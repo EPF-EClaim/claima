@@ -1,4 +1,4 @@
-<mvc:View controllerName="claimafrontend.controller.View1"
+<mvc:View controllerName="claimafrontend.controller.Main"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m">
     <Page id="page" title="{i18n>title}">
