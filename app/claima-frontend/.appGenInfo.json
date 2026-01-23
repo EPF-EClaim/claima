@@ -6,7 +6,7 @@
     "metadataFilename": "",
     "serviceUrl": "http://localhost:4004/odata/v4/EmployeeSrv/",
     "appName": "claima-frontend",
-    "appTitle": "eClaims",
+    "appTitle": "eClaim",
     "appDescription": "An SAP Fiori application.",
     "appNamespace": "",
     "ui5Theme": "sap_horizon",

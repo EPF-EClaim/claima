@@ -9,7 +9,7 @@
 |**Service Type**<br>Local CAP|
 |**Service URL**<br>http://localhost:4004/odata/v4/EmployeeSrv/|
 |**Module Name**<br>claima-frontend|
-|**Application Title**<br>eClaims|
+|**Application Title**<br>eClaim|
 |**Namespace**<br>|
 |**UI5 Theme**<br>sap_horizon|
 |**UI5 Version**<br>1.144.0|
