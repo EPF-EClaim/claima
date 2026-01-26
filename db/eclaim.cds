@@ -1,8 +1,5 @@
 namespace ZEMP_MASTER;
 
-// using {managed} from '@sap/cds/common';
-
-// @cds.persistence.exists
 entity ZEMP_MASTER {
     key EEID            : String;
         NAME            : String;
@@ -22,11 +19,10 @@ entity ZEMP_MASTER {
         CEO             : String;
         HOD             : String;
         HOS             : String;
-        ZREQUEST_HEADER : Association to ZREQUEST_HEADER
+        ZREQUEST_HEADER : Association to one ZREQUEST_HEADER
                               on ZREQUEST_HEADER.EMP_ID = EEID;
 }
 
-// @cds.persistence.exists
 entity ZREQUEST_HEADER {
     key EMP_ID                 : String;
     key REQUEST_ID             : UUID;
@@ -43,20 +39,18 @@ entity ZREQUEST_HEADER {
         ATTACHMENT             : String;
         LOCATION               : String;
         TYPE_OF_TRANSPORTATION : String;
-        ZCLAIM_TYPE            : Association to ZCLAIM_TYPE
+        ZCLAIM_TYPE            : Association to one ZCLAIM_TYPE
                                      on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
-        ZREQUEST_ITEM          : Association to ZREQUEST_ITEM
+        ZREQUEST_ITEM          : Association to one ZREQUEST_ITEM
                                      on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
-        ZREQUEST_TYPE          : Association to ZREQUEST_TYPE
+        ZREQUEST_TYPE          : Association to one ZREQUEST_TYPE
                                      on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
-        ZREQUEST_GRP           : Association to ZREQUEST_GRP
+        ZREQUEST_GRP           : Association to one ZREQUEST_GRP
                                      on ZREQUEST_GRP.REQUEST_GROUP_ID = REQUEST_GROUP_ID;
-        ZCLAIM_HEADER          : Association to ZCLAIM_HEADER
+        ZCLAIM_HEADER          : Association to one ZCLAIM_HEADER
                                      on ZCLAIM_HEADER.CLAIM_ID = CLAIM_TYPE_ID;
 }
 
-
-// @cds.persistence.exists
 entity ZREQUEST_ITEM {
     key REQUEST_ID             : String;
     key CLAIM_TYPE_ITEM_ID     : String;
@@ -65,10 +59,9 @@ entity ZREQUEST_ITEM {
         ATTACHMENT             : String;
         ZREQ_ITEM_PART         : Composition of many ZREQ_ITEM_PART
                                      on  ZREQ_ITEM_PART.REQUEST_ID         = REQUEST_ID
-                                     and ZREQ_ITEM_PART.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID
+                                     and ZREQ_ITEM_PART.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID;
 }
 
-// @cds.persistence.exists
 entity ZREQ_ITEM_PART {
     key REQUEST_ID           : String;
     key CLAIM_TYPE_ITEM_ID   : String;
@@ -78,7 +71,6 @@ entity ZREQ_ITEM_PART {
         ALLOCATED_AMOUNT     : Decimal;
 }
 
-// @cds.persistence.exists
 entity ZREQUEST_TYPE {
     key REQUEST_TYPE_ID   : String;
         REQUEST_TYPE_DESC : String;
@@ -87,13 +79,11 @@ entity ZREQUEST_TYPE {
         STATUS            : String;
 }
 
-// @cds.persistence.exists
 entity ZCLAIM_TYPE {
     key CLAIM_TYPE_ID   : String;
         CLAIM_TYPE_DESC : String;
 }
 
-// @cds.persistence.exists
 entity ZREQUEST_GRP {
     key REQUEST_GROUP_ID   : String;
         REQUEST_GROUP_DESC : String;
@@ -102,7 +92,6 @@ entity ZREQUEST_GRP {
         STATUS             : String;
 }
 
-// @cds.persistence.exists
 entity ZNUM_RANGE {
     key RANGE_ID : String;
         ![FROM]  : String;
@@ -110,7 +99,6 @@ entity ZNUM_RANGE {
         CURRENT  : String;
 }
 
-// @cds.persistence.exists
 entity ZCLAIM_HEADER {
     key CLAIM_ID              : String;
         CLAIM_MAIN_CAT_ID     : String;
@@ -130,7 +118,6 @@ entity ZCLAIM_HEADER {
                                     on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
 }
 
-// @cds.persistence.exists
 entity ZCLAIM_ITEM {
     key CLAIM_ID          : String;
     key CLAIM_ITEM_ID     : String;
@@ -182,26 +169,27 @@ entity ZCLAIM_ITEM {
         STATE2            : String;
         RECEIPT_DATE      : String;
         RECEIPT_NUMBER    : String;
-        ZCLAIM_PURPOSE    : Association to ZCLAIM_PURPOSE
+        ZCLAIM_PURPOSE    : Association to one ZCLAIM_PURPOSE
                                 on ZCLAIM_PURPOSE.CLAIM_PURPOSE_ID = CLAIM_PURPOSE;
-        ZLODGING_CAT      : Association to ZLODGING_CAT
+        ZLODGING_CAT      : Association to one ZLODGING_CAT
                                 on ZLODGING_CAT.LODGING_CATEGORY_ID = LODGING_CATEGORY;
 }
 
-// @cds.persistence.exists
 entity ZCLAIM_PURPOSE {
     key CLAIM_PURPOSE_ID   : String;
         CLAIM_PURPOSE_DESC : String;
 }
 
-// @cds.persistence.exists
 entity ZCLAIM_DISCLAIMER {
     key CLAIM_DISCLAIMER_ID   : String;
         CLAIM_DISCLAIMER_DESC : String;
 }
 
-// @cds.persistence.exists
 entity ZLODGING_CAT {
     key LODGING_CATEGORY_ID   : String;
         LODGING_CATEGORY_DESC : String;
+}
+
+entity Entity1 {
+    key ID : UUID;
 }

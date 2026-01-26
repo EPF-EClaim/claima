@@ -1,2 +1,2 @@
 
-using from './claima-frontend/annotations';
+using from './Claim-A/annotations';
