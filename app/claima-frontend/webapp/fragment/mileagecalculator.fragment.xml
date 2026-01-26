@@ -1,0 +1,52 @@
+
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  id="mileagecalculator">
+
+  <Dialog
+    id="helloDialog"
+    title="Mileage Calculator"
+    contentWidth="900px"
+
+    afterOpen=".onMileageDialogAfterOpen"
+    afterClose=".onMileageDialogAfterClose">
+
+    <!-- Wrap your original view's content inside a single VBox -->
+    <content>
+      <VBox id="rootVBox" class="sapUiMediumMargin" width="100%">
+
+        <Title text="Mileage Calculator" level="H2" />
+
+        <!-- Same IDs as your project1 view -->
+        <Input id="inputFrom" placeholder="Origin" width="100%" />
+        <Input id="inputTo" placeholder="Destination" width="100%" />
+
+        <!-- Action row -->
+        <HBox class="sapUiSmallMarginTop" alignItems="Center">
+          <Button text="Calculate Route" press=".onCalculateRoute" />
+          <Text id="txtDistance" class="sapUiSmallMarginBegin" text="Distance Calculated: -" />
+
+          <!-- Route picker (hidden until >1 route) -->
+          <Select id="routePicker"
+                  class="sapUiSmallMarginBegin"
+                  width="280px"
+                  visible="false"
+                  change=".onRoutePicked" />
+        </HBox>
+
+        <!-- Map container: VBox renders a DIV with fixed height -->
+        <VBox id="mapContainer" height="500px" width="100%" class="sapUiSmallMarginTop" />
+
+      </VBox>
+    </content>
+
+    <beginButton>
+      <Button text="Calculate Route" type="Emphasized" press=".onCalculateRoute" />
+    </beginButton>
+    <buttons>
+      <Button id="add_mileage"    text="Add Mileage to Expense" type="Accept" press=".onAddMileage" />
+      <Button id="cancel_mileage" text="Cancel"                 press=".onCancelMileage" />
+    </buttons>
+  </Dialog>
+</core:FragmentDefinition>

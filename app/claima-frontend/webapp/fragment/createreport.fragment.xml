@@ -1,0 +1,104 @@
+<core:FragmentDefinition
+    xmlns:l="sap.ui.layout"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:u="sap.ui.unified"
+    id="createreport"
+>
+    <Dialog title="{i18n>createreport_header}" contentWidth="900px">
+
+            <f:SimpleForm
+                id="SimpleFormToolbar"
+                editable="true"
+                layout="ResponsiveGridLayout"
+                labelSpanXL="4"
+                labelSpanL="3"
+                labelSpanM="4"
+                labelSpanS="12"
+                adjustLabelSpan="false"
+                emptySpanXL="0"
+                emptySpanL="4"
+                emptySpanM="0"
+                emptySpanS="0"
+                columnsXL="2"
+                columnsL="1"
+                columnsM="1"
+                singleContainerFullSize="true"
+                ariaLabelledBy="Title1"
+            >
+                <f:content>
+                    <Label text="{i18n>report_purpose}" />
+                    <Input value="{input>/report/purpose}" required="true" id="createreport_purpose"/>
+
+                    <Label text="{i18n>report_startdate}" />
+                    <Input
+                        value="{input>/report/startdate}"
+                        type="Date" required="true" id="createreport_startdate" 
+                    />
+                    <Label text="{i18n>report_enddate}" />
+                    <Input
+                        value="{input>/report/enddate}"
+                        type="Date" required="true" id="createreport_enddate"
+                    />
+
+                    <Label text="{i18n>report_category}" />
+                    <Select
+                        id="createreport_expcat"
+                        selectedKey="{input>/report/category}"
+						required="true"
+                    >
+                        <items>
+                            <core:Item
+                                text="{i18n>expcat_direct}"
+                                key="expcat_direct"
+                            />
+                            <core:Item
+                                text="{i18n>expcat_auto}"
+                                key="expcat_auto"
+                            />
+                            <core:Item
+                                text="{i18n>expcat_withoutrequest}"
+                                key="expcat_withoutrequest"
+                            />
+                        </items>
+                    </Select>
+
+                    <Label text="{i18n>report_amt_approved}" />
+                    <Input
+                        value="{input>/report/amt_approved}"
+                        type="Number"
+                        id="createreport_amt_approved"
+                    />
+					<Label text="{i18n>report_comment}" />
+                    <Input value="{input>/report/comment}" required="true" id="createreport_comment" />
+
+                    <Label text="{i18n>createreport_attachment}" />
+                    <u:FileUploader
+                        id="createreport_attachment"
+                        name="myFileUpload"
+                        uploadUrl="upload/"
+                        uploadComplete="handleUploadComplete"
+                    />
+                </f:content>
+            </f:SimpleForm>
+     
+		<buttons>
+            <!-- <Button
+                    id="createreport_attachment"
+                    press=""
+                    text="{i18n>createreport_attachment}"
+                /> -->
+            <Button
+                    id="createreport_create"
+                    press="onCreateReport"
+                    text="{i18n>createreport_create}"
+                />
+			<Button
+                    id="createreport_cancel"
+                    press="onCancelFragment"
+                    text="{i18n>createreport_cancel}"
+                /></buttons>     
+    </Dialog>
+</core:FragmentDefinition>

@@ -25,7 +25,7 @@
         }
       }
     }
-  },
+  },  
   "sap.ui": {
     "technology": "UI5",
     "icons": {
@@ -48,21 +48,23 @@
       "minUI5Version": "1.144.0",
       "libs": {
         "sap.m": {},
-        "sap.ui.core": {}
+        "sap.ui.core": {},
+        "sap.ui.table": {},
+        "sap.ui.unified": {}
       }
     },
     "contentDensities": {
       "compact": true,
       "cozy": true
     },
-    "models": {
+    "models": {   
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
           "bundleName": "claimafrontend.i18n.i18n"
         }
       },
-      "": {
+      "employee": {
         "dataSource": "mainService",
         "preload": true,
         "settings": {
@@ -70,6 +72,22 @@
           "autoExpandSelect": true,
           "earlyRequests": true
         }
+      },
+      "manifests": {
+        "type": "sap.ui.model.json.JSONModel",
+        "uri": "model/data.json"
+      },
+      "current": {
+        "type": "sap.ui.model.json.JSONModel",
+        "uri": "model/data2.json"
+      },
+      "input": {
+        "type": "sap.ui.model.json.JSONModel",
+        "uri": "model/data2.json"
+      },
+      "mockdata": {
+        "type": "sap.ui.model.json.JSONModel",
+        "uri": "model/mockdata.json"
       }
     },
     "resources": {
@@ -98,12 +116,21 @@
           "target": [
             "TargetMain"
           ]
+        }, 
+        {
+          "pattern": "Dashboard",
+          "name": "Dashboard",
+          "target": "TargetDashboard"
         }
       ],
       "targets": {
         "TargetMain": {
           "id": "Main",
           "name": "Main"
+        }, 
+        "TargetDashboard": {
+          "viewId": "Dashboard",
+          "viewName": "App"
         }
       }
     },
@@ -112,6 +139,17 @@
       "type": "XML",
       "id": "App",
       "async": true
+    },
+    "config": {
+      "sample": {
+        "stretch": true,
+        "files": [
+          "App.view.xml",
+          "App.controller.js",
+          "manifest.json",
+          "model/data.json"
+        ]
+      }
     }
   }
 }

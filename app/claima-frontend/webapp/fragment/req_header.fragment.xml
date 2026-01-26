@@ -1,0 +1,115 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:f="sap.f">
+    <VBox
+        id="request_form_header_box1" 
+        backgroundDesign="Solid"
+        class="roundedBox sapUiSmallMargin"
+        rowGap="1rem">
+        <OverflowToolbar height="3rem">
+            <Title text="{i18n>req_form_header_title}" titleStyle="H3"/>
+            <ToolbarSpacer />
+            <Button type="Default" icon="sap-icon://print" />
+        </OverflowToolbar>
+        <form:Form 
+            id="req_header1"
+            layout="ColumnLayout"
+            editable="false" >
+            <form:layout><form:ColumnLayout /></form:layout>
+            <form:formContainers>
+                <form:FormContainer >
+                    <form:formElements>
+                        <form:FormElement label="{i18n>req_purpose}">
+                            <form:fields>
+                                <Text text="{request>/purpose}" />
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_id}">
+                            <form:fields>
+                                <Text text="{request>/reqid}" />
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_start_date}">
+                            <form:fields>
+                                <Text text="{request>/startdate}" />
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_end_date}">
+                            <form:fields>
+                                <Text text="{request>/enddate}" />
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_location}">
+                            <form:fields>
+                                <Text text="{request>/location}" />
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_details}">
+                            <form:fields>
+                                <Text text="{request>/detail}" />
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_grptype}">
+                            <form:fields>
+                                <Text text="{request>/grptype}" />
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_status}">
+                            <form:fields>
+                                <Text text="{request>/reqstatus}" />
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_cc}">
+                            <form:fields>
+                                <Text text="{request>/costcenter}" />
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_acc}">
+                            <form:fields>
+                                <Text text="{request>/altcostcenter}" />
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_caa}">
+                            <form:fields>
+                                <Text text="0.00" textAlign="End"/>
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_amt}">
+                            <form:fields>
+                                <Text text="0.00" textAlign="End"/>
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_total_amt}">
+                            <form:fields>
+                                <Text text="0.00" textAlign="End"/>
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_rtype}">
+                            <form:fields>
+                                <Text text="{request>/type}" />
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_comment}">
+                            <form:fields>
+                                <Text text="{request>/comment}"/>
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_cashadvtype}">
+                            <form:fields>
+                                <Text text="{request>/cashadvtype}"/>
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_policy}">
+                            <form:fields>
+                                <Text text="{request>/policy}"/>
+                            </form:fields>
+                        </form:FormElement>
+                    </form:formElements>
+                </form:FormContainer>
+            </form:formContainers>
+        </form:Form>
+    </VBox>
+</core:FragmentDefinition>
