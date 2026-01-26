@@ -1,5 +1,5 @@
 <mvc:View
-    controllerName="claima.controller.App"
+    controllerName="claimafrontend.controller.App"
     xmlns="sap.m"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:tnt="sap.tnt"
@@ -415,7 +415,7 @@
                         <content>
                             <VBox id="main">
                                 <core:Fragment
-                                    fragmentName="claima.fragment.report"
+                                    fragmentName="claimafrontend.fragment.report"
                                     type="XML"
                                 />
                                 <VBox
@@ -423,7 +423,7 @@
                                     visible="true"
                                 >
                                     <core:Fragment
-                                        fragmentName="claima.fragment.expensetype"
+                                        fragmentName="claimafrontend.fragment.expensetype"
                                         type="XML"
                                     />
                                 </VBox>
@@ -432,7 +432,7 @@
                                     visible="false"
                                 >
                                     <core:Fragment
-                                        fragmentName="claima.fragment.claimdetails"
+                                        fragmentName="claimafrontend.fragment.claimdetails"
                                         type="XML"
                                     />
                                 </VBox>
@@ -608,7 +608,7 @@
 						
 						<mvc:XMLView
 							id="request_form_view"
-							viewName="claima.view.RequestForm" />
+							viewName="claimafrontend.view.RequestForm" />
 
 					</NavContainer>
                 </pages>
@@ -616,7 +616,7 @@
                 <Page id="myrequest" showHeader="false" class="sapUiNoContentPadding">
                     <content>
                         <core:Fragment
-                            fragmentName="claima.fragment.myrequestform"
+                            fragmentName="claimafrontend.fragment.myrequestform"
                             type="XML"
                         />
                     </content>
@@ -625,7 +625,7 @@
                 <Page id="myreport" showHeader="false" class="sapUiNoContentPadding">
                     <content>
                         <core:Fragment
-                            fragmentName="claima.fragment.myrequestreport"
+                            fragmentName="claimafrontend.fragment.myrequestreport"
                             type="XML"
                         />
                     </content>
