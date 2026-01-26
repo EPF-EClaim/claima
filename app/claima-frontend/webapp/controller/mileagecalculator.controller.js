@@ -7,7 +7,7 @@ sap.ui.define([
 ], function (Controller, MessageToast, Item, Fragment) {
     "use strict";
 
-    return Controller.extend("claima.controller.mileagecalculator", {
+    return Controller.extend("claimafrontend.controller.mileagecalculator", {
 
         /* ---------- Host wiring ---------- */
 
