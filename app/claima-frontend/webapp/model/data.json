@@ -1,0 +1,215 @@
+{
+	"draft": [
+		{
+			"ClaimId": 1,
+			"ClaimType": "Medical",
+			"ClaimDate": "01-Dec-2025"
+		},
+		{
+			"ClaimId": 2,
+			"ClaimType": "Travel",
+			"ClaimDate": "01-Jan-2026"
+		}
+	],
+	"object": {
+		"sap.app": {
+			"id": "sample.CardsLayout.model.object",
+			"type": "card"
+		},
+		"sap.card": {
+			"type": "Object",
+			"actions": [
+				{
+					"type": "Navigation",
+					"parameters": {
+						"url": ""
+					}
+				}
+			],
+			"header": {
+				"title": "{i18n>directclaim}"
+			}
+		}
+	},
+	"preclaim": {
+		"sap.app": {
+			"id": "preclaim",
+			"type": "card"
+		},
+		"sap.card": {
+			"type": "Object",
+			"actions": [
+				{
+					"type": "Navigation",
+					"parameters": {
+						"url": "users/donnaMendez"
+					}
+				}
+			],
+			"header": {
+				"title": "{i18n>preclaim}"
+			}
+		}
+	},
+	"autoclaim": {
+		"sap.app": {
+			"id": "autoclaim",
+			"type": "card"
+		},
+		"sap.card": {
+			"type": "Object",
+			"actions": [
+				{
+					"type": "Navigation",
+					"parameters": {
+						"url": "users/donnaMendez"
+					}
+				}
+			],
+			"header": {
+				"title": "{i18n>autoclaim}"
+			}
+		}
+	},
+	"returnclaim": {
+		"sap.app": {
+			"id": "returnclaim",
+			"type": "card"
+		},
+		"sap.card": {
+			"type": "Object",
+			"actions": [
+				{
+					"type": "Navigation",
+					"parameters": {
+						"url": "users/donnaMendez"
+					}
+				}
+			],
+			"header": {
+				"title": "{i18n>returnclaim}"
+			}
+		}
+	},
+	"expensereport": {
+		"sap.app": {
+			"id": "expensereport",
+			"type": "card"
+		},
+		"sap.card": {
+			"type": "Object",
+			"actions": [
+				{
+					"type": "Navigation",
+					"parameters": {}
+				}
+			],
+			"header": {
+				"title": "{i18n>expensereport}",
+				"subtitle": "{manifests>/testreportCount}"
+			}
+		}
+	},
+	"myrequest": {
+		"sap.app": {
+			"id": "myrequest",
+			"type": "card"
+		},
+		"sap.card": {
+			"type": "Object",
+			"actions": [
+				{
+					"type": "Navigation",
+					"parameters": {}
+				}
+			],
+			"header": {
+				"title": "{i18n>myrequest}"
+			}
+		}
+	},
+	"approval": {
+		"sap.app": {
+			"id": "approval",
+			"type": "card"
+		},
+		"sap.card": {
+			"type": "Object",
+			"actions": [
+				{
+					"type": "Navigation",
+					"parameters": {}
+				}
+			],
+			"header": {
+				"title": "{i18n>approval}"
+			}
+		}
+	},
+	"testreportCount": "count 5",
+	"mock_expensereport": {
+		"sap.app": {
+			"id": "approval",
+			"type": "card"
+		},
+		"sap.card": {
+			"type": "Object",
+			"actions": [
+				{
+					"type": "Navigation",
+					"parameters": {}
+				}
+			],
+			"header": {
+				"title": "{i18n>approval}"
+			}
+		}
+	},
+
+	
+	
+	"types": [
+		{ "key": "T1", "text": "Type A" },
+		{ "key": "T2", "text": "Type B" },
+		{ "key": "T3", "text": "Type C" },
+		{ "key": "T4", "text": "Type D" },
+		{ "key": "T5", "text": "Type E" }
+	],
+
+	"fieldSets": {
+		"type": {
+		"T1": [
+			{ "id": "priority", "label": "Priority", "control": "Select", "path": "/form/priority",
+			"items": [
+				{ "key": "H", "text": "High" },
+				{ "key": "M", "text": "Medium" },
+				{ "key": "L", "text": "Low" }
+			],
+			"required": true
+			}
+		],
+		"T2": [
+			{ "id": "amount", "label": "Amount", "control": "Input", "type": "Number", "path": "/form/amount" }
+		],
+		"T3": [
+			{ "id": "costCenter", "label": "Cost Center", "control": "Input", "path": "/form/costCenter" }
+		],
+		"T4": [
+			{ "id": "attachment", "label": "Attachment", "control": "FileUploader", "path": "/form/attachment" }
+		],
+		"T5": [
+			{ "id": "category", "label": "Category", "control": "Select", "path": "/form/category",
+			"items": [
+				{ "key": "A", "text": "Cat A" },
+				{ "key": "B", "text": "Cat B" }
+			]
+			}
+		]
+		}
+	},
+
+	"selection": { "purpose": "", "type": "" },
+	"form": {}
+
+
+}

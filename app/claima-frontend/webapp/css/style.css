@@ -1,1 +1,19 @@
-/* Enter your custom styles here */
+.button{
+    height: 900px;
+}
+
+/* Start added by Jefry Yap */
+.roundedBox {
+  border-radius: var(--sapElement_BorderCornerRadius, 0.5rem);
+  background: var(--sapGroup_ContentBackground, #fff);
+  padding: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+clickableInput {
+    cursor: pointer;
+}
+
+
+/* End added by Jefry Yap */

@@ -1,0 +1,88 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:f="sap.f"
+    xmlns:core="sap.ui.core"
+    xmlns:mdc="sap.ui.mdc"
+    xmlns:mdct="sap.ui.mdc.table">
+    <f:DynamicPage id="expensetype">
+        <f:content>
+            <mdc:Table
+                id="table"
+                header="Expense"
+                p13nMode="Column,Sort,Group,Filter"
+                threshold="25"
+                showRowCount="false"
+                useColumnLabelsAsTooltips="true"
+                selectionMode="Multi">
+                <mdc:actions>
+                    <MenuButton
+                        text="Add Claim Type"
+                        buttonMode="Split"
+                        useDefaultActionOnly="true">
+                        <menu>
+                            <Menu itemSelected="onMenuAction">
+                                <MenuItem
+                                    text="Create Expense" id="expense" press="onPressClaimDetails">
+                                </MenuItem>
+                                <MenuItem
+                                    text="Scan Receipt" id="receipt">
+                                </MenuItem>
+                            </Menu>
+                        </menu>
+                    </MenuButton>
+                    <Button
+                        id="btnEdit"
+                        text="Edit"
+                        press="openConfigurationDialog"
+                        enabled="false"/>
+                    <Button
+                        id="btnDuplicate"
+                        text="Duplicate"
+                        press="openConfigurationDialog"
+                        enabled="false"/>
+                    <Button
+                        id="btnDelete"
+                        text="Delete"
+                        press="openConfigurationDialog"
+                        enabled="false"/>
+                </mdc:actions>
+                <mdct:Column
+                    propertyKey="date"
+                    header="Date">
+                    <Text text="{date}" />
+                </mdct:Column>
+                <mdct:Column
+                    propertyKey="receipt"
+                    header="Receipt">
+                    <Text text="{receipt}" />
+                </mdct:Column>
+                <mdct:Column
+                    propertyKey="first_ascent"
+                    header="Claim Type"
+                >
+                    <Text text="{mountains>first_ascent}" />
+                </mdct:Column>
+                <mdct:Column
+                    propertyKey="countries"
+                    header="Claim Item"
+                >
+                    <Text text="{mountains>countries}" />
+                </mdct:Column>
+                <mdct:Column
+                    propertyKey="parent_mountain"
+                    header="Amount"
+                >
+                    <Text text="{mountains>parent_mountain}" />
+                </mdct:Column>
+                <mdct:Column
+                    propertyKey="parent_mountain"
+                    header="Category"
+                >
+                    <Text text="{mountains>parent_mountain}" />
+                </mdct:Column>
+            </mdc:Table>
+        </f:content>
+    </f:DynamicPage>
+    
+</core:FragmentDefinition>

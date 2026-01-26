@@ -1,0 +1,67 @@
+
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <VBox class="sapUiContentPadding">
+
+        <!-- HEADER -->
+        <Toolbar class="sapUiSmallMarginBottom">
+            <Title text="{configModel>/active/title}" level="H2"/>
+            <ToolbarSpacer/>
+            <Button text="+ Add New Entry" press="onAddEntry" type="Transparent"/>
+            <Button text="Edit" press="onEditEntry"/>
+            <Button text="Copy" press="onCopyEntry"/>
+            <Button text="Delete" press="onDeleteEntry" type="Negative"/>
+        </Toolbar>
+
+        <!-- TABLE -->
+        <Table
+            id="configTable"
+            mode="MultiSelect"
+            inset="false"
+            fixedLayout="false"
+            showSeparators="All"
+            items="{configModel>/active/data}"
+            noDataText="No data available">
+
+            <columns>
+                <Column width="2rem"/>
+                <Column><Text text="Claim_Purpose_ID"/></Column>
+                <Column><Text text="Claim_Purpose Desc"/></Column>
+            </columns>
+
+            <items>
+                <ColumnListItem type="Inactive">
+
+                    <cells>
+                        <!-- Checkbox column -->
+                        <Text text=""/>
+
+                        <!-- Claim_Purpose_ID -->
+                        <HBox>
+                            <Input value="{configModel>Claim_Purpose_ID}" visible="{= ${configModel>edit} }"/>
+                            <Text text="{configModel>Claim_Purpose_ID}" visible="{= !${configModel>edit} }"/>
+                        </HBox>
+
+                        <!-- Claim_Purpose Desc -->
+                        <HBox>
+                            <Input value="{configModel>Claim_Purpose Desc}" visible="{= ${configModel>edit} }"/>
+                            <Text text="{configModel>Claim_Purpose Desc}" visible="{= !${configModel>edit} }"/>
+                        </HBox>
+                    </cells>
+
+                </ColumnListItem>
+            </items>
+        </Table>
+
+        <!-- FOOTER -->
+        <Toolbar class="sapUiMediumMarginTop">
+            <ToolbarSpacer/>
+            <Button text="Back" press="onBackFromConfigTable"/>
+            <Button text="Save" press="onSaveConfigTable" type="Emphasized"/>
+        </Toolbar>
+
+    </VBox>
+
+</core:FragmentDefinition>

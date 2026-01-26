@@ -1,0 +1,12 @@
+{
+	"report": [
+		{
+			"purpose": "mock report #1",
+			"startdate": "01/01/2026",
+			"enddate": "01/03/2026",
+			"category": "expcat_direct",
+			"amt_approved": 240.50,
+			"comment": "mock comment #1"
+		}
+	]
+}

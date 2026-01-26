@@ -1,0 +1,121 @@
+<core:FragmentDefinition
+    xmlns:l="sap.ui.layout"
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:card="sap.f.cards">
+    <VBox class="sapUiSmallMargin" id="report">
+        <HBox>
+            <VBox
+                class="sapUiSmallMargin"
+                width="100rem">
+                <f:Form
+                    id="FormDisplay354wideDual"
+                    editable="false">
+                    <f:title>
+                        <core:Title text="{i18n>expensereport}" />
+                    </f:title>
+                    <f:layout>
+                        <f:ResponsiveGridLayout
+                            labelSpanXL="4"
+                            labelSpanL="3"
+                            labelSpanM="4"
+                            labelSpanS="12"
+                            adjustLabelSpan="false"
+                            emptySpanXL="0"
+                            emptySpanL="4"
+                            emptySpanM="0"
+                            emptySpanS="0"
+                            columnsXL="2"
+                            columnsL="1"
+                            columnsM="1"
+                            singleContainerFullSize="false"
+                        />
+                    </f:layout>
+                    <f:formContainers>
+                        <f:FormContainer>
+                            <f:formElements>
+                                <f:FormElement label="{i18n>reportpurpose}">
+                                    <f:fields>
+                                        <Text
+                                            text="{current>/report/purpose}"
+                                            id="nameText" 
+                                        />
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>id}">
+                                    <f:fields>
+                                        <Text text="{id}" />
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>startdate}">
+                                    <f:fields>
+                                        <Text text="{current>/report/startdate}" />
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>enddate}">
+                                    <f:fields>
+                                        <Text
+                                            text="{current>/report/enddate}"
+                                            id="countryText"
+                                        />
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>prerequest}">
+                                    <f:fields>
+                                        <Text text="{current>/report/category}" />
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>location}">
+                                    <f:fields>
+                                        <Text text="{location}" />
+                                    </f:fields>
+                                </f:FormElement>
+                            </f:formElements>
+                        </f:FormContainer>
+                        <f:FormContainer>
+                            <f:formElements>
+                                <f:FormElement label="{i18n>status}">
+                                    <f:fields>
+                                        <Text text="{current>/report/comment}" />
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>costcenter}">
+                                    <f:fields>
+                                        <Text text="{costcenter}" />
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>altcc}">
+                                    <f:fields>
+                                        <Text text="{altcc}" />
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>total}">
+                                    <f:fields>
+                                        <Text text="{total}" />
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>approvedamt}">
+                                    <f:fields>
+                                        <Text text="{current>/report/amt_approved}" />
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>cashadv}">
+                                    <f:fields>
+                                        <Text text="{cashadv}" />
+                                    </f:fields>
+                                </f:FormElement>
+                                <f:FormElement label="{i18n>finalamt}">
+                                    <f:fields>
+                                        <Text text="{finalamt}" />
+                                    </f:fields>
+                                </f:FormElement>
+                            </f:formElements>
+                        </f:FormContainer>
+                    </f:formContainers>
+                </f:Form>
+            </VBox>
+        </HBox>
+    </VBox>
+</core:FragmentDefinition>

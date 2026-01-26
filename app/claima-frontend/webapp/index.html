@@ -22,6 +22,18 @@
         data-sap-ui-async="true"
         data-sap-ui-frame-options="trusted"
     ></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xjs"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCq2oZylfVF7F1lW9IuUlL62q6UJC9s3tc&libraries=places"
+        async defer>
+        </script>
+
+    <script>
+        window.mapsLoaded = false;
+        function initMap() {
+            window.mapsLoaded = true;
+            console.log("Google Maps API loaded");
+        }
+    </script>
 </head>
 <body class="sapUiBody sapUiSizeCompact" id="content">
     <div

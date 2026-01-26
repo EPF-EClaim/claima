@@ -1,0 +1,158 @@
+<core:FragmentDefinition xmlns:unified="sap.ui.unified" xmlns:l="sap.ui.layout" xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.ui.layout.form">
+	<Dialog title="{i18n>req_po_title}" contentWidth="50%" class="requestDialog">
+		<f:SimpleForm 
+            id="req_create_form"
+			editable="true"
+			layout="ResponsiveGridLayout"
+			labelSpanXL="4"
+			labelSpanL="3"
+			labelSpanM="4"
+			labelSpanS="12"
+			adjustLabelSpan="false"
+			emptySpanXL="0"
+			emptySpanL="4"
+			emptySpanM="0"
+			emptySpanS="0"
+			columnsXL="2"
+			columnsL="1"
+			columnsM="1" >
+			<f:content>	
+			    <!-- Request Purpose -->
+				<Label text="Request Purpose" />
+				<Input value="{request>/purpose}" required="true"/>
+			    <!-- Request Type -->
+				<Label text="Request Type" />
+				<Select selectedKey="{request>/type}" required="true">
+					<core:Item key="none" text="" />
+					<core:Item key="travel" text="Travel" />
+					<core:Item key="mobile" text="Mobile Phone Bill" />
+					<core:Item key="event" text="Event" />
+					<core:Item key="reimbursement" text="Reimbursement" />
+					<core:Item key="cash_adv" text="Cash Advance" />
+				</Select>
+			    <!-- Cash Advance Type -->
+			    <Label text="Cash Advance Type" />
+			    <Select width="100%" 
+						selectedKey="{request>/cashadvtype}" 
+						required="false" 
+						visible="{= ${request>/type} === 'cash_adv'}">
+					<core:Item key="none" text="" />
+					<core:Item key="cat1" text="CAT1" />
+					<core:Item key="cat2" text="CAT2" />
+					<core:Item key="cat3" text="CAT3" />
+					<core:Item key="cat4" text="CAT4" />
+					<core:Item key="cat5" text="CAT5" />
+				</Select>
+			    <!-- Trip/Report Start Date -->
+			    <Label text="Request Start Date"/>
+				<DatePicker
+                    id="request_startdate"
+                    displayFormat="dd MMMM yyyy"  
+                    valueFormat="yyyy-MM-dd" 
+                    placeholder="dd MMMM yyyy"
+					required="true"
+                    value="{request>/startdate}"
+					textAlign="Begin"
+					visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }"/>
+			    <!-- Trip/Report End Date -->
+				<Label text="Request End Date" />
+				<DatePicker
+                    id="request_enddate"
+                    displayFormat="dd MMMM yyyy"  
+                    valueFormat="yyyy-MM-dd" 
+                    placeholder="dd MMMM yyyy"
+					required="true"
+                    value="{request>/enddate}"
+					textAlign="Begin"
+					visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }"/>
+			    <!-- Individual/Group -->
+				<Label text="Individual/Group" />
+				<Select width="100%" 
+						required="true" 
+						selectedKey="{request>/grptype}"
+						visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }">
+					<core:Item key="none" text="" />
+					<core:Item key="individual" text="Individual" />
+					<core:Item key="group" text="Group" />
+				</Select>
+			    <!-- Location -->
+			    <Label text="Location" />
+			    <Input 
+					id="request_location"
+					textAlign="Begin"
+					required="true"
+					value="{request>/location}"
+					visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }"/>
+			    <!-- Type of Transportation -->
+			    <Label text="Type of Transportation" />
+			    <Select width="100%" 
+						selectedKey="{request>/transport}" 
+						required="true" 
+						visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }">
+					<core:Item key="none" text="" />
+					<core:Item key="tot1" text="TOT1" />
+					<core:Item key="tot2" text="TOT2" />
+					<core:Item key="tot3" text="TOT3" />
+					<core:Item key="tot4" text="TOT4" />
+					<core:Item key="tot5" text="TOT5" />
+				</Select>
+			    <!-- Event Detail -->
+			    <Label text="Event Details" />
+			    <TextArea 
+					id="req_event_detail"
+					textAlign="Begin"
+					required="false"
+					value="{request>/detail}"
+					visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }"/>
+			    <!-- Event Policy -->
+			    <Label text="Policy" />
+			    <Input 
+					id="req_policy"
+					textAlign="Begin"
+					required="false"
+					value="{request>/policy}"
+					visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }"/>
+			    <!-- Alternate Cost Center -->
+			    <Label text="Alternate Cost Center" />
+			    <Select width="100%" 
+						selectedKey="{request>/altcostcenter}" 
+						required="false" 
+						visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }">
+					<core:Item key="none" text="" />
+					<core:Item key="cc1" text="CC1" />
+					<core:Item key="cc2" text="CC2" />
+					<core:Item key="cc3" text="CC3" />
+					<core:Item key="cc4" text="CC4" />
+					<core:Item key="cc5" text="CC5" />
+				</Select>
+			    <!-- Attachment 1 -->
+			    <Label text="Attachment 1" />
+			    <unified:FileUploader
+					id="req_attachment_1"
+					icon="sap-icon://upload"
+					change=".onImportChange"
+					visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }"
+					/>
+			    <!-- Attachment 2 -->
+			    <Label text="Attachment 2" />
+			    <unified:FileUploader
+					id="req_attachment_2"
+					icon="sap-icon://upload"
+					change=".onImportChange"
+					visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }"/>
+			    <!-- Comment -->
+			    <Label text="Comments" />
+			    <TextArea
+					id="request_comment"
+					textAlign="Begin"
+					required="true"
+					value="{request>/comment}"
+					visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }" />
+			</f:content>
+        </f:SimpleForm>
+		<HBox id="request_placeholder" alignItems="Center" justifyContent="End" class="sapUiSmallMarginEnd" columnGap="0.5rem">
+            <Button id="request_create" press="onClickCreateRequest" 	text="{i18n>req_create}" type="Emphasized"/>
+            <Button id="request_cancel" press="onClickCancel" 			text="{i18n>req_cancel}" />
+		</HBox>
+	</Dialog>
+</core:FragmentDefinition>
