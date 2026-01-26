@@ -7,7 +7,7 @@ sap.ui.define([
 
 	Opa5.extendConfig({
 		arrangements: new Startup(),
-		viewNamespace: "claima.view.",
+		viewNamespace: "claimafrontend.view.",
 		autoWait: true
 	});
 });
