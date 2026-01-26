@@ -3,7 +3,7 @@ sap.ui.define([
 ], (Controller) => {
     "use strict";
 
-    return Controller.extend("claima.controller.Main", {
+    return Controller.extend("claimafrontend.controller.Main", {
         onInit() {
         }
     });
