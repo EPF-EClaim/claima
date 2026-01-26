@@ -26,7 +26,7 @@ sap.ui.define([
 ) {
 	"use strict";
 
-	return Controller.extend("claimafrontend.controller.App", {
+	return Controller.extend("claima.controller.App", {
 		onInit: function () {
 
 			// oViewModel
@@ -241,7 +241,7 @@ sap.ui.define([
 		onClickConfiguration: async function () {
 			// if (!this.oConfigPage) {
 			// 	this.oConfigPage = Fragment.load({
-			// 		name: "claimafrontend.fragment.configuration",
+			// 		name: "claima.fragment.configuration",
 			// 		type: "XML",
 			// 		controller: this
 			// 	});
@@ -260,7 +260,7 @@ sap.ui.define([
     onNavCreateReport: async function () {
 			if (!this.oDialogFragment) {
 				this.oDialogFragment = await Fragment.load({
-					name: "claimafrontend.fragment.createreport",
+					name: "claima.fragment.createreport",
 					type: "XML",
 					controller: this,
 				});
@@ -457,7 +457,7 @@ sap.ui.define([
 				this._pMileageFrag = new Promise((resolve, reject) => {
 
 					// Load the fragment controller class dynamically
-					sap.ui.require(["claimafrontend/controller/mileagecalculator.controller"], (MileageFragController) => {
+					sap.ui.require(["claima/controller/mileagecalculator.controller"], (MileageFragController) => {
 						try {
 							var oFragController = new MileageFragController();
 
@@ -467,7 +467,7 @@ sap.ui.define([
 							// Load the fragment with id prefix
 							Fragment.load({
 								id: oView.getId(), // critical for byId() to resolve fragment controls
-								name: "claimafrontend.fragment.mileagecalculator",
+								name: "claima.fragment.mileagecalculator",
 								controller: oFragController
 							}).then((oDialog) => {
 								// models + lifecycle
@@ -548,7 +548,7 @@ sap.ui.define([
 			if (!this.oDialogFragment) {
 				this.oDialogFragment = await Fragment.load({
 					id: "request",
-					name: "claimafrontend.fragment.request",
+					name: "claima.fragment.request",
 					type: "XML",
 					controller: this,
 				});
