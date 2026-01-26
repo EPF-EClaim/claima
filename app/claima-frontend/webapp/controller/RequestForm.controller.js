@@ -10,7 +10,7 @@ sap.ui.define([
 ], (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment) => {
     "use strict";
 
-    return Controller.extend("claima.controller.RequestForm", {
+    return Controller.extend("claimafrontend.controller.RequestForm", {
         onInit() {
             
 			// show header
@@ -72,7 +72,7 @@ sap.ui.define([
 
 				pFormFragment = Fragment.load({
 					id: oView.getId(),
-					name: "claima.fragment." + sFragmentName,
+					name: "claimafrontend.fragment." + sFragmentName,
 					type: "XML",
 					controller: this,
 					
