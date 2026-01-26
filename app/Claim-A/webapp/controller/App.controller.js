@@ -221,7 +221,7 @@ sap.ui.define([
 					break;
 				// Start added by Jefry 15-01-2026
 				case "createrequest":
-					this.onNavMyRequest();
+					this.onClickMyRequest();
 					break;
 				// End added by Jefry 15-01-2026
 				case "config": // your configuration menu
