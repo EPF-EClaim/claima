@@ -1,5 +1,5 @@
 sap.ui.define([
-	"claima/test/unit/controller/Main.controller"
+	"claimafrontend/test/unit/controller/Main.controller"
 ], function () {
 	"use strict";
 });
