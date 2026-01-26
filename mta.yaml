@@ -1,6 +1,8 @@
 _schema-version: 3.3.0
 ID: claima-backend
 description: A simple CAP project.
+parameters:
+  enable-parallel-deployments: true
 version: 1.0.0
 modules:
 - name: claima-backend-srv
@@ -9,6 +11,7 @@ modules:
   requires:
   - name: claima-backend-auth
   - name: claima-backend-db
+  - name: claima-backend-connectivity
   provides:
   - name: srv-api
     properties:
@@ -23,11 +26,22 @@ modules:
   path: gen/db
   requires:
   - name: claima-backend-db
+    properties:
+      TARGET_CONTAINER: ~{hdi-container-name}
+  - name: cross-container-service-1
+    group: SERVICE_REPLACEMENTS
+    properties:
+      key: ServiceName_1
+      service: ~{the-service-name}
   parameters:
     buildpack: nodejs_buildpack
 - name: claima-backend
   type: approuter.nodejs
   path: app/router
+  parameters:
+      keep-existing-routes: true
+      disk-quota: 256M
+      memory: 256M
   requires:
   - name: srv-api
     group: destinations
@@ -47,10 +61,6 @@ modules:
     properties:
       app-protocol: ${protocol}
       app-uri: ${default-uri}
-  parameters:
-    disk-quota: 256M
-    keep-existing-routes: true
-    memory: 256M
 - name: claima-backend-app-content
   type: com.sap.application.content
   path: .
@@ -62,12 +72,12 @@ modules:
     build-result: resources
     requires:
     - artifacts:
-      - claimafrontend.zip
-      name: claimafrontend
+      - Claim-A.zip
+      name: eclaim
       target-path: resources/
-- name: claimafrontend
+- name: Claim-A
   type: html5
-  path: app/claima-frontend
+  path: app/Claim-A
   build-parameters:
     build-result: dist
     builder: custom
@@ -98,6 +108,19 @@ resources:
   parameters:
     service: hana
     service-plan: hdi-shared
+  properties:
+    hdi-container-name: ${service-name}
+- name: claima-backend-connectivity
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: connectivity
+    service-plan: lite
+- name: cross-container-service-1
+  type: org.cloudfoundry.existing-service
+  parameters:
+    service-name: ZPROJ_SAPHANADB-hdidb-ws-phcgj
+  properties:
+    the-service-name: ${service-name}
 - name: claima-backend-repo-host
   type: org.cloudfoundry.managed-service
   parameters:
@@ -122,9 +145,6 @@ resources:
     service: destination
     service-name: claima-backend-destination-service
     service-plan: lite
-parameters:
-  deploy_mode: html5-repo
-  enable-parallel-deployments: true
 build-parameters:
   before-all:
   - builder: custom
