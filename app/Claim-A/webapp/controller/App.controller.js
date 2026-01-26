@@ -410,6 +410,46 @@ sap.ui.define([
 			this.byId("pageContainer").to(oNextPage);
 		},
 
+		// CLICK CONFIGURATION TABLE CARD
+		onOpenConfigTable: async function (oEvent) {
+
+			let tableId = oEvent.getSource().getCustomData()[0].getValue();
+			let m = this.getView().getModel("configModel");
+
+			m.setProperty("/active/title", tableId);
+			m.setProperty("/active/data",
+				JSON.parse(JSON.stringify(m.getProperty("/" + tableId)))
+			);
+
+			this.loadConfigPage();
+		},
+
+		// LOAD CONFIG DETAIL PAGE
+		loadConfigPage: async function () {
+
+			if (!this.oConfigDetailPage) {
+
+				const oFragment = await Fragment.load({
+					id: this.createId("ConfigFrag"),
+					name: "claima.fragment.configuration",
+					controller: this
+				});
+				this.getView().addDependent(oFragment);
+
+				this.oConfigDetailPage = new sap.m.Page(
+					this.createId("configDetailPage"),
+					{
+						title: "eClaim Configuration",
+						content: [oFragment],
+						showNavButton: true,
+						navButtonPress: this.onBackFromConfigTable.bind(this)
+					}
+				);
+				this.byId("pageContainer").addPage(this.oConfigDetailPage);
+			}
+			this.byId("pageContainer").to(this.byId("configDetailPage"));
+		},
+
 		onRowPressForm: function (oEvent) {
 			// 1) Read the selected row data from the "myRequest" named model
 			const oListItem = oEvent.getParameter("listItem");
