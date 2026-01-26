@@ -14,7 +14,7 @@ sap.ui.define([
 			// start the app UI component
 			this.iStartMyUIComponent({
 				componentConfig: {
-					name: "claimafrontend",
+					name: "claima",
 					async: true
 				},
 				hash: oOptions.hash,

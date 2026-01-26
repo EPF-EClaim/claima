@@ -1,7 +1,7 @@
 /* global QUnit */
 QUnit.config.autostart = false;
 
-sap.ui.require(["claimafrontend/test/integration/AllJourneys"
+sap.ui.require(["claima/test/integration/AllJourneys"
 ], function () {
 	QUnit.start();
 });

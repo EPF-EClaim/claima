@@ -1,4 +1,0 @@
-<mvc:View controllerName="claimafrontend.controller.Main"
-    xmlns:mvc="sap.ui.core.mvc"
-    xmlns="sap.m">
-</mvc:View>
