@@ -1,7 +1,7 @@
 /*global QUnit*/
 
 sap.ui.define([
-	"claima/controller/Main.controller"
+	"claimafrontend/controller/Main.controller"
 ], function (Controller) {
 	"use strict";
 
