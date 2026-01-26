@@ -1,7 +1,7 @@
 {
   "_version": "1.81.0",
   "sap.app": {
-    "id": "claima",
+    "id": "claimafrontend",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "applicationVersion": {
@@ -12,8 +12,8 @@
     "resources": "resources.json",
     "sourceTemplate": {
       "id": "@sap/generator-fiori:basic",
-      "version": "1.20.0",
-      "toolsId": "5e53ce21-6b98-4c53-9e82-de44fa4c3b3b"
+      "version": "1.20.1",
+      "toolsId": "6e0f9a81-5ce1-4c3d-9cea-f29fb3955a80"
     },
     "dataSources": {
       "mainService": {
@@ -40,13 +40,12 @@
       "desktop": true,
       "tablet": true,
       "phone": true
-    },
-    "fullWidth": true
+    }
   },
   "sap.ui5": {
-    "flexEnabled": false,
+    "flexEnabled": true,
     "dependencies": {
-      "minUI5Version": "1.143.0",
+      "minUI5Version": "1.144.0",
       "libs": {
         "sap.m": {},
         "sap.ui.core": {},
@@ -59,6 +58,12 @@
       "cozy": true
     },
     "models": {   
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "claimafrontend.i18n.i18n"
+        }
+      },
       "employee": {
         "dataSource": "mainService",
         "preload": true,
@@ -83,12 +88,6 @@
       "mockdata": {
         "type": "sap.ui.model.json.JSONModel",
         "uri": "model/mockdata.json"
-      },
-      "i18n": {
-        "type": "sap.ui.model.resource.ResourceModel",
-        "settings": {
-          "bundleName": "claima.i18n.i18n"
-        }
       }
     },
     "resources": {
@@ -106,9 +105,9 @@
         "transition": "slide",
         "type": "View",
         "viewType": "XML",
-        "path": "claima.view",
+        "path": "claimafrontend.view",
         "async": true,
-        "viewPath": "claima.view"
+        "viewPath": "claimafrontend.view"
       },
       "routes": [
         {
@@ -136,7 +135,7 @@
       }
     },
     "rootView": {
-      "viewName": "claima.view.App",
+      "viewName": "claimafrontend.view.App",
       "type": "XML",
       "id": "App",
       "async": true
