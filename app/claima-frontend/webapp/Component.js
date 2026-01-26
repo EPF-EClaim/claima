@@ -1,10 +1,10 @@
 sap.ui.define([
     "sap/ui/core/UIComponent",
-    "claimafrontend/model/models"
+    "claima/model/models"
 ], (UIComponent, models) => {
     "use strict";
 
-    return UIComponent.extend("claimafrontend.Component", {
+    return UIComponent.extend("claima.Component", {
         metadata: {
             manifest: "json",
             interfaces: [
