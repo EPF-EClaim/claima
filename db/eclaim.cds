@@ -1,4 +1,4 @@
-namespace ZEMP_MASTER;
+namespace ECLAIM;
 
 entity ZEMP_MASTER {
     key EEID            : String;
@@ -188,8 +188,4 @@ entity ZCLAIM_DISCLAIMER {
 entity ZLODGING_CAT {
     key LODGING_CATEGORY_ID   : String;
         LODGING_CATEGORY_DESC : String;
-}
-
-entity Entity1 {
-    key ID : UUID;
 }
