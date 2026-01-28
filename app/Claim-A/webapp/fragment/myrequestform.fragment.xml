@@ -17,8 +17,8 @@
                 mode="SingleSelectMaster"
                 width="auto"
                 items="{path:'employee>/ZREQUEST_HEADER', parameters: {
-                $count: true,
-                $select: 'OBJECTIVE_PURPOSE,REQUEST_ID,START_DATE,END_DATE,AMOUNT'}}"
+                $count: true
+                }}"
                 itemPress="onRowPressForm"
             >
                 <columns>
@@ -53,8 +53,7 @@
 
                             <Text text="{employee>OBJECTIVE_PURPOSE}" />
                             <Text text="{employee>REQUEST_ID}" />
-                            <Text text="{path: 'employee>START_DATE'}"
-                            />
+                            <Text text="{path: 'employee>START_DATE'}"/>
                             <Text text="{employee>END_DATE}" />
                             <Text text="{employee>AMOUNT}" />
                         </cells>

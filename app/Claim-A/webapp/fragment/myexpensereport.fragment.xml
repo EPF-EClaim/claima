@@ -18,8 +18,7 @@
                 mode="SingleSelectMaster"
                 width="auto"
                 items="{path:'employee>/ZCLAIM_HEADER', parameters: {
-                $count: true,
-                $select: 'CLAIM_ID,CLAIM_DATE,STATUS_ID,TOTAL,CATEGORY'}}"
+                $count: true }}"
                 itemPress="onRowPress"
             >
                 <columns>
@@ -43,7 +42,7 @@
                 <items>
                     <ColumnListItem
                         type="Active"
-                        press="handlePress"
+                        
                     >
                         <cells>
                             <!-- <Text text="{myRequest>reportpurpose}" />
