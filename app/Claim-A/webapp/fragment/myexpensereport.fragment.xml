@@ -1,0 +1,66 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.f"
+>
+    <f:DynamicPage
+        id="myexpenserepo"
+        headerExpanded="false"
+        fitContent="true"
+        
+    >
+        <f:content>
+            <!-- Using sap.m.Table for JSONModel testing -->
+            <!-- items="{myRequest>/requests}" -->
+            <Table
+                id="tb_myexpensetrepo"
+                headerText="My Expense Report"
+                mode="SingleSelectMaster"
+                width="auto"
+                items="{path:'employee>/ZCLAIM_HEADER', parameters: {
+                $count: true,
+                $select: 'CLAIM_ID,CLAIM_DATE,STATUS_ID,TOTAL,CATEGORY'}}"
+                itemPress="onRowPress"
+            >
+                <columns>
+                    <Column>
+                        <Text text="Report Purpose" />
+                    </Column>
+                    <Column>
+                        <Text text="Report ID" />
+                    </Column>
+                    <Column>
+                        <Text text="Start Date" />
+                    </Column>
+                    <Column>
+                        <Text text="Status" />
+                    </Column>
+                    <Column>
+                        <Text text="Amount" />
+                    </Column>
+                </columns>
+
+                <items>
+                    <ColumnListItem
+                        type="Active"
+                        press="handlePress"
+                    >
+                        <cells>
+                            <!-- <Text text="{myRequest>reportpurpose}" />
+                            <Text text="{myRequest>reportid}" />
+                            <Text text="{myRequest>startdate}" />
+                            <Text text="{myRequest>status}" />
+                            <Text text="{myRequest>amount}" /> -->
+
+                            <Text text="{employee>CATEGORY}" />
+                            <Text text="{employee>CLAIM_ID}" />
+                            <Text text="{employee>CLAIM_DATE}" />
+                            <Text text="{employee>STATUS_ID}" />
+                            <Text text="{employee>TOTAL}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </f:content>
+    </f:DynamicPage>
+</core:FragmentDefinition>
