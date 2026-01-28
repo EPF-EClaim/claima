@@ -71,7 +71,7 @@ sap.ui.define([
 			// CONFIG MODEL for all 4 table
 			var oConfigModel = new JSONModel({
 				ZCLAIM_PURPOSE: [],
-				ConfigurationTable2: [],
+				ZRISK: [],
 				ConfigurationTable3: [],
 				ConfigurationTable4: [],
 				active: {
@@ -127,7 +127,7 @@ sap.ui.define([
 
 		// BACK BUTTON CONFIGURATION
 		onBackFromConfigTable: function () {
-			this.byId("pageContainer").to(this.byId("configuration"));
+			this.byId("pageContainer").to(this.getView().byId('configurationPage'));
 		},
 
 		// SAVE CONFIGURATION
@@ -138,7 +138,8 @@ sap.ui.define([
 
 			activeData.forEach(r => r.edit = false);
 			m.setProperty("/" + tableId, activeData);
-
+			
+			console.log(m.getProperty("/active/data/"));
 			MessageToast.show("Saved");
 		},
 
@@ -155,6 +156,7 @@ sap.ui.define([
 			});
 			let m = this.getView().getModel("configModel");
 			m.refresh(true);
+			console.log(m.getProperty("/active/data/"));
 
 		},
 
@@ -414,13 +416,14 @@ sap.ui.define([
 		onOpenConfigTable: async function (oEvent) {
 
 			let tableId = oEvent.getSource().getCustomData()[0].getValue();
+			console.log(tableId);
 			let m = this.getView().getModel("configModel");
 
 			m.setProperty("/active/title", tableId);
 			m.setProperty("/active/data",
 				JSON.parse(JSON.stringify(m.getProperty("/" + tableId)))
 			);
-
+			console.log(m.getProperty("/active/data/"));
 			this.loadConfigPage();
 		},
 
