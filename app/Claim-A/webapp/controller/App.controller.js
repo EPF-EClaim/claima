@@ -51,7 +51,7 @@ sap.ui.define([
 				costcenter: "",
 				altcostcenter: "",
 				cashadvtype: "",
-				comment: "", 
+				comment: "",
 				saved: ""
 			});
 			this.getView().setModel(oRequestModel, "request");
@@ -79,29 +79,28 @@ sap.ui.define([
 				}
 			});
 			this.getView().setModel(oConfigModel, "configModel");
-      
+
 			//Start insert Aiman Salim - 21/1/2026
-			const oMyRequestModel = new JSONModel({
-				requests: [
-					{
-						reportpurpose: "Travel Claim",
-						reportid: "REQ001",
-						startdate: "2026-01-01",
-						status: "Approved",
-						amount: "1200"
-					},
-					{
-						reportpurpose: "Training Expense",
-						reportid: "REQ002",
-						startdate: "2026-01-10",
-						status: "Pending",
-						amount: "850"
-					}
-				]
-			});
-
-			this.getView().setModel(oMyRequestModel, "myRequest");
-
+			/* 			const oMyRequestModel = new JSONModel({
+							requests: [
+								{
+									reportpurpose: "Travel Claim",
+									reportid: "REQ001",
+									startdate: "2026-01-01",
+									status: "Approved",
+									amount: "1200"
+								},
+								{
+									reportpurpose: "Training Expense",
+									reportid: "REQ002",
+									startdate: "2026-01-10",
+									status: "Pending",
+									amount: "850"
+								}
+							]
+						});
+			
+						this.getView().setModel(oMyRequestModel, "myRequest"); */
 			const oMyRequestModel2 = new JSONModel({
 				requestsform: [
 					{
@@ -257,7 +256,7 @@ sap.ui.define([
 			oPageContainer.to(this.byId("configurationPage"));
 
 		},
-    onNavCreateReport: async function () {
+		onNavCreateReport: async function () {
 			if (!this.oDialogFragment) {
 				this.oDialogFragment = await Fragment.load({
 					name: "claima.fragment.createreport",
@@ -386,24 +385,15 @@ sap.ui.define([
 			oVehicle.setVisible(claimShow);
 
 		},
+		//Start Aiman Salim 22/1/2026 - Comment off
 
-		onPressNavToDetail: function (oEvent) {
-			var oItem = oEvent.getParameter("item");
-			this.byId("pageContainer").to(this.getView().byId('new_request'));
-		},
-
-		onPressNavToDetail2: function (oEvent) {
-			var oItem = oEvent.getParameter("item");
-			this.byId("pageContainer").to(this.getView().byId('expensereport'));
-		},
-
+		//For MyExpenseReport view - Upon click, it will move to ExpenseReport detail page. 
 		onRowPress: function (oEvent) {
 			const oItem = oEvent.getParameter("listItem");
-			const oData = oItem.getBindingContext("myRequest").getObject();
+			const oData = oItem.getBindingContext("employee").getObject();
 
-			//Optional: pass data to the next page via a model
 			const oNextPageModel = new JSONModel(oData);
-			const oNextPage = this.byId("new_request");
+			const oNextPage = this.byId("expensereport");
 			oNextPage.setModel(oNextPageModel, "selectedRequest");
 
 			//Navigate to next page
@@ -449,35 +439,43 @@ sap.ui.define([
 			}
 			this.byId("pageContainer").to(this.byId("configDetailPage"));
 		},
-
+		//For MyRequestForm view - Upon click, it will move to MyRequestForm detail page. 
 		onRowPressForm: function (oEvent) {
-			// 1) Read the selected row data from the "myRequest" named model
-			const oListItem = oEvent.getParameter("listItem");
-			const oSelectedData = oListItem.getBindingContext("myRequestform").getObject();
+			const oItem = oEvent.getParameter("listItem");
+			const oData = oItem.getBindingContext("employee").getObject();
 
-			// 2) Put the selected data into a model that the target page can read
-			//    Option A (recommended): set it on the target page under a named model
-			const oTargetPage = this.byId("expensereport");   // assumes expensereport is a Page/View in the same view
-			if (oTargetPage) {
-				oTargetPage.setModel(new sap.ui.model.json.JSONModel(oSelectedData), "selectedRequest");
-			} else {
-				// Fallback: set on the *view*, which the target page can also inherit if bound
-				this.getView().setModel(new sap.ui.model.json.JSONModel(oSelectedData), "selectedRequest");
-			}
+			const oNextPageModel = new JSONModel(oData);
+			const oNextPage = this.byId("new_request");
+			oNextPage.setModel(oNextPageModel, "selectedRequest");
 
-			// 3) Navigate NavContainer to the expensereport page
-			const oNav = this.byId("pageContainer");
-			const sTargetId = this.getView().createId("expensereport");
-			oNav.to(sTargetId);
+			//Navigate to next page
+			this.byId("pageContainer").to(oNextPage);
 
-			// 4) (Optional) If your expensereport page has step sections, toggle as needed
-			const oExpenseTypeScr = this.byId("expensetypescr");
-			const oClaimScr = this.byId("claimscr");
-			if (oExpenseTypeScr) { oExpenseTypeScr.setVisible(true); }
-			if (oClaimScr) { oClaimScr.setVisible(false); }
-			if (this.createreportButtons) {
-				this.createreportButtons("expensetypescr");
-			}
+			/* 			const oListItem = oEvent.getParameter("listItem");
+						const oSelectedData = oListItem.getBindingContext("myRequestform").getObject();
+			
+						// 2) Put the selected data into a model that the target page can read
+						const oTargetPage = this.byId("new_request");   // assumes expensereport is a Page/View in the same view
+						if (oTargetPage) {
+							oTargetPage.setModel(new sap.ui.model.json.JSONModel(oSelectedData), "selectedRequest");
+						} else {
+							// Fallback: set on the *view*, which the target page can also inherit if bound
+							this.getView().setModel(new sap.ui.model.json.JSONModel(oSelectedData), "selectedRequest");
+						}
+			
+						// 3) Navigate NavContainer to the expensereport page
+						const oNav = this.byId("pageContainer");
+						const sTargetId = this.getView().createId("new_request");
+						oNav.to(sTargetId); */
+
+			/* 			// 4) (Optional) If your expensereport page has step sections, toggle as needed
+						const oExpenseTypeScr = this.byId("expensetypescr");
+						const oClaimScr = this.byId("claimscr");
+						if (oExpenseTypeScr) { oExpenseTypeScr.setVisible(true); }
+						if (oClaimScr) { oClaimScr.setVisible(false); }
+						if (this.createreportButtons) {
+							this.createreportButtons("expensetypescr");
+						} */
 		},
 
 		/* =========================================================
@@ -540,8 +538,8 @@ sap.ui.define([
 									}
 
 									// Optional: push km to your model/input if you want
-									 var oKm = this.byId("km_input_id");
-									 if (oKm) { oKm.setValue(res.km); }
+									var oKm = this.byId("km_input_id");
+									if (oKm) { oKm.setValue(res.km); }
 
 								}.bind(this));
 
@@ -604,7 +602,7 @@ sap.ui.define([
 		},
 
 		onClickCreateRequest: function () {
-			
+
 			// value validation
 			// const oReq = this.getOwnerComponent().getModel("request");
 			// const sType = oReq.getProperty("/type");
@@ -652,7 +650,7 @@ sap.ui.define([
 			const sType = oConfig.getProperty("/selection/type");
 
 			const aPurposeFields = (sPurpose && oConfig.getProperty("/fieldSets/purpose/" + sPurpose)) || [];
-			const aTypeFields    = (sType && oConfig.getProperty("/fieldSets/type/" + sType)) || [];
+			const aTypeFields = (sType && oConfig.getProperty("/fieldSets/type/" + sType)) || [];
 
 			// Merge fields; you can also dedupe by id if overlaps possible
 			const aFields = aPurposeFields.concat(aTypeFields);
@@ -666,79 +664,79 @@ sap.ui.define([
 			aFields.forEach(function (fdef) {
 				// Label
 				oSF.addContent(new sap.m.Label({
-				text: fdef.label,
-				required: !!fdef.required,
-				labelFor: fdef.id
+					text: fdef.label,
+					required: !!fdef.required,
+					labelFor: fdef.id
 				}));
 
 				// Control factory
 				let oCtrl = null;
 				switch (fdef.control) {
-				case "Input":
-					oCtrl = new Input(fdef.id, {
-					type: fdef.type === "Number" ? "Number" : "Text",
-					value: "{config>" + fdef.path + "}"
-					});
-					break;
+					case "Input":
+						oCtrl = new Input(fdef.id, {
+							type: fdef.type === "Number" ? "Number" : "Text",
+							value: "{config>" + fdef.path + "}"
+						});
+						break;
 
-				case "TextArea":
-					oCtrl = new TextArea(fdef.id, {
-					value: "{config>" + fdef.path + "}",
-					rows: 3,
-					growing: true
-					});
-					break;
+					case "TextArea":
+						oCtrl = new TextArea(fdef.id, {
+							value: "{config>" + fdef.path + "}",
+							rows: 3,
+							growing: true
+						});
+						break;
 
-				case "DatePicker":
-					oCtrl = new DatePicker(fdef.id, {
-					value: "{config>" + fdef.path + "}",
-					valueFormat: "yyyy-MM-dd",
-					displayFormat: "medium"
-					});
-					break;
+					case "DatePicker":
+						oCtrl = new DatePicker(fdef.id, {
+							value: "{config>" + fdef.path + "}",
+							valueFormat: "yyyy-MM-dd",
+							displayFormat: "medium"
+						});
+						break;
 
-				case "Select":
-					oCtrl = new Select(fdef.id, {
-					selectedKey: "{config>" + fdef.path + "}"
-					});
-					// local items
-					if (Array.isArray(fdef.items)) {
-					fdef.items.forEach(function (it) {
-						oCtrl.addItem(new Item({ key: it.key, text: it.text }));
-					});
-					} else if (fdef.itemsPath) {
-					// dynamic items binding example
-					oCtrl.bindItems({
-						path: "config>" + fdef.itemsPath,
-						template: new Item({ key: "{config>key}", text: "{config>text}" })
-					});
-					}
-					break;
+					case "Select":
+						oCtrl = new Select(fdef.id, {
+							selectedKey: "{config>" + fdef.path + "}"
+						});
+						// local items
+						if (Array.isArray(fdef.items)) {
+							fdef.items.forEach(function (it) {
+								oCtrl.addItem(new Item({ key: it.key, text: it.text }));
+							});
+						} else if (fdef.itemsPath) {
+							// dynamic items binding example
+							oCtrl.bindItems({
+								path: "config>" + fdef.itemsPath,
+								template: new Item({ key: "{config>key}", text: "{config>text}" })
+							});
+						}
+						break;
 
-				case "FileUploader":
-					oCtrl = new FileUploader(fdef.id, {
-					fileType: ["pdf", "png", "jpg"],
-					maximumFileSize: 10, // MB
-					change: this._onFileSelected.bind(this, fdef.path)
-					});
-					break;
+					case "FileUploader":
+						oCtrl = new FileUploader(fdef.id, {
+							fileType: ["pdf", "png", "jpg"],
+							maximumFileSize: 10, // MB
+							change: this._onFileSelected.bind(this, fdef.path)
+						});
+						break;
 
-				default:
-					oCtrl = new Input(fdef.id, {
-					value: "{config>" + fdef.path + "}"
-					});
+					default:
+						oCtrl = new Input(fdef.id, {
+							value: "{config>" + fdef.path + "}"
+						});
 				}
 
 				// Simple required check on change (optional)
 				if (fdef.required && oCtrl.setValueState) {
-				const fnValidate = () => {
-					const v = oConfig.getProperty(fdef.path);
-					const empty = v === undefined || v === null || v === "";
-					oCtrl.setValueState(empty ? ValueState.Error : ValueState.None);
-				};
-				oCtrl.attachChange(fnValidate);
-				// run once
-				setTimeout(fnValidate, 0);
+					const fnValidate = () => {
+						const v = oConfig.getProperty(fdef.path);
+						const empty = v === undefined || v === null || v === "";
+						oCtrl.setValueState(empty ? ValueState.Error : ValueState.None);
+					};
+					oCtrl.attachChange(fnValidate);
+					// run once
+					setTimeout(fnValidate, 0);
 				}
 
 				oSF.addContent(oCtrl);
@@ -761,7 +759,7 @@ sap.ui.define([
 
 			// Basic validation
 			const aPurposeFields = (sPurpose && oModel.getProperty("/fieldSets/purpose/" + sPurpose)) || [];
-			const aTypeFields    = (sType && oModel.getProperty("/fieldSets/type/" + sType)) || [];
+			const aTypeFields = (sType && oModel.getProperty("/fieldSets/type/" + sType)) || [];
 			const aFields = aPurposeFields.concat(aTypeFields);
 
 			const missing = aFields.filter(f => f.required).filter(f => {
@@ -795,8 +793,8 @@ sap.ui.define([
 
 			//dummy testing
 			const oContext = oListBinding.create({
-				RANGE_ID: "E0010",
-				FROM: "AIN"
+				RANGE_ID: "E0012",
+				FROM: "AS"
 			});
 			oContext.created()
 				.then(() => {

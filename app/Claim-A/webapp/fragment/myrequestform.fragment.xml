@@ -8,25 +8,17 @@
         headerExpanded="false"
         fitContent="true"
     >
-        <f:title>
-            <f:DynamicPageTitle>
-                <f:actions>
-                    <Button
-                        text="Go to Detail page 2"
-                        press="onPressNavToDetail"
-                    />
-                </f:actions>
-            </f:DynamicPageTitle>
-        </f:title>
-
         <f:content>
             <!-- Using sap.m.Table for JSONModel testing -->
+            <!-- items="{myRequestform>/requestsform}" -->
             <Table
                 id="tb_myrequestform"
                 headerText="My Request Form"
                 mode="SingleSelectMaster"
                 width="auto"
-                items="{myRequestform>/requestsform}"
+                items="{path:'employee>/ZREQUEST_HEADER', parameters: {
+                $count: true,
+                $select: 'OBJECTIVE_PURPOSE,REQUEST_ID,START_DATE,END_DATE,AMOUNT'}}"
                 itemPress="onRowPressForm"
             >
                 <columns>
@@ -53,11 +45,18 @@
                         press="handlePress"
                     >
                         <cells>
-                            <Text text="{myRequestform>reportpurpose}" />
+                            <!--                <Text text="{myRequestform>reportpurpose}" />
                             <Text text="{myRequestform>reportid}" />
                             <Text text="{myRequestform>startdate}" />
                             <Text text="{myRequestform>status}" />
-                            <Text text="{myRequestform>amount}" />
+                            <Text text="{myRequestform>amount}" /> -->
+
+                            <Text text="{employee>OBJECTIVE_PURPOSE}" />
+                            <Text text="{employee>REQUEST_ID}" />
+                            <Text text="{path: 'employee>START_DATE'}"
+                            />
+                            <Text text="{employee>END_DATE}" />
+                            <Text text="{employee>AMOUNT}" />
                         </cells>
                     </ColumnListItem>
                 </items>
