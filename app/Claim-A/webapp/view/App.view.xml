@@ -316,7 +316,7 @@
                     <Page
                         id="configurationPage"
                         title="{i18n>configtitle}"
-                        navButtonPress="onPressBack">
+                        navButtonPress="onBackFromConfigTable">
                         <content>
                             <ScrollContainer
                                 vertical="true"
@@ -344,6 +344,7 @@
                                                 value="ZCLAIM_PURPOSE"
                                             />
                                         </f:customData>
+                                        <!--file in i18n folder is used to change the title-->
                                         <f:header>
                                             <cards:Header
                                                 title="{i18n>conf1}"
@@ -360,7 +361,7 @@
                                        <f:customData>
                                             <core:CustomData
                                                 key="id"
-                                                value="ConfigurationTable2"
+                                                value="ZRISK"
                                             />
                                         </f:customData>
                                         <f:header>

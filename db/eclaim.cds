@@ -189,3 +189,12 @@ entity ZLODGING_CAT {
     key LODGING_CATEGORY_ID   : String;
         LODGING_CATEGORY_DESC : String;
 }
+
+entity Entity1 {
+    key ID : UUID;
+}
+
+entity ZRISK{
+    key RISK_ID : String;
+        RISK_DESCRIPTION: String;
+}
