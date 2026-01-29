@@ -1,4 +1,4 @@
-namespace ZEMP_MASTER;
+namespace ECLAIM;
 
 entity ZEMP_MASTER {
     key EEID            : String;

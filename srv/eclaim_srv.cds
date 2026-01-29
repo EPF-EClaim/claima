@@ -1,34 +1,22 @@
-using  { ZEMP_MASTER }
-   from '../db/eclaim';
+using { ECLAIM } from '../db/eclaim';
 
-@path : 'EmployeeSrv'
-service eclaim_srv
-{
-    entity EmployeeData as
-        projection on ZEMP_MASTER.ZEMP_MASTER;
+@path: 'EmployeeSrv'
+service eclaim_srv {
+    entity ZEMP_MASTER    as projection on ECLAIM.ZEMP_MASTER;
 
-    entity ZREQUEST_TYPE as
-        projection on ZEMP_MASTER.ZREQUEST_TYPE;
+    entity ZREQUEST_TYPE   as projection on ECLAIM.ZREQUEST_TYPE;
 
-   
-    entity ZREQUEST_HEADER as
-        projection on ZEMP_MASTER.ZREQUEST_HEADER;
+    entity ZREQUEST_HEADER as projection on ECLAIM.ZREQUEST_HEADER;
 
+    entity ZCLAIM_TYPE     as projection on ECLAIM.ZCLAIM_TYPE;
 
-    entity ZCLAIM_TYPE as
-        projection on ZEMP_MASTER.ZCLAIM_TYPE;
+    entity ZREQUEST_ITEM   as projection on ECLAIM.ZREQUEST_ITEM;
 
+    entity ZREQUEST_GRP    as projection on ECLAIM.ZREQUEST_GRP;
 
-    entity ZREQUEST_ITEM as
-        projection on ZEMP_MASTER.ZREQUEST_ITEM;
+    entity ZCLAIM_HEADER   as projection on ECLAIM.ZCLAIM_HEADER;
 
+    entity ZNUM_RANGE      as projection on ECLAIM.ZNUM_RANGE;
 
-    entity ZREQUEST_GRP as
-        projection on ZEMP_MASTER.ZREQUEST_GRP;
-
-    entity ZCLAIM_HEADER as
-        projection on ZEMP_MASTER.ZCLAIM_HEADER;
-
-    entity ZNUM_RANGE as
-        projection on ZEMP_MASTER.ZNUM_RANGE;
+    entity ZCLAIM_PURPOSE  as projection on ECLAIM.ZCLAIM_PURPOSE;
 }
