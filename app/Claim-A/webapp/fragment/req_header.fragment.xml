@@ -72,7 +72,7 @@
                                 <Text text="{request>/altcostcenter}" />
                             </form:fields>
                         </form:FormElement>
-                        <form:FormElement label="{i18n>req_caa}">
+                        <form:FormElement label="{i18n>req_caa}" visible="{= ${request>/type} === 'cash_adv'}">
                             <form:fields>
                                 <Text text="0.00" textAlign="End"/>
                             </form:fields>
@@ -97,7 +97,7 @@
                                 <Text text="{request>/comment}"/>
                             </form:fields>
                         </form:FormElement>
-                        <form:FormElement label="{i18n>req_cashadvtype}">
+                        <form:FormElement label="{i18n>req_cashadvtype}" visible="{= ${request>/type} === 'cash_adv'}">
                             <form:fields>
                                 <Text text="{request>/cashadvtype}"/>
                             </form:fields>

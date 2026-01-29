@@ -7,7 +7,6 @@
     "@sap-cloud-sdk/connectivity": "^4",
     "@sap-cloud-sdk/http-client": "^4",
     "@sap-cloud-sdk/resilience": "^4",
-    "@sap/cds": "^9",
     "@sap/xssec": "^4",
     "express": "^4"
   },
@@ -48,7 +47,7 @@
       "employee_srv": {
         "kind": "odata",
         "model": "srv/external/employee_srv"
-      }, 
+      },
       "eclaim": {
         "kind": "odata",
         "model": "srv/external/eclaim"

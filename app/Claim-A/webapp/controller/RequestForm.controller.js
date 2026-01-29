@@ -37,12 +37,7 @@ sap.ui.define([
 					{claim_type: "Testing Claim Type 02", est_amount: 100670, currency_code: "MYR", est_no_of_participant: 10},
 					{claim_type: "Testing Claim Type 03", est_amount: 100230, currency_code: "MYR", est_no_of_participant: 10},
 					{claim_type: "Testing Claim Type 04", est_amount: 1000, currency_code: "MYR", est_no_of_participant: 10},
-					{claim_type: "Testing Claim Type 05", est_amount: 10300, currency_code: "MYR", est_no_of_participant: 10},
-					{claim_type: "Testing Claim Type 06", est_amount: 1000, currency_code: "MYR", est_no_of_participant: 10},
-					{claim_type: "Testing Claim Type 07", est_amount: 15000, currency_code: "MYR", est_no_of_participant: 10},
-					{claim_type: "Testing Claim Type 08", est_amount: 1000, currency_code: "MYR", est_no_of_participant: 10},
-					{claim_type: "Testing Claim Type 09", est_amount: 500, currency_code: "MYR", est_no_of_participant: 10},
-					{claim_type: "Testing Claim Type 10", est_amount: 10000, currency_code: "MYR", est_no_of_participant: 10}
+					{claim_type: "Testing Claim Type 05", est_amount: 10300, currency_code: "MYR", est_no_of_participant: 10}
 				],
 				participant : [
                     {
@@ -149,6 +144,22 @@ sap.ui.define([
 
 		onSaveRequestDraft: function () {
 			MessageToast.show("save draft")	
+			// write database
+			var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
+            var sServiceUrl = sBaseUri + "/ZREQUEST_TYPE"; 
+
+			fetch(sServiceUrl, 
+				{method: "POST", headers: {"Content-Type": "application/json"},
+				body: JSON.stringify({
+					REQUEST_TYPE_ID: "RT0006",
+					REQUEST_TYPE_DESC: "Testing Create Data",
+					END_DATE: "9999-12-31",
+					START_DATE: "2026-01-01",
+					STATUS: "INACTIVE"
+				})
+			})
+			.then(r => r.json());
+			// .then(console.log);
 		},
 
         onDeleteRequest: function () {
