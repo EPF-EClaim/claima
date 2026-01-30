@@ -52,7 +52,8 @@ sap.ui.define([
 				altcostcenter: "",
 				cashadvtype: "",
 				comment: "", 
-				saved: ""
+				doc1: "",
+				doc2: ""
 			});
 			this.getView().setModel(oRequestModel, "request");
 
@@ -587,7 +588,30 @@ sap.ui.define([
 		// --- end of mileage integration ---
 
 		// Start added by Jefry Yap 15-01-2026
+		// Request Form Controller
 		onClickMyRequest: async function () {
+			this.getView().getModel("request").setData({
+				purpose: "",
+				reqid: "",
+				type: "",
+				reqstatus: "",
+				startdate: "",
+				enddate: "",
+				grptype: "",
+				location: "",
+				transport: "",
+				detail: "",
+				policy: "",
+				costcenter: "",
+				altcostcenter: "",
+				cashadvtype: "",
+				comment: "",
+				doc1: "",
+				doc2: ""
+			});
+			this._loadReqTypeSelectionData();
+			
+
 			if (!this.oDialogFragment) {
 				this.oDialogFragment = await Fragment.load({
 					id: "request",
@@ -607,187 +631,234 @@ sap.ui.define([
 		},
 
 		onClickCreateRequest: function () {
-			
-			// value validation
-			// const oReq = this.getOwnerComponent().getModel("request");
-			// const sType = oReq.getProperty("/type");
-			// if (!sType) {
-			// 	sap.m.MessageToast.show("Please choose a request type.");
-			// 	return;
-			// }
+			var oReqModel = this.getView().getModel("request");
+			var oInputData = oReqModel.getData();
+			var okcode = true;
+			var message = '';
 
-			// backend get value
-			const oReqModel = this.getView().getModel("request");
-			oReqModel.setProperty("/reqid", "Testing ID");
-			oReqModel.setProperty("/reqstatus", "Draft")
-
-			// Close Fragment and navigate to Request Form
-			this.oDialogFragment.close();
-			this.byId("pageContainer").to(this.getView().byId('new_request'));
-		},
-
-		onDialogCancel: function (oEvent) {
-			oEvent.getSource().getParent().close();
-		},
-
-		onDialogAfterClose: function () {
-			// cleanup if needed
-		},
-
-		onPurposeChange: function () {
-			this._rebuildDynamicForm();
-		},
-
-		onTypeChange: function () {
-			this._rebuildDynamicForm();
-		},
-
-		// Build/refresh fields every time purpose/type changes
-		_rebuildDynamicForm: function () {
-			const oView = this.getView();
-			const oConfig = oView.getModel("config");
-			const oSF = oView.byId("dynForm");
-
-			// Clear previous content
-			oSF.destroyContent();
-
-			const sPurpose = oConfig.getProperty("/selection/purpose");
-			const sType = oConfig.getProperty("/selection/type");
-
-			const aPurposeFields = (sPurpose && oConfig.getProperty("/fieldSets/purpose/" + sPurpose)) || [];
-			const aTypeFields    = (sType && oConfig.getProperty("/fieldSets/type/" + sType)) || [];
-
-			// Merge fields; you can also dedupe by id if overlaps possible
-			const aFields = aPurposeFields.concat(aTypeFields);
-
-			// Early return if nothing selected
-			if (!aFields.length) {
-				return;
-			}
-
-			// Generate form elements
-			aFields.forEach(function (fdef) {
-				// Label
-				oSF.addContent(new sap.m.Label({
-				text: fdef.label,
-				required: !!fdef.required,
-				labelFor: fdef.id
-				}));
-
-				// Control factory
-				let oCtrl = null;
-				switch (fdef.control) {
-				case "Input":
-					oCtrl = new Input(fdef.id, {
-					type: fdef.type === "Number" ? "Number" : "Text",
-					value: "{config>" + fdef.path + "}"
-					});
+			// Check mandatory field based on Request Type
+			switch (oInputData.type) {
+				case 'RT0001 Travel':
+					if (oInputData.purpose == '' || oInputData.type == '' || 
+						oInputData.startdate == '' || oInputData.enddate == '' ||
+						oInputData.grptype == '' || oInputData.location == '' ||
+						oInputData.transport == '') {
+						okcode = false;
+						message = 'Please enter all mandatory details';
+					};
 					break;
-
-				case "TextArea":
-					oCtrl = new TextArea(fdef.id, {
-					value: "{config>" + fdef.path + "}",
-					rows: 3,
-					growing: true
-					});
+				case 'RT0002 Mobile Phone Bill':
+					if (oInputData.purpose == '' || oInputData.type == '' || 
+						oInputData.grptype == '' || oInputData.doc1 == '') {
+						okcode = false;
+						message = 'Please enter all mandatory details';
+						break;
+					};
 					break;
-
-				case "DatePicker":
-					oCtrl = new DatePicker(fdef.id, {
-					value: "{config>" + fdef.path + "}",
-					valueFormat: "yyyy-MM-dd",
-					displayFormat: "medium"
-					});
+				case 'RT0003 Event':
+					if (oInputData.purpose == '' || oInputData.type == '' || 
+						oInputData.startdate == '' || oInputData.enddate == '' ||
+						oInputData.grptype == '' || oInputData.location == '' ||
+						oInputData.transport == ''|| oInputData.detail == '' || 
+						oInputData.policy == '') {
+						okcode = false;
+						message = 'Please enter all mandatory details';
+						break;
+					};
 					break;
-
-				case "Select":
-					oCtrl = new Select(fdef.id, {
-					selectedKey: "{config>" + fdef.path + "}"
-					});
-					// local items
-					if (Array.isArray(fdef.items)) {
-					fdef.items.forEach(function (it) {
-						oCtrl.addItem(new Item({ key: it.key, text: it.text }));
-					});
-					} else if (fdef.itemsPath) {
-					// dynamic items binding example
-					oCtrl.bindItems({
-						path: "config>" + fdef.itemsPath,
-						template: new Item({ key: "{config>key}", text: "{config>text}" })
-					});
-					}
+				case 'RT0004 Reimbursement':
+					if (oInputData.purpose == '' || oInputData.type == '' || 
+						oInputData.grptype == '') {
+						okcode = false;
+						message = 'Please enter all mandatory details';
+					};
 					break;
-
-				case "FileUploader":
-					oCtrl = new FileUploader(fdef.id, {
-					fileType: ["pdf", "png", "jpg"],
-					maximumFileSize: 10, // MB
-					change: this._onFileSelected.bind(this, fdef.path)
-					});
+				case 'RT0005 Cash Advance':
+					if (oInputData.purpose == '' || oInputData.type == '' || 
+						oInputData.cashadvtype == '' || oInputData.startdate == '' || 
+						oInputData.enddate == '' || oInputData.grptype == '' || 
+						oInputData.location == '' || oInputData.transport == '') {
+						okcode = false;
+						message = 'Please enter all mandatory details';
+					};
+					if (oInputData.type == 'Event' && ( oInputData.detail == '' || 
+						oInputData.policy == '' )) {
+						okcode = false;
+						message = 'Please enter all mandatory details';
+					};
 					break;
-
 				default:
-					oCtrl = new Input(fdef.id, {
-					value: "{config>" + fdef.path + "}"
-					});
-				}
-
-				// Simple required check on change (optional)
-				if (fdef.required && oCtrl.setValueState) {
-				const fnValidate = () => {
-					const v = oConfig.getProperty(fdef.path);
-					const empty = v === undefined || v === null || v === "";
-					oCtrl.setValueState(empty ? ValueState.Error : ValueState.None);
-				};
-				oCtrl.attachChange(fnValidate);
-				// run once
-				setTimeout(fnValidate, 0);
-				}
-
-				oSF.addContent(oCtrl);
-			}, this);
-		},
-
-		_onFileSelected: function (sPath, oEvent) {
-			// You can store the File name only, or upload immediately
-			const oFile = oEvent.getParameter("files")?.[0];
-			if (oFile) {
-				const oModel = this.getView().getModel("config");
-				oModel.setProperty(sPath, oFile.name);
-			}
-		},
-
-		onSubmit: function (oEvent) {
-			const oModel = this.getView().getModel("config");
-			const sPurpose = oModel.getProperty("/selection/purpose");
-			const sType = oModel.getProperty("/selection/type");
-
-			// Basic validation
-			const aPurposeFields = (sPurpose && oModel.getProperty("/fieldSets/purpose/" + sPurpose)) || [];
-			const aTypeFields    = (sType && oModel.getProperty("/fieldSets/type/" + sType)) || [];
-			const aFields = aPurposeFields.concat(aTypeFields);
-
-			const missing = aFields.filter(f => f.required).filter(f => {
-				const v = oModel.getProperty(f.path);
-				return v === undefined || v === null || v === "";
-			});
-
-			if (missing.length) {
-				sap.m.MessageToast.show("Please fill all required fields.");
-				return;
+					if (oInputData.purpose == '' || 
+						oInputData.type == '') {
+						okcode = false;
+						message = 'Please enter all mandatory details';
+					} 
 			}
 
-			// Collect payload
-			const oPayload = {
-				purpose: sPurpose,
-				type: sType,
-				data: oModel.getProperty("/form")
+			// Check attachment 1 (mandatory)
+			if (okcode == true && oInputData.doc1 == '') {
+				okcode = false;
+				message = 'Please upload Attachment 1';
 			};
 
-			// TODO: call backend or proceed
-			console.log("Submitting:", oPayload);
-			// Close dialog
-			oEvent.getSource().getParent().close();
+			if (okcode == true && oInputData.enddate < oInputData.startdate) {
+				okcode = false;
+				message = "End Date cannot be earlier than begin date";
+			}
+
+			
+			// value validation
+			if (okcode === false) {
+				MessageToast.show(message);} 
+			else {
+				this.createRequestHeader(oInputData, oReqModel);
+			};
+		},
+
+		// load request type data
+		_loadReqTypeSelectionData: function () {
+            var oView = this.getView();
+            var oJSONModel = new JSONModel();
+			
+			// Safely get the base service URL from manifest
+			var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
+            var sServiceUrl = sBaseUri + "/ZREQUEST_TYPE"; 
+
+            // Fetch data from CAP OData service
+            fetch(sServiceUrl)
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json();
+                })
+                .then(function (data) {
+					const aTypes = data.value || data;
+					const aFiltered = aTypes.filter(item => item.STATUS === "ACTIVE");
+					oJSONModel.setData({ types: aFiltered });
+                    oView.setModel(oJSONModel, "req_type_list");
+                    // MessageToast.show("Data loaded successfully");
+                })
+                .catch(function (error) {
+                    console.error("Error fetching CDS data:", error);
+                    // MessageToast.show("Failed to load data", error);
+                });
+        },
+
+		createRequestHeader:  function (oInputData, oReqModel) {
+			this.getCurrentReqNumber().then((result) => {
+				if (result) {
+					oReqModel.setProperty("/reqid", result.reqNo);
+					oReqModel.setProperty("/reqstatus", "Draft")
+
+					// Write to Database Table ZREQUEST_HEADER
+					var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
+					var sServiceUrl = sBaseUri + "/ZREQUEST_HEADER"; 
+
+					fetch(sServiceUrl, 
+						{method: "POST", headers: {"Content-Type": "application/json"},
+						body: JSON.stringify({
+							EMP_ID                 : "000001",
+							REQUEST_ID             : oInputData.reqid,
+							REQUEST_TYPE_ID        : oInputData.type,
+							REFERENCE_NUMBER       : "100236",
+							OBJECTIVE_PURPOSE      : oInputData.purpose,
+							START_DATE             : oInputData.startdate,
+							END_DATE               : oInputData.enddate,
+							REMARK                 : oInputData.comment,
+							CLAIM_TYPE_ID          : "",
+							REQUEST_GROUP_ID       : oInputData.grptype,
+							ALTERNATE_COST_CENTRE  : oInputData.altcostcenter,
+							AMOUNT                 : "10000",
+							ATTACHMENT             : oInputData.doc1,
+							LOCATION               : oInputData.location,
+							TYPE_OF_TRANSPORTATION : oInputData.transport,
+							ZCLAIM_TYPE   		   : "",
+							ZREQUEST_ITEM 		   : "",
+							ZREQUEST_TYPE 		   : "",
+							ZREQUEST_GRP  		   : "",
+							ZCLAIM_HEADER 		   : ""
+						}) 
+					})
+					.then(r => r.json())
+					.then((res) => {
+						if (!res.error) {
+							this.oDialogFragment.close();
+							this.byId("pageContainer").to(this.getView().byId('new_request'));
+							this.updateCurrentReqNumber(result.current);
+						} else {
+							MessageToast.show(res.error.code, res.error.message);
+						};
+					});
+				};
+			});
+		},
+
+		getCurrentReqNumber: async function () {
+			const sBaseUri = this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri || "/odata/v4/EmployeeSrv/";
+			const sServiceUrl = sBaseUri.replace(/\/$/, "") + "/ZNUM_RANGE";
+
+			try {
+				const response = await fetch(sServiceUrl);
+
+				if (!response.ok) {
+					throw new Error(`HTTP ${response.status} ${response.statusText}`);
+				}
+
+				const data = await response.json();
+
+				const nr01 = (data.value || data).find(x => x.RANGE_ID === "NR01");
+				if (!nr01 || nr01.CURRENT == null) {
+					throw new Error("NR01 not found or CURRENT is missing");
+				}
+
+				const current = Number(nr01.CURRENT);
+				const yy = String(new Date().getFullYear()).slice(-2);
+				const reqNo = `REQ${yy}${String(current).padStart(9, "0")}`;
+
+				return { reqNo, current };
+
+			} catch (err) {
+				console.error("Error fetching CDS data:", err);
+				return null; // or: throw err;
+			}
+		},
+
+
+		updateCurrentReqNumber: async function (currentNumber) {
+			const sId = "NR01";
+			const sBaseUri =
+				this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri
+				|| "/odata/v4/EmployeeSrv/";
+
+			const sServiceUrl = sBaseUri.replace(/\/$/, "") + "/ZNUM_RANGE('" + encodeURIComponent(sId) + "')";
+			const nextNumber = currentNumber + 1;
+
+			try {
+				const res = await fetch(sServiceUrl, {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ CURRENT: String(nextNumber) })
+				});
+
+				if (!res.ok) {
+				const errText = await res.text().catch(() => "");
+				throw new Error(`PATCH failed ${res.status} ${res.statusText}: ${errText}`);
+				}
+
+				// PATCH often returns 204
+				if (res.status === 204) return { CURRENT: nextNumber };
+
+				// If the server returns JSON entity
+				const contentType = res.headers.get("content-type") || "";
+				if (contentType.includes("application/json")) {
+				return await res.json();
+				}
+				return await res.text(); // fallback
+			} catch (e) {
+				console.error("Error updating number range:", e);
+				return null;
+			}
 		},
 
 		// End added by Jefry Yap 15-01-2026
@@ -815,7 +886,6 @@ sap.ui.define([
 		onClickCancel: function () {
 			this.oDialogFragment.close();
 		},
-		// ++Jefry_Changes
 
 	});
 });
