@@ -449,11 +449,11 @@ sap.ui.define([
 			const reqid = String(row.REQUEST_ID).trim();
 			console.log("reqid:", reqid);
 			
-
 			if (!oCtx) {
 				sap.m.MessageToast.show("No context found on the selected row.");
 				return;
 			}
+
 
 
 			// (Optional) Ensure needed properties are loaded (V4 lazy loading)
