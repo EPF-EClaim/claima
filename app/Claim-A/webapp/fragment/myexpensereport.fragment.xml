@@ -42,7 +42,6 @@
                 <items>
                     <ColumnListItem
                         type="Active"
-                        
                     >
                         <cells>
                             <!-- <Text text="{myRequest>reportpurpose}" />

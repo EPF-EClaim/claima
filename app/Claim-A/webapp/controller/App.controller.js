@@ -441,21 +441,38 @@ sap.ui.define([
 		},
 
 		//For MyRequestForm view - Upon click, it will move to MyRequestForm detail page. 
-		onRowPressForm: function (oEvent) {
+		onRowPressForm: async function (oEvent) {
+			// row context from named model "employee"
 			const oItem = oEvent.getParameter("listItem");
 			const oCtx = oItem && oItem.getBindingContext("employee");
+			const row = oCtx.getObject();
+			const reqid = String(row.REQUEST_ID).trim();
+			console.log("reqid:", reqid);
+			
+
 			if (!oCtx) {
 				sap.m.MessageToast.show("No context found on the selected row.");
 				return;
 			}
 
-			this.getView().setBusy(true);
 
-			// V4: request the full entity behind the binding context
-			oCtx.requestObject().then((oFullEntity) => {
-				console.log("Full entity:", oFullEntity);
-				const mapped = this._mapHeaderToCurrentRequest(oFullEntity);
+			// (Optional) Ensure needed properties are loaded (V4 lazy loading)
+			// Add/adjust keys based on what _mapHeaderToCurrentRequest expects
+			try {
+				this.getView().setBusy(true);
 
+				//await oCtx.requestProperty([]);
+
+
+
+				// Fetch the full entity (remaining props will be resolved as needed)
+				const fullEntity = await oCtx.requestObject();
+
+
+				// Map backend entity → MyRequestForm view model schema
+				const mapped = this._mapHeaderToCurrentRequest(fullEntity);
+
+				// Set/refresh the "request" JSON model (same pattern as onRowPress)
 				let oRequest = this.getView().getModel("request");
 				if (!oRequest) {
 					oRequest = new sap.ui.model.json.JSONModel();
@@ -463,45 +480,47 @@ sap.ui.define([
 				}
 				oRequest.setData(mapped);
 
-				const oDetailPage = this.getView().byId("new_request");
+				// Navigate to detail page that consumes the "request" model
+				const oPageContainer = this.byId("pageContainer");
+				const oDetailPage = this.byId("new_request");
 				if (!oDetailPage) {
 					sap.m.MessageToast.show("Detail page 'new_request' not found.");
 					return;
 				}
-				this.byId("pageContainer").to(oDetailPage);
-			}).catch((e) => {
-				jQuery.sap.log.error("V4 requestObject failed: " + e);
-				sap.m.MessageToast.show("Failed to load full request data");
-			}).finally(() => this.getView().setBusy(false));
+				oPageContainer.to(oDetailPage);
 
-
+			} catch (e) {
+				jQuery.sap.log.error("onRowPressForm failed: " + e);
+				sap.m.MessageToast.show("Failed to load request data.");
+			} finally {
+				this.getView().setBusy(false);
+			}
 		},
 
 		_mapHeaderToCurrentRequest: function (row) {
 			// Helper: format date (if row.CLAIM_DATE is Date or /Date(...)/)
-			const fmtDate = (d) => {
+			const fmt = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" });
+			const toYMD = (d) => {
 				try {
 					if (d instanceof Date) {
-						return d.toISOString().slice(0, 10); // yyyy-MM-dd
+						return fmt.format(d);
 					}
-					// If OData V2 string like "/Date(1737417600000)/"
-					if (typeof d === "string" && /\/Date\(\d+\)\//.test(d)) {
-						const ts = parseInt(d.match(/\d+/)[0], 10);
-						return new Date(ts).toISOString().slice(0, 10);
+					if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
+						return d; // already "YYYY-MM-DD"
 					}
-					// Already a yyyy-MM-dd string?
-					return d || "";
-				} catch (e) {
-					return "";
-				}
+				} catch (e) {/* ignore */ }
+				return d || "";
 			};
 
 			return {
 				purpose: row.OBJECTIVE_PURPOSE || "",
 				reqid: row.REQUEST_ID || "",
-				startdate: fmtDate(row.START_DATE),
-				enddate: fmtDate(row.END_DATE),
-
+				startdate: toYMD(row.START_DATE),
+				enddate: toYMD(row.END_DATE),
+				altcostcenter: "",
+				location: row.LOCATION || "",
+				detail: row.REMARK || "",
+				grptype: row.REQUEST_GROUP_ID || "",
 				// Static totals shown as "0.00" in fragment; keep if you plan to compute later
 				saved: "",
 				// If you later bind these, set proper numbers/strings:

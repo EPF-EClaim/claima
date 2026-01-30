@@ -17,9 +17,10 @@
                 mode="SingleSelectMaster"
                 width="auto"
                 items="{path:'employee>/ZREQUEST_HEADER', parameters: {
-                $count: true
-                }}"
+                $count: true,
+                $select: 'REQUEST_ID,OBJECTIVE_PURPOSE,EMP_ID,START_DATE,END_DATE,LOCATION,TYPE_OF_TRANSPORTATION,REQUEST_GROUP_ID,REMARK'}}"
                 itemPress="onRowPressForm"
+                growing="true"
             >
                 <columns>
                     <Column>
@@ -42,7 +43,6 @@
                 <items>
                     <ColumnListItem
                         type="Active"
-                        press="handlePress"
                     >
                         <cells>
                             <!--                <Text text="{myRequestform>reportpurpose}" />
@@ -53,7 +53,7 @@
 
                             <Text text="{employee>OBJECTIVE_PURPOSE}" />
                             <Text text="{employee>REQUEST_ID}" />
-                            <Text text="{path: 'employee>START_DATE'}"/>
+                            <Text text="{employee>START_DATE}"/>
                             <Text text="{employee>END_DATE}" />
                             <Text text="{employee>AMOUNT}" />
                         </cells>
