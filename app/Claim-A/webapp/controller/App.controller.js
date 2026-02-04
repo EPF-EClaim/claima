@@ -176,7 +176,7 @@ sap.ui.define([
 			var oKey = oItem.getKey();
 
 			switch (oKey) {
-				case "nav_createreport":
+				case "sidenav_createreport":
 					this.onNavCreateReport();
 					break;
 				// Start added by Jefry 15-01-2026
@@ -217,25 +217,18 @@ sap.ui.define([
 			oPageContainer.to(this.byId("configurationPage"));
 
 		},
-		onNavCreateReport: async function () {
-			if (!this.oDialogFragment) {
-				this.oDialogFragment = await Fragment.load({
-					name: "claima.fragment.createreport",
-					type: "XML",
-					controller: this,
-				});
-				this.getView().addDependent(this.oDialogFragment);
+		// onNavCreateReport: async function () {
+		// 	if (!this.oDialogFragment) {
+		// 		this.oDialogFragment = await Fragment.load({
+		// 			name: "claima.fragment.createreport",
+		// 			type: "XML",
+		// 			controller: this,
+		// 		});
+		// 		this.getView().addDependent(this.oDialogFragment);
+		// 	}
+		// 	this.oDialogFragment.open();
 
-				// Start added by Jefry Yap
-				this.oDialogFragment.attachAfterClose(() => {
-					this.oDialogFragment.destroy();
-					this.oDialogFragment = null;
-				});
-				// End added by Jefry Yap
-			}
-			this.oDialogFragment.open();
-
-		},
+		// },
 
 		onMenuButtonPress: function () {
 			var toolPage = this.byId("toolPage");
@@ -260,33 +253,52 @@ sap.ui.define([
 			}
 		},
 
-		onCancelFragment: function () {
-			this.oDialogFragment.close();
-		},
+		// Create Report - Functions
+        async onNavCreateReport() {
+            this.oDialog ??= await this.loadFragment({
+                name: "claima.fragment.createreport",
+            });
+            this.oDialog.open();
+        },
 
-		onCreateReport: function () {
+		onCreateReport_Create: function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("input");
 			var oInputData = oInputModel.getData();
 
-			if (oInputData.report.purpose == '' || oInputData.report.startdate == ''
-				|| oInputData.report.enddate == '' || oInputData.report.category == '') {
-				var message = 'Please enter all mandatory details';
+			if (
+				oInputData.report.purpose == '' ||
+				oInputData.report.startdate == '' ||
+				oInputData.report.enddate == '' ||
+				oInputData.report.comment == '') {
+				// required fields without value
+				var message = this.getView().getModel("i18n").getResourceBundle().getText("dialog_createreport_required");;
 				MessageToast.show(message);
 			} else {
+
+				// use default value for category if no value detected
+				if (oInputData.report.category == '') {
+					oInputData.report.category = 'expcat_direct';
+				}
 
 				// set as current data
 				var oCurrentModel = this.getView().getModel("current");
 				oCurrentModel.setData(oInputData);
 
+				// go to expense report screen
 				var view = "expensereport";
-				this.oDialogFragment.close();
+				this.oDialog.close();
 				this.byId("pageContainer").to(this.getView().createId(view));
 				this.getView().byId("expensetypescr").setVisible(true);
 				this.getView().byId("claimscr").setVisible(false);
 				this.createreportButtons("expensetypescr");
 			}
 		},
+
+		onCreateReport_Cancel: function () {
+			this.oDialog.close();
+		},
+		// end Create Report - Functions
 
 		onPressBack: function (oEvent) {
 			this.byId("pageContainer").to(this.getView().createId("dashboard"));

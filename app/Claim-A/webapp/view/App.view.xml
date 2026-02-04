@@ -44,8 +44,8 @@
                         expanded="false"
                     />
                     <tnt:NavigationListItem
-                        key="nav_createreport"
-                        text="{i18n>nav_createreport}"
+                        key="sidenav_createreport"
+                        text="{i18n>sidenav_createreport}"
                         icon="sap-icon://add"
                         enabled="true"
                         expanded="false"
