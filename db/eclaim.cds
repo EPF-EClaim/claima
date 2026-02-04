@@ -1,3 +1,5 @@
+using { managed } from '@sap/cds/common';
+
 namespace ECLAIM;
 
 entity ZEMP_MASTER {
@@ -189,3 +191,206 @@ entity ZLODGING_CAT {
     key LODGING_CATEGORY_ID   : String;
         LODGING_CATEGORY_DESC : String;
 }
+
+entity ZCOST_CENTER: managed {
+    key COST_CENTER_ID   : String;
+        COST_CENTER_DESC : String;
+        START_DATE       : Date;
+        END_DATE         : Date;
+        STATUS           : String;
+}
+
+entity ZCLAIM_TYPE_INFO: managed {
+    key CLAIM_TYPE_ID       : String;
+    key CLAIM_TYPE_ITEM_ID  : String;
+        START_DATE          : Date;
+        END_DATE            : Date;
+        STATUS              : String;   
+        TYPE                : String;
+        RISK_ID             : String;
+        GL_ACCOUNT          : String;
+        CATEGORY            : String;
+        TAXABLE             : Boolean;
+}
+
+entity ZRISK: managed {
+    key RISK_ID   : String;
+        RISK_DESC : String;
+}
+
+entity ZCLAIM_TYPE_ITEM: managed {
+    key CLAIM_TYPE_ITEM_ID      : String;
+        CLAIM_TYPE_ITEM_DESC    : String;
+}
+
+entity ZAPP_FIELD_CTRL: managed {
+    key CLAIM_TYPE_ID       : String;
+    key CLAIM_TYPE_ITEM_ID  : String;
+        FIELD01             : Boolean;
+        FIELD02             : Boolean;
+        FIELD03             : Boolean;
+        FIELD04             : Boolean;
+        FIELD05             : Boolean;
+        FIELD06             : Boolean;
+        FIELD07             : Boolean;
+        FIELD08             : Boolean;
+        FIELD09             : Boolean;
+        FIELD10             : Boolean;
+        FIELD11             : Boolean;
+        FIELD12             : Boolean;
+        FIELD13             : Boolean;
+        FIELD14             : Boolean;
+        FIELD15             : Boolean;
+        FIELD16             : Boolean;
+        FIELD17             : Boolean;
+        FIELD18             : Boolean;
+        FIELD19             : Boolean;
+        FIELD20             : Boolean;
+}
+
+entity ZBUDGET: managed {
+    key YEAR : Date;
+    key COMMITMENT_ITEM : String;
+    key FUND_CENTER     : Integer;
+    key MATERIAL_GROUP  : Integer;
+        ORIGINAL_BUDGET : Decimal;
+        VIREMENT_IN     : Decimal;
+        VIREMENT_OUT    : Decimal;
+        SUPPLEMENT      : Decimal;
+        RETURN          : Decimal;
+        CURR_BUDGET     : Decimal;
+        COMMITMENT      : Decimal;
+        ACTUAL          : Decimal;
+        CONSUMED        : Decimal;
+        BUDGET_BALANCE  : Decimal;
+        BUDGET_OWNER_ID : String;
+}
+
+entity ZARITH_OPT: managed {
+    key OPERATOR_ID     : String;
+        OPERATOR_DESC   : String;
+}
+
+entity ZAPPROVAL_RULES: managed {
+    key ZSCENARIO       : String;
+    key ZSEQNO          : String(1);
+    key ZAPPR_LVL       : String(1);
+        ZAMT            : Decimal;
+        ZAMT_OP         : String(2);
+        ZDAYS           : Integer;
+        ZDAYS_OP        : String(2);
+        ZCOSTCTR        : String;
+        ZCOSTCTR_OP     : String(2);
+        ZRISK           : String;
+        ZRISK_OP        : String;
+        ZAPPROVER_ID    : String;
+} 
+
+entity ZCLAIM_MAIN_CAT: managed {
+    key CLAIM_MAIN_CAT_ID   : String;
+        CLAIM_MAIN_CAT_DESC : String;
+}
+
+entity ZCLAIM_CATEGORY: managed {
+    key CLAIM_CAT_ID        : String;
+        CLAIM_CATEGORY_DESC : String;
+}
+
+entity ZSTATUS: managed {
+    key STATUS_ID   : String;
+        STATUS_DESC : String;
+}
+
+entity ZROOM_TYPE: managed {
+    key ROOM_TYPE_ID    : String;
+        ROOM_TYPE_DESC  : String;
+}
+
+entity ZFLIGHT_CLASS: managed {
+    key FLIGHT_CLASS_ID     : String;
+        FLIGHT_CLASS_DESC   : String;
+}
+
+entity ZCOUNTRY: managed {
+    key COUNTRY_ID      : String;
+        COUNTRY_DESC    : String
+}
+
+entity ZAREA: managed {
+    key AREA_ID     : String(6);
+        AREA_DESC   : String; 
+}
+
+entity ZLOC_TYPE: managed {
+    key LOC_TYPE_ID     : String(6);
+        LOC_TYPE_DESC   : String;
+        STATE1          : String;
+        STATE2          : String;
+        FROM_LOCATION   : String;
+        TO_LOCATION     : String;
+}
+
+entity ZCURRENCY: managed {
+    key CURRENCY_ID     : String(3);
+        CURRENCY_DESC   : String;
+}
+
+entity ZSTAFF_CAT: managed {
+    key STAFF_CATEGORY_ID   : String;
+        STAFF_CATEGORY_DESC : String;
+}
+
+entity ZMARITAL_STAT: managed {
+    key MARRIAGE_CATEGORY_ID    : String;
+        MARRIAGE_CATEGORY_DESC  : String
+}
+
+entity ZVEHICLE_TYPE: managed {
+    key VEHICLE_TYPE_ID     : String;
+        VEHICLE_TYPE_DESC   : String;
+}
+
+entity ZRATE_KM: managed {
+    key RATE_KM_ID  : String;
+        RATE_PER_KM : Decimal;
+}
+
+entity ZREGION: managed {
+    key REGION_ID   : String;
+        REGION_DESC : String;
+}
+
+entity ZTRANSFER_MODE: managed {
+    key MODE_ID     : String;
+        MODE_DESC   : String;
+}
+
+entity ZKWSP_BRANCH: managed {
+    key BRANCH_ID   : String;
+        BRANCH_DESC : String;
+}
+
+entity ZSTATE: managed {
+    key COUNTRY_ID  : String;
+        STATE_ID    : String;
+        STATE_DESC  : String;
+}
+
+entity ZKWSP_MILEAGE: managed {
+    key FROM_STATE_ID   : String;
+    key FROM_BRANCH_ID  : String;
+    key TO_STATE_ID     : String;
+    key TO_BRANCH_ID    : String;
+        MILEAGE         : Integer;
+        MAX_MILEAGE     : Integer;
+}
+
+
+
+
+
+
+
+
+
+
