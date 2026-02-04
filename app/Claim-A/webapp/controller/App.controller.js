@@ -454,10 +454,6 @@ sap.ui.define([
 				return;
 			}
 
-
-
-			// (Optional) Ensure needed properties are loaded (V4 lazy loading)
-			// Add/adjust keys based on what _mapHeaderToCurrentRequest expects
 			try {
 				this.getView().setBusy(true);
 
@@ -467,7 +463,6 @@ sap.ui.define([
 
 				// Fetch the full entity (remaining props will be resolved as needed)
 				const fullEntity = await oCtx.requestObject();
-
 
 				// Map backend entity → MyRequestForm view model schema
 				const mapped = this._mapHeaderToCurrentRequest(fullEntity);
