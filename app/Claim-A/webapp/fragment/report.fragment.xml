@@ -24,11 +24,11 @@
                             labelSpanS="12"
                             adjustLabelSpan="false"
                             emptySpanXL="0"
-                            emptySpanL="4"
+                            emptySpanL="1"
                             emptySpanM="0"
                             emptySpanS="0"
                             columnsXL="2"
-                            columnsL="1"
+                            columnsL="2"
                             columnsM="1"
                             singleContainerFullSize="false"
                         />
@@ -46,7 +46,7 @@
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>id}">
                                     <f:fields>
-                                        <Text text="{id}" />
+                                        <Text text="{current>/report/id}" />
                                     </f:fields>
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>startdate}">
@@ -69,7 +69,7 @@
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>location}">
                                     <f:fields>
-                                        <Text text="{location}" />
+                                        <Text text="{current>/report/location}" />
                                     </f:fields>
                                 </f:FormElement>
                             </f:formElements>

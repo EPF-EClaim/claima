@@ -447,7 +447,7 @@
                 <Page id="myreport" showHeader="false" class="sapUiNoContentPadding">
                     <content>
                         <core:Fragment
-                            fragmentName="claima.fragment.myrequestreport"
+                            fragmentName="claima.fragment.myexpensereport"
                             type="XML"
                         />
                     </content>

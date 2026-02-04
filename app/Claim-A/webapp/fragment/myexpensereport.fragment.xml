@@ -4,29 +4,21 @@
     xmlns:f="sap.f"
 >
     <f:DynamicPage
-        id="myrequestrepo"
+        id="myexpenserepo"
         headerExpanded="false"
         fitContent="true"
+        
     >
-        <f:title>
-            <f:DynamicPageTitle>
-                <f:actions>
-                    <Button
-                        text="Go to Detail page 2"
-                        press="onPressNavToDetail2"
-                    />
-                </f:actions>
-            </f:DynamicPageTitle>
-        </f:title>
-
         <f:content>
             <!-- Using sap.m.Table for JSONModel testing -->
+            <!-- items="{myRequest>/requests}" -->
             <Table
-                id="tb_myrequestrepo"
-                headerText="My Request Report"
+                id="tb_myexpensetrepo"
+                headerText="My Expense Report"
                 mode="SingleSelectMaster"
                 width="auto"
-                items="{myRequest>/requests}"
+                items="{path:'employee>/ZCLAIM_HEADER', parameters: {
+                $count: true }}"
                 itemPress="onRowPress"
             >
                 <columns>
@@ -50,14 +42,19 @@
                 <items>
                     <ColumnListItem
                         type="Active"
-                        press="handlePress"
                     >
                         <cells>
-                            <Text text="{myRequest>reportpurpose}" />
+                            <!-- <Text text="{myRequest>reportpurpose}" />
                             <Text text="{myRequest>reportid}" />
                             <Text text="{myRequest>startdate}" />
                             <Text text="{myRequest>status}" />
-                            <Text text="{myRequest>amount}" />
+                            <Text text="{myRequest>amount}" /> -->
+
+                            <Text text="{employee>CATEGORY}" />
+                            <Text text="{employee>CLAIM_ID}" />
+                            <Text text="{employee>CLAIM_DATE}" />
+                            <Text text="{employee>STATUS_ID}" />
+                            <Text text="{employee>TOTAL}" />
                         </cells>
                     </ColumnListItem>
                 </items>

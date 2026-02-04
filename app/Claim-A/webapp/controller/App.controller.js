@@ -80,51 +80,8 @@ sap.ui.define([
 				}
 			});
 			this.getView().setModel(oConfigModel, "configModel");
-      
-			//Start insert Aiman Salim - 21/1/2026
-			const oMyRequestModel = new JSONModel({
-				requests: [
-					{
-						reportpurpose: "Travel Claim",
-						reportid: "REQ001",
-						startdate: "2026-01-01",
-						status: "Approved",
-						amount: "1200"
-					},
-					{
-						reportpurpose: "Training Expense",
-						reportid: "REQ002",
-						startdate: "2026-01-10",
-						status: "Pending",
-						amount: "850"
-					}
-				]
-			});
-
-			this.getView().setModel(oMyRequestModel, "myRequest");
-
-			const oMyRequestModel2 = new JSONModel({
-				requestsform: [
-					{
-						reportpurpose: "Test for my report form 1",
-						reportid: "TTQ001",
-						startdate: "2026-01-01",
-						status: "Approved",
-						amount: "1200"
-					},
-					{
-						reportpurpose: "Test for my report form",
-						reportid: "TTQ002",
-						startdate: "2026-01-10",
-						status: "Pending",
-						amount: "850"
-					}
-				]
-			});
-			this.getView().setModel(oMyRequestModel2, "myRequestform");
 		},
 
-		//End insert Aiman Salim - 21/1/2026
 
 		// BACK BUTTON CONFIGURATION
 		onBackFromConfigTable: function () {
@@ -260,7 +217,7 @@ sap.ui.define([
 			oPageContainer.to(this.byId("configurationPage"));
 
 		},
-    onNavCreateReport: async function () {
+		onNavCreateReport: async function () {
 			if (!this.oDialogFragment) {
 				this.oDialogFragment = await Fragment.load({
 					name: "claima.fragment.createreport",
@@ -389,29 +346,190 @@ sap.ui.define([
 			oVehicle.setVisible(claimShow);
 
 		},
+		//Start Aiman Salim 22/1/2026 - Comment off
 
-		onPressNavToDetail: function (oEvent) {
-			var oItem = oEvent.getParameter("item");
-			this.byId("pageContainer").to(this.getView().byId('new_request'));
+		//For MyExpenseReport view - Upon click, it will move to ExpenseReport detail page. 
+
+
+		_getUserIdFromFLP: function () {
+			try {
+				if (sap.ushell && sap.ushell.Container && sap.ushell.Container.getUser) {
+					return sap.ushell.Container.getUser().getId(); // e.g. AIMAN.SALIM
+				}
+			} catch (e) { }
+			return null;
 		},
 
-		onPressNavToDetail2: function (oEvent) {
-			var oItem = oEvent.getParameter("item");
-			this.byId("pageContainer").to(this.getView().byId('expensereport'));
-		},
+		onRowPress: async function (oEvent) {
+			/* 					const oItem = oEvent.getParameter("listItem");
+								const oData = oItem.getBindingContext("employee").getObject();
+			
+								const oNextPageModel = new JSONModel(oData);
+								const oNextPage = this.byId("expensereport");
+								oNextPage.setModel(oNextPageModel, "selectedRequest");
+			
+								//Navigate to next page
+								this.byId("pageContainer").to(oNextPage); */
 
-		onRowPress: function (oEvent) {
+
+			// row context from named model "employee"
 			const oItem = oEvent.getParameter("listItem");
-			const oData = oItem.getBindingContext("myRequest").getObject();
+			const oCtx = oItem && oItem.getBindingContext("employee")
 
-			//Optional: pass data to the next page via a model
-			const oNextPageModel = new JSONModel(oData);
-			const oNextPage = this.byId("new_request");
-			oNextPage.setModel(oNextPageModel, "selectedRequest");
 
-			//Navigate to next page
-			this.byId("pageContainer").to(oNextPage);
+			if (!oCtx) {
+				MessageToast.show("No context found on the selected row.");
+				return;
+			}
+
+
+			await oCtx.requestProperty([
+				"EMP_ID",
+				"EMP_NAME",
+				"STATUS_ID",
+				"DEPARTMENT",
+				"ALTERNATE_COST_CENTRE",
+				"AMOUNT",
+				"CLAIM_MAIN_CAT_ID"
+				// ... add more properties if your detail page needs them
+			]); // Will fetch only what's missing from the backend
+
+			//const row = oCtx.getObject();
+			const fullEntity = await oCtx.requestObject()
+
+
+			// map header → current schema used by report.fragment
+			// const mapped = this._mapHeaderToCurrent(row);
+			const mapped = this._mapHeaderToCurrent(fullEntity);
+
+
+			// set "current" model data
+			let oCurrent = this.getView().getModel("current");
+			if (!oCurrent) {
+				oCurrent = new sap.ui.model.json.JSONModel();
+				this.getView().setModel(oCurrent, "current");
+			}
+			oCurrent.setData(mapped);
+
+
+			// navigate to the detail page that contains report.fragment
+			const oDetailPage = this.byId("expensereport");
+			if (!oDetailPage) {
+				sap.m.MessageToast.show("Detail page 'expensereport' not found.");
+				return;
+			}
+			this.byId("pageContainer").to(oDetailPage);
 		},
+
+		_mapHeaderToCurrent: function (row) {
+			return {
+				id: row.CLAIM_ID,
+				location: row.CLAIM_MAIN_CAT_ID || "",
+				costcenter: row.CLAIM_MAIN_CAT_ID || "",
+				altcc: row.ALTERNATE_COST_CENTRE || "",
+				total: row.AMOUNT,
+				cashadv: row.CLAIM_ID || "",
+				finalamt: row.CLAIM_ID || "",
+				report: {
+					id: row.CLAIM_ID,
+					purpose: row.CATEGORY || "",
+					startdate: row.CLAIM_DATE || "",
+					enddate: row.CLAIM_DATE || "",
+					location: row.location || "",
+					category: row.CATEGORY || "",
+					comment: row.CLAIM_ID || "",
+					amt_approved: row.TOTAL || ""
+				}
+			};
+		},
+
+		//For MyRequestForm view - Upon click, it will move to MyRequestForm detail page. 
+		onRowPressForm: async function (oEvent) {
+			// row context from named model "employee"
+			const oItem = oEvent.getParameter("listItem");
+			const oCtx = oItem && oItem.getBindingContext("employee");
+			const row = oCtx.getObject();
+			const reqid = String(row.REQUEST_ID).trim();
+			console.log("reqid:", reqid);
+			
+			if (!oCtx) {
+				sap.m.MessageToast.show("No context found on the selected row.");
+				return;
+			}
+
+			try {
+				this.getView().setBusy(true);
+
+				//await oCtx.requestProperty([]);
+
+
+
+				// Fetch the full entity (remaining props will be resolved as needed)
+				const fullEntity = await oCtx.requestObject();
+
+				// Map backend entity → MyRequestForm view model schema
+				const mapped = this._mapHeaderToCurrentRequest(fullEntity);
+
+				// Set/refresh the "request" JSON model (same pattern as onRowPress)
+				let oRequest = this.getView().getModel("request");
+				if (!oRequest) {
+					oRequest = new sap.ui.model.json.JSONModel();
+					this.getView().setModel(oRequest, "request");
+				}
+				oRequest.setData(mapped);
+
+				// Navigate to detail page that consumes the "request" model
+				const oPageContainer = this.byId("pageContainer");
+				const oDetailPage = this.byId("new_request");
+				if (!oDetailPage) {
+					sap.m.MessageToast.show("Detail page 'new_request' not found.");
+					return;
+				}
+				oPageContainer.to(oDetailPage);
+
+			} catch (e) {
+				jQuery.sap.log.error("onRowPressForm failed: " + e);
+				sap.m.MessageToast.show("Failed to load request data.");
+			} finally {
+				this.getView().setBusy(false);
+			}
+		},
+
+		_mapHeaderToCurrentRequest: function (row) {
+			// Helper: format date (if row.CLAIM_DATE is Date or /Date(...)/)
+			const fmt = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" });
+			const toYMD = (d) => {
+				try {
+					if (d instanceof Date) {
+						return fmt.format(d);
+					}
+					if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
+						return d; // already "YYYY-MM-DD"
+					}
+				} catch (e) {/* ignore */ }
+				return d || "";
+			};
+
+			return {
+				purpose: row.OBJECTIVE_PURPOSE || "",
+				reqid: row.REQUEST_ID || "",
+				startdate: toYMD(row.START_DATE),
+				enddate: toYMD(row.END_DATE),
+				altcostcenter: "",
+				location: row.LOCATION || "",
+				detail: row.REMARK || "",
+				grptype: row.REQUEST_GROUP_ID || "",
+				// Static totals shown as "0.00" in fragment; keep if you plan to compute later
+				saved: "",
+				// If you later bind these, set proper numbers/strings:
+				// caa / amt / total_amt not present in fragment's model; they are static "0.00" texts
+				// You can add them when needed:
+				// cashadvamount : "0.00",
+				// amount        : "0.00",
+				// totalamount   : "0.00"
+			};
+		},
+
 
 		// CLICK CONFIGURATION TABLE CARD
 		onOpenConfigTable: async function (oEvent) {
@@ -427,6 +545,7 @@ sap.ui.define([
 			console.log(m.getProperty("/active/data/"));
 			this.loadConfigPage();
 		},
+
 
 		// LOAD CONFIG DETAIL PAGE
 		loadConfigPage: async function () {
@@ -454,35 +573,6 @@ sap.ui.define([
 			this.byId("pageContainer").to(this.byId("configDetailPage"));
 		},
 
-		onRowPressForm: function (oEvent) {
-			// 1) Read the selected row data from the "myRequest" named model
-			const oListItem = oEvent.getParameter("listItem");
-			const oSelectedData = oListItem.getBindingContext("myRequestform").getObject();
-
-			// 2) Put the selected data into a model that the target page can read
-			//    Option A (recommended): set it on the target page under a named model
-			const oTargetPage = this.byId("expensereport");   // assumes expensereport is a Page/View in the same view
-			if (oTargetPage) {
-				oTargetPage.setModel(new sap.ui.model.json.JSONModel(oSelectedData), "selectedRequest");
-			} else {
-				// Fallback: set on the *view*, which the target page can also inherit if bound
-				this.getView().setModel(new sap.ui.model.json.JSONModel(oSelectedData), "selectedRequest");
-			}
-
-			// 3) Navigate NavContainer to the expensereport page
-			const oNav = this.byId("pageContainer");
-			const sTargetId = this.getView().createId("expensereport");
-			oNav.to(sTargetId);
-
-			// 4) (Optional) If your expensereport page has step sections, toggle as needed
-			const oExpenseTypeScr = this.byId("expensetypescr");
-			const oClaimScr = this.byId("claimscr");
-			if (oExpenseTypeScr) { oExpenseTypeScr.setVisible(true); }
-			if (oClaimScr) { oClaimScr.setVisible(false); }
-			if (this.createreportButtons) {
-				this.createreportButtons("expensetypescr");
-			}
-		},
 
 		/* =========================================================
 		 * Mileage dialog (Fragment) — use a dedicated controller
@@ -544,8 +634,8 @@ sap.ui.define([
 									}
 
 									// Optional: push km to your model/input if you want
-									 var oKm = this.byId("km_input_id");
-									 if (oKm) { oKm.setValue(res.km); }
+									var oKm = this.byId("km_input_id");
+									if (oKm) { oKm.setValue(res.km); }
 
 								}.bind(this));
 
@@ -869,8 +959,8 @@ sap.ui.define([
 
 			//dummy testing
 			const oContext = oListBinding.create({
-				RANGE_ID: "E0010",
-				FROM: "AIN"
+				RANGE_ID: "E0012",
+				FROM: "AS"
 			});
 			oContext.created()
 				.then(() => {
