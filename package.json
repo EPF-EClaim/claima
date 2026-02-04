@@ -48,7 +48,7 @@
       "employee_srv": {
         "kind": "odata",
         "model": "srv/external/employee_srv"
-      }, 
+      },
       "eclaim": {
         "kind": "odata",
         "model": "srv/external/eclaim"
@@ -57,5 +57,8 @@
   },
   "workspaces": [
     "app/*"
+  ],
+  "sapux": [
+    "app/project1"
   ]
 }

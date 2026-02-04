@@ -1,0 +1,20 @@
+<mvc:View controllerName="claima.controller.configuration" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:macros="sap.fe.macros">
+    <!-- <Text text="Test Configuration"></Text> -->
+    <macros:Table xmlns:macro="sap.fe.macros" id="claimConfiguration" metaPath="/ZCLAIM_PURPOSE/@com.sap.vocabularies.UI.v1.LineItem" selectionMode="Multi" enableSelectAll="true" creationMode="" isSearchable="false" type="ResponsiveTable" busy="false" condensedTableLayout="true" contextPath="/ZCLAIM_PURPOSE" disableColumnFreeze="false" disableCopyToClipboard="false" enableAutoColumnWidth="true" enableExport="true" enableFullScreen="false" enablePaste="true" headerVisible="false" popinLayout="Block" readOnly="false" rowCountMode="Auto">
+        <!-- <creationMode name="InlineCreationRows" inlineCreationRowsHiddenInEditMode="true" />   -->
+    </macros:Table>
+    <!-- <macros:actions />
+          <macros:Action
+               key="customAction"
+               text="My Custom Action"
+               press=".onPressAction"
+               placement="After"
+               anchor="DataFieldForAction::Service.toggleBoolean"
+               requiresSelection="true"
+          /> -->
+    <!-- <macros:ActionGroup text="Grouped Actions" placement="After" anchor="customAction">
+               <macros:Action text="Menu Action 1" press=".onPressMenuAction" />
+               <macros:Action text="Menu Action 2" press=".onPressMenuAction" />
+          </macros:ActionGroup> -->
+    <!-- </macros:actions>  -->
+</mvc:View>

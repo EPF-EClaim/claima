@@ -1,18 +1,17 @@
-
 <core:FragmentDefinition
     xmlns="sap.m"
     xmlns:core="sap.ui.core">
 
-    <VBox class="sapUiContentPadding">
+    <VBox class="sapUiContentPadding sapUiSmallMargin">
 
         <!-- HEADER -->
-        <Toolbar class="sapUiSmallMarginBottom">
-            <Title text="{configModel>/active/title}" level="H2"/>
+        <Toolbar >
+            <Title text="ZCLAIM PURPOSE" level="H2"/>
             <ToolbarSpacer/>
-            <Button text="+ Add New Entry" press="onAddEntry" type="Transparent"/>
-            <Button text="Edit" press="onEditEntry"/>
-            <Button text="Copy" press="onCopyEntry"/>
-            <Button text="Delete" press="onDeleteEntry" type="Negative"/>
+            <Button id="confadd" text="+ Add New Entry" press="onAddEntry" visible="true"/>
+            <Button id="confedit" text="Edit" press="onEditEntry" visible="true"/>
+            <Button id="confcopy" text="Copy" press="onCopyEntry" visible="true"/>
+            <Button id="confdelete" text="Delete" press="onDeleteEntry" visible="true" />
         </Toolbar>
 
         <!-- TABLE -->
@@ -21,46 +20,55 @@
             mode="MultiSelect"
             inset="false"
             fixedLayout="false"
+            growing="true"
+            growingScrollToLoad="true"
             showSeparators="All"
-            items="{configModel>/active/data}"
+            items="{ path: 'employee>/ZCLAIM_PURPOSE' }"
+            selectionChange="onselectionChange"
             noDataText="No data available">
+            <!-- <headerToolbar></headerToolbar> -->
 
             <columns>
-                <Column width="2rem"/>
-                <Column><Text text="Claim_Purpose_ID"/></Column>
-                <Column><Text text="Claim_Purpose Desc"/></Column>
+                <!-- <Column width="2rem"/> -->
+                <Column><Text text="Claim Purpose ID"/></Column>
+                <Column><Text text="Claim Purpose Desc"/></Column>
             </columns>
 
             <items>
-                <ColumnListItem type="Inactive">
+                <ColumnListItem vAlign="Middle" >
 
                     <cells>
                         <!-- Checkbox column -->
-                        <Text text=""/>
+                        <!-- <Text text=""/> -->
 
                         <!-- Claim_Purpose_ID -->
-                        <HBox>
-                            <Input value="{configModel>Claim_Purpose_ID}" visible="{= ${configModel>edit} }"/>
-                            <Text text="{configModel>Claim_Purpose_ID}" visible="{= !${configModel>edit} }"/>
+                        <HBox visible="true">
+                            <Input id= "claimpurposeid" value="{employee>CLAIM_PURPOSE_ID}" visible="false" /> 
+                            <Text text="{employee>CLAIM_PURPOSE_ID}" visible="true"/>
                         </HBox>
 
                         <!-- Claim_Purpose Desc -->
-                        <HBox>
-                            <Input value="{configModel>Claim_Purpose Desc}" visible="{= ${configModel>edit} }"/>
-                            <Text text="{configModel>Claim_Purpose Desc}" visible="{= !${configModel>edit} }"/>
+                        <HBox visible="true">
+                            <Input id= "claimpurposedesc" value="{employee>CLAIM_PURPOSE_DESC}" visible="false"/>
+                            <Text text="{employee>CLAIM_PURPOSE_DESC}" visible="true"/>
                         </HBox>
+                        
                     </cells>
+                    <!-- <cells>
+                    <core:Fragment fragmentName="claima.fragment.inputfields" type="XML" />
+                    </cells> -->
 
                 </ColumnListItem>
             </items>
         </Table>
 
         <!-- FOOTER -->
-        <Toolbar class="sapUiMediumMarginTop">
+        <!-- <Toolbar class="sapUiMediumMarginTop">
             <ToolbarSpacer/>
             <Button text="Back" press="onBackFromConfigTable"/>
             <Button text="Save" press="onSaveConfigTable" type="Emphasized"/>
-        </Toolbar>
+        </Toolbar> -->
+        
 
     </VBox>
 

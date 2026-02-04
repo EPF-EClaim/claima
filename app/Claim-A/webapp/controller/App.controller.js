@@ -10,7 +10,11 @@ sap.ui.define([
 	"sap/m/MessageToast",
 	"sap/m/Text",
 	"sap/m/library",
-	"sap/tnt/library"
+	"sap/tnt/library",
+	"sap/m/Input",
+	"sap/m/Label",
+	"sap/m/VBox", 
+	"sap/ui/model/odata/v4/ODataModel"
 ], function (
 	Device,
 	Controller,
@@ -22,13 +26,20 @@ sap.ui.define([
 	MessageToast,
 	Text,
 	library,
-	tntLibrary
+	tntLibrary,
+	Input,
+	Label,
+	VBox,
+	ODataModel
 ) {
 	"use strict";
+	
 
 	return Controller.extend("claima.controller.App", {
 		onInit: function () {
-
+			// super.onInit();
+			// var oModel = this.base.getExtensionAPI().getModel();
+			//  PageController.prototype.onInit.apply(this, arguments);
 			// oViewModel
 			const oViewModel = new sap.ui.model.json.JSONModel({
 				rtype: "" // current selected request type
@@ -51,7 +62,7 @@ sap.ui.define([
 				costcenter: "",
 				altcostcenter: "",
 				cashadvtype: "",
-				comment: "", 
+				comment: "",
 				saved: ""
 			});
 			this.getView().setModel(oRequestModel, "request");
@@ -78,8 +89,20 @@ sap.ui.define([
 					data: []
 				}
 			});
+
 			this.getView().setModel(oConfigModel, "configModel");
-      
+
+			var newModel = new JSONModel({
+				visibleHeader: true,
+				"editable": false,
+				"valueState": "None",
+				"add": true,
+				"edit": true,
+				"delete": true
+
+			});
+			this.getView().setModel(newModel, "newModel");
+
 			//Start insert Aiman Salim - 21/1/2026
 			const oMyRequestModel = new JSONModel({
 				requests: [
@@ -143,29 +166,119 @@ sap.ui.define([
 		},
 
 		// ADD NEW ROW CONFIGURATION
-		onAddEntry: function () {
-			let data = this.getView().getModel("configModel").getProperty("/active/data");
+		onAddEntry: function (oEvent) {
+			this._openDialog(oEvent);
+			// var oDialog = new Dialog({
+            //     title: 'Add New Entry',
+            //     type: 'Message',
+            //     content: [
+            //         new VBox({
+            //             items: [
+            //                 new Label({ text: 'Claim Purpose ID' }),
+            //                 new Input({ id: "claimpurposeid" }),
+            //                 new Label({ text: 'Claim Purpose Description' }),
+            //                 new Input({ id: "claimdescription" })
+            //             ]
+            //         })
+            //     ],
+            //     beginButton: new Button({
+            //         text: 'Add New Entry',
+            //         press: function () {
+            //             this._addConfig();
+            //             oDialog.close();
+            //         }.bind(this)
+            //     }),
+            //     endButton: new Button({
+            //         text: 'Cancel',
+            //         press: function () {
+            //             oDialog.close();
+            //         }
+            //     }),
+            //     afterClose: function () {
+            //         oDialog.destroy();
+            //     }
+            // });
 
-			data.push({
-				Claim_Purpose_ID: "",
-				Claim_Purpose_Desc: "",
+            // oDialog.open();
+		},
 
-				edit: true,
-				selected: false
-			});
-			let m = this.getView().getModel("configModel");
-			m.refresh(true);
+		_addConfig: function () {
+			var oModel = this.getView().getModel("employee");
+			var aConfig = oModel.bindList("/ZCLAIM_PURPOSE");
 
+			var sClaimPurposeId = sap.ui.getCore().byId("claimpurposeid").getValue();
+			var sClaimDesc = sap.ui.getCore().byId("claimdescription").getValue();
+
+			var oNewEntries = {
+				"CLAIM_PURPOSE_ID": sClaimPurposeId,
+				"CLAIM_PURPOSE_DESC": sClaimDesc
+			};
+
+			aConfig.create(oNewEntries);
+			MessageToast.show("New entry created");
+			sap.ui.getCore().byId("container-claima---App--ConfigFrag--configTable").getBinding("items").refresh();
 		},
 
 		// EDIT ROW CONFIGURATION
-		onEditEntry: function () {
+		onEditEntry: function (oEvent) {
 			let oTable = this.byId("ConfigFrag--configTable");
-			let sel = oTable.getSelectedItems();
-			if (!sel.length) return MessageToast.show("Select a row.");
+			
+			var selectedRowData = oTable.getSelectedContexts();
+			if (selectedRowData.length === 0) {
+				MessageToast.show("please select atleast one row");
+				return;
+			} else {
+			// selectedRowData.forEach(function(item){
+			// 	var sContext = item;
+			// 	var sPath = sContext.getPath();
+			// 	var sObject = sContext.getObject();
+			// 	var oldData = {
+			// 		sPath: sPath, 
+			// 		sObject: sObject
+			// 	};
+			// });
+			
+			this._openDialog(oEvent, selectedRowData);
+			}
+		},
 
-			let ctx = sel[0].getBindingContext("configModel");
-			ctx.setProperty("edit", true);
+		_openDialog: function (oEvent, oRecord){
+			var oButton = oEvent.getSource().getAccessibilityInfo().description;
+
+			var oCurrentData = Object.assign({}, oRecord );
+
+			var oDialog = new Dialog({
+                title: '',
+                type: 'Message',
+                content: [
+                    new VBox({
+                        items: [
+                            new Label({ text: 'Claim Purpose ID' }),
+                            new Input({ id: "claimpurposeid" }),
+                            new Label({ text: 'Claim Purpose Description' }),
+                            new Input({ id: "claimdescription" })
+                        ]
+                    })
+                ],
+                beginButton: new Button({
+                    text: 'Add New Entry',
+                    press: function () {
+                        this._addConfig();
+                        oDialog.close();
+                    }.bind(this)
+                }),
+                endButton: new Button({
+                    text: 'Cancel',
+                    press: function () {
+                        oDialog.close();
+                    }
+                }),
+                afterClose: function () {
+                    oDialog.destroy();
+                }
+            });
+
+            oDialog.open();
 		},
 
 		// COPY ROW CONFIGURATION
@@ -174,6 +287,8 @@ sap.ui.define([
 			let sel = oTable.getSelectedItem();
 			if (!sel) return MessageToast.show("Select a row.");
 
+			var oModel = this.getView().getModel("employee");
+			
 			let m = this.getView().getModel("configModel");
 			let data = m.getProperty("/active/data");
 			let obj = sel.getBindingContext("configModel").getObject();
@@ -183,21 +298,18 @@ sap.ui.define([
 		},
 
 		// DELETE ROW CONFIGURATION
-		onDeleteEntry: function () {
+		onDeleteEntry: function (oEvent) {
+			// this.mode = "delete";
 			let oTable = this.byId("ConfigFrag--configTable");
 			let sel = oTable.getSelectedItems();
 			if (!sel.length) return MessageToast.show("Nothing selected.");
 
-			let m = this.getView().getModel("configModel");
-			let data = m.getProperty("/active/data");
-
-			sel.reverse().forEach(item => {
-				let index = item.getBindingContext("configModel").getPath().split("/").pop();
-				data.splice(index, 1);
+			sel.reverse().forEach(oItem => {
+				const oContext = oItem.getBindingContext("employee");
+				if (oContext) {
+					oContext.delete();
+				}
 			});
-
-			m.refresh(true);
-
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
@@ -239,16 +351,6 @@ sap.ui.define([
 		},
 		// Configuration
 		onClickConfiguration: async function () {
-			// if (!this.oConfigPage) {
-			// 	this.oConfigPage = Fragment.load({
-			// 		name: "claima.fragment.configuration",
-			// 		type: "XML",
-			// 		controller: this
-			// 	});
-			// 	this.getView().addDependent(this.oConfigPage);
-			// }
-
-			// Navigate to configuration page
 			var oPageContainer = this.byId("pageContainer");
 			if (!this.byId("configurationPage")) {
 				var oPage = new sap.m.Page(this.createId("configurationPage"), {
@@ -257,7 +359,7 @@ sap.ui.define([
 			oPageContainer.to(this.byId("configurationPage"));
 
 		},
-    onNavCreateReport: async function () {
+		onNavCreateReport: async function () {
 			if (!this.oDialogFragment) {
 				this.oDialogFragment = await Fragment.load({
 					name: "claima.fragment.createreport",
@@ -411,27 +513,52 @@ sap.ui.define([
 		},
 
 		// CLICK CONFIGURATION TABLE CARD
-		onOpenConfigTable: async function (oEvent) {
+		onOpenConfigTable: function (oEvent) {
 
-			let tableId = oEvent.getSource().getCustomData()[0].getValue();
-			let m = this.getView().getModel("configModel");
+			// let tableId = oEvent.getSource().getCustomData()[0].getValue();
+			// let m = this.getView().getModel("configModel");
 
-			m.setProperty("/active/title", tableId);
-			m.setProperty("/active/data",
-				JSON.parse(JSON.stringify(m.getProperty("/" + tableId)))
-			);
+			// m.setProperty("/active/title", tableId);
+			// m.setProperty("/active/data",
+			// 	JSON.parse(JSON.stringify(m.getProperty("/" + tableId)))
+			// );
+			// var oBinding = this.base.getExtensionAPI();
+			var oRouter = this.getOwnerComponent().getRouter();
+			oRouter.navTo("Configuration");
+			// .getModel().bindList("/ZCLAIM_PURPOSE", null, [], [], []);
 
-			this.loadConfigPage();
+			// const oExtensionAPI = this.base.getExtensionAPI();
+			// this.loadFragment({
+			// 	name: "claima.fragment.inputfields", 
+			// 	controller: this, 
+			// 	initialBindingContext: this.getBindingContext()
+			// }).then(function(oFragment){
+			// 	this.getView().addDependent(oFragment);
+			//  });
+
+			// this.loadConfigPage();
 		},
 
 		// LOAD CONFIG DETAIL PAGE
 		loadConfigPage: async function () {
+			var oView = this.getView();
+			var oModel = oView.getModel("employee");
+			var sPath = "/ZCLAIM_PURPOSE";
+
+			oView.bindElement({
+				path: sPath,
+				model: "employee",
+				events: {
+					change: this._onBindingChange.bind(this)
+				}
+			});
 
 			if (!this.oConfigDetailPage) {
 
 				const oFragment = await Fragment.load({
 					id: this.createId("ConfigFrag"),
 					name: "claima.fragment.configuration",
+					// "claima.fragment.configuration",
 					controller: this
 				});
 				this.getView().addDependent(oFragment);
@@ -440,14 +567,19 @@ sap.ui.define([
 					this.createId("configDetailPage"),
 					{
 						title: "eClaim Configuration",
-						content: [oFragment],
-						showNavButton: true,
-						navButtonPress: this.onBackFromConfigTable.bind(this)
+						content: [oFragment]
+						// showNavButton: true,
+						// navButtonPress: this.onBackFromConfigTable.bind(this)
 					}
 				);
 				this.byId("pageContainer").addPage(this.oConfigDetailPage);
 			}
 			this.byId("pageContainer").to(this.byId("configDetailPage"));
+		},
+
+		_onBindingChange: function () {
+			var oVirew = this.getView();
+
 		},
 
 		onRowPressForm: function (oEvent) {
@@ -540,8 +672,8 @@ sap.ui.define([
 									}
 
 									// Optional: push km to your model/input if you want
-									 var oKm = this.byId("km_input_id");
-									 if (oKm) { oKm.setValue(res.km); }
+									var oKm = this.byId("km_input_id");
+									if (oKm) { oKm.setValue(res.km); }
 
 								}.bind(this));
 
@@ -604,7 +736,7 @@ sap.ui.define([
 		},
 
 		onClickCreateRequest: function () {
-			
+
 			// value validation
 			// const oReq = this.getOwnerComponent().getModel("request");
 			// const sType = oReq.getProperty("/type");
@@ -652,7 +784,7 @@ sap.ui.define([
 			const sType = oConfig.getProperty("/selection/type");
 
 			const aPurposeFields = (sPurpose && oConfig.getProperty("/fieldSets/purpose/" + sPurpose)) || [];
-			const aTypeFields    = (sType && oConfig.getProperty("/fieldSets/type/" + sType)) || [];
+			const aTypeFields = (sType && oConfig.getProperty("/fieldSets/type/" + sType)) || [];
 
 			// Merge fields; you can also dedupe by id if overlaps possible
 			const aFields = aPurposeFields.concat(aTypeFields);
@@ -666,79 +798,79 @@ sap.ui.define([
 			aFields.forEach(function (fdef) {
 				// Label
 				oSF.addContent(new sap.m.Label({
-				text: fdef.label,
-				required: !!fdef.required,
-				labelFor: fdef.id
+					text: fdef.label,
+					required: !!fdef.required,
+					labelFor: fdef.id
 				}));
 
 				// Control factory
 				let oCtrl = null;
 				switch (fdef.control) {
-				case "Input":
-					oCtrl = new Input(fdef.id, {
-					type: fdef.type === "Number" ? "Number" : "Text",
-					value: "{config>" + fdef.path + "}"
-					});
-					break;
+					case "Input":
+						oCtrl = new Input(fdef.id, {
+							type: fdef.type === "Number" ? "Number" : "Text",
+							value: "{config>" + fdef.path + "}"
+						});
+						break;
 
-				case "TextArea":
-					oCtrl = new TextArea(fdef.id, {
-					value: "{config>" + fdef.path + "}",
-					rows: 3,
-					growing: true
-					});
-					break;
+					case "TextArea":
+						oCtrl = new TextArea(fdef.id, {
+							value: "{config>" + fdef.path + "}",
+							rows: 3,
+							growing: true
+						});
+						break;
 
-				case "DatePicker":
-					oCtrl = new DatePicker(fdef.id, {
-					value: "{config>" + fdef.path + "}",
-					valueFormat: "yyyy-MM-dd",
-					displayFormat: "medium"
-					});
-					break;
+					case "DatePicker":
+						oCtrl = new DatePicker(fdef.id, {
+							value: "{config>" + fdef.path + "}",
+							valueFormat: "yyyy-MM-dd",
+							displayFormat: "medium"
+						});
+						break;
 
-				case "Select":
-					oCtrl = new Select(fdef.id, {
-					selectedKey: "{config>" + fdef.path + "}"
-					});
-					// local items
-					if (Array.isArray(fdef.items)) {
-					fdef.items.forEach(function (it) {
-						oCtrl.addItem(new Item({ key: it.key, text: it.text }));
-					});
-					} else if (fdef.itemsPath) {
-					// dynamic items binding example
-					oCtrl.bindItems({
-						path: "config>" + fdef.itemsPath,
-						template: new Item({ key: "{config>key}", text: "{config>text}" })
-					});
-					}
-					break;
+					case "Select":
+						oCtrl = new Select(fdef.id, {
+							selectedKey: "{config>" + fdef.path + "}"
+						});
+						// local items
+						if (Array.isArray(fdef.items)) {
+							fdef.items.forEach(function (it) {
+								oCtrl.addItem(new Item({ key: it.key, text: it.text }));
+							});
+						} else if (fdef.itemsPath) {
+							// dynamic items binding example
+							oCtrl.bindItems({
+								path: "config>" + fdef.itemsPath,
+								template: new Item({ key: "{config>key}", text: "{config>text}" })
+							});
+						}
+						break;
 
-				case "FileUploader":
-					oCtrl = new FileUploader(fdef.id, {
-					fileType: ["pdf", "png", "jpg"],
-					maximumFileSize: 10, // MB
-					change: this._onFileSelected.bind(this, fdef.path)
-					});
-					break;
+					case "FileUploader":
+						oCtrl = new FileUploader(fdef.id, {
+							fileType: ["pdf", "png", "jpg"],
+							maximumFileSize: 10, // MB
+							change: this._onFileSelected.bind(this, fdef.path)
+						});
+						break;
 
-				default:
-					oCtrl = new Input(fdef.id, {
-					value: "{config>" + fdef.path + "}"
-					});
+					default:
+						oCtrl = new Input(fdef.id, {
+							value: "{config>" + fdef.path + "}"
+						});
 				}
 
 				// Simple required check on change (optional)
 				if (fdef.required && oCtrl.setValueState) {
-				const fnValidate = () => {
-					const v = oConfig.getProperty(fdef.path);
-					const empty = v === undefined || v === null || v === "";
-					oCtrl.setValueState(empty ? ValueState.Error : ValueState.None);
-				};
-				oCtrl.attachChange(fnValidate);
-				// run once
-				setTimeout(fnValidate, 0);
+					const fnValidate = () => {
+						const v = oConfig.getProperty(fdef.path);
+						const empty = v === undefined || v === null || v === "";
+						oCtrl.setValueState(empty ? ValueState.Error : ValueState.None);
+					};
+					oCtrl.attachChange(fnValidate);
+					// run once
+					setTimeout(fnValidate, 0);
 				}
 
 				oSF.addContent(oCtrl);
@@ -761,7 +893,7 @@ sap.ui.define([
 
 			// Basic validation
 			const aPurposeFields = (sPurpose && oModel.getProperty("/fieldSets/purpose/" + sPurpose)) || [];
-			const aTypeFields    = (sType && oModel.getProperty("/fieldSets/type/" + sType)) || [];
+			const aTypeFields = (sType && oModel.getProperty("/fieldSets/type/" + sType)) || [];
 			const aFields = aPurposeFields.concat(aTypeFields);
 
 			const missing = aFields.filter(f => f.required).filter(f => {
@@ -813,6 +945,18 @@ sap.ui.define([
 			this.oDialogFragment.close();
 		},
 		// ++Jefry_Changes
+
+		onClickNavigate: function (oEvent) {
+			let id = oEvent.getParameters().id;
+			if(id === "container-claima---App--dashboard-claim" || id === "application-app-preview-component---App--dashboard-claim"){
+				this.byId("pageContainer").to(this.getView().createId("myreport"));
+			} else if (id === "container-claima---App--dashboard-request" || id === "application-app-preview-component---App--dashboard-request"){
+				this.byId("pageContainer").to(this.getView().createId("myrequest"));
+			}
+			
+		}
+
+		
 
 	});
 });

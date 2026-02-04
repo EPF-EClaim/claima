@@ -1,6 +1,8 @@
+using {managed} from '@sap/cds/common';
+
 namespace ECLAIM;
 
-entity ZEMP_MASTER {
+entity ZEMP_MASTER : managed {
     key EEID            : String;
         NAME            : String;
         GRADE           : String;
@@ -23,7 +25,7 @@ entity ZEMP_MASTER {
                               on ZREQUEST_HEADER.EMP_ID = EEID;
 }
 
-entity ZREQUEST_HEADER {
+entity ZREQUEST_HEADER : managed {
     key EMP_ID                 : String;
     key REQUEST_ID             : UUID;
         REQUEST_TYPE_ID        : UUID;
@@ -51,7 +53,7 @@ entity ZREQUEST_HEADER {
                                      on ZCLAIM_HEADER.CLAIM_ID = CLAIM_TYPE_ID;
 }
 
-entity ZREQUEST_ITEM {
+entity ZREQUEST_ITEM : managed {
     key REQUEST_ID             : String;
     key CLAIM_TYPE_ITEM_ID     : String;
         AMOUNT                 : Decimal;
@@ -62,7 +64,7 @@ entity ZREQUEST_ITEM {
                                      and ZREQ_ITEM_PART.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID;
 }
 
-entity ZREQ_ITEM_PART {
+entity ZREQ_ITEM_PART: managed  {
     key REQUEST_ID           : String;
     key CLAIM_TYPE_ITEM_ID   : String;
     key PARTICIPANTS_ID      : String;
@@ -71,7 +73,7 @@ entity ZREQ_ITEM_PART {
         ALLOCATED_AMOUNT     : Decimal;
 }
 
-entity ZREQUEST_TYPE {
+entity ZREQUEST_TYPE : managed {
     key REQUEST_TYPE_ID   : String;
         REQUEST_TYPE_DESC : String;
         END_DATE          : Date;
@@ -79,12 +81,12 @@ entity ZREQUEST_TYPE {
         STATUS            : String;
 }
 
-entity ZCLAIM_TYPE {
+entity ZCLAIM_TYPE: managed  {
     key CLAIM_TYPE_ID   : String;
         CLAIM_TYPE_DESC : String;
 }
 
-entity ZREQUEST_GRP {
+entity ZREQUEST_GRP: managed  {
     key REQUEST_GROUP_ID   : String;
         REQUEST_GROUP_DESC : String;
         END_DATE           : Date;
@@ -92,14 +94,14 @@ entity ZREQUEST_GRP {
         STATUS             : String;
 }
 
-entity ZNUM_RANGE {
+entity ZNUM_RANGE: managed  {
     key RANGE_ID : String;
         ![FROM]  : String;
         TO       : String;
         CURRENT  : String;
 }
 
-entity ZCLAIM_HEADER {
+entity ZCLAIM_HEADER: managed  {
     key CLAIM_ID              : String;
         CLAIM_MAIN_CAT_ID     : String;
         EMP_ID                : String;
@@ -118,7 +120,7 @@ entity ZCLAIM_HEADER {
                                     on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
 }
 
-entity ZCLAIM_ITEM {
+entity ZCLAIM_ITEM : managed {
     key CLAIM_ID          : String;
     key CLAIM_ITEM_ID     : String;
         CLAIM_TYPE_ITEM   : String;
@@ -175,17 +177,17 @@ entity ZCLAIM_ITEM {
                                 on ZLODGING_CAT.LODGING_CATEGORY_ID = LODGING_CATEGORY;
 }
 
-entity ZCLAIM_PURPOSE {
+entity ZCLAIM_PURPOSE: managed  {
     key CLAIM_PURPOSE_ID   : String;
         CLAIM_PURPOSE_DESC : String;
 }
 
-entity ZCLAIM_DISCLAIMER {
+entity ZCLAIM_DISCLAIMER: managed  {
     key CLAIM_DISCLAIMER_ID   : String;
         CLAIM_DISCLAIMER_DESC : String;
 }
 
-entity ZLODGING_CAT {
+entity ZLODGING_CAT: managed  {
     key LODGING_CATEGORY_ID   : String;
         LODGING_CATEGORY_DESC : String;
 }

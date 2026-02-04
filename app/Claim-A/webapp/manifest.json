@@ -25,7 +25,7 @@
         }
       }
     }
-  },  
+  },
   "sap.ui": {
     "technology": "UI5",
     "icons": {
@@ -51,15 +51,25 @@
         "sap.m": {},
         "sap.ui.core": {},
         "sap.ui.table": {},
-        "sap.ui.unified": {}
+        "sap.ui.unified": {},
+        "sap.fe.templates": {}
       }
     },
     "contentDensities": {
       "compact": true,
       "cozy": true
     },
-    "models": {   
+    "models": {
       "employee": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "": {
         "dataSource": "mainService",
         "preload": true,
         "settings": {
@@ -102,13 +112,12 @@
       "config": {
         "routerClass": "sap.m.routing.Router",
         "controlAggregation": "pages",
-        "controlId": "app",
+        "controlId": "pageContainer",
         "transition": "slide",
         "type": "View",
         "viewType": "XML",
-        "path": "claima.view",
-        "async": true,
-        "viewPath": "claima.view"
+        "path": "",
+        "async": true
       },
       "routes": [
         {
@@ -117,21 +126,59 @@
           "target": [
             "TargetMain"
           ]
-        }, 
+        },
         {
           "pattern": "Dashboard",
           "name": "Dashboard",
           "target": "TargetDashboard"
-        }
+        }, 
+         {
+          "pattern": "Configuration",
+          "name": "Configuration",
+          "target": [
+            "Configuration"
+          ]
+        }    
       ],
       "targets": {
         "TargetMain": {
           "id": "Main",
           "name": "Main"
-        }, 
+        },
         "TargetDashboard": {
-          "viewId": "Dashboard",
-          "viewName": "App"
+          "id": "Dashboard",
+          "name": "App"
+        },
+        "Configuration": {
+          "id": "Configuration",
+          "name": "sap.fe.core.fpm",
+          "type": "Component",
+          "controlId": "pageContainer",
+          "controlAggregation": "pages",
+          "viewLevel": 2,
+          "options": {
+            "settings": {
+              "viewName": "claima.view.Configuration",
+              "viewId": "Configuration",
+              "entitySet": "ZCLAIM_PURPOSE",
+              "contextPath": "/ZCLAIM_PURPOSE", 
+              "createMode": "Inline",
+              "multiSelect": true,
+              "tableSettings": {
+                "inlineDelete": true
+              }
+            
+            }
+          }
+        }
+      }
+    },
+    "extends": {
+      "extensions": {
+        "sap.ui.controllerExtensions": {
+          "sap.fe.templates.ListReport.ListReportController" : {
+            "controllerName": "claima.controller.configuration"
+          }
         }
       }
     },
@@ -152,5 +199,9 @@
         ]
       }
     }
+  },
+  "sap.fiori": {
+     "registrationIds": [],
+        "archeType": "transactional"
   }
 }
