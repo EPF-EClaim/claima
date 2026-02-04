@@ -16,108 +16,131 @@
 			columnsXL="2"
 			columnsL="1"
 			columnsM="1" >
-			<f:content>	
-			    <!-- Request Purpose -->
+			<f:content>
 				<Label text="Request Purpose" />
 				<Input value="{request>/purpose}" required="true"/>
-			    <!-- Request Type -->
+
 				<Label text="Request Type" />
-				<Select selectedKey="{request>/type}" required="true">
-					<core:Item key="none" text="" />
-					<core:Item key="travel" text="Travel" />
-					<core:Item key="mobile" text="Mobile Phone Bill" />
-					<core:Item key="event" text="Event" />
-					<core:Item key="reimbursement" text="Reimbursement" />
-					<core:Item key="cash_adv" text="Cash Advance" />
+				<Select selectedKey="{request>/type}" 
+						required="true" 
+						items="{path: 'req_type_list>/types',
+								sorter: { path: 'REQUEST_TYPE_ID', descending: false }}">
+					<items>
+						<core:Item key="{req_type_list>REQUEST_TYPE_ID} {req_type_list>REQUEST_TYPE_DESC}" 
+								text="{req_type_list>REQUEST_TYPE_DESC}" />
+					</items>
 				</Select>
-			    <!-- Cash Advance Type -->
+
 			    <Label text="Cash Advance Type" />
 			    <Select width="100%" 
 						selectedKey="{request>/cashadvtype}" 
-						required="false" 
-						visible="{= ${request>/type} === 'cash_adv'}">
+						required="{= ${request>/type} === 'RT0005 Cash Advance' }"
+						visible="{= ${request>/type} === 'RT0005 Cash Advance' }">
 					<core:Item key="none" text="" />
-					<core:Item key="cat1" text="CAT1" />
+					<core:Item key="Event" text="Event" />
 					<core:Item key="cat2" text="CAT2" />
 					<core:Item key="cat3" text="CAT3" />
 					<core:Item key="cat4" text="CAT4" />
 					<core:Item key="cat5" text="CAT5" />
 				</Select>
-			    <!-- Trip/Report Start Date -->
+
 			    <Label text="Request Start Date"/>
 				<DatePicker
                     id="request_startdate"
-                    displayFormat="dd MMMM yyyy"  
+                    displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
-                    placeholder="dd MMMM yyyy"
-					required="true"
+                    placeholder="dd MMM yyyy"
                     value="{request>/startdate}"
 					textAlign="Begin"
-					visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }"/>
-			    <!-- Trip/Report End Date -->
+					required="{= ${request>/type} === 'RT0001 Travel' || 
+								${request>/type} === 'RT0003 Event'  || 
+								${request>/type} === 'RT0005 Cash Advance' }"
+					visible="{= ${request>/type} === 'RT0001 Travel' || 
+								${request>/type} === 'RT0003 Event'  || 
+								${request>/type} === 'RT0004 Reimbursement'  || 
+								${request>/type} === 'RT0005 Cash Advance' }"/>
+
 				<Label text="Request End Date" />
 				<DatePicker
                     id="request_enddate"
-                    displayFormat="dd MMMM yyyy"  
+                    displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
-                    placeholder="dd MMMM yyyy"
-					required="true"
+                    placeholder="dd MMM yyyy"
                     value="{request>/enddate}"
 					textAlign="Begin"
-					visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }"/>
-			    <!-- Individual/Group -->
+					required="{= ${request>/type} === 'RT0001 Travel' || 
+								${request>/type} === 'RT0003 Event'  || 
+								${request>/type} === 'RT0005 Cash Advance' }"
+					visible="{= ${request>/type} === 'RT0001 Travel' || 
+								${request>/type} === 'RT0003 Event'  || 
+								${request>/type} === 'RT0004 Reimbursement'  || 
+								${request>/type} === 'RT0005 Cash Advance' }"/>
+
 				<Label text="Individual/Group" />
 				<Select width="100%" 
 						required="true" 
 						selectedKey="{request>/grptype}"
-						visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }">
+						visible="{= ${request>/type} === 'RT0001 Travel' || 
+									${request>/type} === 'RT0002 Mobile'  || 
+									${request>/type} === 'RT0003 Event'  || 
+									${request>/type} === 'RT0004 Reimbursement'  || 
+									${request>/type} === 'RT0005 Cash Advance' }">
 					<core:Item key="none" text="" />
 					<core:Item key="individual" text="Individual" />
 					<core:Item key="group" text="Group" />
 				</Select>
-			    <!-- Location -->
+
 			    <Label text="Location" />
 			    <Input 
 					id="request_location"
 					textAlign="Begin"
-					required="true"
 					value="{request>/location}"
-					visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }"/>
-			    <!-- Type of Transportation -->
+					required="{= ${request>/type} === 'RT0001 Travel' || 
+								${request>/type} === 'RT0003 Event'  || 
+								${request>/type} === 'RT0005 Cash Advance' }"
+					visible="{= ${request>/type} === 'RT0001 Travel' || 
+								${request>/type} === 'RT0003 Event'  || 
+								${request>/type} === 'RT0005 Cash Advance' }"/>
+
 			    <Label text="Type of Transportation" />
-			    <Select width="100%" 
-						selectedKey="{request>/transport}" 
-						required="true" 
-						visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }">
-					<core:Item key="none" text="" />
-					<core:Item key="tot1" text="TOT1" />
-					<core:Item key="tot2" text="TOT2" />
-					<core:Item key="tot3" text="TOT3" />
-					<core:Item key="tot4" text="TOT4" />
-					<core:Item key="tot5" text="TOT5" />
-				</Select>
-			    <!-- Event Detail -->
+				<Input 
+					id="req_transport"
+					value="{request>/transport}"
+					required="{= ${request>/type} === 'RT0001 Travel' || 
+								${request>/type} === 'RT0003 Event'  || 
+								${request>/type} === 'RT0005 Cash Advance' }"
+					visible="{= ${request>/type} === 'RT0001 Travel' || 
+								${request>/type} === 'RT0003 Event'  || 
+								${request>/type} === 'RT0005 Cash Advance' }" />
+
 			    <Label text="Event Details" />
 			    <TextArea 
 					id="req_event_detail"
 					textAlign="Begin"
-					required="false"
 					value="{request>/detail}"
-					visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }"/>
-			    <!-- Event Policy -->
+					required="{= ${request>/type} === 'RT0003 Event'  || 
+								${request>/cashadvtype} === 'Event' }"
+					visible="{= ${request>/type} === 'RT0003 Event'  || 
+								${request>/type} === 'RT0005 Cash Advance' }"/>
+								
 			    <Label text="Policy" />
 			    <Input 
 					id="req_policy"
 					textAlign="Begin"
-					required="false"
 					value="{request>/policy}"
-					visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }"/>
-			    <!-- Alternate Cost Center -->
+					required="{= ${request>/type} === 'RT0003 Event'  || 
+								${request>/cashadvtype} === 'Event' }"
+					visible="{= ${request>/type} === 'RT0003 Event'  || 
+								${request>/type} === 'RT0005 Cash Advance' }"/>
+
 			    <Label text="Alternate Cost Center" />
 			    <Select width="100%" 
 						selectedKey="{request>/altcostcenter}" 
 						required="false" 
-						visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }">
+						visible="{= ${request>/type} === 'RT0001 Travel' || 
+									${request>/type} === 'RT0003 Event'  || 
+									${request>/type} === 'RT0004 Reimbursement'  || 
+									${request>/type} === 'RT0005 Cash Advance' }">
 					<core:Item key="none" text="" />
 					<core:Item key="cc1" text="CC1" />
 					<core:Item key="cc2" text="CC2" />
@@ -125,29 +148,41 @@
 					<core:Item key="cc4" text="CC4" />
 					<core:Item key="cc5" text="CC5" />
 				</Select>
-			    <!-- Attachment 1 -->
+
+			    <Label text="Comment" />
+			    <TextArea
+					id="request_comment"
+					textAlign="Begin"
+					required="false"
+					value="{request>/comment}"
+					visible="{= ${request>/type} === 'RT0001 Travel' || 
+								${request>/type} === 'RT0002 Mobile'  || 
+								${request>/type} === 'RT0003 Event'  || 
+								${request>/type} === 'RT0004 Reimbursement'  || 
+								${request>/type} === 'RT0005 Cash Advance' }" />
+
 			    <Label text="Attachment 1" />
 			    <unified:FileUploader
 					id="req_attachment_1"
 					icon="sap-icon://upload"
 					change=".onImportChange"
-					visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }"
+					value="{request>/doc1}"
+					visible="{= ${request>/type} === 'RT0001 Travel' || 
+								${request>/type} === 'RT0002 Mobile'  || 
+								${request>/type} === 'RT0003 Event'  || 
+								${request>/type} === 'RT0004 Reimbursement'  || 
+								${request>/type} === 'RT0005 Cash Advance' }"
 					/>
-			    <!-- Attachment 2 -->
+
 			    <Label text="Attachment 2" />
 			    <unified:FileUploader
 					id="req_attachment_2"
 					icon="sap-icon://upload"
 					change=".onImportChange"
-					visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }"/>
-			    <!-- Comment -->
-			    <Label text="Comments" />
-			    <TextArea
-					id="request_comment"
-					textAlign="Begin"
-					required="true"
-					value="{request>/comment}"
-					visible="{= ${request>/type} === 'travel' || ${request>/type} === 'event' }" />
+					value="{request>/doc2}"
+					visible="{= ${request>/type} === 'RT0003 Event'  || 
+								${request>/type} === 'RT0005 Cash Advance' }"/>
+								
 			</f:content>
         </f:SimpleForm>
 		<HBox id="request_placeholder" alignItems="Center" justifyContent="End" class="sapUiSmallMarginEnd" columnGap="0.5rem">

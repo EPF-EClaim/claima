@@ -27,8 +27,8 @@
 
             <columns>
                 <Column width="2rem"/>
-                <Column><Text text="Claim_Purpose_ID"/></Column>
-                <Column><Text text="Claim_Purpose Desc"/></Column>
+                <Column><Text text="Claim Purpose ID"/></Column>
+                <Column><Text text="Claim Purpose Description"/></Column>
             </columns>
 
             <items>
