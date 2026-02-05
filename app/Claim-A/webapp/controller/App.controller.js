@@ -49,7 +49,7 @@ sap.ui.define([
 				altcostcenter: "",
 				doc1: "",
 				doc2: "",
-				comment: "", 
+				comment: "",
 				eventdetail1: "",
 				eventdetail2: "",
 				eventdetail3: "",
@@ -102,7 +102,7 @@ sap.ui.define([
 
 			activeData.forEach(r => r.edit = false);
 			m.setProperty("/" + tableId, activeData);
-			
+
 			console.log(m.getProperty("/active/data/"));
 			MessageToast.show("Saved");
 		},
@@ -330,7 +330,7 @@ sap.ui.define([
 			}
 
 		},
-		// Start added by Aiman Salim - To show or hide fields based on Claim Item
+		// Start added by Aiman Salim 22/1/2026 - For Create Expense Report.To show or hide fields based on Claim Item
 		onClaimItemChange: function (oEvent) {
 			const sKey = oEvent.getSource().getSelectedKey();
 			//set ids 
@@ -351,11 +351,8 @@ sap.ui.define([
 			oVehicle.setVisible(claimShow);
 
 		},
-		//Start Aiman Salim 22/1/2026 - Comment off
 
-		//For MyExpenseReport view - Upon click, it will move to ExpenseReport detail page. 
-
-
+		//Testing for User ID fetch based on user login
 		_getUserIdFromFLP: function () {
 			try {
 				if (sap.ushell && sap.ushell.Container && sap.ushell.Container.getUser) {
@@ -364,30 +361,17 @@ sap.ui.define([
 			} catch (e) { }
 			return null;
 		},
-
+		//For MyClaimStatus(myexpensereport) on item click. This will fetch data based on row selected and push to detail page
 		onRowPress: async function (oEvent) {
-			/* 					const oItem = oEvent.getParameter("listItem");
-								const oData = oItem.getBindingContext("employee").getObject();
-			
-								const oNextPageModel = new JSONModel(oData);
-								const oNextPage = this.byId("expensereport");
-								oNextPage.setModel(oNextPageModel, "selectedRequest");
-			
-								//Navigate to next page
-								this.byId("pageContainer").to(oNextPage); */
 
-
-			// row context from named model "employee"
 			const oItem = oEvent.getParameter("listItem");
 			const oCtx = oItem && oItem.getBindingContext("employee")
-
 
 			if (!oCtx) {
 				MessageToast.show("No context found on the selected row.");
 				return;
 			}
-
-
+			//Fetch data not available 
 			await oCtx.requestProperty([
 				"EMP_ID",
 				"EMP_NAME",
@@ -396,8 +380,7 @@ sap.ui.define([
 				"ALTERNATE_COST_CENTRE",
 				"AMOUNT",
 				"CLAIM_MAIN_CAT_ID"
-				// ... add more properties if your detail page needs them
-			]); // Will fetch only what's missing from the backend
+			]);
 
 			//const row = oCtx.getObject();
 			const fullEntity = await oCtx.requestObject()
@@ -426,6 +409,7 @@ sap.ui.define([
 			this.byId("pageContainer").to(oDetailPage);
 		},
 
+		//Mapping for fields and database
 		_mapHeaderToCurrent: function (row) {
 			return {
 				id: row.CLAIM_ID,
@@ -448,7 +432,7 @@ sap.ui.define([
 			};
 		},
 
-		//For MyRequestForm view - Upon click, it will move to MyRequestForm detail page. 
+		//For My Pre-Approval (MyRequestForm) view - Upon click, it will move to MyRequestForm detail page. 
 		onRowPressForm: async function (oEvent) {
 			// row context from named model "employee"
 			const oItem = oEvent.getParameter("listItem");
@@ -465,10 +449,6 @@ sap.ui.define([
 			try {
 				this.getView().setBusy(true);
 
-				//await oCtx.requestProperty([]);
-
-
-
 				// Fetch the full entity (remaining props will be resolved as needed)
 				const fullEntity = await oCtx.requestObject();
 
@@ -482,7 +462,7 @@ sap.ui.define([
 					this.getView().setModel(oRequest, "request");
 				}
 				oRequest.setData(mapped);
-				//Added new
+				
 				const sReqId = String(fullEntity.REQUEST_ID || "").trim();
 
 				// Navigate to detail page that consumes the "request" model
@@ -495,24 +475,6 @@ sap.ui.define([
 				oPageContainer.to(oDetailPage);
 
 				this._callRequestFormLoad(oDetailPage, sReqId);
-
-				/* 				// 5) Ask the RequestForm controller to fetch & bind the items
-				
-								let oDetailCtrl = null;
-								if (typeof oDetailPage.getController === "function") {
-									oDetailCtrl = oDetailPage.getController();
-								} else if (typeof oDetailPage.getContent === "function") {
-									const aContent = oDetailPage.getContent() || [];
-									const oInnerView = aContent.find(c => typeof c.getController === "function");
-									if (oInnerView) oDetailCtrl = oInnerView.getController();
-								}
-				
-								if (oDetailCtrl && oDetailCtrl.loadItemsForRequest) {
-									await oDetailCtrl.loadItemsForRequest(sReqId);
-								} else {
-									jQuery.sap.log.warning("RequestForm controller API 'loadItemsForRequest' not found.");
-								} */
-
 
 			} catch (e) {
 				jQuery.sap.log.error("onRowPressForm failed: " + e);
@@ -531,7 +493,7 @@ sap.ui.define([
 						return fmt.format(d);
 					}
 					if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
-						return d; // already "YYYY-MM-DD"
+						return d; 
 					}
 				} catch (e) {/* ignore */ }
 				return d || "";
@@ -540,8 +502,8 @@ sap.ui.define([
 			return {
 				purpose: row.OBJECTIVE_PURPOSE || "",
 				reqid: row.REQUEST_ID || "",
-				startdate: toYMD(row.START_DATE),
-				enddate: toYMD(row.END_DATE),
+				tripstartdate: toYMD(row.START_DATE),
+				tripenddate: toYMD(row.END_DATE),
 				altcostcenter: "",
 				location: row.LOCATION || "",
 				detail: row.REMARK || "",
@@ -580,6 +542,7 @@ sap.ui.define([
 				}
 			}, 0);
 		},
+		// End added by Aiman Salim 22/1/2026 - 05/02/2026
 
 
 		// CLICK CONFIGURATION TABLE CARD
@@ -626,7 +589,7 @@ sap.ui.define([
 
 
 		/* =========================================================
-		 * Mileage dialog (Fragment) — use a dedicated controller
+		 * Mileage dialog (Fragment) — use a dedicated controller - For Google Maps
 		 * ========================================================= */
 
 		// <<< CHANGED: use the new lazy loader instead of openHelloDialog()
@@ -744,7 +707,7 @@ sap.ui.define([
 				altcostcenter: "",
 				doc1: "",
 				doc2: "",
-				comment: "", 
+				comment: "",
 				eventdetail1: "",
 				eventdetail2: "",
 				eventdetail3: "",
@@ -757,7 +720,7 @@ sap.ui.define([
 				totalamt: 0
 			});
 			this._loadReqTypeSelectionData();
-			
+
 
 			if (!this.oDialogFragment) {
 				this.oDialogFragment = await Fragment.load({
@@ -842,10 +805,11 @@ sap.ui.define([
 			// 	message = "End Date cannot be earlier than begin date";
 			// }
 
-			
+
 			// value validation
 			if (okcode === false) {
-				MessageToast.show(message);} 
+				MessageToast.show(message);
+			}
 			else {
 				this.createRequestHeader(oInputData, oReqModel);
 			};
@@ -853,35 +817,35 @@ sap.ui.define([
 
 		// load request type data
 		_loadReqTypeSelectionData: function () {
-            var oView = this.getView();
-            var oJSONModel = new JSONModel();
-			
+			var oView = this.getView();
+			var oJSONModel = new JSONModel();
+
 			// Safely get the base service URL from manifest
 			var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
-            var sServiceUrl = sBaseUri + "/ZREQUEST_TYPE"; 
+			var sServiceUrl = sBaseUri + "/ZREQUEST_TYPE";
 
-            // Fetch data from CAP OData service
-            fetch(sServiceUrl)
-                .then(function (response) {
-                    if (!response.ok) {
-                        throw new Error("Network response was not ok");
-                    }
-                    return response.json();
-                })
-                .then(function (data) {
+			// Fetch data from CAP OData service
+			fetch(sServiceUrl)
+				.then(function (response) {
+					if (!response.ok) {
+						throw new Error("Network response was not ok");
+					}
+					return response.json();
+				})
+				.then(function (data) {
 					const aTypes = data.value || data;
 					const aFiltered = aTypes.filter(item => item.STATUS === "ACTIVE");
 					oJSONModel.setData({ types: aFiltered });
-                    oView.setModel(oJSONModel, "req_type_list");
-                    // MessageToast.show("Data loaded successfully");
-                })
-                .catch(function (error) {
-                    console.error("Error fetching CDS data:", error);
-                    // MessageToast.show("Failed to load data", error);
-                });
-        },
+					oView.setModel(oJSONModel, "req_type_list");
+					// MessageToast.show("Data loaded successfully");
+				})
+				.catch(function (error) {
+					console.error("Error fetching CDS data:", error);
+					// MessageToast.show("Failed to load data", error);
+				});
+		},
 
-		createRequestHeader:  function (oInputData, oReqModel) {
+		createRequestHeader: function (oInputData, oReqModel) {
 			this.getCurrentReqNumber().then((result) => {
 				if (result) {
 					oReqModel.setProperty("/reqid", result.reqNo);
@@ -926,7 +890,7 @@ sap.ui.define([
 					// 		MessageToast.show(res.error.code, res.error.message);
 					// 	};
 					// });
-					
+
 					this.oDialogFragment.close();
 					this.byId("pageContainer").to(this.getView().byId('new_request'));
 				};
@@ -975,14 +939,14 @@ sap.ui.define([
 
 			try {
 				const res = await fetch(sServiceUrl, {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ CURRENT: String(nextNumber) })
+					method: "PATCH",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ CURRENT: String(nextNumber) })
 				});
 
 				if (!res.ok) {
-				const errText = await res.text().catch(() => "");
-				throw new Error(`PATCH failed ${res.status} ${res.statusText}: ${errText}`);
+					const errText = await res.text().catch(() => "");
+					throw new Error(`PATCH failed ${res.status} ${res.statusText}: ${errText}`);
 				}
 
 				// PATCH often returns 204
@@ -991,7 +955,7 @@ sap.ui.define([
 				// If the server returns JSON entity
 				const contentType = res.headers.get("content-type") || "";
 				if (contentType.includes("application/json")) {
-				return await res.json();
+					return await res.json();
 				}
 				return await res.text(); // fallback
 			} catch (e) {

@@ -9,7 +9,7 @@ sap.ui.define([
 	"sap/ui/export/Spreadsheet",
 	"sap/ui/core/BusyIndicator"
 
-], (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, ) => {
+], (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator ) => {
     "use strict";
 
 	return Controller.extend("claima.controller.RequestForm", {
@@ -24,7 +24,7 @@ sap.ui.define([
 				control : [
 					{view: "list"}
 				],
-				req_item_rows : [
+				/* req_item_rows : [
 					{claim_type: "Testing Claim Type 01", est_amount: 10100, currency_code: "MYR", est_no_of_participant: 10},
 					{claim_type: "Testing Claim Type 02", est_amount: 100670, currency_code: "MYR", est_no_of_participant: 10},
 					{claim_type: "Testing Claim Type 03", est_amount: 100230, currency_code: "MYR", est_no_of_participant: 10},
@@ -35,7 +35,7 @@ sap.ui.define([
 					{claim_type: "Testing Claim Type 08", est_amount: 1000, currency_code: "MYR", est_no_of_participant: 10},
 					{claim_type: "Testing Claim Type 09", est_amount: 500, currency_code: "MYR", est_no_of_participant: 10},
 					{claim_type: "Testing Claim Type 10", est_amount: 10000, currency_code: "MYR", est_no_of_participant: 10}
-				],
+				], */
 				participant : [
                     {
                         participant_name: "",
@@ -769,7 +769,7 @@ sap.ui.define([
 
 		},
 
-		//Aiman Salim - Added to Bind Item;
+		//Aiman Salim 5/02/2026 Start of insert- Added to fetch data and bind item;
 		loadItemsForRequest: async function (sReqId) {
 			if (!sReqId) {
 				MessageToast.show("Missing Request ID.");
@@ -831,10 +831,12 @@ sap.ui.define([
 			return aEntities.map((e) => ({
 				request_id: e.REQUEST_ID || "",
 				claim_type: e.CLAIM_TYPE_ITEM_ID || "",
+				claim_type_item: e.CLAIM_TYPE_ITEM_ID || "",
 				est_amount: Number(e.AMOUNT) || "",
 				curenncy_code: "MYR",
 				/* est_no_of_participant: e.AMOUNT ||"", */
 			}));
 		},
+		//Aiman Salim 5/02/2026 End of insert- Added to fetch data and bind item;
 	});
 });
