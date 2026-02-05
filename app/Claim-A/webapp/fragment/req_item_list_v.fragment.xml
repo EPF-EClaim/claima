@@ -17,7 +17,7 @@
     xmlns:ShellBar="sap.f.ShellBar"
     xmlns:layout="sap.ui.layout">
     <VBox
-        id="request_item_list_fragment" 
+        id="request_item_list_v_fragment" 
         backgroundDesign="Solid"
         class="roundedBox sapUiSmallMargin"
         rowGap="1rem">
@@ -27,19 +27,19 @@
                 style="Clear">
                 <m:Title text="{i18n>req_form_detail_title} ({view>/totalCount})" titleStyle="H3" />
                 <m:ToolbarSpacer />
-                <m:Button text="{i18n>req_b_create_item}"   type="Emphasized"   icon="sap-icon://add"       press=".onPressAddItem"></m:Button>
-                <m:Button text="{i18n>req_b_edit}"          type="Default"      press=".onSelectEdit" />
-                <m:Button text="{i18n>req_b_delete}"        type="Default"      press=".onRowDeleteReqItem" />
+                <m:Button text="{i18n>req_b_create_item}"   type="Emphasized"   icon="sap-icon://add"       press=".onPressAddItem" enabled="false"></m:Button>
+                <m:Button text="{i18n>req_b_edit}"          type="Default"      press=".onSelectEdit" enabled="false" />
+                <m:Button text="{i18n>req_b_delete}"        type="Default"      press=".onRowDeleteReqItem" enabled="false" />
             </OverflowToolbar>
             <VBox rowGap="1rem">
                 <table:Table 
                     id="req_item_table"
                     rows="{/req_item_rows}"
                     columnHeaderHeight="3rem"
-                    selectionMode="MultiToggle"
                     ariaLabelledBy="title"
                     width="auto"
-                    rowActionCount="2">
+                    selectionMode="None"
+                    rowActionCount="1">
                     <table:Column  width="25rem">
                         <m:Label text="{i18n>req_i_claim_type}"></m:Label>
                         <table:template>
@@ -67,8 +67,6 @@
                     <table:rowActionTemplate>
                         <table:RowAction> 
                             <table:items>
-                                <!-- <table:RowActionItem icon="sap-icon://edit" text="{i18n>req_b_edit}"        press=".onSelectEdit"/> -->
-                                <table:RowActionItem type="Delete"          press=".onRowDeleteReqItem"/>
                                 <table:RowActionItem type="Navigation"      press=".onSelectEdit"/>
                             </table:items>
                         </table:RowAction>
