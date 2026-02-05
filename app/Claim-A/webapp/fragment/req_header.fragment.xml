@@ -1,4 +1,4 @@
-<core:FragmentDefinition
+<core:FragmentDefinition xmlns:unified="sap.ui.unified"
     xmlns="sap.m"
     xmlns:form="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
@@ -12,7 +12,7 @@
         <OverflowToolbar height="3rem">
             <Title text="{i18n>req_form_header_title}" titleStyle="H3"/>
             <ToolbarSpacer />
-            <Button type="Default" icon="sap-icon://print" />
+            <!-- <Button type="Default" icon="sap-icon://print" /> -->
         </OverflowToolbar>
         <form:Form 
             id="req_header1"
@@ -32,14 +32,24 @@
                                 <Text text="{request>/reqid}" />
                             </form:fields>
                         </form:FormElement>
-                        <form:FormElement label="{i18n>req_start_date}">
+                        <form:FormElement label="{i18n>req_tripstartdate}">
                             <form:fields>
-                                <Text text="{request>/startdate}" />
+                                <Text text="{request>/tripstartdate}" />
                             </form:fields>
                         </form:FormElement>
-                        <form:FormElement label="{i18n>req_end_date}">
+                        <form:FormElement label="{i18n>req_tripenddate}">
                             <form:fields>
-                                <Text text="{request>/enddate}" />
+                                <Text text="{request>/tripenddate}" />
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_eventstartdate}">
+                            <form:fields>
+                                <Text text="{request>/eventstartdate}" />
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_eventenddate}">
+                            <form:fields>
+                                <Text text="{request>/eventenddate}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_location}">
@@ -47,14 +57,14 @@
                                 <Text text="{request>/location}" />
                             </form:fields>
                         </form:FormElement>
-                        <form:FormElement label="{i18n>req_details}">
-                            <form:fields>
-                                <Text text="{request>/detail}" />
-                            </form:fields>
-                        </form:FormElement>
                         <form:FormElement label="{i18n>req_grptype}">
                             <form:fields>
                                 <Text text="{request>/grptype}" />
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_transport}">
+                            <form:fields>
+                                <Text text="{request>/transport}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_status}">
@@ -72,24 +82,24 @@
                                 <Text text="{request>/altcostcenter}" />
                             </form:fields>
                         </form:FormElement>
-                        <form:FormElement label="{i18n>req_caa}" visible="{= ${request>/type} === 'cash_adv'}">
+                        <form:FormElement label="{i18n>req_caa}">
                             <form:fields>
-                                <Text text="0.00" textAlign="End"/>
+                                <Text text="{request>/cashadvamt}" ></Text>
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_amt}">
                             <form:fields>
-                                <Text text="0.00" textAlign="End"/>
+                                <Text text="{request>/reqamt}" ></Text>
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_total_amt}">
                             <form:fields>
-                                <Text text="0.00" textAlign="End"/>
+                                <Text text="{request>/totalamt}" ></Text>
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_rtype}">
                             <form:fields>
-                                <Text text="{request>/type}" />
+                                <Text text="{request>/reqtype}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_comment}">
@@ -97,14 +107,14 @@
                                 <Text text="{request>/comment}"/>
                             </form:fields>
                         </form:FormElement>
-                        <form:FormElement label="{i18n>req_cashadvtype}" visible="{= ${request>/type} === 'cash_adv'}">
+                        <form:FormElement label="{i18n>req_attach1}">
                             <form:fields>
-                                <Text text="{request>/cashadvtype}"/>
+                                <Text text="{request>/doc1}"/>
                             </form:fields>
                         </form:FormElement>
-                        <form:FormElement label="{i18n>req_policy}">
+                        <form:FormElement label="{i18n>req_attach2}">
                             <form:fields>
-                                <Text text="{request>/policy}"/>
+                                <Text text="{request>/doc2}"/>
                             </form:fields>
                         </form:FormElement>
                     </form:formElements>
