@@ -5,9 +5,10 @@ sap.ui.define([
     "sap/m/Dialog",
 	"sap/m/Button",
 	"sap/m/Label", 
-	"sap/ui/core/Fragment"
+	"sap/ui/core/Fragment",
+  	"sap/ui/export/Spreadsheet",
 
-], (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment) => {
+], (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet) => {
     "use strict";
 
     return Controller.extend("claima.controller.RequestForm", {
@@ -17,30 +18,21 @@ sap.ui.define([
 			this._formFragments = {};
 			this._showFormFragment();
 
-			// check view for footer button
-			const oViewModel = new JSONModel({
-                    currentPageId: "req_item_table_view" // matches your initialPage
-                });
-            this.getView().setModel(oViewModel, "view");
-
-            // // Keep model in sync when user navigates
-            // const oNav = this.byId("req_form_item_container");
-            // oNav.attachAfterNavigate(this._onAfterNavigate, this);
-
-			// // Item Table
+			// Item Table
 			const oModel = new JSONModel({
-				control : [
-					{view: "list"}
-				],
+				control : 
+					{view: "view"}
+				,
 				req_item_rows : [
-					{claim_type: "Testing Claim Type 01", est_amount: 10100, currency_code: "MYR", est_no_of_participant: 10},
-					{claim_type: "Testing Claim Type 02", est_amount: 100670, currency_code: "MYR", est_no_of_participant: 10},
-					{claim_type: "Testing Claim Type 03", est_amount: 100230, currency_code: "MYR", est_no_of_participant: 10},
-					{claim_type: "Testing Claim Type 04", est_amount: 1000, currency_code: "MYR", est_no_of_participant: 10},
-					{claim_type: "Testing Claim Type 05", est_amount: 10300, currency_code: "MYR", est_no_of_participant: 10}
+					{claim_type: "Testing Claim Type 01", claim_type_item: "CTI01", est_amount: 10100, currency_code: "MYR", est_no_of_participant: 10},
+					{claim_type: "Testing Claim Type 02", claim_type_item: "CTI01", est_amount: 100670, currency_code: "MYR", est_no_of_participant: 10},
+					{claim_type: "Testing Claim Type 03", claim_type_item: "CTI01", est_amount: 100230, currency_code: "MYR", est_no_of_participant: 10},
+					{claim_type: "Testing Claim Type 04", claim_type_item: "CTI01", est_amount: 1000, currency_code: "MYR", est_no_of_participant: 10},
+					{claim_type: "Testing Claim Type 05", claim_type_item: "CTI01", est_amount: 10300, currency_code: "MYR", est_no_of_participant: 10}
 				],
 				participant : [
                     {
+						req_item_row: 0,
                         participant_name: "",
                         emp_cost_center: "",
                         alloc_amount: ""
@@ -61,6 +53,9 @@ sap.ui.define([
 
         }, 
 
+		// ==================================================
+		// Initiate Fragment in the view
+
 		_getFormFragment: function (sFragmentName) {
 			var pFormFragment = this._formFragments[sFragmentName],
 				oView = this.getView();
@@ -80,23 +75,17 @@ sap.ui.define([
 		_showFormFragment : function () {
 			var oPage = this.byId("request_form");
 
-
 			oPage.removeAllContent();
 			this._getFormFragment("req_header").then(function(oVBox){
 				oPage.insertContent(oVBox, 0);
 			});
-			this._getFormFragment("req_item_list").then(function(oVBox){
+			this._getFormFragment("req_item_list_v").then(function(oVBox){
 				oPage.insertContent(oVBox, 1);
 			});
 		},
-
-        _onAfterNavigate: function (oEvent) {
-            const oTo = oEvent.getParameter("to");
-            const test = this.getView().getLocalId(oTo.getId());
-            if (oTo) {
-                this.getView().getModel("view").setProperty("/currentPageId", this.getView().getLocalId(oTo.getId()));
-            }
-        }, 
+		
+		// ==================================================
+		// Footer Button logic
  
         onBack: function () {
 			if (!this.oBackDialog) {
@@ -215,10 +204,11 @@ sap.ui.define([
 		},
 		
 		onSaveItem: function () {
-			MessageToast.show("save item")	
+			this.onSave();
 		},
 
-		// Item List Logics Section
+		// ==================================================
+		// Item List Button Logic
 
 		onPressAddItem: async function () {
 			// 1) Resolve the Page
@@ -256,12 +246,11 @@ sap.ui.define([
 			}
 
 			const oModel = this.getView().getModel();
-			oModel.setProperty("/control/0/view", 'create');
+			oModel.setProperty("/control/view", 'create');
 
 			
 		},
 
-		// Delete table row item
 		onRowDeleteReqItem: function (oEvent) {
             const oTable   = this.byId('req_item_table');
             const oBinding = oTable.getBinding("req_item_rows");
@@ -323,30 +312,68 @@ sap.ui.define([
         },
 
         onDeleteSelectedReqItem: function () {
-            
             this.onRowDelete({ getSource: function () { return null; } });
         }, 
 
-		onSelectEdit: function () {
-			var oScroll = this.getView().getParent();          // should be the ScrollContainer
-			var oMaybeNav = oScroll && oScroll.getParent && oScroll.getParent(); // NavContainer
-
-			if (oMaybeNav && typeof oMaybeNav.to === "function") {
-				// Get the sibling page (req_create_item_view) **inside the same NavContainer**
-				var aPages = oMaybeNav.getPages ? oMaybeNav.getPages() : oMaybeNav.getAggregation("pages");
-				var oCreatePage = aPages && aPages.find(function (p) {
-				return p.getId && p.getId().endsWith("req_create_item_view");
-				});
-
-				if (oCreatePage) {
-				oMaybeNav.to(oCreatePage, "slide");
-				return;
+		onCancel: async function () {
+			
+			const oPage = this.byId("request_form");
+			
+            // 2) Remove the existing list fragment if present
+			//    Make sure the root control inside the fragment has id="--request_item_list_fragment"
+			const oListRoot = this.byId("request_create_item_fragment");
+			if (oListRoot) {
+				// Remove from its immediate parent aggregation
+				const oParent = oListRoot.getParent();
+				if (oParent && typeof oParent.removeContent === "function") {
+				oParent.removeContent(oListRoot);
+				} else if (oParent && typeof oParent.removeItem === "function") {
+				oParent.removeItem(oListRoot);
 				}
+				oListRoot.destroy(); // free resources
 			}
 
-		}, 
+			// 3) Insert the create-item fragment deterministically
+			try {
+				const oVBox = await this._getFormFragment("req_item_list"); // returns a control
+
+				// Put it right after the header (index 1), or at the end if not enough content
+				const iIndex = Math.min(1, oPage.getContent().length);
+				oPage.insertContent(oVBox, iIndex);
+			} catch (e) {
+				// if _getFormFragment rejects
+				sap.m.MessageToast.show("Could not open Create Item form.");
+				return;
+			}
+
+			const oModel = this.getView().getModel();
+			oModel.setProperty("/control/view", 'list');
+        },
+
+        onSave: function () {
+
+			const oModel = this.getView().getModel(); // JSONModel
+			const aRows  = oModel.getProperty("/req_item_rows") || [];
+
+			aRows.push({
+				claim_type: "Testing Claim Type",
+				est_amount: 100,
+				currency_code: "MYR",
+				est_no_of_participant: 100
+			});
+
+			oModel.setProperty("/req_item_rows", aRows);
+
+            this.onCancel();
+        },
+
+        onSaveAddAnother: function () {
+			this.onSave();
+        },
         
+		// ==================================================
         // Count Request Item
+
 		onAfterRendering: function () {
 			const oTable = this.byId("req_item_table"); // sap.ui.table.Table
 			if (!oTable) return;
@@ -459,9 +486,6 @@ sap.ui.define([
 			// this.byId("txtReqItemSelected").setText(aSel.length + " selected");
 		},
 
-		/**
-		 * Always detach to avoid leaks (recommended)
-		 */
 		onExit: function () {
 			const oRef = this._reqItem;
 			if (!oRef) return;
@@ -531,7 +555,6 @@ sap.ui.define([
             oVM.setProperty("/selectedCount", aSel.length);
         },
 
-        // (Optional) Clean up if the view is destroyed
         onExit: function () {
             const oTable = this.byId && this.byId("req_item_table");
             if (oTable && this._countsAttached) {
@@ -546,7 +569,8 @@ sap.ui.define([
             this._countsAttached = false;
         },
 
-		//  Create Item Logic Section
+		// ==================================================
+		//  Append new row for participant list
 
 		appendNewRow: function (oEvent) {
             const sVal = (oEvent.getParameter("value") || "").trim();
@@ -559,6 +583,9 @@ sap.ui.define([
             const oModel = oCtx.getModel(); 
             const aRows  = oModel.getProperty("/participant") || [];
 
+			const aHeader = oCtx.getModel("request");
+			const aGrpType = aHeader.getProperty("/grptype");
+
             if (aRows[iIndex]) {
                 aRows[iIndex].participant_name = sVal;
             }
@@ -568,6 +595,7 @@ sap.ui.define([
             const bIsLast = iIndex === aRows.length - 1;
             if (bIsLast && sVal) {
                 aRows.push({
+					req_item_row: 0,
                     participant_name: "",
                     emp_cost_center: "",
                     alloc_amount: "" 
@@ -587,10 +615,9 @@ sap.ui.define([
             }
             // If list became empty (shouldn't happen), ensure at least one blank row
             if (aRows.length === 0) {
-                aRows.push({ participant_name: "", emp_cost_center: "", alloc_amount: "" });
+                aRows.push({ req_item_row: 0, participant_name: "", emp_cost_center: "", alloc_amount: "" });
             }
         },
-
         
         _isEmptyRow: function (oRow) {
             if (!oRow) return true;
@@ -599,6 +626,9 @@ sap.ui.define([
             const allocEmpty = !oRow.alloc_amount || String(oRow.alloc_amount).trim() === "";
             return nameEmpty && costEmpty && allocEmpty;
         },
+
+		// ==================================================
+		// Delete Participant Row Logic
 
 		onRowDeleteParticipant: function (oEvent) {
             const oTable   = this.byId("req_participant_table");
@@ -665,9 +695,9 @@ sap.ui.define([
             // Optional: keep one empty row to support your auto-append UX
             if (aRows.length === 0) {
                 aRows.push({
-                participant_name: "",
-                emp_cost_center: "",
-                alloc_amount: ""
+					participant_name: "",
+					emp_cost_center: "",
+					alloc_amount: ""
                 });
             }
 
@@ -675,64 +705,60 @@ sap.ui.define([
             oTable.clearSelection();
         },
 
-		onCancel: async function () {
-			
-			const oPage = this.byId("request_form");
-			
-            // 2) Remove the existing list fragment if present
-			//    Make sure the root control inside the fragment has id="--request_item_list_fragment"
-			const oListRoot = this.byId("request_create_item_fragment");
-			if (oListRoot) {
-				// Remove from its immediate parent aggregation
-				const oParent = oListRoot.getParent();
-				if (oParent && typeof oParent.removeContent === "function") {
-				oParent.removeContent(oListRoot);
-				} else if (oParent && typeof oParent.removeItem === "function") {
-				oParent.removeItem(oListRoot);
+		// ==================================================
+		// Excel Template Logic
+
+		onDownloadTemplate: function () {
+			// Define 3 columns
+			const aColumns = [
+				{
+					label: "Participant",
+					property: "Participant",
+					type: "string"
+				},
+				{
+					label: "Cost Center",
+					property: "CostCenter",
+					type: "string"
+				},
+				{
+					label: "Allocated Amount (MYR)",
+					property: "Amount",
+					type: "number", 
+					scale: 2,
+					delimiter: true
 				}
-				oListRoot.destroy(); // free resources
-			}
+			];
 
-			// 3) Insert the create-item fragment deterministically
-			try {
-				const oVBox = await this._getFormFragment("req_item_list"); // returns a control
+			// Create an empty data set (just headers). If you want N empty rows, provide empty objects.
+			const iEmptyRows = 10; // change to e.g., 10 for 10 blank rows
+			const aData = Array.from({ length: iEmptyRows }, () => ({
+				Participant: "",
+				CostCenter: "",
+				Amount: null
+			}));
 
-				// Put it right after the header (index 1), or at the end if not enough content
-				const iIndex = Math.min(1, oPage.getContent().length);
-				oPage.insertContent(oVBox, iIndex);
-			} catch (e) {
-				// if _getFormFragment rejects
-				sap.m.MessageToast.show("Could not open Create Item form.");
-				return;
-			}
+			const oModel = new JSONModel(aData);
 
-			const oModel = this.getView().getModel();
-			oModel.setProperty("/control/0/view", 'list');
-        },
+			const oSettings = {
+				workbook: {
+				columns: aColumns,
+				context: {
+					sheetName: "Template"
+				}
+				},
+				dataSource: oModel.getData(),
+				fileName: "ClaimTemplate.xlsx",
+				worker: true // use a Web Worker for large exports
+			};
 
-        onSave: function () {
-            // ... validate & persist your item ...
-            // Then navigate back:
-
-			const oModel = this.getView().getModel(); // JSONModel
-			const aRows  = oModel.getProperty("/req_item_rows") || [];
-
-			aRows.push({
-				claim_type: "Testing Claim Type",
-				est_amount: 100,
-				currency_code: "MYR",
-				est_no_of_participant: 100
+			const oSheet = new Spreadsheet(oSettings);
+			oSheet.build()
+				.then(() => oSheet.destroy())
+				.catch((err) => {
+				// Optional: handle errors
+				sap.m.MessageBox.error("Export failed: " + err);
 			});
-
-			oModel.setProperty("/req_item_rows", aRows);
-
-            this.onCancel();
-        },
-
-        onSaveAddAnother: function () {
-            // Logic to create new item in request item list
-           
-        },
+		}
     });
-
 });

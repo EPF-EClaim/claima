@@ -38,22 +38,28 @@ sap.ui.define([
 			// oRequestModel
 			const oRequestModel = new JSONModel({
 				purpose: "",
-				reqid: "",
-				type: "",
-				reqstatus: "",
-				startdate: "",
-				enddate: "",
-				grptype: "",
+				reqtype: "travel",
+				tripstartdate: "",
+				tripenddate: "",
+				eventstartdate: "",
+				eventenddate: "",
+				grptype: "individual",
 				location: "",
 				transport: "",
-				detail: "",
-				policy: "",
-				costcenter: "",
 				altcostcenter: "",
-				cashadvtype: "",
-				comment: "", 
 				doc1: "",
-				doc2: ""
+				doc2: "",
+				comment: "", 
+				eventdetail1: "",
+				eventdetail2: "",
+				eventdetail3: "",
+				eventdetail4: "",
+				reqid: "",
+				reqstatus: "",
+				costcenter: "",
+				cashadvamt: 0,
+				reqamt: 0,
+				totalamt: 0
 			});
 			this.getView().setModel(oRequestModel, "request");
 
@@ -682,22 +688,28 @@ sap.ui.define([
 		onClickMyRequest: async function () {
 			this.getView().getModel("request").setData({
 				purpose: "",
-				reqid: "",
-				type: "",
-				reqstatus: "",
-				startdate: "",
-				enddate: "",
-				grptype: "",
+				reqtype: "travel",
+				tripstartdate: "",
+				tripenddate: "",
+				eventstartdate: "",
+				eventenddate: "",
+				grptype: "individual",
 				location: "",
 				transport: "",
-				detail: "",
-				policy: "",
-				costcenter: "",
 				altcostcenter: "",
-				cashadvtype: "",
-				comment: "",
 				doc1: "",
-				doc2: ""
+				doc2: "",
+				comment: "", 
+				eventdetail1: "",
+				eventdetail2: "",
+				eventdetail3: "",
+				eventdetail4: "",
+				reqid: "",
+				reqstatus: "",
+				costcenter: "",
+				cashadvamt: 0,
+				reqamt: 0,
+				totalamt: 0
 			});
 			this._loadReqTypeSelectionData();
 			
@@ -727,74 +739,63 @@ sap.ui.define([
 			var message = '';
 
 			// Check mandatory field based on Request Type
-			switch (oInputData.type) {
-				case 'RT0001 Travel':
-					if (oInputData.purpose == '' || oInputData.type == '' || 
-						oInputData.startdate == '' || oInputData.enddate == '' ||
-						oInputData.grptype == '' || oInputData.location == '' ||
-						oInputData.transport == '') {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-					};
-					break;
-				case 'RT0002 Mobile Phone Bill':
-					if (oInputData.purpose == '' || oInputData.type == '' || 
-						oInputData.grptype == '' || oInputData.doc1 == '') {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-						break;
-					};
-					break;
-				case 'RT0003 Event':
-					if (oInputData.purpose == '' || oInputData.type == '' || 
-						oInputData.startdate == '' || oInputData.enddate == '' ||
-						oInputData.grptype == '' || oInputData.location == '' ||
-						oInputData.transport == ''|| oInputData.detail == '' || 
-						oInputData.policy == '') {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-						break;
-					};
-					break;
-				case 'RT0004 Reimbursement':
-					if (oInputData.purpose == '' || oInputData.type == '' || 
-						oInputData.grptype == '') {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-					};
-					break;
-				case 'RT0005 Cash Advance':
-					if (oInputData.purpose == '' || oInputData.type == '' || 
-						oInputData.cashadvtype == '' || oInputData.startdate == '' || 
-						oInputData.enddate == '' || oInputData.grptype == '' || 
-						oInputData.location == '' || oInputData.transport == '') {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-					};
-					if (oInputData.type == 'Event' && ( oInputData.detail == '' || 
-						oInputData.policy == '' )) {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-					};
-					break;
-				default:
-					if (oInputData.purpose == '' || 
-						oInputData.type == '') {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-					} 
-			}
+			// switch (oInputData.type) {
+			// 	case 'RT0001 Travel':
+			// 		if (oInputData.purpose == '' || oInputData.reqtype == '' || 
+			// 			oInputData.tripstartdate == '' || oInputData.tripenddate == '' ||
+			// 			oInputData.eventstartdate == '' || oInputData.eventenddate == '' ||
+			// 			oInputData.grptype == '' || oInputData.location == '' ||
+			// 			oInputData.transport == '' || oInputData.comment == '' ) {
+			// 			okcode = false;
+			// 			message = 'Please enter all mandatory details';
+			// 		};
+			// 		break;
+			// 	case 'RT0002 Mobile':
+			// 		if (oInputData.purpose == '' || oInputData.reqtype == '' || 
+			// 			oInputData.grptype == '' || oInputData.comment == '' ) {
+			// 			okcode = false;
+			// 			message = 'Please enter all mandatory details';
+			// 			break;
+			// 		};
+			// 		break;
+			// 	case 'RT0003 Event':
+			// 		if (oInputData.purpose == '' || oInputData.reqtype == '' || 
+			// 			oInputData.eventstartdate == '' || oInputData.eventenddate == '' ||
+			// 			oInputData.grptype == '' || oInputData.location == '' ||
+			// 			oInputData.comment == '' || oInputData.eventdetail1 == '' || 
+			// 			oInputData.eventdetail2 == '' || oInputData.eventdetail3 == '' || 
+			// 			oInputData.eventdetail4 == '') {
+			// 			okcode = false;
+			// 			message = 'Please enter all mandatory details';
+			// 			break;
+			// 		};
+			// 		break;
+			// 	case 'RT0004 Reimbursement':
+			// 		if (oInputData.purpose == '' || oInputData.reqtype == '' || 
+			// 			oInputData.tripstartdate == '' || oInputData.tripenddate == '' ||
+			// 			oInputData.grptype == '' || oInputData.comment == '' ) {
+			// 			okcode = false;
+			// 			message = 'Please enter all mandatory details';
+			// 		};
+			// 		break;
+			// 	default:
+			// 		if (oInputData.purpose == '' || 
+			// 			oInputData.type == '') {
+			// 			okcode = false;
+			// 			message = 'Please enter all mandatory details';
+			// 		} 
+			// }
 
-			// Check attachment 1 (mandatory)
-			if (okcode == true && oInputData.doc1 == '') {
-				okcode = false;
-				message = 'Please upload Attachment 1';
-			};
+			// // Check attachment 1 (mandatory)
+			// if (okcode == true && oInputData.doc1 == '') {
+			// 	okcode = false;
+			// 	message = 'Please upload Attachment 1';
+			// };
 
-			if (okcode == true && oInputData.enddate < oInputData.startdate) {
-				okcode = false;
-				message = "End Date cannot be earlier than begin date";
-			}
+			// if (okcode == true && oInputData.enddate < oInputData.startdate) {
+			// 	okcode = false;
+			// 	message = "End Date cannot be earlier than begin date";
+			// }
 
 			
 			// value validation
@@ -842,44 +843,47 @@ sap.ui.define([
 					oReqModel.setProperty("/reqstatus", "Draft")
 
 					// Write to Database Table ZREQUEST_HEADER
-					var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
-					var sServiceUrl = sBaseUri + "/ZREQUEST_HEADER"; 
+					// var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
+					// var sServiceUrl = sBaseUri + "/ZREQUEST_HEADER"; 
 
-					fetch(sServiceUrl, 
-						{method: "POST", headers: {"Content-Type": "application/json"},
-						body: JSON.stringify({
-							EMP_ID                 : "000001",
-							REQUEST_ID             : oInputData.reqid,
-							REQUEST_TYPE_ID        : oInputData.type,
-							REFERENCE_NUMBER       : "100236",
-							OBJECTIVE_PURPOSE      : oInputData.purpose,
-							START_DATE             : oInputData.startdate,
-							END_DATE               : oInputData.enddate,
-							REMARK                 : oInputData.comment,
-							CLAIM_TYPE_ID          : "",
-							REQUEST_GROUP_ID       : oInputData.grptype,
-							ALTERNATE_COST_CENTRE  : oInputData.altcostcenter,
-							AMOUNT                 : "10000",
-							ATTACHMENT             : oInputData.doc1,
-							LOCATION               : oInputData.location,
-							TYPE_OF_TRANSPORTATION : oInputData.transport,
-							ZCLAIM_TYPE   		   : "",
-							ZREQUEST_ITEM 		   : "",
-							ZREQUEST_TYPE 		   : "",
-							ZREQUEST_GRP  		   : "",
-							ZCLAIM_HEADER 		   : ""
-						}) 
-					})
-					.then(r => r.json())
-					.then((res) => {
-						if (!res.error) {
-							this.oDialogFragment.close();
-							this.byId("pageContainer").to(this.getView().byId('new_request'));
-							this.updateCurrentReqNumber(result.current);
-						} else {
-							MessageToast.show(res.error.code, res.error.message);
-						};
-					});
+					// fetch(sServiceUrl, 
+					// 	{method: "POST", headers: {"Content-Type": "application/json"},
+					// 	body: JSON.stringify({
+					// 		EMP_ID                 : "000001",
+					// 		REQUEST_ID             : oInputData.reqid,
+					// 		REQUEST_TYPE_ID        : oInputData.reqtype,
+					// 		REFERENCE_NUMBER       : "100236",
+					// 		OBJECTIVE_PURPOSE      : oInputData.purpose,
+					// 		START_DATE             : oInputData.tripstartdate,
+					// 		END_DATE               : oInputData.tripenddate,
+					// 		REMARK                 : oInputData.comment,
+					// 		CLAIM_TYPE_ID          : "",
+					// 		REQUEST_GROUP_ID       : oInputData.grptype,
+					// 		ALTERNATE_COST_CENTRE  : oInputData.altcostcenter,
+					// 		AMOUNT                 : String(oInputData.totalamt),
+					// 		ATTACHMENT             : oInputData.doc1,
+					// 		LOCATION               : oInputData.location,
+					// 		TYPE_OF_TRANSPORTATION : oInputData.transport,
+					// 		ZCLAIM_TYPE   		   : "",
+					// 		ZREQUEST_ITEM 		   : "",
+					// 		ZREQUEST_TYPE 		   : "",
+					// 		ZREQUEST_GRP  		   : "",
+					// 		ZCLAIM_HEADER 		   : ""
+					// 	}) 
+					// })
+					// .then(r => r.json())
+					// .then((res) => {
+					// 	if (!res.error) {
+					// 		this.updateCurrentReqNumber(result.current);
+					// 		this.oDialogFragment.close();
+					// 		this.byId("pageContainer").to(this.getView().byId('new_request'));
+					// 	} else {
+					// 		MessageToast.show(res.error.code, res.error.message);
+					// 	};
+					// });
+					
+					this.oDialogFragment.close();
+					this.byId("pageContainer").to(this.getView().byId('new_request'));
 				};
 			});
 		},
