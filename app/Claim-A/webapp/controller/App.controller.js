@@ -521,29 +521,8 @@ sap.ui.define([
 
 		// CLICK CONFIGURATION TABLE CARD
 		onOpenConfigTable: function (oEvent) {
-
-			// let tableId = oEvent.getSource().getCustomData()[0].getValue();
-			// let m = this.getView().getModel("configModel");
-
-			// m.setProperty("/active/title", tableId);
-			// m.setProperty("/active/data",
-			// 	JSON.parse(JSON.stringify(m.getProperty("/" + tableId)))
-			// );
-			// var oBinding = this.base.getExtensionAPI();
 			var oRouter = this.getOwnerComponent().getRouter();
-			oRouter.navTo("Configuration");
-			// .getModel().bindList("/ZCLAIM_PURPOSE", null, [], [], []);
-
-			// const oExtensionAPI = this.base.getExtensionAPI();
-			// this.loadFragment({
-			// 	name: "claima.fragment.inputfields", 
-			// 	controller: this, 
-			// 	initialBindingContext: this.getBindingContext()
-			// }).then(function(oFragment){
-			// 	this.getView().addDependent(oFragment);
-			//  });
-
-			// this.loadConfigPage();
+			oRouter.navTo("ZCLAIM_PURPOSE");
 		},
 
 		// LOAD CONFIG DETAIL PAGE

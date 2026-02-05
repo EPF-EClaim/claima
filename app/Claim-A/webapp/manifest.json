@@ -133,10 +133,10 @@
           "target": "TargetDashboard"
         }, 
          {
-          "pattern": "Configuration:?query:",
-          "name": "Configuration",
+          "pattern": "ZCLAIM_PURPOSE",
+          "name": "ZCLAIM_PURPOSE",
           "target": [
-            "Configuration"
+            "ZCLAIM_PURPOSE"
           ]
         }, 
         {
@@ -156,22 +156,43 @@
           "id": "Dashboard",
           "name": "App"
         },
-        "Configuration": {
-          "id": "Configuration",
-          "name": "sap.fe.core.fpm",
+        "ZCLAIM_PURPOSE": {
           "type": "Component",
-          "controlId": "pageContainer",
-          "controlAggregation": "pages",
-          "viewLevel": 2,
+          "id": "ZCLAIM_PURPOSE",
+          "name": "sap.fe.templates.ListReport",
           "options": {
             "settings": {
-              "viewName": "claima.view.Configuration",
-              "viewId": "Configuration",
-              "entitySet": "ZCLAIM_PURPOSE",
-              "contextPath": "/ZCLAIM_PURPOSE", 
-              "multiSelect": true,
-              "inlineDelete": true, 
-              "createMode": "inline"
+              "contextPath": "/ZCLAIM_PURPOSE",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "enableMassEdit": {
+                      "visibleFields": "CLAIM_PURPOSE_ID,CLAIM_PURPOSE_DESC",
+                      "operationGroupingMode": "Isolated"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "CLAIM_PURPOSE_ID,CLAIM_PURPOSE_DESC"
+                    },
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
             }
           }
         }, 
