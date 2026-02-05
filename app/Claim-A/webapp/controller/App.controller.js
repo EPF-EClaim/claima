@@ -521,8 +521,14 @@ sap.ui.define([
 
 		// CLICK CONFIGURATION TABLE CARD
 		onOpenConfigTable: function (oEvent) {
+			var oTableId = oEvent.getParameters().id;	
+			if(oTableId.includes("ZCLAIM_PURPOSE")){
+				var oNavigation = "ZCLAIM_PURPOSE";
+			} else if (oTableId.includes("ZRISK")){
+				oNavigation = "ZRISK";
+			}
 			var oRouter = this.getOwnerComponent().getRouter();
-			oRouter.navTo("ZCLAIM_PURPOSE");
+			oRouter.navTo(oNavigation);
 		},
 
 		// LOAD CONFIG DETAIL PAGE

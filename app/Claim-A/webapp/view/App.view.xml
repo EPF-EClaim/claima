@@ -474,10 +474,10 @@
                                             gap="1rem"
                                         />
                                     </f:layout>
-                                    <!-- <macros:Table id="claimConfig-1" metaPath= "/ZCLAIM_PURPOSE/@com.sap.vocabularies.UI.v1.LineItem" selectionMode="Multi"/> -->
 
                                     <!-- ZCLAIM_PURPOSE -->
                                     <f:Card
+                                        id="ZCLAIM_PURPOSE"
                                         class="sapUiSmallMargin"
                                         width="15rem"
                                         press="onOpenConfigTable">
@@ -496,6 +496,7 @@
 
                                     <!-- Configuration Table 2 -->
                                     <f:Card
+                                        id="ZRISK"
                                         class="sapUiSmallMargin"
                                         width="15rem"
                                         press="onOpenConfigTable"
@@ -503,7 +504,7 @@
                                         <f:customData>
                                             <core:CustomData
                                                 key="id"
-                                                value="ConfigurationTable2"
+                                                value="{i18n>zrisk}"
                                             />
                                         </f:customData>
                                         <f:header>

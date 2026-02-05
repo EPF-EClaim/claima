@@ -138,6 +138,13 @@
           "target": [
             "ZCLAIM_PURPOSE"
           ]
+        },
+        {
+          "pattern": "ZRISK",
+          "name": "ZRISK",
+          "target": [
+            "ZRISK"
+          ]
         }, 
         {
           "pattern": "MainConfiguration",
@@ -196,6 +203,38 @@
             }
           }
         }, 
+        "ZRISK": {
+          "type": "Component",
+          "id": "ZRISK",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZRISK",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
         "MainConfiguration":{
           "id": "MainConfiguration", 
           "name": "MainConfiguration", 
