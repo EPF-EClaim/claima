@@ -201,7 +201,6 @@ sap.ui.define([
 					}
 					break;
 			}
-
 		},
 		// Configuration
 		onClickConfiguration: async function () {
@@ -454,10 +453,10 @@ sap.ui.define([
 			// row context from named model "employee"
 			const oItem = oEvent.getParameter("listItem");
 			const oCtx = oItem && oItem.getBindingContext("employee");
-			const row = oCtx.getObject();
-			const reqid = String(row.REQUEST_ID).trim();
-			console.log("reqid:", reqid);
-			
+			/* 	const row = oCtx.getObject();
+				const reqid = String(row.REQUEST_ID).trim();
+				console.log("reqid:", reqid); */
+
 			if (!oCtx) {
 				sap.m.MessageToast.show("No context found on the selected row.");
 				return;
@@ -483,6 +482,8 @@ sap.ui.define([
 					this.getView().setModel(oRequest, "request");
 				}
 				oRequest.setData(mapped);
+				//Added new
+				const sReqId = String(fullEntity.REQUEST_ID || "").trim();
 
 				// Navigate to detail page that consumes the "request" model
 				const oPageContainer = this.byId("pageContainer");
@@ -492,6 +493,26 @@ sap.ui.define([
 					return;
 				}
 				oPageContainer.to(oDetailPage);
+
+				this._callRequestFormLoad(oDetailPage, sReqId);
+
+				/* 				// 5) Ask the RequestForm controller to fetch & bind the items
+				
+								let oDetailCtrl = null;
+								if (typeof oDetailPage.getController === "function") {
+									oDetailCtrl = oDetailPage.getController();
+								} else if (typeof oDetailPage.getContent === "function") {
+									const aContent = oDetailPage.getContent() || [];
+									const oInnerView = aContent.find(c => typeof c.getController === "function");
+									if (oInnerView) oDetailCtrl = oInnerView.getController();
+								}
+				
+								if (oDetailCtrl && oDetailCtrl.loadItemsForRequest) {
+									await oDetailCtrl.loadItemsForRequest(sReqId);
+								} else {
+									jQuery.sap.log.warning("RequestForm controller API 'loadItemsForRequest' not found.");
+								} */
+
 
 			} catch (e) {
 				jQuery.sap.log.error("onRowPressForm failed: " + e);
@@ -534,6 +555,30 @@ sap.ui.define([
 				// amount        : "0.00",
 				// totalamount   : "0.00"
 			};
+		},
+
+		/**
+ * Call RequestForm.loadItemsForRequest by scanning descendants of the page.
+ * No changes needed in RequestForm.controller.
+ */
+		_callRequestFormLoad: function (oDetailPage, sReqId) {
+			// Defer to allow NavContainer to render the page content
+			setTimeout(function () {
+				// find the first descendant that exposes getController() (typically the inner XMLView)
+				var aViews = (typeof oDetailPage.findAggregatedObjects === "function")
+					? oDetailPage.findAggregatedObjects(true, function (c) {
+						return typeof c.getController === "function";
+					})
+					: [];
+
+				var oCtrl = (aViews && aViews.length) ? aViews[0].getController() : null;
+
+				if (oCtrl && typeof oCtrl.loadItemsForRequest === "function") {
+					oCtrl.loadItemsForRequest(sReqId);
+				} else {
+					jQuery.sap.log.warning("RequestForm controller API 'loadItemsForRequest' not found.");
+				}
+			}, 0);
 		},
 
 
