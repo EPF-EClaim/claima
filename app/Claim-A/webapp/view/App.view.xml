@@ -39,28 +39,28 @@
                     />
                     <tnt:NavigationListItem
                         key="nav_createreport"
-                        text="{i18n>nav_createreport}"
+                        text="{i18n>nav_prerequest}"
                         icon="sap-icon://add"
                         enabled="true"
                         expanded="false"
                     />
                     <tnt:NavigationListItem
                         key="createrequest"
-                        text="{i18n>nav_createrequest}"
+                        text="{i18n>nav_claimsubmission}"
                         icon="sap-icon://sys-add"
                         enabled="true"
                         expanded="false"
                     />
                     <tnt:NavigationListItem
                         key="myreport"
-                        text="{i18n>nav_myreport}"
+                        text="{i18n>nav_preappstatus}"
                         icon="sap-icon://activity-items"
                         enabled="true"
                         expanded="false"
                     />
                     <tnt:NavigationListItem
                         key="myrequest"
-                        text="{i18n>nav_myrequest}"
+                        text="{i18n>nav_claimstatus}"
                         icon="sap-icon://document-text"
                         enabled="true"
                         expanded="false"

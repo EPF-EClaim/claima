@@ -133,10 +133,17 @@
           "target": "TargetDashboard"
         }, 
          {
-          "pattern": "Configuration",
+          "pattern": "Configuration:?query:",
           "name": "Configuration",
           "target": [
             "Configuration"
+          ]
+        }, 
+        {
+          "pattern": "MainConfiguration",
+          "name": "MainConfiguration",
+          "target":[
+            "MainConfiguration"
           ]
         }    
       ],
@@ -162,14 +169,16 @@
               "viewId": "Configuration",
               "entitySet": "ZCLAIM_PURPOSE",
               "contextPath": "/ZCLAIM_PURPOSE", 
-              "createMode": "Inline",
               "multiSelect": true,
-              "tableSettings": {
-                "inlineDelete": true
-              }
-            
+              "inlineDelete": true, 
+              "createMode": "inline"
             }
           }
+        }, 
+        "MainConfiguration":{
+          "id": "MainConfiguration", 
+          "name": "MainConfiguration", 
+          "type": "View"
         }
       }
     },

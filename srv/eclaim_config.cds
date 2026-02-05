@@ -9,8 +9,6 @@ annotate service.ZCLAIM_PURPOSE with @(
         Insertable: true
     },
     odata.draft.enabled,
-
-
     UI          : {
         CreateHidden: false,
         DeleteHidden: false,

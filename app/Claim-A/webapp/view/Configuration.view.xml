@@ -1,8 +1,9 @@
 <mvc:View controllerName="claima.controller.configuration" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:macros="sap.fe.macros" xmlns:macrosTable="sap.fe.macros.Table">
-    <macros:Table xmlns:macro="sap.fe.macros" id="claimConfiguration" metaPath="@com.sap.vocabularies.UI.v1.LineItem" selectionMode="Multi" 
-    enableSelectAll="true" creationMode="Inline" isSearchable="false" type="ResponsiveTable" busy="false" condensedTableLayout="true" 
-    contextPath="/ZCLAIM_PURPOSE" disableColumnFreeze="false" disableCopyToClipboard="false" enableAutoColumnWidth="true" enableExport="true" 
-    enableFullScreen="false" enablePaste="true" headerVisible="true" popinLayout="Block" readOnly="false" rowCountMode="Auto" header="ZCLAIM PURPOSE">
+    <macros:Table xmlns:macro="sap.fe.macros" id="claimConfiguration" metaPath="@com.sap.vocabularies.UI.v1.LineItem" selectionMode="Multi"
+    enableSelectAll="true" creationMode="inline" isSearchable="false" type="ResponsiveTable" 
+    contextPath="/ZCLAIM_PURPOSE"  disableCopyToClipboard="false" enableAutoColumnWidth="true" enableExport="true" 
+    enablePaste="true" headerVisible="true" popinLayout="Block" readOnly="false" rowCountMode="Auto" header="ZCLAIM PURPOSE" >
+   
      <macros:massEdit>
      </macros:massEdit>
     </macros:Table>

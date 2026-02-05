@@ -13,7 +13,7 @@ sap.ui.define([
 	"sap/tnt/library",
 	"sap/m/Input",
 	"sap/m/Label",
-	"sap/m/VBox", 
+	"sap/m/VBox",
 	"sap/ui/model/odata/v4/ODataModel"
 ], function (
 	Device,
@@ -33,7 +33,7 @@ sap.ui.define([
 	ODataModel
 ) {
 	"use strict";
-	
+
 
 	return Controller.extend("claima.controller.App", {
 		onInit: function () {
@@ -169,37 +169,37 @@ sap.ui.define([
 		onAddEntry: function (oEvent) {
 			this._openDialog(oEvent);
 			// var oDialog = new Dialog({
-            //     title: 'Add New Entry',
-            //     type: 'Message',
-            //     content: [
-            //         new VBox({
-            //             items: [
-            //                 new Label({ text: 'Claim Purpose ID' }),
-            //                 new Input({ id: "claimpurposeid" }),
-            //                 new Label({ text: 'Claim Purpose Description' }),
-            //                 new Input({ id: "claimdescription" })
-            //             ]
-            //         })
-            //     ],
-            //     beginButton: new Button({
-            //         text: 'Add New Entry',
-            //         press: function () {
-            //             this._addConfig();
-            //             oDialog.close();
-            //         }.bind(this)
-            //     }),
-            //     endButton: new Button({
-            //         text: 'Cancel',
-            //         press: function () {
-            //             oDialog.close();
-            //         }
-            //     }),
-            //     afterClose: function () {
-            //         oDialog.destroy();
-            //     }
-            // });
+			//     title: 'Add New Entry',
+			//     type: 'Message',
+			//     content: [
+			//         new VBox({
+			//             items: [
+			//                 new Label({ text: 'Claim Purpose ID' }),
+			//                 new Input({ id: "claimpurposeid" }),
+			//                 new Label({ text: 'Claim Purpose Description' }),
+			//                 new Input({ id: "claimdescription" })
+			//             ]
+			//         })
+			//     ],
+			//     beginButton: new Button({
+			//         text: 'Add New Entry',
+			//         press: function () {
+			//             this._addConfig();
+			//             oDialog.close();
+			//         }.bind(this)
+			//     }),
+			//     endButton: new Button({
+			//         text: 'Cancel',
+			//         press: function () {
+			//             oDialog.close();
+			//         }
+			//     }),
+			//     afterClose: function () {
+			//         oDialog.destroy();
+			//     }
+			// });
 
-            // oDialog.open();
+			// oDialog.open();
 		},
 
 		_addConfig: function () {
@@ -222,63 +222,63 @@ sap.ui.define([
 		// EDIT ROW CONFIGURATION
 		onEditEntry: function (oEvent) {
 			let oTable = this.byId("ConfigFrag--configTable");
-			
+
 			var selectedRowData = oTable.getSelectedContexts();
 			if (selectedRowData.length === 0) {
 				MessageToast.show("please select atleast one row");
 				return;
 			} else {
-			// selectedRowData.forEach(function(item){
-			// 	var sContext = item;
-			// 	var sPath = sContext.getPath();
-			// 	var sObject = sContext.getObject();
-			// 	var oldData = {
-			// 		sPath: sPath, 
-			// 		sObject: sObject
-			// 	};
-			// });
-			
-			this._openDialog(oEvent, selectedRowData);
+				// selectedRowData.forEach(function(item){
+				// 	var sContext = item;
+				// 	var sPath = sContext.getPath();
+				// 	var sObject = sContext.getObject();
+				// 	var oldData = {
+				// 		sPath: sPath, 
+				// 		sObject: sObject
+				// 	};
+				// });
+
+				this._openDialog(oEvent, selectedRowData);
 			}
 		},
 
-		_openDialog: function (oEvent, oRecord){
+		_openDialog: function (oEvent, oRecord) {
 			var oButton = oEvent.getSource().getAccessibilityInfo().description;
 
-			var oCurrentData = Object.assign({}, oRecord );
+			var oCurrentData = Object.assign({}, oRecord);
 
 			var oDialog = new Dialog({
-                title: '',
-                type: 'Message',
-                content: [
-                    new VBox({
-                        items: [
-                            new Label({ text: 'Claim Purpose ID' }),
-                            new Input({ id: "claimpurposeid" }),
-                            new Label({ text: 'Claim Purpose Description' }),
-                            new Input({ id: "claimdescription" })
-                        ]
-                    })
-                ],
-                beginButton: new Button({
-                    text: 'Add New Entry',
-                    press: function () {
-                        this._addConfig();
-                        oDialog.close();
-                    }.bind(this)
-                }),
-                endButton: new Button({
-                    text: 'Cancel',
-                    press: function () {
-                        oDialog.close();
-                    }
-                }),
-                afterClose: function () {
-                    oDialog.destroy();
-                }
-            });
+				title: '',
+				type: 'Message',
+				content: [
+					new VBox({
+						items: [
+							new Label({ text: 'Claim Purpose ID' }),
+							new Input({ id: "claimpurposeid" }),
+							new Label({ text: 'Claim Purpose Description' }),
+							new Input({ id: "claimdescription" })
+						]
+					})
+				],
+				beginButton: new Button({
+					text: 'Add New Entry',
+					press: function () {
+						this._addConfig();
+						oDialog.close();
+					}.bind(this)
+				}),
+				endButton: new Button({
+					text: 'Cancel',
+					press: function () {
+						oDialog.close();
+					}
+				}),
+				afterClose: function () {
+					oDialog.destroy();
+				}
+			});
 
-            oDialog.open();
+			oDialog.open();
 		},
 
 		// COPY ROW CONFIGURATION
@@ -288,7 +288,7 @@ sap.ui.define([
 			if (!sel) return MessageToast.show("Select a row.");
 
 			var oModel = this.getView().getModel("employee");
-			
+
 			let m = this.getView().getModel("configModel");
 			let data = m.getProperty("/active/data");
 			let obj = sel.getBindingContext("configModel").getObject();
@@ -326,6 +326,11 @@ sap.ui.define([
 		onNavItemSelect: function (oEvent) {
 			var oItem = oEvent.getParameter("item");
 			var oKey = oItem.getKey();
+			var oRouter = this.getOwnerComponent().getRouter();
+			if(window.location.hash) {
+						var sCleanUrl = window.location.href.split("#")[0];
+						window.history.replaceState(null, document.title, sCleanUrl);
+					}
 
 			switch (oKey) {
 				case "nav_createreport":
@@ -336,8 +341,9 @@ sap.ui.define([
 					this.onClickMyRequest();
 					break;
 				// End added by Jefry 15-01-2026
-				case "config": // your configuration menu
+				case "config": // your configuration menu	
 					this.onClickConfiguration();
+							
 					break;
 				default:
 					// navigate to page with ID same as the key
@@ -357,7 +363,8 @@ sap.ui.define([
 				});
 			}
 			oPageContainer.to(this.byId("configurationPage"));
-
+			// var oRouter = this.getOwnerComponent().getRouter();
+			// oRouter.navTo("MainConfiguration");		
 		},
 		onNavCreateReport: async function () {
 			if (!this.oDialogFragment) {
@@ -948,15 +955,15 @@ sap.ui.define([
 
 		onClickNavigate: function (oEvent) {
 			let id = oEvent.getParameters().id;
-			if(id === "container-claima---App--dashboard-claim" || id === "application-app-preview-component---App--dashboard-claim"){
+			if (id === "container-claima---App--dashboard-claim" || id === "application-app-preview-component---App--dashboard-claim") {
 				this.byId("pageContainer").to(this.getView().createId("myreport"));
-			} else if (id === "container-claima---App--dashboard-request" || id === "application-app-preview-component---App--dashboard-request"){
+			} else if (id === "container-claima---App--dashboard-request" || id === "application-app-preview-component---App--dashboard-request") {
 				this.byId("pageContainer").to(this.getView().createId("myrequest"));
 			}
-			
+
 		}
 
-		
+
 
 	});
 });
