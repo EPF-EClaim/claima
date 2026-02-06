@@ -806,4 +806,295 @@ annotate service.ZFLIGHT_CLASS with @(
     }
 );
 
+annotate service.ZCOUNTRY with @(
+    cds.autoexpose,
+    Common.SemanticKey: [COUNTRY_ID],
+    Capabilities: {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI          : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZCOUNTRY',
+            TypeNamePlural: 'ZCOUNTRY',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : COUNTRY_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Country ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COUNTRY_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Country Description'
+            }
+        ]
+    }
+);
+
+annotate service.ZAREA with @(
+    cds.autoexpose,
+    Common.SemanticKey: [AREA_ID],
+    Capabilities: {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI          : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZAREA',
+            TypeNamePlural: 'ZAREA',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : AREA_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Area ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : AREA_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Area Description'
+            }
+        ]
+    }
+);
+
+annotate service.ZCURRENCY with @(
+    cds.autoexpose,
+    Common.SemanticKey: [CURRENCY_ID],
+    Capabilities: {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI          : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZCURRENCY',
+            TypeNamePlural: 'ZCURRENCY',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : CURRENCY_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Currency ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CURRENCY_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Currency Description'
+            }
+        ]
+    }
+);
+
+annotate service.ZMARITAL_STAT with @(
+    cds.autoexpose,
+    Common.SemanticKey: [MARRIAGE_CATEGORY_ID],
+    Capabilities: {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI          : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZMARITAL_STAT',
+            TypeNamePlural: 'ZMARITAL_STAT',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : MARRIAGE_CATEGORY_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Marriage Category ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MARRIAGE_CATEGORY_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Marriage Category Description'
+            }
+        ]
+    }
+);
+
+annotate service.ZSTAFF_CAT with @(
+    cds.autoexpose,
+    Common.SemanticKey: [STAFF_CATEGORY_ID],
+    Capabilities: {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI          : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZSTAFF_CAT',
+            TypeNamePlural: 'ZSTAFF_CAT',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : STAFF_CATEGORY_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Staff Category ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STAFF_CATEGORY_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Staff Category Description'
+            }
+        ]
+    }
+);
+
+annotate service.ZVEHICLE_TYPE with @(
+    cds.autoexpose,
+    Common.SemanticKey: [VEHICLE_TYPE_ID],
+    Capabilities: {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI          : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZVEHICLE_TYPE',
+            TypeNamePlural: 'ZVEHICLE_TYPE',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : VEHICLE_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Vehicle Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VEHICLE_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Vehicle Type Description'
+            }
+        ]
+    }
+);
+
+annotate service.ZKWSP_BRANCH with @(
+    cds.autoexpose,
+    Common.SemanticKey: [BRANCH_ID],
+    Capabilities: {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI          : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZKWSP_BRANCH',
+            TypeNamePlural: 'ZKWSP_BRANCH',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : BRANCH_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Branch ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : BRANCH_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Branch Description'
+            }
+        ]
+    }
+);
+
+annotate service.ZSTATE with @(
+    cds.autoexpose,
+    Common.SemanticKey: [COUNTRY_ID, STATE_ID],
+    Capabilities: {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI          : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZSTATE',
+            TypeNamePlural: 'ZSTATE',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : COUNTRY_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Country ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'State ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'State Description'
+            },
+        ]
+    }
+);
+
+
+
+
+
+
 

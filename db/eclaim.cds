@@ -31,16 +31,31 @@ entity ZREQUEST_HEADER : managed {
         REQUEST_TYPE_ID        : UUID;
         REFERENCE_NUMBER       : String;
         OBJECTIVE_PURPOSE      : String;
-        START_DATE             : String;
-        END_DATE               : String;
+        TRIP_START_DATE        : String;
+        TRIP_END_DATE          : String;
+        EVENT_START_DATE       : String;
+        EVENT_END_DATE         : String;
         REMARK                 : String;
         CLAIM_TYPE_ID          : String;
-        REQUEST_GROUP_ID       : UUID;
+        REQUEST_GROUP_ID       : String;
         ALTERNATE_COST_CENTRE  : String;
-        AMOUNT                 : String;
-        ATTACHMENT             : String;
+        REQUEST_AMOUNT         : String;
+        TOTAL_AMOUNT           : String;
+        ATTACHMENT1            : String;
+        ATTACHMENT2            : String;
         LOCATION               : String;
         TYPE_OF_TRANSPORTATION : String;
+        EVENT_FIELD1           : String;
+        EVENT_FIELD2           : String;
+        EVENT_FIELD3           : String;
+        EVENT_FIELD4           : String;
+        EVENT_FIELD5           : String;
+        STATUS                 : String;
+        COST_CENTER            : String;
+        CASH_ADVANCE           : Decimal;
+        CASH_ADVANCE_DATE      : Date;
+        TRAVEL_ALONE_FAMILY    : String(1);
+        TRAVEL_FAMILY_NOW_LATER: String(1);
         ZCLAIM_TYPE            : Association to one ZCLAIM_TYPE
                                      on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
         ZREQUEST_ITEM          : Association to one ZREQUEST_ITEM
@@ -51,6 +66,10 @@ entity ZREQUEST_HEADER : managed {
                                      on ZREQUEST_GRP.REQUEST_GROUP_ID = REQUEST_GROUP_ID;
         ZCLAIM_HEADER          : Association to one ZCLAIM_HEADER
                                      on ZCLAIM_HEADER.CLAIM_ID = CLAIM_TYPE_ID;
+        ZSTATUS                : Association to one ZSTATUS
+                                     on ZSTATUS.STATUS_ID = STATUS;  
+        ZCOST_CENTER           : Association to one ZCOST_CENTER
+                                     on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
 }
 
 entity ZREQUEST_ITEM : managed {
