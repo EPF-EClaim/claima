@@ -1,30 +1,17 @@
 sap.ui.define([
-	'sap/fe/core/PageController'
+    "sap/ui/core/mvc/Controller"
+], (Controller) => {
+    "use strict";
 
-], (PageController
-) => {
-	"use strict";
+    return Controller.extend("claima.controller.controller", {
+        onInit() {
+        }, 
 
-	return PageController.extend('claima.controller.configuration', {
-
-		onInit() {
-			PageController.prototype.onInit.apply(this);
+		onOpenConfigTable: function (oEvent) {
+			var oNavigation = oEvent.getSource().getId().split("--").pop();
+			var oRouter = this.getOwnerComponent().getRouter();
+			oRouter.navTo(oNavigation);
 		},
-
-		// ADD NEW ROW CONFIGURATION
-		onAddEntry: function () {
-			let data = this.getView().getModel("configModel").getProperty("/active/data");
-
-			data.push({
-				Claim_Purpose_ID: "",
-				Claim_Purpose_Desc: "",
-
-				edit: true,
-				selected: false
-			});
-			let m = this.getView().getModel("configModel");
-			m.refresh(true);
-
-		},
-	});
+		
+    });
 });

@@ -458,101 +458,11 @@
                     <!-- ================= Configuration Page ================= -->
                     <Page
                         id="configurationPage"
-                        title="{i18n>configtitle}">
+                        showHeader="false">
                         <content>
-                            
-                            <ScrollContainer
-                                vertical="true"
-                                horizontal="false"
-                                height="100%"
-                                class="sapUiContentPadding">
-                                <f:GridContainer>
-                                    <f:layout>
-                                        <f:GridContainerSettings
-                                            columnSize="16rem"
-                                            rowSize="auto"
-                                            gap="1rem"
-                                        />
-                                    </f:layout>
-
-                                    <!-- ZCLAIM_PURPOSE -->
-                                    <f:Card
-                                        id="ZCLAIM_PURPOSE"
-                                        class="sapUiSmallMargin"
-                                        width="15rem"
-                                        press="onOpenConfigTable">
-                                        <f:customData>
-                                            <core:CustomData
-                                                key="id"
-                                                value="ZCLAIM_PURPOSE"
-                                            />
-                                        </f:customData>
-                                        <f:header>
-                                            <cards:Header
-                                                title="{i18n>conf1}"
-                                            />
-                                        </f:header>
-                                    </f:Card>
-
-                                    <!-- Configuration Table 2 -->
-                                    <f:Card
-                                        id="ZRISK"
-                                        class="sapUiSmallMargin"
-                                        width="15rem"
-                                        press="onOpenConfigTable"
-                                    >
-                                        <f:customData>
-                                            <core:CustomData
-                                                key="id"
-                                                value="{i18n>zrisk}"
-                                            />
-                                        </f:customData>
-                                        <f:header>
-                                            <cards:Header
-                                                title="{i18n>conf2}"
-                                            />
-                                        </f:header>
-                                    </f:Card>
-
-                                    <!-- Configuration Table 3 -->
-                                    <f:Card
-                                        class="sapUiSmallMargin"
-                                        width="15rem"
-                                        press="onOpenConfigTable"
-                                    >
-                                        <f:customData>
-                                            <core:CustomData
-                                                key="id"
-                                                value="ConfigurationTable3"
-                                            />
-                                        </f:customData>
-                                        <f:header>
-                                            <cards:Header
-                                                title="{i18n>conf3}"
-                                            />
-                                        </f:header>
-                                    </f:Card>
-
-                                    <!-- Configuration Table 4 -->
-                                    <f:Card
-                                        class="sapUiSmallMargin"
-                                        width="15rem"
-                                        press="onOpenConfigTable"
-                                    >
-                                        <f:customData>
-                                            <core:CustomData
-                                                key="id"
-                                                value="ConfigurationTable4"
-                                            />
-                                        </f:customData>
-                                        <f:header>
-                                            <cards:Header
-                                                title="{i18n>conf4}"
-                                            />
-                                        </f:header>
-                                    </f:Card>
-                                </f:GridContainer>
-                            </ScrollContainer>
+                           <mvc:XMLView
+                            id="configuration_view"
+                            viewName="claima.view.Configuration"/>   
                         </content>
                     </Page>
                     <!-- ================= Configuration Page ================= -->

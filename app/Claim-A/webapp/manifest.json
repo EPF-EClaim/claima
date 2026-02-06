@@ -131,8 +131,8 @@
           "pattern": "Dashboard",
           "name": "Dashboard",
           "target": "TargetDashboard"
-        }, 
-         {
+        },
+        {
           "pattern": "ZCLAIM_PURPOSE",
           "name": "ZCLAIM_PURPOSE",
           "target": [
@@ -145,14 +145,112 @@
           "target": [
             "ZRISK"
           ]
-        }, 
+        },
         {
-          "pattern": "MainConfiguration",
-          "name": "MainConfiguration",
-          "target":[
-            "MainConfiguration"
+          "pattern": "ZREQUEST_GRP",
+          "name": "ZREQUEST_GRP",
+          "target": [
+            "ZREQUEST_GRP"
           ]
-        }    
+        },
+        {
+          "pattern": "ZREQUEST_TYPE",
+          "name": "ZREQUEST_TYPE",
+          "target": [
+            "ZREQUEST_TYPE"
+          ]
+        },
+        {
+          "pattern": "ZCLAIM_TYPE",
+          "name": "ZCLAIM_TYPE",
+          "target": [
+            "ZCLAIM_TYPE"
+          ]
+        },
+        {
+          "pattern": "ZNUM_RANGE",
+          "name": "ZNUM_RANGE",
+          "target": [
+            "ZNUM_RANGE"
+          ]
+        },
+        {
+          "pattern": "ZCLAIM_TYPE_ITEM",
+          "name": "ZCLAIM_TYPE_ITEM",
+          "target": [
+            "ZCLAIM_TYPE_ITEM"
+          ]
+        },
+        {
+          "pattern": "ZAPP_FIELD_CTRL",
+          "name": "ZAPP_FIELD_CTRL",
+          "target": [
+            "ZAPP_FIELD_CTRL"
+          ]
+        },
+         {
+          "pattern": "ZARITH_OPT",
+          "name": "ZARITH_OPT",
+          "target": [
+            "ZARITH_OPT"
+          ]
+        },
+        {
+          "pattern": "ZAPPROVAL_RULES",
+          "name": "ZAPPROVAL_RULES",
+          "target": [
+            "ZAPPROVAL_RULES"
+          ]
+        },
+        {
+          "pattern": "ZCLAIM_MAIN_CAT",
+          "name": "ZCLAIM_MAIN_CAT",
+          "target": [
+            "ZCLAIM_MAIN_CAT"
+          ]
+        },
+        {
+          "pattern": "ZCLAIM_CATEGORY",
+          "name": "ZCLAIM_CATEGORY",
+          "target": [
+            "ZCLAIM_CATEGORY"
+          ]
+        },
+        {
+          "pattern": "ZSTATUS",
+          "name": "ZSTATUS",
+          "target": [
+            "ZSTATUS"
+          ]
+        },
+        {
+          "pattern": "ZCLAIM_DISCLAIMER",
+          "name": "ZCLAIM_DISCLAIMER",
+          "target": [
+            "ZCLAIM_DISCLAIMER"
+          ]
+        },
+        {
+          "pattern": "ZLODGING_CAT",
+          "name": "ZLODGING_CAT",
+          "target": [
+            "ZLODGING_CAT"
+          ]
+        },
+        {
+          "pattern": "ZROOM_TYPE",
+          "name": "ZROOM_TYPE",
+          "target": [
+            "ZROOM_TYPE"
+          ]
+        },
+        {
+          "pattern": "ZFLIGHT_CLASS",
+          "name": "ZFLIGHT_CLASS",
+          "target": [
+            "ZFLIGHT_CLASS"
+          ]
+        }
       ],
       "targets": {
         "TargetMain": {
@@ -202,7 +300,7 @@
               "navigation": {}
             }
           }
-        }, 
+        },
         "ZRISK": {
           "type": "Component",
           "id": "ZRISK",
@@ -210,6 +308,50 @@
           "options": {
             "settings": {
               "contextPath": "/ZRISK",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": true,
+                      "filter": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true,
+                      "showCounts": true
+                    },
+                    "disableCopyToClipboard": false,
+                    "enableMassEdit": {
+                      "ignoredFields": "RISK_ID,RISK_DESC",
+                      "operationGroupingMode": "Isolated",
+                      "visibleFields": "RISK_ID,RISK_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "RISK_ID,RISK_DESC"
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZREQUEST_GRP": {
+          "type": "Component",
+          "id": "ZREQUEST_GRP",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZREQUEST_GRP",
               "variantManagement": "None",
               "controlConfiguration": {
                 "@com.sap.vocabularies.UI.v1.LineItem": {
@@ -235,17 +377,460 @@
             }
           }
         },
-        "MainConfiguration":{
-          "id": "MainConfiguration", 
-          "name": "MainConfiguration", 
-          "type": "View"
+        "ZREQUEST_TYPE": {
+          "type": "Component",
+          "id": "ZREQUEST_TYPE",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZREQUEST_TYPE",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZCLAIM_TYPE": {
+          "type": "Component",
+          "id": "ZCLAIM_TYPE",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZCLAIM_TYPE",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        }, 
+        "ZNUM_RANGE": {
+          "type": "Component",
+          "id": "ZNUM_RANGE",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZNUM_RANGE",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZCLAIM_TYPE_ITEM": {
+          "type": "Component",
+          "id": "ZCLAIM_TYPE_ITEM",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZCLAIM_TYPE_ITEM",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZAPP_FIELD_CTRL": {
+          "type": "Component",
+          "id": "ZAPP_FIELD_CTRL",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZAPP_FIELD_CTRL",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        }, 
+        "ZARITH_OPT": {
+          "type": "Component",
+          "id": "ZARITH_OPT",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZARITH_OPT",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        }, 
+        "ZAPPROVAL_RULES": {
+          "type": "Component",
+          "id": "ZAPPROVAL_RULES",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZAPPROVAL_RULES",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZCLAIM_MAIN_CAT": {
+          "type": "Component",
+          "id": "ZCLAIM_MAIN_CAT",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZCLAIM_MAIN_CAT",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZCLAIM_CATEGORY": {
+          "type": "Component",
+          "id": "ZCLAIM_CATEGORY",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZCLAIM_CATEGORY",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZSTATUS": {
+          "type": "Component",
+          "id": "ZSTATUS",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZSTATUS",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZCLAIM_DISCLAIMER": {
+          "type": "Component",
+          "id": "ZCLAIM_DISCLAIMER",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZCLAIM_DISCLAIMER",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZLODGING_CAT": {
+          "type": "Component",
+          "id": "ZLODGING_CAT",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZLODGING_CAT",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZROOM_TYPE": {
+          "type": "Component",
+          "id": "ZROOM_TYPE",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZROOM_TYPE",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZFLIGHT_CLASS": {
+          "type": "Component",
+          "id": "ZFLIGHT_CLASS",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZFLIGHT_CLASS",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
         }
       }
     },
     "extends": {
       "extensions": {
         "sap.ui.controllerExtensions": {
-          "sap.fe.templates.ListReport.ListReportController" : {
+          "sap.fe.templates.ListReport.ListReportController": {
             "controllerName": "claima.controller.configuration"
           }
         }
@@ -270,7 +855,7 @@
     }
   },
   "sap.fiori": {
-     "registrationIds": [],
-        "archeType": "transactional"
+    "registrationIds": [],
+    "archeType": "transactional"
   }
 }

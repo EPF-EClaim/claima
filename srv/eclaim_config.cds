@@ -2,6 +2,7 @@ using {eclaim_srv as service} from './eclaim_srv';
 
 annotate service.ZCLAIM_PURPOSE with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [CLAIM_PURPOSE_ID],
     Capabilities: {
         Deletable : true,
