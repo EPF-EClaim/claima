@@ -285,8 +285,8 @@
                                 <Button
                                     id="draft"
                                     text="Save Draft"
-                                    press="onPress"
-                                    enabled="false"
+                                    press="onPressSaveDraft"
+                                    enabled="true"
                                 />
 
                                 <Button

@@ -310,6 +310,108 @@ sap.ui.define([
 			this.byId("pageContainer").to(this.getView().createId("dashboard"));
 		},
 
+		onPressSaveDraft: function (oEvent) {
+			this.getCurrentReportNumber().then((result) => {
+				if (result) {
+					// Set data for ZCLAIM_HEADER
+					var oCurrentModel = this.getView().getModel("current");
+					//// Report Number
+					oCurrentModel.setProperty("/report/claim_id", result.reportNo);
+					//// Status ID
+					oCurrentModel.setProperty("/report/status_id", "Draft")
+					//// get data from current claim header shown
+					var oCurrentData = oCurrentModel.getData();
+
+					//// Claim Main Category ID
+					switch (oCurrentData.report.category) {
+						case "expcat_direct":
+							var claimMainCatID = "0000000001";
+							break;
+						case "expcat_auto":
+							claimMainCatID = "0000000002";
+							break;
+						case "expcat_withoutrequest":
+							claimMainCatID = "0000000003";
+							break;
+					}
+
+					//// Claim Date (get current date)
+					var currentDate = new Date().toJSON().substring(0,10);
+
+					//// Amount Approved (Total)
+					var amtApproved = Number.parseFloat(oCurrentData.report.amt_approved).toFixed(2);
+					if (amtApproved == 'NaN') {
+						amtApproved = 0.00;
+					}
+
+					// Write to Database Table ZCLAIM_HEADER
+					var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
+					var sServiceUrl = sBaseUri + "/ZCLAIM_HEADER"; 
+
+					fetch(sServiceUrl, 
+						{method: "POST", headers: {"Content-Type": "application/json"},
+						body: JSON.stringify({
+							CLAIM_ID               : oCurrentData.report.claim_id,
+							CLAIM_MAIN_CAT_ID      : claimMainCatID,
+							EMP_ID                 : "000001",
+							CLAIM_DATE             : currentDate,
+							CATEGORY               : "Course",
+							ALTERNATE_COST_CENTER  : null,
+							CLAIM_TYPE_ID          : "001",
+							TOTAL                  : amtApproved,
+							STATUS_ID          	   : oCurrentData.report.status_id,
+							DEPARTMENT             : "IT Dept 2",
+							EMP_NAME               : "Ahmad Anthony",
+							JOB_POSITION		   : "Junior Analyst",
+							PERSONAL_GRADE		   : "22",
+							POSITION_NO		       : "000003",
+							ZCLAIM_ITEM            : null
+						}) 
+					})
+					.then(r => r.json())
+					.then((res) => {
+						if (!res.error) {
+							MessageToast.show("Record created");
+							this.updateCurrentReqNumber(result.current);
+							this.byId("pageContainer").to(this.getView().createId("dashboard"));
+						} else {
+							MessageToast.show(res.error.code, res.error.message);
+						};
+					});
+				};
+			});
+		},
+
+		getCurrentReportNumber: async function () {
+			const sBaseUri = this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri || "/odata/v4/EmployeeSrv/";
+			const sServiceUrl = sBaseUri.replace(/\/$/, "") + "/ZNUM_RANGE";
+
+			try {
+				const response = await fetch(sServiceUrl);
+
+				if (!response.ok) {
+					throw new Error(`HTTP ${response.status} ${response.statusText}`);
+				}
+
+				const data = await response.json();
+
+				const nr01 = (data.value || data).find(x => x.RANGE_ID === "NR01");
+				if (!nr01 || nr01.CURRENT == null) {
+					throw new Error("NR01 not found or CURRENT is missing");
+				}
+
+				const current = Number(nr01.CURRENT);
+				const yy = String(new Date().getFullYear()).slice(-2);
+				const reportNo = `CLM${yy}${String(current).padStart(9, "0")}`;
+
+				return { reportNo, current };
+
+			} catch (err) {
+				console.error("Error fetching CDS data:", err);
+				return null; // or: throw err;
+			}
+		},
+
 		onPressClaimDetails: function () {
 			this.getView().byId("expensetypescr").setVisible(false);
 			this.getView().byId("claimscr").setVisible(true);
