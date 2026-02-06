@@ -372,7 +372,7 @@ sap.ui.define([
 					.then((res) => {
 						if (!res.error) {
 							MessageToast.show("Record created");
-							this.updateCurrentReqNumber(result.current);
+							this.updateCurrentReportNumber(result.current);
 							this.byId("pageContainer").to(this.getView().createId("dashboard"));
 						} else {
 							MessageToast.show(res.error.code, res.error.message);
@@ -395,12 +395,12 @@ sap.ui.define([
 
 				const data = await response.json();
 
-				const nr01 = (data.value || data).find(x => x.RANGE_ID === "NR01");
-				if (!nr01 || nr01.CURRENT == null) {
-					throw new Error("NR01 not found or CURRENT is missing");
+				const nr02 = (data.value || data).find(x => x.RANGE_ID === "NR02");
+				if (!nr02 || nr02.CURRENT == null) {
+					throw new Error("NR02 not found or CURRENT is missing");
 				}
 
-				const current = Number(nr01.CURRENT);
+				const current = Number(nr02.CURRENT);
 				const yy = String(new Date().getFullYear()).slice(-2);
 				const reportNo = `CLM${yy}${String(current).padStart(9, "0")}`;
 
@@ -409,6 +409,42 @@ sap.ui.define([
 			} catch (err) {
 				console.error("Error fetching CDS data:", err);
 				return null; // or: throw err;
+			}
+		},
+
+		updateCurrentReportNumber: async function (currentNumber) {
+			const sId = "NR02";
+			const sBaseUri =
+				this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri
+				|| "/odata/v4/EmployeeSrv/";
+
+			const sServiceUrl = sBaseUri.replace(/\/$/, "") + "/ZNUM_RANGE('" + encodeURIComponent(sId) + "')";
+			const nextNumber = currentNumber + 1;
+
+			try {
+				const res = await fetch(sServiceUrl, {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ CURRENT: String(nextNumber) })
+				});
+
+				if (!res.ok) {
+				const errText = await res.text().catch(() => "");
+				throw new Error(`PATCH failed ${res.status} ${res.statusText}: ${errText}`);
+				}
+
+				// PATCH often returns 204
+				if (res.status === 204) return { CURRENT: nextNumber };
+
+				// If the server returns JSON entity
+				const contentType = res.headers.get("content-type") || "";
+				if (contentType.includes("application/json")) {
+				return await res.json();
+				}
+				return await res.text(); // fallback
+			} catch (e) {
+				console.error("Error updating number range:", e);
+				return null;
 			}
 		},
 
