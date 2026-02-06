@@ -197,22 +197,22 @@ entity ZCLAIM_ITEM : managed {
 }
 
 entity ZCLAIM_PURPOSE: managed  {
-    key CLAIM_PURPOSE_ID   : String;
+    key CLAIM_PURPOSE_ID   : String @mandatory;
         CLAIM_PURPOSE_DESC : String;
 }
 
 entity ZCLAIM_DISCLAIMER: managed  {
-    key CLAIM_DISCLAIMER_ID   : String;
+    key CLAIM_DISCLAIMER_ID   : String @mandatory;
         CLAIM_DISCLAIMER_DESC : String;
 }
 
 entity ZLODGING_CAT: managed  {
-    key LODGING_CATEGORY_ID   : String;
+    key LODGING_CATEGORY_ID   : String @mandatory;
         LODGING_CATEGORY_DESC : String;
 }
 
 entity ZCOST_CENTER: managed {
-    key COST_CENTER_ID   : String;
+    key COST_CENTER_ID   : String @mandatory;
         COST_CENTER_DESC : String;
         START_DATE       : Date;
         END_DATE         : Date;
@@ -220,8 +220,8 @@ entity ZCOST_CENTER: managed {
 }
 
 entity ZCLAIM_TYPE_INFO: managed {
-    key CLAIM_TYPE_ID       : String;
-    key CLAIM_TYPE_ITEM_ID  : String;
+    key CLAIM_TYPE_ID       : String @mandatory;
+    key CLAIM_TYPE_ITEM_ID  : String @mandatory;
         START_DATE          : Date;
         END_DATE            : Date;
         STATUS              : String;   
@@ -238,13 +238,13 @@ entity ZRISK: managed {
 }
 
 entity ZCLAIM_TYPE_ITEM: managed {
-    key CLAIM_TYPE_ITEM_ID      : String;
+    key CLAIM_TYPE_ITEM_ID      : String @mandatory;
         CLAIM_TYPE_ITEM_DESC    : String;
 }
 
 entity ZAPP_FIELD_CTRL: managed {
-    key CLAIM_TYPE_ID       : String;
-    key CLAIM_TYPE_ITEM_ID  : String;
+    key CLAIM_TYPE_ID       : String @mandatory;
+    key CLAIM_TYPE_ITEM_ID  : String @mandatory;
         FIELD01             : Boolean;
         FIELD02             : Boolean;
         FIELD03             : Boolean;
@@ -268,10 +268,10 @@ entity ZAPP_FIELD_CTRL: managed {
 }
 
 entity ZBUDGET: managed {
-    key YEAR : Date;
-    key COMMITMENT_ITEM : String;
-    key FUND_CENTER     : Integer;
-    key MATERIAL_GROUP  : Integer;
+    key YEAR : Date @mandatory;
+    key COMMITMENT_ITEM : String @mandatory;
+    key FUND_CENTER     : Integer @mandatory;
+    key MATERIAL_GROUP  : Integer @mandatory;
         ORIGINAL_BUDGET : Decimal;
         VIREMENT_IN     : Decimal;
         VIREMENT_OUT    : Decimal;
@@ -286,14 +286,14 @@ entity ZBUDGET: managed {
 }
 
 entity ZARITH_OPT: managed {
-    key OPERATOR_ID     : String;
+    key OPERATOR_ID     : String @mandatory;
         OPERATOR_DESC   : String;
 }
 
 entity ZAPPROVAL_RULES: managed {
-    key ZSCENARIO       : String;
-    key ZSEQNO          : String(1);
-    key ZAPPR_LVL       : String(1);
+    key ZSCENARIO       : String @mandatory;
+    key ZSEQNO          : String(1) @mandatory;
+    key ZAPPR_LVL       : String(1) @mandatory;
         ZAMT            : Decimal;
         ZAMT_OP         : String(2);
         ZDAYS           : Integer;
@@ -306,27 +306,27 @@ entity ZAPPROVAL_RULES: managed {
 } 
 
 entity ZCLAIM_MAIN_CAT: managed {
-    key CLAIM_MAIN_CAT_ID   : String;
+    key CLAIM_MAIN_CAT_ID   : String @mandatory;
         CLAIM_MAIN_CAT_DESC : String;
 }
 
 entity ZCLAIM_CATEGORY: managed {
-    key CLAIM_CAT_ID        : String;
+    key CLAIM_CAT_ID        : String @mandatory;
         CLAIM_CATEGORY_DESC : String;
 }
 
 entity ZSTATUS: managed {
-    key STATUS_ID   : String;
+    key STATUS_ID   : String @mandatory;
         STATUS_DESC : String;
 }
 
 entity ZROOM_TYPE: managed {
-    key ROOM_TYPE_ID    : String;
+    key ROOM_TYPE_ID    : String @mandatory;
         ROOM_TYPE_DESC  : String;
 }
 
 entity ZFLIGHT_CLASS: managed {
-    key FLIGHT_CLASS_ID     : String;
+    key FLIGHT_CLASS_ID     : String @mandatory;
         FLIGHT_CLASS_DESC   : String;
 }
 

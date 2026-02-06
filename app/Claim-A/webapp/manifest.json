@@ -182,13 +182,6 @@
           ]
         },
         {
-          "pattern": "ZAPP_FIELD_CTRL",
-          "name": "ZAPP_FIELD_CTRL",
-          "target": [
-            "ZAPP_FIELD_CTRL"
-          ]
-        },
-         {
           "pattern": "ZARITH_OPT",
           "name": "ZARITH_OPT",
           "target": [
@@ -249,6 +242,62 @@
           "name": "ZFLIGHT_CLASS",
           "target": [
             "ZFLIGHT_CLASS"
+          ]
+        },
+        {
+          "pattern": "ZAREA",
+          "name": "ZAREA",
+          "target": [
+            "ZAREA"
+          ]
+        },
+        {
+          "pattern": "ZCOUNTRY",
+          "name": "ZCOUNTRY",
+          "target": [
+            "ZCOUNTRY"
+          ]
+        },
+        {
+          "pattern": "ZCURRENCY",
+          "name": "ZCURRENCY",
+          "target": [
+            "ZCURRENCY"
+          ]
+        },
+        {
+          "pattern": "ZMARITAL_STAT",
+          "name": "ZMARITAL_STAT",
+          "target": [
+            "ZMARITAL_STAT"
+          ]
+        },
+        {
+          "pattern": "ZSTAFF_CAT",
+          "name": "ZSTAFF_CAT",
+          "target": [
+            "ZSTAFF_CAT"
+          ]
+        },
+        {
+          "pattern": "ZVEHICLE_TYPE",
+          "name": "ZVEHICLE_TYPE",
+          "target": [
+            "ZVEHICLE_TYPE"
+          ]
+        },
+        {
+          "pattern": "ZKWSP_BRANCH",
+          "name": "ZKWSP_BRANCH",
+          "target": [
+            "ZKWSP_BRANCH"
+          ]
+        },
+        {
+          "pattern": "ZSTATE",
+          "name": "ZSTATE",
+          "target": [
+            "ZSTATE"
           ]
         }
       ],
@@ -440,7 +489,7 @@
               "navigation": {}
             }
           }
-        }, 
+        },
         "ZNUM_RANGE": {
           "type": "Component",
           "id": "ZNUM_RANGE",
@@ -505,38 +554,6 @@
             }
           }
         },
-        "ZAPP_FIELD_CTRL": {
-          "type": "Component",
-          "id": "ZAPP_FIELD_CTRL",
-          "name": "sap.fe.templates.ListReport",
-          "options": {
-            "settings": {
-              "contextPath": "/ZAPP_FIELD_CTRL",
-              "variantManagement": "None",
-              "controlConfiguration": {
-                "@com.sap.vocabularies.UI.v1.LineItem": {
-                  "tableSettings": {
-                    "type": "ResponsiveTable",
-                    "createMode": "inline",
-                    "initialLoad": "Enabled",
-                    "enableExport": true,
-                    "selectAll": false,
-                    "selectionMode": "Single",
-                    "personalization": {
-                      "column": false
-                    },
-                    "quickVariantSelection": {
-                      "hideTableTitle": true
-                    }
-                  }
-                }
-              },
-              "hideFilterBar": true,
-              "initialLoad": "Enabled",
-              "navigation": {}
-            }
-          }
-        }, 
         "ZARITH_OPT": {
           "type": "Component",
           "id": "ZARITH_OPT",
@@ -568,7 +585,7 @@
               "navigation": {}
             }
           }
-        }, 
+        },
         "ZAPPROVAL_RULES": {
           "type": "Component",
           "id": "ZAPPROVAL_RULES",
@@ -800,6 +817,262 @@
           "options": {
             "settings": {
               "contextPath": "/ZFLIGHT_CLASS",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZAREA": {
+          "type": "Component",
+          "id": "ZAREA",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZAREA",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZCOUNTRY": {
+          "type": "Component",
+          "id": "ZCOUNTRY",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZCOUNTRY",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZCURRENCY": {
+          "type": "Component",
+          "id": "ZCURRENCY",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZCURRENCY",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZMARITAL_STAT": {
+          "type": "Component",
+          "id": "ZMARITAL_STAT",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZMARITAL_STAT",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZSTAFF_CAT": {
+          "type": "Component",
+          "id": "ZSTAFF_CAT",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZSTAFF_CAT",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZVEHICLE_TYPE": {
+          "type": "Component",
+          "id": "ZVEHICLE_TYPE",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZVEHICLE_TYPE",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZKWSP_BRANCH": {
+          "type": "Component",
+          "id": "ZKWSP_BRANCH",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZKWSP_BRANCH",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZSTATE": {
+          "type": "Component",
+          "id": "ZSTATE",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZSTATE",
               "variantManagement": "None",
               "controlConfiguration": {
                 "@com.sap.vocabularies.UI.v1.LineItem": {
