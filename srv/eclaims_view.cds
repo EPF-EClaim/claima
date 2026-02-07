@@ -56,10 +56,10 @@ entity ZEMP_REQUEST_ITEM_VIEW
     LOCATION
   };
 
-entity ZEMP_REQUEST_PART_VIEW
-  as projection on ECLAIM.ZREQ_ITEM_PART {
+// entity ZEMP_REQUEST_PART_VIEW
+//   as projection on ECLAIM.ZREQ_ITEM_PART {
     
-  };  
+//   };  
 
 
 

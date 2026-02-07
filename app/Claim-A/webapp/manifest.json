@@ -377,7 +377,6 @@
                     },
                     "disableCopyToClipboard": false,
                     "enableMassEdit": {
-                      "ignoredFields": "RISK_ID,RISK_DESC",
                       "operationGroupingMode": "Isolated",
                       "visibleFields": "RISK_ID,RISK_DESC"
                     },
@@ -416,6 +415,14 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "operationGroupingMode": "Isolated",
+                      "visibleFields": "REQUEST_GROUP_ID,REQUEST_GROUP_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "REQUEST_GROUP_ID,REQUEST_GROUP_DESC"
                     }
                   }
                 }
@@ -448,6 +455,13 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "REQUEST_TYPE_ID,REQUEST_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                    },
+                    "enableMassEdit": {
+                      "visibleFields": "REQUEST_TYPE_ID,REQUEST_TYPE_DESC,START_DATE,END_DATE,STATUS"
                     }
                   }
                 }
@@ -480,6 +494,14 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "CLAIM_TYPE_ID,CLAIM_TYPE_DESC"
+                    },
+                    "enableMassEdit": {
+                      "operationGroupingMode": "Isolated",
+                      "visibleFields": "CLAIM_TYPE_DESC,CLAIM_TYPE_ID"
                     }
                   }
                 }
@@ -544,6 +566,14 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "visibleFields": "CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC",
+                      "operationGroupingMode": "Isolated"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC"
                     }
                   }
                 }
@@ -576,6 +606,13 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "visibleFields": "OPERATOR_ID,OPERATOR_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "OPERATOR_ID,OPERATOR_DESC"
                     }
                   }
                 }
@@ -608,6 +645,13 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "visibleFields": "ZSCENARIO,ZSEQNO,ZAMT_OP,ZAPPR_LVL,ZAMT,ZDAYS,ZDAYS_OP,ZCOSTCTR,ZCOSTCTR_OP,ZRISK,ZRISK_OP,ZAPPROVER_ID"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "ZSCENARIO,ZSEQNO,ZAPPR_LVL,ZAMT,ZAMT_OP,ZDAYS,ZDAYS_OP,ZCOSTCTR,ZCOSTCTR_OP,ZRISK,ZRISK_OP,ZAPPROVER_ID"
                     }
                   }
                 }
@@ -640,6 +684,14 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "operationGroupingMode": "Isolated",
+                      "visibleFields": "CLAIM_MAIN_CAT_DESC,CLAIM_MAIN_CAT_ID"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "CLAIM_MAIN_CAT_ID,CLAIM_MAIN_CAT_DESC"
                     }
                   }
                 }
@@ -672,6 +724,13 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "visibleFields": "CLAIM_CAT_ID,CLAIM_CATEGORY_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "CLAIM_CAT_ID,CLAIM_CATEGORY_DESC"
                     }
                   }
                 }
@@ -704,6 +763,13 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "visibleFields": "STATUS_ID,STATUS_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "STATUS_ID,STATUS_DESC"
                     }
                   }
                 }
@@ -736,6 +802,14 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "operationGroupingMode": "Isolated",
+                      "visibleFields": "CLAIM_DISCLAIMER_ID,CLAIM_DISCLAIMER_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "CLAIM_DISCLAIMER_ID,CLAIM_DISCLAIMER_DESC"
                     }
                   }
                 }
@@ -768,6 +842,14 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "visibleFields": "LODGING_CATEGORY_ID,LODGING_CATEGORY_DESC",
+                      "operationGroupingMode": "Isolated"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "LODGING_CATEGORY_ID,LODGING_CATEGORY_DESC"
                     }
                   }
                 }
@@ -799,7 +881,16 @@
                       "column": false
                     },
                     "quickVariantSelection": {
-                      "hideTableTitle": true
+                      "hideTableTitle": true,
+                      "showCounts": true
+                    },
+                    "enableMassEdit": {
+                      "operationGroupingMode": "Isolated",
+                      "visibleFields": "ROOM_TYPE_ID,ROOM_TYPE_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "ROOM_TYPE_ID,ROOM_TYPE_DESC"
                     }
                   }
                 }
@@ -864,6 +955,13 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "visibleFields": "AREA_ID,AREA_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "AREA_ID,AREA_DESC"
                     }
                   }
                 }
@@ -895,7 +993,16 @@
                       "column": false
                     },
                     "quickVariantSelection": {
-                      "hideTableTitle": true
+                      "hideTableTitle": true,
+                      "showCounts": true
+                    },
+                    "enableMassEdit": {
+                      "operationGroupingMode": "Isolated",
+                      "visibleFields": "COUNTRY_ID,COUNTRY_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "COUNTRY_ID,COUNTRY_DESC"
                     }
                   }
                 }
@@ -928,6 +1035,14 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "visibleFields": "CURRENCY_ID,CURRENCY_DESC",
+                      "operationGroupingMode": "Isolated"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "CURRENCY_ID,CURRENCY_DESC"
                     }
                   }
                 }
@@ -960,6 +1075,13 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "visibleFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC"
                     }
                   }
                 }
@@ -992,6 +1114,14 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "visibleFields": "STAFF_CATEGORY_ID,STAFF_CATEGORY_DESC",
+                      "operationGroupingMode": "Isolated"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "STAFF_CATEGORY_ID,STAFF_CATEGORY_DESC"
                     }
                   }
                 }
@@ -1024,6 +1154,13 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "visibleFields": "VEHICLE_TYPE_ID,VEHICLE_TYPE_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "VEHICLE_TYPE_ID,VEHICLE_TYPE_DESC"
                     }
                   }
                 }
@@ -1056,6 +1193,13 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "visibleFields": "BRANCH_ID,BRANCH_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "BRANCH_ID,BRANCH_DESC"
                     }
                   }
                 }
@@ -1088,6 +1232,14 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "visibleFields": "COUNTRY_ID,STATE_ID,STATE_DESC",
+                      "operationGroupingMode": "Isolated"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "COUNTRY_ID,STATE_ID,STATE_DESC"
                     }
                   }
                 }
