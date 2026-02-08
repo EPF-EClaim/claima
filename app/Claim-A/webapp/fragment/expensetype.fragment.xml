@@ -1,88 +1,62 @@
+<!-- claima/fragment/expensetype.fragment.xml -->
 <core:FragmentDefinition
     xmlns="sap.m"
     xmlns:mvc="sap.ui.core.mvc"
-    xmlns:f="sap.f"
-    xmlns:core="sap.ui.core"
-    xmlns:mdc="sap.ui.mdc"
-    xmlns:mdct="sap.ui.mdc.table">
-    <f:DynamicPage id="expensetype">
-        <f:content>
-            <mdc:Table
-                id="table"
-                header="Expense"
-                p13nMode="Column,Sort,Group,Filter"
-                threshold="25"
-                showRowCount="false"
-                useColumnLabelsAsTooltips="true"
-                selectionMode="Multi">
-                <mdc:actions>
-                    <MenuButton
-                        text="Add Claim Type"
+    xmlns:core="sap.ui.core">
+
+    <VBox class="roundedBox sapUiSmallMargin" rowGap="1rem" backgroundDesign="Solid">
+        <!-- Actions toolbar -->
+        <Toolbar>
+        <ToolbarSpacer />
+            <MenuButton text="Add Claim Type"
                         buttonMode="Split"
                         useDefaultActionOnly="true">
-                        <menu>
-                            <Menu itemSelected="onMenuAction">
-                                <MenuItem
-                                    text="Create Expense" id="expense" press="onPressClaimDetails">
-                                </MenuItem>
-                                <MenuItem
-                                    text="Scan Receipt" id="receipt">
-                                </MenuItem>
-                            </Menu>
-                        </menu>
-                    </MenuButton>
-                    <Button
-                        id="btnEdit"
-                        text="Edit"
-                        press="openConfigurationDialog"
-                        enabled="false"/>
-                    <Button
-                        id="btnDuplicate"
-                        text="Duplicate"
-                        press="openConfigurationDialog"
-                        enabled="false"/>
-                    <Button
-                        id="btnDelete"
-                        text="Delete"
-                        press="openConfigurationDialog"
-                        enabled="false"/>
-                </mdc:actions>
-                <mdct:Column
-                    propertyKey="date"
-                    header="Date">
-                    <Text text="{date}" />
-                </mdct:Column>
-                <mdct:Column
-                    propertyKey="receipt"
-                    header="Receipt">
-                    <Text text="{receipt}" />
-                </mdct:Column>
-                <mdct:Column
-                    propertyKey="first_ascent"
-                    header="Claim Type"
-                >
-                    <Text text="{mountains>first_ascent}" />
-                </mdct:Column>
-                <mdct:Column
-                    propertyKey="countries"
-                    header="Claim Item"
-                >
-                    <Text text="{mountains>countries}" />
-                </mdct:Column>
-                <mdct:Column
-                    propertyKey="parent_mountain"
-                    header="Amount"
-                >
-                    <Text text="{mountains>parent_mountain}" />
-                </mdct:Column>
-                <mdct:Column
-                    propertyKey="parent_mountain"
-                    header="Category"
-                >
-                    <Text text="{mountains>parent_mountain}" />
-                </mdct:Column>
-            </mdc:Table>
-        </f:content>
-    </f:DynamicPage>
-    
+                <menu>
+                    <Menu itemSelected="onMenuAction">
+                        <MenuItem text="Create Expense" id="expense" press="onPressClaimDetails"/>
+                        <MenuItem text="Scan Receipt" id="receipt"/>
+                    </Menu>
+                </menu>
+            </MenuButton>
+            <Button id="btnEdit" text="Edit" press="openConfigurationDialog" enabled="false"/>
+            <Button id="btnDuplicate" text="Duplicate" press="openConfigurationDialog" enabled="false"/>
+            <Button id="btnDelete" text="Delete" press="openConfigurationDialog" enabled="false"/>
+        </Toolbar>
+
+        <!-- Items table -->
+        <Table id="itemsTable"
+               items="{items>/results}"
+               width="100%"
+               growing="true"
+               growingScrollToLoad="false"
+               sticky="ColumnHeaders">
+
+            <columns>
+                <Column><Text text="Date"/></Column>
+                <Column><Text text="Receipt"/></Column>
+                <Column><Text text="Claim Type"/></Column>
+                <Column><Text text="Claim Item"/></Column>
+                <Column hAlign="End"><Text text="Amount"/></Column>
+                <Column><Text text="Category"/></Column>
+            </columns>
+
+            <items>
+                <ColumnListItem>
+                    <cells>
+                        <Text text="{
+                        path: 'items>START_DATE',
+                        type: 'sap.ui.model.odata.type.Date',
+                        formatOptions: { pattern: 'dd MMM yyyy' }
+                        }"/>
+                        <Text text="{items>RECEIPT_NO}"/>
+                        <Text text="{items>CLAIM_TYPE_ITEM}"/>
+                        <Text text="{items>CLAIM_ITEM_ID}"/>
+                        <ObjectNumber number="{items>AMOUNT}" unit="{items>CURRENCY}"/>
+                        <Text text="{items>STAFF_CATEGORY}"/>
+                    </cells>
+                </ColumnListItem>
+            </items>
+
+        </Table>
+    </VBox>
 </core:FragmentDefinition>

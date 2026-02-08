@@ -9,11 +9,9 @@
         fitContent="true"
     >
         <f:content>
-            <!-- Using sap.m.Table for JSONModel testing -->
-            <!-- items="{myRequestform>/requestsform}" -->
             <Table
                 id="tb_myrequestform"
-                headerText="My Request Form"
+                headerText="My Pre-Approval Status"
                 mode="SingleSelectMaster"
                 width="auto"
                 items="{path:'employee>/ZREQUEST_HEADER', parameters: {
@@ -42,19 +40,20 @@
 
                 <items>
                     <ColumnListItem
-                        type="Active"
+                        
                     >
                         <cells>
-                            <!--                <Text text="{myRequestform>reportpurpose}" />
-                            <Text text="{myRequestform>reportid}" />
-                            <Text text="{myRequestform>startdate}" />
-                            <Text text="{myRequestform>status}" />
-                            <Text text="{myRequestform>amount}" /> -->
-
                             <Text text="{employee>OBJECTIVE_PURPOSE}" />
                             <Text text="{employee>REQUEST_ID}" />
-                            <Text text="{employee>START_DATE}"/>
-                            <Text text="{employee>END_DATE}" />
+                            <Text text="{
+                                path: 'employee>START_DATE',
+                                type: 'sap.ui.model.odata.type.Date',
+                                formatOptions: { pattern: 'dd MMM yyyy' } 
+                            }"/>
+                            <Text text="{
+                                path: 'employee>END_DATE',
+                                type: 'sap.ui.model.odata.type.Date',
+                                formatOptions: { pattern: 'dd MMM yyyy' }}" />
                             <Text text="{employee>AMOUNT}" />
                         </cells>
                     </ColumnListItem>

@@ -10,7 +10,9 @@ sap.ui.define([
 	"sap/m/MessageToast",
 	"sap/m/Text",
 	"sap/m/library",
-	"sap/tnt/library"
+	"sap/tnt/library",
+	"sap/ui/model/Filter",
+	"sap/ui/model/FilterOperator"
 ], function (
 	Device,
 	Controller,
@@ -22,7 +24,9 @@ sap.ui.define([
 	MessageToast,
 	Text,
 	library,
-	tntLibrary
+	tntLibrary,
+	Filter,
+	FilterOperator
 ) {
 	"use strict";
 
@@ -86,6 +90,12 @@ sap.ui.define([
 				}
 			});
 			this.getView().setModel(oConfigModel, "configModel");
+
+
+			const oItemsModel = new JSONModel({ results: [] });
+			this.getView().setModel(oItemsModel, "items");
+
+
 		},
 
 
@@ -362,69 +372,107 @@ sap.ui.define([
 			return null;
 		},
 		//For MyClaimStatus(myexpensereport) on item click. This will fetch data based on row selected and push to detail page
-		onRowPress: async function (oEvent) {
 
+		onRowPress: async function (oEvent) {
 			const oItem = oEvent.getParameter("listItem");
-			const oCtx = oItem && oItem.getBindingContext("employee")
+			const oCtx = oItem && oItem.getBindingContext("employee");
 
 			if (!oCtx) {
-				MessageToast.show("No context found on the selected row.");
+				sap.m.MessageToast.show("No context found on the selected row.");
 				return;
 			}
-			//Fetch data not available 
-			await oCtx.requestProperty([
-				"EMP_ID",
-				"EMP_NAME",
-				"STATUS_ID",
-				"DEPARTMENT",
-				"ALTERNATE_COST_CENTRE",
-				"AMOUNT",
-				"CLAIM_MAIN_CAT_ID"
-			]);
 
-			//const row = oCtx.getObject();
-			const fullEntity = await oCtx.requestObject()
-
-
-			// map header → current schema used by report.fragment
-			// const mapped = this._mapHeaderToCurrent(row);
-			const mapped = this._mapHeaderToCurrent(fullEntity);
-
-
-			// set "current" model data
-			let oCurrent = this.getView().getModel("current");
-			if (!oCurrent) {
-				oCurrent = new sap.ui.model.json.JSONModel();
-				this.getView().setModel(oCurrent, "current");
+			// optional: clear the selection (nice UX)
+			const oSrcTable = oEvent.getSource();
+			if (oSrcTable && oSrcTable.removeSelections) {
+				oSrcTable.removeSelections(true);
 			}
-			oCurrent.setData(mapped);
 
+			const oModel = oCtx.getModel();        // OData V4 model "employee"
+			const oPage = this.byId("expensereport");
 
-			// navigate to the detail page that contains report.fragment
-			const oDetailPage = this.byId("expensereport");
-			if (!oDetailPage) {
-				sap.m.MessageToast.show("Detail page 'expensereport' not found.");
-				return;
+			try {
+				oPage.setBusy(true);
+
+				// 2) Full header (gets anything not in $select)
+				const oHeader = await oCtx.requestObject();
+				const sClaimId = String(oHeader.CLAIM_ID || "").trim();
+
+				if (!sClaimId) {
+					sap.m.MessageToast.show("Selected row does not have a valid CLAIM_ID.");
+					return;
+				}
+
+				// 3) Map header → "current" (report.fragment)
+				let oCurrent = this.getView().getModel("current");
+				if (!oCurrent) {
+					oCurrent = new sap.ui.model.json.JSONModel();
+					this.getView().setModel(oCurrent, "current");
+				}
+				oCurrent.setData(this._mapHeaderToCurrent(oHeader));
+
+				// 4) Fetch items → "items" model (expensetype.fragment)
+				const oItemsBinding = oModel.bindList(
+					"/ZCLAIM_ITEM",
+      /* oContext  */ undefined,
+      /* aSorters  */[],
+      /* aFilters  */[new Filter("CLAIM_ID", FilterOperator.EQ, sClaimId)],
+      /* mParams   */ {
+						$select: "CLAIM_ID,START_DATE,CLAIM_TYPE_ITEM,CLAIM_ITEM_ID,AMOUNT,CURRENCY,STAFF_CATEGORY"
+					}
+				);
+
+				const aItemCtxs = await oItemsBinding.requestContexts(0, Infinity);
+				const aItems = await Promise.all(aItemCtxs.map(c => c.requestObject()));
+
+				let oItemsModel = this.getView().getModel("items");
+				if (!oItemsModel) {
+					oItemsModel = new sap.ui.model.json.JSONModel({ results: [] });
+					this.getView().setModel(oItemsModel, "items");
+				}
+				oItemsModel.setData({ results: aItems || [] });
+
+				// 5) Navigate
+				const oPageContainer = this.byId("pageContainer");
+				oPageContainer.to(oPage);
+
+				// Show expensetype first (your current UX)
+				this.getView().byId("expensetypescr").setVisible(true);
+				this.getView().byId("claimscr").setVisible(false);
+				this.createreportButtons("expensetypescr");
+
+			} catch (e) {
+				jQuery.sap.log.error("onRowPress error: " + e);
+				sap.m.MessageToast.show("Failed to load claim header/items.");
+			} finally {
+				oPage.setBusy(false);
 			}
-			this.byId("pageContainer").to(oDetailPage);
 		},
 
-		//Mapping for fields and database
 		_mapHeaderToCurrent: function (row) {
+			// Helper: convert to yyyy-MM-dd (adjust to your locale if needed)
+			const fmt = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" });
+			const toYMD = (d) => {
+				if (d instanceof Date) return fmt.format(d);
+				// handle ISO string "2026-01-26" or similar -> keep
+				if (typeof d === "string") return d;
+				return d || "";
+			};
+
 			return {
 				id: row.CLAIM_ID,
 				location: row.CLAIM_MAIN_CAT_ID || "",
 				costcenter: row.CLAIM_MAIN_CAT_ID || "",
 				altcc: row.ALTERNATE_COST_CENTRE || "",
-				total: row.AMOUNT,
+				total: row.TOTAL,          // you use TOTAL in the table
 				cashadv: row.CLAIM_ID || "",
 				finalamt: row.CLAIM_ID || "",
 				report: {
 					id: row.CLAIM_ID,
 					purpose: row.CATEGORY || "",
-					startdate: row.CLAIM_DATE || "",
-					enddate: row.CLAIM_DATE || "",
-					location: row.location || "",
+					startdate: toYMD(row.CLAIM_DATE),
+					enddate: toYMD(row.CLAIM_DATE),
+					location: row.LOCATION || "",
 					category: row.CATEGORY || "",
 					comment: row.CLAIM_ID || "",
 					amt_approved: row.TOTAL || ""
@@ -437,9 +485,6 @@ sap.ui.define([
 			// row context from named model "employee"
 			const oItem = oEvent.getParameter("listItem");
 			const oCtx = oItem && oItem.getBindingContext("employee");
-			/* 	const row = oCtx.getObject();
-				const reqid = String(row.REQUEST_ID).trim();
-				console.log("reqid:", reqid); */
 
 			if (!oCtx) {
 				sap.m.MessageToast.show("No context found on the selected row.");
@@ -462,7 +507,14 @@ sap.ui.define([
 					this.getView().setModel(oRequest, "request");
 				}
 				oRequest.setData(mapped);
-				
+
+
+				const oModel = this.getOwnerComponent().getModel("request")
+					|| this.getView().getModel("request");
+				if (oModel) {
+					oModel.setProperty("/view", "list");   // your custom flag
+				}
+
 				const sReqId = String(fullEntity.REQUEST_ID || "").trim();
 
 				// Navigate to detail page that consumes the "request" model
@@ -493,7 +545,7 @@ sap.ui.define([
 						return fmt.format(d);
 					}
 					if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
-						return d; 
+						return d;
 					}
 				} catch (e) {/* ignore */ }
 				return d || "";
