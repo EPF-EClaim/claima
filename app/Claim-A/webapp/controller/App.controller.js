@@ -263,6 +263,146 @@ sap.ui.define([
 			this.byId("pageContainer").to(this.getView().createId("dashboard"));
 		},
 
+		onPressSaveDraft: async function (oEvent) {
+			var currentReportNumber = await this.getCurrentReportNumber();
+
+			// Set data for ZCLAIM_HEADER
+			var oCurrentModel = this.getView().getModel("current");
+			//// Claim Type ID
+			oCurrentModel.setProperty("/report/claim_type", "001")
+			//// Status ID
+			oCurrentModel.setProperty("/report/status_id", "Draft")
+			//// get data from current claim header shown
+			var oCurrentData = oCurrentModel.getData();
+
+			////// Claim Main Category ID
+			// switch (oCurrentData.report.category) {
+				// case "expcat_direct":
+					// var claimMainCatID = "0000000001";
+					// break;
+				// case "expcat_auto":
+					// claimMainCatID = "0000000002";
+					// break;
+				// case "expcat_withoutrequest":
+					// claimMainCatID = "0000000003";
+					// break;
+			// }
+
+			//// Alternate Cost Center
+			var altCC = oCurrentData.altcc;
+			if (altCC == '') {
+				altCC = null;
+			}
+
+			//// Amount Approved (Total)
+			var amtApproved = Number.parseFloat(oCurrentData.report.amt_approved).toFixed(2);
+			if (amtApproved == 'NaN') {
+				amtApproved = 0.00;
+			}
+
+			// Write to Database Table ZCLAIM_HEADER
+			var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
+			var sServiceUrl = sBaseUri + "/ZCLAIM_HEADER"; 
+
+			fetch(sServiceUrl, 
+				{method: "POST", headers: {"Content-Type": "application/json"},
+				body: JSON.stringify({
+					CLAIM_ID               : oCurrentData.report.id,
+					// CLAIM_MAIN_CAT_ID      : claimMainCatID,
+					CLAIM_MAIN_CAT_ID      : oCurrentData.costcenter,
+					EMP_ID                 : "000001",
+					CLAIM_DATE             : oCurrentData.report.startdate,
+					CATEGORY               : oCurrentData.report.purpose,
+					ALTERNATE_COST_CENTER  : altCC,
+					CLAIM_TYPE_ID          : oCurrentData.report.claim_type,
+					TOTAL                  : amtApproved,
+					STATUS_ID          	   : oCurrentData.report.status_id,
+					DEPARTMENT             : "IT Dept 2",
+					EMP_NAME               : "Ahmad Anthony",
+					JOB_POSITION		   : "Junior Analyst",
+					PERSONAL_GRADE		   : "22",
+					POSITION_NO		       : "000003",
+					ZCLAIM_ITEM            : null
+				}) 
+			})
+			.then(r => r.json())
+			.then((res) => {
+				if (!res.error) {
+					MessageToast.show("Record created");
+					this.updateCurrentReportNumber(currentReportNumber.current);
+					this.byId("pageContainer").to(this.getView().createId("dashboard"));
+				} else {
+					MessageToast.show(res.error.code, res.error.message);
+				};
+			});
+		},
+
+		getCurrentReportNumber: async function () {
+			const sBaseUri = this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri || "/odata/v4/EmployeeSrv/";
+			const sServiceUrl = sBaseUri.replace(/\/$/, "") + "/ZNUM_RANGE";
+
+			try {
+				const response = await fetch(sServiceUrl);
+
+				if (!response.ok) {
+					throw new Error(`HTTP ${response.status} ${response.statusText}`);
+				}
+
+				const data = await response.json();
+
+				const nr02 = (data.value || data).find(x => x.RANGE_ID === "NR02");
+				if (!nr02 || nr02.CURRENT == null) {
+					throw new Error("NR02 not found or CURRENT is missing");
+				}
+
+				const current = Number(nr02.CURRENT);
+				const yy = String(new Date().getFullYear()).slice(-2);
+				const reportNo = `CLM${yy}${String(current).padStart(9, "0")}`;
+
+				return { reportNo, current };
+
+			} catch (err) {
+				console.error("Error fetching CDS data:", err);
+				return null; // or: throw err;
+			}
+		},
+
+		updateCurrentReportNumber: async function (currentNumber) {
+			const sId = "NR02";
+			const sBaseUri =
+				this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri
+				|| "/odata/v4/EmployeeSrv/";
+
+			const sServiceUrl = sBaseUri.replace(/\/$/, "") + "/ZNUM_RANGE('" + encodeURIComponent(sId) + "')";
+			const nextNumber = currentNumber + 1;
+
+			try {
+				const res = await fetch(sServiceUrl, {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ CURRENT: String(nextNumber) })
+				});
+
+				if (!res.ok) {
+				const errText = await res.text().catch(() => "");
+				throw new Error(`PATCH failed ${res.status} ${res.statusText}: ${errText}`);
+				}
+
+				// PATCH often returns 204
+				if (res.status === 204) return { CURRENT: nextNumber };
+
+				// If the server returns JSON entity
+				const contentType = res.headers.get("content-type") || "";
+				if (contentType.includes("application/json")) {
+				return await res.json();
+				}
+				return await res.text(); // fallback
+			} catch (e) {
+				console.error("Error updating number range:", e);
+				return null;
+			}
+		},
+
 		onPressClaimDetails: function () {
 			this.getView().byId("expensetypescr").setVisible(false);
 			this.getView().byId("claimscr").setVisible(true);
