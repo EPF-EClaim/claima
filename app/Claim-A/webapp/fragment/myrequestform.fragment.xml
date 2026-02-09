@@ -8,26 +8,17 @@
         headerExpanded="false"
         fitContent="true"
     >
-        <f:title>
-            <f:DynamicPageTitle>
-                <f:actions>
-                    <Button
-                        text="Go to Detail page 2"
-                        press="onPressNavToDetail"
-                    />
-                </f:actions>
-            </f:DynamicPageTitle>
-        </f:title>
-
         <f:content>
-            <!-- Using sap.m.Table for JSONModel testing -->
             <Table
                 id="tb_myrequestform"
-                headerText="My Request Form"
+                headerText="My Pre-Approval Status"
                 mode="SingleSelectMaster"
                 width="auto"
-                items="{myRequestform>/requestsform}"
+                items="{path:'employee>/ZREQUEST_HEADER', parameters: {
+                $count: true,
+                $select: 'REQUEST_ID,OBJECTIVE_PURPOSE,EMP_ID,START_DATE,END_DATE,LOCATION,TYPE_OF_TRANSPORTATION,REQUEST_GROUP_ID,REMARK'}}"
                 itemPress="onRowPressForm"
+                growing="true"
             >
                 <columns>
                     <Column>
@@ -49,15 +40,21 @@
 
                 <items>
                     <ColumnListItem
-                        type="Active"
-                        press="handlePress"
+                        
                     >
                         <cells>
-                            <Text text="{myRequestform>reportpurpose}" />
-                            <Text text="{myRequestform>reportid}" />
-                            <Text text="{myRequestform>startdate}" />
-                            <Text text="{myRequestform>status}" />
-                            <Text text="{myRequestform>amount}" />
+                            <Text text="{employee>OBJECTIVE_PURPOSE}" />
+                            <Text text="{employee>REQUEST_ID}" />
+                            <Text text="{
+                                path: 'employee>START_DATE',
+                                type: 'sap.ui.model.odata.type.Date',
+                                formatOptions: { pattern: 'dd MMM yyyy' } 
+                            }"/>
+                            <Text text="{
+                                path: 'employee>END_DATE',
+                                type: 'sap.ui.model.odata.type.Date',
+                                formatOptions: { pattern: 'dd MMM yyyy' }}" />
+                            <Text text="{employee>AMOUNT}" />
                         </cells>
                     </ColumnListItem>
                 </items>

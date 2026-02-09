@@ -5,7 +5,7 @@
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
     xmlns:card="sap.f.cards">
-    <VBox class="sapUiSmallMargin" id="report">
+    <VBox class="sapUiSmallMargin" id="report" binding="{current>/}">
         <HBox>
             <VBox
                 class="sapUiSmallMargin"
@@ -24,11 +24,11 @@
                             labelSpanS="12"
                             adjustLabelSpan="false"
                             emptySpanXL="0"
-                            emptySpanL="4"
+                            emptySpanL="1"
                             emptySpanM="0"
                             emptySpanS="0"
                             columnsXL="2"
-                            columnsL="1"
+                            columnsL="2"
                             columnsM="1"
                             singleContainerFullSize="false"
                         />
@@ -46,18 +46,23 @@
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>id}">
                                     <f:fields>
-                                        <Text text="{id}" />
+                                        <Text text="{current>/report/id}" />
                                     </f:fields>
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>startdate}">
                                     <f:fields>
-                                        <Text text="{current>/report/startdate}" />
+                                        <Text text="{   path: 'current>/report/startdate', 
+                                                        type: 'sap.ui.model.odata.type.Date',
+                                                        formatOptions: { pattern: 'dd MMM yyyy' }
+                                            }" />
                                     </f:fields>
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>enddate}">
                                     <f:fields>
                                         <Text
-                                            text="{current>/report/enddate}"
+                                            text="{path: 'current>/report/enddate', 
+                                                        type: 'sap.ui.model.odata.type.Date',
+                                                        formatOptions: { pattern: 'dd MMM yyyy' }}"
                                             id="countryText"
                                         />
                                     </f:fields>
@@ -69,7 +74,7 @@
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>location}">
                                     <f:fields>
-                                        <Text text="{location}" />
+                                        <Text text="{current>/report/location}" />
                                     </f:fields>
                                 </f:FormElement>
                             </f:formElements>

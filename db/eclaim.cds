@@ -458,3 +458,12 @@ entity ZKWSP_MILEAGE : managed {
         MILEAGE        : Integer @Common.Label: 'Mileage';
         MAX_MILEAGE    : Integer @Common.Label: ' Max Mileage';
 }
+
+entity Entity1 {
+    key ID : UUID;
+}
+
+entity ZRISK{
+    key RISK_ID : String;
+        RISK_DESCRIPTION: String;
+}
