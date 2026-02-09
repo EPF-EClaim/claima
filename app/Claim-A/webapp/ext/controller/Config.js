@@ -49,13 +49,13 @@ sap.ui.define([
                 oHBox.addItem(new sap.m.Label({
                     text: field + ":",
                     width: "100px",
-                    labelFor: field + fieldCount
+                    labelFor: field
                 }));
 
                 const oInput = new sap.m.Input({
                     value: value?.toString() || "",
                     name: field,
-                    width: "350px",
+                    width: "400px",
                     valueLiveUpdate: true
                 });
 

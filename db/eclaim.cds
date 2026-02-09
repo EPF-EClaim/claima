@@ -56,9 +56,7 @@ entity ZREQUEST_HEADER : managed {
         CASH_ADVANCE_DATE       : Date;
         TRAVEL_ALONE_FAMILY     : String(1);
         TRAVEL_FAMILY_NOW_LATER : String(1);
-        /*ZCLAIM_TYPE            : Association to one ZCLAIM_TYPE
-                                     on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;*/
-        ZREQUEST_ITEM           : Composition of many ZREQUEST_ITEM /*change to composition 6/2/2026*/
+        ZREQUEST_ITEM           : Composition of many ZREQUEST_ITEM 
                                       on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
         ZREQUEST_TYPE           : Association to ZREQUEST_TYPE
                                       on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
@@ -116,8 +114,10 @@ entity ZREQUEST_TYPE : managed {
 }
 
 entity ZCLAIM_TYPE : managed {
-    key CLAIM_TYPE_ID   : String  @mandatory  @Common.Label: 'Claim Type ID';
-        CLAIM_TYPE_DESC : String  @Common.Label: 'Claim Type Description';
+    key CLAIM_TYPE_ID    : String  @mandatory  @Common.Label: 'Claim Type ID';
+        CLAIM_TYPE_DESC  : String  @Common.Label: 'Claim Type Description';
+        ZCLAIM_TYPE_ITEM : Composition of many ZCLAIM_TYPE_ITEM
+                               on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
 
 }
 
@@ -292,6 +292,7 @@ entity ZRISK : managed {
 }
 
 entity ZCLAIM_TYPE_ITEM : managed {
+    key CLAIM_TYPE_ID        : String  @mandatory  @Common.Label: 'Claim Type ID';
     key CLAIM_TYPE_ITEM_ID   : String  @mandatory  @Common.Label: 'Claim Type Item Id';
         CLAIM_TYPE_ITEM_DESC : String  @Common.Label: 'Claim Type Item Description';
 }

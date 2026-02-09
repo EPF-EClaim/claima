@@ -279,7 +279,7 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
         Updatable : true,
         Insertable: true
     },
-    odata.draft.enabled,
+    // odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
