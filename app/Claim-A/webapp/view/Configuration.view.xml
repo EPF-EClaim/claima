@@ -1,9 +1,305 @@
-<mvc:View controllerName="claima.controller.configuration" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:macros="sap.fe.macros" xmlns:macrosTable="sap.fe.macros.Table">
-    <macros:Table xmlns:macro="sap.fe.macros" id="claimConfiguration" metaPath="@com.sap.vocabularies.UI.v1.LineItem" selectionMode="Multi" 
-    enableSelectAll="true" creationMode="Inline" isSearchable="false" type="ResponsiveTable" busy="false" condensedTableLayout="true" 
-    contextPath="/ZCLAIM_PURPOSE" disableColumnFreeze="false" disableCopyToClipboard="false" enableAutoColumnWidth="true" enableExport="true" 
-    enableFullScreen="false" enablePaste="true" headerVisible="true" popinLayout="Block" readOnly="false" rowCountMode="Auto" header="ZCLAIM PURPOSE">
-     <macros:massEdit>
-     </macros:massEdit>
-    </macros:Table>
+<mvc:View controllerName="claima.controller.configuration"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:tnt="sap.tnt"
+    xmlns:cards="sap.f.cards"
+    xmlns:f="sap.f"
+    xmlns:l="sap.ui.layout"
+    xmlns:cssgrid="sap.ui.layout.cssgrid"
+    xmlns:w="sap.ui.integration.widgets"
+    xmlns:card="sap.f.cards"
+    xmlns:core="sap.ui.core"
+    xmlns:layout="sap.ui.layout">
+                            <ScrollContainer
+                                vertical="true"
+                                horizontal="false"
+                                height="100%"
+                                class="sapUiContentPadding">
+                                <f:GridContainer>
+                                    <f:layout>
+                                        <f:GridContainerSettings
+                                            columnSize="16rem"
+                                            rowSize="auto"
+                                            gap="1rem"
+                                        />
+                                    </f:layout>
+
+                                    
+                                    <f:Card
+                                        id="ZCLAIM_PURPOSE"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:customData>
+                                            <core:CustomData
+                                                key="id"
+                                                value="ZCLAIM_PURPOSE"
+                                            />
+                                        </f:customData>
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf1}"
+                                            />
+                                        </f:header>
+                                    </f:Card>
+
+                                    
+                                    <f:Card
+                                        id="ZRISK"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_zrisk}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    
+                                    <f:Card
+                                        id="ZREQUEST_GRP"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_zreqgrp}"
+                                            />
+                                        </f:header>
+                                    </f:Card>
+
+                                    
+                                    <f:Card
+                                        id="ZREQUEST_TYPE"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_zreqtype}"
+                                            />
+                                        </f:header>
+                                    </f:Card>
+                                    
+                                    <f:Card
+                                        id="ZCLAIM_TYPE"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_zclaimtype}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZCLAIM_TYPE_ITEM"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_zclaimtpeitem}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZNUM_RANGE"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_znum}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZAPP_FIELD_CTRL"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_fieldctrl}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZARITH_OPT"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_zarith}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZAPPROVAL_RULES"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_appr}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZCLAIM_MAIN_CAT"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_zclaimmain}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZCLAIM_CATEGORY"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_claimcat}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZSTATUS"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_stat}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZCLAIM_DISCLAIMER"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_disc}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZLODGING_CAT"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_lodg}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZROOM_TYPE"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_room}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZCOUNTRY"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_country}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZAREA"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_area}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZCURRENCY"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_curr}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZSTAFF_CAT"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_staff}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZMARITAL_STAT"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_marital}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZVEHICLE_TYPE"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_vehicle}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZKWSP_BRANCH"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_kwsp}"/>
+                                        </f:header>
+                                    </f:Card>
+
+                                    <f:Card
+                                        id="ZSTATE"
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenConfigTable">
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf_state}"/>
+                                        </f:header>
+                                    </f:Card>
+                                </f:GridContainer>
+                            </ScrollContainer>
 </mvc:View>

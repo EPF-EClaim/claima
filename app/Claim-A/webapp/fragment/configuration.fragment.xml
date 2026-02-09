@@ -3,7 +3,6 @@
     xmlns:core="sap.ui.core">
 
     <VBox class="sapUiContentPadding sapUiSmallMargin">
-
         <!-- HEADER -->
         <Toolbar >
             <Title text="ZCLAIM PURPOSE" level="H2"/>

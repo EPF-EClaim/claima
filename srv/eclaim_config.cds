@@ -2,16 +2,15 @@ using {eclaim_srv as service} from './eclaim_srv';
 
 annotate service.ZCLAIM_PURPOSE with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [CLAIM_PURPOSE_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
-
-
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -20,6 +19,12 @@ annotate service.ZCLAIM_PURPOSE with @(
             TypeNamePlural: 'ZCLAIM_PURPOSE',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_PURPOSE_ID,
@@ -39,15 +44,16 @@ annotate service.ZCLAIM_PURPOSE with @(
 
 annotate service.ZRISK with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [RISK_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -56,6 +62,12 @@ annotate service.ZRISK with @(
             TypeNamePlural: 'ZRISK',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : RISK_ID,
@@ -74,15 +86,16 @@ annotate service.ZRISK with @(
 
 annotate service.ZREQUEST_GRP with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [REQUEST_GROUP_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -91,6 +104,12 @@ annotate service.ZREQUEST_GRP with @(
             TypeNamePlural: 'ZREQUEST_GRP',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : REQUEST_GROUP_ID,
@@ -109,15 +128,16 @@ annotate service.ZREQUEST_GRP with @(
 
 annotate service.ZREQUEST_TYPE with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [REQUEST_TYPE_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -126,6 +146,12 @@ annotate service.ZREQUEST_TYPE with @(
             TypeNamePlural: 'ZREQUEST_TYPE',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : REQUEST_TYPE_ID,
@@ -162,15 +188,16 @@ annotate service.ZREQUEST_TYPE with @(
 
 annotate service.ZCLAIM_TYPE with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [CLAIM_TYPE_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -179,6 +206,12 @@ annotate service.ZCLAIM_TYPE with @(
             TypeNamePlural: 'ZCLAIM_TYPE',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_TYPE_ID,
@@ -198,16 +231,11 @@ annotate service.ZCLAIM_TYPE with @(
 annotate service.ZNUM_RANGE with @(
     cds.autoexpose,
     Common.SemanticKey: [RANGE_ID],
-    Capabilities: {
-        Deletable : true,
-        Updatable : true,
-        Insertable: true
-    },
-    odata.draft.enabled,
 
-    UI          : {
-        CreateHidden: false,
-        DeleteHidden: false,
+
+    UI                : {
+        CreateHidden: true,
+        DeleteHidden: true,
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZNUM_RANGE',
@@ -244,15 +272,16 @@ annotate service.ZNUM_RANGE with @(
 
 annotate service.ZCLAIM_TYPE_ITEM with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [CLAIM_TYPE_ITEM_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -261,6 +290,12 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
             TypeNamePlural: 'ZCLAIM_TYPE_ITEM',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_TYPE_ITEM_ID,
@@ -279,15 +314,19 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
 
 annotate service.ZAPP_FIELD_CTRL with @(
     cds.autoexpose,
-    Common.SemanticKey: [CLAIM_TYPE_ID, CLAIM_TYPE_ITEM_ID],
-    Capabilities: {
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        CLAIM_TYPE_ID,
+        CLAIM_TYPE_ITEM_ID
+    ],
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -296,6 +335,12 @@ annotate service.ZAPP_FIELD_CTRL with @(
             TypeNamePlural: 'ZAPP_FIELD_CTRL',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_TYPE_ID,
@@ -434,15 +479,16 @@ annotate service.ZAPP_FIELD_CTRL with @(
 
 annotate service.ZARITH_OPT with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [OPERATOR_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -451,6 +497,12 @@ annotate service.ZARITH_OPT with @(
             TypeNamePlural: 'ZARITH_OPT',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : OPERATOR_ID,
@@ -469,15 +521,20 @@ annotate service.ZARITH_OPT with @(
 
 annotate service.ZAPPROVAL_RULES with @(
     cds.autoexpose,
-    Common.SemanticKey: [ZSCENARIO, ZSEQNO, ZAPPR_LVL],
-    Capabilities: {
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        ZSCENARIO,
+        ZSEQNO,
+        ZAPPR_LVL
+    ],
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -486,6 +543,12 @@ annotate service.ZAPPROVAL_RULES with @(
             TypeNamePlural: 'ZAPPROVAL_RULES',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : ZSCENARIO,
@@ -539,7 +602,7 @@ annotate service.ZAPPROVAL_RULES with @(
                 Value            : ZCOSTCTR_OP,
                 ![@UI.Importance]: #High,
                 Label            : 'ZCOSTCTR_OP'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : ZRISK,
@@ -557,22 +620,23 @@ annotate service.ZAPPROVAL_RULES with @(
                 Value            : ZAPPROVER_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'ZAPPROVER_ID'
-            },                       
+            },
         ]
     }
 );
 
 annotate service.ZCLAIM_MAIN_CAT with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [CLAIM_MAIN_CAT_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -581,6 +645,12 @@ annotate service.ZCLAIM_MAIN_CAT with @(
             TypeNamePlural: 'ZCLAIM_MAIN_CAT',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_MAIN_CAT_ID,
@@ -599,15 +669,16 @@ annotate service.ZCLAIM_MAIN_CAT with @(
 
 annotate service.ZCLAIM_CATEGORY with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [CLAIM_CAT_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -616,6 +687,12 @@ annotate service.ZCLAIM_CATEGORY with @(
             TypeNamePlural: 'ZCLAIM_CATEGORY',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_CAT_ID,
@@ -634,15 +711,16 @@ annotate service.ZCLAIM_CATEGORY with @(
 
 annotate service.ZSTATUS with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [STATUS_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -651,6 +729,12 @@ annotate service.ZSTATUS with @(
             TypeNamePlural: 'ZSTATUS',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : STATUS_ID,
@@ -669,15 +753,16 @@ annotate service.ZSTATUS with @(
 
 annotate service.ZCLAIM_DISCLAIMER with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [CLAIM_DISCLAIMER_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -686,6 +771,12 @@ annotate service.ZCLAIM_DISCLAIMER with @(
             TypeNamePlural: 'ZCLAIM_DISCLAIMER',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_DISCLAIMER_ID,
@@ -704,15 +795,16 @@ annotate service.ZCLAIM_DISCLAIMER with @(
 
 annotate service.ZLODGING_CAT with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [LODGING_CATEGORY_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -721,6 +813,12 @@ annotate service.ZLODGING_CAT with @(
             TypeNamePlural: 'ZLODGING_CAT',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : LODGING_CATEGORY_ID,
@@ -739,15 +837,16 @@ annotate service.ZLODGING_CAT with @(
 
 annotate service.ZROOM_TYPE with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [ROOM_TYPE_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -756,6 +855,12 @@ annotate service.ZROOM_TYPE with @(
             TypeNamePlural: 'ZROOM_TYPE',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : ROOM_TYPE_ID,
@@ -774,15 +879,16 @@ annotate service.ZROOM_TYPE with @(
 
 annotate service.ZFLIGHT_CLASS with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [FLIGHT_CLASS_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -791,6 +897,12 @@ annotate service.ZFLIGHT_CLASS with @(
             TypeNamePlural: 'ZFLIGHT_CLASS',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : FLIGHT_CLASS_ID,
@@ -809,15 +921,16 @@ annotate service.ZFLIGHT_CLASS with @(
 
 annotate service.ZCOUNTRY with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [COUNTRY_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -826,6 +939,12 @@ annotate service.ZCOUNTRY with @(
             TypeNamePlural: 'ZCOUNTRY',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : COUNTRY_ID,
@@ -844,15 +963,16 @@ annotate service.ZCOUNTRY with @(
 
 annotate service.ZAREA with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [AREA_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -861,6 +981,12 @@ annotate service.ZAREA with @(
             TypeNamePlural: 'ZAREA',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : AREA_ID,
@@ -879,15 +1005,16 @@ annotate service.ZAREA with @(
 
 annotate service.ZCURRENCY with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [CURRENCY_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -896,6 +1023,12 @@ annotate service.ZCURRENCY with @(
             TypeNamePlural: 'ZCURRENCY',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CURRENCY_ID,
@@ -914,15 +1047,16 @@ annotate service.ZCURRENCY with @(
 
 annotate service.ZMARITAL_STAT with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [MARRIAGE_CATEGORY_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -931,6 +1065,12 @@ annotate service.ZMARITAL_STAT with @(
             TypeNamePlural: 'ZMARITAL_STAT',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : MARRIAGE_CATEGORY_ID,
@@ -949,15 +1089,16 @@ annotate service.ZMARITAL_STAT with @(
 
 annotate service.ZSTAFF_CAT with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [STAFF_CATEGORY_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -966,6 +1107,12 @@ annotate service.ZSTAFF_CAT with @(
             TypeNamePlural: 'ZSTAFF_CAT',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : STAFF_CATEGORY_ID,
@@ -984,15 +1131,16 @@ annotate service.ZSTAFF_CAT with @(
 
 annotate service.ZVEHICLE_TYPE with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [VEHICLE_TYPE_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -1001,6 +1149,12 @@ annotate service.ZVEHICLE_TYPE with @(
             TypeNamePlural: 'ZVEHICLE_TYPE',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : VEHICLE_TYPE_ID,
@@ -1019,15 +1173,16 @@ annotate service.ZVEHICLE_TYPE with @(
 
 annotate service.ZKWSP_BRANCH with @(
     cds.autoexpose,
+    odata.draft.bypass,
     Common.SemanticKey: [BRANCH_ID],
-    Capabilities: {
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -1036,6 +1191,12 @@ annotate service.ZKWSP_BRANCH with @(
             TypeNamePlural: 'ZKWSP_BRANCH',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : BRANCH_ID,
@@ -1054,15 +1215,19 @@ annotate service.ZKWSP_BRANCH with @(
 
 annotate service.ZSTATE with @(
     cds.autoexpose,
-    Common.SemanticKey: [COUNTRY_ID, STATE_ID],
-    Capabilities: {
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        COUNTRY_ID,
+        STATE_ID
+    ],
+    Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI          : {
+    UI                : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -1071,6 +1236,12 @@ annotate service.ZSTATE with @(
             TypeNamePlural: 'ZSTATE',
         },
         LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : COUNTRY_ID,
@@ -1092,10 +1263,3 @@ annotate service.ZSTATE with @(
         ]
     }
 );
-
-
-
-
-
-
-
