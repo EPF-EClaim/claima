@@ -18,10 +18,10 @@
 			columnsM="1" >
 			<f:content>
 				<Label text="{i18n>req_purpose}" />
-				<Input value="{request>/purpose}" required="true"/>
+				<Input value="{request>/req_header/purpose}" required="true"/>
 
 				<Label text="{i18n>req_rtype}" />
-				<Select selectedKey="{request>/reqtype}" 
+				<Select selectedKey="{request>/req_header/reqtype}" 
 						required="true" 
 						items="{path: 'req_type_list>/types',
 								sorter: { path: 'REQUEST_TYPE_ID', descending: false }}">
@@ -37,13 +37,13 @@
                     displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
                     placeholder="dd MMM yyyy"
-                    value="{request>/tripstartdate}"
+                    value="{request>/req_header/tripstartdate}"
 					textAlign="Begin"
-					required="{= ${request>/reqtype} === 'RT0001 Travel' || 
-								${request>/reqtype} === 'RT0004 Reimbursement' }"
-					visible="{= ${request>/reqtype} === 'RT0001 Travel' || 
-								${request>/reqtype} === 'RT0003 Event'  || 
-								${request>/reqtype} === 'RT0004 Reimbursement' }"/>
+					required="{= ${request>/req_header/reqtype} === 'RT0001 Travel' || 
+								${request>/req_header/reqtype} === 'RT0004 Reimbursement' }"
+					visible="{= ${request>/req_header/reqtype} === 'RT0001 Travel' || 
+								${request>/req_header/reqtype} === 'RT0003 Event'  || 
+								${request>/req_header/reqtype} === 'RT0004 Reimbursement' }"/>
 
 				<Label text="{i18n>req_tripenddate}" />
 				<DatePicker
@@ -51,13 +51,13 @@
                     displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
                     placeholder="dd MMM yyyy"
-                    value="{request>/tripenddate}"
+                    value="{request>/req_header/tripenddate}"
 					textAlign="Begin"
-					required="{= ${request>/reqtype} === 'RT0001 Travel' || 
-								${request>/reqtype} === 'RT0004 Reimbursement' }"
-					visible="{= ${request>/reqtype} === 'RT0001 Travel' || 
-								${request>/reqtype} === 'RT0003 Event'  || 
-								${request>/reqtype} === 'RT0004 Reimbursement' }"/>
+					required="{= ${request>/req_header/reqtype} === 'RT0001 Travel' || 
+								${request>/req_header/reqtype} === 'RT0004 Reimbursement' }"
+					visible="{= ${request>/req_header/reqtype} === 'RT0001 Travel' || 
+								${request>/req_header/reqtype} === 'RT0003 Event'  || 
+								${request>/req_header/reqtype} === 'RT0004 Reimbursement' }"/>
 
 				<Label text="{i18n>req_eventstartdate}"/>
 				<DatePicker
@@ -65,12 +65,12 @@
                     displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
                     placeholder="dd MMM yyyy"
-                    value="{request>/eventstartdate}"
+                    value="{request>/req_header/eventstartdate}"
 					textAlign="Begin"
-					required="{= ${request>/reqtype} === 'RT0001 Travel' || 
-								${request>/reqtype} === 'RT0003 Event' }"
-					visible="{= ${request>/reqtype} === 'RT0001 Travel' || 
-								${request>/reqtype} === 'RT0003 Event' }"/>
+					required="{= ${request>/req_header/reqtype} === 'RT0001 Travel' || 
+								${request>/req_header/reqtype} === 'RT0003 Event' }"
+					visible="{= ${request>/req_header/reqtype} === 'RT0001 Travel' || 
+								${request>/req_header/reqtype} === 'RT0003 Event' }"/>
 
 				<Label text="{i18n>req_eventenddate}" />
 				<DatePicker
@@ -78,21 +78,21 @@
                     displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
                     placeholder="dd MMM yyyy"
-                    value="{request>/eventenddate}"
+                    value="{request>/req_header/eventenddate}"
 					textAlign="Begin"
-					required="{= ${request>/reqtype} === 'RT0001 Travel' || 
-								${request>/reqtype} === 'RT0003 Event' }"
-					visible="{= ${request>/reqtype} === 'RT0001 Travel' || 
-								${request>/reqtype} === 'RT0003 Event' }" />	
+					required="{= ${request>/req_header/reqtype} === 'RT0001 Travel' || 
+								${request>/req_header/reqtype} === 'RT0003 Event' }"
+					visible="{= ${request>/req_header/reqtype} === 'RT0001 Travel' || 
+								${request>/req_header/reqtype} === 'RT0003 Event' }" />	
 
 				<Label text="{i18n>req_grptype}" />
 				<Select width="100%" 
 						required="true" 
-						selectedKey="{request>/grptype}"
-						visible="{= ${request>/reqtype} === 'RT0001 Travel' || 
-									${request>/reqtype} === 'RT0002 Mobile'  || 
-									${request>/reqtype} === 'RT0003 Event'  || 
-									${request>/reqtype} === 'RT0004 Reimbursement' }">
+						selectedKey="{request>/req_header/grptype}"
+						visible="{= ${request>/req_header/reqtype} === 'RT0001 Travel' || 
+									${request>/req_header/reqtype} === 'RT0002 Mobile'  || 
+									${request>/req_header/reqtype} === 'RT0003 Event'  || 
+									${request>/req_header/reqtype} === 'RT0004 Reimbursement' }">
 					<!-- <core:Item key="none" text="" /> -->
 					<core:Item key="individual" text="Individual" />
 					<core:Item key="group" text="Group" />
@@ -102,29 +102,29 @@
 			    <Input 
 					id="request_location"
 					textAlign="Begin"
-					value="{request>/location}"
-					required="{= ${request>/reqtype} === 'RT0001 Travel' || 
-								${request>/reqtype} === 'RT0003 Event' }"
-					visible="{= ${request>/reqtype} === 'RT0001 Travel' || 
-								${request>/reqtype} === 'RT0003 Event'  || 
-								${request>/reqtype} === 'RT0004 Reimbursement' }"/>
+					value="{request>/req_header/location}"
+					required="{= ${request>/req_header/reqtype} === 'RT0001 Travel' || 
+								${request>/req_header/reqtype} === 'RT0003 Event' }"
+					visible="{= ${request>/req_header/reqtype} === 'RT0001 Travel' || 
+								${request>/req_header/reqtype} === 'RT0003 Event'  || 
+								${request>/req_header/reqtype} === 'RT0004 Reimbursement' }"/>
 
 			    <Label text="{i18n>req_transport}" />
 				<Input 
 					id="req_transport"
-					value="{request>/transport}"
-					required="{= ${request>/reqtype} === 'RT0001 Travel' }"
-					visible="{= ${request>/reqtype} === 'RT0001 Travel' || 
-								${request>/reqtype} === 'RT0003 Event'  || 
-								${request>/reqtype} === 'RT0004 Reimbursement' }" />
+					value="{request>/req_header/transport}"
+					required="{= ${request>/req_header/reqtype} === 'RT0001 Travel' }"
+					visible="{= ${request>/req_header/reqtype} === 'RT0001 Travel' || 
+								${request>/req_header/reqtype} === 'RT0003 Event'  || 
+								${request>/req_header/reqtype} === 'RT0004 Reimbursement' }" />
 
 			    <Label text="{i18n>req_acc}" />
 			    <Select width="100%" 
-						selectedKey="{request>/altcostcenter}" 
+						selectedKey="{request>/req_header/altcostcenter}" 
 						required="false" 
-						visible="{= ${request>/reqtype} === 'RT0001 Travel' || 
-									${request>/reqtype} === 'RT0003 Event'  || 
-									${request>/reqtype} === 'RT0004 Reimbursement' }">
+						visible="{= ${request>/req_header/reqtype} === 'RT0001 Travel' || 
+									${request>/req_header/reqtype} === 'RT0003 Event'  || 
+									${request>/req_header/reqtype} === 'RT0004 Reimbursement' }">
 					<core:Item key="none" text="" />
 					<core:Item key="cc1" text="CC1" />
 					<core:Item key="cc2" text="CC2" />
@@ -137,64 +137,64 @@
 			    <unified:FileUploader
 					id="req_attachment_1"
 					change=".onImportChange"
-					value="{request>/doc1}"
-					visible="{= ${request>/reqtype} === 'RT0001 Travel' || 
-								${request>/reqtype} === 'RT0002 Mobile' || 
-								${request>/reqtype} === 'RT0003 Event'  || 
-								${request>/reqtype} === 'RT0004 Reimbursement' }" />
+					value="{request>/req_header/doc1}"
+					visible="{= ${request>/req_header/reqtype} === 'RT0001 Travel' || 
+								${request>/req_header/reqtype} === 'RT0002 Mobile' || 
+								${request>/req_header/reqtype} === 'RT0003 Event'  || 
+								${request>/req_header/reqtype} === 'RT0004 Reimbursement' }" />
 
 			    <Label text="{i18n>req_attach2}" />
 			    <unified:FileUploader
 					id="req_attachment_2"
 					change=".onImportChange"
-					value="{request>/doc2}"
-					visible="{= ${request>/reqtype} === 'RT0001 Travel' || 
-								${request>/reqtype} === 'RT0002 Mobile' || 
-								${request>/reqtype} === 'RT0003 Event'  || 
-								${request>/reqtype} === 'RT0004 Reimbursement' }" />
+					value="{request>/req_header/doc2}"
+					visible="{= ${request>/req_header/reqtype} === 'RT0001 Travel' || 
+								${request>/req_header/reqtype} === 'RT0002 Mobile' || 
+								${request>/req_header/reqtype} === 'RT0003 Event'  || 
+								${request>/req_header/reqtype} === 'RT0004 Reimbursement' }" />
 
 			    <Label text="{i18n>req_comment}" />
 			    <TextArea
 					id="request_comment"
 					textAlign="Begin"
 					required="true"
-					value="{request>/comment}"
-					visible="{= ${request>/reqtype} === 'RT0001 Travel' || 
-								${request>/reqtype} === 'RT0002 Mobile' || 
-								${request>/reqtype} === 'RT0003 Event'  || 
-								${request>/reqtype} === 'RT0004 Reimbursement' }" />
+					value="{request>/req_header/comment}"
+					visible="{= ${request>/req_header/reqtype} === 'RT0001 Travel' || 
+								${request>/req_header/reqtype} === 'RT0002 Mobile' || 
+								${request>/req_header/reqtype} === 'RT0003 Event'  || 
+								${request>/req_header/reqtype} === 'RT0004 Reimbursement' }" />
 
 				<Label text="{i18n>req_event1}" />
 			    <TextArea 
 					id="req_event_detail_1"
 					textAlign="Begin"
-					value="{request>/eventdetail1}"
-					required="{= ${request>/reqtype} === 'RT0003 Event' }"
-					visible="{= ${request>/reqtype} === 'RT0003 Event' }"/>
+					value="{request>/req_header/eventdetail1}"
+					required="{= ${request>/req_header/reqtype} === 'RT0003 Event' }"
+					visible="{= ${request>/req_header/reqtype} === 'RT0003 Event' }"/>
 								
 			    <Label text="{i18n>req_event2}" />
 			    <TextArea 
 					id="req_event_detail_2"
 					textAlign="Begin"
-					value="{request>/eventdetail2}"
-					required="{= ${request>/reqtype} === 'RT0003 Event' }"
-					visible="{= ${request>/reqtype} === 'RT0003 Event' }"/>
+					value="{request>/req_header/eventdetail2}"
+					required="{= ${request>/req_header/reqtype} === 'RT0003 Event' }"
+					visible="{= ${request>/req_header/reqtype} === 'RT0003 Event' }"/>
 
 				<Label text="{i18n>req_event3}" />
 			    <TextArea 
 					id="req_event_detail_3"
 					textAlign="Begin"
-					value="{request>/eventdetail3}"
-					required="{= ${request>/reqtype} === 'RT0003 Event' }"
-					visible="{= ${request>/reqtype} === 'RT0003 Event' }"/>
+					value="{request>/req_header/eventdetail3}"
+					required="{= ${request>/req_header/reqtype} === 'RT0003 Event' }"
+					visible="{= ${request>/req_header/reqtype} === 'RT0003 Event' }"/>
 
 				<Label text="{i18n>req_event4}" />
 			    <TextArea 
 					id="req_event_detail_4"
 					textAlign="Begin"
-					value="{request>/eventdetail4}"
-					required="{= ${request>/reqtype} === 'RT0003 Event' }"
-					visible="{= ${request>/reqtype} === 'RT0003 Event' }"/>
+					value="{request>/req_header/eventdetail4}"
+					required="{= ${request>/req_header/reqtype} === 'RT0003 Event' }"
+					visible="{= ${request>/req_header/reqtype} === 'RT0003 Event' }"/>
 								
 			</f:content>
         </f:SimpleForm>

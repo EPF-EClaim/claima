@@ -15,7 +15,7 @@
             <OverflowToolbar height="3rem">
                 <Title text="{i18n>req_form_detail_title}" titleStyle="H4" />
                 <ToolbarSpacer />
-                <MenuButton text="{i18n>req_b_save_request}" buttonMode="Split" defaultAction="onSave" beforeMenuOpen="onBeforeMenuOpen" useDefaultActionOnly="true">
+                <MenuButton text="{i18n>req_b_save_request}" buttonMode="Split" defaultAction="onSave" beforeMenuOpen="onBeforeMenuOpen" useDefaultActionOnly="true" enabled="{= ${request>/view} !== 'view' }">
                     <menu>
                         <Menu itemSelected="onMenuAction">
                             <MenuItem text="{i18n>req_b_save_n_add}" press=".onSaveAddAnother" />
@@ -39,9 +39,9 @@
                             <form:formElements>
 
                                 <!-- Claim Type -->
-                                <form:FormElement label="{i18n>req_i_claim_type}">
+                                <form:FormElement label="{i18n>req_i_claim_type}" >
                                     <form:fields>
-                                        <m:Select>
+                                        <m:Select enabled="{= ${request>/view} !== 'view' }">
                                             <items>
                                                 <core:Item key="CT1" text="Claim Type 1"/>
                                                 <core:Item key="CT2" text="Claim Type 2"/>
@@ -55,7 +55,7 @@
                                 <!-- Estimated Amount -->
                                 <form:FormElement label="{i18n>req_i_est_amt}">
                                     <form:fields>
-                                        <m:Input id="estAmount" type="Number" textAlign="Begin"/>
+                                        <m:Input id="estAmount" type="Number" textAlign="Begin" enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -68,28 +68,29 @@
                                             valueFormat="yyyy-MM-dd"
                                             placeholder="dd MMM yyyy"
                                             value="{request>/tripstartdate}"
-                                            textAlign="Begin"/>
+                                            textAlign="Begin"
+                                            enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Location -->
                                 <form:FormElement label="{i18n>req_i_location}">
                                     <form:fields>
-                                        <m:Input id="i_location" textAlign="Begin"/>
+                                        <m:Input id="i_location" textAlign="Begin" enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Estimated Participants -->
                                 <form:FormElement label="{i18n>req_i_estparticipant}">
                                     <form:fields>
-                                        <m:Input id="estNoOfParticipant" type="Number" textAlign="Begin"/>
+                                        <m:Input id="estNoOfParticipant" type="Number" textAlign="Begin" enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Claim Type Item -->
                                 <form:FormElement label="{i18n>req_i_claim_type_item}">
                                     <form:fields>
-                                        <m:Select>
+                                        <m:Select enabled="{= ${request>/view} !== 'view' }">
                                             <items>
                                                 <core:Item key="CI1" text="Claim Type Item 1"/>
                                                 <core:Item key="CI2" text="Claim Type Item 2"/>
@@ -103,7 +104,7 @@
                                 <!-- Cash Advance -->
                                 <form:FormElement label="{i18n>req_i_cashadv}">
                                     <form:fields>
-                                        <m:Select id="cash_adv" selectedKey="no_cashadv">
+                                        <m:Select id="cash_adv" selectedKey="no_cashadv" enabled="{= ${request>/view} !== 'view' }">
                                             <items>
                                                 <core:Item key="no_cashadv" text="No"/>
                                                 <core:Item key="yes_cashadv" text="Yes"/>
@@ -121,14 +122,15 @@
                                             valueFormat="yyyy-MM-dd"
                                             placeholder="dd MMM yyyy"
                                             value="{request>/tripstartdate}"
-                                            textAlign="Begin"/>
+                                            textAlign="Begin"
+                                            enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Remarks -->
                                 <form:FormElement label="{i18n>req_i_remarks}">
                                     <form:fields>
-                                        <m:TextArea id="i_remarks" textAlign="Begin"/>
+                                        <m:TextArea id="i_remarks" textAlign="Begin" enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -153,19 +155,20 @@
                             buttonText="{i18n>req_b_upload_list}"
                             fileType="csv,xlsx"
                             change=".onImportChange"
-                            style="Emphasized"/>
-                        <Button icon="sap-icon://delete" text="{i18n>req_b_delete}" press=".onRowDeleteParticipant"/>
+                            style="Emphasized"
+                            enabled="{= ${request>/view} !== 'view' }"/>
+                        <Button icon="sap-icon://delete" text="{i18n>req_b_delete}" press=".onRowDeleteParticipant" enabled="{= ${request>/view} !== 'view' }"/>
                     </OverflowToolbar>
                     <table:Table 
                         id="req_participant_table"
-                        rows="{/participant}"
+                        rows="{request>/participant}"
                         columnHeaderHeight="3rem"
                         selectionMode="MultiToggle"
                         rowActionCount="1">
                         <table:Column width="25rem">
                             <Label text="{i18n>req_p_name}"></Label>
                             <table:template>
-                                <Input id="participant_name" textAlign="Begin" value="{participant_name}" change=".appendNewRow"></Input>
+                                <Input id="participant_name" textAlign="Begin" value="{request>participant_name}" change=".appendNewRow"></Input>
                             </table:template>
                         </table:Column>
                         <table:Column width="25rem">
@@ -177,13 +180,13 @@
                         <table:Column width="25rem">
                             <Label text="{i18n>req_p_alloc_amt}"></Label>
                             <table:template>
-                                <Input id="alloc_amount" textAlign="End" value="{alloc_amount}" type="Number"></Input>
+                                <Input id="alloc_amount" textAlign="End" value="{request>alloc_amount}" type="Number"></Input>
                             </table:template>
                         </table:Column>
                         <table:rowActionTemplate>
                             <table:RowAction>
                                 <table:items>
-                                    <table:RowActionItem type="Delete" press="onRowDeleteParticipant"></table:RowActionItem>
+                                    <table:RowActionItem type="Delete" press="onRowDeleteParticipant" visible="{= ${request>/view} !== 'view' }"></table:RowActionItem>
                                 </table:items>
                             </table:RowAction>
                         </table:rowActionTemplate>

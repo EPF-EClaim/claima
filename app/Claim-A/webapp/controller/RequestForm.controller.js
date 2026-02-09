@@ -12,45 +12,11 @@ sap.ui.define([
     "use strict";
 
     return Controller.extend("claima.controller.RequestForm", {
-        onInit() {
+        async onInit() {
             
 			// show header
 			this._formFragments = {};
 			this._showFormFragment();
-
-			// Item Table
-			const oModel = new JSONModel({
-				control : 
-					{view: "view"}
-				,
-				req_item_rows : [
-					{claim_type: "Testing Claim Type 01", claim_type_item: "CTI01", est_amount: 10100, currency_code: "MYR", est_no_of_participant: 10},
-					{claim_type: "Testing Claim Type 02", claim_type_item: "CTI01", est_amount: 100670, currency_code: "MYR", est_no_of_participant: 10},
-					{claim_type: "Testing Claim Type 03", claim_type_item: "CTI01", est_amount: 100230, currency_code: "MYR", est_no_of_participant: 10},
-					{claim_type: "Testing Claim Type 04", claim_type_item: "CTI01", est_amount: 1000, currency_code: "MYR", est_no_of_participant: 10},
-					{claim_type: "Testing Claim Type 05", claim_type_item: "CTI01", est_amount: 10300, currency_code: "MYR", est_no_of_participant: 10}
-				],
-				participant : [
-                    {
-						req_item_row: 0,
-                        participant_name: "",
-                        emp_cost_center: "",
-                        alloc_amount: ""
-                    }
-                ]
-			
-			});
-			oModel.setSizeLimit(50);
-			this.getView().setModel(oModel);
-
-			// Item Table Count
-            const oVM = new sap.ui.model.json.JSONModel({
-                visibleCount: 0, // number of rows currently shown (respects filters)
-                totalCount: 0,   // total items in the underlying array (no filters)
-                selectedCount: 0 // selected row count (if you use selection)
-            });
-            this.getView().setModel(oVM, "view");
-
         }, 
 
 		// ==================================================
@@ -79,7 +45,7 @@ sap.ui.define([
 			this._getFormFragment("req_header").then(function(oVBox){
 				oPage.insertContent(oVBox, 0);
 			});
-			this._getFormFragment("req_item_list_v").then(function(oVBox){
+			this._getFormFragment("req_item_list").then(function(oVBox){
 				oPage.insertContent(oVBox, 1);
 			});
 		},
@@ -207,109 +173,158 @@ sap.ui.define([
 			this.onSave();
 		},
 
-		// ==================================================
-		// Item List Button Logic
-
-		onPressAddItem: async function () {
-			// 1) Resolve the Page
+		onBackView: async function () {
 			const oPage = this.byId("request_form");
-			if (!oPage) {
-				sap.m.MessageToast.show("Page 'request_form' not found.");
-				return;
-			}
-
-			// 2) Remove the existing list fragment if present
-			//    Make sure the root control inside the fragment has id="--request_item_list_fragment"
-			const oListRoot = this.byId("request_item_list_fragment");
+			const oListRoot = this.byId("request_create_item_fragment");
 			if (oListRoot) {
-				// Remove from its immediate parent aggregation
 				const oParent = oListRoot.getParent();
 				if (oParent && typeof oParent.removeContent === "function") {
 				oParent.removeContent(oListRoot);
 				} else if (oParent && typeof oParent.removeItem === "function") {
 				oParent.removeItem(oListRoot);
 				}
-				oListRoot.destroy(); // free resources
+				oListRoot.destroy();
+
+				try {
+					const oVBox = await this._getFormFragment("req_item_list"); 
+
+					const iIndex = Math.min(1, oPage.getContent().length);
+					oPage.insertContent(oVBox, iIndex);
+				} catch (e) {
+					sap.m.MessageToast.show("Could not open Create Item form.");
+					return;
+				}
+			} else {
+				var oScroll = this.getView().getParent();          // ScrollContainer
+				var oMaybeNav = oScroll && oScroll.getParent && oScroll.getParent(); // NavContainer
+
+				var aPages = oMaybeNav.getPages ? oMaybeNav.getPages() : oMaybeNav.getAggregation("pages");
+				var oMainPage = aPages && aPages.find(function (p) {
+					return p.getId && p.getId().endsWith("dashboard");
+				});
+
+				if (oMainPage) {
+				oMaybeNav.to(oMainPage, "slide");
+				}
+
 			}
 
-			// 3) Insert the create-item fragment deterministically
-			try {
-				const oVBox = await this._getFormFragment("req_create_item"); // returns a control
+			
+		},
 
-				// Put it right after the header (index 1), or at the end if not enough content
+		// ==================================================
+		// Item List Button Logic
+
+		onPressAddItem: async function () {
+			
+			const oPage = this.byId("request_form");
+			if (!oPage) {
+				sap.m.MessageToast.show("Page 'request_form' not found.");
+				return;
+			}
+
+			const oListRoot = this.byId("request_item_list_fragment");
+			if (oListRoot) {
+				
+				const oParent = oListRoot.getParent();
+				if (oParent && typeof oParent.removeContent === "function") {
+				oParent.removeContent(oListRoot);
+				} else if (oParent && typeof oParent.removeItem === "function") {
+				oParent.removeItem(oListRoot);
+				}
+				oListRoot.destroy(); 
+			}
+
+			try {
+				const oVBox = await this._getFormFragment("req_create_item"); 
+
 				const iIndex = Math.min(1, oPage.getContent().length);
 				oPage.insertContent(oVBox, iIndex);
 			} catch (e) {
-				// if _getFormFragment rejects
 				sap.m.MessageToast.show("Could not open Create Item form.");
 				return;
 			}
 
-			const oModel = this.getView().getModel();
-			oModel.setProperty("/control/view", 'create');
+			const oModel = this.getOwnerComponent().getModel('request');
+			oModel.setProperty("/view", 'create');
 
 			
 		},
 
 		onRowDeleteReqItem: function (oEvent) {
-            const oTable   = this.byId('req_item_table');
-            const oBinding = oTable.getBinding("req_item_rows");
-            const oModel   = this.getView().getModel();  
-            const aRows    = oModel.getProperty("/req_item_rows") || [];
+			const oTable   = this.byId("req_item_table");
+			const oModel   = this.getOwnerComponent().getModel("request");  // named JSONModel
+			const aRows    = oModel.getProperty("/req_item_rows") || [];
 
-            let aSelectedVisIdx = oTable.getSelectedIndices() || [];
-            let aModelIdxToDelete = [];
+			// Try SAPUI5-provided event parameters first (preferred)
+			let iModelIndexFromAction = null;
+			const oRowParam     = oEvent.getParameter && oEvent.getParameter("row");
+			const iRowIndexParam= oEvent.getParameter && oEvent.getParameter("rowIndex");
 
-            const getCtxByVisibleIndex = function (iVis) {
-                if (typeof oTable.getContextByIndex === "function") {
-                return oTable.getContextByIndex(iVis) || null;
-                }
-                if (oBinding && typeof oBinding.getContexts === "function") {
-                const aCtx = oBinding.getContexts(iVis, 1);
-                return aCtx && aCtx[0] ? aCtx[0] : null;
-                }
-                return null;
-            };
+			if (oRowParam) {
+				// IMPORTANT: pass the named model to getBindingContext
+				const oCtx = oRowParam.getBindingContext("request");
+				if (oCtx) {
+				const sPath = oCtx.getPath();                // e.g. "/req_item_rows/3"
+				const iIdx  = parseInt(sPath.split("/").pop(), 10);
+				if (Number.isInteger(iIdx)) {
+					iModelIndexFromAction = iIdx;
+				}
+				}
+			} else if (Number.isInteger(iRowIndexParam)) {
+				// Fallback: derive from visible row index
+				const oCtx = oTable.getContextByIndex(iRowIndexParam); // bound to 'rows' → right model
+				if (oCtx) {
+				const sPath = oCtx.getPath();
+				const iIdx  = parseInt(sPath.split("/").pop(), 10);
+				if (Number.isInteger(iIdx)) {
+					iModelIndexFromAction = iIdx;
+				}
+				}
+			}
 
-            if (aSelectedVisIdx.length > 0) {
-                aModelIdxToDelete = aSelectedVisIdx
-                .map(function (iVis) {
-                    const oCtx = getCtxByVisibleIndex(iVis);
-                    if (!oCtx) return null;
-                    const sPath = oCtx.getPath();     
-                    const iIdx  = parseInt(sPath.split("/").pop(), 10);
-                    return Number.isInteger(iIdx) ? iIdx : null;
-                })
-                .filter(function (x) { return x !== null; });
-            } else {
-                const oActionItem = oEvent.getSource();               
-                const oRow        = oActionItem?.getParent()?.getParent(); 
-                const oCtx        = oRow?.getBindingContext();
-                if (oCtx) {
-                const sPath = oCtx.getPath();
-                const iIdx  = parseInt(sPath.split("/").pop(), 10);
-                if (Number.isInteger(iIdx)) {
-                    aModelIdxToDelete = [iIdx];
-                }
-                }
-            }
+			// Now support both flows:
+			// 1) Toolbar Delete → uses selection
+			// 2) RowAction Delete → uses iModelIndexFromAction
+			let aModelIdxToDelete = [];
 
-            if (aModelIdxToDelete.length === 0) {
-                MessageToast.show("Select row to delete");
-            }
+			// Case 1: User selected rows (e.g., Delete button on toolbar)
+			const aSelectedVisIdx = oTable.getSelectedIndices() || [];
+			if (aSelectedVisIdx.length > 0) {
+				const oBinding = oTable.getBinding("rows");
+				aModelIdxToDelete = aSelectedVisIdx
+				.map(function (iVis) {
+					// getContextByIndex works on 'rows' binding, returns named context
+					const oCtx = oTable.getContextByIndex(iVis);
+					if (!oCtx) return null;
+					const sPath = oCtx.getPath();
+					const iIdx  = parseInt(sPath.split("/").pop(), 10);
+					return Number.isInteger(iIdx) ? iIdx : null;
+				})
+				.filter(function (x) { return x !== null; });
+			} else if (Number.isInteger(iModelIndexFromAction)) {
+				// Case 2: RowAction press (no selection)
+				aModelIdxToDelete = [iModelIndexFromAction];
+			}
 
-            aModelIdxToDelete = Array.from(new Set(aModelIdxToDelete))
-                .sort(function (a, b) { return b - a; });
+			if (aModelIdxToDelete.length === 0) {
+				sap.m.MessageToast.show("Select row to delete");
+				return;
+			}
 
-            aModelIdxToDelete.forEach(function (iIdx) {
-                if (iIdx >= 0 && iIdx < aRows.length) {
-                aRows.splice(iIdx, 1);
-                }
-            });
+			// Deduplicate and delete from the end
+			aModelIdxToDelete = Array.from(new Set(aModelIdxToDelete))
+				.sort(function (a, b) { return b - a; });
 
-            oModel.setProperty("/req_item_rows", aRows);
-            oTable.clearSelection();
-        },
+			aModelIdxToDelete.forEach(function (iIdx) {
+				if (iIdx >= 0 && iIdx < aRows.length) {
+				aRows.splice(iIdx, 1);
+				}
+			});
+
+			oModel.setProperty("/req_item_rows", aRows);
+			oTable.clearSelection();
+		},
 
         onDeleteSelectedReqItem: function () {
             this.onRowDelete({ getSource: function () { return null; } });
@@ -346,20 +361,20 @@ sap.ui.define([
 				return;
 			}
 
-			const oModel = this.getView().getModel();
-			oModel.setProperty("/control/view", 'list');
+			const oModel = this.getOwnerComponent().getModel('request');
+			oModel.setProperty("/view", 'list');
         },
 
         onSave: function () {
 
-			const oModel = this.getView().getModel(); // JSONModel
+			const oModel = this.getOwnerComponent().getModel('request');
 			const aRows  = oModel.getProperty("/req_item_rows") || [];
 
 			aRows.push({
-				claim_type: "Testing Claim Type",
-				est_amount: 100,
-				currency_code: "MYR",
-				est_no_of_participant: 100
+				REQUEST_ID: "REQ26000000339",
+				CLAIM_TYPE_ITEM_ID: "003",
+				AMOUNT: 1000.00,
+				TYPE_OF_TRANSPORTATION: "Testings"
 			});
 
 			oModel.setProperty("/req_item_rows", aRows);
@@ -369,204 +384,6 @@ sap.ui.define([
 
         onSaveAddAnother: function () {
 			this.onSave();
-        },
-        
-		// ==================================================
-        // Count Request Item
-
-		onAfterRendering: function () {
-			const oTable = this.byId("req_item_table"); // sap.ui.table.Table
-			if (!oTable) return;
-
-			// Avoid multiple attachments if onAfterRendering runs again
-			if (this._countsAttached) {
-				return;
-			}
-			this._countsAttached = true;
-
-			const fnAttachWhenReady = () => {
-				const oBinding = oTable.getBinding("rows");   // MUST be "rows" for sap.ui.table.Table
-				if (!oBinding) {
-				// Try again on the next tick if binding isn’t there yet
-				setTimeout(fnAttachWhenReady, 0);
-				return;
-				}
-
-				// Keep references so we can detach in onExit
-				this._reqItem = this._reqItem || {};
-				this._reqItem.table   = oTable;
-				this._reqItem.binding = oBinding;
-				this._reqItem.model   = oBinding.getModel();
-				this._reqItem.path    = (oTable.getBindingInfo("rows") || {}).path; // e.g., "/req_item_rows"
-
-				// --- 1) Binding-level listeners (contexts/length changes) ---
-				oBinding.attachEvent("change",        this._updateTableCounts, this);
-				oBinding.attachEvent("dataReceived",  this._updateTableCounts, this);
-				oBinding.attachEvent("refresh",       this._updateTableCounts, this);
-
-				// --- 2) Selection change (if you also show selected count) ---
-				if (typeof oTable.attachRowSelectionChange === "function") {
-				oTable.attachRowSelectionChange(this._updateSelectedCount, this);
-				}
-
-				// --- 3) Model-level listeners (data/content changes) ---
-				const oModel = this._reqItem.model;
-
-				// JSONModel: propertyChange is emitted for setProperty
-				if (oModel && typeof oModel.attachPropertyChange === "function") {
-				this._reqItem._onPropChange = (oEvt) => {
-					// Only react when the changed path is the collection or a child of it
-					const sPath = oEvt.getParameter("path");
-					if (!sPath) return;
-					if (this._isPathWithinCollection(sPath, this._reqItem.path)) {
-					this._updateTableCounts();
-					}
-				};
-				oModel.attachPropertyChange(this._reqItem._onPropChange, this);
-				} else if (oModel && typeof oModel.attachEvent === "function") {
-				// Fallback for older runtimes: generic event attach
-				this._reqItem._onPropChange = (oEvt) => {
-					const sPath = oEvt.getParameter && oEvt.getParameter("path");
-					if (sPath && this._isPathWithinCollection(sPath, this._reqItem.path)) {
-					this._updateTableCounts();
-					}
-				};
-				oModel.attachEvent("propertyChange", this._reqItem._onPropChange, this);
-				}
-
-				// ODataModel (V2/V4) – request lifecycle hooks
-				if (oModel && typeof oModel.attachRequestCompleted === "function") {
-				this._reqItem._onReqCompleted = () => this._updateTableCounts();
-				oModel.attachRequestCompleted(this._reqItem._onReqCompleted, this);
-				}
-				if (oModel && typeof oModel.attachRequestSent === "function") {
-				this._reqItem._onReqSent = () => {/* optional: show busy, etc. */};
-				oModel.attachRequestSent(this._reqItem._onReqSent, this);
-				}
-
-				// Initial compute (once everything is wired)
-				this._updateTableCounts();
-			};
-
-			fnAttachWhenReady();
-		},
-
-		/**
-		 * Helper to check if a changed path affects the collection bound to the table.
-		 * Examples:
-		 *   collection = "/req_item_rows"
-		 *   changed path "/req_item_rows" or "/req_item_rows/3" or "/req_item_rows/3/est_amount" -> true
-		 */
-		_isPathWithinCollection: function (sChangedPath, sCollectionPath) {
-			if (!sChangedPath || !sCollectionPath) return false;
-			if (sChangedPath === sCollectionPath) return true;
-			return sChangedPath.indexOf(sCollectionPath + "/") === 0;
-		},
-
-		/**
-		 * Your existing counter updater (make sure it reads from binding/model)
-		 * Example: recompute total items, selected items, totals, etc.
-		 */
-		_updateTableCounts: function () {
-			const oRef = this._reqItem;
-			if (!oRef || !oRef.table || !oRef.binding) return;
-
-			const iLength = oRef.binding.getLength ? oRef.binding.getLength() : 0;
-			// ... your logic to update counts/badges/texts based on iLength ...
-			// Example:
-			// this.byId("txtReqItemCount").setText(iLength + " item(s)");
-		},
-
-		_updateSelectedCount: function () {
-			const oRef = this._reqItem;
-			if (!oRef || !oRef.table) return;
-			const aSel = oRef.table.getSelectedIndices ? oRef.table.getSelectedIndices() : [];
-			// ... update selected count UI ...
-			// Example:
-			// this.byId("txtReqItemSelected").setText(aSel.length + " selected");
-		},
-
-		onExit: function () {
-			const oRef = this._reqItem;
-			if (!oRef) return;
-
-			// Detach binding events
-			if (oRef.binding) {
-				oRef.binding.detachEvent("change",       this._updateTableCounts, this);
-				oRef.binding.detachEvent("dataReceived", this._updateTableCounts, this);
-				oRef.binding.detachEvent("refresh",      this._updateTableCounts, this);
-			}
-
-			// Detach selection change
-			if (oRef.table && typeof oRef.table.detachRowSelectionChange === "function") {
-				oRef.table.detachRowSelectionChange(this._updateSelectedCount, this);
-			}
-
-			// Detach model events
-			if (oRef.model) {
-				if (oRef._onPropChange && typeof oRef.model.detachPropertyChange === "function") {
-				oRef.model.detachPropertyChange(oRef._onPropChange, this);
-				} else if (oRef._onPropChange && typeof oRef.model.detachEvent === "function") {
-				oRef.model.detachEvent("propertyChange", oRef._onPropChange, this);
-				}
-				if (oRef._onReqCompleted && typeof oRef.model.detachRequestCompleted === "function") {
-				oRef.model.detachRequestCompleted(oRef._onReqCompleted, this);
-				}
-				if (oRef._onReqSent && typeof oRef.model.detachRequestSent === "function") {
-				oRef.model.detachRequestSent(oRef._onReqSent, this);
-				}
-			}
-
-			this._reqItem = null;
-			this._countsAttached = false;
-		},
-
-
-        _updateTableCounts: function () {
-            const oTable   = this.byId("req_item_table");
-            const oBinding = oTable.getBinding("rows"); // <-- FIXED: use "rows"
-            const oVM      = this.getView().getModel("view"); // holds /visibleCount, /totalCount
-
-            // visibleCount = number of rows currently shown (respects filters)
-            let visibleCount = 0;
-            if (oBinding) {
-                visibleCount = oBinding.getLength();
-            }
-
-            // totalCount = total items in your backing array (no filters)
-            const oJSON = this.getView().getModel();  // default JSONModel
-            const aAll  = oJSON ? (oJSON.getProperty("/req_item_rows") || []) : [];
-            const totalCount = aAll.length;
-
-            // write both values; useful if you show both in UI
-            oVM.setProperty("/visibleCount", visibleCount);
-            oVM.setProperty("/totalCount", totalCount);
-
-            // Optional: keep selectedCount in sync if you display it
-            if (typeof this._updateSelectedCount === "function") {
-                this._updateSelectedCount();
-            }
-        },
-
-        _updateSelectedCount: function () {
-            const oTable = this.byId("req_item_table");
-            const oVM    = this.getView().getModel("view");
-            const aSel   = oTable.getSelectedIndices ? oTable.getSelectedIndices() : [];
-            oVM.setProperty("/selectedCount", aSel.length);
-        },
-
-        onExit: function () {
-            const oTable = this.byId && this.byId("req_item_table");
-            if (oTable && this._countsAttached) {
-                const oBinding = oTable.getBinding("rows");
-                if (oBinding) {
-                oBinding.detachEvent("change", this._updateTableCounts, this);
-                oBinding.detachEvent("dataReceived", this._updateTableCounts, this);
-                oBinding.detachEvent("refresh", this._updateTableCounts, this);
-                }
-                oTable.detachRowSelectionChange(this._updateSelectedCount, this);
-            }
-            this._countsAttached = false;
         },
 
 		// ==================================================
@@ -582,9 +399,6 @@ sap.ui.define([
 
             const oModel = oCtx.getModel(); 
             const aRows  = oModel.getProperty("/participant") || [];
-
-			const aHeader = oCtx.getModel("request");
-			const aGrpType = aHeader.getProperty("/grptype");
 
             if (aRows[iIndex]) {
                 aRows[iIndex].participant_name = sVal;
@@ -707,6 +521,7 @@ sap.ui.define([
 
 		// ==================================================
 		// Excel Template Logic
+		// ==================================================
 
 		onDownloadTemplate: function () {
 			// Define 3 columns
@@ -759,6 +574,112 @@ sap.ui.define([
 				// Optional: handle errors
 				sap.m.MessageBox.error("Export failed: " + err);
 			});
+		},
+		
+		// ==================================================
+		// Get Data
+		// ==================================================
+
+		_getItemList: async function (req_id) {
+			// Guard
+			if (req_id == null || req_id === "") {
+				console.warn("No REQUEST_ID provided");
+				// Clear current data to reflect no selection
+				this.getView().getModel().setProperty("/req_item_rows", []);
+				return [];
+			}
+
+			// Base URL from manifest
+			const sBaseUri = this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri
+							|| "/odata/v4/EmployeeSrv/";
+			const sServiceUrl = sBaseUri.replace(/\/$/, "") + "/ZREQUEST_ITEM";
+
+			// Build URL with $filter
+			const url = new URL(sServiceUrl, window.location.origin);
+			const qs  = new URLSearchParams();
+
+			// Decide how to format the literal based on your metadata:
+			// - Numeric (Edm.Int32/Int64): no quotes
+			// - GUID (Edm.Guid): guid'...'
+			// - Otherwise (Edm.String): quoted
+			const sReq = String(req_id);
+			const isNumeric = typeof req_id === "number" || /^\d+$/.test(sReq);
+			const isGuid    = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(sReq);
+
+			let sLiteral;
+			if (isNumeric) {
+				sLiteral = sReq; // no quotes
+			} else if (isGuid) {
+				sLiteral = `guid'${sReq}'`;
+			} else {
+				// Escape single quotes by doubling them per OData literal rules
+				const escaped = sReq.replace(/'/g, "''");
+				sLiteral = `'${escaped}'`;
+			}
+
+			qs.set("$filter", `REQUEST_ID eq ${sLiteral}`);
+			qs.set("$count", "true"); // optional, handy when you need server count
+			// qs.set("$select", "REQUEST_ID,Field1,Field2"); // optional
+			// qs.set("$orderby", "REQUEST_ID desc"); // optional
+			url.search = qs.toString();
+
+			try {
+				const response = await fetch(url.toString(), { headers: { "Accept": "application/json" } });
+				if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
+
+				const data = await response.json();
+				const aItems = Array.isArray(data.value) ? data.value : [];
+
+				// ✅ Set the collection to the default model path your table binds to
+				this.getView().getModel().setProperty("/req_item_rows", aItems);
+
+				// (Optional) If you maintain counts manually, call your updater:
+				// this._updateTableCounts();
+
+				return aItems; // return the array for further use if needed
+			} catch (err) {
+				// eslint-disable-next-line no-console
+				console.error("Error fetching ZREQUEST_ITEM by REQUEST_ID:", err);
+				this.getView().getModel().setProperty("/req_item_rows", []);
+				return [];
+			}
+		},
+		
+		navToItemDetail: async function () {
+			const oPage = this.byId("request_form");
+			if (!oPage) {
+				sap.m.MessageToast.show("Page 'request_form' not found.");
+				return;
+			}
+
+			const oListRoot = this.byId("request_item_list_fragment");
+			if (oListRoot) {
+				
+				const oParent = oListRoot.getParent();
+				if (oParent && typeof oParent.removeContent === "function") {
+				oParent.removeContent(oListRoot);
+				} else if (oParent && typeof oParent.removeItem === "function") {
+				oParent.removeItem(oListRoot);
+				}
+				oListRoot.destroy(); 
+			}
+
+			try {
+				const oVBox = await this._getFormFragment("req_create_item"); 
+
+				const iIndex = Math.min(1, oPage.getContent().length);
+				oPage.insertContent(oVBox, iIndex);
+			} catch (e) {
+				sap.m.MessageToast.show("Could not open Create Item form.");
+				return;
+			}
+			
+			const oModel = this.getOwnerComponent().getModel('request');
+			var view = oModel.getProperty("/view");
+
+			if(oModel.getProperty("/view") != 'view') {
+				oModel.setProperty("/view", 'create');
+			}
 		}
     });
 });

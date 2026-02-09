@@ -29,41 +29,6 @@ sap.ui.define([
 	return Controller.extend("claima.controller.App", {
 		onInit: function () {
 
-			// oViewModel
-			const oViewModel = new sap.ui.model.json.JSONModel({
-				rtype: "" // current selected request type
-			});
-			this.getView().setModel(oViewModel, "view");
-
-			// oRequestModel
-			const oRequestModel = new JSONModel({
-				purpose: "",
-				reqtype: "travel",
-				tripstartdate: "",
-				tripenddate: "",
-				eventstartdate: "",
-				eventenddate: "",
-				grptype: "individual",
-				location: "",
-				transport: "",
-				altcostcenter: "",
-				doc1: "",
-				doc2: "",
-				comment: "", 
-				eventdetail1: "",
-				eventdetail2: "",
-				eventdetail3: "",
-				eventdetail4: "",
-				reqid: "",
-				reqstatus: "",
-				costcenter: "",
-				cashadvamt: 0,
-				reqamt: 0,
-				totalamt: 0
-			});
-			this.getView().setModel(oRequestModel, "request");
-
-
 			// oReportModel
 			var oReportModel = new JSONModel({
 				"purpose": "",
@@ -275,8 +240,8 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("input");
 			var oInputData = oInputModel.getData();
 
-			if (oInputData.report.purpose == '' || oInputData.report.startdate == ''
-				|| oInputData.report.enddate == '' || oInputData.report.category == '') {
+			if (oInputData.req_header.report.purpose == '' || oInputData.req_header.report.startdate == ''
+				|| oInputData.req_header.report.enddate == '' || oInputData.req_header.report.category == '') {
 				var message = 'Please enter all mandatory details';
 				MessageToast.show(message);
 			} else {
@@ -683,33 +648,37 @@ sap.ui.define([
 		},
 		// --- end of mileage integration ---
 
-		// Start added by Jefry Yap 15-01-2026
+		// ==================================================
 		// Request Form Controller
+		// ==================================================
+
 		onClickMyRequest: async function () {
-			this.getView().getModel("request").setData({
-				purpose: "",
-				reqtype: "travel",
-				tripstartdate: "",
-				tripenddate: "",
-				eventstartdate: "",
-				eventenddate: "",
-				grptype: "individual",
-				location: "",
-				transport: "",
-				altcostcenter: "",
-				doc1: "",
-				doc2: "",
-				comment: "", 
-				eventdetail1: "",
-				eventdetail2: "",
-				eventdetail3: "",
-				eventdetail4: "",
-				reqid: "",
-				reqstatus: "",
-				costcenter: "",
-				cashadvamt: 0,
-				reqamt: 0,
-				totalamt: 0
+			this.getOwnerComponent().getModel("request").setData({
+				view: "view",
+				req_header : {
+					reqtype: "travel",
+					tripstartdate: "",
+					tripenddate: "",
+					eventstartdate: "",
+					eventenddate: "",
+					grptype: "individual",
+					location: "",
+					transport: "",
+					altcostcenter: "",
+					doc1: "",
+					doc2: "",
+					comment: "", 
+					eventdetail1: "",
+					eventdetail2: "",
+					eventdetail3: "",
+					eventdetail4: "",
+					reqid: "",
+					reqstatus: "",
+					costcenter: "",
+					cashadvamt: 0,
+					reqamt: 0,
+					totalamt: 0
+				}
 			});
 			this._loadReqTypeSelectionData();
 			
@@ -739,60 +708,60 @@ sap.ui.define([
 			var message = '';
 
 			// Check mandatory field based on Request Type
-			// switch (oInputData.type) {
+			// switch (oInputData.req_header.type) {
 			// 	case 'RT0001 Travel':
-			// 		if (oInputData.purpose == '' || oInputData.reqtype == '' || 
-			// 			oInputData.tripstartdate == '' || oInputData.tripenddate == '' ||
-			// 			oInputData.eventstartdate == '' || oInputData.eventenddate == '' ||
-			// 			oInputData.grptype == '' || oInputData.location == '' ||
-			// 			oInputData.transport == '' || oInputData.comment == '' ) {
+			// 		if (oInputData.req_header.purpose == '' || oInputData.req_header.reqtype == '' || 
+			// 			oInputData.req_header.tripstartdate == '' || oInputData.req_header.tripenddate == '' ||
+			// 			oInputData.req_header.eventstartdate == '' || oInputData.req_header.eventenddate == '' ||
+			// 			oInputData.req_header.grptype == '' || oInputData.req_header.location == '' ||
+			// 			oInputData.req_header.transport == '' || oInputData.req_header.comment == '' ) {
 			// 			okcode = false;
 			// 			message = 'Please enter all mandatory details';
 			// 		};
 			// 		break;
 			// 	case 'RT0002 Mobile':
-			// 		if (oInputData.purpose == '' || oInputData.reqtype == '' || 
-			// 			oInputData.grptype == '' || oInputData.comment == '' ) {
+			// 		if (oInputData.req_header.purpose == '' || oInputData.req_header.reqtype == '' || 
+			// 			oInputData.req_header.grptype == '' || oInputData.req_header.comment == '' ) {
 			// 			okcode = false;
 			// 			message = 'Please enter all mandatory details';
 			// 			break;
 			// 		};
 			// 		break;
 			// 	case 'RT0003 Event':
-			// 		if (oInputData.purpose == '' || oInputData.reqtype == '' || 
-			// 			oInputData.eventstartdate == '' || oInputData.eventenddate == '' ||
-			// 			oInputData.grptype == '' || oInputData.location == '' ||
-			// 			oInputData.comment == '' || oInputData.eventdetail1 == '' || 
-			// 			oInputData.eventdetail2 == '' || oInputData.eventdetail3 == '' || 
-			// 			oInputData.eventdetail4 == '') {
+			// 		if (oInputData.req_header.purpose == '' || oInputData.req_header.reqtype == '' || 
+			// 			oInputData.req_header.eventstartdate == '' || oInputData.req_header.eventenddate == '' ||
+			// 			oInputData.req_header.grptype == '' || oInputData.req_header.location == '' ||
+			// 			oInputData.req_header.comment == '' || oInputData.req_header.eventdetail1 == '' || 
+			// 			oInputData.req_header.eventdetail2 == '' || oInputData.req_header.eventdetail3 == '' || 
+			// 			oInputData.req_header.eventdetail4 == '') {
 			// 			okcode = false;
 			// 			message = 'Please enter all mandatory details';
 			// 			break;
 			// 		};
 			// 		break;
 			// 	case 'RT0004 Reimbursement':
-			// 		if (oInputData.purpose == '' || oInputData.reqtype == '' || 
-			// 			oInputData.tripstartdate == '' || oInputData.tripenddate == '' ||
-			// 			oInputData.grptype == '' || oInputData.comment == '' ) {
+			// 		if (oInputData.req_header.purpose == '' || oInputData.req_header.reqtype == '' || 
+			// 			oInputData.req_header.tripstartdate == '' || oInputData.req_header.tripenddate == '' ||
+			// 			oInputData.req_header.grptype == '' || oInputData.req_header.comment == '' ) {
 			// 			okcode = false;
 			// 			message = 'Please enter all mandatory details';
 			// 		};
 			// 		break;
 			// 	default:
-			// 		if (oInputData.purpose == '' || 
-			// 			oInputData.type == '') {
+			// 		if (oInputData.req_header.purpose == '' || 
+			// 			oInputData.req_header.type == '') {
 			// 			okcode = false;
 			// 			message = 'Please enter all mandatory details';
 			// 		} 
 			// }
 
 			// // Check attachment 1 (mandatory)
-			// if (okcode == true && oInputData.doc1 == '') {
+			// if (okcode == true && oInputData.req_header.doc1 == '') {
 			// 	okcode = false;
 			// 	message = 'Please upload Attachment 1';
 			// };
 
-			// if (okcode == true && oInputData.enddate < oInputData.startdate) {
+			// if (okcode == true && oInputData.req_header.enddate < oInputData.req_header.startdate) {
 			// 	okcode = false;
 			// 	message = "End Date cannot be earlier than begin date";
 			// }
@@ -839,8 +808,8 @@ sap.ui.define([
 		createRequestHeader:  function (oInputData, oReqModel) {
 			this.getCurrentReqNumber().then((result) => {
 				if (result) {
-					oReqModel.setProperty("/reqid", result.reqNo);
-					oReqModel.setProperty("/reqstatus", "Draft")
+					oReqModel.setProperty("/req_header/reqid", result.reqNo);
+					oReqModel.setProperty("/req_header/reqstatus", "Draft")
 
 					// Write to Database Table ZREQUEST_HEADER
 					// var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
@@ -850,20 +819,20 @@ sap.ui.define([
 					// 	{method: "POST", headers: {"Content-Type": "application/json"},
 					// 	body: JSON.stringify({
 					// 		EMP_ID                 : "000001",
-					// 		REQUEST_ID             : oInputData.reqid,
-					// 		REQUEST_TYPE_ID        : oInputData.reqtype,
+					// 		REQUEST_ID             : oInputData.req_header.reqid,
+					// 		REQUEST_TYPE_ID        : oInputData.req_header.reqtype,
 					// 		REFERENCE_NUMBER       : "100236",
-					// 		OBJECTIVE_PURPOSE      : oInputData.purpose,
-					// 		START_DATE             : oInputData.tripstartdate,
-					// 		END_DATE               : oInputData.tripenddate,
-					// 		REMARK                 : oInputData.comment,
+					// 		OBJECTIVE_PURPOSE      : oInputData.req_header.purpose,
+					// 		START_DATE             : oInputData.req_header.tripstartdate,
+					// 		END_DATE               : oInputData.req_header.tripenddate,
+					// 		REMARK                 : oInputData.req_header.comment,
 					// 		CLAIM_TYPE_ID          : "",
-					// 		REQUEST_GROUP_ID       : oInputData.grptype,
-					// 		ALTERNATE_COST_CENTRE  : oInputData.altcostcenter,
-					// 		AMOUNT                 : String(oInputData.totalamt),
-					// 		ATTACHMENT             : oInputData.doc1,
-					// 		LOCATION               : oInputData.location,
-					// 		TYPE_OF_TRANSPORTATION : oInputData.transport,
+					// 		REQUEST_GROUP_ID       : oInputData.req_header.grptype,
+					// 		ALTERNATE_COST_CENTRE  : oInputData.req_header.altcostcenter,
+					// 		AMOUNT                 : String(oInputData.req_header.totalamt),
+					// 		ATTACHMENT             : oInputData.req_header.doc1,
+					// 		LOCATION               : oInputData.req_header.location,
+					// 		TYPE_OF_TRANSPORTATION : oInputData.req_header.transport,
 					// 		ZCLAIM_TYPE   		   : "",
 					// 		ZREQUEST_ITEM 		   : "",
 					// 		ZREQUEST_TYPE 		   : "",
@@ -883,6 +852,11 @@ sap.ui.define([
 					// });
 					
 					this.oDialogFragment.close();
+					const oModel = this.getOwnerComponent().getModel('request');
+					oModel.setProperty("/view", 'list');
+					this._getItemList(oInputData.req_header.reqid);
+
+					// navigate to pre-approval request form page
 					this.byId("pageContainer").to(this.getView().byId('new_request'));
 				};
 			});
@@ -930,23 +904,21 @@ sap.ui.define([
 
 			try {
 				const res = await fetch(sServiceUrl, {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ CURRENT: String(nextNumber) })
+					method: "PATCH",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ CURRENT: String(nextNumber) })
 				});
 
 				if (!res.ok) {
-				const errText = await res.text().catch(() => "");
-				throw new Error(`PATCH failed ${res.status} ${res.statusText}: ${errText}`);
+					const errText = await res.text().catch(() => "");
+					throw new Error(`PATCH failed ${res.status} ${res.statusText}: ${errText}`);
 				}
-
-				// PATCH often returns 204
+				
 				if (res.status === 204) return { CURRENT: nextNumber };
 
-				// If the server returns JSON entity
 				const contentType = res.headers.get("content-type") || "";
 				if (contentType.includes("application/json")) {
-				return await res.json();
+					return await res.json();
 				}
 				return await res.text(); // fallback
 			} catch (e) {
@@ -955,7 +927,68 @@ sap.ui.define([
 			}
 		},
 
-		// End added by Jefry Yap 15-01-2026
+		// Controller method (async)
+		_getItemList: async function (req_id) {
+			if (!req_id) {
+				console.warn("No REQUEST_ID provided");
+				this.getView().getModel().setProperty("/req_item_rows", []);
+				return [];
+			}
+
+			const sBaseUri =
+				this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri
+				|| "/odata/v4/EmployeeSrv/";
+			const sServiceUrl = sBaseUri.replace(/\/$/, "") + "/ZREQUEST_ITEM";
+
+			// REQUEST_ID is a string like "REQ26000000339" → single-quoted OData string literal
+			const sReq = String(req_id);
+			const isGuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(sReq);
+			const isNumeric = /^\d+$/.test(sReq);
+
+			let sLiteral;
+			if (isNumeric) {
+				sLiteral = sReq; // Edm.Int*: no quotes
+			} else if (isGuid) {
+				sLiteral = `guid'${sReq}'`; // Edm.Guid
+			} else {
+				const escaped = sReq.replace(/'/g, "''"); // escape single quotes
+				sLiteral = `'${escaped}'`; // Edm.String
+			}
+
+			// Build the full URL, encode ONLY the filter expression
+			const base = new URL(sServiceUrl, window.location.origin).toString();
+			const filterExpr = `REQUEST_ID eq ${sLiteral}`; // keep spaces here
+			const query = [
+				`$filter=${encodeURIComponent(filterExpr)}`,     // spaces -> %20 (no '+')
+				`$count=true`,
+				`$format=json`                                  // helps some SAP GW setups
+			].join("&");
+
+			const fullUrl = `${base}?${query}`;
+
+			try {
+				const response = await fetch(fullUrl, {
+				headers: { "Accept": "application/json" }
+				// credentials: "include" // uncomment if your GW requires cookies/SSO
+				});
+				if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
+
+				const data = await response.json();
+				const aItems = Array.isArray(data.value) ? data.value : [];
+				this.getOwnerComponent().getModel('request').setProperty("/req_item_rows", aItems);
+				var test = this.getOwnerComponent().getModel('request').getProperty('/req_item_rows');
+				return aItems;
+			} catch (err) {
+				console.error("Fetch failed:", err, { url: fullUrl });
+				this.getView().getModel().setProperty("/req_item_rows", []);
+				return [];
+			}
+		},
+
+		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+		// End of Request Form Controller
+		// ==================================================
+		
 
 		onPressSave: function () {
 			var oModel = this.getView().getModel("employee");

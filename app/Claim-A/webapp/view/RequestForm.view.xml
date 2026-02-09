@@ -3,7 +3,8 @@
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns="sap.m"
     xmlns:core="sap.ui.core"
-	controllerName="claima.controller.RequestForm">
+	controllerName="claima.controller.RequestForm"
+    id="request_form_xmlview">
 	
     <Page 
         id="request_form"
@@ -12,13 +13,13 @@
         <footer>
             <OverflowToolbar >
                 <ToolbarSpacer />
-                <Button id="req_back_scr"       type="Back"         text="Back"             press=".onBackView"             visible="{= ${/control/view} === 'view' }"/>
-                <Button id="req_back"           type="Back"         text="Back"             press=".onBack"                 visible="{= ${/control/view} === 'list' }"/>
-                <Button id="req_save_draft"     type="Default"      text="Save Draft"       press=".onSaveRequestDraft"     visible="{= ${/control/view} === 'list' }"/>
-                <Button id="req_delete"         type="Reject"       text="Delete Request"   press=".onDeleteRequest"        visible="{= ${/control/view} === 'list' }"/>
-                <Button id="req_submit"         type="Emphasized"   text="Submit Request"   press=".onSubmitRequest"        visible="{= ${/control/view} === 'list' }"/>
-                <Button id="req_item_cancel"    type="Default"      text="Cancel"           press=".onCancelItem"           visible="{= ${/control/view} === 'create' }"/>
-                <Button id="req_item_save"      type="Emphasized"   text="Save"             press=".onSaveItem"             visible="{= ${/control/view} === 'create' }"/>
+                <Button id="req_back_scr"       type="Back"         text="Back"             press=".onBackView"             visible="{= ${request>/view} === 'view' }"/>
+                <Button id="req_back"           type="Back"         text="Back"             press=".onBack"                 visible="{= ${request>/view} === 'list' }"/>
+                <Button id="req_save_draft"     type="Default"      text="Save Draft"       press=".onSaveRequestDraft"     visible="{= ${request>/view} === 'list' }"/>
+                <Button id="req_delete"         type="Reject"       text="Delete Request"   press=".onDeleteRequest"        visible="{= ${request>/view} === 'list' }"/>
+                <Button id="req_submit"         type="Emphasized"   text="Submit Request"   press=".onSubmitRequest"        visible="{= ${request>/view} === 'list' }"/>
+                <Button id="req_item_cancel"    type="Default"      text="Cancel"           press=".onCancelItem"           visible="{= ${request>/view} === 'create' }"/>
+                <Button id="req_item_save"      type="Emphasized"   text="Save"             press=".onSaveItem"             visible="{= ${request>/view} === 'create' }"/>
             </OverflowToolbar>
         </footer>
     </Page>
