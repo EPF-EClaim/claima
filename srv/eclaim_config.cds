@@ -21,7 +21,7 @@ annotate service.ZCLAIM_PURPOSE with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -64,7 +64,7 @@ annotate service.ZRISK with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -106,7 +106,7 @@ annotate service.ZREQUEST_GRP with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -148,7 +148,7 @@ annotate service.ZREQUEST_TYPE with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -208,7 +208,7 @@ annotate service.ZCLAIM_TYPE with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -292,7 +292,7 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -337,7 +337,7 @@ annotate service.ZAPP_FIELD_CTRL with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -499,7 +499,7 @@ annotate service.ZARITH_OPT with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -545,7 +545,7 @@ annotate service.ZAPPROVAL_RULES with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -647,7 +647,7 @@ annotate service.ZCLAIM_MAIN_CAT with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -689,7 +689,7 @@ annotate service.ZCLAIM_CATEGORY with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -731,7 +731,7 @@ annotate service.ZSTATUS with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -773,7 +773,7 @@ annotate service.ZCLAIM_DISCLAIMER with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -815,7 +815,7 @@ annotate service.ZLODGING_CAT with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -857,7 +857,7 @@ annotate service.ZROOM_TYPE with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -899,7 +899,7 @@ annotate service.ZFLIGHT_CLASS with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -941,7 +941,7 @@ annotate service.ZCOUNTRY with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -983,7 +983,7 @@ annotate service.ZAREA with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -1025,7 +1025,7 @@ annotate service.ZCURRENCY with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -1067,7 +1067,7 @@ annotate service.ZMARITAL_STAT with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -1109,7 +1109,7 @@ annotate service.ZSTAFF_CAT with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -1151,7 +1151,7 @@ annotate service.ZVEHICLE_TYPE with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -1193,7 +1193,7 @@ annotate service.ZKWSP_BRANCH with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },
@@ -1238,7 +1238,7 @@ annotate service.ZSTATE with @(
         LineItem    : [
             {
                 $Type              : 'UI.DataFieldForAction',
-                Action             : '',
+                Action             : 'eclaim_srv.Copy',
                 ![@UI.IsCopyAction]: true,
                 Label              : 'Copy'
             },

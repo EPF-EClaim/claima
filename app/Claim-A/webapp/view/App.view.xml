@@ -165,7 +165,6 @@
                                             textAlign="Center"
                                             class="sapUiSmallMarginBegin"
                                         />
-                                        <!-- <Title level="H3" text="{employee>/ZCLAIM_HEADER/$count}" textAlign="Center" class="sapUiSmallMarginBegin" /> -->
                                     </HBox>
                                 </Panel>
                             </HBox>

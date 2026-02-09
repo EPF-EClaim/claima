@@ -3,7 +3,7 @@ using {managed} from '@sap/cds/common';
 namespace ECLAIM;
 
 entity ZEMP_MASTER : managed {
-    key EEID            : String @mandatory;
+    key EEID            : String;
         NAME            : String;
         GRADE           : String;
         CC              : String;
@@ -26,8 +26,8 @@ entity ZEMP_MASTER : managed {
 }
 
 entity ZREQUEST_HEADER : managed {
-    key EMP_ID                  : String @mandatory;
-    key REQUEST_ID              : UUID   @mandatory;
+    key EMP_ID                  : String;
+    key REQUEST_ID              : UUID;
         REQUEST_TYPE_ID         : UUID;
         REFERENCE_NUMBER        : String;
         OBJECTIVE_PURPOSE       : String;
@@ -73,9 +73,9 @@ entity ZREQUEST_HEADER : managed {
 }
 
 entity ZREQUEST_ITEM : managed {
-    key REQUEST_ID         : String @mandatory;
+    key REQUEST_ID         : String ;
         // key REQUEST_SUB_ID         : String @mandatory;
-    key CLAIM_TYPE_ITEM_ID : String @mandatory;
+    key CLAIM_TYPE_ITEM_ID : String ;
         CLAIM_TYPE_ID      : String;
         EST_AMOUNT         : Decimal;
         EST_NO_PARTICIPANT : Integer;
@@ -98,28 +98,27 @@ entity ZREQUEST_ITEM : managed {
 }
 
 entity ZREQ_ITEM_PART : managed {
-    key REQUEST_ID           : String @mandatory;
+    key REQUEST_ID           : String;
         // key REQUEST_SUB_ID       : String @mandatory;
-    key CLAIM_TYPE_ITEM_ID   : String @mandatory;
-    key PARTICIPANTS_ID      : String @mandatory;
+    CLAIM_TYPE_ITEM_ID   : String;
+    PARTICIPANTS_ID      : String;
         PARTICIPANTS         : String;
         EMPLOYEE_COST_CENTER : String;
         ALLOCATED_AMOUNT     : Decimal;
 }
 
 entity ZREQUEST_TYPE : managed {
-    key REQUEST_TYPE_ID   : String  @mandatory  @Common.Label: 'REQUEST_TYPE_ID';
-        REQUEST_TYPE_DESC : String  @Common.Label: 'REQUEST_TYPE_DESC';
-        END_DATE          : Date    @Common.Label: 'END_DATE';
-        START_DATE        : Date    @Common.Label: 'START_DATE';
-        STATUS            : String  @Common.Label: 'STATUS';
+    key REQUEST_TYPE_ID   : String  @mandatory  @Common.Label: 'Request Type ID';
+        REQUEST_TYPE_DESC : String  @Common.Label: 'Request Type Description';
+        END_DATE          : Date    @Common.Label: 'End Date';
+        START_DATE        : Date    @Common.Label: 'Start Date';
+        STATUS            : String  @Common.Label: 'Status';
 }
 
 entity ZCLAIM_TYPE : managed {
-    key CLAIM_TYPE_ID    : String  @mandatory  @Common.Label: 'CLAIM_TYPE_ID';
-        CLAIM_TYPE_DESC  : String  @Common.Label: 'CLAIM_TYPE_DESC';
-        ZCLAIM_TYPE_ITEM : Composition of many ZCLAIM_TYPE_ITEM
-                               on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ID;
+    key CLAIM_TYPE_ID   : String  @mandatory  @Common.Label: 'Claim Type ID';
+        CLAIM_TYPE_DESC : String  @Common.Label: 'Claim Type Description';
+
 }
 
 entity ZREQUEST_GRP : managed {
@@ -138,7 +137,7 @@ entity ZNUM_RANGE : managed {
 }
 
 entity ZCLAIM_HEADER : managed {
-    key CLAIM_ID              : String @mandatory;
+    key CLAIM_ID              : String;
         CLAIM_MAIN_CAT_ID     : String;
         EMP_ID                : String;
         CLAIM_DATE            : Date;
@@ -157,8 +156,8 @@ entity ZCLAIM_HEADER : managed {
 }
 
 entity ZCLAIM_ITEM : managed {
-    key CLAIM_ID          : String @mandatory;
-    key CLAIM_ITEM_ID     : String @mandatory;
+    key CLAIM_ID          : String;
+    key CLAIM_ITEM_ID     : String;
         CLAIM_TYPE_ITEM   : String;
         AMOUNT            : Decimal;
         REMARK            : String;
@@ -224,17 +223,17 @@ entity ZCLAIM_PURPOSE : managed {
 }
 
 entity ZCLAIM_DISCLAIMER : managed {
-    key CLAIM_DISCLAIMER_ID   : String  @mandatory  @Common.Label: 'CLAIM_DISCLAIMER_ID';
-        CLAIM_DISCLAIMER_DESC : String  @Common.Label: 'CLAIM_DISCLAIMER_DESC';
+    key CLAIM_DISCLAIMER_ID   : String  @mandatory  @Common.Label: 'Claim Disclaimer ID';
+        CLAIM_DISCLAIMER_DESC : String  @Common.Label: 'Claim Disclaimer Description';
 }
 
 entity ZLODGING_CAT : managed {
-    key LODGING_CATEGORY_ID   : String @mandatory;
-        LODGING_CATEGORY_DESC : String;
+    key LODGING_CATEGORY_ID   : String  @mandatory  @Common.Label: 'Lodging Category ID';
+        LODGING_CATEGORY_DESC : String  @Common.Label: 'Lodging Category Description';
 }
 
 entity ZCOST_CENTER : managed {
-    key COST_CENTER_ID   : String @mandatory;
+    key COST_CENTER_ID   : String;
         COST_CENTER_DESC : String;
         START_DATE       : Date;
         END_DATE         : Date;
@@ -242,8 +241,8 @@ entity ZCOST_CENTER : managed {
 }
 
 entity ZCLAIM_TYPE_INFO : managed {
-    key CLAIM_TYPE_ID      : String @mandatory;
-    key CLAIM_TYPE_ITEM_ID : String @mandatory;
+    key CLAIM_TYPE_ID      : String;
+    key CLAIM_TYPE_ITEM_ID : String;
         START_DATE         : Date;
         END_DATE           : Date;
         STATUS             : String;
@@ -290,7 +289,7 @@ entity ZAPP_FIELD_CTRL : managed {
 }
 
 entity ZBUDGET : managed {
-    key YEAR            : Date @mandatory;
+    key YEAR            : Date;
     key COMMITMENT_ITEM : String;
     key FUND_CENTER     : Integer;
     key MATERIAL_GROUP  : Integer;
@@ -343,23 +342,23 @@ entity ZSTATUS : managed {
 }
 
 entity ZROOM_TYPE : managed {
-    key ROOM_TYPE_ID   : String  @mandatory  @Common.Label: 'ROOM_TYPE_ID';
-        ROOM_TYPE_DESC : String  @Common.Label: 'ROOM_TYPE_DESC';
+    key ROOM_TYPE_ID   : String  @mandatory  @Common.Label: 'Room Type ID';
+        ROOM_TYPE_DESC : String  @Common.Label: 'Room Type Description';
 }
 
 entity ZFLIGHT_CLASS : managed {
-    key FLIGHT_CLASS_ID   : String  @mandatory  @Common.Label: 'FLIGHT_CLASS_ID';
-        FLIGHT_CLASS_DESC : String  @Common.Label: 'FLIGHT_CLASS_DESC';
+    key FLIGHT_CLASS_ID   : String  @mandatory  @Common.Label: 'Flight Class ID';
+        FLIGHT_CLASS_DESC : String  @Common.Label: 'Flight Class Description';
 }
 
 entity ZCOUNTRY : managed {
-    key COUNTRY_ID   : String  @mandatory  @Common.Label: 'COUNTRY_ID';
-        COUNTRY_DESC : String  @Common.Label: 'COUNTRY_DESC';
+    key COUNTRY_ID   : String  @mandatory  @Common.Label: 'Country ID';
+        COUNTRY_DESC : String  @Common.Label: 'Country Description';
 }
 
 entity ZAREA : managed {
-    key AREA_ID   : String(6)  @mandatory  @Common.Label: 'AREA_ID';
-        AREA_DESC : String     @Common.Label: 'AREA_DESC';
+    key AREA_ID   : String(6)  @mandatory  @Common.Label: 'Area ID';
+        AREA_DESC : String     @Common.Label: 'Area Description';
 }
 
 entity ZLOC_TYPE : managed {
@@ -372,56 +371,56 @@ entity ZLOC_TYPE : managed {
 }
 
 entity ZCURRENCY : managed {
-    key CURRENCY_ID   : String(3)  @mandatory  @Common.Label: 'CURRENCY_ID';
-        CURRENCY_DESC : String     @Common.Label: 'CURRENCY_DESC';
+    key CURRENCY_ID   : String(3)  @mandatory  @Common.Label: 'Currency ID';
+        CURRENCY_DESC : String     @Common.Label: 'Currency Description';
 }
 
 entity ZSTAFF_CAT : managed {
-    key STAFF_CATEGORY_ID   : String  @mandatory  @Common.Label: 'STAFF_CATEGORY_ID';
-        STAFF_CATEGORY_DESC : String  @Common.Label: 'STAFF_CATEGORY_DESC';
+    key STAFF_CATEGORY_ID   : String  @mandatory  @Common.Label: 'Staff Category ID';
+        STAFF_CATEGORY_DESC : String  @Common.Label: 'Staff Category Description';
 }
 
 entity ZMARITAL_STAT : managed {
-    key MARRIAGE_CATEGORY_ID   : String  @mandatory  @Common.Label: 'MARRIAGE_CATEGORY_ID';
-        MARRIAGE_CATEGORY_DESC : String  @Common.Label: 'MARRIAGE_CATEGORY_DESC';
+    key MARRIAGE_CATEGORY_ID   : String  @mandatory  @Common.Label: 'Marriage Category ID';
+        MARRIAGE_CATEGORY_DESC : String  @Common.Label: 'Marriage Category Description';
 }
 
 entity ZVEHICLE_TYPE : managed {
-    key VEHICLE_TYPE_ID   : String  @mandatory  @Common.Label: 'VEHICLE_TYPE_ID';
-        VEHICLE_TYPE_DESC : String  @Common.Label: 'VEHICLE_TYPE_DESC';
+    key VEHICLE_TYPE_ID   : String  @mandatory  @Common.Label: 'Vehicle Type ID';
+        VEHICLE_TYPE_DESC : String  @Common.Label: 'Vehicle Type Description';
 }
 
 entity ZRATE_KM : managed {
-    key RATE_KM_ID  : String  @mandatory  @Common.Label: 'RATE_KM_ID';
-        RATE_PER_KM : Decimal @Common.Label: 'RATE_PER_KM';
+    key RATE_KM_ID  : String  @mandatory  @Common.Label: 'Rate KM ID';
+        RATE_PER_KM : Decimal @Common.Label: 'Rate Per KM';
 }
 
 entity ZREGION : managed {
-    key REGION_ID   : String  @mandatory  @Common.Label: 'REGION_ID';
-        REGION_DESC : String  @Common.Label: 'REGION_DESC';
+    key REGION_ID   : String  @mandatory  @Common.Label: 'Region ID';
+        REGION_DESC : String  @Common.Label: 'Region Description';
 }
 
 entity ZTRANSFER_MODE : managed {
-    key MODE_ID   : String  @mandatory  @Common.Label: 'MODE_ID';
-        MODE_DESC : String  @Common.Label: 'MODE_DESC';
+    key MODE_ID   : String  @mandatory  @Common.Label: 'Mode ID';
+        MODE_DESC : String  @Common.Label: 'Mode Description';
 }
 
 entity ZKWSP_BRANCH : managed {
-    key BRANCH_ID   : String  @mandatory  @Common.Label: 'BRANCH_ID';
-        BRANCH_DESC : String  @Common.Label: 'BRANCH_DESC';
+    key BRANCH_ID   : String  @mandatory  @Common.Label: 'Branch ID';
+        BRANCH_DESC : String  @Common.Label: 'Branch Description';
 }
 
 entity ZSTATE : managed {
-    key COUNTRY_ID : String  @mandatory  @Common.Label: 'COUNTRY_ID';
-        STATE_ID   : String  @Common.Label: 'STATE_ID';
-        STATE_DESC : String  @Common.Label: 'STATE_DESC';
+    key COUNTRY_ID : String  @mandatory  @Common.Label: 'Country ID';
+        STATE_ID   : String  @Common.Label: 'State ID';
+        STATE_DESC : String  @Common.Label: 'State Description';
 }
 
 entity ZKWSP_MILEAGE : managed {
-    key FROM_STATE_ID  : String @mandatory;
-    key FROM_BRANCH_ID : String @mandatory;
-    key TO_STATE_ID    : String @mandatory;
-    key TO_BRANCH_ID   : String @mandatory;
-        MILEAGE        : Integer;
-        MAX_MILEAGE    : Integer;
+    key FROM_STATE_ID  : String  @mandatory  @Common.Label: 'From State ID';
+    key FROM_BRANCH_ID : String  @mandatory  @Common.Label: 'From Branch ID';
+    key TO_STATE_ID    : String  @mandatory  @Common.Lable: 'To State ID';
+    key TO_BRANCH_ID   : String  @mandatory  @Common.Label: 'To Branch ID';
+        MILEAGE        : Integer @Common.Label: 'Mileage';
+        MAX_MILEAGE    : Integer @Common.Label: ' Max Mileage';
 }

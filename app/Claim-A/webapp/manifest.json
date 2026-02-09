@@ -316,6 +316,7 @@
           "name": "sap.fe.templates.ListReport",
           "options": {
             "settings": {
+              "showHeaderFacetOptions": false,
               "contextPath": "/ZCLAIM_PURPOSE",
               "variantManagement": "None",
               "controlConfiguration": {
@@ -340,6 +341,18 @@
                     },
                     "quickVariantSelection": {
                       "hideTableTitle": true
+                    }
+                  },
+                  "actions": {
+                    "copyrecord": {
+                      "press": "claima.ext.controller.Config.onclickcopy",
+                      "visible": true,
+                      "enabled": true,
+                      "requiresSelection": true,
+                      "text": "New Copy"
+                    },
+                    "DataFieldForAction::eclaim_srv.Copy": {
+                      "enableOnSelect": "single"
                     }
                   }
                 }
@@ -462,6 +475,18 @@
                     },
                     "enableMassEdit": {
                       "visibleFields": "REQUEST_TYPE_ID,REQUEST_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                    }
+                  },
+                  "actions": {
+                    "DataFieldForAction::eclaim_srv.Copy": {
+                      "enableOnSelect": "single"
+                    },
+                    "newCopy": {
+                      "press": "claima.ext.controller.Config.onclickcopy",
+                      "visible": true,
+                      "enabled": true,
+                      "requiresSelection": true,
+                      "text": "Copy Record"
                     }
                   }
                 }
