@@ -46,7 +46,7 @@
                     />
                     <tnt:NavigationListItem
                         key="createrequest"
-                        text="{i18n>nav_claimsubmission}"
+                        text="{i18n>nav_prerequest}"
                         icon="sap-icon://sys-add"
                         enabled="true"
                         expanded="false"

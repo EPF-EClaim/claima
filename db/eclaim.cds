@@ -463,7 +463,4 @@ entity Entity1 {
     key ID : UUID;
 }
 
-entity ZRISK{
-    key RISK_ID : String;
-        RISK_DESCRIPTION: String;
-}
+
