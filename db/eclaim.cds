@@ -36,7 +36,6 @@ entity ZREQUEST_HEADER : managed {
         EVENT_START_DATE        : String;
         EVENT_END_DATE          : String;
         REMARK                  : String;
-        //CLAIM_TYPE_ID          : String;
         REQUEST_GROUP_ID        : String;
         ALTERNATE_COST_CENTRE   : String;
         REQUEST_AMOUNT          : String;
@@ -56,16 +55,12 @@ entity ZREQUEST_HEADER : managed {
         CASH_ADVANCE_DATE       : Date;
         TRAVEL_ALONE_FAMILY     : String(1);
         TRAVEL_FAMILY_NOW_LATER : String(1);
-        /*ZCLAIM_TYPE            : Association to one ZCLAIM_TYPE
-                                     on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;*/
-        ZREQUEST_ITEM           : Composition of many ZREQUEST_ITEM /*change to composition 6/2/2026*/
+        ZREQUEST_ITEM           : Composition of many ZREQUEST_ITEM 
                                       on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
         ZREQUEST_TYPE           : Association to ZREQUEST_TYPE
                                       on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
         ZREQUEST_GRP            : Association to ZREQUEST_GRP
                                       on ZREQUEST_GRP.REQUEST_GROUP_ID = REQUEST_GROUP_ID;
-        /*ZCLAIM_HEADER          : Association to one ZCLAIM_HEADER
-                                     on ZCLAIM_HEADER.CLAIM_ID = CLAIM_TYPE_ID;*/
         ZSTATUS                 : Association to ZSTATUS
                                       on ZSTATUS.STATUS_ID = STATUS;
         ZCOST_CENTER            : Association to ZCOST_CENTER
@@ -74,9 +69,9 @@ entity ZREQUEST_HEADER : managed {
 
 entity ZREQUEST_ITEM : managed {
     key REQUEST_ID         : String;
-        // key REQUEST_SUB_ID         : String @mandatory;
-    key CLAIM_TYPE_ITEM_ID : String;
-    key CLAIM_TYPE_ID      : String;
+    key REQUEST_SUB_ID         : String @mandatory;
+        CLAIM_TYPE_ITEM_ID : String;
+        CLAIM_TYPE_ID      : String;
         EST_AMOUNT         : Decimal;
         EST_NO_PARTICIPANT : Integer;
         CASH_ADVANCE       : Boolean;
