@@ -224,7 +224,15 @@ annotate service.ZCLAIM_TYPE with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Claim Type Description'
             }
-        ]
+        ], 
+        Facets  : [
+            {
+                $Type: 'UI.ReferenceFacet', 
+                Target: 'ZCLAIM_TYPE_ITEM/@UI.LineItem',
+                Label: 'Items',
+                ID: 'Items'
+            }
+        ],
     }
 );
 
@@ -290,11 +298,17 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
             TypeNamePlural: 'ZCLAIM_TYPE_ITEM',
         },
         LineItem    : [
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type ID'
             },
             {
                 $Type            : 'UI.DataField',
