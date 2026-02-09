@@ -10,7 +10,9 @@ sap.ui.define([
 	"sap/m/MessageToast",
 	"sap/m/Text",
 	"sap/m/library",
-	"sap/tnt/library"
+	"sap/tnt/library",
+	"sap/ui/model/Filter",
+	"sap/ui/model/FilterOperator"
 ], function (
 	Device,
 	Controller,
@@ -22,7 +24,9 @@ sap.ui.define([
 	MessageToast,
 	Text,
 	library,
-	tntLibrary
+	tntLibrary,
+	Filter,
+	FilterOperator
 ) {
 	"use strict";
 
@@ -49,7 +53,7 @@ sap.ui.define([
 				altcostcenter: "",
 				doc1: "",
 				doc2: "",
-				comment: "", 
+				comment: "",
 				eventdetail1: "",
 				eventdetail2: "",
 				eventdetail3: "",
@@ -86,6 +90,12 @@ sap.ui.define([
 				}
 			});
 			this.getView().setModel(oConfigModel, "configModel");
+
+
+			const oItemsModel = new JSONModel({ results: [] });
+			this.getView().setModel(oItemsModel, "items");
+
+
 		},
 
 
@@ -102,7 +112,7 @@ sap.ui.define([
 
 			activeData.forEach(r => r.edit = false);
 			m.setProperty("/" + tableId, activeData);
-			
+
 			console.log(m.getProperty("/active/data/"));
 			MessageToast.show("Saved");
 		},
@@ -201,7 +211,6 @@ sap.ui.define([
 					}
 					break;
 			}
-
 		},
 		// Configuration
 		onClickConfiguration: async function () {
@@ -544,7 +553,7 @@ sap.ui.define([
 			}
 
 		},
-		// Start added by Aiman Salim - To show or hide fields based on Claim Item
+		// Start added by Aiman Salim 22/1/2026 - For Create Expense Report.To show or hide fields based on Claim Item
 		onClaimItemChange: function (oEvent) {
 			const sKey = oEvent.getSource().getSelectedKey();
 			//set ids 
@@ -565,11 +574,8 @@ sap.ui.define([
 			oVehicle.setVisible(claimShow);
 
 		},
-		//Start Aiman Salim 22/1/2026 - Comment off
 
-		//For MyExpenseReport view - Upon click, it will move to ExpenseReport detail page. 
-
-
+		//Testing for User ID fetch based on user login
 		_getUserIdFromFLP: function () {
 			try {
 				if (sap.ushell && sap.ushell.Container && sap.ushell.Container.getUser) {
@@ -578,83 +584,108 @@ sap.ui.define([
 			} catch (e) { }
 			return null;
 		},
+		//For MyClaimStatus(myexpensereport) on item click. This will fetch data based on row selected and push to detail page
 
 		onRowPress: async function (oEvent) {
-			/* 					const oItem = oEvent.getParameter("listItem");
-								const oData = oItem.getBindingContext("employee").getObject();
-			
-								const oNextPageModel = new JSONModel(oData);
-								const oNextPage = this.byId("expensereport");
-								oNextPage.setModel(oNextPageModel, "selectedRequest");
-			
-								//Navigate to next page
-								this.byId("pageContainer").to(oNextPage); */
-
-
-			// row context from named model "employee"
 			const oItem = oEvent.getParameter("listItem");
-			const oCtx = oItem && oItem.getBindingContext("employee")
-
+			const oCtx = oItem && oItem.getBindingContext("employee");
 
 			if (!oCtx) {
-				MessageToast.show("No context found on the selected row.");
+				sap.m.MessageToast.show("No context found on the selected row.");
 				return;
 			}
 
-
-			await oCtx.requestProperty([
-				"EMP_ID",
-				"EMP_NAME",
-				"STATUS_ID",
-				"DEPARTMENT",
-				"ALTERNATE_COST_CENTER",
-				"TOTAL",
-				"CLAIM_MAIN_CAT_ID"
-				// ... add more properties if your detail page needs them
-			]); // Will fetch only what's missing from the backend
-
-			//const row = oCtx.getObject();
-			const fullEntity = await oCtx.requestObject()
-
-
-			// map header → current schema used by report.fragment
-			// const mapped = this._mapHeaderToCurrent(row);
-			const mapped = this._mapHeaderToCurrent(fullEntity);
-
-
-			// set "current" model data
-			let oCurrent = this.getView().getModel("current");
-			if (!oCurrent) {
-				oCurrent = new sap.ui.model.json.JSONModel();
-				this.getView().setModel(oCurrent, "current");
+			// optional: clear the selection (nice UX)
+			const oSrcTable = oEvent.getSource();
+			if (oSrcTable && oSrcTable.removeSelections) {
+				oSrcTable.removeSelections(true);
 			}
-			oCurrent.setData(mapped);
 
+			const oModel = oCtx.getModel();        // OData V4 model "employee"
+			const oPage = this.byId("expensereport");
 
-			// navigate to the detail page that contains report.fragment
-			const oDetailPage = this.byId("expensereport");
-			if (!oDetailPage) {
-				sap.m.MessageToast.show("Detail page 'expensereport' not found.");
-				return;
+			try {
+				oPage.setBusy(true);
+
+				// 2) Full header (gets anything not in $select)
+				const oHeader = await oCtx.requestObject();
+				const sClaimId = String(oHeader.CLAIM_ID || "").trim();
+
+				if (!sClaimId) {
+					sap.m.MessageToast.show("Selected row does not have a valid CLAIM_ID.");
+					return;
+				}
+
+				// 3) Map header → "current" (report.fragment)
+				let oCurrent = this.getView().getModel("current");
+				if (!oCurrent) {
+					oCurrent = new sap.ui.model.json.JSONModel();
+					this.getView().setModel(oCurrent, "current");
+				}
+				oCurrent.setData(this._mapHeaderToCurrent(oHeader));
+
+				// 4) Fetch items → "items" model (expensetype.fragment)
+				const oItemsBinding = oModel.bindList(
+					"/ZCLAIM_ITEM",
+      /* oContext  */ undefined,
+      /* aSorters  */[],
+      /* aFilters  */[new Filter("CLAIM_ID", FilterOperator.EQ, sClaimId)],
+      /* mParams   */ {
+						$select: "CLAIM_ID,START_DATE,CLAIM_TYPE_ITEM,CLAIM_ITEM_ID,AMOUNT,CURRENCY,STAFF_CATEGORY"
+					}
+				);
+
+				const aItemCtxs = await oItemsBinding.requestContexts(0, Infinity);
+				const aItems = await Promise.all(aItemCtxs.map(c => c.requestObject()));
+
+				let oItemsModel = this.getView().getModel("items");
+				if (!oItemsModel) {
+					oItemsModel = new sap.ui.model.json.JSONModel({ results: [] });
+					this.getView().setModel(oItemsModel, "items");
+				}
+				oItemsModel.setData({ results: aItems || [] });
+
+				// 5) Navigate
+				const oPageContainer = this.byId("pageContainer");
+				oPageContainer.to(oPage);
+
+				// Show expensetype first (your current UX)
+				this.getView().byId("expensetypescr").setVisible(true);
+				this.getView().byId("claimscr").setVisible(false);
+				this.createreportButtons("expensetypescr");
+
+			} catch (e) {
+				jQuery.sap.log.error("onRowPress error: " + e);
+				sap.m.MessageToast.show("Failed to load claim header/items.");
+			} finally {
+				oPage.setBusy(false);
 			}
-			this.byId("pageContainer").to(oDetailPage);
 		},
 
 		_mapHeaderToCurrent: function (row) {
+			// Helper: convert to yyyy-MM-dd (adjust to your locale if needed)
+			const fmt = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" });
+			const toYMD = (d) => {
+				if (d instanceof Date) return fmt.format(d);
+				// handle ISO string "2026-01-26" or similar -> keep
+				if (typeof d === "string") return d;
+				return d || "";
+			};
+
 			return {
 				id: row.CLAIM_ID,
 				location: row.CLAIM_MAIN_CAT_ID || "",
 				costcenter: row.CLAIM_MAIN_CAT_ID || "",
 				altcc: row.ALTERNATE_COST_CENTRE || "",
-				total: row.AMOUNT,
+				total: row.TOTAL,          // you use TOTAL in the table
 				cashadv: row.CLAIM_ID || "",
 				finalamt: row.CLAIM_ID || "",
 				report: {
 					id: row.CLAIM_ID,
 					purpose: row.CATEGORY || "",
-					startdate: row.CLAIM_DATE || "",
-					enddate: row.CLAIM_DATE || "",
-					location: row.location || "",
+					startdate: toYMD(row.CLAIM_DATE),
+					enddate: toYMD(row.CLAIM_DATE),
+					location: row.LOCATION || "",
 					category: row.CATEGORY || "",
 					comment: row.CLAIM_ID || "",
 					amt_approved: row.TOTAL || ""
@@ -662,15 +693,12 @@ sap.ui.define([
 			};
 		},
 
-		//For MyRequestForm view - Upon click, it will move to MyRequestForm detail page. 
+		//For My Pre-Approval (MyRequestForm) view - Upon click, it will move to MyRequestForm detail page. 
 		onRowPressForm: async function (oEvent) {
 			// row context from named model "employee"
 			const oItem = oEvent.getParameter("listItem");
 			const oCtx = oItem && oItem.getBindingContext("employee");
-			const row = oCtx.getObject();
-			const reqid = String(row.REQUEST_ID).trim();
-			console.log("reqid:", reqid);
-			
+
 			if (!oCtx) {
 				sap.m.MessageToast.show("No context found on the selected row.");
 				return;
@@ -678,10 +706,6 @@ sap.ui.define([
 
 			try {
 				this.getView().setBusy(true);
-
-				//await oCtx.requestProperty([]);
-
-
 
 				// Fetch the full entity (remaining props will be resolved as needed)
 				const fullEntity = await oCtx.requestObject();
@@ -697,6 +721,15 @@ sap.ui.define([
 				}
 				oRequest.setData(mapped);
 
+
+				const oModel = this.getOwnerComponent().getModel("request")
+					|| this.getView().getModel("request");
+				if (oModel) {
+					oModel.setProperty("/view", "list");   // your custom flag
+				}
+
+				const sReqId = String(fullEntity.REQUEST_ID || "").trim();
+
 				// Navigate to detail page that consumes the "request" model
 				const oPageContainer = this.byId("pageContainer");
 				const oDetailPage = this.byId("new_request");
@@ -705,6 +738,8 @@ sap.ui.define([
 					return;
 				}
 				oPageContainer.to(oDetailPage);
+
+				this._callRequestFormLoad(oDetailPage, sReqId);
 
 			} catch (e) {
 				jQuery.sap.log.error("onRowPressForm failed: " + e);
@@ -723,7 +758,7 @@ sap.ui.define([
 						return fmt.format(d);
 					}
 					if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
-						return d; // already "YYYY-MM-DD"
+						return d;
 					}
 				} catch (e) {/* ignore */ }
 				return d || "";
@@ -732,8 +767,8 @@ sap.ui.define([
 			return {
 				purpose: row.OBJECTIVE_PURPOSE || "",
 				reqid: row.REQUEST_ID || "",
-				startdate: toYMD(row.START_DATE),
-				enddate: toYMD(row.END_DATE),
+				tripstartdate: toYMD(row.START_DATE),
+				tripenddate: toYMD(row.END_DATE),
 				altcostcenter: "",
 				location: row.LOCATION || "",
 				detail: row.REMARK || "",
@@ -748,6 +783,31 @@ sap.ui.define([
 				// totalamount   : "0.00"
 			};
 		},
+
+		/**
+ * Call RequestForm.loadItemsForRequest by scanning descendants of the page.
+ * No changes needed in RequestForm.controller.
+ */
+		_callRequestFormLoad: function (oDetailPage, sReqId) {
+			// Defer to allow NavContainer to render the page content
+			setTimeout(function () {
+				// find the first descendant that exposes getController() (typically the inner XMLView)
+				var aViews = (typeof oDetailPage.findAggregatedObjects === "function")
+					? oDetailPage.findAggregatedObjects(true, function (c) {
+						return typeof c.getController === "function";
+					})
+					: [];
+
+				var oCtrl = (aViews && aViews.length) ? aViews[0].getController() : null;
+
+				if (oCtrl && typeof oCtrl.loadItemsForRequest === "function") {
+					oCtrl.loadItemsForRequest(sReqId);
+				} else {
+					jQuery.sap.log.warning("RequestForm controller API 'loadItemsForRequest' not found.");
+				}
+			}, 0);
+		},
+		// End added by Aiman Salim 22/1/2026 - 05/02/2026
 
 
 		// CLICK CONFIGURATION TABLE CARD
@@ -794,7 +854,7 @@ sap.ui.define([
 
 
 		/* =========================================================
-		 * Mileage dialog (Fragment) — use a dedicated controller
+		 * Mileage dialog (Fragment) — use a dedicated controller - For Google Maps
 		 * ========================================================= */
 
 		// <<< CHANGED: use the new lazy loader instead of openHelloDialog()
@@ -912,7 +972,7 @@ sap.ui.define([
 				altcostcenter: "",
 				doc1: "",
 				doc2: "",
-				comment: "", 
+				comment: "",
 				eventdetail1: "",
 				eventdetail2: "",
 				eventdetail3: "",
@@ -925,7 +985,7 @@ sap.ui.define([
 				totalamt: 0
 			});
 			this._loadReqTypeSelectionData();
-			
+
 
 			if (!this.oDialogFragment) {
 				this.oDialogFragment = await Fragment.load({
@@ -1010,10 +1070,11 @@ sap.ui.define([
 			// 	message = "End Date cannot be earlier than begin date";
 			// }
 
-			
+
 			// value validation
 			if (okcode === false) {
-				MessageToast.show(message);} 
+				MessageToast.show(message);
+			}
 			else {
 				this.createRequestHeader(oInputData, oReqModel);
 			};
@@ -1021,35 +1082,35 @@ sap.ui.define([
 
 		// load request type data
 		_loadReqTypeSelectionData: function () {
-            var oView = this.getView();
-            var oJSONModel = new JSONModel();
-			
+			var oView = this.getView();
+			var oJSONModel = new JSONModel();
+
 			// Safely get the base service URL from manifest
 			var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
-            var sServiceUrl = sBaseUri + "/ZREQUEST_TYPE"; 
+			var sServiceUrl = sBaseUri + "/ZREQUEST_TYPE";
 
-            // Fetch data from CAP OData service
-            fetch(sServiceUrl)
-                .then(function (response) {
-                    if (!response.ok) {
-                        throw new Error("Network response was not ok");
-                    }
-                    return response.json();
-                })
-                .then(function (data) {
+			// Fetch data from CAP OData service
+			fetch(sServiceUrl)
+				.then(function (response) {
+					if (!response.ok) {
+						throw new Error("Network response was not ok");
+					}
+					return response.json();
+				})
+				.then(function (data) {
 					const aTypes = data.value || data;
 					const aFiltered = aTypes.filter(item => item.STATUS === "ACTIVE");
 					oJSONModel.setData({ types: aFiltered });
-                    oView.setModel(oJSONModel, "req_type_list");
-                    // MessageToast.show("Data loaded successfully");
-                })
-                .catch(function (error) {
-                    console.error("Error fetching CDS data:", error);
-                    // MessageToast.show("Failed to load data", error);
-                });
-        },
+					oView.setModel(oJSONModel, "req_type_list");
+					// MessageToast.show("Data loaded successfully");
+				})
+				.catch(function (error) {
+					console.error("Error fetching CDS data:", error);
+					// MessageToast.show("Failed to load data", error);
+				});
+		},
 
-		createRequestHeader:  function (oInputData, oReqModel) {
+		createRequestHeader: function (oInputData, oReqModel) {
 			this.getCurrentReqNumber().then((result) => {
 				if (result) {
 					oReqModel.setProperty("/reqid", result.reqNo);
@@ -1094,7 +1155,7 @@ sap.ui.define([
 					// 		MessageToast.show(res.error.code, res.error.message);
 					// 	};
 					// });
-					
+
 					this.oDialogFragment.close();
 					this.byId("pageContainer").to(this.getView().byId('new_request'));
 				};
@@ -1143,14 +1204,14 @@ sap.ui.define([
 
 			try {
 				const res = await fetch(sServiceUrl, {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ CURRENT: String(nextNumber) })
+					method: "PATCH",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ CURRENT: String(nextNumber) })
 				});
 
 				if (!res.ok) {
-				const errText = await res.text().catch(() => "");
-				throw new Error(`PATCH failed ${res.status} ${res.statusText}: ${errText}`);
+					const errText = await res.text().catch(() => "");
+					throw new Error(`PATCH failed ${res.status} ${res.statusText}: ${errText}`);
 				}
 
 				// PATCH often returns 204
@@ -1159,7 +1220,7 @@ sap.ui.define([
 				// If the server returns JSON entity
 				const contentType = res.headers.get("content-type") || "";
 				if (contentType.includes("application/json")) {
-				return await res.json();
+					return await res.json();
 				}
 				return await res.text(); // fallback
 			} catch (e) {

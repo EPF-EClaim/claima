@@ -33,7 +33,7 @@
             </OverflowToolbar>
             <VBox rowGap="1rem">
                 <table:Table 
-                    id="req_item_table"
+                    id="req_item_table2"
                     rows="{/req_item_rows}"
                     columnHeaderHeight="3rem"
                     selectionMode="MultiToggle"

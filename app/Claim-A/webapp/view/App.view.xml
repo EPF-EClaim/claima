@@ -232,9 +232,10 @@
                     <Page
                         id="expensereport"
                         showHeader="false"
+                        enableScrolling="true"
                     >
                         <content>
-                            <VBox id="main">
+                            <VBox id="main" class="fullheight" fitContainer="true" >
                                 <core:Fragment
                                     fragmentName="claima.fragment.report"
                                     type="XML"
@@ -242,6 +243,7 @@
                                 <VBox
                                     id="expensetypescr"
                                     visible="true"
+                                    class="fullheight"
                                 >
                                     <core:Fragment
                                         fragmentName="claima.fragment.expensetype"
@@ -251,6 +253,7 @@
                                 <VBox
                                     id="claimscr"
                                     visible="false"
+                                    class="fullheight"
                                 >
                                     <core:Fragment
                                         fragmentName="claima.fragment.claimdetails"
@@ -421,6 +424,26 @@
                         class="sapUiContentPadding"
                     >
                         <Text text="test text" />
+
+                                                            <!-- ZCLAIM_PURPOSE -->
+                                    <f:Card
+                                        class="sapUiSmallMargin"
+                                        width="15rem"
+                                        press="onOpenAnalytics1"
+                                    >
+                                       <f:customData>
+                                            <core:CustomData
+                                                key="id"
+                                                value="ZANALTICS_1"
+                                            />
+                                        </f:customData>
+                                        <!--file in i18n folder is used to change the title-->
+                                        <f:header>
+                                            <cards:Header
+                                                title="{i18n>conf1}"
+                                            />
+                                        </f:header>
+                                    </f:Card>
                     </ScrollContainer>
 					<NavContainer
 						id="new_request"
