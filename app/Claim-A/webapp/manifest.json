@@ -299,6 +299,13 @@
           "target": [
             "ZSTATE"
           ]
+        },
+        {
+          "pattern": "ZAPP_FIELD_CTRL",
+          "name": "ZAPP_FIELD_CTRL",
+          "target": [
+            "ZAPP_FIELD_CTRL"
+          ]
         }
       ],
       "targets": {
@@ -1265,6 +1272,46 @@
                     "creationMode": {
                       "name": "CreationDialog",
                       "creationFields": "COUNTRY_ID,STATE_ID,STATE_DESC"
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZAPP_FIELD_CTRL": {
+          "type": "Component",
+          "id": "ZAPP_FIELD_CTRL",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZAPP_FIELD_CTRL",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "operationGroupingMode": "Isolated",
+                      "visibleFields": "CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,FIELD01,FIELD02,FIELD03,FIELD04,FIELD05,FIELD06,FIELD07,FIELD08,FIELD09,FIELD10,FIELD11,FIELD12,FIELD13,FIELD14,FIELD15,FIELD16,FIELD17,FIELD18,FIELD19,FIELD20"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,FIELD01,FIELD02,FIELD03,FIELD04,FIELD05,FIELD06,FIELD07,FIELD08,FIELD09,FIELD10,FIELD11,FIELD12,FIELD13,FIELD14,FIELD15,FIELD16,FIELD17,FIELD18,FIELD19,FIELD20"
                     }
                   }
                 }

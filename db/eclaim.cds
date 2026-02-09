@@ -73,9 +73,9 @@ entity ZREQUEST_HEADER : managed {
 }
 
 entity ZREQUEST_ITEM : managed {
-    key REQUEST_ID         : String ;
+    key REQUEST_ID         : String;
         // key REQUEST_SUB_ID         : String @mandatory;
-    key CLAIM_TYPE_ITEM_ID : String ;
+    key CLAIM_TYPE_ITEM_ID : String;
         CLAIM_TYPE_ID      : String;
         EST_AMOUNT         : Decimal;
         EST_NO_PARTICIPANT : Integer;
@@ -100,8 +100,8 @@ entity ZREQUEST_ITEM : managed {
 entity ZREQ_ITEM_PART : managed {
     key REQUEST_ID           : String;
         // key REQUEST_SUB_ID       : String @mandatory;
-    CLAIM_TYPE_ITEM_ID   : String;
-    PARTICIPANTS_ID      : String;
+        CLAIM_TYPE_ITEM_ID   : String;
+        PARTICIPANTS_ID      : String;
         PARTICIPANTS         : String;
         EMPLOYEE_COST_CENTER : String;
         ALLOCATED_AMOUNT     : Decimal;
@@ -116,8 +116,10 @@ entity ZREQUEST_TYPE : managed {
 }
 
 entity ZCLAIM_TYPE : managed {
-    key CLAIM_TYPE_ID   : String  @mandatory  @Common.Label: 'Claim Type ID';
-        CLAIM_TYPE_DESC : String  @Common.Label: 'Claim Type Description';
+    key CLAIM_TYPE_ID    : String  @mandatory  @Common.Label: 'Claim Type ID';
+        CLAIM_TYPE_DESC  : String  @Common.Label: 'Claim Type Description';
+        ZCLAIM_TYPE_ITEM : Composition of many ZCLAIM_TYPE_ITEM
+                               on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
 
 }
 
@@ -259,6 +261,7 @@ entity ZRISK : managed {
 }
 
 entity ZCLAIM_TYPE_ITEM : managed {
+    key CLAIM_TYPE_ID        : String  @mandatory  @Common.Label: 'Claim Type ID';
     key CLAIM_TYPE_ITEM_ID   : String  @mandatory  @Common.Label: 'Claim Type Item Id';
         CLAIM_TYPE_ITEM_DESC : String  @Common.Label: 'Claim Type Item Description';
 }
