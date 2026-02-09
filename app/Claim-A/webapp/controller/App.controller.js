@@ -382,74 +382,76 @@ sap.ui.define([
 			this.byId("pageContainer").to(this.getView().createId("dashboard"));
 		},
 
-		onPressSaveDraft: function (oEvent) {
-			this.getCurrentReportNumber().then((result) => {
-				if (result) {
-					// Set data for ZCLAIM_HEADER
-					var oCurrentModel = this.getView().getModel("current");
-					//// Report Number
-					oCurrentModel.setProperty("/report/claim_id", result.reportNo);
-					//// Status ID
-					oCurrentModel.setProperty("/report/status_id", "Draft")
-					//// get data from current claim header shown
-					var oCurrentData = oCurrentModel.getData();
+		onPressSaveDraft: async function (oEvent) {
+			var currentReportNumber = await this.getCurrentReportNumber();
 
-					//// Claim Main Category ID
-					switch (oCurrentData.report.category) {
-						case "expcat_direct":
-							var claimMainCatID = "0000000001";
-							break;
-						case "expcat_auto":
-							claimMainCatID = "0000000002";
-							break;
-						case "expcat_withoutrequest":
-							claimMainCatID = "0000000003";
-							break;
-					}
+			// Set data for ZCLAIM_HEADER
+			var oCurrentModel = this.getView().getModel("current");
+			//// Claim Type ID
+			oCurrentModel.setProperty("/report/claim_type", "001")
+			//// Status ID
+			oCurrentModel.setProperty("/report/status_id", "Draft")
+			//// get data from current claim header shown
+			var oCurrentData = oCurrentModel.getData();
 
-					//// Claim Date (get current date)
-					var currentDate = new Date().toJSON().substring(0,10);
+			////// Claim Main Category ID
+			// switch (oCurrentData.report.category) {
+				// case "expcat_direct":
+					// var claimMainCatID = "0000000001";
+					// break;
+				// case "expcat_auto":
+					// claimMainCatID = "0000000002";
+					// break;
+				// case "expcat_withoutrequest":
+					// claimMainCatID = "0000000003";
+					// break;
+			// }
 
-					//// Amount Approved (Total)
-					var amtApproved = Number.parseFloat(oCurrentData.report.amt_approved).toFixed(2);
-					if (amtApproved == 'NaN') {
-						amtApproved = 0.00;
-					}
+			//// Alternate Cost Center
+			var altCC = oCurrentData.altcc;
+			if (altCC == '') {
+				altCC = null;
+			}
 
-					// Write to Database Table ZCLAIM_HEADER
-					var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
-					var sServiceUrl = sBaseUri + "/ZCLAIM_HEADER"; 
+			//// Amount Approved (Total)
+			var amtApproved = Number.parseFloat(oCurrentData.report.amt_approved).toFixed(2);
+			if (amtApproved == 'NaN') {
+				amtApproved = 0.00;
+			}
 
-					fetch(sServiceUrl, 
-						{method: "POST", headers: {"Content-Type": "application/json"},
-						body: JSON.stringify({
-							CLAIM_ID               : oCurrentData.report.claim_id,
-							CLAIM_MAIN_CAT_ID      : claimMainCatID,
-							EMP_ID                 : "000001",
-							CLAIM_DATE             : currentDate,
-							CATEGORY               : oCurrentData.report.purpose,
-							ALTERNATE_COST_CENTER  : null,
-							CLAIM_TYPE_ID          : "001",
-							TOTAL                  : amtApproved,
-							STATUS_ID          	   : oCurrentData.report.status_id,
-							DEPARTMENT             : "IT Dept 2",
-							EMP_NAME               : "Ahmad Anthony",
-							JOB_POSITION		   : "Junior Analyst",
-							PERSONAL_GRADE		   : "22",
-							POSITION_NO		       : "000003",
-							ZCLAIM_ITEM            : null
-						}) 
-					})
-					.then(r => r.json())
-					.then((res) => {
-						if (!res.error) {
-							MessageToast.show("Record created");
-							this.updateCurrentReportNumber(result.current);
-							this.byId("pageContainer").to(this.getView().createId("dashboard"));
-						} else {
-							MessageToast.show(res.error.code, res.error.message);
-						};
-					});
+			// Write to Database Table ZCLAIM_HEADER
+			var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
+			var sServiceUrl = sBaseUri + "/ZCLAIM_HEADER"; 
+
+			fetch(sServiceUrl, 
+				{method: "POST", headers: {"Content-Type": "application/json"},
+				body: JSON.stringify({
+					CLAIM_ID               : oCurrentData.report.id,
+					// CLAIM_MAIN_CAT_ID      : claimMainCatID,
+					CLAIM_MAIN_CAT_ID      : oCurrentData.costcenter,
+					EMP_ID                 : "000001",
+					CLAIM_DATE             : oCurrentData.report.startdate,
+					CATEGORY               : oCurrentData.report.purpose,
+					ALTERNATE_COST_CENTER  : altCC,
+					CLAIM_TYPE_ID          : oCurrentData.report.claim_type,
+					TOTAL                  : amtApproved,
+					STATUS_ID          	   : oCurrentData.report.status_id,
+					DEPARTMENT             : "IT Dept 2",
+					EMP_NAME               : "Ahmad Anthony",
+					JOB_POSITION		   : "Junior Analyst",
+					PERSONAL_GRADE		   : "22",
+					POSITION_NO		       : "000003",
+					ZCLAIM_ITEM            : null
+				}) 
+			})
+			.then(r => r.json())
+			.then((res) => {
+				if (!res.error) {
+					MessageToast.show("Record created");
+					this.updateCurrentReportNumber(currentReportNumber.current);
+					this.byId("pageContainer").to(this.getView().createId("dashboard"));
+				} else {
+					MessageToast.show(res.error.code, res.error.message);
 				};
 			});
 		},
