@@ -14,7 +14,7 @@ sap.ui.define([
     SimpleForm,
     MessageToast) {
     'use strict';
-
+ 
     return {
         /**
          * Generated event handler.
@@ -99,6 +99,7 @@ sap.ui.define([
 
             oDialog.addContent(oVBox);
             oDialog.open();
+
         }     
     };
 });
