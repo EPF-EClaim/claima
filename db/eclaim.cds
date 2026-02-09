@@ -76,7 +76,7 @@ entity ZREQUEST_ITEM : managed {
     key REQUEST_ID         : String;
         // key REQUEST_SUB_ID         : String @mandatory;
     key CLAIM_TYPE_ITEM_ID : String;
-        CLAIM_TYPE_ID      : String;
+    key CLAIM_TYPE_ID      : String;
         EST_AMOUNT         : Decimal;
         EST_NO_PARTICIPANT : Integer;
         CASH_ADVANCE       : Boolean;
