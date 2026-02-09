@@ -267,7 +267,7 @@ sap.ui.define([
             this.oDialog.open();
         },
 
-		onCreateReport_Create: function () {
+		onCreateReport_Create: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("input");
 			var oInputData = oInputModel.getData();
@@ -282,22 +282,85 @@ sap.ui.define([
 				MessageToast.show(message);
 			} else {
 
+				// get current claim number
+				var currentReportNumber = await this.getCurrentReportNumber();
+
 				// use default value for category if no value detected
 				if (oInputData.report.category == '') {
 					oInputData.report.category = 'expcat_direct';
 				}
+				//// Claim Date (get current date)
+				var currentDate = new Date().toJSON().substring(0,10);
+				//// Amount Approved (Total)
+				var amtApproved = Number.parseFloat(oInputData.report.amt_approved).toFixed(2);
+				if (amtApproved == 'NaN') {
+					amtApproved = 0.00;
+				}
+				//// Claim Main Category ID
+				switch (oInputData.report.category) {
+					case "expcat_direct":
+						var claimMainCatID = "0000000001";
+						break;
+					case "expcat_auto":
+						claimMainCatID = "0000000002";
+						break;
+					case "expcat_withoutrequest":
+						claimMainCatID = "0000000003";
+						break;
+				}
 
-				// set as current data
-				var oCurrentModel = this.getView().getModel("current");
-				oCurrentModel.setData(oInputData);
+				//// set as current data
+				// var oCurrentModel = this.getView().getModel("current");
+				// oCurrentModel.setData(oInputData);
+				
+				// set context
+				var currentEntity = {
+					"CLAIM_ID": currentReportNumber.reportNo,
+					"CLAIM_MAIN_CAT_ID": claimMainCatID,
+					"EMP_ID": "000001",
+					"CLAIM_DATE": currentDate,
+					"CATEGORY": oInputData.report.purpose,
+					"ALTERNATE_COST_CENTER": null,
+					"CLAIM_TYPE_ID": "001",
+					"TOTAL": amtApproved,
+					"STATUS_ID": "Draft",
+					"DEPARTMENT": "IT Dept 2",
+					"EMP_NAME": "Ahmad Anthony",
+					"JOB_POSITION": "Junior Analyst",
+					"PERSONAL_GRADE": "22",
+					"POSITION_NO": "000003",
+					"ZCLAIM_ITEM": null
+				}
 
-				// go to expense report screen
-				var view = "expensereport";
+				// map header → current schema used by report.fragment
+				// const mapped = this._mapHeaderToCurrent(row);
+				const mapped = this._mapHeaderToCurrent(currentEntity);
+
+
+				// set "current" model data
+				let oCurrent = this.getView().getModel("current");
+				if (!oCurrent) {
+					oCurrent = new sap.ui.model.json.JSONModel();
+					this.getView().setModel(oCurrent, "current");
+				}
+				oCurrent.setData(mapped);
+
+
+				// navigate to the detail page that contains report.fragment
+				const oDetailPage = this.byId("expensereport");
+				if (!oDetailPage) {
+					sap.m.MessageToast.show("Detail page 'expensereport' not found.");
+					return;
+				}
+				this.byId("pageContainer").to(oDetailPage);
+				
+				//// go to expense report screen
+				// var view = "expensereport";
 				this.oDialog.close();
-				this.byId("pageContainer").to(this.getView().createId(view));
-				this.getView().byId("expensetypescr").setVisible(true);
-				this.getView().byId("claimscr").setVisible(false);
-				this.createreportButtons("expensetypescr");
+				// this.byId("pageContainer").to(this.getView().createId(view));
+				// this.getView().byId("expensetypescr").setVisible(true);
+				// this.getView().byId("claimscr").setVisible(false);
+				// this.createreportButtons("expensetypescr");
 			}
 		},
 
@@ -355,7 +418,7 @@ sap.ui.define([
 							CLAIM_MAIN_CAT_ID      : claimMainCatID,
 							EMP_ID                 : "000001",
 							CLAIM_DATE             : currentDate,
-							CATEGORY               : "Course",
+							CATEGORY               : oCurrentData.report.purpose,
 							ALTERNATE_COST_CENTER  : null,
 							CLAIM_TYPE_ID          : "001",
 							TOTAL                  : amtApproved,
@@ -544,8 +607,8 @@ sap.ui.define([
 				"EMP_NAME",
 				"STATUS_ID",
 				"DEPARTMENT",
-				"ALTERNATE_COST_CENTRE",
-				"AMOUNT",
+				"ALTERNATE_COST_CENTER",
+				"TOTAL",
 				"CLAIM_MAIN_CAT_ID"
 				// ... add more properties if your detail page needs them
 			]); // Will fetch only what's missing from the backend
