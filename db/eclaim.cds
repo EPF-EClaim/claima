@@ -143,7 +143,7 @@ entity ZNUM_RANGE : managed
     key RANGE_ID : String
         @mandatory
         @Common.Label : 'RANGE_ID';
-    FROM : String
+    ![FROM] : String
         @Common.Label : 'FROM';
     TO : String
         @Common.Label : 'TO';
@@ -245,25 +245,6 @@ entity ZCLAIM_ITEM : managed
 entity ZCLAIM_PURPOSE : managed
 {
     key CLAIM_PURPOSE_ID : String
-        @assert :
-        {
-            = : 'case when CLAIM_PURPOSE_ID is null then ''Please fill in the mandatory field'' end',
-            xpr :
-            [
-                'case',
-                'when',
-                {
-                    ref : ["CLAIM_PURPOSE_ID"]
-                },
-                'is',
-                'null',
-                'then',
-                {
-                    val : 'Please fill in the mandatory field'
-                },
-                'end'
-            ]
-        }
         @mandatory
         @Common.Label : 'Claim Purpose ID';
     CLAIM_PURPOSE_DESC : String
