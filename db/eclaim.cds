@@ -88,6 +88,7 @@ entity ZCLAIM_TYPE_ITEM {
     key CLAIM_TYPE_ID        : String;
     key CLAIM_TYPE_ITEM_ID   : String;
         CLAIM_TYPE_ITEM_DESC : String;
+        CATEGORY_ID          : String;
 }
 
 entity ZREQUEST_GRP {

@@ -302,7 +302,7 @@ sap.ui.define([
 			var claimItem = oEvent.getParameters().selectedItem.getKey();
 			if (claimItem) {
 				// placeholder - show claim item category in category input
-				this.byId("input_claimprocess_category").setValue(this.getView().getModel("i18n").getResourceBundle().getText("value_claimprocess_category_direct"));
+				this.byId("input_claimprocess_category").setValue(this._getTexti18n("value_claimprocess_category_direct"));
 
 				// enable 'Start Claim' button
 				this.byId("button_claimprocess_startclaim").setEnabled(true);
@@ -317,7 +317,7 @@ sap.ui.define([
 			oInputModel.setProperty("/claimitem_desc",this.byId("select_claimprocess_claimitem")._getSelectedItemText());
 			//// get claim type category
 			switch (this.byId("input_claimprocess_category").getValue()) {
-				case this.getView().getModel("i18n").getResourceBundle().getText("value_claimprocess_category_direct"):
+				case this._getTexti18n("value_claimprocess_category_direct"):
 					oInputModel.setProperty("/category","DIRECT");
 					break;
 				default:
@@ -373,7 +373,7 @@ sap.ui.define([
 				oInputData.report.enddate == '' ||
 				oInputData.report.comment == '') {
 				// required fields without value
-				var message = this.getView().getModel("i18n").getResourceBundle().getText("dialog_createreport_required");
+				var message = this._getTexti18n("dialog_createreport_required");
 				MessageToast.show(message);
 			} else {
 
@@ -1342,6 +1342,10 @@ sap.ui.define([
 		onClickCancel: function () {
 			this.oDialogFragment.close();
 		},
+
+		_getTexti18n: function (input) {
+			return this.getView().getModel("i18n").getResourceBundle().getText(input);
+		}
 
 	});
 });
