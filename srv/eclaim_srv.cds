@@ -175,6 +175,8 @@ service eclaim_srv {
     entity ZOFFICE_LOCATION  as projection on ECLAIM.ZOFFICE_LOCATION;
 
     entity ZOFFICE_DISTANCE  as projection on ECLAIM.ZOFFICE_DISTANCE;
+
+    entity ZLOC_TYPE         as projection on ECLAIM.ZLOC_TYPE;
 };
 
 

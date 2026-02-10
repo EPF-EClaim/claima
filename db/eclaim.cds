@@ -293,6 +293,9 @@ entity ZCLAIM_DISCLAIMER : managed {
 entity ZLODGING_CAT : managed {
     key LODGING_CATEGORY_ID   : String  @mandatory  @Common.Label: 'Lodging Category ID';
         LODGING_CATEGORY_DESC : String  @Common.Label: 'Lodging Category Description';
+        START_DATE            : Date;
+        END_DATE              : Date;
+        STATUS                : String;
 }
 
 entity ZCOST_CENTER : managed {
@@ -413,21 +416,24 @@ entity ZAPPROVAL_RULES : managed {
 }
 
 entity ZCLAIM_MAIN_CAT : managed {
-    key CLAIM_MAIN_CAT_ID   : String  @mandatory  @Common.Label: 'CLAIM_MAIN_CAT_ID';
-        CLAIM_MAIN_CAT_DESC : String  @Common.Label: 'CLAIM_MAIN_CAT_DESC';
+    key CLAIM_MAIN_CAT_ID   : String  @mandatory  @Common.Label: 'Claim Main Category ID';
+        CLAIM_MAIN_CAT_DESC : String  @Common.Label: 'Claim Main Category Description';
 }
 
 entity ZCLAIM_CATEGORY : managed {
-    key CLAIM_CAT_ID        : String  @mandatory  @Common.Label: 'CLAIM_CAT_ID';
-        CLAIM_CATEGORY_DESC : String  @Common.Label: 'CLAIM_CATEGORY_DESC';
+    key CLAIM_CAT_ID        : String  @mandatory  @Common.Label: 'Claim Category ID';
+        CLAIM_CATEGORY_DESC : String  @Common.Label: 'Claim Category Description';
         START_DATE          : String  @Common.Label: 'Start Date';
         END_DATE            : String  @Common.Label: 'End Date';
         STATUS              : String  @Common.Label: 'Status';         
 }
 
 entity ZSTATUS : managed {
-    key STATUS_ID   : String  @mandatory  @Common.Label: 'STATUS_ID';
-        STATUS_DESC : String  @Common.Label: 'STATUS_DESC';
+    key STATUS_ID   : String  @mandatory  @Common.Label: 'Status ID';
+        STATUS_DESC : String  @Common.Label: 'Status Description';
+        START_DATE  : String  @Common.Label: 'Start Date';
+        END_DATE    : String  @Common.Label: 'End Date';
+        STATUS      : String  @Common.Label: 'Status';         
 }
 
 entity ZROOM_TYPE : managed {
@@ -465,10 +471,9 @@ entity ZAREA : managed {
 entity ZLOC_TYPE : managed {
     key LOC_TYPE_ID   : String(6)  @mandatory  @Common.Label: 'LOC_TYPE_ID';
         LOC_TYPE_DESC : String     @Common.Label: 'LOC_TYPE_DESC';
-        STATE1        : String     @Common.Label: 'STATE1';
-        STATE2        : String     @Common.Label: 'STATE2';
-        FROM_LOCATION : String     @Common.Label: 'FROM_LOCATION';
-        TO_LOCATION   : String     @Common.Label: 'TO_LOCATION';
+        START_DATE    : String  @Common.Label: 'Start Date';
+        END_DATE      : String  @Common.Label: 'End Date';
+        STATUS        : String  @Common.Label: 'Status';  
 }
 
 entity ZCURRENCY : managed {

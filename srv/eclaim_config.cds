@@ -782,7 +782,25 @@ annotate service.ZSTATUS with @(
                 Value            : STATUS_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Status Description'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }             
         ]
     }
 );
@@ -866,7 +884,25 @@ annotate service.ZLODGING_CAT with @(
                 Value            : LODGING_CATEGORY_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Lodging Category Description'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }            
         ]
     }
 );
@@ -2192,6 +2228,68 @@ annotate service.ZOFFICE_DISTANCE with @(
                 Value            : MILEAGE,
                 ![@UI.Importance]: #High,
                 Label            : 'Mileage'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZLOC_TYPE with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        LOC_TYPE_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZLOC_TYPE',
+            TypeNamePlural: 'ZLOC_TYPE',
+        },
+        LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LOC_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Location Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LOC_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Location Type Description'
             },            
             {
                 $Type            : 'UI.DataField',
