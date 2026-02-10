@@ -25,9 +25,9 @@
             <OverflowToolbar
                 height="3rem"
                 style="Clear">
-                <m:Title text="{i18n>req_form_detail_title} ({= ${request>/req_item_rows}.length })" titleStyle="H3" />
+                <m:Title text="{i18n>req_form_detail_title} ({= ${request>/list_count} })" titleStyle="H3" />
                 <m:ToolbarSpacer />
-                <m:Button text="{i18n>req_b_create_item}"   type="Emphasized"   icon="sap-icon://add"       press=".onPressAddItem"     enabled="{= ${request>/view} !== 'view' }" />
+                <m:Button text="{i18n>req_b_create_item}"   type="Emphasized"   icon="sap-icon://add"       press=".onAddItem"     enabled="{= ${request>/view} !== 'view' }" />
                 <m:Button text="{i18n>req_b_edit}"          type="Default"                                  press=".onSelectEdit"       enabled="{= ${request>/view} !== 'view' }"/>
                 <m:Button text="{i18n>req_b_delete}"        type="Default"                                  press=".onRowDeleteReqItem" enabled="{= ${request>/view} !== 'view' }" />
             </OverflowToolbar>

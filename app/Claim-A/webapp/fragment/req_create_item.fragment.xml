@@ -91,7 +91,8 @@
                                 </form:FormElement>
 
                                 <!-- Estimated Participants -->
-                                <form:FormElement label="{i18n>req_i_estparticipant}">
+                                <form:FormElement label="{i18n>req_i_estparticipant}"
+                                                visible="{= ${request>/req_header/grptype} === 'group'}">
                                     <form:fields>
                                         <m:Input 
                                             id="estNoOfParticipant" 
@@ -159,11 +160,7 @@
                         </form:FormContainer>
                     </form:formContainers>
                 </form:Form>
-
-                <!-- <HBox alignItems="Center">
-                    <Image src="../images/4_quadrants.png" width="100%"></Image>
-                </HBox> -->
-
+                
                 <VBox rowGap="0.5rem">
                     <OverflowToolbar height="3rem">
                         <Title text="{i18n>req_participant}" titleStyle="H4" />
@@ -189,7 +186,7 @@
                         <table:Column width="25rem">
                             <Label text="{i18n>req_p_name}"></Label>
                             <table:template>
-                                <Input id="participant_name" textAlign="Begin" value="{request>PARTICIPANT_ID}" change=".appendNewRow"></Input>
+                                <Input id="participant_name" textAlign="Begin" value="{request>PARTICIPANTS_ID}" change=".appendNewRow"></Input>
                             </table:template>
                         </table:Column>
                         <table:Column width="25rem">

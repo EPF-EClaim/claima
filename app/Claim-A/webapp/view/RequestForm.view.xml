@@ -5,7 +5,7 @@
     xmlns:core="sap.ui.core"
 	controllerName="claima.controller.RequestForm"
     id="request_form_xmlview">
-	
+
     <Page 
         id="request_form"
         floatingFooter="true"
