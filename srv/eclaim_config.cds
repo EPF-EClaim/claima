@@ -79,6 +79,24 @@ annotate service.ZRISK with @(
                 Value            : RISK_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Risk Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
             }
         ]
     }
@@ -704,7 +722,25 @@ annotate service.ZCLAIM_CATEGORY with @(
                 Value            : CLAIM_CATEGORY_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Claim Category Description'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }            
         ]
     }
 );
@@ -932,7 +968,25 @@ annotate service.ZFLIGHT_CLASS with @(
                 Value            : FLIGHT_CLASS_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Flight Class Description'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }            
         ]
     }
 );
@@ -974,7 +1028,25 @@ annotate service.ZCOUNTRY with @(
                 Value            : COUNTRY_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Country Description'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }            
         ]
     }
 );
@@ -1016,7 +1088,25 @@ annotate service.ZAREA with @(
                 Value            : AREA_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Area Description'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }            
         ]
     }
 );
@@ -1100,7 +1190,25 @@ annotate service.ZMARITAL_STAT with @(
                 Value            : MARRIAGE_CATEGORY_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Marriage Category Description'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }            
         ]
     }
 );
@@ -1314,6 +1422,24 @@ annotate service.ZSTATE with @(
                 ![@UI.Importance]: #High,
                 Label            : 'State Description'
             },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }            
         ]
     }
 );
@@ -1830,6 +1956,18 @@ annotate service.ZRATE_KM with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : VEHICLE_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Vehicle Type ID'
+            },  
+            {
+                $Type            : 'UI.DataField',
+                Value            : RATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Rate'
+            },                            
+            {
+                $Type            : 'UI.DataField',
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
@@ -1896,6 +2034,171 @@ annotate service.ZSUBMISSION_TYPE with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
             },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+
+annotate service.ZOFFICE_LOCATION with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        LOCATION_ID,
+        STATE_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZOFFICE_LOCATION',
+            TypeNamePlural: 'ZOFFICE_LOCATION',
+        },
+        LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LOCATION_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Location ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'State ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LOCATION_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Location Description'
+            },
+                        {
+                $Type            : 'UI.DataField',
+                Value            : LOCATION_GROUP,
+                ![@UI.Importance]: #High,
+                Label            : 'Location Group'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LEGAL_ENTITY,
+                ![@UI.Importance]: #High,
+                Label            : 'Legal Entity'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZOFFICE_DISTANCE with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        FROM_LOCATION_ID,
+        FROM_STATE_ID,
+        TO_LOCATION_ID,
+        TO_STATE_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZOFFICE_DISTANCE',
+            TypeNamePlural: 'ZOFFICE_DISTANCE',
+        },
+        LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FROM_STATE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'From State ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FROM_LOCATION_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'From Location ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TO_STATE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'To State ID'
+            },
+                        {
+                $Type            : 'UI.DataField',
+                Value            : TO_LOCATION_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'To Location ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MILEAGE,
+                ![@UI.Importance]: #High,
+                Label            : 'Mileage'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },            
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,

@@ -53,7 +53,9 @@ entity ZEMP_MASTER : managed {
                                     on  ZSTATE.COUNTRY_ID = COUNTRY
                                     and ZSTATE.STATE_ID = STATE;  
         ZEMP_TYPE               : Association to ZEMP_TYPE
-                                    on  ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;   
+                                    on  ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;  
+        ZOFFICE_LOCATION        : Association to ZOFFICE_LOCATION   
+                                    on ZOFFICE_LOCATION.LOCATION_ID = OFFICE_LOCATION; 
 }
 
 entity ZREQUEST_HEADER : managed {
@@ -296,6 +298,8 @@ entity ZLODGING_CAT : managed {
 entity ZCOST_CENTER : managed {
     key COST_CENTER_ID   : String;
         COST_CENTER_DESC : String;
+        EXTERNAL_OBJ_ID  : String;
+        DEPARTMENT       : String;
         START_DATE       : Date;
         END_DATE         : Date;
         STATUS           : String;
@@ -315,8 +319,11 @@ entity ZCLAIM_TYPE_INFO : managed {
 }
 
 entity ZRISK : managed {
-    key RISK_ID   : String  @mandatory  @Common.Label: 'Risk Id';
-        RISK_DESC : String  @Common.Label: 'Risk Description';
+    key RISK_ID     : String  @mandatory  @Common.Label: 'Risk Id';
+        RISK_DESC   : String  @Common.Label: 'Risk Description';
+        START_DATE  : String  @Common.Label: 'Start Date';
+        END_DATE    : String  @Common.Label: 'End Date';
+        STATUS      : String  @Common.Label: 'Status';
 }
 
 entity ZCLAIM_TYPE_ITEM : managed {
@@ -413,6 +420,9 @@ entity ZCLAIM_MAIN_CAT : managed {
 entity ZCLAIM_CATEGORY : managed {
     key CLAIM_CAT_ID        : String  @mandatory  @Common.Label: 'CLAIM_CAT_ID';
         CLAIM_CATEGORY_DESC : String  @Common.Label: 'CLAIM_CATEGORY_DESC';
+        START_DATE          : String  @Common.Label: 'Start Date';
+        END_DATE            : String  @Common.Label: 'End Date';
+        STATUS              : String  @Common.Label: 'Status';         
 }
 
 entity ZSTATUS : managed {
@@ -429,18 +439,27 @@ entity ZROOM_TYPE : managed {
 }
 
 entity ZFLIGHT_CLASS : managed {
-    key FLIGHT_CLASS_ID   : String  @mandatory  @Common.Label: 'Flight Class ID';
-        FLIGHT_CLASS_DESC : String  @Common.Label: 'Flight Class Description';
+    key FLIGHT_CLASS_ID     : String  @mandatory  @Common.Label: 'Flight Class ID';
+        FLIGHT_CLASS_DESC   : String  @Common.Label: 'Flight Class Description';
+        START_DATE          : String  @Common.Label: 'Start Date';
+        END_DATE            : String  @Common.Label: 'End Date';
+        STATUS              : String  @Common.Label: 'Status';        
 }
 
 entity ZCOUNTRY : managed {
     key COUNTRY_ID   : String  @mandatory  @Common.Label: 'Country ID';
         COUNTRY_DESC : String  @Common.Label: 'Country Description';
+        START_DATE   : String  @Common.Label: 'Start Date';
+        END_DATE     : String  @Common.Label: 'End Date';
+        STATUS       : String  @Common.Label: 'Status';        
 }
 
 entity ZAREA : managed {
-    key AREA_ID   : String(6)  @mandatory  @Common.Label: 'Area ID';
-        AREA_DESC : String     @Common.Label: 'Area Description';
+    key AREA_ID     : String(6)  @mandatory  @Common.Label: 'Area ID';
+        AREA_DESC   : String     @Common.Label: 'Area Description';
+        START_DATE  : String  @Common.Label: 'Start Date';
+        END_DATE    : String  @Common.Label: 'End Date';
+        STATUS      : String  @Common.Label: 'Status';           
 }
 
 entity ZLOC_TYPE : managed {
@@ -466,8 +485,11 @@ entity ZSTAFF_CAT : managed {
 }
 
 entity ZMARITAL_STAT : managed {
-    key MARRIAGE_CATEGORY_ID   : String  @mandatory  @Common.Label: 'Marriage Category ID';
-        MARRIAGE_CATEGORY_DESC : String  @Common.Label: 'Marriage Category Description';
+    key MARRIAGE_CATEGORY_ID    : String  @mandatory  @Common.Label: 'Marriage Category ID';
+        MARRIAGE_CATEGORY_DESC  : String  @Common.Label: 'Marriage Category Description';
+        START_DATE              : String  @Common.Label: 'Start Date';
+        END_DATE                : String  @Common.Label: 'End Date';
+        STATUS                  : String  @Common.Label: 'Status';
 }
 
 entity ZVEHICLE_TYPE : managed {
@@ -479,11 +501,15 @@ entity ZVEHICLE_TYPE : managed {
 }
 
 entity ZRATE_KM : managed {
-    key RATE_KM_ID  : String  @mandatory  @Common.Label: 'Rate KM ID';
-        RATE_PER_KM : Decimal @Common.Label: 'Rate Per KM';
-        START_DATE  : String  @Common.Label: 'Start Date';
-        END_DATE    : String  @Common.Label: 'End Date';
-        STATUS      : String  @Common.Label: 'Status';
+    key RATE_KM_ID          : String  @mandatory  @Common.Label: 'Rate KM ID';
+        RATE_PER_KM         : Decimal @Common.Label: 'Rate Per KM';
+        VEHICLE_TYPE_ID     : String  @Common.Label: 'Vehicle ID';
+        RATE                : Decimal;
+        START_DATE          : String  @Common.Label: 'Start Date';
+        END_DATE            : String  @Common.Label: 'End Date';
+        STATUS              : String  @Common.Label: 'Status';
+        ZVEHICLE_TYPE       : Association to ZVEHICLE_TYPE
+                                on ZVEHICLE_TYPE.VEHICLE_TYPE_ID = VEHICLE_TYPE_ID;
 }
 
 entity ZREGION : managed {
@@ -506,7 +532,7 @@ entity ZKWSP_BRANCH : managed {
 
 entity ZSTATE : managed {
     key COUNTRY_ID : String  @mandatory  @Common.Label: 'Country ID';
-        STATE_ID   : String  @Common.Label: 'State ID';
+    key STATE_ID   : String  @Common.Label: 'State ID';
         STATE_DESC : String  @Common.Label: 'State Description';
         START_DATE : Date   @Common.Label: 'Start Date';
         END_DATE   : Date   @Common.Label: 'End Date';
@@ -572,6 +598,29 @@ entity ZSUBMISSION_TYPE: managed {
         START_DATE              : String @Common.Label: 'Start Date';
         END_DATE                : String @Common.Label: 'End Date';
         STATUS                  : String @Common.Label: 'Status'; 
+}
+
+entity ZOFFICE_LOCATION: managed {
+    key LOCATION_ID     : String @mandatory @Common.Label: 'Location ID';
+    key STATE_ID        : String @mandatory @Common.Label: 'State ID';
+        LOCATION_DESC   : String @Common.Label: 'Location Description';
+        LOCATION_GROUP  : String @Common.Label: 'Location Group';
+        LEGAL_ENTITY    : String @Common.Label: 'Legal Entity';
+        START_DATE      : String @Common.Label: 'Start Date';
+        END_DATE        : String @Common.Label: 'End Date';
+        STATUS          : String @Common.Label: 'Status';         
+
+}
+
+entity ZOFFICE_DISTANCE: managed {
+    key FROM_STATE_ID       : String @mandatory @Common.Label: 'From State ID';
+    key FROM_LOCATION_ID    : String @mandatory @Common.Label: 'From Location ID';
+    key TO_STATE_ID         : String @mandatory @Common.Label: 'To State ID';
+    key TO_LOCATION_ID      : String @mandatory @Common.Label: 'To Location ID';
+        MILEAGE             : String @Common.Label: 'Mileage';
+        START_DATE          : String @Common.Label: 'Start Date';
+        END_DATE            : String @Common.Label: 'End Date';
+        STATUS              : String @Common.Label: 'Status';         
 }
 
 

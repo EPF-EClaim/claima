@@ -171,6 +171,10 @@ service eclaim_srv {
     entity ZRATE_KM          as projection on ECLAIM.ZRATE_KM;
 
     entity ZSUBMISSION_TYPE  as projection on ECLAIM.ZSUBMISSION_TYPE;
+
+    entity ZOFFICE_LOCATION  as projection on ECLAIM.ZOFFICE_LOCATION;
+
+    entity ZOFFICE_DISTANCE  as projection on ECLAIM.ZOFFICE_DISTANCE;
 };
 
 
