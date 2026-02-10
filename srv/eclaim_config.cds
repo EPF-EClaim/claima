@@ -886,6 +886,24 @@ annotate service.ZROOM_TYPE with @(
                 Value            : ROOM_TYPE_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Room Type Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
             }
         ]
     }
@@ -1138,6 +1156,24 @@ annotate service.ZSTAFF_CAT with @(
                 Value            : STAFF_CATEGORY_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Staff Category Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
             }
         ]
     }
@@ -1180,6 +1216,24 @@ annotate service.ZVEHICLE_TYPE with @(
                 Value            : VEHICLE_TYPE_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Vehicle Type Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
             }
         ]
     }
@@ -1304,7 +1358,121 @@ annotate service.ZEMP_MASTER with @(
                 $Type            : 'UI.DataField',
                 Value            : EEID,
                 ![@UI.Importance]: #High,
-                Label            : 'Country ID'
+                Label            : 'Employee ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Name'
+            },   
+            {
+                $Type            : 'UI.DataField',
+                Value            : GRADE,
+                ![@UI.Importance]: #High,
+                Label            : 'Personal Grade'
+            },        
+            {
+                $Type            : 'UI.DataField',
+                Value            : CC,
+                ![@UI.Importance]: #High,
+                Label            : 'Cost Center'
+            },    
+            {
+                $Type            : 'UI.DataField',
+                Value            : POS,
+                ![@UI.Importance]: #High,
+                Label            : 'Position Number'
+            },    
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEP,
+                ![@UI.Importance]: #High,
+                Label            : 'Department'
+            },       
+            {
+                $Type            : 'UI.DataField',
+                Value            : B_PLACE,
+                ![@UI.Importance]: #High,
+                Label            : 'Place of Birth'
+            },  
+            {
+                $Type            : 'UI.DataField',
+                Value            : MARITAL,
+                ![@UI.Importance]: #High,
+                Label            : 'Marital Status'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : JOB_GROUP,
+                ![@UI.Importance]: #High,
+                Label            : 'Job Group'
+            },                                                
+            {
+                $Type            : 'UI.DataField',
+                Value            : OFFICE_LOCATION,
+                ![@UI.Importance]: #High,
+                Label            : 'Office Location'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ADDRESS_LINE1,
+                ![@UI.Importance]: #High,
+                Label            : 'Address Line 1'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ADDRESS_LINE2,
+                ![@UI.Importance]: #High,
+                Label            : 'Address Line 2'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ADDRESS_LINE3,
+                ![@UI.Importance]: #High,
+                Label            : 'Address Line 3'
+            },                                                
+            {
+                $Type            : 'UI.DataField',
+                Value            : POSTCODE,
+                ![@UI.Importance]: #High,
+                Label            : 'Postcode'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATE,
+                ![@UI.Importance]: #High,
+                Label            : 'State'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COUNTRY,
+                ![@UI.Importance]: #High,
+                Label            : 'Country'
+            },                                                                       
+            {
+                $Type            : 'UI.DataField',
+                Value            : CONTACT_NO,
+                ![@UI.Importance]: #High,
+                Label            : 'Contact No'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMAIL,
+                ![@UI.Importance]: #High,
+                Label            : 'Email'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DIRECT_SUPPERIOR,
+                ![@UI.Importance]: #High,
+                Label            : 'Direct Supperior'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ROLE,
+                ![@UI.Importance]: #High,
+                Label            : 'Role'
             },
             {
                 $Type            : 'UI.DataField',
@@ -1314,16 +1482,58 @@ annotate service.ZEMP_MASTER with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : B_PLACE,
+                Value            : MOBILE_BILL_ELIGIBILITY,
                 ![@UI.Importance]: #High,
-                Label            : 'Place of Birth'
+                Label            : 'Mobile Bill Eligibility'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMPLOYEE_TYPE,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Type'
+            },    
+            {
+                $Type            : 'UI.DataField',
+                Value            : POSITION_NAME,
+                ![@UI.Importance]: #High,
+                Label            : 'Position Name'
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : MOBILE_BILL_ELIGIBILITY,
+                Value            : POSITION_START_DATE,
                 ![@UI.Importance]: #High,
-                Label            : 'Mobile Bill '
+                Label            : 'Position Start Date'
+            },   
+            {
+                $Type            : 'UI.DataField',
+                Value            : POSITION_EVENT_REASON,
+                ![@UI.Importance]: #High,
+                Label            : 'Position Event Reason'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : CONFIRMATION_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Confimation Date'
+            },    
+            {
+                $Type            : 'UI.DataField',
+                Value            : EFFECTIVE_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Effective Date'
             },
+            {
+                $Type            : 'UI.DataField',
+                Value            : UPDATED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Updated Date'
+            },  
+            {
+                $Type            : 'UI.DataField',
+                Value            : INSERTED_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Inserted Date'
+            },                                                       
         ]
     }
 );
@@ -1588,6 +1798,130 @@ annotate service.ZREGION with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Region Description'
             },
+        ]
+    }
+);
+
+annotate service.ZRATE_KM with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        ROLE_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZRATE_KM',
+            TypeNamePlural: 'ZRATE_KM',
+        },
+        LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RATE_KM_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Rate KM ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RATE_PER_KM,
+                ![@UI.Importance]: #High,
+                Label            : 'Rate Per KM'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZSUBMISSION_TYPE with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        SUBMISSION_TYPE_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZSUBMISSION_TYPE',
+            TypeNamePlural: 'ZSUBMISSION_TYPE',
+        },
+        LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBMISSION_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Submission Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBMISSION_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Submission Type Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
         ]
     }
 );

@@ -56,10 +56,8 @@ entity ZEMP_MASTER : managed {
 }
 
 entity ZREQUEST_HEADER : managed {
-    key EMP_ID                  : String
-        @mandatory;
-    key REQUEST_ID              : UUID
-        @mandatory;
+    key EMP_ID                  : String @mandatory;   
+    key REQUEST_ID              : UUID @mandatory;     
         REQUEST_TYPE_ID         : UUID;
         REFERENCE_NUMBER        : String;
         OBJECTIVE_PURPOSE       : String;
@@ -93,36 +91,34 @@ entity ZREQUEST_HEADER : managed {
                                       on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
         ZREQUEST_GRP            : Association to one ZREQUEST_GRP
                                       on ZREQUEST_GRP.REQUEST_GROUP_ID = REQUEST_GROUP_ID;
-        ZSTATUS                 : Association to one ZSTATUS
-                                      on ZSTATUS.STATUS_ID = STATUS;
-        ZCOST_CENTER            : Association to one ZCOST_CENTER
-                                      on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
-        ZEMP_MASTER             : Association to one ZEMP_MASTER
-                                      on ZEMP_MASTER.EEID = EMP_ID;
+        ZSTATUS                : Association to one ZSTATUS
+                                     on ZSTATUS.STATUS_ID = STATUS;  
+        ZCOST_CENTER           : Association to one ZCOST_CENTER
+                                     on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
+        ZEMP_MASTER            : Association to one ZEMP_MASTER
+                                    on ZEMP_MASTER.EEID = EMP_ID;
 }
 
 entity ZREQUEST_ITEM : managed {
-    key REQUEST_ID         : String
-        @mandatory;
-    key REQUEST_SUB_ID     : String
-        @mandatory;
-        CLAIM_TYPE_ITEM_ID : String;
-        CLAIM_TYPE_ID      : String;
-        EST_AMOUNT         : Decimal;
-        EST_NO_PARTICIPANT : Integer;
-        CASH_ADVANCE       : Boolean;
-        START_DATE         : Date;
-        END_DATE           : Date;
-        REMARK             : String;
-        SEND_TO_SF         : Boolean;
-        LOCATION           : String;
-        ZREQ_ITEM_PART     : Composition of many ZREQ_ITEM_PART
-                                 on  ZREQ_ITEM_PART.REQUEST_ID     = REQUEST_ID
-                                 and ZREQ_ITEM_PART.REQUEST_SUB_ID = REQUEST_SUB_ID;
-        ZCLAIM_TYPE        : Association to one ZCLAIM_TYPE
-                                 on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
-        ZCLAIM_TYPE_ITEM   : Association to one ZCLAIM_TYPE_ITEM
-                                 on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID;
+    key REQUEST_ID             : String @mandatory;    
+    key REQUEST_SUB_ID         : String @mandatory;    
+        CLAIM_TYPE_ITEM_ID     : String;    
+        CLAIM_TYPE_ID          : String;
+        EST_AMOUNT             : Decimal;
+        EST_NO_PARTICIPANT     : Integer;
+        CASH_ADVANCE           : Boolean;
+        START_DATE             : Date;
+        END_DATE               : Date;
+        REMARK                 : String;
+        SEND_TO_SF             : Boolean;   
+        LOCATION               : String;  
+        ZREQ_ITEM_PART         : Composition of many ZREQ_ITEM_PART
+                                     on  ZREQ_ITEM_PART.REQUEST_ID         = REQUEST_ID
+                                     and ZREQ_ITEM_PART.REQUEST_SUB_ID     = REQUEST_SUB_ID;
+        ZCLAIM_TYPE            : Association to one ZCLAIM_TYPE
+                                     on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;   
+        ZCLAIM_TYPE_ITEM       : Association to one ZCLAIM_TYPE_ITEM
+                                     on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID;                                      
 }
 
 entity ZREQ_ITEM_PART : managed {
@@ -151,9 +147,9 @@ entity ZREQUEST_TYPE : managed {
 entity ZCLAIM_TYPE : managed {
     key CLAIM_TYPE_ID    : String  @mandatory  @Common.Label: 'Claim Type ID';
         CLAIM_TYPE_DESC  : String  @Common.Label: 'Claim Type Description';
-        END_DATE          : Date    @Common.Label: 'End Date';
-        START_DATE        : Date    @Common.Label: 'Start Date';
-        STATUS            : String  @Common.Label: 'Status';        
+        END_DATE         : Date    @Common.Label: 'End Date';
+        START_DATE       : Date    @Common.Label: 'Start Date';
+        STATUS           : String  @Common.Label: 'Status';        
         ZCLAIM_TYPE_ITEM : Composition of many ZCLAIM_TYPE_ITEM
                                on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
 }
@@ -354,10 +350,18 @@ entity ZCLAIM_TYPE_ITEM : managed {
         STATUS               : String  @Common.Label: 'Status';
         CATEGORY_ID          : String  @Common.Label: 'Category ID';
         COST_CENTER          : String  @Common.Label: 'Cost Center';
+        GL_ACCOUNT           : String  @Common.Label: 'GL Account';
+        MATERIAL_CODE        : String  @Common.Label: 'Material Code';
+        RISK                 : String  @Common.Label: 'Risk';
+        SUBMISSION_TYPE      : String  @Common.Label: 'Submission Type';
         ZCLAIM_CATEGORY      : Association to ZCLAIM_CATEGORY
                                 on ZCLAIM_CATEGORY.CLAIM_CAT_ID = CATEGORY_ID;
         ZCOST_CENTER         : Association to ZCOST_CENTER
                                 on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
+        ZRISK                : Association to ZRISK
+                                on ZRISK.RISK_ID = RISK;
+        ZSUBMISSION_TYPE     : Association to ZSUBMISSION_TYPE
+                                on ZSUBMISSION_TYPE.SUBMISSION_TYPE_ID = SUBMISSION_TYPE;
 }
 
 entity ZAPP_FIELD_CTRL : managed {
@@ -490,11 +494,11 @@ entity ZSTATUS : managed {
 }
 
 entity ZROOM_TYPE : managed {
-    key ROOM_TYPE_ID   : String
-        @mandatory
-        @Common.Label: 'Room Type ID';
-        ROOM_TYPE_DESC : String
-        @Common.Label: 'Room Type Description';
+    key ROOM_TYPE_ID   : String  @mandatory  @Common.Label: 'Room Type ID';
+        ROOM_TYPE_DESC : String  @Common.Label: 'Room Type Description';
+        START_DATE     : String  @Common.Label: 'Start Date';
+        END_DATE       : String  @Common.Label: 'End Date';
+        STATUS         : String  @Common.Label: 'Status';
 }
 
 entity ZFLIGHT_CLASS : managed {
@@ -546,11 +550,11 @@ entity ZCURRENCY : managed {
 }
 
 entity ZSTAFF_CAT : managed {
-    key STAFF_CATEGORY_ID   : String
-        @mandatory
-        @Common.Label: 'Staff Category ID';
-        STAFF_CATEGORY_DESC : String
-        @Common.Label: 'Staff Category Description';
+    key STAFF_CATEGORY_ID   : String  @mandatory  @Common.Label: 'Staff Category ID';
+        STAFF_CATEGORY_DESC : String  @Common.Label: 'Staff Category Description';
+        START_DATE          : String  @Common.Label: 'Start Date';
+        END_DATE            : String  @Common.Label: 'End Date';
+        STATUS              : String  @Common.Label: 'Status';
 }
 
 entity ZMARITAL_STAT : managed {
@@ -562,19 +566,19 @@ entity ZMARITAL_STAT : managed {
 }
 
 entity ZVEHICLE_TYPE : managed {
-    key VEHICLE_TYPE_ID   : String
-        @mandatory
-        @Common.Label: 'Vehicle Type ID';
-        VEHICLE_TYPE_DESC : String
-        @Common.Label: 'Vehicle Type Description';
+    key VEHICLE_TYPE_ID   : String  @mandatory  @Common.Label: 'Vehicle Type ID';
+        VEHICLE_TYPE_DESC : String  @Common.Label: 'Vehicle Type Description';
+        START_DATE        : String  @Common.Label: 'Start Date';
+        END_DATE          : String  @Common.Label: 'End Date';
+        STATUS            : String  @Common.Label: 'Status';
 }
 
 entity ZRATE_KM : managed {
-    key RATE_KM_ID  : String
-        @mandatory
-        @Common.Label: 'Rate KM ID';
-        RATE_PER_KM : Decimal
-        @Common.Label: 'Rate Per KM';
+    key RATE_KM_ID  : String  @mandatory  @Common.Label: 'Rate KM ID';
+        RATE_PER_KM : Decimal @Common.Label: 'Rate Per KM';
+        START_DATE  : String  @Common.Label: 'Start Date';
+        END_DATE    : String  @Common.Label: 'End Date';
+        STATUS      : String  @Common.Label: 'Status';
 }
 
 entity ZREGION : managed {
@@ -602,13 +606,12 @@ entity ZKWSP_BRANCH : managed {
 }
 
 entity ZSTATE : managed {
-    key COUNTRY_ID : String
-        @mandatory
-        @Common.Label: 'Country ID';
-        STATE_ID   : String
-        @Common.Label: 'State ID';
-        STATE_DESC : String
-        @Common.Label: 'State Description';
+    key COUNTRY_ID : String  @mandatory  @Common.Label: 'Country ID';
+        STATE_ID   : String  @Common.Label: 'State ID';
+        STATE_DESC : String  @Common.Label: 'State Description';
+        START_DATE : Date   @Common.Label: 'Start Date';
+        END_DATE   : Date   @Common.Label: 'End Date';
+        STATUS     : String @Common.Label: 'Status';        
 }
 
 entity ZKWSP_MILEAGE : managed {
@@ -659,7 +662,17 @@ entity ZUSER_TYPE: managed {
 entity ZEMP_TYPE: managed {
     key EMP_TYPE_ID    : String @mandatory @Common.Label: 'Employee Type ID';
         EMP_TYPE_DESC  : String @Common.Label: 'Employee Type Description';
-        START_DATE      : String @Common.Label: 'Start Date';
-        END_DATE        : String @Common.Label: 'End Date';
-        STATUS          : String @Common.Label: 'Status';
+        START_DATE     : String @Common.Label: 'Start Date';
+        END_DATE       : String @Common.Label: 'End Date';
+        STATUS         : String @Common.Label: 'Status';
 } 
+
+entity ZSUBMISSION_TYPE: managed {
+    key SUBMISSION_TYPE_ID      : String @mandatory @Common.Label: 'Submission Type ID';
+        SUBMISSION_TYPE_DESC    : String @Common.Label: 'Submission Type Description';
+        START_DATE              : String @Common.Label: 'Start Date';
+        END_DATE                : String @Common.Label: 'End Date';
+        STATUS                  : String @Common.Label: 'Status'; 
+}
+
+
