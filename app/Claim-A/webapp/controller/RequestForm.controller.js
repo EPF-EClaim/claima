@@ -829,14 +829,8 @@ sap.ui.define([
 			const aFilters = [new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)];
 
 
-/* 			// Build $filter safely
-			const esc = (s) => String(s).replace(/'/g, "''");
-			const sFilter = "REQUEST_ID eq '" + esc(sReqId) + "'"; */
-
-
 			// Adjust entity set and $select fields to your service metadata if needed
 			const oListBinding = oModel.bindList("/ZREQUEST_ITEM", null, null, aFilters, {
-	/* 			$filter: sFilter, */
 				$select: "REQUEST_ID,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,EST_NO_PARTICIPANT,EST_AMOUNT",
 				$orderby: "REQUEST_ID,CLAIM_TYPE_ITEM_ID"
 			});
@@ -849,7 +843,7 @@ sap.ui.define([
 				claim_type: e.CLAIM_TYPE_ID || "",
 				claim_type_item: e.CLAIM_TYPE_ITEM_ID || "",
 				est_amount: Number(e.EST_AMOUNT) || "",
-				curenncy_code: "MYR",
+				//curenncy_code: "MYR",
 				est_no_of_participant: e.EST_NO_PARTICIPANT || "",
 			}));
 		},
