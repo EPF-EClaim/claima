@@ -298,6 +298,7 @@ entity ZCLAIM_PURPOSE : managed {
         @Common.Label: 'Claim Purpose ID';
         CLAIM_PURPOSE_DESC : String
         @Common.Label: 'Claim Purpose Description';
+        
 }
 
 entity ZCLAIM_DISCLAIMER : managed {
