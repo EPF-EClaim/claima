@@ -1372,4 +1372,225 @@ annotate service.ZJOB_GROUP with @(
     }
 );
 
+annotate service.ZDEPARTMENT with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        DEPARTMENT_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZDEPARTMENT',
+            TypeNamePlural: 'ZDEPARTMENT',
+        },
+        LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPARTMENT_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Department ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPARTMENT_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Department Description'
+            },
+        ]
+    }
+);
+
+annotate service.ZROLE with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        ROLE_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZROLE',
+            TypeNamePlural: 'ZROLE',
+        },
+        LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ROLE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Role ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ROLE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Role Description'
+            },
+        ]
+    }
+);
+
+annotate service.ZUSER_TYPE with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        USER_TYPE_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZUSER_TYPE',
+            TypeNamePlural: 'ZUSER_TYPE',
+        },
+        LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : USER_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'User Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : USER_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'User Type Description'
+            },
+        ]
+    }
+);
+
+annotate service.ZEMP_TYPE with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        EMP_TYPE_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZEMP_TYPE',
+            TypeNamePlural: 'ZEMP_TYPE',
+        },
+        LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Type Description'
+            },
+        ]
+    }
+);
+
+annotate service.ZREGION with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        E
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZREGION',
+            TypeNamePlural: 'ZREGION',
+        },
+        LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REGION_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Region ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : USER_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Region Description'
+            },
+        ]
+    }
+);
+
+
 
