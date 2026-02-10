@@ -30,7 +30,7 @@
                     <Select
                         id="select_claimprocess_claimtype"
                         forceSelection="false"
-                        selectedKey="{input>/claimtype}"
+                        selectedKey="{claimtype>/type}"
                         items="{
                             path: 'employee>/ZCLAIM_TYPE',
                             sorter: { path: 'CLAIM_TYPE_DESC' }
@@ -45,7 +45,7 @@
                     <Select
                         id="select_claimprocess_claimitem"
                         forceSelection="false"
-                        selectedKey="{input>/claimitem}"
+                        selectedKey="{claimtype>/item}"
                         editable="false"
                         change="onChange_ClaimItem"
                         liveChange="onChange_ClaimItem">
@@ -55,7 +55,7 @@
                     <Label text="{i18n>label_claimprocess_category}" />
                     <Input
                         id="input_claimprocess_category"
-                        value="{input>/category_desc}"
+                        value="{claimtype>/descr/category}"
                         editable="false"
                     />
                 </f:content>

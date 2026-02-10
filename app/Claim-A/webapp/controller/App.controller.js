@@ -67,6 +67,18 @@ sap.ui.define([
 			});
 			this.getView().setModel(oRequestModel, "request");
 
+			// Claim Type Model
+			var oClaimTypeModel = new JSONModel({
+				"type": null,
+				"item": null,
+				"category": null,
+				"descr": {
+					"type": null,
+					"item": null,
+					"category": null
+				}
+			});
+			this.getView().setModel(oClaimTypeModel, "claimtype");
 
 			// oReportModel
 			var oReportModel = new JSONModel({
@@ -312,23 +324,22 @@ sap.ui.define([
 
 		onStartClaim_ClaimProcess: async function () {
 			// validate input data
-			var oInputModel = this.getView().getModel("input");
 			//// get claim type/item description
-			oInputModel.setProperty("/claimtype_desc",this.byId("select_claimprocess_claimtype")._getSelectedItemText());
-			oInputModel.setProperty("/claimitem_desc",this.byId("select_claimprocess_claimitem")._getSelectedItemText());
+			oClaimTypeModel.setProperty("/descr/type",this.byId("select_claimprocess_claimtype")._getSelectedItemText());
+			oClaimTypeModel.setProperty("/descr/item",this.byId("select_claimprocess_claimitem")._getSelectedItemText());
 			//// get claim type category
 			switch (this.byId("input_claimprocess_category").getValue()) {
 				case this._getTexti18n("value_claimprocess_category_direct"):
-					oInputModel.setProperty("/category","DIRECT");
+					oClaimTypeModel.setProperty("/category","DIRECT");
 					break;
 				default:
-					oInputModel.setProperty("/category","");
+					oClaimTypeModel.setProperty("/category","");
 					break;
 			}
 
-			// set as current data
-			var oCurrentModel = this.getView().getModel("current");
-			oCurrentModel.setData(oInputModel.getData());
+			// // set as current data
+			// var oCurrentModel = this.getView().getModel("current");
+			// oCurrentModel.setData(oInputModel.getData());
 
 			// reset Claim Process dialog before closing
 			this._resetClaimProcess();
