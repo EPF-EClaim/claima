@@ -162,12 +162,15 @@ service eclaim_srv {
 
     entity ZDEPARTMENT       as projection on ECLAIM.ZDEPARTMENT;
 
-    entity ZJOB_GROUP         as projection on ECLAIM.ZJOB_GROUP;
+    entity ZJOB_GROUP        as projection on ECLAIM.ZJOB_GROUP;
 
     entity ZEMP_TYPE         as projection on ECLAIM.ZEMP_TYPE;
 
-    entity ZREGION         as projection on ECLAIM.ZREGION;
+    entity ZREGION           as projection on ECLAIM.ZREGION;
 
+    entity ZRATE_KM          as projection on ECLAIM.ZRATE_KM;
+
+    entity ZSUBMISSION_TYPE  as projection on ECLAIM.ZSUBMISSION_TYPE;
 };
 
 
