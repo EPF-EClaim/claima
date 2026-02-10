@@ -99,6 +99,10 @@
         "settings": {
           "bundleName": "claima.i18n.i18n"
         }
+      },
+      "request": {
+        "type": "sap.ui.model.json.JSONModel",
+        "uri": "model/request.json"
       }
     },
     "resources": {

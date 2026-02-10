@@ -13,11 +13,6 @@ sap.ui.define([
 	"use strict";
 
 	return Controller.extend("claima.controller.RequestForm", {
-		onInit() {
-
-			// show header
-			this._formFragments = {};
-			this._showFormFragment();
 
 			// Item Table
 			const oModel = new JSONModel({
@@ -58,23 +53,22 @@ sap.ui.define([
 
 		},
 
-		// ==================================================
-		// Initiate Fragment in the view
+			// Fragment cache
+			this._fragments = Object.create(null);
 
-		_getFormFragment: function (sFragmentName) {
-			var pFormFragment = this._formFragments[sFragmentName],
-				oView = this.getView();
+			// Ensure model defaults exist (OPTION 1 structure)
+			this._ensureRequestModelDefaults();
 
-			pFormFragment = Fragment.load({
-				id: oView.getId(),
-				name: "claima.fragment." + sFragmentName,
-				type: "XML",
-				controller: this,
+			// Show default header + list fragments
+			await this._showHeaderAndList();
+		},
 
-			});
-			this._formFragments[sFragmentName] = pFormFragment;
+		/* =========================================================
+		* Helpers: Model & Service
+		* ======================================================= */
 
-			return pFormFragment;
+		_getReqModel() {
+			return this.getOwnerComponent().getModel("request");
 		},
 
 		_showFormFragment: function () {
@@ -133,7 +127,11 @@ sap.ui.define([
 				});
 			}
 
-			this.oBackDialog.open();
+		_serviceRoot() {
+			// Correct way to read from manifest
+			const s = this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri
+				|| "/odata/v4/EmployeeSrv/";
+			return s.replace(/\/$/, ""); // no trailing slash
 		},
 
 		onSaveRequestDraft: function () {
@@ -157,164 +155,85 @@ sap.ui.define([
 			// .then(console.log);
 		},
 
-		onDeleteRequest: function () {
-			if (!this.oDeleteDialog) {
-				this.oDeleteDialog = new Dialog({
-					title: "Delete Request",
-					type: "Message",
-					content: [
-						new Label({
-							text: "Do you want to delete this request?",
-							labelFor: "rejectionNote"
-						})
-					],
-					beginButton: new Button({
-						type: "Emphasized",
-						text: "Delete",
-						press: function () {
-							this.oDeleteDialog.close();
-							// nav to dashboard
-							var oScroll = this.getView().getParent();          // ScrollContainer
-							var oMaybeNav = oScroll && oScroll.getParent && oScroll.getParent(); // NavContainer
+		/* =========================================================
+		* Helpers: Fragment Management
+		* ======================================================= */
 
-							var aPages = oMaybeNav.getPages ? oMaybeNav.getPages() : oMaybeNav.getAggregation("pages");
-							var oMainPage = aPages && aPages.find(function (p) {
-								return p.getId && p.getId().endsWith("dashboard");
-							});
-
-							if (oMainPage) {
-								oMaybeNav.to(oMainPage, "slide");
-							}
-
-
-						}.bind(this)
-					}),
-					endButton: new Button({
-						text: "Cancel",
-						press: function () {
-							this.oDeleteDialog.close();
-						}.bind(this)
-					})
+		async _getFormFragment(sName) {
+			const oView = this.getView();
+			if (!this._fragments[sName]) {
+				this._fragments[sName] = Fragment.load({
+				id: oView.getId(),                // stable IDs
+				name: "claima.fragment." + sName, // e.g., "req_header", "req_item_list", "req_create_item"
+				type: "XML",
+				controller: this
+				}).then((oFrag) => {
+				oView.addDependent(oFrag);        // inherit models & i18n
+				return oFrag;
 				});
 			}
-
-			this.oDeleteDialog.open();
+			return this._fragments[sName];
 		},
 
-		onSubmitRequest: function () {
-			MessageToast.show("submit request")
+		async _replaceContentAt(oPage, iIndex, oControl) {
+			// Ensure the slot exists
+			const iSafe = Math.min(iIndex, oPage.getContent().length);
+			oPage.insertContent(oControl, iSafe);
 		},
 
-		onCancelItem: function () {
-			MessageToast.show("cancel item")
+		async _removeByLocalId(sLocalId) {
+			const ctrl = this.byId(sLocalId);
+			if (!ctrl) return;
+			const parent = ctrl.getParent && ctrl.getParent();
+			if (parent?.removeContent) parent.removeContent(ctrl);
+			else if (parent?.removeItem) parent.removeItem(ctrl);
+			// ctrl.destroy();
 		},
 
-		onSaveItem: function () {
-			this.onSave();
+		async _showHeaderAndList() {
+			const oPage = this.byId("request_form"); // <Page id="request_form"/>
+			if (!oPage) return;
+
+			// Remove any open "create item" fragment to enforce list mode
+			await this._removeByLocalId("request_create_item_fragment");
+
+			const oHeader = await this._getFormFragment("req_header");
+			const oList   = await this._getFormFragment("req_item_list");
+
+			oPage.removeAllContent();
+			await this._replaceContentAt(oPage, 0, oHeader);
+			await this._replaceContentAt(oPage, 1, oList);
+
+			// Mark view state
+			this._getReqModel().setProperty("/view", "list");
 		},
 
-		// ==================================================
-		// Item List Button Logic
-
-		onPressAddItem: async function () {
-			// 1) Resolve the Page
+		async _showItemCreate() {
 			const oPage = this.byId("request_form");
-			if (!oPage) {
-				sap.m.MessageToast.show("Page 'request_form' not found.");
-				return;
-			}
+			if (!oPage) return;
 
-			// 2) Remove the existing list fragment if present
-			//    Make sure the root control inside the fragment has id="--request_item_list_fragment"
-			const oListRoot = this.byId("request_item_list_fragment");
-			if (oListRoot) {
-				// Remove from its immediate parent aggregation
-				const oParent = oListRoot.getParent();
-				if (oParent && typeof oParent.removeContent === "function") {
-					oParent.removeContent(oListRoot);
-				} else if (oParent && typeof oParent.removeItem === "function") {
-					oParent.removeItem(oListRoot);
-				}
-				oListRoot.destroy(); // free resources
-			}
+			// Remove list fragment so only create is visible
+			await this._removeByLocalId("request_item_list_fragment");
 
-			// 3) Insert the create-item fragment deterministically
-			try {
-				const oVBox = await this._getFormFragment("req_create_item"); // returns a control
+			const oCreate = await this._getFormFragment("req_create_item");
+			await this._replaceContentAt(oPage, 1, oCreate);
 
-				// Put it right after the header (index 1), or at the end if not enough content
-				const iIndex = Math.min(1, oPage.getContent().length);
-				oPage.insertContent(oVBox, iIndex);
-			} catch (e) {
-				// if _getFormFragment rejects
-				sap.m.MessageToast.show("Could not open Create Item form.");
-				return;
-			}
-
-			const oModel = this.getView().getModel();
-			oModel.setProperty("/control/view", 'create');
-
-
+			// Mark view state
+			this._getReqModel().setProperty("/view", "create");
 		},
 
-		onRowDeleteReqItem: function (oEvent) {
-			const oTable = this.byId('req_item_table');
-			const oBinding = oTable.getBinding("req_item_rows");
-			const oModel = this.getView().getModel();
-			const aRows = oModel.getProperty("/req_item_rows") || [];
+		async _showItemList() {
+			const oPage = this.byId("request_form");
+			if (!oPage) return;
 
-			let aSelectedVisIdx = oTable.getSelectedIndices() || [];
-			let aModelIdxToDelete = [];
+			// Remove list fragment so only create is visible
+			await this._removeByLocalId("request_create_item_fragment");
 
-			const getCtxByVisibleIndex = function (iVis) {
-				if (typeof oTable.getContextByIndex === "function") {
-					return oTable.getContextByIndex(iVis) || null;
-				}
-				if (oBinding && typeof oBinding.getContexts === "function") {
-					const aCtx = oBinding.getContexts(iVis, 1);
-					return aCtx && aCtx[0] ? aCtx[0] : null;
-				}
-				return null;
-			};
+			const oCreate = await this._getFormFragment("req_item_list");
+			await this._replaceContentAt(oPage, 1, oCreate);
 
-			if (aSelectedVisIdx.length > 0) {
-				aModelIdxToDelete = aSelectedVisIdx
-					.map(function (iVis) {
-						const oCtx = getCtxByVisibleIndex(iVis);
-						if (!oCtx) return null;
-						const sPath = oCtx.getPath();
-						const iIdx = parseInt(sPath.split("/").pop(), 10);
-						return Number.isInteger(iIdx) ? iIdx : null;
-					})
-					.filter(function (x) { return x !== null; });
-			} else {
-				const oActionItem = oEvent.getSource();
-				const oRow = oActionItem?.getParent()?.getParent();
-				const oCtx = oRow?.getBindingContext();
-				if (oCtx) {
-					const sPath = oCtx.getPath();
-					const iIdx = parseInt(sPath.split("/").pop(), 10);
-					if (Number.isInteger(iIdx)) {
-						aModelIdxToDelete = [iIdx];
-					}
-				}
-			}
-
-			if (aModelIdxToDelete.length === 0) {
-				MessageToast.show("Select row to delete");
-			}
-
-			aModelIdxToDelete = Array.from(new Set(aModelIdxToDelete))
-				.sort(function (a, b) { return b - a; });
-
-			aModelIdxToDelete.forEach(function (iIdx) {
-				if (iIdx >= 0 && iIdx < aRows.length) {
-					aRows.splice(iIdx, 1);
-				}
-			});
-
-			oModel.setProperty("/req_item_rows", aRows);
-			oTable.clearSelection();
+			// Mark view state
+			this._getReqModel().setProperty("/view", "list");
 		},
 
 		onDeleteSelectedReqItem: function () {
@@ -338,17 +257,16 @@ sap.ui.define([
 				}
 				oListRoot.destroy(); // free resources
 			}
+			this.oBackDialog.open();
+		},
 
-			// 3) Insert the create-item fragment deterministically
-			try {
-				const oVBox = await this._getFormFragment("req_item_list"); // returns a control
+		onDeleteRequest() {
+			const oReq   = this._getReqModel();
+			const empId  = String(oReq.getProperty("/req_header/empid") || "").trim();
+			const reqId  = String(oReq.getProperty("/req_header/reqid") || "").trim();
 
-				// Put it right after the header (index 1), or at the end if not enough content
-				const iIndex = Math.min(1, oPage.getContent().length);
-				oPage.insertContent(oVBox, iIndex);
-			} catch (e) {
-				// if _getFormFragment rejects
-				sap.m.MessageToast.show("Could not open Create Item form.");
+			if (!empId || !reqId) {
+				sap.m.MessageToast.show("EMP ID or Request ID missing");
 				return;
 			}
 
@@ -361,14 +279,20 @@ sap.ui.define([
 			const oModel = this.getView().getModel(); // JSONModel
 			const aRows = oModel.getProperty("/req_item_rows") || [];
 
-			aRows.push({
-				claim_type: "Testing Claim Type",
-				est_amount: 100,
-				currency_code: "MYR",
-				est_no_of_participant: 100
+			const res = await fetch(url, {
+				method: "PATCH",
+				headers: {
+					"Content-Type": "application/json",
+					"Accept": "application/json",
+					"If-Match": "*"                // avoid ETag / concurrency issues
+				},
+				body: JSON.stringify(payload)
 			});
 
-			oModel.setProperty("/req_item_rows", aRows);
+			if (!res.ok) {
+				const txt = await res.text().catch(() => "");
+				throw new Error(`Delete failed: ${res.status} ${txt}`);
+			}
 
 			this.onCancel();
 		},
@@ -380,186 +304,224 @@ sap.ui.define([
 		// ==================================================
 		// Count Request Item
 
-		onAfterRendering: function () {
-			const oTable = this.byId("req_item_table"); // sap.ui.table.Table
-			if (!oTable) return;
+			// check req_item_rows if it is empty
+			if (!rows.length) {
+				this._showMustAddClaimDialog();
+				return;   
+			}
 
-			// Avoid multiple attachments if onAfterRendering runs again
-			if (this._countsAttached) {
+			const reqId = String(data.req_header.reqid || "").trim();
+			const empId = sap.ushell.Container.getUser().getId();
+
+			if (!reqId || !empId) {
+				sap.m.MessageToast.show("EMP ID or Request ID missing");
 				return;
 			}
-			this._countsAttached = true;
 
-			const fnAttachWhenReady = () => {
-				const oBinding = oTable.getBinding("rows");   // MUST be "rows" for sap.ui.table.Table
-				if (!oBinding) {
-					// Try again on the next tick if binding isn’t there yet
-					setTimeout(fnAttachWhenReady, 0);
-					return;
+			try {
+				sap.ui.core.BusyIndicator.show(0);
+
+				// Build composite key URL for PATCH:
+				// Example: /ZREQUEST_HEADER(EMP_ID='E12345',REQUEST_ID='REQ26000000339')
+				const base = this._serviceRoot();
+				const entityUrl = `${base}/ZREQUEST_HEADER(EMP_ID='${encodeURIComponent(empId)}',REQUEST_ID='${encodeURIComponent(reqId)}')`;
+
+				// PATCH payload
+				const payload = {
+					STATUS: "SUBMITTED",
+				};
+
+				const res = await fetch(entityUrl, {
+					method: "PATCH",
+					headers: {
+						"Content-Type": "application/json",
+						"Accept": "application/json",
+						"If-Match": "*" // important for OData v4
+					},
+					body: JSON.stringify(payload)
+				});
+
+				if (!res.ok) {
+					const t = await res.text().catch(() => "");
+					throw new Error(`Update failed: ${res.status} ${t}`);
 				}
 
-				// Keep references so we can detach in onExit
-				this._reqItem = this._reqItem || {};
-				this._reqItem.table = oTable;
-				this._reqItem.binding = oBinding;
-				this._reqItem.model = oBinding.getModel();
-				this._reqItem.path = (oTable.getBindingInfo("rows") || {}).path; // e.g., "/req_item_rows"
+				sap.m.MessageToast.show("Request submitted successfully");
 
-				// --- 1) Binding-level listeners (contexts/length changes) ---
-				oBinding.attachEvent("change", this._updateTableCounts, this);
-				oBinding.attachEvent("dataReceived", this._updateTableCounts, this);
-				oBinding.attachEvent("refresh", this._updateTableCounts, this);
+				// Optional: update local model
+				oReq.setProperty("/req_header/status", "SUBMITTED");
 
-				// --- 2) Selection change (if you also show selected count) ---
-				if (typeof oTable.attachRowSelectionChange === "function") {
-					oTable.attachRowSelectionChange(this._updateSelectedCount, this);
-				}
+			} catch (e) {
+				sap.m.MessageToast.show(e.message || "Submission failed");
+			} finally {
+				sap.ui.core.BusyIndicator.hide();
+			}
+		},
 
-				// --- 3) Model-level listeners (data/content changes) ---
-				const oModel = this._reqItem.model;
-
-				// JSONModel: propertyChange is emitted for setProperty
-				if (oModel && typeof oModel.attachPropertyChange === "function") {
-					this._reqItem._onPropChange = (oEvt) => {
-						// Only react when the changed path is the collection or a child of it
-						const sPath = oEvt.getParameter("path");
-						if (!sPath) return;
-						if (this._isPathWithinCollection(sPath, this._reqItem.path)) {
-							this._updateTableCounts();
+		_showMustAddClaimDialog() {
+			if (!this._oAddClaimDialog) {
+				this._oAddClaimDialog = new sap.m.Dialog({
+					title: "Missing Claim Item",
+					type: "Message",
+					state: "Warning",
+					content: [
+						new sap.m.Label({
+							text: "Please add at least one claim item before submitting.",
+						})
+					],
+					beginButton: new sap.m.Button({
+						text: "OK",
+						press: () => {
+							this._oAddClaimDialog.close();
 						}
-					};
-					oModel.attachPropertyChange(this._reqItem._onPropChange, this);
-				} else if (oModel && typeof oModel.attachEvent === "function") {
-					// Fallback for older runtimes: generic event attach
-					this._reqItem._onPropChange = (oEvt) => {
-						const sPath = oEvt.getParameter && oEvt.getParameter("path");
-						if (sPath && this._isPathWithinCollection(sPath, this._reqItem.path)) {
-							this._updateTableCounts();
-						}
-					};
-					oModel.attachEvent("propertyChange", this._reqItem._onPropChange, this);
-				}
+					})
+				});
+				this.getView().addDependent(this._oAddClaimDialog);
+			}
+			this._oAddClaimDialog.open();
+		},
 
-				// ODataModel (V2/V4) – request lifecycle hooks
-				if (oModel && typeof oModel.attachRequestCompleted === "function") {
-					this._reqItem._onReqCompleted = () => this._updateTableCounts();
-					oModel.attachRequestCompleted(this._reqItem._onReqCompleted, this);
-				}
-				if (oModel && typeof oModel.attachRequestSent === "function") {
-					this._reqItem._onReqSent = () => {/* optional: show busy, etc. */ };
-					oModel.attachRequestSent(this._reqItem._onReqSent, this);
-				}
+		/* =========================================================
+		* Header & Item List Area
+		* ======================================================= */
 
-				// Initial compute (once everything is wired)
-				this._updateTableCounts();
+		async onAddItem() {
+			await this._showItemCreate();
+
+			// Reset current item + participants
+			const oReq = this._getReqModel();
+			const data = oReq.getData();
+			data.req_item = {
+				claim_type: "CT1",
+				claim_type_item: "CTI1",
+				est_amount: "",
+				est_no_participant: "",
+				cash_advance: "no_cashadv",
+				start_date: "",
+				end_date: "",
+				location: "",
+				remarks: ""
 			};
-
-			fnAttachWhenReady();
+			data.participant = [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
+			data.view = "create";
+			oReq.setData(data);
 		},
 
-		/**
-		 * Helper to check if a changed path affects the collection bound to the table.
-		 * Examples:
-		 *   collection = "/req_item_rows"
-		 *   changed path "/req_item_rows" or "/req_item_rows/3" or "/req_item_rows/3/est_amount" -> true
-		 */
-		_isPathWithinCollection: function (sChangedPath, sCollectionPath) {
-			if (!sChangedPath || !sCollectionPath) return false;
-			if (sChangedPath === sCollectionPath) return true;
-			return sChangedPath.indexOf(sCollectionPath + "/") === 0;
-		},
+		async navToItemDetail() {
+			// From list → open create/edit screen
+			await this._showItemCreate();
 
-		/**
-		 * Your existing counter updater (make sure it reads from binding/model)
-		 * Example: recompute total items, selected items, totals, etc.
-		 */
-		_updateTableCounts: function () {
-			const oRef = this._reqItem;
-			if (!oRef || !oRef.table || !oRef.binding) return;
-
-			const iLength = oRef.binding.getLength ? oRef.binding.getLength() : 0;
-			// ... your logic to update counts/badges/texts based on iLength ...
-			// Example:
-			// this.byId("txtReqItemCount").setText(iLength + " item(s)");
-		},
-
-		_updateSelectedCount: function () {
-			const oRef = this._reqItem;
-			if (!oRef || !oRef.table) return;
-			const aSel = oRef.table.getSelectedIndices ? oRef.table.getSelectedIndices() : [];
-			// ... update selected count UI ...
-			// Example:
-			// this.byId("txtReqItemSelected").setText(aSel.length + " selected");
-		},
-
-		onExit: function () {
-			const oRef = this._reqItem;
-			if (!oRef) return;
-
-			// Detach binding events
-			if (oRef.binding) {
-				oRef.binding.detachEvent("change", this._updateTableCounts, this);
-				oRef.binding.detachEvent("dataReceived", this._updateTableCounts, this);
-				oRef.binding.detachEvent("refresh", this._updateTableCounts, this);
+			// If not explicitly set, default to 'create'
+			const oReq = this._getReqModel();
+			if (oReq.getProperty("/view") !== "view") {
+				oReq.setProperty("/view", "create");
 			}
+		},
 
-			// Detach selection change
-			if (oRef.table && typeof oRef.table.detachRowSelectionChange === "function") {
-				oRef.table.detachRowSelectionChange(this._updateSelectedCount, this);
+		// Back from create to list (cancel)
+		async onBackView() {
+			await this._showHeaderAndList();
+		},
+
+		// Cancel alias (keep one implementation)
+		async onCancel() {
+			await this._showHeaderAndList();
+
+			// When coming back to list, optionally add the just-entered item (if needed)
+			// Here we push a new row **only if** you want to keep the behavior.
+			// Comment this block if you don't want an auto-append on cancel.
+			const oReq = this._getReqModel();
+			const data = oReq.getData();
+			const rows = Array.isArray(data.req_item_rows) ? data.req_item_rows : [];
+
+			if (data.req_item?.claim_type || data.req_item?.est_amount) {
+				rows.push({
+				CLAIM_TYPE_ID: data.req_item.claim_type,
+				CLAIM_TYPE_ITEM_ID: data.req_item.claim_type_item,
+				EST_AMOUNT: parseFloat(data.req_item.est_amount || 0),
+				EST_NO_PARTICIPANT: parseInt(data.req_item.est_no_participant || 1, 10)
+				});
+				oReq.setProperty("/req_item_rows", rows);
+				oReq.setProperty("/list_count", rows.length);
 			}
+		},
 
-			// Detach model events
-			if (oRef.model) {
-				if (oRef._onPropChange && typeof oRef.model.detachPropertyChange === "function") {
-					oRef.model.detachPropertyChange(oRef._onPropChange, this);
-				} else if (oRef._onPropChange && typeof oRef.model.detachEvent === "function") {
-					oRef.model.detachEvent("propertyChange", oRef._onPropChange, this);
+		/* =========================================================
+		* Item List: Delete Row(s)
+		* ======================================================= */
+
+		onRowDeleteReqItem(oEvent) {
+			const oTable = this.byId("req_item_table");             // sap.ui.table.Table
+			const oReq   = this._getReqModel();
+			const aRows  = oReq.getProperty("/req_item_rows") || [];
+
+			// RowAction press gives row/rowIndex
+			let iFromAction = null;
+			const oRow      = oEvent.getParameter && oEvent.getParameter("row");
+			const iRowIdx   = oEvent.getParameter && oEvent.getParameter("rowIndex");
+
+			if (oRow) {
+				const oCtx = oRow.getBindingContext("request");
+				if (oCtx) {
+				const i = parseInt(oCtx.getPath().split("/").pop(), 10);
+				if (Number.isInteger(i)) iFromAction = i;
 				}
-				if (oRef._onReqCompleted && typeof oRef.model.detachRequestCompleted === "function") {
-					oRef.model.detachRequestCompleted(oRef._onReqCompleted, this);
+			} else if (Number.isInteger(iRowIdx)) {
+				const oCtx = oTable.getContextByIndex(iRowIdx);
+				if (oCtx) {
+				const i = parseInt(oCtx.getPath().split("/").pop(), 10);
+				if (Number.isInteger(i)) iFromAction = i;
 				}
-				if (oRef._onReqSent && typeof oRef.model.detachRequestSent === "function") {
-					oRef.model.detachRequestSent(oRef._onReqSent, this);
-				}
 			}
 
-			this._reqItem = null;
-			this._countsAttached = false;
-		},
-
-
-		_updateTableCounts: function () {
-			const oTable = this.byId("req_item_table");
-			const oBinding = oTable.getBinding("rows"); // <-- FIXED: use "rows"
-			const oVM = this.getView().getModel("view"); // holds /visibleCount, /totalCount
-
-			// visibleCount = number of rows currently shown (respects filters)
-			let visibleCount = 0;
-			if (oBinding) {
-				visibleCount = oBinding.getLength();
+			let aToDelete = [];
+			const aSelected = oTable.getSelectedIndices() || [];
+			if (aSelected.length > 0) {
+				aToDelete = aSelected.map((vis) => {
+				const oCtx = oTable.getContextByIndex(vis);
+				if (!oCtx) return null;
+				const i = parseInt(oCtx.getPath().split("/").pop(), 10);
+				return Number.isInteger(i) ? i : null;
+				}).filter(x => x !== null);
+			} else if (Number.isInteger(iFromAction)) {
+				aToDelete = [iFromAction];
 			}
 
-			// totalCount = total items in your backing array (no filters)
-			const oJSON = this.getView().getModel();  // default JSONModel
-			const aAll = oJSON ? (oJSON.getProperty("/req_item_rows") || []) : [];
-			const totalCount = aAll.length;
-
-			// write both values; useful if you show both in UI
-			oVM.setProperty("/visibleCount", visibleCount);
-			oVM.setProperty("/totalCount", totalCount);
-
-			// Optional: keep selectedCount in sync if you display it
-			if (typeof this._updateSelectedCount === "function") {
-				this._updateSelectedCount();
+			if (aToDelete.length === 0) {
+				MessageToast.show("Select row to delete");
+				return;
 			}
+
+			aToDelete = Array.from(new Set(aToDelete)).sort((a, b) => b - a);
+			aToDelete.forEach((i) => {
+				if (i >= 0 && i < aRows.length) aRows.splice(i, 1);
+			});
+
+			oReq.setProperty("/req_item_rows", aRows);
+			oReq.setProperty("/list_count", aRows.length);
+			oTable.clearSelection();
 		},
 
-		_updateSelectedCount: function () {
-			const oTable = this.byId("req_item_table");
-			const oVM = this.getView().getModel("view");
-			const aSel = oTable.getSelectedIndices ? oTable.getSelectedIndices() : [];
-			oVM.setProperty("/selectedCount", aSel.length);
-		},
+		/* =========================================================
+		* Participant list: auto-append last empty row + delete
+		* ======================================================= */
+
+		appendNewRow(oEvent) {
+			const oReq = this._getReqModel();
+			if (oReq.getProperty("/req_header/grptype") !== "group") return;
+
+			const src  = oEvent.getSource();
+			const sVal = (oEvent.getParameter && oEvent.getParameter("value"))
+				?? (src?.getValue?.() ?? "");
+			const sTrim = String(sVal).trim();
+
+			const oCtx = src.getBindingContext("request");
+			if (!oCtx) return;
+
+			const path = oCtx.getPath(); // "/participant/<index>"
+			const segs = path.split("/");
+			const idx  = parseInt(segs[segs.length - 1], 10);
+			if (!Number.isInteger(idx)) return;
 
 		onExit: function () {
 			const oTable = this.byId && this.byId("req_item_table");
@@ -596,7 +558,7 @@ sap.ui.define([
 				aRows[iIndex].participant_name = sVal;
 			}
 
-			this._normalizeTrailingEmptyRow(aRows);
+			oReq.setProperty(`/participant/${idx}/PARTICIPANTS_ID`, sTrim);
 
 			const bIsLast = iIndex === aRows.length - 1;
 			if (bIsLast && sVal) {
@@ -608,10 +570,28 @@ sap.ui.define([
 				});
 			}
 
-			oModel.setProperty("/participant", aRows);
-			// If table uses growing, you might need a .refresh(true) in some setups
-			// oModel.refresh(true);
+			const isLast = idx === aRows.length - 1;
+			if (isLast && sTrim) {
+				oReq.setProperty(`/participant/${aRows.length}`, { PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" });
+			}
+		},
 
+		_normalizeTrailingEmptyRow(aRows) {
+			const oReq = this._getReqModel();
+			let lastNonEmpty = -1;
+			for (let i = 0; i < aRows.length; i++) {
+				const r = aRows[i] || {};
+				const isEmpty = !String(r.PARTICIPANTS_ID || "").trim() && !String(r.ALLOCATED_AMOUNT || "").trim();
+				if (!isEmpty) lastNonEmpty = i;
+			}
+			const desiredLength = Math.max(lastNonEmpty + 2, 1); // keep one trailing empty
+			if (aRows.length > desiredLength) {
+				aRows.splice(desiredLength);
+				oReq.setProperty("/participant", aRows.slice()); // new ref
+			} else if (aRows.length === 0) {
+				aRows.push({ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" });
+				oReq.setProperty("/participant", aRows);
+			}
 		},
 
 		_normalizeTrailingEmptyRow: function (aRows) {
@@ -638,59 +618,47 @@ sap.ui.define([
 
 		onRowDeleteParticipant: function (oEvent) {
 			const oTable = this.byId("req_participant_table");
-			const oBinding = oTable.getBinding("participant");  // ListBinding/RowBinding
-			const oModel = this.getView().getModel();  // JSONModel expected
-			const aRows = oModel.getProperty("/participant") || [];
+			const oReq   = this._getReqModel();
+			let aRows    = oReq.getProperty("/participant") || [];
 
-			// collect visible selected indices (e.g., [0, 2, 5])
-			let aSelectedVisIdx = oTable.getSelectedIndices() || [];
-			let aModelIdxToDelete = [];
+			let idxFromAction = null;
+			const oRow    = oEvent.getParameter && oEvent.getParameter("row");
+			const visIdx  = oEvent.getParameter && oEvent.getParameter("rowIndex");
 
-			// Helper to get a context for a visible index in a version-safe way
-			const getCtxByVisibleIndex = function (iVis) {
-				// Preferred: table API (exists on sap.ui.table.Table)
-				if (typeof oTable.getContextByIndex === "function") {
-					return oTable.getContextByIndex(iVis) || null;
-				}
-				// Fallback: binding API
-				if (oBinding && typeof oBinding.getContexts === "function") {
-					const aCtx = oBinding.getContexts(iVis, 1);
-					return aCtx && aCtx[0] ? aCtx[0] : null;
-				}
-				return null;
-			};
-
-			if (aSelectedVisIdx.length > 0) {
-				aModelIdxToDelete = aSelectedVisIdx
-					.map(function (iVis) {
-						const oCtx = getCtxByVisibleIndex(iVis);
-						if (!oCtx) return null;
-						const sPath = oCtx.getPath();      // e.g., "/rows/3"
-						const iIdx = parseInt(sPath.split("/").pop(), 10);
-						return Number.isInteger(iIdx) ? iIdx : null;
-					})
-					.filter(function (x) { return x !== null; });
-			} else {
-				// Nothing selected → delete row where the action was pressed
-				const oActionItem = oEvent.getSource();                // RowActionItem
-				const oRow = oActionItem?.getParent()?.getParent(); // RowAction -> Row
-				const oCtx = oRow?.getBindingContext();
+			if (oRow) {
+				const oCtx = oRow.getBindingContext("request");
 				if (oCtx) {
-					const sPath = oCtx.getPath();
-					const iIdx = parseInt(sPath.split("/").pop(), 10);
-					if (Number.isInteger(iIdx)) {
-						aModelIdxToDelete = [iIdx];
-					}
+				const i = parseInt(oCtx.getPath().split("/").pop(), 10);
+				if (Number.isInteger(i)) idxFromAction = i;
+				}
+			} else if (Number.isInteger(visIdx)) {
+				const oCtx = oTable.getContextByIndex(visIdx);
+				if (oCtx) {
+				const i = parseInt(oCtx.getPath().split("/").pop(), 10);
+				if (Number.isInteger(i)) idxFromAction = i;
 				}
 			}
 
-			if (aModelIdxToDelete.length === 0) {
-				MessageToast.show("Select row to delete");
+			let aToDelete = [];
+			const aSel = oTable.getSelectedIndices() || [];
+			if (aSel.length > 0) {
+				aToDelete = aSel.map((v) => {
+				const oCtx = oTable.getContextByIndex(v);
+				if (!oCtx) return null;
+				const i = parseInt(oCtx.getPath().split("/").pop(), 10);
+				return Number.isInteger(i) ? i : null;
+				}).filter(x => x !== null);
+			} else if (Number.isInteger(idxFromAction)) {
+				aToDelete = [idxFromAction];
 			}
 
-			// De-dup and sort desc so splice doesn’t shift later indices
-			aModelIdxToDelete = Array.from(new Set(aModelIdxToDelete))
-				.sort(function (a, b) { return b - a; });
+			if (aToDelete.length === 0) {
+				MessageToast.show("Select row to delete");
+				return;
+			}
+
+			aToDelete = Array.from(new Set(aToDelete)).sort((a, b) => b - a);
+			aToDelete.forEach((i) => { if (i >= 0 && i < aRows.length) aRows.splice(i, 1); });
 
 			aModelIdxToDelete.forEach(function (iIdx) {
 				if (iIdx >= 0 && iIdx < aRows.length) {
@@ -707,90 +675,107 @@ sap.ui.define([
 				});
 			}
 
-			oModel.setProperty("/participant", aRows);
+			oReq.setProperty("/participant", aRows);
 			oTable.clearSelection();
 		},
 
-		onCancel: async function () {
+		/* =========================================================
+		* Save Draft / Save Item / Save+Another
+		* ======================================================= */
 
-			const oPage = this.byId("request_form");
+		async onSaveRequestDraft() {
+			MessageToast.show("save draft");
+			const url = this._entityUrl("ZREQUEST_TYPE");
+			const payload = {
+				REQUEST_TYPE_ID: "RT0006",
+				REQUEST_TYPE_DESC: "Testing Create Data",
+				END_DATE: "9999-12-31",
+				START_DATE: "2026-01-01",
+				STATUS: "INACTIVE"
+			};
 
-			// 2) Remove the existing list fragment if present
-			//    Make sure the root control inside the fragment has id="--request_item_list_fragment"
-			const oListRoot = this.byId("request_create_item_fragment");
-			if (oListRoot) {
-				// Remove from its immediate parent aggregation
-				const oParent = oListRoot.getParent();
-				if (oParent && typeof oParent.removeContent === "function") {
-					oParent.removeContent(oListRoot);
-				} else if (oParent && typeof oParent.removeItem === "function") {
-					oParent.removeItem(oListRoot);
-				}
-				oListRoot.destroy(); // free resources
-			}
-
-			// 3) Insert the create-item fragment deterministically
-			try {
-				const oVBox = await this._getFormFragment("req_item_list"); // returns a control
-
-				// Put it right after the header (index 1), or at the end if not enough content
-				const iIndex = Math.min(1, oPage.getContent().length);
-				oPage.insertContent(oVBox, iIndex);
-			} catch (e) {
-				// if _getFormFragment rejects
-				sap.m.MessageToast.show("Could not open Create Item form.");
-				return;
-			}
-
-			const oModel = this.getView().getModel();
-			oModel.setProperty("/control/0/view", 'list');
-		},
-
-		onSave: function () {
-			// ... validate & persist your item ...
-			// Then navigate back:
-
-			const oModel = this.getView().getModel(); // JSONModel
-			const aRows = oModel.getProperty("/req_item_rows") || [];
-
-			aRows.push({
-				claim_type: "Testing Claim Type",
-				est_amount: 100,
-				currency_code: "MYR",
-				est_no_of_participant: 100
+			const res = await fetch(url, {
+				method: "POST",
+				headers: { "Content-Type": "application/json", "Accept": "application/json" },
+				body: JSON.stringify(payload)
 			});
 
-			oModel.setProperty("/req_item_rows", aRows);
-
-			this.onCancel();
-		},
-
-		onSaveAddAnother: function () {
-			// Logic to create new item in request item list
-
-		},
-
-		//Aiman Salim 5/02/2026 Start of insert- Added to fetch data and bind item;
-		loadItemsForRequest: async function (sReqId) {
-			if (!sReqId) {
-				MessageToast.show("Missing Request ID.");
+			if (!res.ok) {
+				const t = await res.text();
+				MessageToast.show(`Draft failed: ${res.status} ${t}`);
 				return;
 			}
+			MessageToast.show("Draft saved");
+		},
+
+		onSaveItem() {
+			this.onSave();
+		},
+
+		async onSaveAddAnother() {
+			const oReq = this._getReqModel();
+			await this.onSave(); // saves current
+			// Re-open create form fresh
+			await this._showItemCreate();
+
+			// Reset create buffers
+			const data = oReq.getData();
+			data.req_item = {
+				claim_type: "CT1",
+				claim_type_item: "CTI1",
+				est_amount: "",
+				est_no_participant: "",
+				cash_advance: "no_cashadv",
+				start_date: "",
+				end_date: "",
+				location: "",
+				remarks: ""
+			};
+			data.participant = [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
+			data.view = "create";
+			oReq.setData(data);
+		},
+
+		async onSave() {
+			// Validate & save to backend
+			const oReq      = this._getReqModel();
+			const data      = oReq.getData();
+			const reqId     = String(data.req_header.reqid || "").trim();
+			const claimType = data.req_item.claim_type;
+			const claimItem = data.req_item.claim_type_item;
+			const estAmt    = parseFloat(data.req_item.est_amount || 0);
+			const estNoPart = parseInt(data.req_item.est_no_participant || 1, 10);
+
+			if (!reqId) { MessageToast.show("Missing Request ID"); return; }
+			if (!claimType || !claimItem) { MessageToast.show("Select claim type/item"); return; }
+
+			BusyIndicator.show(0);
+
 			try {
-				BusyIndicator.show(0);
+				// 1) Get number range
+				const nr = await this.getCurrentReqNumber("NR03");
+				if (!nr) throw new Error("Number range not available");
+				const requestSubId = String(nr.result);
 
-				// Fetch from backend (OData V4)
-				const aItems = await this._fetchReqItemsByReqId(sReqId);
+				// 2) POST to ZREQUEST_ITEM
+				const urlItem = this._entityUrl("ZREQUEST_ITEM");
+				const payloadItem = {
+					REQUEST_ID: reqId,
+					REQUEST_SUB_ID: requestSubId,
+					CLAIM_TYPE_ID: claimType,
+					CLAIM_TYPE_ITEM_ID: claimItem,
+					EST_AMOUNT: estAmt,
+					EST_NO_PARTICIPANT: estNoPart
+				};
 
-				// Bind to the JSON model used by req_item_list.fragment
-				const oLocal = this.getView().getModel(); // default JSON model
-				oLocal.setProperty("/req_item_rows", aItems);
-
-				// Update counts for the toolbar title and any badges
-				const oVM = this.getView().getModel("view");
-				if (oVM) {
-					oVM.setProperty("/totalCount", aItems.length);
-					oVM.setProperty("/visibleCount", aItems.length);
+				const resItem = await fetch(urlItem, {
+					method: "POST",
+					headers: { "Content-Type": "application/json", "Accept": "application/json" },
+					body: JSON.stringify(payloadItem)
+				});
+				if (!resItem.ok) {
+					const e = await resItem.text();
+					throw new Error(`Item save failed: ${resItem.status} ${e}`);
 				}
 
 
@@ -805,9 +790,19 @@ sap.ui.define([
 				if (typeof this._updateTableCounts === "function") {
 					this._updateTableCounts();
 				}
+
+				// 4) Update number range
+				await this.updateCurrentReqNumber("NR03", nr.current);
+
+				// 5) Refresh list view (pull latest from backend)
+				await this._getItemList(reqId);
+
+				// 6) Back to list view
+				await this._showItemList();
+
+				MessageToast.show("Saved Successfully");
 			} catch (e) {
-				jQuery.sap.log.error("loadItemsForRequest failed: " + e);
-				MessageToast.show("Unable to load request items.");
+				MessageToast.show(e.message || "Save failed");
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -828,6 +823,17 @@ sap.ui.define([
 			const FilterOperator = sap.ui.model.FilterOperator;
 			const aFilters = [new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)];
 
+			try {
+				const res = await fetch(url, { headers: { "Accept": "application/json" } });
+				if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+				const data = await res.json();
+				const a = Array.isArray(data?.value) ? data.value : [];
+
+				// Fix numeric types if backend returns strings
+				a.forEach((it) => {
+				if (it.EST_AMOUNT != null) it.EST_AMOUNT = parseFloat(it.EST_AMOUNT);
+				if (it.EST_NO_PARTICIPANT != null) it.EST_NO_PARTICIPANT = parseInt(it.EST_NO_PARTICIPANT, 10);
+				});
 
 			// Adjust entity set and $select fields to your service metadata if needed
 			const oListBinding = oModel.bindList("/ZREQUEST_ITEM", null, null, aFilters, {
@@ -847,6 +853,36 @@ sap.ui.define([
 				est_no_of_participant: e.EST_NO_PARTICIPANT || "",
 			}));
 		},
-		//Aiman Salim 5/02/2026 End of insert- Added to fetch data and bind item;
+
+		async updateCurrentReqNumber(nr, currentNumber) {
+			const id  = encodeURIComponent(nr);
+			const url = this._entityUrl(`ZNUM_RANGE('${id}')`);
+			const nextNumber = currentNumber + 1;
+
+			try {
+				const res = await fetch(url, {
+				method: "PATCH",
+				headers: {
+					"Content-Type": "application/json",
+					"If-Match": "*" // avoid ETag issues
+				},
+				body: JSON.stringify({ CURRENT: String(nextNumber) })
+				});
+
+				if (!res.ok) {
+				const t = await res.text().catch(() => "");
+				throw new Error(`PATCH failed ${res.status} ${res.statusText}: ${t}`);
+				}
+				if (res.status === 204) return { CURRENT: nextNumber };
+
+				const ct = res.headers.get("content-type") || "";
+				return ct.includes("application/json") ? await res.json() : await res.text();
+			} catch (e) {
+				// eslint-disable-next-line no-console
+				console.error("Error updating number range:", e);
+				return null;
+			}
+		}
+
 	});
 });
