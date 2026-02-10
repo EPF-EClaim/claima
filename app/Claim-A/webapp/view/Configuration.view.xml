@@ -374,6 +374,18 @@
                 </f:header>
             </f:Card>
 
+            <f:Card
+                id="ZREGION"
+                class="sapUiSmallMargin"
+                width="15rem"
+                press="onOpenConfigTable"
+            >
+                <f:header>
+                    <cards:Header title="ZREGION" />
+                </f:header>
+            </f:Card>
+
+
         </f:GridContainer>
     </ScrollContainer>
 </mvc:View>

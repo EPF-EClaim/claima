@@ -355,6 +355,13 @@
           "target": [
             "ZEMP_MASTER"
           ]
+        },
+        {
+          "pattern": "ZREGION",
+          "name": "ZREGION",
+          "target": [
+            "ZREGION"
+          ]
         }
       ],
       "targets": {
@@ -1343,6 +1350,47 @@
                     "creationMode": {
                       "name": "CreationDialog",
                       "creationFields": "COUNTRY_ID,COUNTRY_DESC"
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZREGION": {
+          "type": "Component",
+          "id": "ZREGION",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZREGION",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true,
+                      "showCounts": true
+                    },
+                    "enableMassEdit": {
+                      "operationGroupingMode": "Isolated",
+                      "visibleFields": "REGION_ID,USER_TYPE_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "REGION_ID,USER_TYPE_DESC"
                     }
                   }
                 }

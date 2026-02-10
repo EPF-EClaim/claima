@@ -1584,7 +1584,7 @@ annotate service.ZREGION with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : USER_TYPE_DESC,
+                Value            : REGION_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Region Description'
             },
