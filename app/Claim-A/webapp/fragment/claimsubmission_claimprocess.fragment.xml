@@ -64,26 +64,26 @@
 		<buttons>
             <!-- Create Pre-Approval Request -->
             <Button
-                    id="button_claimprocess_preapproval"
-                    text="{i18n>button_claimprocess_preapproval}"
-                    enabled="false"
-                    visible="false"
-                />
+                id="button_claimprocess_preapproval"
+                text="{i18n>button_claimprocess_preapproval}"
+                enabled="false"
+                visible="false"
+            />
 
             <!-- Start Claim -->
             <Button
-                    id="button_claimprocess_startclaim"
-                    press="onStartClaim_ClaimProcess"
-                    text="{i18n>button_claimprocess_startclaim}"
-                    enabled="false"
-                />
+                id="button_claimprocess_startclaim"
+                press="onStartClaim_ClaimProcess"
+                text="{i18n>button_claimprocess_startclaim}"
+                enabled="false"
+            />
 
             <!-- Cancel -->
 			<Button
-                    id="button_claimprocess_cancel"
-                    press="onCancel_ClaimProcess"
-                    text="{i18n>button_claimprocess_cancel}"
-                />
+                id="button_claimprocess_cancel"
+                press="onCancel_ClaimProcess"
+                text="{i18n>button_claimprocess_cancel}"
+            />
         </buttons>     
     </Dialog>
 </core:FragmentDefinition>

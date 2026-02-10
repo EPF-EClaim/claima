@@ -256,7 +256,7 @@ sap.ui.define([
 			}
 		},
 
-		// Claim Submission - Functions
+		// Functions - Claim Submission
 		onNav_ClaimSubmission: async function () {
 			// load Claim Process dialog
 			this.oDialog_ClaimProcess ??= await this.loadFragment({
@@ -267,12 +267,13 @@ sap.ui.define([
 			}
 		},
 
+		//// Functions - Claim Process 
 		onChange_ClaimType: function (oEvent) {
 			// validate claim type
 			var claimType = oEvent.getParameters().selectedItem.getKey();
 			if (claimType) {
 				// set filter for claim items based on selected claim type
-				var oFilter = new sap.ui.model.Filter('CLAIM_TYPE_ID_CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, claimType);
+				var oFilter = new sap.ui.model.Filter('CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, claimType);
 
 				// set claim items based on selected claim type
 				this.byId("select_claimprocess_claimitem").bindAggregation("items", {
@@ -328,14 +329,15 @@ sap.ui.define([
 			// set as current data
 			var oCurrentModel = this.getView().getModel("current");
 			oCurrentModel.setData(oInputModel.getData());
-			
+
 			// reset Claim Process dialog before closing
 			this._resetClaimProcess();
 			this.oDialog_ClaimProcess.close();
 
 			// load Claim Submission dialog
 			this.oDialog ??= await this.loadFragment({
-				name: "claima.fragment.createreport",
+				// name: "claima.fragment.createreport",
+				name: "claima.fragment.claimsubmission_claimsubmission",
 			});
 			if (this.oDialog) {
 				this.oDialog.open();
@@ -356,11 +358,12 @@ sap.ui.define([
 			this.byId("select_claimprocess_claimitem").setEditable(false);
 
 			// reset claim item category
-			this.byId("input_claimprocess_category").setValue("");
+			this.byId("input_claimprocess_category").setValue(null);
 
 			// disable 'Start Claim' button
 			this.byId("button_claimprocess_startclaim").setEnabled(false);
 		},
+		//// end Functions - Claim Process 
 
 		onCreateReport_Create: async function () {
 			// validate input data
@@ -462,7 +465,7 @@ sap.ui.define([
 		onCreateReport_Cancel: function () {
 			this.oDialog.close();
 		},
-		// end Claim Submission - Functions
+		// end Functions - Claim Submission
 
 		onPressBack: function (oEvent) {
 			this.byId("pageContainer").to(this.getView().createId("dashboard"));
