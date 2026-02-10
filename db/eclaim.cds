@@ -1,28 +1,55 @@
 namespace ECLAIM;
 
-using { managed } from '@sap/cds/common';
-
-entity ZEMP_MASTER : managed
-{
-    key EEID : String;
-    NAME : String;
-    GRADE : String;
-    CC : String;
-    POS : String;
-    DEP : String;
-    JOB_CODE : String;
-    LOC : String;
-    MGR : String;
-    CXO : String;
-    TYPE_E : String;
-    TYPE_A : String;
-    TYPE_AD : String;
-    B_PLACE : String;
-    MARITAL : String;
-    CEO : String;
-    HOD : String;
-    HOS : String;
-    ZREQUEST_HEADER : Association to one ZREQUEST_HEADER on ZREQUEST_HEADER.EMP_ID = EEID;
+entity ZEMP_MASTER : managed {
+    key EEID                    : String @mandatory;
+        NAME                    : String;
+        GRADE                   : String;
+        CC                      : String;
+        POS                     : String;
+        DEP                     : String;
+        B_PLACE                 : String;
+        MARITAL                 : String;
+        JOB_GROUP               : String;
+        OFFICE_LOCATION         : String;
+        ADDRESS_LINE1           : String;
+        ADDRESS_LINE2           : String;
+        ADDRESS_LINE3           : String;
+        POSTCODE                : String;
+        STATE                   : String;
+        COUNTRY                 : String;
+        CONTACT_NO              : String;
+        EMAIL                   : String;
+        DIRECT_SUPPERIOR        : String;
+        ROLE                    : String;
+        USER_TYPE               : String;
+        MOBILE_BILL_ELIGIBILITY : String;
+        EMPLOYEE_TYPE           : String;
+        POSITION_NAME           : String;
+        POSITION_START_DATE     : Date;
+        POSITION_EVENT_REASON   : String;
+        CONFIRMATION_DATE       : Date;
+        EFFECTIVE_DATE          : Date;
+        UPDATED_DATE            : Date;
+        INSERTED_DATE           : Date;
+        ZREQUEST_HEADER         : Association to one ZREQUEST_HEADER
+                                    on ZREQUEST_HEADER.EMP_ID = EEID;
+        ZCOST_CENTER            : Association to ZCOST_CENTER
+                                    on ZCOST_CENTER.COST_CENTER_ID = CC;
+        ZMARITAL_STAT           : Association to ZMARITAL_STAT
+                                    on ZMARITAL_STAT.MARRIAGE_CATEGORY_ID = MARITAL;
+        ZDEPARTMENT             : Association to ZDEPARTMENT
+                                    on ZDEPARTMENT.DEPARTMENT_ID = DEP;
+        ZJOB_GROUP              : Association to ZJOB_GROUP
+                                    on ZJOB_GROUP.JOB_GROUP_ID = JOB_GROUP; 
+        ZROLE                   : Association to ZROLE
+                                    on ZROLE.ROLE_ID = ROLE;
+        ZUSER_TYPE              : Association to ZUSER_TYPE
+                                    on ZUSER_TYPE.USER_TYPE_ID = USER_TYPE; 
+        ZCOUNTRY                : Association to ZCOUNTRY   
+                                    on ZCOUNTRY.COUNTRY_ID = COUNTRY;
+        ZSTATE                  : Association to ZSTATE
+                                    on  ZSTATE.COUNTRY_ID = COUNTRY
+                                    and ZSTATE.STATE_ID = STATE;     
 }
 
 entity ZREQUEST_HEADER : managed
@@ -87,15 +114,13 @@ entity ZREQUEST_ITEM : managed
     ZCLAIM_TYPE_ITEM : Association to one ZCLAIM_TYPE_ITEM on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID;
 }
 
-entity ZREQ_ITEM_PART : managed
-{
-    key REQUEST_ID : String
-        @mandatory;
-    key REQUEST_SUB_ID : String
-        @mandatory;
-    PARTICIPANTS_ID : String;
-    ALLOCATED_AMOUNT : Decimal;
-    ZEMP_MASTER : Association to one ZEMP_MASTER on ZEMP_MASTER.EEID = PARTICIPANTS_ID;
+entity ZREQ_ITEM_PART: managed  {
+    key REQUEST_ID           : String @mandatory;  
+    key REQUEST_SUB_ID       : String @mandatory;  
+    key PARTICIPANTS_ID      : String @mandatory;      
+        ALLOCATED_AMOUNT     : Decimal;
+        ZEMP_MASTER          : Association to one ZEMP_MASTER
+                                    on ZEMP_MASTER.EEID = PARTICIPANTS_ID;
 }
 
 entity ZREQUEST_TYPE : managed
@@ -585,26 +610,47 @@ entity ZSTATE : managed
         @Common.Label : 'State Description';
 }
 
-entity ZKWSP_MILEAGE : managed
-{
-    key FROM_STATE_ID : String
-        @mandatory
-        @Common.Label : 'From State ID';
-    key FROM_BRANCH_ID : String
-        @mandatory
-        @Common.Label : 'From Branch ID';
-    key TO_STATE_ID : String
-        @mandatory;
-    key TO_BRANCH_ID : String
-        @mandatory
-        @Common.Label : 'To Branch ID';
-    MILEAGE : Integer
-        @Common.Label : 'Mileage';
-    MAX_MILEAGE : Integer
-        @Common.Label : ' Max Mileage';
+entity ZKWSP_MILEAGE : managed {
+    key FROM_STATE_ID  : String  @mandatory  @Common.Label: 'From State ID';
+    key FROM_BRANCH_ID : String  @mandatory  @Common.Label: 'From Branch ID';
+    key TO_STATE_ID    : String  @mandatory  @Common.Lable: 'To State ID';
+    key TO_BRANCH_ID   : String  @mandatory  @Common.Label: 'To Branch ID';
+        MILEAGE        : Integer @Common.Label: 'Mileage';
+        MAX_MILEAGE    : Integer @Common.Label: ' Max Mileage';
 }
 
-entity Entity1
-{
-    key ID : UUID;
+entity ZJOB_GROUP : managed {
+    key JOB_GROUP_ID    : String @mandatory @Common.Label: 'Job Group ID';
+        JOB_GROUP_DESC  : String @Common.Label: 'Job Group ID';
+        START_DATE      : Date   @Common.Label: 'Start Date';
+        END_DATE        : Date   @Common.Label: 'End Date';
+        STATUS          : String @Common.Label: 'Status';
 }
+
+entity ZDEPARTMENT: managed {
+    key DEPARTMENT_ID       : String @mandatory @Common.Label: 'Department ID';
+        DEPARTMENT_DESC     : String @Common.Label: 'Department Description';
+        START_DATE          : Date   @Common.Label: 'Start Date';
+        END_DATE            : Date   @Common.Label: 'End Date';
+        STATUS              : String @Common.Label: 'Status';
+        HEAD_OF_DEPARTMENT  : String @Common.Label: 'Head of Department';
+        SHORT_CODE          : String @Common.Label: 'Short Code';
+        COST_CENTER         : String @Common.Label: 'Cost Center';
+        DIVISION            : String @Common.Label: 'Division';
+}
+
+entity ZROLE : managed {
+    key ROLE_ID     : String @mandatory @Common.Label: 'Role ID';
+        ROLE_DESC   : String @Common.Label: 'Role Description';
+        START_DATE  : String @Common.Label: 'Start Date';
+        END_DATE    : String @Common.Label: 'End Date';
+        STATUS      : String @Common.Label: 'Status';
+}
+
+entity ZUSER_TYPE: managed {
+    key USER_TYPE_ID    : String @mandatory @Common.Label: 'User Type ID';
+        USER_TYPE_DESC  : String @Common.Label: 'User Type Description';
+        START_DATE      : String @Common.Label: 'Start Date';
+        END_DATE        : String @Common.Label: 'End Date';
+        STATUS          : String @Common.Label: 'Status';
+}       
