@@ -44,8 +44,8 @@
                         expanded="false"
                     />
                     <tnt:NavigationListItem
-                        key="sidenav_createreport"
-                        text="{i18n>sidenav_createreport}"
+                        key="sidenav_claimsubmission"
+                        text="{i18n>sidenav_claimsubmission}"
                         icon="sap-icon://add"
                         enabled="true"
                         expanded="false"

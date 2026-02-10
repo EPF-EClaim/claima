@@ -1,0 +1,88 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:l="sap.ui.layout"
+    xmlns:f="sap.ui.layout.form"
+>
+    <Dialog id="dialog_claimprocess" title="{i18n>dialog_claimprocess}" contentWidth="50em">
+
+            <!-- Form Layout -->
+            <f:SimpleForm
+                editable="true"
+                layout="ResponsiveGridLayout"
+                labelSpanXL="4"
+                labelSpanL="4"
+                labelSpanM="4"
+                labelSpanS="12"
+                adjustLabelSpan="false"
+                emptySpanXL="2"
+                emptySpanL="2"
+                emptySpanM="2"
+                emptySpanS="0"
+                columnsM="1"
+                columnsL="1"
+                columnsXL="1"
+                singleContainerFullSize="false" >
+                <f:content>
+                    <!-- Claim Type -->
+                    <Label text="{i18n>label_claimprocess_claimtype}" />
+                    <Select
+                        id="select_claimprocess_claimtype"
+                        forceSelection="false"
+                        selectedKey="{/claimtype}"
+                        items="{
+                            path: 'employee>/ZCLAIM_TYPE',
+                            sorter: { path: 'CLAIM_TYPE_DESC' }
+                        }"
+                        change="onChange_ClaimType"
+                        liveChange="onChange_ClaimType">
+                        <core:Item key="{employee>CLAIM_TYPE_ID}" text="{employee>CLAIM_TYPE_DESC}" />
+                    </Select>
+
+                    <!-- Claim Item -->
+                    <Label text="{i18n>label_claimprocess_claimitem}" />
+                    <Select
+                        id="select_claimprocess_claimitem"
+                        forceSelection="false"
+                        selectedKey="{/claimitem}"
+                        editable="false"
+                        change="onChange_ClaimItem"
+                        liveChange="onChange_ClaimItem">
+                    </Select>
+
+                    <!-- Category -->
+                    <Label text="{i18n>label_claimprocess_category}" />
+                    <Input
+                        id="input_claimprocess_category"
+                        editable="false"
+                    />
+                </f:content>
+            </f:SimpleForm>
+     
+		<buttons>
+            <!-- Create Pre-Approval Request -->
+            <Button
+                    id="button_claimprocess_preapproval"
+                    text="{i18n>button_claimprocess_preapproval}"
+                    enabled="false"
+                    visible="false"
+                />
+
+            <!-- Start Claim -->
+            <Button
+                    id="button_claimprocess_startclaim"
+                    press="onStartClaim_ClaimProcess"
+                    text="{i18n>button_claimprocess_startclaim}"
+                    enabled="false"
+                />
+
+            <!-- Cancel -->
+			<Button
+                    id="button_claimprocess_cancel"
+                    press="onCancel_ClaimProcess"
+                    text="{i18n>button_claimprocess_cancel}"
+                />
+        </buttons>     
+    </Dialog>
+</core:FragmentDefinition>

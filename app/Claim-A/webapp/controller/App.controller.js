@@ -192,8 +192,8 @@ sap.ui.define([
 			var oKey = oItem.getKey();
 
 			switch (oKey) {
-				case "sidenav_createreport":
-					this.onNavCreateReport();
+				case "sidenav_claimsubmission":
+					this.onNav_ClaimSubmission();
 					break;
 				// Start added by Jefry 15-01-2026
 				case "createrequest":
@@ -232,18 +232,6 @@ sap.ui.define([
 			oPageContainer.to(this.byId("configurationPage"));
 
 		},
-		// onNavCreateReport: async function () {
-		// 	if (!this.oDialogFragment) {
-		// 		this.oDialogFragment = await Fragment.load({
-		// 			name: "claima.fragment.createreport",
-		// 			type: "XML",
-		// 			controller: this,
-		// 		});
-		// 		this.getView().addDependent(this.oDialogFragment);
-		// 	}
-		// 	this.oDialogFragment.open();
-
-		// },
 
 		onMenuButtonPress: function () {
 			var toolPage = this.byId("toolPage");
@@ -268,13 +256,87 @@ sap.ui.define([
 			}
 		},
 
-		// Create Report - Functions
-        async onNavCreateReport() {
-            this.oDialog ??= await this.loadFragment({
-                name: "claima.fragment.createreport",
-            });
-            this.oDialog.open();
-        },
+		// Claim Submission - Functions
+		onNav_ClaimSubmission: async function () {
+			// load Claim Process dialog
+			this.oDialog_ClaimProcess ??= await this.loadFragment({
+				name: "claima.fragment.claimsubmission_claimprocess",
+			});
+			if (this.oDialog_ClaimProcess) {
+				this.oDialog_ClaimProcess.open();
+			}
+		},
+
+		onChange_ClaimType: function (oEvent) {
+			// validate claim type
+			var claimType = oEvent.getParameters().selectedItem.getKey();
+			if (claimType) {
+				// set filter for claim items based on selected claim type
+				var oFilter = new sap.ui.model.Filter('CLAIM_TYPE_ID_CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, claimType);
+
+				// set claim items based on selected claim type
+				this.byId("select_claimprocess_claimitem").bindAggregation("items", {
+					path: "employee>/ZCLAIM_TYPE_ITEM",
+					filters: [oFilter],
+					template: new sap.ui.core.Item({
+						key: "{employee>CLAIM_TYPE_ITEM_ID}",
+						text: "{employee>CLAIM_TYPE_ITEM_DESC}"
+					})
+				});
+				this.byId("select_claimprocess_claimitem").setEditable(true);
+
+				// disable 'Start Claim' button if new claim type selected 
+				if (this.byId("select_claimprocess_claimitem").getEnabled()) {
+					this.byId("button_claimprocess_startclaim").setEnabled(false);
+				}
+			}
+		},
+
+		onChange_ClaimItem: function (oEvent) {
+			// validate claim item
+			var claimItem = oEvent.getParameters().selectedItem.getKey();
+			if (claimItem) {
+				// placeholder - show claim item category in category input
+				this.byId("input_claimprocess_category").setValue(this.getView().getModel("i18n").getResourceBundle().getText("value_claimprocess_category_direct"));
+
+				// enable 'Start Claim' button
+				this.byId("button_claimprocess_startclaim").setEnabled(true);
+			}
+		},
+
+		onStartClaim_ClaimProcess: async function () {
+			// reset Claim Process dialog before closing
+			this._resetClaimProcess();
+			this.oDialog_ClaimProcess.close();
+
+			// load Claim Submission dialog
+			this.oDialog ??= await this.loadFragment({
+				name: "claima.fragment.createreport",
+			});
+			if (this.oDialog) {
+				this.oDialog.open();
+			}
+		},
+
+		onCancel_ClaimProcess: function () {
+			this._resetClaimProcess();
+			this.oDialog_ClaimProcess.close();
+		},
+
+		_resetClaimProcess: function () {
+			// reset claim type select
+			this.byId("select_claimprocess_claimtype").setSelectedItem(null);
+
+			// reset claim item select
+			this.byId("select_claimprocess_claimitem").unbindAggregation("items");
+			this.byId("select_claimprocess_claimitem").setEditable(false);
+
+			// reset claim item category
+			this.byId("input_claimprocess_category").setValue("");
+
+			// disable 'Start Claim' button
+			this.byId("button_claimprocess_startclaim").setEnabled(false);
+		},
 
 		onCreateReport_Create: async function () {
 			// validate input data
@@ -287,7 +349,7 @@ sap.ui.define([
 				oInputData.report.enddate == '' ||
 				oInputData.report.comment == '') {
 				// required fields without value
-				var message = this.getView().getModel("i18n").getResourceBundle().getText("dialog_createreport_required");;
+				var message = this.getView().getModel("i18n").getResourceBundle().getText("dialog_createreport_required");
 				MessageToast.show(message);
 			} else {
 
@@ -376,7 +438,7 @@ sap.ui.define([
 		onCreateReport_Cancel: function () {
 			this.oDialog.close();
 		},
-		// end Create Report - Functions
+		// end Claim Submission - Functions
 
 		onPressBack: function (oEvent) {
 			this.byId("pageContainer").to(this.getView().createId("dashboard"));
