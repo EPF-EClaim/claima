@@ -306,6 +306,55 @@
           "target": [
             "ZAPP_FIELD_CTRL"
           ]
+        }, 
+        {
+          "pattern": "ZJOB_GROUP",
+          "name": "ZJOB_GROUP",
+          "target": [
+            "ZJOB_GROUP"
+          ]
+        },
+        {
+          "pattern": "ZDEPARTMENT",
+          "name": "ZDEPARTMENT",
+          "target": [
+            "ZDEPARTMENT"
+          ]
+        },
+        {
+          "pattern": "ZUSER_TYPE",
+          "name": "ZUSER_TYPE",
+          "target": [
+            "ZUSER_TYPE"
+          ]
+        },
+        {
+          "pattern": "ZROLE",
+          "name": "ZROLE",
+          "target": [
+            "ZROLE"
+          ]
+        }, 
+        {
+          "pattern": "ZEMP_TYPE",
+          "name": "ZEMP_TYPE",
+          "target": [
+            "ZEMP_TYPE"
+          ]
+        },
+        {
+          "pattern": "ZFLIGHT_CLASS",
+          "name": "ZFLIGHT_CLASS",
+          "target": [
+            "ZFLIGHT_CLASS"
+          ]
+        },
+        {
+          "pattern": "ZEMP_MASTER",
+          "name": "ZEMP_MASTER",
+          "target": [
+            "ZEMP_MASTER"
+          ]
         }
       ],
       "targets": {
@@ -403,6 +452,217 @@
                     "creationMode": {
                       "name": "CreationDialog",
                       "creationFields": "RISK_ID,RISK_DESC"
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZEMP_TYPE": {
+          "type": "Component",
+          "id": "ZEMP_TYPE",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZEMP_TYPE",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": true,
+                      "filter": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true,
+                      "showCounts": true
+                    },
+                    "disableCopyToClipboard": false,
+                    "enableMassEdit": {
+                      "operationGroupingMode": "Isolated",
+                      "visibleFields": "EMP_TYPE_ID,EMP_TYPE_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "EMP_TYPE_ID,EMP_TYPE_DESC"
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZEMP_MASTER": {
+          "type": "Component",
+          "id": "ZEMP_MASTER",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZEMP_MASTER",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": true,
+                      "filter": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true,
+                      "showCounts": true
+                    },
+                    "disableCopyToClipboard": false,
+                    "enableMassEdit": {
+                      "operationGroupingMode": "Isolated",
+                      "visibleFields": "USER_TYPE,B_PLACE, MOBILE_BILL_ELIGIBILITY"
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZDEPARTMENT": {
+          "type": "Component",
+          "id": "ZDEPARTMENT",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZDEPARTMENT",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": true,
+                      "filter": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true,
+                      "showCounts": true
+                    },
+                    "disableCopyToClipboard": false,
+                     "enableMassEdit": {
+                      "operationGroupingMode": "Isolated",
+                      "visibleFields": "DEPARTMENT_ID, DEPARTMENT_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "DEPARTMENT_ID, DEPARTMENT_DESC"
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZJOB_GROUP": {
+          "type": "Component",
+          "id": "ZJOB_GROUP",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZJOB_GROUP",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": true,
+                      "filter": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true,
+                      "showCounts": true
+                    },
+                    "disableCopyToClipboard": false,
+                    "enableMassEdit": {
+                      "operationGroupingMode": "Isolated",
+                      "visibleFields": "JOB_GROUP_ID, JOB_GROUP_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "JOB_GROUP_ID, JOB_GROUP_DESC"
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
+        "ZROLE": {
+          "type": "Component",
+          "id": "ZROLE",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZROLE",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": true,
+                      "filter": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true,
+                      "showCounts": true
+                    },
+                    "disableCopyToClipboard": false,
+                    "enableMassEdit": {
+                      "operationGroupingMode": "Isolated",
+                      "visibleFields": "ROLE_ID, ROLE_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "ROLE_ID, ROLE_DESC"
                     }
                   }
                 }
@@ -694,6 +954,45 @@
             }
           }
         },
+        "ZUSER_TYPE": {
+          "type": "Component",
+          "id": "ZUSER_TYPE",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/ZUSER_TYPE",
+              "variantManagement": "None",
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable",
+                    "createMode": "inline",
+                    "initialLoad": "Enabled",
+                    "enableExport": true,
+                    "selectAll": false,
+                    "selectionMode": "Single",
+                    "personalization": {
+                      "column": false
+                    },
+                    "quickVariantSelection": {
+                      "hideTableTitle": true
+                    },
+                    "enableMassEdit": {
+                      "visibleFields": "USER_TYPE_ID,USER_TYPE_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "USER_TYPE_ID,USER_TYPE_DESC"
+                    }
+                  }
+                }
+              },
+              "hideFilterBar": true,
+              "initialLoad": "Enabled",
+              "navigation": {}
+            }
+          }
+        },
         "ZCLAIM_MAIN_CAT": {
           "type": "Component",
           "id": "ZCLAIM_MAIN_CAT",
@@ -954,7 +1253,16 @@
                       "column": false
                     },
                     "quickVariantSelection": {
-                      "hideTableTitle": true
+                      "hideTableTitle": true,
+                      "showCounts": true
+                    },
+                    "enableMassEdit": {
+                      "operationGroupingMode": "Isolated",
+                      "visibleFields": "FLIGHT_CLASS_ID,FLIGHT_CLASS_DESC"
+                    },
+                    "creationMode": {
+                      "name": "CreationDialog",
+                      "creationFields": "FLIGHT_CLASS_ID,FLIGHT_CLASS_DESC"
                     }
                   }
                 }
