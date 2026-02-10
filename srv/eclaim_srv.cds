@@ -19,7 +19,7 @@ service eclaim_srv {
                 //                                 ) returns zclaim_type;
             key CLAIM_TYPE_ID,
                 CLAIM_TYPE_DESC,
-                ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM
+                ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM as Item
 
 
         // }
