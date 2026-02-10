@@ -4,6 +4,17 @@ specVersion: "4.0"
 metadata:
   name: claima
 type: application
+framework:
+  name: SAPUI5
+  version: "1.143.0"
+  libraries:
+    - name: sap.fe.macros
+    - name: sap.fe.templates
+    - name: sap.f
+    - name: sap.m
+    - name: sap.ui.core
+    - name: sap.ui.layout
+    - name: themelib_sap_horizon   
 server:
   customMiddleware:
     - name: fiori-tools-proxy

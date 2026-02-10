@@ -30,9 +30,12 @@ sap.ui.define([
 ) {
 	"use strict";
 
+
 	return Controller.extend("claima.controller.App", {
 		onInit: function () {
-
+			// super.onInit();
+			// var oModel = this.base.getExtensionAPI().getModel();
+			//  PageController.prototype.onInit.apply(this, arguments);
 			// oViewModel
 			const oViewModel = new sap.ui.model.json.JSONModel({
 				rtype: "" // current selected request type
@@ -89,6 +92,7 @@ sap.ui.define([
 					data: []
 				}
 			});
+
 			this.getView().setModel(oConfigModel, "configModel");
 
 
@@ -190,9 +194,11 @@ sap.ui.define([
 		onNavItemSelect: function (oEvent) {
 			var oItem = oEvent.getParameter("item");
 			var oKey = oItem.getKey();
+			var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+			oRouter.navTo("RouteMain"); //dummy routing
 
 			switch (oKey) {
-				case "nav_createreport":
+				case "sidenav_createreport":
 					this.onNavCreateReport();
 					break;
 				// Start added by Jefry 15-01-2026
@@ -200,8 +206,8 @@ sap.ui.define([
 					this.onClickMyRequest();
 					break;
 				// End added by Jefry 15-01-2026
-				case "config": // your configuration menu
-					this.onClickConfiguration();
+				case "config": // your configuration menu				
+					this.onClickConfiguration();						
 					break;
 				default:
 					// navigate to page with ID same as the key
@@ -212,45 +218,27 @@ sap.ui.define([
 					break;
 			}
 		},
-		// Configuration
+		// Configuration App
 		onClickConfiguration: async function () {
-			// if (!this.oConfigPage) {
-			// 	this.oConfigPage = Fragment.load({
-			// 		name: "claima.fragment.configuration",
-			// 		type: "XML",
-			// 		controller: this
-			// 	});
-			// 	this.getView().addDependent(this.oConfigPage);
-			// }
-
-			// Navigate to configuration page
 			var oPageContainer = this.byId("pageContainer");
 			if (!this.byId("configurationPage")) {
 				var oPage = new sap.m.Page(this.createId("configurationPage"), {
 				});
 			}
-			oPageContainer.to(this.byId("configurationPage"));
-
+			oPageContainer.to(this.byId("configurationPage"));	
 		},
-		onNavCreateReport: async function () {
-			if (!this.oDialogFragment) {
-				this.oDialogFragment = await Fragment.load({
-					name: "claima.fragment.createreport",
-					type: "XML",
-					controller: this,
-				});
-				this.getView().addDependent(this.oDialogFragment);
+		// onNavCreateReport: async function () {
+		// 	if (!this.oDialogFragment) {
+		// 		this.oDialogFragment = await Fragment.load({
+		// 			name: "claima.fragment.createreport",
+		// 			type: "XML",
+		// 			controller: this,
+		// 		});
+		// 		this.getView().addDependent(this.oDialogFragment);
+		// 	}
+		// 	this.oDialogFragment.open();
 
-				// Start added by Jefry Yap
-				this.oDialogFragment.attachAfterClose(() => {
-					this.oDialogFragment.destroy();
-					this.oDialogFragment = null;
-				});
-				// End added by Jefry Yap
-			}
-			this.oDialogFragment.open();
-
-		},
+		// },
 
 		onMenuButtonPress: function () {
 			var toolPage = this.byId("toolPage");
@@ -275,36 +263,258 @@ sap.ui.define([
 			}
 		},
 
-		onCancelFragment: function () {
-			this.oDialogFragment.close();
-		},
+		// Create Report - Functions
+        async onNavCreateReport() {
+            this.oDialog ??= await this.loadFragment({
+                name: "claima.fragment.createreport",
+            });
+            this.oDialog.open();
+        },
 
-		onCreateReport: function () {
+		onCreateReport_Create: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("input");
 			var oInputData = oInputModel.getData();
 
-			if (oInputData.report.purpose == '' || oInputData.report.startdate == ''
-				|| oInputData.report.enddate == '' || oInputData.report.category == '') {
-				var message = 'Please enter all mandatory details';
+			if (
+				oInputData.report.purpose == '' ||
+				oInputData.report.startdate == '' ||
+				oInputData.report.enddate == '' ||
+				oInputData.report.comment == '') {
+				// required fields without value
+				var message = this.getView().getModel("i18n").getResourceBundle().getText("dialog_createreport_required");;
 				MessageToast.show(message);
 			} else {
 
-				// set as current data
-				var oCurrentModel = this.getView().getModel("current");
-				oCurrentModel.setData(oInputData);
+				// get current claim number
+				var currentReportNumber = await this.getCurrentReportNumber();
 
-				var view = "expensereport";
-				this.oDialogFragment.close();
-				this.byId("pageContainer").to(this.getView().createId(view));
-				this.getView().byId("expensetypescr").setVisible(true);
-				this.getView().byId("claimscr").setVisible(false);
-				this.createreportButtons("expensetypescr");
+				// use default value for category if no value detected
+				if (oInputData.report.category == '') {
+					oInputData.report.category = 'expcat_direct';
+				}
+				//// Claim Date (get current date)
+				var currentDate = new Date().toJSON().substring(0,10);
+				//// Amount Approved (Total)
+				var amtApproved = Number.parseFloat(oInputData.report.amt_approved).toFixed(2);
+				if (amtApproved == 'NaN') {
+					amtApproved = 0.00;
+				}
+				//// Claim Main Category ID
+				switch (oInputData.report.category) {
+					case "expcat_direct":
+						var claimMainCatID = "0000000001";
+						break;
+					case "expcat_auto":
+						claimMainCatID = "0000000002";
+						break;
+					case "expcat_withoutrequest":
+						claimMainCatID = "0000000003";
+						break;
+				}
+
+				//// set as current data
+				// var oCurrentModel = this.getView().getModel("current");
+				// oCurrentModel.setData(oInputData);
+				
+				// set context
+				var currentEntity = {
+					"CLAIM_ID": currentReportNumber.reportNo,
+					"CLAIM_MAIN_CAT_ID": claimMainCatID,
+					"EMP_ID": "000001",
+					"CLAIM_DATE": currentDate,
+					"CATEGORY": oInputData.report.purpose,
+					"ALTERNATE_COST_CENTER": null,
+					"CLAIM_TYPE_ID": "001",
+					"TOTAL": amtApproved,
+					"STATUS_ID": "Draft",
+					"DEPARTMENT": "IT Dept 2",
+					"EMP_NAME": "Ahmad Anthony",
+					"JOB_POSITION": "Junior Analyst",
+					"PERSONAL_GRADE": "22",
+					"POSITION_NO": "000003",
+					"ZCLAIM_ITEM": null
+				}
+
+				// map header → current schema used by report.fragment
+				// const mapped = this._mapHeaderToCurrent(row);
+				const mapped = this._mapHeaderToCurrent(currentEntity);
+
+
+				// set "current" model data
+				let oCurrent = this.getView().getModel("current");
+				if (!oCurrent) {
+					oCurrent = new sap.ui.model.json.JSONModel();
+					this.getView().setModel(oCurrent, "current");
+				}
+				oCurrent.setData(mapped);
+
+
+				// navigate to the detail page that contains report.fragment
+				const oDetailPage = this.byId("expensereport");
+				if (!oDetailPage) {
+					sap.m.MessageToast.show("Detail page 'expensereport' not found.");
+					return;
+				}
+				this.byId("pageContainer").to(oDetailPage);
+				
+				//// go to expense report screen
+				// var view = "expensereport";
+				this.oDialog.close();
+				// this.byId("pageContainer").to(this.getView().createId(view));
+				// this.getView().byId("expensetypescr").setVisible(true);
+				// this.getView().byId("claimscr").setVisible(false);
+				// this.createreportButtons("expensetypescr");
 			}
 		},
 
+		onCreateReport_Cancel: function () {
+			this.oDialog.close();
+		},
+		// end Create Report - Functions
+
 		onPressBack: function (oEvent) {
 			this.byId("pageContainer").to(this.getView().createId("dashboard"));
+		},
+
+		onPressSaveDraft: async function (oEvent) {
+			var currentReportNumber = await this.getCurrentReportNumber();
+
+			// Set data for ZCLAIM_HEADER
+			var oCurrentModel = this.getView().getModel("current");
+			//// Claim Type ID
+			oCurrentModel.setProperty("/report/claim_type", "001")
+			//// Status ID
+			oCurrentModel.setProperty("/report/status_id", "Draft")
+			//// get data from current claim header shown
+			var oCurrentData = oCurrentModel.getData();
+
+			////// Claim Main Category ID
+			// switch (oCurrentData.report.category) {
+				// case "expcat_direct":
+					// var claimMainCatID = "0000000001";
+					// break;
+				// case "expcat_auto":
+					// claimMainCatID = "0000000002";
+					// break;
+				// case "expcat_withoutrequest":
+					// claimMainCatID = "0000000003";
+					// break;
+			// }
+
+			//// Alternate Cost Center
+			var altCC = oCurrentData.altcc;
+			if (altCC == '') {
+				altCC = null;
+			}
+
+			//// Amount Approved (Total)
+			var amtApproved = Number.parseFloat(oCurrentData.report.amt_approved).toFixed(2);
+			if (amtApproved == 'NaN') {
+				amtApproved = 0.00;
+			}
+
+			// Write to Database Table ZCLAIM_HEADER
+			var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
+			var sServiceUrl = sBaseUri + "/ZCLAIM_HEADER"; 
+
+			fetch(sServiceUrl, 
+				{method: "POST", headers: {"Content-Type": "application/json"},
+				body: JSON.stringify({
+					CLAIM_ID               : oCurrentData.report.id,
+					// CLAIM_MAIN_CAT_ID      : claimMainCatID,
+					CLAIM_MAIN_CAT_ID      : oCurrentData.costcenter,
+					EMP_ID                 : "000001",
+					CLAIM_DATE             : oCurrentData.report.startdate,
+					CATEGORY               : oCurrentData.report.purpose,
+					ALTERNATE_COST_CENTER  : altCC,
+					CLAIM_TYPE_ID          : oCurrentData.report.claim_type,
+					TOTAL                  : amtApproved,
+					STATUS_ID          	   : oCurrentData.report.status_id,
+					DEPARTMENT             : "IT Dept 2",
+					EMP_NAME               : "Ahmad Anthony",
+					JOB_POSITION		   : "Junior Analyst",
+					PERSONAL_GRADE		   : "22",
+					POSITION_NO		       : "000003",
+					ZCLAIM_ITEM            : null
+				}) 
+			})
+			.then(r => r.json())
+			.then((res) => {
+				if (!res.error) {
+					MessageToast.show("Record created");
+					this.updateCurrentReportNumber(currentReportNumber.current);
+					this.byId("pageContainer").to(this.getView().createId("dashboard"));
+				} else {
+					MessageToast.show(res.error.code, res.error.message);
+				};
+			});
+		},
+
+		getCurrentReportNumber: async function () {
+			const sBaseUri = this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri || "/odata/v4/EmployeeSrv/";
+			const sServiceUrl = sBaseUri.replace(/\/$/, "") + "/ZNUM_RANGE";
+
+			try {
+				const response = await fetch(sServiceUrl);
+
+				if (!response.ok) {
+					throw new Error(`HTTP ${response.status} ${response.statusText}`);
+				}
+
+				const data = await response.json();
+
+				const nr02 = (data.value || data).find(x => x.RANGE_ID === "NR02");
+				if (!nr02 || nr02.CURRENT == null) {
+					throw new Error("NR02 not found or CURRENT is missing");
+				}
+
+				const current = Number(nr02.CURRENT);
+				const yy = String(new Date().getFullYear()).slice(-2);
+				const reportNo = `CLM${yy}${String(current).padStart(9, "0")}`;
+
+				return { reportNo, current };
+
+			} catch (err) {
+				console.error("Error fetching CDS data:", err);
+				return null; // or: throw err;
+			}
+		},
+
+		updateCurrentReportNumber: async function (currentNumber) {
+			const sId = "NR02";
+			const sBaseUri =
+				this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri
+				|| "/odata/v4/EmployeeSrv/";
+
+			const sServiceUrl = sBaseUri.replace(/\/$/, "") + "/ZNUM_RANGE('" + encodeURIComponent(sId) + "')";
+			const nextNumber = currentNumber + 1;
+
+			try {
+				const res = await fetch(sServiceUrl, {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ CURRENT: String(nextNumber) })
+				});
+
+				if (!res.ok) {
+				const errText = await res.text().catch(() => "");
+				throw new Error(`PATCH failed ${res.status} ${res.statusText}: ${errText}`);
+				}
+
+				// PATCH often returns 204
+				if (res.status === 204) return { CURRENT: nextNumber };
+
+				// If the server returns JSON entity
+				const contentType = res.headers.get("content-type") || "";
+				if (contentType.includes("application/json")) {
+				return await res.json();
+				}
+				return await res.text(); // fallback
+			} catch (e) {
+				console.error("Error updating number range:", e);
+				return null;
+			}
 		},
 
 		onPressClaimDetails: function () {
@@ -702,6 +912,8 @@ sap.ui.define([
 									// Optional: push km to your model/input if you want
 									var oKm = this.byId("km_input_id");
 									if (oKm) { oKm.setValue(res.km); }
+									var oKm = this.byId("km_input_id");
+									if (oKm) { oKm.setValue(res.km); }
 
 								}.bind(this));
 
@@ -1041,6 +1253,19 @@ sap.ui.define([
 		onClickCancel: function () {
 			this.oDialogFragment.close();
 		},
+		// ++Jefry_Changes
+
+		onClickNavigate: function (oEvent) {
+			let id = oEvent.getParameters().id;
+			if (id === "container-claima---App--dashboard-claim" || id === "application-app-preview-component---App--dashboard-claim") {
+				this.byId("pageContainer").to(this.getView().createId("myreport"));
+			} else if (id === "container-claima---App--dashboard-request" || id === "application-app-preview-component---App--dashboard-request") {
+				this.byId("pageContainer").to(this.getView().createId("myrequest"));
+			}
+
+		}
+
+
 
 	});
 });
