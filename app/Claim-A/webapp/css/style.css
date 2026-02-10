@@ -15,5 +15,10 @@ clickableInput {
     cursor: pointer;
 }
 
-
 /* End added by Jefry Yap */
+
+/* Start added by Aiman Salim */
+/* Make container chains actually fill available height */
+.fullheight { height: 100%; }
+
+/* End added by Aiman Salim */

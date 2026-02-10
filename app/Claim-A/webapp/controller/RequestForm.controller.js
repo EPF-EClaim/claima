@@ -1,14 +1,15 @@
 sap.ui.define([
-    "sap/ui/core/mvc/Controller",
-    "sap/m/MessageToast",
-    "sap/ui/model/json/JSONModel",
-    "sap/m/Dialog",
+	"sap/ui/core/mvc/Controller",
+	"sap/m/MessageToast",
+	"sap/ui/model/json/JSONModel",
+	"sap/m/Dialog",
 	"sap/m/Button",
 	"sap/m/Label", 
 	"sap/ui/core/Fragment",
-  	"sap/ui/export/Spreadsheet",
+	"sap/ui/export/Spreadsheet",
+	"sap/ui/core/BusyIndicator"
 
-], (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet) => {
+], (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator ) => {
     "use strict";
 
     return Controller.extend("claima.controller.RequestForm", {
@@ -28,23 +29,23 @@ sap.ui.define([
 			var pFormFragment = this._formFragments[sFragmentName],
 				oView = this.getView();
 
-				pFormFragment = Fragment.load({
-					id: oView.getId(),
-					name: "claima.fragment." + sFragmentName,
-					type: "XML",
-					controller: this,
-					
-				});
-				this._formFragments[sFragmentName] = pFormFragment;
+			pFormFragment = Fragment.load({
+				id: oView.getId(),
+				name: "claima.fragment." + sFragmentName,
+				type: "XML",
+				controller: this,
+
+			});
+			this._formFragments[sFragmentName] = pFormFragment;
 
 			return pFormFragment;
 		},
 
-		_showFormFragment : function () {
+		_showFormFragment: function () {
 			var oPage = this.byId("request_form");
 
 			oPage.removeAllContent();
-			this._getFormFragment("req_header").then(function(oVBox){
+			this._getFormFragment("req_header").then(function (oVBox) {
 				oPage.insertContent(oVBox, 0);
 			});
 			this._getFormFragment("req_item_list").then(function(oVBox){
@@ -71,7 +72,7 @@ sap.ui.define([
 						text: "Confirm",
 						press: function () {
 							this.oBackDialog.close();
-                            // nav to dashboard
+							// nav to dashboard
 							var oScroll = this.getView().getParent();          // ScrollContainer
 							var oMaybeNav = oScroll && oScroll.getParent && oScroll.getParent(); // NavContainer
 
@@ -81,7 +82,7 @@ sap.ui.define([
 							});
 
 							if (oMainPage) {
-							oMaybeNav.to(oMainPage, "slide");
+								oMaybeNav.to(oMainPage, "slide");
 							}
 
 
@@ -97,7 +98,7 @@ sap.ui.define([
 			}
 
 			this.oBackDialog.open();
-        }, 
+		},
 
 		onSaveRequestDraft: function () {
 			MessageToast.show("save draft")	
@@ -119,7 +120,7 @@ sap.ui.define([
 			// .then(console.log);
 		},
 
-        onDeleteRequest: function () {
+		onDeleteRequest: function () {
 			if (!this.oDeleteDialog) {
 				this.oDeleteDialog = new Dialog({
 					title: "Delete Request",
@@ -135,7 +136,7 @@ sap.ui.define([
 						text: "Delete",
 						press: function () {
 							this.oDeleteDialog.close();
-                            // nav to dashboard
+							// nav to dashboard
 							var oScroll = this.getView().getParent();          // ScrollContainer
 							var oMaybeNav = oScroll && oScroll.getParent && oScroll.getParent(); // NavContainer
 
@@ -145,7 +146,7 @@ sap.ui.define([
 							});
 
 							if (oMainPage) {
-							oMaybeNav.to(oMainPage, "slide");
+								oMaybeNav.to(oMainPage, "slide");
 							}
 
 
@@ -164,7 +165,7 @@ sap.ui.define([
 		},
 
 		onSubmitRequest: function () {
-			MessageToast.show("submit request")	
+			MessageToast.show("submit request")
 		},
 
 		onCancelItem: async function () {
@@ -173,9 +174,9 @@ sap.ui.define([
 			if (oListRoot) {
 				const oParent = oListRoot.getParent();
 				if (oParent && typeof oParent.removeContent === "function") {
-				oParent.removeContent(oListRoot);
+					oParent.removeContent(oListRoot);
 				} else if (oParent && typeof oParent.removeItem === "function") {
-				oParent.removeItem(oListRoot);
+					oParent.removeItem(oListRoot);
 				}
 				oListRoot.destroy();
 
@@ -641,57 +642,55 @@ sap.ui.define([
 
 			oModel.setProperty("/participant", aRows);
 			oTable.clearSelection();
-        },
+		},
 
-		// ==================================================
-		// Excel Template Logic
-		// ==================================================
+		onCancel: async function () {
 
-		onDownloadTemplate: function () {
-			// Define 3 columns
-			const aColumns = [
-				{
-					label: "PARTICIPANTS_ID",
-					property: "Participant",
-					type: "string"
-				},
-				{
-					label: "Allocated Amount (MYR)",
-					property: "Amount",
-					type: "number", 
-					scale: 2,
-					delimiter: true
+			const oPage = this.byId("request_form");
+
+			// 2) Remove the existing list fragment if present
+			//    Make sure the root control inside the fragment has id="--request_item_list_fragment"
+			const oListRoot = this.byId("request_create_item_fragment");
+			if (oListRoot) {
+				// Remove from its immediate parent aggregation
+				const oParent = oListRoot.getParent();
+				if (oParent && typeof oParent.removeContent === "function") {
+					oParent.removeContent(oListRoot);
+				} else if (oParent && typeof oParent.removeItem === "function") {
+					oParent.removeItem(oListRoot);
 				}
-			];
+				oListRoot.destroy(); // free resources
+			}
 
-			// Create an empty data set (just headers). If you want N empty rows, provide empty objects.
-			const iEmptyRows = 10; // change to e.g., 10 for 10 blank rows
-			const aData = Array.from({ length: iEmptyRows }, () => ({
-				Participant: "",
-				CostCenter: "",
-				Amount: null
-			}));
+			// 3) Insert the create-item fragment deterministically
+			try {
+				const oVBox = await this._getFormFragment("req_item_list"); // returns a control
 
-			const oModel = new JSONModel(aData);
+				// Put it right after the header (index 1), or at the end if not enough content
+				const iIndex = Math.min(1, oPage.getContent().length);
+				oPage.insertContent(oVBox, iIndex);
+			} catch (e) {
+				// if _getFormFragment rejects
+				sap.m.MessageToast.show("Could not open Create Item form.");
+				return;
+			}
 
-			const oSettings = {
-				workbook: {
-				columns: aColumns,
-				context: {
-					sheetName: "Template"
-				}
-				},
-				dataSource: oModel.getData(),
-				fileName: "ClaimTemplate.xlsx",
-				worker: true // use a Web Worker for large exports
-			};
+			const oModel = this.getView().getModel();
+			oModel.setProperty("/control/0/view", 'list');
+		},
 
-			const oSheet = new Spreadsheet(oSettings);
-			oSheet.build()
-				.then(() => oSheet.destroy())
-				.catch((err) => {
-				// Optional: handle errors
-				sap.m.MessageBox.error("Export failed: " + err);
+		onSave: function () {
+			// ... validate & persist your item ...
+			// Then navigate back:
+
+			const oModel = this.getView().getModel(); // JSONModel
+			const aRows = oModel.getProperty("/req_item_rows") || [];
+
+			aRows.push({
+				claim_type: "Testing Claim Type",
+				est_amount: 100,
+				currency_code: "MYR",
+				est_no_of_participant: 100
 			});
 		},
 		

@@ -70,40 +70,12 @@ modules:
     build-result: resources
     requires:
     - artifacts:
-      - test1.zip
-      name: test1
+      - claima.zip
+      name: claima
       target-path: resources/
-    - artifacts:
-      - project1.zip
-      name: project1
-      target-path: resources/
-    - artifacts:
-      - eclaim.zip
-      name: eclaim
-      target-path: resources/
-- name: test1
+- name: claima
   type: html5
-  path: app/test-1
-  build-parameters:
-    build-result: dist
-    builder: custom
-    commands:
-    - npm install
-    - npm run build:cf
-    supported-platforms: []
-- name: project1
-  type: html5
-  path: app/project1
-  build-parameters:
-    build-result: dist
-    builder: custom
-    commands:
-    - npm install
-    - npm run build:cf
-    supported-platforms: []
-- name: eclaim
-  type: html5
-  path: app/eclaim
+  path: app/claima
   build-parameters:
     build-result: dist
     builder: custom

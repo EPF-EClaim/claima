@@ -7,18 +7,16 @@
         id="myexpenserepo"
         headerExpanded="false"
         fitContent="true"
-        
     >
         <f:content>
-            <!-- Using sap.m.Table for JSONModel testing -->
-            <!-- items="{myRequest>/requests}" -->
             <Table
                 id="tb_myexpensetrepo"
-                headerText="My Expense Report"
+                headerText="My Claim Status"
                 mode="SingleSelectMaster"
                 width="auto"
                 items="{path:'employee>/ZCLAIM_HEADER', parameters: {
-                $count: true }}"
+                $count: true,
+                $select: 'CATEGORY,CLAIM_ID,CLAIM_DATE,STATUS_ID,TOTAL' }}"
                 itemPress="onRowPress"
             >
                 <columns>
@@ -44,15 +42,14 @@
                         type="Active"
                     >
                         <cells>
-                            <!-- <Text text="{myRequest>reportpurpose}" />
-                            <Text text="{myRequest>reportid}" />
-                            <Text text="{myRequest>startdate}" />
-                            <Text text="{myRequest>status}" />
-                            <Text text="{myRequest>amount}" /> -->
-
                             <Text text="{employee>CATEGORY}" />
                             <Text text="{employee>CLAIM_ID}" />
-                            <Text text="{employee>CLAIM_DATE}" />
+                            <Text text="{
+                            
+                                path: 'employee>CLAIM_DATE', 
+                                type: 'sap.ui.model.odata.type.Date',
+                                formatOptions: { pattern: 'dd MMM yyyy' }
+                                }" />
                             <Text text="{employee>STATUS_ID}" />
                             <Text text="{employee>TOTAL}" />
                         </cells>
