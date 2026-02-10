@@ -36,7 +36,8 @@ entity ZREQUEST_HEADER {
         REQUEST_GROUP_ID       : UUID;
         ALTERNATE_COST_CENTRE  : String;
         AMOUNT                 : String;
-        ATTACHMENT             : String;
+        ATTACHMENT1            : String;
+        ATTACHMENT2            : String;
         LOCATION               : String;
         TYPE_OF_TRANSPORTATION : String;
         ZCLAIM_TYPE            : Association to one ZCLAIM_TYPE

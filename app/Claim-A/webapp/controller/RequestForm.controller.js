@@ -13,18 +13,8 @@ sap.ui.define([
 
     return Controller.extend("claima.controller.RequestForm", {
         async onInit() {
+			const sUserId = sap.ushell.Container.getUser().getId();
 			
-			var oRequestItemPart = new JSONModel({
-				"participant" : [
-					{
-						"PARTICIPANT_ID": "",
-						"ALLOCATED_AMOUNT": ""
-					}
-				]
-			});
-			this.getOwnerComponent().getModel('request').setProperty('/participant', oRequestItemPart);
-
-            
 			// show header
 			this._formFragments = {};
 			this._showFormFragment();
@@ -32,6 +22,7 @@ sap.ui.define([
 
 		// ==================================================
 		// Initiate Fragment in the view
+		// ==================================================
 
 		_getFormFragment: function (sFragmentName) {
 			var pFormFragment = this._formFragments[sFragmentName],
@@ -225,6 +216,7 @@ sap.ui.define([
 
 		// ==================================================
 		// Item List Button Logic
+		// ==================================================
 
 		onPressAddItem: async function () {
 			
@@ -397,6 +389,7 @@ sap.ui.define([
 			this._getItemList(req_header.reqid);
 			const oModel = this.getOwnerComponent().getModel('request');
 			oModel.setProperty("/view", 'list');
+			oModel.refresh(true);
         },
 
         onSave: function () {
@@ -484,6 +477,7 @@ sap.ui.define([
 
 		// ==================================================
 		// Delete Participant Row Logic
+		// ==================================================
 
 		onRowDeleteParticipant: function (oEvent) {
             const oTable   = this.byId("req_participant_table");
@@ -556,6 +550,13 @@ sap.ui.define([
 				}
 			});
 
+			if (aRows.length === 0) {
+                aRows.push({
+					PARTICIPANT_ID: "",
+					ALLOCATED_AMOUNT: ""
+                });
+            }
+
 			oModel.setProperty("/participant", aRows);
 			oTable.clearSelection();
         },
@@ -613,7 +614,7 @@ sap.ui.define([
 		},
 		
 		// ==================================================
-		// Get Data
+		// Get List Data
 		// ==================================================
 
 		_getItemList: async function (req_id) {
@@ -713,7 +714,6 @@ sap.ui.define([
 			}
 			
 			const oModel = this.getOwnerComponent().getModel('request');
-			var view = oModel.getProperty("/view");
 
 			if(oModel.getProperty("/view") != 'view') {
 				oModel.setProperty("/view", 'create');
@@ -760,11 +760,33 @@ sap.ui.define([
 					}
 					return response.json();
 				})
-				.then((res) => {
+				.then(async (res) => {
 					// Success Logic
 					const oModel = this.getOwnerComponent().getModel('request');
 					oModel.setProperty("/view", 'list');
 					this.updateCurrentReqNumber('NR03', result.current);
+					
+					var participant_list = oModel.getProperty("/participant");
+					var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
+					var sServiceUrl = sBaseUri.replace(/\/$/, "") + "/ZREQ_ITEM_PART";
+					
+					for (const row of participant_list) {
+						const res = await fetch(sServiceUrl, {
+							method: "POST",
+							headers: { "Content-Type": "application/json", "Accept": "application/json" },
+							body: JSON.stringify({
+								REQUEST_ID 			: String(oReqModel.req_header.reqid),
+								REQUEST_SUB_ID		: String(result.result),
+								PARTICIPANTS_ID		: row.PARTICIPANTS_ID,
+								ALLOCATED_AMOUNT	: row.ALLOCATED_AMOUNT
+							})
+						});
+						if (!res.ok) {
+							const text = await res.text();
+							throw new Error(`Failed to create: HTTP ${res.status} - ${text}`);
+						}
+					}
+
 					sap.m.MessageToast.show("Saved Successfully");
 				})
 				.catch(err => {
@@ -777,10 +799,10 @@ sap.ui.define([
 			var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
 			var sServiceUrl = sBaseUri.replace(/\/$/, "") + "/ZREQ_ITEM_PART";
 			var oPayload = {
-				"REQUEST_ID": String(oReqModel.req_item.req_id),
-				"REQUEST_SUB_ID": String(oReqModel.req_item.req_subid),
-				"PARTICIPANT_ID": oReqModel.participant.PARTICIPANT_ID,
-				"ALLOCATED_AMOUNT": parseFloat(oReqModel.participant.ALLOCATED_AMOUNT || 0),
+				"REQUEST_ID": String(oReqModel.req_id),
+				"REQUEST_SUB_ID": String(oReqModel.req_subid),
+				"PARTICIPANTS_ID": oReqModel.participant_id,
+				"ALLOCATED_AMOUNT": parseFloat(oReqModel.alloc_amount || 0),
 			};
 			fetch(sServiceUrl, {
 				method: "POST",

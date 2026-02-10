@@ -19,4 +19,6 @@ service eclaim_srv {
     entity ZNUM_RANGE      as projection on ECLAIM.ZNUM_RANGE;
 
     entity ZCLAIM_PURPOSE  as projection on ECLAIM.ZCLAIM_PURPOSE;
+
+    entity ZREQ_ITEM_PART  as projection on ECLAIM.ZREQ_ITEM_PART;
 }
