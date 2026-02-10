@@ -16,10 +16,10 @@
                 <Button id="req_back_scr"       type="Back"         text="Back"             press=".onBackView"             visible="{= ${request>/view} === 'view' }"/>
                 <Button id="req_back"           type="Back"         text="Back"             press=".onBack"                 visible="{= ${request>/view} === 'list' }"/>
                 <Button id="req_save_draft"     type="Default"      text="Save Draft"       press=".onSaveRequestDraft"     visible="{= ${request>/view} === 'list' }"/>
-                <Button id="req_delete"         type="Reject"       text="Delete Request"   press=".onDeleteRequest"        visible="{= ${request>/view} === 'list' }"/>
-                <Button id="req_submit"         type="Emphasized"   text="Submit Request"   press=".onSubmitRequest"        visible="{= ${request>/view} === 'list' }"/>
+                <Button id="req_delete"         type="Default"      text="Delete Request"   press=".onDeleteRequest"        visible="{= ${request>/view} === 'list' }"/>
+                <Button id="req_submit"         type="Default"      text="Submit Request"   press=".onSubmitRequest"        visible="{= ${request>/view} === 'list' }"/>
                 <Button id="req_item_cancel"    type="Default"      text="Cancel"           press=".onCancelItem"           visible="{= ${request>/view} === 'create' }"/>
-                <Button id="req_item_save"      type="Emphasized"   text="Save"             press=".onSaveItem"             visible="{= ${request>/view} === 'create' }"/>
+                <Button id="req_item_save"      type="Default"      text="Save"             press=".onSaveItem"             visible="{= ${request>/view} === 'create' }"/>
             </OverflowToolbar>
         </footer>
     </Page>

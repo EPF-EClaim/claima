@@ -33,22 +33,22 @@
         {"claim_type": "Testing Claim Type 05", "claim_type_item": "CTI01", "est_amount": 10300,  "currency_code": "MYR", "est_no_of_participant": 10}
     ],
     "req_item": {
+        "req_id": "",
+        "req_subid": "",
         "claim_type": "",
         "claim_type_item": "",
         "est_amount": 0,
-        "cash_adv": false,
+        "est_no_participant": 0,
+        "cash_advance": false,
         "start_date": "",
         "end_date": "",
         "location": "",
-        "participant_amt": 0,
         "remarks": ""
     },
     "participant" : [
         {
-            "req_item_row": 0,
-            "participant_name": "",
-            "emp_cost_center": "",
-            "alloc_amount": ""
+            "PARTICIPANT_ID": "",
+            "ALLOCATED_AMOUNT": ""
         }
     ]
 }

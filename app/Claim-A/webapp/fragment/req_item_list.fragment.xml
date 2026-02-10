@@ -43,8 +43,7 @@
                     <table:Column  width="25rem">
                         <m:Label text="{i18n>req_i_claim_type}"></m:Label>
                         <table:template>
-                            <!-- <m:Text text="{TYPE_OF_TRANSPORTATION}" wrapping="false" /> -->
-                            <m:Text text="{request>REQUEST_ID}" wrapping="false" />
+                            <m:Text text="{request>CLAIM_TYPE_ID}" wrapping="false" />
                         </table:template>
                     </table:Column>
                     <table:Column  width="25rem">
@@ -56,20 +55,20 @@
                     <table:Column  width="15rem">
                         <m:Label text="{i18n>req_i_est_amt}"></m:Label>
                         <table:template>
-                            <m:Text text="MYR {request>AMOUNT}" textDirection="RTL"></m:Text>
-                            <!-- <unified:Currency value="{request>AMOUNT}"/> -->
+                            <unified:Currency value="{request>EST_AMOUNT}" 
+                                              currency="MYR" 
+                                              useSymbol="true"/>
                         </table:template>
                     </table:Column>
                     <table:Column  width="15rem">
                         <m:Label text="{i18n>req_i_estparticipant}"></m:Label>
                         <table:template>
-                            <m:Text text="{request>TYPE_OF_TRANSPORTATION}" wrapping="false" />
+                            <m:Text text="{request>EST_NO_PARTICIPANT}" />
                         </table:template>
                     </table:Column>
                     <table:rowActionTemplate>
                         <table:RowAction> 
                             <table:items>
-                                <!-- <table:RowActionItem icon="sap-icon://edit" text="{i18n>req_b_edit}"        press=".onSelectEdit"/> -->
                                 <table:RowActionItem type="Delete"      press=".onRowDeleteReqItem" visible="{= ${request>/view} !== 'view' }"/>
                                 <table:RowActionItem type="Navigation"  press=".navToItemDetail"/>
                             </table:items>

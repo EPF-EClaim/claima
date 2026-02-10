@@ -946,38 +946,40 @@ sap.ui.define([
         },
 
 		createRequestHeader:  function (oInputData, oReqModel) {
-			this.getCurrentReqNumber().then((result) => {
+			this.getCurrentReqNumber('NR01').then((result) => {
 				if (result) {
 					oReqModel.setProperty("/req_header/reqid", result.reqNo);
 					oReqModel.setProperty("/req_header/reqstatus", "Draft")
 
-					// Write to Database Table ZREQUEST_HEADER
+					// // Write to Database Table ZREQUEST_HEADER
 					// var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
 					// var sServiceUrl = sBaseUri + "/ZREQUEST_HEADER"; 
 
 					// fetch(sServiceUrl, 
 					// 	{method: "POST", headers: {"Content-Type": "application/json"},
 					// 	body: JSON.stringify({
-					// 		EMP_ID                 : "000001",
-					// 		REQUEST_ID             : oInputData.req_header.reqid,
-					// 		REQUEST_TYPE_ID        : oInputData.req_header.reqtype,
-					// 		REFERENCE_NUMBER       : "100236",
-					// 		OBJECTIVE_PURPOSE      : oInputData.req_header.purpose,
-					// 		START_DATE             : oInputData.req_header.tripstartdate,
-					// 		END_DATE               : oInputData.req_header.tripenddate,
-					// 		REMARK                 : oInputData.req_header.comment,
-					// 		CLAIM_TYPE_ID          : "",
-					// 		REQUEST_GROUP_ID       : oInputData.req_header.grptype,
-					// 		ALTERNATE_COST_CENTRE  : oInputData.req_header.altcostcenter,
-					// 		AMOUNT                 : String(oInputData.req_header.totalamt),
-					// 		ATTACHMENT             : oInputData.req_header.doc1,
-					// 		LOCATION               : oInputData.req_header.location,
-					// 		TYPE_OF_TRANSPORTATION : oInputData.req_header.transport,
-					// 		ZCLAIM_TYPE   		   : "",
-					// 		ZREQUEST_ITEM 		   : "",
-					// 		ZREQUEST_TYPE 		   : "",
-					// 		ZREQUEST_GRP  		   : "",
-					// 		ZCLAIM_HEADER 		   : ""
+					// 		EMP_ID                 	: "00001",
+					// 		REQUEST_ID             	: oInputData.req_header.reqid,
+					// 		REQUEST_TYPE_ID        	: oInputData.req_header.reqtype,
+					// 		REFERENCE_NUMBER       	: "",
+					// 		OBJECTIVE_PURPOSE      	: oInputData.req_header.purpose,
+					// 		REMARK                 	: oInputData.req_header.comment,
+					// 		REQUEST_GROUP_ID       	: oInputData.req_header.grptype,
+					// 		ALTERNATE_COST_CENTRE  	: oInputData.req_header.altcostcenter,
+					// 		LOCATION               	: oInputData.req_header.location,
+					// 		TYPE_OF_TRANSPORTATION 	: oInputData.req_header.transport,
+					// 		ATTACHMENT1            	: oInputData.req_header.doc1,
+					// 		ATTACHMENT2            	: oInputData.req_header.doc2,
+					// 		CASH_ADVANCE		   	: oInputData.req_header.cashadvamt,
+					// 		CASH_ADVANCE_DATE	   	: "",
+					// 		COST_CENTER            	: oInputData.req_header.costcenter,
+					// 		EVENT_START_DATE		: oInputData.req_header.eventstartdate,
+					// 		EVENT_END_DATE			: oInputData.req_header.eventenddate,
+					// 		TRIP_START_DATE         : oInputData.req_header.tripstartdate,
+					// 		TRIP_END_DATE           : oInputData.req_header.tripenddate,
+					// 		REQUEST_AMOUNT			: oInputData.req_header.reqamt,
+					// 		TOTAL_AMOUNT            : oInputData.req_header.totalamt,
+					// 		STATUS					: oInputData.req_header.status
 					// 	}) 
 					// })
 					// .then(r => r.json())
@@ -1002,7 +1004,7 @@ sap.ui.define([
 			});
 		},
 
-		getCurrentReqNumber: async function () {
+		getCurrentReqNumber: async function (range_id) {
 			const sBaseUri = this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri || "/odata/v4/EmployeeSrv/";
 			const sServiceUrl = sBaseUri.replace(/\/$/, "") + "/ZNUM_RANGE";
 
@@ -1015,7 +1017,7 @@ sap.ui.define([
 
 				const data = await response.json();
 
-				const nr01 = (data.value || data).find(x => x.RANGE_ID === "NR01");
+				const nr01 = (data.value || data).find(x => x.RANGE_ID === range_id);
 				if (!nr01 || nr01.CURRENT == null) {
 					throw new Error("NR01 not found or CURRENT is missing");
 				}
@@ -1098,8 +1100,10 @@ sap.ui.define([
 			// Build the full URL, encode ONLY the filter expression
 			const base = new URL(sServiceUrl, window.location.origin).toString();
 			const filterExpr = `REQUEST_ID eq ${sLiteral}`; // keep spaces here
+			const orderbyExpr = "REQUEST_SUB_ID asc";
 			const query = [
 				`$filter=${encodeURIComponent(filterExpr)}`,     // spaces -> %20 (no '+')
+				`$orderby=${encodeURIComponent(orderbyExpr)}`,
 				`$count=true`,
 				`$format=json`                                  // helps some SAP GW setups
 			].join("&");
@@ -1116,8 +1120,18 @@ sap.ui.define([
 				const data = await response.json();
 				const aItems = Array.isArray(data.value) ? data.value : [];
 				this.getOwnerComponent().getModel('request').setProperty("/req_item_rows", aItems);
-				var test = this.getOwnerComponent().getModel('request').getProperty('/req_item_rows');
-				return aItems;
+				var aRows = this.getOwnerComponent().getModel('request').getProperty('/req_item_rows');
+				// parse back the data type if it is not string
+				aRows.forEach(function(oItem) {
+					if(oItem.EST_AMOUNT) {
+						oItem.EST_AMOUNT = parseFloat(oItem.EST_AMOUNT);
+					}
+					if (oItem.EST_NO_PARTICIPANT) {
+						oItem.EST_NO_PARTICIPANT = parseInt(oItem.EST_NO_PARTICIPANT);
+					}
+				});
+				this.getOwnerComponent().getModel('request').setProperty("/req_item_rows", aRows);
+				// return aItems;
 			} catch (err) {
 				console.error("Fetch failed:", err, { url: fullUrl });
 				this.getView().getModel().setProperty("/req_item_rows", []);

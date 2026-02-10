@@ -53,21 +53,20 @@ entity ZREQUEST_HEADER {
 
 entity ZREQUEST_ITEM {
     key REQUEST_ID             : String;
-    key CLAIM_TYPE_ITEM_ID     : String;
-        AMOUNT                 : Decimal;
-        TYPE_OF_TRANSPORTATION : String;
-        ATTACHMENT             : String;
+    key REQUEST_SUB_ID         : String;
+        CLAIM_TYPE_ITEM_ID     : String;
+        EST_AMOUNT             : Decimal;
+        EST_NO_PARTICIPANT     : Integer;
+        CLAIM_TYPE_ID          : String;
         ZREQ_ITEM_PART         : Composition of many ZREQ_ITEM_PART
                                      on  ZREQ_ITEM_PART.REQUEST_ID         = REQUEST_ID
-                                     and ZREQ_ITEM_PART.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID;
+                                     and ZREQ_ITEM_PART.REQUEST_SUB_ID     = REQUEST_SUB_ID;
 }
 
 entity ZREQ_ITEM_PART {
     key REQUEST_ID           : String;
-    key CLAIM_TYPE_ITEM_ID   : String;
+    key REQUEST_SUB_ID       : String;
     key PARTICIPANTS_ID      : String;
-        PARTICIPANTS         : String;
-        EMPLOYEE_COST_CENTER : String;
         ALLOCATED_AMOUNT     : Decimal;
 }
 

@@ -31,7 +31,7 @@
                     editable="true">
 
                     <form:layout>
-                        <form:ColumnLayout ></form:ColumnLayout>
+                        <form:ColumnLayout columnsL="2" columnsM="2"></form:ColumnLayout>
                     </form:layout>
 
                     <form:formContainers>
@@ -41,7 +41,8 @@
                                 <!-- Claim Type -->
                                 <form:FormElement label="{i18n>req_i_claim_type}" >
                                     <form:fields>
-                                        <m:Select enabled="{= ${request>/view} !== 'view' }">
+                                        <m:Select enabled="{= ${request>/view} !== 'view' }"
+                                                  selectedKey="{request>/req_item/claim_type}">
                                             <items>
                                                 <core:Item key="CT1" text="Claim Type 1"/>
                                                 <core:Item key="CT2" text="Claim Type 2"/>
@@ -55,7 +56,12 @@
                                 <!-- Estimated Amount -->
                                 <form:FormElement label="{i18n>req_i_est_amt}">
                                     <form:fields>
-                                        <m:Input id="estAmount" type="Number" textAlign="Begin" enabled="{= ${request>/view} !== 'view' }"/>
+                                        <m:Input 
+                                            id="estAmount" 
+                                            type="Number" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/est_amount}"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -67,7 +73,7 @@
                                             displayFormat="dd MMM yyyy"
                                             valueFormat="yyyy-MM-dd"
                                             placeholder="dd MMM yyyy"
-                                            value="{request>/tripstartdate}"
+                                            value="{request>/req_item/start_date}"
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
@@ -76,21 +82,32 @@
                                 <!-- Location -->
                                 <form:FormElement label="{i18n>req_i_location}">
                                     <form:fields>
-                                        <m:Input id="i_location" textAlign="Begin" enabled="{= ${request>/view} !== 'view' }"/>
+                                        <m:Input 
+                                            id="i_location" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/location}"/>
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Estimated Participants -->
                                 <form:FormElement label="{i18n>req_i_estparticipant}">
                                     <form:fields>
-                                        <m:Input id="estNoOfParticipant" type="Number" textAlign="Begin" enabled="{= ${request>/view} !== 'view' }"/>
+                                        <m:Input 
+                                            id="estNoOfParticipant" 
+                                            type="Number" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/est_no_participant}"/>
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Claim Type Item -->
                                 <form:FormElement label="{i18n>req_i_claim_type_item}">
                                     <form:fields>
-                                        <m:Select enabled="{= ${request>/view} !== 'view' }">
+                                        <m:Select 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            selectedKey="{request>/req_item/claim_type_item_id}">
                                             <items>
                                                 <core:Item key="CI1" text="Claim Type Item 1"/>
                                                 <core:Item key="CI2" text="Claim Type Item 2"/>
@@ -104,7 +121,7 @@
                                 <!-- Cash Advance -->
                                 <form:FormElement label="{i18n>req_i_cashadv}">
                                     <form:fields>
-                                        <m:Select id="cash_adv" selectedKey="no_cashadv" enabled="{= ${request>/view} !== 'view' }">
+                                        <m:Select id="cash_adv" selectedKey="{request>/req_item/cash_advance}" enabled="{= ${request>/view} !== 'view' }">
                                             <items>
                                                 <core:Item key="no_cashadv" text="No"/>
                                                 <core:Item key="yes_cashadv" text="Yes"/>
@@ -121,7 +138,7 @@
                                             displayFormat="dd MMM yyyy"
                                             valueFormat="yyyy-MM-dd"
                                             placeholder="dd MMM yyyy"
-                                            value="{request>/tripstartdate}"
+                                            value="{request>/req_item/end_date}"
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
@@ -130,7 +147,11 @@
                                 <!-- Remarks -->
                                 <form:FormElement label="{i18n>req_i_remarks}">
                                     <form:fields>
-                                        <m:TextArea id="i_remarks" textAlign="Begin" enabled="{= ${request>/view} !== 'view' }"/>
+                                        <m:TextArea 
+                                            id="i_remarks" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/remark}"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -168,7 +189,7 @@
                         <table:Column width="25rem">
                             <Label text="{i18n>req_p_name}"></Label>
                             <table:template>
-                                <Input id="participant_name" textAlign="Begin" value="{request>participant_name}" change=".appendNewRow"></Input>
+                                <Input id="participant_name" textAlign="Begin" value="{request>PARTICIPANT_ID}" change=".appendNewRow"></Input>
                             </table:template>
                         </table:Column>
                         <table:Column width="25rem">
@@ -180,7 +201,7 @@
                         <table:Column width="25rem">
                             <Label text="{i18n>req_p_alloc_amt}"></Label>
                             <table:template>
-                                <Input id="alloc_amount" textAlign="End" value="{request>alloc_amount}" type="Number"></Input>
+                                <Input id="alloc_amount" textAlign="End" value="{request>ALLOCATED_AMOUNT}" type="Number"></Input>
                             </table:template>
                         </table:Column>
                         <table:rowActionTemplate>
