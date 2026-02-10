@@ -357,12 +357,12 @@ sap.ui.define([
 			this.oDialog_ClaimProcess.close();
 
 			// load Claim Submission dialog
-			this.oDialog ??= await this.loadFragment({
-				name: "claima.fragment.createreport",
-				// name: "claima.fragment.claimsubmission_claimsubmission",
+			this.oDialog_ClaimSubmission ??= await this.loadFragment({
+				// name: "claima.fragment.createreport",
+				name: "claima.fragment.claimsubmission_claimsubmission",
 			});
-			if (this.oDialog) {
-				this.oDialog.open();
+			if (this.oDialog_ClaimSubmission) {
+				this.oDialog_ClaimSubmission.open();
 			}
 		},
 
@@ -485,8 +485,40 @@ sap.ui.define([
 			}
 		},
 
-		onCreateReport_Cancel: function () {
-			this.oDialog.close();
+		onClaimSubmission_ClaimSubmission: async function () {
+			// validate input data
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+
+			// reset Claim Submission dialog before closing
+			this._resetClaimSubmission();
+			this.oDialog_ClaimProcess.close();
+
+			// navigate to the detail page that contains report.fragment
+			const oDetailPage = this.byId("expensereport");
+			if (!oDetailPage) {
+				sap.m.MessageToast.show("Detail page 'expensereport' not found.");
+				return;
+			}
+			this.byId("pageContainer").to(oDetailPage);
+		},
+
+		onCancel_ClaimSubmission: function () {
+			this._resetClaimSubmission();
+			this.oDialog_ClaimSubmission.close();
+		},
+
+		_resetClaimSubmission: function () {
+			// reset input fields
+			this.byId("input_claimsubmission_purpose").setValue(null);
+			this.byId("datepicker_claimsubmission_startdate").setValue(null);
+			this.byId("datepicker_claimsubmission_enddate").setValue(null);
+			this.byId("input_claimsubmission_altcc").setValue(null);
+			this.byId("select_claimsubmission_category").setSelectedItem(null);
+			this.byId("input_claimsubmission_amtapproved").setValue(null);
+			this.byId("input_claimsubmission_comment").setValue(null);
+
+			// disable 'Attachment Email Approval' button
+			this.byId("button_claimsubmission_attachment").setEnabled(false);
 		},
 		//// end Functions - Claim Submission (dialog)
 		// end Functions - Claim Submission
