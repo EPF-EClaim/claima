@@ -10,6 +10,8 @@ service eclaim_srv {
 
     entity ZCLAIM_TYPE     as projection on ECLAIM.ZCLAIM_TYPE;
 
+    entity ZCLAIM_TYPE_ITEM as projection on ECLAIM.ZCLAIM_TYPE_ITEM;
+
     entity ZREQUEST_ITEM   as projection on ECLAIM.ZREQUEST_ITEM;
 
     entity ZREQUEST_GRP    as projection on ECLAIM.ZREQUEST_GRP;

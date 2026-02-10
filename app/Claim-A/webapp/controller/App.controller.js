@@ -285,6 +285,11 @@ sap.ui.define([
 				});
 				this.byId("select_claimprocess_claimitem").setEditable(true);
 
+				// clear claim item category if new claim type selected
+				if (this.byId("input_claimprocess_category").getValue().length > 0) {
+					this.byId("input_claimprocess_category").setValue("");
+				}
+
 				// disable 'Start Claim' button if new claim type selected 
 				if (this.byId("select_claimprocess_claimitem").getEnabled()) {
 					this.byId("button_claimprocess_startclaim").setEnabled(false);
@@ -305,6 +310,25 @@ sap.ui.define([
 		},
 
 		onStartClaim_ClaimProcess: async function () {
+			// validate input data
+			var oInputModel = this.getView().getModel("input");
+			//// get claim type/item description
+			oInputModel.setProperty("/claimtype_desc",this.byId("select_claimprocess_claimtype")._getSelectedItemText());
+			oInputModel.setProperty("/claimitem_desc",this.byId("select_claimprocess_claimitem")._getSelectedItemText());
+			//// get claim type category
+			switch (this.byId("input_claimprocess_category").getValue()) {
+				case this.getView().getModel("i18n").getResourceBundle().getText("value_claimprocess_category_direct"):
+					oInputModel.setProperty("/category","DIRECT");
+					break;
+				default:
+					oInputModel.setProperty("/category","");
+					break;
+			}
+
+			// set as current data
+			var oCurrentModel = this.getView().getModel("current");
+			oCurrentModel.setData(oInputModel.getData());
+			
 			// reset Claim Process dialog before closing
 			this._resetClaimProcess();
 			this.oDialog_ClaimProcess.close();

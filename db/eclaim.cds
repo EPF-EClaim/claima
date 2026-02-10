@@ -84,6 +84,12 @@ entity ZCLAIM_TYPE {
         CLAIM_TYPE_DESC : String;
 }
 
+entity ZCLAIM_TYPE_ITEM {
+    key CLAIM_TYPE_ID_CLAIM_TYPE_ID : String;
+    key CLAIM_TYPE_ITEM_ID          : String;
+        CLAIM_TYPE_ITEM_DESC        : String;
+}
+
 entity ZREQUEST_GRP {
     key REQUEST_GROUP_ID   : String;
         REQUEST_GROUP_DESC : String;
