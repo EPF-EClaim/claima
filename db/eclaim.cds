@@ -293,9 +293,9 @@ entity ZCLAIM_DISCLAIMER : managed {
 entity ZLODGING_CAT : managed {
     key LODGING_CATEGORY_ID   : String  @mandatory  @Common.Label: 'Lodging Category ID';
         LODGING_CATEGORY_DESC : String  @Common.Label: 'Lodging Category Description';
-        START_DATE            : Date;
-        END_DATE              : Date;
-        STATUS                : String;
+        START_DATE            : Date @Common.Label: 'Start Date';
+        END_DATE              : Date @Common.Label: 'End Date';
+        STATUS                : String @Common.Label: 'Status';
 }
 
 entity ZCOST_CENTER : managed {
