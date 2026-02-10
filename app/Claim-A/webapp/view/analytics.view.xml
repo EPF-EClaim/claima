@@ -1,0 +1,65 @@
+<mvc:View
+    controllerName="claima.controller.analytics"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:f="sap.f"
+    xmlns:cards="sap.f.cards"
+    xmlns:core="sap.ui.core">
+
+    <ScrollContainer id="analytics" class="sapUiContentPadding" height="100%">
+        <Title text="{i18n>ana_poptitle}" titleStyle="H3" />
+
+        <VBox width="100%" class="sapUiSmallMarginTop" >
+
+            <!-- 1. Claims Report Summary -->
+            <f:Card class="sapUiSmallMargin" width="auto" >
+                <f:content>
+                    <Button
+                        type="Transparent"
+                        width="auto"
+                        press=".onOpenAnalytics1"
+                        text="{i18n>ana_title1}"
+                        
+                    />
+                </f:content>
+            </f:Card>
+
+            <!-- 2. Claims Report Details -->
+            <f:Card class="sapUiSmallMargin" width="auto">
+                <f:content>
+                    <Button
+                        type="Transparent"
+                        width="auto"
+                        press=".onOpenAnalytics2"
+                        text="{i18n>ana_title2}"
+                    />
+                </f:content>
+            </f:Card>
+
+            <!-- 3. Pre-Approved Request Summary -->
+            <f:Card class="sapUiSmallMargin" width="auto">
+                <f:content>
+                    <Button
+                        type="Transparent"
+                        width="auto"
+                        press=".onOpenAnalytics3"
+                        text="{i18n>ana_title3}"
+                    />
+                </f:content>
+            </f:Card>
+
+            <!-- 4. Pre-Approved Request Details -->
+            <f:Card class="sapUiSmallMargin" width="auto">
+                <f:content>
+                    <Button
+                        type="Transparent"
+                        width="auto"
+                        press=".onOpenAnalytics4"
+                        text="{i18n>ana_title4}"
+                    />
+                </f:content>
+            </f:Card>
+
+        </VBox>
+    </ScrollContainer>
+</mvc:View>

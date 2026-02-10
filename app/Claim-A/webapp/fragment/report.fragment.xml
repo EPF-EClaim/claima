@@ -1,10 +1,11 @@
-<core:FragmentDefinition
+<core:FragmentDefinition xmlns:unified="sap.ui.unified"
     xmlns:l="sap.ui.layout"
     xmlns:core="sap.ui.core"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
-    xmlns:card="sap.f.cards">
+    xmlns:card="sap.f.cards"
+    >
     <VBox class="roundedBox sapUiSmallMargin" id="report" binding="{current>/}" width="auto" rowGap="1rem" backgroundDesign="Solid" height="60%">
         <HBox width="100%">
             <VBox
@@ -14,7 +15,7 @@
                     id="FormDisplay354wideDual"
                     editable="false">
                     <f:title>
-                        <core:Title text="{i18n>expensereport}" />
+                        <core:Title text="{i18n>claimreport}" level="H3"/>
                     </f:title>
                     <f:layout>
                         <f:ResponsiveGridLayout

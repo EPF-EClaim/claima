@@ -209,6 +209,11 @@ sap.ui.define([
 				case "config": // your configuration menu				
 					this.onClickConfiguration();						
 					break;
+				// Start Aiman Salim 10/02/2026 - Added for analytics
+				case "analytics":
+					this.onClickAnalytics();
+					break;
+				// End 	 Aiman Salim 10/02/2026 - Added for analytics
 				default:
 					// navigate to page with ID same as the key
 					var oPage = this.byId(oKey); // make sure your NavContainer has a page with this ID
@@ -226,6 +231,15 @@ sap.ui.define([
 				});
 			}
 			oPageContainer.to(this.byId("configurationPage"));	
+		},
+		// Analytics App
+		onClickAnalytics: async function () {
+			var oPageContainer = this.byId("pageContainer");
+			if (!this.byId("analyticsPage")) {
+				var oPage = new sap.m.Page(this.createId("analyticsPage"), {
+				});
+			}
+			oPageContainer.to(this.byId("analyticsPage"));	
 		},
 		// onNavCreateReport: async function () {
 		// 	if (!this.oDialogFragment) {

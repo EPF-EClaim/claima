@@ -92,7 +92,8 @@
         <tnt:mainContents>
             <NavContainer
                 id="pageContainer"
-                initialPage="dashboard">
+                initialPage="dashboard"
+            >
                 <pages>
                     <ScrollContainer
                         id="dashboard"
@@ -240,7 +241,7 @@
                             </VBox>
 
                             <VBox>
-                            <Panel
+                                <Panel
                                     width="80%"
                                     height="200px"
                                     class="sapUiSmallMarginBeginEnd sapUiTinyMarginTopBottom"
@@ -272,39 +273,44 @@
                                     <VBox>
                                         <ScrollContainer>
                                             <Table
-                                            items="{ path: 'employee>/ZREQUEST_HEADER' }"
-                                            growing="true"
-                                            noDataText="No data available">
-                                            <columns>
-                                                <Column
-                                                    demandPopin="true"
-                                                    hAlign="Left"
-                                                />
-                                                <Column demandPopin="true" />
-                                                <Column demandPopin="true" />
-                                            </columns>
-                                            <items>
-                                                <ColumnListItem>
-                                                    <cells>
-                                                        <Text
-                                                            text="{employee>LOCATION}"
-                                                        />
-                                                        <Text
-                                                            text="{employee>START_DATE}"
-                                                        />
-                                                        <Text
-                                                            text="{employee>AMOUNT}"
-                                                        />
-                                                    </cells>
-                                                </ColumnListItem>
-                                            </items>
-                                        </Table>
+                                                items="{ path: 'employee>/ZREQUEST_HEADER' }"
+                                                growing="true"
+                                                noDataText="No data available"
+                                            >
+                                                <columns>
+                                                    <Column
+                                                        demandPopin="true"
+                                                        hAlign="Left"
+                                                    />
+                                                    <Column
+                                                        demandPopin="true"
+                                                    />
+                                                    <Column
+                                                        demandPopin="true"
+                                                    />
+                                                </columns>
+                                                <items>
+                                                    <ColumnListItem>
+                                                        <cells>
+                                                            <Text
+                                                                text="{employee>LOCATION}"
+                                                            />
+                                                            <Text
+                                                                text="{employee>START_DATE}"
+                                                            />
+                                                            <Text
+                                                                text="{employee>AMOUNT}"
+                                                            />
+                                                        </cells>
+                                                    </ColumnListItem>
+                                                </items>
+                                            </Table>
                                         </ScrollContainer>
                                     </VBox>
                                 </Panel>
                             </VBox>
                             <VBox>
-                            <Panel
+                                <Panel
                                     width="80%"
                                     height="200px"
                                     class="sapUiSmallMarginBeginEnd sapUiTinyMarginTopBottom"
@@ -329,41 +335,45 @@
                                             id="dashboard-approval"
                                             text="See All"
                                             class="sapUiLargeMarginBegin"
-                                            type="Transparent" 
+                                            type="Transparent"
                                             press="onClickNavigate"
                                         />
                                     </HBox>
                                     <VBox>
                                         <ScrollContainer>
                                             <Table
-                                            items="{ path: 'employee>/ZREQUEST_GRP' }"
-                                            growing="true"
-                                            noDataText="No data available"
-                                        >
-                                            <columns>
-                                                <Column
-                                                    demandPopin="true"
-                                                    hAlign="Left"
-                                                />
-                                                <Column demandPopin="true" />
-                                                <Column demandPopin="true" />
-                                            </columns>
-                                            <items>
-                                                <ColumnListItem>
-                                                    <cells>
-                                                        <Text
-                                                            text="{employee>REQUEST_GROUP_ID}"
-                                                        />
-                                                        <Text
-                                                            text="{employee>REQUEST_GROUP_DESC}"
-                                                        />
-                                                        <Text
-                                                            text="{employee>END_DATE}"
-                                                        />
-                                                    </cells>
-                                                </ColumnListItem>
-                                            </items>
-                                        </Table>
+                                                items="{ path: 'employee>/ZREQUEST_GRP' }"
+                                                growing="true"
+                                                noDataText="No data available"
+                                            >
+                                                <columns>
+                                                    <Column
+                                                        demandPopin="true"
+                                                        hAlign="Left"
+                                                    />
+                                                    <Column
+                                                        demandPopin="true"
+                                                    />
+                                                    <Column
+                                                        demandPopin="true"
+                                                    />
+                                                </columns>
+                                                <items>
+                                                    <ColumnListItem>
+                                                        <cells>
+                                                            <Text
+                                                                text="{employee>REQUEST_GROUP_ID}"
+                                                            />
+                                                            <Text
+                                                                text="{employee>REQUEST_GROUP_DESC}"
+                                                            />
+                                                            <Text
+                                                                text="{employee>END_DATE}"
+                                                            />
+                                                        </cells>
+                                                    </ColumnListItem>
+                                                </items>
+                                            </Table>
                                         </ScrollContainer>
                                     </VBox>
                                 </Panel>
@@ -377,7 +387,11 @@
                         enableScrolling="true"
                     >
                         <content>
-                            <VBox id="main" class="fullheight" fitContainer="true" >
+                            <VBox
+                                id="main"
+                                class="fullheight"
+                                fitContainer="true"
+                            >
                                 <core:Fragment
                                     fragmentName="claima.fragment.report"
                                     type="XML"
@@ -460,42 +474,30 @@
                     <!-- ================= Configuration Page ================= -->
                     <Page
                         id="configurationPage"
-                        showHeader="false">
+                        showHeader="false"
+                    >
                         <content>
-                           <mvc:XMLView
-                            id="configuration_view"
-                            viewName="claima.view.Configuration"/>   
+                            <mvc:XMLView
+                                id="configuration_view"
+                                viewName="claima.view.Configuration"
+                            />
                         </content>
                     </Page>
-                    <!-- ================= Configuration Page ================= -->
+                    <!-- ================= Analytics Page ================= -->
 
-                    <ScrollContainer
-                        id="analytics"
-                        height="100%"
-                        class="sapUiContentPadding"
+                    <Page
+                        id="analyticsPage"
+                        showHeader="false"
                     >
-                        <Text text="test text" />
+                        <content>
+                            <mvc:XMLView
+                                id="analytics_view"
+                                viewName="claima.view.analytics"
+                            />
+                        </content>
+                    </Page>
 
-                                                            <!-- ZCLAIM_PURPOSE -->
-                                    <f:Card
-                                        class="sapUiSmallMargin"
-                                        width="15rem"
-                                        press="onOpenAnalytics1"
-                                    >
-                                       <f:customData>
-                                            <core:CustomData
-                                                key="id"
-                                                value="ZANALTICS_1"
-                                            />
-                                        </f:customData>
-                                        <!--file in i18n folder is used to change the title-->
-                                        <f:header>
-                                            <cards:Header
-                                                title="{i18n>conf1}"
-                                            />
-                                        </f:header>
-                                    </f:Card>
-                    </ScrollContainer>
+                    
                     <NavContainer
                         id="new_request"
                         class="sapUiContentPadding"
