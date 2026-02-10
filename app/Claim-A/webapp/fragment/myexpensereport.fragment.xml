@@ -8,10 +8,10 @@
         headerExpanded="false"
         fitContent="true"
     >
+        <!-- headerText="My Claim Status" -->
         <f:content>
             <Table
                 id="tb_myexpensetrepo"
-                headerText="My Claim Status"
                 mode="SingleSelectMaster"
                 width="auto"
                 items="{path:'employee>/ZCLAIM_HEADER', parameters: {
@@ -19,12 +19,21 @@
                 $select: 'CATEGORY,CLAIM_ID,CLAIM_DATE,STATUS_ID,TOTAL' }}"
                 itemPress="onRowPress"
             >
+                <headerToolbar>
+                    <Toolbar>
+                        <!-- Title with inline count -->
+                        <Title
+                            text="{= ${i18n>nav_myreport} + ' (' + ${employee>/ZCLAIM_HEADER/$count} + ')'}"
+                        />
+                    </Toolbar>
+                </headerToolbar>
+
                 <columns>
                     <Column>
-                        <Text text="Report Purpose" />
+                        <Text text="Purpose" />
                     </Column>
                     <Column>
-                        <Text text="Report ID" />
+                        <Text text="Claim ID" />
                     </Column>
                     <Column>
                         <Text text="Start Date" />
@@ -38,18 +47,18 @@
                 </columns>
 
                 <items>
-                    <ColumnListItem
-                        type="Active"
-                    >
+                    <ColumnListItem type="Active">
                         <cells>
                             <Text text="{employee>CATEGORY}" />
                             <Text text="{employee>CLAIM_ID}" />
-                            <Text text="{
+                            <Text
+                                text="{
                             
                                 path: 'employee>CLAIM_DATE', 
                                 type: 'sap.ui.model.odata.type.Date',
                                 formatOptions: { pattern: 'dd MMM yyyy' }
-                                }" />
+                                }"
+                            />
                             <Text text="{employee>STATUS_ID}" />
                             <Text text="{employee>TOTAL}" />
                         </cells>

@@ -508,7 +508,7 @@
                         />
                     </NavContainer>
                 </pages>
-                <!-- === My Request Page (added) === -->
+                <!-- === My Pre-Approval Status Page (added) === -->
                 <Page
                     id="myrequest"
                     showHeader="false"
@@ -516,12 +516,12 @@
                 >
                     <content>
                         <core:Fragment
-                            fragmentName="claima.fragment.myrequestform"
+                            fragmentName="claima.fragment.myexpensereport"
                             type="XML"
                         />
                     </content>
                 </Page>
-                <!-- === My Request Report (added) === -->
+                <!-- === My Claim Status Page (added) === -->
                 <Page
                     id="myreport"
                     showHeader="false"
@@ -529,7 +529,7 @@
                 >
                     <content>
                         <core:Fragment
-                            fragmentName="claima.fragment.myexpensereport"
+                            fragmentName="claima.fragment.myrequestform"
                             type="XML"
                         />
                     </content>
