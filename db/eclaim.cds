@@ -51,7 +51,9 @@ entity ZEMP_MASTER : managed {
                                     on ZCOUNTRY.COUNTRY_ID = COUNTRY;
         ZSTATE                  : Association to ZSTATE
                                     on  ZSTATE.COUNTRY_ID = COUNTRY
-                                    and ZSTATE.STATE_ID = STATE;     
+                                    and ZSTATE.STATE_ID = STATE;  
+        ZEMP_TYPE               : Association to ZEMP_TYPE
+                                    on  ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;   
 }
 
 entity ZREQUEST_HEADER : managed {
@@ -145,6 +147,9 @@ entity ZREQUEST_TYPE : managed {
 entity ZCLAIM_TYPE : managed {
     key CLAIM_TYPE_ID    : String  @mandatory  @Common.Label: 'Claim Type ID';
         CLAIM_TYPE_DESC  : String  @Common.Label: 'Claim Type Description';
+        END_DATE          : Date    @Common.Label: 'End Date';
+        START_DATE        : Date    @Common.Label: 'Start Date';
+        STATUS            : String  @Common.Label: 'Status';        
         ZCLAIM_TYPE_ITEM : Composition of many ZCLAIM_TYPE_ITEM
                                on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
 
@@ -194,7 +199,6 @@ entity ZCLAIM_HEADER : managed {
                                     on ZCOST_CENTER.COST_CENTER_ID = ALTERNATE_COST_CENTER;
         ZSTATUS               : Association to one ZSTATUS
                                     on ZSTATUS.STATUS_ID = STATUS_ID;
-
 }
 
 entity ZCLAIM_ITEM : managed {
@@ -324,6 +328,15 @@ entity ZCLAIM_TYPE_ITEM : managed {
     key CLAIM_TYPE_ID        : String  @mandatory  @Common.Label: 'Claim Type ID';
     key CLAIM_TYPE_ITEM_ID   : String  @mandatory  @Common.Label: 'Claim Type Item Id';
         CLAIM_TYPE_ITEM_DESC : String  @Common.Label: 'Claim Type Item Description';
+        END_DATE             : Date    @Common.Label: 'End Date';
+        START_DATE           : Date    @Common.Label: 'Start Date';
+        STATUS               : String  @Common.Label: 'Status';
+        CATEGORY_ID          : String  @Common.Label: 'Category ID';
+        COST_CENTER          : String  @Common.Label: 'Cost Center';
+        ZCLAIM_CATEGORY      : Association to ZCLAIM_CATEGORY
+                                on ZCLAIM_CATEGORY.CLAIM_CAT_ID = CATEGORY_ID;
+        ZCOST_CENTER         : Association to ZCOST_CENTER
+                                on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
 }
 
 entity ZAPP_FIELD_CTRL : managed {
@@ -461,6 +474,9 @@ entity ZRATE_KM : managed {
 entity ZREGION : managed {
     key REGION_ID   : String  @mandatory  @Common.Label: 'Region ID';
         REGION_DESC : String  @Common.Label: 'Region Description';
+        START_DATE  : String @Common.Label: 'Start Date';
+        END_DATE    : String @Common.Label: 'End Date';
+        STATUS      : String @Common.Label: 'Status';
 }
 
 entity ZTRANSFER_MODE : managed {
@@ -523,3 +539,11 @@ entity ZUSER_TYPE: managed {
         END_DATE        : String @Common.Label: 'End Date';
         STATUS          : String @Common.Label: 'Status';
 }       
+
+entity ZEMP_TYPE: managed {
+    key EMP_TYPE_ID    : String @mandatory @Common.Label: 'Employee Type ID';
+        EMP_TYPE_DESC  : String @Common.Label: 'Employee Type Description';
+        START_DATE      : String @Common.Label: 'Start Date';
+        END_DATE        : String @Common.Label: 'End Date';
+        STATUS          : String @Common.Label: 'Status';
+} 
