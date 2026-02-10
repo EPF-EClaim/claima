@@ -60,8 +60,8 @@ entity ZEMP_MASTER : managed {
 
 entity ZREQUEST_HEADER : managed {
     key EMP_ID                  : String @mandatory;   
-    key REQUEST_ID              : UUID @mandatory;     
-        REQUEST_TYPE_ID         : UUID;
+    key REQUEST_ID              : String @mandatory;     
+        REQUEST_TYPE_ID         : String;
         REFERENCE_NUMBER        : String;
         OBJECTIVE_PURPOSE       : String;
         TRIP_START_DATE         : String;
@@ -197,7 +197,7 @@ entity ZCLAIM_HEADER : managed {
         ZSTATUS               : Association to one ZSTATUS
                                     on ZSTATUS.STATUS_ID = STATUS_ID;
 }
-
+ 
 entity ZCLAIM_ITEM : managed {
     key CLAIM_ID          : String;
     key CLAIM_ITEM_ID     : String;
@@ -392,7 +392,13 @@ entity ZBUDGET : managed {
         ACTUAL          : Decimal;
         CONSUMED        : Decimal;
         BUDGET_BALANCE  : Decimal;
+        PROJECT_CODE    : String;
         BUDGET_OWNER_ID : String;
+        WBS_CODE        : Integer;
+        IO              : String;
+        CURRENCY        : String;
+        ZCOST_CENTER    : Association to ZCOST_CENTER
+                            on ZCOST_CENTER.COST_CENTER_ID = FUND_CENTER;
 }
 
 entity ZARITH_OPT : managed {
@@ -509,12 +515,15 @@ entity ZRATE_KM : managed {
     key RATE_KM_ID          : String  @mandatory  @Common.Label: 'Rate KM ID';
         RATE_PER_KM         : Decimal @Common.Label: 'Rate Per KM';
         VEHICLE_TYPE_ID     : String  @Common.Label: 'Vehicle ID';
-        RATE                : Decimal;
+        CLAIM_TYPE_ITEM_ID  : String  @Common.Label: 'Claim Type Item ID';
+        RATE                : Decimal @Common.Label: 'Rate';
         START_DATE          : String  @Common.Label: 'Start Date';
         END_DATE            : String  @Common.Label: 'End Date';
         STATUS              : String  @Common.Label: 'Status';
         ZVEHICLE_TYPE       : Association to ZVEHICLE_TYPE
                                 on ZVEHICLE_TYPE.VEHICLE_TYPE_ID = VEHICLE_TYPE_ID;
+        ZCLAIM_TYPE_ITEM    : Association to one ZCLAIM_TYPE_ITEM
+                                on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID;                                
 }
 
 entity ZREGION : managed {
@@ -627,5 +636,6 @@ entity ZOFFICE_DISTANCE: managed {
         END_DATE            : String @Common.Label: 'End Date';
         STATUS              : String @Common.Label: 'Status';         
 }
+
 
 

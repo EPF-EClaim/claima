@@ -1995,7 +1995,13 @@ annotate service.ZRATE_KM with @(
                 Value            : VEHICLE_TYPE_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Vehicle Type ID'
-            },  
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ITEM_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type Item ID'
+            },             
             {
                 $Type            : 'UI.DataField',
                 Value            : RATE,
