@@ -155,4 +155,16 @@ service eclaim_srv {
     entity ZKWSP_BRANCH      as projection on ECLAIM.ZKWSP_BRANCH;
 
     entity ZSTATE            as projection on ECLAIM.ZSTATE;
-}
+
+    entity ZUSER_TYPE        as projection on ECLAIM.ZUSER_TYPE;
+
+    entity ZROLE             as projection on ECLAIM.ZROLE;
+
+    entity ZDEPARTMENT       as projection on ECLAIM.ZDEPARTMENT;
+
+    entity ZJOB_GROUP         as projection on ECLAIM.ZJOB_GROUP;
+
+};
+
+
+

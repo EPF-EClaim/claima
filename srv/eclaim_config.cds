@@ -1263,3 +1263,99 @@ annotate service.ZSTATE with @(
         ]
     }
 );
+
+annotate service.ZEMP_MASTER with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        EEID
+    ],
+    Capabilities      : {
+        Deletable : false,
+        Updatable : true,
+        Insertable: false
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: true,
+        DeleteHidden: true,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZEMP_MASTER',
+            TypeNamePlural: 'ZEMP_MASTER',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : EEID,
+                ![@UI.Importance]: #High,
+                Label            : 'Country ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : USER_TYPE,
+                ![@UI.Importance]: #High,
+                Label            : 'User Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : B_PLACE,
+                ![@UI.Importance]: #High,
+                Label            : 'Place of Birth'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MOBILE_BILL_ELIGIBILITY,
+                ![@UI.Importance]: #High,
+                Label            : 'Mobile Bill '
+            },
+        ]
+    }
+);
+
+annotate service.ZJOB_GROUP with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        JOB_GROUP_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZJOB_GROUP',
+            TypeNamePlural: 'ZJOB_GROUP',
+        },
+        LineItem    : [
+            {
+                $Type              : 'UI.DataFieldForAction',
+                Action             : 'eclaim_srv.Copy',
+                ![@UI.IsCopyAction]: true,
+                Label              : 'Copy'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : JOB_GROUP_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Job Group ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : JOB_GROUP_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Job Group Description'
+            },
+        ]
+    }
+);
+
+
