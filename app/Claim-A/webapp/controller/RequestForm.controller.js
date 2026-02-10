@@ -415,43 +415,64 @@ sap.ui.define([
 		// ==================================================
 
 		appendNewRow: function (oEvent) {
-            const sVal = (oEvent.getParameter("value") || "").trim();
-            const aRows  = this.getOwnerComponent().getModel('request').getProperty("/participant") || [];
+			const oModel = this.getOwnerComponent().getModel("request");
+			const sVal = (oEvent.getParameter && oEvent.getParameter("value")) 
+							?? (oEvent.getSource && oEvent.getSource().getValue && oEvent.getSource().getValue()) 
+							?? "";
+			const sTrimmed = String(sVal).trim();
+			const oCtx = oEvent.getSource().getBindingContext("request");
+			if (!oCtx) {
+				return;
+			}
 
-            if (aRows[iIndex]) {
-                aRows[iIndex].participant_name = sVal;
-            }
+			const sPath = oCtx.getPath(); 
+			const aSegments = sPath.split("/");
+			const iIndex = parseInt(aSegments[aSegments.length - 1], 10);
+			if (!Number.isInteger(iIndex)) {
+				return;
+			}
 
-            this._normalizeTrailingEmptyRow(aRows);
+			let aRows = oModel.getProperty("/participant");
+			if (!Array.isArray(aRows)) {
+				aRows = [];
+				oModel.setProperty("/participant", aRows);
+			}
 
-            const bIsLast = iIndex === aRows.length - 1;
-            if (bIsLast && sVal) {
-                aRows.push({
-                    PARTICIPANT_ID: "",
-                    ALLOCATED_AMOUNT: "" 
-                });
-				if (sVal) {
-					var oModel = this.getOwnerComponent().getModel('request').getData();
-					this.appendNewParticipant(oModel);
-				}
-            }
+			oModel.setProperty(`/participant/${iIndex}/PARTICIPANT_ID`, sTrimmed);
 
-            this.getOwnerComponent().getModel('request').setProperty("/participant", aRows);
-            // If table uses growing, you might need a .refresh(true) in some setups
-            // oModel.refresh(true);
+			if (typeof this._normalizeTrailingEmptyRow === "function") {
+				this._normalizeTrailingEmptyRow(aRows);
+			}
 
-        },
+			const bIsLast = iIndex === aRows.length - 1;
+			if (bIsLast && sTrimmed) {
+				const oNewRow = {
+				PARTICIPANT_ID: "",
+				ALLOCATED_AMOUNT: ""
+				};
+				oModel.setProperty(`/participant/${aRows.length}`, oNewRow);
+			}
+
+			// 8) In some setups (rare), you might need a refresh to re-render table rows
+			// oModel.refresh(true);
+		},
 
 		_normalizeTrailingEmptyRow: function (aRows) {
-            // Remove extra trailing empties if any
-            while (aRows.length > 1 && this._isEmptyRow(aRows[aRows.length - 1]) && this._isEmptyRow(aRows[aRows.length - 2])) {
-                aRows.pop();
-            }
-            // If list became empty (shouldn't happen), ensure at least one blank row
-            if (aRows.length === 0) {
-                aRows.push({ req_item_row: 0, participant_name: "", emp_cost_center: "", alloc_amount: "" });
-            }
-        },
+			let lastNonEmpty = -1;
+			for (let i = 0; i < aRows.length; i++) {
+				const r = aRows[i] || {};
+				const isEmpty = !String(r.PARTICIPANT_ID || "").trim() && !String(r.ALLOCATED_AMOUNT || "").trim();
+				if (!isEmpty) lastNonEmpty = i;
+			}
+			const desiredLength = Math.max(lastNonEmpty + 2, 1); 
+			if (aRows.length > desiredLength) {
+				aRows.splice(desiredLength);
+				this.getOwnerComponent().getModel("request").setProperty("/participant", aRows.slice());
+			} else if (aRows.length === 0) {
+				aRows.push({ PARTICIPANT_ID: "", ALLOCATED_AMOUNT: "" });
+				this.getOwnerComponent().getModel("request").setProperty("/participant", aRows);
+			}
+		},
         
         _isEmptyRow: function (oRow) {
             if (!oRow) return true;
@@ -466,77 +487,77 @@ sap.ui.define([
 
 		onRowDeleteParticipant: function (oEvent) {
             const oTable   = this.byId("req_participant_table");
-            const oBinding = oTable.getBinding("participant");  // ListBinding/RowBinding
-            const oModel   = this.getView().getModel();  // JSONModel expected
-            const aRows    = oModel.getProperty("/participant") || [];
+			const oModel   = this.getOwnerComponent().getModel("request");  // named JSONModel
+			const aRows    = oModel.getProperty("/participant") || [];
 
-            // collect visible selected indices (e.g., [0, 2, 5])
-            let aSelectedVisIdx = oTable.getSelectedIndices() || [];
-            let aModelIdxToDelete = [];
+			// Try SAPUI5-provided event parameters first (preferred)
+			let iModelIndexFromAction = null;
+			const oRowParam     = oEvent.getParameter && oEvent.getParameter("row");
+			const iRowIndexParam= oEvent.getParameter && oEvent.getParameter("rowIndex");
 
-            // Helper to get a context for a visible index in a version-safe way
-            const getCtxByVisibleIndex = function (iVis) {
-                // Preferred: table API (exists on sap.ui.table.Table)
-                if (typeof oTable.getContextByIndex === "function") {
-                return oTable.getContextByIndex(iVis) || null;
-                }
-                // Fallback: binding API
-                if (oBinding && typeof oBinding.getContexts === "function") {
-                const aCtx = oBinding.getContexts(iVis, 1);
-                return aCtx && aCtx[0] ? aCtx[0] : null;
-                }
-                return null;
-            };
+			if (oRowParam) {
+				// IMPORTANT: pass the named model to getBindingContext
+				const oCtx = oRowParam.getBindingContext("request");
+				if (oCtx) {
+				const sPath = oCtx.getPath();                // e.g. "/req_item_rows/3"
+				const iIdx  = parseInt(sPath.split("/").pop(), 10);
+				if (Number.isInteger(iIdx)) {
+					iModelIndexFromAction = iIdx;
+				}
+				}
+			} else if (Number.isInteger(iRowIndexParam)) {
+				// Fallback: derive from visible row index
+				const oCtx = oTable.getContextByIndex(iRowIndexParam); // bound to 'rows' → right model
+				if (oCtx) {
+				const sPath = oCtx.getPath();
+				const iIdx  = parseInt(sPath.split("/").pop(), 10);
+				if (Number.isInteger(iIdx)) {
+					iModelIndexFromAction = iIdx;
+				}
+				}
+			}
 
-            if (aSelectedVisIdx.length > 0) {
-                aModelIdxToDelete = aSelectedVisIdx
-                .map(function (iVis) {
-                    const oCtx = getCtxByVisibleIndex(iVis);
-                    if (!oCtx) return null;
-                    const sPath = oCtx.getPath();      // e.g., "/rows/3"
-                    const iIdx  = parseInt(sPath.split("/").pop(), 10);
-                    return Number.isInteger(iIdx) ? iIdx : null;
-                })
-                .filter(function (x) { return x !== null; });
-            } else {
-                // Nothing selected → delete row where the action was pressed
-                const oActionItem = oEvent.getSource();                // RowActionItem
-                const oRow        = oActionItem?.getParent()?.getParent(); // RowAction -> Row
-                const oCtx        = oRow?.getBindingContext();
-                if (oCtx) {
-                const sPath = oCtx.getPath();
-                const iIdx  = parseInt(sPath.split("/").pop(), 10);
-                if (Number.isInteger(iIdx)) {
-                    aModelIdxToDelete = [iIdx];
-                }
-                }
-            }
+			// Now support both flows:
+			// 1) Toolbar Delete → uses selection
+			// 2) RowAction Delete → uses iModelIndexFromAction
+			let aModelIdxToDelete = [];
 
-            if (aModelIdxToDelete.length === 0) {
-                MessageToast.show("Select row to delete");
-            }
+			// Case 1: User selected rows (e.g., Delete button on toolbar)
+			const aSelectedVisIdx = oTable.getSelectedIndices() || [];
+			if (aSelectedVisIdx.length > 0) {
+				const oBinding = oTable.getBinding("rows");
+				aModelIdxToDelete = aSelectedVisIdx
+				.map(function (iVis) {
+					// getContextByIndex works on 'rows' binding, returns named context
+					const oCtx = oTable.getContextByIndex(iVis);
+					if (!oCtx) return null;
+					const sPath = oCtx.getPath();
+					const iIdx  = parseInt(sPath.split("/").pop(), 10);
+					return Number.isInteger(iIdx) ? iIdx : null;
+				})
+				.filter(function (x) { return x !== null; });
+			} else if (Number.isInteger(iModelIndexFromAction)) {
+				// Case 2: RowAction press (no selection)
+				aModelIdxToDelete = [iModelIndexFromAction];
+			}
 
-            // De-dup and sort desc so splice doesn’t shift later indices
-            aModelIdxToDelete = Array.from(new Set(aModelIdxToDelete))
-                .sort(function (a, b) { return b - a; });
+			if (aModelIdxToDelete.length === 0) {
+				sap.m.MessageToast.show("Select row to delete");
+				return;
+			}
 
-            aModelIdxToDelete.forEach(function (iIdx) {
-                if (iIdx >= 0 && iIdx < aRows.length) {
-                aRows.splice(iIdx, 1);
-                }
-            });
+			// Deduplicate and delete from the end
+			aModelIdxToDelete = Array.from(new Set(aModelIdxToDelete))
+				.sort(function (a, b) { return b - a; });
 
-            // Optional: keep one empty row to support your auto-append UX
-            if (aRows.length === 0) {
-                aRows.push({
-					participant_name: "",
-					emp_cost_center: "",
-					alloc_amount: ""
-                });
-            }
+			aModelIdxToDelete.forEach(function (iIdx) {
+				if (iIdx >= 0 && iIdx < aRows.length) {
+				aRows.splice(iIdx, 1);
+				}
+			});
 
-            oModel.setProperty("/participant", aRows);
-            oTable.clearSelection();
+			oModel.setProperty("/participant", aRows);
+			oTable.clearSelection();
         },
 
 		// ==================================================
