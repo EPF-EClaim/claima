@@ -8,6 +8,8 @@ service eclaim_srv {
 
     entity ZREQUEST_HEADER as projection on ECLAIM.ZREQUEST_HEADER;
 
+    entity ZCLAIM_CATEGORY     as projection on ECLAIM.ZCLAIM_CATEGORY;
+
     entity ZCLAIM_TYPE     as projection on ECLAIM.ZCLAIM_TYPE;
 
     entity ZCLAIM_TYPE_ITEM as projection on ECLAIM.ZCLAIM_TYPE_ITEM;

@@ -79,6 +79,11 @@ entity ZREQUEST_TYPE {
         STATUS            : String;
 }
 
+entity ZCLAIM_CATEGORY {
+    key CLAIM_CAT_ID        : String;
+        CLAIM_CATEGORY_DESC : String;
+}
+
 entity ZCLAIM_TYPE {
     key CLAIM_TYPE_ID   : String;
         CLAIM_TYPE_DESC : String;
@@ -89,6 +94,8 @@ entity ZCLAIM_TYPE_ITEM {
     key CLAIM_TYPE_ITEM_ID   : String;
         CLAIM_TYPE_ITEM_DESC : String;
         CATEGORY_ID          : String;
+        ZCLAIM_CATEGORY      : Association to one ZCLAIM_CATEGORY
+                                   on ZCLAIM_CATEGORY.CLAIM_CAT_ID = CATEGORY_ID;
 }
 
 entity ZREQUEST_GRP {

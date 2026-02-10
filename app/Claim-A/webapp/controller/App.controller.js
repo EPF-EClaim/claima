@@ -67,18 +67,31 @@ sap.ui.define([
 			});
 			this.getView().setModel(oRequestModel, "request");
 
-			// Claim Type Model
-			var oClaimTypeModel = new JSONModel({
-				"type": null,
-				"item": null,
-				"category": null,
-				"descr": {
+			// Claim Submission Model
+			var oClaimSubmissionModel = new JSONModel({
+				"claimtype": {
 					"type": null,
 					"item": null,
-					"category": null
+					"category": null,
+					"descr": {
+						"type": null,
+						"item": null,
+						"category": null
+					}
+				},
+				"claimheader": {
+					"claim_id": null,
+					"purpose": "",
+					"startdate": null,
+					"enddate": null,
+					"altcc": null,
+					"category": null,
+					"amt_approved": null,
+					"comment": null
 				}
 			});
-			this.getView().setModel(oClaimTypeModel, "claimtype");
+			//// set input
+			this.getView().setModel(oClaimSubmissionModel, "claimsubmission_input");
 
 			// oReportModel
 			var oReportModel = new JSONModel({
@@ -279,18 +292,23 @@ sap.ui.define([
 			}
 		},
 
-		//// Functions - Claim Process 
+		//// Functions - Claim Process
 		onChange_ClaimType: function (oEvent) {
 			// validate claim type
-			var claimType = oEvent.getParameters().selectedItem.getKey();
+			var claimType = oEvent.getParameters().selectedItem;
 			if (claimType) {
-				// set filter for claim items based on selected claim type
-				var oFilter = new sap.ui.model.Filter('CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, claimType);
-
 				// set claim items based on selected claim type
 				this.byId("select_claimprocess_claimitem").bindAggregation("items", {
 					path: "employee>/ZCLAIM_TYPE_ITEM",
-					filters: [oFilter],
+					filters: [new sap.ui.model.Filter('CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, claimType.getKey())],
+					parameters: {
+						$expand: {
+							"ZCLAIM_CATEGORY": {
+								$select: "CLAIM_CATEGORY_DESC"
+							}
+						},
+						$select: "CATEGORY_ID"
+					},
 					template: new sap.ui.core.Item({
 						key: "{employee>CLAIM_TYPE_ITEM_ID}",
 						text: "{employee>CLAIM_TYPE_ITEM_DESC}"
@@ -312,10 +330,15 @@ sap.ui.define([
 
 		onChange_ClaimItem: function (oEvent) {
 			// validate claim item
-			var claimItem = oEvent.getParameters().selectedItem.getKey();
+			var claimItem = oEvent.getParameters().selectedItem;
 			if (claimItem) {
-				// placeholder - show claim item category in category input
-				this.byId("input_claimprocess_category").setValue(this._getTexti18n("value_claimprocess_category_direct"));
+				// get category description from claim item
+				var claimCategoryDesc = claimItem.getBindingContext("employee").getObject("ZCLAIM_CATEGORY/CLAIM_CATEGORY_DESC");
+
+				// show claim item category in category input
+				this.byId("input_claimprocess_category").setValue(claimCategoryDesc);
+				var oInputModel = this.getView().getModel("claimsubmission_input");
+				oInputModel.setProperty("/claimtype/category",claimItem.getBindingContext("employee").getObject("CATEGORY_ID"));
 
 				// enable 'Start Claim' button
 				this.byId("button_claimprocess_startclaim").setEnabled(true);
@@ -324,22 +347,10 @@ sap.ui.define([
 
 		onStartClaim_ClaimProcess: async function () {
 			// validate input data
+			var oInputModel = this.getView().getModel("claimsubmission_input");
 			//// get claim type/item description
-			oClaimTypeModel.setProperty("/descr/type",this.byId("select_claimprocess_claimtype")._getSelectedItemText());
-			oClaimTypeModel.setProperty("/descr/item",this.byId("select_claimprocess_claimitem")._getSelectedItemText());
-			//// get claim type category
-			switch (this.byId("input_claimprocess_category").getValue()) {
-				case this._getTexti18n("value_claimprocess_category_direct"):
-					oClaimTypeModel.setProperty("/category","DIRECT");
-					break;
-				default:
-					oClaimTypeModel.setProperty("/category","");
-					break;
-			}
-
-			// // set as current data
-			// var oCurrentModel = this.getView().getModel("current");
-			// oCurrentModel.setData(oInputModel.getData());
+			oInputModel.setProperty("/claimtype/descr/type",this.byId("select_claimprocess_claimtype")._getSelectedItemText());
+			oInputModel.setProperty("/claimtype/descr/item",this.byId("select_claimprocess_claimitem")._getSelectedItemText());
 
 			// reset Claim Process dialog before closing
 			this._resetClaimProcess();
@@ -347,8 +358,8 @@ sap.ui.define([
 
 			// load Claim Submission dialog
 			this.oDialog ??= await this.loadFragment({
-				// name: "claima.fragment.createreport",
-				name: "claima.fragment.claimsubmission_claimsubmission",
+				name: "claima.fragment.createreport",
+				// name: "claima.fragment.claimsubmission_claimsubmission",
 			});
 			if (this.oDialog) {
 				this.oDialog.open();
@@ -374,8 +385,9 @@ sap.ui.define([
 			// disable 'Start Claim' button
 			this.byId("button_claimprocess_startclaim").setEnabled(false);
 		},
-		//// end Functions - Claim Process 
+		//// end Functions - Claim Process
 
+		//// Functions - Claim Submission (dialog)
 		onCreateReport_Create: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("input");
@@ -476,6 +488,7 @@ sap.ui.define([
 		onCreateReport_Cancel: function () {
 			this.oDialog.close();
 		},
+		//// end Functions - Claim Submission (dialog)
 		// end Functions - Claim Submission
 
 		onPressBack: function (oEvent) {
