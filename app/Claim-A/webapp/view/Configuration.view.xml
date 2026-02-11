@@ -55,7 +55,7 @@
                 </f:header>
             </f:Card>
 
-            <f:Card
+            <!-- <f:Card
                 id="ZREQUEST_GRP"
                 class="sapUiSmallMargin"
                 width="15rem"
@@ -64,7 +64,7 @@
                 <f:header>
                     <cards:Header title="{i18n>conf_zreqgrp}" />
                 </f:header>
-            </f:Card>
+            </f:Card> -->
 
             <f:Card
                 id="ZREQUEST_TYPE"
@@ -121,7 +121,7 @@
                 </f:header>
             </f:Card>
 
-            <f:Card
+            <!-- <f:Card
                 id="ZARITH_OPT"
                 class="sapUiSmallMargin"
                 width="15rem"
@@ -130,9 +130,9 @@
                 <f:header>
                     <cards:Header title="{i18n>conf_zarith}" />
                 </f:header>
-            </f:Card>
+            </f:Card> -->
 
-            <f:Card
+            <!-- <f:Card
                 id="ZAPPROVAL_RULES"
                 class="sapUiSmallMargin"
                 width="15rem"
@@ -141,9 +141,9 @@
                 <f:header>
                     <cards:Header title="{i18n>conf_appr}" />
                 </f:header>
-            </f:Card>
+            </f:Card> -->
 
-            <f:Card
+            <!-- <f:Card
                 id="ZCLAIM_MAIN_CAT"
                 class="sapUiSmallMargin"
                 width="15rem"
@@ -152,7 +152,7 @@
                 <f:header>
                     <cards:Header title="{i18n>conf_zclaimmain}" />
                 </f:header>
-            </f:Card>
+            </f:Card> -->
 
             <f:Card
                 id="ZCLAIM_CATEGORY"

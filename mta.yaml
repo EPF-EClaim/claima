@@ -178,7 +178,6 @@ resources:
                 HTML5.DynamicDestination: true
     requires:
       - name: srv-api
-
   - name: claima-backend-html5-repo-host
     type: org.cloudfoundry.managed-service
     parameters:

@@ -35,7 +35,7 @@
     "requires": {
       "[production]": {
         "db": "hana-cloud",
-        "auth": "xsuaa"
+        "auth": "mocked"
       },
       "connectivity": true,
       "[hybrid]": {

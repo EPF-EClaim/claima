@@ -43,7 +43,7 @@ resources:
       service-plan: application
       path: ./xs-security.json
       config:
-        xsappname: claima-${org}-${space}
+        xsappname: claima-${space}
         tenant-mode: dedicated
         oauth2-configuration:
           credential-types:
