@@ -58,9 +58,9 @@ entity ZEMP_MASTER : managed {
 entity ZREQUEST_HEADER : managed {
     key EMP_ID                  : String
         @mandatory;
-    key REQUEST_ID              : String
+    key REQUEST_ID              : UUID
         @mandatory;
-        REQUEST_TYPE_ID         : String;
+        REQUEST_TYPE_ID         : UUID;
         REFERENCE_NUMBER        : String;
         OBJECTIVE_PURPOSE       : String;
         TRIP_START_DATE         : String;

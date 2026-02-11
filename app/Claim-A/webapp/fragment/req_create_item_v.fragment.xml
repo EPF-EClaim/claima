@@ -7,7 +7,7 @@
     xmlns:unified="sap.ui.unified"
     xmlns:table="sap.ui.table" >
     <VBox
-        id="request_create_item_fragment" 
+        id="request_create_item_v_fragment" 
         backgroundDesign="Solid"
         class="roundedBox sapUiSmallMargin"
         rowGap="1rem">
@@ -15,7 +15,7 @@
             <OverflowToolbar height="3rem">
                 <Title text="{i18n>req_form_detail_title}" titleStyle="H4" />
                 <ToolbarSpacer />
-                <MenuButton text="{i18n>req_b_save_request}" buttonMode="Split" defaultAction="onSave" beforeMenuOpen="onBeforeMenuOpen" useDefaultActionOnly="true">
+                <MenuButton text="{i18n>req_b_save_request}" buttonMode="Split" defaultAction="onSave" beforeMenuOpen="onBeforeMenuOpen" useDefaultActionOnly="true" enabled="false">
                     <menu>
                         <Menu itemSelected="onMenuAction">
                             <MenuItem text="{i18n>req_b_save_n_add}" press=".onSaveAddAnother" />
@@ -28,7 +28,7 @@
                     xmlns:form="sap.ui.layout.form"
                     xmlns:m="sap.m"
                     xmlns:core="sap.ui.core"
-                    editable="true">
+                    editable="false">
 
                     <form:layout>
                         <form:ColumnLayout ></form:ColumnLayout>
@@ -41,7 +41,7 @@
                                 <!-- Claim Type -->
                                 <form:FormElement label="{i18n>req_i_claim_type}">
                                     <form:fields>
-                                        <m:Select>
+                                        <m:Select editable="false" selectedKey="CT1">
                                             <items>
                                                 <core:Item key="CT1" text="Claim Type 1"/>
                                                 <core:Item key="CT2" text="Claim Type 2"/>
@@ -55,7 +55,7 @@
                                 <!-- Estimated Amount -->
                                 <form:FormElement label="{i18n>req_i_est_amt}">
                                     <form:fields>
-                                        <m:Input id="estAmount" type="Number" textAlign="Begin"/>
+                                        <m:Input id="estAmount_v" type="Number" textAlign="Begin" editable="false" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -63,33 +63,34 @@
                                 <form:FormElement label="{i18n>req_i_start_date}">
                                     <form:fields>
                                         <m:DatePicker
-                                            id="i_start_date"
+                                            id="i_start_date_v"
                                             displayFormat="dd MMM yyyy"
                                             valueFormat="yyyy-MM-dd"
                                             placeholder="dd MMM yyyy"
                                             value="{request>/tripstartdate}"
-                                            textAlign="Begin"/>
+                                            textAlign="Begin"
+                                            editable="false"/>
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Location -->
                                 <form:FormElement label="{i18n>req_i_location}">
                                     <form:fields>
-                                        <m:Input id="i_location" textAlign="Begin"/>
+                                        <m:Input id="i_location_v" textAlign="Begin" editable="false"/>
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Estimated Participants -->
                                 <form:FormElement label="{i18n>req_i_estparticipant}">
                                     <form:fields>
-                                        <m:Input id="estNoOfParticipant" type="Number" textAlign="Begin"/>
+                                        <m:Input id="estNoOfParticipant_v" type="Number" textAlign="Begin" editable="false" />
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Claim Type Item -->
                                 <form:FormElement label="{i18n>req_i_claim_type_item}">
                                     <form:fields>
-                                        <m:Select>
+                                        <m:Select selectedKey="CI1" editable="false">
                                             <items>
                                                 <core:Item key="CI1" text="Claim Type Item 1"/>
                                                 <core:Item key="CI2" text="Claim Type Item 2"/>
@@ -103,7 +104,7 @@
                                 <!-- Cash Advance -->
                                 <form:FormElement label="{i18n>req_i_cashadv}">
                                     <form:fields>
-                                        <m:Select id="cash_adv" selectedKey="no_cashadv">
+                                        <m:Select id="cash_adv_v" selectedKey="no_cashadv" editable="false">
                                             <items>
                                                 <core:Item key="no_cashadv" text="No"/>
                                                 <core:Item key="yes_cashadv" text="Yes"/>
@@ -116,19 +117,20 @@
                                 <form:FormElement label="{i18n>req_i_end_date}">
                                     <form:fields>
                                         <m:DatePicker
-                                            id="i_end_date"
+                                            id="i_end_date_v"
                                             displayFormat="dd MMM yyyy"
                                             valueFormat="yyyy-MM-dd"
                                             placeholder="dd MMM yyyy"
                                             value="{request>/tripstartdate}"
-                                            textAlign="Begin"/>
+                                            textAlign="Begin"
+                                            editable="false"/>
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Remarks -->
                                 <form:FormElement label="{i18n>req_i_remarks}">
                                     <form:fields>
-                                        <m:TextArea id="i_remarks" textAlign="Begin"/>
+                                        <m:TextArea id="i_remarks_v" textAlign="Begin" editable="false"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -137,15 +139,11 @@
                     </form:formContainers>
                 </form:Form>
 
-                <!-- <HBox alignItems="Center">
-                    <Image src="../images/4_quadrants.png" width="100%"></Image>
-                </HBox> -->
-
                 <VBox rowGap="0.5rem">
                     <OverflowToolbar height="3rem">
                         <Title text="{i18n>req_participant}" titleStyle="H4" />
                         <ToolbarSpacer />
-                        <Button text="{i18n>req_b_download_template}" press=".onDownloadTemplate"></Button>
+                        <Button text="{i18n>req_b_download_template}" enabled="false"></Button>
                         <unified:FileUploader
                             id="fuImport"
                             icon="sap-icon://upload"
@@ -153,19 +151,20 @@
                             buttonText="{i18n>req_b_upload_list}"
                             fileType="csv,xlsx"
                             change=".onImportChange"
-                            style="Emphasized"/>
-                        <Button icon="sap-icon://delete" text="{i18n>req_b_delete}" press=".onRowDeleteParticipant"/>
+                            style="Emphasized"
+                            enabled="false"/>
+                        <Button icon="sap-icon://delete" text="{i18n>req_b_delete}" press=".onRowDeleteParticipant" enabled="false"/>
                     </OverflowToolbar>
                     <table:Table 
                         id="req_participant_table"
                         rows="{/participant}"
                         columnHeaderHeight="3rem"
-                        selectionMode="MultiToggle"
-                        rowActionCount="1">
+                        selectionMode="None"
+                        rowActionCount="0">
                         <table:Column width="25rem">
                             <Label text="{i18n>req_p_name}"></Label>
                             <table:template>
-                                <Input id="participant_name" textAlign="Begin" value="{participant_name}" change=".appendNewRow"></Input>
+                                <Text id="participant_name_v" textAlign="Begin" text="{participant_name}" />
                             </table:template>
                         </table:Column>
                         <table:Column width="25rem">
@@ -177,13 +176,13 @@
                         <table:Column width="25rem">
                             <Label text="{i18n>req_p_alloc_amt}"></Label>
                             <table:template>
-                                <Input id="alloc_amount" textAlign="End" value="{alloc_amount}" type="Number"></Input>
+                                <Text id="alloc_amount_v" textAlign="End" text="{alloc_amount}" />
                             </table:template>
                         </table:Column>
                         <table:rowActionTemplate>
                             <table:RowAction>
                                 <table:items>
-                                    <table:RowActionItem type="Delete" press="onRowDeleteParticipant"></table:RowActionItem>
+                                    <table:RowActionItem type="Delete" press="onRowDeleteParticipant" visible="false" ></table:RowActionItem>
                                 </table:items>
                             </table:RowAction>
                         </table:rowActionTemplate>
