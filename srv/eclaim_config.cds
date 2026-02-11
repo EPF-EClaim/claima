@@ -1,47 +1,5 @@
 using {eclaim_srv as service} from './eclaim_srv';
 
-annotate service.ZCLAIM_PURPOSE with @(
-    cds.autoexpose,
-    odata.draft.bypass,
-    Common.SemanticKey: [CLAIM_PURPOSE_ID],
-    Capabilities      : {
-        Deletable : true,
-        Updatable : true,
-        Insertable: true
-    },
-    odata.draft.enabled,
-    UI                : {
-        CreateHidden: false,
-        DeleteHidden: false,
-        HeaderInfo  : {
-            $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZCLAIM_PURPOSE',
-            TypeNamePlural: 'ZCLAIM_PURPOSE',
-        },
-        LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : CLAIM_PURPOSE_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim Purpose ID'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : CLAIM_PURPOSE_DESC,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim Purpose Description'
-            }
-        ]
-    }
-
-);
-
 annotate service.ZRISK with @(
     cds.autoexpose,
     odata.draft.bypass,
@@ -62,12 +20,6 @@ annotate service.ZRISK with @(
             TypeNamePlural: 'ZRISK',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : RISK_ID,
@@ -102,48 +54,6 @@ annotate service.ZRISK with @(
     }
 );
 
-annotate service.ZREQUEST_GRP with @(
-    cds.autoexpose,
-    odata.draft.bypass,
-    Common.SemanticKey: [REQUEST_GROUP_ID],
-    Capabilities      : {
-        Deletable : true,
-        Updatable : true,
-        Insertable: true
-    },
-    odata.draft.enabled,
-
-    UI                : {
-        CreateHidden: false,
-        DeleteHidden: false,
-        HeaderInfo  : {
-            $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZREQUEST_GRP',
-            TypeNamePlural: 'ZREQUEST_GRP',
-        },
-        LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : REQUEST_GROUP_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Request Group ID'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : REQUEST_GROUP_DESC,
-                ![@UI.Importance]: #High,
-                Label            : 'Requese Group Description'
-            }
-        ]
-    }
-);
-
 annotate service.ZREQUEST_TYPE with @(
     cds.autoexpose,
     odata.draft.bypass,
@@ -164,12 +74,6 @@ annotate service.ZREQUEST_TYPE with @(
             TypeNamePlural: 'ZREQUEST_TYPE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : REQUEST_TYPE_ID,
@@ -224,12 +128,6 @@ annotate service.ZCLAIM_TYPE with @(
             TypeNamePlural: 'ZCLAIM_TYPE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_TYPE_ID,
@@ -309,12 +207,6 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
         },
         LineItem    : [
             {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_TYPE_ITEM_ID,
                 ![@UI.Importance]: #High,
@@ -353,12 +245,6 @@ annotate service.ZAPP_FIELD_CTRL with @(
             TypeNamePlural: 'ZAPP_FIELD_CTRL',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_TYPE_ID,
@@ -495,196 +381,6 @@ annotate service.ZAPP_FIELD_CTRL with @(
     }
 );
 
-annotate service.ZARITH_OPT with @(
-    cds.autoexpose,
-    odata.draft.bypass,
-    Common.SemanticKey: [OPERATOR_ID],
-    Capabilities      : {
-        Deletable : true,
-        Updatable : true,
-        Insertable: true
-    },
-    odata.draft.enabled,
-
-    UI                : {
-        CreateHidden: false,
-        DeleteHidden: false,
-        HeaderInfo  : {
-            $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZARITH_OPT',
-            TypeNamePlural: 'ZARITH_OPT',
-        },
-        LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : OPERATOR_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Operator ID'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : OPERATOR_DESC,
-                ![@UI.Importance]: #High,
-                Label            : 'Operator Description'
-            }
-        ]
-    }
-);
-
-annotate service.ZAPPROVAL_RULES with @(
-    cds.autoexpose,
-    odata.draft.bypass,
-    Common.SemanticKey: [
-        ZSCENARIO,
-        ZSEQNO,
-        ZAPPR_LVL
-    ],
-    Capabilities      : {
-        Deletable : true,
-        Updatable : true,
-        Insertable: true
-    },
-    odata.draft.enabled,
-
-    UI                : {
-        CreateHidden: false,
-        DeleteHidden: false,
-        HeaderInfo  : {
-            $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZAPPROVAL_RULES',
-            TypeNamePlural: 'ZAPPROVAL_RULES',
-        },
-        LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : ZSCENARIO,
-                ![@UI.Importance]: #High,
-                Label            : 'ZSCENARIO'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : ZSEQNO,
-                ![@UI.Importance]: #High,
-                Label            : 'ZSEQNO'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : ZAPPR_LVL,
-                ![@UI.Importance]: #High,
-                Label            : 'ZAPPR_LVL'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : ZAMT,
-                ![@UI.Importance]: #High,
-                Label            : 'ZAMT'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : ZAMT_OP,
-                ![@UI.Importance]: #High,
-                Label            : 'ZAMT_OP'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : ZDAYS,
-                ![@UI.Importance]: #High,
-                Label            : 'ZDAYS'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : ZDAYS_OP,
-                ![@UI.Importance]: #High,
-                Label            : 'ZDAYS_OP'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : ZCOSTCTR,
-                ![@UI.Importance]: #High,
-                Label            : 'ZCOSTCTR'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : ZCOSTCTR_OP,
-                ![@UI.Importance]: #High,
-                Label            : 'ZCOSTCTR_OP'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : ZRISK,
-                ![@UI.Importance]: #High,
-                Label            : 'ZRISK'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : ZRISK_OP,
-                ![@UI.Importance]: #High,
-                Label            : 'ZRISK_OP'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : ZAPPROVER_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'ZAPPROVER_ID'
-            },
-        ]
-    }
-);
-
-annotate service.ZCLAIM_MAIN_CAT with @(
-    cds.autoexpose,
-    odata.draft.bypass,
-    Common.SemanticKey: [CLAIM_MAIN_CAT_ID],
-    Capabilities      : {
-        Deletable : true,
-        Updatable : true,
-        Insertable: true
-    },
-    odata.draft.enabled,
-
-    UI                : {
-        CreateHidden: false,
-        DeleteHidden: false,
-        HeaderInfo  : {
-            $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZCLAIM_MAIN_CAT',
-            TypeNamePlural: 'ZCLAIM_MAIN_CAT',
-        },
-        LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : CLAIM_MAIN_CAT_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim Main Category ID'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : CLAIM_MAIN_CAT_DESC,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim Main Category Description'
-            }
-        ]
-    }
-);
-
 annotate service.ZCLAIM_CATEGORY with @(
     cds.autoexpose,
     odata.draft.bypass,
@@ -705,12 +401,6 @@ annotate service.ZCLAIM_CATEGORY with @(
             TypeNamePlural: 'ZCLAIM_CATEGORY',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_CAT_ID,
@@ -766,12 +456,6 @@ annotate service.ZSTATUS with @(
         },
         LineItem    : [
             {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
                 $Type            : 'UI.DataField',
                 Value            : STATUS_ID,
                 ![@UI.Importance]: #High,
@@ -805,48 +489,6 @@ annotate service.ZSTATUS with @(
     }
 );
 
-annotate service.ZCLAIM_DISCLAIMER with @(
-    cds.autoexpose,
-    odata.draft.bypass,
-    Common.SemanticKey: [CLAIM_DISCLAIMER_ID],
-    Capabilities      : {
-        Deletable : true,
-        Updatable : true,
-        Insertable: true
-    },
-    odata.draft.enabled,
-
-    UI                : {
-        CreateHidden: false,
-        DeleteHidden: false,
-        HeaderInfo  : {
-            $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZCLAIM_DISCLAIMER',
-            TypeNamePlural: 'ZCLAIM_DISCLAIMER',
-        },
-        LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : CLAIM_DISCLAIMER_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim Disclaimer ID'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : CLAIM_DISCLAIMER_DESC,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim Disclaimer Description'
-            }
-        ]
-    }
-);
-
 annotate service.ZLODGING_CAT with @(
     cds.autoexpose,
     odata.draft.bypass,
@@ -867,12 +509,6 @@ annotate service.ZLODGING_CAT with @(
             TypeNamePlural: 'ZLODGING_CAT',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : LODGING_CATEGORY_ID,
@@ -916,7 +552,7 @@ annotate service.ZROOM_TYPE with @(
         Updatable : true,
         Insertable: true
     },
-    odata.draft.enabled,
+    //odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -927,12 +563,6 @@ annotate service.ZROOM_TYPE with @(
             TypeNamePlural: 'ZROOM_TYPE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : ROOM_TYPE_ID,
@@ -988,12 +618,6 @@ annotate service.ZFLIGHT_CLASS with @(
         },
         LineItem    : [
             {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
                 $Type            : 'UI.DataField',
                 Value            : FLIGHT_CLASS_ID,
                 ![@UI.Importance]: #High,
@@ -1047,12 +671,6 @@ annotate service.ZCOUNTRY with @(
             TypeNamePlural: 'ZCOUNTRY',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : COUNTRY_ID,
@@ -1108,12 +726,6 @@ annotate service.ZAREA with @(
         },
         LineItem    : [
             {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
                 $Type            : 'UI.DataField',
                 Value            : AREA_ID,
                 ![@UI.Importance]: #High,
@@ -1147,48 +759,6 @@ annotate service.ZAREA with @(
     }
 );
 
-annotate service.ZCURRENCY with @(
-    cds.autoexpose,
-    odata.draft.bypass,
-    Common.SemanticKey: [CURRENCY_ID],
-    Capabilities      : {
-        Deletable : true,
-        Updatable : true,
-        Insertable: true
-    },
-    odata.draft.enabled,
-
-    UI                : {
-        CreateHidden: false,
-        DeleteHidden: false,
-        HeaderInfo  : {
-            $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZCURRENCY',
-            TypeNamePlural: 'ZCURRENCY',
-        },
-        LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : CURRENCY_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Currency ID'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : CURRENCY_DESC,
-                ![@UI.Importance]: #High,
-                Label            : 'Currency Description'
-            }
-        ]
-    }
-);
-
 annotate service.ZMARITAL_STAT with @(
     cds.autoexpose,
     odata.draft.bypass,
@@ -1209,12 +779,6 @@ annotate service.ZMARITAL_STAT with @(
             TypeNamePlural: 'ZMARITAL_STAT',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : MARRIAGE_CATEGORY_ID,
@@ -1258,7 +822,7 @@ annotate service.ZSTAFF_CAT with @(
         Updatable : true,
         Insertable: true
     },
-    odata.draft.enabled,
+    //odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1269,12 +833,6 @@ annotate service.ZSTAFF_CAT with @(
             TypeNamePlural: 'ZSTAFF_CAT',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : STAFF_CATEGORY_ID,
@@ -1318,7 +876,7 @@ annotate service.ZVEHICLE_TYPE with @(
         Updatable : true,
         Insertable: true
     },
-    odata.draft.enabled,
+    //odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1329,12 +887,6 @@ annotate service.ZVEHICLE_TYPE with @(
             TypeNamePlural: 'ZVEHICLE_TYPE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : VEHICLE_TYPE_ID,
@@ -1369,48 +921,6 @@ annotate service.ZVEHICLE_TYPE with @(
     }
 );
 
-annotate service.ZKWSP_BRANCH with @(
-    cds.autoexpose,
-    odata.draft.bypass,
-    Common.SemanticKey: [BRANCH_ID],
-    Capabilities      : {
-        Deletable : true,
-        Updatable : true,
-        Insertable: true
-    },
-    odata.draft.enabled,
-
-    UI                : {
-        CreateHidden: false,
-        DeleteHidden: false,
-        HeaderInfo  : {
-            $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZKWSP_BRANCH',
-            TypeNamePlural: 'ZKWSP_BRANCH',
-        },
-        LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : BRANCH_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Branch ID'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : BRANCH_DESC,
-                ![@UI.Importance]: #High,
-                Label            : 'Branch Description'
-            }
-        ]
-    }
-);
-
 annotate service.ZSTATE with @(
     cds.autoexpose,
     odata.draft.bypass,
@@ -1423,7 +933,7 @@ annotate service.ZSTATE with @(
         Updatable : true,
         Insertable: true
     },
-    odata.draft.enabled,
+    //odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1434,12 +944,6 @@ annotate service.ZSTATE with @(
             TypeNamePlural: 'ZSTATE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : COUNTRY_ID,
@@ -1709,12 +1213,6 @@ annotate service.ZJOB_GROUP with @(
         },
         LineItem    : [
             {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
                 $Type            : 'UI.DataField',
                 Value            : JOB_GROUP_ID,
                 ![@UI.Importance]: #High,
@@ -1753,12 +1251,6 @@ annotate service.ZDEPARTMENT with @(
         },
         LineItem    : [
             {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
                 $Type            : 'UI.DataField',
                 Value            : DEPARTMENT_ID,
                 ![@UI.Importance]: #High,
@@ -1785,7 +1277,7 @@ annotate service.ZROLE with @(
         Updatable : true,
         Insertable: true
     },
-    odata.draft.enabled,
+    //odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1796,12 +1288,6 @@ annotate service.ZROLE with @(
             TypeNamePlural: 'ZROLE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : ROLE_ID,
@@ -1829,7 +1315,7 @@ annotate service.ZUSER_TYPE with @(
         Updatable : true,
         Insertable: true
     },
-    odata.draft.enabled,
+    //odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1840,12 +1326,6 @@ annotate service.ZUSER_TYPE with @(
             TypeNamePlural: 'ZUSER_TYPE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : USER_TYPE_ID,
@@ -1873,7 +1353,7 @@ annotate service.ZEMP_TYPE with @(
         Updatable : true,
         Insertable: true
     },
-    odata.draft.enabled,
+    //odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1884,12 +1364,6 @@ annotate service.ZEMP_TYPE with @(
             TypeNamePlural: 'ZEMP_TYPE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : EMP_TYPE_ID,
@@ -1910,14 +1384,14 @@ annotate service.ZREGION with @(
     cds.autoexpose,
     odata.draft.bypass,
     Common.SemanticKey: [
-        E
+        REGION_ID
     ],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
-    odata.draft.enabled,
+    //odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1928,12 +1402,6 @@ annotate service.ZREGION with @(
             TypeNamePlural: 'ZREGION',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : REGION_ID,
@@ -1961,7 +1429,7 @@ annotate service.ZRATE_KM with @(
         Updatable : true,
         Insertable: true
     },
-    odata.draft.enabled,
+    //odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1972,12 +1440,6 @@ annotate service.ZRATE_KM with @(
             TypeNamePlural: 'ZRATE_KM',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : RATE_KM_ID,
@@ -2053,12 +1515,6 @@ annotate service.ZSUBMISSION_TYPE with @(
         },
         LineItem    : [
             {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
                 $Type            : 'UI.DataField',
                 Value            : SUBMISSION_TYPE_ID,
                 ![@UI.Importance]: #High,
@@ -2116,12 +1572,6 @@ annotate service.ZOFFICE_LOCATION with @(
             TypeNamePlural: 'ZOFFICE_LOCATION',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
             {
                 $Type            : 'UI.DataField',
                 Value            : LOCATION_ID,
@@ -2200,12 +1650,6 @@ annotate service.ZOFFICE_DISTANCE with @(
         },
         LineItem    : [
             {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
                 $Type            : 'UI.DataField',
                 Value            : FROM_STATE_ID,
                 ![@UI.Importance]: #High,
@@ -2280,12 +1724,6 @@ annotate service.ZLOC_TYPE with @(
         },
         LineItem    : [
             {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
-            {
                 $Type            : 'UI.DataField',
                 Value            : LOC_TYPE_ID,
                 ![@UI.Importance]: #High,
@@ -2318,6 +1756,175 @@ annotate service.ZLOC_TYPE with @(
         ]
     }
 );
+
+annotate service.ZMATERIAL_GROUP with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        MATERIAL_CODE_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZMATERIAL_GROUP',
+            TypeNamePlural: 'ZMATERIAL_GROUP',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : MATERIAL_CODE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Material Code ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MATERIAL_CODE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Material Code Description'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZINDIV_GROUP with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        IND_OR_GROUP_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZINDIV_GROUP',
+            TypeNamePlural: 'ZINDIV_GROUP',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : IND_OR_GROUP_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Individual/Group ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : IND_OR_GROUP_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Individual/Group ID Description'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZPREAPPROVAL_STATUS with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        PREAPPROVAL_STATUS_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZPREAPPROVAL_STATUS',
+            TypeNamePlural: 'ZPREAPPROVAL_STATUS',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : PREAPPROVAL_STATUS_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Pre-Approval Status ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PREAPPROVAL_STATUS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Pre-Approval Status Description'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
 
 
 
