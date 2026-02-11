@@ -1410,7 +1410,7 @@ annotate service.ZREGION with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : USER_TYPE_DESC,
+                Value            : REGION_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Region Description'
             },
@@ -1924,6 +1924,234 @@ annotate service.ZPREAPPROVAL_STATUS with @(
         ]
     }
 );
+
+annotate service.ZEMP_VEHICLE with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        EMP_ID,
+        VEHICLE_NO
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZEMP_VEHICLE',
+            TypeNamePlural: 'ZEMP_VEHICLE',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMP_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VEHICLE_NO,
+                ![@UI.Importance]: #High,
+                Label            : 'Vehicle Number'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZEMP_RELATIONSHIP with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        RELATIONSHIP_TYPE_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZEMP_RELATIONSHIP',
+            TypeNamePlural: 'ZEMP_RELATIONSHIP',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : RELATIONSHIP_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Relationship Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RELATIONSHIP_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Relationship Type Description'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZLOOKUP_FIELD with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        LOOKUP_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZLOOKUP_FIELD',
+            TypeNamePlural: 'ZLOOKUP_FIELD',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : LOOKUP_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Lookup ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LOOKUP_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Lookup Description'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZMARITAL_CAT with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        MARRIAGE_CATEGORY_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZMARITAL_CAT',
+            TypeNamePlural: 'ZMARITAL_CAT',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : MARRIAGE_CATEGORY_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Marriage Category ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MARRIAGE_CATEGORY_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Marriage Category Description'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+
+
 
 
 

@@ -690,8 +690,8 @@ entity ZINTERNAL_ORDER: managed {
 }
 
 entity ZEMP_RELATIONSHIP: managed {
-    key RELATIONSHIP_TYPE_ID    : String @mandatory @Common.Label: 'Employee Type ID';
-        RELATIONSHIP_TYPE_DESC  : String @Common.Label: 'Employee Type Description'; 
+    key RELATIONSHIP_TYPE_ID    : String @mandatory @Common.Label: 'Relationship Type ID';
+        RELATIONSHIP_TYPE_DESC  : String @Common.Label: 'Relationship Type Description'; 
         START_DATE              : Date @Common.Label: 'Start Date';
         END_DATE                : Date @Common.Label: 'End Date';
         STATUS                  : String @Common.Label: 'Status';         
