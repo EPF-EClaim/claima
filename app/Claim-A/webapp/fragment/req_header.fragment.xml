@@ -24,97 +24,97 @@
                     <form:formElements>
                         <form:FormElement label="{i18n>req_purpose}">
                             <form:fields>
-                                <Text text="{request>/req_header/purpose}" />
+                                <Text text="{request>/purpose}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_id}">
                             <form:fields>
-                                <Text text="{request>/req_header/reqid}" />
+                                <Text text="{request>/reqid}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_tripstartdate}">
                             <form:fields>
-                                <Text text="{request>/req_header/tripstartdate}" />
+                                <Text text="{request>/tripstartdate}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_tripenddate}">
                             <form:fields>
-                                <Text text="{request>/req_header/tripenddate}" />
+                                <Text text="{request>/tripenddate}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_eventstartdate}">
                             <form:fields>
-                                <Text text="{request>/req_header/eventstartdate}" />
+                                <Text text="{request>/eventstartdate}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_eventenddate}">
                             <form:fields>
-                                <Text text="{request>/req_header/eventenddate}" />
+                                <Text text="{request>/eventenddate}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_location}">
                             <form:fields>
-                                <Text text="{request>/req_header/location}" />
+                                <Text text="{request>/location}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_grptype}">
                             <form:fields>
-                                <Text text="{request>/req_header/grptype}" />
+                                <Text text="{request>/grptype}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_transport}">
                             <form:fields>
-                                <Text text="{request>/req_header/transport}" />
+                                <Text text="{request>/transport}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_status}">
                             <form:fields>
-                                <Text text="{request>/req_header/reqstatus}" />
+                                <Text text="{request>/reqstatus}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_cc}">
                             <form:fields>
-                                <Text text="{request>/req_header/costcenter}" />
+                                <Text text="{request>/costcenter}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_acc}">
                             <form:fields>
-                                <Text text="{request>/req_header/altcostcenter}" />
+                                <Text text="{request>/altcostcenter}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_caa}">
                             <form:fields>
-                                <Text text="{request>/req_header/cashadvamt}" ></Text>
+                                <Text text="{request>/cashadvamt}" ></Text>
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_amt}">
                             <form:fields>
-                                <Text text="{request>/req_header/reqamt}" ></Text>
+                                <Text text="{request>/reqamt}" ></Text>
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_total_amt}">
                             <form:fields>
-                                <Text text="{request>/req_header/totalamt}" ></Text>
+                                <Text text="{request>/totalamt}" ></Text>
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_rtype}">
                             <form:fields>
-                                <Text text="{request>/req_header/reqtype}" />
+                                <Text text="{request>/reqtype}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_comment}">
                             <form:fields>
-                                <Text text="{request>/req_header/comment}"/>
+                                <Text text="{request>/comment}"/>
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_attach1}">
                             <form:fields>
-                                <Text text="{request>/req_header/doc1}"/>
+                                <Text text="{request>/doc1}"/>
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_attach2}">
                             <form:fields>
-                                <Text text="{request>/req_header/doc2}"/>
+                                <Text text="{request>/doc2}"/>
                             </form:fields>
                         </form:FormElement>
                     </form:formElements>
