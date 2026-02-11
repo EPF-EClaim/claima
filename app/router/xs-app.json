@@ -1,11 +1,15 @@
 {
+  "welcomeFile": "/app/claima/index.html",
   "routes": [
     {
-      "source": "^/(.*)$",
+      "source": "^/app/(.*)$",
       "target": "$1",
+      "localdir": "."
+    },
+    {
+      "source": "^/(.*)$",
       "destination": "srv-api",
       "csrfProtection": true
     }
-  ],
-  "welcomeFile": "/test1"
+  ]
 }

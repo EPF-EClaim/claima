@@ -19,12 +19,12 @@ annotate service.ZCLAIM_PURPOSE with @(
             TypeNamePlural: 'ZCLAIM_PURPOSE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_PURPOSE_ID,
@@ -62,12 +62,12 @@ annotate service.ZRISK with @(
             TypeNamePlural: 'ZRISK',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : RISK_ID,
@@ -104,12 +104,12 @@ annotate service.ZREQUEST_GRP with @(
             TypeNamePlural: 'ZREQUEST_GRP',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : REQUEST_GROUP_ID,
@@ -146,12 +146,12 @@ annotate service.ZREQUEST_TYPE with @(
             TypeNamePlural: 'ZREQUEST_TYPE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : REQUEST_TYPE_ID,
@@ -206,12 +206,12 @@ annotate service.ZCLAIM_TYPE with @(
             TypeNamePlural: 'ZCLAIM_TYPE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_TYPE_ID,
@@ -304,12 +304,12 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
             //     ![@UI.IsCopyAction]: true,
             //     Label              : 'Copy'
             // },
-            {
-                $Type            : 'UI.DataField',
-                Value            : CLAIM_TYPE_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim Type ID'
-            },
+            // {
+            //     $Type            : 'UI.DataField',
+            //     Value            : CLAIM_TYPE_ID,
+            //     ![@UI.Importance]: #High,
+            //     Label            : 'Claim Type ID'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_TYPE_ITEM_ID,
@@ -349,12 +349,12 @@ annotate service.ZAPP_FIELD_CTRL with @(
             TypeNamePlural: 'ZAPP_FIELD_CTRL',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_TYPE_ID,
@@ -511,12 +511,12 @@ annotate service.ZARITH_OPT with @(
             TypeNamePlural: 'ZARITH_OPT',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : OPERATOR_ID,
@@ -557,12 +557,12 @@ annotate service.ZAPPROVAL_RULES with @(
             TypeNamePlural: 'ZAPPROVAL_RULES',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : ZSCENARIO,
@@ -659,12 +659,12 @@ annotate service.ZCLAIM_MAIN_CAT with @(
             TypeNamePlural: 'ZCLAIM_MAIN_CAT',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_MAIN_CAT_ID,
@@ -701,12 +701,12 @@ annotate service.ZCLAIM_CATEGORY with @(
             TypeNamePlural: 'ZCLAIM_CATEGORY',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_CAT_ID,
@@ -743,12 +743,12 @@ annotate service.ZSTATUS with @(
             TypeNamePlural: 'ZSTATUS',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : STATUS_ID,
@@ -785,12 +785,12 @@ annotate service.ZCLAIM_DISCLAIMER with @(
             TypeNamePlural: 'ZCLAIM_DISCLAIMER',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_DISCLAIMER_ID,
@@ -827,12 +827,12 @@ annotate service.ZLODGING_CAT with @(
             TypeNamePlural: 'ZLODGING_CAT',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : LODGING_CATEGORY_ID,
@@ -869,12 +869,12 @@ annotate service.ZROOM_TYPE with @(
             TypeNamePlural: 'ZROOM_TYPE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : ROOM_TYPE_ID,
@@ -929,12 +929,12 @@ annotate service.ZFLIGHT_CLASS with @(
             TypeNamePlural: 'ZFLIGHT_CLASS',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : FLIGHT_CLASS_ID,
@@ -971,12 +971,12 @@ annotate service.ZCOUNTRY with @(
             TypeNamePlural: 'ZCOUNTRY',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : COUNTRY_ID,
@@ -1013,12 +1013,12 @@ annotate service.ZAREA with @(
             TypeNamePlural: 'ZAREA',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : AREA_ID,
@@ -1055,12 +1055,12 @@ annotate service.ZCURRENCY with @(
             TypeNamePlural: 'ZCURRENCY',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : CURRENCY_ID,
@@ -1097,12 +1097,12 @@ annotate service.ZMARITAL_STAT with @(
             TypeNamePlural: 'ZMARITAL_STAT',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : MARRIAGE_CATEGORY_ID,
@@ -1139,12 +1139,12 @@ annotate service.ZSTAFF_CAT with @(
             TypeNamePlural: 'ZSTAFF_CAT',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : STAFF_CATEGORY_ID,
@@ -1199,12 +1199,12 @@ annotate service.ZVEHICLE_TYPE with @(
             TypeNamePlural: 'ZVEHICLE_TYPE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : VEHICLE_TYPE_ID,
@@ -1259,12 +1259,12 @@ annotate service.ZKWSP_BRANCH with @(
             TypeNamePlural: 'ZKWSP_BRANCH',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : BRANCH_ID,
@@ -1304,12 +1304,12 @@ annotate service.ZSTATE with @(
             TypeNamePlural: 'ZSTATE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : COUNTRY_ID,
@@ -1560,12 +1560,12 @@ annotate service.ZJOB_GROUP with @(
             TypeNamePlural: 'ZJOB_GROUP',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : JOB_GROUP_ID,
@@ -1604,12 +1604,12 @@ annotate service.ZDEPARTMENT with @(
             TypeNamePlural: 'ZDEPARTMENT',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : DEPARTMENT_ID,
@@ -1648,12 +1648,12 @@ annotate service.ZROLE with @(
             TypeNamePlural: 'ZROLE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : ROLE_ID,
@@ -1692,12 +1692,12 @@ annotate service.ZUSER_TYPE with @(
             TypeNamePlural: 'ZUSER_TYPE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : USER_TYPE_ID,
@@ -1736,12 +1736,12 @@ annotate service.ZEMP_TYPE with @(
             TypeNamePlural: 'ZEMP_TYPE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : EMP_TYPE_ID,
@@ -1780,12 +1780,12 @@ annotate service.ZREGION with @(
             TypeNamePlural: 'ZREGION',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : REGION_ID,
@@ -1824,12 +1824,12 @@ annotate service.ZRATE_KM with @(
             TypeNamePlural: 'ZRATE_KM',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : RATE_KM_ID,
@@ -1886,12 +1886,12 @@ annotate service.ZSUBMISSION_TYPE with @(
             TypeNamePlural: 'ZSUBMISSION_TYPE',
         },
         LineItem    : [
-            {
-                $Type              : 'UI.DataFieldForAction',
-                Action             : 'eclaim_srv.Copy',
-                ![@UI.IsCopyAction]: true,
-                Label              : 'Copy'
-            },
+            // {
+            //     $Type              : 'UI.DataFieldForAction',
+            //     Action             : 'eclaim_srv.Copy',
+            //     ![@UI.IsCopyAction]: true,
+            //     Label              : 'Copy'
+            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : SUBMISSION_TYPE_ID,
