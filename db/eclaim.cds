@@ -68,7 +68,7 @@ entity ZREQUEST_HEADER : managed {
         EVENT_START_DATE        : String;
         EVENT_END_DATE          : String;
         REMARK                  : String;
-        REQUEST_GROUP_ID        : String;
+        IND_OR_GROUP            : String;
         ALTERNATE_COST_CENTRE   : String;
         REQUEST_AMOUNT          : String;
         TOTAL_AMOUNT            : String;
@@ -91,8 +91,6 @@ entity ZREQUEST_HEADER : managed {
                                       on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
         ZREQUEST_TYPE           : Association to one ZREQUEST_TYPE
                                       on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
-        ZREQUEST_GRP            : Association to one ZREQUEST_GRP
-                                      on ZREQUEST_GRP.REQUEST_GROUP_ID = REQUEST_GROUP_ID;
         ZSTATUS                 : Association to one ZSTATUS
                                       on ZSTATUS.STATUS_ID = STATUS;
         ZCOST_CENTER            : Association to one ZCOST_CENTER

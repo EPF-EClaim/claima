@@ -48,7 +48,7 @@ sap.ui.define([
 			data.req_item_rows     = Array.isArray(data.req_item_rows) ? data.req_item_rows : [];
 			data.req_item          = data.req_item || {
 				claim_type: "CT1",
-				claim_type_item: "CTI1",
+				claim_type_item_id: "CTI1",
 				est_amount: "",
 				est_no_participant: "",
 				cash_advance: "no_cashadv",
@@ -82,13 +82,13 @@ sap.ui.define([
 			const oView = this.getView();
 			if (!this._fragments[sName]) {
 				this._fragments[sName] = Fragment.load({
-				id: oView.getId(),                // stable IDs
-				name: "claima.fragment." + sName, // e.g., "req_header", "req_item_list", "req_create_item"
-				type: "XML",
-				controller: this
+					id: oView.getId(),                // stable IDs
+					name: "claima.fragment." + sName, // e.g., "req_header", "req_item_list", "req_create_item"
+					type: "XML",
+					controller: this
 				}).then((oFrag) => {
-				oView.addDependent(oFrag);        // inherit models & i18n
-				return oFrag;
+					oView.addDependent(oFrag);        // inherit models & i18n
+					return oFrag;
 				});
 			}
 			return this._fragments[sName];
@@ -127,7 +127,7 @@ sap.ui.define([
 			this._getReqModel().setProperty("/view", "list");
 		},
 
-		async _showItemCreate() {
+		async _showItemCreate(state) {
 			const oPage = this.byId("request_form");
 			if (!oPage) return;
 
@@ -138,10 +138,10 @@ sap.ui.define([
 			await this._replaceContentAt(oPage, 1, oCreate);
 
 			// Mark view state
-			this._getReqModel().setProperty("/view", "create");
+			this._getReqModel().setProperty("/view", state);
 		},
 
-		async _showItemList() {
+		async _showItemList(state) {
 			const oPage = this.byId("request_form");
 			if (!oPage) return;
 
@@ -152,7 +152,7 @@ sap.ui.define([
 			await this._replaceContentAt(oPage, 1, oCreate);
 
 			// Mark view state
-			this._getReqModel().setProperty("/view", "list");
+			this._getReqModel().setProperty("/view", state);
 		},
 
 		/* =========================================================
@@ -186,7 +186,7 @@ sap.ui.define([
 
 		onDeleteRequest() {
 			const oReq   = this._getReqModel();
-			const empId  = String(oReq.getProperty("/req_header/empid") || "").trim();
+			const empId  = this._userId;
 			const reqId  = String(oReq.getProperty("/req_header/reqid") || "").trim();
 
 			if (!empId || !reqId) {
@@ -282,7 +282,7 @@ sap.ui.define([
 			}
 
 			const reqId = String(data.req_header.reqid || "").trim();
-			const empId = sap.ushell.Container.getUser().getId();
+			const empId = this._userId;
 
 			if (!reqId || !empId) {
 				sap.m.MessageToast.show("EMP ID or Request ID missing");
@@ -299,7 +299,7 @@ sap.ui.define([
 
 				// PATCH payload
 				const payload = {
-					STATUS: "SUBMITTED",
+					STATUS: "PENDING APPROVAL",
 				};
 
 				const res = await fetch(entityUrl, {
@@ -352,19 +352,71 @@ sap.ui.define([
 			this._oAddClaimDialog.open();
 		},
 
+		 async onSaveRequest() {
+			const oReq = this._getReqModel();
+			const data = oReq.getData();
+
+			const reqId = String(data.req_header.reqid || "").trim();
+			const empId = this._userId;
+
+			if (!reqId || !empId) {
+				sap.m.MessageToast.show("EMP ID or Request ID missing");
+				return;
+			}
+
+			try {
+				sap.ui.core.BusyIndicator.show(0);
+
+				// Build composite key URL for PATCH:
+				// Example: /ZREQUEST_HEADER(EMP_ID='E12345',REQUEST_ID='REQ26000000339')
+				const base = this._serviceRoot();
+				const entityUrl = `${base}/ZREQUEST_HEADER(EMP_ID='${encodeURIComponent(empId)}',REQUEST_ID='${encodeURIComponent(reqId)}')`;
+
+				// PATCH payload
+				const payload = {
+					STATUS: "SAVED",
+				};
+
+				const res = await fetch(entityUrl, {
+					method: "PATCH",
+					headers: {
+						"Content-Type": "application/json",
+						"Accept": "application/json",
+						"If-Match": "*" // important for OData v4
+					},
+					body: JSON.stringify(payload)
+				});
+
+				if (!res.ok) {
+					const t = await res.text().catch(() => "");
+					throw new Error(`Update failed: ${res.status} ${t}`);
+				}
+
+				sap.m.MessageToast.show("Request submitted successfully");
+
+				// Optional: update local model
+				oReq.setProperty("/req_header/status", "SUBMITTED");
+
+			} catch (e) {
+				sap.m.MessageToast.show(e.message || "Submission failed");
+			} finally {
+				sap.ui.core.BusyIndicator.hide();
+			}
+		},
+
 		/* =========================================================
 		* Header & Item List Area
 		* ======================================================= */
 
 		async onAddItem() {
-			await this._showItemCreate();
+			await this._showItemCreate("create");
 
 			// Reset current item + participants
 			const oReq = this._getReqModel();
 			const data = oReq.getData();
 			data.req_item = {
 				claim_type: "CT1",
-				claim_type_item: "CTI1",
+				claim_type_item_id: "CTI1",
 				est_amount: "",
 				est_no_participant: "",
 				cash_advance: "no_cashadv",
@@ -378,14 +430,114 @@ sap.ui.define([
 			oReq.setData(data);
 		},
 
-		async navToItemDetail() {
-			// From list → open create/edit screen
-			await this._showItemCreate();
+		// Convenience wrappers
+		onOpenItemView: function (oEvent) {
+			return this._openItemFromList(oEvent, /* bEdit = */ false);
+		},
+		
+		onOpenItemEdit: function (oEvent) {
+			return this._openItemFromList(oEvent, /* bEdit = */ true);
+		},
 
-			// If not explicitly set, default to 'create'
+		/**
+		 * Opens the req_create_item fragment and binds it to the selected row.
+		 * bEdit=false → 'view' mode (your fragment disables editing when /view === 'view')
+		 * bEdit=true  → 'create' mode (enabled)
+		 */
+		_openItemFromList: async function (oEvent, bEdit) {
+			const oReq   = this._getReqModel();           // your named JSONModel "request"
+			const oTable = this.byId("req_item_table");
+
+			// 1) Determine the selected row context (row action, rowIndex, or first selected)
+			let oCtx = null;
+			const oRow    = oEvent?.getParameter?.("row");
+			const iRowIdx = oEvent?.getParameter?.("rowIndex");
+
+			if (oRow) {
+				oCtx = oRow.getBindingContext("request");
+			} else if (Number.isInteger(iRowIdx)) {
+				oCtx = oTable.getContextByIndex(iRowIdx);
+			} else {
+				const aSel = oTable.getSelectedIndices();
+				if (aSel?.length) {
+				oCtx = oTable.getContextByIndex(aSel[0]);
+				}
+			}
+
+			if (!oCtx) {
+				sap.m.MessageToast.show("Select an item to open");
+				return;
+			}
+
+			// 2) Read the row object from the JSON model
+			const row = oCtx.getObject();   // {REQUEST_ID, REQUEST_SUB_ID, CLAIM_TYPE_ID, ...}
+			const reqId = String(row.REQUEST_ID || oReq.getProperty("/req_header/reqid") || "").trim();
+			const subId = String(row.REQUEST_SUB_ID || "").trim();
+
+			// 3) Map list row → /req_item (matching your fragment bindings)
+			//    NOTE: claim_type_item_id is what your fragment binds to.
+			oReq.setProperty("/req_header/reqid", reqId); // keep header in sync
+			oReq.setProperty("/req_item", {
+				req_subid            : subId,
+				claim_type           : row.CLAIM_TYPE_ID || "",
+				claim_type_item_id 	 : row.CLAIM_TYPE_ITEM_ID || "",  // <- fragment binding expects this name
+				est_amount           : row.EST_AMOUNT ?? "",
+				est_no_participant   : row.EST_NO_PARTICIPANT ?? "",
+				start_date           : row.START_DATE || "",
+				end_date             : row.END_DATE || "",
+				location             : row.LOCATION || "",
+				cash_advance         : row.CASH_ADVANCE || "no_cashadv",
+				remark               : row.REMARK || ""
+			});
+
+			// 4) Set read-only (view) vs editable (create) mode per your fragment's logic
+			oReq.setProperty("/view", bEdit ? "i_edit" : "view");
+
+			// 5) Swap the fragment into the page (reuse your existing helper)
+			await this._showItemCreate(oReq.getProperty("/view"));   // shows claima.fragment.req_create_item in the "details" slot
+
+			// 6) Load participants for the selected item from backend
+			await this._loadParticipantsForItem(reqId, subId);
+		},
+
+		/**
+		 * Loads participants for (REQUEST_ID, REQUEST_SUB_ID) into request>/participant
+		 */
+		_loadParticipantsForItem: async function (reqId, subId) {
 			const oReq = this._getReqModel();
-			if (oReq.getProperty("/view") !== "view") {
-				oReq.setProperty("/view", "create");
+
+			// Default: one empty row (for local add)
+			const setEmpty = () => oReq.setProperty("/participant", [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }]);
+
+			if (!reqId || !subId) {
+				setEmpty();
+				return;
+			}
+
+			try {
+				const base = this._entityUrl("ZREQ_ITEM_PART");
+				const filter = encodeURIComponent(
+				`REQUEST_ID eq '${String(reqId).replace(/'/g, "''")}' and REQUEST_SUB_ID eq '${String(subId).replace(/'/g, "''")}'`
+				);
+				const orderby = encodeURIComponent("PARTICIPANTS_ID asc");
+				const url = `${base}?$filter=${filter}&$orderby=${orderby}&$format=json`;
+
+				const res = await fetch(url, { headers: { "Accept": "application/json" } });
+				if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+
+				const data = await res.json();
+				const parts = Array.isArray(data.value) ? data.value : [];
+
+				const aMapped = parts.map(p => ({
+				PARTICIPANTS_ID : p.PARTICIPANTS_ID || p.PARTICIPANT_ID || "",
+				ALLOCATED_AMOUNT: p.ALLOCATED_AMOUNT ?? ""
+				}));
+
+				oReq.setProperty("/participant", aMapped.length ? aMapped : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }]);
+			} catch (e) {
+				// eslint-disable-next-line no-console
+				console.error("Load participants failed:", e);
+				setEmpty();
 			}
 		},
 
@@ -407,10 +559,10 @@ sap.ui.define([
 
 			if (data.req_item?.claim_type || data.req_item?.est_amount) {
 				rows.push({
-				CLAIM_TYPE_ID: data.req_item.claim_type,
-				CLAIM_TYPE_ITEM_ID: data.req_item.claim_type_item,
-				EST_AMOUNT: parseFloat(data.req_item.est_amount || 0),
-				EST_NO_PARTICIPANT: parseInt(data.req_item.est_no_participant || 1, 10)
+					CLAIM_TYPE_ID: data.req_item.claim_type,
+					CLAIM_TYPE_ITEM_ID: data.req_item._id,
+					EST_AMOUNT: parseFloat(data.req_item.est_amount || 0),
+					EST_NO_PARTICIPANT: parseInt(data.req_item.est_no_participant || 1, 10)
 				});
 				oReq.setProperty("/req_item_rows", rows);
 				oReq.setProperty("/list_count", rows.length);
@@ -421,15 +573,15 @@ sap.ui.define([
 		* Item List: Delete Row(s)
 		* ======================================================= */
 
-		onRowDeleteReqItem(oEvent) {
-			const oTable = this.byId("req_item_table");             // sap.ui.table.Table
+		async onRowDeleteReqItem(oEvent) {
+			const oTable = this.byId("req_item_table"); // sap.ui.table.Table
 			const oReq   = this._getReqModel();
 			const aRows  = oReq.getProperty("/req_item_rows") || [];
 
-			// RowAction press gives row/rowIndex
+			// Determine which indices to delete (selection or row action)
 			let iFromAction = null;
-			const oRow      = oEvent.getParameter && oEvent.getParameter("row");
-			const iRowIdx   = oEvent.getParameter && oEvent.getParameter("rowIndex");
+			const oRow    = oEvent.getParameter && oEvent.getParameter("row");
+			const iRowIdx = oEvent.getParameter && oEvent.getParameter("rowIndex");
 
 			if (oRow) {
 				const oCtx = oRow.getBindingContext("request");
@@ -453,24 +605,116 @@ sap.ui.define([
 				if (!oCtx) return null;
 				const i = parseInt(oCtx.getPath().split("/").pop(), 10);
 				return Number.isInteger(i) ? i : null;
-				}).filter(x => x !== null);
+				}).filter((x) => x !== null);
 			} else if (Number.isInteger(iFromAction)) {
 				aToDelete = [iFromAction];
 			}
 
 			if (aToDelete.length === 0) {
-				MessageToast.show("Select row to delete");
+				sap.m.MessageToast.show("Select row to delete");
 				return;
 			}
 
+			// Remove duplicates, sort desc so splices don't shift indices
 			aToDelete = Array.from(new Set(aToDelete)).sort((a, b) => b - a);
-			aToDelete.forEach((i) => {
-				if (i >= 0 && i < aRows.length) aRows.splice(i, 1);
-			});
 
-			oReq.setProperty("/req_item_rows", aRows);
-			oReq.setProperty("/list_count", aRows.length);
+			// === Backend delete first ===
+			sap.ui.core.BusyIndicator.show(0);
+			const successIdx = [];
+			let errorMsg = "";
+
+			try {
+				for (const i of aToDelete) {
+				if (i < 0 || i >= aRows.length) continue;
+				const row = aRows[i] || {};
+				const reqId = String(row.REQUEST_ID || "").trim();
+				const subId = String(row.REQUEST_SUB_ID || "").trim();
+
+				if (!reqId || !subId) {
+					errorMsg = "Missing REQUEST_ID or REQUEST_SUB_ID in row.";
+					continue;
+				}
+
+				try {
+					await this._deleteItemCascade(reqId, subId);
+					successIdx.push(i);
+				} catch (e) {
+					// Collect errors but keep processing other rows
+					errorMsg = e.message || "Delete failed for one or more rows.";
+				}
+				}
+			} finally {
+				sap.ui.core.BusyIndicator.hide();
+			}
+
+			// === Update local model only for successful deletes ===
+			if (successIdx.length > 0) {
+				successIdx.sort((a, b) => b - a).forEach((i) => {
+				if (i >= 0 && i < aRows.length) aRows.splice(i, 1);
+				});
+				oReq.setProperty("/req_item_rows", aRows);
+				oReq.setProperty("/list_count", aRows.length);
+				sap.m.MessageToast.show(`Deleted ${successIdx.length} item(s)`);
+			}
+
+			if (errorMsg) {
+				sap.m.MessageToast.show(errorMsg);
+			}
+
 			oTable.clearSelection();
+		},
+
+		/**
+		 * Deletes all ZREQ_ITEM_PART entries for (REQUEST_ID, REQUEST_SUB_ID)
+		 * then deletes the ZREQUEST_ITEM row for the same key.
+		 * Accepts 404 as "already gone".
+		 */
+		async _deleteItemCascade(requestId, requestSubId) {
+			const base     = this._serviceRoot();
+			const partSet  = "ZREQ_ITEM_PART";
+			const itemSet  = "ZREQUEST_ITEM";
+
+			// 1) Fetch participants for this item (so we can delete each by key)
+			const reqIdLit  = requestId.replace(/'/g, "''");     // escape for OData literal
+			const subIdLit  = requestSubId.replace(/'/g, "''");  // escape for OData literal
+			const filter    = encodeURIComponent(`REQUEST_ID eq '${reqIdLit}' and REQUEST_SUB_ID eq '${subIdLit}'`);
+			const selUrl    = `${base}/${partSet}?$select=PARTICIPANTS_ID&$filter=${filter}&$format=json`;
+
+			const resp = await fetch(selUrl, { headers: { "Accept": "application/json" } });
+			if (!resp.ok && resp.status !== 404) {
+				const t = await resp.text().catch(() => "");
+				throw new Error(`Load participants failed: ${resp.status} ${t}`);
+			}
+
+			const data = resp.ok ? await resp.json() : { value: [] };
+			const parts = Array.isArray(data?.value) ? data.value : [];
+
+			// 2) Delete participants
+			for (const p of parts) {
+				const pid = String(p.PARTICIPANTS_ID ?? "");
+				// Compose key predicate (encode values; keep quotes)
+				const delPartUrl = `${base}/${partSet}(REQUEST_ID='${encodeURIComponent(requestId)}',REQUEST_SUB_ID='${encodeURIComponent(requestSubId)}',PARTICIPANTS_ID='${encodeURIComponent(pid)}')`;
+
+				const delP = await fetch(delPartUrl, {
+				method: "DELETE",
+				headers: { "If-Match": "*" } // avoid ETag issues
+				});
+
+				if (!delP.ok && delP.status !== 404) {
+				const t = await delP.text().catch(() => "");
+				throw new Error(`Delete participant failed: ${delP.status} ${t}`);
+				}
+			}
+
+			// 3) Delete the item
+			const delItemUrl = `${base}/${itemSet}(REQUEST_ID='${encodeURIComponent(requestId)}',REQUEST_SUB_ID='${encodeURIComponent(requestSubId)}')`;
+			const delI = await fetch(delItemUrl, { method: "DELETE", headers: { "If-Match": "*" } });
+			if (!delI.ok && delI.status !== 404) {
+				const t = await delI.text().catch(() => "");
+				throw new Error(`Delete item failed: ${delI.status} ${t}`);
+			}
+
+			return true;
 		},
 
 		/* =========================================================
@@ -529,11 +773,13 @@ sap.ui.define([
 			}
 		},
 
-		onRowDeleteParticipant(oEvent) {
+		// Replace your handler with this version
+		async onRowDeleteParticipant(oEvent) {
 			const oTable = this.byId("req_participant_table");
 			const oReq   = this._getReqModel();
 			let aRows    = oReq.getProperty("/participant") || [];
 
+			// --- Determine indices to delete (selection or row-action) ---
 			let idxFromAction = null;
 			const oRow    = oEvent.getParameter && oEvent.getParameter("row");
 			const visIdx  = oEvent.getParameter && oEvent.getParameter("rowIndex");
@@ -566,22 +812,84 @@ sap.ui.define([
 			}
 
 			if (aToDelete.length === 0) {
-				MessageToast.show("Select row to delete");
+				sap.m.MessageToast.show("Select participant row to delete");
 				return;
 			}
 
-			aToDelete = Array.from(new Set(aToDelete)).sort((a, b) => b - a);
-			aToDelete.forEach((i) => { if (i >= 0 && i < aRows.length) aRows.splice(i, 1); });
+			// --- Prepare service root (self-contained, works with or without _serviceRoot) ---
+			const serviceRoot = (this._serviceRoot ? this._serviceRoot() :
+				(this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri || "/odata/v4/EmployeeSrv/"))
+				.replace(/\/$/, "");
 
-			// Ensure at least 1 empty row remains
-			if (!Array.isArray(aRows) || aRows.length === 0) {
-				aRows = [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
-			} else {
-				this._normalizeTrailingEmptyRow(aRows);
+			const buildDelUrl = (reqId, subId, pid) =>
+				`${serviceRoot}/ZREQ_ITEM_PART(` +
+				`REQUEST_ID='${encodeURIComponent(reqId)}',` +
+				`REQUEST_SUB_ID='${encodeURIComponent(subId)}',` +
+				`PARTICIPANTS_ID='${encodeURIComponent(pid)}'` +
+				`)`;
+
+			// --- Delete: DB when keys exist, else local-only ---
+			aToDelete = Array.from(new Set(aToDelete)).sort((a, b) => b - a);
+			const successIdx = [];
+			let errorMsg = "";
+
+			sap.ui.core.BusyIndicator.show(0);
+			try {
+				for (const i of aToDelete) {
+				if (i < 0 || i >= aRows.length) continue;
+
+				const row  = aRows[i] || {};
+				const pid  = String(row.PARTICIPANTS_ID ?? row.PARTICIPANT_ID ?? "").trim();
+				const reqId = String(row.REQUEST_ID ?? oReq.getProperty("/req_header/reqid") ?? "").trim();
+				const subId = String(row.REQUEST_SUB_ID ?? oReq.getProperty("/req_item/req_subid") ?? "").trim();
+
+				const hasKeys = !!(reqId && subId && pid);
+
+				if (hasKeys) {
+					try {
+					const url = buildDelUrl(reqId, subId, pid);
+					const res = await fetch(url, {
+						method: "DELETE",
+						headers: { "If-Match": "*" } // avoid ETag issues
+					});
+					// Treat 404 as already deleted
+					if (!res.ok && res.status !== 404) {
+						const t = await res.text().catch(() => "");
+						throw new Error(`Delete participant failed (${res.status}): ${t}`);
+					}
+					successIdx.push(i);
+					} catch (e) {
+					errorMsg = e.message || "Failed to delete one or more participants.";
+					}
+				} else {
+					// Local-only (not yet saved to DB)
+					successIdx.push(i);
+				}
+				}
+			} finally {
+				sap.ui.core.BusyIndicator.hide();
 			}
 
-			oReq.setProperty("/participant", aRows);
-			oTable.clearSelection();
+			// --- Remove locally only successful ones and normalize trailing row ---
+			if (successIdx.length > 0) {
+				successIdx.sort((a, b) => b - a).forEach((i) => {
+				if (i >= 0 && i < aRows.length) aRows.splice(i, 1);
+				});
+
+				if (!Array.isArray(aRows) || aRows.length === 0) {
+				aRows = [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
+				} else {
+				this._normalizeTrailingEmptyRow(aRows); // your existing helper
+				}
+
+				oReq.setProperty("/participant", aRows);
+				oTable.clearSelection();
+				sap.m.MessageToast.show(`Deleted ${successIdx.length} participant(s)`);
+			}
+
+			if (errorMsg) {
+				sap.m.MessageToast.show(errorMsg);
+			}
 		},
 
 		/* =========================================================
@@ -621,13 +929,13 @@ sap.ui.define([
 			const oReq = this._getReqModel();
 			await this.onSave(); // saves current
 			// Re-open create form fresh
-			await this._showItemCreate();
+			await this._showItemCreate("create");
 
 			// Reset create buffers
 			const data = oReq.getData();
 			data.req_item = {
 				claim_type: "CT1",
-				claim_type_item: "CTI1",
+				claim_type_item_id: "CTI1",
 				est_amount: "",
 				est_no_participant: "",
 				cash_advance: "no_cashadv",
@@ -646,18 +954,76 @@ sap.ui.define([
 			const oReq      = this._getReqModel();
 			const data      = oReq.getData();
 			const reqId     = String(data.req_header.reqid || "").trim();
-			const claimType = data.req_item.claim_type;
-			const claimItem = data.req_item.claim_type_item;
+
+			// View flag: 'i_edit' triggers EDIT flow; otherwise CREATE flow
+			const isEdit    = oReq.getProperty("/view") === "i_edit";
+
+			// Common field extraction
+			const claimType = data.req_item.claim_type;           // e.g., "CT1"
+			const claimItem = data.req_item.claim_type_item_id;      // or 'claim_type_item_id' if you use that in form
 			const estAmt    = parseFloat(data.req_item.est_amount || 0);
 			const estNoPart = parseInt(data.req_item.est_no_participant || 1, 10);
 
-			if (!reqId) { MessageToast.show("Missing Request ID"); return; }
-			if (!claimType || !claimItem) { MessageToast.show("Select claim type/item"); return; }
+			if (!reqId) { sap.m.MessageToast.show("Missing Request ID"); return; }
+			if (!claimType || !claimItem) { sap.m.MessageToast.show("Select claim type/item"); return; }
 
-			BusyIndicator.show(0);
+			sap.ui.core.BusyIndicator.show(0);
 
 			try {
-				// 1) Get number range
+				// ================================
+				// EDIT FLOW
+				// ================================
+				if (isEdit) {
+					const requestSubId = String(data.req_item.req_subid || "").trim();
+					if (!requestSubId) {
+						throw new Error("Missing Request Sub ID for edit");
+					}
+
+					// 1) PATCH the item
+					const urlItem = this._entityUrl(
+						`ZREQUEST_ITEM(REQUEST_ID='${encodeURIComponent(reqId)}',REQUEST_SUB_ID='${encodeURIComponent(requestSubId)}')`
+					);
+					const payloadItem = {
+						CLAIM_TYPE_ID: claimType,
+						CLAIM_TYPE_ITEM_ID: claimItem,
+						EST_AMOUNT: estAmt,
+						EST_NO_PARTICIPANT: estNoPart,
+						// If you also edit these fields in your form, include them:
+						// START_DATE: data.req_item.start_date || null,
+						// END_DATE  : data.req_item.end_date   || null,
+						// LOCATION  : data.req_item.location  || "",
+						// REMARK    : data.req_item.remark    || ""
+					};
+
+					const resPatch = await fetch(urlItem, {
+						method: "PATCH",
+						headers: {
+						"Content-Type": "application/json",
+						"Accept": "application/json",
+						"If-Match": "*" // avoid ETag issues
+						},
+						body: JSON.stringify(payloadItem)
+					});
+					if (!resPatch.ok) {
+						const e = await resPatch.text();
+						throw new Error(`Item update failed: ${resPatch.status} ${e}`);
+					}
+
+					// 2) Sync participants for this item
+					await this._replaceParticipantsForItem(reqId, requestSubId, data.participant);
+
+					// 3) Refresh list & navigate back
+					await this._getItemList(reqId);
+					await this._showItemList('list');
+
+					sap.m.MessageToast.show("Updated Successfully");
+					return;
+				}
+
+				// ================================
+				// CREATE FLOW (original path)
+				// ================================
+				// 1) Get number range (new sub ID)
 				const nr = await this.getCurrentReqNumber("NR03");
 				if (!nr) throw new Error("Number range not available");
 				const requestSubId = String(nr.result);
@@ -685,23 +1051,22 @@ sap.ui.define([
 
 				// 3) POST participants (skip empty)
 				const parts = Array.isArray(data.participant) ? data.participant : [];
-				const urlPart = this._entityUrl("ZREQ_ITEM_PART"); // ensure this entity is exposed
+				const urlPart = this._entityUrl("ZREQ_ITEM_PART");
 				for (const p of parts) {
 					const pid = String(p.PARTICIPANTS_ID || "").trim();
 					if (!pid) continue;
-						const alloc = parseFloat(p.ALLOCATED_AMOUNT || 0);
+					const alloc = parseFloat(p.ALLOCATED_AMOUNT || 0);
 
-						const res = await fetch(urlPart, {
-							method: "POST",
-							headers: { "Content-Type": "application/json", "Accept": "application/json" },
-							body: JSON.stringify({
-							REQUEST_ID: reqId,
-							REQUEST_SUB_ID: requestSubId,
-							PARTICIPANTS_ID: pid,
-							ALLOCATED_AMOUNT: alloc
-							})
-						}
-					);
+					const res = await fetch(urlPart, {
+						method: "POST",
+						headers: { "Content-Type": "application/json", "Accept": "application/json" },
+						body: JSON.stringify({
+						REQUEST_ID: reqId,
+						REQUEST_SUB_ID: requestSubId,
+						PARTICIPANTS_ID: pid,
+						ALLOCATED_AMOUNT: alloc
+						})
+					});
 					if (!res.ok) {
 						const t = await res.text();
 						throw new Error(`Participant save failed: ${res.status} ${t}`);
@@ -715,14 +1080,86 @@ sap.ui.define([
 				await this._getItemList(reqId);
 
 				// 6) Back to list view
-				await this._showItemList();
+				await this._showItemList("list");
 
-				MessageToast.show("Saved Successfully");
+				sap.m.MessageToast.show("Saved Successfully");
 			} catch (e) {
-				MessageToast.show(e.message || "Save failed");
+				sap.m.MessageToast.show(e.message || "Save failed");
 			} finally {
-				BusyIndicator.hide();
+				sap.ui.core.BusyIndicator.hide();
 			}
+		},
+
+		/**
+		 * Replace all participants for an item:
+		 * 1) DELETE all ZREQ_ITEM_PART for the key
+		 * 2) INSERT from the provided array (skip empty rows)
+		 */
+		async _replaceParticipantsForItem(requestId, requestSubId, aParticipants) {
+			const base = this._serviceRoot();
+
+			// 1) Delete existing (best-effort; DELETE by filter is not standard → load then delete, or implement a backend action)
+			// Here: load keys then delete one-by-one
+			const filter = encodeURIComponent(
+				`REQUEST_ID eq '${String(requestId).replace(/'/g, "''")}' and REQUEST_SUB_ID eq '${String(requestSubId).replace(/'/g, "''")}'`
+			);
+			const selUrl = `${base}/ZREQ_ITEM_PART?$select=PARTICIPANTS_ID&$filter=${filter}&$format=json`;
+
+			const resSel = await fetch(selUrl, { headers: { "Accept": "application/json" } });
+			if (!resSel.ok && resSel.status !== 404) {
+				const t = await resSel.text().catch(() => "");
+				throw new Error(`Load participants failed: ${resSel.status} ${t}`);
+			}
+			const data = resSel.ok ? await resSel.json() : { value: [] };
+			const existing = Array.isArray(data?.value) ? data.value : [];
+
+			for (const r of existing) {
+				const pid = String(r.PARTICIPANTS_ID ?? "").trim();
+				if (!pid) continue;
+				const delUrl = `${base}/ZREQ_ITEM_PART(` +
+							`REQUEST_ID='${encodeURIComponent(requestId)}',` +
+							`REQUEST_SUB_ID='${encodeURIComponent(requestSubId)}',` +
+							`PARTICIPANTS_ID='${encodeURIComponent(pid)}'` +
+							`)`;
+				const del = await fetch(delUrl, { method: "DELETE", headers: { "If-Match": "*" } });
+				if (!del.ok && del.status !== 404) {
+				const t = await del.text().catch(() => "");
+				throw new Error(`Delete participant failed: ${del.status} ${t}`);
+				}
+			}
+
+			// 2) Insert from current array
+			const urlPart = `${base}/ZREQ_ITEM_PART`;
+			const list = Array.isArray(aParticipants) ? aParticipants : [];
+			for (const p of list) {
+				const pid = String(p.PARTICIPANTS_ID || p.PARTICIPANT_ID || "").trim();
+				if (!pid) continue;
+				const alloc = parseFloat(p.ALLOCATED_AMOUNT || 0);
+
+				const ins = await fetch(urlPart, {
+				method: "POST",
+				headers: { "Content-Type": "application/json", "Accept": "application/json" },
+				body: JSON.stringify({
+					REQUEST_ID: requestId,
+					REQUEST_SUB_ID: requestSubId,
+					PARTICIPANTS_ID: pid,
+					ALLOCATED_AMOUNT: alloc
+				})
+				});
+				if (!ins.ok) {
+				const t = await ins.text().catch(() => "");
+				throw new Error(`Insert participant failed: ${ins.status} ${t}`);
+				}
+			}
+		},
+
+		async onCancelItem() {
+			const oReq      = this._getReqModel();
+			const data      = oReq.getData();
+			const reqId     = String(data.req_header.reqid || "").trim();
+			
+			await this._getItemList(reqId);
+			await this._showItemList('list');
 		},
 
 		/* =========================================================
@@ -765,8 +1202,8 @@ sap.ui.define([
 
 				// Fix numeric types if backend returns strings
 				a.forEach((it) => {
-				if (it.EST_AMOUNT != null) it.EST_AMOUNT = parseFloat(it.EST_AMOUNT);
-				if (it.EST_NO_PARTICIPANT != null) it.EST_NO_PARTICIPANT = parseInt(it.EST_NO_PARTICIPANT, 10);
+					if (it.EST_AMOUNT != null) it.EST_AMOUNT = parseFloat(it.EST_AMOUNT);
+					if (it.EST_NO_PARTICIPANT != null) it.EST_NO_PARTICIPANT = parseInt(it.EST_NO_PARTICIPANT, 10);
 				});
 
 				oReq.setProperty("/req_item_rows", a);

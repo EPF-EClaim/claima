@@ -110,10 +110,10 @@
                                             enabled="{= ${request>/view} !== 'view' }"
                                             selectedKey="{request>/req_item/claim_type_item_id}">
                                             <items>
-                                                <core:Item key="CI1" text="Claim Type Item 1"/>
-                                                <core:Item key="CI2" text="Claim Type Item 2"/>
-                                                <core:Item key="CI3" text="Claim Type Item 3"/>
-                                                <core:Item key="CI4" text="Claim Type Item 4"/>
+                                                <core:Item key="CTI1" text="Claim Type Item 1"/>
+                                                <core:Item key="CTI2" text="Claim Type Item 2"/>
+                                                <core:Item key="CTI3" text="Claim Type Item 3"/>
+                                                <core:Item key="CTI4" text="Claim Type Item 4"/>
                                             </items>
                                         </m:Select>
                                     </form:fields>

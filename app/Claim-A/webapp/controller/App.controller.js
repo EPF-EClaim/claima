@@ -1098,7 +1098,7 @@ sap.ui.define([
 							REFERENCE_NUMBER       	: "",
 							OBJECTIVE_PURPOSE      	: oInputData.req_header.purpose,
 							REMARK                 	: oInputData.req_header.comment,
-							REQUEST_GROUP_ID       	: oInputData.req_header.grptype,
+							IND_OR_GROUP	       	: oInputData.req_header.grptype,
 							ALTERNATE_COST_CENTRE  	: oInputData.req_header.altcostcenter,
 							LOCATION               	: oInputData.req_header.location,
 							TYPE_OF_TRANSPORTATION 	: oInputData.req_header.transport,
@@ -1113,7 +1113,7 @@ sap.ui.define([
 							TRIP_END_DATE           : oInputData.req_header.tripenddate,
 							REQUEST_AMOUNT			: String(oInputData.req_header.reqamt),
 							TOTAL_AMOUNT            : String(oInputData.req_header.totalamt),
-							STATUS					: oInputData.req_header.status
+							STATUS					: oInputData.req_header.reqstatus
 						}) 
 					})
 					.then(r => r.json())
@@ -1121,19 +1121,16 @@ sap.ui.define([
 						if (!res.error) {
 							this.updateCurrentReqNumber(result.current);
 							this.oDialogFragment.close();
+							const oModel = this.getOwnerComponent().getModel('request');
+							oModel.setProperty("/view", 'list');
+							this._getItemList(oInputData.req_header.reqid);
+
+							// navigate to pre-approval request form page
 							this.byId("pageContainer").to(this.getView().byId('new_request'));
 						} else {
 							MessageToast.show(res.error.code, res.error.message);
 						};
 					});
-					
-					this.oDialogFragment.close();
-					const oModel = this.getOwnerComponent().getModel('request');
-					oModel.setProperty("/view", 'list');
-					this._getItemList(oInputData.req_header.reqid);
-
-					// navigate to pre-approval request form page
-					this.byId("pageContainer").to(this.getView().byId('new_request'));
 				};
 			});
 		},

@@ -70,7 +70,8 @@
                         <table:RowAction> 
                             <table:items>
                                 <table:RowActionItem type="Delete"      press=".onRowDeleteReqItem" visible="{= ${request>/view} !== 'view' }"/>
-                                <table:RowActionItem type="Navigation"  press=".navToItemDetail"/>
+                                <table:RowActionItem type="Navigation"  press=".onOpenItemEdit"    visible="{= ${request>/view} !== 'view' }" />
+                                <table:RowActionItem type="Navigation"  press=".onOpenItemView"    visible="{= ${request>/view} === 'view' }"/>
                             </table:items>
                         </table:RowAction>
                     </table:rowActionTemplate>
