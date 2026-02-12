@@ -14,7 +14,7 @@ framework:
     - name: sap.m
     - name: sap.ui.core
     - name: sap.ui.layout
-    - name: themelib_sap_horizon   
+    - name: themelib_sap_horizon
 server:
   customMiddleware:
     - name: fiori-tools-proxy
@@ -38,5 +38,19 @@ server:
       configuration:
         flp:
           theme: sap_horizon
-          
-
+resources:
+  configuration:
+    propertiesFileSourceEncoding: UTF-8
+builder:
+  resources:
+    excludes:
+      - "/test/**"
+      - "/localService/**"
+  customTasks:
+    - name: ui5-task-zipper
+      afterTask: generateVersionInfo
+      configuration:
+        archiveName: Claim-A
+        relativePaths: true
+        additionalFiles:
+          - xs-app.json
