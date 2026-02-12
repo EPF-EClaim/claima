@@ -145,24 +145,10 @@
      "target": "TargetDashboard"
     },
     {
-     "pattern": "ZCLAIM_PURPOSE",
-     "name": "ZCLAIM_PURPOSE",
-     "target": [
-      "ZCLAIM_PURPOSE"
-     ]
-    },
-    {
      "pattern": "ZRISK",
      "name": "ZRISK",
      "target": [
       "ZRISK"
-     ]
-    },
-    {
-     "pattern": "ZREQUEST_GRP",
-     "name": "ZREQUEST_GRP",
-     "target": [
-      "ZREQUEST_GRP"
      ]
     },
     {
@@ -194,27 +180,6 @@
      ]
     },
     {
-     "pattern": "ZARITH_OPT",
-     "name": "ZARITH_OPT",
-     "target": [
-      "ZARITH_OPT"
-     ]
-    },
-    {
-     "pattern": "ZAPPROVAL_RULES",
-     "name": "ZAPPROVAL_RULES",
-     "target": [
-      "ZAPPROVAL_RULES"
-     ]
-    },
-    {
-     "pattern": "ZCLAIM_MAIN_CAT",
-     "name": "ZCLAIM_MAIN_CAT",
-     "target": [
-      "ZCLAIM_MAIN_CAT"
-     ]
-    },
-    {
      "pattern": "ZCLAIM_CATEGORY",
      "name": "ZCLAIM_CATEGORY",
      "target": [
@@ -226,13 +191,6 @@
      "name": "ZSTATUS",
      "target": [
       "ZSTATUS"
-     ]
-    },
-    {
-     "pattern": "ZCLAIM_DISCLAIMER",
-     "name": "ZCLAIM_DISCLAIMER",
-     "target": [
-      "ZCLAIM_DISCLAIMER"
      ]
     },
     {
@@ -271,13 +229,6 @@
      ]
     },
     {
-     "pattern": "ZCURRENCY",
-     "name": "ZCURRENCY",
-     "target": [
-      "ZCURRENCY"
-     ]
-    },
-    {
      "pattern": "ZMARITAL_STAT",
      "name": "ZMARITAL_STAT",
      "target": [
@@ -296,13 +247,6 @@
      "name": "ZVEHICLE_TYPE",
      "target": [
       "ZVEHICLE_TYPE"
-     ]
-    },
-    {
-     "pattern": "ZKWSP_BRANCH",
-     "name": "ZKWSP_BRANCH",
-     "target": [
-      "ZKWSP_BRANCH"
      ]
     },
     {
@@ -374,6 +318,13 @@
      "target": [
       "ZREGION"
      ]
+    },
+    {
+     "pattern": "ZSUBMISSION_TYPE",
+     "name": "ZSUBMISSION_TYPE",
+     "target": [
+      "ZSUBMISSION_TYPE"
+     ]
     }
    ],
    "targets": {
@@ -384,59 +335,6 @@
     "TargetDashboard": {
      "id": "Dashboard",
      "name": "App"
-    },
-    "ZCLAIM_PURPOSE": {
-     "type": "Component",
-     "id": "ZCLAIM_PURPOSE",
-     "name": "sap.fe.templates.ListReport",
-     "options": {
-      "settings": {
-       "showHeaderFacetOptions": false,
-       "contextPath": "/ZCLAIM_PURPOSE",
-       "variantManagement": "None",
-       "controlConfiguration": {
-        "@com.sap.vocabularies.UI.v1.LineItem": {
-         "tableSettings": {
-          "type": "ResponsiveTable",
-          "createMode": "inline",
-          "initialLoad": "Enabled",
-          "enableExport": true,
-          "enableMassEdit": {
-           "visibleFields": "CLAIM_PURPOSE_ID,CLAIM_PURPOSE_DESC",
-           "operationGroupingMode": "Isolated"
-          },
-          "creationMode": {
-           "name": "CreationDialog",
-           "creationFields": "CLAIM_PURPOSE_ID,CLAIM_PURPOSE_DESC"
-          },
-          "selectAll": false,
-          "selectionMode": "Single",
-          "personalization": {
-           "column": false
-          },
-          "quickVariantSelection": {
-           "hideTableTitle": true
-          }
-         },
-         "actions": {
-          "copyrecord": {
-           "press": "claima.ext.controller.Config.onclickcopy",
-           "visible": true,
-           "enabled": true,
-           "requiresSelection": true,
-           "text": "New Copy"
-          },
-          "DataFieldForAction::eclaim_srv.Copy": {
-           "enableOnSelect": "single"
-          }
-         }
-        }
-       },
-       "hideFilterBar": true,
-       "initialLoad": "Enabled",
-       "navigation": {}
-      }
-     }
     },
     "ZRISK": {
      "type": "Component",
@@ -692,46 +590,6 @@
       }
      }
     },
-    "ZREQUEST_GRP": {
-     "type": "Component",
-     "id": "ZREQUEST_GRP",
-     "name": "sap.fe.templates.ListReport",
-     "options": {
-      "settings": {
-       "contextPath": "/ZREQUEST_GRP",
-       "variantManagement": "None",
-       "controlConfiguration": {
-        "@com.sap.vocabularies.UI.v1.LineItem": {
-         "tableSettings": {
-          "type": "ResponsiveTable",
-          "createMode": "inline",
-          "initialLoad": "Enabled",
-          "enableExport": true,
-          "selectAll": false,
-          "selectionMode": "Single",
-          "personalization": {
-           "column": false
-          },
-          "quickVariantSelection": {
-           "hideTableTitle": true
-          },
-          "enableMassEdit": {
-           "operationGroupingMode": "Isolated",
-           "visibleFields": "REQUEST_GROUP_ID,REQUEST_GROUP_DESC"
-          },
-          "creationMode": {
-           "name": "CreationDialog",
-           "creationFields": "REQUEST_GROUP_ID,REQUEST_GROUP_DESC"
-          }
-         }
-        }
-       },
-       "hideFilterBar": true,
-       "initialLoad": "Enabled",
-       "navigation": {}
-      }
-     }
-    },
     "ZREQUEST_TYPE": {
      "type": "Component",
      "id": "ZREQUEST_TYPE",
@@ -823,6 +681,57 @@
       }
      }
     },
+    "ZSUBMISSION_TYPE": {
+     "type": "Component",
+     "id": "ZSUBMISSION_TYPE",
+     "name": "sap.fe.templates.ListReport",
+     "options": {
+      "settings": {
+       "contextPath": "/ZSUBMISSION_TYPE",
+       "variantManagement": "None",
+       "controlConfiguration": {
+        "@com.sap.vocabularies.UI.v1.LineItem": {
+         "tableSettings": {
+          "type": "ResponsiveTable",
+          "createMode": "inline",
+          "initialLoad": "Enabled",
+          "enableExport": true,
+          "selectAll": false,
+          "selectionMode": "Single",
+          "personalization": {
+           "column": false
+          },
+          "quickVariantSelection": {
+           "hideTableTitle": true
+          },
+          "creationMode": {
+           "name": "CreationDialog",
+           "creationFields": "SUBMISSION_TYPE_ID,SUBMISSION_TYPE_DESC,START_DATE,END_DATE,STATUS"
+          },
+          "enableMassEdit": {
+           "visibleFields": "SUBMISSION_TYPE_ID,SUBMISSION_TYPE_DESC,START_DATE,END_DATE,STATUS"
+          }
+         }
+        }
+       },
+       "hideFilterBar": true,
+       "initialLoad": "Enabled",
+       "navigation": {},
+       "content": {
+        "header": {
+         "actions": {
+          "copyEntry": {
+           "press": "claima.ext.controller.Config.onClickCopy",
+           "visible": true,
+           "enabled": true,
+           "text": "Copy"
+          }
+         }
+        }
+       }
+      }
+     }
+    },
     "ZNUM_RANGE": {
      "type": "Component",
      "id": "ZNUM_RANGE",
@@ -895,84 +804,6 @@
       }
      }
     },
-    "ZARITH_OPT": {
-     "type": "Component",
-     "id": "ZARITH_OPT",
-     "name": "sap.fe.templates.ListReport",
-     "options": {
-      "settings": {
-       "contextPath": "/ZARITH_OPT",
-       "variantManagement": "None",
-       "controlConfiguration": {
-        "@com.sap.vocabularies.UI.v1.LineItem": {
-         "tableSettings": {
-          "type": "ResponsiveTable",
-          "createMode": "inline",
-          "initialLoad": "Enabled",
-          "enableExport": true,
-          "selectAll": false,
-          "selectionMode": "Single",
-          "personalization": {
-           "column": false
-          },
-          "quickVariantSelection": {
-           "hideTableTitle": true
-          },
-          "enableMassEdit": {
-           "visibleFields": "OPERATOR_ID,OPERATOR_DESC"
-          },
-          "creationMode": {
-           "name": "CreationDialog",
-           "creationFields": "OPERATOR_ID,OPERATOR_DESC"
-          }
-         }
-        }
-       },
-       "hideFilterBar": true,
-       "initialLoad": "Enabled",
-       "navigation": {}
-      }
-     }
-    },
-    "ZAPPROVAL_RULES": {
-     "type": "Component",
-     "id": "ZAPPROVAL_RULES",
-     "name": "sap.fe.templates.ListReport",
-     "options": {
-      "settings": {
-       "contextPath": "/ZAPPROVAL_RULES",
-       "variantManagement": "None",
-       "controlConfiguration": {
-        "@com.sap.vocabularies.UI.v1.LineItem": {
-         "tableSettings": {
-          "type": "ResponsiveTable",
-          "createMode": "inline",
-          "initialLoad": "Enabled",
-          "enableExport": true,
-          "selectAll": false,
-          "selectionMode": "Single",
-          "personalization": {
-           "column": false
-          },
-          "quickVariantSelection": {
-           "hideTableTitle": true
-          },
-          "enableMassEdit": {
-           "visibleFields": "ZSCENARIO,ZSEQNO,ZAMT_OP,ZAPPR_LVL,ZAMT,ZDAYS,ZDAYS_OP,ZCOSTCTR,ZCOSTCTR_OP,ZRISK,ZRISK_OP,ZAPPROVER_ID"
-          },
-          "creationMode": {
-           "name": "CreationDialog",
-           "creationFields": "ZSCENARIO,ZSEQNO,ZAPPR_LVL,ZAMT,ZAMT_OP,ZDAYS,ZDAYS_OP,ZCOSTCTR,ZCOSTCTR_OP,ZRISK,ZRISK_OP,ZAPPROVER_ID"
-          }
-         }
-        }
-       },
-       "hideFilterBar": true,
-       "initialLoad": "Enabled",
-       "navigation": {}
-      }
-     }
-    },
     "ZUSER_TYPE": {
      "type": "Component",
      "id": "ZUSER_TYPE",
@@ -1002,46 +833,6 @@
           "creationMode": {
            "name": "CreationDialog",
            "creationFields": "USER_TYPE_ID,USER_TYPE_DESC"
-          }
-         }
-        }
-       },
-       "hideFilterBar": true,
-       "initialLoad": "Enabled",
-       "navigation": {}
-      }
-     }
-    },
-    "ZCLAIM_MAIN_CAT": {
-     "type": "Component",
-     "id": "ZCLAIM_MAIN_CAT",
-     "name": "sap.fe.templates.ListReport",
-     "options": {
-      "settings": {
-       "contextPath": "/ZCLAIM_MAIN_CAT",
-       "variantManagement": "None",
-       "controlConfiguration": {
-        "@com.sap.vocabularies.UI.v1.LineItem": {
-         "tableSettings": {
-          "type": "ResponsiveTable",
-          "createMode": "inline",
-          "initialLoad": "Enabled",
-          "enableExport": true,
-          "selectAll": false,
-          "selectionMode": "Single",
-          "personalization": {
-           "column": false
-          },
-          "quickVariantSelection": {
-           "hideTableTitle": true
-          },
-          "enableMassEdit": {
-           "operationGroupingMode": "Isolated",
-           "visibleFields": "CLAIM_MAIN_CAT_DESC,CLAIM_MAIN_CAT_ID"
-          },
-          "creationMode": {
-           "name": "CreationDialog",
-           "creationFields": "CLAIM_MAIN_CAT_ID,CLAIM_MAIN_CAT_DESC"
           }
          }
         }
@@ -1120,46 +911,6 @@
           "creationMode": {
            "name": "CreationDialog",
            "creationFields": "STATUS_ID,STATUS_DESC"
-          }
-         }
-        }
-       },
-       "hideFilterBar": true,
-       "initialLoad": "Enabled",
-       "navigation": {}
-      }
-     }
-    },
-    "ZCLAIM_DISCLAIMER": {
-     "type": "Component",
-     "id": "ZCLAIM_DISCLAIMER",
-     "name": "sap.fe.templates.ListReport",
-     "options": {
-      "settings": {
-       "contextPath": "/ZCLAIM_DISCLAIMER",
-       "variantManagement": "None",
-       "controlConfiguration": {
-        "@com.sap.vocabularies.UI.v1.LineItem": {
-         "tableSettings": {
-          "type": "ResponsiveTable",
-          "createMode": "inline",
-          "initialLoad": "Enabled",
-          "enableExport": true,
-          "selectAll": false,
-          "selectionMode": "Single",
-          "personalization": {
-           "column": false
-          },
-          "quickVariantSelection": {
-           "hideTableTitle": true
-          },
-          "enableMassEdit": {
-           "operationGroupingMode": "Isolated",
-           "visibleFields": "CLAIM_DISCLAIMER_ID,CLAIM_DISCLAIMER_DESC"
-          },
-          "creationMode": {
-           "name": "CreationDialog",
-           "creationFields": "CLAIM_DISCLAIMER_ID,CLAIM_DISCLAIMER_DESC"
           }
          }
         }
@@ -1413,46 +1164,6 @@
       }
      }
     },
-    "ZCURRENCY": {
-     "type": "Component",
-     "id": "ZCURRENCY",
-     "name": "sap.fe.templates.ListReport",
-     "options": {
-      "settings": {
-       "contextPath": "/ZCURRENCY",
-       "variantManagement": "None",
-       "controlConfiguration": {
-        "@com.sap.vocabularies.UI.v1.LineItem": {
-         "tableSettings": {
-          "type": "ResponsiveTable",
-          "createMode": "inline",
-          "initialLoad": "Enabled",
-          "enableExport": true,
-          "selectAll": false,
-          "selectionMode": "Single",
-          "personalization": {
-           "column": false
-          },
-          "quickVariantSelection": {
-           "hideTableTitle": true
-          },
-          "enableMassEdit": {
-           "visibleFields": "CURRENCY_ID,CURRENCY_DESC",
-           "operationGroupingMode": "Isolated"
-          },
-          "creationMode": {
-           "name": "CreationDialog",
-           "creationFields": "CURRENCY_ID,CURRENCY_DESC"
-          }
-         }
-        }
-       },
-       "hideFilterBar": true,
-       "initialLoad": "Enabled",
-       "navigation": {}
-      }
-     }
-    },
     "ZMARITAL_STAT": {
      "type": "Component",
      "id": "ZMARITAL_STAT",
@@ -1561,45 +1272,6 @@
           "creationMode": {
            "name": "CreationDialog",
            "creationFields": "VEHICLE_TYPE_ID,VEHICLE_TYPE_DESC"
-          }
-         }
-        }
-       },
-       "hideFilterBar": true,
-       "initialLoad": "Enabled",
-       "navigation": {}
-      }
-     }
-    },
-    "ZKWSP_BRANCH": {
-     "type": "Component",
-     "id": "ZKWSP_BRANCH",
-     "name": "sap.fe.templates.ListReport",
-     "options": {
-      "settings": {
-       "contextPath": "/ZKWSP_BRANCH",
-       "variantManagement": "None",
-       "controlConfiguration": {
-        "@com.sap.vocabularies.UI.v1.LineItem": {
-         "tableSettings": {
-          "type": "ResponsiveTable",
-          "createMode": "inline",
-          "initialLoad": "Enabled",
-          "enableExport": true,
-          "selectAll": false,
-          "selectionMode": "Single",
-          "personalization": {
-           "column": false
-          },
-          "quickVariantSelection": {
-           "hideTableTitle": true
-          },
-          "enableMassEdit": {
-           "visibleFields": "BRANCH_ID,BRANCH_DESC"
-          },
-          "creationMode": {
-           "name": "CreationDialog",
-           "creationFields": "BRANCH_ID,BRANCH_DESC"
           }
          }
         }
