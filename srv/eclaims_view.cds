@@ -1,4 +1,4 @@
-/*using { ECLAIM } from '../db/eclaim';
+using { ECLAIM } from '../db/eclaim';
 
 namespace ECLAIMVIEW;
 
@@ -14,8 +14,8 @@ entity ZEMP_REQUEST_VIEW
         TRIP_END_DATE,
         EVENT_START_DATE,
         EVENT_END_DATE,
-        //REQUEST_GROUP_ID,
-        //ZREQUEST_GRP.REQUEST_GROUP_DESC,
+        IND_OR_GROUP,
+        ZINDIV_GROUP.IND_OR_GROUP_DESC,
         LOCATION,
         TYPE_OF_TRANSPORTATION,
         ALTERNATE_COST_CENTRE,
@@ -77,7 +77,7 @@ entity ZEMP_CLAIM_HEADER_VIEW
         ZCOST_CENTER.COST_CENTER_DESC,
         CLAIM_TYPE_ID,
         ZCLAIM_TYPE.CLAIM_TYPE_DESC,
-        //TOTAL_CLAIM_AMOUNT,
+        TOTAL_CLAIM_AMOUNT,
         STATUS_ID,
         ZSTATUS.STATUS_DESC,
         ZEMP_MASTER.DEP,
@@ -178,7 +178,7 @@ entity ZEMP_CLAIM_STATUS_HEADER
   //        ZCLAIM_PURPOSE.CLAIM_PURPOSE_DESC,
           START_DATE,
           AMOUNT,
-    }*/
+    }
 
 
 

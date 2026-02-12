@@ -149,6 +149,18 @@ service eclaim_srv {
     entity ZMARITAL_CAT as projection on ECLAIM.ZMARITAL_CAT;
 
     entity ZPREAPPROVAL_STATUS as projection on ECLAIM.ZPREAPPROVAL_STATUS;
+
+    entity ZPROJECT_HDR as projection on ECLAIM.ZPROJECT_HDR;
+
+    entity ZBRANCH as projection on ECLAIM.ZBRANCH;
+
+    entity ZEMP_CA_PAYMENT as projection on ECLAIM.ZEMP_CA_PAYMENT;
+
+    entity ZPERDIEM_ENT as projection on ECLAIM.ZPERDIEM_ENT;
+
+    entity ZHOUSING_LOAN_SCHEME as projection on ECLAIM.ZHOUSING_LOAN_SCHEME;
+
+    entity ZLENDER_NAME as projection on ECLAIM.ZLENDER_NAME;
 };
 
 
