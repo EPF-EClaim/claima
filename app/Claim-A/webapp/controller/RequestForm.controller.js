@@ -1306,7 +1306,87 @@ sap.ui.define([
 				})
 			] : [];
 			oBinding.filter(aFilters);
-		}
+		}, 
 
+		/* =========================================================
+		* Aiman changes 
+		* ======================================================= */
+
+		loadItemsForRequest: async function (sReqId) {
+			if (!sReqId) {
+				MessageToast.show("Missing Request ID.");
+				return;
+			}
+			try {
+				BusyIndicator.show(0);
+
+				// Fetch from backend (OData V4)
+				const aItems = await this._fetchReqItemsByReqId(sReqId);
+
+				// Bind to the JSON model used by req_item_list.fragment
+				const oLocal = this.getView().getModel(); // default JSON model
+				oLocal.setProperty("/req_item_rows", aItems);
+
+				// Update counts for the toolbar title and any badges
+				const oVM = this.getView().getModel("view");
+				if (oVM) {
+					oVM.setProperty("/totalCount", aItems.length);
+					oVM.setProperty("/visibleCount", aItems.length);
+				}
+
+
+				// Refresh the correct table binding (sap.ui.table.Table uses "rows")
+				const oTable = this.byId("req_item_table2");
+				if (oTable && oTable.getBinding && oTable.getBinding("rows")) {
+					oTable.getBinding("rows").refresh();
+				}
+
+
+				// If your table is already rendered and has listeners attached:
+				if (typeof this._updateTableCounts === "function") {
+					this._updateTableCounts();
+				}
+			} catch (e) {
+				jQuery.sap.log.error("loadItemsForRequest failed: " + e);
+				MessageToast.show("Unable to load request items.");
+			} finally {
+				BusyIndicator.hide();
+			}
+		},
+
+		_fetchReqItemsByReqId: async function (sReqId) {
+			// Get your V4 OData model (inherited from Component or View)
+			const oModel =
+				this.getView().getModel("employee") ||
+				this.getOwnerComponent().getModel("employee");
+			if (!oModel) {
+				throw new Error("OData model 'employee' not found.");
+			}
+
+
+			// Build V4 filter properly (use Filter argument, not $filter in mParameters)
+			const Filter = sap.ui.model.Filter;
+			const FilterOperator = sap.ui.model.FilterOperator;
+			const aFilters = [new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)];
+
+
+			// Adjust entity set and $select fields to your service metadata if needed
+			const oListBinding = oModel.bindList("/ZREQUEST_ITEM", null, null, aFilters, {
+				$select: "REQUEST_ID,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,EST_NO_PARTICIPANT,EST_AMOUNT",
+				$orderby: "REQUEST_ID,CLAIM_TYPE_ITEM_ID"
+			});
+
+			const aCtx = await oListBinding.requestContexts(0, Infinity);
+			const aEntities = await Promise.all(aCtx.map((c) => c.requestObject()));
+
+			return aEntities.map((e) => ({
+				request_id: e.REQUEST_ID || "",
+				claim_type: e.CLAIM_TYPE_ID || "",
+				claim_type_item: e.CLAIM_TYPE_ITEM_ID || "",
+				est_amount: Number(e.EST_AMOUNT) || "",
+				//curenncy_code: "MYR",
+				est_no_of_participant: e.EST_NO_PARTICIPANT || "",
+			}));
+		},
 	});
 });
