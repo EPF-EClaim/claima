@@ -393,11 +393,11 @@ sap.ui.define([
 		},
 
 		// Convenience wrappers
-		onOpenItemView: function (oEvent) {
+		onOpenItemView (oEvent) {
 			return this._openItemFromList(oEvent, /* bEdit = */ false);
 		},
 		
-		onOpenItemEdit: function (oEvent) {
+		onOpenItemEdit (oEvent) {
 			return this._openItemFromList(oEvent, /* bEdit = */ true);
 		},
 
@@ -406,7 +406,7 @@ sap.ui.define([
 		 * bEdit=false → 'view' mode (your fragment disables editing when /view === 'view')
 		 * bEdit=true  → 'create' mode (enabled)
 		 */
-		_openItemFromList: async function (oEvent, bEdit) {
+		async _openItemFromList (oEvent, bEdit) {
 			const oReq   = this._getReqModel();           // your named JSONModel "request"
 			const oTable = this.byId("req_item_table");
 
@@ -465,7 +465,7 @@ sap.ui.define([
 		/**
 		 * Loads participants for (REQUEST_ID, REQUEST_SUB_ID) into request>/participant
 		 */
-		_loadParticipantsForItem: async function (reqId, subId) {
+		async _loadParticipantsForItem (reqId, subId) {
 			const oReq = this._getReqModel();
 
 			// Default: one empty row (for local add)
@@ -1213,7 +1213,7 @@ sap.ui.define([
 		* Participant Value Help 
 		* ======================================================= */
 
-		onValueHelpRequest: function (oEvent) {
+		onValueHelpRequest (oEvent) {
 			this._oInputSource = oEvent.getSource();
 			if (!this._pEmployeeDialog) {
 				this._pEmployeeDialog = sap.ui.core.Fragment.load({
@@ -1228,7 +1228,7 @@ sap.ui.define([
 			this._pEmployeeDialog.then(oDialog => oDialog.open());
 		},
 
-		onParticipantInputChange: function (oEvent) {
+		onParticipantInputChange (oEvent) {
 			const oInput = oEvent.getSource();
 			const sValue = oInput.getValue();
 			const sPath = oInput.getBindingContext("request").getPath();
@@ -1267,7 +1267,7 @@ sap.ui.define([
 			}).catch(() => oInput.setBusy(false));
 		},
 
-		onValueHelpConfirm: function (oEvent) {
+		onValueHelpConfirm (oEvent) {
 			const oSelectedItem = oEvent.getParameter("selectedItem");
 			if (oSelectedItem) {
 				const sPath = this._oInputSource.getBindingContext("request").getPath();
@@ -1277,7 +1277,7 @@ sap.ui.define([
 			}
 		},
 
-		_updateParticipantData: function (sRowPath, oEmpData) {
+		_updateParticipantData (sRowPath, oEmpData) {
 			const oReqModel = this._getReqModel();
 
 			if (oEmpData) {
@@ -1293,7 +1293,7 @@ sap.ui.define([
 			}
 		},
 
-		onValueHelpSearch: function (oEvent) {
+		onValueHelpSearch (oEvent) {
 			const sValue = oEvent.getParameter("value");
 			const oBinding = oEvent.getSource().getBinding("items");
 			const aFilters = sValue ? [
