@@ -36,7 +36,7 @@
                     id="request_tripstartdate"
                     displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
-                    placeholder="dd MMM yyyy"
+                    placeholder="eg: 01 Jan 1990"
                     value="{request>/req_header/tripstartdate}"
 					textAlign="Begin"
 					required="{= ${request>/req_header/reqtype} === 'RT0001' || 
@@ -50,7 +50,7 @@
                     id="request_tripenddate"
                     displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
-                    placeholder="dd MMM yyyy"
+                    placeholder="eg: 01 Jan 1990"
                     value="{request>/req_header/tripenddate}"
 					textAlign="Begin"
 					required="{= ${request>/req_header/reqtype} === 'RT0001' || 
@@ -64,7 +64,7 @@
                     id="request_eventstartdate"
                     displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
-                    placeholder="dd MMM yyyy"
+                    placeholder="eg: 01 Jan 1990"
                     value="{request>/req_header/eventstartdate}"
 					textAlign="Begin"
 					required="{= ${request>/req_header/reqtype} === 'RT0001' || 
@@ -77,7 +77,7 @@
                     id="request_eventenddate"
                     displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
-                    placeholder="dd MMM yyyy"
+                    placeholder="eg: 01 Jan 1990"
                     value="{request>/req_header/eventenddate}"
 					textAlign="Begin"
 					required="{= ${request>/req_header/reqtype} === 'RT0001' || 

@@ -63,16 +63,25 @@ sap.ui.define([
 			oReq.setData(data);
 		},
 
-		_serviceRoot() {
-			// Correct way to read from manifest
-			const s = this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri
-				|| "/odata/v4/EmployeeSrv/";
-			return s.replace(/\/$/, ""); // no trailing slash
-		},
+		_serviceRoot(sDataSource = "mainService") {
+			const oManifest = this.getOwnerComponent().getManifestEntry("sap.app");
+			const sUri = oManifest?.dataSources?.[sDataSource]?.uri;
+			
+			let sPath = sUri;
+			if (!sPath) {
+				sPath = (sDataSource === "mainService") 
+					? "/odata/v4/EmployeeSrv/" 
+					: "/odata/v4/eclaim-view-srv/";
+			}
 
-		_entityUrl(sEntitySet) {
-			return new URL(this._serviceRoot() + "/" + sEntitySet, window.location.origin).toString();
+			return sPath.replace(/\/$/, "");
 		},
+		
+		_entityUrl(sEntitySet, sDataSource = "mainService") {
+			const sBase = this._serviceRoot(sDataSource);
+			return new URL(`${sBase}/${sEntitySet}`, window.location.origin).toString();
+		},
+		
 
 		/* =========================================================
 		* Helpers: Fragment Management
@@ -300,6 +309,8 @@ sap.ui.define([
 				// PATCH payload
 				const payload = {
 					STATUS: "PENDING APPROVAL",
+					CASH_ADVANCE: data.req_header.cashadv_amt,
+					REQUEST_AMOUNT: data.req_header.req_amt
 				};
 
 				const res = await fetch(entityUrl, {
@@ -352,58 +363,6 @@ sap.ui.define([
 			this._oAddClaimDialog.open();
 		},
 
-		 async onSaveRequest() {
-			const oReq = this._getReqModel();
-			const data = oReq.getData();
-
-			const reqId = String(data.req_header.reqid || "").trim();
-			const empId = this._userId;
-
-			if (!reqId || !empId) {
-				sap.m.MessageToast.show("EMP ID or Request ID missing");
-				return;
-			}
-
-			try {
-				sap.ui.core.BusyIndicator.show(0);
-
-				// Build composite key URL for PATCH:
-				// Example: /ZREQUEST_HEADER(EMP_ID='E12345',REQUEST_ID='REQ26000000339')
-				const base = this._serviceRoot();
-				const entityUrl = `${base}/ZREQUEST_HEADER(EMP_ID='${encodeURIComponent(empId)}',REQUEST_ID='${encodeURIComponent(reqId)}')`;
-
-				// PATCH payload
-				const payload = {
-					STATUS: "SAVED",
-				};
-
-				const res = await fetch(entityUrl, {
-					method: "PATCH",
-					headers: {
-						"Content-Type": "application/json",
-						"Accept": "application/json",
-						"If-Match": "*" // important for OData v4
-					},
-					body: JSON.stringify(payload)
-				});
-
-				if (!res.ok) {
-					const t = await res.text().catch(() => "");
-					throw new Error(`Update failed: ${res.status} ${t}`);
-				}
-
-				sap.m.MessageToast.show("Request submitted successfully");
-
-				// Optional: update local model
-				oReq.setProperty("/req_header/status", "SUBMITTED");
-
-			} catch (e) {
-				sap.m.MessageToast.show(e.message || "Submission failed");
-			} finally {
-				sap.ui.core.BusyIndicator.hide();
-			}
-		},
-
 		/* =========================================================
 		* Header & Item List Area
 		* ======================================================= */
@@ -425,7 +384,7 @@ sap.ui.define([
 				location: "",
 				remarks: ""
 			};
-			data.participant = [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
+			data.participant = [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }];
 			data.view = "create";
 			oReq.setData(data);
 		},
@@ -515,9 +474,10 @@ sap.ui.define([
 			}
 
 			try {
+				// const base = this._entityUrl("ZEMP_REQUEST_PART_VIEW", "eclaimViewService");
 				const base = this._entityUrl("ZREQ_ITEM_PART");
 				const filter = encodeURIComponent(
-				`REQUEST_ID eq '${String(reqId).replace(/'/g, "''")}' and REQUEST_SUB_ID eq '${String(subId).replace(/'/g, "''")}'`
+					`REQUEST_ID eq '${String(reqId).replace(/'/g, "''")}' and REQUEST_SUB_ID eq '${String(subId).replace(/'/g, "''")}'`
 				);
 				const orderby = encodeURIComponent("PARTICIPANTS_ID asc");
 				const url = `${base}?$filter=${filter}&$orderby=${orderby}&$format=json`;
@@ -529,11 +489,13 @@ sap.ui.define([
 				const parts = Array.isArray(data.value) ? data.value : [];
 
 				const aMapped = parts.map(p => ({
-				PARTICIPANTS_ID : p.PARTICIPANTS_ID || p.PARTICIPANT_ID || "",
-				ALLOCATED_AMOUNT: p.ALLOCATED_AMOUNT ?? ""
+					PARTICIPANTS_ID : p.PARTICIPANTS_ID || "",
+					PARTICIPANT_NAME : p.NAME || "",
+					PARTICIPANT_COST_CENTER : p.CC || "",
+					ALLOCATED_AMOUNT: p.ALLOCATED_AMOUNT ?? ""
 				}));
 
-				oReq.setProperty("/participant", aMapped.length ? aMapped : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }]);
+				oReq.setProperty("/participant", aMapped.length ? aMapped : [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }]);
 			} catch (e) {
 				// eslint-disable-next-line no-console
 				console.error("Load participants failed:", e);
@@ -884,7 +846,7 @@ sap.ui.define([
 
 				oReq.setProperty("/participant", aRows);
 				oTable.clearSelection();
-				sap.m.MessageToast.show(`Deleted ${successIdx.length} participant(s)`);
+				sap.m.MessageToast.show(`Deleted ${successIdx.length - 1 || 1} participant(s)`);
 			}
 
 			if (errorMsg) {
@@ -895,31 +857,6 @@ sap.ui.define([
 		/* =========================================================
 		* Save Draft / Save Item / Save+Another
 		* ======================================================= */
-
-		async onSaveRequestDraft() {
-			MessageToast.show("save draft");
-			const url = this._entityUrl("ZREQUEST_TYPE");
-			const payload = {
-				REQUEST_TYPE_ID: "RT0006",
-				REQUEST_TYPE_DESC: "Testing Create Data",
-				END_DATE: "9999-12-31",
-				START_DATE: "2026-01-01",
-				STATUS: "INACTIVE"
-			};
-
-			const res = await fetch(url, {
-				method: "POST",
-				headers: { "Content-Type": "application/json", "Accept": "application/json" },
-				body: JSON.stringify(payload)
-			});
-
-			if (!res.ok) {
-				const t = await res.text();
-				MessageToast.show(`Draft failed: ${res.status} ${t}`);
-				return;
-			}
-			MessageToast.show("Draft saved");
-		},
 
 		onSaveItem() {
 			this.onSave();
@@ -970,16 +907,21 @@ sap.ui.define([
 			sap.ui.core.BusyIndicator.show(0);
 
 			try {
-				// ================================
-				// EDIT FLOW
-				// ================================
+				const alloc_total = data.participant.reduce((sum, it) => {
+					return sum + (parseFloat(it.ALLOCATED_AMOUNT) || 0);
+				}, 0);
+
+				if (alloc_total > data.req_item.est_amount) {
+					sap.m.MessageToast.show('Allocated Amount cannot be more than Estimated Amount');
+					return;
+				}
+
 				if (isEdit) {
 					const requestSubId = String(data.req_item.req_subid || "").trim();
 					if (!requestSubId) {
 						throw new Error("Missing Request Sub ID for edit");
 					}
 
-					// 1) PATCH the item
 					const urlItem = this._entityUrl(
 						`ZREQUEST_ITEM(REQUEST_ID='${encodeURIComponent(reqId)}',REQUEST_SUB_ID='${encodeURIComponent(requestSubId)}')`
 					);
@@ -1000,7 +942,7 @@ sap.ui.define([
 						headers: {
 						"Content-Type": "application/json",
 						"Accept": "application/json",
-						"If-Match": "*" // avoid ETag issues
+						"If-Match": "*" 
 						},
 						body: JSON.stringify(payloadItem)
 					});
@@ -1009,10 +951,8 @@ sap.ui.define([
 						throw new Error(`Item update failed: ${resPatch.status} ${e}`);
 					}
 
-					// 2) Sync participants for this item
 					await this._replaceParticipantsForItem(reqId, requestSubId, data.participant);
 
-					// 3) Refresh list & navigate back
 					await this._getItemList(reqId);
 					await this._showItemList('list');
 
@@ -1020,15 +960,11 @@ sap.ui.define([
 					return;
 				}
 
-				// ================================
-				// CREATE FLOW (original path)
-				// ================================
-				// 1) Get number range (new sub ID)
+				
 				const nr = await this.getCurrentReqNumber("NR03");
 				if (!nr) throw new Error("Number range not available");
 				const requestSubId = String(nr.result);
 
-				// 2) POST to ZREQUEST_ITEM
 				const urlItem = this._entityUrl("ZREQUEST_ITEM");
 				const payloadItem = {
 					REQUEST_ID: reqId,
@@ -1049,7 +985,6 @@ sap.ui.define([
 					throw new Error(`Item save failed: ${resItem.status} ${e}`);
 				}
 
-				// 3) POST participants (skip empty)
 				const parts = Array.isArray(data.participant) ? data.participant : [];
 				const urlPart = this._entityUrl("ZREQ_ITEM_PART");
 				for (const p of parts) {
@@ -1073,13 +1008,10 @@ sap.ui.define([
 					}
 				}
 
-				// 4) Update number range
 				await this.updateCurrentReqNumber("NR03", nr.current);
 
-				// 5) Refresh list view (pull latest from backend)
 				await this._getItemList(reqId);
 
-				// 6) Back to list view
 				await this._showItemList("list");
 
 				sap.m.MessageToast.show("Saved Successfully");
@@ -1090,11 +1022,6 @@ sap.ui.define([
 			}
 		},
 
-		/**
-		 * Replace all participants for an item:
-		 * 1) DELETE all ZREQ_ITEM_PART for the key
-		 * 2) INSERT from the provided array (skip empty rows)
-		 */
 		async _replaceParticipantsForItem(requestId, requestSubId, aParticipants) {
 			const base = this._serviceRoot();
 
@@ -1206,6 +1133,17 @@ sap.ui.define([
 					if (it.EST_NO_PARTICIPANT != null) it.EST_NO_PARTICIPANT = parseInt(it.EST_NO_PARTICIPANT, 10);
 				});
 
+				const cashadv_amt = a.reduce((sum, it) => {
+					return it.CASH_ADVANCE === "YES" ? sum + (parseFloat(it.EST_AMOUNT) || 0) : sum;
+				}, 0);
+
+				const req_amt = a.reduce((sum, it) => {
+					return it.CASH_ADVANCE === null ? sum + (parseFloat(it.EST_AMOUNT) || 0) : sum;
+				}, 0);
+				
+				oReq.setProperty("/req_header/cashadvamt", cashadv_amt);
+				oReq.setProperty("/req_header/reqamt", req_amt);
+
 				oReq.setProperty("/req_item_rows", a);
 				oReq.setProperty("/list_count", a.length);
 				return a;
@@ -1266,6 +1204,105 @@ sap.ui.define([
 				console.error("Error updating number range:", e);
 				return null;
 			}
+		}, 
+
+		/* =========================================================
+		* Participant Value Help 
+		* ======================================================= */
+
+		onValueHelpRequest: function (oEvent) {
+			this._oInputSource = oEvent.getSource();
+			if (!this._pEmployeeDialog) {
+				this._pEmployeeDialog = sap.ui.core.Fragment.load({
+					id: this.getView().getId(),
+					name: "claima.fragment.req_participant_vh",
+					controller: this
+				}).then(oDialog => {
+					this.getView().addDependent(oDialog);
+					return oDialog;
+				});
+			}
+			this._pEmployeeDialog.then(oDialog => oDialog.open());
+		},
+
+		onParticipantInputChange: function (oEvent) {
+			const oInput = oEvent.getSource();
+			const sValue = oInput.getValue();
+			const sPath = oInput.getBindingContext("request").getPath();
+			const oSelectedRow = oEvent.getParameter("selectedRow");
+
+			// --- CASE 1: INPUT CLEARED ---
+			if (!sValue) {
+				this._updateParticipantData(sPath, null); // Pass null to clear
+				return;
+			}
+
+			// --- CASE 2: SUGGESTION SELECTED ---
+			if (oSelectedRow) {
+				const oEmpData = oSelectedRow.getBindingContext().getObject();
+				this._updateParticipantData(sPath, oEmpData);
+				this.appendNewRow(oEvent);
+				return;
+			}
+
+			// --- CASE 3: MANUAL ENTER / TAB OUT ---
+			const oListBinding = this.getView().getModel().bindList("/ZEMP_MASTER");
+			const oFilter = new sap.ui.model.Filter("EEID", "EQ", sValue);
+			
+			oInput.setBusy(true);
+			oListBinding.filter(oFilter).requestContexts(0, 1).then(aContexts => {
+				oInput.setBusy(false);
+				if (aContexts.length > 0) {
+					const oEmpData = aContexts[0].getObject();
+					this._updateParticipantData(sPath, oEmpData);
+					this.appendNewRow(oEvent);
+				} else {
+					// Invalid ID entered manually
+					this._updateParticipantData(sPath, null); 
+					sap.m.MessageToast.show("Employee ID not found");
+				}
+			}).catch(() => oInput.setBusy(false));
+		},
+
+		onValueHelpConfirm: function (oEvent) {
+			const oSelectedItem = oEvent.getParameter("selectedItem");
+			if (oSelectedItem) {
+				const sPath = this._oInputSource.getBindingContext("request").getPath();
+				const oEmpData = oSelectedItem.getBindingContext().getObject();
+				this._updateParticipantData(sPath, oEmpData);
+				this.appendNewRow(oEvent);
+			}
+		},
+
+		_updateParticipantData: function (sRowPath, oEmpData) {
+			const oReqModel = this._getReqModel();
+
+			if (oEmpData) {
+				// Populate fields
+				oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", oEmpData.EEID || oEmpData.ID);
+				oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", oEmpData.NAME);
+				oReqModel.setProperty(sRowPath + "/PARTICIPANT_COST_CENTER", oEmpData.CC);
+			} else {
+				// Clear fields
+				oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", "");
+				oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", "");
+				oReqModel.setProperty(sRowPath + "/PARTICIPANT_COST_CENTER", "");
+			}
+		},
+
+		onValueHelpSearch: function (oEvent) {
+			const sValue = oEvent.getParameter("value");
+			const oBinding = oEvent.getSource().getBinding("items");
+			const aFilters = sValue ? [
+				new sap.ui.model.Filter({
+					filters: [
+						new sap.ui.model.Filter("EEID", "Contains", sValue),
+						new sap.ui.model.Filter("NAME", "Contains", sValue)
+					],
+					and: false
+				})
+			] : [];
+			oBinding.filter(aFilters);
 		}
 
 	});

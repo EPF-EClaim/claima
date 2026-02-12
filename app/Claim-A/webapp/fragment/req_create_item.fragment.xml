@@ -1,11 +1,12 @@
-<core:FragmentDefinition xmlns:form2="sap.fe.macros.form"
+<core:FragmentDefinition xmlns:table2="sap.ui.mdc.table" xmlns:form2="sap.fe.macros.form"
     xmlns="sap.m"
     xmlns:form="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:f="sap.f"
     xmlns:unified="sap.ui.unified"
-    xmlns:table="sap.ui.table" >
+    xmlns:table="sap.ui.table"
+    xmlns:mdc="sap.ui.mdc" >
     <VBox
         id="request_create_item_fragment" 
         backgroundDesign="Solid"
@@ -72,7 +73,7 @@
                                             id="i_start_date"
                                             displayFormat="dd MMM yyyy"
                                             valueFormat="yyyy-MM-dd"
-                                            placeholder="dd MMM yyyy"
+                                            placeholder="eg: 01 Jan 1990"
                                             value="{request>/req_item/start_date}"
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
@@ -138,7 +139,7 @@
                                             id="i_end_date"
                                             displayFormat="dd MMM yyyy"
                                             valueFormat="yyyy-MM-dd"
-                                            placeholder="dd MMM yyyy"
+                                            placeholder="eg: 01 Jan 1990"
                                             value="{request>/req_item/end_date}"
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
@@ -183,19 +184,47 @@
                         columnHeaderHeight="3rem"
                         selectionMode="MultiToggle"
                         rowActionCount="1">
+                        <table:Column width="10rem">
+                            <Label text="{i18n>req_p_id}"></Label>
+                            <table:template>
+                                <Input 
+                                    value="{request>PARTICIPANTS_ID}" 
+                                    showSuggestion="true"
+                                    suggestionRows="{/ZEMP_MASTER}"
+                                    suggestionItemSelected=".onParticipantInputChange"
+                                    change=".onParticipantInputChange"
+                                    showValueHelp="true"
+                                    valueHelpRequest=".onValueHelpRequest">
+                                    <suggestionColumns>
+                                        <Column><Label text="EEID"/></Column>
+                                        <Column><Label text="Name"/></Column>
+                                        <Column><Label text="Cost Center"/></Column>
+                                    </suggestionColumns>
+                                    <suggestionRows>
+                                        <ColumnListItem>
+                                            <cells>
+                                                <Label text="{EEID}"/>
+                                                <Label text="{NAME}"/>
+                                                <Label text="{CC}"/>
+                                            </cells>
+                                        </ColumnListItem>
+                                    </suggestionRows>
+                                </Input>
+                            </table:template>
+                        </table:Column>
                         <table:Column width="25rem">
                             <Label text="{i18n>req_p_name}"></Label>
                             <table:template>
-                                <Input id="participant_name" textAlign="Begin" value="{request>PARTICIPANTS_ID}" change=".appendNewRow"></Input>
+                                <Text text="{request>PARTICIPANT_NAME}" />
                             </table:template>
                         </table:Column>
                         <table:Column width="25rem">
                             <Label text="{i18n>req_p_cost_center}"></Label>
                             <table:template>
-                                <Text text="cost_center" />
+                                <Text text="{request>PARTICIPANT_COST_CENTER}" />
                             </table:template>
                         </table:Column>
-                        <table:Column width="25rem">
+                        <table:Column width="15rem">
                             <Label text="{i18n>req_p_alloc_amt}"></Label>
                             <table:template>
                                 <Input id="alloc_amount" textAlign="End" value="{request>ALLOCATED_AMOUNT}" type="Number"></Input>

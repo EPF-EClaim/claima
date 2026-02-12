@@ -745,9 +745,9 @@ sap.ui.define([
 		},
 
 		/**
- * Call RequestForm.loadItemsForRequest by scanning descendants of the page.
- * No changes needed in RequestForm.controller.
- */
+		 * Call RequestForm.loadItemsForRequest by scanning descendants of the page.
+		 * No changes needed in RequestForm.controller.
+		 */
 		_callRequestFormLoad: function (oDetailPage, sReqId) {
 			// Defer to allow NavContainer to render the page content
 			setTimeout(function () {
@@ -948,8 +948,7 @@ sap.ui.define([
 					reqstatus: "",
 					costcenter: "",
 					cashadvamt: 0,
-					reqamt: 0,
-					totalamt: 0
+					reqamt: 0
 				}
 			});
 			this._loadReqTypeSelectionData();
@@ -980,63 +979,63 @@ sap.ui.define([
 			var message = '';
 
 			// Check mandatory field based on Request Type
-			switch (oInputData.req_header.type) {
-				case 'RT0001':
-					if (oInputData.req_header.purpose == '' || oInputData.req_header.reqtype == '' || 
-						oInputData.req_header.tripstartdate == '' || oInputData.req_header.tripenddate == '' ||
-						oInputData.req_header.eventstartdate == '' || oInputData.req_header.eventenddate == '' ||
-						oInputData.req_header.grptype == '' || oInputData.req_header.location == '' ||
-						oInputData.req_header.transport == '' || oInputData.req_header.comment == '' ) {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-					};
-					break;
-				case 'RT0002':
-					if (oInputData.req_header.purpose == '' || oInputData.req_header.reqtype == '' || 
-						oInputData.req_header.grptype == '' || oInputData.req_header.comment == '' ) {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-						break;
-					};
-					break;
-				case 'RT0003':
-					if (oInputData.req_header.purpose == '' || oInputData.req_header.reqtype == '' || 
-						oInputData.req_header.eventstartdate == '' || oInputData.req_header.eventenddate == '' ||
-						oInputData.req_header.grptype == '' || oInputData.req_header.location == '' ||
-						oInputData.req_header.comment == '' || oInputData.req_header.eventdetail1 == '' || 
-						oInputData.req_header.eventdetail2 == '' || oInputData.req_header.eventdetail3 == '' || 
-						oInputData.req_header.eventdetail4 == '') {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-						break;
-					};
-					break;
-				case 'RT0004':
-					if (oInputData.req_header.purpose == '' || oInputData.req_header.reqtype == '' || 
-						oInputData.req_header.tripstartdate == '' || oInputData.req_header.tripenddate == '' ||
-						oInputData.req_header.grptype == '' || oInputData.req_header.comment == '' ) {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-					};
-					break;
-				default:
-					if (oInputData.req_header.purpose == '' || 
-						oInputData.req_header.reqtype == 'RT0000') {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-					} 
-			}
+			// switch (oInputData.req_header.type) {
+			// 	case 'RT0001':
+			// 		if (oInputData.req_header.purpose == '' || oInputData.req_header.reqtype == '' || 
+			// 			oInputData.req_header.tripstartdate == '' || oInputData.req_header.tripenddate == '' ||
+			// 			oInputData.req_header.eventstartdate == '' || oInputData.req_header.eventenddate == '' ||
+			// 			oInputData.req_header.grptype == '' || oInputData.req_header.location == '' ||
+			// 			oInputData.req_header.transport == '' || oInputData.req_header.comment == '' ) {
+			// 			okcode = false;
+			// 			message = 'Please enter all mandatory details';
+			// 		};
+			// 		break;
+			// 	case 'RT0002':
+			// 		if (oInputData.req_header.purpose == '' || oInputData.req_header.reqtype == '' || 
+			// 			oInputData.req_header.grptype == '' || oInputData.req_header.comment == '' ) {
+			// 			okcode = false;
+			// 			message = 'Please enter all mandatory details';
+			// 			break;
+			// 		};
+			// 		break;
+			// 	case 'RT0003':
+			// 		if (oInputData.req_header.purpose == '' || oInputData.req_header.reqtype == '' || 
+			// 			oInputData.req_header.eventstartdate == '' || oInputData.req_header.eventenddate == '' ||
+			// 			oInputData.req_header.grptype == '' || oInputData.req_header.location == '' ||
+			// 			oInputData.req_header.comment == '' || oInputData.req_header.eventdetail1 == '' || 
+			// 			oInputData.req_header.eventdetail2 == '' || oInputData.req_header.eventdetail3 == '' || 
+			// 			oInputData.req_header.eventdetail4 == '') {
+			// 			okcode = false;
+			// 			message = 'Please enter all mandatory details';
+			// 			break;
+			// 		};
+			// 		break;
+			// 	case 'RT0004':
+			// 		if (oInputData.req_header.purpose == '' || oInputData.req_header.reqtype == '' || 
+			// 			oInputData.req_header.tripstartdate == '' || oInputData.req_header.tripenddate == '' ||
+			// 			oInputData.req_header.grptype == '' || oInputData.req_header.comment == '' ) {
+			// 			okcode = false;
+			// 			message = 'Please enter all mandatory details';
+			// 		};
+			// 		break;
+			// 	default:
+			// 		if (oInputData.req_header.purpose == '' || 
+			// 			oInputData.req_header.reqtype == 'RT0000') {
+			// 			okcode = false;
+			// 			message = 'Please enter all mandatory details';
+			// 		} 
+			// }
 
-			// Check attachment 1 (mandatory)
-			if (okcode == true && oInputData.req_header.doc1 == '') {
-				okcode = false;
-				message = 'Please upload Attachment 1';
-			};
+			// // Check attachment 1 (mandatory)
+			// if (okcode == true && oInputData.req_header.doc1 == '') {
+			// 	okcode = false;
+			// 	message = 'Please upload Attachment 1';
+			// };
 
-			if (okcode == true && oInputData.req_header.enddate < oInputData.req_header.startdate) {
-				okcode = false;
-				message = "End Date cannot be earlier than begin date";
-			}
+			// if (okcode == true && oInputData.req_header.enddate < oInputData.req_header.startdate) {
+			// 	okcode = false;
+			// 	message = "End Date cannot be earlier than begin date";
+			// }
 
 
 			// value validation
@@ -1082,44 +1081,43 @@ sap.ui.define([
 			this.getCurrentReqNumber('NR01').then((result) => {
 				if (result) {
 					oReqModel.setProperty("/req_header/reqid", result.reqNo);
-					oReqModel.setProperty("/req_header/reqstatus", "Draft")
+					oReqModel.setProperty("/req_header/reqstatus", "DRAFT")
 
 					// Write to Database Table ZREQUEST_HEADER
-					var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
-					var sServiceUrl = sBaseUri + "/ZREQUEST_HEADER"; 
-					var sUserId = sap.ushell.Container.getUser().getId();
+					// var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
+					// var sServiceUrl = sBaseUri + "/ZREQUEST_HEADER"; 
+					// var sUserId = sap.ushell.Container.getUser().getId();
 
-					fetch(sServiceUrl, 
-						{method: "POST", headers: {"Content-Type": "application/json"},
-						body: JSON.stringify({
-							EMP_ID                 	: sUserId,
-							REQUEST_ID             	: oInputData.req_header.reqid,
-							REQUEST_TYPE_ID        	: oInputData.req_header.reqtype,
-							REFERENCE_NUMBER       	: "",
-							OBJECTIVE_PURPOSE      	: oInputData.req_header.purpose,
-							REMARK                 	: oInputData.req_header.comment,
-							IND_OR_GROUP	       	: oInputData.req_header.grptype,
-							ALTERNATE_COST_CENTRE  	: oInputData.req_header.altcostcenter,
-							LOCATION               	: oInputData.req_header.location,
-							TYPE_OF_TRANSPORTATION 	: oInputData.req_header.transport,
-							ATTACHMENT1            	: oInputData.req_header.doc1,
-							ATTACHMENT2            	: oInputData.req_header.doc2,
-							CASH_ADVANCE		   	: parseFloat(oInputData.req_header.cashadvamt),
-							CASH_ADVANCE_DATE	   	: null,
-							COST_CENTER            	: oInputData.req_header.costcenter,
-							EVENT_START_DATE		: oInputData.req_header.eventstartdate,
-							EVENT_END_DATE			: oInputData.req_header.eventenddate,
-							TRIP_START_DATE         : oInputData.req_header.tripstartdate,
-							TRIP_END_DATE           : oInputData.req_header.tripenddate,
-							REQUEST_AMOUNT			: String(oInputData.req_header.reqamt),
-							TOTAL_AMOUNT            : String(oInputData.req_header.totalamt),
-							STATUS					: oInputData.req_header.reqstatus
-						}) 
-					})
-					.then(r => r.json())
-					.then((res) => {
-						if (!res.error) {
-							this.updateCurrentReqNumber(result.current);
+					// fetch(sServiceUrl, 
+					// 	{method: "POST", headers: {"Content-Type": "application/json"},
+					// 	body: JSON.stringify({
+					// 		EMP_ID                 	: sUserId,
+					// 		REQUEST_ID             	: oInputData.req_header.reqid,
+					// 		REQUEST_TYPE_ID        	: oInputData.req_header.reqtype,
+					// 		REFERENCE_NUMBER       	: "",
+					// 		OBJECTIVE_PURPOSE      	: oInputData.req_header.purpose,
+					// 		REMARK                 	: oInputData.req_header.comment,
+					// 		IND_OR_GROUP	       	: oInputData.req_header.grptype,
+					// 		ALTERNATE_COST_CENTRE  	: oInputData.req_header.altcostcenter,
+					// 		LOCATION               	: oInputData.req_header.location,
+					// 		TYPE_OF_TRANSPORTATION 	: oInputData.req_header.transport,
+					// 		ATTACHMENT1            	: oInputData.req_header.doc1,
+					// 		ATTACHMENT2            	: oInputData.req_header.doc2,
+					// 		CASH_ADVANCE		   	: parseFloat(oInputData.req_header.cashadvamt),
+					// 		CASH_ADVANCE_DATE	   	: null,
+					// 		COST_CENTER            	: oInputData.req_header.costcenter,
+					// 		EVENT_START_DATE		: oInputData.req_header.eventstartdate,
+					// 		EVENT_END_DATE			: oInputData.req_header.eventenddate,
+					// 		TRIP_START_DATE         : oInputData.req_header.tripstartdate,
+					// 		TRIP_END_DATE           : oInputData.req_header.tripenddate,
+					// 		REQUEST_AMOUNT			: String(oInputData.req_header.reqamt),
+					// 		STATUS					: oInputData.req_header.reqstatus,
+					// 	}) 
+					// })
+					// .then(r => r.json())
+					// .then((res) => {
+					// 	if (!res.error) {
+					// 		this.updateCurrentReqNumber(result.current);
 							this.oDialogFragment.close();
 							const oModel = this.getOwnerComponent().getModel('request');
 							oModel.setProperty("/view", 'list');
@@ -1127,10 +1125,10 @@ sap.ui.define([
 
 							// navigate to pre-approval request form page
 							this.byId("pageContainer").to(this.getView().byId('new_request'));
-						} else {
-							MessageToast.show(res.error.code, res.error.message);
-						};
-					});
+					// 	} else {
+					// 		MessageToast.show(res.error.code, res.error.message);
+					// 	};
+					// });
 				};
 			});
 		},
