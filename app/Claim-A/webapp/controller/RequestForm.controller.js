@@ -309,8 +309,8 @@ sap.ui.define([
 				// PATCH payload
 				const payload = {
 					STATUS: "PENDING APPROVAL",
-					CASH_ADVANCE: data.req_header.cashadv_amt,
-					REQUEST_AMOUNT: data.req_header.req_amt
+					CASH_ADVANCE: parseFloat(data.req_header.cashadvamt),
+					REQUEST_AMOUNT: parseFloat(data.req_header.reqamt)
 				};
 
 				const res = await fetch(entityUrl, {
@@ -333,7 +333,7 @@ sap.ui.define([
 				const oScroll = this.getView().getParent();              // ScrollContainer
 				const oNav    = oScroll && oScroll.getParent && oScroll.getParent(); // NavContainer
 				const aPages  = oNav?.getPages ? oNav.getPages() : oNav?.getAggregation?.("pages");
-				const oMain   = aPages && aPages.find(p => p.getId && p.getId().endsWith("my_request"));
+				const oMain   = aPages && aPages.find(p => p.getId && p.getId().endsWith("myrequest"));
 				if (oMain) oNav.to(oMain, "slide");
 
 			} catch (e) {
@@ -370,26 +370,57 @@ sap.ui.define([
 		* Header & Item List Area
 		* ======================================================= */
 
-		async onAddItem() {
+		async onAddItem(oEvent) {
 			await this._showItemCreate("create");
 
-			// Reset current item + participants
 			const oReq = this._getReqModel();
 			const data = oReq.getData();
-			data.req_item = {
-				claim_type: "CT1",
-				claim_type_item_id: "CTI1",
-				est_amount: "",
-				est_no_participant: "",
-				cash_advance: "no_cashadv",
-				start_date: "",
-				end_date: "",
-				location: "",
-				remarks: ""
-			};
-			data.participant = [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }];
+			
+			// ... your req_item reset logic ...
+
+			// FIX: Await the async function call
+			const emp_data = await this._getEmpIdDetail(this._userId);
+
+			if (data.req_header.grptype === 'individual') {
+				// Use the returned data to populate the fields
+				data.participant = [{ 
+					PARTICIPANTS_ID: this._userId, 
+					PARTICIPANT_NAME: emp_data ? emp_data.name : "", 
+					PARTICIPANT_COST_CENTER: emp_data ? emp_data.cc : "", 
+					ALLOCATED_AMOUNT: "" 
+				}];
+			} else {
+				data.participant = [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }];
+			}
+			
 			data.view = "create";
 			oReq.setData(data);
+		},
+
+		async _getEmpIdDetail(sEEID) {
+			const oModel = this.getView().getModel(); 
+			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
+				new sap.ui.model.Filter("EEID", "EQ", sEEID)
+			]);
+
+			try {
+				// FIX: You MUST await the requestContexts call
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					return { 
+						name: oData.NAME, 
+						cc: oData.CC 
+					};
+				} else {
+					console.warn("No employee found with ID: " + sEEID);
+					return null;
+				}
+			} catch (oError) {
+				console.error("Error fetching employee detail", oError);
+				return null; // Return null so the app doesn't crash
+			}
 		},
 
 		// Convenience wrappers
@@ -400,12 +431,7 @@ sap.ui.define([
 		onOpenItemEdit (oEvent) {
 			return this._openItemFromList(oEvent, /* bEdit = */ true);
 		},
-
-		/**
-		 * Opens the req_create_item fragment and binds it to the selected row.
-		 * bEdit=false → 'view' mode (your fragment disables editing when /view === 'view')
-		 * bEdit=true  → 'create' mode (enabled)
-		 */
+		
 		async _openItemFromList (oEvent, bEdit) {
 			const oReq   = this._getReqModel();           // your named JSONModel "request"
 			const oTable = this.byId("req_item_table");
@@ -1309,84 +1335,158 @@ sap.ui.define([
 		}, 
 
 		/* =========================================================
+		* Excel Files Logics 
+		* ======================================================= */
+
+		onExport: function() {
+			var oModel = this.getView().getModel("request");
+			var aData = oModel.getProperty("/participant") || [];
+			
+			// Logic: If the array is empty OR the first row's EEID is falsy, export an empty list.
+			// Otherwise, export the full list.
+			var aExportData = (aData.length > 0 && aData[0].PARTICIPANTS_ID) ? aData : [];
+
+			var aCols = this._createColumnConfig();
+			var oSettings = {
+				workbook: { 
+					columns: aCols 
+				},
+				dataSource: aExportData,
+				fileName: "Request_Data.xlsx",
+				worker: false // Set to false for small datasets or if debugging
+			};
+
+			var oSheet = new Spreadsheet(oSettings);
+			oSheet.build()
+				.then(function() {
+					sap.m.MessageToast.show("Export successful");
+				})
+				.finally(function() {
+					oSheet.destroy();
+				});
+		},
+
+        _createColumnConfig: function() {
+            return [
+                { label: 'Participant ID (EEID)', property: 'PARTICIPANTS_ID', type: 'string' },
+                { label: 'Participant Name', property: 'PARTICIPANT_NAME', type: 'string' },
+                { label: 'Participant Cost Center', property: 'PARTICIPANT_COST_CENTER', type: 'string' },
+                { label: 'Allocated Amount (MYR)', property: 'ALLOCATED_AMOUNT', type: 'number' }
+                // Add more columns as per your /req_item_rows structure
+            ];
+        }, 
+
+		onUploadParticipants: function(oEvent) {
+			const oFileUploader = oEvent.getSource();
+			const oFile = oEvent.getParameter("files")[0];
+			
+			if (!oFile) return;
+
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				const data = new Uint8Array(e.target.result);
+				const workbook = XLSX.read(data, { type: 'array' });
+				const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+				
+				// Convert Excel rows to JSON
+				const aExcelData = XLSX.utils.sheet_to_json(worksheet);
+
+				// Map Excel headers back to your Model Properties
+				const aMappedParticipants = aExcelData.map(row => ({
+					PARTICIPANTS_ID: row["Participant ID (EEID) "], // "EEID" is the label from your export
+					PARTICIPANT_NAME: row["Participant Name"] || "",
+					PARTICIPANT_COST_CENTER: row["Participant Cost Center"] || "",
+					ALLOCATED_AMOUNT: row["Allocated Amount"] || "0"
+				}));
+
+				// Update your Request Model
+				const oReqModel = this.getView().getModel("request");
+				oReqModel.setProperty("/participant", aMappedParticipants);
+				
+				sap.m.MessageToast.show("Participants updated from file!");
+			};
+			reader.readAsArrayBuffer(oFile);
+		}
+
+		/* =========================================================
 		* Aiman changes 
 		* ======================================================= */
 
-		loadItemsForRequest: async function (sReqId) {
-			if (!sReqId) {
-				MessageToast.show("Missing Request ID.");
-				return;
-			}
-			try {
-				BusyIndicator.show(0);
+		// loadItemsForRequest: async function (sReqId) {
+		// 	if (!sReqId) {
+		// 		MessageToast.show("Missing Request ID.");
+		// 		return;
+		// 	}
+		// 	try {
+		// 		BusyIndicator.show(0);
 
-				// Fetch from backend (OData V4)
-				const aItems = await this._fetchReqItemsByReqId(sReqId);
+		// 		// Fetch from backend (OData V4)
+		// 		const aItems = await this._fetchReqItemsByReqId(sReqId);
 
-				// Bind to the JSON model used by req_item_list.fragment
-				const oLocal = this.getView().getModel(); // default JSON model
-				oLocal.setProperty("/req_item_rows", aItems);
+		// 		// Bind to the JSON model used by req_item_list.fragment
+		// 		const oLocal = this.getView().getModel(); // default JSON model
+		// 		oLocal.setProperty("/req_item_rows", aItems);
 
-				// Update counts for the toolbar title and any badges
-				const oVM = this.getView().getModel("view");
-				if (oVM) {
-					oVM.setProperty("/totalCount", aItems.length);
-					oVM.setProperty("/visibleCount", aItems.length);
-				}
-
-
-				// Refresh the correct table binding (sap.ui.table.Table uses "rows")
-				const oTable = this.byId("req_item_table2");
-				if (oTable && oTable.getBinding && oTable.getBinding("rows")) {
-					oTable.getBinding("rows").refresh();
-				}
+		// 		// Update counts for the toolbar title and any badges
+		// 		const oVM = this.getView().getModel("view");
+		// 		if (oVM) {
+		// 			oVM.setProperty("/totalCount", aItems.length);
+		// 			oVM.setProperty("/visibleCount", aItems.length);
+		// 		}
 
 
-				// If your table is already rendered and has listeners attached:
-				if (typeof this._updateTableCounts === "function") {
-					this._updateTableCounts();
-				}
-			} catch (e) {
-				jQuery.sap.log.error("loadItemsForRequest failed: " + e);
-				MessageToast.show("Unable to load request items.");
-			} finally {
-				BusyIndicator.hide();
-			}
-		},
-
-		_fetchReqItemsByReqId: async function (sReqId) {
-			// Get your V4 OData model (inherited from Component or View)
-			const oModel =
-				this.getView().getModel("employee") ||
-				this.getOwnerComponent().getModel("employee");
-			if (!oModel) {
-				throw new Error("OData model 'employee' not found.");
-			}
+		// 		// Refresh the correct table binding (sap.ui.table.Table uses "rows")
+		// 		const oTable = this.byId("req_item_table2");
+		// 		if (oTable && oTable.getBinding && oTable.getBinding("rows")) {
+		// 			oTable.getBinding("rows").refresh();
+		// 		}
 
 
-			// Build V4 filter properly (use Filter argument, not $filter in mParameters)
-			const Filter = sap.ui.model.Filter;
-			const FilterOperator = sap.ui.model.FilterOperator;
-			const aFilters = [new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)];
+		// 		// If your table is already rendered and has listeners attached:
+		// 		if (typeof this._updateTableCounts === "function") {
+		// 			this._updateTableCounts();
+		// 		}
+		// 	} catch (e) {
+		// 		jQuery.sap.log.error("loadItemsForRequest failed: " + e);
+		// 		MessageToast.show("Unable to load request items.");
+		// 	} finally {
+		// 		BusyIndicator.hide();
+		// 	}
+		// },
+
+		// _fetchReqItemsByReqId: async function (sReqId) {
+		// 	// Get your V4 OData model (inherited from Component or View)
+		// 	const oModel =
+		// 		this.getView().getModel("employee") ||
+		// 		this.getOwnerComponent().getModel("employee");
+		// 	if (!oModel) {
+		// 		throw new Error("OData model 'employee' not found.");
+		// 	}
 
 
-			// Adjust entity set and $select fields to your service metadata if needed
-			const oListBinding = oModel.bindList("/ZREQUEST_ITEM", null, null, aFilters, {
-				$select: "REQUEST_ID,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,EST_NO_PARTICIPANT,EST_AMOUNT",
-				$orderby: "REQUEST_ID,CLAIM_TYPE_ITEM_ID"
-			});
+		// 	// Build V4 filter properly (use Filter argument, not $filter in mParameters)
+		// 	const Filter = sap.ui.model.Filter;
+		// 	const FilterOperator = sap.ui.model.FilterOperator;
+		// 	const aFilters = [new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)];
 
-			const aCtx = await oListBinding.requestContexts(0, Infinity);
-			const aEntities = await Promise.all(aCtx.map((c) => c.requestObject()));
 
-			return aEntities.map((e) => ({
-				request_id: e.REQUEST_ID || "",
-				claim_type: e.CLAIM_TYPE_ID || "",
-				claim_type_item: e.CLAIM_TYPE_ITEM_ID || "",
-				est_amount: Number(e.EST_AMOUNT) || "",
-				//curenncy_code: "MYR",
-				est_no_of_participant: e.EST_NO_PARTICIPANT || "",
-			}));
-		},
+		// 	// Adjust entity set and $select fields to your service metadata if needed
+		// 	const oListBinding = oModel.bindList("/ZREQUEST_ITEM", null, null, aFilters, {
+		// 		$select: "REQUEST_ID,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,EST_NO_PARTICIPANT,EST_AMOUNT",
+		// 		$orderby: "REQUEST_ID,CLAIM_TYPE_ITEM_ID"
+		// 	});
+
+		// 	const aCtx = await oListBinding.requestContexts(0, Infinity);
+		// 	const aEntities = await Promise.all(aCtx.map((c) => c.requestObject()));
+
+		// 	return aEntities.map((e) => ({
+		// 		request_id: e.REQUEST_ID || "",
+		// 		claim_type: e.CLAIM_TYPE_ID || "",
+		// 		claim_type_item: e.CLAIM_TYPE_ITEM_ID || "",
+		// 		est_amount: Number(e.EST_AMOUNT) || "",
+		// 		//curenncy_code: "MYR",
+		// 		est_no_of_participant: e.EST_NO_PARTICIPANT || "",
+		// 	}));
+		// },
 	});
 });

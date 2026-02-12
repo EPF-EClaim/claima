@@ -166,14 +166,14 @@
                     <OverflowToolbar height="3rem">
                         <Title text="{i18n>req_participant}" titleStyle="H4" />
                         <ToolbarSpacer />
-                        <Button text="{i18n>req_b_download_template}" press=".onDownloadTemplate"></Button>
+                        <Button text="{i18n>req_b_download_template}" press=".onExport"></Button>
                         <unified:FileUploader
                             id="fuImport"
                             icon="sap-icon://upload"
                             buttonOnly="true"
                             buttonText="{i18n>req_b_upload_list}"
                             fileType="csv,xlsx"
-                            change=".onImportChange"
+                            change=".onUploadParticipants"
                             style="Emphasized"
                             enabled="{= ${request>/view} !== 'view' }"/>
                         <Button icon="sap-icon://delete" text="{i18n>req_b_delete}" press=".onRowDeleteParticipant" enabled="{= ${request>/view} !== 'view' }"/>
@@ -184,7 +184,7 @@
                         columnHeaderHeight="3rem"
                         selectionMode="MultiToggle"
                         rowActionCount="1">
-                        <table:Column width="10rem">
+                        <table:Column width="10rem" >
                             <Label text="{i18n>req_p_id}"></Label>
                             <table:template>
                                 <Input 
@@ -194,7 +194,8 @@
                                     suggestionItemSelected=".onParticipantInputChange"
                                     change=".onParticipantInputChange"
                                     showValueHelp="true"
-                                    valueHelpRequest=".onValueHelpRequest">
+                                    valueHelpRequest=".onValueHelpRequest"
+                                    enabled="{= ${request>/req_header/grptype} === 'group'}">
                                     <suggestionColumns>
                                         <Column><Label text="EEID"/></Column>
                                         <Column><Label text="Name"/></Column>

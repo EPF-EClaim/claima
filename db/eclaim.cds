@@ -70,8 +70,8 @@ entity ZREQUEST_HEADER : managed {
         REMARK                  : String;
         IND_OR_GROUP            : String;
         ALTERNATE_COST_CENTRE   : String;
-        REQUEST_AMOUNT          : String;
-        TOTAL_AMOUNT            : String;
+        REQUEST_AMOUNT          : Decimal;
+        TOTAL_AMOUNT            : Decimal;
         ATTACHMENT1             : String;
         ATTACHMENT2             : String;
         LOCATION                : String;

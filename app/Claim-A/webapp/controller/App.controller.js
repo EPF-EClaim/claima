@@ -923,351 +923,252 @@ sap.ui.define([
 		// ==================================================
 
 		onClickMyRequest: async function () {
-			this.getOwnerComponent().getModel("request").setData({
-				list_count: "0",
-				view: "view",
-				req_header : {
-					purpose:"",
-					reqtype: "travel",
-					tripstartdate: "",
-					tripenddate: "",
-					eventstartdate: "",
-					eventenddate: "",
-					grptype: "individual",
-					location: "",
-					transport: "",
-					altcostcenter: "",
-					doc1: "",
-					doc2: "",
-					comment: "", 
-					eventdetail1: "",
-					eventdetail2: "",
-					eventdetail3: "",
-					eventdetail4: "",
-					reqid: "",
-					reqstatus: "",
-					costcenter: "",
-					cashadvamt: 0,
-					reqamt: 0
-				}
-			});
-			this._loadReqTypeSelectionData();
+            // Reset JSON Model for the Form
+            const oRequestModel = this.getOwnerComponent().getModel("request");
+            oRequestModel.setData({
+                list_count: 0,
+                view: "view",
+                req_header: {
+                    purpose: "",
+                    reqtype: "travel",
+                    tripstartdate: null,
+                    tripenddate: null,
+                    eventstartdate: null,
+                    eventenddate: null,
+                    grptype: "individual",
+                    location: "",
+                    transport: "",
+                    altcostcenter: "",
+                    doc1: "",
+                    doc2: "",
+                    comment: "",
+                    eventdetail1: "",
+                    eventdetail2: "",
+                    eventdetail3: "",
+                    eventdetail4: "",
+                    reqid: "",
+                    reqstatus: "",
+                    costcenter: "",
+                    cashadvamt: 0,
+                    reqamt: 0
+                }
+            });
 
+            this._loadReqTypeSelectionData();
 
-			if (!this.oDialogFragment) {
-				this.oDialogFragment = await Fragment.load({
-					id: "request",
-					name: "claima.fragment.request",
-					type: "XML",
-					controller: this,
-				});
-				this.getView().addDependent(this.oDialogFragment);
+            if (!this.oDialogFragment) {
+                this.oDialogFragment = await Fragment.load({
+                    id: "request",
+                    name: "claima.fragment.request",
+                    controller: this
+                });
+                this.getView().addDependent(this.oDialogFragment);
+                
+                this.oDialogFragment.attachAfterClose(() => {
+                    // Note: In many V4 apps, we keep the fragment and just reset the data
+                    // But staying true to your logic of destroying it:
+                    this.oDialogFragment.destroy();
+                    this.oDialogFragment = null;
+                });
+            }
+            this.oDialogFragment.open();
+            this.oDialogFragment.addStyleClass('requestDialog');
+        },
 
-				this.oDialogFragment.attachAfterClose(() => {
-					this.oDialogFragment.destroy();
-					this.oDialogFragment = null;
-				});
-			}
-			this.oDialogFragment.open();
-			this.oDialogFragment.addStyleClass('requestDialog')
-		},
+        _loadReqTypeSelectionData: function () {
+            const oMainModel = this.getOwnerComponent().getModel(); // OData V4 Model
+            const oListBinding = oMainModel.bindList("/ZREQUEST_TYPE", null, null, [
+                new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
+            ]);
 
-		onClickCreateRequest: function () {
-			var oReqModel = this.getView().getModel("request");
-			var oInputData = oReqModel.getData();
-			var okcode = true;
-			var message = '';
+            oListBinding.requestContexts().then((aContexts) => {
+                const aData = aContexts.map(oCtx => oCtx.getObject());
+                const oTypeModel = new JSONModel({ types: aData });
+                this.getView().setModel(oTypeModel, "req_type_list");
+            }).catch(err => console.error("Type Load Failed", err));
+        },
 
-			// Check mandatory field based on Request Type
-			switch (oInputData.req_header.type) {
-				case 'RT0001':
-					if (oInputData.req_header.purpose == '' || oInputData.req_header.reqtype == '' || 
-						oInputData.req_header.tripstartdate == '' || oInputData.req_header.tripenddate == '' ||
-						oInputData.req_header.eventstartdate == '' || oInputData.req_header.eventenddate == '' ||
-						oInputData.req_header.grptype == '' || oInputData.req_header.location == '' ||
-						oInputData.req_header.transport == '' || oInputData.req_header.comment == '' ) {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-					};
-					break;
-				case 'RT0002':
-					if (oInputData.req_header.purpose == '' || oInputData.req_header.reqtype == '' || 
-						oInputData.req_header.grptype == '' || oInputData.req_header.comment == '' ) {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-						break;
-					};
-					break;
-				case 'RT0003':
-					if (oInputData.req_header.purpose == '' || oInputData.req_header.reqtype == '' || 
-						oInputData.req_header.eventstartdate == '' || oInputData.req_header.eventenddate == '' ||
-						oInputData.req_header.grptype == '' || oInputData.req_header.location == '' ||
-						oInputData.req_header.comment == '' || oInputData.req_header.eventdetail1 == '' || 
-						oInputData.req_header.eventdetail2 == '' || oInputData.req_header.eventdetail3 == '' || 
-						oInputData.req_header.eventdetail4 == '') {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-						break;
-					};
-					break;
-				case 'RT0004':
-					if (oInputData.req_header.purpose == '' || oInputData.req_header.reqtype == '' || 
-						oInputData.req_header.tripstartdate == '' || oInputData.req_header.tripenddate == '' ||
-						oInputData.req_header.grptype == '' || oInputData.req_header.comment == '' ) {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-					};
-					break;
-				default:
-					if (oInputData.req_header.purpose == '' || 
-						oInputData.req_header.reqtype == 'RT0000') {
-						okcode = false;
-						message = 'Please enter all mandatory details';
-					} 
-			}
+        onClickCreateRequest: function () {
+            const oReqModel = this.getView().getModel("request");
+            const oData = oReqModel.getProperty("/req_header");
+            let okcode = true;
+            let message = '';
 
-			// Check attachment 1 (mandatory)
-			if (okcode == true && oInputData.req_header.doc1 == '') {
-				okcode = false;
-				message = 'Please upload Attachment 1';
-			};
+            // Simplified Validation Logic
+            const mandatoryFields = {
+                'RT0001': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'eventstartdate', 'eventenddate', 'grptype', 'location', 'transport', 'comment'],
+                'RT0002': ['purpose', 'reqtype', 'grptype', 'comment'],
+                'RT0003': ['purpose', 'reqtype', 'eventstartdate', 'eventenddate', 'grptype', 'location', 'comment', 'eventdetail1', 'eventdetail2', 'eventdetail3', 'eventdetail4'],
+                'RT0004': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'grptype', 'comment']
+            };
 
-			if (okcode == true && oInputData.req_header.enddate < oInputData.req_header.startdate) {
-				okcode = false;
-				message = "End Date cannot be earlier than begin date";
-			}
+            const fieldsToCheck = mandatoryFields[oData.reqtype] || ['purpose'];
+            const isMissing = fieldsToCheck.some(field => !oData[field] || oData[field] === "");
 
+            if (isMissing || (oData.reqtype === 'RT0000')) {
+                okcode = false;
+                message = 'Please enter all mandatory details';
+            } else if (!oData.doc1) {
+                okcode = false;
+                message = 'Please upload Attachment 1';
+            } else if (oData.tripenddate < oData.tripstartdate) {
+                okcode = false;
+                message = "End Date cannot be earlier than begin date";
+            }
 
-			// value validation
-			if (okcode === false) {
-				MessageToast.show(message);
-			}
-			else {
-				this.createRequestHeader(oInputData, oReqModel);
-			};
-		},
+            if (!okcode) {
+                MessageToast.show(message);
+            } else {
+                this.createRequestHeader(oData, oReqModel);
+            }
+        },
 
-		// load request type data
-		_loadReqTypeSelectionData: function () {
-			var oView = this.getView();
-			var oJSONModel = new JSONModel();
+        createRequestHeader: async function (oInputData, oReqModel) {
+			const oMainModel = this.getOwnerComponent().getModel();
+			const oResult = await this.getCurrentReqNumber('NR01');
 
-			// Safely get the base service URL from manifest
-			var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
-			var sServiceUrl = sBaseUri + "/ZREQUEST_TYPE";
+			if (oResult) {
+				const sUserId = sap.ushell.Container.getUser().getId();
+				const oListBinding = oMainModel.bindList("/ZREQUEST_HEADER");
 
-			// Fetch data from CAP OData service
-			fetch(sServiceUrl)
-				.then(function (response) {
-					if (!response.ok) {
-						throw new Error("Network response was not ok");
-					}
-					return response.json();
-				})
-				.then(function (data) {
-					const aTypes = data.value || data;
-					const aFiltered = aTypes.filter(item => item.STATUS === "ACTIVE");
-					oJSONModel.setData({ types: aFiltered });
-					oView.setModel(oJSONModel, "req_type_list");
-					// MessageToast.show("Data loaded successfully");
-				})
-				.catch(function (error) {
-					console.error("Error fetching CDS data:", error);
-					// MessageToast.show("Failed to load data", error);
-				});
-		},
-
-		createRequestHeader:  function (oInputData, oReqModel) {
-			this.getCurrentReqNumber('NR01').then((result) => {
-				if (result) {
-					oReqModel.setProperty("/req_header/reqid", result.reqNo);
-					oReqModel.setProperty("/req_header/reqstatus", "DRAFT")
-
-					// Write to Database Table ZREQUEST_HEADER
-					var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
-					var sServiceUrl = sBaseUri + "/ZREQUEST_HEADER"; 
-					var sUserId = sap.ushell.Container.getUser().getId();
-
-					fetch(sServiceUrl, 
-						{method: "POST", headers: {"Content-Type": "application/json"},
-						body: JSON.stringify({
-							EMP_ID                 	: sUserId,
-							REQUEST_ID             	: oInputData.req_header.reqid,
-							REQUEST_TYPE_ID        	: oInputData.req_header.reqtype,
-							REFERENCE_NUMBER       	: "",
-							OBJECTIVE_PURPOSE      	: oInputData.req_header.purpose,
-							REMARK                 	: oInputData.req_header.comment,
-							IND_OR_GROUP	       	: oInputData.req_header.grptype,
-							ALTERNATE_COST_CENTRE  	: oInputData.req_header.altcostcenter,
-							LOCATION               	: oInputData.req_header.location,
-							TYPE_OF_TRANSPORTATION 	: oInputData.req_header.transport,
-							ATTACHMENT1            	: oInputData.req_header.doc1,
-							ATTACHMENT2            	: oInputData.req_header.doc2,
-							CASH_ADVANCE		   	: parseFloat(oInputData.req_header.cashadvamt),
-							CASH_ADVANCE_DATE	   	: null,
-							COST_CENTER            	: oInputData.req_header.costcenter,
-							EVENT_START_DATE		: oInputData.req_header.eventstartdate,
-							EVENT_END_DATE			: oInputData.req_header.eventenddate,
-							TRIP_START_DATE         : oInputData.req_header.tripstartdate,
-							TRIP_END_DATE           : oInputData.req_header.tripenddate,
-							REQUEST_AMOUNT			: String(oInputData.req_header.reqamt),
-							STATUS					: oInputData.req_header.reqstatus,
-						}) 
-					})
-					.then(r => r.json())
-					.then((res) => {
-						if (!res.error) {
-							this.updateCurrentReqNumber(result.current);
-							this.oDialogFragment.close();
-							const oModel = this.getOwnerComponent().getModel('request');
-							oModel.setProperty("/view", 'list');
-							this._getItemList(oInputData.req_header.reqid);
-
-							// navigate to pre-approval request form page
-							this.byId("pageContainer").to(this.getView().byId('new_request'));
-						} else {
-							MessageToast.show(res.error.code, res.error.message);
-						};
-					});
-				};
-			});
-		},
-
-		getCurrentReqNumber: async function (range_id) {
-			const sBaseUri = this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri || "/odata/v4/EmployeeSrv/";
-			const sServiceUrl = sBaseUri.replace(/\/$/, "") + "/ZNUM_RANGE";
-
-			try {
-				const response = await fetch(sServiceUrl);
-
-				if (!response.ok) {
-					throw new Error(`HTTP ${response.status} ${response.statusText}`);
-				}
-
-				const data = await response.json();
-
-				const nr01 = (data.value || data).find(x => x.RANGE_ID === range_id);
-				if (!nr01 || nr01.CURRENT == null) {
-					throw new Error("NR01 not found or CURRENT is missing");
-				}
-
-				const current = Number(nr01.CURRENT);
-				const yy = String(new Date().getFullYear()).slice(-2);
-				const reqNo = `REQ${yy}${String(current).padStart(9, "0")}`;
-
-				return { reqNo, current };
-
-			} catch (err) {
-				console.error("Error fetching CDS data:", err);
-				return null; // or: throw err;
-			}
-		},
-
-
-		updateCurrentReqNumber: async function (currentNumber) {
-			const sId = "NR01";
-			const sBaseUri =
-				this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri
-				|| "/odata/v4/EmployeeSrv/";
-
-			const sServiceUrl = sBaseUri.replace(/\/$/, "") + "/ZNUM_RANGE('" + encodeURIComponent(sId) + "')";
-			const nextNumber = currentNumber + 1;
-
-			try {
-				const res = await fetch(sServiceUrl, {
-					method: "PATCH",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ CURRENT: String(nextNumber) })
-				});
-
-				if (!res.ok) {
-					const errText = await res.text().catch(() => "");
-					throw new Error(`PATCH failed ${res.status} ${res.statusText}: ${errText}`);
-				}
+				// FIX 1: Use 'await' to wait for the employee details
+				const emp_data = await this._getEmpIdDetail(sUserId);
 				
-				if (res.status === 204) return { CURRENT: nextNumber };
+				// Safety check in case employee data isn't found
+				const sCostCenter = emp_data ? emp_data.cc : "";
 
-				const contentType = res.headers.get("content-type") || "";
-				if (contentType.includes("application/json")) {
-					return await res.json();
-				}
-				return await res.text(); // fallback
-			} catch (e) {
-				console.error("Error updating number range:", e);
-				return null;
+				const oPayload = {
+					EMP_ID: sUserId,
+					REQUEST_ID: oResult.reqNo,
+					REQUEST_TYPE_ID: oInputData.reqtype,
+					OBJECTIVE_PURPOSE: oInputData.purpose,
+					REMARK: oInputData.comment,
+					IND_OR_GROUP: oInputData.grptype,
+					ALTERNATE_COST_CENTRE: oInputData.altcostcenter,
+					LOCATION: oInputData.location,
+					TYPE_OF_TRANSPORTATION: oInputData.transport,
+					ATTACHMENT1: oInputData.doc1,
+					ATTACHMENT2: oInputData.doc2,
+					CASH_ADVANCE: parseFloat(oInputData.cashadvamt).toFixed(2),
+					COST_CENTER: sCostCenter, // Now correctly populated
+					EVENT_START_DATE: oInputData.eventstartdate,
+					EVENT_END_DATE: oInputData.eventenddate,
+					TRIP_START_DATE: oInputData.tripstartdate,
+					TRIP_END_DATE: oInputData.tripenddate,
+					REQUEST_AMOUNT: String(oInputData.reqamt),
+					STATUS: "DRAFT"
+				};
+
+				const oContext = oListBinding.create(oPayload);
+
+				oContext.created().then(() => {
+					this.updateCurrentReqNumber(oResult.current);
+					this.oDialogFragment.close();
+					
+					oReqModel.setProperty("/view", 'list');
+					oReqModel.setProperty("/req_header/reqid", oResult.reqNo);
+					oReqModel.setProperty("/req_header/reqstatus", 'DRAFT');
+					oReqModel.setProperty("/req_header/costcenter", sCostCenter);
+					this._getItemList(oResult.reqNo);
+					
+					this.byId("pageContainer").to(this.getView().byId('new_request'));
+				}).catch(err => {
+					sap.m.MessageToast.show("Creation failed: " + err.message);
+				});
 			}
 		},
 
-		// Controller method (async)
-		_getItemList: async function (req_id) {
-			if (!req_id) {
-				console.warn("No REQUEST_ID provided");
-				this.getView().getModel().setProperty("/req_item_rows", []);
-				return [];
-			}
-
-			const sBaseUri =
-				this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri
-				|| "/odata/v4/EmployeeSrv/";
-			const sServiceUrl = sBaseUri.replace(/\/$/, "") + "/ZREQUEST_ITEM";
-
-			// REQUEST_ID is a string like "REQ26000000339" → single-quoted OData string literal
-			const sReq = String(req_id);
-			const isGuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(sReq);
-			const isNumeric = /^\d+$/.test(sReq);
-
-			let sLiteral;
-			if (isNumeric) {
-				sLiteral = sReq; // Edm.Int*: no quotes
-			} else if (isGuid) {
-				sLiteral = `guid'${sReq}'`; // Edm.Guid
-			} else {
-				const escaped = sReq.replace(/'/g, "''"); // escape single quotes
-				sLiteral = `'${escaped}'`; // Edm.String
-			}
-
-			// Build the full URL, encode ONLY the filter expression
-			const base = new URL(sServiceUrl, window.location.origin).toString();
-			const filterExpr = `REQUEST_ID eq ${sLiteral}`; // keep spaces here
-			const orderbyExpr = "REQUEST_SUB_ID asc";
-			const query = [
-				`$filter=${encodeURIComponent(filterExpr)}`,     // spaces -> %20 (no '+')
-				`$orderby=${encodeURIComponent(orderbyExpr)}`,
-				`$count=true`,
-				`$format=json`                                  // helps some SAP GW setups
-			].join("&");
-
-			const fullUrl = `${base}?${query}`;
+		async _getEmpIdDetail(sEEID) {
+			const oModel = this.getView().getModel(); 
+			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
+				new sap.ui.model.Filter("EEID", "EQ", sEEID)
+			]);
 
 			try {
-				const response = await fetch(fullUrl, {
-				headers: { "Accept": "application/json" }
-				// credentials: "include" // uncomment if your GW requires cookies/SSO
-				});
-				if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
+				// FIX: You MUST await the requestContexts call
+				const aContexts = await oListBinding.requestContexts(0, 1);
 
-				const data = await response.json();
-				const aItems = Array.isArray(data.value) ? data.value : [];
-				this.getOwnerComponent().getModel('request').setProperty("/req_item_rows", aItems);
-				var aRows = this.getOwnerComponent().getModel('request').getProperty('/req_item_rows');
-				// parse back the data type if it is not string
-				aRows.forEach(function(oItem) {
-					if(oItem.EST_AMOUNT) {
-						oItem.EST_AMOUNT = parseFloat(oItem.EST_AMOUNT);
-					}
-					if (oItem.EST_NO_PARTICIPANT) {
-						oItem.EST_NO_PARTICIPANT = parseInt(oItem.EST_NO_PARTICIPANT);
-					}
-				});
-				this.getOwnerComponent().getModel('request').setProperty("/req_item_rows", aRows);
-				this.getOwnerComponent().getModel('request').setProperty('/list_count', aRows.length);
-				// return aItems;
-			} catch (err) {
-				console.error("Fetch failed:", err, { url: fullUrl });
-				this.getView().getModel().setProperty("/req_item_rows", []);
-				return [];
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					return { 
+						name: oData.NAME, 
+						cc: oData.CC 
+					};
+				} else {
+					console.warn("No employee found with ID: " + sEEID);
+					return null;
+				}
+			} catch (oError) {
+				console.error("Error fetching employee detail", oError);
+				return null; // Return null so the app doesn't crash
 			}
 		},
+
+        getCurrentReqNumber: async function (range_id) {
+            const oMainModel = this.getOwnerComponent().getModel();
+            const oListBinding = oMainModel.bindList("/ZNUM_RANGE", null, null, [
+                new Filter("RANGE_ID", FilterOperator.EQ, range_id)
+            ]);
+
+            try {
+                const aContexts = await oListBinding.requestContexts(0, 1);
+                if (aContexts.length === 0) throw new Error("Range ID not found");
+
+                const oData = aContexts[0].getObject();
+                const current = Number(oData.CURRENT);
+                const yy = String(new Date().getFullYear()).slice(-2);
+                const reqNo = `REQ${yy}${String(current).padStart(9, "0")}`;
+
+                return { reqNo, current };
+            } catch (err) {
+                console.error("Number Range Error:", err);
+                return null;
+            }
+        },
+
+        updateCurrentReqNumber: async function (currentNumber) {
+            const oMainModel = this.getOwnerComponent().getModel();
+            // In V4, we address a single entity by binding a context to its path
+            const oContext = oMainModel.bindContext(`/ZNUM_RANGE('${encodeURIComponent('NR01')}')`).getBoundContext();
+            
+            try {
+                await oContext.setProperty("CURRENT", String(currentNumber + 1));
+                // V4 automatically queues changes; if using SubmitMode.Auto, it sends immediately.
+                // If using Manual, you'd call oMainModel.submitBatch("groupName");
+                return true;
+            } catch (e) {
+                console.error("Update Failed", e);
+                return false;
+            }
+        },
+
+        _getItemList: async function (req_id) {
+            const oMainModel = this.getOwnerComponent().getModel();
+            const oRequestModel = this.getOwnerComponent().getModel('request');
+
+            const oListBinding = oMainModel.bindList("/ZREQUEST_ITEM", null, [
+                new Sorter("REQUEST_SUB_ID", false)
+            ], [
+                new Filter("REQUEST_ID", FilterOperator.EQ, req_id)
+            ]);
+
+            try {
+                const aContexts = await oListBinding.requestContexts();
+                const aItems = aContexts.map(oCtx => {
+                    const obj = oCtx.getObject();
+                    // Type conversion as per original logic
+                    if (obj.EST_AMOUNT) obj.EST_AMOUNT = parseFloat(obj.EST_AMOUNT);
+                    if (obj.EST_NO_PARTICIPANT) obj.EST_NO_PARTICIPANT = parseInt(obj.EST_NO_PARTICIPANT);
+                    return obj;
+                });
+
+                oRequestModel.setProperty("/req_item_rows", aItems);
+                oRequestModel.setProperty('/list_count', aItems.length);
+            } catch (err) {
+                console.error("Fetch Items failed:", err);
+                oRequestModel.setProperty("/req_item_rows", []);
+            }
+        },
 
 		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		// End of Request Form Controller
@@ -1297,7 +1198,6 @@ sap.ui.define([
 		onClickCancel: function () {
 			this.oDialogFragment.close();
 		},
-		// ++Jefry_Changes
 
 		onClickNavigate: function (oEvent) {
 			let id = oEvent.getParameters().id;
@@ -1308,8 +1208,5 @@ sap.ui.define([
 			}
 
 		}
-
-
-
 	});
 });
