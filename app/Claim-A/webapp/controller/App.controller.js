@@ -69,24 +69,33 @@ sap.ui.define([
 
 			// Claim Submission Model
 			var oClaimSubmissionModel = new JSONModel({
+				"employee": {
+					"eeid": null,
+					"name": null,
+					"cc": null,
+				},
 				"claimtype": {
 					"type": null,
 					"item": null,
 					"category": null,
+					"requestform": null,
+					"requestform_amt": null,
 					"descr": {
 						"type": null,
 						"item": null,
-						"category": null
+						"category": null,
+						"requestform": null
 					}
 				},
 				"claimheader": {
 					"claim_id": null,
 					"purpose": "",
-					"startdate": null,
-					"enddate": null,
+					"trip_startdate": null,
+					"trip_enddate": null,
+					"event_startdate": null,
+					"event_enddate": null,
+					"location": null,
 					"altcc": null,
-					"category": null,
-					"amt_approved": null,
 					"comment": null
 				}
 			});
@@ -288,12 +297,21 @@ sap.ui.define([
 				name: "claima.fragment.claimsubmission_claimprocess",
 			});
 			if (this.oDialog_ClaimProcess) {
+				this._onInit_ClaimProcess();
 				this.oDialog_ClaimProcess.open();
 			}
 		},
 
 		//// Functions - Claim Process
-		onChange_ClaimType: function (oEvent) {
+		_onInit_ClaimProcess: function () {
+			// placeholder - set employee data
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			oInputModel.setProperty("/employee/eeid","000001");
+			oInputModel.setProperty("/employee/name","Test Name");
+			oInputModel.setProperty("/employee/cc","4001");
+		},
+
+		onSelect_ClaimProcess_ClaimType: function (oEvent) {
 			// validate claim type
 			var claimType = oEvent.getParameters().selectedItem;
 			if (claimType) {
@@ -315,34 +333,87 @@ sap.ui.define([
 					})
 				});
 				this.byId("select_claimprocess_claimitem").setEditable(true);
+				this.byId("select_claimprocess_claimitem").setSelectedItem(null);
 
 				// clear claim item category if new claim type selected
 				if (this.byId("input_claimprocess_category").getValue().length > 0) {
-					this.byId("input_claimprocess_category").setValue("");
+					this.byId("input_claimprocess_category").setValue(null);
+				}
+
+				// reset request form
+				if (this.byId("select_claimprocess_requestform").getEnabled()) {
+					this._reset_ClaimProcess_RequestForm();
 				}
 
 				// disable 'Start Claim' button if new claim type selected 
-				if (this.byId("select_claimprocess_claimitem").getEnabled()) {
+				if (this.byId("button_claimprocess_startclaim").getEnabled()) {
 					this.byId("button_claimprocess_startclaim").setEnabled(false);
 				}
 			}
 		},
 
-		onChange_ClaimItem: function (oEvent) {
+		onSelect_ClaimProcess_ClaimItem: function (oEvent) {
 			// validate claim item
 			var claimItem = oEvent.getParameters().selectedItem;
 			if (claimItem) {
-				// get category description from claim item
+				// get category values from claim item
+				var categoryId = claimItem.getBindingContext("employee").getObject("CATEGORY_ID");
 				var claimCategoryDesc = claimItem.getBindingContext("employee").getObject("ZCLAIM_CATEGORY/CLAIM_CATEGORY_DESC");
 
 				// show claim item category in category input
 				this.byId("input_claimprocess_category").setValue(claimCategoryDesc);
 				var oInputModel = this.getView().getModel("claimsubmission_input");
-				oInputModel.setProperty("/claimtype/category",claimItem.getBindingContext("employee").getObject("CATEGORY_ID"));
 
-				// enable 'Start Claim' button
+				// enable 'Request Form' selection
+				if (categoryId == 'PREAPPROVAL') {
+					if (!this.byId("select_claimprocess_requestform").getEnabled()) {
+						this.byId("select_claimprocess_requestform").bindAggregation("items", {
+							path: "employee>/ZREQUEST_HEADER",
+							filters: [new sap.ui.model.Filter('EMP_ID', sap.ui.model.FilterOperator.EQ, oInputModel.getProperty("/employee/eeid"))],
+							parameters: {
+								$select: "AMOUNT"
+							},
+							template: new sap.ui.core.Item({
+								key: "{employee>REQUEST_ID}",
+								text: "{employee>REQUEST_ID} {employee>OBJECTIVE_PURPOSE}"
+							})
+						});
+						this.byId("select_claimprocess_requestform").setEnabled(true);
+						this.byId("select_claimprocess_requestform").setVisible(true);
+						this.byId("select_claimprocess_requestform").setEditable(true);
+
+						// enable 'Create Pre-Approval Request' button
+						this.byId("button_claimprocess_preapproval").setEnabled(true);
+						this.byId("button_claimprocess_preapproval").setVisible(true);
+
+						// disable 'Start Claim' button if active
+						if (this.byId("button_claimprocess_startclaim").getEnabled()) {
+							this.byId("button_claimprocess_startclaim").setEnabled(false);
+						}
+					}
+				}
+
+				// enable 'Start Claim' button if not Pre-Approval
+				if (categoryId != 'PREAPPROVAL') {
+					this.byId("button_claimprocess_startclaim").setEnabled(true);
+				}
+			}
+		},
+
+		onSelect_ClaimProcess_RequestForm: function () {
+			// enable 'Start Claim' button if not already enabled
+			if (!this.byId("button_claimprocess_startclaim").getEnabled()) {
 				this.byId("button_claimprocess_startclaim").setEnabled(true);
 			}
+		},
+
+		onPreApproval_ClaimProcess: function () {
+			// reset Claim Process dialog before closing
+			this._reset_ClaimProcess();
+			this.oDialog_ClaimProcess.close();
+
+			// load Pre-Approval Request dialog 
+			this.onClickMyRequest();
 		},
 
 		onStartClaim_ClaimProcess: async function () {
@@ -351,9 +422,16 @@ sap.ui.define([
 			//// get claim type/item description
 			oInputModel.setProperty("/claimtype/descr/type",this.byId("select_claimprocess_claimtype")._getSelectedItemText());
 			oInputModel.setProperty("/claimtype/descr/item",this.byId("select_claimprocess_claimitem")._getSelectedItemText());
+			//// get claim item category ID
+			oInputModel.setProperty("/claimtype/category",this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("CATEGORY_ID"));
+			//// get request form values
+			if (this.byId("select_claimprocess_requestform").getSelectedItem()) {
+				oInputModel.setProperty("/claimtype/descr/requestform",this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("OBJECTIVE_PURPOSE"));
+				oInputModel.setProperty("/claimtype/requestform_amt",this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("AMOUNT"));
+			}
 
 			// reset Claim Process dialog before closing
-			this._resetClaimProcess();
+			this._reset_ClaimProcess();
 			this.oDialog_ClaimProcess.close();
 
 			// load Claim Submission dialog
@@ -362,32 +440,63 @@ sap.ui.define([
 				name: "claima.fragment.claimsubmission_claimsubmission",
 			});
 			if (this.oDialog_ClaimSubmission) {
+				this._onInit_ClaimSubmission();
 				this.oDialog_ClaimSubmission.open();
 			}
 		},
 
 		onCancel_ClaimProcess: function () {
-			this._resetClaimProcess();
+			this._reset_ClaimProcess();
 			this.oDialog_ClaimProcess.close();
 		},
 
-		_resetClaimProcess: function () {
+		_reset_ClaimProcess: function () {
 			// reset claim type select
-			this.byId("select_claimprocess_claimtype").setSelectedItem(null);
+			if (this.byId("select_claimprocess_claimtype").getSelectedItem()) {
+				this.byId("select_claimprocess_claimtype").setSelectedItem(null);
+			}
 
 			// reset claim item select
-			this.byId("select_claimprocess_claimitem").unbindAggregation("items");
-			this.byId("select_claimprocess_claimitem").setEditable(false);
+			if (this.byId("select_claimprocess_claimitem").getEditable()) {
+				this.byId("select_claimprocess_claimitem").unbindAggregation("items");
+				this.byId("select_claimprocess_claimitem").setSelectedItem(null);
+				this.byId("select_claimprocess_claimitem").setEditable(false);
+			}
 
 			// reset claim item category
-			this.byId("input_claimprocess_category").setValue(null);
+			if (this.byId("input_claimprocess_category").getValue().length > 0) {
+				this.byId("input_claimprocess_category").setValue(null);
+			}
+
+			// reset request form
+			if (this.byId("select_claimprocess_requestform").getEnabled()) {
+				this._reset_ClaimProcess_RequestForm();
+			}
 
 			// disable 'Start Claim' button
-			this.byId("button_claimprocess_startclaim").setEnabled(false);
+			if (this.byId("button_claimprocess_startclaim").getEnabled()) {
+				this.byId("button_claimprocess_startclaim").setEnabled(false);
+			}
+		},
+
+		_reset_ClaimProcess_RequestForm: function () {
+			// disable request form select
+			this.byId("select_claimprocess_requestform").unbindAggregation("items");
+			this.byId("select_claimprocess_requestform").setEnabled(false);
+			this.byId("select_claimprocess_requestform").setVisible(false);
+			this.byId("select_claimprocess_requestform").setEditable(false);
+
+			// disable 'Create Pre-Approval Request' button
+			this.byId("button_claimprocess_preapproval").setEnabled(false);
+			this.byId("button_claimprocess_preapproval").setVisible(false);
 		},
 		//// end Functions - Claim Process
 
 		//// Functions - Claim Submission (dialog)
+		_onInit_ClaimSubmission: function () {
+			// init code for claim submission dialog
+		},
+
 		onCreateReport_Create: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("input");
@@ -486,11 +595,20 @@ sap.ui.define([
 		},
 
 		onClaimSubmission_ClaimSubmission: async function () {
+			// validate attachment
+			if (this.byId("fileuploader_claimsubmission_attachment").getValue()) {
+				var isUploadSuccess = this._onUpload_ClaimSubmission_Attachment();
+				if (!isUploadSuccess) {
+					// don't proceed claim submission if attachment upload fails
+					return;
+				}
+			}
+
 			// validate input data
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 
 			// reset Claim Submission dialog before closing
-			this._resetClaimSubmission();
+			this._reset_ClaimSubmission();
 			this.oDialog_ClaimProcess.close();
 
 			// navigate to the detail page that contains report.fragment
@@ -502,23 +620,81 @@ sap.ui.define([
 			this.byId("pageContainer").to(oDetailPage);
 		},
 
+		_onUpload_ClaimSubmission_Attachment: function () {
+			// check if file can be uploaded
+			var oFileUploader = this.byId("fileuploader_claimsubmission_attachment");
+			oFileUploader.checkFileReadable().then(function() {
+				oFileUploader.upload();
+				return true;
+			}, function(error) {
+				MessageToast.show(this._getTexti18n("msg_claimsubmission_attachment_upload_error"));
+			}).then(function() {
+				oFileUploader.clear();
+				return false;
+			});
+		},
+
+		onUploadComplete_ClaimSubmission_Attachment: function(oEvent) {
+			// Please note that the event response should be taken from the event parameters but for our test example, it is hardcoded.
+
+			var sResponse = "File upload complete. Status: 200",
+				iHttpStatusCode = parseInt(/\d{3}/.exec(sResponse)[0]),
+				sMessage;
+
+			if (sResponse) {
+				sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
+				MessageToast.show(sMessage);
+			}
+		},
+
+		onTypeMissmatch_ClaimSubmission_Attachment: function(oEvent) {
+			var aFileTypes = oEvent.getSource().getFileType();
+			aFileTypes.map(function(sType) {
+				return "*." + sType;
+			});
+			MessageToast.show(this._getTexti18n("msg_claimsubmission_attachment_upload_mismatch", [this.byId("fileuploader_claimsubmission_attachment").getValue()]));
+		},
+
 		onCancel_ClaimSubmission: function () {
-			this._resetClaimSubmission();
+			this._reset_ClaimSubmission();
 			this.oDialog_ClaimSubmission.close();
 		},
 
-		_resetClaimSubmission: function () {
+		_reset_ClaimSubmission: function () {
 			// reset input fields
-			this.byId("input_claimsubmission_purpose").setValue(null);
-			this.byId("datepicker_claimsubmission_startdate").setValue(null);
-			this.byId("datepicker_claimsubmission_enddate").setValue(null);
-			this.byId("input_claimsubmission_altcc").setValue(null);
-			this.byId("select_claimsubmission_category").setSelectedItem(null);
-			this.byId("input_claimsubmission_amtapproved").setValue(null);
-			this.byId("input_claimsubmission_comment").setValue(null);
-
-			// disable 'Attachment Email Approval' button
-			this.byId("button_claimsubmission_attachment").setEnabled(false);
+			//// report purpose
+			if (this.byId("input_claimsubmission_purpose").getValue()) {
+				this.byId("input_claimsubmission_purpose").setValue(null);
+			}
+			//// trip/event dates
+			if (this.byId("datepicker_claimsubmission_tripstartdate").getValue()) {
+				this.byId("datepicker_claimsubmission_tripstartdate").setValue(null);
+			}
+			if (this.byId("datepicker_claimsubmission_tripenddate").getValue()) {
+				this.byId("datepicker_claimsubmission_tripenddate").setValue(null);
+			}
+			if (this.byId("datepicker_claimsubmission_eventstartdate").getValue()) {
+				this.byId("datepicker_claimsubmission_eventstartdate").setValue(null);
+			}
+			if (this.byId("datepicker_claimsubmission_eventenddate").getValue()) {
+				this.byId("datepicker_claimsubmission_eventenddate").setValue(null);
+			}
+			//// location
+			if (this.byId("input_claimsubmission_location").getValue()) {
+				this.byId("input_claimsubmission_location").setValue(null);
+			}
+			//// alternate cost centre
+			if (this.byId("select_claimsubmission_altcc").getSelectedItem()) {
+				this.byId("select_claimsubmission_altcc").setSelectedItem(null);
+			}
+			//// attachment email approval
+			if (this.byId("fileuploader_claimsubmission_attachment").getValue()) {
+				this.byId("fileuploader_claimsubmission_attachment").setValue(null);
+			}
+			//// comment
+			if (this.byId("input_claimsubmission_comment").getValue()) {
+				this.byId("input_claimsubmission_comment").setValue(null);
+			}
 		},
 		//// end Functions - Claim Submission (dialog)
 		// end Functions - Claim Submission
@@ -1402,8 +1578,13 @@ sap.ui.define([
 			this.oDialogFragment.close();
 		},
 
-		_getTexti18n: function (input) {
-			return this.getView().getModel("i18n").getResourceBundle().getText(input);
+		_getTexti18n: function (i18nKey, array_i18nParameters) {
+			if (array_i18nParameters) {
+				return this.getView().getModel("i18n").getResourceBundle().getText(i18nKey, array_i18nParameters);
+			}
+			else {
+				return this.getView().getModel("i18n").getResourceBundle().getText(i18nKey);
+			}
 		}
 
 	});

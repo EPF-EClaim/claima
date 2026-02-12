@@ -98,6 +98,16 @@ entity ZCLAIM_TYPE_ITEM {
                                    on ZCLAIM_CATEGORY.CLAIM_CAT_ID = CATEGORY_ID;
 }
 
+entity ZCOST_CENTER {
+    key COST_CENTER_ID   : String;
+        COST_CENTER_DESC : String;
+        START_DATE       : Date;
+        END_DATE         : Date;
+        STATUS           : String;
+        DEPARTMENT       : String;
+        EXTERNAL_OBJ_ID  : String;
+}
+
 entity ZREQUEST_GRP {
     key REQUEST_GROUP_ID   : String;
         REQUEST_GROUP_DESC : String;

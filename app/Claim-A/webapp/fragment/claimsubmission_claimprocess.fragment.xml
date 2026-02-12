@@ -35,8 +35,9 @@
                             path: 'employee>/ZCLAIM_TYPE',
                             sorter: { path: 'CLAIM_TYPE_DESC' }
                         }"
-                        change="onChange_ClaimType"
-                        liveChange="onChange_ClaimType">
+                        change="onSelect_ClaimProcess_ClaimType"
+                        liveChange="onSelect_ClaimProcess_ClaimType"
+                    >
                         <core:Item key="{employee>CLAIM_TYPE_ID}" text="{employee>CLAIM_TYPE_DESC}" />
                     </Select>
 
@@ -47,8 +48,9 @@
                         forceSelection="false"
                         selectedKey="{claimsubmission_input>/claimtype/item}"
                         editable="false"
-                        change="onChange_ClaimItem"
-                        liveChange="onChange_ClaimItem">
+                        change="onSelect_ClaimProcess_ClaimItem"
+                        liveChange="onSelect_ClaimProcess_ClaimItem"
+                    >
                     </Select>
 
                     <!-- Category -->
@@ -58,6 +60,20 @@
                         value="{claimsubmission_input>/claimtype/descr/category}"
                         editable="false"
                     />
+
+                    <!-- Select Request Form (Pre-Approval) -->
+                    <Label text="{i18n>label_claimprocess_requestform}" />
+                    <Select
+                        id="select_claimprocess_requestform"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claimtype/requestform}"
+                        enabled="false"
+                        editable="false"
+                        visible="false"
+                        change="onSelect_ClaimProcess_RequestForm"
+                        liveChange="onSelect_ClaimProcess_RequestForm"
+                    >
+                    </Select>
                 </f:content>
             </f:SimpleForm>
      
@@ -65,6 +81,7 @@
             <!-- Create Pre-Approval Request -->
             <Button
                 id="button_claimprocess_preapproval"
+                press="onPreApproval_ClaimProcess"
                 text="{i18n>button_claimprocess_preapproval}"
                 enabled="false"
                 visible="false"

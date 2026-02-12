@@ -4,7 +4,7 @@
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:l="sap.ui.layout"
     xmlns:f="sap.ui.layout.form"
-    id="createreport"
+	xmlns:u="sap.ui.unified"
 >
     <Dialog id="dialog_claimsubmission" title="{i18n>dialog_claimsubmission}" contentWidth="50em">
 
@@ -34,71 +34,123 @@
                         required="true"
                     />
                     
-                    <!-- Trip/Report Start Date -->
-                    <Label text="{i18n>label_claimsubmission_startdate}" />
-                    <DatePicker
-                        id="datepicker_claimsubmission_startdate"
-                        value="{claimsubmission_input>/claimheader/startdate}"
-                        required="true"
-                        displayFormat="dd MMM yyyy"
-                        />
-
-                    <!-- Trip/Report End Date -->
-                    <Label text="{i18n>label_claimsubmission_enddate}" />
-                    <DatePicker
-                        id="datepicker_claimsubmission_enddate"
-                        value="{claimsubmission_input>/claimheader/enddate}"
-                        required="true"
-                        displayFormat="dd MMM yyyy"
-                        />
-
-                    <!-- Alternative Cost Center -->
-                    <Label text="{i18n>label_claimsubmission_altcc}" />
-                    <Input
-                        id="input_claimsubmission_altcc"
-                        value="{claimsubmission_input>/claimheader/altcc}"
+                    <!-- Claim Type -->
+                    <Label text="{i18n>label_claimsubmission_claimtype}" />
+                    <Text
+                        id="text_claimsubmission_claimtype"
+                        text="{claimsubmission_input>/claimtype/descr/type}"
                     />
                     
-                    <!-- Claim Category -->
-                    <Label text="{i18n>label_claimsubmission_category}" />
-                    <Select
-                        id="select_claimsubmission_category"
-                        forceSelection="false"
-                        required="true"
-                        selectedKey="{claimsubmission_input>/claimheader/category}"
-                        items="{
-                            path: 'employee>/ZCLAIM_CATEGORY',
-                            sorter: { path: 'CLAIM_CATEGORY_DESC' }
-                        }">
-                        <core:Item key="{employee>CLAIM_CAT_ID}" text="{employee>CLAIM_CATEGORY_DESC}" />
-                    </Select>
+                    <!-- Claim Item -->
+                    <Label text="{i18n>label_claimsubmission_claimitem}" />
+                    <Text
+                        id="text_claimsubmission_claimitem"
+                        text="{claimsubmission_input>/claimtype/descr/item}"
+                    />
+                    
+                    <!-- Submission Type -->
+                    <Label text="{i18n>label_claimsubmission_subtype}" />
+                    <Text
+                        id="text_claimsubmission_subtype"
+                        text="{claimsubmission_input>/claimtype/descr/category}"
+                        visible="false"
+                    />
+
+                    <!-- Pre-Approval Request -->
+                    <Label text="{i18n>label_claimsubmission_preapprovalreq}" />
+                    <Text
+                        id="text_claimsubmission_preapprovalreq"
+                        text="{claimsubmission_input>/claimtype/requestform} {claimsubmission_input>/claimtype/descr/requestform}"
+                        visible="false"
+                    />
 
                     <!-- Approved Amount (MYR) -->
                     <Label text="{i18n>label_claimsubmission_amtapproved}" />
-                    <Input
-                        id="input_claimsubmission_amtapproved"
-                        value="{claimsubmission_input>/claimheader/amt_approved}"
-                        editable="false"
+                    <Text
+                        id="text_claimsubmission_amtapproved"
+                        text="{claimsubmission_input>/claimtype/requestform_amt}"
                         visible="false"
                     />
+
+                    <!-- Trip Start Date -->
+                    <Label text="{i18n>label_claimsubmission_tripstartdate}" />
+                    <DatePicker
+                        id="datepicker_claimsubmission_tripstartdate"
+                        value="{claimsubmission_input>/claimheader/trip_startdate}"
+                        required="true"
+                        displayFormat="dd-MMM-yyyy"
+                        />
+
+                    <!-- Trip End Date -->
+                    <Label text="{i18n>label_claimsubmission_tripenddate}" />
+                    <DatePicker
+                        id="datepicker_claimsubmission_tripenddate"
+                        value="{claimsubmission_input>/claimheader/trip_enddate}"
+                        required="true"
+                        displayFormat="dd-MMM-yyyy"
+                        />
+
+                    <!-- Event Start Date -->
+                    <Label text="{i18n>label_claimsubmission_eventstartdate}" />
+                    <DatePicker
+                        id="datepicker_claimsubmission_eventstartdate"
+                        value="{claimsubmission_input>/claimheader/event_startdate}"
+                        displayFormat="dd-MMM-yyyy"
+                        />
+
+                    <!-- Event End Date -->
+                    <Label text="{i18n>label_claimsubmission_eventenddate}" />
+                    <DatePicker
+                        id="datepicker_claimsubmission_eventenddate"
+                        value="{claimsubmission_input>/claimheader/event_enddate}"
+                        displayFormat="dd-MMM-yyyy"
+                        />
+
+                    <!-- Location -->
+                    <Label text="{i18n>label_claimsubmission_location}" />
+                    <Input
+                        id="input_claimsubmission_location"
+                        value="{claimsubmission_input>/claimheader/location}"
+                    />
+
+                    <!-- Alternate Cost Center -->
+                    <Label text="{i18n>label_claimsubmission_altcc}" />
+                    <Select
+                        id="select_claimsubmission_altcc"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claimheader/altcc}"
+                        items="{
+                            path: 'employee>/ZCOST_CENTER',
+                            sorter: { path: 'COST_CENTER_ID' }
+                        }"
+                    >
+                        <core:Item key="{employee>COST_CENTER_ID}" text="{employee>COST_CENTER_ID} {employee>COST_CENTER_DESC}" />
+                    </Select>
+                    
+                    <!-- Attachment Email Approval -->
+                    <Label text="{i18n>label_claimsubmission_attachment}" />
+                    <u:FileUploader
+                        id="fileuploader_claimsubmission_attachment"
+                        name="fileUploaderClaimSubmissionAttachment"
+                        uploadUrl="upload/"
+                        uploadComplete="onUploadComplete_ClaimSubmission_Attachment"
+                        typeMissmatch="onTypeMissmatch_ClaimSubmission_Attachment"
+                        style="Emphasized"
+                        fileType="pdf"
+                    >
+                    </u:FileUploader>
 
                     <!-- Comment -->
                     <Label text="{i18n>label_claimsubmission_comment}" />
                     <Input
                         id="input_claimsubmission_comment"
                         value="{claimsubmission_input>/claimheader/comment}"
+                        required="true"
                     />
                 </f:content>
             </f:SimpleForm>
      
 		<buttons>
-            <!-- Attachment Email Approval -->
-            <Button
-                id="button_claimsubmission_attachment"
-                text="{i18n>button_claimsubmission_attachment}"
-                enabled="false"
-            />
-
             <!-- Claim Submission -->
             <Button
                 id="button_claimsubmission_claimsubmission"
