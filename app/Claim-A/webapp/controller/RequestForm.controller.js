@@ -330,8 +330,11 @@ sap.ui.define([
 
 				sap.m.MessageToast.show("Request submitted successfully");
 
-				// Optional: update local model
-				oReq.setProperty("/req_header/status", "SUBMITTED");
+				const oScroll = this.getView().getParent();              // ScrollContainer
+				const oNav    = oScroll && oScroll.getParent && oScroll.getParent(); // NavContainer
+				const aPages  = oNav?.getPages ? oNav.getPages() : oNav?.getAggregation?.("pages");
+				const oMain   = aPages && aPages.find(p => p.getId && p.getId().endsWith("my_request"));
+				if (oMain) oNav.to(oMain, "slide");
 
 			} catch (e) {
 				sap.m.MessageToast.show(e.message || "Submission failed");
