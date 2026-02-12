@@ -173,10 +173,12 @@ entity ZCLAIM_HEADER : managed {
         SUBMISSION_TYPE                 : String;
         COMMENT                         : String;
         ALTERNATE_COST_CENTER           : String;
+        COST_CENTER                     : String;
         REQUEST_ID                      : String;
         ATTACHMENT_EMAIL_APPROVER       : String;
         STATUS_ID                       : String;
         CLAIM_TYPE_ID                   : String;
+        CLAIM_TYPE_ITEM_ID              : String;
         TOTAL_CLAIM_AMOUNT              : Decimal(16,2);
         APPROVED_AMOUNT                 : Decimal(16,2);
         CASH_ADVANCE_AMOUT              : Decimal(16,2);
@@ -203,13 +205,17 @@ entity ZCLAIM_HEADER : managed {
         ZCLAIM_TYPE                     : Association to one ZCLAIM_TYPE
                                             on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
         ZCOST_CENTER                    : Association to one ZCOST_CENTER
-                                            on ZCOST_CENTER.COST_CENTER_ID = ALTERNATE_COST_CENTER;
+                                            on ZCOST_CENTER.COST_CENTER_ID = ALTERNATE_COST_CENTER;              
         ZSTATUS                         : Association to one ZSTATUS
                                             on ZSTATUS.STATUS_ID = STATUS_ID;
         ZSUBMISSION_TYPE                : Association to ZSUBMISSION_TYPE
                                             on ZSUBMISSION_TYPE.SUBMISSION_TYPE_ID = SUBMISSION_TYPE;
         ZREQUEST_HEADER                 : Association to ZREQUEST_HEADER
                                             on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
+        ZCLAIM_TYPE_ITEM                : Association to one ZCLAIM_TYPE_ITEM
+                                            on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID;  
+        COSTCENTER                      : Association to ZCOST_CENTER
+                                            on COSTCENTER.COST_CENTER_ID = COST_CENTER;                                                                                      
 }
 
 entity ZCLAIM_ITEM : managed {
@@ -247,7 +253,7 @@ entity ZCLAIM_ITEM : managed {
         NO_OF_FAMILY_MEMBER         : Integer;
         PARKING                     : Decimal;
         PHONE_NO                    : String;
-        RATE_PER_KM                 : Decimal;
+        RATE_PER_KM                 : String(2);
         RECEIPT_DATE                : Date;
         RECEIPT_NUMBER              : String;
 		REMARK            		    : String;
@@ -307,6 +313,8 @@ entity ZCLAIM_ITEM : managed {
                                         on ZMARITAL_STAT.MARRIAGE_CATEGORY_ID = MARRIAGE_CATEGORY;
         ZLOC_TYPE                   : Association to one ZLOC_TYPE
                                         on ZLOC_TYPE.LOC_TYPE_ID = LOCATION_TYPE;
+        ZRATE_KM                    : Association to ZRATE_KM
+                                        on ZRATE_KM.RATE_KM_ID = RATE_PER_KM;
 }
 
 entity ZLODGING_CAT : managed {
@@ -501,8 +509,8 @@ entity ZVEHICLE_TYPE : managed {
 }
 
 entity ZRATE_KM : managed {
-    key RATE_KM_ID          : String  @mandatory  @Common.Label: 'Rate KM ID';
-        RATE_PER_KM         : Decimal @Common.Label: 'Rate Per KM';
+    key RATE_KM_ID          : String(2) @mandatory  @Common.Label: 'Rate KM ID';
+        RATE_PER_KM         : Decimal   @Common.Label: 'Rate Per KM';
         VEHICLE_TYPE_ID     : String  @Common.Label: 'Vehicle ID';
         CLAIM_TYPE_ITEM_ID  : String  @Common.Label: 'Claim Type Item ID';
         RATE                : Decimal @Common.Label: 'Rate';
