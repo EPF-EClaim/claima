@@ -108,6 +108,14 @@ entity ZCOST_CENTER {
         EXTERNAL_OBJ_ID  : String;
 }
 
+entity ZSTATUS {
+    key STATUS_ID   : String;
+        STATUS_DESC : String;
+        START_DATE  : Date;
+        END_DATE    : Date;
+        STATUS      : String;
+}
+
 entity ZREQUEST_GRP {
     key REQUEST_GROUP_ID   : String;
         REQUEST_GROUP_DESC : String;
@@ -124,22 +132,54 @@ entity ZNUM_RANGE {
 }
 
 entity ZCLAIM_HEADER {
-    key CLAIM_ID              : String;
-        CLAIM_MAIN_CAT_ID     : String;
-        EMP_ID                : String;
-        CLAIM_DATE            : Date;
-        CATEGORY              : String;
-        ALTERNATE_COST_CENTER : String;
-        CLAIM_TYPE_ID         : String;
-        TOTAL                 : Decimal;
-        STATUS_ID             : String;
-        DEPARTMENT            : String;
-        EMP_NAME              : String;
-        JOB_POSITION          : String;
-        PERSONAL_GRADE        : String;
-        POSITION_NO           : String;
-        ZCLAIM_ITEM           : Composition of many ZCLAIM_ITEM
-                                    on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
+    key CLAIM_ID                       : String;
+        EMP_ID                         : String;
+        PURPOSE                        : String;
+        TRIP_START_DATE                : Date;
+        TRIP_END_DATE                  : Date;
+        EVENT_START_DATE               : Date;
+        EVENT_END_DATE                 : Date;
+        SUBMISSION_TYPE                : String;
+        COMMENT                        : String;
+        COST_CENTER                    : String;
+        ALTERNATE_COST_CENTER          : String;
+        REQUEST_ID                     : String;
+        ATTACHMENT_EMAIL_APPROVER      : String;
+        STATUS_ID                      : String;
+        CLAIM_TYPE_ID                  : String;
+        CLAIM_TYPE_ITEM_ID             : String;
+        TOTAL_CLAIM_AMOUNT             : Decimal;
+        APPROVED_AMOUNT                : Decimal;
+        CASH_ADVANCE_AMOUT             : Decimal;
+        FINAL_AMOUNT_TO_RECEIVE        : Decimal;
+        LAST_MODIFIED_DATE             : Date;
+        SUBMITTED_DATE                 : Date;
+        LAST_APPROVED_DATE             : Date;
+        LAST_APPROVED_TIME             : Time;
+        PAYMENT_DATE                   : Date;
+        LOCATION                       : String;
+        SPOUSE_OFFICE_ADDRESS          : String;
+        HOUSE_COMPLETION_DATE          : Date;
+        MOVE_IN_DATE                   : Date;
+        HOUSING_LOAN_SCHEME            : String;
+        LENDER_NAME                    : String;
+        SPECIFY_DETAILS                : String;
+        NEW_HOUSE_ADDRESS              : String;
+        DIST_OLD_HOUSE_TO_OFFICE_KM    : Decimal;
+        DIST_OLD_HOUSE_TO_NEW_HOUSE_KM : Decimal;
+        ZCLAIM_ITEM                    : Composition of many ZCLAIM_ITEM
+                                             on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
+        ZEMP_MASTER                    : Association to one ZEMP_MASTER
+                                             on ZEMP_MASTER.EEID = EMP_ID;
+        ZCLAIM_TYPE                    : Association to one ZCLAIM_TYPE
+                                             on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
+        ZCLAIM_TYPE_ITEM               : Association to one ZCLAIM_TYPE_ITEM
+                                             on  ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID      = CLAIM_TYPE_ID
+                                             and ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID;
+        ZCOST_CENTER                   : Association to one ZCOST_CENTER
+                                             on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
+        ZSTATUS                        : Association to one ZSTATUS
+                                             on ZSTATUS.STATUS_ID = STATUS_ID;
 }
 
 entity ZCLAIM_ITEM {

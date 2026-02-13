@@ -33,7 +33,10 @@
                         selectedKey="{claimsubmission_input>/claimtype/type}"
                         items="{
                             path: 'employee>/ZCLAIM_TYPE',
-                            sorter: { path: 'CLAIM_TYPE_DESC' }
+                            sorter: [
+                                { path: 'CLAIM_TYPE_DESC' },
+                                { path: 'CLAIM_TYPE_ID' }
+                            ]
                         }"
                         change="onSelect_ClaimProcess_ClaimType"
                         liveChange="onSelect_ClaimProcess_ClaimType"
