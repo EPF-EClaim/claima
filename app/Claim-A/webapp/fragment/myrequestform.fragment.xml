@@ -16,16 +16,25 @@
                 width="auto"
                 items="{path:'employee>/ZREQUEST_HEADER', parameters: {
                 $count: true,
-                $select: 'REQUEST_ID,OBJECTIVE_PURPOSE,EMP_ID,START_DATE,END_DATE,LOCATION,TYPE_OF_TRANSPORTATION,REQUEST_GROUP_ID,REMARK'}}"
+                $select: 'REQUEST_ID,OBJECTIVE_PURPOSE,EMP_ID,TRIP_START_DATE,TRIP_END_DATE,REQUEST_GROUP_ID,REMARK,TOTAL_AMOUNT,COST_CENTER,ALTERNATE_COST_CENTRE,EVENT_START_DATE,EVENT_END_DATE,STATUS,LOCATION,TYPE_OF_TRANSPORTATION,REQUEST_TYPE_ID'}}"
                 itemPress="onRowPressForm"
                 growing="true"
             >
+                <headerToolbar>
+                    <Toolbar>
+                        <!-- Title with inline count -->
+                        <Title
+                            text="{= ${i18n>nav_myrequest} + ' (' + ${employee>/ZREQUEST_HEADER/$count} + ')'}"
+                        />
+                    </Toolbar>
+                </headerToolbar>
+
                 <columns>
                     <Column>
-                        <Text text="Report Purpose" />
+                        <Text text="Purpose" />
                     </Column>
                     <Column>
-                        <Text text="Report ID" />
+                        <Text text="Claim ID" />
                     </Column>
                     <Column>
                         <Text text="Start Date" />
@@ -39,22 +48,19 @@
                 </columns>
 
                 <items>
-                    <ColumnListItem
-                        
-                    >
+                    <ColumnListItem type="Active">
                         <cells>
                             <Text text="{employee>OBJECTIVE_PURPOSE}" />
                             <Text text="{employee>REQUEST_ID}" />
-                            <Text text="{
-                                path: 'employee>START_DATE',
+                            <Text
+                                text="{
+                                path: 'employee>TRIP_START_DATE',
                                 type: 'sap.ui.model.odata.type.Date',
                                 formatOptions: { pattern: 'dd MMM yyyy' } 
-                            }"/>
-                            <Text text="{
-                                path: 'employee>END_DATE',
-                                type: 'sap.ui.model.odata.type.Date',
-                                formatOptions: { pattern: 'dd MMM yyyy' }}" />
-                            <Text text="{employee>AMOUNT}" />
+                            }"
+                            />
+                            <Text text="{employee>STATUS}" />
+                            <Text text="{employee>TOTAL_AMOUNT}" />
                         </cells>
                     </ColumnListItem>
                 </items>
