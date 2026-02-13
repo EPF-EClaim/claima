@@ -558,14 +558,14 @@ annotate service.ZLODGING_CAT with @(
 
 annotate service.ZROOM_TYPE with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [ROOM_TYPE_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -612,7 +612,7 @@ annotate service.ZROOM_TYPE with @(
 
 annotate service.ZFLIGHT_CLASS with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [FLIGHT_CLASS_ID],
     Capabilities      : {
         Deletable : true,
@@ -666,7 +666,7 @@ annotate service.ZFLIGHT_CLASS with @(
 
 annotate service.ZCOUNTRY with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [COUNTRY_ID],
     Capabilities      : {
         Deletable : true,
@@ -720,7 +720,7 @@ annotate service.ZCOUNTRY with @(
 
 annotate service.ZAREA with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [AREA_ID],
     Capabilities      : {
         Deletable : true,
@@ -774,7 +774,7 @@ annotate service.ZAREA with @(
 
 annotate service.ZMARITAL_STAT with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [MARRIAGE_CATEGORY_ID],
     Capabilities      : {
         Deletable : true,
@@ -882,14 +882,14 @@ annotate service.ZSTAFF_CAT with @(
 
 annotate service.ZVEHICLE_TYPE with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [VEHICLE_TYPE_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,

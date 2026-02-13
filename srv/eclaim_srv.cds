@@ -14,7 +14,8 @@ service eclaim_srv {
         projection on ECLAIM.ZCLAIM_TYPE {
             key CLAIM_TYPE_ID,
                 CLAIM_TYPE_DESC,
-                ZCLAIM_TYPE_ITEM : redirected to ZCLAIM_TYPE_ITEM
+                ZCLAIM_TYPE_ITEM : Composition of many ZCLAIM_TYPE_ITEM
+                                       on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID
         };
 
     entity ZREQUEST_ITEM        as projection on ECLAIM.ZREQUEST_ITEM;
@@ -27,8 +28,14 @@ service eclaim_srv {
     entity ZRISK                as projection on ECLAIM.ZRISK
         actions {
             @Common.DefaultValueFunction: 'getDefaultsForCopy'
-            action Copy(RISK_ID: String @(Common.Label: 'New Risk ID'),
-                        RISK_DESC: String @(Common.Label: 'Risk Description')
+            action Copy(RISK_ID: String @(
+                Common.Label: 'New Risk ID',
+                mandatory
+            ),
+                        RISK_DESC: String @(Common.Label: 'Risk Description'),
+                        START_DATE: Date @(Common.Label: 'Start Date'),
+                        END_DATE: Date @Common.Label: 'End Date',
+                        STATUS: String @Common.Label: 'Status'
             ) returns ZRISK;
         };
 
@@ -120,7 +127,7 @@ service eclaim_srv {
 
     entity ZMATERIAL_GROUP      as projection on ECLAIM.ZMATERIAL_GROUP;
 
-    entity ZINDIV_GROUP      as projection on ECLAIM.ZINDIV_GROUP;
+    entity ZINDIV_GROUP         as projection on ECLAIM.ZINDIV_GROUP;
 
     entity ZEMP_DEPENDENT       as projection on ECLAIM.ZEMP_DEPENDENT;
 
