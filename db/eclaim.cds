@@ -198,6 +198,11 @@ entity ZCLAIM_HEADER : managed {
         NEW_HOUSE_ADDRESS               : String;
         DIST_OLD_HOUSE_TO_OFFICE_KM     : Decimal;
         DIST_OLD_HOUSE_TO_NEW_HOUSE_KM  : Decimal;
+        APPROVER1                       : String(6);
+        APPROVER2                       : String(6);
+        APPROVER3                       : String(6);
+        APPROVER4                       : String(6);
+        APPROVER5                       : String(6);
         ZCLAIM_ITEM                     : Composition of many ZCLAIM_ITEM
                                             on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
         ZEMP_MASTER                     : Association to one ZEMP_MASTER
