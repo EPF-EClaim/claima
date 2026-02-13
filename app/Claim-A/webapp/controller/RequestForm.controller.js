@@ -662,6 +662,27 @@ sap.ui.define([
 				sap.m.MessageToast.show(errorMsg);
 			}
 
+			const toNumber = (v) => {
+				if (v === null || v === undefined || v === "") return 0;
+				const n = typeof v === "number" ? v : parseFloat(String(v).replace(/,/g, ""));
+				return Number.isFinite(n) ? n : 0;
+			};
+			
+			const total = (oReq.getProperty("/req_item_rows") || []).reduce((acc, row) => {
+				const amt = row?.EST_AMOUNT ?? row?.est_amount ?? row?.EST_AMT ?? 0;
+				return acc + toNumber(amt);
+			}, 0);
+			
+			const round2 = (n) => Math.round(n * 100) / 100;
+
+			
+			const oHeader = oReq.getProperty("/req_header") || {};
+			if (!oReq.getProperty("/req_header")) {
+				oReq.setProperty("/req_header", oHeader);
+			}
+			oReq.setProperty("/req_header/reqamt", round2(total));
+
+
 			oTable.clearSelection();
 		},
 
@@ -920,7 +941,18 @@ sap.ui.define([
 				location: "",
 				remarks: ""
 			};
-			data.participant = [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
+			const emp_data = await this._getEmpIdDetail(this._userId);
+			if (data.req_header.grptype === 'individual') {
+				// Use the returned data to populate the fields
+				data.participant = [{ 
+					PARTICIPANTS_ID: this._userId, 
+					PARTICIPANT_NAME: emp_data ? emp_data.name : "", 
+					PARTICIPANT_COST_CENTER: emp_data ? emp_data.cc : "", 
+					ALLOCATED_AMOUNT: "" 
+				}];
+			} else {
+				data.participant = [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }];
+			}
 			data.view = "create";
 			oReq.setData(data);
 		},
@@ -935,8 +967,8 @@ sap.ui.define([
 			const isEdit    = oReq.getProperty("/view") === "i_edit";
 
 			// Common field extraction
-			const claimType = data.req_item.claim_type;           // e.g., "CT1"
-			const claimItem = data.req_item.claim_type_item_id;      // or 'claim_type_item_id' if you use that in form
+			const claimType = data.req_item.claim_type;
+			const claimItem = data.req_item.claim_type_item_id;
 			const estAmt    = parseFloat(data.req_item.est_amount || 0);
 			const estNoPart = parseInt(data.req_item.est_no_participant || 1, 10);
 
@@ -950,7 +982,7 @@ sap.ui.define([
 					return sum + (parseFloat(it.ALLOCATED_AMOUNT) || 0);
 				}, 0);
 
-				if (alloc_total > data.req_item.est_amount) {
+				if (alloc_total > estAmt) {
 					sap.m.MessageToast.show('Allocated Amount cannot be more than Estimated Amount');
 					return;
 				}
@@ -969,11 +1001,10 @@ sap.ui.define([
 						CLAIM_TYPE_ITEM_ID: claimItem,
 						EST_AMOUNT: estAmt,
 						EST_NO_PARTICIPANT: estNoPart,
-						// If you also edit these fields in your form, include them:
-						// START_DATE: data.req_item.start_date || null,
-						// END_DATE  : data.req_item.end_date   || null,
-						// LOCATION  : data.req_item.location  || "",
-						// REMARK    : data.req_item.remark    || ""
+						START_DATE: data.req_item.start_date || null,
+						END_DATE  : data.req_item.end_date   || null,
+						LOCATION  : data.req_item.location  || "",
+						REMARK    : data.req_item.remark    || ""
 					};
 
 					const resPatch = await fetch(urlItem, {
@@ -1011,7 +1042,11 @@ sap.ui.define([
 					CLAIM_TYPE_ID: claimType,
 					CLAIM_TYPE_ITEM_ID: claimItem,
 					EST_AMOUNT: estAmt,
-					EST_NO_PARTICIPANT: estNoPart
+					EST_NO_PARTICIPANT: estNoPart,
+					START_DATE: data.req_item.start_date || null,
+					END_DATE  : data.req_item.end_date   || null,
+					LOCATION  : data.req_item.location  || "",
+					REMARK    : data.req_item.remark    || ""
 				};
 
 				const resItem = await fetch(urlItem, {
