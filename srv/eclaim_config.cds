@@ -56,7 +56,6 @@ annotate service.ZRISK with @(
 
 annotate service.ZREQUEST_TYPE with @(
     cds.autoexpose,
-    // odata.draft.bypass,
     Common.SemanticKey: [REQUEST_TYPE_ID],
     Capabilities      : {
         Deletable : true,
