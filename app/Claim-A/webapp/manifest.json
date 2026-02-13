@@ -24,18 +24,6 @@
                     "odataVersion": "4.0"
                 }
             }
-        },
-        "crossNavigation": {
-            "inbounds": {
-                "Claim-A-display": {
-                    "semanticObject": "Claim-A",
-                    "action": "display",
-                    "signature": {
-                        "parameters": {},
-                        "additionalParameters": "allowed"
-                    }
-                }
-            }
         }
     },
     "sap.ui": {

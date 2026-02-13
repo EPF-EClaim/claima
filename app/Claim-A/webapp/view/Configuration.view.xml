@@ -297,14 +297,51 @@
                 id="ZSUBMISSION_TYPE"
                 class="sapUiSmallMargin"
                 width="15rem"
-                press="onOpenConfigTable"
-            >
+                press="onOpenConfigTable">
                 <f:header>
                     <cards:Header title="ZSUBMISSION_TYPE" />
                 </f:header>
             </f:Card>
 
+             <f:Card
+                id="ZLENDER_NAME"
+                class="sapUiSmallMargin"
+                width="15rem"
+                press="onOpenConfigTable">
+                <f:header>
+                    <cards:Header title="ZLENDER_NAME" />
+                </f:header>
+            </f:Card>
 
+            <f:Card
+                id="ZHOUSING_LOAN_SCHEME"
+                class="sapUiSmallMargin"
+                width="15rem"
+                press="onOpenConfigTable">
+                <f:header>
+                    <cards:Header title="ZHOUSING_LOAN_SCHEME" />
+                </f:header>
+            </f:Card>
+
+            <f:Card
+                id="ZPERDIEM_ENT"
+                class="sapUiSmallMargin"
+                width="15rem"
+                press="onOpenConfigTable">
+                <f:header>
+                    <cards:Header title="ZPERDIEM_ENT" />
+                </f:header>
+            </f:Card>
+
+            <f:Card
+                id="ZEMP_CA_PAYMENT"
+                class="sapUiSmallMargin"
+                width="15rem"
+                press="onOpenConfigTable">
+                <f:header>
+                    <cards:Header title="ZEMP_CA_PAYMENT" />
+                </f:header>
+            </f:Card>
         </f:GridContainer>
     </ScrollContainer>
 </mvc:View>
