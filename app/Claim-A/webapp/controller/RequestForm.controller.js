@@ -299,49 +299,75 @@ sap.ui.define([
 				return;
 			}
 
-			try {
-				sap.ui.core.BusyIndicator.show(0);
+			if (!this.oSubmitDialog) {
+				this.oSubmitDialog = new sap.m.Dialog({
+				title: "Submit Request",
+				type: "Message",
+				content: [
+					new sap.m.Label({ text: "Confirm to submit Request?" })
+				],
+				beginButton: new sap.m.Button({
+					type: "Emphasized",
+					text: "Submit",
+					press: async () => {
+					try {
+						sap.ui.core.BusyIndicator.show(0);
 
-				// Build composite key URL for PATCH:
-				// Example: /ZREQUEST_HEADER(EMP_ID='E12345',REQUEST_ID='REQ26000000339')
-				const base = this._serviceRoot();
-				const entityUrl = `${base}/ZREQUEST_HEADER(EMP_ID='${encodeURIComponent(empId)}',REQUEST_ID='${encodeURIComponent(reqId)}')`;
+						// Build composite key URL for PATCH:
+						// Example: /ZREQUEST_HEADER(EMP_ID='E12345',REQUEST_ID='REQ26000000339')
+						const base = this._serviceRoot();
+						const entityUrl = `${base}/ZREQUEST_HEADER(EMP_ID='${encodeURIComponent(empId)}',REQUEST_ID='${encodeURIComponent(reqId)}')`;
 
-				// PATCH payload
-				const payload = {
-					STATUS: "PENDING APPROVAL",
-					CASH_ADVANCE: parseFloat(data.req_header.cashadvamt),
-					REQUEST_AMOUNT: parseFloat(data.req_header.reqamt)
-				};
+						// PATCH payload
+						const payload = {
+							STATUS: "PENDING APPROVAL",
+							CASH_ADVANCE: parseFloat(data.req_header.cashadvamt),
+							REQUEST_AMOUNT: parseFloat(data.req_header.reqamt)
+						};
 
-				const res = await fetch(entityUrl, {
-					method: "PATCH",
-					headers: {
-						"Content-Type": "application/json",
-						"Accept": "application/json",
-						"If-Match": "*" // important for OData v4
-					},
-					body: JSON.stringify(payload)
+						const res = await fetch(entityUrl, {
+							method: "PATCH",
+							headers: {
+								"Content-Type": "application/json",
+								"Accept": "application/json",
+								"If-Match": "*" // important for OData v4
+							},
+							body: JSON.stringify(payload)
+						});
+
+						if (!res.ok) {
+							const t = await res.text().catch(() => "");
+							throw new Error(`Update failed: ${res.status} ${t}`);
+						}
+
+						sap.m.MessageToast.show("Request submitted successfully");
+
+						const oScroll = this.getView().getParent();              // ScrollContainer
+						const oNav    = oScroll && oScroll.getParent && oScroll.getParent(); // NavContainer
+						const aPages  = oNav?.getPages ? oNav.getPages() : oNav?.getAggregation?.("pages");
+						const oMain   = aPages && aPages.find(p => p.getId && p.getId().endsWith("myrequest"));
+						if (oMain) oNav.to(oMain, "slide");
+
+					} catch (e) {
+						sap.m.MessageToast.show(e.message || "Submission failed");
+					} finally {
+						sap.ui.core.BusyIndicator.hide();
+						this.oSubmitDialog.close()
+					}
+					}
+					
+				}),
+				endButton: new sap.m.Button({
+					text: "Cancel",
+					press: () => this.oSubmitDialog.close()
+				})
 				});
-
-				if (!res.ok) {
-					const t = await res.text().catch(() => "");
-					throw new Error(`Update failed: ${res.status} ${t}`);
-				}
-
-				sap.m.MessageToast.show("Request submitted successfully");
-
-				const oScroll = this.getView().getParent();              // ScrollContainer
-				const oNav    = oScroll && oScroll.getParent && oScroll.getParent(); // NavContainer
-				const aPages  = oNav?.getPages ? oNav.getPages() : oNav?.getAggregation?.("pages");
-				const oMain   = aPages && aPages.find(p => p.getId && p.getId().endsWith("myrequest"));
-				if (oMain) oNav.to(oMain, "slide");
-
-			} catch (e) {
-				sap.m.MessageToast.show(e.message || "Submission failed");
-			} finally {
-				sap.ui.core.BusyIndicator.hide();
+				this.getView().addDependent(this.oSubmitDialog);
 			}
+
+			this.oSubmitDialog.open();
+
+			
 		},
 
 		_showMustAddClaimDialog() {
