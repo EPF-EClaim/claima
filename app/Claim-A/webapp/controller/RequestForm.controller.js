@@ -4,13 +4,13 @@ sap.ui.define([
 	"sap/ui/model/json/JSONModel",
 	"sap/m/Dialog",
 	"sap/m/Button",
-	"sap/m/Label", 
+	"sap/m/Label",
 	"sap/ui/core/Fragment",
 	"sap/ui/export/Spreadsheet",
 	"sap/ui/core/BusyIndicator"
 
-], (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator ) => {
-    "use strict";
+], (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator) => {
+	"use strict";
 
 	return Controller.extend("claima.controller.RequestForm", {
 		onInit() {
@@ -21,8 +21,8 @@ sap.ui.define([
 
 			// Item Table
 			const oModel = new JSONModel({
-				control : [
-					{view: "list"}
+				control: [
+					{ view: "list" }
 				],
 				/* req_item_rows : [
 					{claim_type: "Testing Claim Type 01", est_amount: 10100, currency_code: "MYR", est_no_of_participant: 10},
@@ -36,14 +36,14 @@ sap.ui.define([
 					{claim_type: "Testing Claim Type 09", est_amount: 500, currency_code: "MYR", est_no_of_participant: 10},
 					{claim_type: "Testing Claim Type 10", est_amount: 10000, currency_code: "MYR", est_no_of_participant: 10}
 				], */
-				participant : [
-                    {
-                        participant_name: "",
-                        emp_cost_center: "",
-                        alloc_amount: ""
-                    }
-                ]
-			
+				participant: [
+					{
+						participant_name: "",
+						emp_cost_center: "",
+						alloc_amount: ""
+					}
+				]
+
 			});
 			oModel.setSizeLimit(50);
 			this.getView().setModel(oModel);
@@ -84,15 +84,15 @@ sap.ui.define([
 			this._getFormFragment("req_header").then(function (oVBox) {
 				oPage.insertContent(oVBox, 0);
 			});
-			this._getFormFragment("req_item_list_v").then(function(oVBox){
+			this._getFormFragment("req_item_list_v").then(function (oVBox) {
 				oPage.insertContent(oVBox, 1);
 			});
 		},
-		
+
 		// ==================================================
 		// Footer Button logic
- 
-        onBack: function () {
+
+		onBack: function () {
 			if (!this.oBackDialog) {
 				this.oBackDialog = new Dialog({
 					title: "Warning",
@@ -137,22 +137,23 @@ sap.ui.define([
 		},
 
 		onSaveRequestDraft: function () {
-			MessageToast.show("save draft")	
+			MessageToast.show("save draft")
 			// write database
 			var sBaseUri = this.getOwnerComponent().getManifestEntry("/sap.app/dataSources/mainService/uri") || "/odata/v4/EmployeeSrv/";
-            var sServiceUrl = sBaseUri + "/ZREQUEST_TYPE"; 
+			var sServiceUrl = sBaseUri + "/ZREQUEST_TYPE";
 
-			fetch(sServiceUrl, 
-				{method: "POST", headers: {"Content-Type": "application/json"},
-				body: JSON.stringify({
-					REQUEST_TYPE_ID: "RT0006",
-					REQUEST_TYPE_DESC: "Testing Create Data",
-					END_DATE: "9999-12-31",
-					START_DATE: "2026-01-01",
-					STATUS: "INACTIVE"
+			fetch(sServiceUrl,
+				{
+					method: "POST", headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						REQUEST_TYPE_ID: "RT0006",
+						REQUEST_TYPE_DESC: "Testing Create Data",
+						END_DATE: "9999-12-31",
+						START_DATE: "2026-01-01",
+						STATUS: "INACTIVE"
+					})
 				})
-			})
-			.then(r => r.json());
+				.then(r => r.json());
 			// .then(console.log);
 		},
 
@@ -316,24 +317,24 @@ sap.ui.define([
 			oTable.clearSelection();
 		},
 
-        onDeleteSelectedReqItem: function () {
-            this.onRowDelete({ getSource: function () { return null; } });
-        }, 
+		onDeleteSelectedReqItem: function () {
+			this.onRowDelete({ getSource: function () { return null; } });
+		},
 
 		onCancel: async function () {
-			
+
 			const oPage = this.byId("request_form");
-			
-            // 2) Remove the existing list fragment if present
+
+			// 2) Remove the existing list fragment if present
 			//    Make sure the root control inside the fragment has id="--request_item_list_fragment"
 			const oListRoot = this.byId("request_create_item_fragment");
 			if (oListRoot) {
 				// Remove from its immediate parent aggregation
 				const oParent = oListRoot.getParent();
 				if (oParent && typeof oParent.removeContent === "function") {
-				oParent.removeContent(oListRoot);
+					oParent.removeContent(oListRoot);
 				} else if (oParent && typeof oParent.removeItem === "function") {
-				oParent.removeItem(oListRoot);
+					oParent.removeItem(oListRoot);
 				}
 				oListRoot.destroy(); // free resources
 			}
@@ -353,12 +354,12 @@ sap.ui.define([
 
 			const oModel = this.getView().getModel();
 			oModel.setProperty("/control/view", 'list');
-        },
+		},
 
-        onSave: function () {
+		onSave: function () {
 
 			const oModel = this.getView().getModel(); // JSONModel
-			const aRows  = oModel.getProperty("/req_item_rows") || [];
+			const aRows = oModel.getProperty("/req_item_rows") || [];
 
 			aRows.push({
 				claim_type: "Testing Claim Type",
@@ -369,15 +370,15 @@ sap.ui.define([
 
 			oModel.setProperty("/req_item_rows", aRows);
 
-            this.onCancel();
-        },
+			this.onCancel();
+		},
 
-        onSaveAddAnother: function () {
+		onSaveAddAnother: function () {
 			this.onSave();
-        },
-        
+		},
+
 		// ==================================================
-        // Count Request Item
+		// Count Request Item
 
 		onAfterRendering: function () {
 			const oTable = this.byId("req_item_table"); // sap.ui.table.Table
@@ -560,19 +561,19 @@ sap.ui.define([
 			oVM.setProperty("/selectedCount", aSel.length);
 		},
 
-        onExit: function () {
-            const oTable = this.byId && this.byId("req_item_table");
-            if (oTable && this._countsAttached) {
-                const oBinding = oTable.getBinding("rows");
-                if (oBinding) {
-                oBinding.detachEvent("change", this._updateTableCounts, this);
-                oBinding.detachEvent("dataReceived", this._updateTableCounts, this);
-                oBinding.detachEvent("refresh", this._updateTableCounts, this);
-                }
-                oTable.detachRowSelectionChange(this._updateSelectedCount, this);
-            }
-            this._countsAttached = false;
-        },
+		onExit: function () {
+			const oTable = this.byId && this.byId("req_item_table");
+			if (oTable && this._countsAttached) {
+				const oBinding = oTable.getBinding("rows");
+				if (oBinding) {
+					oBinding.detachEvent("change", this._updateTableCounts, this);
+					oBinding.detachEvent("dataReceived", this._updateTableCounts, this);
+					oBinding.detachEvent("refresh", this._updateTableCounts, this);
+				}
+				oTable.detachRowSelectionChange(this._updateSelectedCount, this);
+			}
+			this._countsAttached = false;
+		},
 
 		// ==================================================
 		//  Append new row for participant list
@@ -585,8 +586,8 @@ sap.ui.define([
 			const sPath = oCtx.getPath();
 			const iIndex = parseInt(sPath.split("/").pop(), 10);
 
-            const oModel = oCtx.getModel(); 
-            const aRows  = oModel.getProperty("/participant") || [];
+			const oModel = oCtx.getModel();
+			const aRows = oModel.getProperty("/participant") || [];
 
 			const aHeader = oCtx.getModel("request");
 			const aGrpType = aHeader.getProperty("/grptype");
@@ -597,15 +598,15 @@ sap.ui.define([
 
 			this._normalizeTrailingEmptyRow(aRows);
 
-            const bIsLast = iIndex === aRows.length - 1;
-            if (bIsLast && sVal) {
-                aRows.push({
+			const bIsLast = iIndex === aRows.length - 1;
+			if (bIsLast && sVal) {
+				aRows.push({
 					req_item_row: 0,
-                    participant_name: "",
-                    emp_cost_center: "",
-                    alloc_amount: "" 
-                });
-            }
+					participant_name: "",
+					emp_cost_center: "",
+					alloc_amount: ""
+				});
+			}
 
 			oModel.setProperty("/participant", aRows);
 			// If table uses growing, you might need a .refresh(true) in some setups
@@ -614,23 +615,23 @@ sap.ui.define([
 		},
 
 		_normalizeTrailingEmptyRow: function (aRows) {
-            // Remove extra trailing empties if any
-            while (aRows.length > 1 && this._isEmptyRow(aRows[aRows.length - 1]) && this._isEmptyRow(aRows[aRows.length - 2])) {
-                aRows.pop();
-            }
-            // If list became empty (shouldn't happen), ensure at least one blank row
-            if (aRows.length === 0) {
-                aRows.push({ req_item_row: 0, participant_name: "", emp_cost_center: "", alloc_amount: "" });
-            }
-        },
-        
-        _isEmptyRow: function (oRow) {
-            if (!oRow) return true;
-            const nameEmpty  = !oRow.participant_name || String(oRow.participant_name).trim() === "";
-            const costEmpty  = !oRow.emp_cost_center || String(oRow.emp_cost_center).trim() === "";
-            const allocEmpty = !oRow.alloc_amount || String(oRow.alloc_amount).trim() === "";
-            return nameEmpty && costEmpty && allocEmpty;
-        },
+			// Remove extra trailing empties if any
+			while (aRows.length > 1 && this._isEmptyRow(aRows[aRows.length - 1]) && this._isEmptyRow(aRows[aRows.length - 2])) {
+				aRows.pop();
+			}
+			// If list became empty (shouldn't happen), ensure at least one blank row
+			if (aRows.length === 0) {
+				aRows.push({ req_item_row: 0, participant_name: "", emp_cost_center: "", alloc_amount: "" });
+			}
+		},
+
+		_isEmptyRow: function (oRow) {
+			if (!oRow) return true;
+			const nameEmpty = !oRow.participant_name || String(oRow.participant_name).trim() === "";
+			const costEmpty = !oRow.emp_cost_center || String(oRow.emp_cost_center).trim() === "";
+			const allocEmpty = !oRow.alloc_amount || String(oRow.alloc_amount).trim() === "";
+			return nameEmpty && costEmpty && allocEmpty;
+		},
 
 		// ==================================================
 		// Delete Participant Row Logic
@@ -697,14 +698,14 @@ sap.ui.define([
 				}
 			});
 
-            // Optional: keep one empty row to support your auto-append UX
-            if (aRows.length === 0) {
-                aRows.push({
+			// Optional: keep one empty row to support your auto-append UX
+			if (aRows.length === 0) {
+				aRows.push({
 					participant_name: "",
 					emp_cost_center: "",
 					alloc_amount: ""
-                });
-            }
+				});
+			}
 
 			oModel.setProperty("/participant", aRows);
 			oTable.clearSelection();
@@ -792,6 +793,14 @@ sap.ui.define([
 					oVM.setProperty("/visibleCount", aItems.length);
 				}
 
+
+				// Refresh the correct table binding (sap.ui.table.Table uses "rows")
+				const oTable = this.byId("req_item_table2");
+				if (oTable && oTable.getBinding && oTable.getBinding("rows")) {
+					oTable.getBinding("rows").refresh();
+				}
+
+
 				// If your table is already rendered and has listeners attached:
 				if (typeof this._updateTableCounts === "function") {
 					this._updateTableCounts();
@@ -804,7 +813,6 @@ sap.ui.define([
 			}
 		},
 
-
 		_fetchReqItemsByReqId: async function (sReqId) {
 			// Get your V4 OData model (inherited from Component or View)
 			const oModel =
@@ -814,15 +822,17 @@ sap.ui.define([
 				throw new Error("OData model 'employee' not found.");
 			}
 
-			// Build $filter safely
-			const esc = (s) => String(s).replace(/'/g, "''");
-			const sFilter = "REQUEST_ID eq '" + esc(sReqId) + "'";
+
+			// Build V4 filter properly (use Filter argument, not $filter in mParameters)
+			const Filter = sap.ui.model.Filter;
+			const FilterOperator = sap.ui.model.FilterOperator;
+			const aFilters = [new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)];
 
 
 			// Adjust entity set and $select fields to your service metadata if needed
-			const oListBinding = oModel.bindList("/ZREQUEST_ITEM", undefined, undefined, undefined, {
-				$filter: sFilter,
-				$select: "REQUEST_ID,CLAIM_TYPE_ITEM_ID,AMOUNT"
+			const oListBinding = oModel.bindList("/ZREQUEST_ITEM", null, null, aFilters, {
+				$select: "REQUEST_ID,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,EST_NO_PARTICIPANT,EST_AMOUNT",
+				$orderby: "REQUEST_ID,CLAIM_TYPE_ITEM_ID"
 			});
 
 			const aCtx = await oListBinding.requestContexts(0, Infinity);
@@ -830,11 +840,11 @@ sap.ui.define([
 
 			return aEntities.map((e) => ({
 				request_id: e.REQUEST_ID || "",
-				claim_type: e.CLAIM_TYPE_ITEM_ID || "",
+				claim_type: e.CLAIM_TYPE_ID || "",
 				claim_type_item: e.CLAIM_TYPE_ITEM_ID || "",
-				est_amount: Number(e.AMOUNT) || "",
-				curenncy_code: "MYR",
-				/* est_no_of_participant: e.AMOUNT ||"", */
+				est_amount: Number(e.EST_AMOUNT) || "",
+				//curenncy_code: "MYR",
+				est_no_of_participant: e.EST_NO_PARTICIPANT || "",
 			}));
 		},
 		//Aiman Salim 5/02/2026 End of insert- Added to fetch data and bind item;

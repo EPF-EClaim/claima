@@ -5,11 +5,11 @@
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
     xmlns:card="sap.f.cards">
-    <VBox class="sapUiSmallMargin" id="report" binding="{current>/}">
-        <HBox>
+    <VBox class="roundedBox sapUiSmallMargin" id="report" binding="{current>/}" width="auto" rowGap="1rem" backgroundDesign="Solid" height="60%">
+        <HBox width="100%">
             <VBox
                 class="sapUiSmallMargin"
-                width="100rem">
+                width="100%">
                 <f:Form
                     id="FormDisplay354wideDual"
                     editable="false">

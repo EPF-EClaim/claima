@@ -120,9 +120,7 @@ service eclaim_srv {
 
     entity ZMATERIAL_GROUP      as projection on ECLAIM.ZMATERIAL_GROUP;
 
-    entity ZINDIV_GROUP         as projection on ECLAIM.ZINDIV_GROUP;
-
-    entity ZTRAIN_COURSE_PART   as projection on ECLAIM.ZTRAIN_COURSE_PART;
+    entity ZINDIV_GROUP      as projection on ECLAIM.ZINDIV_GROUP;
 
     entity ZEMP_DEPENDENT       as projection on ECLAIM.ZEMP_DEPENDENT;
 
