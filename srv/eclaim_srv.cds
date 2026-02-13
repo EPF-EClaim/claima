@@ -129,8 +129,6 @@ service eclaim_srv {
 
     entity ZINDIV_GROUP      as projection on ECLAIM.ZINDIV_GROUP;
 
-    entity ZCLAIM_ITEM       as projection on ECLAIM.ZCLAIM_ITEM;
-
     entity ZTRAIN_COURSE_PART as projection on ECLAIM.ZTRAIN_COURSE_PART;
 
     entity ZEMP_DEPENDENT as projection on ECLAIM.ZEMP_DEPENDENT;
