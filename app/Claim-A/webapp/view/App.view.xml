@@ -13,9 +13,6 @@
     xmlns:Icon="sap.ui.core.Icon"
     xmlns:ShellBar="sap.f.ShellBar"
     xmlns:layout="sap.ui.layout"
-    displayBlock="true"
-    height="100%"
-    class="sapUiResponsiveMargin"
 >
     <tnt:ToolPage id="toolPage">
         <tnt:header>
@@ -26,9 +23,6 @@
             />
         </tnt:header>
         <tnt:sideContent>
-            <!-- <core:Fragment
-					fragmentName="view.navigation"
-					type="XML" /> -->
             <tnt:SideNavigation
                 expanded="true"
                 itemPress=".onNavItemPress"
@@ -52,21 +46,21 @@
                     />
                     <tnt:NavigationListItem
                         key="createrequest"
-                        text="{i18n>nav_createrequest}"
+                        text="{i18n>nav_prerequest}"
                         icon="sap-icon://sys-add"
                         enabled="true"
                         expanded="false"
                     />
                     <tnt:NavigationListItem
                         key="myreport"
-                        text="{i18n>nav_myreport}"
+                        text="{i18n>nav_preappstatus}"
                         icon="sap-icon://activity-items"
                         enabled="true"
                         expanded="false"
                     />
                     <tnt:NavigationListItem
                         key="myrequest"
-                        text="{i18n>nav_myrequest}"
+                        text="{i18n>nav_claimstatus}"
                         icon="sap-icon://document-text"
                         enabled="true"
                         expanded="false"
@@ -98,137 +92,285 @@
         <tnt:mainContents>
             <NavContainer
                 id="pageContainer"
-                initialPage="dashboard"
-            >
+                initialPage="dashboard">
                 <pages>
                     <ScrollContainer
                         id="dashboard"
                         horizontal="false"
-                        vertical="true"
                         height="100%"
-                        class="sapUiContentPadding"
                     >
                         <VBox>
                             <HBox>
-                                <VBox
-                                    class="sapUiSmallMargin"
-                                    justifyContent="SpaceBetween"
+                                <Panel
+                                    width="20rem"
+                                    height="4rem"
+                                    class="sapUiSmallMarginBeginEnd sapUiMediumMarginTopBottom"
                                 >
-                                    <f:GridContainer>
-                                        <f:layout>
-                                            <f:GridContainerSettings
-                                                rowSize="5rem"
-                                                columnSize="20rem"
-                                                gap="1rem"
-                                            />
-                                        </f:layout>
-                                        <w:Card
-                                            manifest="{manifests>/expensereport}"
-                                            action="onAction"
+                                    <HBox>
+                                        <core:Icon
+                                            src="sap-icon://document-text"
+                                            size="25px"
                                         />
-                                    </f:GridContainer>
-                                </VBox>
-                                <VBox
-                                    class="sapUiSmallMargin"
-                                    justifyContent="SpaceBetween"
+                                        <Title
+                                            level="H3"
+                                            text="My Claim Status"
+                                            textAlign="Center"
+                                            class="sapUiSmallMarginBegin"
+                                        />
+                                        <Title
+                                            level="H3"
+                                            text="{employee>/ZCLAIM_HEADER/$count}"
+                                            textAlign="Center"
+                                            class="sapUiSmallMarginBegin"
+                                        />
+                                    </HBox>
+                                </Panel>
+                                <Panel
+                                    width="20rem"
+                                    height="4rem"
+                                    class="sapUiMediumMarginBeginEnd sapUiMediumMarginTopBottom"
                                 >
-                                    <f:GridContainer>
-                                        <f:layout>
-                                            <f:GridContainerSettings
-                                                rowSize="5rem"
-                                                columnSize="20rem"
-                                                gap="1rem"
-                                            />
-                                        </f:layout>
-                                        <w:Card
-                                            manifest="{manifests>/myrequest}"
-                                            action="onAction"
+                                    <HBox>
+                                        <core:Icon
+                                            src="sap-icon://activity-items"
+                                            size="25px"
                                         />
-                                    </f:GridContainer>
-                                </VBox>
-                                <VBox
-                                    class="sapUiSmallMargin"
-                                    justifyContent="SpaceBetween"
+                                        <Title
+                                            level="H3"
+                                            text="My Pre-Approval Status"
+                                            textAlign="Center"
+                                            class="sapUiSmallMarginBegin"
+                                        />
+                                        <Title
+                                            level="H3"
+                                            text="{employee>/ZREQUEST_HEADER/$count}"
+                                            textAlign="Center"
+                                            class="sapUiSmallMarginBegin"
+                                        />
+                                    </HBox>
+                                </Panel>
+                                <Panel
+                                    width="20rem"
+                                    height="4rem"
+                                    class="sapUiMediumMarginBeginEnd sapUiMediumMarginTopBottom"
                                 >
-                                    <f:GridContainer>
-                                        <f:layout>
-                                            <f:GridContainerSettings
-                                                rowSize="5rem"
-                                                columnSize="20rem"
-                                                gap="1rem"
-                                            />
-                                        </f:layout>
-                                        <w:Card
-                                            manifest="{manifests>/approval}"
-                                            action="onAction"
+                                    <HBox>
+                                        <core:Icon
+                                            src="sap-icon://sys-enter"
+                                            size="25px"
                                         />
-                                    </f:GridContainer>
-                                </VBox>
+                                        <Title
+                                            level="H3"
+                                            text="Required Approval"
+                                            textAlign="Center"
+                                            class="sapUiSmallMarginBegin"
+                                        />
+                                    </HBox>
+                                </Panel>
                             </HBox>
 
-                            <f:GridContainer>
-                                <f:Card
-                                    class="sapUiSmallMargin"
-                                    width="90rem"
+                            <VBox>
+                                <Panel
+                                    width="80%"
+                                    height="200px"
+                                    class="sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom"
                                 >
-                                    <f:header>
-                                        <cards:Header
-                                            title="{i18n>myexpensesreport}"
-                                            iconSrc="sap-icon://document-text"
+                                    <HBox>
+                                        <HBox
+                                            alignItems="Center"
+                                            width="100%"
+                                        >
+                                            <core:Icon
+                                                src="sap-icon://document-text"
+                                                size="25px"
+                                            />
+                                            <Title
+                                                level="H3"
+                                                text="{i18n>myexpensesreport} ({employee>/ZCLAIM_HEADER/$count})"
+                                                textAlign="Center"
+                                                class="sapUiSmallMarginBegin"
+                                            />
+                                        </HBox>
+                                        <!-- <HBox alignItems="Center" width="100%" justifyContent="SpaceBetween"> -->
+                                        <Button
+                                            id="dashboard-claim"
+                                            text="See All"
+                                            class="sapUiLargeMarginBegin"
+                                            type="Transparent"
+                                            press="onClickNavigate"
                                         />
-                                    </f:header>
-                                    <f:content>
-                                        <List
-                                            class="sapUiSmallMarginBottom"
-                                            showSeparators="None"
-                                        />
-                                    </f:content>
-                                </f:Card>
-                            </f:GridContainer>
+                                    </HBox>
+                                    <VBox>
+                                        <ScrollContainer>
+                                            <Table
+                                                items="{ path: 'employee>/ZCLAIM_HEADER' }"
+                                                growing="true"
+                                                noDataText="No data available"
+                                            >
+                                                <columns>
+                                                    <Column
+                                                        demandPopin="true"
+                                                    />
+                                                    <Column
+                                                        demandPopin="true"
+                                                    />
+                                                    <Column
+                                                        demandPopin="true"
+                                                    />
+                                                </columns>
+                                                <items>
+                                                    <ColumnListItem>
+                                                        <cells>
+                                                            <Text
+                                                                text="{employee>CATEGORY}"
+                                                            />
+                                                            <Text
+                                                                text="{employee>CLAIM_DATE}"
+                                                            />
+                                                            <Text
+                                                                text="{employee>TOTAL}"
+                                                            />
+                                                        </cells>
+                                                    </ColumnListItem>
+                                                </items>
+                                            </Table>
+                                        </ScrollContainer>
+                                    </VBox>
+                                </Panel>
+                            </VBox>
 
-                            <f:GridContainer>
-                                <f:Card
-                                    class="sapUiSmallMargin"
-                                    width="90rem"
+                            <VBox>
+                            <Panel
+                                    width="80%"
+                                    height="200px"
+                                    class="sapUiSmallMarginBeginEnd sapUiTinyMarginTopBottom"
                                 >
-                                    <f:header>
-                                        <cards:Header
-                                            title="{i18n>myrequest}"
-                                            iconSrc="sap-icon://activity-items"
+                                    <HBox>
+                                        <HBox
+                                            alignItems="Center"
+                                            width="100%"
+                                        >
+                                            <core:Icon
+                                                src="sap-icon://activity-items"
+                                                size="25px"
+                                            />
+                                            <Title
+                                                level="H3"
+                                                text="{i18n>myrequest} ({employee>/ZREQUEST_HEADER/$count})"
+                                                textAlign="Center"
+                                                class="sapUiSmallMarginBegin"
+                                            />
+                                        </HBox>
+                                        <Button
+                                            id="dashboard-request"
+                                            text="See All"
+                                            class="sapUiLargeMarginBegin"
+                                            type="Transparent"
+                                            press="onClickNavigate"
                                         />
-                                    </f:header>
-                                    <f:content>
-                                        <List
-                                            class="sapUiSmallMarginBottom"
-                                            showSeparators="None"
-                                        />
-                                    </f:content>
-                                </f:Card>
-                            </f:GridContainer>
-
-                            <f:GridContainer>
-                                <f:Card
-                                    class="sapUiSmallMargin"
-                                    width="90rem"
+                                    </HBox>
+                                    <VBox>
+                                        <ScrollContainer>
+                                            <Table
+                                            items="{ path: 'employee>/ZREQUEST_HEADER' }"
+                                            growing="true"
+                                            noDataText="No data available">
+                                            <columns>
+                                                <Column
+                                                    demandPopin="true"
+                                                    hAlign="Left"
+                                                />
+                                                <Column demandPopin="true" />
+                                                <Column demandPopin="true" />
+                                            </columns>
+                                            <items>
+                                                <ColumnListItem>
+                                                    <cells>
+                                                        <Text
+                                                            text="{employee>LOCATION}"
+                                                        />
+                                                        <Text
+                                                            text="{employee>START_DATE}"
+                                                        />
+                                                        <Text
+                                                            text="{employee>AMOUNT}"
+                                                        />
+                                                    </cells>
+                                                </ColumnListItem>
+                                            </items>
+                                        </Table>
+                                        </ScrollContainer>
+                                    </VBox>
+                                </Panel>
+                            </VBox>
+                            <VBox>
+                            <Panel
+                                    width="80%"
+                                    height="200px"
+                                    class="sapUiSmallMarginBeginEnd sapUiTinyMarginTopBottom"
                                 >
-                                    <f:header>
-                                        <cards:Header
-                                            title="{i18n>approvals}"
-                                            iconSrc="sap-icon://sys-enter"
+                                    <HBox>
+                                        <HBox
+                                            alignItems="Center"
+                                            width="100%"
+                                        >
+                                            <core:Icon
+                                                src="sap-icon://sys-enter"
+                                                size="25px"
+                                            />
+                                            <Title
+                                                level="H3"
+                                                text="{i18n>approval}"
+                                                textAlign="Center"
+                                                class="sapUiSmallMarginBegin"
+                                            />
+                                        </HBox>
+                                        <Button
+                                            id="dashboard-approval"
+                                            text="See All"
+                                            class="sapUiLargeMarginBegin"
+                                            type="Transparent" 
+                                            press="onClickNavigate"
                                         />
-                                    </f:header>
-                                    <f:content>
-                                        <List
-                                            class="sapUiSmallMarginBottom"
-                                            showSeparators="None"
-                                        />
-                                    </f:content>
-                                </f:Card>
-                                <!-- </Panel> -->
-                            </f:GridContainer>
+                                    </HBox>
+                                    <VBox>
+                                        <ScrollContainer>
+                                            <Table
+                                            items="{ path: 'employee>/ZREQUEST_GRP' }"
+                                            growing="true"
+                                            noDataText="No data available"
+                                        >
+                                            <columns>
+                                                <Column
+                                                    demandPopin="true"
+                                                    hAlign="Left"
+                                                />
+                                                <Column demandPopin="true" />
+                                                <Column demandPopin="true" />
+                                            </columns>
+                                            <items>
+                                                <ColumnListItem>
+                                                    <cells>
+                                                        <Text
+                                                            text="{employee>REQUEST_GROUP_ID}"
+                                                        />
+                                                        <Text
+                                                            text="{employee>REQUEST_GROUP_DESC}"
+                                                        />
+                                                        <Text
+                                                            text="{employee>END_DATE}"
+                                                        />
+                                                    </cells>
+                                                </ColumnListItem>
+                                            </items>
+                                        </Table>
+                                        </ScrollContainer>
+                                    </VBox>
+                                </Panel>
+                            </VBox>
                         </VBox>
                     </ScrollContainer>
-                    
+
                     <Page
                         id="expensereport"
                         showHeader="false"
@@ -311,115 +453,24 @@
                     <ScrollContainer
                         id="config"
                         horizontal="false"
-                        vertical="true"
+                        vertical="false"
                         height="100%"
                         class="sapUiContentPadding"
                     />
                     <!-- ================= Configuration Page ================= -->
                     <Page
                         id="configurationPage"
-                        title="{i18n>configtitle}"
-                        navButtonPress="onBackFromConfigTable">
+                        showHeader="false">
                         <content>
-                            <ScrollContainer
-                                vertical="true"
-                                horizontal="false"
-                                height="100%"
-                                class="sapUiContentPadding">    
-                                <f:GridContainer>
-                                    <f:layout>
-                                        <f:GridContainerSettings
-                                            columnSize="16rem"
-                                            rowSize="auto"
-                                            gap="1rem"
-                                        />
-                                    </f:layout>
-
-                                    <!-- ZCLAIM_PURPOSE -->
-                                    <f:Card
-                                        class="sapUiSmallMargin"
-                                        width="15rem"
-                                        press="onOpenConfigTable"
-                                    >
-                                       <f:customData>
-                                            <core:CustomData
-                                                key="id"
-                                                value="ZCLAIM_PURPOSE"
-                                            />
-                                        </f:customData>
-                                        <!--file in i18n folder is used to change the title-->
-                                        <f:header>
-                                            <cards:Header
-                                                title="{i18n>conf1}"
-                                            />
-                                        </f:header>
-                                    </f:Card>
-
-                                    <!-- Configuration Table 2 -->
-                                    <f:Card
-                                        class="sapUiSmallMargin"
-                                        width="15rem"
-                                        press="onOpenConfigTable"
-                                    >
-                                       <f:customData>
-                                            <core:CustomData
-                                                key="id"
-                                                value="ZRISK"
-                                            />
-                                        </f:customData>
-                                        <f:header>
-                                            <cards:Header
-                                                title="{i18n>conf2}"
-                                            />
-                                        </f:header>
-                                    </f:Card>
-
-                                    <!-- Configuration Table 3 -->
-                                    <f:Card
-                                        class="sapUiSmallMargin"
-                                        width="15rem"
-                                        press="onOpenConfigTable"
-                                    >
-                                       <f:customData>
-                                            <core:CustomData
-                                                key="id"
-                                                value="ConfigurationTable3"
-                                            />
-                                        </f:customData>
-                                        <f:header>
-                                            <cards:Header
-                                                title="{i18n>conf3}"
-                                            />
-                                        </f:header>
-                                    </f:Card>
-
-                                    <!-- Configuration Table 4 -->
-                                    <f:Card
-                                        class="sapUiSmallMargin"
-                                        width="15rem"
-                                        press="onOpenConfigTable"
-                                    >
-                                        <f:customData>
-                                            <core:CustomData
-                                                key="id"
-                                                value="ConfigurationTable4"
-                                            />
-                                        </f:customData>
-                                        <f:header>
-                                            <cards:Header
-                                                title="{i18n>conf4}"
-                                            />
-                                        </f:header>
-                                    </f:Card>
-                                </f:GridContainer>
-                            </ScrollContainer>
+                           <mvc:XMLView
+                            id="configuration_view"
+                            viewName="claima.view.Configuration"/>   
                         </content>
-                    </Page> <!-- ================= Configuration Page ================= -->
-                  
+                    </Page>
+                    <!-- ================= Configuration Page ================= -->
+
                     <ScrollContainer
                         id="analytics"
-                        horizontal="false"
-                        vertical="true"
                         height="100%"
                         class="sapUiContentPadding"
                     >
@@ -445,29 +496,24 @@
                                         </f:header>
                                     </f:Card>
                     </ScrollContainer>
-					<NavContainer
-						id="new_request"
-						class="sapUiContentPadding"
-						height="100%"
-						width="100%">
-						
-						<mvc:XMLView
-							id="request_form_view"
-							viewName="claima.view.RequestForm" />
-
-					</NavContainer>
-                </pages>
-                <!-- === My Request Page (added) === -->
-                <Page id="myrequest" showHeader="false" class="sapUiNoContentPadding">
-                    <content>
-                        <core:Fragment
-                            fragmentName="claima.fragment.myrequestform"
-                            type="XML"
+                    <NavContainer
+                        id="new_request"
+                        class="sapUiContentPadding"
+                        height="100%"
+                        width="100%"
+                    >
+                        <mvc:XMLView
+                            id="request_form_view"
+                            viewName="claima.view.RequestForm"
                         />
-                    </content>
-                </Page>
-                <!-- === My Request Report (added) === -->
-                <Page id="myreport" showHeader="false" class="sapUiNoContentPadding">
+                    </NavContainer>
+                </pages>
+                <!-- === My Pre-Approval Status Page (added) === -->
+                <Page
+                    id="myrequest"
+                    showHeader="false"
+                    class="sapUiNoContentPadding"
+                >
                     <content>
                         <core:Fragment
                             fragmentName="claima.fragment.myexpensereport"
@@ -475,7 +521,19 @@
                         />
                     </content>
                 </Page>
-
+                <!-- === My Claim Status Page (added) === -->
+                <Page
+                    id="myreport"
+                    showHeader="false"
+                    class="sapUiNoContentPadding"
+                >
+                    <content>
+                        <core:Fragment
+                            fragmentName="claima.fragment.myrequestform"
+                            type="XML"
+                        />
+                    </content>
+                </Page>
             </NavContainer>
         </tnt:mainContents>
     </tnt:ToolPage>

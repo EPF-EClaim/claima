@@ -30,9 +30,12 @@ sap.ui.define([
 ) {
 	"use strict";
 
+
 	return Controller.extend("claima.controller.App", {
 		onInit: function () {
-
+			// super.onInit();
+			// var oModel = this.base.getExtensionAPI().getModel();
+			//  PageController.prototype.onInit.apply(this, arguments);
 			// oViewModel
 			const oViewModel = new sap.ui.model.json.JSONModel({
 				rtype: "" // current selected request type
@@ -165,6 +168,7 @@ sap.ui.define([
 					data: []
 				}
 			});
+
 			this.getView().setModel(oConfigModel, "configModel");
 
 
@@ -266,6 +270,8 @@ sap.ui.define([
 		onNavItemSelect: function (oEvent) {
 			var oItem = oEvent.getParameter("item");
 			var oKey = oItem.getKey();
+			var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+			oRouter.navTo("RouteMain"); //dummy routing
 
 			switch (oKey) {
 				case "sidenav_claimsubmission":
@@ -276,8 +282,8 @@ sap.ui.define([
 					this.onClickMyRequest();
 					break;
 				// End added by Jefry 15-01-2026
-				case "config": // your configuration menu
-					this.onClickConfiguration();
+				case "config": // your configuration menu				
+					this.onClickConfiguration();						
 					break;
 				default:
 					// navigate to page with ID same as the key
@@ -288,25 +294,14 @@ sap.ui.define([
 					break;
 			}
 		},
-		// Configuration
+		// Configuration App
 		onClickConfiguration: async function () {
-			// if (!this.oConfigPage) {
-			// 	this.oConfigPage = Fragment.load({
-			// 		name: "claima.fragment.configuration",
-			// 		type: "XML",
-			// 		controller: this
-			// 	});
-			// 	this.getView().addDependent(this.oConfigPage);
-			// }
-
-			// Navigate to configuration page
 			var oPageContainer = this.byId("pageContainer");
 			if (!this.byId("configurationPage")) {
 				var oPage = new sap.m.Page(this.createId("configurationPage"), {
 				});
 			}
-			oPageContainer.to(this.byId("configurationPage"));
-
+			oPageContainer.to(this.byId("configurationPage"));	
 		},
 
 		onMenuButtonPress: function () {
@@ -1177,14 +1172,14 @@ sap.ui.define([
 
 		_mapHeaderToCurrentRequest: function (row) {
 			// Helper: format date (if row.CLAIM_DATE is Date or /Date(...)/)
-			const fmt = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" });
+			const fmt = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "dd MMM yyyy" });
 			const toYMD = (d) => {
 				try {
 					if (d instanceof Date) {
 						return fmt.format(d);
 					}
 					if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
-						return d;
+						return fmt.format(new Date(d));
 					}
 				} catch (e) {/* ignore */ }
 				return d || "";
@@ -1193,12 +1188,19 @@ sap.ui.define([
 			return {
 				purpose: row.OBJECTIVE_PURPOSE || "",
 				reqid: row.REQUEST_ID || "",
-				tripstartdate: toYMD(row.START_DATE),
-				tripenddate: toYMD(row.END_DATE),
-				altcostcenter: "",
+				tripstartdate: toYMD(row.TRIP_START_DATE),
+				tripenddate: toYMD(row.TRIP_END_DATE),
+				eventstartdate: toYMD(row.EVENT_START_DATE),
+				eventenddate: toYMD(row.EVENT_END_DATE),
+				costcenter: row.COST_CENTER || "",
+				altcostcenter: row.ALTERNATE_COST_CENTRE || "",
 				location: row.LOCATION || "",
 				detail: row.REMARK || "",
 				grptype: row.REQUEST_GROUP_ID || "",
+				transport: row.TYPE_OF_TRANSPORTATION || "",
+				reqstatus: row.STATUS || "",
+				reqtype: row.REQUEST_TYPE_ID || "",
+				comment: row.REMARK || "",
 				// Static totals shown as "0.00" in fragment; keep if you plan to compute later
 				saved: "",
 				// If you later bind these, set proper numbers/strings:
@@ -1339,6 +1341,8 @@ sap.ui.define([
 									}
 
 									// Optional: push km to your model/input if you want
+									var oKm = this.byId("km_input_id");
+									if (oKm) { oKm.setValue(res.km); }
 									var oKm = this.byId("km_input_id");
 									if (oKm) { oKm.setValue(res.km); }
 
@@ -1680,6 +1684,19 @@ sap.ui.define([
 		onClickCancel: function () {
 			this.oDialogFragment.close();
 		},
+		// ++Jefry_Changes
+
+		onClickNavigate: function (oEvent) {
+			let id = oEvent.getParameters().id;
+			if (id === "container-claima---App--dashboard-claim" || id === "application-app-preview-component---App--dashboard-claim") {
+				this.byId("pageContainer").to(this.getView().createId("myrequest")); //Aiman Salim Start Add 10/02/2026 - Change myreport to myrequest
+			} else if (id === "container-claima---App--dashboard-request" || id === "application-app-preview-component---App--dashboard-request") {
+				this.byId("pageContainer").to(this.getView().createId("myreport")); //Aiman Salim Start Add 10/02/2026 - Change myreport to myrequest
+			}
+
+		}
+
+
 
 		_getTexti18n: function (i18nKey, array_i18nParameters) {
 			if (array_i18nParameters) {

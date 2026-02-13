@@ -35,3 +35,7 @@ mta_archives/
 
 # auto generated wildcard
 db/.env
+# auto generated wildcard
+app/Claim-A/gen/db/.env
+# auto generated wildcard
+gen/db/.env

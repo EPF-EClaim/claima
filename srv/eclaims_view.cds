@@ -1,0 +1,186 @@
+using { ECLAIM } from '../db/eclaim';
+
+namespace ECLAIMVIEW;
+
+entity ZEMP_REQUEST_VIEW
+  as projection on ECLAIM.ZREQUEST_HEADER {
+    key EMP_ID,
+    key REQUEST_ID,        
+        ZEMP_MASTER.CC,        
+        OBJECTIVE_PURPOSE,
+        REQUEST_TYPE_ID,
+        ZREQUEST_TYPE.REQUEST_TYPE_DESC,
+        TRIP_START_DATE,
+        TRIP_END_DATE,
+        EVENT_START_DATE,
+        EVENT_END_DATE,
+        IND_OR_GROUP,
+        ZINDIV_GROUP.IND_OR_GROUP_DESC,
+        LOCATION,
+        TYPE_OF_TRANSPORTATION,
+        ALTERNATE_COST_CENTRE,
+        ATTACHMENT1,
+        ATTACHMENT2,
+        REMARK,
+        EVENT_FIELD1,
+        EVENT_FIELD2,
+        EVENT_FIELD3,
+        EVENT_FIELD4,
+        EVENT_FIELD5,
+        STATUS,
+        ZSTATUS.STATUS_DESC,
+        COST_CENTER,
+        CASH_ADVANCE,
+        REQUEST_AMOUNT,
+        TOTAL_AMOUNT,
+};
+
+
+entity ZEMP_REQUEST_ITEM_VIEW
+  as projection on ECLAIM.ZREQUEST_ITEM {
+    key REQUEST_ID,
+    key REQUEST_SUB_ID,
+        CLAIM_TYPE_ID,
+        ZCLAIM_TYPE.CLAIM_TYPE_DESC, 
+        CLAIM_TYPE_ITEM_ID,
+        ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_DESC,
+        EST_AMOUNT,
+        EST_NO_PARTICIPANT,
+        CASH_ADVANCE,
+        START_DATE,
+        END_DATE,
+        REMARK,
+        SEND_TO_SF,
+        LOCATION
+  };
+
+entity ZEMP_REQUEST_PART_VIEW
+  as projection on ECLAIM.ZREQ_ITEM_PART {
+    key REQUEST_ID,
+    key REQUEST_SUB_ID,
+        PARTICIPANTS_ID,
+        ALLOCATED_AMOUNT,
+        ZEMP_MASTER.NAME,
+        ZEMP_MASTER.CC
+  };
+
+entity ZEMP_CLAIM_HEADER_VIEW
+  as projection on ECLAIM.ZCLAIM_HEADER {
+    key CLAIM_ID,
+        //CLAIM_MAIN_CAT_ID,
+        //ZCLAIM_MAIN_CAT.CLAIM_MAIN_CAT_DESC,
+        ZEMP_MASTER.EEID,
+        //CLAIM_DATE,
+        //CLAIM_CATEGORY_ID,
+        //ZCLAIM_CATEGORY.CLAIM_CATEGORY_DESC,
+        ALTERNATE_COST_CENTER,
+        ZCOST_CENTER.COST_CENTER_DESC,
+        CLAIM_TYPE_ID,
+        ZCLAIM_TYPE.CLAIM_TYPE_DESC,
+        TOTAL_CLAIM_AMOUNT,
+        STATUS_ID,
+        ZSTATUS.STATUS_DESC,
+        ZEMP_MASTER.DEP,
+        ZEMP_MASTER.NAME,
+        ZEMP_MASTER.POS,
+        ZEMP_MASTER.GRADE,
+        ZEMP_MASTER.JOB_GROUP,
+  };
+
+entity ZEMP_CLAIM_ITEM_VIEW
+  as projection on ECLAIM.ZCLAIM_ITEM {
+    key CLAIM_ID,
+    //key CLAIM_ITEM_ID,
+    //    CLAIM_TYPE_ITEM,
+        ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_DESC,
+        AMOUNT,
+        REMARK,
+        ATTACHMENT_FILE_1,
+        ATTACHMENT_FILE_2,
+    //    CLAIM_PURPOSE,
+    //    ZCLAIM_PURPOSE.CLAIM_PURPOSE_DESC,
+    //    CLAIM_DISCLAIMER,
+    //    ZCLAIM_DISCLAIMER.CLAIM_DISCLAIMER_DESC,
+        START_DATE,
+        END_DATE,
+        START_TIME,
+        END_TIME,
+        VEHICLE_TYPE,
+        ZVEHICLE_TYPE.VEHICLE_TYPE_DESC,
+        KM,
+        RATE_PER_KM,
+        BILL_NO,
+        ACCOUNT_NO,
+        BILL_DATE,
+        TOLL,
+        PARKING,
+    //    TRANSPORT_FARE,
+        LODGING_CATEGORY,
+        ZLODGING_CAT.LODGING_CATEGORY_DESC,
+        LODGING_ADDRESS,
+        ROOM_TYPE,
+        ZROOM_TYPE.ROOM_TYPE_DESC,
+        FLIGHT_CLASS,
+        ZFLIGHT_CLASS.FLIGHT_CLASS_DESC,
+        COUNTRY,
+        REGION,
+        ZREGION.REGION_DESC,
+        AREA,
+        ZAREA.AREA_DESC,
+        LOCATION,
+        PHONE_NO,
+        //NUM_OF_DAY,
+        //MORE_THAN_4_WDAYS,
+        FROM_ELC,
+        TOTAL_EXP_AMOUNT,
+        //COMPENSATION_PCT,
+        //CURRENCY,
+        //CURRENCY_RATE,
+        //CURRENCY_AMOUNT,
+        FAMILY_COUNT,
+        STAFF_CATEGORY,
+        ZSTAFF_CAT.STAFF_CATEGORY_DESC,
+        MARRIAGE_CATEGORY,
+        ZMARITAL_STAT.MARRIAGE_CATEGORY_DESC,
+        ZLOC_TYPE.LOC_TYPE_ID,
+        ZLOC_TYPE.LOC_TYPE_DESC,
+        RECEIPT_DATE,
+        RECEIPT_NUMBER
+  };
+
+entity ZEMP_REQUEST_STATUS
+  as projection on ECLAIM.ZREQUEST_HEADER {
+    key REQUEST_ID,
+        OBJECTIVE_PURPOSE,
+        REQUEST_TYPE_ID,
+        ZREQUEST_TYPE.REQUEST_TYPE_DESC,
+        STATUS,
+        TRIP_START_DATE,
+        EVENT_START_DATE,
+        REQUEST_AMOUNT,
+        TOTAL_AMOUNT,
+        EMP_ID
+  };
+
+entity ZEMP_CLAIM_STATUS_HEADER
+  as projection on ECLAIM.ZCLAIM_HEADER {
+    key CLAIM_ID,
+        STATUS_ID,
+        ZSTATUS.STATUS_DESC,
+        EMP_ID
+  };
+
+  entity ZEMP_CLAIM_STATUS_ITEM
+    as projection on ECLAIM.ZCLAIM_ITEM {
+      key CLAIM_ID,
+  //    key CLAIM_ITEM_ID,
+  //        CLAIM_PURPOSE,
+  //        ZCLAIM_PURPOSE.CLAIM_PURPOSE_DESC,
+          START_DATE,
+          AMOUNT,
+    }
+
+
+
+
+
