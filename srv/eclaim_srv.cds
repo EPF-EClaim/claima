@@ -28,30 +28,9 @@ service eclaim_srv {
     entity ZREQUEST_ITEM     as projection on ECLAIM.ZREQUEST_ITEM;
     entity ZREQ_ITEM_PART    as projection on ECLAIM.ZREQ_ITEM_PART;
 
-    entity ZREQUEST_GRP      as projection on ECLAIM.ZREQUEST_GRP
-        actions {
-            @Common.DefaultValuesFunction: 'getDefaultsForCopy'
-            action Copy(REQUEST_GROUP_ID: String @(Common.Label: 'REQUEST_GROUP_ID'),
-                        REQUEST_GROUP_DESC: String @(Common.Label: 'REQUEST_GROUP_DESC'),
-                        END_DATE: Date @(Common.Label: 'END_DATE'),
-                        START_DATE: Date @(Common.Label: 'START_DATE'),
-                        STATUS: String @(Common.Label: 'STATUS')
-            ) returns ZREQUEST_GRP;
-        };
-
     entity ZCLAIM_HEADER     as projection on ECLAIM.ZCLAIM_HEADER;
 
     entity ZNUM_RANGE        as projection on ECLAIM.ZNUM_RANGE;
-
-    entity ZCLAIM_PURPOSE    as projection on ECLAIM.ZCLAIM_PURPOSE
-        actions {
-            @Common.DefaultValueFunction: 'getDefaultsForCopy'
-            action Copy(CLAIM_PURPOSE_ID: String @(Common.Label: 'New Claim Purpose ID'),
-                        CLAIM_PURPOSE_DESC: String @(Common.Label: 'Description')
-            ) returns ZCLAIM_PURPOSE;
-        };
-
-    function getDefaultsForCopy(ID: ZCLAIM_PURPOSE:CLAIM_PURPOSE_ID) returns ZCLAIM_PURPOSE;
 
     entity ZRISK             as projection on ECLAIM.ZRISK
         actions {
@@ -96,41 +75,6 @@ service eclaim_srv {
                         FIELD20: Boolean @Common.Label: 'Field20',
             ) returns ZAPP_FIELD_CTRL;
         };
-
-    entity ZARITH_OPT        as projection on ECLAIM.ZARITH_OPT
-        actions {
-            @Common.DefaultValueFunction: 'getDefaultsForCopy'
-            action Copy(OPERATOR_ID: String  @mandatory  @Common.Label: 'Operator Id',
-                        OPERATOR_DESC: String @Common.Label: 'Operator Description'
-            ) returns ZARITH_OPT;
-        };
-
-    entity ZAPPROVAL_RULES   as projection on ECLAIM.ZAPPROVAL_RULES
-        actions {
-            @Common.DefaultValueFunction: 'getDefaultsForCopy'
-            action Copy(ZSCENARIO: String  @mandatory  @Common.Label: 'ZSCENARIO',
-                        ZSEQNO: String(1)  @mandatory  @Common.Label: 'ZSEQNO',
-                        ZAPPR_LVL: String(1)  @mandatory  @Common.Label: 'ZAPPR_LVL',
-                        ZAMT: Decimal @Common.Label: 'ZAMT',
-                        ZAMT_OP: String(2) @Common.Label: 'ZAMT_OP',
-                        ZDAYS: Integer @Common.Label: 'ZDAYS',
-                        ZDAYS_OP: String(2) @Common.Label: 'ZDAYS_OP',
-                        ZCOSTCTR: String @Common.Label: 'ZCOSTCTR',
-                        ZCOSTCTR_OP: String(2) @Common.Label: 'ZCOSTCTR_OP',
-                        ZRISK: String @Common.Label: 'ZRISK',
-                        ZRISK_OP: String @Common.Label: 'ZRISK_OP',
-                        ZAPPROVER_ID: String @Common.Label: 'ZAPPROVER_ID'
-            ) returns ZAPPROVAL_RULES;
-        };
-
-    entity ZCLAIM_MAIN_CAT   as projection on ECLAIM.ZCLAIM_MAIN_CAT
-        actions {
-            @Common.DefaultValueFunction: 'getDefaultsForCopy'
-            action Copy(CLAIM_MAIN_CAT_ID: String  @mandatory  @Common.Label: 'CLAIM_MAIN_CAT_ID',
-                        CLAIM_MAIN_CAT_DESC: String @Common.Label: 'CLAIM_MAIN_CAT_DESC'
-            ) returns ZCLAIM_MAIN_CAT;
-        };
-
     entity ZCLAIM_CATEGORY   as projection on ECLAIM.ZCLAIM_CATEGORY
         actions {
             @Common.DefaultValueFunction: 'getDefaultsForCopy'
@@ -141,8 +85,6 @@ service eclaim_srv {
 
     entity ZSTATUS           as projection on ECLAIM.ZSTATUS;
 
-    entity ZCLAIM_DISCLAIMER as projection on ECLAIM.ZCLAIM_DISCLAIMER;
-
     entity ZLODGING_CAT      as projection on ECLAIM.ZLODGING_CAT;
 
     entity ZROOM_TYPE        as projection on ECLAIM.ZROOM_TYPE;
@@ -151,17 +93,13 @@ service eclaim_srv {
 
     entity ZCOUNTRY          as projection on ECLAIM.ZCOUNTRY;
 
-    entity ZAREA             as projection on ECLAIM.ZAREA;
-
-    entity ZCURRENCY         as projection on ECLAIM.ZCURRENCY;
+    entity ZAREA             as projection on ECLAIM.ZAREA;  
 
     entity ZSTAFF_CAT        as projection on ECLAIM.ZSTAFF_CAT;
 
     entity ZMARITAL_STAT     as projection on ECLAIM.ZMARITAL_STAT;
 
     entity ZVEHICLE_TYPE     as projection on ECLAIM.ZVEHICLE_TYPE;
-
-    entity ZKWSP_BRANCH      as projection on ECLAIM.ZKWSP_BRANCH;
 
     entity ZSTATE            as projection on ECLAIM.ZSTATE;
 
@@ -171,12 +109,67 @@ service eclaim_srv {
 
     entity ZDEPARTMENT       as projection on ECLAIM.ZDEPARTMENT;
 
-    entity ZJOB_GROUP         as projection on ECLAIM.ZJOB_GROUP;
+    entity ZJOB_GROUP        as projection on ECLAIM.ZJOB_GROUP;
 
     entity ZEMP_TYPE         as projection on ECLAIM.ZEMP_TYPE;
 
-    entity ZREGION         as projection on ECLAIM.ZREGION;
+    entity ZREGION           as projection on ECLAIM.ZREGION;
 
+    entity ZRATE_KM          as projection on ECLAIM.ZRATE_KM;
+
+    entity ZSUBMISSION_TYPE  as projection on ECLAIM.ZSUBMISSION_TYPE;
+
+    entity ZOFFICE_LOCATION  as projection on ECLAIM.ZOFFICE_LOCATION;
+
+    entity ZOFFICE_DISTANCE  as projection on ECLAIM.ZOFFICE_DISTANCE;
+
+    entity ZLOC_TYPE         as projection on ECLAIM.ZLOC_TYPE;
+
+    entity ZMATERIAL_GROUP   as projection on ECLAIM.ZMATERIAL_GROUP;
+
+    entity ZINDIV_GROUP      as projection on ECLAIM.ZINDIV_GROUP;
+
+    entity ZCLAIM_ITEM       as projection on ECLAIM.ZCLAIM_ITEM;
+
+    entity ZTRAIN_COURSE_PART as projection on ECLAIM.ZTRAIN_COURSE_PART;
+
+    entity ZEMP_DEPENDENT as projection on ECLAIM.ZEMP_DEPENDENT;
+
+    entity ZBUDGET as projection on ECLAIM.ZBUDGET;
+
+    entity ZAPPROVAL_1 as projection on ECLAIM.ZAPPROVAL_1;
+
+    entity ZAPPROVAL_2 as projection on ECLAIM.ZAPPROVAL_2;
+
+    entity ZAPPROVAL_3 as projection on ECLAIM.ZAPPROVAL_3;
+
+    entity ZEMP_VEHICLE as projection on ECLAIM.ZEMP_VEHICLE;
+
+    entity ZCOST_CENTER as projection on ECLAIM.ZCOST_CENTER;
+
+    entity ZEMP_RELATIONSHIP as projection on ECLAIM.ZEMP_RELATIONSHIP;
+
+    entity ZINTERNAL_ORDER as projection on ECLAIM.ZINTERNAL_ORDER;
+
+    entity ZGL_ACCOUNT as projection on ECLAIM.ZGL_ACCOUNT;
+
+    entity ZLOOKUP_FIELD as projection on ECLAIM.ZLOOKUP_FIELD;
+
+    entity ZMARITAL_CAT as projection on ECLAIM.ZMARITAL_CAT;
+
+    entity ZPREAPPROVAL_STATUS as projection on ECLAIM.ZPREAPPROVAL_STATUS;
+
+    entity ZPROJECT_HDR as projection on ECLAIM.ZPROJECT_HDR;
+
+    entity ZBRANCH as projection on ECLAIM.ZBRANCH;
+
+    entity ZEMP_CA_PAYMENT as projection on ECLAIM.ZEMP_CA_PAYMENT;
+
+    entity ZPERDIEM_ENT as projection on ECLAIM.ZPERDIEM_ENT;
+
+    entity ZHOUSING_LOAN_SCHEME as projection on ECLAIM.ZHOUSING_LOAN_SCHEME;
+
+    entity ZLENDER_NAME as projection on ECLAIM.ZLENDER_NAME;
 };
 
 
