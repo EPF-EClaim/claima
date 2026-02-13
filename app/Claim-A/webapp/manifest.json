@@ -413,6 +413,15 @@
            "name": "CreationDialog",
            "creationFields": "EMP_TYPE_ID,EMP_TYPE_DESC"
           }
+         },
+         "actions": {
+          "copybtn": {
+           "press": "claima.ext.controller.Config.onClickCopy",
+           "visible": true,
+           "enabled": true,
+           "requiresSelection": true,
+           "text": "Copy"
+          }
          }
         }
        },
@@ -671,6 +680,18 @@
           "enableMassEdit": {
            "operationGroupingMode": "Isolated",
            "visibleFields": "CLAIM_TYPE_DESC,CLAIM_TYPE_ID"
+          }
+         },
+         "actions": {
+          "DataFieldForAction::eclaim_srv.Copy": {
+           "enableOnSelect": "single"
+          },
+          "newCopy": {
+           "press": "claima.ext.controller.Config.onclickcopy",
+           "visible": true,
+           "enabled": true,
+           "requiresSelection": true,
+           "text": "Copy"
           }
          }
         }
