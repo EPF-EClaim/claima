@@ -1,154 +1,56 @@
 _schema-version: 3.3.0
-ID: claima-backend
-description: A simple CAP project.
-version: 1.0.0
-modules:
-- name: claima-backend-srv
-  type: nodejs
-  path: gen/srv
-  requires:
-  - name: claima-backend-auth
-  - name: claima-backend-db
-  - name: claima-backend-connectivity
-  provides:
-  - name: srv-api 
-    properties:
-      srv-url: ${default-url}
-  parameters:
-    buildpack: nodejs_buildpack
-    instances: 1
-  build-parameters:
-    builder: npm-ci
-- name: claima-backend-db-deployer
-  type: hdb
-  path: gen/db
-  requires:
-  - name: claima-backend-db
-    properties:
-      TARGET_CONTAINER: ~{hdi-container-name}
-  - name: cross-container-service-1
-    group: SERVICE_REPLACEMENTS
-    properties:
-      key: ServiceName_1
-      service: ~{the-service-name}
-  parameters:
-    buildpack: nodejs_buildpack
-- name: claima-backend
-  type: approuter.nodejs
-  path: app/router
-  requires:
-  - name: srv-api
-    group: destinations
-    properties:
-      forwardAuthToken: true
-      name: srv-api
-      url: ~{srv-url}
-  - name: claima-backend-auth
-  - name: claima-backend-destination-service
-    group: destinations
-    properties:
-      forwardAuthToken: false
-      name: ui5
-      url: https://ui5.sap.com
-  provides:
-  - name: app-api
-    properties:
-      app-protocol: ${protocol}
-      app-uri: ${default-uri}
-  parameters:
-    disk-quota: 256M
-    keep-existing-routes: true
-    memory: 256M
-- name: claima-backend-app-content
-  type: com.sap.application.content
-  path: .
-  requires:
-  - name: claima-backend-repo-host
-    parameters:
-      content-target: true
-  build-parameters:
-    build-result: resources
-    requires:
-    - artifacts:
-      - claima.zip
-      name: claima
-      target-path: resources/
-- name: claima
-  type: html5
-  path: app/claima
-  build-parameters:
-    build-result: dist
-    builder: custom
-    commands:
-    - npm install
-    - npm run build:cf
-    supported-platforms: []
-resources:
-- name: claima-backend-auth
-  type: org.cloudfoundry.managed-service
-  parameters:
-    config:
-      oauth2-configuration:
-        credential-types:
-        - binding-secret
-        - x509
-        redirect-uris:
-        - https://*~{app-api/app-uri}/**
-      tenant-mode: dedicated
-      xsappname: claima-backend-${org}-${space}
-    path: ./xs-security.json
-    service: xsuaa
-    service-plan: application
-  requires:
-  - name: app-api
-- name: claima-backend-db
-  type: com.sap.xs.hdi-container
-  parameters:
-    service: hana
-    service-plan: hdi-shared
-  properties:
-    hdi-container-name: ${service-name}
-- name: claima-backend-connectivity
-  type: org.cloudfoundry.managed-service
-  parameters:
-    service: connectivity
-    service-plan: lite
-- name: cross-container-service-1
-  type: org.cloudfoundry.existing-service
-  parameters:
-    service-name: ZPROJ_SAPHANADB-hdidb-ws-phcgj
-  properties:
-    the-service-name: ${service-name}
-- name: claima-backend-repo-host
-  type: org.cloudfoundry.managed-service
-  parameters:
-    service: html5-apps-repo
-    service-name: claima-backend-html5-service
-    service-plan: app-host
-- name: claima-backend-destination-service
-  type: org.cloudfoundry.managed-service
-  parameters:
-    config:
-      HTML5Runtime_enabled: false
-      init_data:
-        instance:
-          destinations:
-          - Authentication: NoAuthentication
-            Name: ui5
-            ProxyType: Internet
-            Type: HTTP
-            URL: https://ui5.sap.com
-          existing_destinations_policy: update
-      version: 1.0.0
-    service: destination
-    service-name: claima-backend-destination-service
-    service-plan: lite
+ID: claima
+version: 0.0.1
+description: "An SAP Fiori application."
 parameters:
-  deploy_mode: html5-repo
   enable-parallel-deployments: true
 build-parameters:
   before-all:
-  - builder: custom
-    commands:
-    - npm ci
-    - npx cds build --production
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production --ws-pack
+modules:
+  - name: claima-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      instances: 1
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm-ci
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: claima-auth
+      - name: claima-db
+
+  - name: claima-db-deployer
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      - name: claima-db
+
+resources:
+  - name: claima-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: claima-${space}
+        tenant-mode: dedicated
+        oauth2-configuration:
+          credential-types:
+            - "binding-secret"
+            - "x509"
+  - name: claima-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared

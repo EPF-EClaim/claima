@@ -33,7 +33,7 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.App", {
 		onInit: function () {
-
+			
 			// oReportModel
 			var oReportModel = new JSONModel({
 				"purpose": "",
@@ -711,14 +711,14 @@ sap.ui.define([
 
 		_mapHeaderToCurrentRequest: function (row) {
 			// Helper: format date (if row.CLAIM_DATE is Date or /Date(...)/)
-			const fmt = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" });
+			const fmt = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "dd MMM yyyy" });
 			const toYMD = (d) => {
 				try {
 					if (d instanceof Date) {
 						return fmt.format(d);
 					}
 					if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
-						return d;
+						return fmt.format(new Date(d));
 					}
 				} catch (e) {/* ignore */ }
 				return d || "";
@@ -727,12 +727,19 @@ sap.ui.define([
 			return {
 				purpose: row.OBJECTIVE_PURPOSE || "",
 				reqid: row.REQUEST_ID || "",
-				tripstartdate: toYMD(row.START_DATE),
-				tripenddate: toYMD(row.END_DATE),
-				altcostcenter: "",
+				tripstartdate: toYMD(row.TRIP_START_DATE),
+				tripenddate: toYMD(row.TRIP_END_DATE),
+				eventstartdate: toYMD(row.EVENT_START_DATE),
+				eventenddate: toYMD(row.EVENT_END_DATE),
+				costcenter: row.COST_CENTER || "",
+				altcostcenter: row.ALTERNATE_COST_CENTRE || "",
 				location: row.LOCATION || "",
 				detail: row.REMARK || "",
 				grptype: row.REQUEST_GROUP_ID || "",
+				transport: row.TYPE_OF_TRANSPORTATION || "",
+				reqstatus: row.STATUS || "",
+				reqtype: row.REQUEST_TYPE_ID || "",
+				comment: row.REMARK || "",
 				// Static totals shown as "0.00" in fragment; keep if you plan to compute later
 				saved: "",
 				// If you later bind these, set proper numbers/strings:
@@ -1173,7 +1180,6 @@ sap.ui.define([
 		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		// End of Request Form Controller
 		// ==================================================
-		
 
 		onPressSave: function () {
 			var oModel = this.getView().getModel("employee");
@@ -1202,9 +1208,9 @@ sap.ui.define([
 		onClickNavigate: function (oEvent) {
 			let id = oEvent.getParameters().id;
 			if (id === "container-claima---App--dashboard-claim" || id === "application-app-preview-component---App--dashboard-claim") {
-				this.byId("pageContainer").to(this.getView().createId("myreport"));
+				this.byId("pageContainer").to(this.getView().createId("myrequest")); //Aiman Salim Start Add 10/02/2026 - Change myreport to myrequest
 			} else if (id === "container-claima---App--dashboard-request" || id === "application-app-preview-component---App--dashboard-request") {
-				this.byId("pageContainer").to(this.getView().createId("myrequest"));
+				this.byId("pageContainer").to(this.getView().createId("myreport")); //Aiman Salim Start Add 10/02/2026 - Change myreport to myrequest
 			}
 
 		}
