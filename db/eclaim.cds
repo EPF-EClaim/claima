@@ -190,7 +190,7 @@ entity ZCLAIM_HEADER : managed {
         LAST_MODIFIED_DATE              : Date;
         SUBMITTED_DATE                  : Date;
         LAST_APPROVED_DATE              : Date;
-        LAST_APPROVED_TIME              : Date;
+        LAST_APPROVED_TIME              : Time;
         PAYMENT_DATE                    : Date;
         LOCATION                        : String;
         SPOUSE_OFFICE_ADDRESS           : String;
@@ -438,7 +438,7 @@ entity ZAPP_FIELD_CTRL : managed {
 }
 
 entity ZBUDGET : managed {
-    key YEAR            : Date;
+    key YEAR            : Integer;
     key COMMITMENT_ITEM : String;
     key FUND_CENTER     : Integer;
     key MATERIAL_GROUP  : Integer;
@@ -789,7 +789,7 @@ entity ZAPPROVAL_1: managed {
         REQUESTED_AMOUNT        : String @Common.Label: 'Requested Amount';
         EQUATION_SYMBOL2        : String @Common.Label: 'Equation Symbol 2';
         THRESHOLD_AMOUNT        : String @Common.Label: 'Threshold Amount';
-        RECEIPT_DATE            : String @Common.Label: 'Receipt Date';
+        RECEIPT_DATE            : Date   @Common.Label: 'Receipt Date';
         EQUATION_SYMBOL3        : String @Common.Label: 'Equation Symbol 3';
         DAYS                    : String @Common.Label: 'Days';
         EMPLOYEE_COST_CENTER    : String @Common.Label: 'Employee Cost Center';
@@ -849,7 +849,7 @@ entity ZEMP_CA_PAYMENT: managed {
     key REQUEST_ID          : String @mandatory @Common.Label: 'Pre Approval Request ID';
     key EMP_ID              : String @Common.Label: 'Employee ID';
     key DISBURSEMENT_DATE   : Date   @Common.Label: 'Disbursement Date';
-        DISBURSEMENT_STATUS : Date   @Common.Label: 'Disbursement Status (Y/N)';        
+        DISBURSEMENT_STATUS : String @Common.Label: 'Disbursement Status (Y/N)';        
 }
 
 entity ZPERDIEM_ENT: managed {
