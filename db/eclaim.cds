@@ -1,6 +1,5 @@
-using {managed} from '@sap/cds/common';
-
 namespace ECLAIM;
+using { managed } from '@sap/cds/common';
 
 entity ZEMP_MASTER : managed {
     key EEID                    : String @mandatory;
@@ -34,21 +33,21 @@ entity ZEMP_MASTER : managed {
         UPDATED_DATE            : Date;
         INSERTED_DATE           : Date;
         ZREQUEST_HEADER         : Association to one ZREQUEST_HEADER
-                                    on ZREQUEST_HEADER.EMP_ID = EEID;
+                                      on ZREQUEST_HEADER.EMP_ID = EEID;
         ZCOST_CENTER            : Association to ZCOST_CENTER
-                                    on ZCOST_CENTER.COST_CENTER_ID = CC;
+                                      on ZCOST_CENTER.COST_CENTER_ID = CC;
         ZMARITAL_STAT           : Association to ZMARITAL_STAT
-                                    on ZMARITAL_STAT.MARRIAGE_CATEGORY_ID = MARITAL;
+                                      on ZMARITAL_STAT.MARRIAGE_CATEGORY_ID = MARITAL;
         ZDEPARTMENT             : Association to ZDEPARTMENT
-                                    on ZDEPARTMENT.DEPARTMENT_ID = DEP;
+                                      on ZDEPARTMENT.DEPARTMENT_ID = DEP;
         ZJOB_GROUP              : Association to ZJOB_GROUP
-                                    on ZJOB_GROUP.JOB_GROUP_ID = JOB_GROUP; 
+                                      on ZJOB_GROUP.JOB_GROUP_ID = JOB_GROUP;
         ZROLE                   : Association to ZROLE
-                                    on ZROLE.ROLE_ID = ROLE;
+                                      on ZROLE.ROLE_ID = ROLE;
         ZUSER_TYPE              : Association to ZUSER_TYPE
-                                    on ZUSER_TYPE.USER_TYPE_ID = USER_TYPE; 
-        ZCOUNTRY                : Association to ZCOUNTRY   
-                                    on ZCOUNTRY.COUNTRY_ID = COUNTRY;
+                                      on ZUSER_TYPE.USER_TYPE_ID = USER_TYPE;
+        ZCOUNTRY                : Association to ZCOUNTRY
+                                      on ZCOUNTRY.COUNTRY_ID = COUNTRY;
         ZSTATE                  : Association to ZSTATE
                                     on  ZSTATE.COUNTRY_ID = COUNTRY
                                     and ZSTATE.STATE_ID = STATE;  
@@ -90,9 +89,9 @@ entity ZREQUEST_HEADER : managed {
         CASH_ADVANCE_DATE       : Date;
         TRAVEL_ALONE_FAMILY     : String(1);
         TRAVEL_FAMILY_NOW_LATER : String(1);
-        ZREQUEST_ITEM           : Composition of many ZREQUEST_ITEM 
+        ZREQUEST_ITEM           : Composition of many ZREQUEST_ITEM
                                       on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
-        ZREQUEST_TYPE           : Association to ZREQUEST_TYPE
+        ZREQUEST_TYPE           : Association to one ZREQUEST_TYPE
                                       on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
         ZSTATUS                : Association to one ZSTATUS
                                      on ZSTATUS.STATUS_ID = STATUS;  
@@ -136,11 +135,17 @@ entity ZREQ_ITEM_PART: managed  {
 }
 
 entity ZREQUEST_TYPE : managed {
-    key REQUEST_TYPE_ID   : String  @mandatory  @Common.Label: 'Request Type ID';
-        REQUEST_TYPE_DESC : String  @Common.Label: 'Request Type Description';
-        END_DATE          : Date    @Common.Label: 'End Date';
-        START_DATE        : Date    @Common.Label: 'Start Date';
-        STATUS            : String  @Common.Label: 'Status';
+    key REQUEST_TYPE_ID   : String
+        @mandatory
+        @Common.Label: 'Request Type ID';
+        REQUEST_TYPE_DESC : String
+        @Common.Label: 'Request Type Description';
+        END_DATE          : Date
+        @Common.Label: 'End Date';
+        START_DATE        : Date
+        @Common.Label: 'Start Date';
+        STATUS            : String
+        @Common.Label: 'Status';
 }
 
 entity ZCLAIM_TYPE : managed {
@@ -151,7 +156,6 @@ entity ZCLAIM_TYPE : managed {
         STATUS           : String  @Common.Label: 'Status';        
         ZCLAIM_TYPE_ITEM : Composition of many ZCLAIM_TYPE_ITEM
                                on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
-
 }
 
 entity ZNUM_RANGE : managed {
@@ -385,28 +389,52 @@ entity ZCLAIM_TYPE_ITEM : managed {
 }
 
 entity ZAPP_FIELD_CTRL : managed {
-    key CLAIM_TYPE_ID      : String  @mandatory  @Common.Label: 'Claim Type Id';
-    key CLAIM_TYPE_ITEM_ID : String  @mandatory  @Common.Label: 'Claim Type Item Id';
-        FIELD01            : Boolean @Common.Label: 'Field01';
-        FIELD02            : Boolean @Common.Label: 'Field02';
-        FIELD03            : Boolean @Common.Label: 'Field03';
-        FIELD04            : Boolean @Common.Label: 'Field04';
-        FIELD05            : Boolean @Common.Label: 'Field05';
-        FIELD06            : Boolean @Common.Label: 'Field06';
-        FIELD07            : Boolean @Common.Label: 'Field07';
-        FIELD08            : Boolean @Common.Label: 'Field08';
-        FIELD09            : Boolean @Common.Label: 'Field09';
-        FIELD10            : Boolean @Common.Label: 'Field10';
-        FIELD11            : Boolean @Common.Label: 'Field11';
-        FIELD12            : Boolean @Common.Label: 'Field12';
-        FIELD13            : Boolean @Common.Label: 'Field13';
-        FIELD14            : Boolean @Common.Label: 'Field14';
-        FIELD15            : Boolean @Common.Label: 'Field15';
-        FIELD16            : Boolean @Common.Label: 'Field16';
-        FIELD17            : Boolean @Common.Label: 'Field17';
-        FIELD18            : Boolean @Common.Label: 'Field18';
-        FIELD19            : Boolean @Common.Label: 'Field19';
-        FIELD20            : Boolean @Common.Label: 'Field20';
+    key CLAIM_TYPE_ID      : String
+        @mandatory
+        @Common.Label: 'Claim Type Id';
+    key CLAIM_TYPE_ITEM_ID : String
+        @mandatory
+        @Common.Label: 'Claim Type Item Id';
+        FIELD01            : Boolean
+        @Common.Label: 'Field01';
+        FIELD02            : Boolean
+        @Common.Label: 'Field02';
+        FIELD03            : Boolean
+        @Common.Label: 'Field03';
+        FIELD04            : Boolean
+        @Common.Label: 'Field04';
+        FIELD05            : Boolean
+        @Common.Label: 'Field05';
+        FIELD06            : Boolean
+        @Common.Label: 'Field06';
+        FIELD07            : Boolean
+        @Common.Label: 'Field07';
+        FIELD08            : Boolean
+        @Common.Label: 'Field08';
+        FIELD09            : Boolean
+        @Common.Label: 'Field09';
+        FIELD10            : Boolean
+        @Common.Label: 'Field10';
+        FIELD11            : Boolean
+        @Common.Label: 'Field11';
+        FIELD12            : Boolean
+        @Common.Label: 'Field12';
+        FIELD13            : Boolean
+        @Common.Label: 'Field13';
+        FIELD14            : Boolean
+        @Common.Label: 'Field14';
+        FIELD15            : Boolean
+        @Common.Label: 'Field15';
+        FIELD16            : Boolean
+        @Common.Label: 'Field16';
+        FIELD17            : Boolean
+        @Common.Label: 'Field17';
+        FIELD18            : Boolean
+        @Common.Label: 'Field18';
+        FIELD19            : Boolean
+        @Common.Label: 'Field19';
+        FIELD20            : Boolean
+        @Common.Label: 'Field20';
 }
 
 entity ZBUDGET : managed {
@@ -537,8 +565,11 @@ entity ZREGION : managed {
 }
 
 entity ZTRANSFER_MODE : managed {
-    key MODE_ID   : String  @mandatory  @Common.Label: 'Mode ID';
-        MODE_DESC : String  @Common.Label: 'Mode Description';
+    key MODE_ID   : String
+        @mandatory
+        @Common.Label: 'Mode ID';
+        MODE_DESC : String
+        @Common.Label: 'Mode Description';
 }
 
 entity ZSTATE : managed {
@@ -560,23 +591,23 @@ entity ZKWSP_MILEAGE : managed {
 }
 
 entity ZJOB_GROUP : managed {
-    key JOB_GROUP_ID    : String @mandatory @Common.Label: 'Job Group ID';
-        JOB_GROUP_DESC  : String @Common.Label: 'Job Group ID';
-        START_DATE      : Date   @Common.Label: 'Start Date';
-        END_DATE        : Date   @Common.Label: 'End Date';
-        STATUS          : String @Common.Label: 'Status';
+    key JOB_GROUP_ID   : String  @mandatory  @Common.Label: 'Job Group ID';
+        JOB_GROUP_DESC : String  @Common.Label: 'Job Group ID';
+        START_DATE     : Date    @Common.Label: 'Start Date';
+        END_DATE       : Date    @Common.Label: 'End Date';
+        STATUS         : String  @Common.Label: 'Status';
 }
 
-entity ZDEPARTMENT: managed {
-    key DEPARTMENT_ID       : String @mandatory @Common.Label: 'Department ID';
-        DEPARTMENT_DESC     : String @Common.Label: 'Department Description';
-        START_DATE          : Date   @Common.Label: 'Start Date';
-        END_DATE            : Date   @Common.Label: 'End Date';
-        STATUS              : String @Common.Label: 'Status';
-        HEAD_OF_DEPARTMENT  : String @Common.Label: 'Head of Department';
-        SHORT_CODE          : String @Common.Label: 'Short Code';
-        COST_CENTER         : String @Common.Label: 'Cost Center';
-        DIVISION            : String @Common.Label: 'Division';
+entity ZDEPARTMENT : managed {
+    key DEPARTMENT_ID      : String  @mandatory  @Common.Label: 'Department ID';
+        DEPARTMENT_DESC    : String  @Common.Label: 'Department Description';
+        START_DATE         : Date    @Common.Label: 'Start Date';
+        END_DATE           : Date    @Common.Label: 'End Date';
+        STATUS             : String  @Common.Label: 'Status';
+        HEAD_OF_DEPARTMENT : String  @Common.Label: 'Head of Department';
+        SHORT_CODE         : String  @Common.Label: 'Short Code';
+        COST_CENTER        : String  @Common.Label: 'Cost Center';
+        DIVISION           : String  @Common.Label: 'Division';
 }
 
 entity ZROLE : managed {

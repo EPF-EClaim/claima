@@ -6,18 +6,27 @@ service eclaim_srv {
 
     entity ZREQUEST_TYPE     as projection on ECLAIM.ZREQUEST_TYPE;
 
+    entity ZCLAIM_ITEM       as projection on ECLAIM.ZCLAIM_ITEM;
+
     entity ZREQUEST_HEADER   as projection on ECLAIM.ZREQUEST_HEADER;
 
-    entity ZCLAIM_TYPE       as projection on ECLAIM.ZCLAIM_TYPE
-        actions {
-            @Common.DefaultValuesFunction: 'getDefaultsForCopy'
-            action Copy(CLAIM_TYPE_ID: String @(Common.Label: 'New Claim Type ID'),
-                        CLAIM_TYPE_DESC: String @(Common.Label: 'Claim Type Description')
-            ) returns ZCLAIM_TYPE;
+    entity ZCLAIM_TYPE       as
+        projection on ECLAIM.ZCLAIM_TYPE {
+                // actions {
+                //     @Common.DefaultValuesFunction: 'getDefaultsForCopy'
+                //     action Copy(claim_type_id : String @(Common.Label: 'New Claim Type ID'),
+                //     CLAIM_TYPE_DESC           : String @(Common.Label: 'Claim Type Description')
+                //                                 ) returns zclaim_type;
+            key CLAIM_TYPE_ID,
+                CLAIM_TYPE_DESC,
+                ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM as Item
+
+
+        // }
         };
 
     entity ZREQUEST_ITEM     as projection on ECLAIM.ZREQUEST_ITEM;
-    entity ZREQ_ITEM_PART as projection on ECLAIM.ZREQ_ITEM_PART;
+    entity ZREQ_ITEM_PART    as projection on ECLAIM.ZREQ_ITEM_PART;
 
     entity ZCLAIM_HEADER     as projection on ECLAIM.ZCLAIM_HEADER;
 

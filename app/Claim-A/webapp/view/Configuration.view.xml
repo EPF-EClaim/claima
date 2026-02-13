@@ -92,7 +92,7 @@
                                         </f:header>
                                     </f:Card>
 
-                                    <f:Card
+                                    <!-- <f:Card
                                         id="ZCLAIM_TYPE_ITEM"
                                         class="sapUiSmallMargin"
                                         width="15rem"
@@ -101,7 +101,7 @@
                                             <cards:Header
                                                 title="{i18n>conf_zclaimtpeitem}"/>
                                         </f:header>
-                                    </f:Card>
+                                    </f:Card> -->
 
                                     <f:Card
                                         id="ZNUM_RANGE"

@@ -4,27 +4,26 @@
     xmlns:f="sap.f"
 >
     <f:DynamicPage
-        id="myrequestform"
+        id="myexpenserepo"
         headerExpanded="false"
         fitContent="true"
     >
+        <!-- headerText="My Claim Status" -->
         <f:content>
             <Table
-                id="tb_myrequestform"
-                headerText="My Pre-Approval Status"
+                id="tb_myexpensetrepo"
                 mode="SingleSelectMaster"
                 width="auto"
-                items="{path:'employee>/ZREQUEST_HEADER', parameters: {
+                items="{path:'employee>/ZCLAIM_HEADER', parameters: {
                 $count: true,
-                $select: 'REQUEST_ID,OBJECTIVE_PURPOSE,EMP_ID,TRIP_START_DATE,TRIP_END_DATE,REQUEST_GROUP_ID,REMARK,TOTAL_AMOUNT,COST_CENTER,ALTERNATE_COST_CENTRE,EVENT_START_DATE,EVENT_END_DATE,STATUS,LOCATION,TYPE_OF_TRANSPORTATION,REQUEST_TYPE_ID'}}"
-                itemPress="onRowPressForm"
-                growing="true"
+                $select: 'CATEGORY,CLAIM_ID,CLAIM_DATE,STATUS_ID,TOTAL' }}"
+                itemPress="onRowPress"
             >
                 <headerToolbar>
                     <Toolbar>
                         <!-- Title with inline count -->
                         <Title
-                            text="{= ${i18n>nav_myrequest} + ' (' + ${employee>/ZREQUEST_HEADER/$count} + ')'}"
+                            text="{= ${i18n>nav_myreport} + ' (' + ${employee>/ZCLAIM_HEADER/$count} + ')'}"
                         />
                     </Toolbar>
                 </headerToolbar>
@@ -50,17 +49,18 @@
                 <items>
                     <ColumnListItem type="Active">
                         <cells>
-                            <Text text="{employee>OBJECTIVE_PURPOSE}" />
-                            <Text text="{employee>REQUEST_ID}" />
+                            <Text text="{employee>CATEGORY}" />
+                            <Text text="{employee>CLAIM_ID}" />
                             <Text
                                 text="{
-                                path: 'employee>TRIP_START_DATE',
+                            
+                                path: 'employee>CLAIM_DATE', 
                                 type: 'sap.ui.model.odata.type.Date',
-                                formatOptions: { pattern: 'dd MMM yyyy' } 
-                            }"
+                                formatOptions: { pattern: 'dd MMM yyyy' }
+                                }"
                             />
-                            <Text text="{employee>STATUS}" />
-                            <Text text="{employee>TOTAL_AMOUNT}" />
+                            <Text text="{employee>STATUS_ID}" />
+                            <Text text="{employee>TOTAL}" />
                         </cells>
                     </ColumnListItem>
                 </items>
