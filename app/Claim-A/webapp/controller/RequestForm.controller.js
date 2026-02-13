@@ -173,6 +173,7 @@ sap.ui.define([
 				this.oBackDialog = new Dialog({
 				title: "Warning",
 				type: "Message",
+				state: "Warning",
 				content: [ new Label({ text: "You haven't saved, do you confirm to go back?" }) ],
 				beginButton: new Button({
 					type: "Emphasized",
@@ -375,10 +376,19 @@ sap.ui.define([
 
 			const oReq = this._getReqModel();
 			const data = oReq.getData();
-			
-			// ... your req_item reset logic ...
 
-			// FIX: Await the async function call
+			data.req_item = {
+				claim_type: "CT1",
+				claim_type_item_id: "CTI1",
+				est_amount: "",
+				est_no_participant: "",
+				cash_advance: "no_cashadv",
+				start_date: "",
+				end_date: "",
+				location: "",
+				remarks: ""
+			};
+			
 			const emp_data = await this._getEmpIdDetail(this._userId);
 
 			if (data.req_header.grptype === 'individual') {
@@ -1352,7 +1362,7 @@ sap.ui.define([
 					columns: aCols 
 				},
 				dataSource: aExportData,
-				fileName: "Request_Data.xlsx",
+				fileName: "Pre-Approval Request Participant Data.xlsx",
 				worker: false // Set to false for small datasets or if debugging
 			};
 

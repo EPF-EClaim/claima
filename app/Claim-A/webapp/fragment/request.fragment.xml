@@ -89,6 +89,7 @@
 				<Select width="100%" 
 						required="true" 
 						selectedKey="{request>/req_header/grptype}"
+						enabled="{= ${request>/req_header/reqtype} !== 'RT0004'}"
 						visible="{= ${request>/req_header/reqtype} === 'RT0001' || 
 									${request>/req_header/reqtype} === 'RT0002'  || 
 									${request>/req_header/reqtype} === 'RT0003'  || 

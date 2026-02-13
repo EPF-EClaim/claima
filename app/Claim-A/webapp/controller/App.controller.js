@@ -1010,7 +1010,7 @@ sap.ui.define([
                 message = 'Please enter all mandatory details';
             } else if (!oData.doc1) {
                 okcode = false;
-                message = 'Please upload Attachment 1';
+                message = 'Please upload Attachment 1 (Mandatory)';
             } else if (oData.tripenddate < oData.tripstartdate) {
                 okcode = false;
                 message = "End Date cannot be earlier than begin date";
