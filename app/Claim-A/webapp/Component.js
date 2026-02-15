@@ -1,11 +1,12 @@
 sap.ui.define([
     // "sap/ui/core/UIComponent",
     "sap/fe/core/AppComponent",
-    "claima/model/models"
+    "claima/model/models",
+    "sap/ui/model/json/JSONModel"
     ], 
     // (UIComponent, 
     (AppComponent, 
-        models) => {
+        models, JSONModel) => {
     "use strict";
 
     // return UIComponent.extend("claima.Component", {

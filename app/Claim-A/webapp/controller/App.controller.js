@@ -642,7 +642,7 @@ sap.ui.define([
       /* aSorters  */[],
       /* aFilters  */[new Filter("CLAIM_ID", FilterOperator.EQ, sClaimId)],
       /* mParams   */ {
-						$select: "CLAIM_ID,START_DATE,CLAIM_TYPE_ITEM,CLAIM_ITEM_ID,AMOUNT,CURRENCY,STAFF_CATEGORY"
+						$select: "CLAIM_ID,START_DATE,CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ID,AMOUNT,STAFF_CATEGORY"
 					}
 				);
 
@@ -685,21 +685,20 @@ sap.ui.define([
 
 			return {
 				id: row.CLAIM_ID,
-				location: row.CLAIM_MAIN_CAT_ID || "",
-				costcenter: row.CLAIM_MAIN_CAT_ID || "",
-				altcc: row.ALTERNATE_COST_CENTRE || "",
-				total: row.TOTAL,          // you use TOTAL in the table
+				location: row.LOCATION || "",
+				costcenter: row.ALTERNATE_COST_CENTER || "",
+				altcc: row.ALTERNATE_COST_CENTER || "",
+				total: row.TOTAL_CLAIM_AMOUNT,          // you use TOTAL in the table
 				cashadv: row.CLAIM_ID || "",
 				finalamt: row.CLAIM_ID || "",
 				report: {
 					id: row.CLAIM_ID,
-					purpose: row.CATEGORY || "",
-					startdate: toYMD(row.CLAIM_DATE),
-					enddate: toYMD(row.CLAIM_DATE),
+					purpose: row.PURPOSE || "",
+					startdate: toYMD(row.EVENT_START_DATE),
+					enddate: toYMD(row.EVENT_END_DATE),
 					location: row.LOCATION || "",
-					category: row.CATEGORY || "",
 					comment: row.CLAIM_ID || "",
-					amt_approved: row.TOTAL || ""
+					amt_approved: row.TOTAL_CLAIM_AMOUNT || ""
 				}
 			};
 		},

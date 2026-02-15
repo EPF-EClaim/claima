@@ -1,0 +1,660 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.f"
+    xmlns:mdc="sap.ui.mdc"
+    xmlns:mdct="sap.ui.mdc.table"
+>
+    <!-- Root must be a Page so NavContainer can navigate to it -->
+    <Page
+        id="analyticsClaimReportPage"
+        title="{i18n>ana_poptitle}"
+        showNavButton="true"
+        navButtonPress=".onBackFromAnalyticsClaimReport"
+    >
+        <content>
+            <f:DynamicPage id="analyticsClaimDynPage">
+                <f:content>
+                    <mdc:Table
+                        id="analyticsclaimtab"
+                        enableExport="true"
+                    >
+                        <mdct:Column
+                            propertyKey="employee"
+                            header="{i18n>employee_name}"
+                        >
+                            <Text text="{mountains>name} ({mountains>range})" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="personal_grade"
+                            header="{i18n>personal_grade}"
+                        >
+                            <Text text="{mountains>range}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="dept"
+                            header="{i18n>department_id}"
+                        >
+                            <Text text="{mountains>first_ascent}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="dept_name"
+                            header="{i18n>department_name}"
+                        >
+                            <Text text="{mountains>height} m" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="unit"
+                            header="{i18n>unit}"
+                        >
+                            <Text text="{mountains>countries}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="position"
+                            header="{i18n>position}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="employee_id"
+                            header="{i18n>employee_id}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="claim_id"
+                            header="{i18n>claim_id}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="claim_type"
+                            header="{i18n>claim_type}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="preappreq_id"
+                            header="{i18n>preappreq_id}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="preappreq_date"
+                            header="{i18n>preappreq_date}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="submitted_type"
+                            header="{i18n>submitted_type}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="submitted_date"
+                            header="{i18n>submitted_date}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="approval1"
+                            header="{i18n>approval1}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="approval2"
+                            header="{i18n>approval2}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="approval3"
+                            header="{i18n>approval3}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="approval4"
+                            header="{i18n>approval4}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="approval5"
+                            header="{i18n>approval5}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="final_app_date"
+                            header="{i18n>final_app_date}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="last_send_date"
+                            header="{i18n>last_send_date}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="days_approved"
+                            header="{i18n>days_approved}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="cash_adv_recei_date"
+                            header="{i18n>cash_adv_recei_date}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="payment_date"
+                            header="{i18n>payment_date}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="cc_code"
+                            header="{i18n>cc_code}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="cc_desc"
+                            header="{i18n>cc_desc}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="alt_cc_code"
+                            header="{i18n>alt_cc_code}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="alt_cc_desc"
+                            header="{i18n>alt_cc_desc}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="gl_acct"
+                            header="{i18n>gl_acct}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="code_mat"
+                            header="{i18n>code_mat}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="gl_acct"
+                            header="{i18n>gl_acct}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="total_claim_amt"
+                            header="{i18n>total_claim_amt}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="cash_adv"
+                            header="{i18n>cash_adv}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="final_amt_receive"
+                            header="{i18n>final_amt_receive}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="course_code"
+                            header="{i18n>course_code}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="course_desc"
+                            header="{i18n>course_desc}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <!-- Begin add for detail view fields-->
+                        <mdct:Column
+                            propertyKey="claim_id"
+                            header="{i18n>claim_id}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="claim_sub_id"
+                            header="{i18n>claim_sub_id}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="item_no"
+                            header="{i18n>item_no}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="compensation"
+                            header="{i18n>compensation}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="acct_no"
+                            header="{i18n>acct_no}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="amount"
+                            header="{i18n>amount}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="bill_date"
+                            header="{i18n>bill_date}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="bill_no"
+                            header="{i18n>bill_no}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="category"
+                            header="{i18n>category}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="claim_type"
+                            header="{i18n>claim_type}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="claim_item"
+                            header="{i18n>claim_item}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="country"
+                            header="{i18n>country}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="disclaimer"
+                            header="{i18n>disclaimer}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="req_i_end_date"
+                            header="{i18n>req_i_end_date}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="req_i_end_time"
+                            header="{i18n>req_i_end_time}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="flight_class"
+                            header="{i18n>flight_class}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="ELC"
+                            header="{i18n>ELC}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="fromloc"
+                            header="{i18n>fromloc}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="fromloc_office"
+                            header="{i18n>fromloc_office}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="kilometer"
+                            header="{i18n>kilometer}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="location"
+                            header="{i18n>location}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="location_type"
+                            header="{i18n>location_type}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="lodging_add"
+                            header="{i18n>lodging_add}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="lodging_cat"
+                            header="{i18n>lodging_cat}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="marriage"
+                            header="{i18n>marriage}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="more_days"
+                            header="{i18n>more_days}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="wilayah"
+                            header="{i18n>wilayah}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="num_fm"
+                            header="{i18n>num_fm}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="parking"
+                            header="{i18n>parking}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="phone"
+                            header="{i18n>phone}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="rate_per_km"
+                            header="{i18n>rate_per_km}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="receipt_date"
+                            header="{i18n>receipt_date}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="receipt_num"
+                            header="{i18n>receipt_num}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="remark"
+                            header="{i18n>remark}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        
+                        <mdct:Column
+                            propertyKey="room_type"
+                            header="{i18n>room_type}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="semenanjung_or_sabah_sarawak"
+                            header="{i18n>semenanjung_or_sabah_sarawak}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="staff_category"
+                            header="{i18n>staff_category}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="start_date"
+                            header="{i18n>start_date}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                        <mdct:Column
+                            propertyKey="start_time"
+                            header="{i18n>start_time}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="state"
+                            header="{i18n>state}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="to_loc"
+                            header="{i18n>to_loc}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="to_loc_off"
+                            header="{i18n>to_loc_off}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="toll"
+                            header="{i18n>toll}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="total_expenses_amount"
+                            header="{i18n>total_expenses_amount}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="type_of_vehicle"
+                            header="{i18n>type_of_vehicle}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="vehicle"
+                            header="{i18n>vehicle}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="req_tripstartdate"
+                            header="{i18n>req_tripstartdate}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="trip_start_time"
+                            header="{i18n>trip_start_time}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="req_tripenddate"
+                            header="{i18n>req_tripenddate}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="travel_duration_days"
+                            header="{i18n>travel_duration_days}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="travel_duration_hrs"
+                            header="{i18n>travel_duration_hrs}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="provided_breakfast"
+                            header="{i18n>provided_breakfast}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="provided_lunch"
+                            header="{i18n>provided_lunch}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="provided_dinner"
+                            header="{i18n>provided_dinner}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="entitled_breakfast"
+                            header="{i18n>entitled_breakfast}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="entitled_lunch"
+                            header="{i18n>entitled_lunch}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="entitled_dinner"
+                            header="{i18n>entitled_dinner}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="anggota_id"
+                            header="{i18n>anggota_id}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="anggota_name"
+                            header="{i18n>anggota_name}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="dependent_name"
+                            header="{i18n>dependent_name}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="gl_code_claim_item"
+                            header="{i18n>gl_code_claim_item}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+
+                        <mdct:Column
+                            propertyKey="code_material_claim_item"
+                            header="{i18n>code_material_claim_item}"
+                        >
+                            <Text text="{mountains>parent_mountain}" />
+                        </mdct:Column>
+                    </mdc:Table>
+                </f:content>
+            </f:DynamicPage>
+        </content>
+
+        <footer>
+            <Toolbar
+                design="Solid"
+                class="sapUiTinyMargin"
+            >
+                <ToolbarSpacer />
+
+                <Button
+                    id="btnExportAnalytics"
+                    text="{i18n>export}"
+                    type="Emphasized"
+                    press=".onExportAnalyticsReport"
+                />
+
+                <Button
+                    id="btnCloseAnalytics"
+                    text="{i18n>close}"
+                    press=".onBackFromAnalyticsClaimReport"
+                />
+            </Toolbar>
+        </footer>
+    </Page>
+</core:FragmentDefinition>

@@ -6,7 +6,7 @@
     xmlns:f="sap.ui.layout.form"
     xmlns:card="sap.f.cards"
     >
-    <VBox class="roundedBox sapUiSmallMargin" id="report" binding="{current>/}" width="auto" rowGap="1rem" backgroundDesign="Solid" height="60%">
+    <VBox class="roundedBox sapUiSmallMargin" id="report" binding="{current>/}" width="auto" rowGap="1rem" backgroundDesign="Solid" height="100%">
         <HBox width="100%">
             <VBox
                 class="sapUiSmallMargin"

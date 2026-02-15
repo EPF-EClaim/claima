@@ -1,0 +1,352 @@
+<core:FragmentDefinition
+    xmlns:unified="sap.ui.unified"
+    xmlns:l="sap.ui.layout"
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+>
+    <Dialog
+        title="Report Filter"
+        contentWidth="50%"
+        class="requestDialog"
+    >
+        <f:SimpleForm
+            id="analytic_create_form"
+            editable="true"
+            layout="ResponsiveGridLayout"
+            labelSpanXL="2"
+            labelSpanL="2"
+            labelSpanM="2"
+            labelSpanS="12"
+            adjustLabelSpan="true"
+            emptySpanXL="0"
+            emptySpanL="0"
+            emptySpanM="0"
+            emptySpanS="0"
+            columnsXL="2"
+            columnsL="2"
+            columnsM="2"
+        >
+            <f:content>
+                <!-- LEFT -->
+                <Label text="{i18n>req_tripstartdate}" />
+                <DatePicker
+                    id="analytics_tripstartdate"
+                    displayFormat="dd MMM yyyy"
+                    valueFormat="yyyy-MM-dd"
+                    placeholder="dd MMM yyyy"
+                    value="{request>/tripstartdate}"
+                    textAlign="Begin"
+                    required="true"
+                />
+
+                <!-- RIGHT -->
+                <Label text="{i18n>req_tripenddate}" />
+                <DatePicker
+                    id="analytics_tripenddate"
+                    displayFormat="dd MMM yyyy"
+                    valueFormat="yyyy-MM-dd"
+                    placeholder="dd MMM yyyy"
+                    value="{request>/tripenddate}"
+                    textAlign="Begin"
+                    required="true"
+                />
+                <Label text="Payment Date" />
+
+                <DatePicker
+                    id="analytics_paydate"
+                    displayFormat="dd MMM yyyy"
+                    valueFormat="yyyy-MM-dd"
+                    placeholder="dd MMM yyyy"
+                    value="{request>/analytics_paydate}"
+                    textAlign="Begin"
+                    required="true"
+                />
+
+                <Label text="Status for Pre-Approval Request / Claim record " />
+                <Select
+                    id="status"
+                    width="100%"
+                    forceSelection="false"
+                    required="true"
+                    items="{
+                        path: 'employee>/ZSTATUS',
+                        parameters: {
+                            $select: 'STATUS_ID,STATUS_DESC',
+                            $orderby: 'STATUS_DESC'
+                        }
+                        }"
+                >
+                    <core:Item
+                        key="{employee>STATUS_ID}"
+                        text="{employee>STATUS_DESC}"
+                    />
+                </Select>
+
+                <Label text="Course code" />
+                <TextArea
+                    id="ccode"
+                    textAlign="Begin"
+                    value="Test"
+                />
+
+                <Label text="{i18n>department}" />
+
+                <Select
+                    id="select_department"
+                    width="100%"
+                    forceSelection="false"
+                    items="{
+                        path: 'employee>/ZDEPARTMENT',
+                        parameters: {
+                            $select: 'DEPARTMENT_ID,DEPARTMENT_DESC',
+                            $orderby: 'DEPARTMENT_DESC'
+                        }
+                        }"
+                >
+                    <core:Item
+                        key="{employee>DEPARTMENT_ID}"
+                        text="{employee>DEPARTMENT_DESC}"
+                    />
+                </Select>
+
+                <Label text="GL Code" />
+
+                <Select
+                    id="glcode"
+                    width="100%"
+                    forceSelection="false"
+                    items="{
+                        path: 'employee>/ZDEPARTMENT',
+                        parameters: {
+                            $select: 'GL_ACCOUNT_ID,GL_ACCOUNT_DESC',
+                            $orderby: 'GL_ACCOUNT_DESC'
+                        }
+                        }"
+                >
+                    <core:Item
+                        key="{employee>GL_ACCOUNT_ID}"
+                        text="{employee>GL_ACCOUNT_DESC}"
+                    />
+                </Select>
+
+                <Label text="Cost Center" />
+                <TextArea
+                    id="cc"
+                    textAlign="Begin"
+                    value="Test"
+                />
+
+                <Label text="Claim Type" />
+                <Select
+                    id="claim_type"
+                    width="100%"
+                    forceSelection="false"
+                    items="{
+                        path: 'employee>/ZCLAIM_TYPE',
+                        parameters: {
+                            $select: 'CLAIM_TYPE_ID,CLAIM_TYPE_DESC',
+                            $orderby: 'CLAIM_TYPE_DESC'
+                        }
+                        }"
+                >
+                    <core:Item
+                        key="{employee>CLAIM_TYPE_ID}"
+                        text="{employee>CLAIM_TYPE_DESC}"
+                    />
+                </Select>
+
+                <Label text="Claim Item" />
+                <!--  <TextArea
+                    id="claim_item"
+                    textAlign="Begin"
+                    value="Test"
+                /> -->
+
+                <Select
+                    id="claim_item"
+                    width="100%"
+                    forceSelection="false"
+                    items="{
+                        path: 'employee>/ZCLAIM_TYPE_ITEM',
+                        parameters: {
+                            $select: 'CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC',
+                            $orderby: 'CLAIM_TYPE_ITEM_DESC'
+                        }
+                        }"
+                >
+                    <core:Item
+                        key="{employee>CLAIM_TYPE_ITEM_ID}"
+                        text="{employee>CLAIM_TYPE_ITEM_DESC}"
+                    />
+                </Select>
+
+                <Label text="Location" />
+                <!--                 <TextArea
+                    id="location"
+                    textAlign="Begin"
+                    value="Test"
+                /> -->
+
+                <Select
+                    id="location"
+                    width="100%"
+                    forceSelection="false"
+                    items="{
+                        path: 'employee>/ZLOC_TYPE',
+                        parameters: {
+                            $select: 'LOC_TYPE_ID,LOC_TYPE_DESC',
+                            $orderby: 'LOC_TYPE_DESC'
+                        }
+                        }"
+                >
+                    <core:Item
+                        key="{employee>LOC_TYPE_ID}"
+                        text="{employee>LOC_TYPE_DESC}"
+                    />
+                </Select>
+
+                <Label text="{i18n>req_tripenddate}" />
+                <DatePicker
+                    id="analytics_eventstartdate"
+                    displayFormat="dd MMM yyyy"
+                    valueFormat="yyyy-MM-dd"
+                    placeholder="dd MMM yyyy"
+                    textAlign="Begin"
+                    required="true"
+                />
+                <Label text="Payment Date" />
+                <DatePicker
+                    id="analytics_eventenddate"
+                    displayFormat="dd MMM yyyy"
+                    valueFormat="yyyy-MM-dd"
+                    placeholder="dd MMM yyyy"
+                    textAlign="Begin"
+                    required="true"
+                />
+
+                <Label text="Individual/Group" />
+                <Select
+                    id="grouping"
+                    width="100%"
+                    forceSelection="false"
+                    items="{
+                        path: 'employee>/ZINDIV_GROUP',
+                        parameters: {
+                            $select: 'IND_OR_GROUP_ID,IND_OR_GROUP_DESC',
+                            $orderby: 'IND_OR_GROUP_DESC'
+                        }
+                        }"
+                >
+                    <core:Item
+                        key="{employee>IND_OR_GROUP_ID}"
+                        text="{employee>IND_OR_GROUP_DESC}"
+                    />
+                </Select>
+
+                <Label text="Amount" />
+                <TextArea
+                    id="amount"
+                    textAlign="Begin"
+                    value="Test"
+                />
+
+                <Label text="Employee name" />
+                <!-- <TextArea
+                    id="emp_name"
+                    textAlign="Begin"
+                    value="Test"
+                /> -->
+                <!-- selectedKey="{request>/EEID}" -->
+                <Select
+                    id="emp_name"
+                    width="100%"
+                    forceSelection="false"
+                    items="{
+                        path: 'employee>/ZEMP_MASTER',
+                        parameters: {
+                            $select: 'EEID,NAME',
+                            $orderby: 'NAME'
+                        }
+                        }"
+                >
+                    <core:Item
+                        key="{employee>EEID}"
+                        text="{employee>NAME}"
+                    />
+                </Select>
+
+                <Label text="Request Type" />
+                <!-- <TextArea
+                    id="reqtype"
+                    textAlign="Begin"
+                    value="Test"
+                /> -->
+
+                <Select
+                    id="reqtype"
+                    width="100%"
+                    forceSelection="false"
+                    items="{
+                        path: 'employee>/ZREQUEST_TYPE',
+                        parameters: {
+                            $select: 'REQUEST_TYPE_ID,REQUEST_TYPE_DESC',
+                            $orderby: 'REQUEST_TYPE_DESC'
+                        }
+                        }"
+                >
+                    <core:Item
+                        key="{employee>REQUEST_TYPE_ID}"
+                        text="{employee>REQUEST_TYPE_DESC}"
+                    />
+                </Select>
+
+                <Label text="Claim Category" />
+                <!-- <TextArea
+                    id="claim_cat"
+                    textAlign="Begin"
+                    value="Test"
+                /> -->
+
+                <Select
+                    id="claim_cat"
+                    width="100%"
+                    forceSelection="false"
+                    items="{
+                        path: 'employee>/ZCLAIM_CATEGORY',
+                        parameters: {
+                            $select: 'CLAIM_CAT_ID,CLAIM_CATEGORY_DESC',
+                            $orderby: 'CLAIM_CATEGORY_DESC'
+                        }
+                        }"
+                >
+                    <core:Item
+                        key="{employee>CLAIM_CAT_ID}"
+                        text="{employee>CLAIM_CATEGORY_DESC}"
+                    />
+                </Select>
+            </f:content>
+        </f:SimpleForm>
+
+        <!-- Buttons -->
+        <HBox
+            alignItems="Center"
+            justifyContent="End"
+            class="sapUiSmallMarginEnd"
+            columnGap="0.5rem"
+        >
+            <Button
+                id="analytics_placeholder_create"
+                press="onClickCreateRequest_ana"
+                text="{i18n>submitbtn}"
+                type="Emphasized"
+            />
+            <Button
+                id="analytics_placeholder_cancel"
+                press="onClickCancel_ana"
+                text="{i18n>req_b_cancel}"
+            />
+        </HBox>
+    </Dialog>
+</core:FragmentDefinition>
