@@ -78,10 +78,13 @@ sap.ui.define([
 
                         oInputs.forEach(oInput => {
                             var sLabel = oInput?.getAccessibilityInfo()?.children[0]?.getAccessibilityInfo()?.description?.replaceAll(":", "").trim();
-                            var sNewInput = oInput?.getAccessibilityInfo()?.children[1]?.getAccessibilityInfo()?.description;
+                            var sInput = oInput?.getAccessibilityInfo()?.children[1]?.getAccessibilityInfo()?.description;
+                            var sNewInput = sInput === 'Empty'? null: sInput;
                             oNewEntry[sLabel] = sNewInput;
                         });
-                        oNewEntry["IsActiveEntity"] = "true";
+                        oNewEntry["IsActiveEntity"] = true;
+                        oNewEntry["HasDraftEntity"] = false;
+
                         var oModel = this.getModel(),
                             oListBinding = oModel.bindList(sPath),
                             oContext = oListBinding.create(oNewEntry);

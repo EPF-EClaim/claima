@@ -1031,7 +1031,7 @@
                                         },
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "RISK_ID,RISK_DESC"
+                                            "creationFields": "RISK_ID,RISK_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -1767,11 +1767,11 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": {
-                                            "visibleFields": "CLAIM_CAT_ID,CLAIM_CATEGORY_DESC"
+                                            "visibleFields": "CLAIM_CAT_ID,CLAIM_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
                                         },
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "CLAIM_CAT_ID,CLAIM_CATEGORY_DESC"
+                                            "creationFields": "CLAIM_CAT_ID,CLAIM_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -1867,23 +1867,11 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": {
-                                            "visibleFields": "STATUS_ID,STATUS_DESC"
+                                            "visibleFields": "STATUS_ID,STATUS_DESC,START_DATE,END_DATE,STATUS"
                                         },
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "STATUS_ID,STATUS_DESC"
-                                        }
-                                    },
-                                    "actions": {
-                                        "DataFieldForAction::eclaim_srv.Copy": {
-                                            "enableOnSelect": "single"
-                                        },
-                                        "newCopy": {
-                                            "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Copy"
+                                            "creationFields": "STATUS_ID,STATUS_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     }
                                 }
@@ -1918,12 +1906,12 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": {
-                                            "visibleFields": "LODGING_CATEGORY_ID,LODGING_CATEGORY_DESC",
+                                            "visibleFields": "LODGING_CATEGORY_ID,LODGING_CATEGORY_DESC,START_DATE,END_DATE,STATUS",
                                             "operationGroupingMode": "Isolated"
                                         },
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "LODGING_CATEGORY_ID,LODGING_CATEGORY_DESC"
+                                            "creationFields": "LODGING_CATEGORY_ID,LODGING_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -1976,7 +1964,7 @@
                                         },
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "ROOM_TYPE_ID,ROOM_TYPE_DESC"
+                                            "creationFields": "ROOM_TYPE_ID,ROOM_TYPE_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -2120,11 +2108,11 @@
                                         },
                                         "enableMassEdit": {
                                             "operationGroupingMode": "Isolated",
-                                            "visibleFields": "COUNTRY_ID,COUNTRY_DESC"
+                                            "visibleFields": "COUNTRY_ID,COUNTRY_DESC,END_DATE,START_DATE,STATUS"
                                         },
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "COUNTRY_ID,COUNTRY_DESC"
+                                            "creationFields": "COUNTRY_ID,COUNTRY_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -2170,11 +2158,11 @@
                                         },
                                         "enableMassEdit": {
                                             "operationGroupingMode": "Isolated",
-                                            "visibleFields": "REGION_ID,USER_TYPE_DESC"
+                                            "visibleFields": "REGION_ID,USER_TYPE_DESC,REGION_DESC"
                                         },
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "REGION_ID,USER_TYPE_DESC"
+                                            "creationFields": "REGION_ID,USER_TYPE_DESC,REGION_DESC"
                                         }
                                     },
                                     "actions": {
@@ -2218,11 +2206,11 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": {
-                                            "visibleFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC"
+                                            "visibleFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
                                         },
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC"
+                                            "creationFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -2266,12 +2254,12 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": {
-                                            "visibleFields": "STAFF_CATEGORY_ID,STAFF_CATEGORY_DESC",
+                                            "visibleFields": "STAFF_CATEGORY_ID,STAFF_CATEGORY_DESC,START_DATE,END_DATE,STATUS",
                                             "operationGroupingMode": "Isolated"
                                         },
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "STAFF_CATEGORY_ID,STAFF_CATEGORY_DESC"
+                                            "creationFields": "STAFF_CATEGORY_ID,STAFF_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -2315,11 +2303,11 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": {
-                                            "visibleFields": "VEHICLE_TYPE_ID,VEHICLE_TYPE_DESC"
+                                            "visibleFields": "VEHICLE_TYPE_ID,VEHICLE_TYPE_DESC,START_DATE,END_DATE,STATUS"
                                         },
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "VEHICLE_TYPE_ID,VEHICLE_TYPE_DESC"
+                                            "creationFields": "VEHICLE_TYPE_ID,VEHICLE_TYPE_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -2363,12 +2351,12 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": {
-                                            "visibleFields": "COUNTRY_ID,STATE_ID,STATE_DESC",
+                                            "visibleFields": "COUNTRY_ID,STATE_ID,STATE_DESC,START_DATE,END_DATE,STATUS",
                                             "operationGroupingMode": "Isolated"
                                         },
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "COUNTRY_ID,STATE_ID,STATE_DESC"
+                                            "creationFields": "COUNTRY_ID,STATE_ID,STATE_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -2419,15 +2407,6 @@
                                             "name": "CreationDialog",
                                             "creationFields": "CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,FIELD01,FIELD02,FIELD03,FIELD04,FIELD05,FIELD06,FIELD07,FIELD08,FIELD09,FIELD10,FIELD11,FIELD12,FIELD13,FIELD14,FIELD15,FIELD16,FIELD17,FIELD18,FIELD19,FIELD20"
                                         }
-                                    },
-                                    "actions": {
-                                        "newCopy": {
-                                            "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Copy"
-                                        }
                                     }
                                 }
                             },
@@ -2472,6 +2451,9 @@
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "LENDER_ID,LENDER_NAME,START_DATE,END_DATE,STATUS"
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "START_DATE,LENDER_NAME,LENDER_ID,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {

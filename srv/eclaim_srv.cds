@@ -79,11 +79,23 @@ service eclaim_srv {
         actions {
             @Common.DefaultValueFunction: 'getDefaultsForCopy'
             action Copy(CLAIM_CAT_ID: String  @mandatory  @Common.Label: 'New Claim Category ID',
-                        CLAIM_CATEGORY_DESC: String @Common.Label: 'Claim Category Description'
+                        CLAIM_CATEGORY_DESC: String @Common.Label: 'Claim Category Description',
+                        START_DATE: Date @Common.Label: 'Start Date',
+                        END_DATE: Date @Common.Label: 'End Date',
+                        STATUS: String @Common.Label: 'Status'
             ) returns ZCLAIM_CATEGORY;
         };
 
-    entity ZSTATUS              as projection on ECLAIM.ZSTATUS;
+    entity ZSTATUS              as projection on ECLAIM.ZSTATUS
+        actions {
+            @Common.DefaultValueFunction: 'getDefaultsForCopy'
+            action Copy(STATUS_ID: String  @mandatory  @Common.Label: 'Status ID',
+                        STATUS_DESC: String @Common.Label: 'Status Description',
+                        START_DATE: Date @Common.Label: 'Start Date',
+                        END_DATE: Date @Common.Label: 'End Date',
+                        STATUS: String @Common.Label: 'Status'
+            ) returns ZSTATUS;
+        };
 
     entity ZLODGING_CAT         as projection on ECLAIM.ZLODGING_CAT;
 

@@ -2,7 +2,7 @@ using {eclaim_srv as service} from './eclaim_srv';
 
 annotate service.ZRISK with @(
     cds.autoexpose,
-    odata.draft.bypass,
+   
     Common.SemanticKey: [RISK_ID],
     Capabilities      : {
         Deletable : true,
@@ -10,6 +10,7 @@ annotate service.ZRISK with @(
         Insertable: true
     },
     odata.draft.enabled,
+    // Common.DraftRoot.NewAction,
 
     UI                : {
         CreateHidden: false,
@@ -936,7 +937,7 @@ annotate service.ZVEHICLE_TYPE with @(
 
 annotate service.ZSTATE with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [
         COUNTRY_ID,
         STATE_ID
@@ -946,7 +947,7 @@ annotate service.ZSTATE with @(
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1281,7 +1282,7 @@ annotate service.ZDEPARTMENT with @(
 
 annotate service.ZROLE with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [
         ROLE_ID
     ],
@@ -1290,7 +1291,7 @@ annotate service.ZROLE with @(
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1395,7 +1396,7 @@ annotate service.ZEMP_TYPE with @(
 
 annotate service.ZREGION with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [
         REGION_ID
     ],
@@ -1404,7 +1405,7 @@ annotate service.ZREGION with @(
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1433,7 +1434,7 @@ annotate service.ZREGION with @(
 
 annotate service.ZRATE_KM with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [
         ROLE_ID
     ],
@@ -1442,7 +1443,7 @@ annotate service.ZRATE_KM with @(
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
