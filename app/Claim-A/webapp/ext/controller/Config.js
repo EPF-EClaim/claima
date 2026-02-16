@@ -1,21 +1,67 @@
 sap.ui.define([
     "sap/ui/core/mvc/ControllerExtension",
-    "sap/m/Dialog",
-    "sap/m/Button",
-    "sap/m/Label",
-    "sap/m/Input",
-    "sap/ui/layout/form/SimpleForm",
-    "sap/m/MessageToast",
     "sap/m/DatePicker",
 ], function (ControllerExtension,
-    Dialog,
-    Button,
-    Label,
-    Input,
-    SimpleForm,
-    MessageToast,
     DatePicker) {
     'use strict';
+    
+    const _getDetails = function (oView, aSelectedContexts) {
+        const oSelectedContext = aSelectedContexts[0];
+        const oData = oSelectedContext.getObject();
+        const sPath = oSelectedContext.getBinding().sPath;
+        const oModel = oView.getModel();
+        const oEntityType = oModel.getMetaModel().getContext(sPath).getObject();
+        const sEntityType = oEntityType.$Type;
+        const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
+
+        const oLineItems = oModel.getMetaModel().getContext(`/${sEntityType}/@com.sap.vocabularies.UI.v1.LineItem`).getObject();
+
+        const oVBox = new sap.m.VBox({
+            width: "50%",
+            fitContainer: true
+        });
+
+        oLineItems.forEach(function (item) {
+            const fieldName = item.Value.$Path;
+            const oFieldMeta = oDataType[fieldName];
+            const fieldType = oFieldMeta?.$Type;
+
+            const oHBox = new sap.m.HBox({
+                alignItems: "Center",
+                width: "100%"
+            });
+
+            oHBox.addItem(new sap.m.Label({
+                text: item.Label,
+                width: "200px",
+                labelFor: fieldName
+            }));
+
+            const oInput = fieldType?.includes('Edm.Date') ?
+                new DatePicker({
+                    value: oData[fieldName] || null,
+                    name: fieldName,
+                    width: "400px",
+                    displayFormat: "dd MMM yyyy",
+                    valueFormat: "yyyy-MM-dd"
+                }) :
+                fieldType?.includes('Edm.Boolean') ?
+                    new sap.m.CheckBox({
+                        selected: oData[fieldName] === true || oData[fieldName] === 'true',
+                        name: fieldName,
+                        width: "400px"
+                    }) :
+                    new sap.m.Input({
+                        value: oData[fieldName]?.toString() || "",
+                        name: fieldName,
+                        width: "400px"
+                    });
+
+            oHBox.addItem(oInput);
+            oVBox.addItem(oHBox);
+        });
+        return { oVBox, sPath, oModel, oSelectedContext, };
+    }
 
     return {
         /**
@@ -27,61 +73,8 @@ sap.ui.define([
 
         onclickcopy: function (oContext, aSelectedContexts) {
             const oNewEntry = {};
-            const oSelectedContext = aSelectedContexts[0];
-            const sPath = oSelectedContext.getBinding().sPath;
-            const oData = oSelectedContext.getObject();
-            const oModel = this.getModel();
-            const oEntityType = oModel.getMetaModel().getContext(sPath).getObject();
-            const sEntityType = oEntityType.$Type;
-            const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
-
-            const oLineItems = oModel.getMetaModel().getContext(`/${sEntityType}/@com.sap.vocabularies.UI.v1.LineItem`).getObject();
-
-            const oVBox = new sap.m.VBox({
-                width: "50%",
-                fitContainer: true
-            });
-
-            oLineItems.forEach(function (item) {
-                const fieldName = item.Value.$Path;
-                const oFieldMeta = oDataType[fieldName];
-                const fieldType = oFieldMeta?.$Type;
-
-                const oHBox = new sap.m.HBox({
-                    alignItems: "Center",
-                    width: "100%"
-                });
-
-                oHBox.addItem(new sap.m.Label({
-                    text: item.Label,
-                    width: "200px",
-                    labelFor: fieldName,
-                    required: oFieldMeta.$Nullable? oFieldMeta.$Nullable: false
-                }));
-
-                const oInput = fieldType?.includes('Edm.Date') ?
-                    new DatePicker({
-                        value: oData[fieldName] || null,
-                        name: fieldName,
-                        width: "400px",
-                        displayFormat: "dd MMM yyyy",
-                        valueFormat: "yyyy-MM-dd"
-                    }) :
-                    fieldType?.includes('Edm.Boolean') ?
-                        new sap.m.CheckBox({
-                            selected: oData[fieldName] === true || oData[fieldName] === 'true',
-                            name: fieldName,
-                            width: "400px"
-                        }) :
-                        new sap.m.Input({
-                            value: oData[fieldName]?.toString() || "",
-                            name: fieldName,
-                            width: "400px"
-                        });
-
-                oHBox.addItem(oInput);
-                oVBox.addItem(oHBox);
-            });
+            const oView = this.getRouting().getView();
+            const { oVBox, sPath, oModel, oSelectedContext } = _getDetails(oView, aSelectedContexts);
 
             const oDialog = new sap.m.Dialog({
                 title: `Copy Record`,
@@ -127,106 +120,8 @@ sap.ui.define([
         },
 
         onClickEdit: function (oContext, aSelectedContexts) {
-            const oSelectedContext = aSelectedContexts[0];
-            const oData = oSelectedContext.getObject();
-
-            // const oVBox = new sap.m.VBox({
-            //     width: "50%",
-            //     fitContainer: true
-            // });
-
-            // Object.entries(oData).forEach(([field, value]) => {
-            //     if (field.includes('DraftAdministrativeData') ||
-            //         field.includes('HasActiveEntity') ||
-            //         field.includes('HasDraftEntity') ||
-            //         field.includes('@$ui5.context.isSelected') ||
-            //         field.includes('IsActiveEntity')) {
-            //         return;
-            //     }
-
-            //     const oHBox = new sap.m.HBox({
-            //         alignItems: "Center",
-            //         width: "100%"
-            //     });
-
-            //     oHBox.addItem(new sap.m.Label({
-            //         text: field,
-            //         width: "200px",
-            //         labelFor: field
-            //     }));
-            //     const oDateInput = field.toLowerCase().includes('date');
-
-            //     const oInput = oDateInput ?
-            //         new DatePicker({
-            //             value: value || "",
-            //             name: field,
-            //             width: "400px",
-            //             displayFormat: "dd MMM YYYY",
-            //             valueFormat: "yyyy-MM-dd"
-            //         }) :
-            //         new sap.m.Input({
-            //             value: value?.toString() || "",
-            //             name: field,
-            //             width: "400px",
-            //             valueLiveUpdate: true
-            //         });
-
-            //     oHBox.addItem(oInput);
-            //     oVBox.addItem(oHBox);
-            // });
-            const sPath = oSelectedContext.getBinding().sPath;
-            const oModel = this.getModel();
-            const oEntityType = oModel.getMetaModel().getContext(sPath).getObject();
-            const sEntityType = oEntityType.$Type;
-            const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
-
-            const oLineItems = oModel.getMetaModel().getContext(`/${sEntityType}/@com.sap.vocabularies.UI.v1.LineItem`).getObject();
-
-            const oVBox = new sap.m.VBox({
-                width: "50%",
-                fitContainer: true
-            });
-
-            oLineItems.forEach(function (item) {
-                const fieldName = item.Value.$Path;
-                const oFieldMeta = oDataType[fieldName];
-                const fieldType = oFieldMeta?.$Type;
-
-                const oHBox = new sap.m.HBox({
-                    alignItems: "Center",
-                    width: "100%"
-                });
-
-                oHBox.addItem(new sap.m.Label({
-                    text: item.Label,
-                    width: "200px",
-                    labelFor: fieldName
-                }));
-
-                const oInput = fieldType?.includes('Edm.Date') ?
-                    new DatePicker({
-                        value: oData[fieldName] || null,
-                        name: fieldName,
-                        width: "400px",
-                        displayFormat: "dd MMM yyyy",
-                        valueFormat: "yyyy-MM-dd"
-                    }) :
-                    fieldType?.includes('Edm.Boolean') ?
-                        new sap.m.CheckBox({
-                            selected: oData[fieldName] === true || oData[fieldName] === 'true',
-                            name: fieldName,
-                            width: "400px"
-                        }) :
-                        new sap.m.Input({
-                            value: oData[fieldName]?.toString() || "",
-                            name: fieldName,
-                            width: "400px"
-                        });
-
-                oHBox.addItem(oInput);
-                oVBox.addItem(oHBox);
-            });
-
+            const oView = this.getRouting().getView();
+            const { oVBox, sPath, oModel, oSelectedContext } = _getDetails(oView, aSelectedContexts);
 
             const oDialog = new sap.m.Dialog({
                 title: `Edit Record`,
@@ -262,11 +157,6 @@ sap.ui.define([
             oDialog.addContent(oVBox);
             oDialog.open();
 
-        },
-
-        _getDetails: function (oData, oLineItems, oDataType) {
-
         }
-
-    };
+    }
 });
