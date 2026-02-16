@@ -7,7 +7,6 @@
         "applicationVersion": {
             "version": "0.0.1"
         },
-        "title": "{{appTitle}}",
         "description": "{{appDescription}}",
         "resources": "resources.json",
         "sourceTemplate": {
@@ -1044,6 +1043,7 @@
                         "settings": {
                             "contextPath": "/ZRISK",
                             "variantManagement": "None",
+                            "variantManagementHidden": true,
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {

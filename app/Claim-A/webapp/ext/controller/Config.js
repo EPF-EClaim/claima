@@ -4,7 +4,7 @@ sap.ui.define([
 ], function (ControllerExtension,
     DatePicker) {
     'use strict';
-    
+
     const _getDetails = function (oView, aSelectedContexts) {
         const oSelectedContext = aSelectedContexts[0];
         const oData = oSelectedContext.getObject();
@@ -17,48 +17,62 @@ sap.ui.define([
         const oLineItems = oModel.getMetaModel().getContext(`/${sEntityType}/@com.sap.vocabularies.UI.v1.LineItem`).getObject();
 
         const oVBox = new sap.m.VBox({
-            width: "50%",
-            fitContainer: true
+            width: "70%",
+            fitContainer: true,
+            // alignItems: "Center",
+            // justifyContent: "Center",
         });
+        oVBox.addStyleClass("sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom")
 
         oLineItems.forEach(function (item) {
             const fieldName = item.Value.$Path;
             const oFieldMeta = oDataType[fieldName];
             const fieldType = oFieldMeta?.$Type;
 
-            const oHBox = new sap.m.HBox({
-                alignItems: "Center",
-                width: "100%"
-            });
+            // const oHBox = new sap.m.HBox({
+            //     alignItems: "Center",
+            //     width: "100%"
+            // });
 
-            oHBox.addItem(new sap.m.Label({
+            oVBox.addItem(new sap.m.Label({
                 text: item.Label,
-                width: "200px",
-                labelFor: fieldName
+                width: "100%",
+                labelFor: fieldName,
+                required: !!(oDataType[fieldName] && oDataType[fieldName].$Nullable === false)
             }));
+            oVBox.addStyleClass("sapUiSmallMarginTopBottom")
 
             const oInput = fieldType?.includes('Edm.Date') ?
                 new DatePicker({
                     value: oData[fieldName] || null,
                     name: fieldName,
-                    width: "400px",
+                    width: "130%",
                     displayFormat: "dd MMM yyyy",
                     valueFormat: "yyyy-MM-dd"
                 }) :
                 fieldType?.includes('Edm.Boolean') ?
-                    new sap.m.CheckBox({
-                        selected: oData[fieldName] === true || oData[fieldName] === 'true',
+                    new sap.m.Select({
                         name: fieldName,
-                        width: "400px"
+                        width: "130%",
+                        selectedKey: (oData[fieldName] === true || oData[fieldName] === true) ? true : false,
+                        items: [
+                            new sap.ui.core.ListItem({
+                                key: false,
+                                text: "No"
+                            }),
+                            new sap.ui.core.ListItem({
+                                key: true,
+                                text: "Yes"
+                            })]
                     }) :
                     new sap.m.Input({
                         value: oData[fieldName]?.toString() || "",
                         name: fieldName,
-                        width: "400px"
+                        width: "130%"
                     });
 
-            oHBox.addItem(oInput);
-            oVBox.addItem(oHBox);
+            oVBox.addItem(oInput);
+            // oVBox.addItem(oHBox);
         });
         return { oVBox, sPath, oModel, oSelectedContext, };
     }
@@ -78,7 +92,7 @@ sap.ui.define([
 
             const oDialog = new sap.m.Dialog({
                 title: `Copy Record`,
-                contentWidth: "35%",
+                contentWidth: "15%",
                 // contentHeight: "450px",
                 horizontalScrolling: false,
                 beginButton: new sap.m.Button({
@@ -86,16 +100,15 @@ sap.ui.define([
                     press: function () {
                         var oInputs = oVBox.getItems();
 
-                        oInputs.forEach(oHBox => {
-                            var oControl = oHBox.getItems()[1];
-                            if (oControl && (oControl.isA("sap.m.Input") || oControl.isA("sap.m.DatePicker"))) {
-                                var sFieldName = oControl.getName();
-                                var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+                        for (let i = 1; i < oInputs.length; i += 2) {
+                            const oControl = oInputs[i];
 
-                                oNewEntry[sFieldName] = sNewInput;
-                            }
+                            var sFieldName = oControl.getName();
+                            var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
 
-                        });
+                            oNewEntry[sFieldName] = sNewInput;
+                        }
+
                         oNewEntry["IsActiveEntity"] = true;
                         oNewEntry["HasDraftEntity"] = false;
 
@@ -113,7 +126,6 @@ sap.ui.define([
                 }),
                 afterClose: function () { oDialog.destroy(); }
             });
-
             oDialog.addContent(oVBox);
             oDialog.open();
 
@@ -125,7 +137,7 @@ sap.ui.define([
 
             const oDialog = new sap.m.Dialog({
                 title: `Edit Record`,
-                contentWidth: "40%",
+                contentWidth: "15%",
                 // contentHeight: "450px",
                 horizontalScrolling: false,
                 beginButton: new sap.m.Button({
@@ -133,15 +145,14 @@ sap.ui.define([
                     press: function () {
                         var oInputs = oVBox.getItems();
 
-                        oInputs.forEach(oHBox => {
-                            var oControl = oHBox.getItems()[1];
-                            if (oControl && (oControl.isA("sap.m.Input") || oControl.isA("sap.m.DatePicker"))) {
-                                var sFieldName = oControl.getName();
-                                var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+                        for (let i = 1; i < oInputs.length; i += 2) {
+                            const oControl = oInputs[i];
 
-                                oSelectedContext.setProperty(sFieldName, sNewInput);
-                            }
-                        });
+                            var sFieldName = oControl.getName();
+                            var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+
+                            oSelectedContext.setProperty(sFieldName, sNewInput);
+                        }                  
 
                         sap.m.MessageToast.show("Record updated");
                         oDialog.close();
