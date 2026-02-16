@@ -30,7 +30,7 @@
       "index": true
     },
     "fiori": {
-      "bypass_draft": true
+      "direct_crud": true
     },
     "hana": {
       "deploy-format": "hdbtable"
