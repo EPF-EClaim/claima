@@ -8,6 +8,7 @@ entity ZEMP_MASTER : managed {
         CC                      : String;
         POS                     : String;
         DEP                     : String;
+        UNIT_SECTION            : String;
         B_PLACE                 : String;
         MARITAL                 : String;
         JOB_GROUP               : String;
@@ -24,6 +25,7 @@ entity ZEMP_MASTER : managed {
         ROLE                    : String;
         USER_TYPE               : String;
         MOBILE_BILL_ELIGIBILITY : String;
+        MOBILE_BILL_ELIG_AMOUNT : Decimal(7,2);
         EMPLOYEE_TYPE           : String;
         POSITION_NAME           : String;
         POSITION_START_DATE     : Date;
@@ -55,13 +57,14 @@ entity ZEMP_MASTER : managed {
                                     on  ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;  
         ZOFFICE_LOCATION        : Association to ZOFFICE_LOCATION   
                                     on ZOFFICE_LOCATION.LOCATION_ID = OFFICE_LOCATION; 
+        ZBRANCH                 : Association to ZBRANCH
+                                    on ZBRANCH.BRANCH_ID = UNIT_SECTION;
 }
 
 entity ZREQUEST_HEADER : managed {
-    key EMP_ID                  : String @mandatory;   
-    key REQUEST_ID              : String @mandatory;     
+    key REQUEST_ID              : String @mandatory;    
+        EMP_ID                  : String;        
         REQUEST_TYPE_ID         : String;
-        REFERENCE_NUMBER        : String;
         OBJECTIVE_PURPOSE       : String;
         TRIP_START_DATE         : Date;
         TRIP_END_DATE           : Date;
@@ -87,8 +90,16 @@ entity ZREQUEST_HEADER : managed {
         COST_CENTER             : String;
         CASH_ADVANCE            : Decimal(16,2);
         CASH_ADVANCE_DATE       : Date;
+        LAST_APPROVED_DATE      : Date;
+        LAST_APPROVED_TIME      : Time;
         TRAVEL_ALONE_FAMILY     : String(1);
         TRAVEL_FAMILY_NOW_LATER : String(1);
+        LAST_SEND_BACK_DATE     : Date;
+        APPROVER1               : String(6);
+        APPROVER2               : String(6);
+        APPROVER3               : String(6);
+        APPROVER4               : String(6);
+        APPROVER5               : String(6);        
         ZREQUEST_ITEM           : Composition of many ZREQUEST_ITEM
                                       on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
         ZREQUEST_TYPE           : Association to one ZREQUEST_TYPE
@@ -101,28 +112,46 @@ entity ZREQUEST_HEADER : managed {
                                     on ZEMP_MASTER.EEID = EMP_ID;
         ZINDIV_GROUP           : Association to ZINDIV_GROUP
                                     on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
+        COSTCENTER              : Association to ZCOST_CENTER
+                                    on COSTCENTER.COST_CENTER_ID = ALTERNATE_COST_CENTRE;       
+        ZCLAIM_HEADER           : Association to ZCLAIM_HEADER
+                                    on ZCLAIM_HEADER.REQUEST_ID =  REQUEST_ID;                              
 }
 
 entity ZREQUEST_ITEM : managed {
-    key REQUEST_ID             : String @mandatory;    
-    key REQUEST_SUB_ID         : String @mandatory;    
-        CLAIM_TYPE_ITEM_ID     : String;    
-        CLAIM_TYPE_ID          : String;
-        EST_AMOUNT             : Decimal(16,2);
-        EST_NO_PARTICIPANT     : Integer;
-        CASH_ADVANCE           : Boolean;
-        START_DATE             : Date;
-        END_DATE               : Date;
-        REMARK                 : String;
-        SEND_TO_SF             : Boolean;   
-        LOCATION               : String;  
-        ZREQ_ITEM_PART         : Composition of many ZREQ_ITEM_PART
-                                     on  ZREQ_ITEM_PART.REQUEST_ID         = REQUEST_ID
-                                     and ZREQ_ITEM_PART.REQUEST_SUB_ID     = REQUEST_SUB_ID;
-        ZCLAIM_TYPE            : Association to one ZCLAIM_TYPE
-                                     on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;   
-        ZCLAIM_TYPE_ITEM       : Association to one ZCLAIM_TYPE_ITEM
-                                     on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID;                                      
+    key REQUEST_ID                  : String @mandatory;    
+    key REQUEST_SUB_ID              : String @mandatory;    
+        CLAIM_TYPE_ITEM_ID          : String;    
+        CLAIM_TYPE_ID               : String;
+        EST_AMOUNT                  : Decimal(16,2);
+        EST_NO_PARTICIPANT          : Integer;
+        CASH_ADVANCE                : Boolean;
+        START_DATE                  : Date;
+        END_DATE                    : Date;
+        REMARK                      : String;
+        SEND_TO_SF                  : Boolean;   
+        LOCATION                    : String;
+        DECLARE_CLUB_MEMBERSHIP     : Boolean;  
+        KWSP_SPORTS_REPRESENTATION  : String;
+        SPORTS_CLAIM_DISCLAIMER     : Boolean;
+        VEHICLE_TYPE                : String;
+        MODE_OF_TRANSFER            : String;
+        TRANSFER_DATE               : Date;
+        NO_OF_DAYS                  : Integer;
+        MARRIAGE_CATEGORY           : String;
+        FAMILY_COUNT                : Integer;
+        ZMARITAL_CAT                : Association to one ZMARITAL_CAT
+                                        on ZMARITAL_CAT.MARRIAGE_CATEGORY_ID = MARRIAGE_CATEGORY;        
+        ZVEHICLE_TYPE               : Association to one ZVEHICLE_TYPE
+                                        on ZVEHICLE_TYPE.VEHICLE_TYPE_ID = VEHICLE_TYPE;
+        ZREQ_ITEM_PART              : Composition of many ZREQ_ITEM_PART
+                                        on  ZREQ_ITEM_PART.REQUEST_ID         = REQUEST_ID
+                                        and ZREQ_ITEM_PART.REQUEST_SUB_ID     = REQUEST_SUB_ID;
+        ZCLAIM_TYPE                 : Association to one ZCLAIM_TYPE
+                                        on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;   
+        ZCLAIM_TYPE_ITEM            : Association to one ZCLAIM_TYPE_ITEM
+                                        on  ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID
+                                        and ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID                                   
 }
 
 entity ZREQ_ITEM_PART: managed  {
@@ -191,6 +220,7 @@ entity ZCLAIM_HEADER : managed {
         SUBMITTED_DATE                  : Date;
         LAST_APPROVED_DATE              : Date;
         LAST_APPROVED_TIME              : Time;
+        LAST_SEND_BACK_DATE             : Date;
         PAYMENT_DATE                    : Date;
         LOCATION                        : String;
         SPOUSE_OFFICE_ADDRESS           : String;
@@ -202,6 +232,8 @@ entity ZCLAIM_HEADER : managed {
         NEW_HOUSE_ADDRESS               : String;
         DIST_OLD_HOUSE_TO_OFFICE_KM     : Decimal;
         DIST_OLD_HOUSE_TO_NEW_HOUSE_KM  : Decimal;
+        PROJECT_CODE                    : String;
+        COURSE_CODE                     : String;
         APPROVER1                       : String(6);
         APPROVER2                       : String(6);
         APPROVER3                       : String(6);
@@ -220,11 +252,20 @@ entity ZCLAIM_HEADER : managed {
         ZSUBMISSION_TYPE                : Association to ZSUBMISSION_TYPE
                                             on ZSUBMISSION_TYPE.SUBMISSION_TYPE_ID = SUBMISSION_TYPE;
         ZREQUEST_HEADER                 : Association to ZREQUEST_HEADER
-                                            on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
+                                            on  ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZCLAIM_TYPE_ITEM                : Association to one ZCLAIM_TYPE_ITEM
-                                            on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID;  
+                                            on  ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID
+                                            and ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID =  CLAIM_TYPE_ID;
         COSTCENTER                      : Association to ZCOST_CENTER
-                                            on COSTCENTER.COST_CENTER_ID = COST_CENTER;                                                                                      
+                                            on COSTCENTER.COST_CENTER_ID = COST_CENTER;  
+        ZLENDER_NAME                    : Association to ZLENDER_NAME
+                                            on ZLENDER_NAME.LENDER_ID = LENDER_NAME;   
+        ZPROJECT_HDR                    : Association to ZPROJECT_HDR
+                                            on ZPROJECT_HDR.PROJECT_CODE_IO = PROJECT_CODE;  
+        ZTRAIN_COURSE_PART              : Association to ZTRAIN_COURSE_PART
+                                            on  ZTRAIN_COURSE_PART.PARTICIPANT_ID = EMP_ID
+                                            and ZTRAIN_COURSE_PART.COURSE_ID = COURSE_CODE
+                                            and ZTRAIN_COURSE_PART.CLAIM_ID =  CLAIM_ID;                                                                             
 }
 
 entity ZCLAIM_ITEM : managed {
@@ -254,6 +295,7 @@ entity ZCLAIM_ITEM : managed {
         KM                          : Decimal(6,2);
         LOCATION                    : String;
         LOCATION_TYPE               : String;
+        ROUND_TRIP                  : Boolean;
         LODGING_CATEGORY            : String;
         LODGING_ADDRESS             : String;
         MARRIAGE_CATEGORY           : String;
@@ -278,7 +320,9 @@ entity ZCLAIM_ITEM : managed {
         VEHICLE_TYPE                : String;
         VEHICLE_FARE                : Boolean;
         TRIP_START_DATE             : Date;
+        TRIP_START_TIME             : Time;
         TRIP_END_DATE               : Date;
+        TRIP_END_TIME               : Time;
         EVENT_START_DATE            : Date;
         EVENT_END_DATE              : Date; 
         TRAVEL_DURATION_DAY         : Decimal(3,1);
@@ -305,7 +349,8 @@ entity ZCLAIM_ITEM : managed {
         ZLODGING_CAT                : Association to ZLODGING_CAT
                                         on ZLODGING_CAT.LODGING_CATEGORY_ID = LODGING_CATEGORY;
         ZCLAIM_TYPE_ITEM            : Association to one ZCLAIM_TYPE_ITEM
-                                        on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID;
+                                        on  ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID
+                                        and ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID =  CLAIM_TYPE_ID;
         ZVEHICLE_TYPE               : Association to one ZVEHICLE_TYPE
                                         on ZVEHICLE_TYPE.VEHICLE_TYPE_ID = VEHICLE_TYPE;
         ZROOM_TYPE                  : Association to one ZROOM_TYPE
@@ -318,12 +363,28 @@ entity ZCLAIM_ITEM : managed {
                                         on ZAREA.AREA_ID = AREA;
         ZSTAFF_CAT                  : Association to ZSTAFF_CAT
                                         on ZSTAFF_CAT.STAFF_CATEGORY_ID = STAFF_CATEGORY;
-        ZMARITAL_STAT               : Association to one ZMARITAL_STAT
-                                        on ZMARITAL_STAT.MARRIAGE_CATEGORY_ID = MARRIAGE_CATEGORY;
+        ZMARITAL_CAT               : Association to one ZMARITAL_CAT
+                                        on ZMARITAL_CAT.MARRIAGE_CATEGORY_ID = MARRIAGE_CATEGORY;
         ZLOC_TYPE                   : Association to one ZLOC_TYPE
                                         on ZLOC_TYPE.LOC_TYPE_ID = LOCATION_TYPE;
         ZRATE_KM                    : Association to ZRATE_KM
                                         on ZRATE_KM.RATE_KM_ID = RATE_PER_KM;
+        ZCLAIM_TYPE                 : Association to one ZCLAIM_TYPE
+                                        on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID; 
+        ZCOUNTRY                    : Association to ZCOUNTRY
+                                        on ZCOUNTRY.COUNTRY_ID = COUNTRY;
+        ZOFFICE_LOCATION            : Association to ZOFFICE_LOCATION       
+                                        on ZOFFICE_LOCATION.LOCATION_ID = FROM_LOCATION_OFFICE;
+        ZOFFICE_LOCATION1           : Association to ZOFFICE_LOCATION 
+                                        on ZOFFICE_LOCATION1.LOCATION_ID = TO_LOCATION_OFFICE;
+        ZOFFICE_DISTANCE            : Association to ZOFFICE_DISTANCE
+                                        on  ZOFFICE_DISTANCE.FROM_LOCATION_ID = FROM_LOCATION
+                                        and ZOFFICE_DISTANCE.FROM_STATE_ID = FROM_STATE_ID;
+        ZOFFICE_DISTANCE1           : Association to ZOFFICE_DISTANCE
+                                        on  ZOFFICE_DISTANCE1.TO_LOCATION_ID = TO_LOCATION
+                                        and ZOFFICE_DISTANCE1.TO_STATE_ID = TO_STATE_ID;    
+        ZGL_ACCOUNT                 : Association to ZGL_ACCOUNT
+                                        on ZGL_ACCOUNT.GL_ACCOUNT_ID = ACCOUNT_NO;                           
 }
 
 entity ZLODGING_CAT : managed {
@@ -876,6 +937,14 @@ entity ZLENDER_NAME: managed {
         START_DATE  : Date   @Common.Label: 'Start Date';
         END_DATE    : Date   @Common.Label: 'End Date';
         STATUS      : String @Common.Label: 'Status'; 
+}
+
+entity ZREJECT_REASON: managed {
+    key REJECT_REASON_ID    : String @mandatory @Common.Label: 'Reject Reason ID';
+        REJECT_REASON_DESC  : String @Common.Label: 'Reject Reason Description';
+        START_DATE          : Date   @Common.Label: 'Start Date';
+        END_DATE            : Date   @Common.Label: 'End Date';
+        STATUS              : String @Common.Label: 'Status';     
 }
 
 
