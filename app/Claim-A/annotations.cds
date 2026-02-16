@@ -205,11 +205,6 @@ annotate eclaim_srv.ZAPP_FIELD_CTRL with @(
             Label : 'Field 20',
             @UI.Importance : #High,
         },
-        {
-            $Type : 'UI.DataFieldForAction',
-            Action : 'eclaim_srv.Copy',
-            Label : 'Copy',
-        },
     ]
 );
 
@@ -244,11 +239,6 @@ annotate eclaim_srv.ZSTATUS with @(
             Value : STATUS,
             Label : 'Status',
             @UI.Importance : #High,
-        },
-        {
-            $Type : 'UI.DataFieldForAction',
-            Action : 'eclaim_srv.Copy',
-            Label : 'Copy',
         },
     ]
 );

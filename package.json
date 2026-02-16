@@ -46,8 +46,7 @@
       },
       "app-front": true,
       "html5-repo": true,
-      "destinations": true,
-      "workzone": true
+      "destinations": true
     }
   },
   "workspaces": [

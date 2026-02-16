@@ -5,14 +5,16 @@ sap.ui.define([
     "sap/m/Label",
     "sap/m/Input",
     "sap/ui/layout/form/SimpleForm",
-    "sap/m/MessageToast"
+    "sap/m/MessageToast",
+    "sap/m/DatePicker",
 ], function (ControllerExtension,
     Dialog,
     Button,
     Label,
     Input,
     SimpleForm,
-    MessageToast) {
+    MessageToast,
+    DatePicker) {
     'use strict';
 
     return {
@@ -22,26 +24,28 @@ sap.ui.define([
          * @param oContext the context of the page on which the event was fired. `undefined` for list report page.
          * @param aSelectedContexts the selected contexts of the table rows.
          */
+
         onclickcopy: function (oContext, aSelectedContexts) {
-            MessageToast.show("Custom handler invoked.");
             const oNewEntry = {};
             const oSelectedContext = aSelectedContexts[0];
             const sPath = oSelectedContext.getBinding().sPath;
             const oData = oSelectedContext.getObject();
+            const oModel = this.getModel();
+            const oEntityType = oModel.getMetaModel().getContext(sPath).getObject();
+            const sEntityType = oEntityType.$Type;
+            const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
+
+            const oLineItems = oModel.getMetaModel().getContext(`/${sEntityType}/@com.sap.vocabularies.UI.v1.LineItem`).getObject();
 
             const oVBox = new sap.m.VBox({
-                width: "100%",
+                width: "50%",
                 fitContainer: true
             });
 
-            Object.entries(oData).forEach(([field, value]) => {
-                if (field.includes('DraftAdministrativeData') ||
-                    field.includes('HasActiveEntity') ||
-                    field.includes('HasDraftEntity') ||
-                    field.includes('@$ui5.context.isSelected') ||
-                    field.includes('IsActiveEntity')) {
-                    return;
-                }
+            oLineItems.forEach(function (item) {
+                const fieldName = item.Value.$Path;
+                const oFieldMeta = oDataType[fieldName];
+                const fieldType = oFieldMeta?.$Type;
 
                 const oHBox = new sap.m.HBox({
                     alignItems: "Center",
@@ -49,17 +53,31 @@ sap.ui.define([
                 });
 
                 oHBox.addItem(new sap.m.Label({
-                    text: field,
-                    width: "100px",
-                    labelFor: field
+                    text: item.Label,
+                    width: "200px",
+                    labelFor: fieldName,
+                    required: oFieldMeta.$Nullable? oFieldMeta.$Nullable: false
                 }));
 
-                const oInput = new sap.m.Input({
-                    value: value?.toString() || "",
-                    name: field,
-                    width: "400px",
-                    valueLiveUpdate: true
-                });
+                const oInput = fieldType?.includes('Edm.Date') ?
+                    new DatePicker({
+                        value: oData[fieldName] || null,
+                        name: fieldName,
+                        width: "400px",
+                        displayFormat: "dd MMM yyyy",
+                        valueFormat: "yyyy-MM-dd"
+                    }) :
+                    fieldType?.includes('Edm.Boolean') ?
+                        new sap.m.CheckBox({
+                            selected: oData[fieldName] === true || oData[fieldName] === 'true',
+                            name: fieldName,
+                            width: "400px"
+                        }) :
+                        new sap.m.Input({
+                            value: oData[fieldName]?.toString() || "",
+                            name: fieldName,
+                            width: "400px"
+                        });
 
                 oHBox.addItem(oInput);
                 oVBox.addItem(oHBox);
@@ -67,26 +85,29 @@ sap.ui.define([
 
             const oDialog = new sap.m.Dialog({
                 title: `Copy Record`,
-                contentWidth: "700px",
+                contentWidth: "35%",
                 // contentHeight: "450px",
                 horizontalScrolling: false,
                 beginButton: new sap.m.Button({
                     text: "Copy",
                     press: function () {
                         var oInputs = oVBox.getItems();
-                        const oPrevRecord = { ...oData };
 
-                        oInputs.forEach(oInput => {
-                            var sLabel = oInput?.getAccessibilityInfo()?.children[0]?.getAccessibilityInfo()?.description?.replaceAll(":", "").trim();
-                            var sInput = oInput?.getAccessibilityInfo()?.children[1]?.getAccessibilityInfo()?.description;
-                            var sNewInput = sInput === 'Empty'? null: sInput;
-                            oNewEntry[sLabel] = sNewInput;
+                        oInputs.forEach(oHBox => {
+                            var oControl = oHBox.getItems()[1];
+                            if (oControl && (oControl.isA("sap.m.Input") || oControl.isA("sap.m.DatePicker"))) {
+                                var sFieldName = oControl.getName();
+                                var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+
+                                oNewEntry[sFieldName] = sNewInput;
+                            }
+
                         });
                         oNewEntry["IsActiveEntity"] = true;
                         oNewEntry["HasDraftEntity"] = false;
 
-                        var oModel = this.getModel(),
-                            oListBinding = oModel.bindList(sPath),
+
+                        var oListBinding = oModel.bindList(sPath),
                             oContext = oListBinding.create(oNewEntry);
                         oModel.refresh();
 
@@ -103,6 +124,149 @@ sap.ui.define([
             oDialog.addContent(oVBox);
             oDialog.open();
 
+        },
+
+        onClickEdit: function (oContext, aSelectedContexts) {
+            const oSelectedContext = aSelectedContexts[0];
+            const oData = oSelectedContext.getObject();
+
+            // const oVBox = new sap.m.VBox({
+            //     width: "50%",
+            //     fitContainer: true
+            // });
+
+            // Object.entries(oData).forEach(([field, value]) => {
+            //     if (field.includes('DraftAdministrativeData') ||
+            //         field.includes('HasActiveEntity') ||
+            //         field.includes('HasDraftEntity') ||
+            //         field.includes('@$ui5.context.isSelected') ||
+            //         field.includes('IsActiveEntity')) {
+            //         return;
+            //     }
+
+            //     const oHBox = new sap.m.HBox({
+            //         alignItems: "Center",
+            //         width: "100%"
+            //     });
+
+            //     oHBox.addItem(new sap.m.Label({
+            //         text: field,
+            //         width: "200px",
+            //         labelFor: field
+            //     }));
+            //     const oDateInput = field.toLowerCase().includes('date');
+
+            //     const oInput = oDateInput ?
+            //         new DatePicker({
+            //             value: value || "",
+            //             name: field,
+            //             width: "400px",
+            //             displayFormat: "dd MMM YYYY",
+            //             valueFormat: "yyyy-MM-dd"
+            //         }) :
+            //         new sap.m.Input({
+            //             value: value?.toString() || "",
+            //             name: field,
+            //             width: "400px",
+            //             valueLiveUpdate: true
+            //         });
+
+            //     oHBox.addItem(oInput);
+            //     oVBox.addItem(oHBox);
+            // });
+            const sPath = oSelectedContext.getBinding().sPath;
+            const oModel = this.getModel();
+            const oEntityType = oModel.getMetaModel().getContext(sPath).getObject();
+            const sEntityType = oEntityType.$Type;
+            const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
+
+            const oLineItems = oModel.getMetaModel().getContext(`/${sEntityType}/@com.sap.vocabularies.UI.v1.LineItem`).getObject();
+
+            const oVBox = new sap.m.VBox({
+                width: "50%",
+                fitContainer: true
+            });
+
+            oLineItems.forEach(function (item) {
+                const fieldName = item.Value.$Path;
+                const oFieldMeta = oDataType[fieldName];
+                const fieldType = oFieldMeta?.$Type;
+
+                const oHBox = new sap.m.HBox({
+                    alignItems: "Center",
+                    width: "100%"
+                });
+
+                oHBox.addItem(new sap.m.Label({
+                    text: item.Label,
+                    width: "200px",
+                    labelFor: fieldName
+                }));
+
+                const oInput = fieldType?.includes('Edm.Date') ?
+                    new DatePicker({
+                        value: oData[fieldName] || null,
+                        name: fieldName,
+                        width: "400px",
+                        displayFormat: "dd MMM yyyy",
+                        valueFormat: "yyyy-MM-dd"
+                    }) :
+                    fieldType?.includes('Edm.Boolean') ?
+                        new sap.m.CheckBox({
+                            selected: oData[fieldName] === true || oData[fieldName] === 'true',
+                            name: fieldName,
+                            width: "400px"
+                        }) :
+                        new sap.m.Input({
+                            value: oData[fieldName]?.toString() || "",
+                            name: fieldName,
+                            width: "400px"
+                        });
+
+                oHBox.addItem(oInput);
+                oVBox.addItem(oHBox);
+            });
+
+
+            const oDialog = new sap.m.Dialog({
+                title: `Edit Record`,
+                contentWidth: "40%",
+                // contentHeight: "450px",
+                horizontalScrolling: false,
+                beginButton: new sap.m.Button({
+                    text: "Edit",
+                    press: function () {
+                        var oInputs = oVBox.getItems();
+
+                        oInputs.forEach(oHBox => {
+                            var oControl = oHBox.getItems()[1];
+                            if (oControl && (oControl.isA("sap.m.Input") || oControl.isA("sap.m.DatePicker"))) {
+                                var sFieldName = oControl.getName();
+                                var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+
+                                oSelectedContext.setProperty(sFieldName, sNewInput);
+                            }
+                        });
+
+                        sap.m.MessageToast.show("Record updated");
+                        oDialog.close();
+                    }.bind(this)
+                }),
+                endButton: new sap.m.Button({
+                    text: "Cancel",
+                    press: function () { oDialog.close(); }
+                }),
+                afterClose: function () { oDialog.destroy(); }
+            });
+
+            oDialog.addContent(oVBox);
+            oDialog.open();
+
+        },
+
+        _getDetails: function (oData, oLineItems, oDataType) {
+
         }
+
     };
 });
