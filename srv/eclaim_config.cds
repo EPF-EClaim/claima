@@ -1082,7 +1082,7 @@ annotate service.ZEMP_MASTER with @(
     Capabilities      : {
         Deletable : false,
         Updatable : true,
-        Insertable: false
+        Insertable: true
     },
     odata.draft.enabled,
 
