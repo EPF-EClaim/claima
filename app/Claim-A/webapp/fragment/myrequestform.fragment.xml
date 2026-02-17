@@ -34,7 +34,7 @@
                         <Text text="Purpose" />
                     </Column>
                     <Column>
-                        <Text text="Claim ID" />
+                        <Text text="Request ID" />
                     </Column>
                     <Column>
                         <Text text="Start Date" />

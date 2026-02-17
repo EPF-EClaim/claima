@@ -14,7 +14,7 @@ sap.ui.define([
     SimpleForm,
     MessageToast) {
     'use strict';
- 
+
     return {
         /**
          * Generated event handler.
@@ -24,7 +24,9 @@ sap.ui.define([
          */
         onclickcopy: function (oContext, aSelectedContexts) {
             MessageToast.show("Custom handler invoked.");
+            const oNewEntry = {};
             const oSelectedContext = aSelectedContexts[0];
+            const sPath = oSelectedContext.getBinding().sPath;
             const oData = oSelectedContext.getObject();
 
             const oVBox = new sap.m.VBox({
@@ -47,7 +49,7 @@ sap.ui.define([
                 });
 
                 oHBox.addItem(new sap.m.Label({
-                    text: field + ":",
+                    text: field,
                     width: "100px",
                     labelFor: field
                 }));
@@ -71,23 +73,21 @@ sap.ui.define([
                 beginButton: new sap.m.Button({
                     text: "Copy",
                     press: function () {
-                        // Collect input values
-                        const oInputs = oVBox.findAggregatedObjects(true, sap.m.Input);
-                        const oNewData = { ...oData };
+                        var oInputs = oVBox.getItems();
+                        const oPrevRecord = { ...oData };
 
                         oInputs.forEach(oInput => {
-                            oNewData[oInput.getName()] = oInput.getValue();
+                            var sLabel = oInput?.getAccessibilityInfo()?.children[0]?.getAccessibilityInfo()?.description?.replaceAll(":", "").trim();
+                            var sNewInput = oInput?.getAccessibilityInfo()?.children[1]?.getAccessibilityInfo()?.description;
+                            oNewEntry[sLabel] = sNewInput;
                         });
+                        oNewEntry["IsActiveEntity"] = "true";
+                        var oModel = this.getModel(),
+                            oListBinding = oModel.bindList(sPath),
+                            oContext = oListBinding.create(oNewEntry);
+                        oModel.refresh();
 
-                        // Remove ID fields
-                        Object.keys(oNewData).forEach(key => {
-                            if (key.toLowerCase().includes('id')) delete oNewData[key];
-                        });
-
-                        // Backend call
-                        this.base.extensionAPI.fireAction("ZCLAIM_PURPOSE.Copy", oNewData);
                         oDialog.close();
-                        sap.m.MessageToast.show("Record copied successfully!");
                     }.bind(this)
                 }),
                 endButton: new sap.m.Button({
@@ -100,6 +100,6 @@ sap.ui.define([
             oDialog.addContent(oVBox);
             oDialog.open();
 
-        }     
+        }
     };
 });

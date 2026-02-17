@@ -129,8 +129,6 @@ service eclaim_srv {
 
     entity ZINDIV_GROUP      as projection on ECLAIM.ZINDIV_GROUP;
 
-    //entity ZCLAIM_ITEM       as projection on ECLAIM.ZCLAIM_ITEM;
-
     entity ZTRAIN_COURSE_PART as projection on ECLAIM.ZTRAIN_COURSE_PART;
 
     entity ZEMP_DEPENDENT as projection on ECLAIM.ZEMP_DEPENDENT;
@@ -157,8 +155,17 @@ service eclaim_srv {
 
     entity ZMARITAL_CAT as projection on ECLAIM.ZMARITAL_CAT;
 
-    entity ZPREAPPROVAL_STATUS as projection on ECLAIM.ZPREAPPROVAL_STATUS;
+    entity ZPROJECT_HDR as projection on ECLAIM.ZPROJECT_HDR;
+
+    entity ZBRANCH as projection on ECLAIM.ZBRANCH;
+
+    entity ZEMP_CA_PAYMENT as projection on ECLAIM.ZEMP_CA_PAYMENT;
+
+    entity ZPERDIEM_ENT as projection on ECLAIM.ZPERDIEM_ENT;
+
+    entity ZHOUSING_LOAN_SCHEME as projection on ECLAIM.ZHOUSING_LOAN_SCHEME;
+
+    entity ZLENDER_NAME as projection on ECLAIM.ZLENDER_NAME;
+
+    entity ZREJECT_REASON as projection on ECLAIM.ZREJECT_REASON;
 };
-
-
-

@@ -28,23 +28,6 @@
             </f:layout>
 
             <f:Card
-                id="ZCLAIM_PURPOSE"
-                class="sapUiSmallMargin"
-                width="15rem"
-                press="onOpenConfigTable"
-            >
-                <f:customData>
-                    <core:CustomData
-                        key="id"
-                        value="ZCLAIM_PURPOSE"
-                    />
-                </f:customData>
-                <f:header>
-                    <cards:Header title="{i18n>conf1}" />
-                </f:header>
-            </f:Card>
-
-            <f:Card
                 id="ZRISK"
                 class="sapUiSmallMargin"
                 width="15rem"
@@ -54,17 +37,6 @@
                     <cards:Header title="{i18n>conf_zrisk}" />
                 </f:header>
             </f:Card>
-
-            <!-- <f:Card
-                id="ZREQUEST_GRP"
-                class="sapUiSmallMargin"
-                width="15rem"
-                press="onOpenConfigTable"
-            >
-                <f:header>
-                    <cards:Header title="{i18n>conf_zreqgrp}" />
-                </f:header>
-            </f:Card> -->
 
             <f:Card
                 id="ZREQUEST_TYPE"
@@ -88,17 +60,6 @@
                 </f:header>
             </f:Card>
 
-            <!-- <f:Card
-                                        id="ZCLAIM_TYPE_ITEM"
-                                        class="sapUiSmallMargin"
-                                        width="15rem"
-                                        press="onOpenConfigTable">
-                                        <f:header>
-                                            <cards:Header
-                                                title="{i18n>conf_zclaimtpeitem}"/>
-                                        </f:header>
-                                    </f:Card> -->
-
             <f:Card
                 id="ZNUM_RANGE"
                 class="sapUiSmallMargin"
@@ -120,39 +81,6 @@
                     <cards:Header title="{i18n>conf_fieldctrl}" />
                 </f:header>
             </f:Card>
-
-            <!-- <f:Card
-                id="ZARITH_OPT"
-                class="sapUiSmallMargin"
-                width="15rem"
-                press="onOpenConfigTable"
-            >
-                <f:header>
-                    <cards:Header title="{i18n>conf_zarith}" />
-                </f:header>
-            </f:Card> -->
-
-            <!-- <f:Card
-                id="ZAPPROVAL_RULES"
-                class="sapUiSmallMargin"
-                width="15rem"
-                press="onOpenConfigTable"
-            >
-                <f:header>
-                    <cards:Header title="{i18n>conf_appr}" />
-                </f:header>
-            </f:Card> -->
-
-            <!-- <f:Card
-                id="ZCLAIM_MAIN_CAT"
-                class="sapUiSmallMargin"
-                width="15rem"
-                press="onOpenConfigTable"
-            >
-                <f:header>
-                    <cards:Header title="{i18n>conf_zclaimmain}" />
-                </f:header>
-            </f:Card> -->
 
             <f:Card
                 id="ZCLAIM_CATEGORY"
@@ -232,17 +160,6 @@
             </f:Card>
 
             <f:Card
-                id="ZCURRENCY"
-                class="sapUiSmallMargin"
-                width="15rem"
-                press="onOpenConfigTable"
-            >
-                <f:header>
-                    <cards:Header title="{i18n>conf_curr}" />
-                </f:header>
-            </f:Card>
-
-            <f:Card
                 id="ZSTAFF_CAT"
                 class="sapUiSmallMargin"
                 width="15rem"
@@ -275,16 +192,7 @@
                 </f:header>
             </f:Card>
 
-            <f:Card
-                id="ZKWSP_BRANCH"
-                class="sapUiSmallMargin"
-                width="15rem"
-                press="onOpenConfigTable"
-            >
-                <f:header>
-                    <cards:Header title="{i18n>conf_kwsp}" />
-                </f:header>
-            </f:Card>
+            
 
             <f:Card
                 id="ZJOB_GROUP"
@@ -382,6 +290,17 @@
             >
                 <f:header>
                     <cards:Header title="ZREGION" />
+                </f:header>
+            </f:Card>
+
+            <f:Card
+                id="ZSUBMISSION_TYPE"
+                class="sapUiSmallMargin"
+                width="15rem"
+                press="onOpenConfigTable"
+            >
+                <f:header>
+                    <cards:Header title="ZSUBMISSION_TYPE" />
                 </f:header>
             </f:Card>
 
