@@ -802,8 +802,8 @@ entity ZEMP_RELATIONSHIP: managed {
 entity ZEMP_VEHICLE: managed {
     key EMP_ID      : String @mandatory @Common.Label: 'Employee ID';
     key VEHICLE_NO  : String @Common.Label: 'Vehicle Number';
-    key START_DATE  : Date @Common.Label: 'Start Date';
-    key END_DATE    : Date @Common.Label: 'End Date';
+        START_DATE  : Date @Common.Label: 'Start Date';
+        END_DATE    : Date @Common.Label: 'End Date';
         STATUS      : String @Common.Label: 'Status';    
 }
 
