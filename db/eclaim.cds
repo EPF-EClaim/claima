@@ -9,6 +9,7 @@ entity ZEMP_MASTER : managed {
         CC                      : String;
         POS                     : String;
         DEP                     : String;
+        UNIT_SECTION            : String;
         B_PLACE                 : String;
         MARITAL                 : String;
         JOB_GROUP               : String;
@@ -65,7 +66,6 @@ entity ZREQUEST_HEADER : managed {
     key REQUEST_ID              : String @mandatory;
         EMP_ID                  : String;
         REQUEST_TYPE_ID         : String;
-        REFERENCE_NUMBER        : String;
         OBJECTIVE_PURPOSE       : String;
         TRIP_START_DATE         : Date;
         TRIP_END_DATE           : Date;
@@ -91,6 +91,8 @@ entity ZREQUEST_HEADER : managed {
         COST_CENTER             : String;
         CASH_ADVANCE            : Decimal(16, 2);
         CASH_ADVANCE_DATE       : Date;
+        LAST_APPROVED_DATE      : Date;
+        LAST_APPROVED_TIME      : Time;
         TRAVEL_ALONE_FAMILY     : String(1);
         TRAVEL_FAMILY_NOW_LATER : String(1);
         LAST_SEND_BACK_DATE     : Date;
@@ -394,7 +396,7 @@ entity ZLODGING_CAT : managed {
         STATUS                : String  @Common.Label: 'Status';
 }
 
-entity ZCOST_CENTER {
+entity ZCOST_CENTER : managed {
     key COST_CENTER_ID   : String;
         COST_CENTER_DESC : String;
         EXTERNAL_OBJ_ID  : String;
