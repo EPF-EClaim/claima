@@ -214,7 +214,7 @@
                     valueFormat="yyyy-MM-dd"
                     placeholder="dd MMM yyyy"
                     textAlign="Begin"
-                    required="true"
+                    required="false"
                 />
                 <Label text="Payment Date" />
                 <DatePicker
@@ -223,7 +223,7 @@
                     valueFormat="yyyy-MM-dd"
                     placeholder="dd MMM yyyy"
                     textAlign="Begin"
-                    required="true"
+                    required="false"
                 />
 
                 <Label text="Individual/Group" />
@@ -278,16 +278,11 @@
                 </Select>
 
                 <Label text="Request Type" />
-                <!-- <TextArea
-                    id="reqtype"
-                    textAlign="Begin"
-                    value="Test"
-                /> -->
-
                 <Select
                     id="reqtype"
                     width="100%"
                     forceSelection="false"
+                    visible="{anaVM>/showRequestType}"
                     items="{
                         path: 'employee>/ZREQUEST_TYPE',
                         parameters: {
@@ -303,16 +298,11 @@
                 </Select>
 
                 <Label text="Claim Category" />
-                <!-- <TextArea
-                    id="claim_cat"
-                    textAlign="Begin"
-                    value="Test"
-                /> -->
-
                 <Select
                     id="claim_cat"
                     width="100%"
                     forceSelection="false"
+                    visible="{anaVM>/showClaimCategory}"
                     items="{
                         path: 'employee>/ZCLAIM_CATEGORY',
                         parameters: {

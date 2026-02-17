@@ -9,18 +9,21 @@
     <ScrollContainer id="analytics" class="sapUiContentPadding" height="100%">
         <Title text="{i18n>ana_poptitle}" titleStyle="H3" />
 
-        <VBox width="100%" class="sapUiSmallMarginTop" >
+        <VBox width="100%" class="sapUiSmallMarginTop">
 
             <!-- 1. Claims Report Summary -->
-            <f:Card class="sapUiSmallMargin" width="auto" >
+            <f:Card class="sapUiSmallMargin" width="auto">
                 <f:content>
                     <Button
+                        id="btnAnalytics1"
                         type="Transparent"
                         width="auto"
-                        press=".onOpenAnalytics1"
-                        text="{i18n>ana_title1}"
-                        
-                    />
+                        press=".onOpenAnalytics"
+                        text="{i18n>ana_title1}">
+                        <customData>
+                            <core:CustomData key="target" value="analyticsClaimReportSummary"/>
+                        </customData>
+                    </Button>
                 </f:content>
             </f:Card>
 
@@ -28,11 +31,15 @@
             <f:Card class="sapUiSmallMargin" width="auto">
                 <f:content>
                     <Button
+                        id="btnAnalytics2"
                         type="Transparent"
                         width="auto"
-                        press=".onOpenAnalytics2"
-                        text="{i18n>ana_title2}"
-                    />
+                        press=".onOpenAnalytics"
+                        text="{i18n>ana_title2}">
+                        <customData>
+                            <core:CustomData key="target" value="analyticsClaimReportDetails"/>
+                        </customData>
+                    </Button>
                 </f:content>
             </f:Card>
 
@@ -40,11 +47,15 @@
             <f:Card class="sapUiSmallMargin" width="auto">
                 <f:content>
                     <Button
+                        id="btnAnalytics3"
                         type="Transparent"
                         width="auto"
-                        press=".onOpenAnalytics3"
-                        text="{i18n>ana_title3}"
-                    />
+                        press=".onOpenAnalytics"
+                        text="{i18n>ana_title3}">
+                        <customData>
+                            <core:CustomData key="target" value="preApprovedSummary"/>
+                        </customData>
+                    </Button>
                 </f:content>
             </f:Card>
 
@@ -52,11 +63,15 @@
             <f:Card class="sapUiSmallMargin" width="auto">
                 <f:content>
                     <Button
+                        id="btnAnalytics4"
                         type="Transparent"
                         width="auto"
-                        press=".onOpenAnalytics4"
-                        text="{i18n>ana_title4}"
-                    />
+                        press=".onOpenAnalytics"
+                        text="{i18n>ana_title4}">
+                        <customData>
+                            <core:CustomData key="target" value="preApprovedDetails"/>
+                        </customData>
+                    </Button>
                 </f:content>
             </f:Card>
 

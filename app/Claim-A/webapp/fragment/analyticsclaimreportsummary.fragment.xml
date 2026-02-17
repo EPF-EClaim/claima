@@ -18,6 +18,7 @@
                     <mdc:Table
                         id="analyticsclaimsumtab"
                         enableExport="true"
+                        header="Claims Report Summary"
                     >
                         <mdct:Column
                             propertyKey="employee"
@@ -303,7 +304,7 @@
 
                 <Button
                     id="btnCloseAnalyticsSum"
-                    text="{i18n>close}"
+                    text="Back"
                     press=".onBackFromAnalyticsClaimReport"
                 />
             </Toolbar>

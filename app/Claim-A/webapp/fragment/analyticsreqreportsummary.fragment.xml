@@ -18,6 +18,7 @@
                     <mdc:Table
                         id="analyticsreqsumtab"
                         enableExport="true"
+                        header="Pre-Approved Request Summary"
                     >
                         <mdct:Column
                             propertyKey="employee"
@@ -405,7 +406,7 @@
 
                 <Button
                     id="btnCloseAnalytics_reqsum"
-                    text="{i18n>close}"
+                    text="Back"
                     press=".onBackFromAnalyticsClaimReport"
                 />
             </Toolbar>

@@ -18,6 +18,7 @@
                     <mdc:Table
                         id="analyticsreqtab"
                         enableExport="true"
+                        header="Pre-Approved Request Detailed"
                     >
                         <mdct:Column
                             propertyKey="employee"
@@ -288,7 +289,7 @@
 
                 <Button
                     id="btnCloseAnalytics_req"
-                    text="{i18n>close}"
+                    text="Back"
                     press=".onBackFromAnalyticsClaimReport"
                 />
             </Toolbar>
