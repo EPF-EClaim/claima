@@ -2098,7 +2098,9 @@ annotate service.ZEMP_VEHICLE with @(
     odata.draft.bypass,
     Common.SemanticKey: [
         EMP_ID,
-        VEHICLE_NO
+        VEHICLE_NO,
+        START_DATE,
+        END_DATE
     ],
     Capabilities      : {
         Deletable : true,
