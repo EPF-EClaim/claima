@@ -350,6 +350,7 @@ sap.ui.define([
 			oInputModel.setProperty("/employee/eeid", "000001");
 			oInputModel.setProperty("/employee/name", "Test Name");
 			oInputModel.setProperty("/employee/cc", "4001");
+			oInputModel.setProperty("/employee/descr/cc", "Test Cost Center");
 		},
 
 		onSelect_ClaimProcess_ClaimType: function (oEvent) {
@@ -416,7 +417,7 @@ sap.ui.define([
 							path: "employee>/ZREQUEST_HEADER",
 							filters: [new sap.ui.model.Filter('EMP_ID', sap.ui.model.FilterOperator.EQ, oInputModel.getProperty("/employee/eeid"))],
 							parameters: {
-								$select: "AMOUNT"
+								$select: "REQUEST_AMOUNT"
 							},
 							template: new sap.ui.core.Item({
 								key: "{employee>REQUEST_ID}",
@@ -686,28 +687,36 @@ sap.ui.define([
 					return;
 				}
 			}
+			// validate date range
+			//// trip start/end date
+			if (!this._validDateRange("datepicker_claiminput_tripstartdate", "datepicker_claiminput_tripenddate")) {
+				// stop claim submission if incomplete
+				return;
+			}
+			//// event start/end date (optional)
+			if (this.byId("datepicker_claiminput_eventstartdate").getValue() || this.byId("datepicker_claiminput_eventenddate").getValue()) {
+				if (!this._validDateRange("datepicker_claiminput_eventstartdate", "datepicker_claiminput_eventenddate")) {
+					// stop claim submission if incomplete
+					return;
+				}
+			}
 
 			// validate input data
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			//// get alternate cost center description
-			oInputModel.setProperty("/claimheader/descr/altcc", this.byId("select_claiminput_altcc").getSelectedItem().getBindingContext("employee").getObject("COST_CENTER_DESC"));
+			var altCostCenter = this.byId("select_claiminput_altcc").getSelectedItem();
+			if (altCostCenter) {
+				oInputModel.setProperty("/claimheader/descr/altcc", altCostCenter.getBindingContext("employee").getObject("COST_CENTER_DESC"));
+			}
 
 			// reset Claim Input dialog before closing
 			this._reset_ClaimInput();
 			this.oDialog_ClaimInput.close();
 
 			// load Claim Submission page
-			var oName = "claima.fragment.claimsubmission_claimsubmission";
-			this.oDialog_ClaimSubmission ??= await this.loadFragment({
-				name: oName,
-			});
-			if (this.oDialog_ClaimSubmission) {
-				this._onInit_ClaimSubmission();
-				this.oDialog_ClaimSubmission.open();
-			}
-			else {
-				MessageToast.show(this._getTexti18n("msg_nav_error_fragment", [oName]));
-			}
+			// this.byId("pageContainer").to(this.getView().byId('page_claimsubmission'));
+			this.byId("pageContainer").to(this.getView().byId('navcontainer_claimsubmission'));
+
 		},
 
 		_onUpload_ClaimInput_Attachment: function () {
@@ -743,6 +752,24 @@ sap.ui.define([
 				return "*." + sType;
 			});
 			MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_mismatch", [this.byId("fileuploader_claiminput_attachment").getValue()]));
+		},
+		
+		_validDateRange: function (startdate, enddate) {
+			var startDateValue = this.byId(startdate).getValue();
+			var endDateValue = this.byId(enddate).getValue();
+			// check for missing value
+			if (!startDateValue || !endDateValue) {
+				MessageToast.show(this._getTexti18n("msg_daterange_missing"));
+				return false;
+			}
+			// check if end date earlier than start date
+			else if (startDateValue > endDateValue) {
+				MessageToast.show(this._getTexti18n("msg_daterange_order"));
+				return false;
+			}
+			else {
+				return true;
+			}
 		},
 
 		onCancel_ClaimInput: function () {
@@ -1675,8 +1702,6 @@ sap.ui.define([
 			}
 
 		},
-
-
 
 		_getTexti18n: function (i18nKey, array_i18nParameters) {
 			if (array_i18nParameters) {

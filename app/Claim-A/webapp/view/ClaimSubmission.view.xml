@@ -1,0 +1,50 @@
+<mvc:View
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:l="sap.ui.layout"
+	xmlns:f="sap.ui.layout.form"
+	controllerName="claima.controller.ClaimSubmission"
+>
+	<Page
+		id="page_claimsubmission"
+        showHeader="false"
+        enableScrolling="true"
+	>
+		<!-- content here -->
+		<footer>
+			<Toolbar>
+				<ToolbarSpacer/>
+					<!-- Save Draft -->
+					<Button
+						id="button_claimsubmission_savedraft"
+						press="onSaveDraft_ClaimSubmission"
+						text="{i18n>button_claimsubmission_savedraft}"
+					/>
+
+					<!-- Delete Report -->
+					<Button
+						id="button_claimsubmission_deletereport"
+						press="onDeleteReport_ClaimSubmission"
+						text="{i18n>button_claimsubmission_deletereport}"
+						enabled="false"
+					/>
+
+					<!-- Submit Report -->
+					<Button
+						id="button_claimsubmission_submitreport"
+						press="onSubmitReport_ClaimSubmission"
+						text="{i18n>button_claimsubmission_submitreport}"
+						enabled="false"
+					/>
+
+					<!-- Back -->
+					<Button
+						id="button_claimsubmission_back"
+						press="onBack_ClaimSubmission"
+						text="{i18n>button_claimsubmission_back}"
+					/>
+			</Toolbar>
+		</footer>
+	</Page>
+</mvc:View>

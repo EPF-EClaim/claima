@@ -148,47 +148,205 @@ entity ZREQUEST_TYPE : managed {
         @Common.Label: 'Status';
 }
 
-entity ZCLAIM_CATEGORY {
-    key CLAIM_CAT_ID        : String;
-        CLAIM_CATEGORY_DESC : String;
+entity ZCLAIM_TYPE : managed {
+    key CLAIM_TYPE_ID    : String  @mandatory  @Common.Label: 'Claim Type ID';
+        CLAIM_TYPE_DESC  : String  @Common.Label: 'Claim Type Description';
+        END_DATE         : Date    @Common.Label: 'End Date';
+        START_DATE       : Date    @Common.Label: 'Start Date';
+        STATUS           : String  @Common.Label: 'Status';        
+        ZCLAIM_TYPE_ITEM : Composition of many ZCLAIM_TYPE_ITEM
+                               on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
 }
 
-entity ZCLAIM_TYPE {
-    key CLAIM_TYPE_ID   : String;
-        CLAIM_TYPE_DESC : String;
+entity ZNUM_RANGE : managed {
+    key RANGE_ID    : String  @mandatory  @Common.Label: 'RANGE_ID';
+        RANGE_DESC  : String  @Common.Label: 'RANGE_DESC';
+        ![FROM]     : String  @Common.Label: 'FROM';
+        TO          : String  @Common.Label: 'TO';
+        CURRENT     : String  @Common.Label: 'CURRENT';
 }
 
-entity ZCLAIM_TYPE_ITEM {
-    key CLAIM_TYPE_ID        : String;
-    key CLAIM_TYPE_ITEM_ID   : String;
-        CLAIM_TYPE_ITEM_DESC : String;
-        CATEGORY_ID          : String;
-        ZCLAIM_CATEGORY      : Association to one ZCLAIM_CATEGORY
-                                   on ZCLAIM_CATEGORY.CLAIM_CAT_ID = CATEGORY_ID;
+entity ZCLAIM_HEADER : managed {
+    key CLAIM_ID                        : String @mandatory;
+        EMP_ID                          : String;
+        PURPOSE                         : String;
+        TRIP_START_DATE                 : Date;
+        TRIP_END_DATE                   : Date;
+        EVENT_START_DATE                : Date;
+        EVENT_END_DATE                  : Date;
+        SUBMISSION_TYPE                 : String;
+        COMMENT                         : String;
+        ALTERNATE_COST_CENTER           : String;
+        COST_CENTER                     : String;
+        REQUEST_ID                      : String;
+        ATTACHMENT_EMAIL_APPROVER       : String;
+        STATUS_ID                       : String;
+        CLAIM_TYPE_ID                   : String;
+        CLAIM_TYPE_ITEM_ID              : String;
+        TOTAL_CLAIM_AMOUNT              : Decimal(16,2);
+        APPROVED_AMOUNT                 : Decimal(16,2);
+        CASH_ADVANCE_AMOUT              : Decimal(16,2);
+        FINAL_AMOUNT_TO_RECEIVE         : Decimal(16,2);
+        LAST_MODIFIED_DATE              : Date;
+        SUBMITTED_DATE                  : Date;
+        LAST_APPROVED_DATE              : Date;
+        LAST_APPROVED_TIME              : Time;
+        PAYMENT_DATE                    : Date;
+        LOCATION                        : String;
+        SPOUSE_OFFICE_ADDRESS           : String;
+        HOUSE_COMPLETION_DATE           : Date;
+        MOVE_IN_DATE                    : Date;
+        HOUSING_LOAN_SCHEME             : String;
+        LENDER_NAME                     : String;
+        SPECIFY_DETAILS                 : String;
+        NEW_HOUSE_ADDRESS               : String;
+        DIST_OLD_HOUSE_TO_OFFICE_KM     : Decimal;
+        DIST_OLD_HOUSE_TO_NEW_HOUSE_KM  : Decimal;
+        APPROVER1                       : String(6);
+        APPROVER2                       : String(6);
+        APPROVER3                       : String(6);
+        APPROVER4                       : String(6);
+        APPROVER5                       : String(6);
+        ZCLAIM_ITEM                     : Composition of many ZCLAIM_ITEM
+                                            on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
+        ZEMP_MASTER                     : Association to one ZEMP_MASTER
+                                            on ZEMP_MASTER.EEID = EMP_ID;  
+        ZCLAIM_TYPE                     : Association to one ZCLAIM_TYPE
+                                            on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
+        ZCOST_CENTER                    : Association to one ZCOST_CENTER
+                                            on ZCOST_CENTER.COST_CENTER_ID = ALTERNATE_COST_CENTER;              
+        ZSTATUS                         : Association to one ZSTATUS
+                                            on ZSTATUS.STATUS_ID = STATUS_ID;
+        ZSUBMISSION_TYPE                : Association to ZSUBMISSION_TYPE
+                                            on ZSUBMISSION_TYPE.SUBMISSION_TYPE_ID = SUBMISSION_TYPE;
+        ZREQUEST_HEADER                 : Association to ZREQUEST_HEADER
+                                            on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
+        ZCLAIM_TYPE_ITEM                : Association to one ZCLAIM_TYPE_ITEM
+                                            on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID;  
+        COSTCENTER                      : Association to ZCOST_CENTER
+                                            on COSTCENTER.COST_CENTER_ID = COST_CENTER;                                                                                      
 }
 
-entity ZCOST_CENTER {
+entity ZCLAIM_ITEM : managed {
+    key CLAIM_ID                    : String @mandatory;
+    key CLAIM_SUB_ID                : String @mandatory;
+        CLAIM_TYPE_ID               : String;
+        CLAIM_TYPE_ITEM_ID          : String;
+        PERCENTAGE_COMPENSATION     : Decimal(5,2);
+        ACCOUNT_NO                  : String;      
+        AMOUNT                      : Decimal(16,2);
+        ATTACHMENT_FILE_1           : String;
+        ATTACHMENT_FILE_2           : String;
+        BILL_NO                     : String;        
+        BILL_DATE                   : Date;
+        CLAIM_CATEGORY              : String;
+        COUNTRY                     : String;
+        DISCLAIMER                  : Boolean;
+        START_DATE                  : Date;
+        END_DATE                    : Date;
+        START_TIME                  : Time;
+        END_TIME                    : Time;
+        FLIGHT_CLASS                : String;
+        FROM_ELC                    : Boolean;
+        TO_ELC                      : Boolean;
+        FROM_LOCATION               : String;
+        FROM_LOCATION_OFFICE        : String;
+        KM                          : Decimal(6,2);
+        LOCATION                    : String;
+        LOCATION_TYPE               : String;
+        LODGING_CATEGORY            : String;
+        LODGING_ADDRESS             : String;
+        MARRIAGE_CATEGORY           : String;
+        MORE_THAN_14_WORK_DAYS      : Boolean;
+        AREA                        : String;
+        NO_OF_FAMILY_MEMBER         : Integer;
+        PARKING                     : Decimal;
+        PHONE_NO                    : String;
+        RATE_PER_KM                 : String(2);
+        RECEIPT_DATE                : Date;
+        RECEIPT_NUMBER              : String;
+		REMARK            		    : String;
+		ROOM_TYPE         		    : String;
+        REGION                      : String;
+        STAFF_CATEGORY              : String;
+        FROM_STATE_ID               : String;
+        TO_STATE_ID                 : String;
+        TO_LOCATION                 : String;
+        TO_LOCATION_OFFICE          : String;
+        TOLL                        : Decimal(16,2);
+        TOTAL_EXP_AMOUNT            : Decimal(16,2);
+        VEHICLE_TYPE                : String;
+        VEHICLE_FARE                : Boolean;
+        TRIP_START_DATE             : Date;
+        TRIP_END_DATE               : Date;
+        EVENT_START_DATE            : Date;
+        EVENT_END_DATE              : Date; 
+        TRAVEL_DURATION_DAY         : Decimal(3,1);
+        TRAVEL_DURATION_HOUR        : Decimal(4,1);
+        PROVIDED_BREAKFAST          : String;
+        PROVIDED_LUNCH              : String;
+        PROVIDED_DINNER             : String;
+        ENTITLED_BREAKFAST          : String;
+        ENTITLED_LUNCH              : String;
+        ENTITLED_DINNER             : String;   
+        ANGGOTA_ID                  : String;
+        ANGGOTA_NAME                : String;
+        DEPENDENT_NAME              : String;
+        TYPE_OF_PROFESSIONAL_BODY   : String;
+        DISCLAIMER_GALAKAN          : String;    
+        VEHICLE_OWN_OFFICE          : String;
+        MODE_OF_TRANSFER            : String;
+        TRANSFER_DATE               : Date;
+        NO_OF_DAYS                  : Integer;
+        FAMILY_COUNT                : Integer;
+        FUNERAL_TRANSPORTATION      : String;        
+        ZCLAIM_CATEGORY             : Association to ZCLAIM_CATEGORY
+                                        on ZCLAIM_CATEGORY.CLAIM_CAT_ID = CLAIM_CATEGORY;
+        ZLODGING_CAT                : Association to ZLODGING_CAT
+                                        on ZLODGING_CAT.LODGING_CATEGORY_ID = LODGING_CATEGORY;
+        ZCLAIM_TYPE_ITEM            : Association to one ZCLAIM_TYPE_ITEM
+                                        on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID;
+        ZVEHICLE_TYPE               : Association to one ZVEHICLE_TYPE
+                                        on ZVEHICLE_TYPE.VEHICLE_TYPE_ID = VEHICLE_TYPE;
+        ZROOM_TYPE                  : Association to one ZROOM_TYPE
+                                        on ZROOM_TYPE.ROOM_TYPE_ID = ROOM_TYPE;
+        ZFLIGHT_CLASS               : Association to one ZFLIGHT_CLASS
+                                        on ZFLIGHT_CLASS.FLIGHT_CLASS_ID = FLIGHT_CLASS;
+        ZREGION                     : Association to one ZREGION
+                                        on ZREGION.REGION_ID = REGION;
+        ZAREA                       : Association to one ZAREA
+                                        on ZAREA.AREA_ID = AREA;
+        ZSTAFF_CAT                  : Association to ZSTAFF_CAT
+                                        on ZSTAFF_CAT.STAFF_CATEGORY_ID = STAFF_CATEGORY;
+        ZMARITAL_STAT               : Association to one ZMARITAL_STAT
+                                        on ZMARITAL_STAT.MARRIAGE_CATEGORY_ID = MARRIAGE_CATEGORY;
+        ZLOC_TYPE                   : Association to one ZLOC_TYPE
+                                        on ZLOC_TYPE.LOC_TYPE_ID = LOCATION_TYPE;
+        ZRATE_KM                    : Association to ZRATE_KM
+                                        on ZRATE_KM.RATE_KM_ID = RATE_PER_KM;
+}
+
+entity ZLODGING_CAT : managed {
+    key LODGING_CATEGORY_ID   : String  @mandatory  @Common.Label: 'Lodging Category ID';
+        LODGING_CATEGORY_DESC : String  @Common.Label: 'Lodging Category Description';
+        START_DATE            : Date @Common.Label: 'Start Date';
+        END_DATE              : Date @Common.Label: 'End Date';
+        STATUS                : String @Common.Label: 'Status';
+}
+
+entity ZCOST_CENTER : managed {
     key COST_CENTER_ID   : String;
         COST_CENTER_DESC : String;
+        EXTERNAL_OBJ_ID  : String;
+        DEPARTMENT       : String;
         START_DATE       : Date;
         END_DATE         : Date;
         STATUS           : String;
-        DEPARTMENT       : String;
-        EXTERNAL_OBJ_ID  : String;
 }
 
-entity ZSTATUS {
-    key STATUS_ID   : String;
-        STATUS_DESC : String;
-        START_DATE  : Date;
-        END_DATE    : Date;
-        STATUS      : String;
-}
-
-entity ZREQUEST_GRP {
-    key REQUEST_GROUP_ID   : String;
-        REQUEST_GROUP_DESC : String;
-        END_DATE           : Date;
+entity ZCLAIM_TYPE_INFO : managed {
+    key CLAIM_TYPE_ID      : String;
+    key CLAIM_TYPE_ITEM_ID : String;
         START_DATE         : Date;
         END_DATE           : Date;
         STATUS             : String;
@@ -432,143 +590,12 @@ entity ZKWSP_MILEAGE : managed {
         MAX_MILEAGE    : Integer @Common.Label: ' Max Mileage';
 }
 
-entity ZNUM_RANGE {
-    key RANGE_ID : String;
-        ![FROM]  : String;
-        TO       : String;
-        CURRENT  : String;
-}
-
-entity ZCLAIM_HEADER {
-    key CLAIM_ID                       : String;
-        EMP_ID                         : String;
-        PURPOSE                        : String;
-        TRIP_START_DATE                : Date;
-        TRIP_END_DATE                  : Date;
-        EVENT_START_DATE               : Date;
-        EVENT_END_DATE                 : Date;
-        SUBMISSION_TYPE                : String;
-        COMMENT                        : String;
-        COST_CENTER                    : String;
-        ALTERNATE_COST_CENTER          : String;
-        REQUEST_ID                     : String;
-        ATTACHMENT_EMAIL_APPROVER      : String;
-        STATUS_ID                      : String;
-        CLAIM_TYPE_ID                  : String;
-        CLAIM_TYPE_ITEM_ID             : String;
-        TOTAL_CLAIM_AMOUNT             : Decimal;
-        APPROVED_AMOUNT                : Decimal;
-        CASH_ADVANCE_AMOUT             : Decimal;
-        FINAL_AMOUNT_TO_RECEIVE        : Decimal;
-        LAST_MODIFIED_DATE             : Date;
-        SUBMITTED_DATE                 : Date;
-        LAST_APPROVED_DATE             : Date;
-        LAST_APPROVED_TIME             : Time;
-        PAYMENT_DATE                   : Date;
-        LOCATION                       : String;
-        SPOUSE_OFFICE_ADDRESS          : String;
-        HOUSE_COMPLETION_DATE          : Date;
-        MOVE_IN_DATE                   : Date;
-        HOUSING_LOAN_SCHEME            : String;
-        LENDER_NAME                    : String;
-        SPECIFY_DETAILS                : String;
-        NEW_HOUSE_ADDRESS              : String;
-        DIST_OLD_HOUSE_TO_OFFICE_KM    : Decimal;
-        DIST_OLD_HOUSE_TO_NEW_HOUSE_KM : Decimal;
-        ZCLAIM_ITEM                    : Composition of many ZCLAIM_ITEM
-                                             on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
-        ZEMP_MASTER                    : Association to one ZEMP_MASTER
-                                             on ZEMP_MASTER.EEID = EMP_ID;
-        ZCLAIM_TYPE                    : Association to one ZCLAIM_TYPE
-                                             on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
-        ZCLAIM_TYPE_ITEM               : Association to one ZCLAIM_TYPE_ITEM
-                                             on  ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID      = CLAIM_TYPE_ID
-                                             and ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID;
-        ZCOST_CENTER                   : Association to one ZCOST_CENTER
-                                             on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
-        ZSTATUS                        : Association to one ZSTATUS
-                                             on ZSTATUS.STATUS_ID = STATUS_ID;
-}
-
-entity ZCLAIM_ITEM {
-    key CLAIM_ID          : String;
-    key CLAIM_ITEM_ID     : String;
-        CLAIM_TYPE_ITEM   : String;
-        AMOUNT            : Decimal;
-        REMARK            : String;
-        ATTACHMENT_FILE_1 : String;
-        ATTACHMENT_FILE_2 : String;
-        CLAIM_PURPOSE     : String;
-        CLAIM_DISCLAIMER  : String;
-        START_DATE        : Date;
-        END_DATE          : Date;
-        START_TIME        : Time;
-        END_TIME          : Time;
-        VEHICLE_TYPE      : String;
-        KM                : Decimal;
-        RATE_PER_KM       : Decimal;
-        BILL_NO           : String;
-        ACCOUNT_NO        : String;
-        BILL_DATE         : Date;
-        TOLL              : Decimal;
-        PARKING           : Decimal;
-        TRANSPORT_FARE    : Decimal;
-        LODGING_CATEGORY  : String;
-        LODGING_ADDRESS   : String;
-        ROOM_TYPE         : String;
-        FLIGHT_CLASS      : String;
-        COUNTRY           : String;
-        REGION            : String;
-        AREA              : String;
-        LOCATION          : String;
-        FROM_LOCATION     : String;
-        TO_LOCATION       : String;
-        PHONE_NO          : String;
-        NUM_OF_DAY        : String;
-        MORE_THAN_4_WDAYS : String;
-        FROM_ELC          : String;
-        TO_ELC            : String;
-        TOTAL_EXP_AMOUNT  : Decimal;
-        COMPENSATION_PCT  : Decimal;
-        CURRENCY          : String;
-        CURRENCY_RATE     : Decimal;
-        CURRENCY_AMOUNT   : Decimal;
-        FAMILY_COUNT      : String;
-        STAFF_CATEGORY    : String;
-        MARRIAGE_CATEGORY : String;
-        LOCATION_TYPE     : String;
-        STATE1            : String;
-        STATE2            : String;
-        RECEIPT_DATE      : String;
-        RECEIPT_NUMBER    : String;
-        ZCLAIM_PURPOSE    : Association to one ZCLAIM_PURPOSE
-                                on ZCLAIM_PURPOSE.CLAIM_PURPOSE_ID = CLAIM_PURPOSE;
-        ZLODGING_CAT      : Association to one ZLODGING_CAT
-                                on ZLODGING_CAT.LODGING_CATEGORY_ID = LODGING_CATEGORY;
-}
-
-entity ZCLAIM_PURPOSE {
-    key CLAIM_PURPOSE_ID   : String;
-        CLAIM_PURPOSE_DESC : String;
-}
-
-entity ZCLAIM_DISCLAIMER {
-    key CLAIM_DISCLAIMER_ID   : String;
-        CLAIM_DISCLAIMER_DESC : String;
-}
-
-entity ZLODGING_CAT {
-    key LODGING_CATEGORY_ID   : String;
-        LODGING_CATEGORY_DESC : String;
-}
-
-entity Entity1 {
-    key ID : UUID;
-}
-
-entity ZRISK{
-    key RISK_ID : String;
-        RISK_DESCRIPTION: String;
+entity ZJOB_GROUP : managed {
+    key JOB_GROUP_ID   : String  @mandatory  @Common.Label: 'Job Group ID';
+        JOB_GROUP_DESC : String  @Common.Label: 'Job Group ID';
+        START_DATE     : Date    @Common.Label: 'Start Date';
+        END_DATE       : Date    @Common.Label: 'End Date';
+        STATUS         : String  @Common.Label: 'Status';
 }
 
 entity ZDEPARTMENT : managed {
@@ -850,5 +877,4 @@ entity ZLENDER_NAME: managed {
         END_DATE    : Date   @Common.Label: 'End Date';
         STATUS      : String @Common.Label: 'Status'; 
 }
-
 
