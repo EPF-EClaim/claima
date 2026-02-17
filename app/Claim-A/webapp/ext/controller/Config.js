@@ -13,14 +13,11 @@ sap.ui.define([
         const oEntityType = oModel.getMetaModel().getContext(sPath).getObject();
         const sEntityType = oEntityType.$Type;
         const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
-
         const oLineItems = oModel.getMetaModel().getContext(`/${sEntityType}/@com.sap.vocabularies.UI.v1.LineItem`).getObject();
 
         const oVBox = new sap.m.VBox({
             width: "70%",
             fitContainer: true,
-            // alignItems: "Center",
-            // justifyContent: "Center",
         });
         oVBox.addStyleClass("sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom")
 
@@ -28,11 +25,6 @@ sap.ui.define([
             const fieldName = item.Value.$Path;
             const oFieldMeta = oDataType[fieldName];
             const fieldType = oFieldMeta?.$Type;
-
-            // const oHBox = new sap.m.HBox({
-            //     alignItems: "Center",
-            //     width: "100%"
-            // });
 
             oVBox.addItem(new sap.m.Label({
                 text: item.Label,
@@ -54,8 +46,13 @@ sap.ui.define([
                     new sap.m.Select({
                         name: fieldName,
                         width: "130%",
-                        selectedKey: (oData[fieldName] === true || oData[fieldName] === true) ? true : false,
+                        forceSelection: false,
+                        selectedKey: oData[fieldName] || null,
                         items: [
+                            new sap.ui.core.ListItem({
+                                key: null,
+                                text: "None"
+                            }),
                             new sap.ui.core.ListItem({
                                 key: false,
                                 text: "No"
@@ -63,7 +60,8 @@ sap.ui.define([
                             new sap.ui.core.ListItem({
                                 key: true,
                                 text: "Yes"
-                            })]
+                            })
+                        ]
                     }) :
                     new sap.m.Input({
                         value: oData[fieldName]?.toString() || "",
@@ -72,7 +70,6 @@ sap.ui.define([
                     });
 
             oVBox.addItem(oInput);
-            // oVBox.addItem(oHBox);
         });
         return { oVBox, sPath, oModel, oSelectedContext, };
     }
@@ -104,7 +101,12 @@ sap.ui.define([
                             const oControl = oInputs[i];
 
                             var sFieldName = oControl.getName();
-                            var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+                            var sNewInput;
+                            if (oControl.isA("sap.m.Select")) {
+                                sNewInput = oControl.getSelectedKey() === '' ? null : oControl.getSelectedKey();
+                            } else {
+                                sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+                            }
 
                             oNewEntry[sFieldName] = sNewInput;
                         }
@@ -115,9 +117,10 @@ sap.ui.define([
 
                         var oListBinding = oModel.bindList(sPath),
                             oContext = oListBinding.create(oNewEntry);
+                        
                         oModel.refresh();
-
                         oDialog.close();
+                        oListBinding.refresh(true);
                     }.bind(this)
                 }),
                 endButton: new sap.m.Button({
@@ -138,7 +141,6 @@ sap.ui.define([
             const oDialog = new sap.m.Dialog({
                 title: `Edit Record`,
                 contentWidth: "15%",
-                // contentHeight: "450px",
                 horizontalScrolling: false,
                 beginButton: new sap.m.Button({
                     text: "Edit",
@@ -149,10 +151,15 @@ sap.ui.define([
                             const oControl = oInputs[i];
 
                             var sFieldName = oControl.getName();
-                            var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+                            var sNewInput;
+                            if (oControl.isA("sap.m.Select")) {
+                                sNewInput = oControl.getSelectedKey() === '' ? null : oControl.getSelectedKey();
+                            } else {
+                                sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+                            }
 
                             oSelectedContext.setProperty(sFieldName, sNewInput);
-                        }                  
+                        }
 
                         sap.m.MessageToast.show("Record updated");
                         oDialog.close();

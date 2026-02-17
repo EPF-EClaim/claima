@@ -10,7 +10,6 @@ annotate service.ZRISK with @(
         Insertable: true
     },
     odata.draft.enabled,
-    // Common.DraftRoot.NewAction,
 
     UI                : {
         CreateHidden: false,
@@ -155,8 +154,6 @@ annotate service.ZCLAIM_TYPE with @(
 annotate service.ZNUM_RANGE with @(
     cds.autoexpose,
     Common.SemanticKey: [RANGE_ID],
-
-
     UI                : {
         CreateHidden: true,
         DeleteHidden: true,
@@ -836,7 +833,7 @@ annotate service.ZSTAFF_CAT with @(
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1329,7 +1326,7 @@ annotate service.ZUSER_TYPE with @(
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,

@@ -412,6 +412,13 @@
                     "target": [
                         "ZRATE_KM"
                     ]
+                },
+                {
+                    "pattern": "ZOFFICE_LOCATION",
+                    "name": "ZOFFICE_LOCATION",
+                    "target": [
+                        "ZOFFICE_LOCATION"
+                    ]
                 }
             ],
             "targets": {
@@ -512,6 +519,62 @@
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "RATE_KM_ID,RATE_PER_KM,VEHICLE_TYPE_ID,CLAIM_TYPE_ITEM_ID,RATE,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZOFFICE_LOCATION": {
+                    "type": "Component",
+                    "id": "ZOFFICE_LOCATION",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZOFFICE_LOCATION",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": false,
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "LOCATION_ID,STATE_ID,LOCATION_DESC,LOCATION_GROUP,LEGAL_ENTITY,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -880,7 +943,7 @@
                     "name": "sap.fe.templates.ListReport",
                     "options": {
                         "settings": {
-                            "contextPath": "/ZMARITAL_CAT",
+                            "contextPath": "/ZEMP_VEHICLE",
                             "variantManagement": "None",
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
@@ -903,7 +966,7 @@
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
+                                            "creationFields": "EMP_ID,VEHICLE_NO,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -913,6 +976,13 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1181,13 +1251,6 @@
                                         "enableMassEdit": false
                                     },
                                     "actions": {
-                                        "newCopy": {
-                                            "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Copy"
-                                        },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
                                             "visible": true,
@@ -2576,23 +2639,19 @@
                                         }
                                     },
                                     "actions": {
-                                        "newCopy": {
-                                            "press": "claima.ext.controller.Config.onClickCopy",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": false,
-                                            "text": "Copy"
-                                        },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
                                             "visible": true,
                                             "enabled": true,
                                             "requiresSelection": true,
-                                            "text": "Edit",
-                                            "position": {
-                                                "placement": "After",
-                                                "anchor": "newCopy"
-                                            }
+                                            "text": "Edit"
+                                        },
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
                                         }
                                     }
                                 }
