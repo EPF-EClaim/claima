@@ -138,25 +138,7 @@ annotate service.ZCLAIM_TYPE with @(
                 Value            : CLAIM_TYPE_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Claim Type Description'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'End Date'
-            },              
-            {
-                $Type            : 'UI.DataField',
-                Value            : START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Start Date'
-            },          
-            {
-                $Type            : 'UI.DataField',
-                Value            : STATUS,
-                ![@UI.Importance]: #High,
-                Label            : 'Status'
-            }            
+            }
         ], 
         Facets  : [
             {
@@ -220,7 +202,7 @@ annotate service.ZNUM_RANGE with @(
 annotate service.ZCLAIM_TYPE_ITEM with @(
     cds.autoexpose,
     odata.draft.bypass,
-    Common.SemanticKey: [CLAIM_TYPE_ITEM_ID, CLAIM_TYPE_ID],
+    Common.SemanticKey: [CLAIM_TYPE_ITEM_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -239,76 +221,16 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
         LineItem    : [
             {
                 $Type            : 'UI.DataField',
-                Value            : CLAIM_TYPE_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim Type ID'
-            },              
-            {
-                $Type            : 'UI.DataField',
                 Value            : CLAIM_TYPE_ITEM_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Claim Type Item ID'
-            },          
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_TYPE_ITEM_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Claim Type Item Description'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'End Date'
-            },              
-            {
-                $Type            : 'UI.DataField',
-                Value            : START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Start Date'
-            },          
-            {
-                $Type            : 'UI.DataField',
-                Value            : STATUS,
-                ![@UI.Importance]: #High,
-                Label            : 'Status'
-            }, 
-            {
-                $Type            : 'UI.DataField',
-                Value            : CATEGORY_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Category ID'
-            },              
-            {
-                $Type            : 'UI.DataField',
-                Value            : COST_CENTER,
-                ![@UI.Importance]: #High,
-                Label            : 'Cost Center'
-            },          
-            {
-                $Type            : 'UI.DataField',
-                Value            : GL_ACCOUNT,
-                ![@UI.Importance]: #High,
-                Label            : 'GL Account'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : MATERIAL_CODE,
-                ![@UI.Importance]: #High,
-                Label            : 'Material Code'
-            },          
-            {
-                $Type            : 'UI.DataField',
-                Value            : RISK,
-                ![@UI.Importance]: #High,
-                Label            : 'Risk'
-            }, 
-            {
-                $Type            : 'UI.DataField',
-                Value            : SUBMISSION_TYPE,
-                ![@UI.Importance]: #High,
-                Label            : 'Submission Type'
-            }                                                
+            }
         ]
     }
 );
@@ -1315,24 +1237,6 @@ annotate service.ZJOB_GROUP with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Job Group Description'
             },
-            {
-                $Type            : 'UI.DataField',
-                Value            : START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Start Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'End Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : STATUS,
-                ![@UI.Importance]: #High,
-                Label            : 'Status'
-            }            
         ]
     }
 );
@@ -1371,48 +1275,6 @@ annotate service.ZDEPARTMENT with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Department Description'
             },
-            {
-                $Type            : 'UI.DataField',
-                Value            : START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Start Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'End Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : STATUS,
-                ![@UI.Importance]: #High,
-                Label            : 'Status'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : HEAD_OF_DEPARTMENT,
-                ![@UI.Importance]: #High,
-                Label            : 'Head of Department'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : SHORT_CODE,
-                ![@UI.Importance]: #High,
-                Label            : 'Short Code'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : COST_CENTER,
-                ![@UI.Importance]: #High,
-                Label            : 'Cost Center'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : DIVISION,
-                ![@UI.Importance]: #High,
-                Label            : 'Division'
-            }                                               
         ]
     }
 );
@@ -1451,24 +1313,6 @@ annotate service.ZROLE with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Role Description'
             },
-            {
-                $Type            : 'UI.DataField',
-                Value            : START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Start Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'End Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : STATUS,
-                ![@UI.Importance]: #High,
-                Label            : 'Status'
-            }            
         ]
     }
 );
@@ -1507,24 +1351,6 @@ annotate service.ZUSER_TYPE with @(
                 ![@UI.Importance]: #High,
                 Label            : 'User Type Description'
             },
-            {
-                $Type            : 'UI.DataField',
-                Value            : START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Start Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'End Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : STATUS,
-                ![@UI.Importance]: #High,
-                Label            : 'Status'
-            }            
         ]
     }
 );
@@ -1563,24 +1389,6 @@ annotate service.ZEMP_TYPE with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Employee Type Description'
             },
-            {
-                $Type            : 'UI.DataField',
-                Value            : START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Start Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'End Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : STATUS,
-                ![@UI.Importance]: #High,
-                Label            : 'Status'
-            }            
         ]
     }
 );
@@ -1619,24 +1427,6 @@ annotate service.ZREGION with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Region Description'
             },
-            {
-                $Type            : 'UI.DataField',
-                Value            : START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Start Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'End Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : STATUS,
-                ![@UI.Importance]: #High,
-                Label            : 'Status'
-            }            
         ]
     }
 );
@@ -1645,7 +1435,7 @@ annotate service.ZRATE_KM with @(
     cds.autoexpose,
     odata.draft.bypass,
     Common.SemanticKey: [
-        RATE_KM_ID
+        ROLE_ID
     ],
     Capabilities      : {
         Deletable : true,
@@ -1668,6 +1458,12 @@ annotate service.ZRATE_KM with @(
                 Value            : RATE_KM_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Rate KM ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RATE_PER_KM,
+                ![@UI.Importance]: #High,
+                Label            : 'Rate Per KM'
             },
             {
                 $Type            : 'UI.DataField',
@@ -2086,14 +1882,68 @@ annotate service.ZINDIV_GROUP with @(
     }
 );
 
+annotate service.ZPREAPPROVAL_STATUS with @(
+    cds.autoexpose,
+    odata.draft.bypass,
+    Common.SemanticKey: [
+        PREAPPROVAL_STATUS_ID
+    ],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZPREAPPROVAL_STATUS',
+            TypeNamePlural: 'ZPREAPPROVAL_STATUS',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : PREAPPROVAL_STATUS_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Pre-Approval Status ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PREAPPROVAL_STATUS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Pre-Approval Status Description'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },            
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
 annotate service.ZEMP_VEHICLE with @(
     cds.autoexpose,
     odata.draft.bypass,
     Common.SemanticKey: [
         EMP_ID,
-        VEHICLE_NO,
-        START_DATE,
-        END_DATE
+        VEHICLE_NO
     ],
     Capabilities      : {
         Deletable : true,
@@ -2668,62 +2518,6 @@ annotate service.ZLENDER_NAME with @(
                 Value            : LENDER_NAME,
                 ![@UI.Importance]: #High,
                 Label            : 'Lender Name'
-            },  
-            {
-                $Type            : 'UI.DataField',
-                Value            : START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Start Date'
-            },                       
-            {
-                $Type            : 'UI.DataField',
-                Value            : END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'End Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : STATUS,
-                ![@UI.Importance]: #High,
-                Label            : 'Status'
-            }                                        
-        ]
-    }
-);
-
-annotate service.ZREJECT_REASON with @(
-    cds.autoexpose,
-    odata.draft.bypass,
-    Common.SemanticKey: [
-        REJECT_REASON_ID
-    ],
-    Capabilities      : {
-        Deletable : true,
-        Updatable : true,
-        Insertable: true
-    },
-    odata.draft.enabled,
-
-    UI                : {
-        CreateHidden: false,
-        DeleteHidden: false,
-        HeaderInfo  : {
-            $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZREJECT_REASON',
-            TypeNamePlural: 'ZREJECT_REASON',
-        },
-        LineItem    : [
-            {
-                $Type            : 'UI.DataField',
-                Value            : REJECT_REASON_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Reject Reason ID'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : REJECT_REASON_DESC,
-                ![@UI.Importance]: #High,
-                Label            : 'Reject Reason Description'
             },  
             {
                 $Type            : 'UI.DataField',
