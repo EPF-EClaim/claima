@@ -161,7 +161,7 @@ entity ZREQ_ITEM_PART: managed  {
         ALLOCATED_AMOUNT     : Decimal;
         ZEMP_MASTER          : Association to one ZEMP_MASTER
                                     on ZEMP_MASTER.EEID = PARTICIPANTS_ID;
-}
+} 
 
 entity ZREQUEST_TYPE : managed {
     key REQUEST_TYPE_ID   : String
