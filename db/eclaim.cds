@@ -604,7 +604,6 @@ entity ZVEHICLE_TYPE : managed {
 
 entity ZRATE_KM : managed {
     key RATE_KM_ID          : String(2) @mandatory  @Common.Label: 'Rate KM ID';
-        RATE_PER_KM         : Decimal   @Common.Label: 'Rate Per KM';
         VEHICLE_TYPE_ID     : String  @Common.Label: 'Vehicle ID';
         CLAIM_TYPE_ITEM_ID  : String  @Common.Label: 'Claim Type Item ID';
         RATE                : Decimal @Common.Label: 'Rate';
@@ -766,14 +765,6 @@ entity ZTRAIN_COURSE_PART: managed {
                                 on ZSTATUS.STATUS_ID = CLAIM_STATUS;  
         ZCLAIM_HEADER       : Association to ZCLAIM_HEADER
                                 on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
-}
-
-entity ZPREAPPROVAL_STATUS: managed {
-    key PREAPPROVAL_STATUS_ID   : String @mandatory @Common.Label: 'Pre-Approval Status ID';
-        PREAPPROVAL_STATUS_DESC : String @Common.Label: 'Pre-Approval Status Description';
-        START_DATE              : Date @Common.Label: 'Start Date';
-        END_DATE                : Date @Common.Label: 'End Date';
-        STATUS                  : String @Common.Label: 'Status';      
 }
 
 entity ZMARITAL_CAT: managed {
