@@ -1,0 +1,109 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:l="sap.ui.layout"
+    xmlns:f="sap.ui.layout.form"
+>
+    <Dialog id="dialog_claimprocess" title="{i18n>dialog_claimprocess}" contentWidth="50em">
+
+            <!-- Form Layout -->
+            <f:SimpleForm
+                editable="true"
+                layout="ResponsiveGridLayout"
+                labelSpanXL="4"
+                labelSpanL="4"
+                labelSpanM="4"
+                labelSpanS="12"
+                adjustLabelSpan="false"
+                emptySpanXL="2"
+                emptySpanL="2"
+                emptySpanM="2"
+                emptySpanS="0"
+                columnsM="1"
+                columnsL="1"
+                columnsXL="1"
+                singleContainerFullSize="false" >
+                <f:content>
+                    <!-- Claim Type -->
+                    <Label text="{i18n>label_claimprocess_claimtype}" />
+                    <Select
+                        id="select_claimprocess_claimtype"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claimtype/type}"
+                        items="{
+                            path: 'employee>/ZCLAIM_TYPE',
+                            sorter: [
+                                { path: 'CLAIM_TYPE_DESC' },
+                                { path: 'CLAIM_TYPE_ID' }
+                            ]
+                        }"
+                        change="onSelect_ClaimProcess_ClaimType"
+                        liveChange="onSelect_ClaimProcess_ClaimType"
+                    >
+                        <core:Item key="{employee>CLAIM_TYPE_ID}" text="{employee>CLAIM_TYPE_DESC}" />
+                    </Select>
+
+                    <!-- Claim Item -->
+                    <Label text="{i18n>label_claimprocess_claimitem}" />
+                    <Select
+                        id="select_claimprocess_claimitem"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claimtype/item}"
+                        editable="false"
+                        change="onSelect_ClaimProcess_ClaimItem"
+                        liveChange="onSelect_ClaimProcess_ClaimItem"
+                    >
+                    </Select>
+
+                    <!-- Category -->
+                    <Label text="{i18n>label_claimprocess_category}" />
+                    <Input
+                        id="input_claimprocess_category"
+                        value="{claimsubmission_input>/claimtype/descr/category}"
+                        editable="false"
+                    />
+
+                    <!-- Select Request Form (Pre-Approval) -->
+                    <Label text="{i18n>label_claimprocess_requestform}" />
+                    <Select
+                        id="select_claimprocess_requestform"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claimtype/requestform}"
+                        enabled="false"
+                        editable="false"
+                        visible="false"
+                        change="onSelect_ClaimProcess_RequestForm"
+                        liveChange="onSelect_ClaimProcess_RequestForm"
+                    >
+                    </Select>
+                </f:content>
+            </f:SimpleForm>
+     
+		<buttons>
+            <!-- Create Pre-Approval Request -->
+            <Button
+                id="button_claimprocess_preapproval"
+                press="onPreApproval_ClaimProcess"
+                text="{i18n>button_claimprocess_preapproval}"
+                enabled="false"
+                visible="false"
+            />
+
+            <!-- Start Claim -->
+            <Button
+                id="button_claimprocess_startclaim"
+                press="onStartClaim_ClaimProcess"
+                text="{i18n>button_claimprocess_startclaim}"
+                enabled="false"
+            />
+
+            <!-- Cancel -->
+			<Button
+                id="button_claimprocess_cancel"
+                press="onCancel_ClaimProcess"
+                text="{i18n>button_claimprocess_cancel}"
+            />
+        </buttons>     
+    </Dialog>
+</core:FragmentDefinition>
