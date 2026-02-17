@@ -25,16 +25,16 @@
             <OverflowToolbar
                 height="3rem"
                 style="Clear">
-                <m:Title text="{i18n>req_form_detail_title} ({view>/totalCount})" titleStyle="H3" />
+                <m:Title text="{i18n>req_form_detail_title} ({= ${request>/list_count} })" titleStyle="H3" />
                 <m:ToolbarSpacer />
-                <m:Button text="{i18n>req_b_create_item}"   type="Emphasized"   icon="sap-icon://add"       press=".onPressAddItem"></m:Button>
-                <m:Button text="{i18n>req_b_edit}"          type="Default"      press=".onSelectEdit" />
-                <m:Button text="{i18n>req_b_delete}"        type="Default"      press=".onRowDeleteReqItem" />
+                <m:Button text="{i18n>req_b_create_item}"   type="Emphasized"   icon="sap-icon://add"       press=".onAddItem"          enabled="{= ${request>/view} !== 'view' }" />
+                <m:Button text="{i18n>req_b_edit}"          type="Default"                                  press=".onSelectEdit"       enabled="{= ${request>/view} !== 'view' }"/>
+                <m:Button text="{i18n>req_b_delete}"        type="Default"                                  press=".onRowDeleteReqItem" enabled="{= ${request>/view} !== 'view' }" />
             </OverflowToolbar>
             <VBox rowGap="1rem">
                 <table:Table 
-                    id="req_item_table2"
-                    rows="{/req_item_rows}"
+                    id="req_item_table"
+                    rows="{request>/req_item_rows}"
                     columnHeaderHeight="3rem"
                     selectionMode="MultiToggle"
                     ariaLabelledBy="title"
@@ -43,33 +43,35 @@
                     <table:Column  width="25rem">
                         <m:Label text="{i18n>req_i_claim_type}"></m:Label>
                         <table:template>
-                            <m:Text text="{claim_type}" wrapping="false" />
+                            <m:Text text="{request>CLAIM_TYPE_ID}" wrapping="false" />
                         </table:template>
                     </table:Column>
                     <table:Column  width="25rem">
                         <m:Label text="{i18n>req_i_claim_type_item}"></m:Label>
                         <table:template>
-                            <m:Text text="{claim_type_item}" wrapping="false" />
+                            <m:Text text="{request>CLAIM_TYPE_ITEM_ID}" wrapping="false" />
                         </table:template>
                     </table:Column>
                     <table:Column  width="15rem">
                         <m:Label text="{i18n>req_i_est_amt}"></m:Label>
                         <table:template>
-                            <unified:Currency value="{est_amount}" currency="{curenncy_code}"/>
+                            <unified:Currency value="{request>EST_AMOUNT}" 
+                                              currency="MYR" 
+                                              useSymbol="true"/>
                         </table:template>
                     </table:Column>
                     <table:Column  width="15rem">
                         <m:Label text="{i18n>req_i_estparticipant}"></m:Label>
                         <table:template>
-                            <m:Text text="{est_no_of_participant}" wrapping="false" />
+                            <m:Text text="{request>EST_NO_PARTICIPANT}" />
                         </table:template>
                     </table:Column>
                     <table:rowActionTemplate>
                         <table:RowAction> 
                             <table:items>
-                                <!-- <table:RowActionItem icon="sap-icon://edit" text="{i18n>req_b_edit}"        press=".onSelectEdit"/> -->
-                                <table:RowActionItem type="Delete"          press=".onRowDeleteReqItem"/>
-                                <table:RowActionItem type="Navigation"      press=".onSelectEdit"/>
+                                <table:RowActionItem type="Delete"      press=".onRowDeleteReqItem" visible="{= ${request>/view} !== 'view' }"/>
+                                <table:RowActionItem type="Navigation"  press=".onOpenItemEdit"    visible="{= ${request>/view} !== 'view' }" />
+                                <table:RowActionItem type="Navigation"  press=".onOpenItemView"    visible="{= ${request>/view} === 'view' }"/>
                             </table:items>
                         </table:RowAction>
                     </table:rowActionTemplate>

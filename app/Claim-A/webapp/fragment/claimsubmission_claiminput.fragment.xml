@@ -1,0 +1,169 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:l="sap.ui.layout"
+    xmlns:f="sap.ui.layout.form"
+	xmlns:u="sap.ui.unified"
+>
+    <Dialog id="dialog_claiminput" title="{i18n>dialog_claiminput}" contentWidth="50em">
+
+            <!-- Form Layout -->
+            <f:SimpleForm
+                editable="true"
+                layout="ResponsiveGridLayout"
+                labelSpanXL="4"
+                labelSpanL="4"
+                labelSpanM="4"
+                labelSpanS="12"
+                adjustLabelSpan="false"
+                emptySpanXL="2"
+                emptySpanL="2"
+                emptySpanM="2"
+                emptySpanS="0"
+                columnsM="1"
+                columnsL="1"
+                columnsXL="1"
+                singleContainerFullSize="false" >
+                <f:content>
+                    <!-- Report Purpose -->
+                    <Label text="{i18n>label_claiminput_purpose}" />
+                    <Input
+                        id="input_claiminput_purpose"
+                        value="{claimsubmission_input>/claimheader/purpose}"
+                        required="true"
+                    />
+                    
+                    <!-- Claim Type -->
+                    <Label text="{i18n>label_claiminput_claimtype}" />
+                    <Text
+                        id="text_claiminput_claimtype"
+                        text="{claimsubmission_input>/claimheader/descr/claimtype}"
+                    />
+                    
+                    <!-- Claim Item -->
+                    <Label text="{i18n>label_claiminput_claimitem}" />
+                    <Text
+                        id="text_claiminput_claimitem"
+                        text="{claimsubmission_input>/claimheader/descr/claimitem}"
+                    />
+                    
+                    <!-- Submission Type -->
+                    <Label text="{i18n>label_claiminput_subtype}" />
+                    <Text
+                        id="text_claiminput_subtype"
+                        text="{claimsubmission_input>/claimheader/descr/subtype}"
+                        visible="false"
+                    />
+
+                    <!-- Pre-Approval Request -->
+                    <Label text="{i18n>label_claiminput_preapprovalreq}" />
+                    <Text
+                        id="text_claiminput_preapprovalreq"
+                        text="{claimsubmission_input>/claimheader/reqform} {claimsubmission_input>/claimheader/descr/reqform}"
+                        visible="false"
+                    />
+
+                    <!-- Approved Amount (MYR) -->
+                    <Label text="{i18n>label_claiminput_amtapproved}" />
+                    <Text
+                        id="text_claiminput_amtapproved"
+                        text="{claimsubmission_input>/claimheader/amt_approved}"
+                        visible="false"
+                    />
+
+                    <!-- Trip Start Date -->
+                    <Label text="{i18n>label_claiminput_tripstartdate}" />
+                    <DatePicker
+                        id="datepicker_claiminput_tripstartdate"
+                        value="{claimsubmission_input>/claimheader/trip_startdate}"
+                        required="true"
+                        displayFormat="dd-MMM-yyyy"
+                        />
+
+                    <!-- Trip End Date -->
+                    <Label text="{i18n>label_claiminput_tripenddate}" />
+                    <DatePicker
+                        id="datepicker_claiminput_tripenddate"
+                        value="{claimsubmission_input>/claimheader/trip_enddate}"
+                        required="true"
+                        displayFormat="dd-MMM-yyyy"
+                        />
+
+                    <!-- Event Start Date -->
+                    <Label text="{i18n>label_claiminput_eventstartdate}" />
+                    <DatePicker
+                        id="datepicker_claiminput_eventstartdate"
+                        value="{claimsubmission_input>/claimheader/event_startdate}"
+                        displayFormat="dd-MMM-yyyy"
+                        />
+
+                    <!-- Event End Date -->
+                    <Label text="{i18n>label_claiminput_eventenddate}" />
+                    <DatePicker
+                        id="datepicker_claiminput_eventenddate"
+                        value="{claimsubmission_input>/claimheader/event_enddate}"
+                        displayFormat="dd-MMM-yyyy"
+                        />
+
+                    <!-- Location -->
+                    <Label text="{i18n>label_claiminput_location}" />
+                    <Input
+                        id="input_claiminput_location"
+                        value="{claimsubmission_input>/claimheader/location}"
+                    />
+
+                    <!-- Alternate Cost Center -->
+                    <Label text="{i18n>label_claiminput_altcc}" />
+                    <Select
+                        id="select_claiminput_altcc"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claimheader/altcc}"
+                        items="{
+                            path: 'employee>/ZCOST_CENTER',
+                            sorter: { path: 'COST_CENTER_ID' }
+                        }"
+                    >
+                        <core:Item key="{employee>COST_CENTER_ID}" text="{employee>COST_CENTER_ID} {employee>COST_CENTER_DESC}" />
+                    </Select>
+                    
+                    <!-- Attachment Email Approval -->
+                    <Label text="{i18n>label_claiminput_attachment}" />
+                    <u:FileUploader
+                        id="fileuploader_claiminput_attachment"
+                        name="fileUploaderClaimInputAttachment"
+                        uploadUrl="upload/"
+                        uploadComplete="onUploadComplete_ClaimInput_Attachment"
+                        typeMissmatch="onTypeMissmatch_ClaimInput_Attachment"
+                        style="Emphasized"
+                        fileType="pdf"
+                    >
+                    </u:FileUploader>
+
+                    <!-- Comment -->
+                    <Label text="{i18n>label_claiminput_comment}" />
+                    <Input
+                        id="input_claiminput_comment"
+                        value="{claimsubmission_input>/claimheader/comment}"
+                        required="true"
+                    />
+                </f:content>
+            </f:SimpleForm>
+     
+		<buttons>
+            <!-- Claim Submission -->
+            <Button
+                id="button_claiminput_claimsubmission"
+                press="onClaimSubmission_ClaimInput"
+                text="{i18n>button_claiminput_claimsubmission}"
+            />
+
+            <!-- Cancel -->
+			<Button
+                id="button_claiminput_cancel"
+                press="onCancel_ClaimInput"
+                text="{i18n>button_claiminput_cancel}"
+            />
+        </buttons>     
+    </Dialog>
+</core:FragmentDefinition>
