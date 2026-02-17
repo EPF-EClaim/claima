@@ -938,4 +938,3 @@ entity ZREJECT_REASON: managed {
         STATUS              : String @Common.Label: 'Status';     
 }
 
-
