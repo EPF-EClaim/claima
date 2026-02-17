@@ -1,0 +1,54 @@
+{
+    "view" : "view",
+    "req_header": {
+        "purpose"         : "",
+        "reqtype"         : "travel",
+        "tripstartdate"   : "",
+        "tripenddate"     : "",
+        "eventstartdate"  : "",
+        "eventenddate"    : "",
+        "grptype"         : "individual",
+        "location"        : "",
+        "transport"       : "",
+        "altcostcenter"   : "",
+        "doc1"            : "",
+        "doc2"            : "",
+        "comment"         : "", 
+        "eventdetail1"    : "",
+        "eventdetail2"    : "",
+        "eventdetail3"    : "",
+        "eventdetail4"    : "",
+        "reqid"           : "",
+        "reqstatus"       : "",
+        "costcenter"      : "",
+        "cashadvamt"      : 0,
+        "reqamt"          : 0,
+        "totalamt"        : 0
+    },
+    "req_item_rows": [
+        {"claim_type": "Testing Claim Type 01", "claim_type_item": "CTI01", "est_amount": 10100,  "currency_code": "MYR", "est_no_of_participant": 10},
+        {"claim_type": "Testing Claim Type 02", "claim_type_item": "CTI01", "est_amount": 100670, "currency_code": "MYR", "est_no_of_participant": 10},
+        {"claim_type": "Testing Claim Type 03", "claim_type_item": "CTI01", "est_amount": 100230, "currency_code": "MYR", "est_no_of_participant": 10},
+        {"claim_type": "Testing Claim Type 04", "claim_type_item": "CTI01", "est_amount": 1000,   "currency_code": "MYR", "est_no_of_participant": 10},
+        {"claim_type": "Testing Claim Type 05", "claim_type_item": "CTI01", "est_amount": 10300,  "currency_code": "MYR", "est_no_of_participant": 10}
+    ],
+    "req_item": {
+        "req_id": "",
+        "req_subid": "",
+        "claim_type": "",
+        "claim_type_item": "",
+        "est_amount": 0,
+        "est_no_participant": 0,
+        "cash_advance": false,
+        "start_date": "",
+        "end_date": "",
+        "location": "",
+        "remarks": ""
+    },
+    "participant" : [
+        {
+            "PARTICIPANT_ID": "",
+            "ALLOCATED_AMOUNT": ""
+        }
+    ]
+}

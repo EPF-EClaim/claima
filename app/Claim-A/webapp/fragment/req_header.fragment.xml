@@ -18,103 +18,114 @@
             id="req_header1"
             layout="ColumnLayout"
             editable="false" >
-            <form:layout><form:ColumnLayout /></form:layout>
+            <form:layout><form:ColumnLayout columnsL="2" columnsM="2" /></form:layout>
             <form:formContainers>
                 <form:FormContainer >
                     <form:formElements>
                         <form:FormElement label="{i18n>req_purpose}">
                             <form:fields>
-                                <Text text="{request>/purpose}" />
+                                <Text text="{request>/req_header/purpose}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_id}">
                             <form:fields>
-                                <Text text="{request>/reqid}" />
+                                <Text text="{request>/req_header/reqid}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_tripstartdate}">
                             <form:fields>
-                                <Text text="{request>/tripstartdate}" />
+                                <Text text="{request>/req_header/tripstartdate}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_tripenddate}">
                             <form:fields>
-                                <Text text="{request>/tripenddate}" />
+                                <Text text="{request>/req_header/tripenddate}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_eventstartdate}">
                             <form:fields>
-                                <Text text="{request>/eventstartdate}" />
+                                <Text text="{request>/req_header/eventstartdate}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_eventenddate}">
                             <form:fields>
-                                <Text text="{request>/eventenddate}" />
+                                <Text text="{request>/req_header/eventenddate}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_location}">
                             <form:fields>
-                                <Text text="{request>/location}" />
+                                <Text text="{request>/req_header/location}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_grptype}">
                             <form:fields>
-                                <Text text="{request>/grptype}" />
+                                <Text text="{request>/req_header/grptype}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_transport}">
                             <form:fields>
-                                <Text text="{request>/transport}" />
+                                <Text text="{request>/req_header/transport}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_status}">
                             <form:fields>
-                                <Text text="{request>/reqstatus}" />
+                                <Text text="{request>/req_header/reqstatus}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_cc}">
                             <form:fields>
-                                <Text text="{request>/costcenter}" />
+                                <Text text="{request>/req_header/costcenter}"/>
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_acc}">
                             <form:fields>
-                                <Text text="{request>/altcostcenter}" />
+                                <Text text="{request>/req_header/altcostcenter}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_caa}">
                             <form:fields>
-                                <Text text="{request>/cashadvamt}" ></Text>
+                                <Text text="{
+                                            path: 'request>/req_header/cashadvamt',
+                                            type: 'sap.ui.model.type.Float',
+                                            formatOptions: {
+                                                minFractionDigits: 2,
+                                                maxFractionDigits: 2,
+                                                groupingEnabled: true
+                                            }}" 
+                                        textDirection="RTL"></Text>
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_amt}">
                             <form:fields>
-                                <Text text="{request>/reqamt}" ></Text>
-                            </form:fields>
-                        </form:FormElement>
-                        <form:FormElement label="{i18n>req_total_amt}">
-                            <form:fields>
-                                <Text text="{request>/totalamt}" ></Text>
+                                <Text text="{
+                                            path: 'request>/req_header/reqamt',
+                                            type: 'sap.ui.model.type.Float',
+                                            formatOptions: {
+                                                minFractionDigits: 2,
+                                                maxFractionDigits: 2,
+                                                groupingEnabled: true
+                                            }}" 
+                                        textDirection="RTL"></Text>
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_rtype}">
                             <form:fields>
-                                <Text text="{request>/reqtype}" />
+                                <Text text="{request>/req_header/reqtype}" />
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_comment}">
                             <form:fields>
-                                <Text text="{request>/comment}"/>
+                                <Text text="{request>/req_header/comment}"/>
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_attach1}">
                             <form:fields>
-                                <Text text="{request>/doc1}"/>
+                                <Text text="{request>/req_header/doc1}"/>
                             </form:fields>
                         </form:FormElement>
                         <form:FormElement label="{i18n>req_attach2}">
                             <form:fields>
-                                <Text text="{request>/doc2}"/>
+                                <Text text="{request>/req_header/doc2}"/>
                             </form:fields>
                         </form:FormElement>
                     </form:formElements>

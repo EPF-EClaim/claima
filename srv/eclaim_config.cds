@@ -56,7 +56,6 @@ annotate service.ZRISK with @(
 
 annotate service.ZREQUEST_TYPE with @(
     cds.autoexpose,
-    odata.draft.bypass,
     Common.SemanticKey: [REQUEST_TYPE_ID],
     Capabilities      : {
         Deletable : true,
@@ -238,12 +237,6 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
             TypeNamePlural: 'ZCLAIM_TYPE_ITEM',
         },
         LineItem    : [
-            // {
-            //     $Type              : 'UI.DataFieldForAction',
-            //     Action             : 'eclaim_srv.Copy',
-            //     ![@UI.IsCopyAction]: true,
-            //     Label              : 'Copy'
-            // },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_TYPE_ID,
@@ -1547,7 +1540,7 @@ annotate service.ZEMP_TYPE with @(
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
