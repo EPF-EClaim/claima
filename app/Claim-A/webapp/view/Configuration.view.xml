@@ -50,7 +50,7 @@
             </f:Card>
 
             <f:Card
-                id="ZCLAIM_TYPE"
+                id="ZCLAIM_TYPEList"
                 class="sapUiSmallMargin"
                 width="15rem"
                 press="onOpenConfigTable"
@@ -418,17 +418,7 @@
                 width="15rem"
                 press="onOpenConfigTable">
                 <f:header>
-                    <cards:Header title="ZAPPROVAL_2" />
-                </f:header>
-            </f:Card>
-
-            <f:Card
-                id="ZPREAPPROVAL_STATUS"
-                class="sapUiSmallMargin"
-                width="15rem"
-                press="onOpenConfigTable">
-                <f:header>
-                    <cards:Header title="ZPREAPPROVAL_STATUS" />
+                    <cards:Header title="ZAPPROVAL_1" />
                 </f:header>
             </f:Card>
 
