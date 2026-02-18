@@ -5,7 +5,7 @@ namespace ECLAIMVIEW;
 entity ZEMP_REQUEST_VIEW
   as projection on ECLAIM.ZREQUEST_HEADER {
     key REQUEST_ID,        
-        EMP_ID,    
+        EMP_ID,        
         ZEMP_MASTER.CC,        
         OBJECTIVE_PURPOSE,
         REQUEST_TYPE_ID,

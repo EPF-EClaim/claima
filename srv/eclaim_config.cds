@@ -1,3 +1,4 @@
+
 using {eclaim_srv as service} from './eclaim_srv';
 
 annotate service.ZRISK with @(
@@ -1317,7 +1318,7 @@ annotate service.ZJOB_GROUP with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }              
         ]
     }
 );
@@ -1397,7 +1398,7 @@ annotate service.ZDEPARTMENT with @(
                 Value            : DIVISION,
                 ![@UI.Importance]: #High,
                 Label            : 'Division'
-            }                                               
+            }                                            
         ]
     }
 );
@@ -1453,7 +1454,7 @@ annotate service.ZROLE with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }         
         ]
     }
 );
@@ -1509,7 +1510,7 @@ annotate service.ZUSER_TYPE with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }         
         ]
     }
 );
@@ -1525,7 +1526,7 @@ annotate service.ZEMP_TYPE with @(
         Updatable : true,
         Insertable: true
     },
-    odata.draft.enabled,
+    //odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1565,7 +1566,7 @@ annotate service.ZEMP_TYPE with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }        
         ]
     }
 );
@@ -1621,7 +1622,7 @@ annotate service.ZREGION with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }          
         ]
     }
 );

@@ -33,41 +33,6 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.App", {
 		onInit: function () {
-			
-			// oViewModel
-			const oViewModel = new sap.ui.model.json.JSONModel({
-				rtype: "" // current selected request type
-			});
-			this.getView().setModel(oViewModel, "view");
-
-			// oRequestModel
-			const oRequestModel = new JSONModel({
-				purpose: "",
-				reqtype: "travel",
-				tripstartdate: "",
-				tripenddate: "",
-				eventstartdate: "",
-				eventenddate: "",
-				grptype: "individual",
-				location: "",
-				transport: "",
-				altcostcenter: "",
-				doc1: "",
-				doc2: "",
-				comment: "",
-				eventdetail1: "",
-				eventdetail2: "",
-				eventdetail3: "",
-				eventdetail4: "",
-				reqid: "",
-				reqstatus: "",
-				costcenter: "",
-				cashadvamt: 0,
-				reqamt: 0,
-				totalamt: 0
-			});
-			this.getView().setModel(oRequestModel, "request");
-
 			// Claim Submission Model
 			var oClaimSubmissionModel = new JSONModel({
 				"employee": {
@@ -1534,10 +1499,7 @@ sap.ui.define([
 			} else if (id === "container-claima---App--dashboard-request" || id === "application-app-preview-component---App--dashboard-request") {
 				this.byId("pageContainer").to(this.getView().createId("myreport")); //Aiman Salim Start Add 10/02/2026 - Change myreport to myrequest
 			}
-
 		},
-
-
 
 		_getTexti18n: function (i18nKey, array_i18nParameters) {
 			if (array_i18nParameters) {
