@@ -23,6 +23,14 @@
                     "annotations": [],
                     "odataVersion": "4.0"
                 }
+            },
+            "claimService": {
+                "uri": "/odata/v4/eclaim-view-srv/",
+                "type": "OData",
+                "settings": {
+                    "annotations": [],
+                    "odataVersion": "4.0"
+                }
             }
         },
         "crossNavigation": {
@@ -74,6 +82,15 @@
         "models": {
             "employee": {
                 "dataSource": "mainService",
+                "preload": true,
+                "settings": {
+                    "operationMode": "Server",
+                    "autoExpandSelect": true,
+                    "earlyRequests": true
+                }
+            },
+            "employee_view": {
+                "dataSource": "claimService",
                 "preload": true,
                 "settings": {
                     "operationMode": "Server",

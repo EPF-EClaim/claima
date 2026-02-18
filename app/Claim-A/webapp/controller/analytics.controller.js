@@ -8,8 +8,10 @@ sap.ui.define([
     "sap/m/Button",
     "sap/m/Input",
     "sap/m/Label",
-    "sap/m/VBox"
-], function (Controller, MessageToast, Fragment, Spreadsheet, Dialog, Button, Input, Label, VBox) {
+    "sap/m/VBox",
+    // Added: JSONModel import (best practice)
+    "sap/ui/model/json/JSONModel"
+], function (Controller, MessageToast, Fragment, Spreadsheet, Dialog, Button, Input, Label, VBox, JSONModel) {
     "use strict";
 
     // --- helpers (NEW) ---
@@ -23,7 +25,7 @@ sap.ui.define([
             .substring(0, 80);
     }
 
-    const TABLE_ID = "analyticsclaimsumtab"; // <-- adjust this to the actual sap.ui.mdc.Table id
+    const TABLE_ID = "analyticsclaimsumtab"; // (kept for future use)
 
     return Controller.extend("claima.controller.analytics", {
 
@@ -39,7 +41,7 @@ sap.ui.define([
                 sTarget = oCD?.getValue?.();
             }
             if (!sTarget) {
-                sap.m.MessageToast.show("Configuration issue: target not found on the pressed button.");
+                MessageToast.show("Configuration issue: target not found on the pressed button.");
                 return;
             }
             this._analyticsTarget = sTarget;
@@ -47,7 +49,8 @@ sap.ui.define([
             // small VM
             const mFlags = this.getVisibilityForTarget(sTarget);
             if (!this._oAnalyticsVM) {
-                this._oAnalyticsVM = new sap.ui.model.json.JSONModel(mFlags);
+                // ✅ use imported JSONModel instead of global
+                this._oAnalyticsVM = new JSONModel(mFlags);
                 this.getView().setModel(this._oAnalyticsVM, "anaVM");
             } else {
                 this._oAnalyticsVM.setData(mFlags);
@@ -105,24 +108,22 @@ sap.ui.define([
         // Fragment-based navigation helper
         _navToFragmentTarget: async function (sTarget) {
             const mTargetToFragment = {
-                // map your target keys to fragment names
                 analyticsClaimReportSummary: "claima.fragment.analyticsclaimreportsummary",
                 analyticsClaimReportDetails: "claima.fragment.analyticsclaimreport",
-                preApprovedSummary: "claima.fragment.analyticsreqreportsummary.",
+                preApprovedSummary: "claima.fragment.analyticsreqreportsummary",
                 preApprovedDetails: "claima.fragment.analyticsreqreport"
             };
 
             const sFragmentName = mTargetToFragment[sTarget];
             if (!sFragmentName) {
-                sap.m.MessageToast.show("Unknown target: " + sTarget);
+                MessageToast.show("Unknown target: " + sTarget);
                 return;
             }
 
-            // Get the main NavContainer
             const oRoot = this.getOwnerComponent().getRootControl();
             const oNav = oRoot && oRoot.byId("pageContainer");
             if (!oNav) {
-                sap.m.MessageToast.show("Main NavContainer not found.");
+                MessageToast.show("Main NavContainer not found.");
                 return;
             }
 
@@ -133,16 +134,29 @@ sap.ui.define([
             if (!this._pages[sCacheKey]) {
                 try {
                     const oPage = await sap.ui.core.Fragment.load({
-                        id: oRoot.getId(), // prefix with App View ID
+                        id: oRoot.getId(), //
                         name: sFragmentName,
                         controller: this
                     });
+
+                    const oClaimModel = this.getOwnerComponent().getModel("employee_view");
+                    if (!oClaimModel) {
+                        console.error("OData V4 model 'employee_view' not found in component.");
+                        MessageToast.show("Model 'employee_view' is missing (check manifest.json).");
+                    } else {
+                        oPage.setModel(oClaimModel, "employee_view");
+                    }
+
                     oNav.addPage(oPage);
                     this._pages[sCacheKey] = oPage;
 
+
+                    // The delegate ('sap/ui/mdc/TableDelegate') with payload { modelName, collectionName }
+                    // will auto-bind to /ZEMP_CLAIM_REPORT_SUMMARY on the 'employee_view' model.
+
                 } catch (e) {
                     console.error("Failed to load fragment '" + sFragmentName + "':", e);
-                    sap.m.MessageToast.show("Failed to open the selected page (see console).");
+                    MessageToast.show("Failed to open the selected page (see console).");
                     return;
                 }
             }
@@ -290,21 +304,6 @@ sap.ui.define([
 
         // Actually perform the export via OData V4 (XLSX)
         _exportSpreadsheet: async function (sFileName) {
-            /*             const oTable = this._getMdcTable();
-                        if (!oTable || !oTable.isA?.("sap.ui.mdc.Table")) {
-                            MessageToast.show("Export failed: table not found. Please check TABLE_ID.");
-                            return;
-                        }
-                        const oBinding = oTable.getRowBinding(); // OData V4 ListBinding
-            
-                        // Guard: empty result
-                        try { await oBinding.requestContexts(0, 1); } catch (e) { }
-                        if (oBinding.getLength() === 0) {
-                            MessageToast.show("Nothing to export. Adjust filters and try again.");
-                            return;
-                        } */
-
-            // Excel columns (labels, property names, types)
             const aCols = [
                 { label: "Employee", property: "employee", type: "string" },
                 { label: "Personal Grade", property: "personal_grade", type: "string" },
@@ -316,50 +315,24 @@ sap.ui.define([
                 { label: "Total Amount", property: "total_req_amt", type: "number", scale: 2, delimiter: true }
             ];
 
-            //Comment off since no test data
-            /*             // service URL from manifest (adjust the dataSource name if yours differs)
-                        const sServiceUrl = this.getOwnerComponent()
-                            .getManifestEntry("/sap.app/dataSources/mainService/uri");
-            
-                        const oSettings = {
-                            workbook: { columns: aCols },
-                            dataSource: {
-                                type: "OData",
-                                serviceUrl: sServiceUrl,
-                                dataUrl: oBinding.getDownloadUrl(), // includes $select/$filter/$expand from the table
-                                useBatch: true
-                            },
-                            fileName: sFileName,
-                            worker: true
-                        };
-            
-                        const oSheet = new Spreadsheet(oSettings);
-                        oSheet.build().finally(() => oSheet.destroy()); */
-
-
             const oSettings = {
                 workbook: { columns: aCols },
-                dataSource: [],         // <--- HEADERS ONLY (no data)
+                dataSource: [],         // HEADERS ONLY (no data)
                 fileName: sFileName,
                 worker: true
             };
 
             const oSheet = new sap.ui.export.Spreadsheet(oSettings);
             oSheet.build().finally(() => oSheet.destroy());
-
         },
 
         // NEW: CSV export with folder picker (Chromium browsers)
         _exportAsCsvWithPicker: async function (sSuggestedNameCsv) {
-            // 1) Feature-detect File System Access API
             if (!("showSaveFilePicker" in window)) {
                 MessageToast.show("Picking a folder isn’t supported by this browser. Using normal download instead.");
-                // fallback to default XLSX export
                 await this._exportSpreadsheet(sSuggestedNameCsv.replace(/\.csv$/i, ".xlsx"));
                 return;
             }
-
-            // 2) Resolve table + binding
 
             const oTable = this._getMdcTable();
             if (!oTable || !oTable.getRowBinding) {
@@ -369,19 +342,16 @@ sap.ui.define([
 
             const oBinding = oTable.getRowBinding();
 
-            // Guard: empty
-            try { await oBinding.requestContexts(0, 1); } catch (e) { }
+            try { await oBinding.requestContexts(0, 1); } catch (e) { /* no-op */ }
             const iLen = oBinding.getLength();
             if (iLen === 0) {
                 MessageToast.show("Nothing to export. Adjust filters and try again.");
                 return;
             }
 
-            // 3) Collect current rows (note: for very large datasets, prefer XLSX OData export)
             const aCtx = await oBinding.requestContexts(0, iLen);
             const aRows = aCtx.map(c => c.getObject());
 
-            // 4) Define columns (same order as XLSX; adjust as needed)
             const aCols = [
                 { header: "Employee", prop: "employee" },
                 { header: "Personal Grade", prop: "personal_grade" },
@@ -393,7 +363,6 @@ sap.ui.define([
                 { header: "Total Amount", prop: "total_req_amt" }
             ];
 
-            // 5) Build CSV
             const escapeCsv = (v) => {
                 if (v == null) return "";
                 const s = String(v);
@@ -404,8 +373,6 @@ sap.ui.define([
             const sCsv = [sHeader, ...sLines].join("\n");
             const oBlob = new Blob([sCsv], { type: "text/csv;charset=utf-8" });
 
-            // 6) Ask the user where to save (native Save As dialog from the OS)
-            // Supported in Chromium-based browsers; not in Firefox.
             let handle;
             try {
                 handle = await window.showSaveFilePicker({
@@ -414,8 +381,7 @@ sap.ui.define([
                 });
             } catch (e) {
                 if (e && e.name === "AbortError") {
-                    // user canceled
-                    return;
+                    return; // user canceled
                 }
                 throw e;
             }
@@ -427,13 +393,11 @@ sap.ui.define([
             MessageToast.show("CSV saved.");
         },
 
-
         _getMdcTable: function () {
             const oRoot = this.getOwnerComponent().getRootControl();
-            // because Fragment.load used:  id: oRoot.getId()
-            return oRoot && oRoot.byId("analyticsclaimsumtab"); // <-- your table id from the fragment
+            // Because Fragment.load used: id: oRoot.getId(), the real ID is <AppId>--analyticsclaimsumtab
+            return oRoot && (oRoot.byId(TABLE_ID) || sap.ui.getCore().byId(oRoot.getId() + "--" + TABLE_ID));
         }
-
 
     });
 });
