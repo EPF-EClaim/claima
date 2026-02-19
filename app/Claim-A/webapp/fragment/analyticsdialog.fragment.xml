@@ -4,13 +4,13 @@
     xmlns:core="sap.ui.core"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
-    xmlns:f="sap.ui.layout.form"
->
+    xmlns:f="sap.ui.layout.form">
+
     <Dialog
         title="Report Filter"
         contentWidth="50%"
-        class="requestDialog"
-    >
+        class="requestDialog">
+
         <f:SimpleForm
             id="analytic_create_form"
             editable="true"
@@ -26,10 +26,11 @@
             emptySpanS="0"
             columnsXL="2"
             columnsL="2"
-            columnsM="2"
-        >
+            columnsM="2">
+
             <f:content>
-                <!-- LEFT -->
+
+                <!-- Trip Start Date -->
                 <Label text="{i18n>req_tripstartdate}" />
                 <DatePicker
                     id="analytics_tripstartdate"
@@ -38,10 +39,9 @@
                     placeholder="dd MMM yyyy"
                     value="{request>/tripstartdate}"
                     textAlign="Begin"
-                    required="true"
-                />
+                    required="true" />
 
-                <!-- RIGHT -->
+                <!-- Trip End Date -->
                 <Label text="{i18n>req_tripenddate}" />
                 <DatePicker
                     id="analytics_tripenddate"
@@ -50,10 +50,10 @@
                     placeholder="dd MMM yyyy"
                     value="{request>/tripenddate}"
                     textAlign="Begin"
-                    required="true"
-                />
-                <Label text="Payment Date" />
+                    required="true" />
 
+                <!-- Payment Date -->
+                <Label text="Payment Date" />
                 <DatePicker
                     id="analytics_paydate"
                     displayFormat="dd MMM yyyy"
@@ -61,282 +61,159 @@
                     placeholder="dd MMM yyyy"
                     value="{request>/analytics_paydate}"
                     textAlign="Begin"
-                    required="true"
-                />
+                    required="true" />
 
-                <Label text="Status for Pre-Approval Request / Claim record " />
+                <!-- Status -->
+                <Label text="Status for Pre-Approval Request / Claim record" />
                 <Select
                     id="status"
                     width="100%"
                     forceSelection="false"
                     required="true"
-                    items="{
-                        path: 'employee>/ZSTATUS',
-                        parameters: {
-                            $select: 'STATUS_ID,STATUS_DESC',
-                            $orderby: 'STATUS_DESC'
-                        }
-                        }"
-                >
-                    <core:Item
-                        key="{employee>STATUS_ID}"
-                        text="{employee>STATUS_DESC}"
-                    />
+                    items="{employee>/ZSTATUS}">
+                    <core:Item key="{employee>STATUS_ID}" text="{employee>STATUS_DESC}" />
                 </Select>
 
+                <!-- Course Code -->
                 <Label text="Course code" />
-                <TextArea
-                    id="ccode"
-                    textAlign="Begin"
-                    value="Test"
-                />
+                <Select
+                    id="Course_code"
+                    width="100%"
+                    forceSelection="false"
+                    items="{employee>/ZTRAIN_COURSE_PART}">
+                    <core:Item key="{COURSE_ID}" text="{COURSE_DESC}" />
+                </Select>
 
+                <!-- Department -->
                 <Label text="{i18n>department}" />
-
                 <Select
                     id="select_department"
                     width="100%"
                     forceSelection="false"
-                    items="{
-                        path: 'employee>/ZDEPARTMENT',
-                        parameters: {
-                            $select: 'DEPARTMENT_ID,DEPARTMENT_DESC',
-                            $orderby: 'DEPARTMENT_DESC'
-                        }
-                        }"
-                >
-                    <core:Item
-                        key="{employee>DEPARTMENT_ID}"
-                        text="{employee>DEPARTMENT_DESC}"
-                    />
+                    items="{employee>/ZDEPARTMENT}">
+                    <core:Item key="{DEPARTMENT_ID}" text="{DEPARTMENT_DESC}" />
                 </Select>
 
+                <!-- GL Code -->
                 <Label text="GL Code" />
-
                 <Select
                     id="glcode"
                     width="100%"
                     forceSelection="false"
-                    items="{
-                        path: 'employee>/ZDEPARTMENT',
-                        parameters: {
-                            $select: 'GL_ACCOUNT_ID,GL_ACCOUNT_DESC',
-                            $orderby: 'GL_ACCOUNT_DESC'
-                        }
-                        }"
-                >
-                    <core:Item
-                        key="{employee>GL_ACCOUNT_ID}"
-                        text="{employee>GL_ACCOUNT_DESC}"
-                    />
+                    items="{employee>/ZGL_ACCOUNT}">
+                    <core:Item key="{GL_ACCOUNT_ID}" text="{GL_ACCOUNT_DESC}" />
                 </Select>
 
+                <!-- Cost Center -->
                 <Label text="Cost Center" />
-                <TextArea
+                <Select
                     id="cc"
-                    textAlign="Begin"
-                    value="Test"
-                />
+                    width="100%"
+                    forceSelection="false"
+                    items="{employee>/ZCOST_CENTER}">
+                    <core:Item key="{COST_CENTER_ID}" text="{COST_CENTER_DESC}" />
+                </Select>
 
+                <!-- Claim Type -->
                 <Label text="Claim Type" />
                 <Select
                     id="claim_type"
                     width="100%"
                     forceSelection="false"
-                    items="{
-                        path: 'employee>/ZCLAIM_TYPE',
-                        parameters: {
-                            $select: 'CLAIM_TYPE_ID,CLAIM_TYPE_DESC',
-                            $orderby: 'CLAIM_TYPE_DESC'
-                        }
-                        }"
-                >
-                    <core:Item
-                        key="{employee>CLAIM_TYPE_ID}"
-                        text="{employee>CLAIM_TYPE_DESC}"
-                    />
+                    items="{employee>/ZCLAIM_TYPE}">
+                    <core:Item key="{CLAIM_TYPE_ID}" text="{CLAIM_TYPE_DESC}" />
                 </Select>
 
+                <!-- Claim Item -->
                 <Label text="Claim Item" />
-                <!--  <TextArea
-                    id="claim_item"
-                    textAlign="Begin"
-                    value="Test"
-                /> -->
-
                 <Select
                     id="claim_item"
                     width="100%"
                     forceSelection="false"
-                    items="{
-                        path: 'employee>/ZCLAIM_TYPE_ITEM',
-                        parameters: {
-                            $select: 'CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC',
-                            $orderby: 'CLAIM_TYPE_ITEM_DESC'
-                        }
-                        }"
-                >
-                    <core:Item
-                        key="{employee>CLAIM_TYPE_ITEM_ID}"
-                        text="{employee>CLAIM_TYPE_ITEM_DESC}"
-                    />
+                    items="{employee>/ZCLAIM_TYPE_ITEM}">
+                    <core:Item key="{CLAIM_TYPE_ITEM_ID}" text="{CLAIM_TYPE_ITEM_DESC}" />
                 </Select>
 
+                <!-- Location -->
                 <Label text="Location" />
-                <!--                 <TextArea
-                    id="location"
-                    textAlign="Begin"
-                    value="Test"
-                /> -->
-
                 <Select
                     id="location"
                     width="100%"
                     forceSelection="false"
-                    items="{
-                        path: 'employee>/ZLOC_TYPE',
-                        parameters: {
-                            $select: 'LOC_TYPE_ID,LOC_TYPE_DESC',
-                            $orderby: 'LOC_TYPE_DESC'
-                        }
-                        }"
-                >
-                    <core:Item
-                        key="{employee>LOC_TYPE_ID}"
-                        text="{employee>LOC_TYPE_DESC}"
-                    />
+                    items="{employee>/ZLOC_TYPE}">
+                    <core:Item key="{LOC_TYPE_ID}" text="{LOC_TYPE_DESC}" />
                 </Select>
 
+                <!-- Event Start -->
                 <Label text="{i18n>req_tripenddate}" />
                 <DatePicker
                     id="analytics_eventstartdate"
                     displayFormat="dd MMM yyyy"
                     valueFormat="yyyy-MM-dd"
                     placeholder="dd MMM yyyy"
-                    textAlign="Begin"
-                    required="false"
-                />
+                    textAlign="Begin" />
+
+                <!-- Event End -->
                 <Label text="Payment Date" />
                 <DatePicker
                     id="analytics_eventenddate"
                     displayFormat="dd MMM yyyy"
                     valueFormat="yyyy-MM-dd"
                     placeholder="dd MMM yyyy"
-                    textAlign="Begin"
-                    required="false"
-                />
+                    textAlign="Begin" />
 
+                <!-- Individual / Group -->
                 <Label text="Individual/Group" />
                 <Select
                     id="grouping"
                     width="100%"
                     forceSelection="false"
-                    items="{
-                        path: 'employee>/ZINDIV_GROUP',
-                        parameters: {
-                            $select: 'IND_OR_GROUP_ID,IND_OR_GROUP_DESC',
-                            $orderby: 'IND_OR_GROUP_DESC'
-                        }
-                        }"
-                >
-                    <core:Item
-                        key="{employee>IND_OR_GROUP_ID}"
-                        text="{employee>IND_OR_GROUP_DESC}"
-                    />
+                    items="{employee>/ZINDIV_GROUP}">
+                    <core:Item key="{IND_OR_GROUP_ID}" text="{IND_OR_GROUP_DESC}" />
                 </Select>
 
+                <!-- Amount -->
                 <Label text="Amount" />
-                <TextArea
-                    id="amount"
-                    textAlign="Begin"
-                    value="Test"
-                />
+                <TextArea id="amount" textAlign="Begin" />
 
-                <Label text="Employee name" />
-                <!-- <TextArea
-                    id="emp_name"
-                    textAlign="Begin"
-                    value="Test"
-                /> -->
-                <!-- selectedKey="{request>/EEID}" -->
-                <Select
-                    id="emp_name"
-                    width="100%"
-                    forceSelection="false"
-                    items="{
-                        path: 'employee>/ZEMP_MASTER',
-                        parameters: {
-                            $select: 'EEID,NAME',
-                            $orderby: 'NAME'
-                        }
-                        }"
-                >
-                    <core:Item
-                        key="{employee>EEID}"
-                        text="{employee>NAME}"
-                    />
-                </Select>
-
+                <!-- Request Type -->
                 <Label text="Request Type" />
                 <Select
                     id="reqtype"
                     width="100%"
                     forceSelection="false"
                     visible="{anaVM>/showRequestType}"
-                    items="{
-                        path: 'employee>/ZREQUEST_TYPE',
-                        parameters: {
-                            $select: 'REQUEST_TYPE_ID,REQUEST_TYPE_DESC',
-                            $orderby: 'REQUEST_TYPE_DESC'
-                        }
-                        }"
-                >
-                    <core:Item
-                        key="{employee>REQUEST_TYPE_ID}"
-                        text="{employee>REQUEST_TYPE_DESC}"
-                    />
+                    items="{employee>/ZREQUEST_TYPE}">
+                    <core:Item key="{employee>REQUEST_TYPE_ID}" text="{employee>REQUEST_TYPE_DESC}" />
                 </Select>
 
+                <!-- Claim Category -->
                 <Label text="Claim Category" />
                 <Select
                     id="claim_cat"
                     width="100%"
                     forceSelection="false"
                     visible="{anaVM>/showClaimCategory}"
-                    items="{
-                        path: 'employee>/ZCLAIM_CATEGORY',
-                        parameters: {
-                            $select: 'CLAIM_CAT_ID,CLAIM_CATEGORY_DESC',
-                            $orderby: 'CLAIM_CATEGORY_DESC'
-                        }
-                        }"
-                >
-                    <core:Item
-                        key="{employee>CLAIM_CAT_ID}"
-                        text="{employee>CLAIM_CATEGORY_DESC}"
-                    />
+                    items="{employee>/ZCLAIM_CATEGORY}">
+                    <core:Item key="{employee>CLAIM_CAT_ID}" text="{employee>CLAIM_CATEGORY_DESC}" />
                 </Select>
+
             </f:content>
         </f:SimpleForm>
 
         <!-- Buttons -->
-        <HBox
-            alignItems="Center"
-            justifyContent="End"
-            class="sapUiSmallMarginEnd"
-            columnGap="0.5rem"
-        >
+        <HBox alignItems="Center" justifyContent="End"
+              class="sapUiSmallMarginEnd" columnGap="0.5rem">
             <Button
                 id="analytics_placeholder_create"
                 press="onClickCreateRequest_ana"
                 text="{i18n>submitbtn}"
-                type="Emphasized"
-            />
+                type="Emphasized" />
             <Button
                 id="analytics_placeholder_cancel"
                 press="onClickCancel_ana"
-                text="{i18n>req_b_cancel}"
-            />
+                text="{i18n>req_b_cancel}" />
         </HBox>
+
     </Dialog>
 </core:FragmentDefinition>
