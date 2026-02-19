@@ -15,6 +15,15 @@ sap.ui.define([
         const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
         const oLineItems = oModel.getMetaModel().getContext(`/${sEntityType}/@com.sap.vocabularies.UI.v1.LineItem`).getObject();
 
+        const allowedOnZemp = new Set([
+            "USER_TYPE",
+            "B_PLACE",
+            "MOBILE_BILL_ELIGIBILITY", 
+            "ROLE",
+            "MOBILE_BILL_ELIG_AMOUNT"
+        ]);
+        const isZempMaster = sPath?.startsWith("/ZEMP_MASTER");
+
         const oVBox = new sap.m.VBox({
             width: "70%",
             fitContainer: true,
@@ -25,6 +34,7 @@ sap.ui.define([
             const fieldName = item.Value.$Path;
             const oFieldMeta = oDataType[fieldName];
             const fieldType = oFieldMeta?.$Type;
+            const sDisable = isZempMaster && !allowedOnZemp.has(fieldName);
 
             oVBox.addItem(new sap.m.Label({
                 text: item.Label,
@@ -40,7 +50,8 @@ sap.ui.define([
                     name: fieldName,
                     width: "130%",
                     displayFormat: "dd MMM yyyy",
-                    valueFormat: "yyyy-MM-dd"
+                    valueFormat: "yyyy-MM-dd",
+                    enabled: `${sPath}` === '/ZEMP_MASTER' ? false : true
                 }) :
                 fieldType?.includes('Edm.Boolean') ?
                     new sap.m.Select({
@@ -66,7 +77,8 @@ sap.ui.define([
                     new sap.m.Input({
                         value: oData[fieldName]?.toString() || "",
                         name: fieldName,
-                        width: "130%"
+                        width: "130%",
+                        enabled: !sDisable
                     });
 
             oVBox.addItem(oInput);
@@ -117,7 +129,7 @@ sap.ui.define([
 
                         var oListBinding = oModel.bindList(sPath),
                             oContext = oListBinding.create(oNewEntry);
-                        
+
                         oModel.refresh();
                         oDialog.close();
                         oListBinding.refresh(true);

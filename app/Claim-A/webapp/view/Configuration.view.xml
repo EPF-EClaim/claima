@@ -50,7 +50,7 @@
             </f:Card>
 
             <f:Card
-                id="ZCLAIM_TYPEList"
+                id="ZCLAIM_TYPE"
                 class="sapUiSmallMargin"
                 width="15rem"
                 press="onOpenConfigTable"

@@ -1064,6 +1064,7 @@ annotate service.ZSTATE with @(
 
 annotate service.ZEMP_MASTER with @(
     cds.autoexpose,
+    odata.batch: true,
     Common.SemanticKey: [
         EEID
     ],
@@ -1517,7 +1518,7 @@ annotate service.ZUSER_TYPE with @(
 
 annotate service.ZEMP_TYPE with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [
         EMP_TYPE_ID
     ],
@@ -1526,7 +1527,7 @@ annotate service.ZEMP_TYPE with @(
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,

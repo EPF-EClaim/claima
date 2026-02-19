@@ -139,9 +139,9 @@
                     ]
                 },
                 {
-                    "pattern": ":?query:",
-                    "name": "ZCLAIM_TYPEList",
-                    "target": "ZCLAIM_TYPEList"
+                    "pattern": "ZCLAIM_TYPE:?query:",
+                    "name": "ZCLAIM_TYPE",
+                    "target": "ZCLAIM_TYPE"
                 },
                 {
                     "pattern": "ZCLAIM_TYPE({key}):?query:",
@@ -519,7 +519,7 @@
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "RATE_KM_ID,RATE_PER_KM,VEHICLE_TYPE_ID,CLAIM_TYPE_ITEM_ID,RATE,START_DATE,END_DATE,STATUS"
+                                            "creationFields": "RATE_KM_ID,STATUS,VEHICLE_TYPE_ID,CLAIM_TYPE_ITEM_ID,RATE,START_DATE,END_DATE"
                                         }
                                     },
                                     "actions": {
@@ -1140,7 +1140,7 @@
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "EMP_TYPE_ID,EMP_TYPE_DESC"
+                                            "creationFields": "EMP_TYPE_ID,EMP_TYPE_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -1297,7 +1297,7 @@
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "DEPARTMENT_ID, DEPARTMENT_DESC"
+                                            "creationFields": "DEPARTMENT_ID, DEPARTMENT_DESC,DEPARTMENT_DESC,START_DATE,END_DATE,STATUS,HEAD_OF_DEPARTMENT,SHORT_CODE,COST_CENTER,DIVISION"
                                         }
                                     },
                                     "actions": {
@@ -1465,7 +1465,7 @@
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "JOB_GROUP_ID, JOB_GROUP_DESC"
+                                            "creationFields": "JOB_GROUP_ID, JOB_GROUP_DESC,JOB_GROUP_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -1521,7 +1521,7 @@
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "ROLE_ID, ROLE_DESC"
+                                            "creationFields": "ROLE_ID, ROLE_DESC,ROLE_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -1768,7 +1768,7 @@
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "USER_TYPE_ID,USER_TYPE_DESC"
+                                            "creationFields": "USER_TYPE_ID,USER_TYPE_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -2101,7 +2101,7 @@
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "FLIGHT_CLASS_ID,FLIGHT_CLASS_DESC"
+                                            "creationFields": "FLIGHT_CLASS_ID,FLIGHT_CLASS_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -2154,7 +2154,7 @@
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "AREA_ID,AREA_DESC"
+                                            "creationFields": "AREA_ID,AREA_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -2607,15 +2607,15 @@
                         }
                     }
                 },
-                "ZCLAIM_TYPEList": {
+                "ZCLAIM_TYPE": {
                     "type": "Component",
-                    "id": "ZCLAIM_TYPEList",
+                    "id": "ZCLAIM_TYPE",
                     "name": "sap.fe.templates.ListReport",
                     "options": {
                         "settings": {
                             "contextPath": "/ZCLAIM_TYPE",
                             "navigation": {
-                                "ZCLAIM_TYPE": {
+                                "": {
                                     "detail": {
                                         "route": "ZCLAIM_TYPEObjectPage"
                                     }
@@ -2624,16 +2624,19 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "creationMode": {},
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "CLAIM_TYPE_ID,CLAIM_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                                        },
                                         "selectionMode": "Single",
-                                        "enableMassEdit": {
-                                            "operationGroupingMode": "Isolated",
-                                            "visibleFields": "CLAIM_TYPE_ID,CLAIM_TYPE_DESC,START_DATE,END_DATE,STATUS"
-                                        }
+                                        "enableMassEdit": false,
+                                        "selectAll": false
                                     }
                                 }
                             },
-                            "initialLoad": "Enabled"
+                            "initialLoad": "Enabled",
+                            "hideFilterBar": true,
+                            "variantManagement": "None"
                         }
                     }
                 },
@@ -2655,7 +2658,7 @@
                                 "Items/@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
                                         "selectAll": false,
-                                        "selectionMode": "Single",
+                                        "selectionMode": "None",
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "CLAIM_TYPE_ITEM_ID,RISK,CLAIM_TYPE_ITEM_DESC,START_DATE,END_DATE,STATUS,CATEGORY_ID,COST_CENTER,GL_ACCOUNT,MATERIAL_CODE,SUBMISSION_TYPE"

@@ -336,7 +336,7 @@
                                     <VBox>
                                         <ScrollContainer>
                                             <Table
-                                            items="{ path: 'employee>/ZREQUEST_GRP' }"
+                                            items="{ path: '' }"
                                             growing="true"
                                             noDataText="No data available"
                                         >
