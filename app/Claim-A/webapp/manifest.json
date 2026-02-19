@@ -2262,7 +2262,7 @@
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "REGION_ID,USER_TYPE_DESC,REGION_DESC"
+                                            "creationFields": "REGION_ID,REGION_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
