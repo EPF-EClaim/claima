@@ -403,13 +403,13 @@
                     "target": "ZCLAIM_TYPE"
                 },
                 {
+                    "pattern": "ZCLAIM_TYPE({key}):?query:",
                     "name": "ZCLAIM_TYPEObjectPage",
-                    "pattern": "ZCLAIM_TYPE/ZCLAIM_TYPE({ZCLAIM_TYPEKey}):?query:",
                     "target": "ZCLAIM_TYPEObjectPage"
                 },
                 {
                     "name": "ZCLAIM_TYPE_ItemsObjectPage",
-                    "pattern": "ZCLAIM_TYPE/ZCLAIM_TYPE({ZCLAIM_TYPEKey})/Items({ItemsKey}):?query:",
+                    "pattern": "ZCLAIM_TYPE({key})/Items({ItemsKey}):?query:",
                     "target": "ZCLAIM_TYPE_ItemsObjectPage"
                 }
             ],
@@ -2563,14 +2563,26 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "selectionMode": "Single",
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "CLAIM_TYPE_ID"
+                                            "creationFields": "CLAIM_TYPE_ID,CLAIM_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                                        },
+                                        "selectAll": false,
+                                        "selectionMode": "Single"
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
                                         }
                                     }
                                 }
-                            }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled"
                         }
                     }
                 },

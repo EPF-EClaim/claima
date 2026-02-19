@@ -18,7 +18,7 @@
         <tnt:header>
             <f:ShellBar
                 showMenuButton="true"
-                homeIcon="./resources/sap/ui/documentation/sdk/images/logo_sap.png"
+                homeIcon="images/EPF Logo Registered@2x.png"
                 menuButtonPressed="onMenuButtonPress"
             />
         </tnt:header>

@@ -243,3 +243,18 @@ annotate eclaim_srv.ZSTATUS with @(
     ]
 );
 
+annotate eclaim_srv.ZCLAIM_TYPE with @(
+    UI.HeaderInfo : {
+        Title : {
+            $Type : 'UI.DataField',
+            Value : CLAIM_TYPE_ID,
+        },
+        TypeName : '',
+        TypeNamePlural : '',
+        Description : {
+            $Type : 'UI.DataField',
+            Value : 'Claim Type',
+        },
+    }
+);
+
