@@ -1,4 +1,6 @@
 {
+  "xsappname": "claima-backend-app",
+  "tenant-mode": "dedicated",
   "scopes": [],
   "attributes": [],
   "role-templates": []

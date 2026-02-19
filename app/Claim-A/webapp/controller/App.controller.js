@@ -33,43 +33,6 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.App", {
 		onInit: function () {
-			// super.onInit();
-			// var oModel = this.base.getExtensionAPI().getModel();
-			//  PageController.prototype.onInit.apply(this, arguments);
-			// oViewModel
-			const oViewModel = new sap.ui.model.json.JSONModel({
-				rtype: "" // current selected request type
-			});
-			this.getView().setModel(oViewModel, "view");
-
-			// oRequestModel
-			const oRequestModel = new JSONModel({
-				purpose: "",
-				reqtype: "travel",
-				tripstartdate: "",
-				tripenddate: "",
-				eventstartdate: "",
-				eventenddate: "",
-				grptype: "individual",
-				location: "",
-				transport: "",
-				altcostcenter: "",
-				doc1: "",
-				doc2: "",
-				comment: "",
-				eventdetail1: "",
-				eventdetail2: "",
-				eventdetail3: "",
-				eventdetail4: "",
-				reqid: "",
-				reqstatus: "",
-				costcenter: "",
-				cashadvamt: 0,
-				reqamt: 0,
-				totalamt: 0
-			});
-			this.getView().setModel(oRequestModel, "request");
-
 			// Claim Submission Model
 			var oClaimSubmissionModel = new JSONModel({
 				"employee": {
@@ -158,103 +121,10 @@ sap.ui.define([
 			});
 			this.getView().setModel(oReportModel, "report");
 
-			// CONFIG MODEL for all 4 table
-			var oConfigModel = new JSONModel({
-				ZCLAIM_PURPOSE: [],
-				ZRISK: [],
-				ConfigurationTable3: [],
-				ConfigurationTable4: [],
-				active: {
-					data: []
-				}
-			});
-
-			this.getView().setModel(oConfigModel, "configModel");
-
-
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
-
-
 		},
 
-
-		// BACK BUTTON CONFIGURATION
-		onBackFromConfigTable: function () {
-			this.byId("pageContainer").to(this.getView().byId('configurationPage'));
-		},
-
-		// SAVE CONFIGURATION
-		onSaveConfigTable: function () {
-			let m = this.getView().getModel("configModel");
-			let tableId = m.getProperty("/active/title");
-			let activeData = m.getProperty("/active/data");
-
-			activeData.forEach(r => r.edit = false);
-			m.setProperty("/" + tableId, activeData);
-
-			console.log(m.getProperty("/active/data/"));
-			MessageToast.show("Saved");
-		},
-
-		// ADD NEW ROW CONFIGURATION
-		onAddEntry: function () {
-			let data = this.getView().getModel("configModel").getProperty("/active/data");
-
-			data.push({
-				Claim_Purpose_ID: "",
-				Claim_Purpose_Desc: "",
-
-				edit: true,
-				selected: false
-			});
-			let m = this.getView().getModel("configModel");
-			m.refresh(true);
-			console.log(m.getProperty("/active/data/"));
-
-		},
-
-		// EDIT ROW CONFIGURATION
-		onEditEntry: function () {
-			let oTable = this.byId("ConfigFrag--configTable");
-			let sel = oTable.getSelectedItems();
-			if (!sel.length) return MessageToast.show("Select a row.");
-
-			let ctx = sel[0].getBindingContext("configModel");
-			ctx.setProperty("edit", true);
-		},
-
-		// COPY ROW CONFIGURATION
-		onCopyEntry: function () {
-			let oTable = this.byId("ConfigFrag--configTable");
-			let sel = oTable.getSelectedItem();
-			if (!sel) return MessageToast.show("Select a row.");
-
-			let m = this.getView().getModel("configModel");
-			let data = m.getProperty("/active/data");
-			let obj = sel.getBindingContext("configModel").getObject();
-
-			data.push({ ...obj, edit: true });
-			m.refresh(true);
-		},
-
-		// DELETE ROW CONFIGURATION
-		onDeleteEntry: function () {
-			let oTable = this.byId("ConfigFrag--configTable");
-			let sel = oTable.getSelectedItems();
-			if (!sel.length) return MessageToast.show("Nothing selected.");
-
-			let m = this.getView().getModel("configModel");
-			let data = m.getProperty("/active/data");
-
-			sel.reverse().forEach(item => {
-				let index = item.getBindingContext("configModel").getPath().split("/").pop();
-				data.splice(index, 1);
-			});
-
-			m.refresh(true);
-
-		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
 			var oNavigationList = this.byId("navigationList");
@@ -1264,50 +1134,6 @@ sap.ui.define([
 		},
 		// End added by Aiman Salim 22/1/2026 - 05/02/2026
 
-
-		// CLICK CONFIGURATION TABLE CARD
-		onOpenConfigTable: async function (oEvent) {
-
-			let tableId = oEvent.getSource().getCustomData()[0].getValue();
-			console.log(tableId);
-			let m = this.getView().getModel("configModel");
-
-			m.setProperty("/active/title", tableId);
-			m.setProperty("/active/data",
-				JSON.parse(JSON.stringify(m.getProperty("/" + tableId)))
-			);
-			console.log(m.getProperty("/active/data/"));
-			this.loadConfigPage();
-		},
-
-
-		// LOAD CONFIG DETAIL PAGE
-		loadConfigPage: async function () {
-
-			if (!this.oConfigDetailPage) {
-
-				const oFragment = await Fragment.load({
-					id: this.createId("ConfigFrag"),
-					name: "claima.fragment.configuration",
-					controller: this
-				});
-				this.getView().addDependent(oFragment);
-
-				this.oConfigDetailPage = new sap.m.Page(
-					this.createId("configDetailPage"),
-					{
-						title: "eClaim Configuration",
-						content: [oFragment],
-						showNavButton: true,
-						navButtonPress: this.onBackFromConfigTable.bind(this)
-					}
-				);
-				this.byId("pageContainer").addPage(this.oConfigDetailPage);
-			}
-			this.byId("pageContainer").to(this.byId("configDetailPage"));
-		},
-
-
 		/* =========================================================
 		 * Mileage dialog (Fragment) — use a dedicated controller - For Google Maps
 		 * ========================================================= */
@@ -1700,7 +1526,6 @@ sap.ui.define([
 			} else if (id === "container-claima---App--dashboard-request" || id === "application-app-preview-component---App--dashboard-request") {
 				this.byId("pageContainer").to(this.getView().createId("myreport")); //Aiman Salim Start Add 10/02/2026 - Change myreport to myrequest
 			}
-
 		},
 
 		_getTexti18n: function (i18nKey, array_i18nParameters) {

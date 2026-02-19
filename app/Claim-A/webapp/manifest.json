@@ -2,12 +2,12 @@
     "_version": "1.81.0",
     "sap.app": {
         "id": "claima",
+        "title": "",
         "type": "application",
         "i18n": "i18n/i18n.properties",
         "applicationVersion": {
             "version": "0.0.1"
         },
-        "title": "{{appTitle}}",
         "description": "{{appDescription}}",
         "resources": "resources.json",
         "sourceTemplate": {
@@ -22,18 +22,6 @@
                 "settings": {
                     "annotations": [],
                     "odataVersion": "4.0"
-                }
-            }
-        },
-        "crossNavigation": {
-            "inbounds": {
-                "Claim-A-display": {
-                    "semanticObject": "Claim-A",
-                    "action": "display",
-                    "signature": {
-                        "parameters": {},
-                        "additionalParameters": "allowed"
-                    }
                 }
             }
         }
@@ -94,18 +82,6 @@
                 "type": "sap.ui.model.json.JSONModel",
                 "uri": "model/data.json"
             },
-            "current": {
-                "type": "sap.ui.model.json.JSONModel",
-                "uri": "model/data2.json"
-            },
-            "input": {
-                "type": "sap.ui.model.json.JSONModel",
-                "uri": "model/data2.json"
-            },
-            "mockdata": {
-                "type": "sap.ui.model.json.JSONModel",
-                "uri": "model/mockdata.json"
-            },
             "i18n": {
                 "type": "sap.ui.model.resource.ResourceModel",
                 "settings": {
@@ -163,11 +139,14 @@
                     ]
                 },
                 {
-                    "pattern": "ZCLAIM_TYPE",
-                    "name": "ZCLAIM_TYPE",
-                    "target": [
-                        "ZCLAIM_TYPE"
-                    ]
+                    "pattern": ":?query:",
+                    "name": "ZCLAIM_TYPEList",
+                    "target": "ZCLAIM_TYPEList"
+                },
+                {
+                    "pattern": "ZCLAIM_TYPE({key}):?query:",
+                    "name": "ZCLAIM_TYPEObjectPage",
+                    "target": "ZCLAIM_TYPEObjectPage"
                 },
                 {
                     "pattern": "ZNUM_RANGE",
@@ -336,6 +315,111 @@
                     "target": [
                         "ZLENDER_NAME"
                     ]
+                },
+                {
+                    "pattern": "ZHOUSING_LOAN_SCHEME",
+                    "name": "ZHOUSING_LOAN_SCHEME",
+                    "target": [
+                        "ZHOUSING_LOAN_SCHEME"
+                    ]
+                },
+                {
+                    "pattern": "ZPERDIEM_ENT",
+                    "name": "ZPERDIEM_ENT",
+                    "target": [
+                        "ZPERDIEM_ENT"
+                    ]
+                },
+                {
+                    "pattern": "ZEMP_CA_PAYMENT",
+                    "name": "ZEMP_CA_PAYMENT",
+                    "target": [
+                        "ZEMP_CA_PAYMENT"
+                    ]
+                },
+                {
+                    "pattern": "ZBRANCH",
+                    "name": "ZBRANCH",
+                    "target": [
+                        "ZBRANCH"
+                    ]
+                },
+                {
+                    "pattern": "ZPROJECT_HDR",
+                    "name": "ZPROJECT_HDR",
+                    "target": [
+                        "ZPROJECT_HDR"
+                    ]
+                },
+                {
+                    "pattern": "ZMARITAL_CAT",
+                    "name": "ZMARITAL_CAT",
+                    "target": [
+                        "ZMARITAL_CAT"
+                    ]
+                },
+                {
+                    "pattern": "ZLOOKUP_FIELD",
+                    "name": "ZLOOKUP_FIELD",
+                    "target": [
+                        "ZLOOKUP_FIELD"
+                    ]
+                },
+                {
+                    "pattern": "ZEMP_RELATIONSHIP",
+                    "name": "ZEMP_RELATIONSHIP",
+                    "target": [
+                        "ZEMP_RELATIONSHIP"
+                    ]
+                },
+                {
+                    "pattern": "ZEMP_VEHICLE",
+                    "name": "ZEMP_VEHICLE",
+                    "target": [
+                        "ZEMP_VEHICLE"
+                    ]
+                },
+                {
+                    "pattern": "ZINDIV_GROUP",
+                    "name": "ZINDIV_GROUP",
+                    "target": [
+                        "ZINDIV_GROUP"
+                    ]
+                },
+                {
+                    "pattern": "ZMATERIAL_GROUP",
+                    "name": "ZMATERIAL_GROUP",
+                    "target": [
+                        "ZMATERIAL_GROUP"
+                    ]
+                },
+                {
+                    "pattern": "ZLOC_TYPE",
+                    "name": "ZLOC_TYPE",
+                    "target": [
+                        "ZLOC_TYPE"
+                    ]
+                },
+                {
+                    "pattern": "ZOFFICE_DISTANCE",
+                    "name": "ZOFFICE_DISTANCE",
+                    "target": [
+                        "ZOFFICE_DISTANCE"
+                    ]
+                },
+                {
+                    "pattern": "ZRATE_KM",
+                    "name": "ZRATE_KM",
+                    "target": [
+                        "ZRATE_KM"
+                    ]
+                },
+                {
+                    "pattern": "ZOFFICE_LOCATION",
+                    "name": "ZOFFICE_LOCATION",
+                    "target": [
+                        "ZOFFICE_LOCATION"
+                    ]
                 }
             ],
             "targets": {
@@ -347,13 +431,13 @@
                     "id": "Dashboard",
                     "name": "App"
                 },
-                "ZRISK": {
+                "ZPROJECT_HDR": {
                     "type": "Component",
-                    "id": "ZRISK",
+                    "id": "ZPROJECT_HDR",
                     "name": "sap.fe.templates.ListReport",
                     "options": {
                         "settings": {
-                            "contextPath": "/ZRISK",
+                            "contextPath": "/ZPROJECT_HDR",
                             "variantManagement": "None",
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
@@ -373,13 +457,650 @@
                                             "showCounts": true
                                         },
                                         "disableCopyToClipboard": false,
-                                        "enableMassEdit": {
-                                            "operationGroupingMode": "Isolated",
-                                            "visibleFields": "RISK_ID,RISK_DESC"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "RISK_ID,RISK_DESC"
+                                            "creationFields": "PROJECT_CODE_IO,PROJECT_DESC,GL_ACCOUNT,COST_CENTER,STATUS,BUFFER_FIELD1,BUFFER_FIELD2,START_DATE,END_DATE"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy",
+                                            "position": {
+                                                "placement": "Before"
+                                            }
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZRATE_KM": {
+                    "type": "Component",
+                    "id": "ZRATE_KM",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZRATE_KM",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": false,
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "RATE_KM_ID,RATE_PER_KM,VEHICLE_TYPE_ID,CLAIM_TYPE_ITEM_ID,RATE,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZOFFICE_LOCATION": {
+                    "type": "Component",
+                    "id": "ZOFFICE_LOCATION",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZOFFICE_LOCATION",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": false,
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "LOCATION_ID,STATE_ID,LOCATION_DESC,LOCATION_GROUP,LEGAL_ENTITY,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZOFFICE_DISTANCE": {
+                    "type": "Component",
+                    "id": "ZOFFICE_DISTANCE",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZOFFICE_DISTANCE",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": false,
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "FROM_STATE_ID,FROM_LOCATION_ID,TO_STATE_ID,TO_LOCATION_ID,MILEAGE,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZINDIV_GROUP": {
+                    "type": "Component",
+                    "id": "ZINDIV_GROUP",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZINDIV_GROUP",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": false,
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "IND_OR_GROUP_ID,IND_OR_GROUP_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZLOC_TYPE": {
+                    "type": "Component",
+                    "id": "ZLOC_TYPE",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZLOC_TYPE",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": false,
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "LOC_TYPE_ID,START_DATE,LOC_TYPE_DESC,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZMATERIAL_GROUP": {
+                    "type": "Component",
+                    "id": "ZMATERIAL_GROUP",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZMATERIAL_GROUP",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": false,
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "MATERIAL_CODE_ID,MATERIAL_CODE_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZMARITAL_CAT": {
+                    "type": "Component",
+                    "id": "ZMARITAL_CAT",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZMARITAL_CAT",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": false,
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZEMP_VEHICLE": {
+                    "type": "Component",
+                    "id": "ZEMP_VEHICLE",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_VEHICLE",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": false,
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "EMP_ID,VEHICLE_NO,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZEMP_RELATIONSHIP": {
+                    "type": "Component",
+                    "id": "ZEMP_RELATIONSHIP",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_RELATIONSHIP",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": false,
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "RELATIONSHIP_TYPE_ID,RELATIONSHIP_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZLOOKUP_FIELD": {
+                    "type": "Component",
+                    "id": "ZLOOKUP_FIELD",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZLOOKUP_FIELD",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": false,
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "LOOKUP_ID,LOOKUP_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZRISK": {
+                    "type": "Component",
+                    "id": "ZRISK",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZRISK",
+                            "variantManagement": "None",
+                            "variantManagementHidden": true,
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": false,
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "RISK_ID,RISK_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit",
+                                            "position": {
+                                                "placement": "After",
+                                                "anchor": "newCopy"
+                                            }
                                         }
                                     }
                                 }
@@ -416,10 +1137,7 @@
                                             "showCounts": true
                                         },
                                         "disableCopyToClipboard": false,
-                                        "enableMassEdit": {
-                                            "operationGroupingMode": "Isolated",
-                                            "visibleFields": "EMP_TYPE_ID,EMP_TYPE_DESC"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "EMP_TYPE_ID,EMP_TYPE_DESC"
@@ -432,6 +1150,13 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -468,9 +1193,71 @@
                                             "showCounts": true
                                         },
                                         "disableCopyToClipboard": false,
-                                        "enableMassEdit": {
-                                            "operationGroupingMode": "Isolated",
-                                            "visibleFields": "USER_TYPE,B_PLACE, MOBILE_BILL_ELIGIBILITY"
+                                        "enableMassEdit": false
+                                    },
+                                    "actions": {
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZBRANCH": {
+                    "type": "Component",
+                    "id": "ZBRANCH",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZBRANCH",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": false,
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "BRANCH_ID,BRANCH_DESC,HEAD_OF_UNIT,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -507,13 +1294,138 @@
                                             "showCounts": true
                                         },
                                         "disableCopyToClipboard": false,
-                                        "enableMassEdit": {
-                                            "operationGroupingMode": "Isolated",
-                                            "visibleFields": "DEPARTMENT_ID, DEPARTMENT_DESC"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "DEPARTMENT_ID, DEPARTMENT_DESC"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZHOUSING_LOAN_SCHEME": {
+                    "type": "Component",
+                    "id": "ZHOUSING_LOAN_SCHEME",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZHOUSING_LOAN_SCHEME",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": false,
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "HOUSING_LOAN_SCHEME_ID,HOUSING_LOAN_SCHEME_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZPERDIEM_ENT": {
+                    "type": "Component",
+                    "id": "ZPERDIEM_ENT",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZPERDIEM_ENT",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": false,
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "PERSONAL_GRADE_FROM,PERSONAL_GRADE_TO,LOCATION,EFFECTIVE_START_DATE,EFFECTIVE_END_DATE,CURRENCY,AMOUNT"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -550,13 +1462,26 @@
                                             "showCounts": true
                                         },
                                         "disableCopyToClipboard": false,
-                                        "enableMassEdit": {
-                                            "operationGroupingMode": "Isolated",
-                                            "visibleFields": "JOB_GROUP_ID, JOB_GROUP_DESC"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "JOB_GROUP_ID, JOB_GROUP_DESC"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -593,13 +1518,26 @@
                                             "showCounts": true
                                         },
                                         "disableCopyToClipboard": false,
-                                        "enableMassEdit": {
-                                            "operationGroupingMode": "Isolated",
-                                            "visibleFields": "ROLE_ID, ROLE_DESC"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "ROLE_ID, ROLE_DESC"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -637,61 +1575,7 @@
                                             "name": "CreationDialog",
                                             "creationFields": "REQUEST_TYPE_ID,REQUEST_TYPE_DESC,START_DATE,END_DATE,STATUS"
                                         },
-                                        "enableMassEdit": {
-                                            "visibleFields": "REQUEST_TYPE_ID,REQUEST_TYPE_DESC,START_DATE,END_DATE,STATUS"
-                                        }
-                                    },
-                                    "actions": {
-                                        "DataFieldForAction::eclaim_srv.Copy": {
-                                            "enableOnSelect": "single"
-                                        },
-                                        "newCopy": {
-                                            "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Copy Record"
-                                        }
-                                    }
-                                }
-                            },
-                            "hideFilterBar": true,
-                            "initialLoad": "Enabled",
-                            "navigation": {}
-                        }
-                    }
-                },
-                "ZCLAIM_TYPE": {
-                    "type": "Component",
-                    "id": "ZCLAIM_TYPE",
-                    "name": "sap.fe.templates.ListReport",
-                    "options": {
-                        "settings": {
-                            "contextPath": "/ZCLAIM_TYPE",
-                            "variantManagement": "None",
-                            "controlConfiguration": {
-                                "@com.sap.vocabularies.UI.v1.LineItem": {
-                                    "tableSettings": {
-                                        "type": "ResponsiveTable",
-                                        "createMode": "inline",
-                                        "initialLoad": "Enabled",
-                                        "enableExport": true,
-                                        "selectAll": false,
-                                        "selectionMode": "Single",
-                                        "personalization": {
-                                            "column": false
-                                        },
-                                        "quickVariantSelection": {
-                                            "hideTableTitle": true
-                                        },
-                                        "creationMode": {
-                                            "name": "CreationDialog",
-                                            "creationFields": "CLAIM_TYPE_ID,CLAIM_TYPE_DESC"
-                                        },
-                                        "enableMassEdit": {
-                                            "operationGroupingMode": "Isolated",
-                                            "visibleFields": "CLAIM_TYPE_DESC,CLAIM_TYPE_ID"
-                                        }
+                                        "enableMassEdit": false
                                     },
                                     "actions": {
                                         "DataFieldForAction::eclaim_srv.Copy": {
@@ -703,6 +1587,13 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -740,27 +1631,29 @@
                                             "name": "CreationDialog",
                                             "creationFields": "SUBMISSION_TYPE_ID,SUBMISSION_TYPE_DESC,START_DATE,END_DATE,STATUS"
                                         },
-                                        "enableMassEdit": {
-                                            "visibleFields": "SUBMISSION_TYPE_ID,SUBMISSION_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                                        "enableMassEdit": false
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {},
-                            "content": {
-                                "header": {
-                                    "actions": {
-                                        "copyEntry": {
-                                            "press": "claima.ext.controller.Config.onClickCopy",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "text": "Copy"
-                                        }
-                                    }
-                                }
-                            }
+                            "navigation": {}
                         }
                     }
                 },
@@ -819,13 +1712,26 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": {
-                                            "visibleFields": "CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC",
-                                            "operationGroupingMode": "Isolated"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -859,24 +1765,29 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": {
-                                            "visibleFields": "USER_TYPE_ID,USER_TYPE_DESC"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "USER_TYPE_ID,USER_TYPE_DESC"
+                                        }
+                                    },
+                                    "actions": {
+                                        "DataFieldForAction::eclaim_srv.Copy": {
+                                            "enableOnSelect": "single"
                                         },
-                                        "actions": {
-                                            "DataFieldForAction::eclaim_srv.Copy": {
-                                                "enableOnSelect": "single"
-                                            },
-                                            "newCopy": {
-                                                "press": "claima.ext.controller.Config.onclickcopy",
-                                                "visible": true,
-                                                "enabled": true,
-                                                "requiresSelection": true,
-                                                "text": "Copy"
-                                            }
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -910,12 +1821,82 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": {
-                                            "visibleFields": "CLAIM_CAT_ID,CLAIM_CATEGORY_DESC"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "CLAIM_CAT_ID,CLAIM_CATEGORY_DESC"
+                                            "creationFields": "CLAIM_CAT_ID,CLAIM_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZEMP_CA_PAYMENT": {
+                    "type": "Component",
+                    "id": "ZEMP_CA_PAYMENT",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_CA_PAYMENT",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "REQUEST_ID,EMP_ID,DISBURSEMENT_DATE,DISBURSEMENT_STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "DataFieldForAction::eclaim_srv.Copy": {
+                                            "enableOnSelect": "single"
+                                        },
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -949,12 +1930,30 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": {
-                                            "visibleFields": "STATUS_ID,STATUS_DESC"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "STATUS_ID,STATUS_DESC"
+                                            "creationFields": "STATUS_ID,STATUS_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit",
+                                            "position": {
+                                                "placement": "After",
+                                                "anchor": "newCopy"
+                                            }
                                         }
                                     }
                                 }
@@ -988,13 +1987,29 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": {
-                                            "visibleFields": "LODGING_CATEGORY_ID,LODGING_CATEGORY_DESC",
-                                            "operationGroupingMode": "Isolated"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "LODGING_CATEGORY_ID,LODGING_CATEGORY_DESC"
+                                            "creationFields": "LODGING_CATEGORY_ID,LODGING_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "DataFieldForAction::eclaim_srv.Copy": {
+                                            "enableOnSelect": "single"
+                                        },
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1029,13 +2044,26 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "enableMassEdit": {
-                                            "operationGroupingMode": "Isolated",
-                                            "visibleFields": "ROOM_TYPE_ID,ROOM_TYPE_DESC"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "ROOM_TYPE_ID,ROOM_TYPE_DESC"
+                                            "creationFields": "ROOM_TYPE_ID,ROOM_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1070,13 +2098,26 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "enableMassEdit": {
-                                            "operationGroupingMode": "Isolated",
-                                            "visibleFields": "FLIGHT_CLASS_ID,FLIGHT_CLASS_DESC"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "FLIGHT_CLASS_ID,FLIGHT_CLASS_DESC"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1110,12 +2151,26 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": {
-                                            "visibleFields": "AREA_ID,AREA_DESC"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "AREA_ID,AREA_DESC"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1150,13 +2205,26 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "enableMassEdit": {
-                                            "operationGroupingMode": "Isolated",
-                                            "visibleFields": "COUNTRY_ID,COUNTRY_DESC"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "COUNTRY_ID,COUNTRY_DESC"
+                                            "creationFields": "COUNTRY_ID,COUNTRY_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1191,13 +2259,26 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "enableMassEdit": {
-                                            "operationGroupingMode": "Isolated",
-                                            "visibleFields": "REGION_ID,USER_TYPE_DESC"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "REGION_ID,USER_TYPE_DESC"
+                                            "creationFields": "REGION_ID,USER_TYPE_DESC,REGION_DESC"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1231,12 +2312,26 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": {
-                                            "visibleFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC"
+                                            "creationFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1270,13 +2365,26 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": {
-                                            "visibleFields": "STAFF_CATEGORY_ID,STAFF_CATEGORY_DESC",
-                                            "operationGroupingMode": "Isolated"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "STAFF_CATEGORY_ID,STAFF_CATEGORY_DESC"
+                                            "creationFields": "STAFF_CATEGORY_ID,STAFF_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1310,21 +2418,26 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": {
-                                            "visibleFields": "VEHICLE_TYPE_ID,VEHICLE_TYPE_DESC"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "VEHICLE_TYPE_ID,VEHICLE_TYPE_DESC"
+                                            "creationFields": "VEHICLE_TYPE_ID,VEHICLE_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
                                         },
-                                        "actions": {
-                                            "newCopy": {
-                                                "press": "claima.ext.controller.Config.onclickcopy",
-                                                "visible": true,
-                                                "enabled": true,
-                                                "requiresSelection": true,
-                                                "text": "Copy"
-                                            }
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1358,13 +2471,26 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": {
-                                            "visibleFields": "COUNTRY_ID,STATE_ID,STATE_DESC",
-                                            "operationGroupingMode": "Isolated"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "COUNTRY_ID,STATE_ID,STATE_DESC"
+                                            "creationFields": "COUNTRY_ID,STATE_ID,STATE_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1398,22 +2524,26 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": {
-                                            "operationGroupingMode": "Isolated",
-                                            "visibleFields": "CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,FIELD01,FIELD02,FIELD03,FIELD04,FIELD05,FIELD06,FIELD07,FIELD08,FIELD09,FIELD10,FIELD11,FIELD12,FIELD13,FIELD14,FIELD15,FIELD16,FIELD17,FIELD18,FIELD19,FIELD20"
-                                        },
+                                        "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,FIELD01,FIELD02,FIELD03,FIELD04,FIELD05,FIELD06,FIELD07,FIELD08,FIELD09,FIELD10,FIELD11,FIELD12,FIELD13,FIELD14,FIELD15,FIELD16,FIELD17,FIELD18,FIELD19,FIELD20"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         },
-                                        "actions": {
-                                            "newCopy": {
-                                                "press": "claima.ext.controller.Config.onclickcopy",
-                                                "visible": true,
-                                                "enabled": true,
-                                                "requiresSelection": true,
-                                                "text": "Copy"
-                                            }
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
                                         }
                                     }
                                 }
@@ -1447,18 +2577,26 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "actions": {
-                                            "newCopy": {
-                                                "press": "claima.ext.controller.Config.onclickcopy",
-                                                "visible": true,
-                                                "enabled": true,
-                                                "requiresSelection": true,
-                                                "text": "Copy"
-                                            }
-                                        },
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "LENDER_ID,LENDER_NAME,START_DATE,END_DATE,STATUS"
+                                        },
+                                        "enableMassEdit": false
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1468,14 +2606,68 @@
                             "navigation": {}
                         }
                     }
-                }
-            }
-        },
-        "extends": {
-            "extensions": {
-                "sap.ui.controllerExtensions": {
-                    "sap.fe.templates.ListReport.ListReportController": {
-                        "controllerName": "claima.controller.configuration"
+                },
+                "ZCLAIM_TYPEList": {
+                    "type": "Component",
+                    "id": "ZCLAIM_TYPEList",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZCLAIM_TYPE",
+                            "navigation": {
+                                "ZCLAIM_TYPE": {
+                                    "detail": {
+                                        "route": "ZCLAIM_TYPEObjectPage"
+                                    }
+                                }
+                            },
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "creationMode": {},
+                                        "selectionMode": "Single",
+                                        "enableMassEdit": {
+                                            "operationGroupingMode": "Isolated",
+                                            "visibleFields": "CLAIM_TYPE_ID,CLAIM_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    }
+                                }
+                            },
+                            "initialLoad": "Enabled"
+                        }
+                    }
+                },
+                "ZCLAIM_TYPEObjectPage": {
+                    "type": "Component",
+                    "id": "ZCLAIM_TYPEObjectPage",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZCLAIM_TYPE",
+                            "navigation": {},
+                            "editableHeaderContent": false,
+                            "content": {
+                                "header": {
+                                    "visible": true
+                                }
+                            },
+                            "controlConfiguration": {
+                                "Items/@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "CLAIM_TYPE_ITEM_ID,RISK,CLAIM_TYPE_ITEM_DESC,START_DATE,END_DATE,STATUS,CATEGORY_ID,COST_CENTER,GL_ACCOUNT,MATERIAL_CODE,SUBMISSION_TYPE"
+                                        },
+                                        "enableMassEdit": {
+                                            "visibleFields": "CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC,START_DATE,END_DATE,CATEGORY_ID,STATUS,COST_CENTER,GL_ACCOUNT,MATERIAL_CODE,RISK,SUBMISSION_TYPE"
+                                        },
+                                        "enablePaste": true
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

@@ -1,13 +1,26 @@
+
 {
-  "welcomeFile": "/app/claima/index.html",
   "authenticationMethod": "route",
   "routes": [
+    
     {
-      "source": "^(.*)$",
-      "target": "$1",
-      "service": "html5-apps-repo-rt",
-      "authenticationType": "xsuaa",
-      "csrfProtection": false
+    "source": "/http/(.*)$",
+    "target": "/http/$1",
+    "destination": "srv-api",
+    "authenticationType": "none"
+    },
+    {
+      "source": "^(?:/app|/app/.*)?/resources/(.*)$",
+      "target": "/resources/$1",
+      "authenticationType": "none",
+      "destination": "srv-api"
+    },
+    {
+      "source": "^(?:/app|/app/.*)?/test-resources/(.*)$",
+      "target": "/test-resources/$1",
+      "authenticationType": "none",
+      "destination": "srv-api"
     }
-  ]
+  ],
+  "welcomeFile": "/claima/index.html"
 }

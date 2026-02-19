@@ -203,7 +203,7 @@
                                     <VBox>
                                         <ScrollContainer>
                                             <Table
-                                                items="{ path: 'employee>/ZCLAIM_HEADER' }"
+                                                items="{ path: '/ZCLAIM_HEADER' }"
                                                 growing="true"
                                                 noDataText="No data available"
                                             >
@@ -222,13 +222,13 @@
                                                     <ColumnListItem>
                                                         <cells>
                                                             <Text
-                                                                text="{employee>CATEGORY}"
+                                                                text="{CLAIM_ID}"
                                                             />
                                                             <Text
-                                                                text="{employee>CLAIM_DATE}"
+                                                                text="{STATUS_ID}"
                                                             />
                                                             <Text
-                                                                text="{employee>TOTAL}"
+                                                                text="{EVENT_START_DATE}"
                                                             />
                                                         </cells>
                                                     </ColumnListItem>
@@ -272,7 +272,7 @@
                                     <VBox>
                                         <ScrollContainer>
                                             <Table
-                                            items="{ path: 'employee>/ZREQUEST_HEADER' }"
+                                            items="{ path: '/ZREQUEST_HEADER' }"
                                             growing="true"
                                             noDataText="No data available">
                                             <columns>
@@ -287,13 +287,13 @@
                                                 <ColumnListItem>
                                                     <cells>
                                                         <Text
-                                                            text="{employee>LOCATION}"
+                                                            text="{LOCATION}"
                                                         />
                                                         <Text
-                                                            text="{employee>START_DATE}"
+                                                            text="{EVENT_START_DATE}"
                                                         />
                                                         <Text
-                                                            text="{employee>AMOUNT}"
+                                                            text="{REQUEST_AMOUNT}"
                                                         />
                                                     </cells>
                                                 </ColumnListItem>

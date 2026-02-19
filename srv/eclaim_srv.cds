@@ -12,17 +12,12 @@ service eclaim_srv {
 
     entity ZCLAIM_TYPE       as
         projection on ECLAIM.ZCLAIM_TYPE {
-                // actions {
-                //     @Common.DefaultValuesFunction: 'getDefaultsForCopy'
-                //     action Copy(claim_type_id : String @(Common.Label: 'New Claim Type ID'),
-                //     CLAIM_TYPE_DESC           : String @(Common.Label: 'Claim Type Description')
-                //                                 ) returns zclaim_type;
             key CLAIM_TYPE_ID,
                 CLAIM_TYPE_DESC,
-                ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM as Item
-
-
-        // }
+                END_DATE,
+                START_DATE,
+                STATUS,
+                ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM as Items
         };
 
     entity ZREQUEST_ITEM     as projection on ECLAIM.ZREQUEST_ITEM;

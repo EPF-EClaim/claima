@@ -5,7 +5,7 @@ namespace ECLAIMVIEW;
 entity ZEMP_REQUEST_VIEW
   as projection on ECLAIM.ZREQUEST_HEADER {
     key REQUEST_ID,        
-        EMP_ID,    
+        EMP_ID,        
         ZEMP_MASTER.CC,        
         OBJECTIVE_PURPOSE,
         REQUEST_TYPE_ID,
@@ -496,3 +496,9 @@ entity ZEMP_REQUEST_REPORT_DETAILS
         LAST_APPROVED_DATE,
         CASH_ADVANCE_DATE as PAYMENT_DATE               
   }; 
+
+
+
+
+
+
