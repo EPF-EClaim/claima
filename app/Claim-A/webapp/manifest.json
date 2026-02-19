@@ -113,13 +113,6 @@
             },
             "routes": [
                 {
-                    "name": "RouteMain",
-                    "pattern": ":?query:",
-                    "target": [
-                        "TargetMain"
-                    ]
-                },
-                {
                     "pattern": "Dashboard",
                     "name": "Dashboard",
                     "target": "TargetDashboard"
@@ -139,27 +132,10 @@
                     ]
                 },
                 {
-                    "pattern": "ZCLAIM_TYPE:?query:",
-                    "name": "ZCLAIM_TYPE",
-                    "target": "ZCLAIM_TYPE"
-                },
-                {
-                    "pattern": "ZCLAIM_TYPE({key}):?query:",
-                    "name": "ZCLAIM_TYPEObjectPage",
-                    "target": "ZCLAIM_TYPEObjectPage"
-                },
-                {
                     "pattern": "ZNUM_RANGE",
                     "name": "ZNUM_RANGE",
                     "target": [
                         "ZNUM_RANGE"
-                    ]
-                },
-                {
-                    "pattern": "ZCLAIM_TYPE_ITEM",
-                    "name": "ZCLAIM_TYPE_ITEM",
-                    "target": [
-                        "ZCLAIM_TYPE_ITEM"
                     ]
                 },
                 {
@@ -420,6 +396,21 @@
                     "target": [
                         "ZOFFICE_LOCATION"
                     ]
+                },
+                {
+                    "pattern": ":?query:",
+                    "name": "ZCLAIM_TYPE",
+                    "target": "ZCLAIM_TYPE"
+                },
+                {
+                    "name": "ZCLAIM_TYPEObjectPage",
+                    "pattern": "ZCLAIM_TYPE/ZCLAIM_TYPE({ZCLAIM_TYPEKey}):?query:",
+                    "target": "ZCLAIM_TYPEObjectPage"
+                },
+                {
+                    "name": "ZCLAIM_TYPE_ItemsObjectPage",
+                    "pattern": "ZCLAIM_TYPE/ZCLAIM_TYPE({ZCLAIM_TYPEKey})/Items({ItemsKey}):?query:",
+                    "target": "ZCLAIM_TYPE_ItemsObjectPage"
                 }
             ],
             "targets": {
@@ -1689,59 +1680,6 @@
                         }
                     }
                 },
-                "ZCLAIM_TYPE_ITEM": {
-                    "type": "Component",
-                    "id": "ZCLAIM_TYPE_ITEM",
-                    "name": "sap.fe.templates.ListReport",
-                    "options": {
-                        "settings": {
-                            "contextPath": "/ZCLAIM_TYPE_ITEM",
-                            "variantManagement": "None",
-                            "controlConfiguration": {
-                                "@com.sap.vocabularies.UI.v1.LineItem": {
-                                    "tableSettings": {
-                                        "type": "ResponsiveTable",
-                                        "createMode": "inline",
-                                        "initialLoad": "Enabled",
-                                        "enableExport": true,
-                                        "selectAll": false,
-                                        "selectionMode": "Single",
-                                        "personalization": {
-                                            "column": false
-                                        },
-                                        "quickVariantSelection": {
-                                            "hideTableTitle": true
-                                        },
-                                        "enableMassEdit": false,
-                                        "creationMode": {
-                                            "name": "CreationDialog",
-                                            "creationFields": "CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC"
-                                        }
-                                    },
-                                    "actions": {
-                                        "newCopy": {
-                                            "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
-                                        }
-                                    }
-                                }
-                            },
-                            "hideFilterBar": true,
-                            "initialLoad": "Enabled",
-                            "navigation": {}
-                        }
-                    }
-                },
                 "ZUSER_TYPE": {
                     "type": "Component",
                     "id": "ZUSER_TYPE",
@@ -2615,28 +2553,24 @@
                         "settings": {
                             "contextPath": "/ZCLAIM_TYPE",
                             "navigation": {
-                                "": {
+                                "ZCLAIM_TYPE": {
                                     "detail": {
                                         "route": "ZCLAIM_TYPEObjectPage"
                                     }
                                 }
                             },
+                            "variantManagement": "None",
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
+                                        "selectionMode": "Single",
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "CLAIM_TYPE_ID,CLAIM_TYPE_DESC,START_DATE,END_DATE,STATUS"
-                                        },
-                                        "selectionMode": "Single",
-                                        "enableMassEdit": false,
-                                        "selectAll": false
+                                            "creationFields": "CLAIM_TYPE_ID"
+                                        }
                                     }
                                 }
-                            },
-                            "initialLoad": "Enabled",
-                            "hideFilterBar": true,
-                            "variantManagement": "None"
+                            }
                         }
                     }
                 },
@@ -2646,30 +2580,25 @@
                     "name": "sap.fe.templates.ObjectPage",
                     "options": {
                         "settings": {
-                            "contextPath": "/ZCLAIM_TYPE",
-                            "navigation": {},
-                            "editableHeaderContent": false,
-                            "content": {
-                                "header": {
-                                    "visible": true
-                                }
-                            },
-                            "controlConfiguration": {
-                                "Items/@com.sap.vocabularies.UI.v1.LineItem": {
-                                    "tableSettings": {
-                                        "selectAll": false,
-                                        "selectionMode": "None",
-                                        "creationMode": {
-                                            "name": "CreationDialog",
-                                            "creationFields": "CLAIM_TYPE_ITEM_ID,RISK,CLAIM_TYPE_ITEM_DESC,START_DATE,END_DATE,STATUS,CATEGORY_ID,COST_CENTER,GL_ACCOUNT,MATERIAL_CODE,SUBMISSION_TYPE"
-                                        },
-                                        "enableMassEdit": {
-                                            "visibleFields": "CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC,START_DATE,END_DATE,CATEGORY_ID,STATUS,COST_CENTER,GL_ACCOUNT,MATERIAL_CODE,RISK,SUBMISSION_TYPE"
-                                        },
-                                        "enablePaste": true
+                            "navigation": {
+                                "Items": {
+                                    "detail": {
+                                        "route": "ZCLAIM_TYPE_ItemsObjectPage"
                                     }
                                 }
-                            }
+                            },
+                            "contextPath": "/ZCLAIM_TYPE"
+                        }
+                    }
+                },
+                "ZCLAIM_TYPE_ItemsObjectPage": {
+                    "type": "Component",
+                    "id": "ZCLAIM_TYPE_ItemsObjectPage",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "navigation": {},
+                            "contextPath": "/ZCLAIM_TYPE/Items"
                         }
                     }
                 }

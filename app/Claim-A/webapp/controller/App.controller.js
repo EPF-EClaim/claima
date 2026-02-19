@@ -123,6 +123,7 @@ sap.ui.define([
 
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
+			sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
 		},
 
 		onCollapseExpandPress: function () {
@@ -141,7 +142,8 @@ sap.ui.define([
 			var oItem = oEvent.getParameter("item");
 			var oKey = oItem.getKey();
 			var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-			oRouter.navTo("RouteMain"); //dummy routing
+			// oRouter.navTo("RouteMain"); //dummy routing
+			sap.ui.core.routing.HashChanger.getInstance().replaceHash("");
 
 			switch (oKey) {
 				case "sidenav_claimsubmission":
