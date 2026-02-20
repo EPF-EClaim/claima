@@ -52,6 +52,7 @@
                 "sap.ui.core": {},
                 "sap.ui.table": {},
                 "sap.ui.unified": {},
+                "sap.fe.macros": {},
                 "sap.fe.templates": {}
             }
         },
@@ -398,19 +399,14 @@
                     ]
                 },
                 {
-                    "pattern": ":?query:",
+                    "pattern": "ZCLAIM_TYPE",
                     "name": "ZCLAIM_TYPE",
                     "target": "ZCLAIM_TYPE"
                 },
                 {
-                    "pattern": "ZCLAIM_TYPE({key}):?query:",
-                    "name": "ZCLAIM_TYPEObjectPage",
-                    "target": "ZCLAIM_TYPEObjectPage"
-                },
-                {
-                    "name": "ZCLAIM_TYPE_ItemsObjectPage",
-                    "pattern": "ZCLAIM_TYPE({key})/Items({ItemsKey}):?query:",
-                    "target": "ZCLAIM_TYPE_ItemsObjectPage"
+                    "pattern": "ZCLAIM_TYPE_ITEM",
+                    "name": "ZCLAIM_TYPE_ITEM",
+                    "target": "ZCLAIM_TYPE_ITEM"
                 }
             ],
             "targets": {
@@ -2546,73 +2542,19 @@
                     }
                 },
                 "ZCLAIM_TYPE": {
-                    "type": "Component",
-                    "id": "ZCLAIM_TYPE",
-                    "name": "sap.fe.templates.ListReport",
-                    "options": {
-                        "settings": {
-                            "contextPath": "/ZCLAIM_TYPE",
-                            "navigation": {
-                                "ZCLAIM_TYPE": {
-                                    "detail": {
-                                        "route": "ZCLAIM_TYPEObjectPage"
-                                    }
-                                }
-                            },
-                            "variantManagement": "None",
-                            "controlConfiguration": {
-                                "@com.sap.vocabularies.UI.v1.LineItem": {
-                                    "tableSettings": {
-                                        "creationMode": {
-                                            "name": "CreationDialog",
-                                            "creationFields": "CLAIM_TYPE_ID,CLAIM_TYPE_DESC,START_DATE,END_DATE,STATUS"
-                                        },
-                                        "selectAll": false,
-                                        "selectionMode": "Single"
-                                    },
-                                    "actions": {
-                                        "newCopy": {
-                                            "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Copy"
-                                        }
-                                    }
-                                }
-                            },
-                            "hideFilterBar": true,
-                            "initialLoad": "Enabled"
-                        }
-                    }
+                    "id": "ConfigTable",
+                    "path": "claima.view",
+                    "name": "ConfigTable",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition":"slide"
                 },
-                "ZCLAIM_TYPEObjectPage": {
-                    "type": "Component",
-                    "id": "ZCLAIM_TYPEObjectPage",
-                    "name": "sap.fe.templates.ObjectPage",
-                    "options": {
-                        "settings": {
-                            "navigation": {
-                                "Items": {
-                                    "detail": {
-                                        "route": "ZCLAIM_TYPE_ItemsObjectPage"
-                                    }
-                                }
-                            },
-                            "contextPath": "/ZCLAIM_TYPE"
-                        }
-                    }
-                },
-                "ZCLAIM_TYPE_ItemsObjectPage": {
-                    "type": "Component",
-                    "id": "ZCLAIM_TYPE_ItemsObjectPage",
-                    "name": "sap.fe.templates.ObjectPage",
-                    "options": {
-                        "settings": {
-                            "navigation": {},
-                            "contextPath": "/ZCLAIM_TYPE/Items"
-                        }
-                    }
+                "ZCLAIM_TYPE_ITEM": {
+                    "id": "ConfigTable_Item",
+                    "name": "ConfigTable_Item",
+                    "path": "claima.view",
+                    "viewType": "XML", 
+                    "transition": "slide"
                 }
             }
         },
