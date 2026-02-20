@@ -54,7 +54,7 @@
                 />
                 <Button
                     text="Create"
-                    press="onCreate"
+                    press="onCreateItem"
                     enabled="true"
                 />
                 <Button
