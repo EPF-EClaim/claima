@@ -1,0 +1,112 @@
+<mvc:View
+    controllerName="claima.controller.configuration"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:tnt="sap.tnt"
+    xmlns:cards="sap.f.cards"
+    xmlns:f="sap.f"
+    xmlns:l="sap.ui.layout"
+    xmlns:cssgrid="sap.ui.layout.cssgrid"
+    xmlns:w="sap.ui.integration.widgets"
+    xmlns:card="sap.f.cards"
+    xmlns:core="sap.ui.core"
+    xmlns:layout="sap.ui.layout"
+>
+    <Page showHeader="true">
+        <content>
+            <VBox
+                id="listContainer"
+                visible="{= ${config>/mode} === 'list' }"
+                class="sapUiMediumMargin"
+                width="100%"
+            >
+                <Toolbar width="90%">
+                    <Title text="ZCLAIM_TYPE Configuration" />
+                    <ToolbarSpacer />
+                    <Button
+                        text="Edit"
+                        press="onEdit"
+                        enabled="false"
+                    />
+                    <Button
+                        text="Copy"
+                        press="onCopy"
+                        enabled="false"
+                    />
+                    <Button
+                        text="Create"
+                        press="onCreate"
+                        enabled="true"
+                    />
+                    <Button
+                        text="Delete"
+                        press="onDelete"
+                        enabled="false"
+                    />
+                </Toolbar>
+
+                <Table
+                    id="claimTable"
+                    width="90%"
+                    items="{/ZCLAIM_TYPE}"
+                    mode="SingleSelectLeft"
+                    updateFinished="onUpdateFinished"
+                >
+                    <columns>
+                        <Column>
+                            <Text text="Claim Type ID" />
+                        </Column>
+                        <Column>
+                            <Text text="Claim Type Description" />
+                        </Column>
+                        <Column>
+                            <Text text="End Date" />
+                        </Column>
+                        <Column>
+                            <Text text="Start Date" />
+                        </Column>
+                        <Column>
+                            <Text text="Status" />
+                        </Column>
+                        <Column width="2rem">
+                            <Text text="" />
+                        </Column>
+                    </columns>
+
+                    <items>
+                        <ColumnListItem press="onRowPress">
+                            <cells>
+                                <Text text="{CLAIM_TYPE_ID}" />
+
+                                <Text text="{CLAIM_TYPE_DESC}" />
+
+                                <Text
+                                    text="{path: 'END_DATE', 
+                                type: 'sap.ui.model.odata.type.Date',
+                                formatOptions: { pattern: 'dd MMM yyyy' }}"
+                                />
+
+                                <Text text="{START_DATE}" />
+
+                                <Text text="{STATUS}" />
+
+                                <core:Icon
+                                    src="sap-icon://navigation-right-arrow"
+                                    press="onNavigate"
+                                    tooltip="View Item"
+                                    class="sapUiIconColorSubtle"
+                                />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </VBox>
+            <VBox
+                id="objectContainer"
+                visible="{= ${config>/mode} === 'object' }"
+                class="sapUiMediumMargin"
+                width="100%"
+            />
+        </content>
+    </Page>
+</mvc:View>
