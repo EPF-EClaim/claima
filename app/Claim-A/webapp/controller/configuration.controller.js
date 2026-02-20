@@ -84,9 +84,9 @@ sap.ui.define([
                             new Label({ text: 'Claim Type Description' }),
                             new Input({ id: "claimtypedesc" }),
                             new Label({ text: 'End Date' }),
-                            new DatePicker({ id: "enddate" }),
+                            new DatePicker({ id: "enddate", valueFormat:"yyyy-MM-dd", displayFormat:"dd MMM yyyy" }),
                             new Label({ text: 'Start Date' }),
-                            new DatePicker({ id: "startdate" }),
+                            new DatePicker({ id: "startdate", valueFormat:"yyyy-MM-dd", displayFormat:"dd MMM yyyy" }),
                             new Label({ text: 'Status' }),
                             new Input({ id: "status" })
                         ]
@@ -95,8 +95,27 @@ sap.ui.define([
                 beginButton: new Button({
                     text: 'Create',
                     press: function () {
-                        this._addNewEntry();
-                        oDialog.close();
+                        const sId = sap.ui.getCore().byId("claimtypeid").getValue();
+                        if (!sId) { sap.m.MessageToast.show("Claim Type ID is required"); return; }
+
+                        const oNewItem = {
+                            CLAIM_TYPE_ID: sId,
+                            CLAIM_TYPE_DESC: sap.ui.getCore().byId("claimtypedesc").getValue() || null,
+                            START_DATE: sap.ui.getCore().byId("startdate").getValue() || null,
+                            END_DATE: sap.ui.getCore().byId("enddate").getValue() || null,
+                            STATUS: sap.ui.getCore().byId("status").getValue() || null,
+                            IsActiveEntity: true
+                        };
+                        const oModel = this.getView().getModel();
+                        const oListBinding = oModel.bindList("/ZCLAIM_TYPE");
+                        try {
+                            var oContext = oListBinding.create(oNewItem);
+                            sap.m.MessageToast.show("Record created");
+                            oModel.refresh();
+                            oDialog.close();
+                        } catch (e) {
+                            sap.m.MessageToast.show("Error creating record");
+                        }
                     }.bind(this)
                 }),
                 endButton: new Button({
@@ -151,19 +170,19 @@ sap.ui.define([
                     press: function () {
                         var sid = this.getView().getModel("config");
                         var sclaimitemid = sap.ui.getCore().byId("claimtypeitemid").getValue();
-                        var sdesc = sap.ui.getCore().byId("claimtypeitemdesc");
-                        var sdate_e = sap.ui.getCore().byId("enddate");
-                        var sdate_s = sap.ui.getCore().byId("startdate");
-                        var sStatus = sap.ui.getCore().byId("status");
-                        var scategory = sap.ui.getCore().byId("categoryid");
-                        var scostcenter = sap.ui.getCore().byId("costcenter");
-                        var sglaccount = sap.ui.getCore().byId("glaccount");
-                        var smaterialcode = sap.ui.getCore().byId("materialcode");
-                        var srisk = sap.ui.getCore().byId("risk");
-                        var ssubmissiontype = sap.ui.getCore().byId("submissiontype");
+                        var sdesc = sap.ui.getCore().byId("claimtypeitemdesc").getValue();
+                        var sdate_e = sap.ui.getCore().byId("enddate").getValue();
+                        var sdate_s = sap.ui.getCore().byId("startdate").getValue();
+                        var sStatus = sap.ui.getCore().byId("status").getValue();
+                        var scategory = sap.ui.getCore().byId("categoryid").getValue();
+                        var scostcenter = sap.ui.getCore().byId("costcenter").getValue();
+                        var sglaccount = sap.ui.getCore().byId("glaccount").getValue();
+                        var smaterialcode = sap.ui.getCore().byId("materialcode").getValue();
+                        var srisk = sap.ui.getCore().byId("risk").getValue();
+                        var ssubmissiontype = sap.ui.getCore().byId("submissiontype").getValue();
 
-                        var oNewItem = { 
-                            CLAIM_TYPE_ITEM_ID: sclaimitemid ,
+                        var oNewItem = {
+                            CLAIM_TYPE_ITEM_ID: sclaimitemid,
                             CLAIM_TYPE_ITEM_DESC: sdesc ? sdesc : null,
                             END_DATE: sdate_e ? sdate_e : null,
                             START_DATE: sdate_s ? sdate_s : null,
@@ -181,7 +200,7 @@ sap.ui.define([
                         const sItemsPath = oHeader.getPath() + "/Items";
                         var oListBinding = oModel.bindList(sItemsPath),
                             oContext = oListBinding.create(oNewItem);
-                            oModel.refresh();
+                        oModel.refresh();
                         oDialog.close();
                     }.bind(this)
                 }),
