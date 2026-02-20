@@ -30,7 +30,6 @@
       "index": true
     },
     "fiori": {
-      "lean_draft": true,
       "bypass_draft": true
     },
     "hana": {
@@ -47,8 +46,7 @@
       },
       "app-front": true,
       "html5-repo": true,
-      "destinations": true,
-      "workzone": true
+      "destinations": true
     }
   },
   "workspaces": [

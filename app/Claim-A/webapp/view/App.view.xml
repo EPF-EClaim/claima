@@ -204,7 +204,7 @@
                                     <VBox>
                                         <ScrollContainer>
                                             <Table
-                                                items="{ path: 'employee>/ZCLAIM_HEADER' }"
+                                                items="{ path: '/ZCLAIM_HEADER' }"
                                                 growing="true"
                                                 noDataText="No data available"
                                             >
@@ -223,13 +223,13 @@
                                                     <ColumnListItem>
                                                         <cells>
                                                             <Text
-                                                                text="{employee>CATEGORY}"
+                                                                text="{CLAIM_ID}"
                                                             />
                                                             <Text
-                                                                text="{employee>CLAIM_DATE}"
+                                                                text="{STATUS_ID}"
                                                             />
                                                             <Text
-                                                                text="{employee>TOTAL}"
+                                                                text="{EVENT_START_DATE}"
                                                             />
                                                         </cells>
                                                     </ColumnListItem>
@@ -273,38 +273,33 @@
                                     <VBox>
                                         <ScrollContainer>
                                             <Table
-                                                items="{ path: 'employee>/ZREQUEST_HEADER' }"
-                                                growing="true"
-                                                noDataText="No data available"
-                                            >
-                                                <columns>
-                                                    <Column
-                                                        demandPopin="true"
-                                                        hAlign="Left"
-                                                    />
-                                                    <Column
-                                                        demandPopin="true"
-                                                    />
-                                                    <Column
-                                                        demandPopin="true"
-                                                    />
-                                                </columns>
-                                                <items>
-                                                    <ColumnListItem>
-                                                        <cells>
-                                                            <Text
-                                                                text="{employee>LOCATION}"
-                                                            />
-                                                            <Text
-                                                                text="{employee>START_DATE}"
-                                                            />
-                                                            <Text
-                                                                text="{employee>AMOUNT}"
-                                                            />
-                                                        </cells>
-                                                    </ColumnListItem>
-                                                </items>
-                                            </Table>
+                                            items="{ path: '/ZREQUEST_HEADER' }"
+                                            growing="true"
+                                            noDataText="No data available">
+                                            <columns>
+                                                <Column
+                                                    demandPopin="true"
+                                                    hAlign="Left"
+                                                />
+                                                <Column demandPopin="true" />
+                                                <Column demandPopin="true" />
+                                            </columns>
+                                            <items>
+                                                <ColumnListItem>
+                                                    <cells>
+                                                        <Text
+                                                            text="{LOCATION}"
+                                                        />
+                                                        <Text
+                                                            text="{EVENT_START_DATE}"
+                                                        />
+                                                        <Text
+                                                            text="{REQUEST_AMOUNT}"
+                                                        />
+                                                    </cells>
+                                                </ColumnListItem>
+                                            </items>
+                                        </Table>
                                         </ScrollContainer>
                                     </VBox>
                                 </Panel>

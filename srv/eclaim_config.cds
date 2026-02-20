@@ -3,7 +3,7 @@ using {eclaim_srv as service} from './eclaim_srv';
 
 annotate service.ZRISK with @(
     cds.autoexpose,
-    odata.draft.bypass,
+   
     Common.SemanticKey: [RISK_ID],
     Capabilities      : {
         Deletable : true,
@@ -57,7 +57,6 @@ annotate service.ZRISK with @(
 
 annotate service.ZREQUEST_TYPE with @(
     cds.autoexpose,
-    odata.draft.bypass,
     Common.SemanticKey: [REQUEST_TYPE_ID],
     Capabilities      : {
         Deletable : true,
@@ -111,71 +110,85 @@ annotate service.ZREQUEST_TYPE with @(
 
 annotate service.ZCLAIM_TYPE with @(
     cds.autoexpose,
-    odata.draft.bypass,
-    Common.SemanticKey: [CLAIM_TYPE_ID],
-    Capabilities      : {
-        Deletable : true,
-        Updatable : true,
-        Insertable: true
-    },
     odata.draft.enabled,
 
+    Common.SemanticKey: [CLAIM_TYPE_ID],
+
     UI                : {
-        CreateHidden: false,
-        DeleteHidden: false,
-        HeaderInfo  : {
-            $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZCLAIM_TYPE',
-            TypeNamePlural: 'ZCLAIM_TYPE',
-        },
-        LineItem    : [
+        Identification: [
             {
-                $Type            : 'UI.DataField',
-                Value            : CLAIM_TYPE_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim Type ID'
+                $Type: 'UI.DataField',
+                Value: CLAIM_TYPE_ID,
+                Label: 'Claim Type ID'
             },
             {
-                $Type            : 'UI.DataField',
-                Value            : CLAIM_TYPE_DESC,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim Type Description'
+                $Type: 'UI.DataField',
+                Value: CLAIM_TYPE_DESC,
+                Label: 'Description'
             },
             {
-                $Type            : 'UI.DataField',
-                Value            : END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'End Date'
-            },              
+                $Type: 'UI.DataField',
+                Value: START_DATE,
+                Label: 'Start Date'
+            },
             {
-                $Type            : 'UI.DataField',
-                Value            : START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Start Date'
-            },          
+                $Type: 'UI.DataField',
+                Value: END_DATE,
+                Label: 'End Date'
+            },
             {
-                $Type            : 'UI.DataField',
-                Value            : STATUS,
-                ![@UI.Importance]: #High,
-                Label            : 'Status'
-            }            
-        ], 
-        Facets  : [
-            {
-                $Type: 'UI.ReferenceFacet', 
-                Target: 'ZCLAIM_TYPE_ITEM/@UI.LineItem',
-                Label: 'Items',
-                ID: 'Items'
+                $Type: 'UI.DataField',
+                Value: STATUS,
+                Label: 'Status'
             }
         ],
+
+        LineItem      : [
+            {
+                $Type: 'UI.DataField',
+                Value: CLAIM_TYPE_ID,
+                Label: 'Claim Type ID'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: CLAIM_TYPE_DESC,
+                Label: 'Description'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: START_DATE,
+                Label: 'Start Date'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: END_DATE,
+                Label: 'End Date'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: STATUS,
+                Label: 'Status'
+            }
+        ],
+
+        Facets        : [
+            {
+                $Type : 'UI.ReferenceFacet',
+                Label : 'General Information',
+                Target: '@UI.Identification'
+            },
+            {
+                $Type : 'UI.ReferenceFacet',
+                Label : 'Items',
+                Target: 'Items/@UI.LineItem'
+            }
+        ]
     }
 );
 
 annotate service.ZNUM_RANGE with @(
     cds.autoexpose,
     Common.SemanticKey: [RANGE_ID],
-
-
     UI                : {
         CreateHidden: true,
         DeleteHidden: true,
@@ -221,104 +234,70 @@ annotate service.ZNUM_RANGE with @(
 
 annotate service.ZCLAIM_TYPE_ITEM with @(
     cds.autoexpose,
-    odata.draft.bypass,
-    Common.SemanticKey: [CLAIM_TYPE_ITEM_ID, CLAIM_TYPE_ID],
-    Capabilities      : {
-        Deletable : true,
-        Updatable : true,
-        Insertable: true
-    },
-    // odata.draft.enabled,
 
-    UI                : {
-        CreateHidden: false,
-        DeleteHidden: false,
-        HeaderInfo  : {
-            $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZCLAIM_TYPE_ITEM',
-            TypeNamePlural: 'ZCLAIM_TYPE_ITEM',
+    Common.SemanticKey: [
+        CLAIM_TYPE_ID,
+        CLAIM_TYPE_ITEM_ID
+    ],
+
+    UI: {
+        LineItem: [
+        {
+            $Type: 'UI.DataField',
+            Value: CLAIM_TYPE_ITEM_ID,
+            Label: 'Item ID'
         },
-        LineItem    : [
-            // {
-            //     $Type              : 'UI.DataFieldForAction',
-            //     Action             : 'eclaim_srv.Copy',
-            //     ![@UI.IsCopyAction]: true,
-            //     Label              : 'Copy'
-            // },
-            {
-                $Type            : 'UI.DataField',
-                Value            : CLAIM_TYPE_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim Type ID'
-            },              
-            {
-                $Type            : 'UI.DataField',
-                Value            : CLAIM_TYPE_ITEM_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim Type Item ID'
-            },          
-            {
-                $Type            : 'UI.DataField',
-                Value            : CLAIM_TYPE_ITEM_DESC,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim Type Item Description'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'End Date'
-            },              
-            {
-                $Type            : 'UI.DataField',
-                Value            : START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Start Date'
-            },          
-            {
-                $Type            : 'UI.DataField',
-                Value            : STATUS,
-                ![@UI.Importance]: #High,
-                Label            : 'Status'
-            }, 
-            {
-                $Type            : 'UI.DataField',
-                Value            : CATEGORY_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Category ID'
-            },              
-            {
-                $Type            : 'UI.DataField',
-                Value            : COST_CENTER,
-                ![@UI.Importance]: #High,
-                Label            : 'Cost Center'
-            },          
-            {
-                $Type            : 'UI.DataField',
-                Value            : GL_ACCOUNT,
-                ![@UI.Importance]: #High,
-                Label            : 'GL Account'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : MATERIAL_CODE,
-                ![@UI.Importance]: #High,
-                Label            : 'Material Code'
-            },          
-            {
-                $Type            : 'UI.DataField',
-                Value            : RISK,
-                ![@UI.Importance]: #High,
-                Label            : 'Risk'
-            }, 
-            {
-                $Type            : 'UI.DataField',
-                Value            : SUBMISSION_TYPE,
-                ![@UI.Importance]: #High,
-                Label            : 'Submission Type'
-            }                                                
-        ]
-    }
+        {
+            $Type: 'UI.DataField',
+            Value: CLAIM_TYPE_ITEM_DESC,
+            Label: 'Description'
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: START_DATE,
+            Label: 'Start Date'
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: END_DATE,
+            Label: 'End Date'
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: STATUS,
+            Label: 'Status'
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: CATEGORY_ID,
+            Label: 'Category ID'
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: COST_CENTER,
+            Label: 'Cost Center'
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: GL_ACCOUNT,
+            Label: 'GL Account'
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: MATERIAL_CODE,
+            Label: 'Material Code'
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: RISK,
+            Label: 'Risk'
+        },
+        {
+            $Type: 'UI.DataField',
+            Value: SUBMISSION_TYPE,
+            Label: 'Submission Type'
+        }
+    ]}
 );
 
 annotate service.ZAPP_FIELD_CTRL with @(
@@ -644,14 +623,14 @@ annotate service.ZLODGING_CAT with @(
 
 annotate service.ZROOM_TYPE with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [ROOM_TYPE_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -698,7 +677,7 @@ annotate service.ZROOM_TYPE with @(
 
 annotate service.ZFLIGHT_CLASS with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [FLIGHT_CLASS_ID],
     Capabilities      : {
         Deletable : true,
@@ -752,7 +731,7 @@ annotate service.ZFLIGHT_CLASS with @(
 
 annotate service.ZCOUNTRY with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [COUNTRY_ID],
     Capabilities      : {
         Deletable : true,
@@ -806,7 +785,7 @@ annotate service.ZCOUNTRY with @(
 
 annotate service.ZAREA with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [AREA_ID],
     Capabilities      : {
         Deletable : true,
@@ -860,7 +839,7 @@ annotate service.ZAREA with @(
 
 annotate service.ZMARITAL_STAT with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [MARRIAGE_CATEGORY_ID],
     Capabilities      : {
         Deletable : true,
@@ -921,7 +900,7 @@ annotate service.ZSTAFF_CAT with @(
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -968,14 +947,14 @@ annotate service.ZSTAFF_CAT with @(
 
 annotate service.ZVEHICLE_TYPE with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [VEHICLE_TYPE_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1022,7 +1001,7 @@ annotate service.ZVEHICLE_TYPE with @(
 
 annotate service.ZSTATE with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [
         COUNTRY_ID,
         STATE_ID
@@ -1032,7 +1011,7 @@ annotate service.ZSTATE with @(
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1085,16 +1064,15 @@ annotate service.ZSTATE with @(
 
 annotate service.ZEMP_MASTER with @(
     cds.autoexpose,
-    odata.draft.bypass,
     Common.SemanticKey: [
         EEID
     ],
     Capabilities      : {
         Deletable : false,
         Updatable : true,
-        Insertable: false
+        Insertable: true
     },
-    odata.draft.enabled,
+    // odata.draft.enabled,
 
     UI                : {
         CreateHidden: true,
@@ -1340,7 +1318,7 @@ annotate service.ZJOB_GROUP with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }              
         ]
     }
 );
@@ -1420,14 +1398,14 @@ annotate service.ZDEPARTMENT with @(
                 Value            : DIVISION,
                 ![@UI.Importance]: #High,
                 Label            : 'Division'
-            }                                               
+            }                                            
         ]
     }
 );
 
 annotate service.ZROLE with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [
         ROLE_ID
     ],
@@ -1436,7 +1414,7 @@ annotate service.ZROLE with @(
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1476,7 +1454,7 @@ annotate service.ZROLE with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }         
         ]
     }
 );
@@ -1492,7 +1470,7 @@ annotate service.ZUSER_TYPE with @(
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1532,7 +1510,7 @@ annotate service.ZUSER_TYPE with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }         
         ]
     }
 );
@@ -1588,14 +1566,14 @@ annotate service.ZEMP_TYPE with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }        
         ]
     }
 );
 
 annotate service.ZREGION with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [
         REGION_ID
     ],
@@ -1604,7 +1582,7 @@ annotate service.ZREGION with @(
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -1644,14 +1622,14 @@ annotate service.ZREGION with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }          
         ]
     }
 );
 
 annotate service.ZRATE_KM with @(
     cds.autoexpose,
-    odata.draft.bypass,
+    // odata.draft.bypass,
     Common.SemanticKey: [
         RATE_KM_ID
     ],
@@ -1660,7 +1638,7 @@ annotate service.ZRATE_KM with @(
         Updatable : true,
         Insertable: true
     },
-    //odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                : {
         CreateHidden: false,
@@ -2099,7 +2077,9 @@ annotate service.ZEMP_VEHICLE with @(
     odata.draft.bypass,
     Common.SemanticKey: [
         EMP_ID,
-        VEHICLE_NO
+        VEHICLE_NO,
+        START_DATE,
+        END_DATE
     ],
     Capabilities      : {
         Deletable : true,
@@ -2752,3 +2732,11 @@ annotate service.ZREJECT_REASON with @(
         ]
     }
 );
+
+
+
+
+
+
+
+

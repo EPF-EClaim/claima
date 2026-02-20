@@ -185,7 +185,7 @@ entity ZCLAIM_TYPE : managed {
         START_DATE       : Date    @Common.Label: 'Start Date';
         STATUS           : String  @Common.Label: 'Status';
         ZCLAIM_TYPE_ITEM : Composition of many ZCLAIM_TYPE_ITEM
-                               on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
+                               on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID @assert.integrity: false;
 }
 
 entity ZNUM_RANGE : managed {
