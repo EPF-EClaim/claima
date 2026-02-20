@@ -114,6 +114,7 @@ sap.ui.define([
         },
 
         onCreateItem: function () {
+            var oHeader = this._oItemsFragment?.getBindingContext();
             var oDialog = new Dialog({
                 title: 'New Object',
                 type: 'Message',
@@ -148,6 +149,7 @@ sap.ui.define([
                 beginButton: new Button({
                     text: 'Create',
                     press: function () {
+                        var sid = this.getView().getModel("config");
                         var sclaimitemid = sap.ui.getCore().byId("claimtypeitemid").getValue();
                         var sdesc = sap.ui.getCore().byId("claimtypeitemdesc");
                         var sdate_e = sap.ui.getCore().byId("enddate");
@@ -160,22 +162,26 @@ sap.ui.define([
                         var srisk = sap.ui.getCore().byId("risk");
                         var ssubmissiontype = sap.ui.getCore().byId("submissiontype");
 
-                        var oNewItem = {
-                            "CLAIM_TYPE_ITEM_ID": sclaimitemid ? sclaimitemid : null,
-                            "CLAIM_TYPE_ITEM_DESC": sdesc ? sdesc : null,
-                            "END_DATE": sdate_e ? sdate_e : null,
-                            "START_DATE": sdate_s ? sdate_s : null,
-                            "STATUS": sStatus ? sStatus : null,
-                            "CATEGORY_ID": scategory ? scategory : null,
-                            "COST_CENTER": scostcenter ? scostcenter : null,
-                            "GL_ACCOUNT": sglaccount ? sglaccount : null,
-                            "MATERIAL_CODE": smaterialcode ? smaterialcode : null,
-                            "RISK": srisk ? srisk : null,
-                            "SUBMISSION_TYPE": ssubmissiontype ? ssubmissiontype : null,
-                            "IsActiveEntity": true
+                        var oNewItem = { 
+                            CLAIM_TYPE_ITEM_ID: sclaimitemid ,
+                            CLAIM_TYPE_ITEM_DESC: sdesc ? sdesc : null,
+                            END_DATE: sdate_e ? sdate_e : null,
+                            START_DATE: sdate_s ? sdate_s : null,
+                            STATUS: sStatus ? sStatus : null,
+                            CATEGORY_ID: scategory ? scategory : null,
+                            COST_CENTER: scostcenter ? scostcenter : null,
+                            GL_ACCOUNT: sglaccount ? sglaccount : null,
+                            MATERIAL_CODE: smaterialcode ? smaterialcode : null,
+                            RISK: srisk ? srisk : null,
+                            SUBMISSION_TYPE: ssubmissiontype ? ssubmissiontype : null,
+                            IsActiveEntity: true
                         }
 
                         var oModel = this.getView().getModel();
+                        const sItemsPath = oHeader.getPath() + "/Items";
+                        var oListBinding = oModel.bindList(sItemsPath),
+                            oContext = oListBinding.create(oNewItem);
+                            oModel.refresh();
                         oDialog.close();
                     }.bind(this)
                 }),
