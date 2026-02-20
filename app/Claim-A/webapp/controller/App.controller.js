@@ -1514,6 +1514,7 @@ sap.ui.define([
 			}
 		},
 
+		// check user ID
 		_loadCurrentUser: async function () {
             try {
                 const res = await fetch('/user-api/currentUser', {
