@@ -1,0 +1,155 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:l="sap.ui.layout"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:core="sap.ui.core">
+	<VBox class="sapUiSmallMargin">
+		<f:SimpleForm
+			editable="false"
+			layout="ColumnLayout"
+			title="{i18n>simpleform_claimsummary_claimheader}"
+			labelSpanXL="4"
+			labelSpanL="4"
+			labelSpanM="4"
+			labelSpanS="12"
+			adjustLabelSpan="false"
+			emptySpanXL="2"
+			emptySpanL="2"
+			emptySpanM="2"
+			emptySpanS="0"
+			columnsM="2"
+			columnsL="2"
+			columnsXL="2"
+			singleContainerFullSize="false" >
+			<f:content>
+				<!-- Report Purpose -->
+				<Label text="{i18n>label_claimsummary_claimheader_purpose}" />
+				<Text
+					id="text_claimsummary_claimheader_purpose"
+					text="{claimsubmission_input>/claimheader/purpose}"
+				/>
+				
+				<!-- Claim ID -->
+				<Label text="{i18n>label_claimsummary_claimheader_claimid}" />
+				<Text
+					id="text_claimsummary_claimheader_claimid"
+					text="{claimsubmission_input>/claimheader/claim_id}"
+				/>
+				
+				<!-- Trip Start Date -->
+				<Label text="{i18n>label_claimsummary_claimheader_tripstartdate}" />
+				<Text
+					id="text_claimsummary_claimheader_tripstartdate"
+					text="{
+						path: 'claimsubmission_input>/claimheader/trip_startdate',
+						type: 'sap.ui.model.odata.type.Date',
+						formatOptions: { pattern: 'dd-MMM-yyyy' }
+					}"
+				/>
+				
+				<!-- Trip End Date -->
+				<Label text="{i18n>label_claimsummary_claimheader_tripenddate}" />
+				<Text
+					id="text_claimsummary_claimheader_tripenddate"
+					text="{
+						path: 'claimsubmission_input>/claimheader/trip_enddate',
+						type: 'sap.ui.model.odata.type.Date',
+						formatOptions: { pattern: 'dd-MMM-yyyy' }
+					}"
+				/>
+				
+				<!-- Event Start Date -->
+				<Label text="{i18n>label_claimsummary_claimheader_eventstartdate}" />
+				<Text
+					id="text_claimsummary_claimheader_eventstartdate"
+					text="{
+						path: 'claimsubmission_input>/claimheader/event_startdate',
+						type: 'sap.ui.model.odata.type.Date',
+						formatOptions: { pattern: 'dd-MMM-yyyy' }
+					}"
+				/>
+				
+				<!-- Event End Date -->
+				<Label text="{i18n>label_claimsummary_claimheader_eventenddate}" />
+				<Text
+					id="text_claimsummary_claimheader_eventenddate"
+					text="{
+						path: 'claimsubmission_input>/claimheader/event_enddate',
+						type: 'sap.ui.model.odata.type.Date',
+						formatOptions: { pattern: 'dd-MMM-yyyy' }
+					}"
+				/>
+				
+				<!-- Pre-Approval Request -->
+				<Label text="{i18n>label_claimsummary_claimheader_preapprovalreq}" />
+				<Text
+					id="text_claimsummary_claimheader_preapprovalreq"
+					text="{claimsubmission_input>/claimheader/reqform} {claimsubmission_input>/claimheader/descr/reqform}"
+				/>
+				
+				<!-- Location -->
+				<Label text="{i18n>label_claimsummary_claimheader_location}" />
+				<Text
+					id="text_claimsummary_claimheader_location"
+					text="{claimsubmission_input>/claimheader/location}"
+				/>
+				
+				<!-- Claim Status -->
+				<Label text="{i18n>label_claimsummary_claimheader_status}" />
+				<Text
+					id="text_claimsummary_claimheader_status"
+					text="{claimsubmission_input>/claimheader/descr/status}"
+				/>
+				
+				<!-- Cost Center -->
+				<Label text="{i18n>label_claimsummary_claimheader_cc}" />
+				<Text
+					id="text_claimsummary_claimheader_cc"
+					text="{claimsubmission_input>/claimheader/cc} {claimsubmission_input>/claimheader/descr/cc}"
+				/>
+				
+				<!-- Alternate Cost Center -->
+				<Label text="{i18n>label_claimsummary_claimheader_altcc}" />
+				<Text
+					id="text_claimsummary_claimheader_altcc"
+					text="{claimsubmission_input>/claimheader/altcc} {claimsubmission_input>/claimheader/descr/altcc}"
+				/>
+				
+				<!-- Total Claim (MYR) -->
+				<Label text="{i18n>label_claimsummary_claimheader_amttotal}" />
+				<Text
+					id="text_claimsummary_claimheader_amttotal"
+					text="{claimsubmission_input>/claimheader/amt_total}"
+				/>
+				
+				<!-- Approved Amount (MYR) -->
+				<Label text="{i18n>label_claimsummary_claimheader_amtapproved}" />
+				<Text
+					id="text_claimsummary_claimheader_amtapproved"
+					text="{claimsubmission_input>/claimheader/amt_approved}"
+				/>
+				
+				<!-- Cash Advance (MYR) -->
+				<Label text="{i18n>label_claimsummary_claimheader_amtcashadvance}" />
+				<Text
+					id="text_claimsummary_claimheader_amtcashadvance"
+					text="{claimsubmission_input>/claimheader/amt_cashadvance}"
+				/>
+				
+				<!-- Final Amount to Receive (MYR) -->
+				<Label text="{i18n>label_claimsummary_claimheader_amtreceivefinal}" />
+				<Text
+					id="text_claimsummary_claimheader_amtreceivefinal"
+					text="{claimsubmission_input>/claimheader/amt_receivefinal}"
+				/>
+				
+				<!-- Comment -->
+				<Label text="{i18n>label_claimsummary_claimheader_comment}" />
+				<Text
+					id="text_claimsummary_claimheader_comment"
+					text="{claimsubmission_input>/claimheader/comment}"
+				/>
+			</f:content>
+		</f:SimpleForm>
+	</VBox>
+</core:FragmentDefinition>

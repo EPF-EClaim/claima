@@ -33,83 +33,6 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.App", {
 		onInit: function () {
-			// Claim Submission Model
-			var oClaimSubmissionModel = new JSONModel({
-				"employee": {
-					"eeid": null,
-					"name": null,
-					"cc": null,
-					"descr": {
-						"cc": null
-					}
-				},
-				"claimtype": {
-					"type": null,
-					"item": null,
-					"category": null,
-					"requestform": null,
-					"requestform_amt": null,
-					"descr": {
-						"type": null,
-						"item": null,
-						"category": null,
-						"requestform": null
-					}
-				},
-				"claimheader": {
-					"claim_id": null,
-					"emp_id": null,
-					"purpose": null,
-					"status": null,
-					"lastmodifieddate": null,
-					"submitteddate": null,
-					"trip_startdate": null,
-					"trip_enddate": null,
-					"event_startdate": null,
-					"event_enddate": null,
-					"claimtype": null,
-					"claimitem": null,
-					"subtype": null,
-					"location": null,
-					"cc": null,
-					"altcc": null,
-					"comment": null,
-					"reqform": null,
-					"attachment": null,
-					"amt_total": null,
-					"amt_approved": null,
-					"amt_cashadvance": null,
-					"amt_receivefinal": null,
-					"lastapproveddate": null,
-					"lastapprovedtime": null,
-					"lastapproveddate": null,
-					"paymentdate": null,
-					"movinghouse": {
-						"spouseoffice": null,
-						"housecompletiondate": null,
-						"moveindate": null,
-						"housingloanscheme": null,
-						"lendername": null,
-						"specifydetails": null,
-						"newhouseaddress": null,
-						"housecompletiondate": null,
-						"distoldhouse_officekm": null,
-						"distoldhouse_newhousekm": null
-					},
-					"descr": {
-						"status": null,
-						"claimtype": null,
-						"claimitem": null,
-						"subtype": null,
-						"cc": null,
-						"altcc": null,
-						"reqform": null
-					}
-				}
-			});
-			//// set input
-			this.getView().setModel(oClaimSubmissionModel, "claimsubmission_input");
-
 			// oReportModel
 			var oReportModel = new JSONModel({
 				"purpose": "",
@@ -213,10 +136,123 @@ sap.ui.define([
 			}
 		},
 
+		_getNewClaimSubmissionModel: function (modelName) {
+			// Claim Submission Model
+			var oClaimSubmissionModel = new JSONModel({
+				"employee": {
+					"eeid": null,
+					"name": null,
+					"cc": null,
+					"descr": {
+						"cc": null
+					}
+				},
+				"claimtype": {
+					"type": null,
+					"item": null,
+					"category": null,
+					"requestform": null,
+					"requestform_amt": null,
+					"descr": {
+						"type": null,
+						"item": null,
+						"category": null,
+						"requestform": null
+					}
+				},
+				"claimheader": {
+					"claim_id": null,
+					"emp_id": null,
+					"purpose": null,
+					"status": null,
+					"lastmodifieddate": null,
+					"submitteddate": null,
+					"trip_startdate": null,
+					"trip_enddate": null,
+					"event_startdate": null,
+					"event_enddate": null,
+					"claimtype": null,
+					"claimitem": null,
+					"subtype": null,
+					"location": null,
+					"cc": null,
+					"altcc": null,
+					"comment": null,
+					"reqform": null,
+					"attachment": null,
+					"amt_total": null,
+					"amt_approved": null,
+					"amt_cashadvance": null,
+					"amt_receivefinal": null,
+					"lastapproveddate": null,
+					"lastapprovedtime": null,
+					"lastapproveddate": null,
+					"lastsendbackdate": null,
+					"paymentdate": null,
+					"movinghouse": {
+						"spouseoffice": null,
+						"housecompletiondate": null,
+						"moveindate": null,
+						"housingloanscheme": null,
+						"lendername": null,
+						"specifydetails": null,
+						"newhouseaddress": null,
+						"housecompletiondate": null,
+						"distoldhouse_officekm": null,
+						"distoldhouse_newhousekm": null
+					},
+					"project_code": null,
+					"course_code": null,
+					"approver": {
+						"approver1": null,
+						"approver2": null,
+						"approver3": null,
+						"approver4": null,
+						"approver5": null,
+					},
+					"descr": {
+						"status": null,
+						"claimtype": null,
+						"claimitem": null,
+						"subtype": null,
+						"cc": null,
+						"altcc": null,
+						"reqform": null
+					}
+				},
+				"claimitems": [{
+					"item_id": null,
+					"date": null,
+					"receipt": null,
+					"claimtype": null,
+					"claimitem": null,
+					"amt": null,
+					"category": null,
+					"descr": {
+						"claimtype": null,
+						"claimitem": null,
+						"category": null
+					}
+				}],
+				"claimitem_count": 0,
+				"reportnumber": {
+					"reportno": null,
+					"current": null
+				}
+			});
+			//// set input
+			this.getView().setModel(oClaimSubmissionModel, modelName);
+			return this.getView().getModel(modelName);
+		},
+
 		//// Functions - Claim Process
 		_onInit_ClaimProcess: function () {
+			// reset claim process data
+			this._reset_ClaimProcess();
+
 			// placeholder - set employee data
-			var oInputModel = this.getView().getModel("claimsubmission_input");
+			// var oInputModel = this.getView().getModel("claimsubmission_input");
+			var oInputModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 			oInputModel.setProperty("/employee/eeid", "000001");
 			oInputModel.setProperty("/employee/name", "Test Name");
 			oInputModel.setProperty("/employee/cc", "4001");
@@ -346,8 +382,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform_amt", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("AMOUNT"));
 			}
 
-			// reset Claim Process dialog before closing
-			this._reset_ClaimProcess();
+			// close Claim Process dialog
 			this.oDialog_ClaimProcess.close();
 
 			// load Claim Input dialog
@@ -413,6 +448,9 @@ sap.ui.define([
 
 		//// Functions - Claim Input
 		_onInit_ClaimInput: function () {
+			// reset claim input data if exists
+			this._reset_ClaimInput();
+
 			// set data for claim header
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			oInputModel.setProperty("/claimheader/emp_id", oInputModel.getProperty("/employee/eeid"));
@@ -578,15 +616,40 @@ sap.ui.define([
 			if (altCostCenter) {
 				oInputModel.setProperty("/claimheader/descr/altcc", altCostCenter.getBindingContext("employee").getObject("COST_CENTER_DESC"));
 			}
+			//// get claim report number for Claim ID
+			var currentReportNumber = await this.getCurrentReportNumber();
+			if (currentReportNumber) {
+				oInputModel.setProperty("/claimheader/claim_id", currentReportNumber.reportNo);
+				oInputModel.setProperty("/reportnumber/reportno", currentReportNumber.reportNo);
+				oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
+			}
 
-			// reset Claim Input dialog before closing
-			this._reset_ClaimInput();
+			// close Claim Input dialog
 			this.oDialog_ClaimInput.close();
 
 			// load Claim Submission page
-			// this.byId("pageContainer").to(this.getView().byId('page_claimsubmission'));
-			this.byId("pageContainer").to(this.getView().byId('navcontainer_claimsubmission'));
+			//// load Claim Submission init
+			var oClaimSubmissionPage = this.getView().byId('navcontainer_claimsubmission');
+			// if (oClaimSubmissionPage) {
+			// 	setTimeout(function () {
+			// 		// find the first descendant that exposes getController() (typically the inner XMLView)
+			// 		var aViews = (typeof oClaimSubmissionPage.findAggregatedObjects === "function")
+			// 			? oClaimSubmissionPage.findAggregatedObjects(true, function (c) {
+			// 				return typeof c.getController === "function";
+			// 			})
+			// 			: [];
 
+			// 		var oCtrl = (aViews && aViews.length) ? aViews[0].getController() : null;
+
+			// 		if (oCtrl && typeof oCtrl._getInputModel === "function") {
+			// 			oCtrl._getInputModel();
+			// 		} else {
+			// 			jQuery.sap.log.warning("RequestForm controller API 'loadItemsForRequest' not found.");
+			// 		}
+			// 	}, 0);
+			// }
+			// this.byId("pageContainer").to(this.getView().byId('page_claimsubmission'));
+			this.byId("pageContainer").to(oClaimSubmissionPage);
 		},
 
 		_onUpload_ClaimInput_Attachment: function () {
