@@ -124,6 +124,8 @@ sap.ui.define([
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
 			sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
+
+			this._loadCurrentUser();
 		},
 
 		onCollapseExpandPress: function () {
@@ -1510,7 +1512,47 @@ sap.ui.define([
 			else {
 				return this.getView().getModel("i18n").getResourceBundle().getText(i18nKey);
 			}
-		}
+		},
+
+		// check user ID
+		_loadCurrentUser: async function () {
+            try {
+                const res = await fetch('/user-api/currentUser', {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'include' // safe with same-origin; keeps session cookie
+                });
+ 
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const user = await res.json();
+ 
+                // Typical shape: { email, name, firstname, lastname, displayName, ... }
+                const userLoggedEmail = user.email || null;
+ 
+                // Example: store in a JSONModel and set it to the view or component
+                const oUserModel = new sap.ui.model.json.JSONModel({
+                    email: userLoggedEmail,
+                    name: user.name,
+                    givenName: user.firstname,
+                    familyName: user.lastname,
+                    displayName: user.displayName
+                });
+                this.getView().setModel(oUserModel, 'user');
+ 
+                // If you also want the *app* role from your CAP action (/whoami), chain the call:
+                const whoamiRes = await fetch('/srv/whoami', { method: 'POST' });
+                if (whoamiRes.ok) {
+                    const info = await whoamiRes.json(); // { email, roles, isAdmin, dbRole, ... }
+                    oUserModel.setProperty('/roles', info.roles || []);
+                    oUserModel.setProperty('/isAdmin', !!info.isAdmin);
+                    oUserModel.setProperty('/dbRole', info.dbRole || null);
+                }
+            } catch (e) {
+                // Log & optionally show a message to the user
+                console.error('Failed to load current user:', e);
+                sap.m.MessageToast.show('Failed to load user info');
+            }
+        },
 
 	});
 });
