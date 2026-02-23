@@ -56,9 +56,7 @@ service eclaim_srv {
 
     entity ZCOUNTRY             as projection on ECLAIM.ZCOUNTRY;
 
-    entity ZAREA                as projection on ECLAIM.ZAREA;
-
-    entity ZSTAFF_CAT           as projection on ECLAIM.ZSTAFF_CAT;
+    entity ZAREA             as projection on ECLAIM.ZAREA;  
 
     entity ZMARITAL_STAT        as projection on ECLAIM.ZMARITAL_STAT;
 
@@ -104,7 +102,7 @@ service eclaim_srv {
 
     entity ZAPPROVAL_3          as projection on ECLAIM.ZAPPROVAL_3;
 
-    entity ZEMP_VEHICLE         as projection on ECLAIM.ZEMP_VEHICLE;
+    entity ZVEHICLE_OWNERSHIP as projection on ECLAIM.ZVEHICLE_OWNERSHIP;
 
     entity ZCOST_CENTER         as projection on ECLAIM.ZCOST_CENTER;
 
@@ -130,5 +128,7 @@ service eclaim_srv {
 
     entity ZLENDER_NAME         as projection on ECLAIM.ZLENDER_NAME;
 
-    entity ZREJECT_REASON       as projection on ECLAIM.ZREJECT_REASON;
+    entity ZREJECT_REASON as projection on ECLAIM.ZREJECT_REASON;
+
+    entity ZCURRENCY as projection on ECLAIM.ZCURRENCY;
 };
