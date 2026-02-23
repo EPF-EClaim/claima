@@ -19,6 +19,12 @@ sap.ui.define([
             this.getView().setModel(this._oAppModel, "config");
 
 
+            var oViewModel = new sap.ui.model.json.JSONModel({
+                hasSelection: false,
+                selectedContextPath: null
+            });
+            this.getView().setModel(oViewModel, "view");
+
             const oRouter = this.getOwnerComponent().getRouter();
             oRouter.getRoute("ZCLAIM_TYPE").attachPatternMatched(this._onListRouteMatched, this);
         },
@@ -30,6 +36,7 @@ sap.ui.define([
         },
 
         //navigation to object page is not working when cofigure from manifest, alternative manual table config
+        //only for ZCLAIM_TYPE
         onNavigate: async function (oEvent) {
             const oContext = oEvent.getSource().getBindingContext();
             const oData = oContext.getObject();
@@ -37,6 +44,9 @@ sap.ui.define([
             const oConfigModel = this.getView().getModel("config");
             oConfigModel.setProperty("/selectedHeader", oData);
             oConfigModel.setProperty("/mode", "object");
+            this.getView().getModel("view").setData({
+                hasSelection: false
+            });
 
             if (!this._oItemsFragment) {
                 this._oItemsFragment = await sap.ui.core.Fragment.load({
@@ -49,7 +59,7 @@ sap.ui.define([
 
             const oContainer = this.byId("objectContainer");
             if (oContainer.indexOfItem(this._oItemsFragment) === -1) {
-                oContainer.removeAllItems(); // optional
+                oContainer.removeAllItems();
                 oContainer.addItem(this._oItemsFragment);
             }
             this._oItemsFragment.setBindingContext(oContext);
@@ -66,164 +76,228 @@ sap.ui.define([
             }
         },
 
-        onCopy: function (oEvent) {
+        onSelectionChange: function (oEvent) {
+            var oTable = oEvent.getSource();
+            var oSelected = oTable.getSelectedItem();
 
-        },
-        onEdit: function (oEvent) {
+            var bHasSelection = !!oSelected;
+            var sPath = bHasSelection ? oSelected.getBindingContext().getPath() : null;
 
+            this.getView().getModel("view").setData({
+                hasSelection: bHasSelection,
+                selectedContextPath: sPath
+            }, true);
         },
-        onCreate: function () {
-            var oDialog = new Dialog({
-                title: 'New Object',
-                type: 'Message',
-                content: [
-                    new VBox({
-                        items: [
-                            new Label({ text: 'Claim Type ID', required: true }),
-                            new Input({ id: "claimtypeid" }),
-                            new Label({ text: 'Claim Type Description' }),
-                            new Input({ id: "claimtypedesc" }),
-                            new Label({ text: 'End Date' }),
-                            new DatePicker({ id: "enddate", valueFormat:"yyyy-MM-dd", displayFormat:"dd MMM yyyy" }),
-                            new Label({ text: 'Start Date' }),
-                            new DatePicker({ id: "startdate", valueFormat:"yyyy-MM-dd", displayFormat:"dd MMM yyyy" }),
-                            new Label({ text: 'Status' }),
-                            new Input({ id: "status" })
-                        ]
-                    })
-                ],
-                beginButton: new Button({
-                    text: 'Create',
+
+        onCreate: function (oEvent) {
+            const oNewEntry = {};
+            const { oVBox, sPath, oSelected, oModel } = this._getDetails(oEvent);
+            var sNewPath = sPath.includes('Items') ? this._oItemsFragment?.getBindingContext().getPath() + "/Items" : sPath;
+
+            var oDialog = new sap.m.Dialog({
+                title: `New Object`,
+                contentWidth: "15%",
+                horizontalScrolling: false,
+                beginButton: new sap.m.Button({
+                    text: "Create",
                     press: function () {
-                        const sId = sap.ui.getCore().byId("claimtypeid").getValue();
-                        if (!sId) { sap.m.MessageToast.show("Claim Type ID is required"); return; }
+                        var oInputs = oVBox.getItems();
 
-                        const oNewItem = {
-                            CLAIM_TYPE_ID: sId,
-                            CLAIM_TYPE_DESC: sap.ui.getCore().byId("claimtypedesc").getValue() || null,
-                            START_DATE: sap.ui.getCore().byId("startdate").getValue() || null,
-                            END_DATE: sap.ui.getCore().byId("enddate").getValue() || null,
-                            STATUS: sap.ui.getCore().byId("status").getValue() || null,
-                            IsActiveEntity: true
-                        };
-                        const oModel = this.getView().getModel();
-                        const oListBinding = oModel.bindList("/ZCLAIM_TYPE");
-                        try {
-                            var oContext = oListBinding.create(oNewItem);
-                            sap.m.MessageToast.show("Record created");
-                            oModel.refresh();
-                            oDialog.close();
-                        } catch (e) {
-                            sap.m.MessageToast.show("Error creating record");
+                        for (let i = 1; i < oInputs.length; i += 2) {
+                            const oControl = oInputs[i];
+
+                            var sFieldName = oControl.getName();
+                            var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+                            oNewEntry[sFieldName] = sNewInput;
                         }
-                    }.bind(this)
-                }),
-                endButton: new Button({
-                    text: 'Cancel',
-                    press: function () {
-                        oDialog.close();
-                    }
-                }),
-                afterClose: function () {
-                    oDialog.destroy();
-                }
-            });
+                        oNewEntry["IsActiveEntity"] = true;
 
-            oDialog.open();
-        },
+                        var oListBinding = oModel.bindList(sNewPath),
+                            oContext = oListBinding.create(oNewEntry);
 
-        onCreateItem: function () {
-            var oHeader = this._oItemsFragment?.getBindingContext();
-            var oDialog = new Dialog({
-                title: 'New Object',
-                type: 'Message',
-                content: [
-                    new VBox({
-                        items: [
-                            new Label({ text: 'Claim Type Item Id', required: true }),
-                            new Input({ id: "claimtypeitemid" }),
-                            new Label({ text: 'Claim Type Item Description' }),
-                            new Input({ id: "claimtypeitemdesc" }),
-                            new Label({ text: 'End Date' }),
-                            new DatePicker({ id: "enddate" }),
-                            new Label({ text: 'Start Date' }),
-                            new DatePicker({ id: "startdate" }),
-                            new Label({ text: 'Status' }),
-                            new Input({ id: "status" }),
-                            new Label({ text: 'Category ID' }),
-                            new Input({ id: "categoryid" }),
-                            new Label({ text: 'Cost Center' }),
-                            new Input({ id: "costcenter" }),
-                            new Label({ text: 'GL Account' }),
-                            new Input({ id: "glaccount" }),
-                            new Label({ text: 'Material Code' }),
-                            new Input({ id: "materialcode" }),
-                            new Label({ text: 'Risk' }),
-                            new Input({ id: "risk" }),
-                            new Label({ text: 'Submission Type' }),
-                            new Input({ id: "submissiontype" })
-                        ]
-                    })
-                ],
-                beginButton: new Button({
-                    text: 'Create',
-                    press: function () {
-                        var sid = this.getView().getModel("config");
-                        var sclaimitemid = sap.ui.getCore().byId("claimtypeitemid").getValue();
-                        var sdesc = sap.ui.getCore().byId("claimtypeitemdesc").getValue();
-                        var sdate_e = sap.ui.getCore().byId("enddate").getValue();
-                        var sdate_s = sap.ui.getCore().byId("startdate").getValue();
-                        var sStatus = sap.ui.getCore().byId("status").getValue();
-                        var scategory = sap.ui.getCore().byId("categoryid").getValue();
-                        var scostcenter = sap.ui.getCore().byId("costcenter").getValue();
-                        var sglaccount = sap.ui.getCore().byId("glaccount").getValue();
-                        var smaterialcode = sap.ui.getCore().byId("materialcode").getValue();
-                        var srisk = sap.ui.getCore().byId("risk").getValue();
-                        var ssubmissiontype = sap.ui.getCore().byId("submissiontype").getValue();
-
-                        var oNewItem = {
-                            CLAIM_TYPE_ITEM_ID: sclaimitemid,
-                            CLAIM_TYPE_ITEM_DESC: sdesc ? sdesc : null,
-                            END_DATE: sdate_e ? sdate_e : null,
-                            START_DATE: sdate_s ? sdate_s : null,
-                            STATUS: sStatus ? sStatus : null,
-                            CATEGORY_ID: scategory ? scategory : null,
-                            COST_CENTER: scostcenter ? scostcenter : null,
-                            GL_ACCOUNT: sglaccount ? sglaccount : null,
-                            MATERIAL_CODE: smaterialcode ? smaterialcode : null,
-                            RISK: srisk ? srisk : null,
-                            SUBMISSION_TYPE: ssubmissiontype ? ssubmissiontype : null,
-                            IsActiveEntity: true
-                        }
-
-                        var oModel = this.getView().getModel();
-                        const sItemsPath = oHeader.getPath() + "/Items";
-                        var oListBinding = oModel.bindList(sItemsPath),
-                            oContext = oListBinding.create(oNewItem);
+                        sap.m.MessageToast.show("Record created");
                         oModel.refresh();
                         oDialog.close();
                     }.bind(this)
                 }),
-                endButton: new Button({
-                    text: 'Cancel',
-                    press: function () {
-                        oDialog.close();
-                    }
+                endButton: new sap.m.Button({
+                    text: "Cancel",
+                    press: function () { oDialog.close(); }
                 }),
-                afterClose: function () {
-                    oDialog.destroy();
-                }
+                afterClose: function () { oDialog.destroy(); }
             });
-
+            oDialog.addContent(oVBox);
             oDialog.open();
         },
-        onDelete: function (oEvent) {
 
+        onDelete: function (oEvent) {
+            const sSource = oEvent.getSource().getId(),
+                sTableId = sSource?.includes("Header") ? "claimTable" : "ClaimItems--claimitemTable",
+                oTable = this.byId(sTableId),
+                oContext = oTable.getSelectedItem().getBindingContext(),
+                oObject = oContext.getObject();
+
+            sap.m.MessageBox.confirm(`Delete object ${oObject.CLAIM_TYPE_ITEM_ID}?`, {
+                icon: sap.m.MessageBox.Icon.WARNING,
+                title: "Delete",
+                actions: [sap.m.MessageBox.Action.DELETE, sap.m.MessageBox.Action.CANCEL],
+                emphasizedAction: sap.m.MessageBox.Action.DELETE,
+                onClose: async (sAction) => {
+                    if (sAction !== sap.m.MessageBox.Action.DELETE) return;
+                    try {
+                        oContext.delete();
+                        sap.m.MessageToast.show("Object deleted");
+                    } catch (e) {
+                        sap.m.MessageBox.error(e?.message || "Delete failed");
+                    }
+                }
+            })
         },
 
-        _addNewEntry: function (oEntry) {
+        onCopy: function (oEvent) {
+            const oNewEntry = {};
+            var { oVBox, sPath, oSelected, oModel } = this._getDetails(oEvent);
+            const oDialog = new sap.m.Dialog({
+                title: `Copy Record`,
+                contentWidth: "15%",
+                horizontalScrolling: false,
+                beginButton: new sap.m.Button({
+                    text: "Copy",
+                    press: function () {
+                        var oInputs = oVBox.getItems();
 
+                        for (let i = 1; i < oInputs.length; i += 2) {
+                            const oControl = oInputs[i];
+
+                            var sFieldName = oControl.getName();
+                            var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+
+                            oNewEntry[sFieldName] = sNewInput;
+                        }
+
+                        oNewEntry["IsActiveEntity"] = true;
+                        oNewEntry["HasDraftEntity"] = false;
+
+                        if (sPath.includes('Items')) {
+                            var oHeader = this._oItemsFragment?.getBindingContext();
+                            const sItemsPath = oHeader.getPath() + "/Items";
+                            sPath = sItemsPath;
+                        }
+
+                        var oListBinding = oModel.bindList(sPath),
+                            oContext = oListBinding.create(oNewEntry);
+
+                        oModel.refresh();
+                        sap.m.MessageToast.show("Record created");
+                        oDialog.close();
+                        oListBinding.refresh(true);
+                    }.bind(this)
+                }),
+                endButton: new sap.m.Button({
+                    text: "Cancel",
+                    press: function () { oDialog.close(); }
+                }),
+                afterClose: function () { oDialog.destroy(); }
+            });
+            oDialog.addContent(oVBox);
+            oDialog.open();
+        },
+
+        onEdit: function (oEvent) {
+            const { oVBox, sPath, oSelected, oModel } = this._getDetails(oEvent);
+            const oContext = oSelected.getBindingContext();
+            const oDialog = new sap.m.Dialog({
+                title: `Edit Record`,
+                contentWidth: "15%",
+                horizontalScrolling: false,
+                beginButton: new sap.m.Button({
+                    text: "Edit",
+                    press: function () {
+                        var oInputs = oVBox.getItems();
+
+                        for (let i = 1; i < oInputs.length; i += 2) {
+                            const oControl = oInputs[i];
+
+                            var sFieldName = oControl.getName();
+                            var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+
+                            oContext.setProperty(sFieldName, sNewInput);
+                        }
+
+                        sap.m.MessageToast.show("Record updated");
+                        oModel.refresh();
+                        oDialog.close();
+                    }.bind(this)
+                }),
+                endButton: new sap.m.Button({
+                    text: "Cancel",
+                    press: function () { oDialog.close(); }
+                }),
+                afterClose: function () { oDialog.destroy(); }
+            });
+
+            oDialog.addContent(oVBox);
+            oDialog.open();
+        },
+
+        _getDetails: function (oEvent) {
+            const sSource = oEvent.getSource().getId(),
+                sTableId = sSource?.includes("Header") ? "claimTable" : "ClaimItems--claimitemTable",
+                oTable = this.byId(sTableId),
+                oModel = this.getView().getModel();
+
+            if (sSource.includes('Create')) {
+                var sPath = sSource.includes('Header') ? "/ZCLAIM_TYPE" : '/ZCLAIM_TYPE/Items',
+                    oData = {},
+                    oSelected = null;
+            } else {
+                oSelected = oTable.getSelectedItem();
+                sPath = oSelected.getBindingContext().getBinding().sPath === 'Items' ? '/ZCLAIM_TYPE/Items' : oSelected.getBindingContext().getBinding().sPath;
+                oData = oSelected.getBindingContext().getObject();
+            }
+
+            const oEntityType = oModel.getMetaModel().getContext(sPath).getObject(),
+                sEntityType = oEntityType.$Type,
+                oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject(),
+                oLineItems = oModel.getMetaModel().getContext(`/${sEntityType}/@com.sap.vocabularies.UI.v1.LineItem`).getObject();
+
+            const oVBox = new sap.m.VBox({
+                width: "70%",
+                fitContainer: true,
+            });
+            oVBox.addStyleClass("sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom");
+
+            oLineItems.forEach(function (item) {
+                const fieldName = item.Value.$Path;
+                const oFieldMeta = oDataType[fieldName];
+                const fieldType = oFieldMeta?.$Type;
+
+                oVBox.addItem(new sap.m.Label({
+                    text: item.Label,
+                    width: "100%",
+                    labelFor: fieldName,
+                    required: !!(oDataType[fieldName] && oDataType[fieldName].$Nullable === false)
+                }));
+                oVBox.addStyleClass("sapUiSmallMarginTopBottom");
+                const oInput = fieldType?.includes('Edm.Date') ?
+                    new DatePicker({
+                        value: oData[fieldName] || null,
+                        name: fieldName,
+                        width: "130%",
+                        displayFormat: "dd MMM yyyy",
+                        valueFormat: "yyyy-MM-dd",
+                        enabled: true
+                    }) :
+                    new sap.m.Input({
+                        value: oData[fieldName]?.toString() || "",
+                        name: fieldName,
+                        width: "130%",
+                        enabled: true
+                    });
+
+                oVBox.addItem(oInput);
+            });
+            return { oVBox, sPath, oSelected, oModel };
         }
-
     });
 });

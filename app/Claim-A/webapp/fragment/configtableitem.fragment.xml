@@ -43,24 +43,28 @@
                 <Title text="ZCLAIM_TYPE_ITEM" />
                 <ToolbarSpacer />
                 <Button
+                    id="EditItem"
                     text="Edit"
                     press="onEdit"
-                    enabled="false"
+                    enabled="{view>/hasSelection}"
                 />
                 <Button
+                    id="CopyItem"
                     text="Copy"
                     press="onCopy"
-                    enabled="false"
+                    enabled="{view>/hasSelection}"
                 />
                 <Button
+                    id="CreateItem"
                     text="Create"
-                    press="onCreateItem"
+                    press="onCreate"
                     enabled="true"
                 />
                 <Button
+                    id="DeleteItem"
                     text="Delete"
                     press="onDelete"
-                    enabled="false"
+                    enabled="{view>/hasSelection}"
                 />
             </Toolbar>
 
@@ -69,7 +73,8 @@
                 width="90%"
                 items="{Items}"
                 mode="SingleSelectLeft"
-                updateFinished="onUpdateFinished"
+                selectionChange="onSelectionChange"
+                includeItemInSelection="true" 
             >
                 <columns>
                     <Column>

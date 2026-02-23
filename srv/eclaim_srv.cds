@@ -27,63 +27,20 @@ service eclaim_srv {
         };
 
     entity ZREQUEST_ITEM        as projection on ECLAIM.ZREQUEST_ITEM;
+    
     entity ZREQ_ITEM_PART       as projection on ECLAIM.ZREQ_ITEM_PART;
 
     entity ZCLAIM_HEADER        as projection on ECLAIM.ZCLAIM_HEADER;
 
     entity ZNUM_RANGE           as projection on ECLAIM.ZNUM_RANGE;
 
-    entity ZRISK                as projection on ECLAIM.ZRISK
-        actions {
-            @Common.DefaultValueFunction: 'getDefaultsForCopy'
-            action Copy(RISK_ID: String @(Common.Label: 'New Risk ID'),
-                        RISK_DESC: String @(Common.Label: 'Risk Description')
-            ) returns ZRISK;
-        };
+    entity ZRISK                as projection on ECLAIM.ZRISK;
 
-    entity ZCLAIM_TYPE_ITEM     as projection on ECLAIM.ZCLAIM_TYPE_ITEM
-        actions {
-            @Common.DefaultValueFunction: 'getDefaultsForCopy'
-            action Copy(CLAIM_TYPE_ITEM_ID: String @(Common.Label: 'New Claim Type Item ID'),
-                        CLAIM_TYPE_ITEM_DESC: String @(Common.Label: 'Claim Type Item Description')
-            ) returns ZCLAIM_TYPE_ITEM;
-        };
+    entity ZCLAIM_TYPE_ITEM     as projection on ECLAIM.ZCLAIM_TYPE_ITEM;
 
-    entity ZAPP_FIELD_CTRL      as projection on ECLAIM.ZAPP_FIELD_CTRL
-        actions {
-            @Common.DefaultValueFunction: 'getDefaultsForCopy'
-            action Copy(CLAIM_TYPE_ID: String  @mandatory  @Common.Label: 'New Claim Type ID',
-                        CLAIM_TYPE_ITEM_ID: String  @mandatory  @Common.Label: 'New Claim Type Item ID',
-                        FIELD01: Boolean @Common.Label: 'Field01',
-                        FIELD02: Boolean @Common.Label: 'Field02',
-                        FIELD03: Boolean @Common.Label: 'Field03',
-                        FIELD04: Boolean @Common.Label: 'Field04',
-                        FIELD05: Boolean @Common.Label: 'Field05',
-                        FIELD06: Boolean @Common.Label: 'Field06',
-                        FIELD07: Boolean @Common.Label: 'Field07',
-                        FIELD08: Boolean @Common.Label: 'Field08',
-                        FIELD09: Boolean @Common.Label: 'Field09',
-                        FIELD10: Boolean @Common.Label: 'Field10',
-                        FIELD11: Boolean @Common.Label: 'Field11',
-                        FIELD12: Boolean @Common.Label: 'Field12',
-                        FIELD13: Boolean @Common.Label: 'Field13',
-                        FIELD14: Boolean @Common.Label: 'Field14',
-                        FIELD15: Boolean @Common.Label: 'Field15',
-                        FIELD16: Boolean @Common.Label: 'Field16',
-                        FIELD17: Boolean @Common.Label: 'Field17',
-                        FIELD18: Boolean @Common.Label: 'Field18',
-                        FIELD19: Boolean @Common.Label: 'Field19',
-                        FIELD20: Boolean @Common.Label: 'Field20',
-            ) returns ZAPP_FIELD_CTRL;
-        };
+    entity ZAPP_FIELD_CTRL      as projection on ECLAIM.ZAPP_FIELD_CTRL ;
 
-    entity ZCLAIM_CATEGORY      as projection on ECLAIM.ZCLAIM_CATEGORY
-        actions {
-            @Common.DefaultValueFunction: 'getDefaultsForCopy'
-            action Copy(CLAIM_CAT_ID: String  @mandatory  @Common.Label: 'New Claim Category ID',
-                        CLAIM_CATEGORY_DESC: String @Common.Label: 'Claim Category Description'
-            ) returns ZCLAIM_CATEGORY;
-        };
+    entity ZCLAIM_CATEGORY      as projection on ECLAIM.ZCLAIM_CATEGORY;
 
     entity ZSTATUS              as projection on ECLAIM.ZSTATUS;
 

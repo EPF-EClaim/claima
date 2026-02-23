@@ -21,27 +21,31 @@
                 width="100%"
             >
                 <Toolbar width="90%">
-                    <Title text="ZCLAIM_TYPE Configuration" />
+                    <Title text="ZCLAIM_TYPE" />
                     <ToolbarSpacer />
                     <Button
+                        id="EditHeader"
                         text="Edit"
                         press="onEdit"
-                        enabled="false"
+                        enabled="{view>/hasSelection}"
                     />
                     <Button
+                        id="CopyHeader"
                         text="Copy"
                         press="onCopy"
-                        enabled="false"
+                        enabled="{view>/hasSelection}"
                     />
                     <Button
+                        id="CreateHeader"
                         text="Create"
                         press="onCreate"
                         enabled="true"
                     />
                     <Button
+                        id="DeleteHeader"
                         text="Delete"
                         press="onDelete"
-                        enabled="false"
+                        enabled="{view>/hasSelection}"
                     />
                 </Toolbar>
 
@@ -50,7 +54,8 @@
                     width="90%"
                     items="{/ZCLAIM_TYPE}"
                     mode="SingleSelectLeft"
-                    updateFinished="onUpdateFinished"
+                    selectionChange="onSelectionChange"
+                    includeItemInSelection="true"
                 >
                     <columns>
                         <Column>

@@ -1,7 +1,6 @@
-
-POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateEmployee
+POST http://localhost:4004/odata/v4/EmployeeSrv/batchCreateEmployee
 Content-Type: application/json
-
+ 
    {
     "employees": [
     {
@@ -15,7 +14,7 @@ Content-Type: application/json
       "COUNTRY": null,
       "DEP": null,
       "DIRECT_SUPPERIOR": null,
-      "EEID": "5555555",
+      "EEID": "0147301",
       "EFFECTIVE_DATE": null,
       "EMAIL": null,
       "EMPLOYEE_TYPE": null,
@@ -25,7 +24,7 @@ Content-Type: application/json
       "MARITAL": null,
       "MOBILE_BILL_ELIGIBILITY": null,
       "MOBILE_BILL_ELIG_AMOUNT": null,
-      "NAME": "Test Ain",
+      "NAME": "Ain -- saya mahu cuti huhu",
       "OFFICE_LOCATION": null,
       "POS": null,
       "POSITION_EVENT_REASON": null,
@@ -41,7 +40,7 @@ Content-Type: application/json
       "createdBy": null,
       "modifiedAt": "2026-02-19T09:23:40.317Z",
       "modifiedBy": "anonymous"
-    } ,
+    },
     {
       "ADDRESS_LINE1": null,
       "ADDRESS_LINE2": null,
@@ -53,7 +52,7 @@ Content-Type: application/json
       "COUNTRY": null,
       "DEP": null,
       "DIRECT_SUPPERIOR": null,
-      "EEID": "111111",
+      "EEID": "0132356",
       "EFFECTIVE_DATE": null,
       "EMAIL": null,
       "EMPLOYEE_TYPE": null,
@@ -63,7 +62,7 @@ Content-Type: application/json
       "MARITAL": null,
       "MOBILE_BILL_ELIGIBILITY": null,
       "MOBILE_BILL_ELIG_AMOUNT": null,
-      "NAME": "Test Ain",
+      "NAME": "Hello-again",
       "OFFICE_LOCATION": null,
       "POS": null,
       "POSITION_EVENT_REASON": null,
@@ -79,7 +78,9 @@ Content-Type: application/json
       "createdBy": null,
       "modifiedAt": "2026-02-19T09:23:40.317Z",
       "modifiedBy": "anonymous"
-    } 
+    }
     ]
    }
+####
 
+GET http://localhost:4004/odata/v4/EmployeeSrv/ZEMP_MASTER
