@@ -152,18 +152,6 @@
                             <cards:Header title="{i18n>conf_area}" />
                         </f:header>
                     </f:Card>
-
-                    <f:Card
-                        id="ZSTAFF_CAT"
-                        class="sapUiSmallMargin"
-                        width="15rem"
-                        press="onOpenConfigTable"
-                    >
-                        <f:header>
-                            <cards:Header title="{i18n>conf_staff}" />
-                        </f:header>
-                    </f:Card>
-
                     <f:Card
                         id="ZMARITAL_STAT"
                         class="sapUiSmallMargin"
