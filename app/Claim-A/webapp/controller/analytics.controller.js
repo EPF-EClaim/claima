@@ -49,12 +49,60 @@ sap.ui.define([
       this._analyticsTarget = sTarget;
 
       const flags = this.getVisibilityForTarget(sTarget);
+
+      // ADD showTripDates default = true
+      flags.showTripDates = true;
+      flags.tripDatesRequired = true;
+
       this._oAnalyticsVM = this._oAnalyticsVM || new JSONModel();
       this._oAnalyticsVM.setData(flags);
       this.getView().setModel(this._oAnalyticsVM, "anaVM");
 
       this._openFragment("claima.fragment.analyticsdialog");
     },
+
+
+    /*   onRequestTypeChange: function (oEvent) {
+        const selectedKey = oEvent.getSource().getSelectedKey();
+        const anaVM = this.getView().getModel("anaVM");
+  
+        // Hide Trip Dates ONLY if Request Type is RT0002
+        const showTripDates = selectedKey !== "RT0002";
+  
+        anaVM.setProperty("/showTripDates", showTripDates);
+      }, */
+
+    onRequestTypeChange: function (oEvent) {
+      const selectedKey = oEvent.getSource().getSelectedKey();
+      const anaVM = this.getView().getModel("anaVM");
+
+      // RULES:
+      // RT00002 -> hide + not required
+      // RT0004  -> show + not required
+      // default -> show + required
+
+      let showTripDates = true;
+      let tripDatesRequired = true;
+
+      if (selectedKey === "RT0002") {
+        showTripDates = false;
+        tripDatesRequired = false;
+      }
+      else if (selectedKey === "RT0003") {
+        showTripDates = true;
+        tripDatesRequired = false;
+      }
+
+      anaVM.setProperty("/showTripDates", showTripDates);
+      anaVM.setProperty("/tripDatesRequired", tripDatesRequired);
+
+      // Optional: clear values when hidden
+      if (!showTripDates) {
+        this.byId("analytics_tripstartdate")?.setDateValue(null);
+        this.byId("analytics_tripenddate")?.setDateValue(null);
+      }
+    },
+
 
     getVisibilityForTarget: function (sTarget) {
       switch (sTarget) {
@@ -111,21 +159,21 @@ sap.ui.define([
       // Trip dates
       const dTripStart = get("analytics_tripstartdate")?.getDateValue();
       const dTripEnd = get("analytics_tripenddate")?.getDateValue();
-      if (dTripStart) a.push(new Filter("TRIP_START_DATE", FilterOperator.GE, dTripStart));
-      if (dTripEnd) a.push(new Filter("TRIP_END_DATE", FilterOperator.LE, dTripEnd));
+      if (dTripStart) a.push(new Filter("TRIP_START_DATE", FilterOperator.GE, this._formatDate(dTripStart)));
+      if (dTripEnd) a.push(new Filter("TRIP_END_DATE", FilterOperator.LE, this._formatDate(dTripEnd)));
 
       // Event dates (REQUEST entity only)
       const dEvStart = get("analytics_eventstartdate")?.getDateValue();
       const dEvEnd = get("analytics_eventenddate")?.getDateValue();
       if (isReq) {
-        if (dEvStart) a.push(new Filter("EVENT_START_DATE", FilterOperator.GE, dEvStart));
-        if (dEvEnd) a.push(new Filter("EVENT_END_DATE", FilterOperator.LE, dEvEnd));
+        if (dEvStart) a.push(new Filter("EVENT_START_DATE", FilterOperator.GE, this._formatDate(dEvStart)));
+        if (dEvEnd) a.push(new Filter("EVENT_END_DATE", FilterOperator.LE, this._formatDate(dEvEnd)));
       }
 
       // Payment date → claim only
       const dPay = get("analytics_paydate")?.getDateValue();
       if (!isReq && dPay) {
-        a.push(new Filter("PAYMENT_DATE", FilterOperator.EQ, dPay));
+        a.push(new Filter("PAYMENT_DATE", FilterOperator.EQ, this._formatDate(dPay)));
       }
 
       // Status
@@ -169,6 +217,13 @@ sap.ui.define([
       }
 
       return a;
+    },
+
+    //To convert date to format for filtering;
+
+
+    _formatDate(d) {
+      return d ? d.toISOString().split("T")[0] : null;
     },
 
     /* ===========================================================
@@ -399,7 +454,7 @@ sap.ui.define([
           { label: "Last Send Back Date", property: "", type: "date", width: 14 },
           { label: "DAY(S) APPROVED", property: "", width: 4 },
           { label: "Cash Advance Received Date", property: "CASH_ADVANCE_DATE", type: "date", width: 14 },
-          { label: "Payment Date", property: "PAYMENT_DATE", type: "date", width: 14 },
+          { label: "Payment Date", property: "PAYMENT_DATE", width: 14 },
           { label: "Claim Status", property: "STATUS_ID", width: 14 },
           { label: "Cost Center", property: "COST_CENTER", width: 12 },
           { label: "Cost Center Text", property: "COST_CENTER_DESC", width: 12 },
@@ -415,8 +470,9 @@ sap.ui.define([
           { label: "Course Session", property: "COURSE_DESC", width: 12 },
           { label: "Purpose", property: "PURPOSE", width: 24 },
           { label: "Remarks", property: "REMARK", width: 24 },
-          { label: "Trip Start Date", property: "TRIP_START_DATE", type: "date", width: 14 },
-          { label: "Trip End Date", property: "TRIP_END_DATE", type: "date", width: 14 },
+          { label: "Trip Start Date", property: "TRIP_START_DATE", width: 24 },
+          //{ label: "Trip Start Date", property: "TRIP_START_DATE", type: "date", width: 14 },
+          { label: "Trip End Date", property: "TRIP_END_DATE", width: 14 },
           { label: "Location", property: "LOCATION", width: 40 },
         ];
       }
@@ -556,7 +612,7 @@ sap.ui.define([
         { label: "Marriage Category", property: "MARRIAGE_CATEGORY_DESC", width: 14 },
         { label: "More than 14 working days?", property: "MORE_THAN_14_WORK_DAYS", width: 14 },
         { label: "Negara/wilayah", property: "REGION", width: 14 },
-        { label: "Num of Family Members", property: "NO_OF_FAMILY_MEMBER", type: "number", scale: 2, width: 16},
+        { label: "Num of Family Members", property: "NO_OF_FAMILY_MEMBER", type: "number", scale: 2, width: 16 },
         { label: "Parking", property: "PARKING", width: 14 },
         { label: "Phone No", property: "PHONE_NO", width: 14 },
         { label: "Rate Per Kilometer", property: "RATE_PER_KM", width: 14 },

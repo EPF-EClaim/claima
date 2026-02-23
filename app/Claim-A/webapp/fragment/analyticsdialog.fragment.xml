@@ -39,7 +39,8 @@
                     placeholder="dd MMM yyyy"
                     value="{request>/tripstartdate}"
                     textAlign="Begin"
-                    required="true" />
+                    required="{anaVM>/tripDatesRequired}" 
+                    visible="{anaVM>/showTripDates}" />
 
                 <!-- Trip End Date -->
                 <Label text="{i18n>req_tripenddate}" />
@@ -50,7 +51,8 @@
                     placeholder="dd MMM yyyy"
                     value="{request>/tripenddate}"
                     textAlign="Begin"
-                    required="true" />
+                    required="{anaVM>/tripDatesRequired}" 
+                    visible="{anaVM>/showTripDates}" />
 
                 <!-- Payment Date -->
                 <Label text="Payment Date" />
@@ -151,7 +153,9 @@
                     displayFormat="dd MMM yyyy"
                     valueFormat="yyyy-MM-dd"
                     placeholder="dd MMM yyyy"
-                    textAlign="Begin" />
+                    textAlign="Begin" 
+                    required="{anaVM>/showTripDates}" 
+                    visible="{anaVM>/showTripDates}"/>
 
                 <!-- Event End -->
                 <Label text="Payment Date" />
@@ -160,7 +164,9 @@
                     displayFormat="dd MMM yyyy"
                     valueFormat="yyyy-MM-dd"
                     placeholder="dd MMM yyyy"
-                    textAlign="Begin" />
+                    textAlign="Begin" 
+                    required="{anaVM>/showTripDates}" 
+                    visible="{anaVM>/showTripDates}"/>
 
                 <!-- Individual / Group -->
                 <Label text="Individual/Group" />
@@ -173,8 +179,8 @@
                 </Select>
 
                 <!-- Amount -->
-                <Label text="Amount" />
-                <TextArea id="amount" textAlign="Begin" />
+<!--                 <Label text="Amount" />
+                <TextArea id="amount" textAlign="Begin" /> -->
 
                 <!-- Employee Name -->
                 <Label text="Employee name" />
@@ -183,23 +189,26 @@
                     width="100%"
                     forceSelection="false"
                     items="{employee>/ZEMP_MASTER}">
-                    <core:Item key="{employee>EEID}" text="{NAME}" />
+                    <core:Item key="{employee>EEID}" text="{employee>NAME}" />
                 </Select>
 
                 <!-- Request Type -->
                 <Label text="Request Type" />
                 <Select
+                    selectedKey="request>/req_header/reqtype"
                     id="reqtype"
                     width="100%"
                     forceSelection="false"
                     visible="{anaVM>/showRequestType}"
-                    items="{employee>/ZREQUEST_TYPE}">
+                    items="{employee>/ZREQUEST_TYPE}"
+                    change=".onRequestTypeChange">
                     <core:Item key="{employee>REQUEST_TYPE_ID}" text="{employee>REQUEST_TYPE_DESC}" />
                 </Select>
 
                 <!-- Claim Category -->
                 <Label text="Claim Category" />
                 <Select
+                    
                     id="claim_cat"
                     width="100%"
                     forceSelection="false"
