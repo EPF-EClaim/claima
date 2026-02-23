@@ -457,18 +457,6 @@
                         height="100%"
                         class="sapUiContentPadding"
                     />
-                    <!-- ================= Configuration Page ================= -->
-                    <Page
-                        id="configurationPage"
-                        showHeader="false">
-                        <content>
-                           <mvc:XMLView
-                            id="configuration_view"
-                            viewName="claima.view.Configuration"/>   
-                        </content>
-                    </Page>
-                    <!-- ================= Configuration Page ================= -->
-
                     <ScrollContainer
                         id="analytics"
                         height="100%"

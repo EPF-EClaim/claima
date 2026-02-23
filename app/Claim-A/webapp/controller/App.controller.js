@@ -157,7 +157,9 @@ sap.ui.define([
 					break;
 				// End added by Jefry 15-01-2026
 				case "config": // your configuration menu				
-					this.onClickConfiguration();						
+					// this.onClickConfiguration();	
+					var oRouter = this.getOwnerComponent().getRouter();	
+					oRouter.navTo("Configuration");				
 					break;
 				default:
 					// navigate to page with ID same as the key

@@ -8,6 +8,10 @@ service eclaim_srv {
 
     action batchCreateEmployee(employees: many ZEMP_MASTER) returns Response;
 
+    action batchCreateDependent(dependents: many ZEMP_DEPENDENT) returns Response;
+
+    action batchCreateCostCenter(costcenters: many ZCOST_CENTER) returns Response;
+
     entity ZEMP_MASTER          as projection on ECLAIM.ZEMP_MASTER;
 
     entity ZREQUEST_TYPE        as projection on ECLAIM.ZREQUEST_TYPE;
