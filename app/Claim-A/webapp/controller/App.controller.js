@@ -159,7 +159,6 @@ sap.ui.define([
 				case "analytics":
 					this.onClickAnalytics();
 					break;
-					
 				// End 	 Aiman Salim 10/02/2026 - Added for analytics
 				default:
 					// navigate to page with ID same as the key
