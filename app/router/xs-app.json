@@ -1,13 +1,16 @@
-
 {
   "authenticationMethod": "route",
   "routes": [
-    
     {
-    "source": "/http/(.*)$",
-    "target": "/http/$1",
-    "destination": "srv-api",
-    "authenticationType": "none"
+      "source": "^/user-api/currentUser$",
+      "target": "/currentUser",
+      "service": "sap-approuter-userapi"
+    },
+    {
+      "source": "/http/(.*)$",
+      "target": "/http/$1",
+      "destination": "srv-api",
+      "authenticationType": "none"
     },
     {
       "source": "^(?:/app|/app/.*)?/resources/(.*)$",
