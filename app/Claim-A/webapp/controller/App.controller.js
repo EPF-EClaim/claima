@@ -123,8 +123,11 @@ sap.ui.define([
 
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
-			sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
 
+			sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
+			var oRouter = this.getOwnerComponent().getRouter();
+			oRouter.navTo("Dashboard");
+			
 			this._loadCurrentUser();
 		},
 
@@ -143,8 +146,7 @@ sap.ui.define([
 		onNavItemSelect: function (oEvent) {
 			var oItem = oEvent.getParameter("item");
 			var oKey = oItem.getKey();
-			var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-			// oRouter.navTo("RouteMain"); //dummy routing
+			var oRouter = this.getOwnerComponent().getRouter();
 			sap.ui.core.routing.HashChanger.getInstance().replaceHash("");
 
 			switch (oKey) {
@@ -156,10 +158,11 @@ sap.ui.define([
 					this.onClickMyRequest();
 					break;
 				// End added by Jefry 15-01-2026
-				case "config": // your configuration menu				
-					// this.onClickConfiguration();	
-					var oRouter = this.getOwnerComponent().getRouter();	
-					oRouter.navTo("Configuration");				
+				case "config":
+					oRouter.navTo("Configuration");
+					break;
+				case "dashboard":
+					oRouter.navTo("Dashboard");
 					break;
 				default:
 					// navigate to page with ID same as the key
@@ -169,15 +172,6 @@ sap.ui.define([
 					}
 					break;
 			}
-		},
-		// Configuration App
-		onClickConfiguration: async function () {
-			var oPageContainer = this.byId("pageContainer");
-			if (!this.byId("configurationPage")) {
-				var oPage = new sap.m.Page(this.createId("configurationPage"), {
-				});
-			}
-			oPageContainer.to(this.byId("configurationPage"));
 		},
 
 		onMenuButtonPress: function () {

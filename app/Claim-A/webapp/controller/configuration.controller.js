@@ -137,7 +137,9 @@ sap.ui.define([
                 oContext = oTable.getSelectedItem().getBindingContext(),
                 oObject = oContext.getObject();
 
-            sap.m.MessageBox.confirm(`Delete object ${oObject.CLAIM_TYPE_ITEM_ID}?`, {
+            var sObjectId = sSource?.includes("Header") ? oObject.CLAIM_TYPE_ID : oObject.CLAIM_TYPE_ITEM_ID;
+
+            sap.m.MessageBox.confirm(`Delete object ${sObjectId}?`, {
                 icon: sap.m.MessageBox.Icon.WARNING,
                 title: "Delete",
                 actions: [sap.m.MessageBox.Action.DELETE, sap.m.MessageBox.Action.CANCEL],
@@ -147,6 +149,9 @@ sap.ui.define([
                     try {
                         oContext.delete();
                         sap.m.MessageToast.show("Object deleted");
+                        this.getView().getModel("view").setData({
+                            hasSelection: false
+                        });
                     } catch (e) {
                         sap.m.MessageBox.error(e?.message || "Delete failed");
                     }

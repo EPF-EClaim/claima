@@ -85,11 +85,7 @@
 
                                 <Text text="{CLAIM_TYPE_DESC}" />
 
-                                <Text
-                                    text="{path: 'END_DATE', 
-                                type: 'sap.ui.model.odata.type.Date',
-                                formatOptions: { pattern: 'dd MMM yyyy' }}"
-                                />
+                                <Text text="{END_DATE}"/>
 
                                 <Text text="{START_DATE}" />
 

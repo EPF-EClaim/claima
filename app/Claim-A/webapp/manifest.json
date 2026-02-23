@@ -404,14 +404,14 @@
                     "target": "ZCLAIM_TYPE"
                 },
                 {
-                    "pattern": "ZCLAIM_TYPE_ITEM",
-                    "name": "ZCLAIM_TYPE_ITEM",
-                    "target": "ZCLAIM_TYPE_ITEM"
-                },
-                {
                     "pattern": "Configuration",
                     "name": "Configuration",
                     "target": "Configuration"
+                },
+                {
+                    "pattern": "Dashboard",
+                    "name": "Dashboard",
+                    "target": "Dashboard"
                 }
             ],
             "targets": {
@@ -2554,17 +2554,18 @@
                     "viewType": "XML",
                     "transition": "slide"
                 },
-                "ZCLAIM_TYPE_ITEM": {
-                    "id": "ConfigTable_Item",
-                    "name": "ConfigTable_Item",
-                    "path": "claima.view",
-                    "viewType": "XML",
-                    "transition": "slide"
-                },
                 "Configuration": {
                     "id": "Configuration",
                     "path": "claima.view",
                     "name": "Configuration",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
+                "Dashboard": {
+                    "id": "Dashboard",
+                    "path": "claima.view",
+                    "name": "Dashboard",
                     "type": "View",
                     "viewType": "XML",
                     "transition": "slide"
