@@ -415,9 +415,9 @@ sap.ui.define([
 				remarks: ""
 			};
 			
-			const emp_data = await this._getEmpIdDetail(this._userId);
 
 			if (data.req_header.grptype === 'individual') {
+				const emp_data = await this._getEmpIdDetail(this._userId);
 				// Use the returned data to populate the fields
 				data.participant = [{ 
 					PARTICIPANTS_ID: this._userId, 

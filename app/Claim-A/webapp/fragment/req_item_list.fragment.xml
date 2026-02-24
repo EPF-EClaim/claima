@@ -28,7 +28,6 @@
                 <m:Title text="{i18n>req_form_detail_title} ({= ${request>/list_count} })" titleStyle="H3" />
                 <m:ToolbarSpacer />
                 <m:Button text="{i18n>req_b_create_item}"   type="Emphasized"   icon="sap-icon://add"       press=".onAddItem"          enabled="{= ${request>/view} !== 'view' }" />
-                <m:Button text="{i18n>req_b_edit}"          type="Default"                                  press=".onSelectEdit"       enabled="{= ${request>/view} !== 'view' }"/>
                 <m:Button text="{i18n>req_b_delete}"        type="Default"                                  press=".onRowDeleteReqItem" enabled="{= ${request>/view} !== 'view' }" />
             </OverflowToolbar>
             <VBox rowGap="1rem">
@@ -69,9 +68,9 @@
                     <table:rowActionTemplate>
                         <table:RowAction> 
                             <table:items>
-                                <table:RowActionItem type="Delete"      press=".onRowDeleteReqItem" visible="{= ${request>/view} !== 'view' }"/>
-                                <table:RowActionItem type="Navigation"  press=".onOpenItemEdit"    visible="{= ${request>/view} !== 'view' }" />
-                                <table:RowActionItem type="Navigation"  press=".onOpenItemView"    visible="{= ${request>/view} === 'view' }"/>
+                                <table:RowActionItem type="Delete"      press=".onRowDeleteReqItem" visible="{= ${request>/view} !== 'view' }" />
+                                <table:RowActionItem type="Custom"      press=".onOpenItemEdit"     visible="{= ${request>/view} !== 'view' }"  icon="sap-icon://edit"/>
+                                <table:RowActionItem type="Navigation"  press=".onOpenItemView"     visible="{= ${request>/view} === 'view' }" />
                             </table:items>
                         </table:RowAction>
                     </table:rowActionTemplate>

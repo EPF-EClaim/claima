@@ -139,6 +139,7 @@
 					id="req_attachment_1"
 					change=".onImportChange"
 					value="{request>/req_header/doc1}"
+					required="true"
 					visible="{= ${request>/req_header/reqtype} === 'RT0001' || 
 								${request>/req_header/reqtype} === 'RT0002' || 
 								${request>/req_header/reqtype} === 'RT0003'  || 

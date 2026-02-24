@@ -153,11 +153,9 @@ sap.ui.define([
 				case "sidenav_claimsubmission":
 					this.onNav_ClaimSubmission();
 					break;
-				// Start added by Jefry 15-01-2026
 				case "createrequest":
 					this.onClickMyRequest();
 					break;
-				// End added by Jefry 15-01-2026
 				case "config":
 					oRouter.navTo("Configuration");
 					break;
@@ -1326,10 +1324,8 @@ sap.ui.define([
 				const sUserId = sap.ushell.Container.getUser().getId();
 				const oListBinding = oMainModel.bindList("/ZREQUEST_HEADER");
 
-				// FIX 1: Use 'await' to wait for the employee details
 				const emp_data = await this._getEmpIdDetail(sUserId);
 
-				// Safety check in case employee data isn't found
 				const sCostCenter = emp_data ? emp_data.cc : "";
 
 				const oPayload = {
@@ -1339,18 +1335,18 @@ sap.ui.define([
 					OBJECTIVE_PURPOSE: oInputData.purpose,
 					REMARK: oInputData.comment,
 					IND_OR_GROUP: oInputData.grptype,
-					ALTERNATE_COST_CENTRE: oInputData.altcostcenter,
+					ALTERNATE_COST_CENTER: oInputData.altcostcenter,
 					LOCATION: oInputData.location,
 					TYPE_OF_TRANSPORTATION: oInputData.transport,
 					ATTACHMENT1: oInputData.doc1,
 					ATTACHMENT2: oInputData.doc2,
 					CASH_ADVANCE: parseFloat(oInputData.cashadvamt).toFixed(2),
-					COST_CENTER: sCostCenter, // Now correctly populated
+					COST_CENTER: sCostCenter, 
 					EVENT_START_DATE: oInputData.eventstartdate,
 					EVENT_END_DATE: oInputData.eventenddate,
 					TRIP_START_DATE: oInputData.tripstartdate,
 					TRIP_END_DATE: oInputData.tripenddate,
-					REQUEST_AMOUNT: String(oInputData.reqamt),
+					PREAPPROVAL_AMOUNT: String(oInputData.reqamt),
 					STATUS: "DRAFT"
 				};
 
@@ -1366,7 +1362,9 @@ sap.ui.define([
 					oReqModel.setProperty("/req_header/costcenter", sCostCenter);
 					this._getItemList(oResult.reqNo);
 
-					this.byId("pageContainer").to(this.getView().byId('new_request'));
+					// this.byId("pageContainer").to(this.getView().byId('new_request'));
+					var oRouter = this.getOwnerComponent().getRouter();
+					oRouter.navTo("RequestForm");
 				}).catch(err => {
 					sap.m.MessageToast.show("Creation failed: " + err.message);
 				});
