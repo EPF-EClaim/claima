@@ -1026,8 +1026,9 @@ annotate service.ZSTATE with @(
 
 annotate service.ZEMP_MASTER with @(
     cds.autoexpose,
+
     Capabilities.SearchRestrictions: {Searchable: false},
-    odata.batch       : true,
+    cds.server.body_parser.limit: '10mb',
     Common.SemanticKey: [EEID],
     Capabilities      : {
         Deletable : false,

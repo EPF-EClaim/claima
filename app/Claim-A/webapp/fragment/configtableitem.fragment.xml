@@ -71,7 +71,7 @@
             <Table
                 id="claimitemTable"
                 width="90%"
-                items="{ Items }"
+                items="{path: 'Items'}"
                 mode="SingleSelectLeft"
                 selectionChange="onSelectionChange"
                 includeItemInSelection="true" 
@@ -99,9 +99,6 @@
                         <Text text="Cost Center" />
                     </Column>
                     <Column>
-                        <Text text="GL Account" />
-                    </Column>
-                    <Column>
                         <Text text="Material Code" />
                     </Column>
                     <Column>
@@ -113,20 +110,15 @@
                 </columns>
 
                 <items>
-                    <ColumnListItem press="onRowPress">
+                    <ColumnListItem>
                         <cells>
                             <Text text="{CLAIM_TYPE_ITEM_ID}" />
                             <Text text="{CLAIM_TYPE_ITEM_DESC}" />
-                            <Text
-                                text="{path: 'END_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
-                            />
-                            <Text
-                                text="{path: 'START_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
-                            />
+                            <Text text="{END_DATE}" />
+                            <Text text="{START_DATE}"/>
                             <Text text="{STATUS}" />
                             <Text text="{CATEGORY_ID}" />
                             <Text text="{COST_CENTER}" />
-                            <Text text="{GL_ACCOUNT}" />
                             <Text text="{MATERIAL_CODE}" />
                             <Text text="{RISK}" />
                             <Text text="{SUBMISSION_TYPE}" />
