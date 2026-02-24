@@ -147,7 +147,7 @@
                 </Select>
 
                 <!-- Event Start -->
-                <Label text="{i18n>req_tripenddate}" />
+                <Label text="{i18n>req_eventstartdate}" />
                 <DatePicker
                     id="analytics_eventstartdate"
                     displayFormat="dd MMM yyyy"
@@ -158,7 +158,7 @@
                     visible="{anaVM>/showTripDates}"/>
 
                 <!-- Event End -->
-                <Label text="Payment Date" />
+                <Label text="{i18n>req_eventenddate}" />
                 <DatePicker
                     id="analytics_eventenddate"
                     displayFormat="dd MMM yyyy"
