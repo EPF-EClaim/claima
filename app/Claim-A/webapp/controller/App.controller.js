@@ -1509,7 +1509,7 @@ sap.ui.define([
 			}
 		},
 		_loadCurrentUser: function () {
-			// var that = this;
+			var that = this;
 
 			$.ajax({
 				type: "GET",
