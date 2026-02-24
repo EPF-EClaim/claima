@@ -23,11 +23,24 @@
 				<Label text="{i18n>req_rtype}" />
 				<Select selectedKey="{request>/req_header/reqtype}" 
 						required="true" 
+						forceSelection="false"
 						items="{path: 'req_type_list>/types',
 								sorter: { path: 'REQUEST_TYPE_ID', descending: false }}">
 					<items>
 						<core:Item key="{req_type_list>REQUEST_TYPE_ID}" 
 								text="{req_type_list>REQUEST_TYPE_DESC}" />
+					</items>
+				</Select>
+
+				<Label text="{i18n>req_claimtype}" />
+				<Select selectedKey="{request>/req_header/claimtype}" 
+						required="true" 
+						forceSelection="false"
+						items="{path: 'claim_type_list>/types',
+								sorter: { path: 'CLAIM_TYPE_ID', descending: false }}">
+					<items>
+						<core:Item key="{claim_type_list>CLAIM_TYPE_ID}" 
+								text="{claim_type_list>CLAIM_TYPE_DESC}" />
 					</items>
 				</Select>
 

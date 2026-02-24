@@ -1127,11 +1127,13 @@ sap.ui.define([
 					reqstatus: "",
 					costcenter: "",
 					cashadvamt: 0,
-					reqamt: 0
+					reqamt: 0,
+					claimtype: ""
 				}
 			});
 
 			this._loadReqTypeSelectionData();
+			this._loadClaimTypeSelectionData();
 
 			if (!this.oDialogFragment) {
 				this.oDialogFragment = await Fragment.load({
@@ -1162,7 +1164,18 @@ sap.ui.define([
 				const aData = aContexts.map(oCtx => oCtx.getObject());
 				const oTypeModel = new JSONModel({ types: aData });
 				this.getView().setModel(oTypeModel, "req_type_list");
-			}).catch(err => console.error("Type Load Failed", err));
+			}).catch(err => console.error("RequestType Load Failed", err));
+		},
+
+		_loadClaimTypeSelectionData: function () {
+			const oMainModel = this.getOwnerComponent().getModel(); // OData V4 Model
+			const oListBinding = oMainModel.bindList("/ZCLAIM_TYPE");
+
+			oListBinding.requestContexts().then((aContexts) => {
+				const aData = aContexts.map(oCtx => oCtx.getObject());
+				const oTypeModel = new JSONModel({ types: aData });
+				this.getView().setModel(oTypeModel, "claim_type_list");
+			}).catch(err => console.error("ClaimType Load Failed", err));
 		},
 
 		onClickCreateRequest: function () {
