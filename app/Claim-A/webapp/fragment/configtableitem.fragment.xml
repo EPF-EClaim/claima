@@ -1,0 +1,139 @@
+<core:FragmentDefinition
+    xmlns:l="sap.ui.layout"
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:card="sap.f.cards"
+    xmlns:u="sap.ui.unified"
+>
+    <VBox class="sapUiSmallMargin">
+            <VBox class="sapUiMediumMargin"
+            width="100%">
+                <HBox>
+                    <Text text="Claim Type ID: " />
+                    <Text text="{CLAIM_TYPE_ID}" />
+                </HBox>
+                <HBox>
+                    <Text text="Claim Type Description: " />
+                    <Text text="{CLAIM_TYPE_DESC}" />
+                </HBox>
+                <HBox>
+                    <Text text="End Date: " />
+                    <Text
+                        text="{path: 'END_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
+                    />
+                </HBox>
+                <HBox>
+                    <Text text="Start Date: " />
+                    <Text
+                        text="{path: 'START_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
+                    />
+                </HBox>
+                <HBox>
+                    <Text text="Status: " />
+                    <Text text="{STATUS}" />
+                </HBox>
+            </VBox>
+        <VBox
+            class="sapUiMediumMargin"
+            width="100%"
+        >
+            <Toolbar width="90%">
+                <Title text="ZCLAIM_TYPE_ITEM" />
+                <ToolbarSpacer />
+                <Button
+                    id="EditItem"
+                    text="Edit"
+                    press="onEdit"
+                    enabled="{view>/hasSelection}"
+                />
+                <Button
+                    id="CopyItem"
+                    text="Copy"
+                    press="onCopy"
+                    enabled="{view>/hasSelection}"
+                />
+                <Button
+                    id="CreateItem"
+                    text="Create"
+                    press="onCreate"
+                    enabled="true"
+                />
+                <Button
+                    id="DeleteItem"
+                    text="Delete"
+                    press="onDelete"
+                    enabled="{view>/hasSelection}"
+                />
+            </Toolbar>
+
+            <Table
+                id="claimitemTable"
+                width="90%"
+                items="{Items}"
+                mode="SingleSelectLeft"
+                selectionChange="onSelectionChange"
+                includeItemInSelection="true" 
+            >
+                <columns>
+                    <Column>
+                        <Text text="Claim Type Item Id" />
+                    </Column>
+                    <Column>
+                        <Text text="Claim Type Item Description" />
+                    </Column>
+                    <Column>
+                        <Text text="End Date" />
+                    </Column>
+                    <Column>
+                        <Text text="Start Date" />
+                    </Column>
+                    <Column>
+                        <Text text="Status" />
+                    </Column>
+                    <Column>
+                        <Text text="Category ID" />
+                    </Column>
+                    <Column>
+                        <Text text="Cost Center" />
+                    </Column>
+                    <Column>
+                        <Text text="GL Account" />
+                    </Column>
+                    <Column>
+                        <Text text="Material Code" />
+                    </Column>
+                    <Column>
+                        <Text text="Risk" />
+                    </Column>
+                    <Column>
+                        <Text text="Submission Type" />
+                    </Column>
+                </columns>
+
+                <items>
+                    <ColumnListItem press="onRowPress">
+                        <cells>
+                            <Text text="{CLAIM_TYPE_ITEM_ID}" />
+                            <Text text="{CLAIM_TYPE_ITEM_DESC}" />
+                            <Text
+                                text="{path: 'END_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
+                            />
+                            <Text
+                                text="{path: 'START_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
+                            />
+                            <Text text="{STATUS}" />
+                            <Text text="{CATEGORY_ID}" />
+                            <Text text="{COST_CENTER}" />
+                            <Text text="{GL_ACCOUNT}" />
+                            <Text text="{MATERIAL_CODE}" />
+                            <Text text="{RISK}" />
+                            <Text text="{SUBMISSION_TYPE}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </VBox>
+    </VBox>
+</core:FragmentDefinition>

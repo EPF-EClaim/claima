@@ -1,0 +1,178 @@
+PATCH http://localhost:4004/odata/v4/EmployeeSrv/batchCreateEmployee
+Content-Type: application/json
+ 
+   {
+    "employees": [
+    {
+      "ADDRESS_LINE1": null,
+      "ADDRESS_LINE2": null,
+      "ADDRESS_LINE3": null,
+      "B_PLACE": "Malaysia",
+      "CC": "4001",
+      "CONFIRMATION_DATE": null,
+      "CONTACT_NO": null,
+      "COUNTRY": null,
+      "DEP": null,
+      "DIRECT_SUPPERIOR": null,
+      "EEID": "0147301",
+      "EFFECTIVE_DATE": null,
+      "EMAIL": null,
+      "EMPLOYEE_TYPE": null,
+      "GRADE": null,
+      "INSERTED_DATE": null,
+      "JOB_GROUP": null,
+      "MARITAL": null,
+      "MOBILE_BILL_ELIGIBILITY": null,
+      "MOBILE_BILL_ELIG_AMOUNT": null,
+      "NAME": "Ain -- saya mahu cuti huhu",
+      "OFFICE_LOCATION": null,
+      "POS": null,
+      "POSITION_EVENT_REASON": null,
+      "POSITION_NAME": null,
+      "POSITION_START_DATE": null,
+      "POSTCODE": null,
+      "ROLE": null,
+      "STATE": null,
+      "UNIT_SECTION": null,
+      "UPDATED_DATE": null,
+      "USER_TYPE": null,
+      "createdAt": null,
+      "createdBy": null,
+      "modifiedAt": "2026-02-19T09:23:40.317Z",
+      "modifiedBy": "anonymous"
+    },
+    {
+      "ADDRESS_LINE1": null,
+      "ADDRESS_LINE2": null,
+      "ADDRESS_LINE3": null,
+      "B_PLACE": "Malaysia",
+      "CC": "4001",
+      "CONFIRMATION_DATE": null,
+      "CONTACT_NO": null,
+      "COUNTRY": null,
+      "DEP": null,
+      "DIRECT_SUPPERIOR": null,
+      "EEID": "0132356",
+      "EFFECTIVE_DATE": null,
+      "EMAIL": null,
+      "EMPLOYEE_TYPE": null,
+      "GRADE": null,
+      "INSERTED_DATE": null,
+      "JOB_GROUP": null,
+      "MARITAL": null,
+      "MOBILE_BILL_ELIGIBILITY": null,
+      "MOBILE_BILL_ELIG_AMOUNT": null,
+      "NAME": "Hello-again",
+      "OFFICE_LOCATION": null,
+      "POS": null,
+      "POSITION_EVENT_REASON": null,
+      "POSITION_NAME": null,
+      "POSITION_START_DATE": null,
+      "POSTCODE": null,
+      "ROLE": null,
+      "STATE": null,
+      "UNIT_SECTION": null,
+      "UPDATED_DATE": null,
+      "USER_TYPE": null,
+      "createdAt": null,
+      "createdBy": null,
+      "modifiedAt": "2026-02-19T09:23:40.317Z",
+      "modifiedBy": "anonymous"
+    }
+    ]
+   }
+####
+
+GET http://localhost:4004/odata/v4/EmployeeSrv/ZEMP_MASTER
+
+####
+
+POST http://localhost:4004/odata/v4/EmployeeSrv/batchCreateCostCenter
+Content-Type: application/json
+
+{
+  "costcenters":
+   [
+    {
+      "COST_CENTER_DESC": "Investment Services Department (JPPEL)",
+      "COST_CENTER_ID": "100434300",
+      "DEPARTMENT": "8600000000",
+      "END_DATE": null,
+      "EXTERNAL_OBJ_ID": "1000100434300",
+      "START_DATE": "2017-01-01",
+      "STATUS": "Created",
+      "createdAt": "2026-02-19T07:35:15.707Z",
+      "createdBy": "anonymous",
+      "modifiedAt": "2026-02-19T07:35:15.707Z",
+      "modifiedBy": "anonymous"
+    },
+    {
+      "COST_CENTER_DESC": "Cost-Center-1",
+      "COST_CENTER_ID": "6381",
+      "DEPARTMENT": "IT",
+      "END_DATE": null,
+      "EXTERNAL_OBJ_ID": null,
+      "START_DATE": null,
+      "STATUS": null,
+      "createdAt": null,
+      "createdBy": null,
+      "modifiedAt": null,
+      "modifiedBy": "nur.ain.mohamad@my.ey.com"
+    }
+  ]
+}
+#####
+GET http://localhost:4004/odata/v4/EmployeeSrv/ZCOST_CENTER
+
+#####
+GET http://localhost:4004/odata/v4/EmployeeSrv/ZEMP_DEPENDENT
+
+####
+POST http://localhost:4004/odata/v4/EmployeeSrv/batchCreateDependent
+Content-Type: application/json
+
+{
+    "dependents":
+[
+    {
+      "DEPENDENT_NO": 1,
+      "DOB": null,
+      "EMPLOYED": null,
+      "EMP_ID": "0147301",
+      "INSERTED_DATE": null,
+      "LEGAL_NAME": "Nurin's Sister",
+      "NATIONAL_ID": null,
+      "POST_EDU_ASSISTANT_CLAIM_DATE": null,
+      "POST_EDU_ASSISTANT_ENTITLE_AMOUNT": null,
+      "RELATIONSHIP": "Family",
+      "SPOUSE_EMP_ID": null,
+      "START_DATE": null,
+      "STUDENT": null,
+      "UPDATED_DATE": null,
+      "createdAt": null,
+      "createdBy": null,
+      "modifiedAt": null,
+      "modifiedBy": null
+    },
+    {
+      "DEPENDENT_NO": 1,
+      "DOB": "1963-01-16",
+      "EMPLOYED": false,
+      "EMP_ID": "0132356",
+      "INSERTED_DATE": null,
+      "LEGAL_NAME": "Nurin",
+      "NATIONAL_ID": "",
+      "POST_EDU_ASSISTANT_CLAIM_DATE": null,
+      "POST_EDU_ASSISTANT_ENTITLE_AMOUNT": null,
+      "RELATIONSHIP": "Sibling",
+      "SPOUSE_EMP_ID": "",
+      "START_DATE": null,
+      "STUDENT": false,
+      "UPDATED_DATE": null,
+      "createdAt": "2026-02-18T07:15:38.771Z",
+      "createdBy": "nurin.athirah.noor@my.ey.com",
+      "modifiedAt": "2026-02-19T06:43:24.416Z",
+      "modifiedBy": "anonymous"
+    }
+]
+}
