@@ -2045,8 +2045,8 @@ annotate service.ZVEHICLE_OWNERSHIP with @(
         DeleteHidden: false,
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZEMP_VEHICLE',
-            TypeNamePlural: 'ZEMP_VEHICLE',
+            TypeName      : 'ZVEHICLE_OWNERSHIP',
+            TypeNamePlural: 'ZVEHICLE_OWNERSHIP',
         },
         LineItem    : [
             {

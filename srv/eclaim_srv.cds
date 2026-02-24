@@ -6,7 +6,7 @@ service eclaim_srv {
         message : String;
     };
 
-    action batchCreateEmployee(employees: many ZEMP_MASTER) returns Response;
+    action batchCreateEmployee(employees: many ZEMP_MASTER)      returns Response;
 
     action batchCreateDependent(dependents: many ZEMP_DEPENDENT) returns Response;
 
@@ -24,6 +24,8 @@ service eclaim_srv {
         projection on ECLAIM.ZCLAIM_TYPE {
             key CLAIM_TYPE_ID,
                 CLAIM_TYPE_DESC,
+                GL_ACCOUNT,
+                CATEGORY_ID,
                 END_DATE,
                 START_DATE,
                 STATUS,
@@ -31,7 +33,7 @@ service eclaim_srv {
         };
 
     entity ZREQUEST_ITEM        as projection on ECLAIM.ZREQUEST_ITEM;
-    
+
     entity ZREQ_ITEM_PART       as projection on ECLAIM.ZREQ_ITEM_PART;
 
     entity ZCLAIM_HEADER        as projection on ECLAIM.ZCLAIM_HEADER;
@@ -42,7 +44,7 @@ service eclaim_srv {
 
     entity ZCLAIM_TYPE_ITEM     as projection on ECLAIM.ZCLAIM_TYPE_ITEM;
 
-    entity ZAPP_FIELD_CTRL      as projection on ECLAIM.ZAPP_FIELD_CTRL ;
+    entity ZAPP_FIELD_CTRL      as projection on ECLAIM.ZAPP_FIELD_CTRL;
 
     entity ZCLAIM_CATEGORY      as projection on ECLAIM.ZCLAIM_CATEGORY;
 
@@ -56,7 +58,7 @@ service eclaim_srv {
 
     entity ZCOUNTRY             as projection on ECLAIM.ZCOUNTRY;
 
-    entity ZAREA             as projection on ECLAIM.ZAREA;  
+    entity ZAREA                as projection on ECLAIM.ZAREA;
 
     entity ZMARITAL_STAT        as projection on ECLAIM.ZMARITAL_STAT;
 
@@ -102,7 +104,7 @@ service eclaim_srv {
 
     entity ZAPPROVAL_3          as projection on ECLAIM.ZAPPROVAL_3;
 
-    entity ZVEHICLE_OWNERSHIP as projection on ECLAIM.ZVEHICLE_OWNERSHIP;
+    entity ZVEHICLE_OWNERSHIP   as projection on ECLAIM.ZVEHICLE_OWNERSHIP;
 
     entity ZCOST_CENTER         as projection on ECLAIM.ZCOST_CENTER;
 
@@ -128,7 +130,7 @@ service eclaim_srv {
 
     entity ZLENDER_NAME         as projection on ECLAIM.ZLENDER_NAME;
 
-    entity ZREJECT_REASON as projection on ECLAIM.ZREJECT_REASON;
+    entity ZREJECT_REASON       as projection on ECLAIM.ZREJECT_REASON;
 
-    entity ZCURRENCY as projection on ECLAIM.ZCURRENCY;
+    entity ZCURRENCY            as projection on ECLAIM.ZCURRENCY;
 };
