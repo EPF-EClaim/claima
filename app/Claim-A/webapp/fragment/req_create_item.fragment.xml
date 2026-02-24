@@ -183,7 +183,8 @@
                         rows="{request>/participant}"
                         columnHeaderHeight="3rem"
                         selectionMode="MultiToggle"
-                        rowActionCount="1">
+                        rowActionCount="1"
+                        >
                         <table:Column width="10rem" >
                             <Label text="{i18n>req_p_id}"></Label>
                             <table:template>
@@ -195,7 +196,7 @@
                                     change=".onParticipantInputChange"
                                     showValueHelp="true"
                                     valueHelpRequest=".onValueHelpRequest"
-                                    enabled="{= ${request>/req_header/grptype} === 'group'}">
+                                    enabled="{= ${request>/req_header/grptype} === 'group' || ${request>/view} !== 'view'}">
                                     <suggestionColumns>
                                         <Column><Label text="EEID"/></Column>
                                         <Column><Label text="Name"/></Column>
@@ -228,7 +229,8 @@
                         <table:Column width="15rem">
                             <Label text="{i18n>req_p_alloc_amt}"></Label>
                             <table:template>
-                                <Input id="alloc_amount" textAlign="End" value="{request>ALLOCATED_AMOUNT}" type="Number"></Input>
+                                <Input id="alloc_amount" textAlign="End" value="{request>ALLOCATED_AMOUNT}" type="Number"
+                                    enabled="{= ${request>/view} !== 'view'}"></Input>
                             </table:template>
                         </table:Column>
                         <table:rowActionTemplate>

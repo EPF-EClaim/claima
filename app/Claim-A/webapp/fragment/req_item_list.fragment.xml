@@ -69,7 +69,7 @@
                         <table:RowAction> 
                             <table:items>
                                 <table:RowActionItem type="Delete"      press=".onRowDeleteReqItem" visible="{= ${request>/view} !== 'view' }" />
-                                <table:RowActionItem type="Custom"      press=".onOpenItemEdit"     visible="{= ${request>/view} !== 'view' }"  icon="sap-icon://edit"/>
+                                <table:RowActionItem type="Custom"      press=".onOpenItemEdit"     visible="{= ${request>/view} !== 'view' }"  icon="sap-icon://edit"  text="Edit"/>
                                 <table:RowActionItem type="Navigation"  press=".onOpenItemView"     visible="{= ${request>/view} === 'view' }" />
                             </table:items>
                         </table:RowAction>

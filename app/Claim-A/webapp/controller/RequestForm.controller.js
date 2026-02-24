@@ -118,7 +118,7 @@ sap.ui.define([
 			// ctrl.destroy();
 		},
 
-		async _showHeaderAndList() {
+		async _showHeaderAndList(state = "list") {
 			const oPage = this.byId("request_form"); // <Page id="request_form"/>
 			if (!oPage) return;
 
@@ -133,7 +133,7 @@ sap.ui.define([
 			await this._replaceContentAt(oPage, 1, oList);
 
 			// Mark view state
-			this._getReqModel().setProperty("/view", "list");
+			this._getReqModel().setProperty("/view", state);
 		},
 
 		async _showItemCreate(state) {
@@ -227,11 +227,8 @@ sap.ui.define([
 						this.oDeleteDialog.close();
 
 						// Navigate back to dashboard
-						const oScroll = this.getView().getParent();
-						const oNav    = oScroll && oScroll.getParent && oScroll.getParent();
-						const aPages  = oNav?.getPages ? oNav.getPages() : oNav?.getAggregation?.("pages");
-						const oMain   = aPages && aPages.find(p => p.getId && p.getId().endsWith("dashboard"));
-						if (oMain) oNav.to(oMain, "slide");
+						var oRouter = this.getOwnerComponent().getRouter();
+						oRouter.navTo("Dashboard");
 
 					} catch (e) {
 						sap.m.MessageToast.show(e.message || "Delete failed");
@@ -322,7 +319,7 @@ sap.ui.define([
 						const payload = {
 							STATUS: "PENDING APPROVAL",
 							CASH_ADVANCE: parseFloat(data.req_header.cashadvamt),
-							REQUEST_AMOUNT: parseFloat(data.req_header.reqamt)
+							PREAPPROVAL_AMOUNT: parseFloat(data.req_header.reqamt)
 						};
 
 						const res = await fetch(entityUrl, {
@@ -342,11 +339,8 @@ sap.ui.define([
 
 						sap.m.MessageToast.show("Request submitted successfully");
 
-						const oScroll = this.getView().getParent();              // ScrollContainer
-						const oNav    = oScroll && oScroll.getParent && oScroll.getParent(); // NavContainer
-						const aPages  = oNav?.getPages ? oNav.getPages() : oNav?.getAggregation?.("pages");
-						const oMain   = aPages && aPages.find(p => p.getId && p.getId().endsWith("myrequest"));
-						if (oMain) oNav.to(oMain, "slide");
+						var oRouter = this.getOwnerComponent().getRouter();
+						oRouter.navTo("RequestFormStatus");
 
 					} catch (e) {
 						sap.m.MessageToast.show(e.message || "Submission failed");
@@ -539,8 +533,8 @@ sap.ui.define([
 			}
 
 			try {
-				// const base = this._entityUrl("ZEMP_REQUEST_PART_VIEW", "eclaimViewService");
-				const base = this._entityUrl("ZREQ_ITEM_PART");
+				const base = this._entityUrl("ZEMP_REQUEST_PART_VIEW", "eclaimViewService");
+				// const base = this._entityUrl("ZREQ_ITEM_PART");
 				const filter = encodeURIComponent(
 					`REQUEST_ID eq '${String(reqId).replace(/'/g, "''")}' and REQUEST_SUB_ID eq '${String(subId).replace(/'/g, "''")}'`
 				);
@@ -570,7 +564,7 @@ sap.ui.define([
 
 		// Back from create to list (cancel)
 		async onBackView() {
-			await this._showHeaderAndList();
+			await this._showHeaderAndList('view');
 		},
 
 		// Cancel alias (keep one implementation)

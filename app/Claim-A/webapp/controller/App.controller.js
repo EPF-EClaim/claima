@@ -156,6 +156,11 @@ sap.ui.define([
 				case "createrequest":
 					this.onClickMyRequest();
 					break;
+				case "myrequest":
+					this._getPARHeaderList();
+					var oRouter = this.getOwnerComponent().getRouter();
+					oRouter.navTo("RequestFormStatus");
+					break;
 				case "config":
 					oRouter.navTo("Configuration");
 					break;
@@ -983,127 +988,6 @@ sap.ui.define([
 			};
 		},
 
-		//For My Pre-Approval (MyRequestForm) view - Upon click, it will move to MyRequestForm detail page. 
-		onRowPressForm: async function (oEvent) {
-			// row context from named model "employee"
-			const oItem = oEvent.getParameter("listItem");
-			const oCtx = oItem && oItem.getBindingContext("employee");
-
-			if (!oCtx) {
-				sap.m.MessageToast.show("No context found on the selected row.");
-				return;
-			}
-
-			try {
-				this.getView().setBusy(true);
-
-				// Fetch the full entity (remaining props will be resolved as needed)
-				const fullEntity = await oCtx.requestObject();
-
-				// Map backend entity → MyRequestForm view model schema
-				const mapped = this._mapHeaderToCurrentRequest(fullEntity);
-
-				// Set/refresh the "request" JSON model (same pattern as onRowPress)
-				let oRequest = this.getView().getModel("request");
-				if (!oRequest) {
-					oRequest = new sap.ui.model.json.JSONModel();
-					this.getView().setModel(oRequest, "request");
-				}
-				oRequest.setData(mapped);
-
-
-				const oModel = this.getOwnerComponent().getModel("request")
-					|| this.getView().getModel("request");
-				if (oModel) {
-					oModel.setProperty("/view", "list");   // your custom flag
-				}
-
-				const sReqId = String(fullEntity.REQUEST_ID || "").trim();
-
-				// Navigate to detail page that consumes the "request" model
-				const oPageContainer = this.byId("pageContainer");
-				const oDetailPage = this.byId("new_request");
-				if (!oDetailPage) {
-					sap.m.MessageToast.show("Detail page 'new_request' not found.");
-					return;
-				}
-				oPageContainer.to(oDetailPage);
-
-				this._callRequestFormLoad(oDetailPage, sReqId);
-
-			} catch (e) {
-				jQuery.sap.log.error("onRowPressForm failed: " + e);
-				sap.m.MessageToast.show("Failed to load request data.");
-			} finally {
-				this.getView().setBusy(false);
-			}
-		},
-
-		_mapHeaderToCurrentRequest: function (row) {
-			// Helper: format date (if row.CLAIM_DATE is Date or /Date(...)/)
-			const fmt = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "dd MMM yyyy" });
-			const toYMD = (d) => {
-				try {
-					if (d instanceof Date) {
-						return fmt.format(d);
-					}
-					if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
-						return fmt.format(new Date(d));
-					}
-				} catch (e) {/* ignore */ }
-				return d || "";
-			};
-
-			return {
-				purpose: row.OBJECTIVE_PURPOSE || "",
-				reqid: row.REQUEST_ID || "",
-				tripstartdate: toYMD(row.TRIP_START_DATE),
-				tripenddate: toYMD(row.TRIP_END_DATE),
-				eventstartdate: toYMD(row.EVENT_START_DATE),
-				eventenddate: toYMD(row.EVENT_END_DATE),
-				costcenter: row.COST_CENTER || "",
-				altcostcenter: row.ALTERNATE_COST_CENTRE || "",
-				location: row.LOCATION || "",
-				detail: row.REMARK || "",
-				grptype: row.REQUEST_GROUP_ID || "",
-				transport: row.TYPE_OF_TRANSPORTATION || "",
-				reqstatus: row.STATUS || "",
-				reqtype: row.REQUEST_TYPE_ID || "",
-				comment: row.REMARK || "",
-				// Static totals shown as "0.00" in fragment; keep if you plan to compute later
-				saved: "",
-				// If you later bind these, set proper numbers/strings:
-				// caa / amt / total_amt not present in fragment's model; they are static "0.00" texts
-				// You can add them when needed:
-				// cashadvamount : "0.00",
-				// amount        : "0.00",
-				// totalamount   : "0.00"
-			};
-		},
-
-		/**
-		 * Call RequestForm.loadItemsForRequest by scanning descendants of the page.
-		 * No changes needed in RequestForm.controller.
-		 */
-		_callRequestFormLoad: function (oDetailPage, sReqId) {
-			// Defer to allow NavContainer to render the page content
-			setTimeout(function () {
-				// find the first descendant that exposes getController() (typically the inner XMLView)
-				var aViews = (typeof oDetailPage.findAggregatedObjects === "function")
-					? oDetailPage.findAggregatedObjects(true, function (c) {
-						return typeof c.getController === "function";
-					})
-					: [];
-
-				var oCtrl = (aViews && aViews.length) ? aViews[0].getController() : null;
-
-				if (oCtrl && typeof oCtrl.loadItemsForRequest === "function") {
-					oCtrl.loadItemsForRequest(sReqId);
-				} else {
-					jQuery.sap.log.warning("RequestForm controller API 'loadItemsForRequest' not found.");
-				}
-			}, 0);
-		},
 		// End added by Aiman Salim 22/1/2026 - 05/02/2026
 
 		/* =========================================================
@@ -1362,7 +1246,6 @@ sap.ui.define([
 					oReqModel.setProperty("/req_header/costcenter", sCostCenter);
 					this._getItemList(oResult.reqNo);
 
-					// this.byId("pageContainer").to(this.getView().byId('new_request'));
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("RequestForm");
 				}).catch(err => {
@@ -1435,31 +1318,120 @@ sap.ui.define([
 			}
 		},
 
-		_getItemList: async function (req_id) {
-			const oMainModel = this.getOwnerComponent().getModel();
-			const oRequestModel = this.getOwnerComponent().getModel('request');
+		async _getItemList(req_id) {
+			const oReq = this._getReqModel();
+			if (!req_id) {
+				oReq.setProperty("/req_item_rows", []);
+				oReq.setProperty("/list_count", 0);
+				return [];
+			}
 
-			const oListBinding = oMainModel.bindList("/ZREQUEST_ITEM", null, [
-				new Sorter("REQUEST_SUB_ID", false)
-			], [
-				new Filter("REQUEST_ID", FilterOperator.EQ, req_id)
-			]);
+			const sReq = String(req_id);
+			const isGuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(sReq);
+			const isNumeric = /^\d+$/.test(sReq);
+			let sLiteral;
+			if (isNumeric) sLiteral = sReq;
+			else if (isGuid) sLiteral = `guid'${sReq}'`;
+			else sLiteral = `'${sReq.replace(/'/g, "''")}'`;
+
+			const base       = this._entityUrl("ZREQUEST_ITEM");
+			const filterExpr = `REQUEST_ID eq ${sLiteral}`;
+			const orderby    = "REQUEST_SUB_ID asc";
+			const query = [
+				`$filter=${encodeURIComponent(filterExpr)}`,
+				`$orderby=${encodeURIComponent(orderby)}`,
+				`$count=true`,
+				`$format=json`
+			].join("&"); // IMPORTANT: use '&' (not &amp;)
+
+			const url = `${base}?${query}`;
 
 			try {
-				const aContexts = await oListBinding.requestContexts();
-				const aItems = aContexts.map(oCtx => {
-					const obj = oCtx.getObject();
-					// Type conversion as per original logic
-					if (obj.EST_AMOUNT) obj.EST_AMOUNT = parseFloat(obj.EST_AMOUNT);
-					if (obj.EST_NO_PARTICIPANT) obj.EST_NO_PARTICIPANT = parseInt(obj.EST_NO_PARTICIPANT);
-					return obj;
+				const res = await fetch(url, { headers: { "Accept": "application/json" } });
+				if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+				const data = await res.json();
+				const a = Array.isArray(data?.value) ? data.value : [];
+
+				// Fix numeric types if backend returns strings
+				a.forEach((it) => {
+					if (it.EST_AMOUNT != null) it.EST_AMOUNT = parseFloat(it.EST_AMOUNT);
+					if (it.EST_NO_PARTICIPANT != null) it.EST_NO_PARTICIPANT = parseInt(it.EST_NO_PARTICIPANT, 10);
 				});
 
-				oRequestModel.setProperty("/req_item_rows", aItems);
-				oRequestModel.setProperty('/list_count', aItems.length);
+				const cashadv_amt = a.reduce((sum, it) => {
+					return it.CASH_ADVANCE === "YES" ? sum + (parseFloat(it.EST_AMOUNT) || 0) : sum;
+				}, 0);
+
+				const req_amt = a.reduce((sum, it) => {
+					return it.CASH_ADVANCE === null ? sum + (parseFloat(it.EST_AMOUNT) || 0) : sum;
+				}, 0);
+				
+				oReq.setProperty("/req_header/cashadvamt", cashadv_amt);
+				oReq.setProperty("/req_header/reqamt", req_amt);
+
+				oReq.setProperty("/req_item_rows", a);
+				oReq.setProperty("/list_count", a.length);
+				return a;
 			} catch (err) {
-				console.error("Fetch Items failed:", err);
-				oRequestModel.setProperty("/req_item_rows", []);
+				// eslint-disable-next-line no-console
+				console.error("Fetch failed:", err, { url });
+				oReq.setProperty("/req_item_rows", []);
+				oReq.setProperty("/list_count", 0);
+				return [];
+			}
+		},
+
+		_serviceRoot(sDataSource = "mainService") {
+			const oManifest = this.getOwnerComponent().getManifestEntry("sap.app");
+			const sUri = oManifest?.dataSources?.[sDataSource]?.uri;
+			
+			let sPath = sUri;
+			if (!sPath) {
+				sPath = (sDataSource === "mainService") 
+					? "/odata/v4/EmployeeSrv/" 
+					: "/odata/v4/eclaim-view-srv/";
+			}
+
+			return sPath.replace(/\/$/, "");
+		},
+
+		_entityUrl(sEntitySet, sDataSource = "mainService") {
+			const sBase = this._serviceRoot(sDataSource);
+			return new URL(`${sBase}/${sEntitySet}`, window.location.origin).toString();
+		},
+
+		async _getPARHeaderList() {
+			const oReq = this.getOwnerComponent().getModel('request');
+
+			const base       = this._entityUrl("ZREQUEST_HEADER");
+			const orderby    = "REQUEST_ID asc";
+			const query = [
+				`$orderby=${encodeURIComponent(orderby)}`,
+				`$count=true`,
+				`$format=json`
+			].join("&"); // IMPORTANT: use '&' (not &amp;)
+
+			const url = `${base}?${query}`;
+
+			try {
+				const res = await fetch(url, { headers: { "Accept": "application/json" } });
+				if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+				const data = await res.json();
+				const a = Array.isArray(data?.value) ? data.value : [];
+
+                a.forEach((it) => {
+					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = parseFloat(0);
+				});
+
+				oReq.setProperty("/req_header_list", a);
+				oReq.setProperty("/req_header_count", a.length);
+				return a;
+			} catch (err) {
+				// eslint-disable-next-line no-console
+				console.error("Fetch failed:", err, { url });
+				oReq.setProperty("/req_header_list", []);
+				oReq.setProperty("/req_header_count", 0);
+				return [];
 			}
 		},
 

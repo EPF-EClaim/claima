@@ -410,6 +410,11 @@
                     "pattern": "RequestForm",
                     "name": "RequestForm",
                     "target": "RequestForm"
+                },
+                {
+                    "pattern": "RequestFormStatus",
+                    "name": "RequestFormStatus",
+                    "target": "RequestFormStatus"
                 }
             ],
             "targets": {
@@ -2519,6 +2524,14 @@
                     "id": "RequestForm",
                     "path": "claima.view",
                     "name": "RequestForm",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
+                "RequestFormStatus": {
+                    "id": "RequestFormStatus",
+                    "path": "claima.view",
+                    "name": "PARequestStatus",
                     "type": "View",
                     "viewType": "XML",
                     "transition": "slide"
