@@ -111,7 +111,6 @@
                                         class="sapUiSmallMarginBegin"
                                     />
                                 </HBox>
-                                <!-- <HBox alignItems="Center" width="100%" justifyContent="SpaceBetween"> -->
                                 <Button
                                     id="dashboard-claim"
                                     text="See All"
