@@ -123,7 +123,7 @@
                             <VBox>
                                 <ScrollContainer>
                                     <Table
-                                        items="{ path: 'employee>/ZREQUEST_HEADER' }"
+                                        items="{ path: '/ZCLAIM_HEADER' }"
                                         growing="true"
                                         noDataText="No data available"
                                     >
@@ -136,9 +136,9 @@
                                             <ColumnListItem>
                                                 <cells>
                                                     <Text text="{CLAIM_ID}" />
-                                                    <Text text="{STATUS_ID}" />
+                                                    <Text text="{TRIP_START_DATE}" />
                                                     <Text
-                                                        text="{EVENT_START_DATE}"
+                                                        text="{APPROVED_AMOUNT}"
                                                     />
                                                 </cells>
                                             </ColumnListItem>
@@ -197,12 +197,12 @@
                                         <items>
                                             <ColumnListItem>
                                                 <cells>
-                                                    <Text text="{LOCATION}" />
+                                                    <Text text="{REQUEST_ID}" />
                                                     <Text
                                                         text="{EVENT_START_DATE}"
                                                     />
                                                     <Text
-                                                        text="{REQUEST_AMOUNT}"
+                                                        text="{TOTAL_AMOUNT}"
                                                     />
                                                 </cells>
                                             </ColumnListItem>

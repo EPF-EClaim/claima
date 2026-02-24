@@ -71,7 +71,7 @@
             <Table
                 id="claimitemTable"
                 width="90%"
-                items="{Items}"
+                items="{ Items }"
                 mode="SingleSelectLeft"
                 selectionChange="onSelectionChange"
                 includeItemInSelection="true" 
