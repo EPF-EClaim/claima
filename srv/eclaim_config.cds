@@ -1,18 +1,17 @@
-
 using {eclaim_srv as service} from './eclaim_srv';
 
 annotate service.ZRISK with @(
     cds.autoexpose,
-   
-    Common.SemanticKey: [RISK_ID],
-    Capabilities      : {
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [RISK_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -38,7 +37,7 @@ annotate service.ZRISK with @(
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -51,12 +50,14 @@ annotate service.ZRISK with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
             }
-        ]
+        ],
+      
     }
 );
 
 annotate service.ZREQUEST_TYPE with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [REQUEST_TYPE_ID],
     Capabilities      : {
         Deletable : true,
@@ -111,7 +112,7 @@ annotate service.ZREQUEST_TYPE with @(
 annotate service.ZCLAIM_TYPE with @(
     cds.autoexpose,
     odata.draft.enabled,
-
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [CLAIM_TYPE_ID],
 
     UI                : {
@@ -130,12 +131,12 @@ annotate service.ZCLAIM_TYPE with @(
                 $Type: 'UI.DataField',
                 Value: GL_ACCOUNT,
                 Label: 'GL Account'
-            },  
+            },
             {
                 $Type: 'UI.DataField',
                 Value: CATEGORY_ID,
                 Label: 'Category ID'
-            },                      
+            },
             {
                 $Type: 'UI.DataField',
                 Value: START_DATE,
@@ -168,12 +169,12 @@ annotate service.ZCLAIM_TYPE with @(
                 $Type: 'UI.DataField',
                 Value: GL_ACCOUNT,
                 Label: 'GL Account'
-            }, 
+            },
             {
                 $Type: 'UI.DataField',
                 Value: CATEGORY_ID,
                 Label: 'Category ID'
-            },                        
+            },
             {
                 $Type: 'UI.DataField',
                 Value: START_DATE,
@@ -209,6 +210,7 @@ annotate service.ZCLAIM_TYPE with @(
 annotate service.ZNUM_RANGE with @(
     cds.autoexpose,
     Common.SemanticKey: [RANGE_ID],
+    Capabilities.SearchRestrictions: {Searchable: false},
     UI                : {
         CreateHidden: true,
         DeleteHidden: true,
@@ -229,7 +231,7 @@ annotate service.ZNUM_RANGE with @(
                 Value            : RANGE_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Range Description'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : FROM,
@@ -254,14 +256,13 @@ annotate service.ZNUM_RANGE with @(
 
 annotate service.ZCLAIM_TYPE_ITEM with @(
     cds.autoexpose,
-
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [
         CLAIM_TYPE_ID,
         CLAIM_TYPE_ITEM_ID
     ],
 
-    UI: {
-        LineItem: [
+    UI                : {LineItem: [
         {
             $Type: 'UI.DataField',
             Value: CLAIM_TYPE_ITEM_ID,
@@ -317,6 +318,7 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
 
 annotate service.ZAPP_FIELD_CTRL with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [
         CLAIM_TYPE_ID,
         CLAIM_TYPE_ITEM_ID
@@ -475,6 +477,7 @@ annotate service.ZAPP_FIELD_CTRL with @(
 
 annotate service.ZCLAIM_CATEGORY with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [CLAIM_CAT_ID],
     Capabilities      : {
         Deletable : true,
@@ -521,13 +524,14 @@ annotate service.ZCLAIM_CATEGORY with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }
         ]
     }
 );
 
 annotate service.ZSTATUS with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [STATUS_ID],
     Capabilities      : {
         Deletable : true,
@@ -574,13 +578,14 @@ annotate service.ZSTATUS with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }             
+            }
         ]
     }
 );
 
 annotate service.ZLODGING_CAT with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [LODGING_CATEGORY_ID],
     Capabilities      : {
         Deletable : true,
@@ -627,13 +632,14 @@ annotate service.ZLODGING_CAT with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }
         ]
     }
 );
 
 annotate service.ZROOM_TYPE with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [ROOM_TYPE_ID],
     Capabilities      : {
         Deletable : true,
@@ -687,6 +693,7 @@ annotate service.ZROOM_TYPE with @(
 
 annotate service.ZFLIGHT_CLASS with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [FLIGHT_CLASS_ID],
     Capabilities      : {
         Deletable : true,
@@ -733,13 +740,14 @@ annotate service.ZFLIGHT_CLASS with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }
         ]
     }
 );
 
 annotate service.ZCOUNTRY with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [COUNTRY_ID],
     Capabilities      : {
         Deletable : true,
@@ -774,7 +782,7 @@ annotate service.ZCOUNTRY with @(
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -786,13 +794,14 @@ annotate service.ZCOUNTRY with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }
         ]
     }
 );
 
 annotate service.ZAREA with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [AREA_ID],
     Capabilities      : {
         Deletable : true,
@@ -827,7 +836,7 @@ annotate service.ZAREA with @(
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -839,13 +848,14 @@ annotate service.ZAREA with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }
         ]
     }
 );
 
 annotate service.ZMARITAL_STAT with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [MARRIAGE_CATEGORY_ID],
     Capabilities      : {
         Deletable : true,
@@ -892,13 +902,14 @@ annotate service.ZMARITAL_STAT with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }
         ]
     }
 );
 
 annotate service.ZVEHICLE_TYPE with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [VEHICLE_TYPE_ID],
     Capabilities      : {
         Deletable : true,
@@ -952,6 +963,7 @@ annotate service.ZVEHICLE_TYPE with @(
 
 annotate service.ZSTATE with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [
         COUNTRY_ID,
         STATE_ID
@@ -995,7 +1007,7 @@ annotate service.ZSTATE with @(
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -1007,23 +1019,21 @@ annotate service.ZSTATE with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }
         ]
     }
 );
 
 annotate service.ZEMP_MASTER with @(
     cds.autoexpose,
-    odata.batch: true,
-    Common.SemanticKey: [
-        EEID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    odata.batch       : true,
+    Common.SemanticKey: [EEID],
     Capabilities      : {
         Deletable : false,
         Updatable : true,
         Insertable: true
     },
-    // odata.draft.enabled,
 
     UI                : {
         CreateHidden: true,
@@ -1045,55 +1055,55 @@ annotate service.ZEMP_MASTER with @(
                 Value            : NAME,
                 ![@UI.Importance]: #High,
                 Label            : 'Employee Name'
-            },   
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : GRADE,
                 ![@UI.Importance]: #High,
                 Label            : 'Personal Grade'
-            },        
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CC,
                 ![@UI.Importance]: #High,
                 Label            : 'Cost Center'
-            },    
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : POS,
                 ![@UI.Importance]: #High,
                 Label            : 'Position Number'
-            },    
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : DEP,
                 ![@UI.Importance]: #High,
                 Label            : 'Department'
-            },  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : UNIT_SECTION,
                 ![@UI.Importance]: #High,
                 Label            : 'Unit/Section'
-            },                    
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : B_PLACE,
                 ![@UI.Importance]: #High,
                 Label            : 'Place of Birth'
-            },  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : MARITAL,
                 ![@UI.Importance]: #High,
                 Label            : 'Marital Status'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : JOB_GROUP,
                 ![@UI.Importance]: #High,
                 Label            : 'Job Group'
-            },                                                
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : OFFICE_LOCATION,
@@ -1117,7 +1127,7 @@ annotate service.ZEMP_MASTER with @(
                 Value            : ADDRESS_LINE3,
                 ![@UI.Importance]: #High,
                 Label            : 'Address Line 3'
-            },                                                
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : POSTCODE,
@@ -1135,7 +1145,7 @@ annotate service.ZEMP_MASTER with @(
                 Value            : COUNTRY,
                 ![@UI.Importance]: #High,
                 Label            : 'Country'
-            },                                                                       
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CONTACT_NO,
@@ -1171,25 +1181,25 @@ annotate service.ZEMP_MASTER with @(
                 Value            : MEDICAL_INSURANCE_ENTITLEMENT,
                 ![@UI.Importance]: #High,
                 Label            : 'Medical Insurance Entitlement'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : MOBILE_BILL_ELIGIBILITY,
                 ![@UI.Importance]: #High,
                 Label            : 'Mobile Bill Eligibility'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : MOBILE_BILL_ELIG_AMOUNT,
                 ![@UI.Importance]: #High,
                 Label            : 'Mobile Phone Bill Eligible Amount Per Month'
-            },             
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : EMPLOYEE_TYPE,
                 ![@UI.Importance]: #High,
                 Label            : 'Employee Type'
-            },    
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : POSITION_NAME,
@@ -1201,19 +1211,19 @@ annotate service.ZEMP_MASTER with @(
                 Value            : POSITION_START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Position Start Date'
-            },   
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : POSITION_EVENT_REASON,
                 ![@UI.Importance]: #High,
                 Label            : 'Position Event Reason'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CONFIRMATION_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Confimation Date'
-            },    
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : EFFECTIVE_DATE,
@@ -1225,22 +1235,21 @@ annotate service.ZEMP_MASTER with @(
                 Value            : UPDATED_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Updated Date'
-            },  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : INSERTED_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Inserted Date'
-            },                                                       
+            },
         ]
     }
 );
 
 annotate service.ZJOB_GROUP with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        JOB_GROUP_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [JOB_GROUP_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -1286,16 +1295,15 @@ annotate service.ZJOB_GROUP with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }              
+            }
         ]
     }
 );
 
 annotate service.ZDEPARTMENT with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        DEPARTMENT_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [DEPARTMENT_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -1365,16 +1373,15 @@ annotate service.ZDEPARTMENT with @(
                 Value            : DIVISION,
                 ![@UI.Importance]: #High,
                 Label            : 'Division'
-            }                                            
+            }
         ]
     }
 );
 
 annotate service.ZROLE with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        ROLE_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [ROLE_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -1420,16 +1427,15 @@ annotate service.ZROLE with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }         
+            }
         ]
     }
 );
 
 annotate service.ZUSER_TYPE with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        USER_TYPE_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [USER_TYPE_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -1475,16 +1481,15 @@ annotate service.ZUSER_TYPE with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }         
+            }
         ]
     }
 );
 
 annotate service.ZEMP_TYPE with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        EMP_TYPE_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [EMP_TYPE_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -1530,16 +1535,15 @@ annotate service.ZEMP_TYPE with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }        
+            }
         ]
     }
 );
 
 annotate service.ZREGION with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        REGION_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [REGION_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -1585,16 +1589,15 @@ annotate service.ZREGION with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }          
+            }
         ]
     }
 );
 
 annotate service.ZRATE_KM with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        RATE_KM_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [RATE_KM_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -1622,19 +1625,19 @@ annotate service.ZRATE_KM with @(
                 Value            : VEHICLE_TYPE_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Vehicle Type ID'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIM_TYPE_ITEM_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Claim Type Item ID'
-            },             
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : RATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Rate'
-            },                            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
@@ -1659,9 +1662,8 @@ annotate service.ZRATE_KM with @(
 
 annotate service.ZSUBMISSION_TYPE with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        SUBMISSION_TYPE_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [SUBMISSION_TYPE_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -1715,6 +1717,7 @@ annotate service.ZSUBMISSION_TYPE with @(
 
 annotate service.ZOFFICE_LOCATION with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [
         LOCATION_ID,
         STATE_ID
@@ -1753,7 +1756,7 @@ annotate service.ZOFFICE_LOCATION with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Location Description'
             },
-                        {
+            {
                 $Type            : 'UI.DataField',
                 Value            : LOCATION_GROUP,
                 ![@UI.Importance]: #High,
@@ -1764,13 +1767,13 @@ annotate service.ZOFFICE_LOCATION with @(
                 Value            : LEGAL_ENTITY,
                 ![@UI.Importance]: #High,
                 Label            : 'Legal Entity'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -1789,6 +1792,7 @@ annotate service.ZOFFICE_LOCATION with @(
 
 annotate service.ZOFFICE_DISTANCE with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [
         FROM_LOCATION_ID,
         FROM_STATE_ID,
@@ -1829,7 +1833,7 @@ annotate service.ZOFFICE_DISTANCE with @(
                 ![@UI.Importance]: #High,
                 Label            : 'To State ID'
             },
-                        {
+            {
                 $Type            : 'UI.DataField',
                 Value            : TO_LOCATION_ID,
                 ![@UI.Importance]: #High,
@@ -1840,13 +1844,13 @@ annotate service.ZOFFICE_DISTANCE with @(
                 Value            : MILEAGE,
                 ![@UI.Importance]: #High,
                 Label            : 'Mileage'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -1865,9 +1869,8 @@ annotate service.ZOFFICE_DISTANCE with @(
 
 annotate service.ZLOC_TYPE with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        LOC_TYPE_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [LOC_TYPE_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -1895,13 +1898,13 @@ annotate service.ZLOC_TYPE with @(
                 Value            : LOC_TYPE_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Location Type Description'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -1920,9 +1923,8 @@ annotate service.ZLOC_TYPE with @(
 
 annotate service.ZMATERIAL_GROUP with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        MATERIAL_CODE_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [MATERIAL_CODE_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -1950,13 +1952,13 @@ annotate service.ZMATERIAL_GROUP with @(
                 Value            : MATERIAL_CODE_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Material Code Description'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -1975,9 +1977,8 @@ annotate service.ZMATERIAL_GROUP with @(
 
 annotate service.ZINDIV_GROUP with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        IND_OR_GROUP_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [IND_OR_GROUP_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -2005,13 +2006,13 @@ annotate service.ZINDIV_GROUP with @(
                 Value            : IND_OR_GROUP_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Individual/Group ID Description'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -2030,9 +2031,8 @@ annotate service.ZINDIV_GROUP with @(
 
 annotate service.ZVEHICLE_OWNERSHIP with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        VEHICLE_OWNERSHIP_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [VEHICLE_OWNERSHIP_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -2060,13 +2060,13 @@ annotate service.ZVEHICLE_OWNERSHIP with @(
                 Value            : VEHICLE_OWNERSHIP_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Vehicle Ownership Description'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -2085,9 +2085,8 @@ annotate service.ZVEHICLE_OWNERSHIP with @(
 
 annotate service.ZEMP_RELATIONSHIP with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        RELATIONSHIP_TYPE_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [RELATIONSHIP_TYPE_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -2115,13 +2114,13 @@ annotate service.ZEMP_RELATIONSHIP with @(
                 Value            : RELATIONSHIP_TYPE_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Relationship Type Description'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -2140,9 +2139,8 @@ annotate service.ZEMP_RELATIONSHIP with @(
 
 annotate service.ZLOOKUP_FIELD with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        LOOKUP_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [LOOKUP_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -2170,13 +2168,13 @@ annotate service.ZLOOKUP_FIELD with @(
                 Value            : LOOKUP_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Lookup Description'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -2195,9 +2193,8 @@ annotate service.ZLOOKUP_FIELD with @(
 
 annotate service.ZMARITAL_CAT with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        MARRIAGE_CATEGORY_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [MARRIAGE_CATEGORY_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -2225,13 +2222,13 @@ annotate service.ZMARITAL_CAT with @(
                 Value            : MARRIAGE_CATEGORY_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Marriage Category Description'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -2250,9 +2247,8 @@ annotate service.ZMARITAL_CAT with @(
 
 annotate service.ZPROJECT_HDR with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        PROJECT_CODE_IO
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [PROJECT_CODE_IO],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -2280,7 +2276,7 @@ annotate service.ZPROJECT_HDR with @(
                 Value            : PROJECT_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Project Description'
-            },  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : GL_ACCOUNT,
@@ -2304,19 +2300,19 @@ annotate service.ZPROJECT_HDR with @(
                 Value            : BUFFER_FIELD1,
                 ![@UI.Importance]: #High,
                 Label            : 'Buffer Field 1'
-            },                                  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : BUFFER_FIELD2,
                 ![@UI.Importance]: #High,
                 Label            : 'Buffer Field 2'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },                       
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -2329,9 +2325,8 @@ annotate service.ZPROJECT_HDR with @(
 
 annotate service.ZBRANCH with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        BRANCH_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [BRANCH_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -2359,7 +2354,7 @@ annotate service.ZBRANCH with @(
                 Value            : BRANCH_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Unit/Section (Branch) Description'
-            },  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : HEAD_OF_UNIT,
@@ -2371,7 +2366,7 @@ annotate service.ZBRANCH with @(
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },                       
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -2383,13 +2378,14 @@ annotate service.ZBRANCH with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }
         ]
     }
 );
 
 annotate service.ZEMP_CA_PAYMENT with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [
         REQUEST_ID,
         EMP_ID,
@@ -2422,7 +2418,7 @@ annotate service.ZEMP_CA_PAYMENT with @(
                 Value            : EMP_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Employee ID'
-            },  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : DISBURSEMENT_DATE,
@@ -2434,13 +2430,14 @@ annotate service.ZEMP_CA_PAYMENT with @(
                 Value            : DISBURSEMENT_STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Disbursement Status (Y/N)'
-            }            
+            }
         ]
     }
 );
 
 annotate service.ZPERDIEM_ENT with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [
         PERSONAL_GRADE_FROM,
         PERSONAL_GRADE_TO,
@@ -2475,7 +2472,7 @@ annotate service.ZPERDIEM_ENT with @(
                 Value            : PERSONAL_GRADE_TO,
                 ![@UI.Importance]: #High,
                 Label            : 'Personal Grade To'
-            },  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : LOCATION,
@@ -2499,22 +2496,21 @@ annotate service.ZPERDIEM_ENT with @(
                 Value            : CURRENCY,
                 ![@UI.Importance]: #High,
                 Label            : 'Currency'
-            },     
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : AMOUNT,
                 ![@UI.Importance]: #High,
                 Label            : 'Amount'
-            }                             
+            }
         ]
     }
 );
 
 annotate service.ZHOUSING_LOAN_SCHEME with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        HOUSING_LOAN_SCHEME_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [HOUSING_LOAN_SCHEME_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -2542,13 +2538,13 @@ annotate service.ZHOUSING_LOAN_SCHEME with @(
                 Value            : HOUSING_LOAN_SCHEME_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Housing Loan Scheme Description'
-            },  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },                       
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -2560,16 +2556,15 @@ annotate service.ZHOUSING_LOAN_SCHEME with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }                                        
+            }
         ]
     }
 );
 
 annotate service.ZLENDER_NAME with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        LENDER_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [LENDER_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -2597,13 +2592,13 @@ annotate service.ZLENDER_NAME with @(
                 Value            : LENDER_NAME,
                 ![@UI.Importance]: #High,
                 Label            : 'Lender Name'
-            },  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },                       
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -2615,13 +2610,14 @@ annotate service.ZLENDER_NAME with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }                                        
+            }
         ]
     }
 );
 
 annotate service.ZREJECT_REASON with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [
         REASON_ID,
         REASON_TYPE,
@@ -2655,13 +2651,13 @@ annotate service.ZREJECT_REASON with @(
                 Value            : REASON_TYPE,
                 ![@UI.Importance]: #High,
                 Label            : 'Reason Type'
-            },  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },                       
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -2679,16 +2675,15 @@ annotate service.ZREJECT_REASON with @(
                 Value            : REASON_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Reason Text'
-            }                                                   
+            }
         ]
     }
 );
 
 annotate service.ZCURRENCY with @(
     cds.autoexpose,
-    Common.SemanticKey: [
-        CURRENCY_ID
-    ],
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [CURRENCY_ID],
     Capabilities      : {
         Deletable : true,
         Updatable : true,
@@ -2722,7 +2717,7 @@ annotate service.ZCURRENCY with @(
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
-            },                       
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : END_DATE,
@@ -2734,20 +2729,21 @@ annotate service.ZCURRENCY with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }                                                          
+            }
         ]
     }
 );
 
 annotate service.ZEMP_DEPENDENT with @(
     cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey: [
         EMP_ID,
         RELATIONSHIP,
         DEPENDENT_NO
     ],
     Capabilities      : {
-        Deletable : true,
+        Deletable : false,
         Updatable : true,
         Insertable: true
     },
@@ -2771,7 +2767,7 @@ annotate service.ZEMP_DEPENDENT with @(
                 Value            : RELATIONSHIP,
                 ![@UI.Importance]: #High,
                 Label            : 'Relationship'
-            },      
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : DEPENDENT_NO,
@@ -2849,17 +2845,7 @@ annotate service.ZEMP_DEPENDENT with @(
                 Value            : INSERTED_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Inserted Date'
-            }                                                                                                                           
+            }
         ]
     }
 );
-
-
-
-
-
-
-
-
-
-

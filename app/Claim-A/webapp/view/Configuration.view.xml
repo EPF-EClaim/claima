@@ -470,6 +470,39 @@
                             <cards:Header title="ZEMP_DEPENDENT" />
                         </f:header>
                     </f:Card>
+
+                    <f:Card
+                        id="ZREJECT_REASON"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZREJECT_REASON" />
+                        </f:header>
+                    </f:Card>
+
+                    <f:Card
+                        id="ZCURRENCY"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZCURRENCY" />
+                        </f:header>
+                    </f:Card>
+
+                    <f:Card
+                        id="ZVEHICLE_OWNERSHIP"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZVEHICLE_OWNERSHIP" />
+                        </f:header>
+                    </f:Card>
                 </f:GridContainer>
             </ScrollContainer>
         </content>
