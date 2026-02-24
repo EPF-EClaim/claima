@@ -2753,8 +2753,8 @@ annotate service.ZEMP_DEPENDENT with @(
         DeleteHidden: false,
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZCURRENCY',
-            TypeNamePlural: 'ZCURRENCY',
+            TypeName      : 'ZEMP_DEPENDENT',
+            TypeNamePlural: 'ZEMP_DEPENDENT',
         },
         LineItem    : [
             {
