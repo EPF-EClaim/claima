@@ -395,39 +395,6 @@
                     </f:Card>
 
                     <f:Card
-                        id="ZAPPROVAL_3"
-                        class="sapUiSmallMargin"
-                        width="15rem"
-                        press="onOpenConfigTable"
-                    >
-                        <f:header>
-                            <cards:Header title="ZAPPROVAL_3" />
-                        </f:header>
-                    </f:Card>
-
-                    <f:Card
-                        id="ZAPPROVAL_2"
-                        class="sapUiSmallMargin"
-                        width="15rem"
-                        press="onOpenConfigTable"
-                    >
-                        <f:header>
-                            <cards:Header title="ZAPPROVAL_2" />
-                        </f:header>
-                    </f:Card>
-
-                    <f:Card
-                        id="ZAPPROVAL_1"
-                        class="sapUiSmallMargin"
-                        width="15rem"
-                        press="onOpenConfigTable"
-                    >
-                        <f:header>
-                            <cards:Header title="ZAPPROVAL_1" />
-                        </f:header>
-                    </f:Card>
-
-                    <f:Card
                         id="ZINDIV_GROUP"
                         class="sapUiSmallMargin"
                         width="15rem"
@@ -490,6 +457,17 @@
                     >
                         <f:header>
                             <cards:Header title="ZRATE_KM" />
+                        </f:header>
+                    </f:Card>
+
+                    <f:Card
+                        id="ZEMP_DEPENDENT"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZEMP_DEPENDENT" />
                         </f:header>
                     </f:Card>
                 </f:GridContainer>

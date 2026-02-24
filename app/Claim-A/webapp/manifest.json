@@ -405,6 +405,11 @@
                     "pattern": "Dashboard",
                     "name": "Dashboard",
                     "target": "Dashboard"
+                },
+                {
+                    "pattern": "ZEMP_DEPENDENT",
+                    "name": "ZEMP_DEPENDENT",
+                    "target": "ZEMP_DEPENDENT"
                 }
             ],
             "targets": {
@@ -2509,6 +2514,51 @@
                     "type": "View",
                     "viewType": "XML",
                     "transition": "slide"
+                },
+                "ZEMP_DEPENDENT": {
+                    "type": "Component",
+                    "id": "ZEMP_DEPENDENT",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_DEPENDENT",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": false,
+                                        "enableMassEdit": false
+                                    },
+                                    "actions": {
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
                 }
             }
         },
