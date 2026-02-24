@@ -1,0 +1,409 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.f"
+    xmlns:table="sap.ui.table">
+
+    <!-- Root must be a Page so NavContainer can navigate to it -->
+    <Page
+        id="analyticsReqReportPage"
+        title="{i18n>ana_poptitle}">
+
+        <content>
+            <f:DynamicPage id="analyticsReqDynPage">
+            <f:title>
+                    <f:DynamicPageTitle>
+                        <f:heading>
+                            <Title
+                                text="{i18n>ana_title4}"
+                                level="H3"
+                            />
+                        </f:heading>
+                    </f:DynamicPageTitle>
+                </f:title>
+                <f:content>
+                    <!-- Classic Grid Table (replacing MDC) -->
+                    <table:Table
+                        id="analyticsreqtab"
+                        rows="{employee_view>/ZEMP_REQUEST_REPORT_DETAILS}"
+                        selectionMode="None"
+                        columnHeaderVisible="true"
+                        enableColumnReordering="true"
+                        width="auto">
+
+                        <table:columns>
+
+                            <!-- employee -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>employee_name}" />
+                                <table:template><Text text="{employee_view>NAME}" /></table:template>
+                            </table:Column>
+
+                            <!-- personal_grade -->
+                            <table:Column width="8rem">
+                                <Label text="{i18n>personal_grade}" />
+                                <table:template><Text text="{employee_view>GRADE}" /></table:template>
+                            </table:Column>
+
+                            <!-- dept -->
+                            <table:Column width="10rem">
+                                <Label text="{i18n>department_id}" />
+                                <table:template><Text text="{employee_view>DEP}" /></table:template>
+                            </table:Column>
+
+                            <!-- dept_name -->
+                            <table:Column width="16rem">
+                                <Label text="{i18n>department_name}" />
+                                <table:template><Text text="{employee_view>DEPARTMENT_DESC}" /></table:template>
+                            </table:Column>
+
+                            <!-- unit -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>unit}" />
+                                <table:template><Text text="{employee_view>UNIT_SECTION}" /></table:template>
+                            </table:Column>
+
+                            <!-- position -->
+                            <table:Column width="16rem">
+                                <Label text="{i18n>position}" />
+                                <table:template><Text text="{employee_view>POSITION_NAME}" /></table:template>
+                            </table:Column>
+
+                            <!-- employee_id -->
+                            <table:Column width="10rem">
+                                <Label text="{i18n>employee_id}" />
+                                <table:template><Text text="{employee_view>EMP_ID}" /></table:template>
+                            </table:Column>
+
+                            <!-- claim_type -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>claim_type}" />
+                                <table:template><Text text="{employee_view>CLAIM_TYPE_ID}" /></table:template>
+                            </table:Column>
+
+                            <!-- preappreq_id -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>preappreq_id}" />
+                                <table:template><Text text="{employee_view>REQUEST_ID}" /></table:template>
+                            </table:Column>
+
+                            <!-- REQUEST_SUB_ID -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>preappreq_sub_id}" />
+                                <table:template>
+                                    <Text text="{employee_view>REQUEST_SUB_ID}" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- preappreq_date -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>preappreq_date}" />
+                                <table:template>
+                                    <Text text="{ path: 'employee_view>REQUEST_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- req_rtype -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>req_rtype}" />
+                                <table:template><Text text="{employee_view>REQUEST_TYPE_DESC}" /></table:template>
+                            </table:Column>
+
+                            <!-- submitted_date -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>submitted_date}" />
+                                <table:template>
+                                    <Text text="{ path: 'employee_view>SUBMITTED_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- approval1..5 -->
+                            <table:Column width="10rem"><Label text="{i18n>approval1}" /><table:template><Text text="{employee_view>APPROVER1}" /></table:template></table:Column>
+                            <table:Column width="10rem"><Label text="{i18n>approval2}" /><table:template><Text text="{employee_view>APPROVER2}" /></table:template></table:Column>
+                            <table:Column width="10rem"><Label text="{i18n>approval3}" /><table:template><Text text="{employee_view>APPROVER3}" /></table:template></table:Column>
+                            <table:Column width="10rem"><Label text="{i18n>approval4}" /><table:template><Text text="{employee_view>APPROVER4}" /></table:template></table:Column>
+                            <table:Column width="10rem"><Label text="{i18n>approval5}" /><table:template><Text text="{employee_view>APPROVER5}" /></table:template></table:Column>
+
+                            <!-- final_app_date -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>final_app_date}" />
+                                <table:template>
+                                    <Text text="{ path: 'employee_view>LAST_APPROVED_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- last_send_date -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>last_send_date}" />
+                                <table:template>
+                                    <Text text="{ path: 'employee_view>LAST_SEND_BACK_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- days_approved (controller can compute) -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>days_approved}" />
+                                <table:template><Text text="{employee_view>DAYS_APPROVED}" /></table:template>
+                            </table:Column>
+
+                            <!-- cash_adv_recei_date -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>cash_adv_recei_date}" />
+                                <table:template>
+                                    <Text text="{ path: 'employee_view>CASH_ADVANCE_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- payment_date -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>payment_date}" />
+                                <table:template>
+                                    <Text text="{ path: 'employee_view>PAYMENT_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- pre_app_status -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>pre_app_status}" />
+                                <table:template><Text text="{employee_view>STATUS}" /></table:template>
+                            </table:Column>
+
+                            <!-- cc_code -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>cc_code}" />
+                                <table:template><Text text="{employee_view>COST_CENTER}" /></table:template>
+                            </table:Column>
+
+                            <!-- cc_desc -->
+                            <table:Column width="16rem">
+                                <Label text="{i18n>cc_desc}" />
+                                <table:template><Text text="{employee_view>COST_CENTER_DESC}" /></table:template>
+                            </table:Column>
+
+                            <!-- alt_cc_code -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>alt_cc_code}" />
+                                <table:template><Text text="{employee_view>ALTERNATE_COST_CENTRE}" /></table:template>
+                            </table:Column>
+
+                            <!-- alt_cc_desc -->
+                            <table:Column width="16rem">
+                                <Label text="{i18n>alt_cc_desc}" />
+                                <table:template><Text text="{employee_view>ALT_COST_CENTER_DESC}" /></table:template>
+                            </table:Column>
+
+                            <!-- gl_acct -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>gl_acct}" />
+                                <table:template><Text text="{employee_view>GL_ACCOUNT}" /></table:template>
+                            </table:Column>
+
+                            <!-- code_mat -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>code_mat}" />
+                                <table:template><Text text="{employee_view>MATERIAL_CODE}" /></table:template>
+                            </table:Column>
+
+                            <!-- gl_acct (duplicate in MDC sequence; kept) -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>gl_acct}" />
+                                <table:template><Text text="{employee_view>GL_ACCOUNT}" /></table:template>
+                            </table:Column>
+
+                            <!-- total_req_amt -->
+                            <table:Column width="14rem" hAlign="End">
+                                <Label text="{i18n>total_req_amt}" />
+                                <table:template>
+                                    <Text text="{ path: 'employee_view>TOTAL_AMOUNT', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- cash_adv -->
+                            <table:Column width="14rem" hAlign="End">
+                                <Label text="{i18n>cash_adv}" />
+                                <table:template>
+                                    <Text text="{ path: 'employee_view>CASH_ADVANCE', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- purpose -->
+                            <table:Column width="20rem">
+                                <Label text="{i18n>purpose}" />
+                                <table:template><Text text="{employee_view>OBJECTIVE_PURPOSE}" /></table:template>
+                            </table:Column>
+
+                            <!-- req_i_remarks -->
+                            <table:Column width="20rem">
+                                <Label text="{i18n>req_i_remarks}" />
+                                <table:template><Text text="{employee_view>REMARK}" /></table:template>
+                            </table:Column>
+
+                            <!-- req_tripstartdate -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>req_tripstartdate}" />
+                                <table:template>
+                                    <Text text="{ path: 'employee_view>TRIP_START_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- req_tripenddate -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>req_tripenddate}" />
+                                <table:template>
+                                    <Text text="{ path: 'employee_view>TRIP_END_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- req_eventstartdate -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>req_eventstartdate}" />
+                                <table:template>
+                                    <Text text="{ path: 'employee_view>EVENT_START_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- req_eventenddate -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>req_eventenddate}" />
+                                <table:template>
+                                    <Text text="{ path: 'employee_view>EVENT_END_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- location -->
+                            <table:Column width="16rem">
+                                <Label text="{i18n>location}" />
+                                <table:template><Text text="{employee_view>LOCATION}" /></table:template>
+                            </table:Column>
+
+                            <!-- req_transport -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>req_transport}" />
+                                <table:template><Text text="{employee_view>TYPE_OF_TRANSPORTATION}" /></table:template>
+                            </table:Column>
+
+                            <!-- claim_item -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>claim_item}" />
+                                <table:template><Text text="{employee_view>CLAIM_TYPE_ITEM_ID}" /></table:template>
+                            </table:Column>
+
+                            <!-- EST_AMOUNT -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>req_i_est_amt}" />
+                                <table:template><Text text="{employee_view>EST_AMOUNT}" /></table:template>
+                            </table:Column>
+
+                            <!-- EST_NO_PARTICIPANT -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>req_i_estparticipant}" />
+                                <table:template><Text text="{employee_view>EST_NO_PARTICIPANT}" /></table:template>
+                            </table:Column>
+
+                            <!-- CASH_ADVANCE -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>cash_adv}" />
+                                <table:template><Text text="{employee_view>CASH_ADVANCE}" /></table:template>
+                            </table:Column>
+
+                            <!-- START_DATE -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>}" />
+                                <table:template><Text text="{employee_view>START_DATE}" /></table:template>
+                            </table:Column>
+
+                            <!-- END_DATE -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>}" />
+                                <table:template><Text text="{employee_view>END_DATE}" /></table:template>
+                            </table:Column>
+
+                            <!-- REMARK -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>remark}" />
+                                <table:template><Text text="{employee_view>REMARK}" /></table:template>
+                            </table:Column>
+
+                            <!-- DECLARE_CLUB_MEMBERSHIP -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>terma}" />
+                                <table:template><Text text="{employee_view>DECLARE_CLUB_MEMBERSHIP}" /></table:template>
+                            </table:Column>
+
+                             <!-- KWSP_SPORTS_REPRESENTATION -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>mewakili}" />
+                                <table:template><Text text="{employee_view>KWSP_SPORTS_REPRESENTATION}" /></table:template>
+                            </table:Column>
+
+                             <!--SPORTS_CLAIM_DISCLAIMER  -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>disclaimer2}" />
+                                <table:template><Text text="{employee_viewSPORTS_CLAIM_DISCLAIMER>}" /></table:template>
+                            </table:Column>
+
+                             <!-- VEHICLE_TYPE -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>vehicle_own}" />
+                                <table:template><Text text="{employee_view>VEHICLE_TYPE}" /></table:template>
+                            </table:Column>
+
+                             <!-- MODE_OF_TRANSFER -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>mod}" />
+                                <table:template><Text text="{employee_view>MODE_OF_TRANSFER}" /></table:template>
+                            </table:Column>
+
+                             <!-- TRANSFER_DATE -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>pindah}" />
+                                <table:template><Text text="{employee_view>TRANSFER_DATE}" /></table:template>
+                            </table:Column>
+
+                             <!-- NO_OF_DAYS -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>num_days}" />
+                                <table:template><Text text="{employee_view>NO_OF_DAYS}" /></table:template>
+                            </table:Column>
+
+                             <!-- MARRIAGE_CATEGORY -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>marriage_cat}" />
+                                <table:template><Text text="{employee_view>MARRIAGE_CATEGORY}" /></table:template>
+                            </table:Column>
+
+                             <!-- FAMILY_COUNT -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>num_fam_head}" />
+                                <table:template><Text text="{employee_view>FAMILY_COUNT}" /></table:template>
+                            </table:Column>
+
+                             <!-- EST_NO_PARTICIPANT  -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>total_part}" />
+                                <table:template><Text text="{employee_view>EST_NO_PARTICIPANT}" /></table:template>
+                            </table:Column>                          
+
+                        </table:columns>
+                    </table:Table>
+                </f:content>
+            </f:DynamicPage>
+        </content>
+
+        <footer>
+            <Toolbar design="Solid" class="sapUiTinyMargin">
+                <ToolbarSpacer />
+                <Button
+                    id="btnExportAnalytics_req"
+                    text="{i18n>export}"
+                    type="Emphasized"
+                    press=".onExportAnalyticsReport" />
+                <Button
+                    id="btnCloseAnalytics_req"
+                    text="Back"
+                    press=".onBackFromAnalyticsClaimReport" />
+            </Toolbar>
+        </footer>
+
+    </Page>
+</core:FragmentDefinition>
