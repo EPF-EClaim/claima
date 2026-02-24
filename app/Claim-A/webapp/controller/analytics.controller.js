@@ -41,9 +41,6 @@ sap.ui.define([
         const oCD = aCD.find(d => d.getKey?.() === "target");
         sTarget = oCD?.getValue();
       }
-
-      console.log("[Analytics] onOpenAnalytics: source id =", oEvent.getSource().getId(), "target =", sTarget);
-      
       if (!sTarget) {
         MessageToast.show("Configuration error: missing target.");
         return;

@@ -4,9 +4,13 @@
     xmlns:f="sap.f"
     xmlns:table="sap.ui.table">
 
+    xmlns:table="sap.ui.table">
+
     <!-- Root must be a Page so NavContainer can navigate to it -->
     <Page
         id="analyticsReqReportPage"
+        title="{i18n>ana_poptitle}">
+
         title="{i18n>ana_poptitle}">
 
         <content>
@@ -22,6 +26,8 @@
                     </f:DynamicPageTitle>
                 </f:title>
                 <f:content>
+                    <!-- Classic Grid Table (replacing MDC) -->
+                    <table:Table
                     <!-- Classic Grid Table (replacing MDC) -->
                     <table:Table
                         id="analyticsreqtab"
@@ -392,18 +398,22 @@
 
         <footer>
             <Toolbar design="Solid" class="sapUiTinyMargin">
+            <Toolbar design="Solid" class="sapUiTinyMargin">
                 <ToolbarSpacer />
                 <Button
                     id="btnExportAnalytics_req"
                     text="{i18n>export}"
                     type="Emphasized"
                     press=".onExportAnalyticsReport" />
+                    press=".onExportAnalyticsReport" />
                 <Button
                     id="btnCloseAnalytics_req"
                     text="Back"
                     press=".onBackFromAnalyticsClaimReport" />
+                    press=".onBackFromAnalyticsClaimReport" />
             </Toolbar>
         </footer>
+
 
     </Page>
 </core:FragmentDefinition>

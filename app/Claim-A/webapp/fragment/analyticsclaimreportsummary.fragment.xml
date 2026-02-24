@@ -4,12 +4,22 @@
     xmlns:f="sap.f"
     xmlns:table="sap.ui.table">
 
+    xmlns:table="sap.ui.table">
+
     <Page
         id="analyticsClaimReportSumPage"
         title="{i18n>ana_poptitle}"
     >
         <content>
             <f:DynamicPage id="analyticsClaimSumDynPage">
+                <f:title>
+                    <f:DynamicPageTitle>
+                        <f:heading>
+                            <Title text="{i18n>ana_title1}" level="H3"/>
+                        </f:heading>
+                    </f:DynamicPageTitle>
+                </f:title>
+
                 <f:title>
                     <f:DynamicPageTitle>
                         <f:heading>
@@ -82,6 +92,69 @@
                                     <ObjectNumber number="{employee_view>EMP_ID}" />
                                 </table:template>
                             </table:Column>
+                    <table:Table
+                        id="analyticsclaimsumtabGrid"
+                        rows="{employee_view>/ZEMP_CLAIM_REPORT_SUMMARY}"
+                        selectionMode="None"
+                        width="auto">
+
+                        <table:columns>
+
+                            <!-- Employee Name -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>employee_name}" />
+                                <table:template>
+                                    <Text text="{employee_view>NAME}" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- Grade -->
+                            <table:Column width="8rem">
+                                <Label text="{i18n>personal_grade}" />
+                                <table:template>
+                                    <Text text="{employee_view>GRADE}" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- Department -->
+                            <table:Column width="10rem">
+                                <Label text="{i18n>department_id}" />
+                                <table:template>
+                                    <Text text="{employee_view>DEP}" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- Department Name -->
+                            <table:Column width="16rem">
+                                <Label text="{i18n>department_name}" />
+                                <table:template>
+                                    <Text text="{employee_view>DEPARTMENT_DESC}" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- Unit -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>unit}" />
+                                <table:template>
+                                    <Text text="{employee_view>UNIT_SECTION}" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- Position -->
+                            <table:Column width="16rem">
+                                <Label text="{i18n>position}" />
+                                <table:template>
+                                    <Text text="{employee_view>POSITION_NAME}" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- Employee ID -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>employee_id}" />
+                                <table:template>
+                                    <ObjectNumber number="{employee_view>EMP_ID}" />
+                                </table:template>
+                            </table:Column>
 
                             <!-- Claim Type -->
                             <table:Column width="12rem">
@@ -90,7 +163,21 @@
                                     <ObjectIdentifier title="{employee_view>CLAIM_TYPE_DESC}" />
                                 </table:template>
                             </table:Column>
+                            <!-- Claim Type -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>claim_type}" />
+                                <table:template>
+                                    <ObjectIdentifier title="{employee_view>CLAIM_TYPE_DESC}" />
+                                </table:template>
+                            </table:Column>
 
+                            <!-- Claim ID -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>claim_id}" />
+                                <table:template>
+                                    <ObjectIdentifier title="{employee_view>CLAIM_ID}" />
+                                </table:template>
+                            </table:Column>
                             <!-- Claim ID -->
                             <table:Column width="12rem">
                                 <Label text="{i18n>claim_id}" />
@@ -350,7 +437,15 @@
 
         <footer>
             <Toolbar design="Solid" class="sapUiTinyMargin">
+            <Toolbar design="Solid" class="sapUiTinyMargin">
                 <ToolbarSpacer />
+                <Button id="btnExportAnalyticsSum"
+                        text="{i18n>export}"
+                        type="Emphasized"
+                        press=".onExportAnalyticsReport"/>
+                <Button id="btnCloseAnalyticsSum"
+                        text="Back"
+                        press=".onBackFromAnalyticsClaimReport"/>
                 <Button id="btnExportAnalyticsSum"
                         text="{i18n>export}"
                         type="Emphasized"
