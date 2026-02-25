@@ -3,18 +3,29 @@
   "tenant-mode": "dedicated",
   "scopes": [
     {
-      "name": "uaa.user",
+      "name": "$XSAPPNAME.user",
       "description": "UAA"
     }
   ],
-  "attributes": [],
+  "attributes": [
+    "$XSAPPNAME.user"
+  ],
   "role-templates": [
     {
       "name": "Token_exchange",
       "description": "UAA",
       "scope-references": [
-        "uaa.user"
+        "$XSAPPNAME.user"
       ]
     }
-  ]
+  ],
+  "oauth2-configuration": {
+    "credential-types": [
+      "binding-secret",
+      "x509"
+    ],
+    "redirect-uris": [
+      "http://localhost:*/**"
+    ]
+  }
 }
