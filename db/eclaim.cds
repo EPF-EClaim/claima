@@ -59,7 +59,7 @@ entity ZEMP_MASTER : managed {
                                             on ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;
         ZOFFICE_LOCATION              : Association to ZOFFICE_LOCATION
                                             on  ZOFFICE_LOCATION.LOCATION_ID = OFFICE_LOCATION
-                                            and ZOFFICE_LOCATION.STATE_ID = STATE;
+                                            and ZOFFICE_LOCATION.STATE_ID    = STATE;
         ZBRANCH                       : Association to ZBRANCH
                                             on ZBRANCH.BRANCH_ID = UNIT_SECTION;
 }
@@ -987,4 +987,54 @@ entity ZCURRENCY : managed {
         START_DATE    : Date       @Common.Label: 'Start Date';
         END_DATE      : Date       @Common.Label: 'End Date';
         STATUS        : String     @Common.Label: 'Status';
+}
+
+entity ZMOBILE_CATEGORY_PURPOSE : managed {
+    key MOBILE_CATEGORY_PURPOSE_ID   : String  @mandatory  @Common.Label: 'Category/Purpose (Mobile) ID';
+        MOBILE_CATEGORY_PURPOSE_DESC : String  @Common.Label: 'Category/Purpose (Mobile) Description';
+        START_DATE                   : Date    @Common.Label: 'Start Date';
+        END_DATE                     : Date    @Common.Label: 'End Date';
+        STATUS                       : String  @Common.Label: 'Status';
+
+}
+
+entity ZVEHICLE_CLASS : managed {
+    key VEHICLE_CLASS_ID   : String  @mandatory  @Common.Label: 'Vehicle Class ID';
+        VEHICLE_CLASS_DESC : String  @Common.Label: 'Vehicle Class Description';
+        START_DATE         : Date    @Common.Label: 'Start Date';
+        END_DATE           : Date    @Common.Label: 'End Date';
+        STATUS             : String  @Common.Label: 'Status';
+
+}
+
+entity ZINSURANCE_PROVIDER : managed {
+    key INSURANCE_PROVIDER_ID   : String  @mandatory  @Common.Label: 'Insurance Provider ID';
+        INSURANCE_PROVIDER_DESC : String  @Common.Label: 'Insurance Provider Description';
+        START_DATE              : Date    @Common.Label: 'Start Date';
+        END_DATE                : Date    @Common.Label: 'End Date';
+        STATUS                  : String  @Common.Label: 'Status';
+}
+
+entity ZINSURANCE_PACKAGE : managed {
+    key INSURANCE_PACKAGE_ID    : String  @mandatory  @Common.Label: 'Insurance Package ID';
+        ZINSURANCE_PACKAGE_DESC : String  @Common.Label: 'Insurance Package Description';
+        START_DATE              : Date    @Common.Label: 'Start Date';
+        END_DATE                : Date    @Common.Label: 'End Date';
+        STATUS                  : String  @Common.Label: 'Status';
+}
+
+entity ZPROFESIONAL_BODY : managed {
+    key PROFESIONAL_BODY_ID   : String  @mandatory  @Common.Label: 'Type of Profesional Body ID';
+        PROFESIONAL_BODY_DESC : String  @Common.Label: 'Type of Profesional Body Description';
+        START_DATE            : Date    @Common.Label: 'Start Date';
+        END_DATE              : Date    @Common.Label: 'End Date';
+        STATUS                : String  @Common.Label: 'Status';
+}
+
+entity ZSTUDY_LEVELS : managed {
+    key STUDY_LEVELS_ID   : String  @mandatory  @Common.Label: 'Level of Studies ID';
+        STUDY_LEVELS_DESC : String  @Common.Label: 'Level of Studies Description';
+        START_DATE        : Date    @Common.Label: 'Start Date';
+        END_DATE          : Date    @Common.Label: 'End Date';
+        STATUS            : String  @Common.Label: 'Status';
 }
