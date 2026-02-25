@@ -1,7 +1,7 @@
 using {ECLAIM} from '../db/eclaim';
 
 @path: 'EmployeeSrv'
-service eclaim_srv {
+service eclaim_srv{
     type Response {
         message : String;
     };
