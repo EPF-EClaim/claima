@@ -193,7 +193,7 @@
                                     showSuggestion="true"
                                     suggestionRows="{/ZEMP_MASTER}"
                                     suggestionItemSelected=".onParticipantInputChange"
-                                    change=".onParticipantInputChange"
+                                    change=".onUploadParticipants"
                                     showValueHelp="true"
                                     valueHelpRequest=".onValueHelpRequest"
                                     enabled="{= ${request>/req_header/grptype} === 'group' || ${request>/view} !== 'view'}">

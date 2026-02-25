@@ -17,7 +17,7 @@
                 headerText="My Pre-Approval Status"
                 mode="SingleSelectMaster"
                 width="auto"
-                items="{path: 'request>/req_header_list'}"
+                items="{path: 'request_status>/req_header_list'}"
                 itemPress="openItemFromList"
                 growing="true"
             >
@@ -25,7 +25,7 @@
                     <Toolbar>
                         <!-- Title with inline count -->
                         <Title
-                            text="{= ${i18n>nav_myrequest} + ' (' + ${request>/req_header_count} + ')'}"
+                            text="{= ${i18n>nav_myrequest} + ' (' + ${request_status>/req_header_count} + ')'}"
                         />
                     </Toolbar>
                 </headerToolbar>
@@ -38,7 +38,7 @@
                         <Text text="Purpose" />
                     </Column>
                     <Column>
-                        <Text text="Start Date" />
+                        <Text text="Request Date" />
                     </Column>
                     <Column>
                         <Text text="Status" />
@@ -51,18 +51,18 @@
                 <items>
                     <ColumnListItem type="Active">
                         <cells>
-                            <Text text="{request>REQUEST_ID}" />
-                            <Text text="{request>OBJECTIVE_PURPOSE}" />
+                            <Text text="{request_status>REQUEST_ID}" />
+                            <Text text="{request_status>OBJECTIVE_PURPOSE}" />
                             <Text
                                 text="{
-                                    path: 'request>TRIP_START_DATE',
+                                    path: 'request_status>REQUEST_DATE',
                                     type: 'sap.ui.model.odata.type.Date',
                                     formatOptions: { pattern: 'dd MMM yyyy' } 
                                 }"
                             />
-                            <Text text="{request>STATUS}" />
+                            <Text text="{request_status>STATUS}" />
                             <Text text="RM {
-                                    path: 'request>PREAPPROVAL_AMOUNT',
+                                    path: 'request_status>PREAPPROVAL_AMOUNT',
                                     type: 'sap.ui.model.type.Float',
                                     formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
                                 }" />

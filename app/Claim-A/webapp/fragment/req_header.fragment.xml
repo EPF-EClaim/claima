@@ -12,7 +12,7 @@
         <OverflowToolbar height="3rem">
             <Title text="{i18n>req_form_header_title}" titleStyle="H3"/>
             <ToolbarSpacer />
-            <!-- <Button type="Default" icon="sap-icon://print" /> -->
+            <Button type="Default" icon="sap-icon://cause" />
         </OverflowToolbar>
         <form:Form 
             id="req_header1"

@@ -1189,13 +1189,15 @@ sap.ui.define([
 				'RT0001': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'eventstartdate', 'eventenddate', 'grptype', 'location', 'transport', 'comment'],
 				'RT0002': ['purpose', 'reqtype', 'grptype', 'comment'],
 				'RT0003': ['purpose', 'reqtype', 'eventstartdate', 'eventenddate', 'grptype', 'location', 'comment', 'eventdetail1', 'eventdetail2', 'eventdetail3', 'eventdetail4'],
-				'RT0004': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'grptype', 'comment']
+				'RT0004': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'grptype', 'comment'],
+				'RT0005': ['purpose', 'reqtype'],
+				'RT0006': ['purpose', 'reqtype']
 			};
 
 			const fieldsToCheck = mandatoryFields[oData.reqtype] || ['purpose'];
 			const isMissing = fieldsToCheck.some(field => !oData[field] || oData[field] === "");
 
-			if (isMissing || (oData.reqtype === 'RT0000')) {
+			if (isMissing) {
 				okcode = false;
 				message = 'Please enter all mandatory details';
 			} else if (!oData.doc1) {
@@ -1414,7 +1416,7 @@ sap.ui.define([
 		},
 
 		async _getPARHeaderList() {
-			const oReq = this.getOwnerComponent().getModel('request');
+			const oReq = this.getOwnerComponent().getModel('request_status');
 
 			const base       = this._entityUrl("ZREQUEST_HEADER");
 			const orderby    = "REQUEST_ID asc";

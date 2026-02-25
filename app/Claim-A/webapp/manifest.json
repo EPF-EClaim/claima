@@ -92,6 +92,10 @@
             "request": {
                 "type": "sap.ui.model.json.JSONModel",
                 "uri": "model/request.json"
+            },
+            "request_status": {
+                "type": "sap.ui.model.json.JSONModel",
+                "uri": "model/request_status.json"
             }
         },
         "resources": {

@@ -36,9 +36,14 @@ sap.ui.define([
 			return this.getOwnerComponent().getModel("request");
 		},
 
+		_getReqStatModel() {
+			return this.getOwnerComponent().getModel("request_status");
+		},
+
 		_ensureRequestModelDefaults() {
 			const oReq = this._getReqModel();
 			const data = oReq.getData() || {};
+			data.view = "view";
             data.req_header_count  = data.req_header_count ?? 0;
             data.req_header_list   = Array.isArray(data.req_header_list) ? data.req_item_rows: [];
 			oReq.setData(data);
@@ -68,7 +73,7 @@ sap.ui.define([
 		* ======================================================= */
 
         async _getHeaderList() {
-			const oReq = this._getReqModel();
+			const oReq = this._getReqStatModel();
 
 			const base       = this._entityUrl("ZREQUEST_HEADER");
 			const orderby    = "REQUEST_ID asc";
@@ -106,60 +111,64 @@ sap.ui.define([
             try {
                 this.getView().setBusy(true);
 
+                const oReqStatModel = this._getReqStatModel();              // your helper returning the named JSON model "request"
                 const oReqModel = this._getReqModel();              // your helper returning the named JSON model "request"
                 const oTable    = this.byId("tb_myrequestform");
+
+                // Optional UI state on the same model
+                oReqModel.setProperty("/view", "view");
 
                 // 1) Try to get the context from the event's listItem (sap.m.ColumnListItem)
                 let oCtx = oEvent?.getParameter?.("listItem")?.getBindingContext("request");
 
                 // 2) Fallback: if no listItem (e.g., programmatic call), use the table's selection
                 if (!oCtx) {
-                const oSelected = oTable.getSelectedItem?.();
-                if (oSelected) {
-                    oCtx = oSelected.getBindingContext("request");
-                }
+					const oSelected = oTable.getSelectedItem?.();
+					if (oSelected) {
+						oCtx = oSelected.getBindingContext("request_status");
+					}
                 }
 
                 if (!oCtx) {
-                sap.m.MessageToast.show("Select an item to open");
-                return;
+                	sap.m.MessageToast.show("Select an item to open");
+                	return;
                 }
 
                 // For JSON model, we use getObject() (not requestObject())
                 const row   = oCtx.getObject(); // e.g., the element from request>/req_header_list/2
-                const reqId = String(row?.REQUEST_ID || oReqModel.getProperty("/req_header/reqid") || "").trim();
 
                 // Map/set the current request header into the same "request" model, under /req_header
                 oReqModel.setProperty("/req_header", {
-                purpose        : row.OBJECTIVE_PURPOSE || "",
-                reqtype        : row.REQUEST_TYPE_ID || "",
-                tripstartdate  : row.TRIP_START_DATE || "",
-                tripenddate    : row.TRIP_END_DATE || "",
-                eventstartdate : row.EVENT_START_DATE || "",
-                eventenddate   : row.EVENT_END_DATE || "",
-                grptype        : row.IND_OR_GROUP || "",
-                location       : row.LOCATION || "",
-                transport      : row.TYPE_OF_TRANSPORTATION || "",
-                altcostcenter  : row.ALTERNATE_COST_CENTER || "",
-                doc1           : row.ATTACHMENT1 || "",
-                doc2           : row.ATTACHMENT2 || "",
-                comment        : "",
-                eventdetail1   : row.EVENT_FIELD1 || "",
-                eventdetail2   : row.EVENT_FIELD2 || "",
-                eventdetail3   : row.EVENT_FIELD3 || "",
-                eventdetail4   : row.EVENT_FIELD4 || "",
-                reqid          : row.REQUEST_ID || "",
-                reqstatus      : row.STATUS || "",
-                costcenter     : row.COST_CENTER || "",
-                cashadvamt     : row.CASH_ADVANCE || 0,
-                reqamt         : row.PREAPPROVAL_AMOUNT || 0
+					purpose        : row.OBJECTIVE_PURPOSE || "",
+					reqtype        : row.REQUEST_TYPE_ID || "",
+					tripstartdate  : row.TRIP_START_DATE || "",
+					tripenddate    : row.TRIP_END_DATE || "",
+					eventstartdate : row.EVENT_START_DATE || "",
+					eventenddate   : row.EVENT_END_DATE || "",
+					grptype        : row.IND_OR_GROUP || "",
+					location       : row.LOCATION || "",
+					transport      : row.TYPE_OF_TRANSPORTATION || "",
+					altcostcenter  : row.ALTERNATE_COST_CENTER || "",
+					doc1           : row.ATTACHMENT1 || "",
+					doc2           : row.ATTACHMENT2 || "",
+					comment        : "",
+					eventdetail1   : row.EVENT_FIELD1 || "",
+					eventdetail2   : row.EVENT_FIELD2 || "",
+					eventdetail3   : row.EVENT_FIELD3 || "",
+					eventdetail4   : row.EVENT_FIELD4 || "",
+					reqid          : row.REQUEST_ID || "",
+					reqstatus      : row.STATUS || "",
+					costcenter     : row.COST_CENTER || "",
+					cashadvamt     : row.CASH_ADVANCE || 0,
+					reqamt         : row.PREAPPROVAL_AMOUNT || 0
                 });
-
-                // Optional UI state on the same model
-                oReqModel.setProperty("/view", "view");
 
                 // Load items/details for this request
                 this._getItemList(row.REQUEST_ID);
+
+				if (row.STATUS == 'DRAFT') {
+                	oReqModel.setProperty("/view", "list");
+				}
 
                 // Navigate to detail route/view
                 const oRouter = this.getOwnerComponent().getRouter();
