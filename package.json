@@ -27,10 +27,10 @@
   "private": true,
   "cds": {
     "server": {
-      "index": true
-    },
-    "fiori": {
-      "bypass_draft": true
+      "index": true,
+      "body_parser": {
+        "limit": "10mb" 
+      }
     },
     "hana": {
       "deploy-format": "hdbtable"

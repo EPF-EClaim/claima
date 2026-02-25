@@ -20,9 +20,14 @@ sap.ui.define([
             "B_PLACE",
             "MOBILE_BILL_ELIGIBILITY", 
             "ROLE",
-            "MOBILE_BILL_ELIG_AMOUNT"
+            "MOBILE_BILL_ELIG_AMOUNT",
+            "MEDICAL_INSURANCE_ENTITLEMENT",
+            "POST_EDU_ASSISTANT_CLAIM_DATE", 
+            "POST_EDU_ASSISTANT_ENTITLE_AMOUNT", 
+            "MEDICAL_INSURANCE"
         ]);
-        const isZempMaster = sPath?.startsWith("/ZEMP_MASTER");
+
+        const isZempMaster = sPath?.startsWith("/ZEMP_MASTER") || sPath?.startsWith("/ZEMP_DEPENDENT");
 
         const oVBox = new sap.m.VBox({
             width: "70%",

@@ -124,10 +124,10 @@ sap.ui.define([
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
 
-			sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
+			// sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
 			var oRouter = this.getOwnerComponent().getRouter();
 			oRouter.navTo("Dashboard");
-			
+
 			this._loadCurrentUser();
 		},
 
