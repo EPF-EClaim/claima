@@ -65,6 +65,12 @@
                             <Text text="Claim Type Description" />
                         </Column>
                         <Column>
+                            <Text text="GL Account" />
+                        </Column>
+                        <Column>
+                            <Text text="Category ID" />
+                        </Column>
+                        <Column>
                             <Text text="End Date" />
                         </Column>
                         <Column>
@@ -84,6 +90,10 @@
                                 <Text text="{CLAIM_TYPE_ID}" />
 
                                 <Text text="{CLAIM_TYPE_DESC}" />
+
+                                <Text text="{GL_ACCOUNT}" />
+
+                                <Text text="{CATEGORY_ID}" />
 
                                 <Text text="{END_DATE}"/>
 
