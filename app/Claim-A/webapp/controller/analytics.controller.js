@@ -14,7 +14,7 @@ sap.ui.define([
   "use strict";
 
   function sanitizeFileName(s) {
-    return (s || "").replace(/[\\/:*?"<>|]/g, "_").replace(/\s+/g, " ").trim().substring(0, 80);
+    return (s || "").replace(/[\\/:*?"<>\|]/g, "_").replace(/\s+/g, " ").trim().substring(0, 80);
   }
 
   // ===== Table IDs (Summary & Details) =====
@@ -23,7 +23,7 @@ sap.ui.define([
   const CLAIM_DET_TABLE_ID = "analyticsclaimtabGrid";    // Claim Details
   const REQ_DET_TABLE_ID = "analyticsreqtab";          // Request Details
 
-  // ===== Entity roots (for reference only; binding paths are in fragments) =====
+  // ===== Entity roots (for reference only) =====
   const ENTITY_CLAIM_SUM = "/ZEMP_CLAIM_REPORT_SUMMARY";
   const ENTITY_REQ_SUM = "/ZEMP_REQUEST_REPORT_SUMMARY";
   const ENTITY_CLAIM_DET = "/ZEMP_CLAIM_REPORT_DETAILS";
@@ -43,7 +43,7 @@ sap.ui.define([
       }
 
       console.log("[Analytics] onOpenAnalytics: source id =", oEvent.getSource().getId(), "target =", sTarget);
-      
+
       if (!sTarget) {
         MessageToast.show("Configuration error: missing target.");
         return;
@@ -52,8 +52,6 @@ sap.ui.define([
       this._analyticsTarget = sTarget;
 
       const flags = this.getVisibilityForTarget(sTarget);
-
-      // ADD showTripDates default = true
       flags.showTripDates = true;
       flags.tripDatesRequired = true;
 
@@ -63,49 +61,6 @@ sap.ui.define([
 
       this._openFragment("claima.fragment.analyticsdialog");
     },
-
-
-    /*   onRequestTypeChange: function (oEvent) {
-        const selectedKey = oEvent.getSource().getSelectedKey();
-        const anaVM = this.getView().getModel("anaVM");
-  
-        // Hide Trip Dates ONLY if Request Type is RT0002
-        const showTripDates = selectedKey !== "RT0002";
-  
-        anaVM.setProperty("/showTripDates", showTripDates);
-      }, */
-
-    onRequestTypeChange: function (oEvent) {
-      const selectedKey = oEvent.getSource().getSelectedKey();
-      const anaVM = this.getView().getModel("anaVM");
-
-      // RULES:
-      // RT00002 -> hide + not required
-      // RT0004  -> show + not required
-      // default -> show + required
-
-      let showTripDates = true;
-      let tripDatesRequired = true;
-
-      if (selectedKey === "RT0002") {
-        showTripDates = false;
-        tripDatesRequired = false;
-      }
-      else if (selectedKey === "RT0003") {
-        showTripDates = true;
-        tripDatesRequired = false;
-      }
-
-      anaVM.setProperty("/showTripDates", showTripDates);
-      anaVM.setProperty("/tripDatesRequired", tripDatesRequired);
-
-      // Optional: clear values when hidden
-      if (!showTripDates) {
-        this.byId("analytics_tripstartdate")?.setDateValue(null);
-        this.byId("analytics_tripenddate")?.setDateValue(null);
-      }
-    },
-
 
     getVisibilityForTarget: function (sTarget) {
       switch (sTarget) {
@@ -153,97 +108,144 @@ sap.ui.define([
         this._analyticsTarget === "preApprovedDetails"
       );
     },
+    _isClaimTarget: function () {
+      return !this._isRequestTarget();
+    },
+    _isClaimDetails: function () {
+      return this._analyticsTarget === "analyticsClaimReportDetails";
+    },
+    _isReqDetails: function () {
+      return this._analyticsTarget === "preApprovedDetails";
+    },
+
+    // ---- Helpers for MultiComboBox filters
+    _getKeys: function (id) {
+      return this.byId(id)?.getSelectedKeys?.() || [];
+    },
+    _addOrFilter: function (collector, field, keys) {
+      if (!keys || keys.length === 0) return;
+      collector.push(new Filter({
+        and: false,
+        filters: keys.map(k => new Filter(field, FilterOperator.EQ, k))
+      }));
+    },
+
+    // For Status (when Request expects STATUS (text), Claim expects STATUS_ID (key))
+    _getSelectedItemTexts: function (id) {
+      const c = this.byId(id);
+      return c?.getSelectedItems()?.map(it => (it.getText() || "").trim()) || [];
+    },
 
     _buildFiltersFromDialog: function () {
       const isReq = this._isRequestTarget();
+      const isClaim = !isReq;
+      const isClaimDet = this._isClaimDetails();
+      const isReqDet = this._isReqDetails();
+
       const get = this.byId.bind(this);
       const a = [];
 
-      // Trip dates
+      // ---- Dates
       const dTripStart = get("analytics_tripstartdate")?.getDateValue();
       const dTripEnd = get("analytics_tripenddate")?.getDateValue();
       if (dTripStart) a.push(new Filter("TRIP_START_DATE", FilterOperator.GE, this._formatDate(dTripStart)));
       if (dTripEnd) a.push(new Filter("TRIP_END_DATE", FilterOperator.LE, this._formatDate(dTripEnd)));
 
-      // Event dates (REQUEST entity only)
       const dEvStart = get("analytics_eventstartdate")?.getDateValue();
       const dEvEnd = get("analytics_eventenddate")?.getDateValue();
-      //if (isReq) {
       if (dEvStart) a.push(new Filter("EVENT_START_DATE", FilterOperator.GE, this._formatDate(dEvStart)));
       if (dEvEnd) a.push(new Filter("EVENT_END_DATE", FilterOperator.LE, this._formatDate(dEvEnd)));
-      //}
 
-      // Payment date → claim only
       const dPay = get("analytics_paydate")?.getDateValue();
-      if (dPay) {
-        a.push(new Filter("PAYMENT_DATE", FilterOperator.EQ, this._formatDate(dPay)));
+      if (dPay) a.push(new Filter("PAYMENT_DATE", FilterOperator.EQ, this._formatDate(dPay)));
+
+      // ---- Multi-selects
+
+      // Status (entity-aware)
+      if (isReq) {
+        // Request must filter on STATUS (text)
+        const statusTexts = this._getSelectedItemTexts("status");
+        if (statusTexts.length) this._addOrFilter(a, "STATUS", statusTexts);
+      } else {
+        // Claim must filter on STATUS_ID (keys)
+        const statusKeys = this._getKeys("status");
+        if (statusKeys.length) this._addOrFilter(a, "STATUS_ID", statusKeys);
       }
 
-      // Status
-      const sStatus = get("status")?.getSelectedKey();
-      if (sStatus) {
-        if (isReq) a.push(new Filter("STATUS", FilterOperator.EQ, sStatus));
-        else a.push(new Filter("STATUS_ID", FilterOperator.EQ, sStatus));
-      }
+      // Course Code (Claim only)
+      const courseKeys = this._getKeys("Course_code");
+      if (isClaim) this._addOrFilter(a, "COURSE_ID", courseKeys);
 
-      // Department
-      const sDept = get("select_department")?.getSelectedKey();
-      if (sDept) a.push(new Filter("DEP", FilterOperator.EQ, sDept));
+      // Department (both)
+      const deptKeys = this._getKeys("select_department");
+      this._addOrFilter(a, "DEP", deptKeys);
 
-      // Claim Type
-      const sType = get("claim_type")?.getSelectedKey();
-      if (sType) a.push(new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sType));
+      // GL Code (both)
+      const glKeys = this._getKeys("glcode");
+      this._addOrFilter(a, "GL_ACCOUNT", glKeys);
 
-      /*       // Request Type – request entity only
-            const sReqType = get("reqtype")?.getSelectedKey();
-            if (isReq && sReqType) {
-              a.push(new Filter("REQUEST_TYPE_ID", FilterOperator.EQ, sReqType));
-            } */
+      // Cost Center (both)
+      const ccKeys = this._getKeys("cc");
+      this._addOrFilter(a, "COST_CENTER", ccKeys);
+
+      // Claim Type (Claim targets only)
+      const claimTypeKeys = this._getKeys("claim_type");
+      if (isClaim) this._addOrFilter(a, "CLAIM_TYPE_ID", claimTypeKeys);
+
+      // Claim Item (Claim DETAILS only)
+      const claimItemKeys = this._getKeys("claim_item");
+      if (isClaimDet) this._addOrFilter(a, "CLAIM_TYPE_ITEM_ID", claimItemKeys);
+
+      // Location (both)
+      const locKeys = this._getKeys("location");
+      this._addOrFilter(a, "LOCATION", locKeys);
+
+      // Individual / Group (only if backend supports this on the target entity)
+      const grpKeys = this._getKeys("grouping");
+      this._addOrFilter(a, "IND_OR_GROUP_ID", grpKeys);
 
       // Employee
-      const sEmp = get("emp_name")?.getSelectedKey();
-      if (sEmp) a.push(new Filter("EMP_ID", FilterOperator.EQ, sEmp));
+      const empKeys = this._getKeys("emp_name");
+      this._addOrFilter(a, "EMP_ID", empKeys);
 
-      // Cost center
-      const sCC = get("cc")?.getSelectedKey();
-      if (sCC) a.push(new Filter("COST_CENTER", FilterOperator.EQ, sCC));
+      // Request Type (Request only)
+      const reqTypeKeys = this._getKeys("reqtype");
+      if (isReq && reqTypeKeys?.length) this._addOrFilter(a, "REQUEST_TYPE_ID", reqTypeKeys);
 
-      /*    // Amount → entity-specific:
-         const rawAmt = (get("amount")?.getValue() || "").trim();
-         const nAmt = parseFloat(rawAmt.replace(/[, ]/g, ""));
-         if (!Number.isNaN(nAmt)) {
-           if (isReq) {
-             a.push(new Filter("TOTAL_AMOUNT", FilterOperator.GE, nAmt));
-           } else {
-             a.push(new Filter("TOTAL_CLAIM_AMOUNT", FilterOperator.GE, nAmt));
-           }
-         } */
+      // Claim Category (Claim only)
+      const claimCatKeys = this._getKeys("claim_cat");
+      if (isClaim && claimCatKeys?.length) this._addOrFilter(a, "SUBMISSION_TYPE", claimCatKeys);
 
       return a;
     },
 
-    //To convert date to format for filtering;
-
-    //Comment off and replace with another 
-    /* _formatDate(d) {
-      return d ? d.toISOString().split("T")[0] : null;
-    }, */
-
-
+    // Edm.Date-safe (no UTC shift)
     _formatDate(d) {
       if (!d) return null;
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, "0");
       const day = String(d.getDate()).padStart(2, "0");
-      return `${y}-${m}-${day}`; // Edm.Date: yyyy-MM-dd
+      return `${y}-${m}-${day}`;
     },
-
 
     /* ===========================================================
      *  NAVIGATION + TABLE HANDLING
      * =========================================================== */
 
     onClickCreateRequest_ana: async function (oEvent) {
+      // Simple guard: if Status is required in dialog and none selected
+      const statusControl = this.byId("status");
+      if (statusControl?.getRequired?.()) {
+        const sel = statusControl.getSelectedKeys?.() || [];
+        if (sel.length === 0) {
+          statusControl.setValueState("Error");
+          statusControl.setValueStateText("Please choose at least one Status");
+          MessageToast.show("Please choose at least one Status");
+          return;
+        }
+        statusControl.setValueState("None");
+      }
+
       this.onCloseDialog(oEvent);
 
       const aFilters = this._buildFiltersFromDialog();
@@ -252,6 +254,27 @@ sap.ui.define([
       if (oPage) {
         this._applyFiltersToCurrentTable(aFilters);
       }
+    },
+
+    onClickCancel_ana: async function (oEvent) {
+      this.onCloseDialog(oEvent);
+    },
+
+    onBackFromAnalyticsClaimReport: function () {
+      // Navigate back in the NavContainer history if possible
+      const oRoot = this.getOwnerComponent().getRootControl();
+      const oNav = oRoot.byId("pageContainer");
+      if (oNav && oNav.back) {
+        oNav.back();
+        return;
+      }
+
+      
+
+      // Fallback: if no back history, route to a known start page if you have one
+      // Example if you keep a landing page cached:
+      // const oStart = oRoot.byId("analyticsLandingPage");
+      // if (oStart) { oNav.to(oStart, "slide"); }
     },
 
     _navToFragmentTarget: async function (sTarget) {
@@ -288,7 +311,8 @@ sap.ui.define([
       const oPage = this._pages[sTarget];
       oNav.to(oPage, "slide");
 
-      setTimeout(() => this._attachCalculatedFields(), 300);
+      // In OData V4 we DON'T need dataReceived for Days Approved; it's computed via formatter.
+      // setTimeout(() => this._attachCalculatedFields(), 300); // ← no longer needed
 
       return oPage;
     },
@@ -313,61 +337,137 @@ sap.ui.define([
     },
 
     /* ===========================================================
-     *  CALCULATED FIELDS
+     *  FORMATTERS (V4-safe derived values)
      * =========================================================== */
-    _attachCalculatedFields: function () {
-      const b = this._getCurrentBinding();
-      if (b) {
-        b.detachDataReceived(this._onDataReceived, this);
-        b.attachDataReceived(this._onDataReceived, this);
-      }
+
+    // UI formatter for Days Approved (used by XML)
+    daysApprovedFormatter: function (sSubmitted, sApproved) {
+      const toDateOnlyUTC = (v) => {
+        if (!v) return null;
+        const d = (v instanceof Date) ? v : new Date(v);
+        return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      };
+      const d1 = toDateOnlyUTC(sSubmitted);
+      const d2 = toDateOnlyUTC(sApproved);
+      return (d1 && d2) ? Math.floor((d2 - d1) / 86400000) : null;
     },
 
-    _onDataReceived: function () {
-      const b = this._getCurrentBinding();
-      if (!b) return;
-
-      const isReq = this._isRequestTarget();
-      const ctxs = b.getCurrentContexts();
-      ctxs.forEach(ctx => {
-        const o = ctx.getObject();
-        if (!o) return;
-
-        // FINAL_AMOUNT_RECEIVE
-        if (isReq) {
-          // Request entities: TOTAL_AMOUNT - CASH_ADVANCE
-          const total = Number(o.TOTAL_AMOUNT || 0);
-          const cash = Number(o.CASH_ADVANCE || 0);
-          o.FINAL_AMOUNT_RECEIVE = total - cash;
-        } else {
-          // Claim entities: TOTAL_CLAIM_AMOUNT - CASH_ADVANCE_AMOUT
-          const total = Number(o.TOTAL_CLAIM_AMOUNT || 0);
-          const cash = Number(o.CASH_ADVANCE_AMOUT || 0);
-          o.FINAL_AMOUNT_RECEIVE = total - cash;
-        }
-
-        // DAYS_APPROVED = LAST_APPROVED_DATE - SUBMITTED_DATE (both details & summary if present)
-        if (o.LAST_APPROVED_DATE && o.SUBMITTED_DATE) {
-          const d1 = new Date(o.SUBMITTED_DATE);
-          const d2 = new Date(o.LAST_APPROVED_DATE);
-          o.DAYS_APPROVED = Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
-        }
-      });
+    // Helper for export (same logic, plain function)
+    _calcDaysApproved: function (sSubmitted, sApproved) {
+      const toDateOnlyUTC = (v) => {
+        if (!v) return null;
+        const d = (v instanceof Date) ? v : new Date(v);
+        return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      };
+      const d1 = toDateOnlyUTC(sSubmitted);
+      const d2 = toDateOnlyUTC(sApproved);
+      return (d1 && d2) ? Math.floor((d2 - d1) / 86400000) : null;
     },
 
     /* ===========================================================
      *  APPLY FILTERS
      * =========================================================== */
     _applyFiltersToCurrentTable: function (aFilters) {
-      const b = this._getCurrentBinding();
-      if (!b) return;
-      b.filter(aFilters, FilterType.Application);
+      const oTable = this._getCurrentGrid();
+      if (!oTable) return;
+
+      const tryApply = () => {
+        const b = this._getCurrentBinding();
+        if (b) {
+          b.filter(aFilters, FilterType.Application);
+          return true;
+        }
+        return false;
+      };
+
+      if (tryApply()) return;
+
+      const onRowsUpdated = () => {
+        if (tryApply()) {
+          oTable.detachRowsUpdated(onRowsUpdated);
+        }
+      };
+      oTable.attachRowsUpdated(onRowsUpdated);
+
+      setTimeout(() => tryApply(), 0);
     },
 
     /* ===========================================================
      *  EXPORT
      * =========================================================== */
-    onExportAnalyticsReport: async function () {
+    onExportAnalyticsReport: function () {
+      this._openExportPrompt();
+    },
+
+
+    _getReportBaseName: function () {
+      const map = {
+        analyticsClaimReportSummary: "Claim Summary",
+        analyticsClaimReportDetails: "Claim Details",
+        preApprovedSummary: "Pre-Approval Summary",
+        preApprovedDetails: "Pre-Approval Details"
+      };
+      return map[this._analyticsTarget] || "Report";
+    },
+
+    _getTodayString: function () {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${dd}`;
+    },
+
+    _openExportPrompt: function () {
+
+      const defaultName = sanitizeFileName(
+        `${this._getReportBaseName()} ${this._getTodayString()}.xlsx`
+      );
+
+      if (this._dlgExport) {
+        this._dlgExport.getContent()[0].setValue(defaultName);
+        this._dlgExport.open();
+        return;
+      }
+
+      const oInput = new sap.m.Input({
+        value: defaultName,
+        width: "100%",
+        liveChange: function (e) {
+          let v = e.getParameter("value");
+          // Sanitize filename live
+          v = v.replace(/[\\/:*?"<>|]/g, "_").trim();
+          e.getSource().setValue(v);
+        }
+      });
+
+      this._dlgExport = new sap.m.Dialog({
+        title: "Export Report",
+        contentWidth: "30rem",
+        content: [oInput],
+
+        beginButton: new sap.m.Button({
+          text: "Download",
+          type: "Emphasized",
+          press: () => {
+            const enteredName = oInput.getValue().trim();
+            const fileName = enteredName || defaultName;
+            this._dlgExport.close();
+            this._runExportWithFileName(fileName);
+          }
+        }),
+
+        endButton: new sap.m.Button({
+          text: "Cancel",
+          press: () => this._dlgExport.close()
+        })
+      });
+
+      this.getView().addDependent(this._dlgExport);
+      this._dlgExport.open();
+    },
+
+    _runExportWithFileName: async function (fileName) {
       const b = this._getCurrentBinding();
       if (!b) return MessageToast.show("Table not ready.");
 
@@ -376,21 +476,35 @@ sap.ui.define([
 
       try {
         const len = b.getLength();
-        const rows = [];
+        const rowsRaw = [];
+
         for (let i = 0; i < len; i += 1000) {
           const ctx = await b.requestContexts(i, Math.min(1000, len - i));
-          ctx.forEach(c => rows.push(c.getObject()));
+          ctx.forEach(c => rowsRaw.push(c.getObject()));
         }
 
+        // Build derived rows (add DAYS_APPROVED)
+        const rows = rowsRaw.map(o => ({
+          ...o,
+          DAYS_APPROVED: this._calcDaysApproved?.(o.SUBMITTED_DATE, o.LAST_APPROVED_DATE)
+        }));
+
         const cols = this._getExportColumnsForTarget();
-        const sheet = new Spreadsheet({
-          workbook: { columns: cols },
+
+        const sheet = new sap.ui.export.Spreadsheet({
+          workbook: {
+            columns: cols,
+            context: {
+              sheetName: "sheet1"
+            }
+          },
           dataSource: rows,
-          fileName: sanitizeFileName("Export_" + new Date().toISOString().slice(0, 10) + ".xlsx")
+          fileName: sanitizeFileName(fileName)
         });
 
         await sheet.build();
         sheet.destroy();
+
       } finally {
         oView.setBusy(false);
       }
@@ -418,7 +532,7 @@ sap.ui.define([
           { label: "Approval 5", property: "APPROVER5", width: 20 },
           { label: "Final Approved Date", property: "LAST_APPROVED_DATE", type: "date", width: 14 },
           { label: "Last Send Back Date", property: "LAST_SEND_BACK_DATE", type: "date", width: 14 },
-          { label: "DAY(S) APPROVED", property: "", width: 4 },
+          { label: "DAY(S) APPROVED", property: "DAYS_APPROVED", type: "number", scale: 0, width: 8 },
           { label: "Cash Advance Received Date", property: "CASH_ADVANCE_DATE", type: "date", width: 14 },
           { label: "Payment Date", property: "PAYMENT_DATE", type: "date", width: 14 },
           { label: "Pre-Approval Request  Status", property: "STATUS", width: 14 },
@@ -438,7 +552,6 @@ sap.ui.define([
           { label: "Event End Date", property: "EVENT_END_DATE", type: "date", width: 14 },
           { label: "Location", property: "LOCATION", width: 40 },
           { label: "Type of Transportation", property: "TYPE_OF_TRANSPORTATION", width: 40 }
-
         ];
       }
 
@@ -465,7 +578,7 @@ sap.ui.define([
           { label: "Approval 5", property: "APPROVER5", width: 20 },
           { label: "Final Approved Date", property: "LAST_APPROVED_DATE", type: "date", width: 14 },
           { label: "Last Send Back Date", property: "", type: "date", width: 14 },
-          { label: "DAY(S) APPROVED", property: "", width: 4 },
+          { label: "DAY(S) APPROVED", property: "DAYS_APPROVED", type: "number", scale: 0, width: 8 },
           { label: "Cash Advance Received Date", property: "CASH_ADVANCE_DATE", type: "date", width: 14 },
           { label: "Payment Date", property: "PAYMENT_DATE", width: 14 },
           { label: "Claim Status", property: "STATUS_ID", width: 14 },
@@ -484,9 +597,8 @@ sap.ui.define([
           { label: "Purpose", property: "PURPOSE", width: 24 },
           { label: "Remarks", property: "REMARK", width: 24 },
           { label: "Trip Start Date", property: "TRIP_START_DATE", width: 24 },
-          //{ label: "Trip Start Date", property: "TRIP_START_DATE", type: "date", width: 14 },
           { label: "Trip End Date", property: "TRIP_END_DATE", width: 14 },
-          { label: "Location", property: "LOCATION", width: 40 },
+          { label: "Location", property: "LOCATION", width: 40 }
         ];
       }
 
@@ -513,7 +625,7 @@ sap.ui.define([
           { label: "Approval 5", property: "APPROVER5", width: 20 },
           { label: "Final Approved Date", property: "LAST_APPROVED_DATE", type: "date", width: 14 },
           { label: "Last Send Back Date", property: "LAST_SEND_BACK_DATE", type: "date", width: 14 },
-          { label: "DAY(S) APPROVED", property: "", width: 4 },
+          { label: "DAY(S) APPROVED", property: "DAYS_APPROVED", type: "number", scale: 0, width: 8 },
           { label: "Cash Advance Received Date", property: "CASH_ADVANCE_DATE", type: "date", width: 14 },
           { label: "Payment Date", property: "PAYMENT_DATE", type: "date", width: 14 },
           { label: "Pre-Approval Request  Status", property: "STATUS", width: 14 },
@@ -546,16 +658,15 @@ sap.ui.define([
           { label: "Vehicle (Sendiri/Pejabat)", property: "VEHICLE_TYPE", width: 24 },
           { label: "Mode of Transfer", property: "MODE_OF_TRANSFER", width: 24 },
           { label: "Tarikh Pindah", property: "TRANSFER_DATE", type: "date", width: 14 },
-          { label: "Number of Days", property: "NO_OF_DAYS", type: "number", scale: 2, width: 16 },
+          { label: "Number of Days", property: "NO_OF_DAYS", type: "number", scale: 0, width: 16 },
           { label: "Marriage Category", property: "MARRIAGE_CATEGORY", width: 24 },
-          { label: "Number of family member (per head)", property: "FAMILY_COUNT", type: "number", scale: 2, width: 16 },
-          { label: "Total Participant", property: "EST_NO_PARTICIPANT", type: "number", scale: 2, width: 16 },
+          { label: "Number of family member (per head)", property: "FAMILY_COUNT", type: "number", scale: 0, width: 16 },
+          { label: "Total Participant", property: "EST_NO_PARTICIPANT", type: "number", scale: 0, width: 16 },
 
         ];
       }
 
       // ===== Claim DETAILS =====
-      // Map to your metadata from ZEMP_CLAIM_REPORT_DETAILS
       return [
 
         { label: "Employee Name", property: "NAME", width: 20 },
@@ -578,7 +689,7 @@ sap.ui.define([
         { label: "Approval 5", property: "APPROVER5", width: 20 },
         { label: "Final Approved Date", property: "LAST_APPROVED_DATE", type: "date", width: 14 },
         { label: "Last Send Back Date", property: "LAST_SEND_BACK_DATE", type: "date", width: 14 },
-        { label: "DAY(S) APPROVED", property: "", width: 4 },
+        { label: "DAY(S) APPROVED", property: "DAYS_APPROVED", type: "number", scale: 0, width: 8 },
         { label: "Cash Advance Received Date", property: "CASH_ADVANCE_DATE", type: "date", width: 14 },
         { label: "Payment Date", property: "PAYMENT_DATE", type: "date", width: 14 },
         { label: "Claim Status", property: "STATUS_ID", width: 14 },
@@ -615,7 +726,6 @@ sap.ui.define([
         { label: "End Date", property: "END_DATE", width: 14 },
         { label: "End Time", property: "END_TIME", width: 14 },
         { label: "Flight Class ", property: "FLIGHT_CLASS_DESC", width: 14 },
-        { label: "From / To ELC?", property: "FROM_ELC", width: 14 },
         { label: "From Location", property: "FROM_LOCATION_DESC", width: 14 },
         { label: "From Location (Office)", property: "FROM_LOCATION_OFFICE", width: 14 },
         { label: "Kilometer", property: "KM", width: 14 },
@@ -624,7 +734,6 @@ sap.ui.define([
         { label: "Lodging Address", property: "LODGING_ADDRESS", width: 14 },
         { label: "Lodging Category", property: "LODGING_CATEGORY_DESC", width: 14 },
         { label: "Marriage Category", property: "MARRIAGE_CATEGORY_DESC", width: 14 },
-        { label: "More than 14 working days?", property: "MORE_THAN_14_WORK_DAYS", width: 14 },
         { label: "Negara/wilayah", property: "REGION", width: 14 },
         { label: "Num of Family Members", property: "NO_OF_FAMILY_MEMBER", type: "number", scale: 2, width: 16 },
         { label: "Parking", property: "PARKING", width: 14 },
@@ -635,7 +744,6 @@ sap.ui.define([
         { label: "Remark/Justification", property: "REMARK", width: 14 },
         { label: "Room Type", property: "ROOM_TYPE", width: 14 },
         { label: "Semenanjung Or Sabah Sarawak", property: "AREA_DESC", width: 14 },
-        { label: "Staff Category", property: "STAFF_CATEGORY", width: 14 },
         { label: "Start Date", property: "START_DATE", width: 14 },
         { label: "Start Time", property: "START_TIME", width: 14 },
         { label: "State", property: "FROM_STATE_ID", width: 14 },
@@ -661,10 +769,7 @@ sap.ui.define([
         { label: "Anggota Name", property: "ANGGOTA_NAME", width: 14 },
         { label: "Dependent Name", property: "DEPENDENT_NAME", width: 14 },
 
-
-        { label: "", property: "", width: 14 },
       ];
     }
   });
 });
-``

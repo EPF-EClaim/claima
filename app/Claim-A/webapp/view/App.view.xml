@@ -181,7 +181,7 @@
                         class="sapUiContentPadding"
                     />
                     <!-- ================= Configuration Page ================= -->
-                    <Page
+<!--                     <Page
                         id="configurationPage"
                         showHeader="false"
                     >
@@ -191,9 +191,9 @@
                                 viewName="claima.view.Configuration"
                             />
                         </content>
-                    </Page>
+                    </Page> -->
                     <!-- ================= Analytics Page ================= -->
-
+<!-- 
                     <Page
                         id="analyticsPage"
                         showHeader="false"
@@ -201,10 +201,10 @@
                         <content>
                             <mvc:XMLView
                                 id="analytics_view"
-                                viewName="claima.view.analytics"
+                                viewName="claima.view.Analytics"
                             />
                         </content>
-                    </Page>
+                    </Page> -->
 
                     
                     <NavContainer

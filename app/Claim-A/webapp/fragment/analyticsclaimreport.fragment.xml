@@ -138,10 +138,23 @@
                                 </table:template>
                             </table:Column>
 
-                            <!-- days_approved (computed in controller if needed) -->
-                            <table:Column width="12rem">
+                            <!-- Days Approved (computed locally; no backend field) -->
+                            <table:Column
+                                width="12rem"
+                                hAlign="End"
+                            >
                                 <Label text="{i18n>days_approved}" />
-                                <table:template><Text text="{employee_view>DAYS_APPROVED}" /></table:template>
+                                <table:template>
+                                    <Text
+                                        text="{
+                                                parts: [
+                                                'employee_view>SUBMITTED_DATE',
+                                                'employee_view>LAST_APPROVED_DATE'
+                                                ],
+                                                formatter: '.daysApprovedFormatter'
+                                            }"
+                                    />
+                                </table:template>
                             </table:Column>
 
                             <!-- cash_adv_recei_date -->
@@ -383,12 +396,6 @@
                                 <table:template><Text text="{employee_view>FLIGHT_CLASS_DESC}" /></table:template>
                             </table:Column>
 
-                            <!-- ELC -->
-                            <table:Column width="10rem">
-                                <Label text="{i18n>ELC}" />
-                                <table:template><Text text="{employee_view>FROM_ELC}" /></table:template>
-                            </table:Column>
-
                             <!-- fromloc -->
                             <table:Column width="14rem">
                                 <Label text="{i18n>fromloc}" />
@@ -435,12 +442,6 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>marriage}" />
                                 <table:template><Text text="{employee_view>MARRIAGE_CATEGORY_DESC}" /></table:template>
-                            </table:Column>
-
-                            <!-- more_days -->
-                            <table:Column width="12rem">
-                                <Label text="{i18n>more_days}" />
-                                <table:template><Text text="{employee_view>MORE_THAN_14_WORK_DAYS}" /></table:template>
                             </table:Column>
 
                             <!-- wilayah -->
@@ -503,12 +504,6 @@
                             <table:Column width="18rem">
                                 <Label text="{i18n>semenanjung_or_sabah_sarawak}" />
                                 <table:template><Text text="{employee_view>AREA_DESC}" /></table:template>
-                            </table:Column>
-
-                            <!-- staff_category -->
-                            <table:Column width="12rem">
-                                <Label text="{i18n>staff_category}" />
-                                <table:template><Text text="{employee_view>STAFF_CATEGORY}" /></table:template>
                             </table:Column>
 
                             <!-- start_date -->

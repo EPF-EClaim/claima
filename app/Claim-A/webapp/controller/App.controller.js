@@ -163,7 +163,9 @@ sap.ui.define([
 					break;
 				// Start Aiman Salim 10/02/2026 - Added for analytics
 				case "analytics":
-					this.onClickAnalytics();
+					//var oRouter = this.getOwnerComponent().getRouter();
+					oRouter.navTo("Analytics")
+					/* this.onClickAnalytics(); */
 					break;
 				// End 	 Aiman Salim 10/02/2026 - Added for analytics
 				case "dashboard":

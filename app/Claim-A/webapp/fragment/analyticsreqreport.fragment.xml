@@ -140,10 +140,23 @@
                                 </table:template>
                             </table:Column>
 
-                            <!-- days_approved (controller can compute) -->
-                            <table:Column width="12rem">
+                            <!-- Days Approved (computed locally; no backend field) -->
+                            <table:Column
+                                width="12rem"
+                                hAlign="End"
+                            >
                                 <Label text="{i18n>days_approved}" />
-                                <table:template><Text text="{employee_view>DAYS_APPROVED}" /></table:template>
+                                <table:template>
+                                    <Text
+                                        text="{
+                                                parts: [
+                                                'employee_view>SUBMITTED_DATE',
+                                                'employee_view>LAST_APPROVED_DATE'
+                                                ],
+                                                formatter: '.daysApprovedFormatter'
+                                            }"
+                                    />
+                                </table:template>
                             </table:Column>
 
                             <!-- cash_adv_recei_date -->

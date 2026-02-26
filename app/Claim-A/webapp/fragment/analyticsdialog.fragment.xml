@@ -39,8 +39,8 @@
                     placeholder="dd MMM yyyy"
                     value="{request>/tripstartdate}"
                     textAlign="Begin"
-                    required="{anaVM>/tripDatesRequired}" 
-                    visible="{anaVM>/showTripDates}" />
+                    required="false" 
+                     />
 
                 <!-- Trip End Date -->
                 <Label text="{i18n>req_tripenddate}" />
@@ -51,8 +51,8 @@
                     placeholder="dd MMM yyyy"
                     value="{request>/tripenddate}"
                     textAlign="Begin"
-                    required="{anaVM>/tripDatesRequired}" 
-                    visible="{anaVM>/showTripDates}" />
+                    required="false" 
+                    />
 
                 <!-- Payment Date -->
                 <Label text="Payment Date" />
@@ -66,85 +66,77 @@
                     required="true" />
 
                 <!-- Status -->
-                <Label text="Status for Pre-Approval Request / Claim record" />
-                <Select
+                <Label text="{i18n>status}" />
+                <MultiComboBox
                     id="status"
                     width="100%"
-                    forceSelection="false"
                     required="true"
                     items="{employee>/ZSTATUS}">
-                    <core:Item key="{employee>STATUS_ID}" text="{employee>STATUS_DESC}" />
-                </Select>
+                    <core:Item key="{employee>STATUS_ID}" text="{employee>STATUS}" />
+                </MultiComboBox>
 
                 <!-- Course Code -->
                 <Label text="Course code" />
-                <Select
+                <MultiComboBox
                     id="Course_code"
                     width="100%"
-                    forceSelection="false"
                     items="{employee>/ZTRAIN_COURSE_PART}">
                     <core:Item key="{employee>COURSE_ID}" text="{employee>COURSE_DESC}" />
-                </Select>
+                </MultiComboBox>
 
                 <!-- Department -->
                 <Label text="{i18n>department}" />
-                <Select
+                <MultiComboBox
                     id="select_department"
                     width="100%"
-                    forceSelection="false"
                     items="{employee>/ZDEPARTMENT}">
                     <core:Item key="{employee>DEPARTMENT_ID}" text="{employee>DEPARTMENT_DESC}" />
-                </Select>
+                </MultiComboBox>
 
                 <!-- GL Code -->
                 <Label text="GL Code" />
-                <Select
+                <MultiComboBox
                     id="glcode"
                     width="100%"
-                    forceSelection="false"
                     items="{employee>/ZGL_ACCOUNT}">
                     <core:Item key="{employee>GL_ACCOUNT_ID}" text="{employee>GL_ACCOUNT_DESC}" />
-                </Select>
+                </MultiComboBox>
 
                 <!-- Cost Center -->
                 <Label text="Cost Center" />
-                <Select
+                <MultiComboBox
                     id="cc"
                     width="100%"
-                    forceSelection="false"
                     items="{employee>/ZCOST_CENTER}">
                     <core:Item key="{employee>COST_CENTER_ID}" text="{employee>COST_CENTER_DESC}" />
-                </Select>
+                </MultiComboBox>
 
                 <!-- Claim Type -->
                 <Label text="Claim Type" />
-                <Select
+                <MultiComboBox
                     id="claim_type"
                     width="100%"
-                    forceSelection="false"
                     items="{employee>/ZCLAIM_TYPE}">
                     <core:Item key="{employee>CLAIM_TYPE_ID}" text="{employee>CLAIM_TYPE_DESC}" />
-                </Select>
+                </MultiComboBox>
 
                 <!-- Claim Item -->
                 <Label text="Claim Item" />
-                <Select
+                <MultiComboBox
                     id="claim_item"
                     width="100%"
-                    forceSelection="false"
                     items="{employee>/ZCLAIM_TYPE_ITEM}">
                     <core:Item key="{employee>CLAIM_TYPE_ITEM_ID}" text="{employee>CLAIM_TYPE_ITEM_DESC}" />
-                </Select>
+                </MultiComboBox>
 
                 <!-- Location -->
                 <Label text="Location" />
-                <Select
+                <MultiComboBox
                     id="location"
                     width="100%"
-                    forceSelection="false"
                     items="{employee>/ZLOC_TYPE}">
                     <core:Item key="{employee>LOC_TYPE_ID}" text="{employee>LOC_TYPE_DESC}" />
-                </Select>
+                </MultiComboBox>
 
                 <!-- Event Start -->
                 <Label text="{i18n>req_eventstartdate}" />
@@ -154,8 +146,7 @@
                     valueFormat="yyyy-MM-dd"
                     placeholder="dd MMM yyyy"
                     textAlign="Begin" 
-                    required="{anaVM>/showTripDates}" 
-                    visible="{anaVM>/showTripDates}"/>
+                    />
 
                 <!-- Event End -->
                 <Label text="{i18n>req_eventenddate}" />
@@ -165,18 +156,16 @@
                     valueFormat="yyyy-MM-dd"
                     placeholder="dd MMM yyyy"
                     textAlign="Begin" 
-                    required="{anaVM>/showTripDates}" 
-                    visible="{anaVM>/showTripDates}"/>
+                    />
 
                 <!-- Individual / Group -->
                 <Label text="Individual/Group" />
-                <Select
+                <MultiComboBox
                     id="grouping"
                     width="100%"
-                    forceSelection="false"
                     items="{employee>/ZINDIV_GROUP}">
                     <core:Item key="{employee>IND_OR_GROUP_ID}" text="{employee>IND_OR_GROUP_DESC}" />
-                </Select>
+                </MultiComboBox>
 
                 <!-- Amount -->
 <!--                 <Label text="Amount" />
@@ -184,38 +173,34 @@
 
                 <!-- Employee Name -->
                 <Label text="Employee name" />
-                <Select
+                <MultiComboBox
                     id="emp_name"
                     width="100%"
-                    forceSelection="false"
                     items="{employee>/ZEMP_MASTER}">
                     <core:Item key="{employee>EEID}" text="{employee>NAME}" />
-                </Select>
+                </MultiComboBox>
 
                 <!-- Request Type -->
                 <Label text="Request Type" />
-                <Select
-                    selectedKey="request>/req_header/reqtype"
+                <MultiComboBox
                     id="reqtype"
                     width="100%"
-                    forceSelection="false"
                     visible="{anaVM>/showRequestType}"
                     items="{employee>/ZREQUEST_TYPE}"
                     change=".onRequestTypeChange">
                     <core:Item key="{employee>REQUEST_TYPE_ID}" text="{employee>REQUEST_TYPE_DESC}" />
-                </Select>
+                </MultiComboBox>
 
                 <!-- Claim Category -->
                 <Label text="Claim Category" />
-                <Select
+                <MultiComboBox
                     
                     id="claim_cat"
                     width="100%"
-                    forceSelection="false"
                     visible="{anaVM>/showClaimCategory}"
-                    items="{employee>/ZCLAIM_CATEGORY}">
-                    <core:Item key="{employee>CLAIM_CAT_ID}" text="{employee>CLAIM_CATEGORY_DESC}" />
-                </Select>
+                    items="{employee>/ZSUBMISSION_TYPE}">
+                    <core:Item key="{employee>SUBMISSION_TYPE_ID}" text="{employee>SUBMISSION_TYPE_DESC}" />
+                </MultiComboBox>
 
             </f:content>
         </f:SimpleForm>

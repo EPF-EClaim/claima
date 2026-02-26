@@ -4,9 +4,17 @@
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:f="sap.f"
     xmlns:cards="sap.f.cards"
-    xmlns:core="sap.ui.core">
+    xmlns:core="sap.ui.core"
+    xmlns:tnt="sap.tnt"
+    xmlns:l="sap.ui.layout"
+    xmlns:cssgrid="sap.ui.layout.cssgrid"
+    xmlns:w="sap.ui.integration.widgets"
+    xmlns:card="sap.f.cards"
+    xmlns:Icon="sap.ui.core.Icon"
+    xmlns:ShellBar="sap.f.ShellBar"
+    xmlns:layout="sap.ui.layout">
 
-    <ScrollContainer id="analytics" class="sapUiContentPadding" height="100%">
+  <ScrollContainer id="analytics" class="sapUiContentPadding" height="100%">
         <Title text="{i18n>ana_poptitle}" titleStyle="H3" />
 
         <VBox width="100%" class="sapUiSmallMarginTop">
@@ -77,4 +85,5 @@
 
         </VBox>
     </ScrollContainer>
+  
 </mvc:View>
