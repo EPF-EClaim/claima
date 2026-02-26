@@ -181,33 +181,33 @@
                         height="100%"
                         class="sapUiContentPadding"
                     />
-                    <ScrollContainer
-                        id="analytics"
-                        height="100%"
-                        class="sapUiContentPadding"
+                    <!-- ================= Configuration Page ================= -->
+<!--                     <Page
+                        id="configurationPage"
+                        showHeader="false"
                     >
-                        <Text text="test text" />
+                        <content>
+                            <mvc:XMLView
+                                id="configuration_view"
+                                viewName="claima.view.Configuration"
+                            />
+                        </content>
+                    </Page> -->
+                    <!-- ================= Analytics Page ================= -->
+<!-- 
+                    <Page
+                        id="analyticsPage"
+                        showHeader="false"
+                    >
+                        <content>
+                            <mvc:XMLView
+                                id="analytics_view"
+                                viewName="claima.view.Analytics"
+                            />
+                        </content>
+                    </Page> -->
 
-                                                            <!-- ZCLAIM_PURPOSE -->
-                                    <f:Card
-                                        class="sapUiSmallMargin"
-                                        width="15rem"
-                                        press="onOpenAnalytics1"
-                                    >
-                                       <f:customData>
-                                            <core:CustomData
-                                                key="id"
-                                                value="ZANALTICS_1"
-                                            />
-                                        </f:customData>
-                                        <!--file in i18n folder is used to change the title-->
-                                        <f:header>
-                                            <cards:Header
-                                                title="{i18n>conf1}"
-                                            />
-                                        </f:header>
-                                    </f:Card>
-                    </ScrollContainer>
+                    
                     <NavContainer
                         id="new_request"
                         class="sapUiContentPadding"

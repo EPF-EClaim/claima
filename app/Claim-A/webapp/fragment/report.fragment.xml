@@ -4,18 +4,44 @@
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
-    xmlns:card="sap.f.cards">
-    <VBox class="roundedBox sapUiSmallMargin" id="report" binding="{current>/}" width="auto" rowGap="1rem" backgroundDesign="Solid" height="60%">
+    xmlns:card="sap.f.cards"
+>
+    <VBox
+        class="roundedBox sapUiSmallMargin"
+        id="report"
+        binding="{current>/}"
+        width="auto"
+        rowGap="1rem"
+        backgroundDesign="Solid"
+        height="60%"
+    >
         <HBox width="100%">
             <VBox
                 class="sapUiSmallMargin"
-                width="100%">
+                width="100%"
+            >
+                <OverflowToolbar height="3rem">
+                    <Title
+                        text="{i18n>expensereport}"
+                        titleStyle="H3"
+                    />
+                    <ToolbarSpacer />
+                    <Button
+                        type="Default"
+                        icon="sap-icon://excel-attachment"
+                        text="Download"
+                        id="btnExcelDownload"
+                        press=".onDownloadExcelReport"
+                    />
+                </OverflowToolbar>
                 <f:Form
                     id="FormDisplay354wideDual"
-                    editable="false">
-                    <f:title>
+                    editable="false"
+                >
+<!--                     <f:title>
                         <core:Title text="{i18n>expensereport}" />
-                    </f:title>
+                    </f:title> -->
+
                     <f:layout>
                         <f:ResponsiveGridLayout
                             labelSpanXL="4"
@@ -40,7 +66,7 @@
                                     <f:fields>
                                         <Text
                                             text="{current>/report/purpose}"
-                                            id="nameText" 
+                                            id="nameText"
                                         />
                                     </f:fields>
                                 </f:FormElement>
@@ -51,10 +77,12 @@
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>startdate}">
                                     <f:fields>
-                                        <Text text="{   path: 'current>/report/startdate', 
+                                        <Text
+                                            text="{   path: 'current>/report/startdate', 
                                                         type: 'sap.ui.model.odata.type.Date',
                                                         formatOptions: { pattern: 'dd MMM yyyy' }
-                                            }" />
+                                            }"
+                                        />
                                     </f:fields>
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>enddate}">
@@ -69,12 +97,16 @@
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>prerequest}">
                                     <f:fields>
-                                        <Text text="{current>/report/category}" />
+                                        <Text
+                                            text="{current>/report/category}"
+                                        />
                                     </f:fields>
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>location}">
                                     <f:fields>
-                                        <Text text="{current>/report/location}" />
+                                        <Text
+                                            text="{current>/report/location}"
+                                        />
                                     </f:fields>
                                 </f:FormElement>
                             </f:formElements>
@@ -83,7 +115,9 @@
                             <f:formElements>
                                 <f:FormElement label="{i18n>status}">
                                     <f:fields>
-                                        <Text text="{current>/report/comment}" />
+                                        <Text
+                                            text="{current>/report/comment}"
+                                        />
                                     </f:fields>
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>costcenter}">
@@ -103,7 +137,9 @@
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>approvedamt}">
                                     <f:fields>
-                                        <Text text="{current>/report/amt_approved}" />
+                                        <Text
+                                            text="{current>/report/amt_approved}"
+                                        />
                                     </f:fields>
                                 </f:FormElement>
                                 <f:FormElement label="{i18n>cashadv}">
