@@ -1246,7 +1246,8 @@ sap.ui.define([
 					TRIP_START_DATE: oInputData.tripstartdate,
 					TRIP_END_DATE: oInputData.tripenddate,
 					PREAPPROVAL_AMOUNT: String(oInputData.reqamt),
-					STATUS: "DRAFT"
+					STATUS: "DRAFT",
+					CLAIM_TYPE_ID: oInputData.claimtype
 				};
 
 				const oContext = oListBinding.create(oPayload);

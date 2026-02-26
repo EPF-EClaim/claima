@@ -160,7 +160,8 @@ sap.ui.define([
 					reqstatus      : row.STATUS || "",
 					costcenter     : row.COST_CENTER || "",
 					cashadvamt     : row.CASH_ADVANCE || 0,
-					reqamt         : row.PREAPPROVAL_AMOUNT || 0
+					reqamt         : row.PREAPPROVAL_AMOUNT || 0,
+					claimtype	   : row.CLAIM_TYPE_ID || ""
                 });
 
                 // Load items/details for this request

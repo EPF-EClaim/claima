@@ -7,8 +7,9 @@ sap.ui.define([
 	"sap/m/Label",
 	"sap/ui/core/Fragment",
 	"sap/ui/export/Spreadsheet",
-	"sap/ui/core/BusyIndicator"
-], function (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator) {
+	"sap/ui/core/BusyIndicator",
+	"sap/ui/core/routing/History"
+], function (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator, History) {
 	"use strict";
 
 	return Controller.extend("claima.controller.RequestForm", {
@@ -55,7 +56,9 @@ sap.ui.define([
 				start_date: "",
 				end_date: "",
 				location: "",
-				remarks: ""
+				remarks: "",
+				doc1: "",
+				doc2: ""
 			};
 			data.participant       = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
 			data.view              = "view";
@@ -177,14 +180,20 @@ sap.ui.define([
 					title: "Warning",
 					type: "Message",
 					state: "Warning",
-					content: [ new Label({ text: "You haven't saved, do you confirm to go back?" }) ],
+					content: [ new Label({ text: "You haven't submit, do you confirm to go back?" }) ],
 					beginButton: new Button({
 						type: "Emphasized",
 						text: "Confirm",
 						press: async function () {
 							this.oBackDialog.close();
-							var oRouter = this.getOwnerComponent().getRouter();
-							oRouter.navTo("Dashboard");
+							var oHistory = History.getInstance();
+							var sPreviousHash = oHistory.getPreviousHash();
+							if (sPreviousHash) {
+								window.history.go(-1);
+							} else {
+								var oRouter = this.getOwnerComponent().getRouter();
+								oRouter.navTo("Dashboard");
+							}
 						}.bind(this)
 					}),
 					endButton: new Button({ text: "Cancel", press: () => this.oBackDialog.close() })
@@ -393,6 +402,7 @@ sap.ui.define([
 
 		async onAddItem(oEvent) {
 			await this._showItemCreate("create");
+			this._getClaimTypeItemSelection();
 
 			const oReq = this._getReqModel();
 			const data = oReq.getData();
@@ -993,7 +1003,7 @@ sap.ui.define([
 			const isEdit    = oReq.getProperty("/view") === "i_edit";
 
 			// Common field extraction
-			const claimType = data.req_item.claim_type;
+			const claimType = data.req_header.claimtype;
 			const claimItem = data.req_item.claim_type_item_id;
 			const estAmt    = parseFloat(data.req_item.est_amount || 0);
 			const estNoPart = parseInt(data.req_item.est_no_participant || 1, 10);
@@ -1305,6 +1315,52 @@ sap.ui.define([
 				return null;
 			}
 		}, 
+
+		async _getClaimTypeItemSelection() {
+			const oReq = this._getReqModel();
+			var data = oReq.getData();
+			var claim_type_id = data.req_header.claimtype;
+			if (!claim_type_id) {
+				oReq.setProperty("/req_item_rows", []);
+				oReq.setProperty("/list_count", 0);
+				return [];
+			}
+
+			const sReq = String(claim_type_id);
+			const isGuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(sReq);
+			const isNumeric = /^\d+$/.test(sReq);
+			let sLiteral;
+			if (isNumeric) sLiteral = sReq;
+			else if (isGuid) sLiteral = `guid'${sReq}'`;
+			else sLiteral = `'${sReq.replace(/'/g, "''")}'`;
+
+			const base       = this._entityUrl("ZCLAIM_TYPE_ITEM");
+			const filterExpr = `CLAIM_TYPE_ID eq ${sLiteral} and CATEGORY_ID eq 'PREAPPROVAL'`;
+			const orderby    = "CLAIM_TYPE_ID asc";
+			const query = [
+				`$filter=${encodeURIComponent(filterExpr)}`,
+				`$orderby=${encodeURIComponent(orderby)}`,
+				`$count=true`,
+				`$format=json`
+			].join("&"); // IMPORTANT: use '&' (not &amp;)
+
+			const url = `${base}?${query}`;
+
+			try {
+				const res = await fetch(url, { headers: { "Accept": "application/json" } });
+				if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+				const data = await res.json();
+				const a = Array.isArray(data?.value) ? data.value : [];
+
+				oReq.setProperty("/claim_type_items", a);
+				return a;
+			} catch (err) {
+				// eslint-disable-next-line no-console
+				console.error("Fetch failed:", err, { url });
+				oReq.setProperty("/claim_type_items", []);
+				return [];
+			}
+		},
 
 		/* =========================================================
 		* Participant Value Help 
