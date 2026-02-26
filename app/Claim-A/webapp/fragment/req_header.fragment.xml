@@ -12,7 +12,7 @@
         <OverflowToolbar height="3rem">
             <Title text="{i18n>req_form_header_title}" titleStyle="H3"/>
             <ToolbarSpacer />
-            <!-- <Button type="Default" icon="sap-icon://print" /> -->
+            <Button type="Default" icon="sap-icon://cause" />
         </OverflowToolbar>
         <form:Form 
             id="req_header1"
@@ -126,6 +126,11 @@
                         <form:FormElement label="{i18n>req_attach2}">
                             <form:fields>
                                 <Text text="{request>/req_header/doc2}"/>
+                            </form:fields>
+                        </form:FormElement>
+                        <form:FormElement label="{i18n>req_claimtype}">
+                            <form:fields>
+                                <Text text="{request>/req_header/claimtype}"/>
                             </form:fields>
                         </form:FormElement>
                     </form:formElements>

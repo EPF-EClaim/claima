@@ -1,6 +1,6 @@
 using { ECLAIMVIEW } from './eclaims_view';
 
-service ECLAIM_VIEW_SRV {
+service ECLAIM_VIEW_SRV @(requires: 'authenticated-user'){
     entity ZEMP_REQUEST_VIEW            as projection on ECLAIMVIEW.ZEMP_REQUEST_VIEW;
     entity ZEMP_REQUEST_ITEM_VIEW       as projection on ECLAIMVIEW.ZEMP_REQUEST_ITEM_VIEW;
     entity ZEMP_REQUEST_PART_VIEW       as projection on ECLAIMVIEW.ZEMP_REQUEST_PART_VIEW;
@@ -13,4 +13,5 @@ service ECLAIM_VIEW_SRV {
     entity ZEMP_REQUEST_STATUS          as projection on ECLAIMVIEW.ZEMP_REQUEST_STATUS;
     entity ZEMP_CLAIM_STATUS_HEADER     as projection on ECLAIMVIEW.ZEMP_CLAIM_STATUS_HEADER;
     entity ZEMP_CLAIM_STATUS_ITEM       as projection on ECLAIMVIEW.ZEMP_CLAIM_STATUS_ITEM;
+    entity ZEMP_CLAIM_SUBMISSION        as projection on ECLAIMVIEW.ZEMP_CLAIM_SUBMISSION;
 };

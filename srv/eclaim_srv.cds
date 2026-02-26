@@ -1,7 +1,7 @@
 using {ECLAIM} from '../db/eclaim';
 
 @path: 'EmployeeSrv'
-service eclaim_srv {
+service eclaim_srv @(requires: 'authenticated-user'){
     type Response {
         message : String;
     };
@@ -12,15 +12,15 @@ service eclaim_srv {
 
     action   batchCreateCostCenter(costcenters: many ZCOST_CENTER) returns Response;
 
-    entity ZEMP_MASTER          as projection on ECLAIM.ZEMP_MASTER;
+    entity ZEMP_MASTER              as projection on ECLAIM.ZEMP_MASTER;
 
-    entity ZREQUEST_TYPE        as projection on ECLAIM.ZREQUEST_TYPE;
+    entity ZREQUEST_TYPE            as projection on ECLAIM.ZREQUEST_TYPE;
 
-    entity ZCLAIM_ITEM          as projection on ECLAIM.ZCLAIM_ITEM;
+    entity ZCLAIM_ITEM              as projection on ECLAIM.ZCLAIM_ITEM;
 
-    entity ZREQUEST_HEADER      as projection on ECLAIM.ZREQUEST_HEADER;
+    entity ZREQUEST_HEADER          as projection on ECLAIM.ZREQUEST_HEADER;
 
-    entity ZCLAIM_TYPE          as
+    entity ZCLAIM_TYPE              as
         projection on ECLAIM.ZCLAIM_TYPE {
             key CLAIM_TYPE_ID,
                 CLAIM_TYPE_DESC,
@@ -36,108 +36,105 @@ service eclaim_srv {
                 ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM as Items
         };
 
-    entity ZREQUEST_ITEM        as projection on ECLAIM.ZREQUEST_ITEM;
+    entity ZREQUEST_ITEM            as projection on ECLAIM.ZREQUEST_ITEM;
 
-    entity ZREQ_ITEM_PART       as projection on ECLAIM.ZREQ_ITEM_PART;
+    entity ZREQ_ITEM_PART           as projection on ECLAIM.ZREQ_ITEM_PART;
 
-    entity ZCLAIM_HEADER        as projection on ECLAIM.ZCLAIM_HEADER;
+    entity ZCLAIM_HEADER            as projection on ECLAIM.ZCLAIM_HEADER;
 
-    entity ZNUM_RANGE           as projection on ECLAIM.ZNUM_RANGE;
+    entity ZNUM_RANGE               as projection on ECLAIM.ZNUM_RANGE;
 
-    entity ZRISK                as projection on ECLAIM.ZRISK;
+    entity ZRISK                    as projection on ECLAIM.ZRISK;
 
-    entity ZCLAIM_TYPE_ITEM     as projection on ECLAIM.ZCLAIM_TYPE_ITEM;
+    entity ZCLAIM_TYPE_ITEM         as projection on ECLAIM.ZCLAIM_TYPE_ITEM;
 
-    entity ZAPP_FIELD_CTRL      as projection on ECLAIM.ZAPP_FIELD_CTRL;
+    entity ZAPP_FIELD_CTRL          as projection on ECLAIM.ZAPP_FIELD_CTRL;
 
-    entity ZCLAIM_CATEGORY      as projection on ECLAIM.ZCLAIM_CATEGORY;
+    entity ZCLAIM_CATEGORY          as projection on ECLAIM.ZCLAIM_CATEGORY;
 
-    entity ZSTATUS              as projection on ECLAIM.ZSTATUS;
+    entity ZSTATUS                  as projection on ECLAIM.ZSTATUS;
 
-    entity ZLODGING_CAT         as projection on ECLAIM.ZLODGING_CAT;
+    entity ZLODGING_CAT             as projection on ECLAIM.ZLODGING_CAT;
 
-    entity ZROOM_TYPE           as projection on ECLAIM.ZROOM_TYPE;
+    entity ZROOM_TYPE               as projection on ECLAIM.ZROOM_TYPE;
 
-    entity ZFLIGHT_CLASS        as projection on ECLAIM.ZFLIGHT_CLASS;
+    entity ZFLIGHT_CLASS            as projection on ECLAIM.ZFLIGHT_CLASS;
 
-    entity ZCOUNTRY             as projection on ECLAIM.ZCOUNTRY;
+    entity ZCOUNTRY                 as projection on ECLAIM.ZCOUNTRY;
 
-    entity ZAREA                as projection on ECLAIM.ZAREA;
+    entity ZAREA                    as projection on ECLAIM.ZAREA;
 
-    entity ZMARITAL_STAT        as projection on ECLAIM.ZMARITAL_STAT;
+    entity ZMARITAL_STAT            as projection on ECLAIM.ZMARITAL_STAT;
 
-    entity ZVEHICLE_TYPE        as projection on ECLAIM.ZVEHICLE_TYPE;
+    entity ZVEHICLE_TYPE            as projection on ECLAIM.ZVEHICLE_TYPE;
 
-    entity ZSTATE               as projection on ECLAIM.ZSTATE;
+    entity ZSTATE                   as projection on ECLAIM.ZSTATE;
 
-    entity ZUSER_TYPE           as projection on ECLAIM.ZUSER_TYPE;
+    entity ZUSER_TYPE               as projection on ECLAIM.ZUSER_TYPE;
 
-    entity ZROLE                as projection on ECLAIM.ZROLE;
+    entity ZROLE                    as projection on ECLAIM.ZROLE;
 
-    entity ZDEPARTMENT          as projection on ECLAIM.ZDEPARTMENT;
+    entity ZDEPARTMENT              as projection on ECLAIM.ZDEPARTMENT;
 
-    entity ZJOB_GROUP           as projection on ECLAIM.ZJOB_GROUP;
+    entity ZJOB_GROUP               as projection on ECLAIM.ZJOB_GROUP;
 
-    entity ZEMP_TYPE            as projection on ECLAIM.ZEMP_TYPE;
+    entity ZEMP_TYPE                as projection on ECLAIM.ZEMP_TYPE;
 
-    entity ZREGION              as projection on ECLAIM.ZREGION;
+    entity ZREGION                  as projection on ECLAIM.ZREGION;
 
-    entity ZRATE_KM             as projection on ECLAIM.ZRATE_KM;
+    entity ZRATE_KM                 as projection on ECLAIM.ZRATE_KM;
 
-    entity ZSUBMISSION_TYPE     as projection on ECLAIM.ZSUBMISSION_TYPE;
+    entity ZSUBMISSION_TYPE         as projection on ECLAIM.ZSUBMISSION_TYPE;
 
-    entity ZOFFICE_LOCATION     as projection on ECLAIM.ZOFFICE_LOCATION;
+    entity ZOFFICE_LOCATION         as projection on ECLAIM.ZOFFICE_LOCATION;
 
-    entity ZOFFICE_DISTANCE     as projection on ECLAIM.ZOFFICE_DISTANCE;
+    entity ZOFFICE_DISTANCE         as projection on ECLAIM.ZOFFICE_DISTANCE;
 
-    entity ZLOC_TYPE            as projection on ECLAIM.ZLOC_TYPE;
+    entity ZLOC_TYPE                as projection on ECLAIM.ZLOC_TYPE;
 
-    entity ZMATERIAL_GROUP      as projection on ECLAIM.ZMATERIAL_GROUP;
+    entity ZMATERIAL_GROUP          as projection on ECLAIM.ZMATERIAL_GROUP;
 
-    entity ZINDIV_GROUP         as projection on ECLAIM.ZINDIV_GROUP;
+    entity ZINDIV_GROUP             as projection on ECLAIM.ZINDIV_GROUP;
 
-    entity ZTRAIN_COURSE_PART   as projection on ECLAIM.ZTRAIN_COURSE_PART;
+    entity ZTRAIN_COURSE_PART       as projection on ECLAIM.ZTRAIN_COURSE_PART;
 
-    entity ZEMP_DEPENDENT       as projection on ECLAIM.ZEMP_DEPENDENT;
+    entity ZEMP_DEPENDENT           as projection on ECLAIM.ZEMP_DEPENDENT;
 
-    entity ZBUDGET              as projection on ECLAIM.ZBUDGET;
+    entity ZBUDGET                  as projection on ECLAIM.ZBUDGET;
 
-    entity ZAPPROVAL_1          as projection on ECLAIM.ZAPPROVAL_1;
+    entity ZVEHICLE_OWNERSHIP       as projection on ECLAIM.ZVEHICLE_OWNERSHIP;
 
-    entity ZAPPROVAL_2          as projection on ECLAIM.ZAPPROVAL_2;
+    entity ZCOST_CENTER             as projection on ECLAIM.ZCOST_CENTER;
 
-    entity ZAPPROVAL_3          as projection on ECLAIM.ZAPPROVAL_3;
+    entity ZEMP_RELATIONSHIP        as projection on ECLAIM.ZEMP_RELATIONSHIP;
 
-    entity ZVEHICLE_OWNERSHIP   as projection on ECLAIM.ZVEHICLE_OWNERSHIP;
+    entity ZINTERNAL_ORDER          as projection on ECLAIM.ZINTERNAL_ORDER;
 
-    entity ZCOST_CENTER         as projection on ECLAIM.ZCOST_CENTER;
+    entity ZGL_ACCOUNT              as projection on ECLAIM.ZGL_ACCOUNT;
 
-    entity ZEMP_RELATIONSHIP    as projection on ECLAIM.ZEMP_RELATIONSHIP;
+    entity ZMARITAL_CAT             as projection on ECLAIM.ZMARITAL_CAT;
 
-    entity ZINTERNAL_ORDER      as projection on ECLAIM.ZINTERNAL_ORDER;
+    entity ZPROJECT_HDR             as projection on ECLAIM.ZPROJECT_HDR;
 
-    entity ZGL_ACCOUNT          as projection on ECLAIM.ZGL_ACCOUNT;
+    entity ZBRANCH                  as projection on ECLAIM.ZBRANCH;
 
-    entity ZLOOKUP_FIELD        as projection on ECLAIM.ZLOOKUP_FIELD;
+    entity ZEMP_CA_PAYMENT          as projection on ECLAIM.ZEMP_CA_PAYMENT;
 
-    entity ZMARITAL_CAT         as projection on ECLAIM.ZMARITAL_CAT;
+    entity ZPERDIEM_ENT             as projection on ECLAIM.ZPERDIEM_ENT;
 
-    entity ZPROJECT_HDR         as projection on ECLAIM.ZPROJECT_HDR;
+    entity ZHOUSING_LOAN_SCHEME     as projection on ECLAIM.ZHOUSING_LOAN_SCHEME;
 
-    entity ZBRANCH              as projection on ECLAIM.ZBRANCH;
+    entity ZLENDER_NAME             as projection on ECLAIM.ZLENDER_NAME;
 
-    entity ZEMP_CA_PAYMENT      as projection on ECLAIM.ZEMP_CA_PAYMENT;
+    entity ZREJECT_REASON           as projection on ECLAIM.ZREJECT_REASON;
 
-    entity ZPERDIEM_ENT         as projection on ECLAIM.ZPERDIEM_ENT;
+    entity ZCURRENCY                as projection on ECLAIM.ZCURRENCY;
 
-    entity ZHOUSING_LOAN_SCHEME as projection on ECLAIM.ZHOUSING_LOAN_SCHEME;
+    entity ZMOBILE_CATEGORY_PURPOSE as projection on ECLAIM.ZMOBILE_CATEGORY_PURPOSE;
 
-    entity ZLENDER_NAME         as projection on ECLAIM.ZLENDER_NAME;
+    entity ZVEHICLE_CLASS           as projection on ECLAIM.ZVEHICLE_CLASS;
 
-    entity ZREJECT_REASON       as projection on ECLAIM.ZREJECT_REASON;
-
-    entity ZCURRENCY            as projection on ECLAIM.ZCURRENCY;
-
+    entity ZINSURANCE_PROVIDER      as projection on ECLAIM.ZINSURANCE_PROVIDER;
     type UserInfo {
         id       : String;
         userType : String;
@@ -145,4 +142,35 @@ service eclaim_srv {
 
     function getUserType() returns UserInfo;
 
+    entity ZINSURANCE_PACKAGE       as projection on ECLAIM.ZINSURANCE_PACKAGE;
+
+    entity ZPROFESIONAL_BODY        as projection on ECLAIM.ZPROFESIONAL_BODY;
+
+    entity ZSTUDY_LEVELS            as projection on ECLAIM.ZSTUDY_LEVELS;
+
+    entity ZTRANSFER_MODE           as projection on ECLAIM.ZTRANSFER_MODE;
+
+    entity ZTRANSPORT_PASSING       as projection on ECLAIM.ZTRANSPORT_PASSING;
+
+    entity ZTRAVEL_TYPE             as projection on ECLAIM.ZTRAVEL_TYPE;
+
+    entity ZFAMILY_TIMING           as projection on ECLAIM.ZFAMILY_TIMING;
+
+    entity ZSPORTS_REPRESENTATION   as projection on ECLAIM.ZSPORTS_REPRESENTATION;
+
+    entity ZPOSITION_EVENT_REASON   as projection on ECLAIM.ZPOSITION_EVENT_REASON;
+
+    entity ZEMP_DEPENDENT_TYPE      as projection on ECLAIM.ZEMP_DEPENDENT_TYPE;
+
+    entity ZCLAIM_BASIS             as projection on ECLAIM.ZCLAIM_BASIS;
+
+    entity ZHOTEL_LODGING           as projection on ECLAIM.ZHOTEL_LODGING;
+
+    entity ZFARE_TYPE               as projection on ECLAIM.ZFARE_TYPE;
+
+    entity ZMETER_CUBE              as projection on ECLAIM.ZMETER_CUBE;
+
+    entity ZTRAVEL_DAYS             as projection on ECLAIM.ZTRAVEL_DAYS;
+
+    entity ZELIGIBILITY_RULE        as projection on ECLAIM.ZELIGIBILITY_RULE;
 };
