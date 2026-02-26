@@ -30,7 +30,7 @@
                     <Label text="{i18n>label_claiminput_purpose}" />
                     <Input
                         id="input_claiminput_purpose"
-                        value="{claimsubmission_input>/claimheader/purpose}"
+                        value="{claimsubmission_input>/claim_header/purpose}"
                         required="true"
                     />
                     
@@ -38,21 +38,14 @@
                     <Label text="{i18n>label_claiminput_claimtype}" />
                     <Text
                         id="text_claiminput_claimtype"
-                        text="{claimsubmission_input>/claimheader/descr/claimtype}"
-                    />
-                    
-                    <!-- Claim Item -->
-                    <Label text="{i18n>label_claiminput_claimitem}" />
-                    <Text
-                        id="text_claiminput_claimitem"
-                        text="{claimsubmission_input>/claimheader/descr/claimitem}"
+                        text="{claimsubmission_input>/claim_header/descr/claim_type_id}"
                     />
                     
                     <!-- Submission Type -->
                     <Label text="{i18n>label_claiminput_subtype}" />
                     <Text
                         id="text_claiminput_subtype"
-                        text="{claimsubmission_input>/claimheader/descr/subtype}"
+                        text="{claimsubmission_input>/claim_header/descr/submission_type}"
                         visible="false"
                     />
 
@@ -60,15 +53,15 @@
                     <Label text="{i18n>label_claiminput_preapprovalreq}" />
                     <Text
                         id="text_claiminput_preapprovalreq"
-                        text="{claimsubmission_input>/claimheader/reqform} {claimsubmission_input>/claimheader/descr/reqform}"
+                        text="{claimsubmission_input>/claim_header/request_id} {claimsubmission_input>/claim_header/descr/request_id}"
                         visible="false"
                     />
 
-                    <!-- Approved Amount (MYR) -->
+                    <!-- Pre-Approved Amount (MYR) -->
                     <Label text="{i18n>label_claiminput_amtapproved}" />
                     <Text
                         id="text_claiminput_amtapproved"
-                        text="{claimsubmission_input>/claimheader/amt_approved}"
+                        text="{claimsubmission_input>/claim_header/preapproved_amount}"
                         visible="false"
                     />
 
@@ -76,7 +69,7 @@
                     <Label text="{i18n>label_claiminput_tripstartdate}" />
                     <DatePicker
                         id="datepicker_claiminput_tripstartdate"
-                        value="{claimsubmission_input>/claimheader/trip_startdate}"
+                        value="{claimsubmission_input>/claim_header/trip_start_date}"
                         required="true"
                         displayFormat="dd-MMM-yyyy"
                         />
@@ -85,7 +78,7 @@
                     <Label text="{i18n>label_claiminput_tripenddate}" />
                     <DatePicker
                         id="datepicker_claiminput_tripenddate"
-                        value="{claimsubmission_input>/claimheader/trip_enddate}"
+                        value="{claimsubmission_input>/claim_header/trip_end_date}"
                         required="true"
                         displayFormat="dd-MMM-yyyy"
                         />
@@ -94,7 +87,7 @@
                     <Label text="{i18n>label_claiminput_eventstartdate}" />
                     <DatePicker
                         id="datepicker_claiminput_eventstartdate"
-                        value="{claimsubmission_input>/claimheader/event_startdate}"
+                        value="{claimsubmission_input>/claim_header/event_start_date}"
                         displayFormat="dd-MMM-yyyy"
                         />
 
@@ -102,7 +95,7 @@
                     <Label text="{i18n>label_claiminput_eventenddate}" />
                     <DatePicker
                         id="datepicker_claiminput_eventenddate"
-                        value="{claimsubmission_input>/claimheader/event_enddate}"
+                        value="{claimsubmission_input>/claim_header/event_end_date}"
                         displayFormat="dd-MMM-yyyy"
                         />
 
@@ -110,7 +103,7 @@
                     <Label text="{i18n>label_claiminput_location}" />
                     <Input
                         id="input_claiminput_location"
-                        value="{claimsubmission_input>/claimheader/location}"
+                        value="{claimsubmission_input>/claim_header/location}"
                     />
 
                     <!-- Alternate Cost Center -->
@@ -118,14 +111,27 @@
                     <Select
                         id="select_claiminput_altcc"
                         forceSelection="false"
-                        selectedKey="{claimsubmission_input>/claimheader/altcc}"
+                        selectedKey="{claimsubmission_input>/claim_header/alternate_cost_center}"
                         items="{
                             path: 'employee>/ZCOST_CENTER',
                             sorter: { path: 'COST_CENTER_ID' }
                         }"
+                        enabled="true"
+                        editable="true"
+                        visible="true"
                     >
                         <core:Item key="{employee>COST_CENTER_ID}" text="{employee>COST_CENTER_ID} {employee>COST_CENTER_DESC}" />
                     </Select>
+                    
+                    <!-- Alternate Cost Center (Pre-Approval) -->
+                    <Label text="{i18n>label_claiminput_altcc}" />
+                    <Input
+                        id="input_claiminput_altcc"
+                        value="{claimsubmission_input>/claim_header/alternate_cost_center} {claimsubmission_input>/claim_header/descr/alternate_cost_center}"
+                        enabled="false"
+                        editable="false"
+                        visible="false"
+                    />
                     
                     <!-- Attachment Email Approval -->
                     <Label text="{i18n>label_claiminput_attachment}" />
@@ -144,7 +150,7 @@
                     <Label text="{i18n>label_claiminput_comment}" />
                     <Input
                         id="input_claiminput_comment"
-                        value="{claimsubmission_input>/claimheader/comment}"
+                        value="{claimsubmission_input>/claim_header/comment}"
                         required="true"
                     />
                 </f:content>

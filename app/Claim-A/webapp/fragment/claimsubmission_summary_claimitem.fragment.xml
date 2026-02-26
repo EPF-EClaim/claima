@@ -141,7 +141,7 @@
 						<Text text="{receipt}" />
 
 						<!-- Claim Type -->
-						<Text text="{descr/claimtype}" />
+						<Text text="{descr/claim_type_id}" />
 
 						<!-- Claim Item -->
 						<Text text="{descr/claimitem}" />

@@ -35,98 +35,6 @@ sap.ui.define([
 				// set input
 				this.getView().setModel(oClaimSubmissionModel, "claimsubmission_input");
 			}
-			// else {
-			// 	var oClaimSubmissionModel = new JSONModel({
-			// 		"employee": {
-			// 			"eeid": null,
-			// 			"name": null,
-			// 			"cc": null,
-			// 			"descr": {
-			// 				"cc": null
-			// 			}
-			// 		},
-			// 		"claimtype": {
-			// 			"type": null,
-			// 			"item": null,
-			// 			"category": null,
-			// 			"requestform": null,
-			// 			"requestform_amt": null,
-			// 			"descr": {
-			// 				"type": null,
-			// 				"item": null,
-			// 				"category": null,
-			// 				"requestform": null
-			// 			}
-			// 		},
-			// 		"claimheader": {
-			// 			"claim_id": null,
-			// 			"emp_id": null,
-			// 			"purpose": null,
-			// 			"status": null,
-			// 			"lastmodifieddate": null,
-			// 			"submitteddate": null,
-			// 			"trip_startdate": null,
-			// 			"trip_enddate": null,
-			// 			"event_startdate": null,
-			// 			"event_enddate": null,
-			// 			"claimtype": null,
-			// 			"claimitem": null,
-			// 			"subtype": null,
-			// 			"location": null,
-			// 			"cc": null,
-			// 			"altcc": null,
-			// 			"comment": null,
-			// 			"reqform": null,
-			// 			"attachment": null,
-			// 			"amt_total": null,
-			// 			"amt_approved": null,
-			// 			"amt_cashadvance": null,
-			// 			"amt_receivefinal": null,
-			// 			"lastapproveddate": null,
-			// 			"lastapprovedtime": null,
-			// 			"lastapproveddate": null,
-			// 			"paymentdate": null,
-			// 			"movinghouse": {
-			// 				"spouseoffice": null,
-			// 				"housecompletiondate": null,
-			// 				"moveindate": null,
-			// 				"housingloanscheme": null,
-			// 				"lendername": null,
-			// 				"specifydetails": null,
-			// 				"newhouseaddress": null,
-			// 				"housecompletiondate": null,
-			// 				"distoldhouse_officekm": null,
-			// 				"distoldhouse_newhousekm": null
-			// 			},
-			// 			"descr": {
-			// 				"status": null,
-			// 				"claimtype": null,
-			// 				"claimitem": null,
-			// 				"subtype": null,
-			// 				"cc": null,
-			// 				"altcc": null,
-			// 				"reqform": null
-			// 			}
-			// 		},
-			// 		"claimitems": [{
-			// 			"item_id": null,
-			// 			"date": null,
-			// 			"receipt": null,
-			// 			"claimtype": null,
-			// 			"claimitem": null,
-			// 			"amt": null,
-			// 			"category": null,
-			// 			"descr": {
-			// 				"claimtype": null,
-			// 				"claimitem": null,
-			// 				"category": null
-			// 			}
-			// 		}],
-			// 		"claimitem_count": 0
-			// 	});
-			// 	//// set input
-			// 	this.getView().setModel(oClaimSubmissionModel, "claimsubmission_input");
-			// }
 
 			// oReportModel
 			var oReportModel = this.getView().getModel("report");
@@ -202,13 +110,6 @@ sap.ui.define([
 
 		onScanReceipt_ClaimSummary: function () {
 			MessageToast.show("reachable scanreceipt");
-
-			// show claim details screen
-			var oPage = this.byId("page_claimsubmission");
-			oPage.removeContent(oVBox, 1);
-			this._getFormFragment("claimdetails").then(function (oVBox) {
-				oPage.insertContent(oVBox, 1);
-			});
 		},
 
 		onSaveDraft_ClaimSubmission: function () {
@@ -227,49 +128,53 @@ sap.ui.define([
 				{
 					method: "POST", headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
-						CLAIM_ID                       : oInputData.claimheader.claim_id,
-						EMP_ID                         : oInputData.claimheader.emp_id,
-						PURPOSE                        : oInputData.claimheader.purpose,
-						TRIP_START_DATE                : this._getJSONDate(oInputData.claimheader.trip_startdate),
-						TRIP_END_DATE                  : this._getJSONDate(oInputData.claimheader.trip_enddate),
-						EVENT_START_DATE               : this._getJSONDate(oInputData.claimheader.event_startdate),
-						EVENT_END_DATE                 : this._getJSONDate(oInputData.claimheader.event_enddate),
-						SUBMISSION_TYPE                : oInputData.claimheader.subtype,
-						COMMENT                        : oInputData.claimheader.comment,
-						ALTERNATE_COST_CENTER          : oInputData.claimheader.altcc,
-						COST_CENTER                    : oInputData.claimheader.cc,
-						REQUEST_ID                     : oInputData.claimheader.reqform,
-						ATTACHMENT_EMAIL_APPROVER      : oInputData.claimheader.attachment,
-						STATUS_ID                      : oInputData.claimheader.status,
-						CLAIM_TYPE_ID                  : oInputData.claimheader.claimtype,
-						// CLAIM_TYPE_ITEM_ID             : oInputData.claimheader.claimitem,
-						TOTAL_CLAIM_AMOUNT             : parseFloat(oInputData.claimheader.amt_total),
-						PREAPPROVED_AMOUNT             : parseFloat(oInputData.claimheader.amt_approved),
-						CASH_ADVANCE_AMOUNT            : parseFloat(oInputData.claimheader.amt_cashadvance),
-						FINAL_AMOUNT_TO_RECEIVE        : parseFloat(oInputData.claimheader.amt_receivefinal),
-						LAST_MODIFIED_DATE             : this._getJSONDate(oInputData.claimheader.lastmodifieddate),
-						SUBMITTED_DATE                 : this._getJSONDate(oInputData.claimheader.submitteddate),
-						LAST_APPROVED_DATE             : this._getJSONDate(oInputData.claimheader.lastapproveddate),
-						LAST_APPROVED_TIME             : oInputData.claimheader.lastapprovedtime,
-						LAST_SEND_BACK_DATE            : this._getJSONDate(oInputData.claimheader.lastsendbackdate),
-						PAYMENT_DATE                   : this._getJSONDate(oInputData.claimheader.paymentdate),
-						LOCATION                       : oInputData.claimheader.location,
-						SPOUSE_OFFICE_ADDRESS          : oInputData.claimheader.movinghouse.spouseoffice,
-						HOUSE_COMPLETION_DATE          : this._getJSONDate(oInputData.claimheader.movinghouse.housecompletiondate),
-						MOVE_IN_DATE                   : this._getJSONDate(oInputData.claimheader.movinghouse.moveindate),
-						HOUSING_LOAN_SCHEME            : oInputData.claimheader.movinghouse.housingloanscheme,
-						LENDER_NAME                    : oInputData.claimheader.movinghouse.lendername,
-						SPECIFY_DETAILS                : oInputData.claimheader.movinghouse.specifydetails,
-						NEW_HOUSE_ADDRESS              : oInputData.claimheader.movinghouse.newhouseaddress,
-						DIST_OLD_HOUSE_TO_OFFICE_KM    : parseFloat(oInputData.claimheader.movinghouse.distoldhouse_officekm),
-						DIST_OLD_HOUSE_TO_NEW_HOUSE_KM : parseFloat(oInputData.claimheader.movinghouse.distoldhouse_newhousekm),
-						PROJECT_CODE                   : oInputData.claimheader.projectcode,
-						COURSE_CODE                    : oInputData.claimheader.coursecode,
-						APPROVER1                      : oInputData.claimheader.approver.approver1,
-						APPROVER2                      : oInputData.claimheader.approver.approver2,
-						APPROVER3                      : oInputData.claimheader.approver.approver3,
-						APPROVER4                      : oInputData.claimheader.approver.approver4,
-						APPROVER5                      : oInputData.claimheader.approver.approver5,
+						CLAIM_ID: oInputModel.getProperty("/claim_header/claim_id"),
+						EMP_ID: oInputModel.getProperty("claim_header/emp_id"),
+						PURPOSE: oInputModel.getProperty("claim_header/purpose"),
+						TRIP_START_DATE: this._getHanaDate(oInputModel.getProperty("claim_header/trip_start_date")),
+						TRIP_END_DATE: this._getHanaDate(oInputModel.getProperty("claim_header/trip_end_date")),
+						EVENT_START_DATE: this._getHanaDate(oInputModel.getProperty("claim_header/event_start_date")),
+						EVENT_END_DATE: this._getHanaDate(oInputModel.getProperty("claim_header/event_end_date")),
+						SUBMISSION_TYPE: oInputModel.getProperty("claim_header/submission_type"),
+						COMMENT: oInputModel.getProperty("claim_header/comment"),
+						ALTERNATE_COST_CENTER: oInputModel.getProperty("claim_header/alternate_cost_center"),
+						COST_CENTER: oInputModel.getProperty("claim_header/cost_center"),
+						REQUEST_ID: oInputModel.getProperty("claim_header/request_id"),
+						ATTACHMENT_EMAIL_APPROVER: oInputModel.getProperty("claim_header/attachment_email_approver"),
+						STATUS_ID: oInputModel.getProperty("claim_header/status_id"),
+						CLAIM_TYPE_ID: oInputModel.getProperty("claim_header/claim_type_id"),
+						TOTAL_CLAIM_AMOUNT: parseFloat(oInputModel.getProperty("claim_header/total_claim_amount")).toFixed(2),
+						FINAL_AMOUNT_TO_RECEIVE: parseFloat(oInputModel.getProperty("claim_header/final_amount_to_receive")).toFixed(2),
+						LAST_MODIFIED_DATE: this._getHanaDate(oInputModel.getProperty("claim_header/last_modified_date")),
+						SUBMITTED_DATE: this._getHanaDate(oInputModel.getProperty("claim_header/submitted_date")),
+						LAST_APPROVED_DATE: this._getHanaDate(oInputModel.getProperty("claim_header/last_approved_date")),
+						LAST_APPROVED_TIME: this._getHanaTime(oInputModel.getProperty("claim_header/last_approved_time")),
+						PAYMENT_DATE: this._getHanaDate(oInputModel.getProperty("claim_header/payment_date")),
+						LOCATION: oInputModel.getProperty("claim_header/location"),
+						SPOUSE_OFFICE_ADDRESS: oInputModel.getProperty("claim_header/spouse_office_address"),
+						HOUSE_COMPLETION_DATE: this._getHanaDate(oInputModel.getProperty("claim_header/house_completion_date")),
+						MOVE_IN_DATE: this._getHanaDate(oInputModel.getProperty("claim_header/move_in_date")),
+						HOUSING_LOAN_SCHEME: oInputModel.getProperty("claim_header/housing_loan_scheme"),
+						LENDER_NAME: oInputModel.getProperty("claim_header/lender_name"),
+						SPECIFY_DETAILS: oInputModel.getProperty("claim_header/specify_details"),
+						NEW_HOUSE_ADDRESS: oInputModel.getProperty("claim_header/new_house_address"),
+						DIST_OLD_HOUSE_TO_OFFICE_KM: parseFloat(oInputModel.getProperty("claim_header/dist_old_house_to_office_km")).toFixed(2),
+						DIST_OLD_HOUSE_TO_NEW_HOUSE_KM: parseFloat(oInputModel.getProperty("claim_header/dist_old_house_to_new_house_km")).toFixed(2),
+						APPROVER1: oInputModel.getProperty("claim_header/approver1"),
+						APPROVER2: oInputModel.getProperty("claim_header/approver2"),
+						APPROVER3: oInputModel.getProperty("claim_header/approver3"),
+						APPROVER4: oInputModel.getProperty("claim_header/approver4"),
+						APPROVER5: oInputModel.getProperty("claim_header/approver5"),
+						LAST_SEND_BACK_DATE: this._getHanaDate(oInputModel.getProperty("claim_header/last_send_back_date")),
+						COURSE_CODE: oInputModel.getProperty("claim_header/course_code"),
+						PROJECT_CODE: oInputModel.getProperty("claim_header/project_code"),
+						CASH_ADVANCE_AMOUNT: parseFloat(oInputModel.getProperty("claim_header/cash_advance_amount")).toFixed(2),
+						PREAPPROVED_AMOUNT: parseFloat(oInputModel.getProperty("claim_header/preapproved_amount")).toFixed(2),
+						REJECT_REASON_ID: oInputModel.getProperty("claim_header/reject_reason_id"),
+						SEND_BACK_REASON_ID: oInputModel.getProperty("claim_header/send_back_reason_id"),
+						LAST_SEND_BACK_TIME: this._getHanaTime(oInputModel.getProperty("claim_header/last_send_back_time")),
+						REJECT_REASON_DATE: this._getHanaDate(oInputModel.getProperty("claim_header/reject_reason_date")),
+						REJECT_REASON_TIME: this._getHanaTime(oInputModel.getProperty("claim_header/reject_reason_time"))
 					})
 				})
 				.then(r => r.json())
@@ -285,12 +190,12 @@ sap.ui.define([
 						// replace current claim ID with updated claim ID
 						switch (res.error.code) {
 							case '301':
-								MessageToast.show(this._getTexti18n("msg_claimsubmission_uniqueid", [oInputData.claimheader.claim_id]));
+								MessageToast.show(this._getTexti18n("msg_claimsubmission_uniqueid", [oInputData.claim_header.claim_id]));
 								// get updated claim report number
 								this._updateCurrentReportNumber(oInputModel.getProperty("/reportnumber/current"));
 								var currentReportNumber = await this.getCurrentReportNumber();
 								if (currentReportNumber) {
-									oInputModel.setProperty("/claimheader/claim_id", currentReportNumber.reportNo);
+									oInputModel.setProperty("/claim_header/claim_id", currentReportNumber.reportNo);
 									oInputModel.setProperty("/reportnumber/reportno", currentReportNumber.reportNo);
 									oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
 								}
@@ -303,11 +208,21 @@ sap.ui.define([
 				});
 		},
 
-		_getJSONDate: function (date) {
+		_getHanaDate: function (date) {
 			if (date) {
 				var oDate = new Date (date);
 				var oDateString = oDate.getFullYear() + '-' + ('0' + (oDate.getMonth()+1)).slice(-2) + '-' + ('0' + oDate.getDate()).slice(-2);
 				return oDateString;
+			} else {
+				return null;
+			}
+		},
+
+		_getHanaTime: function (time) {
+			if (time) {
+				var oDate = new Date (time);
+				var oTimeString = ('0' + oDate.getHours()).slice(-2) + ':' + ('0' + oDate.getMinutes()).slice(-2) + ':' + ('0' + oDate.getSeconds()).slice(-2);
+				return oTimeString;
 			} else {
 				return null;
 			}
