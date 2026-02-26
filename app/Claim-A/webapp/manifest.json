@@ -54,7 +54,7 @@
     "sap.ui5": {
         "flexEnabled": false,
         "dependencies": {
-            "minUI5Version": "1.143.0",
+            "minUI5Version": "1.144.0",
             "libs": {
                 "sap.m": {},
                 "sap.ui.core": {},
@@ -362,13 +362,6 @@
                     ]
                 },
                 {
-                    "pattern": "ZEMP_VEHICLE",
-                    "name": "ZEMP_VEHICLE",
-                    "target": [
-                        "ZEMP_VEHICLE"
-                    ]
-                },
-                {
                     "pattern": "ZINDIV_GROUP",
                     "name": "ZINDIV_GROUP",
                     "target": [
@@ -429,6 +422,26 @@
                     "pattern": "Dashboard",
                     "name": "Dashboard",
                     "target": "Dashboard"
+                },
+                {
+                    "pattern": "ZEMP_DEPENDENT",
+                    "name": "ZEMP_DEPENDENT",
+                    "target": "ZEMP_DEPENDENT"
+                },
+                {
+                    "pattern": "ZREJECT_REASON",
+                    "name": "ZREJECT_REASON",
+                    "target": "ZREJECT_REASON"
+                },
+                {
+                    "pattern": "ZCURRENCY",
+                    "name": "ZCURRENCY",
+                    "target": "ZCURRENCY"
+                },
+                {
+                    "pattern": "ZVEHICLE_OWNERSHIP",
+                    "name": "ZVEHICLE_OWNERSHIP",
+                    "target": "ZVEHICLE_OWNERSHIP"
                 }
             ],
             "targets": {
@@ -465,7 +478,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -524,7 +537,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -580,7 +593,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -636,7 +649,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -692,7 +705,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -748,7 +761,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -804,7 +817,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -860,67 +873,11 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
-                                        }
-                                    },
-                                    "actions": {
-                                        "newCopy": {
-                                            "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
-                                        }
-                                    }
-                                }
-                            },
-                            "hideFilterBar": true,
-                            "initialLoad": "Enabled",
-                            "navigation": {}
-                        }
-                    }
-                },
-                "ZEMP_VEHICLE": {
-                    "type": "Component",
-                    "id": "ZEMP_VEHICLE",
-                    "name": "sap.fe.templates.ListReport",
-                    "options": {
-                        "settings": {
-                            "contextPath": "/ZEMP_VEHICLE",
-                            "variantManagement": "None",
-                            "controlConfiguration": {
-                                "@com.sap.vocabularies.UI.v1.LineItem": {
-                                    "tableSettings": {
-                                        "type": "ResponsiveTable",
-                                        "createMode": "inline",
-                                        "initialLoad": "Enabled",
-                                        "enableExport": true,
-                                        "selectAll": false,
-                                        "selectionMode": "Single",
-                                        "personalization": {
-                                            "column": true,
-                                            "filter": false
-                                        },
-                                        "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
-                                        },
-                                        "disableCopyToClipboard": false,
-                                        "enableMassEdit": false,
-                                        "creationMode": {
-                                            "name": "CreationDialog",
-                                            "creationFields": "EMP_ID,VEHICLE_NO,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -972,7 +929,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -1028,7 +985,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -1067,7 +1024,6 @@
                         "settings": {
                             "contextPath": "/ZRISK",
                             "variantManagement": "None",
-                            "variantManagementHidden": true,
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
@@ -1078,14 +1034,14 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -1105,11 +1061,7 @@
                                             "visible": true,
                                             "enabled": true,
                                             "requiresSelection": true,
-                                            "text": "Edit",
-                                            "position": {
-                                                "placement": "After",
-                                                "anchor": "newCopy"
-                                            }
+                                            "text": "Edit"
                                         }
                                     }
                                 }
@@ -1145,7 +1097,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -1201,7 +1153,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false
                                     },
                                     "actions": {
@@ -1246,7 +1198,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -1302,7 +1254,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -1358,7 +1310,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -1414,7 +1366,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -1470,7 +1422,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -1526,7 +1478,7 @@
                                             "hideTableTitle": true,
                                             "showCounts": true
                                         },
-                                        "disableCopyToClipboard": false,
+                                        "disableCopyToClipboard": true,
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
@@ -1584,7 +1536,8 @@
                                             "name": "CreationDialog",
                                             "creationFields": "REQUEST_TYPE_ID,REQUEST_TYPE_DESC,START_DATE,END_DATE,STATUS"
                                         },
-                                        "enableMassEdit": false
+                                        "enableMassEdit": false,
+                                        "disableCopyToClipboard": true
                                     },
                                     "actions": {
                                         "DataFieldForAction::eclaim_srv.Copy": {
@@ -2541,6 +2494,210 @@
                     "type": "View",
                     "viewType": "XML",
                     "transition": "slide"
+                },
+                "ZEMP_DEPENDENT": {
+                    "type": "Component",
+                    "id": "ZEMP_DEPENDENT",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_DEPENDENT",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": true,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": true,
+                                        "enableMassEdit": false
+                                    },
+                                    "actions": {
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZREJECT_REASON": {
+                    "type": "Component",
+                    "id": "ZREJECT_REASON",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZREJECT_REASON",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "REASON_ID,REASON_TYPE,START_DATE,END_DATE,STATUS,REASON_DESC"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZCURRENCY": {
+                    "type": "Component",
+                    "id": "ZCURRENCY",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZCURRENCY",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "CURRENCY_ID,CURRENCY_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZVEHICLE_OWNERSHIP": {
+                    "type": "Component",
+                    "id": "ZVEHICLE_OWNERSHIP",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZVEHICLE_OWNERSHIP",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "VEHICLE_OWNERSHIP_ID,VEHICLE_OWNERSHIP_DESC,START_DATE,END_DATE,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
                 }
             }
         },

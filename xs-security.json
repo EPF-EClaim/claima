@@ -1,7 +1,31 @@
 {
   "xsappname": "claima-backend-app",
   "tenant-mode": "dedicated",
-  "scopes": [],
-  "attributes": [],
-  "role-templates": []
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.user",
+      "description": "UAA"
+    }
+  ],
+  "attributes": [
+    "$XSAPPNAME.user"
+  ],
+  "role-templates": [
+    {
+      "name": "Token_exchange",
+      "description": "UAA",
+      "scope-references": [
+        "$XSAPPNAME.user"
+      ]
+    }
+  ],
+  "oauth2-configuration": {
+    "credential-types": [
+      "binding-secret",
+      "x509"
+    ],
+    "redirect-uris": [
+      "http://localhost:*/**"
+    ]
+  }
 }
