@@ -165,6 +165,25 @@ sap.ui.define([
 			});
 		},
 
+		_getNewClaimItemModel: function (modelName) {
+			// Claim Item Model
+			var oClaimItemModel = new JSONModel({
+				"item_id": null,
+				"date": null,
+				"receipt": null,
+				"claimitem": null,
+				"amt": null,
+				"category": null,
+				"descr": {
+					"claimitem": null,
+					"category": null
+				}
+			});
+			//// set input
+			this.getView().setModel(oClaimItemModel, modelName);
+			return this.getView().getModel(modelName);
+		},
+
 		onCreateClaim_ClaimSummary: function () {
 			MessageToast.show("reachable");
 
@@ -223,7 +242,7 @@ sap.ui.define([
 						ATTACHMENT_EMAIL_APPROVER      : oInputData.claimheader.attachment,
 						STATUS_ID                      : oInputData.claimheader.status,
 						CLAIM_TYPE_ID                  : oInputData.claimheader.claimtype,
-						CLAIM_TYPE_ITEM_ID             : oInputData.claimheader.claimitem,
+						// CLAIM_TYPE_ITEM_ID             : oInputData.claimheader.claimitem,
 						TOTAL_CLAIM_AMOUNT             : parseFloat(oInputData.claimheader.amt_total),
 						PREAPPROVED_AMOUNT             : parseFloat(oInputData.claimheader.amt_approved),
 						CASH_ADVANCE_AMOUNT            : parseFloat(oInputData.claimheader.amt_cashadvance),
@@ -258,7 +277,7 @@ sap.ui.define([
 					if (!res.error) {
 						// successfully created record
 						MessageToast.show(this._getTexti18n("msg_claimsubmission_created"));
-						this._updateCurrentReportNumber(oInputData.claimheader.claim_id.slice(-9));
+						this._updateCurrentReportNumber(oInputData.reportnumber.current);
 
 						// return to dashboard
 						this._returnToDashboard();

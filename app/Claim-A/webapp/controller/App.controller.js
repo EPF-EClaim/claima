@@ -172,7 +172,6 @@ sap.ui.define([
 					"event_startdate": null,
 					"event_enddate": null,
 					"claimtype": null,
-					"claimitem": null,
 					"subtype": null,
 					"location": null,
 					"cc": null,
@@ -213,27 +212,13 @@ sap.ui.define([
 					"descr": {
 						"status": null,
 						"claimtype": null,
-						"claimitem": null,
 						"subtype": null,
 						"cc": null,
 						"altcc": null,
 						"reqform": null
 					}
 				},
-				"claimitems": [{
-					"item_id": null,
-					"date": null,
-					"receipt": null,
-					"claimtype": null,
-					"claimitem": null,
-					"amt": null,
-					"category": null,
-					"descr": {
-						"claimtype": null,
-						"claimitem": null,
-						"category": null
-					}
-				}],
+				"claimitems": [{}],
 				"claimitem_count": 0,
 				"reportnumber": {
 					"reportno": null,
@@ -696,7 +681,9 @@ sap.ui.define([
 				return false;
 			}
 			// check if end date earlier than start date
-			else if (startDateValue > endDateValue) {
+			var startDateUnix 	= new Date (startDateValue).valueOf();
+			var endDateUnix 	= new Date (endDateValue).valueOf();
+			if (startDateUnix > endDateUnix) {
 				MessageToast.show(this._getTexti18n("msg_daterange_order"));
 				return false;
 			}
