@@ -988,3 +988,4 @@ entity ZCURRENCY : managed {
         END_DATE      : Date       @Common.Label: 'End Date';
         STATUS        : String     @Common.Label: 'Status';
 }
+
