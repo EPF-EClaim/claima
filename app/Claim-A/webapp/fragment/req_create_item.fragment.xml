@@ -42,15 +42,7 @@
                                 <!-- Claim Type -->
                                 <form:FormElement label="{i18n>req_i_claim_type}" >
                                     <form:fields>
-                                        <m:Select enabled="{= ${request>/view} !== 'view' }"
-                                                  selectedKey="{request>/req_item/claim_type}">
-                                            <items>
-                                                <core:Item key="CT1" text="Claim Type 1"/>
-                                                <core:Item key="CT2" text="Claim Type 2"/>
-                                                <core:Item key="CT3" text="Claim Type 3"/>
-                                                <core:Item key="CT4" text="Claim Type 4"/>
-                                            </items>
-                                        </m:Select>
+                                        <Text text="{request>/req_header/claimtype}" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -91,6 +83,16 @@
                                     </form:fields>
                                 </form:FormElement>
 
+                                <!-- Attachment 1 -->
+                                <form:FormElement label="{i18n>req_attach1}">
+                                    <form:fields>
+                                        <unified:FileUploader
+                                            id="i_attachment1"
+                                            change=".onImportChange"
+                                            value="{request>/req_item/doc1}" />
+                                    </form:fields>
+                                </form:FormElement>
+
                                 <!-- Estimated Participants -->
                                 <form:FormElement label="{i18n>req_i_estparticipant}"
                                                 visible="{= ${request>/req_header/grptype} === 'group'}">
@@ -107,16 +109,16 @@
                                 <!-- Claim Type Item -->
                                 <form:FormElement label="{i18n>req_i_claim_type_item}">
                                     <form:fields>
-                                        <m:Select 
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            selectedKey="{request>/req_item/claim_type_item_id}">
+                                        <Select selectedKey="{request>/req_item/claim_type_item_id}" 
+                                                required="true" 
+                                                forceSelection="false"
+                                                items="{path: 'request>/claim_type_items',
+                                                        sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
                                             <items>
-                                                <core:Item key="CTI1" text="Claim Type Item 1"/>
-                                                <core:Item key="CTI2" text="Claim Type Item 2"/>
-                                                <core:Item key="CTI3" text="Claim Type Item 3"/>
-                                                <core:Item key="CTI4" text="Claim Type Item 4"/>
+                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
+                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
                                             </items>
-                                        </m:Select>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -157,6 +159,16 @@
                                     </form:fields>
                                 </form:FormElement>
 
+                                <!-- Attachment 2 -->
+                                <form:FormElement label="{i18n>req_attach2}">
+                                    <form:fields>
+                                        <unified:FileUploader
+                                            id="i_attachment2"
+                                            change=".onImportChange"
+                                            value="{request>/req_item/doc2}" />
+                                    </form:fields>
+                                </form:FormElement>
+
                             </form:formElements>
                         </form:FormContainer>
                     </form:formContainers>
@@ -183,7 +195,8 @@
                         rows="{request>/participant}"
                         columnHeaderHeight="3rem"
                         selectionMode="MultiToggle"
-                        rowActionCount="1">
+                        rowActionCount="1"
+                        >
                         <table:Column width="10rem" >
                             <Label text="{i18n>req_p_id}"></Label>
                             <table:template>
@@ -192,10 +205,10 @@
                                     showSuggestion="true"
                                     suggestionRows="{/ZEMP_MASTER}"
                                     suggestionItemSelected=".onParticipantInputChange"
-                                    change=".onParticipantInputChange"
+                                    change=".onUploadParticipants"
                                     showValueHelp="true"
                                     valueHelpRequest=".onValueHelpRequest"
-                                    enabled="{= ${request>/req_header/grptype} === 'group'}">
+                                    enabled="{= ${request>/req_header/grptype} === 'group' || ${request>/view} !== 'view'}">
                                     <suggestionColumns>
                                         <Column><Label text="EEID"/></Column>
                                         <Column><Label text="Name"/></Column>
@@ -228,7 +241,8 @@
                         <table:Column width="15rem">
                             <Label text="{i18n>req_p_alloc_amt}"></Label>
                             <table:template>
-                                <Input id="alloc_amount" textAlign="End" value="{request>ALLOCATED_AMOUNT}" type="Number"></Input>
+                                <Input id="alloc_amount" textAlign="End" value="{request>ALLOCATED_AMOUNT}" type="Number"
+                                    enabled="{= ${request>/view} !== 'view'}"></Input>
                             </table:template>
                         </table:Column>
                         <table:rowActionTemplate>

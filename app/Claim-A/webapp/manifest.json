@@ -111,6 +111,10 @@
             "request": {
                 "type": "sap.ui.model.json.JSONModel",
                 "uri": "model/request.json"
+            },
+            "request_status": {
+                "type": "sap.ui.model.json.JSONModel",
+                "uri": "model/request_status.json"
             }
         },
         "resources": {
@@ -422,6 +426,16 @@
                     "pattern": "Dashboard",
                     "name": "Dashboard",
                     "target": "Dashboard"
+                },
+                {
+                    "pattern": "RequestForm",
+                    "name": "RequestForm",
+                    "target": "RequestForm"
+                },
+                {
+                    "pattern": "RequestFormStatus",
+                    "name": "RequestFormStatus",
+                    "target": "RequestFormStatus"
                 },
                 {
                     "pattern": "ZEMP_DEPENDENT",
@@ -2491,6 +2505,22 @@
                     "id": "Dashboard",
                     "path": "claima.view",
                     "name": "Dashboard",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
+                "RequestForm": {
+                    "id": "RequestForm",
+                    "path": "claima.view",
+                    "name": "RequestForm",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
+                "RequestFormStatus": {
+                    "id": "RequestFormStatus",
+                    "path": "claima.view",
+                    "name": "PARequestStatus",
                     "type": "View",
                     "viewType": "XML",
                     "transition": "slide"
