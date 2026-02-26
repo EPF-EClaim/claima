@@ -42,7 +42,8 @@
       },
       "connectivity": true,
       "[hybrid]": {
-        "db": "hana-cloud"
+        "db": "hana-cloud",
+        "auth": "xsuaa"
       },
       "app-front": true,
       "html5-repo": true,
