@@ -2138,60 +2138,6 @@ annotate service.ZEMP_RELATIONSHIP with @(
     }
 );
 
-annotate service.ZLOOKUP_FIELD with @(
-    cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [LOOKUP_ID],
-    Capabilities      : {
-        Deletable : true,
-        Updatable : true,
-        Insertable: true
-    },
-    odata.draft.enabled,
-
-    UI                : {
-        CreateHidden: false,
-        DeleteHidden: false,
-        HeaderInfo  : {
-            $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZLOOKUP_FIELD',
-            TypeNamePlural: 'ZLOOKUP_FIELD',
-        },
-        LineItem    : [
-            {
-                $Type            : 'UI.DataField',
-                Value            : LOOKUP_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Lookup ID'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : LOOKUP_DESC,
-                ![@UI.Importance]: #High,
-                Label            : 'Lookup Description'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Start Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'End Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : STATUS,
-                ![@UI.Importance]: #High,
-                Label            : 'Status'
-            }
-        ]
-    }
-);
-
 annotate service.ZMARITAL_CAT with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
@@ -3152,6 +3098,672 @@ annotate service.ZSTUDY_LEVELS with @(
                 Value            : STUDY_LEVELS_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Level of Studies Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZTRANSFER_MODE with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [TRANSFER_MODE_ID],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZTRANSFER_MODE',
+            TypeNamePlural: 'ZTRANSFER_MODE',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRANSFER_MODE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Mode of Transfer ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRANSFER_MODE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Mode of Transfer Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZTRANSPORT_PASSING with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [TRANSPORT_PASSING_ID],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZTRANSPORT_PASSING',
+            TypeNamePlural: 'ZTRANSPORT_PASSING',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRANSPORT_PASSING_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Transportation of the passing (dead) ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRANSPORT_PASSING_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Transportation of the passing (dead) Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZTRAVEL_TYPE with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [TRAVEL_TYPE_ID],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZTRAVEL_TYPE',
+            TypeNamePlural: 'ZTRAVEL_TYPE',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRAVEL_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Travel (Sendirian/With Family) ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRAVEL_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Travel (Sendirian/With Family) Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZFAMILY_TIMING with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [FAMILY_TIMING_ID],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZFAMILY_TIMING',
+            TypeNamePlural: 'ZFAMILY_TIMING',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : FAMILY_TIMING_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'With Family Now or Later ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FAMILY_TIMING_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'With Family Now or Later Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZSPORTS_REPRESENTATION with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [SPORTS_REPRESENTATION_ID],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZSPORTS_REPRESENTATION',
+            TypeNamePlural: 'ZSPORTS_REPRESENTATION',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : SPORTS_REPRESENTATION_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Represent KWSP in Sport Activity ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SPORTS_REPRESENTATION_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Represent KWSP in Sport Activity Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZPOSITION_EVENT_REASON with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [POSITION_EVENT_REASON_ID],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZPOSITION_EVENT_REASON',
+            TypeNamePlural: 'ZPOSITION_EVENT_REASON',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : POSITION_EVENT_REASON_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Position Event Reason ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : POSITION_EVENT_REASON_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Position Event Reason Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZEMP_DEPENDENT_TYPE with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [DEPENDENT_TYPE_ID],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZEMP_DEPENDENT_TYPE',
+            TypeNamePlural: 'ZEMP_DEPENDENT_TYPE',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPENDENT_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Dependent Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPENDENT_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Dependent Type Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZCLAIM_BASIS with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [CLAIM_BASIS_ID],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZCLAIM_BASIS',
+            TypeNamePlural: 'ZCLAIM_BASIS',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_BASIS_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Basis ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_BASIS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Basis Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZHOTEL_LODGING with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [HOTEL_LODGING_ID],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZHOTEL_LODGING',
+            TypeNamePlural: 'ZHOTEL_LODGING',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : HOTEL_LODGING_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Hotel/Lodjing ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : HOTEL_LODGING_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Hotel/Lodjing Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZFARE_TYPE with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [FARE_TYPE_ID],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZFARE_TYPE',
+            TypeNamePlural: 'ZFARE_TYPE',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : FARE_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Fare Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FARE_TYPE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Fare Type Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZMETER_CUBE with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [METER_CUBE_ID],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZMETER_CUBE',
+            TypeNamePlural: 'ZMETER_CUBE',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : METER_CUBE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Meter Cube ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MARITAL_STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Marital Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPENDENT_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Dependent Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : AGE,
+                ![@UI.Importance]: #High,
+                Label            : 'Age'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : METER_CUBE,
+                ![@UI.Importance]: #High,
+                Label            : 'Meter Cube'
+            },                      
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZTRAVEL_DAYS with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [TRAVEL_DAYS_ID],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZTRAVEL_DAYS',
+            TypeNamePlural: 'ZTRAVEL_DAYS',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRAVEL_DAYS_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Travel Days ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRAVEL_DAYS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Travel Days Description'
             },
             {
                 $Type            : 'UI.DataField',

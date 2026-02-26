@@ -102,12 +102,6 @@ service eclaim_srv @(requires: 'authenticated-user'){
 
     entity ZBUDGET                  as projection on ECLAIM.ZBUDGET;
 
-    entity ZAPPROVAL_1              as projection on ECLAIM.ZAPPROVAL_1;
-
-    entity ZAPPROVAL_2              as projection on ECLAIM.ZAPPROVAL_2;
-
-    entity ZAPPROVAL_3              as projection on ECLAIM.ZAPPROVAL_3;
-
     entity ZVEHICLE_OWNERSHIP       as projection on ECLAIM.ZVEHICLE_OWNERSHIP;
 
     entity ZCOST_CENTER             as projection on ECLAIM.ZCOST_CENTER;
@@ -117,8 +111,6 @@ service eclaim_srv @(requires: 'authenticated-user'){
     entity ZINTERNAL_ORDER          as projection on ECLAIM.ZINTERNAL_ORDER;
 
     entity ZGL_ACCOUNT              as projection on ECLAIM.ZGL_ACCOUNT;
-
-    entity ZLOOKUP_FIELD            as projection on ECLAIM.ZLOOKUP_FIELD;
 
     entity ZMARITAL_CAT             as projection on ECLAIM.ZMARITAL_CAT;
 
@@ -149,4 +141,30 @@ service eclaim_srv @(requires: 'authenticated-user'){
     entity ZPROFESIONAL_BODY        as projection on ECLAIM.ZPROFESIONAL_BODY;
 
     entity ZSTUDY_LEVELS            as projection on ECLAIM.ZSTUDY_LEVELS;
+
+    entity ZTRANSFER_MODE           as projection on ECLAIM.ZTRANSFER_MODE;
+
+    entity ZTRANSPORT_PASSING       as projection on ECLAIM.ZTRANSPORT_PASSING;
+
+    entity ZTRAVEL_TYPE             as projection on ECLAIM.ZTRAVEL_TYPE;
+
+    entity ZFAMILY_TIMING           as projection on ECLAIM.ZFAMILY_TIMING;
+
+    entity ZSPORTS_REPRESENTATION   as projection on ECLAIM.ZSPORTS_REPRESENTATION;
+
+    entity ZPOSITION_EVENT_REASON   as projection on ECLAIM.ZPOSITION_EVENT_REASON;
+
+    entity ZEMP_DEPENDENT_TYPE      as projection on ECLAIM.ZEMP_DEPENDENT_TYPE;
+
+    entity ZCLAIM_BASIS             as projection on ECLAIM.ZCLAIM_BASIS;
+
+    entity ZHOTEL_LODGING           as projection on ECLAIM.ZHOTEL_LODGING;
+
+    entity ZFARE_TYPE               as projection on ECLAIM.ZFARE_TYPE;
+
+    entity ZMETER_CUBE              as projection on ECLAIM.ZMETER_CUBE;
+
+    entity ZTRAVEL_DAYS             as projection on ECLAIM.ZTRAVEL_DAYS;
+
+    entity ZELIGIBILITY_RULE        as projection on ECLAIM.ZELIGIBILITY_RULE;
 };
