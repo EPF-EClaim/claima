@@ -43,7 +43,7 @@
       "connectivity": true,
       "[hybrid]": {
         "db": "hana-cloud",
-        "auth": "xsuaa"
+        "auth": "mocked"
       },
       "app-front": true,
       "html5-repo": true,

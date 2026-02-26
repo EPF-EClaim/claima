@@ -129,6 +129,16 @@ sap.ui.define([
 			oRouter.navTo("Dashboard");
 
 			this._loadCurrentUser();
+
+			const oModel = this.getOwnerComponent().getModel();
+			const ctx = oModel.bindContext("/getUserType()");
+			ctx.requestObject().then(oData => {
+				this._userType = oData.userType || "UNKNOWN";
+			}).catch(err => {
+				console.error("getUserType failed:", err);
+				this._userType = "UNKNOWN";
+			});
+
 		},
 
 		onCollapseExpandPress: function () {
@@ -149,6 +159,17 @@ sap.ui.define([
 			var oRouter = this.getOwnerComponent().getRouter();
 			sap.ui.core.routing.HashChanger.getInstance().replaceHash("");
 
+			//Start EY_ATHIRAH
+			const key = oEvent.getSource().data("key");
+
+			// Make sure userType is available
+			const type = this._userType; // << read what we stored earlier
+			if (!type) {
+				sap.m.MessageToast.show("Please wait… loading your access.");
+				return;
+			}
+			//End EY_ATHIRAH
+
 			switch (oKey) {
 				case "sidenav_claimsubmission":
 					this.onNav_ClaimSubmission();
@@ -162,7 +183,14 @@ sap.ui.define([
 					oRouter.navTo("RequestFormStatus");
 					break;
 				case "config":
-					oRouter.navTo("Configuration");
+					//Start EY_ATHIRAH
+					if (type === "JKEW Admin" || type === "DTD Admin") {
+						oRouter.navTo("Configuration");
+					} else {
+						var message = this._getTexti18n("msg_unauthorized_config");
+						sap.m.MessageBox.error(message);
+					}
+					//End EY_ATHIRAH
 					break;
 				case "dashboard":
 					oRouter.navTo("Dashboard");
@@ -1502,7 +1530,7 @@ sap.ui.define([
 			$.ajax({
 				type: "GET",
 				url: "/user-api/currentUser",
-				success: async function(resultData) {
+				success: async function (resultData) {
 					// Extract email safely with fallbacks (covers common IdP shapes)
 					var email =
 						resultData.email ||

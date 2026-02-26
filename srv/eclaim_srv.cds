@@ -6,11 +6,11 @@ service eclaim_srv @(requires: 'authenticated-user'){
         message : String;
     };
 
-    action batchCreateEmployee(employees: many ZEMP_MASTER)      returns Response;
+    action   batchCreateEmployee(employees: many ZEMP_MASTER)      returns Response;
 
-    action batchCreateDependent(dependents: many ZEMP_DEPENDENT) returns Response;
+    action   batchCreateDependent(dependents: many ZEMP_DEPENDENT) returns Response;
 
-    action batchCreateCostCenter(costcenters: many ZCOST_CENTER) returns Response;
+    action   batchCreateCostCenter(costcenters: many ZCOST_CENTER) returns Response;
 
     entity ZEMP_MASTER              as projection on ECLAIM.ZEMP_MASTER;
 
@@ -135,6 +135,12 @@ service eclaim_srv @(requires: 'authenticated-user'){
     entity ZVEHICLE_CLASS           as projection on ECLAIM.ZVEHICLE_CLASS;
 
     entity ZINSURANCE_PROVIDER      as projection on ECLAIM.ZINSURANCE_PROVIDER;
+    type UserInfo {
+        id       : String;
+        userType : String;
+    }
+
+    function getUserType() returns UserInfo;
 
     entity ZINSURANCE_PACKAGE       as projection on ECLAIM.ZINSURANCE_PACKAGE;
 
