@@ -13,4 +13,5 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user'){
     entity ZEMP_REQUEST_STATUS          as projection on ECLAIMVIEW.ZEMP_REQUEST_STATUS;
     entity ZEMP_CLAIM_STATUS_HEADER     as projection on ECLAIMVIEW.ZEMP_CLAIM_STATUS_HEADER;
     entity ZEMP_CLAIM_STATUS_ITEM       as projection on ECLAIMVIEW.ZEMP_CLAIM_STATUS_ITEM;
+    entity ZEMP_CLAIM_SUBMISSION        as projection on ECLAIMVIEW.ZEMP_CLAIM_SUBMISSION;
 };

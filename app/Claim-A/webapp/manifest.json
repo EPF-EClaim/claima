@@ -23,6 +23,14 @@
                     "annotations": [],
                     "odataVersion": "4.0"
                 }
+            },
+            "claimService": {
+                "uri": "/odata/v4/eclaim-view-srv/",
+                "type": "OData",
+                "settings": {
+                    "annotations": [],
+                    "odataVersion": "4.0"
+                }
             }
         }
     },
@@ -70,6 +78,17 @@
                     "earlyRequests": true
                 }
             },
+            "employee_view": {
+                "dataSource": "claimService",
+                "preload": true,
+                "settings": {
+                    "operationMode": "Server",
+                    "synchronizationMode": "None",
+                    "autoExpandSelect": true,
+                    "earlyRequests": true,
+                    "groupId": "$auto"
+                }
+            },
             "": {
                 "dataSource": "mainService",
                 "preload": true,
@@ -92,6 +111,10 @@
             "request": {
                 "type": "sap.ui.model.json.JSONModel",
                 "uri": "model/request.json"
+            },
+            "request_status": {
+                "type": "sap.ui.model.json.JSONModel",
+                "uri": "model/request_status.json"
             }
         },
         "resources": {
@@ -395,9 +418,24 @@
                     "target": "Configuration"
                 },
                 {
+                    "pattern": "Analytics",
+                    "name": "Analytics",
+                    "target": "Analytics"
+                },
+                {
                     "pattern": "Dashboard",
                     "name": "Dashboard",
                     "target": "Dashboard"
+                },
+                {
+                    "pattern": "RequestForm",
+                    "name": "RequestForm",
+                    "target": "RequestForm"
+                },
+                {
+                    "pattern": "RequestFormStatus",
+                    "name": "RequestFormStatus",
+                    "target": "RequestFormStatus"
                 },
                 {
                     "pattern": "ZEMP_DEPENDENT",
@@ -2455,10 +2493,34 @@
                     "viewType": "XML",
                     "transition": "slide"
                 },
+                "Analytics": {
+                    "id": "Analytics",
+                    "path": "claima.view",
+                    "name": "Analytics",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
                 "Dashboard": {
                     "id": "Dashboard",
                     "path": "claima.view",
                     "name": "Dashboard",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
+                "RequestForm": {
+                    "id": "RequestForm",
+                    "path": "claima.view",
+                    "name": "RequestForm",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
+                "RequestFormStatus": {
+                    "id": "RequestFormStatus",
+                    "path": "claima.view",
+                    "name": "PARequestStatus",
                     "type": "View",
                     "viewType": "XML",
                     "transition": "slide"

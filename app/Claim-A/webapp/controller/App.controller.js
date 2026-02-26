@@ -12,7 +12,10 @@ sap.ui.define([
 	"sap/m/library",
 	"sap/tnt/library",
 	"sap/ui/model/Filter",
-	"sap/ui/model/FilterOperator"
+	"sap/ui/model/FilterOperator",
+	"sap/ui/model/Sorter",
+	"sap/ui/export/Spreadsheet",
+
 ], function (
 	Device,
 	Controller,
@@ -26,9 +29,13 @@ sap.ui.define([
 	library,
 	tntLibrary,
 	Filter,
-	FilterOperator
+	FilterOperator,
+	Sorter,
+	Spreadsheet
 ) {
 	"use strict";
+
+
 
 
 	return Controller.extend("claima.controller.App", {
@@ -52,6 +59,16 @@ sap.ui.define([
 			oRouter.navTo("Dashboard");
 
 			this._loadCurrentUser();
+
+			const oModel = this.getOwnerComponent().getModel();
+			const ctx = oModel.bindContext("/getUserType()");
+			ctx.requestObject().then(oData => {
+				this._userType = oData.userType || "UNKNOWN";
+			}).catch(err => {
+				console.error("getUserType failed:", err);
+				this._userType = "UNKNOWN";
+			});
+
 		},
 
 		onCollapseExpandPress: function () {
@@ -72,18 +89,44 @@ sap.ui.define([
 			var oRouter = this.getOwnerComponent().getRouter();
 			sap.ui.core.routing.HashChanger.getInstance().replaceHash("");
 
+			//Start EY_ATHIRAH
+			const key = oEvent.getSource().data("key");
+
+			// Make sure userType is available
+			const type = this._userType; // << read what we stored earlier
+			if (!type) {
+				sap.m.MessageToast.show("Please wait… loading your access.");
+				return;
+			}
+			//End EY_ATHIRAH
+
 			switch (oKey) {
 				case "sidenav_claimsubmission":
 					this.onNav_ClaimSubmission();
 					break;
-				// Start added by Jefry 15-01-2026
 				case "createrequest":
 					this.onClickMyRequest();
 					break;
-				// End added by Jefry 15-01-2026
-				case "config":
-					oRouter.navTo("Configuration");
+				case "myrequest":
+					this._getPARHeaderList();
+					var oRouter = this.getOwnerComponent().getRouter();
+					oRouter.navTo("RequestFormStatus");
 					break;
+				case "config":
+					//Start EY_ATHIRAH
+					if (type === "JKEW Admin" || type === "DTD Admin") {
+						oRouter.navTo("Configuration");
+					} else {
+						var message = this._getTexti18n("msg_unauthorized_config");
+						sap.m.MessageBox.error(message);
+					}
+					//End EY_ATHIRAH
+					break;
+				// Start Aiman Salim 10/02/2026 - Added for analytics
+				case "analytics":
+					oRouter.navTo("Analytics")
+					break;
+				// End 	 Aiman Salim 10/02/2026 - Added for analytics
 				case "dashboard":
 					oRouter.navTo("Dashboard");
 					break;
@@ -95,6 +138,15 @@ sap.ui.define([
 					}
 					break;
 			}
+		},
+		// Analytics App
+		onClickAnalytics: async function () {
+			var oPageContainer = this.byId("pageContainer");
+			if (!this.byId("analyticsPage")) {
+				var oPage = new sap.m.Page(this.createId("analyticsPage"), {
+				});
+			}
+			oPageContainer.to(this.byId("analyticsPage"));
 		},
 
 		onMenuButtonPress: function () {
@@ -1137,71 +1189,77 @@ sap.ui.define([
 			return null;
 		},
 		//For MyClaimStatus(myexpensereport) on item click. This will fetch data based on row selected and push to detail page
-
+		_getClaimHeaderKeyPath: function (sClaimId, bIsNumericKey = false) {
+			if (!sClaimId) throw new Error("Missing Claim ID");
+			return bIsNumericKey
+				? `/ZCLAIM_HEADER(${Number(sClaimId)})`
+				: `/ZCLAIM_HEADER('${encodeURIComponent(String(sClaimId))}')`;
+		},
 		onRowPress: async function (oEvent) {
 			const oItem = oEvent.getParameter("listItem");
-			const oCtx = oItem && oItem.getBindingContext("employee");
+			const oListCtx = oItem && oItem.getBindingContext("employee"); // <-- list uses model 'employee'
+			if (!oListCtx) { sap.m.MessageToast.show("No context found."); return; }
 
-			if (!oCtx) {
-				sap.m.MessageToast.show("No context found on the selected row.");
-				return;
-			}
-
-			// optional: clear the selection (nice UX)
+			// Optional: clear selection
 			const oSrcTable = oEvent.getSource();
-			if (oSrcTable && oSrcTable.removeSelections) {
-				oSrcTable.removeSelections(true);
-			}
+			if (oSrcTable?.removeSelections) oSrcTable.removeSelections(true);
 
-			const oModel = oCtx.getModel();        // OData V4 model "employee"
+			const oModel = this.getView().getModel("employee"); // OData V4 model
 			const oPage = this.byId("expensereport");
 
 			try {
 				oPage.setBusy(true);
 
-				// 2) Full header (gets anything not in $select)
-				const oHeader = await oCtx.requestObject();
-				const sClaimId = String(oHeader.CLAIM_ID || "").trim();
+				// Read the minimal row (has CLAIM_ID because list $select includes it)
+				const oRow = await oListCtx.requestObject();
+				const sClaimId = String(oRow.CLAIM_ID || "").trim();
+				if (!sClaimId) { sap.m.MessageToast.show("Selected row has no CLAIM_ID."); return; }
 
-				if (!sClaimId) {
-					sap.m.MessageToast.show("Selected row does not have a valid CLAIM_ID.");
-					return;
-				}
+				// Build key path and refetch header with the exact fields you need + expand items
+				const sKeyPath = this._getClaimHeaderKeyPath(sClaimId /*, false if string key*/);
+				const oCtxHeader = oModel.bindContext(sKeyPath, null, {
+					$select: `CLAIM_ID,PURPOSE,LOCATION,STATUS_ID,TOTAL_CLAIM_AMOUNT,COST_CENTER,ALTERNATE_COST_CENTER,EVENT_START_DATE,EVENT_END_DATE,TRIP_START_DATE,TRIP_END_DATE,CASH_ADVANCE_AMOUNT,COMMENT`,
+					$expand: {
+						ZCLAIM_ITEM: {
+							$select: `TRIP_START_DATE,RECEIPT_NUMBER,CLAIM_TYPE_ITEM_ID,AMOUNT,CLAIM_CATEGORY`
+						}
+					}
+				}).getBoundContext();
 
-				// 3) Map header → "current" (report.fragment)
+				const oHeaderFull = await oCtxHeader.requestObject();
+
+				// Map header -> "current" (for your header fragment)
 				let oCurrent = this.getView().getModel("current");
 				if (!oCurrent) {
 					oCurrent = new sap.ui.model.json.JSONModel();
 					this.getView().setModel(oCurrent, "current");
 				}
-				oCurrent.setData(this._mapHeaderToCurrent(oHeader));
+				oCurrent.setData(this._mapHeaderToCurrent(oHeaderFull));
 
-				// 4) Fetch items → "items" model (expensetype.fragment)
-				const oItemsBinding = oModel.bindList(
-					"/ZCLAIM_ITEM",
-      /* oContext  */ undefined,
-      /* aSorters  */[],
-      /* aFilters  */[new Filter("CLAIM_ID", FilterOperator.EQ, sClaimId)],
-      /* mParams   */ {
-						$select: "CLAIM_ID,START_DATE,CLAIM_TYPE_ITEM,CLAIM_ITEM_ID,AMOUNT,CURRENCY,STAFF_CATEGORY"
-					}
-				);
-
-				const aItemCtxs = await oItemsBinding.requestContexts(0, Infinity);
-				const aItems = await Promise.all(aItemCtxs.map(c => c.requestObject()));
+				// Map items (oHeaderFull.ZCLAIM_ITEM) -> "items" model (for expensetype.fragment)
+				const aItems = (oHeaderFull.ZCLAIM_ITEM || []).map(x => ({
+					// Your fragment expects these exact names:
+					START_DATE: x.TRIP_START_DATE || null,
+					RECEIPT_NO: x.RECEIPT_NUMBER || "",
+					CLAIM_TYPE_ITEM: x.CLAIM_TYPE_ITEM_DESC || x.CLAIM_TYPE_ITEM || x.CLAIM_TYPE_ITEM_ID || "",
+					CLAIM_ITEM_ID: x.CLAIM_TYPE_ITEM_ID || "",
+					AMOUNT: Number(x.AMOUNT || 0),
+					CURRENCY: x.CURRENCY || "MYR",
+					STAFF_CATEGORY: x.CLAIM_CATEGORY || ""
+				}));
 
 				let oItemsModel = this.getView().getModel("items");
 				if (!oItemsModel) {
 					oItemsModel = new sap.ui.model.json.JSONModel({ results: [] });
 					this.getView().setModel(oItemsModel, "items");
 				}
-				oItemsModel.setData({ results: aItems || [] });
+				oItemsModel.setData({ results: aItems });
 
-				// 5) Navigate
+				// Navigate to detail page
 				const oPageContainer = this.byId("pageContainer");
 				oPageContainer.to(oPage);
 
-				// Show expensetype first (your current UX)
+				// Show expensetype first (your UX)
 				this.getView().byId("expensetypescr").setVisible(true);
 				this.getView().byId("claimscr").setVisible(false);
 				this.createreportButtons("expensetypescr");
@@ -1215,157 +1273,37 @@ sap.ui.define([
 		},
 
 		_mapHeaderToCurrent: function (row) {
-			// Helper: convert to yyyy-MM-dd (adjust to your locale if needed)
 			const fmt = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" });
 			const toYMD = (d) => {
+				if (!d) return "";
 				if (d instanceof Date) return fmt.format(d);
-				// handle ISO string "2026-01-26" or similar -> keep
 				if (typeof d === "string") return d;
-				return d || "";
+				return "";
 			};
 
 			return {
 				id: row.CLAIM_ID,
-				location: row.CLAIM_MAIN_CAT_ID || "",
-				costcenter: row.CLAIM_MAIN_CAT_ID || "",
-				altcc: row.ALTERNATE_COST_CENTRE || "",
-				total: row.TOTAL,          // you use TOTAL in the table
-				cashadv: row.CLAIM_ID || "",
-				finalamt: row.CLAIM_ID || "",
+				location: row.LOCATION || "",
+				costcenter: row.COST_CENTER || "",
+				altcc: row.ALTERNATE_COST_CENTER || row.ALTERNATE_COST_CENTRE || "",
+				total: row.TOTAL_CLAIM_AMOUNT ?? row.TOTAL ?? "",
+				cashadv: row.CASH_ADVANCE_AMOUNT ?? row.CASH_ADVANCE ?? "",
+				finalamt: row.FINAL_AMOUNT_RECEIVE ?? "",
+
 				report: {
 					id: row.CLAIM_ID,
-					purpose: row.CATEGORY || "",
-					startdate: toYMD(row.CLAIM_DATE),
-					enddate: toYMD(row.CLAIM_DATE),
+					purpose: row.PURPOSE || row.CATEGORY || "",
+					receipt_no: row.RECEIPT_NUMBER || "",
+					startdate: toYMD(row.TRIP_START_DATE),
+					enddate: toYMD(row.TRIP_END_DATE),
 					location: row.LOCATION || "",
-					category: row.CATEGORY || "",
-					comment: row.CLAIM_ID || "",
-					amt_approved: row.TOTAL || ""
+					comment: row.COMMENT || "",
+					amt_approved: row.AMOUNT || "",
+					claim_type_item: row.CLAIM_TYPE_ITEM_ID || ""
 				}
 			};
 		},
 
-		//For My Pre-Approval (MyRequestForm) view - Upon click, it will move to MyRequestForm detail page. 
-		onRowPressForm: async function (oEvent) {
-			// row context from named model "employee"
-			const oItem = oEvent.getParameter("listItem");
-			const oCtx = oItem && oItem.getBindingContext("employee");
-
-			if (!oCtx) {
-				sap.m.MessageToast.show("No context found on the selected row.");
-				return;
-			}
-
-			try {
-				this.getView().setBusy(true);
-
-				// Fetch the full entity (remaining props will be resolved as needed)
-				const fullEntity = await oCtx.requestObject();
-
-				// Map backend entity → MyRequestForm view model schema
-				const mapped = this._mapHeaderToCurrentRequest(fullEntity);
-
-				// Set/refresh the "request" JSON model (same pattern as onRowPress)
-				let oRequest = this.getView().getModel("request");
-				if (!oRequest) {
-					oRequest = new sap.ui.model.json.JSONModel();
-					this.getView().setModel(oRequest, "request");
-				}
-				oRequest.setData(mapped);
-
-
-				const oModel = this.getOwnerComponent().getModel("request")
-					|| this.getView().getModel("request");
-				if (oModel) {
-					oModel.setProperty("/view", "list");   // your custom flag
-				}
-
-				const sReqId = String(fullEntity.REQUEST_ID || "").trim();
-
-				// Navigate to detail page that consumes the "request" model
-				const oPageContainer = this.byId("pageContainer");
-				const oDetailPage = this.byId("new_request");
-				if (!oDetailPage) {
-					sap.m.MessageToast.show("Detail page 'new_request' not found.");
-					return;
-				}
-				oPageContainer.to(oDetailPage);
-
-				this._callRequestFormLoad(oDetailPage, sReqId);
-
-			} catch (e) {
-				jQuery.sap.log.error("onRowPressForm failed: " + e);
-				sap.m.MessageToast.show("Failed to load request data.");
-			} finally {
-				this.getView().setBusy(false);
-			}
-		},
-
-		_mapHeaderToCurrentRequest: function (row) {
-			// Helper: format date (if row.CLAIM_DATE is Date or /Date(...)/)
-			const fmt = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "dd MMM yyyy" });
-			const toYMD = (d) => {
-				try {
-					if (d instanceof Date) {
-						return fmt.format(d);
-					}
-					if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
-						return fmt.format(new Date(d));
-					}
-				} catch (e) {/* ignore */ }
-				return d || "";
-			};
-
-			return {
-				purpose: row.OBJECTIVE_PURPOSE || "",
-				reqid: row.REQUEST_ID || "",
-				tripstartdate: toYMD(row.TRIP_START_DATE),
-				tripenddate: toYMD(row.TRIP_END_DATE),
-				eventstartdate: toYMD(row.EVENT_START_DATE),
-				eventenddate: toYMD(row.EVENT_END_DATE),
-				costcenter: row.COST_CENTER || "",
-				altcostcenter: row.ALTERNATE_COST_CENTRE || "",
-				location: row.LOCATION || "",
-				detail: row.REMARK || "",
-				grptype: row.REQUEST_GROUP_ID || "",
-				transport: row.TYPE_OF_TRANSPORTATION || "",
-				reqstatus: row.STATUS || "",
-				reqtype: row.REQUEST_TYPE_ID || "",
-				comment: row.REMARK || "",
-				// Static totals shown as "0.00" in fragment; keep if you plan to compute later
-				saved: "",
-				// If you later bind these, set proper numbers/strings:
-				// caa / amt / total_amt not present in fragment's model; they are static "0.00" texts
-				// You can add them when needed:
-				// cashadvamount : "0.00",
-				// amount        : "0.00",
-				// totalamount   : "0.00"
-			};
-		},
-
-		/**
-		 * Call RequestForm.loadItemsForRequest by scanning descendants of the page.
-		 * No changes needed in RequestForm.controller.
-		 */
-		_callRequestFormLoad: function (oDetailPage, sReqId) {
-			// Defer to allow NavContainer to render the page content
-			setTimeout(function () {
-				// find the first descendant that exposes getController() (typically the inner XMLView)
-				var aViews = (typeof oDetailPage.findAggregatedObjects === "function")
-					? oDetailPage.findAggregatedObjects(true, function (c) {
-						return typeof c.getController === "function";
-					})
-					: [];
-
-				var oCtrl = (aViews && aViews.length) ? aViews[0].getController() : null;
-
-				if (oCtrl && typeof oCtrl.loadItemsForRequest === "function") {
-					oCtrl.loadItemsForRequest(sReqId);
-				} else {
-					jQuery.sap.log.warning("RequestForm controller API 'loadItemsForRequest' not found.");
-				}
-			}, 0);
-		},
 		// End added by Aiman Salim 22/1/2026 - 05/02/2026
 
 		/* =========================================================
@@ -1505,11 +1443,13 @@ sap.ui.define([
 					reqstatus: "",
 					costcenter: "",
 					cashadvamt: 0,
-					reqamt: 0
+					reqamt: 0,
+					claimtype: ""
 				}
 			});
 
 			this._loadReqTypeSelectionData();
+			this._loadClaimTypeSelectionData();
 
 			if (!this.oDialogFragment) {
 				this.oDialogFragment = await Fragment.load({
@@ -1540,7 +1480,18 @@ sap.ui.define([
 				const aData = aContexts.map(oCtx => oCtx.getObject());
 				const oTypeModel = new JSONModel({ types: aData });
 				this.getView().setModel(oTypeModel, "req_type_list");
-			}).catch(err => console.error("Type Load Failed", err));
+			}).catch(err => console.error("RequestType Load Failed", err));
+		},
+
+		_loadClaimTypeSelectionData: function () {
+			const oMainModel = this.getOwnerComponent().getModel(); // OData V4 Model
+			const oListBinding = oMainModel.bindList("/ZCLAIM_TYPE");
+
+			oListBinding.requestContexts().then((aContexts) => {
+				const aData = aContexts.map(oCtx => oCtx.getObject());
+				const oTypeModel = new JSONModel({ types: aData });
+				this.getView().setModel(oTypeModel, "claim_type_list");
+			}).catch(err => console.error("ClaimType Load Failed", err));
 		},
 
 		onClickCreateRequest: function () {
@@ -1554,13 +1505,15 @@ sap.ui.define([
 				'RT0001': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'eventstartdate', 'eventenddate', 'grptype', 'location', 'transport', 'comment'],
 				'RT0002': ['purpose', 'reqtype', 'grptype', 'comment'],
 				'RT0003': ['purpose', 'reqtype', 'eventstartdate', 'eventenddate', 'grptype', 'location', 'comment', 'eventdetail1', 'eventdetail2', 'eventdetail3', 'eventdetail4'],
-				'RT0004': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'grptype', 'comment']
+				'RT0004': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'grptype', 'comment'],
+				'RT0005': ['purpose', 'reqtype'],
+				'RT0006': ['purpose', 'reqtype']
 			};
 
 			const fieldsToCheck = mandatoryFields[oData.reqtype] || ['purpose'];
 			const isMissing = fieldsToCheck.some(field => !oData[field] || oData[field] === "");
 
-			if (isMissing || (oData.reqtype === 'RT0000')) {
+			if (isMissing) {
 				okcode = false;
 				message = 'Please enter all mandatory details';
 			} else if (!oData.doc1) {
@@ -1586,10 +1539,8 @@ sap.ui.define([
 				const sUserId = sap.ushell.Container.getUser().getId();
 				const oListBinding = oMainModel.bindList("/ZREQUEST_HEADER");
 
-				// FIX 1: Use 'await' to wait for the employee details
 				const emp_data = await this._getEmpIdDetail(sUserId);
 
-				// Safety check in case employee data isn't found
 				const sCostCenter = emp_data ? emp_data.cc : "";
 
 				const oPayload = {
@@ -1599,19 +1550,20 @@ sap.ui.define([
 					OBJECTIVE_PURPOSE: oInputData.purpose,
 					REMARK: oInputData.comment,
 					IND_OR_GROUP: oInputData.grptype,
-					ALTERNATE_COST_CENTRE: oInputData.altcostcenter,
+					ALTERNATE_COST_CENTER: oInputData.altcostcenter,
 					LOCATION: oInputData.location,
 					TYPE_OF_TRANSPORTATION: oInputData.transport,
 					ATTACHMENT1: oInputData.doc1,
 					ATTACHMENT2: oInputData.doc2,
 					CASH_ADVANCE: parseFloat(oInputData.cashadvamt).toFixed(2),
-					COST_CENTER: sCostCenter, // Now correctly populated
+					COST_CENTER: sCostCenter, 
 					EVENT_START_DATE: oInputData.eventstartdate,
 					EVENT_END_DATE: oInputData.eventenddate,
 					TRIP_START_DATE: oInputData.tripstartdate,
 					TRIP_END_DATE: oInputData.tripenddate,
-					REQUEST_AMOUNT: String(oInputData.reqamt),
-					STATUS: "DRAFT"
+					PREAPPROVAL_AMOUNT: String(oInputData.reqamt),
+					STATUS: "DRAFT",
+					CLAIM_TYPE_ID: oInputData.claimtype
 				};
 
 				const oContext = oListBinding.create(oPayload);
@@ -1626,7 +1578,8 @@ sap.ui.define([
 					oReqModel.setProperty("/req_header/costcenter", sCostCenter);
 					this._getItemList(oResult.reqNo);
 
-					this.byId("pageContainer").to(this.getView().byId('new_request'));
+					var oRouter = this.getOwnerComponent().getRouter();
+					oRouter.navTo("RequestForm");
 				}).catch(err => {
 					sap.m.MessageToast.show("Creation failed: " + err.message);
 				});
@@ -1697,31 +1650,120 @@ sap.ui.define([
 			}
 		},
 
-		_getItemList: async function (req_id) {
-			const oMainModel = this.getOwnerComponent().getModel();
-			const oRequestModel = this.getOwnerComponent().getModel('request');
+		async _getItemList(req_id) {
+			const oReq = this._getReqModel();
+			if (!req_id) {
+				oReq.setProperty("/req_item_rows", []);
+				oReq.setProperty("/list_count", 0);
+				return [];
+			}
 
-			const oListBinding = oMainModel.bindList("/ZREQUEST_ITEM", null, [
-				new Sorter("REQUEST_SUB_ID", false)
-			], [
-				new Filter("REQUEST_ID", FilterOperator.EQ, req_id)
-			]);
+			const sReq = String(req_id);
+			const isGuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(sReq);
+			const isNumeric = /^\d+$/.test(sReq);
+			let sLiteral;
+			if (isNumeric) sLiteral = sReq;
+			else if (isGuid) sLiteral = `guid'${sReq}'`;
+			else sLiteral = `'${sReq.replace(/'/g, "''")}'`;
+
+			const base       = this._entityUrl("ZREQUEST_ITEM");
+			const filterExpr = `REQUEST_ID eq ${sLiteral}`;
+			const orderby    = "REQUEST_SUB_ID asc";
+			const query = [
+				`$filter=${encodeURIComponent(filterExpr)}`,
+				`$orderby=${encodeURIComponent(orderby)}`,
+				`$count=true`,
+				`$format=json`
+			].join("&"); // IMPORTANT: use '&' (not &amp;)
+
+			const url = `${base}?${query}`;
 
 			try {
-				const aContexts = await oListBinding.requestContexts();
-				const aItems = aContexts.map(oCtx => {
-					const obj = oCtx.getObject();
-					// Type conversion as per original logic
-					if (obj.EST_AMOUNT) obj.EST_AMOUNT = parseFloat(obj.EST_AMOUNT);
-					if (obj.EST_NO_PARTICIPANT) obj.EST_NO_PARTICIPANT = parseInt(obj.EST_NO_PARTICIPANT);
-					return obj;
+				const res = await fetch(url, { headers: { "Accept": "application/json" } });
+				if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+				const data = await res.json();
+				const a = Array.isArray(data?.value) ? data.value : [];
+
+				// Fix numeric types if backend returns strings
+				a.forEach((it) => {
+					if (it.EST_AMOUNT != null) it.EST_AMOUNT = parseFloat(it.EST_AMOUNT);
+					if (it.EST_NO_PARTICIPANT != null) it.EST_NO_PARTICIPANT = parseInt(it.EST_NO_PARTICIPANT, 10);
 				});
 
-				oRequestModel.setProperty("/req_item_rows", aItems);
-				oRequestModel.setProperty('/list_count', aItems.length);
+				const cashadv_amt = a.reduce((sum, it) => {
+					return it.CASH_ADVANCE === "YES" ? sum + (parseFloat(it.EST_AMOUNT) || 0) : sum;
+				}, 0);
+
+				const req_amt = a.reduce((sum, it) => {
+					return it.CASH_ADVANCE === null ? sum + (parseFloat(it.EST_AMOUNT) || 0) : sum;
+				}, 0);
+				
+				oReq.setProperty("/req_header/cashadvamt", cashadv_amt);
+				oReq.setProperty("/req_header/reqamt", req_amt);
+
+				oReq.setProperty("/req_item_rows", a);
+				oReq.setProperty("/list_count", a.length);
+				return a;
 			} catch (err) {
-				console.error("Fetch Items failed:", err);
-				oRequestModel.setProperty("/req_item_rows", []);
+				// eslint-disable-next-line no-console
+				console.error("Fetch failed:", err, { url });
+				oReq.setProperty("/req_item_rows", []);
+				oReq.setProperty("/list_count", 0);
+				return [];
+			}
+		},
+
+		_serviceRoot(sDataSource = "mainService") {
+			const oManifest = this.getOwnerComponent().getManifestEntry("sap.app");
+			const sUri = oManifest?.dataSources?.[sDataSource]?.uri;
+			
+			let sPath = sUri;
+			if (!sPath) {
+				sPath = (sDataSource === "mainService") 
+					? "/odata/v4/EmployeeSrv/" 
+					: "/odata/v4/eclaim-view-srv/";
+			}
+
+			return sPath.replace(/\/$/, "");
+		},
+
+		_entityUrl(sEntitySet, sDataSource = "mainService") {
+			const sBase = this._serviceRoot(sDataSource);
+			return new URL(`${sBase}/${sEntitySet}`, window.location.origin).toString();
+		},
+
+		async _getPARHeaderList() {
+			const oReq = this.getOwnerComponent().getModel('request_status');
+
+			const base       = this._entityUrl("ZREQUEST_HEADER");
+			const orderby    = "REQUEST_ID asc";
+			const query = [
+				`$orderby=${encodeURIComponent(orderby)}`,
+				`$count=true`,
+				`$format=json`
+			].join("&"); // IMPORTANT: use '&' (not &amp;)
+
+			const url = `${base}?${query}`;
+
+			try {
+				const res = await fetch(url, { headers: { "Accept": "application/json" } });
+				if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+				const data = await res.json();
+				const a = Array.isArray(data?.value) ? data.value : [];
+
+                a.forEach((it) => {
+					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = parseFloat(0);
+				});
+
+				oReq.setProperty("/req_header_list", a);
+				oReq.setProperty("/req_header_count", a.length);
+				return a;
+			} catch (err) {
+				// eslint-disable-next-line no-console
+				console.error("Fetch failed:", err, { url });
+				oReq.setProperty("/req_header_list", []);
+				oReq.setProperty("/req_header_count", 0);
+				return [];
 			}
 		},
 
@@ -1770,13 +1812,14 @@ sap.ui.define([
 				return this.getView().getModel("i18n").getResourceBundle().getText(i18nKey);
 			}
 		},
+
 		_loadCurrentUser: function () {
 			var that = this;
 
 			$.ajax({
 				type: "GET",
 				url: "/user-api/currentUser",
-				success: async function(resultData) {
+				success: async function (resultData) {
 					// Extract email safely with fallbacks (covers common IdP shapes)
 					var email =
 						resultData.email ||
@@ -1801,7 +1844,168 @@ sap.ui.define([
 				}
 			});
 
-		}
+		},
+
+		//Start Add - Aiman Salim - 26/02/2026 <--- Add for excel functionality for Claim Detailed View --->
+		_sanitizeFileName: function (s) {
+			return (s || "")
+				.replace(/[\\/:*?"<>|]/g, "_")
+				.replace(/\s+/g, " ")
+				.trim()
+				.substring(0, 80);
+		},
+		_getTodayString: function () {
+			const d = new Date();
+			const y = d.getFullYear();
+			const m = String(d.getMonth() + 1).padStart(2, "0");
+			const day = String(d.getDate()).padStart(2, "0");
+			return `${y}-${m}-${day}`;
+		},
+		_getExcelFileName: function () {
+			const current = this.getView().getModel("current")?.getData() || {};
+			const id = current?.id || current?.report?.id || "Claim";
+			return this._sanitizeFileName(`Claim_${id}_${this._getTodayString()}.xlsx`);
+		},
+
+
+		_toDate: function (val) {
+			// If already a Date, return as-is
+			if (val instanceof Date) { return val; }
+			if (!val) { return null; }
+			// If it's a string like 'YYYY-MM-DD', convert safely (avoid timezone shifts)
+			if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+				const [y, m, d] = val.split("-").map(Number);
+				// Create a UTC date to avoid local TZ offset skew in Excel
+				return new Date(Date.UTC(y, m - 1, d, 0, 0, 0));
+			}
+			// Try to new Date() anything else
+			const dt = new Date(val);
+			return isNaN(dt.getTime()) ? null : dt;
+		},
+
+
+		
+onDownloadExcelReport: async function () {
+      const oView = this.getView();
+
+      try {
+        oView.setBusy(true);
+
+        // 1) Read current header & items models
+        const current = oView.getModel("current")?.getData();
+        const itemsDS = oView.getModel("items")?.getProperty("/results") || [];
+
+        if (!current) {
+          sap.m.MessageToast.show("No header data to export.");
+          return;
+        }
+
+        // 2) Build one flattened header row
+        const headerRow = {
+          "Claim ID": current.id || current.report?.id || "",
+          "Purpose": current.report?.purpose || "",
+          "Trip Start Date": this._toDate(current.report?.startdate),
+          "Trip End Date": this._toDate(current.report?.enddate),
+          "Location": current.report?.location || current.location || "",
+          "Status/Comment": current.report?.comment || "",
+          "Cost Center": current.costcenter || "",
+          "Alternate Cost Center": current.altcc || "",
+          "Total Amount": current.total ?? "",
+          "Approved Amount": current.report?.amt_approved ?? "",
+          "Cash Advance": current.cashadv ?? "",
+          "Final Amount": current.finalamt ?? ""
+        };
+
+        // 3) Define columns for Header sheet
+        const headerColumns = [
+          { label: "Claim ID",            property: "Claim ID",           width: 18 },
+          { label: "Purpose",             property: "Purpose",            width: 30 },
+          { label: "Trip Start Date",     property: "Trip Start Date",    type: "date",  width: 18, format: "yyyy-mm-dd" },
+          { label: "Trip End Date",       property: "Trip End Date",      type: "date",  width: 18, format: "yyyy-mm-dd" },
+          { label: "Location",            property: "Location",           width: 25 },
+          { label: "Status/Comment",      property: "Status/Comment",     width: 28 },
+          { label: "Cost Center",         property: "Cost Center",        width: 18 },
+          { label: "Alternate Cost Center", property: "Alternate Cost Center", width: 22 },
+          { label: "Total Amount",        property: "Total Amount",       type: "number", scale: 2, width: 18 },
+          { label: "Approved Amount",     property: "Approved Amount",    type: "number", scale: 2, width: 18 },
+          { label: "Cash Advance",        property: "Cash Advance",       type: "number", scale: 2, width: 18 },
+          { label: "Final Amount",        property: "Final Amount",       type: "number", scale: 2, width: 18 }
+        ];
+
+        // 4) Define columns for Items sheet
+        // If START_DATE is a string, we set inputFormat; if it's a Date, you can drop inputFormat.
+        const itemsColumns = [
+          { label: "Date",       property: "START_DATE", type: "date", width: 18, inputFormat: "yyyy-MM-dd", format: "yyyy-mm-dd" },
+          { label: "Receipt",    property: "RECEIPT_NO", width: 20 },
+          { label: "Claim Type", property: "CLAIM_TYPE_ITEM", width: 25 },
+          { label: "Claim Item", property: "CLAIM_ITEM_ID", width: 18 },
+          { label: "Amount",     property: "AMOUNT", type: "number", scale: 2, width: 14 },
+          { label: "Category",   property: "STAFF_CATEGORY", width: 20 }
+        ];
+
+        // Optionally normalize item dates to Date objects to avoid inputFormat handling:
+        // itemsDS.forEach(it => { it.START_DATE = this._toDate(it.START_DATE); });
+
+        // 5) Primary path: multi-sheet workbook
+        //    (If it throws in older UI5, we catch and run the fallback below.)
+        try {
+          const xlsx = new Spreadsheet({
+            workbook: {
+              sheets: [
+                {
+                  context: { sheetName: "Header" },
+                  columns: headerColumns,
+                  dataSource: [headerRow]
+                },
+                {
+                  context: { sheetName: "Items" },
+                  columns: itemsColumns,
+                  dataSource: itemsDS
+                }
+              ]
+            },
+            fileName: this._getExcelFileName(),
+            worker: true
+          });
+
+          await xlsx.build();
+          xlsx.destroy();
+        } catch (multiSheetErr) {
+          // 6) Fallback: Export TWO files if multi-sheet is not supported
+          const base = this._getExcelFileName().replace(/\.xlsx$/i, "");
+
+          // Header.xlsx
+          const xHeader = new Spreadsheet({
+            workbook: { columns: headerColumns, context: { sheetName: "Header" } },
+            dataSource: [headerRow],
+            fileName: `${base}_Header.xlsx`,
+            worker: true
+          });
+          await xHeader.build();
+          xHeader.destroy();
+
+          // Items.xlsx
+          const xItems = new Spreadsheet({
+            workbook: { columns: itemsColumns, context: { sheetName: "Items" } },
+            dataSource: itemsDS,
+            fileName: `${base}_Items.xlsx`,
+            worker: true
+          });
+          await xItems.build();
+          xItems.destroy();
+
+          // Optional toast to indicate fallback
+          sap.m.MessageToast.show("Your UI5 version does not support multi‑sheet. Exported two files instead.");
+          jQuery.sap.log.warning("Multi-sheet export not supported in this UI5 version. Exported two files.", multiSheetErr);
+        }
+
+      } catch (e) {
+        jQuery.sap.log.error("Excel export failed.", e);
+        sap.m.MessageToast.show("Excel export failed.");
+      } finally {
+        oView.setBusy(false);
+      }
+    }
 
 	});
 });

@@ -52,14 +52,14 @@
                         expanded="false"
                     />
                     <tnt:NavigationListItem
-                        key="myreport"
+                        key="myrequest"
                         text="{i18n>nav_preappstatus}"
                         icon="sap-icon://activity-items"
                         enabled="true"
                         expanded="false"
                     />
                     <tnt:NavigationListItem
-                        key="myrequest"
+                        key="myreport"
                         text="{i18n>nav_claimstatus}"
                         icon="sap-icon://document-text"
                         enabled="true"
@@ -117,6 +117,7 @@
                         id="expensereport"
                         showHeader="false"
                         enableScrolling="true"
+                        
                     >
                         <content>
                             <VBox id="main" class="fullheight" fitContainer="true" >
@@ -199,33 +200,33 @@
                         height="100%"
                         class="sapUiContentPadding"
                     />
-                    <ScrollContainer
-                        id="analytics"
-                        height="100%"
-                        class="sapUiContentPadding"
+                    <!-- ================= Configuration Page ================= -->
+<!--                     <Page
+                        id="configurationPage"
+                        showHeader="false"
                     >
-                        <Text text="test text" />
+                        <content>
+                            <mvc:XMLView
+                                id="configuration_view"
+                                viewName="claima.view.Configuration"
+                            />
+                        </content>
+                    </Page> -->
+                    <!-- ================= Analytics Page ================= -->
+<!-- 
+                    <Page
+                        id="analyticsPage"
+                        showHeader="false"
+                    >
+                        <content>
+                            <mvc:XMLView
+                                id="analytics_view"
+                                viewName="claima.view.Analytics"
+                            />
+                        </content>
+                    </Page> -->
 
-                                                            <!-- ZCLAIM_PURPOSE -->
-                                    <f:Card
-                                        class="sapUiSmallMargin"
-                                        width="15rem"
-                                        press="onOpenAnalytics1"
-                                    >
-                                       <f:customData>
-                                            <core:CustomData
-                                                key="id"
-                                                value="ZANALTICS_1"
-                                            />
-                                        </f:customData>
-                                        <!--file in i18n folder is used to change the title-->
-                                        <f:header>
-                                            <cards:Header
-                                                title="{i18n>conf1}"
-                                            />
-                                        </f:header>
-                                    </f:Card>
-                    </ScrollContainer>
+                    
                     <NavContainer
                         id="new_request"
                         class="sapUiContentPadding"
@@ -242,14 +243,14 @@
                 <Page
                     id="myrequest"
                     showHeader="false"
-                    class="sapUiNoContentPadding"
+                    class="sapUiContentPadding"
                 >
                     <content>
-                        <core:Fragment
-                            fragmentName="claima.fragment.myexpensereport"
-                            type="XML"
+                        <mvc:XMLView
+                            id="request_form_status_view"
+                            viewName="claima.view.PARequestStatus"
                         />
-                    </content>
+                    </content> 
                 </Page>
                 <!-- === My Claim Status Page (added) === -->
                 <Page
@@ -259,7 +260,7 @@
                 >
                     <content>
                         <core:Fragment
-                            fragmentName="claima.fragment.myrequestform"
+                            fragmentName="claima.fragment.myexpensereport"
                             type="XML"
                         />
                     </content>

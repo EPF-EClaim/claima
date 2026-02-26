@@ -8,14 +8,17 @@
     "@sap-cloud-sdk/http-client": "^4",
     "@sap-cloud-sdk/resilience": "^4",
     "@sap/xssec": "^4",
-    "express": "^4"
+    "express": "^4",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^2",
     "@sap/cds-dk": "^9",
+    "@ui5/cli": "^4.0.45",
     "cds-plugin-ui5": "^0.13.0",
     "mbt": "^1.2.29",
-    "rimraf": "^5.0.5"
+    "rimraf": "^5.0.5",
+    "ui5-tooling-modules": "^3.34.6"
   },
   "scripts": {
     "start": "cds-serve",
@@ -29,7 +32,7 @@
     "server": {
       "index": true,
       "body_parser": {
-        "limit": "10mb" 
+        "limit": "10mb"
       }
     },
     "hana": {
@@ -43,7 +46,7 @@
       "connectivity": true,
       "[hybrid]": {
         "db": "hana-cloud",
-        "auth": "xsuaa"
+        "auth": "mocked"
       },
       "app-front": true,
       "html5-repo": true,
