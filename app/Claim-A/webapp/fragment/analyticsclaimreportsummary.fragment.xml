@@ -85,8 +85,8 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>employee_id}" />
                                 <table:template>
-                                    <ObjectNumber
-                                        number="{employee_view>EMP_ID}"
+                                    <Text
+                                        text="{employee_view>EMP_ID}"
                                     />
                                 </table:template>
                             </table:Column>
@@ -95,8 +95,8 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>claim_type}" />
                                 <table:template>
-                                    <ObjectIdentifier
-                                        title="{employee_view>CLAIM_TYPE_DESC}"
+                                    <Text
+                                        text="{employee_view>CLAIM_TYPE_DESC}"
                                     />
                                 </table:template>
                             </table:Column>
@@ -105,8 +105,8 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>claim_id}" />
                                 <table:template>
-                                    <ObjectIdentifier
-                                        title="{employee_view>CLAIM_ID}"
+                                    <Text
+                                        text="{employee_view>CLAIM_ID}"
                                     />
                                 </table:template>
                             </table:Column>
@@ -319,6 +319,7 @@
 
                             <!-- total_claim_amt -->
                             <table:Column
+
                                 width="14rem"
                                 hAlign="End"
                             >

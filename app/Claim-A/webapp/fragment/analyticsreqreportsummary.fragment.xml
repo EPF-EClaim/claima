@@ -80,8 +80,8 @@
                             <table:Column width="10rem">
                                 <Label text="{i18n>employee_id}" />
                                 <table:template>
-                                    <ObjectNumber
-                                        number="{employee_view>EMP_ID}"
+                                    <Text
+                                        text="{employee_view>EMP_ID}"
                                     />
                                 </table:template>
                             </table:Column>
