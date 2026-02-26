@@ -1512,7 +1512,8 @@
                                             "name": "CreationDialog",
                                             "creationFields": "REQUEST_TYPE_ID,REQUEST_TYPE_DESC,START_DATE,END_DATE,STATUS"
                                         },
-                                        "enableMassEdit": false
+                                        "enableMassEdit": false,
+                                        "disableCopyToClipboard": true
                                     },
                                     "actions": {
                                         "DataFieldForAction::eclaim_srv.Copy": {
