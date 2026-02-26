@@ -23,6 +23,14 @@
                     "annotations": [],
                     "odataVersion": "4.0"
                 }
+            },
+            "claimService": {
+                "uri": "/odata/v4/eclaim-view-srv/",
+                "type": "OData",
+                "settings": {
+                    "annotations": [],
+                    "odataVersion": "4.0"
+                }
             }
         }
     },
@@ -68,6 +76,17 @@
                     "operationMode": "Server",
                     "autoExpandSelect": true,
                     "earlyRequests": true
+                }
+            },
+            "employee_view": {
+                "dataSource": "claimService",
+                "preload": true,
+                "settings": {
+                    "operationMode": "Server",
+                    "synchronizationMode": "None",
+                    "autoExpandSelect": true,
+                    "earlyRequests": true,
+                    "groupId": "$auto"
                 }
             },
             "": {
@@ -397,6 +416,11 @@
                     "pattern": "Configuration",
                     "name": "Configuration",
                     "target": "Configuration"
+                },
+                {
+                    "pattern": "Analytics",
+                    "name": "Analytics",
+                    "target": "Analytics"
                 },
                 {
                     "pattern": "Dashboard",
@@ -2465,6 +2489,14 @@
                     "id": "Configuration",
                     "path": "claima.view",
                     "name": "Configuration",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
+                "Analytics": {
+                    "id": "Analytics",
+                    "path": "claima.view",
+                    "name": "Analytics",
                     "type": "View",
                     "viewType": "XML",
                     "transition": "slide"

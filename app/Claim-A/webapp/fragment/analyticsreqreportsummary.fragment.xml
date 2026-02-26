@@ -1,0 +1,419 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.f"
+    xmlns:table="sap.ui.table"
+
+>
+    <Page
+        id="analyticsReqReportSumPage"
+        title="{i18n>ana_poptitle}"
+    >
+        <content>
+            <f:DynamicPage id="analyticsReqSumDynPage">
+                <f:title>
+                    <f:DynamicPageTitle>
+                        <f:heading>
+                            <Title
+                                text="{i18n>ana_title3}"
+                                level="H3"
+                            />
+                        </f:heading>
+                    </f:DynamicPageTitle>
+                </f:title>
+                <f:content>
+                    <!-- Request Report Summary (OData V4) -->
+                    <table:Table
+                        id="analyticsreqsumtab"
+                        rows="{employee_view>/ZEMP_REQUEST_REPORT_SUMMARY}"
+                        selectionMode="None"
+                        width="auto"
+                    >
+                        <table:columns>
+                            <!-- Identity / Org -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>employee_name}" />
+                                <table:template>
+                                    <Text text="{employee_view>NAME}" />
+                                </table:template>
+                            </table:Column>
+
+                            <table:Column width="8rem">
+                                <Label text="{i18n>personal_grade}" />
+                                <table:template>
+                                    <Text text="{employee_view>GRADE}" />
+                                </table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>department_id}" />
+                                <table:template>
+                                    <Text text="{employee_view>DEP}" />
+                                </table:template>
+                            </table:Column>
+
+                            <table:Column width="16rem">
+                                <Label text="{i18n>department_name}" />
+                                <table:template>
+                                    <Text
+                                        text="{employee_view>DEPARTMENT_DESC}"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <table:Column width="12rem">
+                                <Label text="{i18n>unit}" />
+                                <table:template>
+                                    <Text text="{employee_view>UNIT_SECTION}" />
+                                </table:template>
+                            </table:Column>
+
+                            <table:Column width="16rem">
+                                <Label text="{i18n>position}" />
+                                <table:template>
+                                    <Text
+                                        text="{employee_view>POSITION_NAME}"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <table:Column width="10rem">
+                                <Label text="{i18n>employee_id}" />
+                                <table:template>
+                                    <Text
+                                        text="{employee_view>EMP_ID}"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- Request / Claim Info -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>claim_type}" />
+                                <table:template>
+                                    <Text
+                                        text="{employee_view>REQUEST_TYPE_DESC}"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <table:Column width="12rem">
+                                <Label text="{i18n>preappreq_id}" />
+                                <table:template>
+                                    <Text text="{employee_view>REQUEST_ID}" />
+                                </table:template>
+                            </table:Column>
+
+                            <table:Column width="14rem">
+                                <Label text="{i18n>preappreq_date}" />
+                                <table:template>
+                                     <Text
+                                        text="{
+                                            path: 'employee_view>REQUEST_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <table:Column width="14rem">
+                                <Label text="{i18n>claim_type}" />
+                                <table:template>
+                                    <Text
+                                        text="{employee_view>REQUEST_TYPE_DESC}"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <table:Column width="12rem">
+                                <Label text="{i18n>submitted_date}" />
+                                <table:template>
+                                    
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>SUBMITTED_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- Approvers -->
+                            <table:Column width="10rem">
+                                <Label text="{i18n>approval1}" />
+                                <table:template>
+                                    <Text text="{employee_view>APPROVER1}" />
+                                </table:template>
+                            </table:Column>
+                            <table:Column width="10rem">
+                                <Label text="{i18n>approval2}" />
+                                <table:template>
+                                    <Text text="{employee_view>APPROVER2}" />
+                                </table:template>
+                            </table:Column>
+                            <table:Column width="10rem">
+                                <Label text="{i18n>approval3}" />
+                                <table:template>
+                                    <Text text="{employee_view>APPROVER3}" />
+                                </table:template>
+                            </table:Column>
+                            <table:Column width="10rem">
+                                <Label text="{i18n>approval4}" />
+                                <table:template>
+                                    <Text text="{employee_view>APPROVER4}" />
+                                </table:template>
+                            </table:Column>
+                            <table:Column width="10rem">
+                                <Label text="{i18n>approval5}" />
+                                <table:template>
+                                    <Text text="{employee_view>APPROVER5}" />
+                                </table:template>
+                            </table:Column>
+
+                            <table:Column width="14rem">
+                                <Label text="{i18n>final_app_date}" />
+                                <table:template>
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>LAST_APPROVED_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
+
+                                    
+                                </table:template>
+                            </table:Column>
+
+                            <!-- Days Approved (computed locally; no backend field) -->
+                            <table:Column
+                                width="12rem"
+                                hAlign="End"
+                            >
+                                <Label text="{i18n>days_approved}" />
+                                <table:template>
+                                    <Text
+                                        text="{
+                                                parts: [
+                                                'employee_view>SUBMITTED_DATE',
+                                                'employee_view>LAST_APPROVED_DATE'
+                                                ],
+                                                formatter: '.daysApprovedFormatter'
+                                            }"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <table:Column width="12rem">
+                                <Label text="{i18n>cash_adv_recei_date}" />
+                                <table:template>
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>CASH_ADVANCE_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- payment_date -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>payment_date}" />
+                                <table:template>
+                                     <Text
+                                        text="{
+                                            path: 'employee_view>PAYMENT_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- Status -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>pre_app_status}" />
+                                <table:template>
+                                    <Text text="{employee_view>STATUS}" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- Cost / Amounts -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>cc_code}" />
+                                <table:template>
+                                    <Text text="{employee_view>COST_CENTER}" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- cc_desc -->
+                            <table:Column width="16rem">
+                                <Label text="{i18n>cc_desc}" />
+                                <table:template>
+                                    <Text
+                                        text="{employee_view>COST_CENTER_DESC}"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- alt_cc_code -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>alt_cc_code}" />
+                                <table:template>
+                                    <Text
+                                        text="{employee_view>ALTERNATE_COST_CENTER}"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- alt_cc_desc -->
+                            <table:Column width="16rem">
+                                <Label text="{i18n>alt_cc_desc}" />
+                                <table:template>
+                                    <Text
+                                        text="{employee_view>ALT_COST_CENTER_DESC}"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- gl_acct -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>gl_acct}" />
+                                <table:template>
+                                    <Text text="{employee_view>GL_ACCOUNT}" />
+                                </table:template>
+                            </table:Column>
+
+                            <table:Column width="12rem">
+                                <Label text="{i18n>total_req_amt}" />
+                                <table:template>
+                                    <Text text="{employee_view>TOTAL_AMOUNT}" />
+                                </table:template>
+                            </table:Column>
+
+                            <table:Column width="12rem">
+                                <Label text="{i18n>cash_adv}" />
+                                <table:template>
+                                    <Text text="{employee_view>CASH_ADVANCE}" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- Purpose / Remarks -->
+                            <table:Column width="20rem">
+                                <Label text="{i18n>purpose}" />
+                                <table:template>
+                                    <Text
+                                        text="{employee_view>OBJECTIVE_PURPOSE}"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <table:Column width="20rem">
+                                <Label text="{i18n>req_i_remarks}" />
+                                <table:template>
+                                    <Text text="{employee_view>REMARK}" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- req_tripstartdate -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>req_tripstartdate}" />
+                                <table:template>
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>TRIP_START_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- req_tripenddate -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>req_tripenddate}" />
+                                <table:template>
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>TRIP_END_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- req_eventstartdate -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>req_eventstartdate}" />
+                                <table:template>
+                                     <Text
+                                        text="{
+                                            path: 'employee_view>EVENT_START_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- req_eventenddate -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>req_eventenddate}" />
+                                <table:template>
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>EVENT_END_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- location -->
+                            <table:Column width="16rem">
+                                <Label text="{i18n>location}" />
+                                <table:template>
+                                    <Text text="{employee_view>LOCATION}" />
+                                </table:template>
+                            </table:Column>
+
+                            <!-- req_transport -->
+                            <table:Column width="14rem">
+                                <Label text="{i18n>req_transport}" />
+                                <table:template>
+                                    <Text
+                                        text="{employee_view>TYPE_OF_TRANSPORTATION}"
+                                    />
+                                </table:template>
+                            </table:Column>
+                        </table:columns>
+                    </table:Table>
+                </f:content>
+            </f:DynamicPage>
+        </content>
+
+        <footer>
+            <Toolbar
+                design="Solid"
+                class="sapUiTinyMargin"
+            >
+                <ToolbarSpacer />
+                <Button
+                    id="btnExportAnalytics_reqsum"
+                    text="{i18n>export}"
+                    type="Emphasized"
+                    press=".onExportAnalyticsReport"
+                />
+                <Button
+                    id="btnCloseAnalytics_reqsum"
+                    text="Back"
+                    press=".onBackFromAnalyticsClaimReport"
+                />
+            </Toolbar>
+        </footer>
+    </Page>
+</core:FragmentDefinition>

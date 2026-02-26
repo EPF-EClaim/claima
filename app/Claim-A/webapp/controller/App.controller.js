@@ -12,7 +12,10 @@ sap.ui.define([
 	"sap/m/library",
 	"sap/tnt/library",
 	"sap/ui/model/Filter",
-	"sap/ui/model/FilterOperator"
+	"sap/ui/model/FilterOperator",
+	"sap/ui/model/Sorter",
+	"sap/ui/export/Spreadsheet",
+
 ], function (
 	Device,
 	Controller,
@@ -26,9 +29,13 @@ sap.ui.define([
 	library,
 	tntLibrary,
 	Filter,
-	FilterOperator
+	FilterOperator,
+	Sorter,
+	Spreadsheet
 ) {
 	"use strict";
+
+
 
 
 	return Controller.extend("claima.controller.App", {
@@ -192,6 +199,11 @@ sap.ui.define([
 					}
 					//End EY_ATHIRAH
 					break;
+				// Start Aiman Salim 10/02/2026 - Added for analytics
+				case "analytics":
+					oRouter.navTo("Analytics")
+					break;
+				// End 	 Aiman Salim 10/02/2026 - Added for analytics
 				case "dashboard":
 					oRouter.navTo("Dashboard");
 					break;
@@ -203,6 +215,15 @@ sap.ui.define([
 					}
 					break;
 			}
+		},
+		// Analytics App
+		onClickAnalytics: async function () {
+			var oPageContainer = this.byId("pageContainer");
+			if (!this.byId("analyticsPage")) {
+				var oPage = new sap.m.Page(this.createId("analyticsPage"), {
+				});
+			}
+			oPageContainer.to(this.byId("analyticsPage"));
 		},
 
 		onMenuButtonPress: function () {
@@ -908,71 +929,77 @@ sap.ui.define([
 			return null;
 		},
 		//For MyClaimStatus(myexpensereport) on item click. This will fetch data based on row selected and push to detail page
-
+		_getClaimHeaderKeyPath: function (sClaimId, bIsNumericKey = false) {
+			if (!sClaimId) throw new Error("Missing Claim ID");
+			return bIsNumericKey
+				? `/ZCLAIM_HEADER(${Number(sClaimId)})`
+				: `/ZCLAIM_HEADER('${encodeURIComponent(String(sClaimId))}')`;
+		},
 		onRowPress: async function (oEvent) {
 			const oItem = oEvent.getParameter("listItem");
-			const oCtx = oItem && oItem.getBindingContext("employee");
+			const oListCtx = oItem && oItem.getBindingContext("employee"); // <-- list uses model 'employee'
+			if (!oListCtx) { sap.m.MessageToast.show("No context found."); return; }
 
-			if (!oCtx) {
-				sap.m.MessageToast.show("No context found on the selected row.");
-				return;
-			}
-
-			// optional: clear the selection (nice UX)
+			// Optional: clear selection
 			const oSrcTable = oEvent.getSource();
-			if (oSrcTable && oSrcTable.removeSelections) {
-				oSrcTable.removeSelections(true);
-			}
+			if (oSrcTable?.removeSelections) oSrcTable.removeSelections(true);
 
-			const oModel = oCtx.getModel();        // OData V4 model "employee"
+			const oModel = this.getView().getModel("employee"); // OData V4 model
 			const oPage = this.byId("expensereport");
 
 			try {
 				oPage.setBusy(true);
 
-				// 2) Full header (gets anything not in $select)
-				const oHeader = await oCtx.requestObject();
-				const sClaimId = String(oHeader.CLAIM_ID || "").trim();
+				// Read the minimal row (has CLAIM_ID because list $select includes it)
+				const oRow = await oListCtx.requestObject();
+				const sClaimId = String(oRow.CLAIM_ID || "").trim();
+				if (!sClaimId) { sap.m.MessageToast.show("Selected row has no CLAIM_ID."); return; }
 
-				if (!sClaimId) {
-					sap.m.MessageToast.show("Selected row does not have a valid CLAIM_ID.");
-					return;
-				}
+				// Build key path and refetch header with the exact fields you need + expand items
+				const sKeyPath = this._getClaimHeaderKeyPath(sClaimId /*, false if string key*/);
+				const oCtxHeader = oModel.bindContext(sKeyPath, null, {
+					$select: `CLAIM_ID,PURPOSE,LOCATION,STATUS_ID,TOTAL_CLAIM_AMOUNT,COST_CENTER,ALTERNATE_COST_CENTER,EVENT_START_DATE,EVENT_END_DATE,TRIP_START_DATE,TRIP_END_DATE,CASH_ADVANCE_AMOUNT,COMMENT`,
+					$expand: {
+						ZCLAIM_ITEM: {
+							$select: `TRIP_START_DATE,RECEIPT_NUMBER,CLAIM_TYPE_ITEM_ID,AMOUNT,CLAIM_CATEGORY`
+						}
+					}
+				}).getBoundContext();
 
-				// 3) Map header → "current" (report.fragment)
+				const oHeaderFull = await oCtxHeader.requestObject();
+
+				// Map header -> "current" (for your header fragment)
 				let oCurrent = this.getView().getModel("current");
 				if (!oCurrent) {
 					oCurrent = new sap.ui.model.json.JSONModel();
 					this.getView().setModel(oCurrent, "current");
 				}
-				oCurrent.setData(this._mapHeaderToCurrent(oHeader));
+				oCurrent.setData(this._mapHeaderToCurrent(oHeaderFull));
 
-				// 4) Fetch items → "items" model (expensetype.fragment)
-				const oItemsBinding = oModel.bindList(
-					"/ZCLAIM_ITEM",
-      /* oContext  */ undefined,
-      /* aSorters  */[],
-      /* aFilters  */[new Filter("CLAIM_ID", FilterOperator.EQ, sClaimId)],
-      /* mParams   */ {
-						$select: "CLAIM_ID,START_DATE,CLAIM_TYPE_ITEM,CLAIM_ITEM_ID,AMOUNT,CURRENCY,STAFF_CATEGORY"
-					}
-				);
-
-				const aItemCtxs = await oItemsBinding.requestContexts(0, Infinity);
-				const aItems = await Promise.all(aItemCtxs.map(c => c.requestObject()));
+				// Map items (oHeaderFull.ZCLAIM_ITEM) -> "items" model (for expensetype.fragment)
+				const aItems = (oHeaderFull.ZCLAIM_ITEM || []).map(x => ({
+					// Your fragment expects these exact names:
+					START_DATE: x.TRIP_START_DATE || null,
+					RECEIPT_NO: x.RECEIPT_NUMBER || "",
+					CLAIM_TYPE_ITEM: x.CLAIM_TYPE_ITEM_DESC || x.CLAIM_TYPE_ITEM || x.CLAIM_TYPE_ITEM_ID || "",
+					CLAIM_ITEM_ID: x.CLAIM_TYPE_ITEM_ID || "",
+					AMOUNT: Number(x.AMOUNT || 0),
+					CURRENCY: x.CURRENCY || "MYR",
+					STAFF_CATEGORY: x.CLAIM_CATEGORY || ""
+				}));
 
 				let oItemsModel = this.getView().getModel("items");
 				if (!oItemsModel) {
 					oItemsModel = new sap.ui.model.json.JSONModel({ results: [] });
 					this.getView().setModel(oItemsModel, "items");
 				}
-				oItemsModel.setData({ results: aItems || [] });
+				oItemsModel.setData({ results: aItems });
 
-				// 5) Navigate
+				// Navigate to detail page
 				const oPageContainer = this.byId("pageContainer");
 				oPageContainer.to(oPage);
 
-				// Show expensetype first (your current UX)
+				// Show expensetype first (your UX)
 				this.getView().byId("expensetypescr").setVisible(true);
 				this.getView().byId("claimscr").setVisible(false);
 				this.createreportButtons("expensetypescr");
@@ -986,32 +1013,33 @@ sap.ui.define([
 		},
 
 		_mapHeaderToCurrent: function (row) {
-			// Helper: convert to yyyy-MM-dd (adjust to your locale if needed)
 			const fmt = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "yyyy-MM-dd" });
 			const toYMD = (d) => {
+				if (!d) return "";
 				if (d instanceof Date) return fmt.format(d);
-				// handle ISO string "2026-01-26" or similar -> keep
 				if (typeof d === "string") return d;
-				return d || "";
+				return "";
 			};
 
 			return {
 				id: row.CLAIM_ID,
-				location: row.CLAIM_MAIN_CAT_ID || "",
-				costcenter: row.CLAIM_MAIN_CAT_ID || "",
-				altcc: row.ALTERNATE_COST_CENTRE || "",
-				total: row.TOTAL,          // you use TOTAL in the table
-				cashadv: row.CLAIM_ID || "",
-				finalamt: row.CLAIM_ID || "",
+				location: row.LOCATION || "",
+				costcenter: row.COST_CENTER || "",
+				altcc: row.ALTERNATE_COST_CENTER || row.ALTERNATE_COST_CENTRE || "",
+				total: row.TOTAL_CLAIM_AMOUNT ?? row.TOTAL ?? "",
+				cashadv: row.CASH_ADVANCE_AMOUNT ?? row.CASH_ADVANCE ?? "",
+				finalamt: row.FINAL_AMOUNT_RECEIVE ?? "",
+
 				report: {
 					id: row.CLAIM_ID,
-					purpose: row.CATEGORY || "",
-					startdate: toYMD(row.CLAIM_DATE),
-					enddate: toYMD(row.CLAIM_DATE),
+					purpose: row.PURPOSE || row.CATEGORY || "",
+					receipt_no: row.RECEIPT_NUMBER || "",
+					startdate: toYMD(row.TRIP_START_DATE),
+					enddate: toYMD(row.TRIP_END_DATE),
 					location: row.LOCATION || "",
-					category: row.CATEGORY || "",
-					comment: row.CLAIM_ID || "",
-					amt_approved: row.TOTAL || ""
+					comment: row.COMMENT || "",
+					amt_approved: row.AMOUNT || "",
+					claim_type_item: row.CLAIM_TYPE_ITEM_ID || ""
 				}
 			};
 		},
@@ -1524,6 +1552,7 @@ sap.ui.define([
 				return this.getView().getModel("i18n").getResourceBundle().getText(i18nKey);
 			}
 		},
+
 		_loadCurrentUser: function () {
 			var that = this;
 
@@ -1555,7 +1584,168 @@ sap.ui.define([
 				}
 			});
 
-		}
+		},
+
+		//Start Add - Aiman Salim - 26/02/2026 <--- Add for excel functionality for Claim Detailed View --->
+		_sanitizeFileName: function (s) {
+			return (s || "")
+				.replace(/[\\/:*?"<>|]/g, "_")
+				.replace(/\s+/g, " ")
+				.trim()
+				.substring(0, 80);
+		},
+		_getTodayString: function () {
+			const d = new Date();
+			const y = d.getFullYear();
+			const m = String(d.getMonth() + 1).padStart(2, "0");
+			const day = String(d.getDate()).padStart(2, "0");
+			return `${y}-${m}-${day}`;
+		},
+		_getExcelFileName: function () {
+			const current = this.getView().getModel("current")?.getData() || {};
+			const id = current?.id || current?.report?.id || "Claim";
+			return this._sanitizeFileName(`Claim_${id}_${this._getTodayString()}.xlsx`);
+		},
+
+
+		_toDate: function (val) {
+			// If already a Date, return as-is
+			if (val instanceof Date) { return val; }
+			if (!val) { return null; }
+			// If it's a string like 'YYYY-MM-DD', convert safely (avoid timezone shifts)
+			if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+				const [y, m, d] = val.split("-").map(Number);
+				// Create a UTC date to avoid local TZ offset skew in Excel
+				return new Date(Date.UTC(y, m - 1, d, 0, 0, 0));
+			}
+			// Try to new Date() anything else
+			const dt = new Date(val);
+			return isNaN(dt.getTime()) ? null : dt;
+		},
+
+
+		
+onDownloadExcelReport: async function () {
+      const oView = this.getView();
+
+      try {
+        oView.setBusy(true);
+
+        // 1) Read current header & items models
+        const current = oView.getModel("current")?.getData();
+        const itemsDS = oView.getModel("items")?.getProperty("/results") || [];
+
+        if (!current) {
+          sap.m.MessageToast.show("No header data to export.");
+          return;
+        }
+
+        // 2) Build one flattened header row
+        const headerRow = {
+          "Claim ID": current.id || current.report?.id || "",
+          "Purpose": current.report?.purpose || "",
+          "Trip Start Date": this._toDate(current.report?.startdate),
+          "Trip End Date": this._toDate(current.report?.enddate),
+          "Location": current.report?.location || current.location || "",
+          "Status/Comment": current.report?.comment || "",
+          "Cost Center": current.costcenter || "",
+          "Alternate Cost Center": current.altcc || "",
+          "Total Amount": current.total ?? "",
+          "Approved Amount": current.report?.amt_approved ?? "",
+          "Cash Advance": current.cashadv ?? "",
+          "Final Amount": current.finalamt ?? ""
+        };
+
+        // 3) Define columns for Header sheet
+        const headerColumns = [
+          { label: "Claim ID",            property: "Claim ID",           width: 18 },
+          { label: "Purpose",             property: "Purpose",            width: 30 },
+          { label: "Trip Start Date",     property: "Trip Start Date",    type: "date",  width: 18, format: "yyyy-mm-dd" },
+          { label: "Trip End Date",       property: "Trip End Date",      type: "date",  width: 18, format: "yyyy-mm-dd" },
+          { label: "Location",            property: "Location",           width: 25 },
+          { label: "Status/Comment",      property: "Status/Comment",     width: 28 },
+          { label: "Cost Center",         property: "Cost Center",        width: 18 },
+          { label: "Alternate Cost Center", property: "Alternate Cost Center", width: 22 },
+          { label: "Total Amount",        property: "Total Amount",       type: "number", scale: 2, width: 18 },
+          { label: "Approved Amount",     property: "Approved Amount",    type: "number", scale: 2, width: 18 },
+          { label: "Cash Advance",        property: "Cash Advance",       type: "number", scale: 2, width: 18 },
+          { label: "Final Amount",        property: "Final Amount",       type: "number", scale: 2, width: 18 }
+        ];
+
+        // 4) Define columns for Items sheet
+        // If START_DATE is a string, we set inputFormat; if it's a Date, you can drop inputFormat.
+        const itemsColumns = [
+          { label: "Date",       property: "START_DATE", type: "date", width: 18, inputFormat: "yyyy-MM-dd", format: "yyyy-mm-dd" },
+          { label: "Receipt",    property: "RECEIPT_NO", width: 20 },
+          { label: "Claim Type", property: "CLAIM_TYPE_ITEM", width: 25 },
+          { label: "Claim Item", property: "CLAIM_ITEM_ID", width: 18 },
+          { label: "Amount",     property: "AMOUNT", type: "number", scale: 2, width: 14 },
+          { label: "Category",   property: "STAFF_CATEGORY", width: 20 }
+        ];
+
+        // Optionally normalize item dates to Date objects to avoid inputFormat handling:
+        // itemsDS.forEach(it => { it.START_DATE = this._toDate(it.START_DATE); });
+
+        // 5) Primary path: multi-sheet workbook
+        //    (If it throws in older UI5, we catch and run the fallback below.)
+        try {
+          const xlsx = new Spreadsheet({
+            workbook: {
+              sheets: [
+                {
+                  context: { sheetName: "Header" },
+                  columns: headerColumns,
+                  dataSource: [headerRow]
+                },
+                {
+                  context: { sheetName: "Items" },
+                  columns: itemsColumns,
+                  dataSource: itemsDS
+                }
+              ]
+            },
+            fileName: this._getExcelFileName(),
+            worker: true
+          });
+
+          await xlsx.build();
+          xlsx.destroy();
+        } catch (multiSheetErr) {
+          // 6) Fallback: Export TWO files if multi-sheet is not supported
+          const base = this._getExcelFileName().replace(/\.xlsx$/i, "");
+
+          // Header.xlsx
+          const xHeader = new Spreadsheet({
+            workbook: { columns: headerColumns, context: { sheetName: "Header" } },
+            dataSource: [headerRow],
+            fileName: `${base}_Header.xlsx`,
+            worker: true
+          });
+          await xHeader.build();
+          xHeader.destroy();
+
+          // Items.xlsx
+          const xItems = new Spreadsheet({
+            workbook: { columns: itemsColumns, context: { sheetName: "Items" } },
+            dataSource: itemsDS,
+            fileName: `${base}_Items.xlsx`,
+            worker: true
+          });
+          await xItems.build();
+          xItems.destroy();
+
+          // Optional toast to indicate fallback
+          sap.m.MessageToast.show("Your UI5 version does not support multi‑sheet. Exported two files instead.");
+          jQuery.sap.log.warning("Multi-sheet export not supported in this UI5 version. Exported two files.", multiSheetErr);
+        }
+
+      } catch (e) {
+        jQuery.sap.log.error("Excel export failed.", e);
+        sap.m.MessageToast.show("Excel export failed.");
+      } finally {
+        oView.setBusy(false);
+      }
+    }
 
 	});
 });

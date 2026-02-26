@@ -1,0 +1,223 @@
+<core:FragmentDefinition
+    xmlns:unified="sap.ui.unified"
+    xmlns:l="sap.ui.layout"
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form">
+
+    <Dialog
+        title="Report Filter"
+        contentWidth="50%"
+        class="requestDialog">
+
+        <f:SimpleForm
+            id="analytic_create_form"
+            editable="true"
+            layout="ResponsiveGridLayout"
+            labelSpanXL="2"
+            labelSpanL="2"
+            labelSpanM="2"
+            labelSpanS="12"
+            adjustLabelSpan="true"
+            emptySpanXL="0"
+            emptySpanL="0"
+            emptySpanM="0"
+            emptySpanS="0"
+            columnsXL="2"
+            columnsL="2"
+            columnsM="2">
+
+            <f:content>
+
+                <!-- Trip Start Date -->
+                <Label text="{i18n>req_tripstartdate}" />
+                <DatePicker
+                    id="analytics_tripstartdate"
+                    displayFormat="dd MMM yyyy"
+                    valueFormat="yyyy-MM-dd"
+                    placeholder="dd MMM yyyy"
+                    value="{request>/tripstartdate}"
+                    textAlign="Begin"
+                    required="false" 
+                     />
+
+                <!-- Trip End Date -->
+                <Label text="{i18n>req_tripenddate}" />
+                <DatePicker
+                    id="analytics_tripenddate"
+                    displayFormat="dd MMM yyyy"
+                    valueFormat="yyyy-MM-dd"
+                    placeholder="dd MMM yyyy"
+                    value="{request>/tripenddate}"
+                    textAlign="Begin"
+                    required="false" 
+                    />
+
+                <!-- Payment Date -->
+                <Label text="Payment Date" />
+                <DatePicker
+                    id="analytics_paydate"
+                    displayFormat="dd MMM yyyy"
+                    valueFormat="yyyy-MM-dd"
+                    placeholder="dd MMM yyyy"
+                    value="{request>/analytics_paydate}"
+                    textAlign="Begin"
+                    required="true" />
+
+                <!-- Status -->
+                <Label text="{i18n>status}" />
+                <MultiComboBox
+                    id="status"
+                    width="100%"
+                    required="true"
+                    items="{employee>/ZSTATUS}">
+                    <core:Item key="{employee>STATUS_ID}" text="{employee>STATUS}" />
+                </MultiComboBox>
+
+                <!-- Course Code -->
+                <Label text="Course code" />
+                <MultiComboBox
+                    id="Course_code"
+                    width="100%"
+                    items="{employee>/ZTRAIN_COURSE_PART}">
+                    <core:Item key="{employee>COURSE_ID}" text="{employee>COURSE_DESC}" />
+                </MultiComboBox>
+
+                <!-- Department -->
+                <Label text="{i18n>department}" />
+                <MultiComboBox
+                    id="select_department"
+                    width="100%"
+                    items="{employee>/ZDEPARTMENT}">
+                    <core:Item key="{employee>DEPARTMENT_ID}" text="{employee>DEPARTMENT_DESC}" />
+                </MultiComboBox>
+
+                <!-- GL Code -->
+                <Label text="GL Code" />
+                <MultiComboBox
+                    id="glcode"
+                    width="100%"
+                    items="{employee>/ZGL_ACCOUNT}">
+                    <core:Item key="{employee>GL_ACCOUNT_ID}" text="{employee>GL_ACCOUNT_DESC}" />
+                </MultiComboBox>
+
+                <!-- Cost Center -->
+                <Label text="Cost Center" />
+                <MultiComboBox
+                    id="cc"
+                    width="100%"
+                    items="{employee>/ZCOST_CENTER}">
+                    <core:Item key="{employee>COST_CENTER_ID}" text="{employee>COST_CENTER_DESC}" />
+                </MultiComboBox>
+
+                <!-- Claim Type -->
+                <Label text="Claim Type" />
+                <MultiComboBox
+                    id="claim_type"
+                    width="100%"
+                    items="{employee>/ZCLAIM_TYPE}">
+                    <core:Item key="{employee>CLAIM_TYPE_ID}" text="{employee>CLAIM_TYPE_DESC}" />
+                </MultiComboBox>
+
+                <!-- Claim Item -->
+                <Label text="Claim Item" />
+                <MultiComboBox
+                    id="claim_item"
+                    width="100%"
+                    items="{employee>/ZCLAIM_TYPE_ITEM}">
+                    <core:Item key="{employee>CLAIM_TYPE_ITEM_ID}" text="{employee>CLAIM_TYPE_ITEM_DESC}" />
+                </MultiComboBox>
+
+                <!-- Location -->
+                <Label text="Location" />
+                <MultiComboBox
+                    id="location"
+                    width="100%"
+                    items="{employee>/ZLOC_TYPE}">
+                    <core:Item key="{employee>LOC_TYPE_ID}" text="{employee>LOC_TYPE_DESC}" />
+                </MultiComboBox>
+
+                <!-- Event Start -->
+                <Label text="{i18n>req_eventstartdate}" />
+                <DatePicker
+                    id="analytics_eventstartdate"
+                    displayFormat="dd MMM yyyy"
+                    valueFormat="yyyy-MM-dd"
+                    placeholder="dd MMM yyyy"
+                    textAlign="Begin" 
+                    />
+
+                <!-- Event End -->
+                <Label text="{i18n>req_eventenddate}" />
+                <DatePicker
+                    id="analytics_eventenddate"
+                    displayFormat="dd MMM yyyy"
+                    valueFormat="yyyy-MM-dd"
+                    placeholder="dd MMM yyyy"
+                    textAlign="Begin" 
+                    />
+
+                <!-- Individual / Group -->
+                <Label text="Individual/Group" />
+                <MultiComboBox
+                    id="grouping"
+                    width="100%"
+                    items="{employee>/ZINDIV_GROUP}">
+                    <core:Item key="{employee>IND_OR_GROUP_ID}" text="{employee>IND_OR_GROUP_DESC}" />
+                </MultiComboBox>
+
+                <!-- Amount -->
+<!--                 <Label text="Amount" />
+                <TextArea id="amount" textAlign="Begin" /> -->
+
+                <!-- Employee Name -->
+                <Label text="Employee name" />
+                <MultiComboBox
+                    id="emp_name"
+                    width="100%"
+                    items="{employee>/ZEMP_MASTER}">
+                    <core:Item key="{employee>EEID}" text="{employee>NAME}" />
+                </MultiComboBox>
+
+                <!-- Request Type -->
+                <Label text="Request Type" />
+                <MultiComboBox
+                    id="reqtype"
+                    width="100%"
+                    visible="{anaVM>/showRequestType}"
+                    items="{employee>/ZREQUEST_TYPE}"
+                    change=".onRequestTypeChange">
+                    <core:Item key="{employee>REQUEST_TYPE_ID}" text="{employee>REQUEST_TYPE_DESC}" />
+                </MultiComboBox>
+
+                <!-- Claim Category -->
+                <Label text="Claim Category" />
+                <MultiComboBox
+                    
+                    id="claim_cat"
+                    width="100%"
+                    visible="{anaVM>/showClaimCategory}"
+                    items="{employee>/ZSUBMISSION_TYPE}">
+                    <core:Item key="{employee>SUBMISSION_TYPE_ID}" text="{employee>SUBMISSION_TYPE_DESC}" />
+                </MultiComboBox>
+
+            </f:content>
+        </f:SimpleForm>
+
+        <!-- Buttons -->
+        <HBox alignItems="Center" justifyContent="End"
+              class="sapUiSmallMarginEnd" columnGap="0.5rem">
+            <Button
+                id="analytics_placeholder_create"
+                press="onClickCreateRequest_ana"
+                text="{i18n>submitbtn}"
+                type="Emphasized" />
+            <Button
+                id="analytics_placeholder_cancel"
+                press="onClickCancel_ana"
+                text="{i18n>req_b_cancel}" />
+        </HBox>
+
+    </Dialog>
+</core:FragmentDefinition>
