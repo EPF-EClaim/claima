@@ -7,8 +7,9 @@ sap.ui.define([
 	"sap/m/Label",
 	"sap/ui/core/Fragment",
 	"sap/ui/export/Spreadsheet",
-	"sap/ui/core/BusyIndicator"
-], function (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator) {
+	"sap/ui/core/BusyIndicator",
+	"sap/ui/core/routing/History"
+], function (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator, History) {
 	"use strict";
 
 	return Controller.extend("claima.controller.RequestForm", {
@@ -55,10 +56,12 @@ sap.ui.define([
 				start_date: "",
 				end_date: "",
 				location: "",
-				remarks: ""
+				remarks: "",
+				doc1: "",
+				doc2: ""
 			};
 			data.participant       = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
-			data.view              = data.view || "list";
+			data.view              = "view";
 			data.list_count        = data.list_count ?? 0;
 			oReq.setData(data);
 		},
@@ -118,7 +121,7 @@ sap.ui.define([
 			// ctrl.destroy();
 		},
 
-		async _showHeaderAndList() {
+		async _showHeaderAndList(state = "view") {
 			const oPage = this.byId("request_form"); // <Page id="request_form"/>
 			if (!oPage) return;
 
@@ -133,7 +136,7 @@ sap.ui.define([
 			await this._replaceContentAt(oPage, 1, oList);
 
 			// Mark view state
-			this._getReqModel().setProperty("/view", "list");
+			this._getReqModel().setProperty("/view", state);
 		},
 
 		async _showItemCreate(state) {
@@ -169,29 +172,35 @@ sap.ui.define([
 		* ======================================================= */
 
 		onBack() {
-			if (!this.oBackDialog) {
-				this.oBackDialog = new Dialog({
-				title: "Warning",
-				type: "Message",
-				state: "Warning",
-				content: [ new Label({ text: "You haven't saved, do you confirm to go back?" }) ],
-				beginButton: new Button({
-					type: "Emphasized",
-					text: "Confirm",
-					press: function () {
-						this.oBackDialog.close();
-						// Navigate to dashboard (parent NavContainer)
-						const oScroll = this.getView().getParent();              // ScrollContainer
-						const oNav    = oScroll && oScroll.getParent && oScroll.getParent(); // NavContainer
-						const aPages  = oNav?.getPages ? oNav.getPages() : oNav?.getAggregation?.("pages");
-						const oMain   = aPages && aPages.find(p => p.getId && p.getId().endsWith("dashboard"));
-						if (oMain) oNav.to(oMain, "slide");
-					}.bind(this)
-				}),
-				endButton: new Button({ text: "Cancel", press: () => this.oBackDialog.close() })
-				});
+			const oReqModel = this._getReqModel();
+			const data = oReqModel.getData();
+			if (data.req_header.reqstatus == "DRAFT") {
+				if (!this.oBackDialog) {
+					this.oBackDialog = new Dialog({
+					title: "Warning",
+					type: "Message",
+					state: "Warning",
+					content: [ new Label({ text: "You haven't submit, do you confirm to go back?" }) ],
+					beginButton: new Button({
+						type: "Emphasized",
+						text: "Confirm",
+						press: async function () {
+							this.oBackDialog.close();
+							var oHistory = History.getInstance();
+							var sPreviousHash = oHistory.getPreviousHash();
+							if (sPreviousHash) {
+								window.history.go(-1);
+							} else {
+								var oRouter = this.getOwnerComponent().getRouter();
+								oRouter.navTo("Dashboard");
+							}
+						}.bind(this)
+					}),
+					endButton: new Button({ text: "Cancel", press: () => this.oBackDialog.close() })
+					});
+				}
+				this.oBackDialog.open();
 			}
-			this.oBackDialog.open();
 		},
 
 		onDeleteRequest() {
@@ -227,11 +236,8 @@ sap.ui.define([
 						this.oDeleteDialog.close();
 
 						// Navigate back to dashboard
-						const oScroll = this.getView().getParent();
-						const oNav    = oScroll && oScroll.getParent && oScroll.getParent();
-						const aPages  = oNav?.getPages ? oNav.getPages() : oNav?.getAggregation?.("pages");
-						const oMain   = aPages && aPages.find(p => p.getId && p.getId().endsWith("dashboard"));
-						if (oMain) oNav.to(oMain, "slide");
+						var oRouter = this.getOwnerComponent().getRouter();
+						oRouter.navTo("Dashboard");
 
 					} catch (e) {
 						sap.m.MessageToast.show(e.message || "Delete failed");
@@ -322,7 +328,7 @@ sap.ui.define([
 						const payload = {
 							STATUS: "PENDING APPROVAL",
 							CASH_ADVANCE: parseFloat(data.req_header.cashadvamt),
-							REQUEST_AMOUNT: parseFloat(data.req_header.reqamt)
+							PREAPPROVAL_AMOUNT: parseFloat(data.req_header.reqamt)
 						};
 
 						const res = await fetch(entityUrl, {
@@ -342,11 +348,8 @@ sap.ui.define([
 
 						sap.m.MessageToast.show("Request submitted successfully");
 
-						const oScroll = this.getView().getParent();              // ScrollContainer
-						const oNav    = oScroll && oScroll.getParent && oScroll.getParent(); // NavContainer
-						const aPages  = oNav?.getPages ? oNav.getPages() : oNav?.getAggregation?.("pages");
-						const oMain   = aPages && aPages.find(p => p.getId && p.getId().endsWith("myrequest"));
-						if (oMain) oNav.to(oMain, "slide");
+						var oRouter = this.getOwnerComponent().getRouter();
+						oRouter.navTo("RequestFormStatus");
 
 					} catch (e) {
 						sap.m.MessageToast.show(e.message || "Submission failed");
@@ -399,6 +402,7 @@ sap.ui.define([
 
 		async onAddItem(oEvent) {
 			await this._showItemCreate("create");
+			this._getClaimTypeItemSelection();
 
 			const oReq = this._getReqModel();
 			const data = oReq.getData();
@@ -415,9 +419,9 @@ sap.ui.define([
 				remarks: ""
 			};
 			
-			const emp_data = await this._getEmpIdDetail(this._userId);
 
 			if (data.req_header.grptype === 'individual') {
+				const emp_data = await this._getEmpIdDetail(this._userId);
 				// Use the returned data to populate the fields
 				data.participant = [{ 
 					PARTICIPANTS_ID: this._userId, 
@@ -539,8 +543,8 @@ sap.ui.define([
 			}
 
 			try {
-				// const base = this._entityUrl("ZEMP_REQUEST_PART_VIEW", "eclaimViewService");
-				const base = this._entityUrl("ZREQ_ITEM_PART");
+				const base = this._entityUrl("ZEMP_REQUEST_PART_VIEW", "eclaimViewService");
+				// const base = this._entityUrl("ZREQ_ITEM_PART");
 				const filter = encodeURIComponent(
 					`REQUEST_ID eq '${String(reqId).replace(/'/g, "''")}' and REQUEST_SUB_ID eq '${String(subId).replace(/'/g, "''")}'`
 				);
@@ -570,12 +574,18 @@ sap.ui.define([
 
 		// Back from create to list (cancel)
 		async onBackView() {
-			await this._showHeaderAndList();
+			var oList = this.byId('request_item_list_fragment');
+			if (!oList) {
+				await this._showHeaderAndList();
+			} else {
+				var oRouter = this.getOwnerComponent().getRouter();
+				oRouter.navTo("RequestFormStatus");
+			}
 		},
 
 		// Cancel alias (keep one implementation)
 		async onCancel() {
-			await this._showHeaderAndList();
+			await this._showHeaderAndList('list');
 
 			// When coming back to list, optionally add the just-entered item (if needed)
 			// Here we push a new row **only if** you want to keep the behavior.
@@ -993,7 +1003,7 @@ sap.ui.define([
 			const isEdit    = oReq.getProperty("/view") === "i_edit";
 
 			// Common field extraction
-			const claimType = data.req_item.claim_type;
+			const claimType = data.req_header.claimtype;
 			const claimItem = data.req_item.claim_type_item_id;
 			const estAmt    = parseFloat(data.req_item.est_amount || 0);
 			const estNoPart = parseInt(data.req_item.est_no_participant || 1, 10);
@@ -1306,6 +1316,52 @@ sap.ui.define([
 			}
 		}, 
 
+		async _getClaimTypeItemSelection() {
+			const oReq = this._getReqModel();
+			var data = oReq.getData();
+			var claim_type_id = data.req_header.claimtype;
+			if (!claim_type_id) {
+				oReq.setProperty("/req_item_rows", []);
+				oReq.setProperty("/list_count", 0);
+				return [];
+			}
+
+			const sReq = String(claim_type_id);
+			const isGuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(sReq);
+			const isNumeric = /^\d+$/.test(sReq);
+			let sLiteral;
+			if (isNumeric) sLiteral = sReq;
+			else if (isGuid) sLiteral = `guid'${sReq}'`;
+			else sLiteral = `'${sReq.replace(/'/g, "''")}'`;
+
+			const base       = this._entityUrl("ZCLAIM_TYPE_ITEM");
+			const filterExpr = `CLAIM_TYPE_ID eq ${sLiteral} and CATEGORY_ID eq 'PREAPPROVAL'`;
+			const orderby    = "CLAIM_TYPE_ID asc";
+			const query = [
+				`$filter=${encodeURIComponent(filterExpr)}`,
+				`$orderby=${encodeURIComponent(orderby)}`,
+				`$count=true`,
+				`$format=json`
+			].join("&"); // IMPORTANT: use '&' (not &amp;)
+
+			const url = `${base}?${query}`;
+
+			try {
+				const res = await fetch(url, { headers: { "Accept": "application/json" } });
+				if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+				const data = await res.json();
+				const a = Array.isArray(data?.value) ? data.value : [];
+
+				oReq.setProperty("/claim_type_items", a);
+				return a;
+			} catch (err) {
+				// eslint-disable-next-line no-console
+				console.error("Fetch failed:", err, { url });
+				oReq.setProperty("/claim_type_items", []);
+				return [];
+			}
+		},
+
 		/* =========================================================
 		* Participant Value Help 
 		* ======================================================= */
@@ -1439,125 +1495,33 @@ sap.ui.define([
 
         _createColumnConfig: function() {
             return [
-                { label: 'Participant ID (EEID)', property: 'PARTICIPANTS_ID', type: 'string' },
-                { label: 'Participant Name', property: 'PARTICIPANT_NAME', type: 'string' },
-                { label: 'Participant Cost Center', property: 'PARTICIPANT_COST_CENTER', type: 'string' },
-                { label: 'Allocated Amount (MYR)', property: 'ALLOCATED_AMOUNT', type: 'number' }
+                { label: 'PARTICIPANTS_ID', property: 'PARTICIPANTS_ID', type: 'string' },
+                { label: 'PARTICIPANT_NAME', property: 'PARTICIPANT_NAME', type: 'string' },
+                { label: 'PARTICIPANT_COST_CENTER', property: 'PARTICIPANT_COST_CENTER', type: 'string' },
+                { label: 'ALLOCATED_AMOUNT', property: 'ALLOCATED_AMOUNT', type: 'number' }
                 // Add more columns as per your /req_item_rows structure
             ];
         }, 
 
-		onUploadParticipants: function(oEvent) {
-			const oFileUploader = oEvent.getSource();
-			const oFile = oEvent.getParameter("files")[0];
-			
-			if (!oFile) return;
+		onUploadParticipants(oEvent) {
+			var file = oEvent.getParameter("files")[0];
+			if (!file) return; // Safety check
 
-			const reader = new FileReader();
-			reader.onload = (e) => {
-				const data = new Uint8Array(e.target.result);
-				const workbook = XLSX.read(data, { type: 'array' });
-				const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-				
-				// Convert Excel rows to JSON
-				const aExcelData = XLSX.utils.sheet_to_json(worksheet);
+			var reader = new FileReader();
 
-				// Map Excel headers back to your Model Properties
-				const aMappedParticipants = aExcelData.map(row => ({
-					PARTICIPANTS_ID: row["Participant ID (EEID) "], // "EEID" is the label from your export
-					PARTICIPANT_NAME: row["Participant Name"] || "",
-					PARTICIPANT_COST_CENTER: row["Participant Cost Center"] || "",
-					ALLOCATED_AMOUNT: row["Allocated Amount"] || "0"
-				}));
+			reader.onload = function (e) {
+				var data = new Uint8Array(e.target.result);
+				var workbook = XLSX.read(data, { type: "array" });
+				var worksheet = workbook.Sheets[workbook.SheetNames[0]];
+				var jsonData = XLSX.utils.sheet_to_json(worksheet);
+				jsonData.push({ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" });
+				const oReqModel = this._getReqModel();
+				oReqModel.setProperty("/participant", jsonData);
 
-				// Update your Request Model
-				const oReqModel = this.getView().getModel("request");
-				oReqModel.setProperty("/participant", aMappedParticipants);
-				
-				sap.m.MessageToast.show("Participants updated from file!");
-			};
-			reader.readAsArrayBuffer(oFile);
+				// MessageToast.show("Upload successful!");
+			}.bind(this);
+
+			reader.readAsArrayBuffer(file);
 		}
-
-		/* =========================================================
-		* Aiman changes 
-		* ======================================================= */
-
-		// loadItemsForRequest: async function (sReqId) {
-		// 	if (!sReqId) {
-		// 		MessageToast.show("Missing Request ID.");
-		// 		return;
-		// 	}
-		// 	try {
-		// 		BusyIndicator.show(0);
-
-		// 		// Fetch from backend (OData V4)
-		// 		const aItems = await this._fetchReqItemsByReqId(sReqId);
-
-		// 		// Bind to the JSON model used by req_item_list.fragment
-		// 		const oLocal = this.getView().getModel(); // default JSON model
-		// 		oLocal.setProperty("/req_item_rows", aItems);
-
-		// 		// Update counts for the toolbar title and any badges
-		// 		const oVM = this.getView().getModel("view");
-		// 		if (oVM) {
-		// 			oVM.setProperty("/totalCount", aItems.length);
-		// 			oVM.setProperty("/visibleCount", aItems.length);
-		// 		}
-
-
-		// 		// Refresh the correct table binding (sap.ui.table.Table uses "rows")
-		// 		const oTable = this.byId("req_item_table2");
-		// 		if (oTable && oTable.getBinding && oTable.getBinding("rows")) {
-		// 			oTable.getBinding("rows").refresh();
-		// 		}
-
-
-		// 		// If your table is already rendered and has listeners attached:
-		// 		if (typeof this._updateTableCounts === "function") {
-		// 			this._updateTableCounts();
-		// 		}
-		// 	} catch (e) {
-		// 		jQuery.sap.log.error("loadItemsForRequest failed: " + e);
-		// 		MessageToast.show("Unable to load request items.");
-		// 	} finally {
-		// 		BusyIndicator.hide();
-		// 	}
-		// },
-
-		// _fetchReqItemsByReqId: async function (sReqId) {
-		// 	// Get your V4 OData model (inherited from Component or View)
-		// 	const oModel =
-		// 		this.getView().getModel("employee") ||
-		// 		this.getOwnerComponent().getModel("employee");
-		// 	if (!oModel) {
-		// 		throw new Error("OData model 'employee' not found.");
-		// 	}
-
-
-		// 	// Build V4 filter properly (use Filter argument, not $filter in mParameters)
-		// 	const Filter = sap.ui.model.Filter;
-		// 	const FilterOperator = sap.ui.model.FilterOperator;
-		// 	const aFilters = [new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)];
-
-
-		// 	// Adjust entity set and $select fields to your service metadata if needed
-		// 	const oListBinding = oModel.bindList("/ZREQUEST_ITEM", null, null, aFilters, {
-		// 		$select: "REQUEST_ID,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,EST_NO_PARTICIPANT,EST_AMOUNT",
-		// 		$orderby: "REQUEST_ID,CLAIM_TYPE_ITEM_ID"
-		// 	});
-
-		// 	const aCtx = await oListBinding.requestContexts(0, Infinity);
-		// 	const aEntities = await Promise.all(aCtx.map((c) => c.requestObject()));
-
-		// 	return aEntities.map((e) => ({
-		// 		request_id: e.REQUEST_ID || "",
-		// 		claim_type: e.CLAIM_TYPE_ID || "",
-		// 		claim_type_item: e.CLAIM_TYPE_ITEM_ID || "",
-		// 		est_amount: Number(e.EST_AMOUNT) || "",
-		// 		//curenncy_code: "MYR",
-		// 		est_no_of_participant: e.EST_NO_PARTICIPANT || "",
-		// 	}));
-		// },
 	});
 });

@@ -52,14 +52,14 @@
                         expanded="false"
                     />
                     <tnt:NavigationListItem
-                        key="myreport"
+                        key="myrequest"
                         text="{i18n>nav_preappstatus}"
                         icon="sap-icon://activity-items"
                         enabled="true"
                         expanded="false"
                     />
                     <tnt:NavigationListItem
-                        key="myrequest"
+                        key="myreport"
                         text="{i18n>nav_claimstatus}"
                         icon="sap-icon://document-text"
                         enabled="true"
@@ -98,6 +98,7 @@
                         id="expensereport"
                         showHeader="false"
                         enableScrolling="true"
+                        
                     >
                         <content>
                             <VBox id="main" class="fullheight" fitContainer="true" >
@@ -223,14 +224,14 @@
                 <Page
                     id="myrequest"
                     showHeader="false"
-                    class="sapUiNoContentPadding"
+                    class="sapUiContentPadding"
                 >
                     <content>
-                        <core:Fragment
-                            fragmentName="claima.fragment.myexpensereport"
-                            type="XML"
+                        <mvc:XMLView
+                            id="request_form_status_view"
+                            viewName="claima.view.PARequestStatus"
                         />
-                    </content>
+                    </content> 
                 </Page>
                 <!-- === My Claim Status Page (added) === -->
                 <Page
@@ -240,7 +241,7 @@
                 >
                     <content>
                         <core:Fragment
-                            fragmentName="claima.fragment.myrequestform"
+                            fragmentName="claima.fragment.myexpensereport"
                             type="XML"
                         />
                     </content>
