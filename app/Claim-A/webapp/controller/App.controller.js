@@ -36,6 +36,8 @@ sap.ui.define([
 	"use strict";
 
 
+
+
 	return Controller.extend("claima.controller.App", {
 		onInit: function () {
 			// Claim Submission Model
@@ -1608,128 +1610,128 @@ sap.ui.define([
 		},
 
 
+		
+onDownloadExcelReport: async function () {
+      const oView = this.getView();
 
-		onDownloadExcelReport: async function () {
-			const oView = this.getView();
+      try {
+        oView.setBusy(true);
 
-			try {
-				oView.setBusy(true);
+        // 1) Read current header & items models
+        const current = oView.getModel("current")?.getData();
+        const itemsDS = oView.getModel("items")?.getProperty("/results") || [];
 
-				// 1) Read current header & items models
-				const current = oView.getModel("current")?.getData();
-				const itemsDS = oView.getModel("items")?.getProperty("/results") || [];
+        if (!current) {
+          sap.m.MessageToast.show("No header data to export.");
+          return;
+        }
 
-				if (!current) {
-					sap.m.MessageToast.show("No header data to export.");
-					return;
-				}
+        // 2) Build one flattened header row
+        const headerRow = {
+          "Claim ID": current.id || current.report?.id || "",
+          "Purpose": current.report?.purpose || "",
+          "Trip Start Date": this._toDate(current.report?.startdate),
+          "Trip End Date": this._toDate(current.report?.enddate),
+          "Location": current.report?.location || current.location || "",
+          "Status/Comment": current.report?.comment || "",
+          "Cost Center": current.costcenter || "",
+          "Alternate Cost Center": current.altcc || "",
+          "Total Amount": current.total ?? "",
+          "Approved Amount": current.report?.amt_approved ?? "",
+          "Cash Advance": current.cashadv ?? "",
+          "Final Amount": current.finalamt ?? ""
+        };
 
-				// 2) Build one flattened header row
-				const headerRow = {
-					"Claim ID": current.id || current.report?.id || "",
-					"Purpose": current.report?.purpose || "",
-					"Trip Start Date": this._toDate(current.report?.startdate),
-					"Trip End Date": this._toDate(current.report?.enddate),
-					"Location": current.report?.location || current.location || "",
-					"Status/Comment": current.report?.comment || "",
-					"Cost Center": current.costcenter || "",
-					"Alternate Cost Center": current.altcc || "",
-					"Total Amount": current.total ?? "",
-					"Approved Amount": current.report?.amt_approved ?? "",
-					"Cash Advance": current.cashadv ?? "",
-					"Final Amount": current.finalamt ?? ""
-				};
+        // 3) Define columns for Header sheet
+        const headerColumns = [
+          { label: "Claim ID",            property: "Claim ID",           width: 18 },
+          { label: "Purpose",             property: "Purpose",            width: 30 },
+          { label: "Trip Start Date",     property: "Trip Start Date",    type: "date",  width: 18, format: "yyyy-mm-dd" },
+          { label: "Trip End Date",       property: "Trip End Date",      type: "date",  width: 18, format: "yyyy-mm-dd" },
+          { label: "Location",            property: "Location",           width: 25 },
+          { label: "Status/Comment",      property: "Status/Comment",     width: 28 },
+          { label: "Cost Center",         property: "Cost Center",        width: 18 },
+          { label: "Alternate Cost Center", property: "Alternate Cost Center", width: 22 },
+          { label: "Total Amount",        property: "Total Amount",       type: "number", scale: 2, width: 18 },
+          { label: "Approved Amount",     property: "Approved Amount",    type: "number", scale: 2, width: 18 },
+          { label: "Cash Advance",        property: "Cash Advance",       type: "number", scale: 2, width: 18 },
+          { label: "Final Amount",        property: "Final Amount",       type: "number", scale: 2, width: 18 }
+        ];
 
-				// 3) Define columns for Header sheet
-				const headerColumns = [
-					{ label: "Claim ID", property: "Claim ID", width: 18 },
-					{ label: "Purpose", property: "Purpose", width: 30 },
-					{ label: "Trip Start Date", property: "Trip Start Date", type: "date", width: 18, format: "yyyy-mm-dd" },
-					{ label: "Trip End Date", property: "Trip End Date", type: "date", width: 18, format: "yyyy-mm-dd" },
-					{ label: "Location", property: "Location", width: 25 },
-					{ label: "Status/Comment", property: "Status/Comment", width: 28 },
-					{ label: "Cost Center", property: "Cost Center", width: 18 },
-					{ label: "Alternate Cost Center", property: "Alternate Cost Center", width: 22 },
-					{ label: "Total Amount", property: "Total Amount", type: "number", scale: 2, width: 18 },
-					{ label: "Approved Amount", property: "Approved Amount", type: "number", scale: 2, width: 18 },
-					{ label: "Cash Advance", property: "Cash Advance", type: "number", scale: 2, width: 18 },
-					{ label: "Final Amount", property: "Final Amount", type: "number", scale: 2, width: 18 }
-				];
+        // 4) Define columns for Items sheet
+        // If START_DATE is a string, we set inputFormat; if it's a Date, you can drop inputFormat.
+        const itemsColumns = [
+          { label: "Date",       property: "START_DATE", type: "date", width: 18, inputFormat: "yyyy-MM-dd", format: "yyyy-mm-dd" },
+          { label: "Receipt",    property: "RECEIPT_NO", width: 20 },
+          { label: "Claim Type", property: "CLAIM_TYPE_ITEM", width: 25 },
+          { label: "Claim Item", property: "CLAIM_ITEM_ID", width: 18 },
+          { label: "Amount",     property: "AMOUNT", type: "number", scale: 2, width: 14 },
+          { label: "Category",   property: "STAFF_CATEGORY", width: 20 }
+        ];
 
-				// 4) Define columns for Items sheet
-				// If START_DATE is a string, we set inputFormat; if it's a Date, you can drop inputFormat.
-				const itemsColumns = [
-					{ label: "Date", property: "START_DATE", type: "date", width: 18, inputFormat: "yyyy-MM-dd", format: "yyyy-mm-dd" },
-					{ label: "Receipt", property: "RECEIPT_NO", width: 20 },
-					{ label: "Claim Type", property: "CLAIM_TYPE_ITEM", width: 25 },
-					{ label: "Claim Item", property: "CLAIM_ITEM_ID", width: 18 },
-					{ label: "Amount", property: "AMOUNT", type: "number", scale: 2, width: 14 },
-					{ label: "Category", property: "STAFF_CATEGORY", width: 20 }
-				];
+        // Optionally normalize item dates to Date objects to avoid inputFormat handling:
+        // itemsDS.forEach(it => { it.START_DATE = this._toDate(it.START_DATE); });
 
-				// Optionally normalize item dates to Date objects to avoid inputFormat handling:
-				// itemsDS.forEach(it => { it.START_DATE = this._toDate(it.START_DATE); });
+        // 5) Primary path: multi-sheet workbook
+        //    (If it throws in older UI5, we catch and run the fallback below.)
+        try {
+          const xlsx = new Spreadsheet({
+            workbook: {
+              sheets: [
+                {
+                  context: { sheetName: "Header" },
+                  columns: headerColumns,
+                  dataSource: [headerRow]
+                },
+                {
+                  context: { sheetName: "Items" },
+                  columns: itemsColumns,
+                  dataSource: itemsDS
+                }
+              ]
+            },
+            fileName: this._getExcelFileName(),
+            worker: true
+          });
 
-				// 5) Primary path: multi-sheet workbook
-				//    (If it throws in older UI5, we catch and run the fallback below.)
-				try {
-					const xlsx = new Spreadsheet({
-						workbook: {
-							sheets: [
-								{
-									context: { sheetName: "Header" },
-									columns: headerColumns,
-									dataSource: [headerRow]
-								},
-								{
-									context: { sheetName: "Items" },
-									columns: itemsColumns,
-									dataSource: itemsDS
-								}
-							]
-						},
-						fileName: this._getExcelFileName(),
-						worker: true
-					});
+          await xlsx.build();
+          xlsx.destroy();
+        } catch (multiSheetErr) {
+          // 6) Fallback: Export TWO files if multi-sheet is not supported
+          const base = this._getExcelFileName().replace(/\.xlsx$/i, "");
 
-					await xlsx.build();
-					xlsx.destroy();
-				} catch (multiSheetErr) {
-					// 6) Fallback: Export TWO files if multi-sheet is not supported
-					const base = this._getExcelFileName().replace(/\.xlsx$/i, "");
+          // Header.xlsx
+          const xHeader = new Spreadsheet({
+            workbook: { columns: headerColumns, context: { sheetName: "Header" } },
+            dataSource: [headerRow],
+            fileName: `${base}_Header.xlsx`,
+            worker: true
+          });
+          await xHeader.build();
+          xHeader.destroy();
 
-					// Header.xlsx
-					const xHeader = new Spreadsheet({
-						workbook: { columns: headerColumns, context: { sheetName: "Header" } },
-						dataSource: [headerRow],
-						fileName: `${base}_Header.xlsx`,
-						worker: true
-					});
-					await xHeader.build();
-					xHeader.destroy();
+          // Items.xlsx
+          const xItems = new Spreadsheet({
+            workbook: { columns: itemsColumns, context: { sheetName: "Items" } },
+            dataSource: itemsDS,
+            fileName: `${base}_Items.xlsx`,
+            worker: true
+          });
+          await xItems.build();
+          xItems.destroy();
 
-					// Items.xlsx
-					const xItems = new Spreadsheet({
-						workbook: { columns: itemsColumns, context: { sheetName: "Items" } },
-						dataSource: itemsDS,
-						fileName: `${base}_Items.xlsx`,
-						worker: true
-					});
-					await xItems.build();
-					xItems.destroy();
+          // Optional toast to indicate fallback
+          sap.m.MessageToast.show("Your UI5 version does not support multi‑sheet. Exported two files instead.");
+          jQuery.sap.log.warning("Multi-sheet export not supported in this UI5 version. Exported two files.", multiSheetErr);
+        }
 
-					// Optional toast to indicate fallback
-					sap.m.MessageToast.show("Your UI5 version does not support multi‑sheet. Exported two files instead.");
-					jQuery.sap.log.warning("Multi-sheet export not supported in this UI5 version. Exported two files.", multiSheetErr);
-				}
-
-			} catch (e) {
-				jQuery.sap.log.error("Excel export failed.", e);
-				sap.m.MessageToast.show("Excel export failed.");
-			} finally {
-				oView.setBusy(false);
-			}
-		}
+      } catch (e) {
+        jQuery.sap.log.error("Excel export failed.", e);
+        sap.m.MessageToast.show("Excel export failed.");
+      } finally {
+        oView.setBusy(false);
+      }
+    }
 
 	});
 });
