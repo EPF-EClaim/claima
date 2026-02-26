@@ -60,22 +60,25 @@ module.exports = (srv) => {
     srv.on('getUserType', async (req) => {
       const { ZEMP_MASTER } = srv.entities;
 
-      const login = req.user?.attr?.login_name || req.user?.id;
+      // 1. Derive some kind of “identity” (locally this will be 'alice' or 'anonymous')
+      const emailFromToken =
+        req.user?.attr?.email ||
+        req.user?.attr?.mail ||
+        req.user?.attr?.user_name ||
+        req.user?.attr?.login_name ||
+        req.user?.id ||
+        "";
 
-      const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: login });
+      const email = String(emailFromToken).trim().toLowerCase();
+      console.log("Derived email (local):", email);
 
-      if (!result) {
-        return {
-          id: login,
-          userType: "UNKNOWN"
-        };
-      }
-
+      // 2. Query your ZEMP_MASTER table using your Email column name
+      const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });  // <— use your real column name here
+      console.log("Result",result);
       return {
-        id: login,
-        userType: result.USER_TYPE
+        id: email,
+        userType: result?.USER_TYPE || "UNKNOWN"
       };
-
-    })
+    });
 
 }
