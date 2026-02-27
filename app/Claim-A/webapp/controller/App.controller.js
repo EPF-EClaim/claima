@@ -184,7 +184,7 @@ sap.ui.define([
 					break;
 				case "config":
 					//Start EY_ATHIRAH
-					if (type === "JKEW Admin" || type === "DTD Admin") {
+					if (type === "DTD Admin") {
 						oRouter.navTo("Configuration");
 					} else {
 						var message = this._getTexti18n("msg_unauthorized_config");
@@ -1566,11 +1566,9 @@ sap.ui.define([
 						null;
 
 					if (email && typeof email === 'string' && email.trim() !== '') {
-						// Create the userData model immediately
-						sap.ui.getCore().setModel(
-							new sap.ui.model.json.JSONModel({ email: email.toLowerCase() }),
-							"userData"
-						);
+						// (Optional) set a model if your view needs it
+						var oUserModel = new sap.ui.model.json.JSONModel({ email: email });
+						that.getView().setModel(oUserModel, 'user');
 
 						sap.m.MessageToast.show('Email: ' + email);
 					} else {
