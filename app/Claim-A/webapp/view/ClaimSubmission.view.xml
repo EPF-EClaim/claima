@@ -9,8 +9,7 @@
 	<Page
 		id="page_claimsubmission"
         showHeader="false"
-        enableScrolling="true"
-	>
+        enableScrolling="true"> 
 		<!-- content here -->
 		<footer>
 			<Toolbar>

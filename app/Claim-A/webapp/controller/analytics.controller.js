@@ -409,7 +409,7 @@ sap.ui.define([
       };
       return map[this._analyticsTarget] || "Report";
     },
-
+ 
     _getTodayString: function () {
       const d = new Date();
       const y = d.getFullYear();

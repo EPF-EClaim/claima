@@ -11,7 +11,7 @@ sap.ui.define([
 	"sap/ui/core/routing/History"
 ], function (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator, History) {
 	"use strict";
-
+ 
 	return Controller.extend("claima.controller.RequestForm", {
 
 		/* =========================================================
@@ -421,10 +421,11 @@ sap.ui.define([
 			
 
 			if (data.req_header.grptype === 'individual') {
-				const emp_data = await this._getEmpIdDetail(this._userId);
+				var oData = this._getReqModel().getData();
+				const emp_data = await this._getEmpIdDetail(oData.eeid);
 				// Use the returned data to populate the fields
 				data.participant = [{ 
-					PARTICIPANTS_ID: this._userId, 
+					PARTICIPANTS_ID: emp_data ? emp_data.eeid : "", 
 					PARTICIPANT_NAME: emp_data ? emp_data.name : "", 
 					PARTICIPANT_COST_CENTER: emp_data ? emp_data.cc : "", 
 					ALLOCATED_AMOUNT: "" 
@@ -450,6 +451,7 @@ sap.ui.define([
 				if (aContexts.length > 0) {
 					const oData = aContexts[0].getObject();
 					return { 
+						eeid: oData.EEID,
 						name: oData.NAME, 
 						cc: oData.CC 
 					};
@@ -977,11 +979,11 @@ sap.ui.define([
 				location: "",
 				remarks: ""
 			};
-			const emp_data = await this._getEmpIdDetail(this._userId);
+			const emp_data = await this._getEmpIdDetail(data.eeid);
 			if (data.req_header.grptype === 'individual') {
 				// Use the returned data to populate the fields
 				data.participant = [{ 
-					PARTICIPANTS_ID: this._userId, 
+					PARTICIPANTS_ID: emp_data ? emp_data.eeid : "", 
 					PARTICIPANT_NAME: emp_data ? emp_data.name : "", 
 					PARTICIPANT_COST_CENTER: emp_data ? emp_data.cc : "", 
 					ALLOCATED_AMOUNT: "" 

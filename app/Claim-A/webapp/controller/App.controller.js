@@ -114,7 +114,7 @@ sap.ui.define([
 					break;
 				case "config":
 					//Start EY_ATHIRAH
-					if (type === "JKEW Admin" || type === "DTD Admin") {
+					if (type === "DTD Admin") {
 						oRouter.navTo("Configuration");
 					} else {
 						var message = this._getTexti18n("msg_unauthorized_config");
@@ -124,9 +124,13 @@ sap.ui.define([
 					break;
 				// Start Aiman Salim 10/02/2026 - Added for analytics
 				case "analytics":
-					oRouter.navTo("Analytics")
+					if (type === "JKEW Admin" || type === "DTD Admin" || type === "GA Admin") {
+						oRouter.navTo("Analytics")
+					} else {
+						var message = this._getTexti18n("msg_unauthorized_analytic");
+						sap.m.MessageBox.error(message);
+					}
 					break;
-				// End 	 Aiman Salim 10/02/2026 - Added for analytics
 				case "dashboard":
 					oRouter.navTo("Dashboard");
 					break;
@@ -825,27 +829,7 @@ sap.ui.define([
 			this.oDialog_ClaimInput.close();
 
 			// load Claim Submission page
-			//// load Claim Submission init
 			var oClaimSubmissionPage = this.getView().byId('navcontainer_claimsubmission');
-			// if (oClaimSubmissionPage) {
-			// 	setTimeout(function () {
-			// 		// find the first descendant that exposes getController() (typically the inner XMLView)
-			// 		var aViews = (typeof oClaimSubmissionPage.findAggregatedObjects === "function")
-			// 			? oClaimSubmissionPage.findAggregatedObjects(true, function (c) {
-			// 				return typeof c.getController === "function";
-			// 			})
-			// 			: [];
-
-			// 		var oCtrl = (aViews && aViews.length) ? aViews[0].getController() : null;
-
-			// 		if (oCtrl && typeof oCtrl._getInputModel === "function") {
-			// 			oCtrl._getInputModel();
-			// 		} else {
-			// 			jQuery.sap.log.warning("RequestForm controller API 'loadItemsForRequest' not found.");
-			// 		}
-			// 	}, 0);
-			// }
-			// this.byId("pageContainer").to(this.getView().byId('page_claimsubmission'));
 			this.byId("pageContainer").to(oClaimSubmissionPage);
 		},
 
@@ -1536,15 +1520,18 @@ sap.ui.define([
 			const oResult = await this.getCurrentReqNumber('NR01');
 
 			if (oResult) {
-				const sUserId = sap.ushell.Container.getUser().getId();
 				const oListBinding = oMainModel.bindList("/ZREQUEST_HEADER");
 
-				const emp_data = await this._getEmpIdDetail(sUserId);
+				// var oUserModel = new sap.ui.model.json.JSONModel({ email: 'Jefry.Yap@my.ey.com' });
+				// this.getView().setModel(oUserModel, 'user');
+
+				var userModelData = this.getView().getModel('user').getData();
+				const emp_data = await this._getEmpIdDetail(userModelData.email);
 
 				const sCostCenter = emp_data ? emp_data.cc : "";
 
 				const oPayload = {
-					EMP_ID: sUserId,
+					EMP_ID: emp_data.eeid,
 					REQUEST_ID: oResult.reqNo,
 					REQUEST_TYPE_ID: oInputData.reqtype,
 					OBJECTIVE_PURPOSE: oInputData.purpose,
@@ -1556,7 +1543,7 @@ sap.ui.define([
 					ATTACHMENT1: oInputData.doc1,
 					ATTACHMENT2: oInputData.doc2,
 					CASH_ADVANCE: parseFloat(oInputData.cashadvamt).toFixed(2),
-					COST_CENTER: sCostCenter, 
+					COST_CENTER: sCostCenter,
 					EVENT_START_DATE: oInputData.eventstartdate,
 					EVENT_END_DATE: oInputData.eventenddate,
 					TRIP_START_DATE: oInputData.tripstartdate,
@@ -1576,6 +1563,7 @@ sap.ui.define([
 					oReqModel.setProperty("/req_header/reqid", oResult.reqNo);
 					oReqModel.setProperty("/req_header/reqstatus", 'DRAFT');
 					oReqModel.setProperty("/req_header/costcenter", sCostCenter);
+					oReqModel.setProperty("/eeid", emp_data.eeid);
 					this._getItemList(oResult.reqNo);
 
 					var oRouter = this.getOwnerComponent().getRouter();
@@ -1586,10 +1574,10 @@ sap.ui.define([
 			}
 		},
 
-		async _getEmpIdDetail(sEEID) {
+		async _getEmpIdDetail(sEMAIL) {
 			const oModel = this.getView().getModel();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new sap.ui.model.Filter("EEID", "EQ", sEEID)
+				new sap.ui.model.Filter("EMAIL", "EQ", sEMAIL)
 			]);
 
 			try {
@@ -1599,6 +1587,7 @@ sap.ui.define([
 				if (aContexts.length > 0) {
 					const oData = aContexts[0].getObject();
 					return {
+						eeid: oData.EEID,
 						name: oData.NAME,
 						cc: oData.CC
 					};
@@ -1666,9 +1655,9 @@ sap.ui.define([
 			else if (isGuid) sLiteral = `guid'${sReq}'`;
 			else sLiteral = `'${sReq.replace(/'/g, "''")}'`;
 
-			const base       = this._entityUrl("ZREQUEST_ITEM");
+			const base = this._entityUrl("ZREQUEST_ITEM");
 			const filterExpr = `REQUEST_ID eq ${sLiteral}`;
-			const orderby    = "REQUEST_SUB_ID asc";
+			const orderby = "REQUEST_SUB_ID asc";
 			const query = [
 				`$filter=${encodeURIComponent(filterExpr)}`,
 				`$orderby=${encodeURIComponent(orderby)}`,
@@ -1697,7 +1686,7 @@ sap.ui.define([
 				const req_amt = a.reduce((sum, it) => {
 					return it.CASH_ADVANCE === null ? sum + (parseFloat(it.EST_AMOUNT) || 0) : sum;
 				}, 0);
-				
+
 				oReq.setProperty("/req_header/cashadvamt", cashadv_amt);
 				oReq.setProperty("/req_header/reqamt", req_amt);
 
@@ -1716,11 +1705,11 @@ sap.ui.define([
 		_serviceRoot(sDataSource = "mainService") {
 			const oManifest = this.getOwnerComponent().getManifestEntry("sap.app");
 			const sUri = oManifest?.dataSources?.[sDataSource]?.uri;
-			
+
 			let sPath = sUri;
 			if (!sPath) {
-				sPath = (sDataSource === "mainService") 
-					? "/odata/v4/EmployeeSrv/" 
+				sPath = (sDataSource === "mainService")
+					? "/odata/v4/EmployeeSrv/"
 					: "/odata/v4/eclaim-view-srv/";
 			}
 
@@ -1735,8 +1724,8 @@ sap.ui.define([
 		async _getPARHeaderList() {
 			const oReq = this.getOwnerComponent().getModel('request_status');
 
-			const base       = this._entityUrl("ZREQUEST_HEADER");
-			const orderby    = "REQUEST_ID asc";
+			const base = this._entityUrl("ZREQUEST_HEADER");
+			const orderby = "REQUEST_ID asc";
 			const query = [
 				`$orderby=${encodeURIComponent(orderby)}`,
 				`$count=true`,
@@ -1751,7 +1740,7 @@ sap.ui.define([
 				const data = await res.json();
 				const a = Array.isArray(data?.value) ? data.value : [];
 
-                a.forEach((it) => {
+				a.forEach((it) => {
 					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = parseFloat(0);
 				});
 
@@ -1797,13 +1786,15 @@ sap.ui.define([
 
 		onClickNavigate: function (oEvent) {
 			let id = oEvent.getParameters().id;
-			if (id === "container-claima---App--dashboard-claim" || id === "application-app-preview-component---App--dashboard-claim") {
-				this.byId("pageContainer").to(this.getView().createId("myrequest")); //Aiman Salim Start Add 10/02/2026 - Change myreport to myrequest
-			} else if (id === "container-claima---App--dashboard-request" || id === "application-app-preview-component---App--dashboard-request") {
-				this.byId("pageContainer").to(this.getView().createId("myreport")); //Aiman Salim Start Add 10/02/2026 - Change myreport to myrequest
+			var oRoot = this.getOwnerComponent().getRootControl();
+			var oNav = oRoot.byId("pageContainer");
+			if (id.includes("dashboard-claim")) {
+				oNav.to(oRoot.createId("myreport"));
+			} else if (id.includes("request")) {
+				oNav.to(oRoot.createId("myrequest"));
 			}
 		},
-
+ 
 		_getTexti18n: function (i18nKey, array_i18nParameters) {
 			if (array_i18nParameters) {
 				return this.getView().getModel("i18n").getResourceBundle().getText(i18nKey, array_i18nParameters);
@@ -1884,128 +1875,128 @@ sap.ui.define([
 		},
 
 
-		
-onDownloadExcelReport: async function () {
-      const oView = this.getView();
 
-      try {
-        oView.setBusy(true);
+		onDownloadExcelReport: async function () {
+			const oView = this.getView();
 
-        // 1) Read current header & items models
-        const current = oView.getModel("current")?.getData();
-        const itemsDS = oView.getModel("items")?.getProperty("/results") || [];
+			try {
+				oView.setBusy(true);
 
-        if (!current) {
-          sap.m.MessageToast.show("No header data to export.");
-          return;
-        }
+				// 1) Read current header & items models
+				const current = oView.getModel("current")?.getData();
+				const itemsDS = oView.getModel("items")?.getProperty("/results") || [];
 
-        // 2) Build one flattened header row
-        const headerRow = {
-          "Claim ID": current.id || current.report?.id || "",
-          "Purpose": current.report?.purpose || "",
-          "Trip Start Date": this._toDate(current.report?.startdate),
-          "Trip End Date": this._toDate(current.report?.enddate),
-          "Location": current.report?.location || current.location || "",
-          "Status/Comment": current.report?.comment || "",
-          "Cost Center": current.costcenter || "",
-          "Alternate Cost Center": current.altcc || "",
-          "Total Amount": current.total ?? "",
-          "Approved Amount": current.report?.amt_approved ?? "",
-          "Cash Advance": current.cashadv ?? "",
-          "Final Amount": current.finalamt ?? ""
-        };
+				if (!current) {
+					sap.m.MessageToast.show("No header data to export.");
+					return;
+				}
 
-        // 3) Define columns for Header sheet
-        const headerColumns = [
-          { label: "Claim ID",            property: "Claim ID",           width: 18 },
-          { label: "Purpose",             property: "Purpose",            width: 30 },
-          { label: "Trip Start Date",     property: "Trip Start Date",    type: "date",  width: 18, format: "yyyy-mm-dd" },
-          { label: "Trip End Date",       property: "Trip End Date",      type: "date",  width: 18, format: "yyyy-mm-dd" },
-          { label: "Location",            property: "Location",           width: 25 },
-          { label: "Status/Comment",      property: "Status/Comment",     width: 28 },
-          { label: "Cost Center",         property: "Cost Center",        width: 18 },
-          { label: "Alternate Cost Center", property: "Alternate Cost Center", width: 22 },
-          { label: "Total Amount",        property: "Total Amount",       type: "number", scale: 2, width: 18 },
-          { label: "Approved Amount",     property: "Approved Amount",    type: "number", scale: 2, width: 18 },
-          { label: "Cash Advance",        property: "Cash Advance",       type: "number", scale: 2, width: 18 },
-          { label: "Final Amount",        property: "Final Amount",       type: "number", scale: 2, width: 18 }
-        ];
+				// 2) Build one flattened header row
+				const headerRow = {
+					"Claim ID": current.id || current.report?.id || "",
+					"Purpose": current.report?.purpose || "",
+					"Trip Start Date": this._toDate(current.report?.startdate),
+					"Trip End Date": this._toDate(current.report?.enddate),
+					"Location": current.report?.location || current.location || "",
+					"Status/Comment": current.report?.comment || "",
+					"Cost Center": current.costcenter || "",
+					"Alternate Cost Center": current.altcc || "",
+					"Total Amount": current.total ?? "",
+					"Approved Amount": current.report?.amt_approved ?? "",
+					"Cash Advance": current.cashadv ?? "",
+					"Final Amount": current.finalamt ?? ""
+				};
 
-        // 4) Define columns for Items sheet
-        // If START_DATE is a string, we set inputFormat; if it's a Date, you can drop inputFormat.
-        const itemsColumns = [
-          { label: "Date",       property: "START_DATE", type: "date", width: 18, inputFormat: "yyyy-MM-dd", format: "yyyy-mm-dd" },
-          { label: "Receipt",    property: "RECEIPT_NO", width: 20 },
-          { label: "Claim Type", property: "CLAIM_TYPE_ITEM", width: 25 },
-          { label: "Claim Item", property: "CLAIM_ITEM_ID", width: 18 },
-          { label: "Amount",     property: "AMOUNT", type: "number", scale: 2, width: 14 },
-          { label: "Category",   property: "STAFF_CATEGORY", width: 20 }
-        ];
+				// 3) Define columns for Header sheet
+				const headerColumns = [
+					{ label: "Claim ID", property: "Claim ID", width: 18 },
+					{ label: "Purpose", property: "Purpose", width: 30 },
+					{ label: "Trip Start Date", property: "Trip Start Date", type: "date", width: 18, format: "yyyy-mm-dd" },
+					{ label: "Trip End Date", property: "Trip End Date", type: "date", width: 18, format: "yyyy-mm-dd" },
+					{ label: "Location", property: "Location", width: 25 },
+					{ label: "Status/Comment", property: "Status/Comment", width: 28 },
+					{ label: "Cost Center", property: "Cost Center", width: 18 },
+					{ label: "Alternate Cost Center", property: "Alternate Cost Center", width: 22 },
+					{ label: "Total Amount", property: "Total Amount", type: "number", scale: 2, width: 18 },
+					{ label: "Approved Amount", property: "Approved Amount", type: "number", scale: 2, width: 18 },
+					{ label: "Cash Advance", property: "Cash Advance", type: "number", scale: 2, width: 18 },
+					{ label: "Final Amount", property: "Final Amount", type: "number", scale: 2, width: 18 }
+				];
 
-        // Optionally normalize item dates to Date objects to avoid inputFormat handling:
-        // itemsDS.forEach(it => { it.START_DATE = this._toDate(it.START_DATE); });
+				// 4) Define columns for Items sheet
+				// If START_DATE is a string, we set inputFormat; if it's a Date, you can drop inputFormat.
+				const itemsColumns = [
+					{ label: "Date", property: "START_DATE", type: "date", width: 18, inputFormat: "yyyy-MM-dd", format: "yyyy-mm-dd" },
+					{ label: "Receipt", property: "RECEIPT_NO", width: 20 },
+					{ label: "Claim Type", property: "CLAIM_TYPE_ITEM", width: 25 },
+					{ label: "Claim Item", property: "CLAIM_ITEM_ID", width: 18 },
+					{ label: "Amount", property: "AMOUNT", type: "number", scale: 2, width: 14 },
+					{ label: "Category", property: "STAFF_CATEGORY", width: 20 }
+				];
 
-        // 5) Primary path: multi-sheet workbook
-        //    (If it throws in older UI5, we catch and run the fallback below.)
-        try {
-          const xlsx = new Spreadsheet({
-            workbook: {
-              sheets: [
-                {
-                  context: { sheetName: "Header" },
-                  columns: headerColumns,
-                  dataSource: [headerRow]
-                },
-                {
-                  context: { sheetName: "Items" },
-                  columns: itemsColumns,
-                  dataSource: itemsDS
-                }
-              ]
-            },
-            fileName: this._getExcelFileName(),
-            worker: true
-          });
+				// Optionally normalize item dates to Date objects to avoid inputFormat handling:
+				// itemsDS.forEach(it => { it.START_DATE = this._toDate(it.START_DATE); });
 
-          await xlsx.build();
-          xlsx.destroy();
-        } catch (multiSheetErr) {
-          // 6) Fallback: Export TWO files if multi-sheet is not supported
-          const base = this._getExcelFileName().replace(/\.xlsx$/i, "");
+				// 5) Primary path: multi-sheet workbook
+				//    (If it throws in older UI5, we catch and run the fallback below.)
+				try {
+					const xlsx = new Spreadsheet({
+						workbook: {
+							sheets: [
+								{
+									context: { sheetName: "Header" },
+									columns: headerColumns,
+									dataSource: [headerRow]
+								},
+								{
+									context: { sheetName: "Items" },
+									columns: itemsColumns,
+									dataSource: itemsDS
+								}
+							]
+						},
+						fileName: this._getExcelFileName(),
+						worker: true
+					});
 
-          // Header.xlsx
-          const xHeader = new Spreadsheet({
-            workbook: { columns: headerColumns, context: { sheetName: "Header" } },
-            dataSource: [headerRow],
-            fileName: `${base}_Header.xlsx`,
-            worker: true
-          });
-          await xHeader.build();
-          xHeader.destroy();
+					await xlsx.build();
+					xlsx.destroy();
+				} catch (multiSheetErr) {
+					// 6) Fallback: Export TWO files if multi-sheet is not supported
+					const base = this._getExcelFileName().replace(/\.xlsx$/i, "");
 
-          // Items.xlsx
-          const xItems = new Spreadsheet({
-            workbook: { columns: itemsColumns, context: { sheetName: "Items" } },
-            dataSource: itemsDS,
-            fileName: `${base}_Items.xlsx`,
-            worker: true
-          });
-          await xItems.build();
-          xItems.destroy();
+					// Header.xlsx
+					const xHeader = new Spreadsheet({
+						workbook: { columns: headerColumns, context: { sheetName: "Header" } },
+						dataSource: [headerRow],
+						fileName: `${base}_Header.xlsx`,
+						worker: true
+					});
+					await xHeader.build();
+					xHeader.destroy();
 
-          // Optional toast to indicate fallback
-          sap.m.MessageToast.show("Your UI5 version does not support multi‑sheet. Exported two files instead.");
-          jQuery.sap.log.warning("Multi-sheet export not supported in this UI5 version. Exported two files.", multiSheetErr);
-        }
+					// Items.xlsx
+					const xItems = new Spreadsheet({
+						workbook: { columns: itemsColumns, context: { sheetName: "Items" } },
+						dataSource: itemsDS,
+						fileName: `${base}_Items.xlsx`,
+						worker: true
+					});
+					await xItems.build();
+					xItems.destroy();
 
-      } catch (e) {
-        jQuery.sap.log.error("Excel export failed.", e);
-        sap.m.MessageToast.show("Excel export failed.");
-      } finally {
-        oView.setBusy(false);
-      }
-    }
+					// Optional toast to indicate fallback
+					sap.m.MessageToast.show("Your UI5 version does not support multi‑sheet. Exported two files instead.");
+					jQuery.sap.log.warning("Multi-sheet export not supported in this UI5 version. Exported two files.", multiSheetErr);
+				}
+
+			} catch (e) {
+				jQuery.sap.log.error("Excel export failed.", e);
+				sap.m.MessageToast.show("Excel export failed.");
+			} finally {
+				oView.setBusy(false);
+			}
+		}
 
 	});
 });

@@ -52,7 +52,7 @@
                 <Table
                     id="claimTable"
                     width="90%"
-                    items="{/ZCLAIM_TYPE}"
+                    items="{ path: '/ZCLAIM_TYPE',sorter : { path : 'modifiedAt' }}"
                     mode="SingleSelectLeft"
                     selectionChange="onSelectionChange"
                     includeItemInSelection="true"
@@ -107,7 +107,7 @@
                                     tooltip="View Item"
                                     class="sapUiIconColorSubtle"
                                 />
-                            </cells>
+                            </cells> 
                         </ColumnListItem>
                     </items>
                 </Table>

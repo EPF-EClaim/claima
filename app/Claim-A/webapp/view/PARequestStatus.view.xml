@@ -6,7 +6,7 @@
 	controllerName="claima.controller.RequestFormStatus"
     id="request_status_xmlview">
 
-    <Page 
+    <Page  
         id="request_form_status"
         floatingFooter="true"
         showHeader="false">
@@ -72,4 +72,4 @@
             </Table>
         </VBox>
     </Page>
-</mvc:View>
+</mvc:View> 

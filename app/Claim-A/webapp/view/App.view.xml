@@ -95,15 +95,6 @@
                 >
                 <pages>
                     <!-- Claim Submission -->
-                    <!-- <Page
-                        id="page_claimsubmission"
-                        showHeader="false"
-                    >
-                        <mvc:XMLView
-                            id="view_claimsubmission"
-                            viewName="claima.view.ClaimSubmission"
-                        />
-                    </Page> -->
                     <NavContainer
                         id="navcontainer_claimsubmission"
                     >
@@ -112,7 +103,7 @@
                             viewName="claima.view.ClaimSubmission"
                         />
                     </NavContainer>
-                    
+
                     <Page
                         id="expensereport"
                         showHeader="false"
@@ -226,7 +217,7 @@
                         </content>
                     </Page> -->
 
-                    
+                     
                     <NavContainer
                         id="new_request"
                         class="sapUiContentPadding"
