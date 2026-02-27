@@ -1,3 +1,4 @@
+
 <core:FragmentDefinition
     xmlns:l="sap.ui.layout"
     xmlns:core="sap.ui.core"
@@ -8,33 +9,35 @@
     xmlns:u="sap.ui.unified"
 >
     <VBox class="sapUiSmallMargin">
-            <VBox class="sapUiMediumMargin"
-            width="100%">
-                <HBox>
-                    <Text text="Claim Type ID: " />
-                    <Text text="{CLAIM_TYPE_ID}" />
-                </HBox>
-                <HBox>
-                    <Text text="Claim Type Description: " />
-                    <Text text="{CLAIM_TYPE_DESC}" />
-                </HBox>
-                <HBox>
-                    <Text text="End Date: " />
-                    <Text
-                        text="{path: 'END_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
-                    />
-                </HBox>
-                <HBox>
-                    <Text text="Start Date: " />
-                    <Text
-                        text="{path: 'START_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
-                    />
-                </HBox>
-                <HBox>
-                    <Text text="Status: " />
-                    <Text text="{STATUS}" />
-                </HBox>
-            </VBox>
+        <VBox
+            class="sapUiMediumMargin"
+            width="100%"
+        >
+            <HBox>
+                <Text text="Claim Type ID: " />
+                <Text text="{CLAIM_TYPE_ID}" />
+            </HBox>
+            <HBox>
+                <Text text="Claim Type Description: " />
+                <Text text="{CLAIM_TYPE_DESC}" />
+            </HBox>
+            <HBox>
+                <Text text="End Date: " />
+                <Text
+                    text="{path: 'END_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
+                />
+            </HBox>
+            <HBox>
+                <Text text="Start Date: " />
+                <Text
+                    text="{path: 'START_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
+                />
+            </HBox>
+            <HBox>
+                <Text text="Status: " />
+                <Text text="{STATUS}" />
+            </HBox>
+        </VBox>
         <VBox
             class="sapUiMediumMargin"
             width="100%"
@@ -71,10 +74,10 @@
             <Table
                 id="claimitemTable"
                 width="90%"
-                items="{path: 'Items'}"
+                items="{path: 'Items',sorter : { path : 'modifiedAt', descending: false }}"
                 mode="SingleSelectLeft"
                 selectionChange="onSelectionChange"
-                includeItemInSelection="true" 
+                includeItemInSelection="true"
             >
                 <columns>
                     <Column>
@@ -115,7 +118,7 @@
                             <Text text="{CLAIM_TYPE_ITEM_ID}" />
                             <Text text="{CLAIM_TYPE_ITEM_DESC}" />
                             <Text text="{END_DATE}" />
-                            <Text text="{START_DATE}"/>
+                            <Text text="{START_DATE}" />
                             <Text text="{STATUS}" />
                             <Text text="{CATEGORY_ID}" />
                             <Text text="{COST_CENTER}" />
