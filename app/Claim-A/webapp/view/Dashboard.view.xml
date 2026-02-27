@@ -124,7 +124,7 @@
                             <VBox>
                                 <ScrollContainer height="140px" vertical="true" horizontal="false">
                                     <Table
-                                        items="{ path: '/ZCLAIM_HEADER' }"
+                                        items="{ path: '/ZCLAIM_HEADER', sorter : { path : 'TRIP_START_DATE' } }"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
                                         inset="false" fixedLayout="true"
@@ -202,7 +202,7 @@
                             <VBox>
                                 <ScrollContainer height="140px" vertical="true" horizontal="false">
                                     <Table
-                                        items="{ path: '/ZREQUEST_HEADER' }"
+                                        items="{ path: '/ZREQUEST_HEADER', sorter : { path : 'REQUEST_DATE' } }"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available">
