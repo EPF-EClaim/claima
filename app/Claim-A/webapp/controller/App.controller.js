@@ -1814,7 +1814,7 @@ sap.ui.define([
 				oNav.to(oRoot.createId("myrequest"));
 			}
 		},
-
+ 
 		_getTexti18n: function (i18nKey, array_i18nParameters) {
 			if (array_i18nParameters) {
 				return this.getView().getModel("i18n").getResourceBundle().getText(i18nKey, array_i18nParameters);

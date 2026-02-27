@@ -282,7 +282,7 @@
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
-                                    >
+                                    > 
                                         <columns>
                                             <Column
                                                 demandPopin="true"

@@ -7,7 +7,7 @@
     xmlns:f="sap.ui.layout.form"
     xmlns:card="sap.f.cards"
     xmlns:u="sap.ui.unified"
->
+> 
     <VBox
         class="sapUiSmallMargin"
         id="claimdetailspage"

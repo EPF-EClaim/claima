@@ -8,4 +8,4 @@ sap.ui.define([
             var that = this;
         }
     });
-});
+}); 

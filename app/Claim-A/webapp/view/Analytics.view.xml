@@ -12,7 +12,7 @@
     xmlns:card="sap.f.cards"
     xmlns:Icon="sap.ui.core.Icon"
     xmlns:ShellBar="sap.f.ShellBar"
-    xmlns:layout="sap.ui.layout">
+    xmlns:layout="sap.ui.layout"> 
 
   <ScrollContainer id="analytics" class="sapUiContentPadding" height="100%">
         <Title text="{i18n>ana_poptitle}" titleStyle="H3" />

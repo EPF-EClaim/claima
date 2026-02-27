@@ -107,7 +107,7 @@
                                     tooltip="View Item"
                                     class="sapUiIconColorSubtle"
                                 />
-                            </cells>
+                            </cells> 
                         </ColumnListItem>
                     </items>
                 </Table>
