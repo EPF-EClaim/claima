@@ -1634,7 +1634,8 @@
                                             "name": "CreationDialog",
                                             "creationFields": "SUBMISSION_TYPE_ID,SUBMISSION_TYPE_DESC,START_DATE,END_DATE,STATUS"
                                         },
-                                        "enableMassEdit": false
+                                        "enableMassEdit": false,
+                                        "disableCopyToClipboard": true
                                     },
                                     "actions": {
                                         "newCopy": {
@@ -1682,7 +1683,8 @@
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
-                                        }
+                                        },
+                                        "disableCopyToClipboard": true
                                     }
                                 }
                             },
@@ -1716,6 +1718,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "USER_TYPE_ID,USER_TYPE_DESC,START_DATE,END_DATE,STATUS"
@@ -1772,6 +1775,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "CLAIM_CAT_ID,CLAIM_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
@@ -1825,6 +1829,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "REQUEST_ID,EMP_ID,DISBURSEMENT_DATE,DISBURSEMENT_STATUS"
@@ -1881,6 +1886,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "STATUS_ID,STATUS_DESC,START_DATE,END_DATE,STATUS"
@@ -1941,7 +1947,8 @@
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "LODGING_CATEGORY_ID,LODGING_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
-                                        }
+                                        },
+                                        "disableCopyToClipboard": true
                                     },
                                     "actions": {
                                         "DataFieldForAction::eclaim_srv.Copy": {
@@ -1995,6 +2002,7 @@
                                             "showCounts": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "ROOM_TYPE_ID,ROOM_TYPE_DESC,START_DATE,END_DATE,STATUS"
@@ -2049,6 +2057,7 @@
                                             "showCounts": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "FLIGHT_CLASS_ID,FLIGHT_CLASS_DESC,START_DATE,END_DATE,STATUS"
@@ -2102,6 +2111,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "AREA_ID,AREA_DESC,START_DATE,END_DATE,STATUS"
@@ -2156,6 +2166,7 @@
                                             "showCounts": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "COUNTRY_ID,COUNTRY_DESC,START_DATE,END_DATE,STATUS"
@@ -2210,6 +2221,7 @@
                                             "showCounts": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "REGION_ID,REGION_DESC,START_DATE,END_DATE,STATUS"
@@ -2263,6 +2275,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
@@ -2316,6 +2329,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "VEHICLE_TYPE_ID,VEHICLE_TYPE_DESC,START_DATE,END_DATE,STATUS"
@@ -2369,6 +2383,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "COUNTRY_ID,STATE_ID,STATE_DESC,START_DATE,END_DATE,STATUS"
@@ -2425,7 +2440,8 @@
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,FIELD01,FIELD02,FIELD03,FIELD04,FIELD05,FIELD06,FIELD07,FIELD08,FIELD09,FIELD10,FIELD11,FIELD12,FIELD13,FIELD14,FIELD15,FIELD16,FIELD17,FIELD18,FIELD19,FIELD20"
-                                        }
+                                        },
+                                        "disableCopyToClipboard": true
                                     },
                                     "actions": {
                                         "newEdit": {
@@ -2478,7 +2494,8 @@
                                             "name": "CreationDialog",
                                             "creationFields": "LENDER_ID,LENDER_NAME,START_DATE,END_DATE,STATUS"
                                         },
-                                        "enableMassEdit": false
+                                        "enableMassEdit": false,
+                                        "disableCopyToClipboard": true
                                     },
                                     "actions": {
                                         "newCopy": {
@@ -2528,6 +2545,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "TRAVEL_DAYS_ID,START_DATE,END_DATE,TRAVEL_DAYS_DESC,STATUS"
@@ -2581,6 +2599,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "METER_CUBE_ID,MARITAL_STATUS,DEPENDENT_TYPE_ID,AGE,METER_CUBE,START_DATE,END_DATE,STATUS"
@@ -2634,6 +2653,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "FARE_TYPE_ID,FARE_TYPE_DESC,START_DATE,END_DATE,STATUS"
@@ -2687,6 +2707,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "HOTEL_LODGING_ID,HOTEL_LODGING_DESC,START_DATE,END_DATE,STATUS"
@@ -2740,6 +2761,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "CLAIM_BASIS_ID,CLAIM_BASIS_DESC,START_DATE,END_DATE,STATUS"
@@ -2793,6 +2815,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "DEPENDENT_TYPE_ID,DEPENDENT_TYPE_DESC,START_DATE,END_DATE,STATUS"
@@ -2846,6 +2869,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "POSITION_EVENT_REASON_ID,POSITION_EVENT_REASON_DESC,START_DATE,END_DATE,STATUS"
@@ -2899,6 +2923,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "SPORTS_REPRESENTATION_ID,SPORTS_REPRESENTATION_DESC,START_DATE,END_DATE,STATUS"
@@ -2952,6 +2977,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "FAMILY_TIMING_ID,FAMILY_TIMING_DESC,START_DATE,END_DATE,STATUS"
@@ -3004,11 +3030,12 @@
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
                                         },
-                                        "enableMassEdit": false,
+                                        "enableMassEdit": false, 
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "TRAVEL_TYPE_ID,TRAVEL_TYPE_DESC,START_DATE,END_DATE,STATUS"
-                                        }
+                                        },
+                                        "disableCopyToClipboard": true
                                     },
                                     "actions": {
                                         "newCopy": {
@@ -3058,6 +3085,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "TRANSPORT_PASSING_ID,TRANSPORT_PASSING_DESC,START_DATE,END_DATE,STATUS"
@@ -3111,6 +3139,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "TRANSFER_MODE_ID,TRANSFER_MODE_DESC,START_DATE,END_DATE,STATUS"
@@ -3167,7 +3196,8 @@
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "STUDY_LEVELS_ID,STUDY_LEVELS_DESC,START_DATE,END_DATE,STATUS"
-                                        }
+                                        },
+                                        "disableCopyToClipboard": true
                                     },
                                     "actions": {
                                         "newCopy": {
@@ -3220,7 +3250,8 @@
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "PROFESIONAL_BODY_ID,PROFESIONAL_BODY_DESC,START_DATE,END_DATE,STATUS"
-                                        }
+                                        },
+                                        "disableCopyToClipboard": true
                                     },
                                     "actions": {
                                         "newCopy": {
@@ -3273,7 +3304,8 @@
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "INSURANCE_PACKAGE_ID,ZINSURANCE_PACKAGE_DESC,START_DATE,END_DATE,STATUS"
-                                        }
+                                        },
+                                        "disableCopyToClipboard": true
                                     },
                                     "actions": {
                                         "newCopy": {
@@ -3326,7 +3358,8 @@
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "INSURANCE_PROVIDER_ID,INSURANCE_PROVIDER_DESC,START_DATE,END_DATE,STATUS"
-                                        }
+                                        },
+                                        "disableCopyToClipboard": true
                                     },
                                     "actions": {
                                         "newCopy": {
@@ -3376,6 +3409,7 @@
                                             "hideTableTitle": true
                                         },
                                         "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "VEHICLE_CLASS_ID,VEHICLE_CLASS_DESC,START_DATE,END_DATE,STATUS"
@@ -3432,7 +3466,8 @@
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "MOBILE_CATEGORY_PURPOSE_ID,MOBILE_CATEGORY_PURPOSE_DESC,START_DATE,END_DATE,STATUS"
-                                        }
+                                        },
+                                        "disableCopyToClipboard": true
                                     },
                                     "actions": {
                                         "newCopy": {
@@ -3684,7 +3719,8 @@
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "VEHICLE_OWNERSHIP_ID,VEHICLE_OWNERSHIP_DESC,START_DATE,END_DATE,STATUS"
-                                        }
+                                        },
+                                        "disableCopyToClipboard": true
                                     },
                                     "actions": {
                                         "newCopy": {
