@@ -1276,15 +1276,18 @@ sap.ui.define([
 			const oResult = await this.getCurrentReqNumber('NR01');
 
 			if (oResult) {
-				const sUserId = sap.ushell.Container.getUser().getId();
 				const oListBinding = oMainModel.bindList("/ZREQUEST_HEADER");
 
-				const emp_data = await this._getEmpIdDetail(sUserId);
+				// var oUserModel = new sap.ui.model.json.JSONModel({ email: 'Jefry.Yap@my.ey.com' });
+				// this.getView().setModel(oUserModel, 'user');
+
+				var userModelData = this.getView().getModel('user').getData();
+				const emp_data = await this._getEmpIdDetail(userModelData.email);
 
 				const sCostCenter = emp_data ? emp_data.cc : "";
 
 				const oPayload = {
-					EMP_ID: sUserId,
+					EMP_ID: emp_data.eeid,
 					REQUEST_ID: oResult.reqNo,
 					REQUEST_TYPE_ID: oInputData.reqtype,
 					OBJECTIVE_PURPOSE: oInputData.purpose,
@@ -1316,6 +1319,7 @@ sap.ui.define([
 					oReqModel.setProperty("/req_header/reqid", oResult.reqNo);
 					oReqModel.setProperty("/req_header/reqstatus", 'DRAFT');
 					oReqModel.setProperty("/req_header/costcenter", sCostCenter);
+					oReqModel.setProperty("/eeid", emp_data.eeid);
 					this._getItemList(oResult.reqNo);
 
 					var oRouter = this.getOwnerComponent().getRouter();
@@ -1326,10 +1330,10 @@ sap.ui.define([
 			}
 		},
 
-		async _getEmpIdDetail(sEEID) {
+		async _getEmpIdDetail(sEMAIL) {
 			const oModel = this.getView().getModel();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new sap.ui.model.Filter("EEID", "EQ", sEEID)
+				new sap.ui.model.Filter("EMAIL", "EQ", sEMAIL)
 			]);
 
 			try {
@@ -1339,6 +1343,7 @@ sap.ui.define([
 				if (aContexts.length > 0) {
 					const oData = aContexts[0].getObject();
 					return {
+						eeid: oData.EEID,
 						name: oData.NAME,
 						cc: oData.CC
 					};
