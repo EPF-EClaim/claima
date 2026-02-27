@@ -24,7 +24,7 @@
           "instance": "claima-backend-auth",
           "key": "claima-backend-auth-key"
         },
-        "kind": "xsuaa-auth",
+        "kind": "mocked",
         "vcap": {
           "name": "auth"
         }
