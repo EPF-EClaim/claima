@@ -87,13 +87,6 @@
 					text="{claimsubmission_input>/claim_header/request_id} {claimsubmission_input>/claim_header/descr/request_id}"
 				/>
 				
-				<!-- Location -->
-				<Label text="{i18n>label_claimsummary_claimheader_location}" />
-				<Text
-					id="text_claimsummary_claimheader_location"
-					text="{claimsubmission_input>/claim_header/location}"
-				/>
-				
 				<!-- Comment -->
 				<Label text="{i18n>label_claimsummary_claimheader_comment}" />
 				<Text
@@ -101,11 +94,11 @@
 					text="{claimsubmission_input>/claim_header/comment}"
 				/>
 				
-				<!-- Claim Status -->
-				<Label text="{i18n>label_claimsummary_claimheader_status}" />
+				<!-- Location -->
+				<Label text="{i18n>label_claimsummary_claimheader_location}" />
 				<Text
-					id="text_claimsummary_claimheader_status"
-					text="{claimsubmission_input>/claim_header/descr/status_id}"
+					id="text_claimsummary_claimheader_location"
+					text="{claimsubmission_input>/claim_header/location}"
 				/>
 				
 				<!-- Cost Center -->
@@ -120,6 +113,13 @@
 				<Text
 					id="text_claimsummary_claimheader_altcc"
 					text="{claimsubmission_input>/claim_header/alternate_cost_center} {claimsubmission_input>/claim_header/descr/alternate_cost_center}"
+				/>
+				
+				<!-- Claim Status -->
+				<Label text="{i18n>label_claimsummary_claimheader_status}" />
+				<Text
+					id="text_claimsummary_claimheader_status"
+					text="{claimsubmission_input>/claim_header/descr/status_id}"
 				/>
 				
 				<!-- Total Claim (MYR) -->

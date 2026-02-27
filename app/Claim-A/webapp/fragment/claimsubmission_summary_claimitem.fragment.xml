@@ -11,7 +11,7 @@
 				text="{
 					parts:[
 						{path:'i18n>title_claimsummary_claimitem'},
-						{path:'claimsubmission_input>/claimitem_count'}
+						{path:'claimsubmission_input>/claim_items_count'}
 					], 
 					formatter:'jQuery.sap.formatMessage'}"
 				level="H2"
@@ -84,9 +84,9 @@
 			inset="false"
 			mode="MultiSelect"
 			items="{
-				path: 'claimsubmission_input>/claimitems',
+				path: 'claimsubmission_input>/claim_items',
 				sorter: {
-					path: 'item_id'
+					path: 'claim_sub_id'
 				}
 			}"
 			growing="true"
@@ -94,6 +94,11 @@
 			sticky="ColumnHeaders"
 		>
 			<columns>
+				<!-- Item -->
+				<Column>
+					<Text text="Item" />
+				</Column>
+
 				<!-- Date -->
 				<Column>
 					<Text text="{i18n>columntext_claimsummary_date}" />
@@ -128,29 +133,32 @@
 			<items>
 				<ColumnListItem vAlign="Middle">
 					<cells>
+						<!-- Item ID -->
+						<ObjectIdentifier text="{claimsubmission_input>claim_sub_id}" />
+
 						<!-- Date -->
 						<Text
 							text="{
-								path: 'date',
+								path: 'claimsubmission_input>start_date',
 								type: 'sap.ui.model.odata.type.Date',
 								formatOptions: { pattern: 'dd-MMM-yyyy' }
 							}"
 						/>
 
 						<!-- Receipt -->
-						<Text text="{receipt}" />
+						<Text text="{claimsubmission_input>receipt_number}" />
 
 						<!-- Claim Type -->
-						<Text text="{descr/claim_type_id}" />
+						<Text text="{claimsubmission_input>descr/claim_type_id}" />
 
 						<!-- Claim Item -->
-						<Text text="{descr/claimitem}" />
+						<Text text="{claimsubmission_input>descr/claim_type_item_id}" />
 
 						<!-- Amount -->
-						<Text text="{amt}" />
+						<Text text="{claimsubmission_input>amount}" />
 
 						<!-- Category -->
-						<Text text="{descr/category}" />
+						<Text text="{claimsubmission_input>descr/claim_category}" />
 					</cells>
 				</ColumnListItem>
 			</items>

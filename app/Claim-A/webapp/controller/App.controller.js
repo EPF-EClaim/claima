@@ -335,8 +335,8 @@ sap.ui.define([
 						"project_code": null,
 					}
 				},
-				"claimitems": [],
-				"claimitem_count": 0,
+				"claim_items": [],
+				"claim_items_count": 0,
 				"reportnumber": {
 					"reportno": null,
 					"current": null

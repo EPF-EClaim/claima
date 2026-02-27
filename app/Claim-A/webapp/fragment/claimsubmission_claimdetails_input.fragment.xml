@@ -1,0 +1,98 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:l="sap.ui.layout"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:core="sap.ui.core"
+	core:require="{FloatType: 'sap/ui/model/type/Float'}">
+	<VBox class="sapUiSmallMargin">
+		<f:SimpleForm
+			editable="false"
+			layout="ColumnLayout"
+			title="Claim Details"
+			labelSpanXL="5"
+			labelSpanL="5"
+			labelSpanM="5"
+			labelSpanS="10"
+			adjustLabelSpan="true"
+			emptySpanXL="1"
+			emptySpanL="1"
+			emptySpanM="1"
+			emptySpanS="0"
+			columnsM="2"
+			columnsL="2"
+			columnsXL="2"
+			singleContainerFullSize="false" >
+			<f:content>
+				<!-- Claim Type -->
+				<Label text="Claim Type" />
+				<Text
+					id="text_claimdetails_input_claimtype"
+					text="{claimsubmission_input>/claim_header/descr/claim_type_id}"
+				/>
+				
+				<!-- Claim Item -->
+				<Label text="Claim item" />
+				<Select
+					id="select_claimdetails_input_claimitem"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_type_item_id}"
+					change="onSelect_ClaimDetails_ClaimItem"
+					liveChange="onSelect_ClaimDetails_ClaimItem"
+					required="true"
+				>
+				</Select>
+
+				<!-- Category -->
+				<Label text="Category" />
+				<Input
+					id="input_claimdetails_input_category"
+					value="{claimitem_input>/descr/claim_category}"
+					editable="false"
+				/>
+			
+				<!-- Amount (MYR) -->
+				<Label text="Amount (MYR)" />
+				<Input
+					id="input_claimdetails_input_amt"
+					value="{
+						path: 'claimitem_input>/amount',
+						type: 'FloatType'
+					}"
+					required="true"
+				/>
+
+				<!-- Trip Start Date -->
+				<Label text="Trip Start Date" />
+				<DatePicker
+					id="datepicker_claimdetails_input_tripstartdate"
+					value="{claimitem_input>/start_date}"
+					required="true"
+					displayFormat="dd-MMM-yyyy"
+				/>
+				
+				<!-- Trip End Date -->
+				<Label text="Trip End Date" />
+				<DatePicker
+					id="datepicker_claimdetails_input_tripenddate"
+					value="{claimitem_input>/end_date}"
+					required="true"
+					displayFormat="dd-MMM-yyyy"
+				/>
+				
+				<!-- Location -->
+				<Label text="Location" />
+				<Input
+					id="input_claimdetails_input_location"
+					value="{claimitem_input>/location}"
+				/>
+
+				<!-- Remarks -->
+				<Label text="Remarks" />
+				<Input
+					id="input_claimdetails_input_remarks"
+					value="{claimitem_input>/remark}"
+				/>
+			</f:content>
+		</f:SimpleForm>
+	</VBox>
+</core:FragmentDefinition>
