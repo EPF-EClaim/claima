@@ -191,12 +191,12 @@ sap.ui.define([
 					break;
 				case "config":
 					//Start EY_ATHIRAH
-					// if (type === "JKEW Admin" || type === "DTD Admin") {
+					if (type === "JKEW Admin" || type === "DTD Admin") {
 						oRouter.navTo("Configuration");
-					// } else {
-					// 	var message = this._getTexti18n("msg_unauthorized_config");
-					// 	sap.m.MessageBox.error(message);
-					// }
+					} else {
+						var message = this._getTexti18n("msg_unauthorized_config");
+						sap.m.MessageBox.error(message);
+					}
 					//End EY_ATHIRAH
 					break;
 				// Start Aiman Salim 10/02/2026 - Added for analytics

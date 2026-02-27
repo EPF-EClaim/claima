@@ -95,10 +95,9 @@
                             height="200px"
                             class="sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom"
                         >
-                            <headerToolbar>
-                                <OverflowToolbar
-                                    design="Transparent"
-                                    class="myCardHeaderSticky"
+                            <HBox>
+                                <HBox
+                                    alignItems="Center"
                                     width="100%"
                                 >
                                     <core:Icon
@@ -111,53 +110,35 @@
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"
                                     />
-                                    <ToolbarSpacer />
-                                    <Button
-                                        id="dashboard-claim"
-                                        text="See All"
-                                        class="sapUiLargeMarginBegin"
-                                        type="Transparent"
-                                        press="onClickNavigate"
-                                    />
-                                </OverflowToolbar>
-                            </headerToolbar>
+                                </HBox>
+                                <Button
+                                    id="dashboard-claim"
+                                    text="See All"
+                                    class="sapUiLargeMarginBegin"
+                                    type="Transparent"
+                                    press="onClickNavigate"
+                                />
+                            </HBox>
                             <VBox>
-                                <ScrollContainer height="140px" vertical="true" horizontal="false">
+                                <ScrollContainer>
                                     <Table
                                         items="{ path: '/ZCLAIM_HEADER', sorter : { path : 'TRIP_START_DATE' } }"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
-                                        inset="false" fixedLayout="true"
                                     >
                                         <columns>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Purpose" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Status" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Start Date" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Amount" />
-                                                </header>
-                                            </Column>
+                                            <Column demandPopin="true" />
+                                            <Column demandPopin="true" />
+                                            <Column demandPopin="true" />
                                         </columns>
                                         <items>
                                             <ColumnListItem>
                                                 <cells>
-                                                    <Text text="{PURPOSE}" />
-                                                    <Text text="{STATUS_ID}" />
+                                                    <Text text="{CLAIM_ID}" />
                                                     <Text text="{TRIP_START_DATE}" />
-                                                    <Text text="{TOTAL_CLAIM_AMOUNT}" />
+                                                    <Text
+                                                        text="{APPROVED_AMOUNT}"
+                                                    />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>
@@ -173,10 +154,9 @@
                             height="200px"
                             class="sapUiSmallMarginBeginEnd sapUiTinyMarginTopBottom"
                         >
-                            <headerToolbar>
-                                <OverflowToolbar
-                                    design="Transparent"
-                                    class="myCardHeaderSticky"
+                            <HBox>
+                                <HBox
+                                    alignItems="Center"
                                     width="100%"
                                 >
                                     <core:Icon
@@ -189,52 +169,40 @@
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"
                                     />
-                                    <ToolbarSpacer />
-                                    <Button
-                                        id="dashboard-request"
-                                        text="See All"
-                                        class="sapUiLargeMarginBegin"
-                                        type="Transparent"
-                                        press="onClickNavigate"
-                                    />
-                                </OverflowToolbar>
-                            </headerToolbar>
+                                </HBox>
+                                <Button
+                                    id="dashboard-request"
+                                    text="See All"
+                                    class="sapUiLargeMarginBegin"
+                                    type="Transparent"
+                                    press="onClickNavigate"
+                                />
+                            </HBox>
                             <VBox>
-                                <ScrollContainer height="140px" vertical="true" horizontal="false">
+                                <ScrollContainer>
                                     <Table
                                         items="{ path: '/ZREQUEST_HEADER', sorter : { path : 'REQUEST_DATE' } }"
                                         growing="true"
-                                        sticky="HeaderToolbar,ColumnHeaders"
-                                        noDataText="No data available">
+                                        noDataText="No data available"
+                                    >
                                         <columns>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Purpose" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Status" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Start Date" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Amount" />
-                                                </header>
-                                            </Column>
+                                            <Column
+                                                demandPopin="true"
+                                                hAlign="Left"
+                                            />
+                                            <Column demandPopin="true" />
+                                            <Column demandPopin="true" />
                                         </columns>
                                         <items>
                                             <ColumnListItem>
                                                 <cells>
-                                                    <Text text="{OBJECTIVE_PURPOSE}" />
-                                                    <Text text="{STATUS}" />
-                                                    <Text text="{REQUEST_DATE}" />
-                                                    <Text text="{PREAPPROVAL_AMOUNT}" />
+                                                    <Text text="{REQUEST_ID}" />
+                                                    <Text
+                                                        text="{EVENT_START_DATE}"
+                                                    />
+                                                    <Text
+                                                        text="{TOTAL_AMOUNT}"
+                                                    />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>
@@ -249,10 +217,9 @@
                             height="200px"
                             class="sapUiSmallMarginBeginEnd sapUiTinyMarginTopBottom"
                         >
-                            <headerToolbar>
-                                <OverflowToolbar
-                                    design="Transparent"
-                                    class="myCardHeaderSticky"
+                            <HBox>
+                                <HBox
+                                    alignItems="Center"
                                     width="100%"
                                 >
                                     <core:Icon
@@ -265,22 +232,20 @@
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"
                                     />
-                                    <ToolbarSpacer />
-                                    <Button
-                                        id="dashboard-approval"
-                                        text="See All"
-                                        class="sapUiLargeMarginBegin"
-                                        type="Transparent"
-                                        press="onClickNavigate"
-                                    />
-                                </OverflowToolbar>
-                            </headerToolbar>
+                                </HBox>
+                                <Button
+                                    id="dashboard-approval"
+                                    text="See All"
+                                    class="sapUiLargeMarginBegin"
+                                    type="Transparent"
+                                    press="onClickNavigate"
+                                />
+                            </HBox>
                             <VBox>
-                                <ScrollContainer height="140px" vertical="true" horizontal="false">
+                                <ScrollContainer>
                                     <Table
                                         items="{ path: '' }"
                                         growing="true"
-                                        sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
                                     >
                                         <columns>
