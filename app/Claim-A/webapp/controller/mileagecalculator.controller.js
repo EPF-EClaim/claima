@@ -10,7 +10,7 @@ sap.ui.define([
     return Controller.extend("claima.controller.mileagecalculator", {
 
         /* ---------- Host wiring ---------- */
-
+ 
         /**
          * Called by the host (App.controller) to pass references and helpers:
          * - oHost: the host controller (to push values back, read models, etc.)

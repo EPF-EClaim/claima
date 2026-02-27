@@ -11,7 +11,7 @@
     xmlns:card="sap.f.cards"
     xmlns:core="sap.ui.core"
     xmlns:layout="sap.ui.layout"
->
+> 
     <Page
         id="configurationPage"
         showHeader="false"

@@ -40,83 +40,6 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.App", {
 		onInit: function () {
-			// Claim Submission Model
-			var oClaimSubmissionModel = new JSONModel({
-				"employee": {
-					"eeid": null,
-					"name": null,
-					"cc": null,
-					"descr": {
-						"cc": null
-					}
-				},
-				"claimtype": {
-					"type": null,
-					"item": null,
-					"category": null,
-					"requestform": null,
-					"requestform_amt": null,
-					"descr": {
-						"type": null,
-						"item": null,
-						"category": null,
-						"requestform": null
-					}
-				},
-				"claimheader": {
-					"claim_id": null,
-					"emp_id": null,
-					"purpose": null,
-					"status": null,
-					"lastmodifieddate": null,
-					"submitteddate": null,
-					"trip_startdate": null,
-					"trip_enddate": null,
-					"event_startdate": null,
-					"event_enddate": null,
-					"claimtype": null,
-					"claimitem": null,
-					"subtype": null,
-					"location": null,
-					"cc": null,
-					"altcc": null,
-					"comment": null,
-					"reqform": null,
-					"attachment": null,
-					"amt_total": null,
-					"amt_approved": null,
-					"amt_cashadvance": null,
-					"amt_receivefinal": null,
-					"lastapproveddate": null,
-					"lastapprovedtime": null,
-					"lastapproveddate": null,
-					"paymentdate": null,
-					"movinghouse": {
-						"spouseoffice": null,
-						"housecompletiondate": null,
-						"moveindate": null,
-						"housingloanscheme": null,
-						"lendername": null,
-						"specifydetails": null,
-						"newhouseaddress": null,
-						"housecompletiondate": null,
-						"distoldhouse_officekm": null,
-						"distoldhouse_newhousekm": null
-					},
-					"descr": {
-						"status": null,
-						"claimtype": null,
-						"claimitem": null,
-						"subtype": null,
-						"cc": null,
-						"altcc": null,
-						"reqform": null
-					}
-				}
-			});
-			//// set input
-			this.getView().setModel(oClaimSubmissionModel, "claimsubmission_input");
-
 			// oReportModel
 			var oReportModel = new JSONModel({
 				"purpose": "",
@@ -191,7 +114,7 @@ sap.ui.define([
 					break;
 				case "config":
 					//Start EY_ATHIRAH
-					if (type === "JKEW Admin" || type === "DTD Admin") {
+					if (type === "DTD Admin") {
 						oRouter.navTo("Configuration");
 					} else {
 						var message = this._getTexti18n("msg_unauthorized_config");
@@ -201,9 +124,13 @@ sap.ui.define([
 					break;
 				// Start Aiman Salim 10/02/2026 - Added for analytics
 				case "analytics":
-					oRouter.navTo("Analytics")
+					if (type === "JKEW Admin" || type === "DTD Admin" || type === "GA Admin") {
+						oRouter.navTo("Analytics")
+					} else {
+						var message = this._getTexti18n("msg_unauthorized_analytic");
+						sap.m.MessageBox.error(message);
+					}
 					break;
-				// End 	 Aiman Salim 10/02/2026 - Added for analytics
 				case "dashboard":
 					oRouter.navTo("Dashboard");
 					break;
@@ -486,8 +413,41 @@ sap.ui.define([
 			// make Pre-Approval Request, Approve Amount visible
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			if (oInputModel.getProperty("/claimtype/category") == 'PREAPPROVAL') {
-				this.byId("text_claiminput_preapprovalreq").setVisible(false);
-				this.byId("text_claiminput_amtapproved").setVisible(false);
+				// make Pre-Approval Request, Approve Amount visible
+				this.byId("text_claiminput_preapprovalreq").setVisible(true);
+				this.byId("text_claiminput_amtapproved").setVisible(true);
+				//// disable editing if dates already set from request
+				if (oInputModel.getProperty("/claimtype/requestform/trip_start_date")) {
+					this.byId("datepicker_claiminput_tripstartdate").setEditable(false);
+				}
+				if (oInputModel.getProperty("/claimtype/requestform/trip_end_date")) {
+					this.byId("datepicker_claiminput_tripenddate").setEditable(false);
+				}
+				if (oInputModel.getProperty("/claimtype/requestform/event_start_date")) {
+					this.byId("datepicker_claiminput_eventstartdate").setEditable(false);
+				}
+				if (oInputModel.getProperty("/claimtype/requestform/event_end_date")) {
+					this.byId("datepicker_claiminput_eventenddate").setEditable(false);
+				}
+				//// disable editing alternate cost center if already set from request
+				if (oInputModel.getProperty("/claimtype/requestform/alternate_cost_center")) {
+					this.byId("select_claiminput_altcc").setEnabled(false);
+					this.byId("select_claiminput_altcc").setEditable(false);
+					this.byId("select_claiminput_altcc").setVisible(false);
+
+					this.byId("input_claiminput_altcc").setEnabled(true);
+					this.byId("input_claiminput_altcc").setVisible(true);
+				}
+			}
+		},
+
+		_getJsonDate: function (date) {
+			if (date) {
+				var oDate = new Date(date);
+				var oDateString = oDate.toLocaleString('default', { day: '2-digit' }) + " " + oDate.toLocaleString('default', { month: 'short' }) + " " + oDate.toLocaleString('default', { year: 'numeric' });
+				return oDateString;
+			} else {
+				return null;
 			}
 		},
 
@@ -665,6 +625,26 @@ sap.ui.define([
 				return "*." + sType;
 			});
 			MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_mismatch", [this.byId("fileuploader_claiminput_attachment").getValue()]));
+		},
+		
+		_validDateRange: function (startdate, enddate) {
+			var startDateValue = this.byId(startdate).getValue();
+			var endDateValue = this.byId(enddate).getValue();
+			// check for missing value
+			if (!startDateValue || !endDateValue) {
+				MessageToast.show(this._getTexti18n("msg_daterange_missing"));
+				return false;
+			}
+			// check if end date earlier than start date
+			var startDateUnix 	= new Date (startDateValue).valueOf();
+			var endDateUnix 	= new Date (endDateValue).valueOf();
+			if (startDateUnix > endDateUnix) {
+				MessageToast.show(this._getTexti18n("msg_daterange_order"));
+				return false;
+			}
+			else {
+				return true;
+			}
 		},
 
 		onCancel_ClaimInput: function () {
@@ -1550,7 +1530,7 @@ sap.ui.define([
 				oNav.to(oRoot.createId("myrequest"));
 			}
 		},
-
+ 
 		_getTexti18n: function (i18nKey, array_i18nParameters) {
 			if (array_i18nParameters) {
 				return this.getView().getModel("i18n").getResourceBundle().getText(i18nKey, array_i18nParameters);
