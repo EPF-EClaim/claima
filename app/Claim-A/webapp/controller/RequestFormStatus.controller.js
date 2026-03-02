@@ -168,7 +168,7 @@ sap.ui.define([
                 this._getItemList(row.REQUEST_ID);
 
 				if (row.STATUS == 'DRAFT') {
-                	oReqModel.setProperty("/view", "list");
+                	oReqModel.setProperty("/view", "approver");
 				}
 
                 // Navigate to detail route/view
