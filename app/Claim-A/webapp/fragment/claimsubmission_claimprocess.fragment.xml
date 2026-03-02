@@ -69,7 +69,7 @@
                     <Select
                         id="select_claimprocess_requestform"
                         forceSelection="false"
-                        selectedKey="{claimsubmission_input>/claimtype/requestform/request_id}"
+                        selectedKey="{claimsubmission_input>/claimtype/requestform}"
                         enabled="false"
                         editable="false"
                         visible="false"

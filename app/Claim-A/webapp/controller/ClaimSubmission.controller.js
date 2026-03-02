@@ -27,7 +27,7 @@ sap.ui.define([
 				this._showInitFormFragment();
 			}
 		},
-
+ 
 		_getInputModel: function () {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			if (oClaimSubmissionModel) {
