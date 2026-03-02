@@ -1,0 +1,159 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:l="sap.ui.layout"
+	xmlns:core="sap.ui.core"
+>
+	<VBox class="sapUiSmallMargin">
+		<!-- Claim Item Toolbar -->
+		<Toolbar>
+			<!-- Claim Item -->
+			<Title
+				text="{
+					parts:[
+						{path:'i18n>title_claimsummary_claimitem'},
+						{path:'claimsubmission_input>/claimitem_count'}
+					], 
+					formatter:'jQuery.sap.formatMessage'}"
+				level="H2"
+			/>
+
+			<!-- space -->
+			<ToolbarSpacer />
+
+			<!-- Add Claim Type -->
+			<MenuButton
+				id="menubutton_claimsummary_addclaimtype"
+				text="{i18n>menubutton_claimsummary_addclaimtype}"
+				buttonMode="Split"
+				useDefaultActionOnly="true"
+			>
+				<menu>
+					<Menu itemSelected="onMenuAction">
+						<!-- Create Claim -->
+						<MenuItem
+							id="menuitem_claimsummary_createclaim"
+							text="{i18n>menuitem_claimsummary_createclaim}"
+							press=".onCreateClaim_ClaimSummary"
+						/>
+
+						<!-- Scan Receipt -->
+						<MenuItem
+							id="menuitem_claimsummary_scanreceipt"
+							text="{i18n>menuitem_claimsummary_scanreceipt}"
+							press=".onScanReceipt_ClaimSummary"
+						/>
+					</Menu>
+				</menu>
+			</MenuButton>
+
+			<!-- Edit -->
+			<Button
+				id="button_claimsummary_edit"
+				text="{i18n>button_claimsummary_edit}"
+				press=".onEdit_ClaimSummary"
+				enabled="false"
+			/>
+
+			<!-- Scan Receipt -->
+			<Button
+				id="button_claimsummary_scanreceipt"
+				text="{i18n>button_claimsummary_scanreceipt}"
+				press=".onScanReceipt_ClaimSummary"
+			/>
+
+			<!-- Duplicate -->
+			<Button
+				id="button_claimsummary_duplicate"
+				text="{i18n>button_claimsummary_duplicate}"
+				press=".onDuplicate_ClaimSummary"
+				enabled="false"
+			/>
+
+			<!-- Delete -->
+			<Button
+				id="button_claimsummary_delete"
+				text="{i18n>button_claimsummary_delete}"
+				press=".onDelete_ClaimSummary"
+				enabled="false"
+			/>
+		</Toolbar>
+
+		<!-- Table for Claim Items -->
+		<Table
+			id="table_claimsummary_claimitem"
+			inset="false"
+			mode="MultiSelect"
+			items="{
+				path: 'claimsubmission_input>/claimitems',
+				sorter: {
+					path: 'item_id'
+				}
+			}"
+			growing="true"
+			growingScrollToLoad="false"
+			sticky="ColumnHeaders"
+		>
+			<columns>
+				<!-- Date -->
+				<Column>
+					<Text text="{i18n>columntext_claimsummary_date}" />
+				</Column>
+
+				<!-- Receipt -->
+				<Column>
+					<Text text="{i18n>columntext_claimsummary_receipt}" />
+				</Column>
+
+				<!-- Claim Type -->
+				<Column>
+					<Text text="{i18n>columntext_claimsummary_claimtype}" />
+				</Column>
+
+				<!-- Claim Item -->
+				<Column>
+					<Text text="{i18n>columntext_claimsummary_claimitem}" />
+				</Column>
+
+				<!-- Amount -->
+				<Column>
+					<Text text="{i18n>columntext_claimsummary_amt}" />
+				</Column>
+
+				<!-- Category -->
+				<Column>
+					<Text text="{i18n>columntext_claimsummary_category}" />
+				</Column>
+			</columns>
+
+			<items>
+				<ColumnListItem vAlign="Middle">
+					<cells>
+						<!-- Date -->
+						<Text
+							text="{
+								path: 'date',
+								type: 'sap.ui.model.odata.type.Date',
+								formatOptions: { pattern: 'dd-MMM-yyyy' }
+							}"
+						/>
+
+						<!-- Receipt -->
+						<Text text="{receipt}" />
+
+						<!-- Claim Type -->
+						<Text text="{descr/claim_type_id}" />
+
+						<!-- Claim Item -->
+						<Text text="{descr/claimitem}" />
+
+						<!-- Amount -->
+						<Text text="{amt}" />
+
+						<!-- Category -->
+						<Text text="{descr/category}" />
+					</cells>
+				</ColumnListItem>
+			</items>
+		</Table>
+	</VBox>
+</core:FragmentDefinition>

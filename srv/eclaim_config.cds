@@ -51,22 +51,22 @@ annotate service.ZRISK with @(
                 Label            : 'Status'
             }
         ],
-      
+
     }
 );
 
 annotate service.ZREQUEST_TYPE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [REQUEST_TYPE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [REQUEST_TYPE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -113,9 +113,9 @@ annotate service.ZCLAIM_TYPE with @(
     cds.autoexpose,
     odata.draft.enabled,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [CLAIM_TYPE_ID],
+    Common.SemanticKey             : [CLAIM_TYPE_ID],
 
-    UI                : {
+    UI                             : {
         Identification: [
             {
                 $Type: 'UI.DataField',
@@ -209,9 +209,9 @@ annotate service.ZCLAIM_TYPE with @(
 
 annotate service.ZNUM_RANGE with @(
     cds.autoexpose,
-    Common.SemanticKey: [RANGE_ID],
+    Common.SemanticKey             : [RANGE_ID],
     Capabilities.SearchRestrictions: {Searchable: false},
-    UI                : {
+    UI                             : {
         CreateHidden: true,
         DeleteHidden: true,
         HeaderInfo  : {
@@ -257,12 +257,12 @@ annotate service.ZNUM_RANGE with @(
 annotate service.ZCLAIM_TYPE_ITEM with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [
+    Common.SemanticKey             : [
         CLAIM_TYPE_ID,
         CLAIM_TYPE_ITEM_ID
     ],
 
-    UI                : {LineItem: [
+    UI                             : {LineItem: [
         {
             $Type: 'UI.DataField',
             Value: CLAIM_TYPE_ITEM_ID,
@@ -319,18 +319,18 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
 annotate service.ZAPP_FIELD_CTRL with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [
+    Common.SemanticKey             : [
         CLAIM_TYPE_ID,
         CLAIM_TYPE_ITEM_ID
     ],
-    Capabilities      : {
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -478,15 +478,15 @@ annotate service.ZAPP_FIELD_CTRL with @(
 annotate service.ZCLAIM_CATEGORY with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [CLAIM_CAT_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [CLAIM_CAT_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -532,15 +532,15 @@ annotate service.ZCLAIM_CATEGORY with @(
 annotate service.ZSTATUS with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [STATUS_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [STATUS_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -586,15 +586,15 @@ annotate service.ZSTATUS with @(
 annotate service.ZLODGING_CAT with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [LODGING_CATEGORY_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [LODGING_CATEGORY_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -640,15 +640,15 @@ annotate service.ZLODGING_CAT with @(
 annotate service.ZROOM_TYPE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [ROOM_TYPE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [ROOM_TYPE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -694,15 +694,15 @@ annotate service.ZROOM_TYPE with @(
 annotate service.ZFLIGHT_CLASS with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [FLIGHT_CLASS_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [FLIGHT_CLASS_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -748,15 +748,15 @@ annotate service.ZFLIGHT_CLASS with @(
 annotate service.ZCOUNTRY with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [COUNTRY_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [COUNTRY_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -802,15 +802,15 @@ annotate service.ZCOUNTRY with @(
 annotate service.ZAREA with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [AREA_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [AREA_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -856,15 +856,15 @@ annotate service.ZAREA with @(
 annotate service.ZMARITAL_STAT with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [MARRIAGE_CATEGORY_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [MARRIAGE_CATEGORY_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -910,15 +910,15 @@ annotate service.ZMARITAL_STAT with @(
 annotate service.ZVEHICLE_TYPE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [VEHICLE_TYPE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [VEHICLE_TYPE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -964,18 +964,18 @@ annotate service.ZVEHICLE_TYPE with @(
 annotate service.ZSTATE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [
+    Common.SemanticKey             : [
         COUNTRY_ID,
         STATE_ID
     ],
-    Capabilities      : {
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -1028,15 +1028,15 @@ annotate service.ZEMP_MASTER with @(
     cds.autoexpose,
 
     Capabilities.SearchRestrictions: {Searchable: false},
-    cds.server.body_parser.limit: '10mb',
-    Common.SemanticKey: [EEID],
-    Capabilities      : {
+    cds.server.body_parser.limit   : '10mb',
+    Common.SemanticKey             : [EEID],
+    Capabilities                   : {
         Deletable : false,
         Updatable : true,
         Insertable: true
     },
 
-    UI                : {
+    UI                             : {
         CreateHidden: true,
         DeleteHidden: true,
         HeaderInfo  : {
@@ -1250,15 +1250,15 @@ annotate service.ZEMP_MASTER with @(
 annotate service.ZJOB_GROUP with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [JOB_GROUP_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [JOB_GROUP_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -1304,15 +1304,15 @@ annotate service.ZJOB_GROUP with @(
 annotate service.ZDEPARTMENT with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [DEPARTMENT_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [DEPARTMENT_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -1382,15 +1382,15 @@ annotate service.ZDEPARTMENT with @(
 annotate service.ZROLE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [ROLE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [ROLE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -1436,15 +1436,15 @@ annotate service.ZROLE with @(
 annotate service.ZUSER_TYPE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [USER_TYPE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [USER_TYPE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -1490,15 +1490,15 @@ annotate service.ZUSER_TYPE with @(
 annotate service.ZEMP_TYPE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [EMP_TYPE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [EMP_TYPE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -1544,15 +1544,15 @@ annotate service.ZEMP_TYPE with @(
 annotate service.ZREGION with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [REGION_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [REGION_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -1598,15 +1598,15 @@ annotate service.ZREGION with @(
 annotate service.ZRATE_KM with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [RATE_KM_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [RATE_KM_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -1664,15 +1664,15 @@ annotate service.ZRATE_KM with @(
 annotate service.ZSUBMISSION_TYPE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [SUBMISSION_TYPE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [SUBMISSION_TYPE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -1719,18 +1719,18 @@ annotate service.ZSUBMISSION_TYPE with @(
 annotate service.ZOFFICE_LOCATION with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [
+    Common.SemanticKey             : [
         LOCATION_ID,
         STATE_ID
     ],
-    Capabilities      : {
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -1794,20 +1794,20 @@ annotate service.ZOFFICE_LOCATION with @(
 annotate service.ZOFFICE_DISTANCE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [
+    Common.SemanticKey             : [
         FROM_LOCATION_ID,
         FROM_STATE_ID,
         TO_LOCATION_ID,
         TO_STATE_ID
     ],
-    Capabilities      : {
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -1871,15 +1871,15 @@ annotate service.ZOFFICE_DISTANCE with @(
 annotate service.ZLOC_TYPE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [LOC_TYPE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [LOC_TYPE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -1925,15 +1925,15 @@ annotate service.ZLOC_TYPE with @(
 annotate service.ZMATERIAL_GROUP with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [MATERIAL_CODE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [MATERIAL_CODE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -1979,15 +1979,15 @@ annotate service.ZMATERIAL_GROUP with @(
 annotate service.ZINDIV_GROUP with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [IND_OR_GROUP_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [IND_OR_GROUP_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -2033,15 +2033,15 @@ annotate service.ZINDIV_GROUP with @(
 annotate service.ZVEHICLE_OWNERSHIP with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [VEHICLE_OWNERSHIP_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [VEHICLE_OWNERSHIP_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -2087,15 +2087,15 @@ annotate service.ZVEHICLE_OWNERSHIP with @(
 annotate service.ZEMP_RELATIONSHIP with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [RELATIONSHIP_TYPE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [RELATIONSHIP_TYPE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -2141,15 +2141,15 @@ annotate service.ZEMP_RELATIONSHIP with @(
 annotate service.ZMARITAL_CAT with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [MARRIAGE_CATEGORY_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [MARRIAGE_CATEGORY_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -2195,15 +2195,15 @@ annotate service.ZMARITAL_CAT with @(
 annotate service.ZPROJECT_HDR with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [PROJECT_CODE_IO],
-    Capabilities      : {
+    Common.SemanticKey             : [PROJECT_CODE_IO],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -2273,15 +2273,15 @@ annotate service.ZPROJECT_HDR with @(
 annotate service.ZBRANCH with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [BRANCH_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [BRANCH_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -2333,19 +2333,19 @@ annotate service.ZBRANCH with @(
 annotate service.ZEMP_CA_PAYMENT with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [
+    Common.SemanticKey             : [
         REQUEST_ID,
         EMP_ID,
         DISBURSEMENT_DATE
     ],
-    Capabilities      : {
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -2385,21 +2385,21 @@ annotate service.ZEMP_CA_PAYMENT with @(
 annotate service.ZPERDIEM_ENT with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [
+    Common.SemanticKey             : [
         PERSONAL_GRADE_FROM,
         PERSONAL_GRADE_TO,
         LOCATION,
         EFFECTIVE_START_DATE,
         EFFECTIVE_END_DATE
     ],
-    Capabilities      : {
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -2457,15 +2457,15 @@ annotate service.ZPERDIEM_ENT with @(
 annotate service.ZHOUSING_LOAN_SCHEME with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [HOUSING_LOAN_SCHEME_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [HOUSING_LOAN_SCHEME_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -2511,15 +2511,15 @@ annotate service.ZHOUSING_LOAN_SCHEME with @(
 annotate service.ZLENDER_NAME with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [LENDER_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [LENDER_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -2565,20 +2565,20 @@ annotate service.ZLENDER_NAME with @(
 annotate service.ZREJECT_REASON with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [
+    Common.SemanticKey             : [
         REASON_ID,
         REASON_TYPE,
         START_DATE,
         END_DATE
     ],
-    Capabilities      : {
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -2630,15 +2630,15 @@ annotate service.ZREJECT_REASON with @(
 annotate service.ZCURRENCY with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [CURRENCY_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [CURRENCY_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -2684,17 +2684,17 @@ annotate service.ZCURRENCY with @(
 annotate service.ZEMP_DEPENDENT with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [
+    Common.SemanticKey             : [
         EMP_ID,
         RELATIONSHIP,
         DEPENDENT_NO
     ],
-    Capabilities      : {
+    Capabilities                   : {
         Deletable : false,
         Updatable : true,
         Insertable: true
     },
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -2800,15 +2800,15 @@ annotate service.ZEMP_DEPENDENT with @(
 annotate service.ZMOBILE_CATEGORY_PURPOSE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [MOBILE_CATEGORY_PURPOSE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [MOBILE_CATEGORY_PURPOSE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -2854,15 +2854,15 @@ annotate service.ZMOBILE_CATEGORY_PURPOSE with @(
 annotate service.ZVEHICLE_CLASS with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [VEHICLE_CLASS_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [VEHICLE_CLASS_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -2908,15 +2908,15 @@ annotate service.ZVEHICLE_CLASS with @(
 annotate service.ZINSURANCE_PROVIDER with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [INSURANCE_PROVIDER_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [INSURANCE_PROVIDER_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -2962,15 +2962,15 @@ annotate service.ZINSURANCE_PROVIDER with @(
 annotate service.ZINSURANCE_PACKAGE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [INSURANCE_PACKAGE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [INSURANCE_PACKAGE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3016,15 +3016,15 @@ annotate service.ZINSURANCE_PACKAGE with @(
 annotate service.ZPROFESIONAL_BODY with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [PROFESIONAL_BODY_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [PROFESIONAL_BODY_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3070,15 +3070,15 @@ annotate service.ZPROFESIONAL_BODY with @(
 annotate service.ZSTUDY_LEVELS with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [STUDY_LEVELS_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [STUDY_LEVELS_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3124,15 +3124,15 @@ annotate service.ZSTUDY_LEVELS with @(
 annotate service.ZTRANSFER_MODE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [TRANSFER_MODE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [TRANSFER_MODE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3178,15 +3178,15 @@ annotate service.ZTRANSFER_MODE with @(
 annotate service.ZTRANSPORT_PASSING with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [TRANSPORT_PASSING_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [TRANSPORT_PASSING_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3232,15 +3232,15 @@ annotate service.ZTRANSPORT_PASSING with @(
 annotate service.ZTRAVEL_TYPE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [TRAVEL_TYPE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [TRAVEL_TYPE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3286,15 +3286,15 @@ annotate service.ZTRAVEL_TYPE with @(
 annotate service.ZFAMILY_TIMING with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [FAMILY_TIMING_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [FAMILY_TIMING_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3340,15 +3340,15 @@ annotate service.ZFAMILY_TIMING with @(
 annotate service.ZSPORTS_REPRESENTATION with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [SPORTS_REPRESENTATION_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [SPORTS_REPRESENTATION_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3394,15 +3394,15 @@ annotate service.ZSPORTS_REPRESENTATION with @(
 annotate service.ZPOSITION_EVENT_REASON with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [POSITION_EVENT_REASON_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [POSITION_EVENT_REASON_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3448,15 +3448,15 @@ annotate service.ZPOSITION_EVENT_REASON with @(
 annotate service.ZEMP_DEPENDENT_TYPE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [DEPENDENT_TYPE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [DEPENDENT_TYPE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3502,15 +3502,15 @@ annotate service.ZEMP_DEPENDENT_TYPE with @(
 annotate service.ZCLAIM_BASIS with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [CLAIM_BASIS_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [CLAIM_BASIS_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3556,15 +3556,15 @@ annotate service.ZCLAIM_BASIS with @(
 annotate service.ZHOTEL_LODGING with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [HOTEL_LODGING_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [HOTEL_LODGING_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3610,15 +3610,15 @@ annotate service.ZHOTEL_LODGING with @(
 annotate service.ZFARE_TYPE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [FARE_TYPE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [FARE_TYPE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3664,15 +3664,15 @@ annotate service.ZFARE_TYPE with @(
 annotate service.ZMETER_CUBE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [METER_CUBE_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [METER_CUBE_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3710,7 +3710,7 @@ annotate service.ZMETER_CUBE with @(
                 Value            : METER_CUBE,
                 ![@UI.Importance]: #High,
                 Label            : 'Meter Cube'
-            },                      
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
@@ -3736,15 +3736,15 @@ annotate service.ZMETER_CUBE with @(
 annotate service.ZTRAVEL_DAYS with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [TRAVEL_DAYS_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [TRAVEL_DAYS_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {

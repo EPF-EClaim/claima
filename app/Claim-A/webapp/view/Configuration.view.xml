@@ -11,7 +11,7 @@
     xmlns:card="sap.f.cards"
     xmlns:core="sap.ui.core"
     xmlns:layout="sap.ui.layout"
->
+> 
     <Page
         id="configurationPage"
         showHeader="false"
@@ -360,18 +360,6 @@
                             <cards:Header title="ZMARITAL_CAT" />
                         </f:header>
                     </f:Card>
-
-                    <f:Card
-                        id="ZLOOKUP_FIELD"
-                        class="sapUiSmallMargin"
-                        width="15rem"
-                        press="onOpenConfigTable"
-                    >
-                        <f:header>
-                            <cards:Header title="ZLOOKUP_FIELD" />
-                        </f:header>
-                    </f:Card>
-
                     <f:Card
                         id="ZEMP_RELATIONSHIP"
                         class="sapUiSmallMargin"
@@ -492,6 +480,186 @@
                             <cards:Header title="ZVEHICLE_OWNERSHIP" />
                         </f:header>
                     </f:Card>
+                    <f:Card
+                        id="ZTRAVEL_DAYS"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZTRAVEL_DAYS" />
+                        </f:header>
+                    </f:Card>
+                    <f:Card
+                        id="ZMETER_CUBE"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZMETER_CUBE" />
+                        </f:header>
+                    </f:Card>
+                    <f:Card
+                        id="ZFARE_TYPE"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZFARE_TYPE" />
+                        </f:header>
+                    </f:Card>    
+                    <f:Card
+                        id="ZHOTEL_LODGING"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZHOTEL_LODGING" />
+                        </f:header>
+                    </f:Card>  
+                    <f:Card
+                        id="ZCLAIM_BASIS"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZCLAIM_BASIS" />
+                        </f:header>
+                    </f:Card>  
+                    <f:Card
+                        id="ZEMP_DEPENDENT_TYPE"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZEMP_DEPENDENT_TYPE" />
+                        </f:header>
+                    </f:Card>                       
+                    <f:Card
+                        id="ZPOSITION_EVENT_REASON"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZPOSITION_EVENT_REASON" />
+                        </f:header>
+                    </f:Card>   
+                    <f:Card
+                        id="ZSPORTS_REPRESENTATION"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZSPORTS_REPRESENTATION" />
+                        </f:header>
+                    </f:Card> 
+                    <f:Card
+                        id="ZFAMILY_TIMING"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZFAMILY_TIMING" />
+                        </f:header>
+                    </f:Card>        
+                    <f:Card
+                        id="ZTRAVEL_TYPE"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZTRAVEL_TYPE" />
+                        </f:header>
+                    </f:Card>  
+                    <f:Card
+                        id="ZTRANSPORT_PASSING"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZTRANSPORT_PASSING" />
+                        </f:header>
+                    </f:Card>   
+                    <f:Card
+                        id="ZTRANSFER_MODE"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZTRANSFER_MODE" />
+                        </f:header>
+                    </f:Card> 
+                    <f:Card
+                        id="ZSTUDY_LEVELS"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZSTUDY_LEVELS" />
+                        </f:header>
+                    </f:Card>     
+                    <f:Card
+                        id="ZPROFESIONAL_BODY"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZPROFESIONAL_BODY" />
+                        </f:header>
+                    </f:Card>  
+                    <f:Card
+                        id="ZINSURANCE_PACKAGE"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZINSURANCE_PACKAGE" />
+                        </f:header>
+                    </f:Card>   
+                    <f:Card
+                        id="ZINSURANCE_PROVIDER"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZINSURANCE_PROVIDER" />
+                        </f:header>
+                    </f:Card> 
+                    <f:Card
+                        id="ZVEHICLE_CLASS"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZVEHICLE_CLASS" />
+                        </f:header>
+                    </f:Card>  
+                    <f:Card
+                        id="ZMOBILE_CATEGORY_PURPOSE"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZMOBILE_CATEGORY_PURPOSE" />
+                        </f:header>
+                    </f:Card>                                                                                                                                                                                                                                                                                                   
                 </f:GridContainer>
             </ScrollContainer>
         </content>

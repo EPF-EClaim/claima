@@ -5,6 +5,37 @@ sap.ui.define([
     DatePicker) {
     'use strict';
 
+    const _validateDate = function (oPayload, oDataType) {
+        if (!oPayload || !oDataType) return true;
+        let startField = null;
+        let endField = null;
+
+        for (const prop in oPayload) {
+            const meta = oDataType[prop];
+
+            if (!meta || meta.$Type !== "Edm.Date") continue;
+
+            const name = prop.toLowerCase();
+
+            if (name.includes("start")) startField = prop;
+            if (name.includes("end")) endField = prop;
+        }
+
+        if (!startField || !endField) return true;
+
+        const start = oPayload[startField];
+        const end = oPayload[endField];
+
+        if (!start || !end) return true;
+
+        if (end < start) {
+            sap.m.MessageToast.show("End date cannot be earlier than start date");
+            return false;
+        }
+
+        return true;
+    }
+
     const _getDetails = function (oView, aSelectedContexts) {
         const oSelectedContext = aSelectedContexts[0];
         const oData = oSelectedContext.getObject();
@@ -14,16 +45,17 @@ sap.ui.define([
         const sEntityType = oEntityType.$Type;
         const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
         const oLineItems = oModel.getMetaModel().getContext(`/${sEntityType}/@com.sap.vocabularies.UI.v1.LineItem`).getObject();
+        const oKeys = oDataType.$Key || [];
 
         const allowedOnZemp = new Set([
             "USER_TYPE",
             "B_PLACE",
-            "MOBILE_BILL_ELIGIBILITY", 
+            "MOBILE_BILL_ELIGIBILITY",
             "ROLE",
             "MOBILE_BILL_ELIG_AMOUNT",
             "MEDICAL_INSURANCE_ENTITLEMENT",
-            "POST_EDU_ASSISTANT_CLAIM_DATE", 
-            "POST_EDU_ASSISTANT_ENTITLE_AMOUNT", 
+            "POST_EDU_ASSISTANT_CLAIM_DATE",
+            "POST_EDU_ASSISTANT_ENTITLE_AMOUNT",
             "MEDICAL_INSURANCE"
         ]);
 
@@ -88,7 +120,7 @@ sap.ui.define([
 
             oVBox.addItem(oInput);
         });
-        return { oVBox, sPath, oModel, oSelectedContext, };
+        return { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType };
     }
 
     return {
@@ -102,12 +134,11 @@ sap.ui.define([
         onclickcopy: function (oContext, aSelectedContexts) {
             const oNewEntry = {};
             const oView = this.getRouting().getView();
-            const { oVBox, sPath, oModel, oSelectedContext } = _getDetails(oView, aSelectedContexts);
+            const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType } = _getDetails(oView, aSelectedContexts);
 
             const oDialog = new sap.m.Dialog({
                 title: `Copy Record`,
                 contentWidth: "15%",
-                // contentHeight: "450px",
                 horizontalScrolling: false,
                 beginButton: new sap.m.Button({
                     text: "Copy",
@@ -127,7 +158,9 @@ sap.ui.define([
 
                             oNewEntry[sFieldName] = sNewInput;
                         }
-
+                        if (!_validateDate(oNewEntry, oDataType)) {
+                            return;
+                        }
                         oNewEntry["IsActiveEntity"] = true;
                         oNewEntry["HasDraftEntity"] = false;
 
@@ -153,7 +186,7 @@ sap.ui.define([
 
         onClickEdit: function (oContext, aSelectedContexts) {
             const oView = this.getRouting().getView();
-            const { oVBox, sPath, oModel, oSelectedContext } = _getDetails(oView, aSelectedContexts);
+            const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType } = _getDetails(oView, aSelectedContexts);
 
             const oDialog = new sap.m.Dialog({
                 title: `Edit Record`,
@@ -161,8 +194,10 @@ sap.ui.define([
                 horizontalScrolling: false,
                 beginButton: new sap.m.Button({
                     text: "Edit",
-                    press: function () {
+                    press: async function () {
                         var oInputs = oVBox.getItems();
+                        const oEdited = {};
+                        const oOld = oSelectedContext.getObject()
 
                         for (let i = 1; i < oInputs.length; i += 2) {
                             const oControl = oInputs[i];
@@ -174,12 +209,46 @@ sap.ui.define([
                             } else {
                                 sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
                             }
-
-                            oSelectedContext.setProperty(sFieldName, sNewInput);
+                            oEdited[sFieldName] = sNewInput;
+                        }
+                        
+                        if (!_validateDate(oEdited, oDataType)) {
+                            return;
                         }
 
-                        sap.m.MessageToast.show("Record updated");
-                        oDialog.close();
+                        (oKeys || []).forEach(function (k) {
+                            if (!(k in oEdited)) {
+                                oEdited[k] = oOld[k];
+                            }
+                        });
+                        const norm = (v) => v == null ? "" : String(v).trim();
+                        const keyChanged = (oKeys || []).some(function (k) {
+                            return norm(oOld[k]) !== norm(oEdited[k]);
+                        });
+
+                        if (!keyChanged) {
+
+                            for (const field in oEdited) {
+                                oSelectedContext.setProperty(field, oEdited[field]);
+                            }
+                            sap.m.MessageToast.show("Record updated");
+                            oDialog.close();
+                            return;
+                        }
+
+                        const oNewEntity = { ...oOld, ...oEdited };
+                        const oListBinding = oModel.bindList(sPath);
+
+                        try {
+                            const oCreateCtx = oListBinding.create(oNewEntity);
+                            await oCreateCtx.created();
+                            await oSelectedContext.delete();
+                            sap.m.MessageToast.show("Record updated");
+                            oModel.refresh();
+                            oDialog.close();
+                        } catch (e) {
+                            sap.m.MessageBox.error("Failed to change key: " + (e?.message || e));
+                        }
                     }.bind(this)
                 }),
                 endButton: new sap.m.Button({
@@ -191,7 +260,6 @@ sap.ui.define([
 
             oDialog.addContent(oVBox);
             oDialog.open();
-
         }
     }
 });

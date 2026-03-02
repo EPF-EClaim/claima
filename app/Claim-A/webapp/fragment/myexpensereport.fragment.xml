@@ -14,9 +14,7 @@
                 id="tb_myexpensetrepo"
                 mode="SingleSelectMaster"
                 width="auto"
-                items="{path:'employee>/ZCLAIM_HEADER', parameters: {
-                $count: true,
-                $select: 'CATEGORY,CLAIM_ID,CLAIM_DATE,STATUS_ID,TOTAL' }}"
+                items="{path:'employee>/ZCLAIM_HEADER'}"
                 itemPress="onRowPress"
             >
                 <headerToolbar>
@@ -49,18 +47,18 @@
                 <items>
                     <ColumnListItem type="Active">
                         <cells>
-                            <Text text="{employee>CATEGORY}" />
+                            <Text text="{employee>PURPOSE}" />
                             <Text text="{employee>CLAIM_ID}" />
                             <Text
                                 text="{
                             
-                                path: 'employee>CLAIM_DATE', 
+                                path: 'employee>TRIP_START_DATE', 
                                 type: 'sap.ui.model.odata.type.Date',
                                 formatOptions: { pattern: 'dd MMM yyyy' }
                                 }"
                             />
                             <Text text="{employee>STATUS_ID}" />
-                            <Text text="{employee>TOTAL}" />
+                            <Text text="{employee>TOTAL_CLAIM_AMOUNT}" />
                         </cells>
                     </ColumnListItem>
                 </items>
