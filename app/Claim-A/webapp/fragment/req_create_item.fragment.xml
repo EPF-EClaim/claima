@@ -208,7 +208,7 @@
                                     change=".onUploadParticipants"
                                     showValueHelp="true"
                                     valueHelpRequest=".onValueHelpRequest"
-                                    enabled="{= ${request>/req_header/grptype} === 'group' || ${request>/view} !== 'view'}">
+                                    enabled="{= ${request>/req_header/grptype} === 'GRP' || ${request>/view} !== 'view'}">
                                     <suggestionColumns>
                                         <Column><Label text="EEID"/></Column>
                                         <Column><Label text="Name"/></Column>

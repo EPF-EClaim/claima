@@ -8,8 +8,11 @@ sap.ui.define([
 	"sap/ui/core/Fragment",
 	"sap/ui/export/Spreadsheet",
 	"sap/ui/core/BusyIndicator",
-	"sap/ui/core/routing/History"
-], function (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator, History) {
+	"sap/ui/core/routing/History",
+	"sap/ui/model/Filter",
+	"sap/ui/model/FilterOperator",
+	"sap/ui/model/Sorter"
+], function (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator, History, Filter, FilterOperator, Sorter) {
 	"use strict";
  
 	return Controller.extend("claima.controller.RequestForm", {
@@ -18,73 +21,17 @@ sap.ui.define([
 		* Lifecycle
 		* ======================================================= */
 		async onInit() {
-			// Get current user (FLP)
-			try {
-				this._userId = sap.ushell?.Container?.getUser?.().getId() || "";
-			} catch (e) { this._userId = ""; }
-
 			// Fragment cache
 			this._fragments = Object.create(null);
-
-			// Ensure model defaults exist (OPTION 1 structure)
-			this._ensureRequestModelDefaults();
-
-			// Show default header + list fragments
-			await this._showHeaderAndList();
 		},
 
 		/* =========================================================
-		* Helpers: Model & Service
+		* Helpers: Model
 		* ======================================================= */
 
 		_getReqModel() {
 			return this.getOwnerComponent().getModel("request");
 		},
-
-		_ensureRequestModelDefaults() {
-			const oReq = this._getReqModel();
-			const data = oReq.getData() || {};
-			// Fill missing sections safely
-			data.req_header        = data.req_header || { reqid: "", grptype: "individual" };
-			data.req_item_rows     = Array.isArray(data.req_item_rows) ? data.req_item_rows : [];
-			data.req_item          = data.req_item || {
-				claim_type: "CT1",
-				claim_type_item_id: "CTI1",
-				est_amount: "",
-				est_no_participant: "",
-				cash_advance: "no_cashadv",
-				start_date: "",
-				end_date: "",
-				location: "",
-				remarks: "",
-				doc1: "",
-				doc2: ""
-			};
-			data.participant       = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
-			data.view              = "view";
-			data.list_count        = data.list_count ?? 0;
-			oReq.setData(data);
-		},
-
-		_serviceRoot(sDataSource = "mainService") {
-			const oManifest = this.getOwnerComponent().getManifestEntry("sap.app");
-			const sUri = oManifest?.dataSources?.[sDataSource]?.uri;
-			
-			let sPath = sUri;
-			if (!sPath) {
-				sPath = (sDataSource === "mainService") 
-					? "/odata/v4/EmployeeSrv/" 
-					: "/odata/v4/eclaim-view-srv/";
-			}
-
-			return sPath.replace(/\/$/, "");
-		},
-		
-		_entityUrl(sEntitySet, sDataSource = "mainService") {
-			const sBase = this._serviceRoot(sDataSource);
-			return new URL(`${sBase}/${sEntitySet}`, window.location.origin).toString();
-		},
-		
 
 		/* =========================================================
 		* Helpers: Fragment Management
@@ -94,12 +41,12 @@ sap.ui.define([
 			const oView = this.getView();
 			if (!this._fragments[sName]) {
 				this._fragments[sName] = Fragment.load({
-					id: oView.getId(),                // stable IDs
-					name: "claima.fragment." + sName, // e.g., "req_header", "req_item_list", "req_create_item"
+					id: oView.getId(),
+					name: "claima.fragment." + sName,
 					type: "XML",
 					controller: this
 				}).then((oFrag) => {
-					oView.addDependent(oFrag);        // inherit models & i18n
+					oView.addDependent(oFrag);
 					return oFrag;
 				});
 			}
@@ -118,38 +65,18 @@ sap.ui.define([
 			const parent = ctrl.getParent && ctrl.getParent();
 			if (parent?.removeContent) parent.removeContent(ctrl);
 			else if (parent?.removeItem) parent.removeItem(ctrl);
-			// ctrl.destroy();
-		},
-
-		async _showHeaderAndList(state = "view") {
-			const oPage = this.byId("request_form"); // <Page id="request_form"/>
-			if (!oPage) return;
-
-			// Remove any open "create item" fragment to enforce list mode
-			await this._removeByLocalId("request_create_item_fragment");
-
-			const oHeader = await this._getFormFragment("req_header");
-			const oList   = await this._getFormFragment("req_item_list");
-
-			oPage.removeAllContent();
-			await this._replaceContentAt(oPage, 0, oHeader);
-			await this._replaceContentAt(oPage, 1, oList);
-
-			// Mark view state
-			this._getReqModel().setProperty("/view", state);
+			ctrl.destroy();
 		},
 
 		async _showItemCreate(state) {
 			const oPage = this.byId("request_form");
 			if (!oPage) return;
 
-			// Remove list fragment so only create is visible
-			await this._removeByLocalId("request_item_list_fragment");
+			await this._removeByLocalId("request_item_list_fragment_d" ?? "request_item_list_fragment");
 
 			const oCreate = await this._getFormFragment("req_create_item");
 			await this._replaceContentAt(oPage, 1, oCreate);
 
-			// Mark view state
 			this._getReqModel().setProperty("/view", state);
 		},
 
@@ -157,13 +84,11 @@ sap.ui.define([
 			const oPage = this.byId("request_form");
 			if (!oPage) return;
 
-			// Remove list fragment so only create is visible
 			await this._removeByLocalId("request_create_item_fragment");
 
 			const oCreate = await this._getFormFragment("req_item_list");
 			await this._replaceContentAt(oPage, 1, oCreate);
 
-			// Mark view state
 			this._getReqModel().setProperty("/view", state);
 		},
 
@@ -205,7 +130,7 @@ sap.ui.define([
 
 		onDeleteRequest() {
 			const oReq   = this._getReqModel();
-			const empId  = this._userId;
+			const empId  = oReq.getProperty("/user");
 			const reqId  = String(oReq.getProperty("/req_header/reqid") || "").trim();
 
 			if (!empId || !reqId) {
@@ -226,7 +151,6 @@ sap.ui.define([
 					text: "Delete",
 					press: async () => {
 					try {
-						// UX: disable delete while processing
 						this.oDeleteDialog.getBeginButton().setEnabled(false);
 						sap.ui.core.BusyIndicator.show(0);
 
@@ -235,7 +159,6 @@ sap.ui.define([
 						sap.m.MessageToast.show("Request deleted");
 						this.oDeleteDialog.close();
 
-						// Navigate back to dashboard
 						var oRouter = this.getOwnerComponent().getRouter();
 						oRouter.navTo("Dashboard");
 
@@ -259,31 +182,27 @@ sap.ui.define([
 		},
 
 		async _updateHeaderStatusToDeleted(empId, reqId) {
-			const base = this._serviceRoot();
-			const url  = `${base}/ZREQUEST_HEADER(EMP_ID='${encodeURIComponent(empId)}',REQUEST_ID='${encodeURIComponent(reqId)}')`;
+			const oReqJson = this._getReqModel();
+			const oModel   = this.getOwnerComponent().getModel();
+			const sUpdateGroupId = "$auto";
 
-			// Soft-delete payload: adjust fields if your backend uses different flags
-			const payload = {
-				STATUS: "DELETED"
-			};
+			const literal = (v) => /^\d+$/.test(String(v)) ? String(Number(v)) : `'${String(v).replace(/'/g, "''")}'`;
 
-			const res = await fetch(url, {
-				method: "PATCH",
-				headers: {
-					"Content-Type": "application/json",
-					"Accept": "application/json",
-					"If-Match": "*"                // avoid ETag / concurrency issues
-				},
-				body: JSON.stringify(payload)
-			});
+			const sPath = `/ZREQUEST_HEADER(EMP_ID=${literal(empId)},REQUEST_ID=${literal(reqId)})`;
+			const oCtxBinding = oModel.bindContext(sPath, null, { $$updateGroupId: sUpdateGroupId, $$ownRequest: true });
 
-			if (!res.ok) {
-				const txt = await res.text().catch(() => "");
-				throw new Error(`Delete failed: ${res.status} ${txt}`);
+			try {
+				await oCtxBinding.requestObject();
+
+				const oCtx = oCtxBinding.getBoundContext();
+				oCtx.setProperty("STATUS", "DELETED");
+				await oModel.submitBatch(sUpdateGroupId);
+
+				oReqJson.setProperty("/req_header/status", "DELETED");
+			} catch (err) {
+				console.error("Update header to DELETED failed:", err);
+				throw err;
 			}
-
-			// Update local model so the UI reflects the change immediately
-			this._getReqModel().setProperty("/req_header/status", "DELETED");
 		},
 
 		async onSubmitRequest() {
@@ -291,14 +210,13 @@ sap.ui.define([
 			const data = oReq.getData();
 			const rows = oReq.getProperty("/req_item_rows") || [];
 
-			// check req_item_rows if it is empty
 			if (!rows.length) {
 				this._showMustAddClaimDialog();
-				return;   
+				return;
 			}
 
 			const reqId = String(data.req_header.reqid || "").trim();
-			const empId = this._userId;
+			const empId  = oReq.getProperty("/user");
 
 			if (!reqId || !empId) {
 				sap.m.MessageToast.show("EMP ID or Request ID missing");
@@ -309,68 +227,76 @@ sap.ui.define([
 				this.oSubmitDialog = new sap.m.Dialog({
 				title: "Submit Request",
 				type: "Message",
-				content: [
-					new sap.m.Label({ text: "Confirm to submit Request?" })
-				],
+				content: [new sap.m.Label({ text: "Confirm to submit Request?" })],
 				beginButton: new sap.m.Button({
 					type: "Emphasized",
 					text: "Submit",
 					press: async () => {
-					try {
-						sap.ui.core.BusyIndicator.show(0);
+						try {
+							sap.ui.core.BusyIndicator.show(0);
 
-						// Build composite key URL for PATCH:
-						// Example: /ZREQUEST_HEADER(EMP_ID='E12345',REQUEST_ID='REQ26000000339')
-						const base = this._serviceRoot();
-						const entityUrl = `${base}/ZREQUEST_HEADER(EMP_ID='${encodeURIComponent(empId)}',REQUEST_ID='${encodeURIComponent(reqId)}')`;
+							const oModel = this.getOwnerComponent().getModel(); 
 
-						// PATCH payload
-						const payload = {
-							STATUS: "PENDING APPROVAL",
-							CASH_ADVANCE: parseFloat(data.req_header.cashadvamt),
-							PREAPPROVAL_AMOUNT: parseFloat(data.req_header.reqamt)
-						};
+							const oListBinding = oModel.bindList(
+								"/ZREQUEST_HEADER",
+								null,
+								null,
+								[
+									new sap.ui.model.Filter({
+										path: "EMP_ID",
+										operator: sap.ui.model.FilterOperator.EQ,
+										value1: empId
+									}),
+									new sap.ui.model.Filter({
+										path: "REQUEST_ID",
+										operator: sap.ui.model.FilterOperator.EQ,
+										value1: reqId
+									})
+								],
+								{
+									$$ownRequest: true,
+									$$groupId: "$auto",
+									$$updateGroupId: "$auto"
+								}
+							);
 
-						const res = await fetch(entityUrl, {
-							method: "PATCH",
-							headers: {
-								"Content-Type": "application/json",
-								"Accept": "application/json",
-								"If-Match": "*" // important for OData v4
-							},
-							body: JSON.stringify(payload)
-						});
+							const aCtx = await oListBinding.requestContexts(0, 1);
+							const oCtx = aCtx[0];
 
-						if (!res.ok) {
-							const t = await res.text().catch(() => "");
-							throw new Error(`Update failed: ${res.status} ${t}`);
+							if (!oCtx) {
+								throw new Error("Request not found for submit.");
+							}
+
+							oCtx.setProperty("STATUS", "PENDING APPROVAL");
+							oCtx.setProperty("CASH_ADVANCE", parseFloat(data.req_header.cashadvamt));
+							oCtx.setProperty("PREAPPROVAL_AMOUNT", parseFloat(data.req_header.reqamt));
+
+							await oModel.submitBatch("$auto");
+
+							sap.m.MessageToast.show("Request submitted successfully");
+
+							const oRouter = this.getOwnerComponent().getRouter();
+							oRouter.navTo("RequestFormStatus");
+							this.getPARHeaderList(empId);
+
+						} catch (e) {
+							sap.m.MessageToast.show(e.message || "Submission failed");
+						} finally {
+							sap.ui.core.BusyIndicator.hide();
+							this.oSubmitDialog.close();
 						}
-
-						sap.m.MessageToast.show("Request submitted successfully");
-
-						var oRouter = this.getOwnerComponent().getRouter();
-						oRouter.navTo("RequestFormStatus");
-
-					} catch (e) {
-						sap.m.MessageToast.show(e.message || "Submission failed");
-					} finally {
-						sap.ui.core.BusyIndicator.hide();
-						this.oSubmitDialog.close()
 					}
-					}
-					
 				}),
 				endButton: new sap.m.Button({
 					text: "Cancel",
 					press: () => this.oSubmitDialog.close()
 				})
 				});
+
 				this.getView().addDependent(this.oSubmitDialog);
 			}
 
 			this.oSubmitDialog.open();
-
-			
 		},
 
 		_showMustAddClaimDialog() {
@@ -408,7 +334,6 @@ sap.ui.define([
 			const data = oReq.getData();
 
 			data.req_item = {
-				claim_type: "CT1",
 				claim_type_item_id: "CTI1",
 				est_amount: "",
 				est_no_participant: "",
@@ -418,12 +343,11 @@ sap.ui.define([
 				location: "",
 				remarks: ""
 			};
-			
 
 			if (data.req_header.grptype === 'individual') {
 				var oData = this._getReqModel().getData();
-				const emp_data = await this._getEmpIdDetail(oData.eeid);
-				// Use the returned data to populate the fields
+				const emp_data = await this._getEmpIdDetail(oData.user);
+				
 				data.participant = [{ 
 					PARTICIPANTS_ID: emp_data ? emp_data.eeid : "", 
 					PARTICIPANT_NAME: emp_data ? emp_data.name : "", 
@@ -445,7 +369,6 @@ sap.ui.define([
 			]);
 
 			try {
-				// FIX: You MUST await the requestContexts call
 				const aContexts = await oListBinding.requestContexts(0, 1);
 
 				if (aContexts.length > 0) {
@@ -461,11 +384,10 @@ sap.ui.define([
 				}
 			} catch (oError) {
 				console.error("Error fetching employee detail", oError);
-				return null; // Return null so the app doesn't crash
+				return null; 
 			}
 		},
 
-		// Convenience wrappers
 		onOpenItemView (oEvent) {
 			return this._openItemFromList(oEvent, /* bEdit = */ false);
 		},
@@ -475,10 +397,9 @@ sap.ui.define([
 		},
 		
 		async _openItemFromList (oEvent, bEdit) {
-			const oReq   = this._getReqModel();           // your named JSONModel "request"
+			const oReq   = this._getReqModel();
 			const oTable = this.byId("req_item_table");
 
-			// 1) Determine the selected row context (row action, rowIndex, or first selected)
 			let oCtx = null;
 			const oRow    = oEvent?.getParameter?.("row");
 			const iRowIdx = oEvent?.getParameter?.("rowIndex");
@@ -499,18 +420,15 @@ sap.ui.define([
 				return;
 			}
 
-			// 2) Read the row object from the JSON model
-			const row = oCtx.getObject();   // {REQUEST_ID, REQUEST_SUB_ID, CLAIM_TYPE_ID, ...}
+			const row = oCtx.getObject();
 			const reqId = String(row.REQUEST_ID || oReq.getProperty("/req_header/reqid") || "").trim();
 			const subId = String(row.REQUEST_SUB_ID || "").trim();
 
-			// 3) Map list row → /req_item (matching your fragment bindings)
-			//    NOTE: claim_type_item_id is what your fragment binds to.
-			oReq.setProperty("/req_header/reqid", reqId); // keep header in sync
+			oReq.setProperty("/req_header/reqid", reqId);
 			oReq.setProperty("/req_item", {
 				req_subid            : subId,
 				claim_type           : row.CLAIM_TYPE_ID || "",
-				claim_type_item_id 	 : row.CLAIM_TYPE_ITEM_ID || "",  // <- fragment binding expects this name
+				claim_type_item_id 	 : row.CLAIM_TYPE_ITEM_ID || "",
 				est_amount           : row.EST_AMOUNT ?? "",
 				est_no_participant   : row.EST_NO_PARTICIPANT ?? "",
 				start_date           : row.START_DATE || "",
@@ -520,24 +438,21 @@ sap.ui.define([
 				remark               : row.REMARK || ""
 			});
 
-			// 4) Set read-only (view) vs editable (create) mode per your fragment's logic
 			oReq.setProperty("/view", bEdit ? "i_edit" : "view");
 
-			// 5) Swap the fragment into the page (reuse your existing helper)
-			await this._showItemCreate(oReq.getProperty("/view"));   // shows claima.fragment.req_create_item in the "details" slot
-
-			// 6) Load participants for the selected item from backend
+			this._showItemCreate(oReq.getProperty("/view"));
 			await this._loadParticipantsForItem(reqId, subId);
+			await this._getClaimTypeItemSelection();
 		},
 
-		/**
-		 * Loads participants for (REQUEST_ID, REQUEST_SUB_ID) into request>/participant
-		 */
-		async _loadParticipantsForItem (reqId, subId) {
+		async _loadParticipantsForItem(reqId, subId) {
 			const oReq = this._getReqModel();
 
-			// Default: one empty row (for local add)
-			const setEmpty = () => oReq.setProperty("/participant", [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }]);
+			const setEmpty = () => {
+				oReq.setProperty("/participant", [
+					{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }
+				]);
+			};
 
 			if (!reqId || !subId) {
 				setEmpty();
@@ -545,66 +460,59 @@ sap.ui.define([
 			}
 
 			try {
-				const base = this._entityUrl("ZEMP_REQUEST_PART_VIEW", "eclaimViewService");
-				// const base = this._entityUrl("ZREQ_ITEM_PART");
-				const filter = encodeURIComponent(
-					`REQUEST_ID eq '${String(reqId).replace(/'/g, "''")}' and REQUEST_SUB_ID eq '${String(subId).replace(/'/g, "''")}'`
+				const oModel = this.getOwnerComponent().getModel("employee_view");
+
+				const oListBinding = oModel.bindList(
+					"/ZEMP_REQUEST_PART_VIEW",
+					null,
+					[new sap.ui.model.Sorter("PARTICIPANTS_ID", false)],
+					[
+						new sap.ui.model.Filter({ path: "REQUEST_ID",     operator: sap.ui.model.FilterOperator.EQ, value1: reqId }),
+						new sap.ui.model.Filter({ path: "REQUEST_SUB_ID", operator: sap.ui.model.FilterOperator.EQ, value1: subId })
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$count: false,
+						$select: "PARTICIPANTS_ID,NAME,CC,ALLOCATED_AMOUNT"
+					}
 				);
-				const orderby = encodeURIComponent("PARTICIPANTS_ID asc");
-				const url = `${base}?$filter=${filter}&$orderby=${orderby}&$format=json`;
 
-				const res = await fetch(url, { headers: { "Accept": "application/json" } });
-				if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const parts = aCtx.map((ctx) => ctx.getObject());
 
-				const data = await res.json();
-				const parts = Array.isArray(data.value) ? data.value : [];
-
-				const aMapped = parts.map(p => ({
-					PARTICIPANTS_ID : p.PARTICIPANTS_ID || "",
-					PARTICIPANT_NAME : p.NAME || "",
-					PARTICIPANT_COST_CENTER : p.CC || "",
+				const aMapped = parts.map((p) => ({
+					PARTICIPANTS_ID: p.PARTICIPANTS_ID ?? "",
+					PARTICIPANT_NAME: p.NAME ?? "",
+					PARTICIPANT_COST_CENTER: p.CC ?? "",
 					ALLOCATED_AMOUNT: p.ALLOCATED_AMOUNT ?? ""
 				}));
 
-				oReq.setProperty("/participant", aMapped.length ? aMapped : [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }]);
+				oReq.setProperty(
+					"/participant",
+					aMapped.length
+						? aMapped
+						: [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }]
+				);
 			} catch (e) {
-				// eslint-disable-next-line no-console
 				console.error("Load participants failed:", e);
 				setEmpty();
 			}
 		},
 
-		// Back from create to list (cancel)
 		async onBackView() {
-			var oList = this.byId('request_item_list_fragment');
-			if (!oList) {
-				await this._showHeaderAndList();
+			var oCreate = this.byId('request_create_item_fragment');
+			if (oCreate) {
+				await this._showItemList('view');
 			} else {
-				var oRouter = this.getOwnerComponent().getRouter();
-				oRouter.navTo("RequestFormStatus");
-			}
-		},
-
-		// Cancel alias (keep one implementation)
-		async onCancel() {
-			await this._showHeaderAndList('list');
-
-			// When coming back to list, optionally add the just-entered item (if needed)
-			// Here we push a new row **only if** you want to keep the behavior.
-			// Comment this block if you don't want an auto-append on cancel.
-			const oReq = this._getReqModel();
-			const data = oReq.getData();
-			const rows = Array.isArray(data.req_item_rows) ? data.req_item_rows : [];
-
-			if (data.req_item?.claim_type || data.req_item?.est_amount) {
-				rows.push({
-					CLAIM_TYPE_ID: data.req_item.claim_type,
-					CLAIM_TYPE_ITEM_ID: data.req_item._id,
-					EST_AMOUNT: parseFloat(data.req_item.est_amount || 0),
-					EST_NO_PARTICIPANT: parseInt(data.req_item.est_no_participant || 1, 10)
-				});
-				oReq.setProperty("/req_item_rows", rows);
-				oReq.setProperty("/list_count", rows.length);
+				var oHistory = History.getInstance();
+				var sPreviousHash = oHistory.getPreviousHash();
+				if (sPreviousHash) {
+					window.history.go(-1);
+				} else {
+					var oRouter = this.getOwnerComponent().getRouter();
+					oRouter.navTo("RequestFormStatus");
+				}
 			}
 		},
 
@@ -613,11 +521,10 @@ sap.ui.define([
 		* ======================================================= */
 
 		async onRowDeleteReqItem(oEvent) {
-			const oTable = this.byId("req_item_table"); // sap.ui.table.Table
+			const oTable = this.byId("req_item_table_d"); 
 			const oReq   = this._getReqModel();
 			const aRows  = oReq.getProperty("/req_item_rows") || [];
 
-			// Determine which indices to delete (selection or row action)
 			let iFromAction = null;
 			const oRow    = oEvent.getParameter && oEvent.getParameter("row");
 			const iRowIdx = oEvent.getParameter && oEvent.getParameter("rowIndex");
@@ -654,10 +561,8 @@ sap.ui.define([
 				return;
 			}
 
-			// Remove duplicates, sort desc so splices don't shift indices
 			aToDelete = Array.from(new Set(aToDelete)).sort((a, b) => b - a);
 
-			// === Backend delete first ===
 			sap.ui.core.BusyIndicator.show(0);
 			const successIdx = [];
 			let errorMsg = "";
@@ -678,7 +583,6 @@ sap.ui.define([
 					await this._deleteItemCascade(reqId, subId);
 					successIdx.push(i);
 				} catch (e) {
-					// Collect errors but keep processing other rows
 					errorMsg = e.message || "Delete failed for one or more rows.";
 				}
 				}
@@ -686,7 +590,6 @@ sap.ui.define([
 				sap.ui.core.BusyIndicator.hide();
 			}
 
-			// === Update local model only for successful deletes ===
 			if (successIdx.length > 0) {
 				successIdx.sort((a, b) => b - a).forEach((i) => {
 				if (i >= 0 && i < aRows.length) aRows.splice(i, 1);
@@ -724,57 +627,91 @@ sap.ui.define([
 			oTable.clearSelection();
 		},
 
-		/**
-		 * Deletes all ZREQ_ITEM_PART entries for (REQUEST_ID, REQUEST_SUB_ID)
-		 * then deletes the ZREQUEST_ITEM row for the same key.
-		 * Accepts 404 as "already gone".
-		 */
 		async _deleteItemCascade(requestId, requestSubId) {
-			const base     = this._serviceRoot();
-			const partSet  = "ZREQ_ITEM_PART";
-			const itemSet  = "ZREQUEST_ITEM";
+			const oModel  = this.getOwnerComponent().getModel(); 
+			const sGroup  = "deleteItemCascade";
 
-			// 1) Fetch participants for this item (so we can delete each by key)
-			const reqIdLit  = requestId.replace(/'/g, "''");     // escape for OData literal
-			const subIdLit  = requestSubId.replace(/'/g, "''");  // escape for OData literal
-			const filter    = encodeURIComponent(`REQUEST_ID eq '${reqIdLit}' and REQUEST_SUB_ID eq '${subIdLit}'`);
-			const selUrl    = `${base}/${partSet}?$select=PARTICIPANTS_ID&$filter=${filter}&$format=json`;
+			const cast = (v) => /^\d+$/.test(String(v)) ? Number(v) : String(v);
 
-			const resp = await fetch(selUrl, { headers: { "Accept": "application/json" } });
-			if (!resp.ok && resp.status !== 404) {
-				const t = await resp.text().catch(() => "");
-				throw new Error(`Load participants failed: ${resp.status} ${t}`);
-			}
+			const isNotFound = (e) => {
+				const s = e?.status || e?.statusCode || e?.httpStatus || e?.cause?.status || e?.cause?.statusCode;
+				return s === 404;
+			};
 
-			const data = resp.ok ? await resp.json() : { value: [] };
-			const parts = Array.isArray(data?.value) ? data.value : [];
+			const vReq = cast(requestId);
+			const vSub = cast(requestSubId);
 
-			// 2) Delete participants
-			for (const p of parts) {
-				const pid = String(p.PARTICIPANTS_ID ?? "");
-				// Compose key predicate (encode values; keep quotes)
-				const delPartUrl = `${base}/${partSet}(REQUEST_ID='${encodeURIComponent(requestId)}',REQUEST_SUB_ID='${encodeURIComponent(requestSubId)}',PARTICIPANTS_ID='${encodeURIComponent(pid)}')`;
-
-				const delP = await fetch(delPartUrl, {
-				method: "DELETE",
-				headers: { "If-Match": "*" } // avoid ETag issues
-				});
-
-				if (!delP.ok && delP.status !== 404) {
-				const t = await delP.text().catch(() => "");
-				throw new Error(`Delete participant failed: ${delP.status} ${t}`);
+			let aPartCtx = [];
+			try {
+				const oPartList = oModel.bindList(
+				"/ZREQ_ITEM_PART",
+				null,
+				null,
+				[
+					new sap.ui.model.Filter({ path: "REQUEST_ID",     operator: sap.ui.model.FilterOperator.EQ, value1: vReq }),
+					new sap.ui.model.Filter({ path: "REQUEST_SUB_ID", operator: sap.ui.model.FilterOperator.EQ, value1: vSub })
+				],
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto", 
+					$select: "REQUEST_ID,REQUEST_SUB_ID,PARTICIPANTS_ID"
+				}
+				);
+				aPartCtx = await oPartList.requestContexts(0, Infinity);
+			} catch (e) {
+				if (!isNotFound(e)) {
+				console.error("Load participants failed:", e);
+				throw e;
 				}
 			}
 
-			// 3) Delete the item
-			const delItemUrl = `${base}/${itemSet}(REQUEST_ID='${encodeURIComponent(requestId)}',REQUEST_SUB_ID='${encodeURIComponent(requestSubId)}')`;
-			const delI = await fetch(delItemUrl, { method: "DELETE", headers: { "If-Match": "*" } });
-			if (!delI.ok && delI.status !== 404) {
-				const t = await delI.text().catch(() => "");
-				throw new Error(`Delete item failed: ${delI.status} ${t}`);
+			let oItemCtx = null;
+			try {
+				const oItemList = oModel.bindList(
+				"/ZREQUEST_ITEM",
+				null,
+				null,
+				[
+					new sap.ui.model.Filter({ path: "REQUEST_ID",     operator: sap.ui.model.FilterOperator.EQ, value1: vReq }),
+					new sap.ui.model.Filter({ path: "REQUEST_SUB_ID", operator: sap.ui.model.FilterOperator.EQ, value1: vSub })
+				],{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$select: "REQUEST_ID,REQUEST_SUB_ID"
+				}
+				);
+				const aItem = await oItemList.requestContexts(0, 1);
+				oItemCtx = aItem[0] || null;
+			} catch (e) {
+				if (!isNotFound(e)) {
+				console.error("Load item failed:", e);
+				throw e;
+				}
 			}
 
-			return true;
+			try {
+				aPartCtx.forEach((ctx) => {
+				ctx.delete(sGroup).catch((e) => {
+					if (!isNotFound(e)) {
+					throw e;
+					}
+				});
+				});
+
+				if (oItemCtx) {
+				oItemCtx.delete(sGroup).catch((e) => {
+					if (!isNotFound(e)) {
+					throw e;
+					}
+				});
+				}
+
+				await oModel.submitBatch(sGroup);
+				return true;
+			} catch (e) {
+				console.error("Delete item cascade failed:", e);
+				throw e;
+			}
 		},
 
 		/* =========================================================
@@ -793,7 +730,7 @@ sap.ui.define([
 			const oCtx = src.getBindingContext("request");
 			if (!oCtx) return;
 
-			const path = oCtx.getPath(); // "/participant/<index>"
+			const path = oCtx.getPath();
 			const segs = path.split("/");
 			const idx  = parseInt(segs[segs.length - 1], 10);
 			if (!Number.isInteger(idx)) return;
@@ -806,7 +743,6 @@ sap.ui.define([
 
 			oReq.setProperty(`/participant/${idx}/PARTICIPANTS_ID`, sTrim);
 
-			// Keep exactly 1 trailing empty
 			this._normalizeTrailingEmptyRow(aRows);
 
 			const isLast = idx === aRows.length - 1;
@@ -823,50 +759,45 @@ sap.ui.define([
 				const isEmpty = !String(r.PARTICIPANTS_ID || "").trim() && !String(r.ALLOCATED_AMOUNT || "").trim();
 				if (!isEmpty) lastNonEmpty = i;
 			}
-			const desiredLength = Math.max(lastNonEmpty + 2, 1); // keep one trailing empty
+			const desiredLength = Math.max(lastNonEmpty + 2, 1); 
 			if (aRows.length > desiredLength) {
 				aRows.splice(desiredLength);
-				oReq.setProperty("/participant", aRows.slice()); // new ref
+				oReq.setProperty("/participant", aRows.slice());
 			} else if (aRows.length === 0) {
 				aRows.push({ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" });
 				oReq.setProperty("/participant", aRows);
 			}
 		},
 
-		// Replace your handler with this version
 		async onRowDeleteParticipant(oEvent) {
 			const oTable = this.byId("req_participant_table");
 			const oReq   = this._getReqModel();
 			let aRows    = oReq.getProperty("/participant") || [];
 
-			// --- Determine indices to delete (selection or row-action) ---
 			let idxFromAction = null;
-			const oRow    = oEvent.getParameter && oEvent.getParameter("row");
-			const visIdx  = oEvent.getParameter && oEvent.getParameter("rowIndex");
+			const oRow   = oEvent.getParameter && oEvent.getParameter("row");
+			const visIdx = oEvent.getParameter && oEvent.getParameter("rowIndex");
+
+			const extractIndexFromCtxPath = (oCtx) => {
+				if (!oCtx) return null;
+				const seg = oCtx.getPath().split("/").pop();
+				const i = parseInt(seg, 10);
+				return Number.isInteger(i) ? i : null;
+			};
 
 			if (oRow) {
 				const oCtx = oRow.getBindingContext("request");
-				if (oCtx) {
-				const i = parseInt(oCtx.getPath().split("/").pop(), 10);
-				if (Number.isInteger(i)) idxFromAction = i;
-				}
+				idxFromAction = extractIndexFromCtxPath(oCtx);
 			} else if (Number.isInteger(visIdx)) {
 				const oCtx = oTable.getContextByIndex(visIdx);
-				if (oCtx) {
-				const i = parseInt(oCtx.getPath().split("/").pop(), 10);
-				if (Number.isInteger(i)) idxFromAction = i;
-				}
+				idxFromAction = extractIndexFromCtxPath(oCtx);
 			}
 
 			let aToDelete = [];
 			const aSel = oTable.getSelectedIndices() || [];
 			if (aSel.length > 0) {
-				aToDelete = aSel.map((v) => {
-				const oCtx = oTable.getContextByIndex(v);
-				if (!oCtx) return null;
-				const i = parseInt(oCtx.getPath().split("/").pop(), 10);
-				return Number.isInteger(i) ? i : null;
-				}).filter(x => x !== null);
+				aToDelete = aSel.map((v) => extractIndexFromCtxPath(oTable.getContextByIndex(v)))
+								.filter((x) => x !== null);
 			} else if (Number.isInteger(idxFromAction)) {
 				aToDelete = [idxFromAction];
 			}
@@ -876,75 +807,98 @@ sap.ui.define([
 				return;
 			}
 
-			// --- Prepare service root (self-contained, works with or without _serviceRoot) ---
-			const serviceRoot = (this._serviceRoot ? this._serviceRoot() :
-				(this.getOwnerComponent().getManifestEntry("sap.app")?.dataSources?.mainService?.uri || "/odata/v4/EmployeeSrv/"))
-				.replace(/\/$/, "");
-
-			const buildDelUrl = (reqId, subId, pid) =>
-				`${serviceRoot}/ZREQ_ITEM_PART(` +
-				`REQUEST_ID='${encodeURIComponent(reqId)}',` +
-				`REQUEST_SUB_ID='${encodeURIComponent(subId)}',` +
-				`PARTICIPANTS_ID='${encodeURIComponent(pid)}'` +
-				`)`;
-
-			// --- Delete: DB when keys exist, else local-only ---
 			aToDelete = Array.from(new Set(aToDelete)).sort((a, b) => b - a);
+
+			const oModel = this.getOwnerComponent().getModel(); 
+			const sGroupId = "delParticipants"; 
+
+			const toNumberIfNumeric = (v) => /^\d+$/.test(String(v)) ? Number(v) : String(v);
+
 			const successIdx = [];
 			let errorMsg = "";
 
 			sap.ui.core.BusyIndicator.show(0);
 			try {
+				const deletePromises = [];
+
 				for (const i of aToDelete) {
 				if (i < 0 || i >= aRows.length) continue;
 
-				const row  = aRows[i] || {};
-				const pid  = String(row.PARTICIPANTS_ID ?? row.PARTICIPANT_ID ?? "").trim();
+				const row   = aRows[i] || {};
+				const pid   = String(row.PARTICIPANTS_ID ?? row.PARTICIPANT_ID ?? "").trim();
 				const reqId = String(row.REQUEST_ID ?? oReq.getProperty("/req_header/reqid") ?? "").trim();
 				const subId = String(row.REQUEST_SUB_ID ?? oReq.getProperty("/req_item/req_subid") ?? "").trim();
 
 				const hasKeys = !!(reqId && subId && pid);
 
-				if (hasKeys) {
-					try {
-					const url = buildDelUrl(reqId, subId, pid);
-					const res = await fetch(url, {
-						method: "DELETE",
-						headers: { "If-Match": "*" } // avoid ETag issues
-					});
-					// Treat 404 as already deleted
-					if (!res.ok && res.status !== 404) {
-						const t = await res.text().catch(() => "");
-						throw new Error(`Delete participant failed (${res.status}): ${t}`);
-					}
+				if (!hasKeys) {
 					successIdx.push(i);
-					} catch (e) {
-					errorMsg = e.message || "Failed to delete one or more participants.";
-					}
-				} else {
-					// Local-only (not yet saved to DB)
-					successIdx.push(i);
+					continue;
 				}
+
+				const vReq = toNumberIfNumeric(reqId);
+				const vSub = toNumberIfNumeric(subId);
+				const vPid = toNumberIfNumeric(pid);
+
+				const oListBinding = oModel.bindList(
+					"/ZREQ_ITEM_PART",
+					null,
+					null,
+					[
+						new sap.ui.model.Filter({ path: "REQUEST_ID",     operator: sap.ui.model.FilterOperator.EQ, value1: vReq }),
+						new sap.ui.model.Filter({ path: "REQUEST_SUB_ID", operator: sap.ui.model.FilterOperator.EQ, value1: vSub }),
+						new sap.ui.model.Filter({ path: "PARTICIPANTS_ID",operator: sap.ui.model.FilterOperator.EQ, value1: vPid })
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: sGroupId,
+						$$updateGroupId: sGroupId,
+						$count: false,
+						$select: "REQUEST_ID,REQUEST_SUB_ID,PARTICIPANTS_ID"
+					}
+				);
+
+				const pDel = oListBinding.requestContexts(0, 1)
+					.then((aCtx) => {
+					const oCtx = aCtx[0];
+					if (!oCtx) {
+						successIdx.push(i);
+						return;
+					}
+					return oCtx.delete(sGroupId).then(() => {
+						successIdx.push(i);
+					});
+					})
+					.catch((e) => {
+					errorMsg = errorMsg || (e && e.message) || "Failed to delete one or more participants.";
+					});
+
+				deletePromises.push(pDel);
+				}
+
+				await Promise.allSettled(deletePromises);
+
+				if (deletePromises.length > 0) {
+				await oModel.submitBatch(sGroupId);
 				}
 			} finally {
 				sap.ui.core.BusyIndicator.hide();
 			}
 
-			// --- Remove locally only successful ones and normalize trailing row ---
 			if (successIdx.length > 0) {
 				successIdx.sort((a, b) => b - a).forEach((i) => {
-				if (i >= 0 && i < aRows.length) aRows.splice(i, 1);
+					if (i >= 0 && i < aRows.length) aRows.splice(i, 1);
 				});
 
 				if (!Array.isArray(aRows) || aRows.length === 0) {
-				aRows = [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
-				} else {
-				this._normalizeTrailingEmptyRow(aRows); // your existing helper
+					aRows = [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }];
+				} else if (this._normalizeTrailingEmptyRow) {
+					this._normalizeTrailingEmptyRow(aRows);
 				}
 
 				oReq.setProperty("/participant", aRows);
 				oTable.clearSelection();
-				sap.m.MessageToast.show(`Deleted ${successIdx.length - 1 || 1} participant(s)`);
+				sap.m.MessageToast.show(`Deleted ${successIdx.length} participant(s)`);
 			}
 
 			if (errorMsg) {
@@ -969,8 +923,7 @@ sap.ui.define([
 			// Reset create buffers
 			const data = oReq.getData();
 			data.req_item = {
-				claim_type: "CT1",
-				claim_type_item_id: "CTI1",
+				claim_type_item_id: "",
 				est_amount: "",
 				est_no_participant: "",
 				cash_advance: "no_cashadv",
@@ -979,9 +932,8 @@ sap.ui.define([
 				location: "",
 				remarks: ""
 			};
-			const emp_data = await this._getEmpIdDetail(data.eeid);
-			if (data.req_header.grptype === 'individual') {
-				// Use the returned data to populate the fields
+			if (data.req_header.grptype === 'IND') {
+				const emp_data = await this._getEmpIdDetail(data.eeid);
 				data.participant = [{ 
 					PARTICIPANTS_ID: emp_data ? emp_data.eeid : "", 
 					PARTICIPANT_NAME: emp_data ? emp_data.name : "", 
@@ -996,15 +948,13 @@ sap.ui.define([
 		},
 
 		async onSave() {
-			// Validate & save to backend
-			const oReq      = this._getReqModel();
-			const data      = oReq.getData();
-			const reqId     = String(data.req_header.reqid || "").trim();
+			const oReq  = this._getReqModel();
+			const data  = oReq.getData();
+			const oModel = this.getOwnerComponent().getModel();
 
-			// View flag: 'i_edit' triggers EDIT flow; otherwise CREATE flow
-			const isEdit    = oReq.getProperty("/view") === "i_edit";
+			const reqId = String(data.req_header.reqid || "").trim();
+			const isEdit = oReq.getProperty("/view") === "i_edit";
 
-			// Common field extraction
 			const claimType = data.req_header.claimtype;
 			const claimItem = data.req_item.claim_type_item_id;
 			const estAmt    = parseFloat(data.req_item.est_amount || 0);
@@ -1016,117 +966,102 @@ sap.ui.define([
 			sap.ui.core.BusyIndicator.show(0);
 
 			try {
-				const alloc_total = data.participant.reduce((sum, it) => {
-					return sum + (parseFloat(it.ALLOCATED_AMOUNT) || 0);
-				}, 0);
-
+				const alloc_total = data.participant.reduce(
+					(sum, it) => sum + (parseFloat(it.ALLOCATED_AMOUNT) || 0),
+					0
+				);
 				if (alloc_total > estAmt) {
-					sap.m.MessageToast.show('Allocated Amount cannot be more than Estimated Amount');
+					sap.m.MessageToast.show("Allocated Amount cannot exceed Estimated Amount");
 					return;
 				}
 
 				if (isEdit) {
 					const requestSubId = String(data.req_item.req_subid || "").trim();
-					if (!requestSubId) {
-						throw new Error("Missing Request Sub ID for edit");
-					}
+					if (!requestSubId) throw new Error("Missing Request Sub ID for edit");
 
-					const urlItem = this._entityUrl(
-						`ZREQUEST_ITEM(REQUEST_ID='${encodeURIComponent(reqId)}',REQUEST_SUB_ID='${encodeURIComponent(requestSubId)}')`
+					const oList = oModel.bindList(
+						"/ZREQUEST_ITEM",
+						null,
+						null,
+						[
+							new sap.ui.model.Filter({ path: "REQUEST_ID", operator: "EQ", value1: reqId }),
+							new sap.ui.model.Filter({ path: "REQUEST_SUB_ID", operator: "EQ", value1: subId })
+						],
+						{ $$ownRequest: true, $$updateGroupId: "itemSave" }
 					);
-					const payloadItem = {
-						CLAIM_TYPE_ID: claimType,
-						CLAIM_TYPE_ITEM_ID: claimItem,
-						EST_AMOUNT: estAmt,
-						EST_NO_PARTICIPANT: estNoPart,
-						START_DATE: data.req_item.start_date || null,
-						END_DATE  : data.req_item.end_date   || null,
-						LOCATION  : data.req_item.location  || "",
-						REMARK    : data.req_item.remark    || ""
-					};
 
-					const resPatch = await fetch(urlItem, {
-						method: "PATCH",
-						headers: {
-						"Content-Type": "application/json",
-						"Accept": "application/json",
-						"If-Match": "*" 
-						},
-						body: JSON.stringify(payloadItem)
-					});
-					if (!resPatch.ok) {
-						const e = await resPatch.text();
-						throw new Error(`Item update failed: ${resPatch.status} ${e}`);
-					}
+					const aCtx = await oList.requestContexts(0, 1);
+					const oItemCtx = aCtx[0];
+					if (!oItemCtx) throw new Error("Item not found for edit");
+
+					oItemCtx.setProperty("CLAIM_TYPE_ID",      claimType);
+					oItemCtx.setProperty("CLAIM_TYPE_ITEM_ID", claimItem);
+					oItemCtx.setProperty("EST_AMOUNT",         estAmt);
+					oItemCtx.setProperty("EST_NO_PARTICIPANT", estNoPart);
+					oItemCtx.setProperty("START_DATE",         data.req_item.start_date || null);
+					oItemCtx.setProperty("END_DATE",           data.req_item.end_date   || null);
+					oItemCtx.setProperty("LOCATION",           data.req_item.location  || "");
+					oItemCtx.setProperty("REMARK",             data.req_item.remark    || "");
 
 					await this._replaceParticipantsForItem(reqId, requestSubId, data.participant);
 
+					await oModel.submitBatch("itemSave");
+
 					await this._getItemList(reqId);
-					await this._showItemList('list');
+					await this._showItemList("list");
 
 					sap.m.MessageToast.show("Updated Successfully");
 					return;
 				}
 
-				
 				const nr = await this.getCurrentReqNumber("NR03");
 				if (!nr) throw new Error("Number range not available");
+
 				const requestSubId = String(nr.result);
 
-				const urlItem = this._entityUrl("ZREQUEST_ITEM");
-				const payloadItem = {
-					REQUEST_ID: reqId,
-					REQUEST_SUB_ID: requestSubId,
-					CLAIM_TYPE_ID: claimType,
-					CLAIM_TYPE_ITEM_ID: claimItem,
-					EST_AMOUNT: estAmt,
-					EST_NO_PARTICIPANT: estNoPart,
-					START_DATE: data.req_item.start_date || null,
-					END_DATE  : data.req_item.end_date   || null,
-					LOCATION  : data.req_item.location  || "",
-					REMARK    : data.req_item.remark    || ""
-				};
+				const oItemCtx = oModel.bindList("/ZREQUEST_ITEM").create(
+					{
+						REQUEST_ID:          reqId,
+						REQUEST_SUB_ID:      requestSubId,
+						CLAIM_TYPE_ID:       claimType,
+						CLAIM_TYPE_ITEM_ID:  claimItem,
+						EST_AMOUNT:          estAmt,
+						EST_NO_PARTICIPANT:  estNoPart,
+						START_DATE:          data.req_item.start_date || null,
+						END_DATE:            data.req_item.end_date   || null,
+						LOCATION:            data.req_item.location  || "",
+						REMARK:              data.req_item.remark    || ""
+					},                  
+					{ $$updateGroupId: "itemCreate" }
+				);
 
-				const resItem = await fetch(urlItem, {
-					method: "POST",
-					headers: { "Content-Type": "application/json", "Accept": "application/json" },
-					body: JSON.stringify(payloadItem)
-				});
-				if (!resItem.ok) {
-					const e = await resItem.text();
-					throw new Error(`Item save failed: ${resItem.status} ${e}`);
-				}
-
-				const parts = Array.isArray(data.participant) ? data.participant : [];
-				const urlPart = this._entityUrl("ZREQ_ITEM_PART");
+				const parts = data.participant || [];
 				for (const p of parts) {
 					const pid = String(p.PARTICIPANTS_ID || "").trim();
 					if (!pid) continue;
+
 					const alloc = parseFloat(p.ALLOCATED_AMOUNT || 0);
 
-					const res = await fetch(urlPart, {
-						method: "POST",
-						headers: { "Content-Type": "application/json", "Accept": "application/json" },
-						body: JSON.stringify({
-						REQUEST_ID: reqId,
-						REQUEST_SUB_ID: requestSubId,
-						PARTICIPANTS_ID: pid,
-						ALLOCATED_AMOUNT: alloc
-						})
-					});
-					if (!res.ok) {
-						const t = await res.text();
-						throw new Error(`Participant save failed: ${res.status} ${t}`);
-					}
+					oModel.bindList("/ZREQ_ITEM_PART").create(
+						{
+						REQUEST_ID:         reqId,
+						REQUEST_SUB_ID:     requestSubId,
+						PARTICIPANTS_ID:    pid,
+						ALLOCATED_AMOUNT:   alloc
+						},
+						{ $$updateGroupId: "itemCreate" }
+					);
 				}
+
+				await oModel.submitBatch("itemCreate");
 
 				await this.updateCurrentReqNumber("NR03", nr.current);
 
 				await this._getItemList(reqId);
-
 				await this._showItemList("list");
 
 				sap.m.MessageToast.show("Saved Successfully");
+
 			} catch (e) {
 				sap.m.MessageToast.show(e.message || "Save failed");
 			} finally {
@@ -1135,61 +1070,80 @@ sap.ui.define([
 		},
 
 		async _replaceParticipantsForItem(requestId, requestSubId, aParticipants) {
-			const base = this._serviceRoot();
+			const oModel = this.getOwnerComponent().getModel();
+			const sGroup = "replaceParts";
 
-			// 1) Delete existing (best-effort; DELETE by filter is not standard → load then delete, or implement a backend action)
-			// Here: load keys then delete one-by-one
-			const filter = encodeURIComponent(
-				`REQUEST_ID eq '${String(requestId).replace(/'/g, "''")}' and REQUEST_SUB_ID eq '${String(requestSubId).replace(/'/g, "''")}'`
-			);
-			const selUrl = `${base}/ZREQ_ITEM_PART?$select=PARTICIPANTS_ID&$filter=${filter}&$format=json`;
+			const isNotFound = (err) => {
+				const c = err?.status || err?.statusCode || err?.cause?.status || err?.cause?.statusCode;
+				return c === 404;
+			};
 
-			const resSel = await fetch(selUrl, { headers: { "Accept": "application/json" } });
-			if (!resSel.ok && resSel.status !== 404) {
-				const t = await resSel.text().catch(() => "");
-				throw new Error(`Load participants failed: ${resSel.status} ${t}`);
-			}
-			const data = resSel.ok ? await resSel.json() : { value: [] };
-			const existing = Array.isArray(data?.value) ? data.value : [];
+			let aExistingCtx = [];
+			try {
+				const oList = oModel.bindList(
+				"/ZREQ_ITEM_PART",
+				null,
+				null,
+				[
+					new sap.ui.model.Filter({ path: "REQUEST_ID",     operator: "EQ", value1: requestId }),
+					new sap.ui.model.Filter({ path: "REQUEST_SUB_ID", operator: "EQ", value1: requestSubId })
+				],
+				{
+					$$ownRequest : true,
+					$$groupId    : "$auto",
+					$select      : "PARTICIPANTS_ID"
+				}
+				);
 
-			for (const r of existing) {
-				const pid = String(r.PARTICIPANTS_ID ?? "").trim();
-				if (!pid) continue;
-				const delUrl = `${base}/ZREQ_ITEM_PART(` +
-							`REQUEST_ID='${encodeURIComponent(requestId)}',` +
-							`REQUEST_SUB_ID='${encodeURIComponent(requestSubId)}',` +
-							`PARTICIPANTS_ID='${encodeURIComponent(pid)}'` +
-							`)`;
-				const del = await fetch(delUrl, { method: "DELETE", headers: { "If-Match": "*" } });
-				if (!del.ok && del.status !== 404) {
-				const t = await del.text().catch(() => "");
-				throw new Error(`Delete participant failed: ${del.status} ${t}`);
+				aExistingCtx = await oList.requestContexts(0, Infinity);
+
+			} catch (err) {
+				if (!isNotFound(err)) {
+				console.error("Load participants failed:", err);
+				throw err;
 				}
 			}
 
-			// 2) Insert from current array
-			const urlPart = `${base}/ZREQ_ITEM_PART`;
-			const list = Array.isArray(aParticipants) ? aParticipants : [];
-			for (const p of list) {
+			try {
+				aExistingCtx.forEach((ctx) => {
+				ctx.delete(sGroup).catch((err) => {
+					if (!isNotFound(err)) throw err;
+				});
+				});
+			} catch (err) {
+				console.error("Participant deletion failed:", err);
+				throw err;
+			}
+
+			const aList = Array.isArray(aParticipants) ? aParticipants : [];
+			try {
+				const oPartList = oModel.bindList("/ZREQ_ITEM_PART", null, null, null, {
+				$$updateGroupId: sGroup
+				});
+
+				aList.forEach((p) => {
 				const pid = String(p.PARTICIPANTS_ID || p.PARTICIPANT_ID || "").trim();
-				if (!pid) continue;
+				if (!pid) return;
+
 				const alloc = parseFloat(p.ALLOCATED_AMOUNT || 0);
 
-				const ins = await fetch(urlPart, {
-				method: "POST",
-				headers: { "Content-Type": "application/json", "Accept": "application/json" },
-				body: JSON.stringify({
-					REQUEST_ID: requestId,
-					REQUEST_SUB_ID: requestSubId,
-					PARTICIPANTS_ID: pid,
+				oPartList.create(
+					{
+					REQUEST_ID:       requestId,
+					REQUEST_SUB_ID:   requestSubId,
+					PARTICIPANTS_ID:  cast(pid),
 					ALLOCATED_AMOUNT: alloc
-				})
+					},
+					true
+				);
 				});
-				if (!ins.ok) {
-				const t = await ins.text().catch(() => "");
-				throw new Error(`Insert participant failed: ${ins.status} ${t}`);
-				}
+
+			} catch (err) {
+				console.error("Insert participant failed:", err);
+				throw err;
 			}
+
+			await oModel.submitBatch(sGroup);
 		},
 
 		async onCancelItem() {
@@ -1207,61 +1161,58 @@ sap.ui.define([
 
 		async _getItemList(req_id) {
 			const oReq = this._getReqModel();
+
 			if (!req_id) {
 				oReq.setProperty("/req_item_rows", []);
 				oReq.setProperty("/list_count", 0);
 				return [];
 			}
 
+			const oModel = this.getOwnerComponent().getModel('employee_view');
+
 			const sReq = String(req_id);
-			const isGuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(sReq);
-			const isNumeric = /^\d+$/.test(sReq);
-			let sLiteral;
-			if (isNumeric) sLiteral = sReq;
-			else if (isGuid) sLiteral = `guid'${sReq}'`;
-			else sLiteral = `'${sReq.replace(/'/g, "''")}'`;
 
-			const base       = this._entityUrl("ZREQUEST_ITEM");
-			const filterExpr = `REQUEST_ID eq ${sLiteral}`;
-			const orderby    = "REQUEST_SUB_ID asc";
-			const query = [
-				`$filter=${encodeURIComponent(filterExpr)}`,
-				`$orderby=${encodeURIComponent(orderby)}`,
-				`$count=true`,
-				`$format=json`
-			].join("&"); // IMPORTANT: use '&' (not &amp;)
-
-			const url = `${base}?${query}`;
+			const oListBinding = oModel.bindList(
+				"/ZEMP_REQUEST_ITEM_VIEW",
+				null,
+				[new sap.ui.model.Sorter("REQUEST_SUB_ID", false)],
+				[new sap.ui.model.Filter({
+					path: "REQUEST_ID",
+					operator: sap.ui.model.FilterOperator.EQ,
+					value1: sReq
+				})],
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$count: true
+				}
+			);
 
 			try {
-				const res = await fetch(url, { headers: { "Accept": "application/json" } });
-				if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-				const data = await res.json();
-				const a = Array.isArray(data?.value) ? data.value : [];
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
 
-				// Fix numeric types if backend returns strings
 				a.forEach((it) => {
 					if (it.EST_AMOUNT != null) it.EST_AMOUNT = parseFloat(it.EST_AMOUNT);
 					if (it.EST_NO_PARTICIPANT != null) it.EST_NO_PARTICIPANT = parseInt(it.EST_NO_PARTICIPANT, 10);
 				});
 
 				const cashadv_amt = a.reduce((sum, it) => {
-					return it.CASH_ADVANCE === "YES" ? sum + (parseFloat(it.EST_AMOUNT) || 0) : sum;
+					return it.CASH_ADVANCE === "YES" ? sum + (Number(it.EST_AMOUNT) || 0) : sum;
 				}, 0);
 
 				const req_amt = a.reduce((sum, it) => {
-					return it.CASH_ADVANCE === null ? sum + (parseFloat(it.EST_AMOUNT) || 0) : sum;
+					return it.CASH_ADVANCE === null ? sum + (Number(it.EST_AMOUNT) || 0) : sum;
 				}, 0);
-				
+
 				oReq.setProperty("/req_header/cashadvamt", cashadv_amt);
 				oReq.setProperty("/req_header/reqamt", req_amt);
-
 				oReq.setProperty("/req_item_rows", a);
 				oReq.setProperty("/list_count", a.length);
+
 				return a;
 			} catch (err) {
-				// eslint-disable-next-line no-console
-				console.error("Fetch failed:", err, { url });
+				console.error("OData V4 bindList failed:", err);
 				oReq.setProperty("/req_item_rows", []);
 				oReq.setProperty("/list_count", 0);
 				return [];
@@ -1269,97 +1220,163 @@ sap.ui.define([
 		},
 
 		async getCurrentReqNumber(range_id) {
-			const url = this._entityUrl("ZNUM_RANGE");
+			const oModel = this.getOwnerComponent().getModel();
+
 			try {
-				const res = await fetch(url, { headers: { "Accept": "application/json" } });
-				if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-				const data = await res.json();
-				const row = (data.value || data || []).find(x => x.RANGE_ID === range_id);
-				if (!row || row.CURRENT == null) throw new Error(`${range_id} not found or CURRENT missing`);
+				const oListBinding = oModel.bindList(
+				"/ZNUM_RANGE",
+				null,
+				null,
+				[
+					new sap.ui.model.Filter({
+					path: "RANGE_ID",
+					operator: sap.ui.model.FilterOperator.EQ,
+					value1: range_id
+					})
+				],
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$select: "RANGE_ID,CURRENT"
+				}
+				);
+
+				const aCtx = await oListBinding.requestContexts(0, 1);
+				const oCtx = aCtx[0];
+
+				if (!oCtx) {
+					throw new Error(`${range_id} not found`);
+				}
+
+				const row = oCtx.getObject();
+				if (row.CURRENT == null) {
+					throw new Error(`${range_id} missing CURRENT`);
+				}
 
 				const current = Number(row.CURRENT);
 				const yy = String(new Date().getFullYear()).slice(-2);
 				const result = `REQ${yy}${String(current).padStart(9, "0")}`;
+
 				return { result, current };
-			} catch (e) {
-				// eslint-disable-next-line no-console
-				console.error("Error fetching number range:", e);
+
+			} catch (err) {
+				console.error("Error fetching number range:", err);
 				return null;
 			}
 		},
 
-		async updateCurrentReqNumber(nr, currentNumber) {
-			const id  = encodeURIComponent(nr);
-			const url = this._entityUrl(`ZNUM_RANGE('${id}')`);
+		async updateCurrentReqNumber(rangeId, currentNumber) {
+			const oModel = this.getOwnerComponent().getModel();
+			const sGroup = "updateRange";
 			const nextNumber = currentNumber + 1;
 
 			try {
-				const res = await fetch(url, {
-				method: "PATCH",
-				headers: {
-					"Content-Type": "application/json",
-					"If-Match": "*" // avoid ETag issues
-				},
-				body: JSON.stringify({ CURRENT: String(nextNumber) })
+				const sPath = `/ZNUM_RANGE(RANGE_ID='${rangeId.replace(/'/g, "''")}')`;
+
+				const oCtxBinding = oModel.bindContext(sPath, null, {
+				$$updateGroupId: sGroup,
+				$$ownRequest: true
 				});
 
-				if (!res.ok) {
-				const t = await res.text().catch(() => "");
-				throw new Error(`PATCH failed ${res.status} ${res.statusText}: ${t}`);
-				}
-				if (res.status === 204) return { CURRENT: nextNumber };
+				await oCtxBinding.requestObject();
+				const oCtx = oCtxBinding.getBoundContext();
 
-				const ct = res.headers.get("content-type") || "";
-				return ct.includes("application/json") ? await res.json() : await res.text();
-			} catch (e) {
-				// eslint-disable-next-line no-console
-				console.error("Error updating number range:", e);
+				oCtx.setProperty("CURRENT", String(nextNumber));
+
+				await oModel.submitBatch(sGroup);
+
+				return { CURRENT: nextNumber };
+
+			} catch (err) {
+				console.error("Error updating number range:", err);
 				return null;
 			}
 		}, 
 
 		async _getClaimTypeItemSelection() {
-			const oReq = this._getReqModel();
-			var data = oReq.getData();
-			var claim_type_id = data.req_header.claimtype;
+			const oReq   = this._getReqModel();
+			const data   = oReq.getData();
+			const claim_type_id = data.req_header.claimtype;
+
 			if (!claim_type_id) {
-				oReq.setProperty("/req_item_rows", []);
-				oReq.setProperty("/list_count", 0);
+				oReq.setProperty("/claim_type_items", []);
 				return [];
 			}
 
-			const sReq = String(claim_type_id);
-			const isGuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(sReq);
-			const isNumeric = /^\d+$/.test(sReq);
-			let sLiteral;
-			if (isNumeric) sLiteral = sReq;
-			else if (isGuid) sLiteral = `guid'${sReq}'`;
-			else sLiteral = `'${sReq.replace(/'/g, "''")}'`;
-
-			const base       = this._entityUrl("ZCLAIM_TYPE_ITEM");
-			const filterExpr = `CLAIM_TYPE_ID eq ${sLiteral} and CATEGORY_ID eq 'PREAPPROVAL'`;
-			const orderby    = "CLAIM_TYPE_ID asc";
-			const query = [
-				`$filter=${encodeURIComponent(filterExpr)}`,
-				`$orderby=${encodeURIComponent(orderby)}`,
-				`$count=true`,
-				`$format=json`
-			].join("&"); // IMPORTANT: use '&' (not &amp;)
-
-			const url = `${base}?${query}`;
+			const oModel = this.getOwnerComponent().getModel();
 
 			try {
-				const res = await fetch(url, { headers: { "Accept": "application/json" } });
-				if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-				const data = await res.json();
-				const a = Array.isArray(data?.value) ? data.value : [];
+				const oListBinding = oModel.bindList(
+					"/ZCLAIM_TYPE_ITEM",
+					null,
+					[
+						new sap.ui.model.Sorter("CLAIM_TYPE_ID", false)
+					],
+					[
+						new sap.ui.model.Filter({
+							path: "CLAIM_TYPE_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: claim_type_id
+						}),
+						new sap.ui.model.Filter({
+							path: "CATEGORY_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: "PREAPPROVAL"
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$count: true,
+						$select: "CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC"
+					}
+				);
+
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
 
 				oReq.setProperty("/claim_type_items", a);
 				return a;
+
 			} catch (err) {
-				// eslint-disable-next-line no-console
-				console.error("Fetch failed:", err, { url });
+				console.error("ODataV4 load claim type items failed:", err);
 				oReq.setProperty("/claim_type_items", []);
+				return [];
+			}
+		},
+
+		// My Pre-Approval Request Status function
+		getPARHeaderList: async function (emp_id) {
+			const oReq = this.getOwnerComponent().getModel("request_status");
+			const oModel = this.getOwnerComponent().getModel();
+
+			const oListBinding = oModel.bindList("/ZREQUEST_HEADER", undefined,
+				[new Sorter("REQUEST_ID")],
+				[new Filter({ path: "EMP_ID", operator: FilterOperator.EQ, value1: String(emp_id) })],
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$$updateGroupId: "$auto",
+					$count: true
+				}
+			);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+				a.forEach((it) => {
+				if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
+				});
+
+				oReq.setProperty("/req_header_list", a);
+				oReq.setProperty("/req_header_count", a.length);
+
+				return a;
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				oReq.setProperty("/req_header_list", []);
+				oReq.setProperty("/req_header_count", 0);
 				return [];
 			}
 		},

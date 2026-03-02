@@ -39,16 +39,10 @@
                     ariaLabelledBy="title"
                     width="auto"
                     rowActionCount="2">
-                    <!-- <table:Column  width="25rem">
-                        <m:Label text="{i18n>req_i_claim_type}"></m:Label>
-                        <table:template>
-                            <m:Text text="{request>CLAIM_TYPE_ID}" wrapping="false" />
-                        </table:template>
-                    </table:Column> -->
                     <table:Column  width="25rem">
                         <m:Label text="{i18n>req_i_claim_type_item}"></m:Label>
                         <table:template>
-                            <m:Text text="{request>CLAIM_TYPE_ITEM_ID}" wrapping="false" />
+                            <m:Text text="{request>CLAIM_TYPE_ITEM_DESC}" wrapping="false" />
                         </table:template>
                     </table:Column>
                     <table:Column  width="15rem">

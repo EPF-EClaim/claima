@@ -25,7 +25,8 @@
 						required="true" 
 						forceSelection="false"
 						items="{path: 'req_type_list>/types',
-								sorter: { path: 'REQUEST_TYPE_ID', descending: false }}">
+								sorter: { path: 'REQUEST_TYPE_ID', descending: false }}"
+						liveChange="_getFieldVisibility_ReqType">
 					<items>
 						<core:Item key="{req_type_list>REQUEST_TYPE_ID}" 
 								text="{req_type_list>REQUEST_TYPE_DESC}" />
@@ -99,17 +100,20 @@
 								${request>/req_header/reqtype} === 'RT0003' }" />	
 
 				<Label text="{i18n>req_grptype}" />
-				<Select width="100%" 
+				<Select selectedKey="{request>/req_header/grptype}" 
 						required="true" 
-						selectedKey="{request>/req_header/grptype}"
+						forceSelection="false"
 						enabled="{= ${request>/req_header/reqtype} !== 'RT0004'}"
 						visible="{= ${request>/req_header/reqtype} === 'RT0001' || 
 									${request>/req_header/reqtype} === 'RT0002'  || 
 									${request>/req_header/reqtype} === 'RT0003'  || 
-									${request>/req_header/reqtype} === 'RT0004' }">
-					<!-- <core:Item key="none" text="" /> -->
-					<core:Item key="individual" text="Individual" />
-					<core:Item key="group" text="Group" />
+									${request>/req_header/reqtype} === 'RT0004' }"
+						items="{path: 'indiv_list>/types',
+								sorter: { path: 'IND_OR_GROUP_ID', descending: false }}">
+					<items>
+						<core:Item key="{indiv_list>IND_OR_GROUP_ID}" 
+								text="{indiv_list>IND_OR_GROUP_DESC}" />
+					</items>
 				</Select>
 
 			    <Label text="{i18n>req_location}" />
