@@ -1,24 +1,43 @@
 const cds = require('@sap/cds');
-const { INSERT, UPDATE, UPSERT } = require('@sap/cds/lib/ql/cds-ql');
+const { UPSERT } = require('@sap/cds/lib/ql/cds-ql');
+
+const _insert = async function (entities, req) {
+  try {
+    var reqdata = req;
+    if (!reqdata || reqdata.length === 0) {
+      throw new Error('No Data Sent')
+    }
+    const tx = cds.tx(req);
+    const results = await tx.run(
+      UPSERT(reqdata).into(entities)
+    );
+    return 'Records updated';
+  } catch (error) {
+    req.error(400, `Fail creating record: ${error.message}`);
+  }
+}
 
 module.exports = (srv) => {
 
   srv.on('batchCreateEmployee', async (req) => {
     const { ZEMP_MASTER } = srv.entities;
-    try {
-      const { employees } = req.data;
-      if (!employees || employees.length === 0) {
-        throw new Error('No Data Sent')
-      }
-      const tx = cds.tx(req);
+    _insert(ZEMP_MASTER, req);
+    // try {
+    //   const { employees } = req.data;
 
-      const results = await tx.run(
-        UPSERT(employees).into(ZEMP_MASTER)
-      );
-      return 'Records updated';
-    } catch (error) {
-      req.error(400, `Fail creating record: ${error.message}`);
-    }
+
+    //   if (!employees || employees.length === 0) {
+    //     throw new Error('No Data Sent')
+    //   }
+    //   const tx = cds.tx(req);
+
+    //   const results = await tx.run(
+    //     UPSERT(employees).into(ZEMP_MASTER)
+    //   );
+    //   return 'Records updated';
+    // } catch (error) {
+    //   req.error(400, `Fail creating record: ${error.message}`);
+    // }
   }),
 
     srv.on('batchCreateCostCenter', async (req) => {
@@ -74,7 +93,7 @@ module.exports = (srv) => {
 
       // 2. Query your ZEMP_MASTER table using your Email column name
       const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });  // <— use your real column name here
-      console.log("Result",result);
+      console.log("Result", result);
       return {
         id: email,
         userType: result?.USER_TYPE || "UNKNOWN"
