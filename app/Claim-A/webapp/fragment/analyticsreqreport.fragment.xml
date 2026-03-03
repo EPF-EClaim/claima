@@ -4,7 +4,7 @@
     xmlns:f="sap.f"
     xmlns:table="sap.ui.table">
 
-
+ 
     <!-- Root must be a Page so NavContainer can navigate to it -->
     <Page
         id="analyticsReqReportPage"

@@ -1216,7 +1216,7 @@ entity ZELIGIBILITY_RULE : managed {
         ASSIGNED_APPROVER         : String         @Common.Label: 'Assigned Approver';
         CONFIRMATION_DATE         : Date           @Common.Label: 'Confirmation Date';
         PERSONAL_GRADE            : String         @Common.Label: 'Personal Grade';
-        ROLE_ID                      : String         @Common.Label: 'Role';
+        ROLE_ID                   : String         @Common.Label: 'Role';
         POSITION_NO_DESC          : String         @Common.Label: 'Position Number/Description';
         MOBILE_PHONE_BILL         : String         @Common.Label: 'Mobile Phone Bill';
         ELIGIBLE_AMOUNT           : Decimal(16, 2) @Common.Label: 'Eligible Amount';
@@ -1255,7 +1255,7 @@ entity ZELIGIBILITY_RULE : managed {
                                         on ZROLE.ROLE_ID = ROLE_ID;
         ZMARITAL_STAT             : Association to ZMARITAL_STAT
                                         on ZMARITAL_STAT.MARRIAGE_CATEGORY_ID = MARITAL_STATUS;
-        ZEMP_DEPENDENT_TYPE       : Association to ZEMP_DEPENDENT_TYPE          
+        ZEMP_DEPENDENT_TYPE       : Association to ZEMP_DEPENDENT_TYPE
                                         on ZEMP_DEPENDENT_TYPE.DEPENDENT_TYPE_ID = DEPENDENT_TYPE_ID;
         ZVEHICLE_OWNERSHIP        : Association to ZVEHICLE_OWNERSHIP
                                         on ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_ID = VEHICLE_OWNERSHIP_ID;
@@ -1285,4 +1285,34 @@ entity ZELIGIBILITY_RULE : managed {
                                         on ZCURRENCY.CURRENCY_ID = CURRENCY;
         ZROOM_TYPE                : Association to ZROOM_TYPE
                                         on ZROOM_TYPE.ROOM_TYPE_ID = ROOM_TYPE_ID;
+}
+
+entity ZAPPROVER_DETAILS_CLAIMS : managed {
+    key CLAIM_ID               : String  @mandatory;
+    key LEVEL                  : Integer @mandatory;
+    key APPROVER_ID            : String  @mandatory;
+    key SUBSTITUTE_APPROVER_ID : String  @mandatory;
+    key STATUS                 : String  @mandatory;
+        REJECT_REASON_ID       : String;
+        PROCESS_TIMESTAMP      : Timestamp;
+        COMMENT                : String;
+}
+
+entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
+    key PREAPPROVAL_ID         : String  @mandatory;
+    key LEVEL                  : Integer @mandatory;
+    key APPROVER_ID            : String  @mandatory;
+    key SUBSTITUTE_APPROVER_ID : String  @mandatory;
+    key STATUS                 : String  @mandatory;
+        REJECT_REASON_ID       : String;
+        PROCESS_TIMESTAMP      : Timestamp;
+        COMMENT                : String;
+}
+
+entity ZSUBSTITUTION_RULES : managed {
+    key SUBSTITUTE_ID      : String @mandatory;
+    key USER_ID            : String @mandatory;
+    key SUBSTITUTE_USER_ID : String @mandatory;
+    key VALID_FROM         : Date   @mandatory;
+    key VALID_TO           : Date   @mandatory;
 }

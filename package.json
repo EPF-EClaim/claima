@@ -35,6 +35,10 @@
         "limit": "10mb"
       }
     },
+    "fiori": {
+      "lean_draft": true,
+      "bypass_draft": true
+    },
     "hana": {
       "deploy-format": "hdbtable"
     },

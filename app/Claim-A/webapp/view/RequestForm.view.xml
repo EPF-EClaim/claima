@@ -6,7 +6,7 @@
 	controllerName="claima.controller.RequestForm"
     id="request_form_xmlview">
 
-    <Page 
+    <Page  
         id="request_form"
         floatingFooter="true"
         showHeader="false">

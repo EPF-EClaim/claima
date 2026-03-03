@@ -1,7 +1,7 @@
 using {ECLAIM} from '../db/eclaim';
 
 @path: 'EmployeeSrv'
-service eclaim_srv @(requires: 'authenticated-user'){
+service eclaim_srv @(requires: 'authenticated-user') {
     type Response {
         message : String;
     };
@@ -135,12 +135,13 @@ service eclaim_srv @(requires: 'authenticated-user'){
     entity ZVEHICLE_CLASS           as projection on ECLAIM.ZVEHICLE_CLASS;
 
     entity ZINSURANCE_PROVIDER      as projection on ECLAIM.ZINSURANCE_PROVIDER;
+
     type UserInfo {
         id       : String;
         userType : String;
     }
 
-    function getUserType() returns UserInfo;
+    function getUserType()                                         returns UserInfo;
 
     entity ZINSURANCE_PACKAGE       as projection on ECLAIM.ZINSURANCE_PACKAGE;
 
@@ -173,4 +174,8 @@ service eclaim_srv @(requires: 'authenticated-user'){
     entity ZTRAVEL_DAYS             as projection on ECLAIM.ZTRAVEL_DAYS;
 
     entity ZELIGIBILITY_RULE        as projection on ECLAIM.ZELIGIBILITY_RULE;
+
+    entity ZWORKFLOW_STEP           as projection on ECLAIM.ZWORKFLOW_STEP;
+
+    entity ZWORKFLOW_RULE           as projection on ECLAIM.ZWORKFLOW_RULE;
 };
