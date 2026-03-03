@@ -209,7 +209,7 @@ annotate service.ZCLAIM_TYPE with @(
 
 annotate service.ZNUM_RANGE with @(
     cds.autoexpose,
-    Common.SemanticKey: [RANGE_ID, PREFIX],
+    Common.SemanticKey: [RANGE_ID],
     Capabilities.SearchRestrictions: {Searchable: false},
     UI                : {
         CreateHidden: true,

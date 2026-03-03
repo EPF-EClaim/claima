@@ -282,7 +282,7 @@ entity ZCLAIM_TYPE : managed {
 
 entity ZNUM_RANGE : managed {
     key RANGE_ID   : String  @mandatory  @Common.Label: 'RANGE_ID';
-    key PREFIX     : String  @mandatory  @Common.Label: 'PREFIX';
+        PREFIX     : String  @mandatory  @Common.Label: 'PREFIX';
         RANGE_DESC : String  @Common.Label: 'RANGE_DESC';
         ![FROM]    : String  @Common.Label: 'FROM';
         TO         : String  @Common.Label: 'TO';
