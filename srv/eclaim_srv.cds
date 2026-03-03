@@ -12,15 +12,49 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   batchCreateCostCenter(costcenters: many ZCOST_CENTER) returns Response;
 
-    entity ZEMP_MASTER              as projection on ECLAIM.ZEMP_MASTER;
-
     entity ZREQUEST_TYPE            as projection on ECLAIM.ZREQUEST_TYPE;
 
     entity ZCLAIM_ITEM              as projection on ECLAIM.ZCLAIM_ITEM;
 
-    entity ZREQUEST_HEADER          as projection on ECLAIM.ZREQUEST_HEADER;
+    entity ZREQUEST_HEADER @(restrict: [{
+        grant: '*',
+        to   : 'Claimant',
+        where: (createdBy = $user)
+    }])                             as projection on ECLAIM.ZREQUEST_HEADER;
 
-    entity ZCLAIM_TYPE              as
+    entity ZEMP_MASTER @(restrict: [
+        {
+            grant: [
+                'READ',
+                'UPDATE'
+            ],
+            to   : [
+                'DTD_Admin',
+                'Technical'
+            ]
+        },
+        {
+            grant: ['READ'],
+            to   : [
+                'Claimant',
+                'Admin_CC',
+                'Admin_System',
+                'Approver'
+            ]
+        }
+    ])                              as projection on ECLAIM.ZEMP_MASTER;
+
+
+    entity ZCLAIM_TYPE @(restrict: [
+        {
+            grant: 'READ',
+            to   : ['Claimant', 'Approver', 'Admin_CC', 'Admin_System']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                              as
         projection on ECLAIM.ZCLAIM_TYPE {
             key CLAIM_TYPE_ID,
                 CLAIM_TYPE_DESC,
@@ -40,7 +74,11 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZREQ_ITEM_PART           as projection on ECLAIM.ZREQ_ITEM_PART;
 
-    entity ZCLAIM_HEADER            as projection on ECLAIM.ZCLAIM_HEADER;
+    entity ZCLAIM_HEADER @(restrict: [{
+        grant: '*',
+        to   : 'Claimant',
+        where: (createdBy = $user)
+    }])                             as projection on ECLAIM.ZCLAIM_HEADER;
 
     entity ZNUM_RANGE               as projection on ECLAIM.ZNUM_RANGE;
 
@@ -98,7 +136,26 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZTRAIN_COURSE_PART       as projection on ECLAIM.ZTRAIN_COURSE_PART;
 
-    entity ZEMP_DEPENDENT           as projection on ECLAIM.ZEMP_DEPENDENT;
+    entity ZEMP_DEPENDENT @(restrict: [
+        {
+            grant: [
+                'READ',
+                'UPDATE'
+            ],
+            to   : [
+                'DTD_Admin',
+                'Technical'
+            ]
+        },
+        {
+            grant: ['READ'],
+            to   : [
+                'Claimant',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        }
+    ])                              as projection on ECLAIM.ZEMP_DEPENDENT;
 
     entity ZBUDGET                  as projection on ECLAIM.ZBUDGET;
 
