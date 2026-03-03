@@ -63,14 +63,14 @@
                     placeholder="dd MMM yyyy"
                     value="{request>/analytics_paydate}"
                     textAlign="Begin"
-                    required="true" />
+                    required="false" />
 
                 <!-- Status -->
                 <Label text="{i18n>status}" />
                 <MultiComboBox
                     id="status"
                     width="100%"
-                    required="true"
+                    required="false"
                     items="{employee>/ZSTATUS}">
                     <core:Item key="{employee>STATUS_ID}" text="{employee>STATUS}" />
                 </MultiComboBox>
