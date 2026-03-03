@@ -282,6 +282,7 @@ entity ZCLAIM_TYPE : managed {
 
 entity ZNUM_RANGE : managed {
     key RANGE_ID   : String  @mandatory  @Common.Label: 'RANGE_ID';
+    key PREFIX     : String  @mandatory  @Common.Label: 'PREFIX';
         RANGE_DESC : String  @Common.Label: 'RANGE_DESC';
         ![FROM]    : String  @Common.Label: 'FROM';
         TO         : String  @Common.Label: 'TO';
@@ -1296,6 +1297,16 @@ entity ZAPPROVER_DETAILS_CLAIMS : managed {
         REJECT_REASON_ID       : String;
         PROCESS_TIMESTAMP      : Timestamp;
         COMMENT                : String;
+        ZEMP_MASTER_APPROVER   : Association to one ZEMP_MASTER
+                                     on ZEMP_MASTER_APPROVER.EEID = APPROVER_ID;
+        ZEMP_MASTER_SUBS       : Association to one ZEMP_MASTER
+                                     on ZEMP_MASTER_SUBS.EEID = SUBSTITUTE_APPROVER_ID;
+        ZREJECT_REASON         : Association to ZREJECT_REASON
+                                     on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
+        ZSTATUS                : Association to one ZSTATUS
+                                     on ZSTATUS.STATUS_ID = STATUS;
+        ZCLAIM_HEADER          : Association to ZCLAIM_HEADER
+                                     on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
 }
 
 entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
@@ -1307,12 +1318,26 @@ entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
         REJECT_REASON_ID       : String;
         PROCESS_TIMESTAMP      : Timestamp;
         COMMENT                : String;
+        ZEMP_MASTER_APPROVER   : Association to one ZEMP_MASTER
+                                     on ZEMP_MASTER_APPROVER.EEID = APPROVER_ID;
+        ZEMP_MASTER_SUBS       : Association to one ZEMP_MASTER
+                                     on ZEMP_MASTER_SUBS.EEID = SUBSTITUTE_APPROVER_ID;
+        ZREJECT_REASON         : Association to ZREJECT_REASON
+                                     on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
+        ZSTATUS                : Association to one ZSTATUS
+                                     on ZSTATUS.STATUS_ID = STATUS;
+        ZREQUEST_HEADER        : Association to one ZREQUEST_HEADER
+                                     on ZREQUEST_HEADER.EMP_ID = PREAPPROVAL_ID;                                     
 }
 
 entity ZSUBSTITUTION_RULES : managed {
-    key SUBSTITUTE_ID      : String @mandatory;
-    key USER_ID            : String @mandatory;
-    key SUBSTITUTE_USER_ID : String @mandatory;
-    key VALID_FROM         : Date   @mandatory;
-    key VALID_TO           : Date   @mandatory;
+    key SUBSTITUTE_RULE_ID : String(10) @mandatory;
+    key USER_ID            : String     @mandatory;
+    key SUBSTITUTE_ID      : String     @mandatory;
+    key VALID_FROM         : Date       @mandatory;
+    key VALID_TO           : Date       @mandatory;
+        ZEMP_MASTER_USER   : Association to one ZEMP_MASTER
+                                 on ZEMP_MASTER_USER.EEID = USER_ID;
+        ZEMP_MASTER_SUBS   : Association to one ZEMP_MASTER
+                                 on ZEMP_MASTER_SUBS.EEID = SUBSTITUTE_ID;
 }
