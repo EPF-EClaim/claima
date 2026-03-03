@@ -21,7 +21,6 @@ sap.ui.define([
 		* Lifecycle
 		* ======================================================= */
 		async onInit() {
-			// Fragment cache
 			this._fragments = Object.create(null);
 		},
 
@@ -66,13 +65,14 @@ sap.ui.define([
 			if (parent?.removeContent) parent.removeContent(ctrl);
 			else if (parent?.removeItem) parent.removeItem(ctrl);
 			ctrl.destroy();
+			this._fragments = Object.create(null);
 		},
 
 		async _showItemCreate(state) {
 			const oPage = this.byId("request_form");
 			if (!oPage) return;
 
-			await this._removeByLocalId("request_item_list_fragment_d" ?? "request_item_list_fragment");
+			await this._removeByLocalId(this.byId("request_item_list_fragment_d") ? "request_item_list_fragment_d" : "request_item_list_fragment");
 
 			const oCreate = await this._getFormFragment("req_create_item");
 			await this._replaceContentAt(oPage, 1, oCreate);
@@ -1021,16 +1021,16 @@ sap.ui.define([
 
 				const oItemCtx = oModel.bindList("/ZREQUEST_ITEM").create(
 					{
-						REQUEST_ID:          reqId,
-						REQUEST_SUB_ID:      requestSubId,
-						CLAIM_TYPE_ID:       claimType,
-						CLAIM_TYPE_ITEM_ID:  claimItem,
-						EST_AMOUNT:          estAmt,
-						EST_NO_PARTICIPANT:  estNoPart,
-						START_DATE:          data.req_item.start_date || null,
-						END_DATE:            data.req_item.end_date   || null,
-						LOCATION:            data.req_item.location  || "",
-						REMARK:              data.req_item.remark    || ""
+						REQUEST_ID			:	reqId,
+						REQUEST_SUB_ID		:	requestSubId,
+						CLAIM_TYPE_ID		:	claimType,
+						CLAIM_TYPE_ITEM_ID	:	claimItem,
+						EST_AMOUNT			:	estAmt,
+						EST_NO_PARTICIPANT	:	estNoPart,
+						START_DATE			:	data.req_item.start_date || null,
+						END_DATE			:	data.req_item.end_date   || null,
+						LOCATION			:	data.req_item.location  || "",
+						REMARK				:	data.req_item.remark    || ""
 					},                  
 					{ $$updateGroupId: "itemCreate" }
 				);
@@ -1322,6 +1322,11 @@ sap.ui.define([
 							path: "CATEGORY_ID",
 							operator: sap.ui.model.FilterOperator.EQ,
 							value1: "PREAPPROVAL"
+						}),
+						new sap.ui.model.Filter({
+							path: "CATEGORY_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: "AUTOAPPROVE"
 						})
 					],
 					{

@@ -71,8 +71,8 @@ sap.ui.define([
 
 
 			this._ensureRequestModelDefaults();
-			// var oUserModel = new sap.ui.model.json.JSONModel({ email: 'jefry.yap@my.ey.com' });
-			// this.getView().setModel(oUserModel, 'user');
+			var oUserModel = new sap.ui.model.json.JSONModel({ email: 'jefry.yap@my.ey.com' });
+			this.getView().setModel(oUserModel, 'user');
 
 			var userModelData = this.getView().getModel('user').getData();
 			const emp_data = await this._getEmpIdDetail(userModelData.email);
@@ -1158,18 +1158,10 @@ sap.ui.define([
 			const data = oReq.getData() || {};
 			data.user 			   = data.user;
 			data.req_header        = { reqid: "", grptype: "IND" };
-			data.req_item_rows     = Array.isArray(data.req_item_rows) ? data.req_item_rows : [];
+			// data.req_item_rows     = Array.isArray(data.req_item_rows) ? data.req_item_rows : [];
+			data.req_item_rows     = [];
 			data.req_item          = data.req_item || {
-				claim_type_item_id: "",
-				est_amount: "",
-				est_no_participant: "",
-				cash_advance: "no_cashadv",
-				start_date: "",
-				end_date: "",
-				location: "",
-				remarks: "",
-				doc1: "",
-				doc2: ""
+				cash_advance: "no_cashadv"
 			};
 			data.participant       = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
 			data.view              = "view";
