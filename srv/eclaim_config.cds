@@ -9,7 +9,7 @@ annotate service.ZRISK with @(
         Updatable : true,
         Insertable: true
     },
-    odata.draft.enabled,
+    // odata.draft.enabled,
 
     UI                             : {
         CreateHidden: false,
@@ -811,7 +811,7 @@ annotate service.ZAREA with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
+        CreateHidden: true,
         DeleteHidden: false,
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
@@ -1596,6 +1596,7 @@ annotate service.ZREGION with @(
 );
 
 annotate service.ZRATE_KM with @(
+    Aggregation.defaultFilter: 'IsActiveEntity eq true',
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey             : [RATE_KM_ID],
@@ -1660,6 +1661,13 @@ annotate service.ZRATE_KM with @(
         ]
     }
 );
+
+// annotate service.ZRATE_KM with {
+    // DraftAdministrativeData @odata.draft.IsActiveEntity: true;
+//     END_DATE                @assert                    : ( case
+//                                                               when END_DATE < START_DATE
+//                                                                    then 'End date should not be earlier than start date' end);
+// };
 
 annotate service.ZSUBMISSION_TYPE with @(
     cds.autoexpose,

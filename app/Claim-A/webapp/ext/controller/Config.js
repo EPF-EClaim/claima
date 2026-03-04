@@ -184,6 +184,120 @@ sap.ui.define([
 
         },
 
+        onClickCreate: function () {
+            const oNewEntry = {};
+            const oView = this.getRouting().getView();
+            const oModel = oView.getModel();
+            const sPath = "/" + oView.getId().split("::")[1];
+            const oEntityType = oModel.getMetaModel().getContext(sPath).getObject();
+            const sEntityType = oEntityType.$Type;
+            const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
+            const oLineItems = oModel.getMetaModel().getContext(`/${sEntityType}/@com.sap.vocabularies.UI.v1.LineItem`).getObject();
+
+            const oVBox = new sap.m.VBox({
+            width: "70%",
+            fitContainer: true,
+        });
+        oVBox.addStyleClass("sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom")
+
+        oLineItems.forEach(function (item) {
+            const fieldName = item.Value.$Path;
+            const oFieldMeta = oDataType[fieldName];
+            const fieldType = oFieldMeta?.$Type;
+
+            oVBox.addItem(new sap.m.Label({
+                text: item.Label,
+                width: "100%",
+                labelFor: fieldName,
+                required: !!(oDataType[fieldName] && oDataType[fieldName].$Nullable === false)
+            }));
+            oVBox.addStyleClass("sapUiSmallMarginTopBottom")
+
+            const oInput = fieldType?.includes('Edm.Date') ?
+                new DatePicker({
+                    value: null,
+                    name: fieldName,
+                    width: "130%",
+                    displayFormat: "dd MMM yyyy",
+                    valueFormat: "yyyy-MM-dd"
+                }) :
+                fieldType?.includes('Edm.Boolean') ?
+                    new sap.m.Select({
+                        name: fieldName,
+                        width: "130%",
+                        forceSelection: false,
+                        selectedKey: null,
+                        items: [
+                            new sap.ui.core.ListItem({
+                                key: null,
+                                text: "None"
+                            }),
+                            new sap.ui.core.ListItem({
+                                key: false,
+                                text: "No"
+                            }),
+                            new sap.ui.core.ListItem({
+                                key: true,
+                                text: "Yes"
+                            })
+                        ]
+                    }) :
+                    new sap.m.Input({
+                        value: "",
+                        name: fieldName,
+                        width: "130%"
+                    });
+
+            oVBox.addItem(oInput);
+        });
+
+            const oDialog = new sap.m.Dialog({
+                title: `New Object`,
+                contentWidth: "15%",
+                horizontalScrolling: false,
+                beginButton: new sap.m.Button({
+                    text: "Create",
+                    press: function () {
+                        var oInputs = oVBox.getItems();
+
+                        for (let i = 1; i < oInputs.length; i += 2) {
+                            const oControl = oInputs[i];
+
+                            var sFieldName = oControl.getName();
+                            var sNewInput;
+                            if (oControl.isA("sap.m.Select")) {
+                                sNewInput = oControl.getSelectedKey() === '' ? null : oControl.getSelectedKey();
+                            } else {
+                                sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+                            }
+
+                            oNewEntry[sFieldName] = sNewInput;
+                        }
+                        if (!_validateDate(oNewEntry, oDataType)) {
+                            return;
+                        }
+                        oNewEntry["IsActiveEntity"] = true;
+                        oNewEntry["HasDraftEntity"] = false;
+
+                        var oListBinding = oModel.bindList(sPath),
+                            oContext = oListBinding.create(oNewEntry);
+                        sap.m.MessageToast.show("Record created");
+                        oModel.refresh();
+                        oDialog.close();
+                        oListBinding.refresh(true);
+                    }.bind(this)
+                }),
+                endButton: new sap.m.Button({
+                    text: "Cancel",
+                    press: function () { oDialog.close(); }
+                }),
+                afterClose: function () { oDialog.destroy(); }
+            });
+            oDialog.addContent(oVBox);
+            oDialog.open();
+
+        },
+
         onClickEdit: function (oContext, aSelectedContexts) {
             const oView = this.getRouting().getView();
             const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType } = _getDetails(oView, aSelectedContexts);
@@ -211,7 +325,7 @@ sap.ui.define([
                             }
                             oEdited[sFieldName] = sNewInput;
                         }
-                        
+
                         if (!_validateDate(oEdited, oDataType)) {
                             return;
                         }
