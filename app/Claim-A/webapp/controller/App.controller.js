@@ -70,7 +70,7 @@ sap.ui.define([
 
 		},
 		
-		onSendEmail: async function (ApproverName,SubmissionDate,ClaimantName,InstanceID,ClaimType,ClaimID,RecipientName,Action,ReceiverEmail,CCEmail,EmailTitle,EmailBody){
+		onSendEmail: async function (ApproverName,SubmissionDate,ClaimantName,InstanceID,ClaimType,ClaimID,RecipientName,Action,ReceiverEmail,CCEmail,EmailTitle,EmailBody,NextApproverName){
 
 			var urlEmail = "/odata/v4/EmployeeSrv/sendEmail";
 
@@ -87,6 +87,7 @@ sap.ui.define([
 			// 	"CCEmail":"",
 			// 	"EmailTitle":"Auto-Approved Claim Submission",
 			// 	"EmailBody":"Dear Sender, your claim has been auto approved"
+			//	"NextApproverName" : "test"
 			// }
 
 			var Payload ={
@@ -101,7 +102,8 @@ sap.ui.define([
 				"ReceiverEmail":ReceiverEmail,
 				"CCEmail":CCEmail,
 				"EmailTitle":EmailTitle,
-				"EmailBody":EmailBody
+				"EmailBody":EmailBody,
+				"NextApproverName" : NextApproverName
 			}
 
 			const sendEmail = await fetch(urlEmail, {

@@ -100,7 +100,8 @@ module.exports = (srv) => {
           "ReceiverEmail":req.data.ReceiverEmail,
           "CCEmail":req.data.CCEmail,
           "EmailTitle":req.data.EmailTitle,
-          "EmailBody":req.data.EmailBody
+          "EmailBody":req.data.EmailBody,
+          "NextApproverName" : req.data.NextApproverName
         }
       });
     });

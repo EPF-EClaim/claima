@@ -144,7 +144,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
     function getUserType()                                         returns UserInfo;
         
     action sendEmail(ApproverName: String,SubmissionDate: String,ClaimantName: String,InstanceID: String,ClaimType: String,ClaimID: String,RecipientName: String,Action: String,
-                       ReceiverEmail: String,CCEmail: String,EmailTitle: String,EmailBody: String) returns Response; 
+                       ReceiverEmail: String,CCEmail: String,EmailTitle: String,EmailBody: String, NextApproverName: String) returns Response; 
 
     entity ZINSURANCE_PACKAGE       as projection on ECLAIM.ZINSURANCE_PACKAGE;
 
