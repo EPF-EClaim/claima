@@ -1,7 +1,7 @@
 using {ECLAIM} from '../db/eclaim';
 
 @path: 'EmployeeSrv'
-service eclaim_srv @(requires: 'authenticated-user') {
+service eclaim_srv {
     type Response {
         message : String;
     };
@@ -12,15 +12,45 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   batchCreateCostCenter(costcenters: many ZCOST_CENTER) returns Response;
 
-    entity ZREQUEST_TYPE            as projection on ECLAIM.ZREQUEST_TYPE;
+    entity ZREQUEST_TYPE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Claimant',
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZREQUEST_TYPE;
 
-    entity ZCLAIM_ITEM              as projection on ECLAIM.ZCLAIM_ITEM;
+    entity ZCLAIM_ITEM @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: '*',
+            to   : [
+                'DTD_Admin',
+                'Claimant'
+            ]
+        }
+    ])                    as projection on ECLAIM.ZCLAIM_ITEM;
 
     entity ZREQUEST_HEADER @(restrict: [{
         grant: '*',
         to   : 'Claimant',
         where: (createdBy = $user)
-    }])                             as projection on ECLAIM.ZREQUEST_HEADER;
+    }])                   as projection on ECLAIM.ZREQUEST_HEADER;
 
     entity ZEMP_MASTER @(restrict: [
         {
@@ -28,10 +58,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 'READ',
                 'UPDATE'
             ],
-            to   : [
-                'DTD_Admin',
-                'Technical'
-            ]
+            to   : ['DTD_Admin']
         },
         {
             grant: ['READ'],
@@ -42,19 +69,24 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 'Approver'
             ]
         }
-    ])                              as projection on ECLAIM.ZEMP_MASTER;
+    ])                    as projection on ECLAIM.ZEMP_MASTER;
 
 
     entity ZCLAIM_TYPE @(restrict: [
         {
             grant: 'READ',
-            to   : ['Claimant', 'Approver', 'Admin_CC', 'Admin_System']
+            to   : [
+                'Claimant',
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
         },
         {
             grant: '*',
             to   : 'DTD_Admin'
         }
-    ])                              as
+    ])                    as
         projection on ECLAIM.ZCLAIM_TYPE {
             key CLAIM_TYPE_ID,
                 CLAIM_TYPE_DESC,
@@ -70,128 +102,859 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM as Items
         };
 
-    entity ZREQUEST_ITEM            as projection on ECLAIM.ZREQUEST_ITEM;
+    entity ZREQUEST_ITEM @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: ['*'],
+            to   : ['Claimant']
+        }
+    ])                    as projection on ECLAIM.ZREQUEST_ITEM;
 
-    entity ZREQ_ITEM_PART           as projection on ECLAIM.ZREQ_ITEM_PART;
+    entity ZREQ_ITEM_PART @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: '*',
+            to   : ['Claimant']
+        }
+    ])                    as projection on ECLAIM.ZREQ_ITEM_PART;
 
     entity ZCLAIM_HEADER @(restrict: [{
         grant: '*',
         to   : 'Claimant',
         where: (createdBy = $user)
-    }])                             as projection on ECLAIM.ZCLAIM_HEADER;
+    }])                   as projection on ECLAIM.ZCLAIM_HEADER;
 
-    entity ZNUM_RANGE               as projection on ECLAIM.ZNUM_RANGE;
-
-    entity ZRISK                    as projection on ECLAIM.ZRISK;
-
-    entity ZCLAIM_TYPE_ITEM         as projection on ECLAIM.ZCLAIM_TYPE_ITEM;
-
-    entity ZAPP_FIELD_CTRL          as projection on ECLAIM.ZAPP_FIELD_CTRL;
-
-    entity ZCLAIM_CATEGORY          as projection on ECLAIM.ZCLAIM_CATEGORY;
-
-    entity ZSTATUS                  as projection on ECLAIM.ZSTATUS;
-
-    entity ZLODGING_CAT             as projection on ECLAIM.ZLODGING_CAT;
-
-    entity ZROOM_TYPE               as projection on ECLAIM.ZROOM_TYPE;
-
-    entity ZFLIGHT_CLASS            as projection on ECLAIM.ZFLIGHT_CLASS;
-
-    entity ZCOUNTRY                 as projection on ECLAIM.ZCOUNTRY;
-
-    entity ZAREA                    as projection on ECLAIM.ZAREA;
-
-    entity ZMARITAL_STAT            as projection on ECLAIM.ZMARITAL_STAT;
-
-    entity ZVEHICLE_TYPE            as projection on ECLAIM.ZVEHICLE_TYPE;
-
-    entity ZSTATE                   as projection on ECLAIM.ZSTATE;
-
-    entity ZUSER_TYPE               as projection on ECLAIM.ZUSER_TYPE;
-
-    entity ZROLE                    as projection on ECLAIM.ZROLE;
-
-    entity ZDEPARTMENT              as projection on ECLAIM.ZDEPARTMENT;
-
-    entity ZJOB_GROUP               as projection on ECLAIM.ZJOB_GROUP;
-
-    entity ZEMP_TYPE                as projection on ECLAIM.ZEMP_TYPE;
-
-    entity ZREGION                  as projection on ECLAIM.ZREGION;
-
-    entity ZRATE_KM                 as projection on ECLAIM.ZRATE_KM;
-
-    entity ZSUBMISSION_TYPE         as projection on ECLAIM.ZSUBMISSION_TYPE;
-
-    entity ZOFFICE_LOCATION         as projection on ECLAIM.ZOFFICE_LOCATION;
-
-    entity ZOFFICE_DISTANCE         as projection on ECLAIM.ZOFFICE_DISTANCE;
-
-    entity ZLOC_TYPE                as projection on ECLAIM.ZLOC_TYPE;
-
-    entity ZMATERIAL_GROUP          as projection on ECLAIM.ZMATERIAL_GROUP;
-
-    entity ZINDIV_GROUP             as projection on ECLAIM.ZINDIV_GROUP;
-
-    entity ZTRAIN_COURSE_PART       as projection on ECLAIM.ZTRAIN_COURSE_PART;
-
-    entity ZEMP_DEPENDENT @(restrict: [
+    entity ZNUM_RANGE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
         {
             grant: [
                 'READ',
-                'UPDATE'
+                'WRITE'
             ],
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZNUM_RANGE;
+
+    entity ZRISK @(restrict: [
+        {
+            grant: 'READ',
             to   : [
-                'DTD_Admin',
-                'Technical'
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
             ]
         },
         {
             grant: ['READ'],
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZRISK;
+
+    entity ZCLAIM_TYPE_ITEM @(restrict: [
+        {
+            grant: 'READ',
             to   : [
-                'Claimant',
+                'Approver',
                 'Admin_CC',
                 'Admin_System'
             ]
+        },
+        {
+            grant: ['READ'],
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
         }
-    ])                              as projection on ECLAIM.ZEMP_DEPENDENT;
+    ])                    as projection on ECLAIM.ZCLAIM_TYPE_ITEM;
 
-    entity ZBUDGET                  as projection on ECLAIM.ZBUDGET;
+    entity ZAPP_FIELD_CTRL @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: ['READ'],
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZAPP_FIELD_CTRL;
 
-    entity ZVEHICLE_OWNERSHIP       as projection on ECLAIM.ZVEHICLE_OWNERSHIP;
+    entity ZCLAIM_CATEGORY @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZCLAIM_CATEGORY;
 
-    entity ZCOST_CENTER             as projection on ECLAIM.ZCOST_CENTER;
+    entity ZSTATUS @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZSTATUS;
 
-    entity ZEMP_RELATIONSHIP        as projection on ECLAIM.ZEMP_RELATIONSHIP;
+    entity ZLODGING_CAT @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZLODGING_CAT;
 
-    entity ZINTERNAL_ORDER          as projection on ECLAIM.ZINTERNAL_ORDER;
+    entity ZROOM_TYPE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZROOM_TYPE;
 
-    entity ZGL_ACCOUNT              as projection on ECLAIM.ZGL_ACCOUNT;
+    entity ZFLIGHT_CLASS @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZFLIGHT_CLASS;
 
-    entity ZMARITAL_CAT             as projection on ECLAIM.ZMARITAL_CAT;
+    entity ZCOUNTRY @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZCOUNTRY;
 
-    entity ZPROJECT_HDR             as projection on ECLAIM.ZPROJECT_HDR;
+    entity ZAREA @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZAREA;
 
-    entity ZBRANCH                  as projection on ECLAIM.ZBRANCH;
+    entity ZMARITAL_STAT @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZMARITAL_STAT;
 
-    entity ZEMP_CA_PAYMENT          as projection on ECLAIM.ZEMP_CA_PAYMENT;
+    entity ZVEHICLE_TYPE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZVEHICLE_TYPE;
 
-    entity ZPERDIEM_ENT             as projection on ECLAIM.ZPERDIEM_ENT;
+    entity ZSTATE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZSTATE;
 
-    entity ZHOUSING_LOAN_SCHEME     as projection on ECLAIM.ZHOUSING_LOAN_SCHEME;
+    entity ZUSER_TYPE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZUSER_TYPE;
 
-    entity ZLENDER_NAME             as projection on ECLAIM.ZLENDER_NAME;
+    entity ZROLE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZROLE;
 
-    entity ZREJECT_REASON           as projection on ECLAIM.ZREJECT_REASON;
+    entity ZDEPARTMENT @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZDEPARTMENT;
 
-    entity ZCURRENCY                as projection on ECLAIM.ZCURRENCY;
+    entity ZJOB_GROUP @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZJOB_GROUP;
 
-    entity ZMOBILE_CATEGORY_PURPOSE as projection on ECLAIM.ZMOBILE_CATEGORY_PURPOSE;
+    entity ZEMP_TYPE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZEMP_TYPE;
 
-    entity ZVEHICLE_CLASS           as projection on ECLAIM.ZVEHICLE_CLASS;
+    entity ZREGION @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZREGION;
 
-    entity ZINSURANCE_PROVIDER      as projection on ECLAIM.ZINSURANCE_PROVIDER;
+    entity ZRATE_KM @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZRATE_KM;
+
+    entity ZSUBMISSION_TYPE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZSUBMISSION_TYPE;
+
+    entity ZOFFICE_LOCATION @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZOFFICE_LOCATION;
+
+    entity ZOFFICE_DISTANCE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZOFFICE_DISTANCE;
+
+    entity ZLOC_TYPE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZLOC_TYPE;
+
+    entity ZMATERIAL_GROUP @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZMATERIAL_GROUP;
+
+    entity ZINDIV_GROUP @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZINDIV_GROUP;
+
+    entity ZTRAIN_COURSE_PART @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: ['READ'],
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZTRAIN_COURSE_PART;
+
+    entity ZEMP_DEPENDENT @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZEMP_DEPENDENT;
+
+    entity ZBUDGET @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: [
+                'READ',
+                'WRITE'
+            ],
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : ['DTD_Admin']
+        }
+    ])                    as projection on ECLAIM.ZBUDGET;
+
+    entity ZVEHICLE_OWNERSHIP @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: [
+                'READ',
+                'WRITE'
+            ],
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZVEHICLE_OWNERSHIP;
+
+    entity ZCOST_CENTER @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: ['READ'],
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZCOST_CENTER;
+
+    entity ZEMP_RELATIONSHIP @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: ['READ'],
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZEMP_RELATIONSHIP;
+
+    entity ZINTERNAL_ORDER @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: ['READ'],
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZINTERNAL_ORDER;
+
+    entity ZGL_ACCOUNT @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: ['READ'],
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZGL_ACCOUNT;
+
+    entity ZMARITAL_CAT @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: ['READ'],
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZMARITAL_CAT;
+
+    entity ZPROJECT_HDR @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: ['READ'],
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZPROJECT_HDR;
+
+    entity ZBRANCH @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: ['READ'],
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZBRANCH;
+
+    entity ZEMP_CA_PAYMENT @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: 'READ',
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZEMP_CA_PAYMENT;
+
+    entity ZPERDIEM_ENT @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: 'READ',
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZPERDIEM_ENT;
+
+    entity ZHOUSING_LOAN_SCHEME @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: 'READ',
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZHOUSING_LOAN_SCHEME;
+
+    entity ZLENDER_NAME @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: 'READ',
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZLENDER_NAME;
+
+    entity ZREJECT_REASON @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System'
+            ]
+        },
+        {
+            grant: 'READ',
+            to   : ['Claimant']
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZREJECT_REASON;
+
+    entity ZCURRENCY @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZCURRENCY;
+
+    entity ZMOBILE_CATEGORY_PURPOSE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZMOBILE_CATEGORY_PURPOSE;
+
+    entity ZVEHICLE_CLASS @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZVEHICLE_CLASS;
+
+    entity ZINSURANCE_PROVIDER @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZINSURANCE_PROVIDER;
 
     type UserInfo {
         id       : String;
@@ -200,39 +963,263 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     function getUserType()                                         returns UserInfo;
 
-    entity ZINSURANCE_PACKAGE       as projection on ECLAIM.ZINSURANCE_PACKAGE;
+    entity ZINSURANCE_PACKAGE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZINSURANCE_PACKAGE;
 
-    entity ZPROFESIONAL_BODY        as projection on ECLAIM.ZPROFESIONAL_BODY;
+    entity ZPROFESIONAL_BODY @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZPROFESIONAL_BODY;
 
-    entity ZSTUDY_LEVELS            as projection on ECLAIM.ZSTUDY_LEVELS;
+    entity ZSTUDY_LEVELS @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZSTUDY_LEVELS;
 
-    entity ZTRANSFER_MODE           as projection on ECLAIM.ZTRANSFER_MODE;
+    entity ZTRANSFER_MODE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZTRANSFER_MODE;
 
-    entity ZTRANSPORT_PASSING       as projection on ECLAIM.ZTRANSPORT_PASSING;
+    entity ZTRANSPORT_PASSING @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZTRANSPORT_PASSING;
 
-    entity ZTRAVEL_TYPE             as projection on ECLAIM.ZTRAVEL_TYPE;
+    entity ZTRAVEL_TYPE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZTRAVEL_TYPE;
 
-    entity ZFAMILY_TIMING           as projection on ECLAIM.ZFAMILY_TIMING;
+    entity ZFAMILY_TIMING @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZFAMILY_TIMING;
 
-    entity ZSPORTS_REPRESENTATION   as projection on ECLAIM.ZSPORTS_REPRESENTATION;
+    entity ZSPORTS_REPRESENTATION @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZSPORTS_REPRESENTATION;
 
-    entity ZPOSITION_EVENT_REASON   as projection on ECLAIM.ZPOSITION_EVENT_REASON;
+    entity ZPOSITION_EVENT_REASON @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZPOSITION_EVENT_REASON;
 
-    entity ZEMP_DEPENDENT_TYPE      as projection on ECLAIM.ZEMP_DEPENDENT_TYPE;
+    entity ZEMP_DEPENDENT_TYPE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZEMP_DEPENDENT_TYPE;
 
-    entity ZCLAIM_BASIS             as projection on ECLAIM.ZCLAIM_BASIS;
+    entity ZCLAIM_BASIS @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZCLAIM_BASIS;
 
-    entity ZHOTEL_LODGING           as projection on ECLAIM.ZHOTEL_LODGING;
+    entity ZHOTEL_LODGING @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZHOTEL_LODGING;
 
-    entity ZFARE_TYPE               as projection on ECLAIM.ZFARE_TYPE;
+    entity ZFARE_TYPE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZFARE_TYPE;
 
-    entity ZMETER_CUBE              as projection on ECLAIM.ZMETER_CUBE;
+    entity ZMETER_CUBE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZMETER_CUBE;
 
-    entity ZTRAVEL_DAYS             as projection on ECLAIM.ZTRAVEL_DAYS;
+    entity ZTRAVEL_DAYS @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZTRAVEL_DAYS;
 
-    entity ZELIGIBILITY_RULE        as projection on ECLAIM.ZELIGIBILITY_RULE;
+    entity ZELIGIBILITY_RULE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                    as projection on ECLAIM.ZELIGIBILITY_RULE;
 
-    entity ZWORKFLOW_STEP           as projection on ECLAIM.ZWORKFLOW_STEP;
+    entity ZWORKFLOW_STEP as projection on ECLAIM.ZWORKFLOW_STEP;
 
-    entity ZWORKFLOW_RULE           as projection on ECLAIM.ZWORKFLOW_RULE;
+    entity ZWORKFLOW_RULE as projection on ECLAIM.ZWORKFLOW_RULE;
 };

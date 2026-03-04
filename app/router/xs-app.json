@@ -6,18 +6,6 @@
   },
   "routes": [
     {
-        "source": "^/app/(.*)$",
-        "target": "$1",
-        "localDir": ".",
-        "cacheControl": "no-cache, no-store, must-revalidate",
-        "authenticationType": "xsuaa"
-    },
-    {
-        "source": "^/appconfig/",
-        "localDir": ".",
-        "cacheControl": "no-cache, no-store, must-revalidate"
-    },
-    {
       "source": "^/user-api/currentUser$",
       "target": "/currentUser",
       "service": "sap-approuter-userapi"

@@ -205,7 +205,11 @@ sap.ui.define([
                             var sFieldName = oControl.getName();
                             var sNewInput;
                             if (oControl.isA("sap.m.Select")) {
-                                sNewInput = oControl.getSelectedKey() === '' ? null : oControl.getSelectedKey();
+                                sNewInput = oControl.getSelectedKey() === '' ? null : 
+                                            oControl.getSelectedKey() === 'false'? false:
+                                            oControl.getSelectedKey() === 'true'? true :
+                                            oControl.getSelectedKey() === 'none'? null:
+                                            oControl.getSelectedKey();
                             } else {
                                 sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
                             }

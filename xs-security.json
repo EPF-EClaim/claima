@@ -3,20 +3,79 @@
   "tenant-mode": "dedicated",
   "scopes": [
     {
-      "name": "$XSAPPNAME.user",
-      "description": "UAA"
+      "name": "$XSAPPNAME.Claimant",
+      "description": "Claimant"
+    },
+    {
+      "name": "$XSAPPNAME.Approver",
+      "description": "Approver"
+    },
+    {
+      "name": "$XSAPPNAME.Admin_CC",
+      "description": "Admin_CC"
+    },
+    {
+      "name": "$XSAPPNAME.Admin_System",
+      "description": "Admin_System"
+    },
+    {
+      "name": "$XSAPPNAME.DTD_Admin",
+      "description": "DTD_Admin"
+    },
+    {
+      "name": "$XSAPPNAME.Technical",
+      "description": "Technical"
     }
   ],
-  "attributes": [
-    "$XSAPPNAME.user"
-  ],
+  "attributes": [],
   "role-templates": [
     {
-      "name": "Token_exchange",
-      "description": "UAA",
+      "name": "Claimant",
+      "description": "generated",
       "scope-references": [
-        "$XSAPPNAME.user"
-      ]
+        "$XSAPPNAME.Claimant"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "Approver",
+      "description": "generated",
+      "scope-references": [
+        "$XSAPPNAME.Approver"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "Admin_CC",
+      "description": "generated",
+      "scope-references": [
+        "$XSAPPNAME.Admin_CC"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "Admin_System",
+      "description": "generated",
+      "scope-references": [
+        "$XSAPPNAME.Admin_System"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "DTD_Admin",
+      "description": "generated",
+      "scope-references": [
+        "$XSAPPNAME.DTD_Admin"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "Technical",
+      "description": "generated",
+      "scope-references": [
+        "$XSAPPNAME.Technical"
+      ],
+      "attribute-references": []
     }
   ],
   "oauth2-configuration": {

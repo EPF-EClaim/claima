@@ -1,5 +1,12 @@
 using {eclaim_srv as service} from './eclaim_srv';
 
+annotate service.ZRISK with {
+    END_DATE @assert: (case
+                           when END_DATE < START_DATE
+                                then 'End date should not be earlier than start date'
+                       end);
+};
+
 annotate service.ZRISK with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
@@ -9,7 +16,7 @@ annotate service.ZRISK with @(
         Updatable : true,
         Insertable: true
     },
-    odata.draft.enabled,
+    // odata.draft.enabled,
 
     UI                             : {
         CreateHidden: false,
@@ -55,6 +62,7 @@ annotate service.ZRISK with @(
     }
 );
 
+
 annotate service.ZREQUEST_TYPE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
@@ -64,7 +72,7 @@ annotate service.ZREQUEST_TYPE with @(
         Updatable : true,
         Insertable: true
     },
-    odata.draft.enabled,
+    // odata.draft.enabled,
 
     UI                             : {
         CreateHidden: false,
@@ -328,7 +336,7 @@ annotate service.ZAPP_FIELD_CTRL with @(
         Updatable : true,
         Insertable: true
     },
-    odata.draft.enabled,
+    // odata.draft.enabled,
 
     UI                             : {
         CreateHidden: false,

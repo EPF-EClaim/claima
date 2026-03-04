@@ -1103,6 +1103,17 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
+                                        },
+                                        "newCreate": {
+                                            "press": ".extension.claima.controller.configuration.onCreate",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": false,
+                                            "text": "Create",
+                                            "position": {
+                                                "placement": "Before",
+                                                "anchor": "newCopy"
+                                            }
                                         }
                                     }
                                 }

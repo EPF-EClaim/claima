@@ -1,47 +1,57 @@
 const cds = require('@sap/cds');
 const { UPSERT } = require('@sap/cds/lib/ql/cds-ql');
 
-const _insert = async function (entities, req) {
-  try {
-    var reqdata = req;
-    if (!reqdata || reqdata.length === 0) {
-      throw new Error('No Data Sent')
-    }
-    const tx = cds.tx(req);
-    const results = await tx.run(
-      UPSERT(reqdata).into(entities)
-    );
-    return 'Records updated';
-  } catch (error) {
-    req.error(400, `Fail creating record: ${error.message}`);
-  }
-}
+// const _insert = async function (entities, req) {
+//   try {
+//     var reqdata = req;
+//     if (!reqdata || reqdata.length === 0) {
+//       throw new Error('No Data Sent')
+//     }
+//     const tx = cds.tx(req);
+//     const results = await tx.run(
+//       UPSERT(reqdata).into(entities)
+//     );
+//     return 'Records updated';
+//   } catch (error) {
+//     req.error(400, `Fail creating record: ${error.message}`);
+//   }
+// }
 
 module.exports = (srv) => {
 
+  const { ZRISK } = srv.entities;
+
+  srv.before('CREATE', ZRISK, (req) => {
+    const { START_DATE, END_DATE } = req.data || {}
+    if (START_DATE != null && END_DATE != null && new Date(END_DATE) < new Date(START_DATE)) {
+      req.error(400, 'End Date must be greater than or equal to Start Date.', { target: 'END_DATE' })
+    }
+  })
+
   srv.on('batchCreateEmployee', async (req) => {
     const { ZEMP_MASTER } = srv.entities;
-    _insert(ZEMP_MASTER, req);
-    // try {
-    //   const { employees } = req.data;
+    // _insert(ZEMP_MASTER, req);
+    try {
+      const { employees } = req.data;
 
 
-    //   if (!employees || employees.length === 0) {
-    //     throw new Error('No Data Sent')
-    //   }
-    //   const tx = cds.tx(req);
+      if (!employees || employees.length === 0) {
+        throw new Error('No Data Sent')
+      }
+      const tx = cds.tx(req);
 
-    //   const results = await tx.run(
-    //     UPSERT(employees).into(ZEMP_MASTER)
-    //   );
-    //   return 'Records updated';
-    // } catch (error) {
-    //   req.error(400, `Fail creating record: ${error.message}`);
-    // }
+      const results = await tx.run(
+        UPSERT(employees).into(ZEMP_MASTER)
+      );
+      return 'Records updated';
+    } catch (error) {
+      req.error(400, `Fail creating record: ${error.message}`);
+    }
   }),
 
     srv.on('batchCreateCostCenter', async (req) => {
       const { ZCOST_CENTER } = srv.entities;
+      // _insert(ZCOST_CENTER, req);
       try {
         const { costcenters } = req.data;
         if (!costcenters || costcenters.length === 0) {
@@ -60,6 +70,7 @@ module.exports = (srv) => {
 
     srv.on('batchCreateDependent', async (req) => {
       const { ZEMP_DEPENDENT } = srv.entities;
+      // _insert(ZEMP_DEPENDENT, req);
       try {
         const { dependents } = req.data;
         if (!dependents || dependents.length === 0) {
