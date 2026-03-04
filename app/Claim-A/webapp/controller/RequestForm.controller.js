@@ -22,6 +22,33 @@ sap.ui.define([
 		* ======================================================= */
 		async onInit() {
 			this._fragments = Object.create(null);
+
+			// URL Access
+			const oRouter = this.getOwnerComponent().getRouter();
+			oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
+		},
+
+		/* =========================================================
+		* URL Access
+		* ======================================================= */
+		
+		_onMatched(oEvent) {
+			let sRequestId = oEvent.getParameter("arguments").request_id;
+
+			try { sRequestId = decodeURIComponent(sRequestId); } catch (e) {}
+
+			console.log("Deep-link request ID:", sRequestId);
+
+			const oReqModel = this.getOwnerComponent().getModel("request");
+			oReqModel.setProperty("/req_header/reqid", sRequestId);
+
+			// 3. Load data for this request ID
+			this._loadRequest(sRequestId);
+		},
+
+		_loadRequest: function (sReqId) {
+			this._getHeader(sReqId);
+			this._getItemList(sReqId);
 		},
 
 		/* =========================================================
@@ -30,6 +57,22 @@ sap.ui.define([
 
 		_getReqModel() {
 			return this.getOwnerComponent().getModel("request");
+		},
+
+		_ensureRequestModelDefaults: function () {
+			const oReq = this._getReqModel();
+			const data = oReq.getData() || {};
+			data.user 			   = data.user;
+			data.req_header        = { reqid: "", grptype: "IND" };
+			// data.req_item_rows     = Array.isArray(data.req_item_rows) ? data.req_item_rows : [];
+			data.req_item_rows     = [];
+			data.req_item          = data.req_item || {
+				cash_advance: "no_cashadv"
+			};
+			data.participant       = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
+			data.view              = "view";
+			data.list_count        = data.list_count ?? 0;
+			oReq.setData(data);
 		},
 
 		/* =========================================================
@@ -111,6 +154,7 @@ sap.ui.define([
 						text: "Confirm",
 						press: async function () {
 							this.oBackDialog.close();
+							this._ensureRequestModelDefaults();
 							var oHistory = History.getInstance();
 							var sPreviousHash = oHistory.getPreviousHash();
 							if (sPreviousHash) {
@@ -514,6 +558,7 @@ sap.ui.define([
 					oRouter.navTo("RequestFormStatus");
 				}
 			}
+			this._ensureRequestModelDefaults();
 		},
 
 		/* =========================================================
@@ -1159,6 +1204,50 @@ sap.ui.define([
 		* Backend: Fetch list / Number Range
 		* ======================================================= */
 
+		async _getHeader(req_id) {
+			const oReq = this._getReqModel();
+
+			if (!req_id) {
+				oReq.setProperty("/req_item_rows", []);
+				oReq.setProperty("/list_count", 0);
+				return [];
+			}
+
+			const oModel = this.getOwnerComponent().getModel('employee_view');
+
+			const sReq = String(req_id);
+
+			const oListBinding = oModel.bindList(
+				"/ZEMP_REQUEST_VIEW",
+				null,
+				null,
+				[new sap.ui.model.Filter({
+					path: "REQUEST_ID",
+					operator: sap.ui.model.FilterOperator.EQ,
+					value1: sReq
+				})],
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$$top: 1
+				}
+			);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, 1);
+				const a = aCtx[0]?.getObject();
+
+				if (a.PREAPPROVAL_AMOUNT == null) {a.PREAPPROVAL_AMOUNT = 0.0;}
+
+				oReq.setProperty("/req_header", a[0]); 
+				return a;
+			} catch (err) {
+				console.error("OData V4 bindList failed:", err);
+				oReq.setProperty("/req_header", a); 
+				return [];
+			}
+		},
+
 		async _getItemList(req_id) {
 			const oReq = this._getReqModel();
 
@@ -1546,6 +1635,11 @@ sap.ui.define([
 			}.bind(this);
 
 			reader.readAsArrayBuffer(file);
-		}
+		},
+
+		/* =========================================================
+		* Approver Functions 
+		* ======================================================= */
+
 	});
 });

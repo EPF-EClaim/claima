@@ -94,7 +94,7 @@ sap.ui.define([
 				}
 
                 const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("RequestForm");
+                oRouter.navTo("RequestForm", {request_id: encodeURIComponent(row.REQUEST_ID)});
             } catch (e) {
                 jQuery.sap.log.error("openItemFromList failed: " + e);
                 sap.m.MessageToast.show("Failed to open the selected item.");

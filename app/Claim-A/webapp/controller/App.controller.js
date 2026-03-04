@@ -148,6 +148,8 @@ sap.ui.define([
 				case "dashboard":
 					oRouter.navTo("Dashboard");
 					break;
+				case "approval":
+					break;
 				default:
 					// navigate to page with ID same as the key
 					var oPage = this.byId(oKey); // make sure your NavContainer has a page with this ID
@@ -1282,6 +1284,8 @@ sap.ui.define([
 			}
 		},
 
+
+
 		// get backend data
 		async _getEmpIdDetail(sEMAIL) {
 			const oModel = this.getOwnerComponent().getModel();
@@ -1408,7 +1412,7 @@ sap.ui.define([
 				});
 
 				oReq.setProperty("/req_header_list", a);
-				oReq.setProperty("/req_header_count", a.length);
+				oReq.setProperty("/req_header_count", a.length); 
 
 				return a;
 			} catch (err) {
