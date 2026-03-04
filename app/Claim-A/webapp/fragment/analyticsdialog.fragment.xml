@@ -30,6 +30,27 @@
 
             <f:content>
 
+            <!-- Status -->
+                <Label text="{i18n>status}" />
+                <MultiComboBox
+                    id="status"
+                    width="100%"
+                    required="false"
+                    items="{employee>/ZSTATUS}">
+                    <core:Item key="{employee>STATUS_ID}" text="{employee>STATUS}" />
+                </MultiComboBox>
+
+                <!-- Payment Date -->
+                <Label text="Payment Date" />
+                <DatePicker
+                    id="analytics_paydate"
+                    displayFormat="dd MMM yyyy"
+                    valueFormat="yyyy-MM-dd"
+                    placeholder="dd MMM yyyy"
+                    value="{request>/analytics_paydate}"
+                    textAlign="Begin"
+                    required="false" />
+
                 <!-- Trip Start Date -->
                 <Label text="{i18n>req_tripstartdate}" />
                 <DatePicker
@@ -54,27 +75,7 @@
                     required="false" 
                     />
 
-                <!-- Payment Date -->
-                <Label text="Payment Date" />
-                <DatePicker
-                    id="analytics_paydate"
-                    displayFormat="dd MMM yyyy"
-                    valueFormat="yyyy-MM-dd"
-                    placeholder="dd MMM yyyy"
-                    value="{request>/analytics_paydate}"
-                    textAlign="Begin"
-                    required="false" />
-
-                <!-- Status -->
-                <Label text="{i18n>status}" />
-                <MultiComboBox
-                    id="status"
-                    width="100%"
-                    required="false"
-                    items="{employee>/ZSTATUS}">
-                    <core:Item key="{employee>STATUS_ID}" text="{employee>STATUS}" />
-                </MultiComboBox>
-
+            
                 <!-- Course Code -->
                 <Label text="Course code" />
                 <MultiComboBox
