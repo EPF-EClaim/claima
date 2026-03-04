@@ -16,7 +16,7 @@ annotate service.ZRISK with @(
         Updatable : true,
         Insertable: true
     },
-    // odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                             : {
         CreateHidden: false,
@@ -72,7 +72,7 @@ annotate service.ZREQUEST_TYPE with @(
         Updatable : true,
         Insertable: true
     },
-    // odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                             : {
         CreateHidden: false,
@@ -336,7 +336,7 @@ annotate service.ZAPP_FIELD_CTRL with @(
         Updatable : true,
         Insertable: true
     },
-    // odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                             : {
         CreateHidden: false,
