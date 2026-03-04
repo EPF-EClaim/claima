@@ -39,7 +39,7 @@ sap.ui.define([
 
 
 	return Controller.extend("claima.controller.App", {
-		onInit: function () {
+		onInit: async function () {
 			// oReportModel
 			var oReportModel = new JSONModel({
 				"purpose": "",
@@ -68,6 +68,20 @@ sap.ui.define([
 				console.error("getUserType failed:", err);
 				this._userType = "UNKNOWN";
 			});
+
+
+			this._ensureRequestModelDefaults();
+			var oUserModel = new sap.ui.model.json.JSONModel({ email: 'jefry.yap@my.ey.com' });
+			this.getView().setModel(oUserModel, 'user');
+
+			var userModelData = this.getView().getModel('user').getData();
+			const emp_data = await this._getEmpIdDetail(userModelData.email);
+
+			const oReqModel = this._getReqModel().getData();
+			oReqModel.user = emp_data.eeid;
+			this._getReqModel().setData(oReqModel);
+
+			this._userId = emp_data.eeid;
 
 		},
 
@@ -108,7 +122,7 @@ sap.ui.define([
 					this.onClickMyRequest();
 					break;
 				case "myrequest":
-					this._getPARHeaderList();
+					this.getPARHeaderList(this._userId);
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("RequestFormStatus");
 					break;
@@ -137,6 +151,8 @@ sap.ui.define([
 					break;
 				case "dashboard":
 					oRouter.navTo("Dashboard");
+					break;
+				case "approval":
 					break;
 				default:
 					// navigate to page with ID same as the key
@@ -196,13 +212,210 @@ sap.ui.define([
 			}
 		},
 
+		_getNewEmployeeModel: function (modelName) {
+			// Employee Model
+			var oEmployeeModel = new JSONModel({
+				"eeid": null,
+				"name": null,
+				"grade": null,
+				"cc": null,
+				"pos": null,
+				"dep": null,
+				"unit_section": null,
+				"b_place": null,
+				"marital": null,
+				"job_group": null,
+				"office_location": null,
+				"address_line1": null,
+				"address_line2": null,
+				"address_line3": null,
+				"postcode": null,
+				"state": null,
+				"country": null,
+				"contact_no": null,
+				"email": null,
+				"direct_supperior": null,
+				"role": null,
+				"user_type": null,
+				"mobile_bill_eligibility": null,
+				"mobile_bill_elig_amount": null,
+				"employee_type": null,
+				"position_name": null,
+				"position_start_date": null,
+				"position_event_reason": null,
+				"confirmation_date": null,
+				"effective_date": null,
+				"updated_date": null,
+				"inserted_date": null,
+				"medical_insurance_entitlement": null,
+				"descr": {
+					"cc": null,
+					"dep": null,
+					"unit_section": null,
+					"marital": null,
+					"job_group": null,
+					"state": null,
+					"country": null,
+					"direct_supperior": null,
+					"role": null,
+					"user_type": null,
+					"employee_type": null
+				}
+			});
+			//// set input
+			this.getView().setModel(oEmployeeModel, modelName);
+			return this.getView().getModel(modelName);
+		},
+
+		_getNewClaimSubmissionModel: function (modelName) {
+			// Employee Model
+			var oEmployeeModel = this._getNewEmployeeModel("emp_current");
+
+			// Claim Submission Model
+			var oClaimSubmissionModel = new JSONModel({
+				"emp_master": oEmployeeModel.getData(),
+				"claimtype": {
+					"type": null,
+					"item": null,
+					"category": null,
+					"requestform": {
+						"request_id": null,
+						"objective_purpose": null,
+						"preapproval_amount": null,
+						"trip_start_date": null,
+						"trip_end_date": null,
+						"event_start_date": null,
+						"event_end_date": null,
+						"alternate_cost_center": null,
+						"descr": {
+							"alternate_cost_center": null
+						}
+					},
+					"requestform_amt": null,
+					"descr": {
+						"type": null,
+						"item": null,
+						"category": null,
+					}
+				},
+				"claim_header": {
+					"claim_id": null,
+					"emp_id": null,
+					"purpose": null,
+					"trip_start_date": null,
+					"trip_end_date": null,
+					"event_start_date": null,
+					"event_end_date": null,
+					"submission_type": null,
+					"comment": null,
+					"alternate_cost_center": null,
+					"cost_center": null,
+					"request_id": null,
+					"attachment_email_approver": null,
+					"status_id": null,
+					"claim_type_id": null,
+					"total_claim_amount": null,
+					"final_amount_to_receive": null,
+					"last_modified_date": null,
+					"submitted_date": null,
+					"last_approved_date": null,
+					"last_approved_time": null,
+					"payment_date": null,
+					"location": null,
+					"spouse_office_address": null,
+					"house_completion_date": null,
+					"move_in_date": null,
+					"housing_loan_scheme": null,
+					"lender_name": null,
+					"specify_details": null,
+					"new_house_address": null,
+					"dist_old_house_to_office_km": null,
+					"dist_old_house_to_new_house_km": null,
+					"approver1": null,
+					"approver2": null,
+					"approver3": null,
+					"approver4": null,
+					"approver5": null,
+					"last_send_back_date": null,
+					"course_code": null,
+					"project_code": null,
+					"cash_advance_amount": null,
+					"preapproved_amount": null,
+					"reject_reason_id": null,
+					"send_back_reason_id": null,
+					"last_send_back_time": null,
+					"reject_reason_date": null,
+					"reject_reason_time": null,
+					"descr": {
+						"submission_type": null,
+						"alternate_cost_center": null,
+						"cost_center": null,
+						"request_id": null,
+						"status_id": null,
+						"claim_type_id": null,
+						"housing_loan_scheme": null,
+						"lender_name": null,
+						"course_code": null,
+						"project_code": null,
+					}
+				},
+				"claim_items": [],
+				"claim_items_count": 0,
+				"reportnumber": {
+					"reportno": null,
+					"current": null
+				}
+			});
+			//// set input
+			this.getView().setModel(oClaimSubmissionModel, modelName);
+			return this.getView().getModel(modelName);
+		},
+
 		//// Functions - Claim Process
-		_onInit_ClaimProcess: function () {
-			// placeholder - set employee data
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-			oInputModel.setProperty("/employee/eeid", "000001");
-			oInputModel.setProperty("/employee/name", "Test Name");
-			oInputModel.setProperty("/employee/cc", "4001");
+		_onInit_ClaimProcess: async function () {
+			// reset claim process data
+			this._reset_ClaimProcess();
+
+			// set new claim submission model;
+			var oInputModel = this._getNewClaimSubmissionModel("claimsubmission_input");
+			//// set employee data
+			var sUserId = sap.ushell ? sap.ushell.Container.getUser().getId() : null;
+			var emp_data = await this._getEmpIdDetail(sUserId);
+			// var sCostCenter = emp_data ? emp_data.cc : "";
+
+			//// placeholder - set placeholder data
+			if (!emp_data) {
+				oInputModel.setProperty("/emp_master/eeid", "DEFAULT_USER");
+				oInputModel.setProperty("/emp_master/name", "NAME11380");
+				oInputModel.setProperty("/emp_master/grade", "G3");
+				oInputModel.setProperty("/emp_master/cc", "108S37362");
+				oInputModel.setProperty("/emp_master/pos", "10003793");
+				oInputModel.setProperty("/emp_master/dep", "3600100000");
+				oInputModel.setProperty("/emp_master/unit_section", "3700903102");
+				oInputModel.setProperty("/emp_master/marital", "M");
+				oInputModel.setProperty("/emp_master/office_location", "3700903100");
+				oInputModel.setProperty("/emp_master/address_line1", "EE ADDRESS1");
+				oInputModel.setProperty("/emp_master/address_line2", "EE ADDRESS2");
+				oInputModel.setProperty("/emp_master/address_line3", "EE ADDRESS3");
+				oInputModel.setProperty("/emp_master/postcode", "88888");
+				oInputModel.setProperty("/emp_master/state", "SEL");
+				oInputModel.setProperty("/emp_master/country", "MYS");
+				oInputModel.setProperty("/emp_master/email", "1900668smsm1@epf.gov.my.test.test");
+				oInputModel.setProperty("/emp_master/direct_supperior", "1902045");
+				oInputModel.setProperty("/emp_master/employee_type", "2378");
+				oInputModel.setProperty("/emp_master/position_name", "MAIN DUTY");
+				oInputModel.setProperty("/emp_master/position_start_date", "1993-06-16");
+				oInputModel.setProperty("/emp_master/position_event_reason", "Z302");
+				oInputModel.setProperty("/emp_master/effective_date", "1993-12-16");
+				oInputModel.setProperty("/emp_master/descr/cc", "SA Seb. Jaya-Penguatkuasaan");
+				oInputModel.setProperty("/emp_master/descr/dep", "Department 1");
+				oInputModel.setProperty("/emp_master/descr/unit_section", "test unit section");
+				oInputModel.setProperty("/emp_master/descr/marital", "Married");
+				oInputModel.setProperty("/emp_master/descr/state", "Selangor");
+				oInputModel.setProperty("/emp_master/descr/country", "Malaysia");
+				oInputModel.setProperty("/emp_master/descr/direct_supperior", "test direct supperior");
+				oInputModel.setProperty("/emp_master/descr/employee_type", "test employee type");
+			}
 		},
 
 		onSelect_ClaimProcess_ClaimType: function (oEvent) {
@@ -267,18 +480,27 @@ sap.ui.define([
 					if (!this.byId("select_claimprocess_requestform").getEnabled()) {
 						this.byId("select_claimprocess_requestform").bindAggregation("items", {
 							path: "employee>/ZREQUEST_HEADER",
-							filters: [new sap.ui.model.Filter('EMP_ID', sap.ui.model.FilterOperator.EQ, oInputModel.getProperty("/employee/eeid"))],
+							filters: [
+								new sap.ui.model.Filter('EMP_ID', sap.ui.model.FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
+								new sap.ui.model.Filter('CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, oInputModel.getProperty("/claimtype/type")),
+							],
 							parameters: {
-								$select: "AMOUNT"
+								$expand: {
+									"COSTCENTER": {
+										$select: "COST_CENTER_DESC"
+									}
+								},
+								$select: "PREAPPROVAL_AMOUNT,EVENT_START_DATE,EVENT_END_DATE,ALTERNATE_COST_CENTER"
 							},
 							template: new sap.ui.core.Item({
 								key: "{employee>REQUEST_ID}",
-								text: "{employee>REQUEST_ID} {employee>OBJECTIVE_PURPOSE}"
+								text: "{employee>REQUEST_ID} {employee>OBJECTIVE_PURPOSE} ({employee>TRIP_START_DATE} – {employee>TRIP_END_DATE})"
 							})
 						});
 						this.byId("select_claimprocess_requestform").setEnabled(true);
 						this.byId("select_claimprocess_requestform").setVisible(true);
 						this.byId("select_claimprocess_requestform").setEditable(true);
+						this.byId("select_claimprocess_requestform").setSelectedItem(null);
 
 						// enable 'Create Pre-Approval Request' button
 						this.byId("button_claimprocess_preapproval").setEnabled(true);
@@ -324,12 +546,17 @@ sap.ui.define([
 			oInputModel.setProperty("/claimtype/category", this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("CATEGORY_ID"));
 			//// get request form values
 			if (this.byId("select_claimprocess_requestform").getSelectedItem()) {
-				oInputModel.setProperty("/claimtype/descr/requestform", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("OBJECTIVE_PURPOSE"));
-				oInputModel.setProperty("/claimtype/requestform_amt", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("AMOUNT"));
+				oInputModel.setProperty("/claimtype/requestform/objective_purpose", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("OBJECTIVE_PURPOSE"));
+				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT"));
+				oInputModel.setProperty("/claimtype/requestform/trip_start_date", this._getJsonDate(this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("TRIP_START_DATE")));
+				oInputModel.setProperty("/claimtype/requestform/trip_end_date", this._getJsonDate(this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("TRIP_END_DATE")));
+				oInputModel.setProperty("/claimtype/requestform/event_start_date", this._getJsonDate(this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("EVENT_START_DATE")));
+				oInputModel.setProperty("/claimtype/requestform/event_end_date", this._getJsonDate(this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("EVENT_END_DATE")));
+				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("ALTERNATE_COST_CENTER"));
+				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("COSTCENTER/COST_CENTER_DESC"));
 			}
 
-			// reset Claim Process dialog before closing
-			this._reset_ClaimProcess();
+			// close Claim Process dialog
 			this.oDialog_ClaimProcess.close();
 
 			// load Claim Input dialog
@@ -386,6 +613,7 @@ sap.ui.define([
 			this.byId("select_claimprocess_requestform").setEnabled(false);
 			this.byId("select_claimprocess_requestform").setVisible(false);
 			this.byId("select_claimprocess_requestform").setEditable(false);
+			this.byId("select_claimprocess_requestform").setSelectedItem(null);
 
 			// disable 'Create Pre-Approval Request' button
 			this.byId("button_claimprocess_preapproval").setEnabled(false);
@@ -395,26 +623,39 @@ sap.ui.define([
 
 		//// Functions - Claim Input
 		_onInit_ClaimInput: function () {
+			// reset claim input data if exists
+			this._reset_ClaimInput();
+
 			// set data for claim header
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			oInputModel.setProperty("/claimheader/emp_id", oInputModel.getProperty("/employee/eeid"));
-			oInputModel.setProperty("/claimheader/status", "DRAFT");
-			oInputModel.setProperty("/claimheader/lastmodifieddate", new Date());
-			oInputModel.setProperty("/claimheader/claimtype", oInputModel.getProperty("/claimtype/type"));
-			oInputModel.setProperty("/claimheader/claimitem", oInputModel.getProperty("/claimtype/item"));
-			oInputModel.setProperty("/claimheader/subtype", oInputModel.getProperty("/claimtype/category"));
-			oInputModel.setProperty("/claimheader/cc", oInputModel.getProperty("/employee/cc"));
-			oInputModel.setProperty("/claimheader/reqform", oInputModel.getProperty("/claimtype/requestform"));
-			oInputModel.setProperty("/claimheader/amt_approved", oInputModel.getProperty("/claimtype/requestform_amt"));
+			var lastModifiedDate = this._getJsonDate(new Date());
+			oInputModel.setProperty("/claim_header/emp_id", oInputModel.getProperty("/emp_master/eeid"));
+			oInputModel.setProperty("/claim_header/status_id", "DRAFT");
+			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
+			oInputModel.setProperty("/claim_header/claim_type_id", oInputModel.getProperty("/claimtype/type"));
+			oInputModel.setProperty("/claim_header/submission_type", oInputModel.getProperty("/claimtype/category"));
+			oInputModel.setProperty("/claim_header/cost_center", oInputModel.getProperty("/emp_master/cc"));
+			//// request form values
+			oInputModel.setProperty("/claim_header/request_id", oInputModel.getProperty("/claimtype/requestform/request_id"));
+			oInputModel.setProperty("/claim_header/preapproved_amount", oInputModel.getProperty("/claimtype/requestform/preapproval_amount"));
+			oInputModel.setProperty("/claim_header/trip_start_date", oInputModel.getProperty("/claimtype/requestform/trip_start_date"));
+			oInputModel.setProperty("/claim_header/trip_end_date", oInputModel.getProperty("/claimtype/requestform/trip_end_date"));
+			oInputModel.setProperty("/claim_header/event_start_date", oInputModel.getProperty("/claimtype/requestform/event_start_date"));
+			oInputModel.setProperty("/claim_header/event_end_date", oInputModel.getProperty("/claimtype/requestform/event_end_date"));
+			oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/alternate_cost_center"));
+			oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/descr/alternate_cost_center"));
+			//// initialized amount values
+			oInputModel.setProperty("/claim_header/total_claim_amount", "0.00");
+			oInputModel.setProperty("/claim_header/final_amount_to_receive", "0.00");
+			oInputModel.setProperty("/claim_header/cash_advance_amount", "0.00");
 			//// include description in data
-			oInputModel.setProperty("/claimheader/descr/status", this._getTexti18n("value_claiminput_status_draft"));
-			oInputModel.setProperty("/claimheader/descr/claimtype", oInputModel.getProperty("/claimtype/descr/type"));
-			oInputModel.setProperty("/claimheader/descr/claimitem", oInputModel.getProperty("/claimtype/descr/item"));
-			oInputModel.setProperty("/claimheader/descr/subtype", oInputModel.getProperty("/claimtype/descr/category"));
-			oInputModel.setProperty("/claimheader/descr/cc", oInputModel.getProperty("/employee/descr/cc"));
-			oInputModel.setProperty("/claimheader/descr/reqform", oInputModel.getProperty("/claimtype/descr/requestform"));
+			oInputModel.setProperty("/claim_header/descr/status_id", this._getTexti18n("value_claiminput_status_draft"));
+			oInputModel.setProperty("/claim_header/descr/claim_type_id", oInputModel.getProperty("/claimtype/descr/type"));
+			oInputModel.setProperty("/claim_header/descr/submission_type", oInputModel.getProperty("/claimtype/descr/category"));
+			oInputModel.setProperty("/claim_header/descr/cost_center", oInputModel.getProperty("/emp_master/descr/cc"));
+			oInputModel.setProperty("/claim_header/descr/request_id", oInputModel.getProperty("/claimtype/requestform/objective_purpose"));
 
-			// make Pre-Approval Request, Approve Amount visible
+			// pre-approval request values
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			if (oInputModel.getProperty("/claimtype/category") == 'PREAPPROVAL') {
 				// make Pre-Approval Request, Approve Amount visible
@@ -447,7 +688,7 @@ sap.ui.define([
 
 		_getJsonDate: function (date) {
 			if (date) {
-				var oDate = new Date(date);
+				var oDate = new Date (date);
 				var oDateString = oDate.toLocaleString('default', { day: '2-digit' }) + " " + oDate.toLocaleString('default', { month: 'short' }) + " " + oDate.toLocaleString('default', { year: 'numeric' });
 				return oDateString;
 			} else {
@@ -572,28 +813,44 @@ sap.ui.define([
 					return;
 				}
 			}
+			// validate date range
+			//// trip start/end date
+			if (!this._validDateRange("datepicker_claiminput_tripstartdate", "datepicker_claiminput_tripenddate")) {
+				// stop claim submission if incomplete
+				return;
+			}
+			//// event start/end date (optional)
+			if (this.byId("datepicker_claiminput_eventstartdate").getValue() || this.byId("datepicker_claiminput_eventenddate").getValue()) {
+				if (!this._validDateRange("datepicker_claiminput_eventstartdate", "datepicker_claiminput_eventenddate")) {
+					// stop claim submission if incomplete
+					return;
+				}
+			}
 
 			// validate input data
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			//// get alternate cost center description
-			oInputModel.setProperty("/claimheader/descr/altcc", this.byId("select_claiminput_altcc").getSelectedItem().getBindingContext("employee").getObject("COST_CENTER_DESC"));
+			//// get alternate cost center
+			if (this.byId("select_claiminput_altcc").getEnabled()) {
+				// select value from drop-down
+				var altCostCenter = this.byId("select_claiminput_altcc").getSelectedItem();
+				if (altCostCenter) {
+					oInputModel.setProperty("/claim_header/descr/alternate_cost_center", altCostCenter.getBindingContext("employee").getObject("COST_CENTER_DESC"));
+				}
+			}
+			//// get claim report number for Claim ID
+			var currentReportNumber = await this.getCurrentReportNumber();
+			if (currentReportNumber) {
+				oInputModel.setProperty("/claim_header/claim_id", currentReportNumber.reportNo);
+				oInputModel.setProperty("/reportnumber/reportno", currentReportNumber.reportNo);
+				oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
+			}
 
-			// reset Claim Input dialog before closing
-			this._reset_ClaimInput();
+			// close Claim Input dialog
 			this.oDialog_ClaimInput.close();
 
 			// load Claim Submission page
-			var oName = "claima.fragment.claimsubmission_claimsubmission";
-			this.oDialog_ClaimSubmission ??= await this.loadFragment({
-				name: oName,
-			});
-			if (this.oDialog_ClaimSubmission) {
-				this._onInit_ClaimSubmission();
-				this.oDialog_ClaimSubmission.open();
-			}
-			else {
-				MessageToast.show(this._getTexti18n("msg_nav_error_fragment", [oName]));
-			}
+			var oClaimSubmissionPage = this.getView().byId('navcontainer_claimsubmission');
+			this.byId("pageContainer").to(oClaimSubmissionPage);
 		},
 
 		_onUpload_ClaimInput_Attachment: function () {
@@ -662,26 +919,49 @@ sap.ui.define([
 			if (this.byId("input_claiminput_purpose").getValue()) {
 				this.byId("input_claiminput_purpose").setValue(null);
 			}
-			//// trip/event dates
+			//// trip dates
 			if (this.byId("datepicker_claiminput_tripstartdate").getValue()) {
 				this.byId("datepicker_claiminput_tripstartdate").setValue(null);
+			}
+			if (!this.byId("datepicker_claiminput_tripstartdate").getEditable()) {
+				this.byId("datepicker_claiminput_tripstartdate").setEditable(true);
 			}
 			if (this.byId("datepicker_claiminput_tripenddate").getValue()) {
 				this.byId("datepicker_claiminput_tripenddate").setValue(null);
 			}
+			if (!this.byId("datepicker_claiminput_tripenddate").getEditable()) {
+				this.byId("datepicker_claiminput_tripenddate").setEditable(true);
+			}
+			//// event dates
 			if (this.byId("datepicker_claiminput_eventstartdate").getValue()) {
 				this.byId("datepicker_claiminput_eventstartdate").setValue(null);
 			}
+			if (!this.byId("datepicker_claiminput_eventstartdate").getEditable()) {
+				this.byId("datepicker_claiminput_eventstartdate").setEditable(true);
+			}
 			if (this.byId("datepicker_claiminput_eventenddate").getValue()) {
 				this.byId("datepicker_claiminput_eventenddate").setValue(null);
+			}
+			if (!this.byId("datepicker_claiminput_eventenddate").getEditable()) {
+				this.byId("datepicker_claiminput_eventenddate").setEditable(true);
 			}
 			//// location
 			if (this.byId("input_claiminput_location").getValue()) {
 				this.byId("input_claiminput_location").setValue(null);
 			}
-			//// alternate cost centre
+			//// alternate cost center
+			if (!this.byId("select_claiminput_altcc").getEnabled()) {
+				this.byId("select_claiminput_altcc").setEnabled(true);
+				this.byId("select_claiminput_altcc").setEditable(true);
+				this.byId("select_claiminput_altcc").setVisible(true);
+			}
 			if (this.byId("select_claiminput_altcc").getSelectedItem()) {
 				this.byId("select_claiminput_altcc").setSelectedItem(null);
+			}
+			if (this.byId("input_claiminput_altcc").getEnabled()) {
+				this.byId("input_claiminput_altcc").setEnabled(false);
+				this.byId("input_claiminput_altcc").setEditable(false);
+				this.byId("input_claiminput_altcc").setVisible(false);
 			}
 			//// attachment email approval
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
@@ -1139,39 +1419,29 @@ sap.ui.define([
 		// Request Form Controller
 		// ==================================================
 
-		onClickMyRequest: async function () {
-			// Reset JSON Model for the Form
-			const oRequestModel = this.getOwnerComponent().getModel("request");
-			oRequestModel.setData({
-				list_count: 0,
-				view: "view",
-				req_header: {
-					purpose: "",
-					reqtype: "travel",
-					tripstartdate: null,
-					tripenddate: null,
-					eventstartdate: null,
-					eventenddate: null,
-					grptype: "individual",
-					location: "",
-					transport: "",
-					altcostcenter: "",
-					doc1: "",
-					doc2: "",
-					comment: "",
-					eventdetail1: "",
-					eventdetail2: "",
-					eventdetail3: "",
-					eventdetail4: "",
-					reqid: "",
-					reqstatus: "",
-					costcenter: "",
-					cashadvamt: 0,
-					reqamt: 0,
-					claimtype: ""
-				}
-			});
+		_getReqModel: function () {
+			return this.getOwnerComponent().getModel("request");
+		},
 
+		_ensureRequestModelDefaults: function () {
+			const oReq = this._getReqModel();
+			const data = oReq.getData() || {};
+			data.user 			   = data.user;
+			data.req_header        = { reqid: "", grptype: "IND" };
+			// data.req_item_rows     = Array.isArray(data.req_item_rows) ? data.req_item_rows : [];
+			data.req_item_rows     = [];
+			data.req_item          = data.req_item || {
+				cash_advance: "no_cashadv"
+			};
+			data.participant       = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
+			data.view              = "view";
+			data.list_count        = data.list_count ?? 0;
+			oReq.setData(data);
+		},
+
+		onClickMyRequest: async function () {
+			this._ensureRequestModelDefaults();
+			this._loadDefaultSelection();
 			this._loadReqTypeSelectionData();
 			this._loadClaimTypeSelectionData();
 
@@ -1184,38 +1454,12 @@ sap.ui.define([
 				this.getView().addDependent(this.oDialogFragment);
 
 				this.oDialogFragment.attachAfterClose(() => {
-					// Note: In many V4 apps, we keep the fragment and just reset the data
-					// But staying true to your logic of destroying it:
 					this.oDialogFragment.destroy();
 					this.oDialogFragment = null;
 				});
 			}
 			this.oDialogFragment.open();
 			this.oDialogFragment.addStyleClass('requestDialog');
-		},
-
-		_loadReqTypeSelectionData: function () {
-			const oMainModel = this.getOwnerComponent().getModel(); // OData V4 Model
-			const oListBinding = oMainModel.bindList("/ZREQUEST_TYPE", null, null, [
-				new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
-			]);
-
-			oListBinding.requestContexts().then((aContexts) => {
-				const aData = aContexts.map(oCtx => oCtx.getObject());
-				const oTypeModel = new JSONModel({ types: aData });
-				this.getView().setModel(oTypeModel, "req_type_list");
-			}).catch(err => console.error("RequestType Load Failed", err));
-		},
-
-		_loadClaimTypeSelectionData: function () {
-			const oMainModel = this.getOwnerComponent().getModel(); // OData V4 Model
-			const oListBinding = oMainModel.bindList("/ZCLAIM_TYPE");
-
-			oListBinding.requestContexts().then((aContexts) => {
-				const aData = aContexts.map(oCtx => oCtx.getObject());
-				const oTypeModel = new JSONModel({ types: aData });
-				this.getView().setModel(oTypeModel, "claim_type_list");
-			}).catch(err => console.error("ClaimType Load Failed", err));
 		},
 
 		onClickCreateRequest: function () {
@@ -1257,13 +1501,10 @@ sap.ui.define([
 
 		createRequestHeader: async function (oInputData, oReqModel) {
 			const oMainModel = this.getOwnerComponent().getModel();
-			const oResult = await this.getCurrentReqNumber('NR01');
+			const oResult = await this._getCurrentReqNumber('NR01');
 
 			if (oResult) {
 				const oListBinding = oMainModel.bindList("/ZREQUEST_HEADER");
-
-				// var oUserModel = new sap.ui.model.json.JSONModel({ email: 'Jefry.Yap@my.ey.com' });
-				// this.getView().setModel(oUserModel, 'user');
 
 				var userModelData = this.getView().getModel('user').getData();
 				const emp_data = await this._getEmpIdDetail(userModelData.email);
@@ -1271,7 +1512,7 @@ sap.ui.define([
 				const sCostCenter = emp_data ? emp_data.cc : "";
 
 				const oPayload = {
-					EMP_ID: emp_data.eeid,
+					EMP_ID: this._userId,
 					REQUEST_ID: oResult.reqNo,
 					REQUEST_TYPE_ID: oInputData.reqtype,
 					OBJECTIVE_PURPOSE: oInputData.purpose,
@@ -1282,13 +1523,11 @@ sap.ui.define([
 					TYPE_OF_TRANSPORTATION: oInputData.transport,
 					ATTACHMENT1: oInputData.doc1,
 					ATTACHMENT2: oInputData.doc2,
-					CASH_ADVANCE: parseFloat(oInputData.cashadvamt).toFixed(2),
 					COST_CENTER: sCostCenter,
 					EVENT_START_DATE: oInputData.eventstartdate,
 					EVENT_END_DATE: oInputData.eventenddate,
 					TRIP_START_DATE: oInputData.tripstartdate,
 					TRIP_END_DATE: oInputData.tripenddate,
-					PREAPPROVAL_AMOUNT: String(oInputData.reqamt),
 					STATUS: "DRAFT",
 					CLAIM_TYPE_ID: oInputData.claimtype
 				};
@@ -1296,7 +1535,7 @@ sap.ui.define([
 				const oContext = oListBinding.create(oPayload);
 
 				oContext.created().then(() => {
-					this.updateCurrentReqNumber(oResult.current);
+					this._updateCurrentReqNumber(oResult.current);
 					this.oDialogFragment.close();
 
 					oReqModel.setProperty("/view", 'list');
@@ -1304,7 +1543,6 @@ sap.ui.define([
 					oReqModel.setProperty("/req_header/reqstatus", 'DRAFT');
 					oReqModel.setProperty("/req_header/costcenter", sCostCenter);
 					oReqModel.setProperty("/eeid", emp_data.eeid);
-					this._getItemList(oResult.reqNo);
 
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("RequestForm");
@@ -1314,14 +1552,16 @@ sap.ui.define([
 			}
 		},
 
+
+
+		// get backend data
 		async _getEmpIdDetail(sEMAIL) {
-			const oModel = this.getView().getModel();
+			const oModel = this.getOwnerComponent().getModel();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
 				new sap.ui.model.Filter("EMAIL", "EQ", sEMAIL)
 			]);
 
 			try {
-				// FIX: You MUST await the requestContexts call
 				const aContexts = await oListBinding.requestContexts(0, 1);
 
 				if (aContexts.length > 0) {
@@ -1341,7 +1581,44 @@ sap.ui.define([
 			}
 		},
 
-		getCurrentReqNumber: async function (range_id) {
+		_loadDefaultSelection: function () {
+			const oMainModel = this.getOwnerComponent().getModel();
+			const oListBinding = oMainModel.bindList("/ZINDIV_GROUP", null, null, [
+				new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
+			]);
+
+			oListBinding.requestContexts().then((aContexts) => {
+				const aData = aContexts.map(oCtx => oCtx.getObject());
+				const oTypeModel = new JSONModel({ types: aData });
+				this.getView().setModel(oTypeModel, "indiv_list");
+			}).catch(err => console.error("GroupType Load Failed", err));
+		},
+
+		_loadReqTypeSelectionData: function () {
+			const oMainModel = this.getOwnerComponent().getModel();
+			const oListBinding = oMainModel.bindList("/ZREQUEST_TYPE", null, null, [
+				new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
+			]);
+
+			oListBinding.requestContexts().then((aContexts) => {
+				const aData = aContexts.map(oCtx => oCtx.getObject());
+				const oTypeModel = new JSONModel({ types: aData });
+				this.getView().setModel(oTypeModel, "req_type_list");
+			}).catch(err => console.error("RequestType Load Failed", err));
+		},
+
+		_loadClaimTypeSelectionData: function () {
+			const oMainModel = this.getOwnerComponent().getModel();
+			const oListBinding = oMainModel.bindList("/ZCLAIM_TYPE");
+
+			oListBinding.requestContexts().then((aContexts) => {
+				const aData = aContexts.map(oCtx => oCtx.getObject());
+				const oTypeModel = new JSONModel({ types: aData });
+				this.getView().setModel(oTypeModel, "claim_type_list");
+			}).catch(err => console.error("ClaimType Load Failed", err));
+		},
+
+		_getCurrentReqNumber: async function (range_id) {
 			const oMainModel = this.getOwnerComponent().getModel();
 			const oListBinding = oMainModel.bindList("/ZNUM_RANGE", null, null, [
 				new Filter("RANGE_ID", FilterOperator.EQ, range_id)
@@ -1352,8 +1629,10 @@ sap.ui.define([
 				if (aContexts.length === 0) throw new Error("Range ID not found");
 
 				const oData = aContexts[0].getObject();
+				// const prefix = oData.PREFIX;
 				const current = Number(oData.CURRENT);
 				const yy = String(new Date().getFullYear()).slice(-2);
+				// const reqNo = `${prefix}${yy}${String(current).padStart(9, "0")}`;
 				const reqNo = `REQ${yy}${String(current).padStart(9, "0")}`;
 
 				return { reqNo, current };
@@ -1363,15 +1642,12 @@ sap.ui.define([
 			}
 		},
 
-		updateCurrentReqNumber: async function (currentNumber) {
+		_updateCurrentReqNumber: async function (currentNumber) {
 			const oMainModel = this.getOwnerComponent().getModel();
-			// In V4, we address a single entity by binding a context to its path
 			const oContext = oMainModel.bindContext(`/ZNUM_RANGE('${encodeURIComponent('NR01')}')`).getBoundContext();
 
 			try {
 				await oContext.setProperty("CURRENT", String(currentNumber + 1));
-				// V4 automatically queues changes; if using SubmitMode.Auto, it sends immediately.
-				// If using Manual, you'd call oMainModel.submitBatch("groupName");
 				return true;
 			} catch (e) {
 				console.error("Update Failed", e);
@@ -1379,121 +1655,44 @@ sap.ui.define([
 			}
 		},
 
-		async _getItemList(req_id) {
-			const oReq = this._getReqModel();
-			if (!req_id) {
-				oReq.setProperty("/req_item_rows", []);
-				oReq.setProperty("/list_count", 0);
-				return [];
-			}
+		// My Pre-Approval Request Status function
+		getPARHeaderList: async function (emp_id) {
+			const oReq = this.getOwnerComponent().getModel("request_status");
+			const oModel = this.getOwnerComponent().getModel();
 
-			const sReq = String(req_id);
-			const isGuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(sReq);
-			const isNumeric = /^\d+$/.test(sReq);
-			let sLiteral;
-			if (isNumeric) sLiteral = sReq;
-			else if (isGuid) sLiteral = `guid'${sReq}'`;
-			else sLiteral = `'${sReq.replace(/'/g, "''")}'`;
-
-			const base = this._entityUrl("ZREQUEST_ITEM");
-			const filterExpr = `REQUEST_ID eq ${sLiteral}`;
-			const orderby = "REQUEST_SUB_ID asc";
-			const query = [
-				`$filter=${encodeURIComponent(filterExpr)}`,
-				`$orderby=${encodeURIComponent(orderby)}`,
-				`$count=true`,
-				`$format=json`
-			].join("&"); // IMPORTANT: use '&' (not &amp;)
-
-			const url = `${base}?${query}`;
+			const oListBinding = oModel.bindList("/ZREQUEST_HEADER", undefined,
+				[new Sorter("REQUEST_ID")],
+				[new Filter({ path: "EMP_ID", operator: FilterOperator.EQ, value1: String(emp_id) })],
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$$updateGroupId: "$auto",
+					$count: true
+				}
+			);
 
 			try {
-				const res = await fetch(url, { headers: { "Accept": "application/json" } });
-				if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-				const data = await res.json();
-				const a = Array.isArray(data?.value) ? data.value : [];
-
-				// Fix numeric types if backend returns strings
-				a.forEach((it) => {
-					if (it.EST_AMOUNT != null) it.EST_AMOUNT = parseFloat(it.EST_AMOUNT);
-					if (it.EST_NO_PARTICIPANT != null) it.EST_NO_PARTICIPANT = parseInt(it.EST_NO_PARTICIPANT, 10);
-				});
-
-				const cashadv_amt = a.reduce((sum, it) => {
-					return it.CASH_ADVANCE === "YES" ? sum + (parseFloat(it.EST_AMOUNT) || 0) : sum;
-				}, 0);
-
-				const req_amt = a.reduce((sum, it) => {
-					return it.CASH_ADVANCE === null ? sum + (parseFloat(it.EST_AMOUNT) || 0) : sum;
-				}, 0);
-
-				oReq.setProperty("/req_header/cashadvamt", cashadv_amt);
-				oReq.setProperty("/req_header/reqamt", req_amt);
-
-				oReq.setProperty("/req_item_rows", a);
-				oReq.setProperty("/list_count", a.length);
-				return a;
-			} catch (err) {
-				// eslint-disable-next-line no-console
-				console.error("Fetch failed:", err, { url });
-				oReq.setProperty("/req_item_rows", []);
-				oReq.setProperty("/list_count", 0);
-				return [];
-			}
-		},
-
-		_serviceRoot(sDataSource = "mainService") {
-			const oManifest = this.getOwnerComponent().getManifestEntry("sap.app");
-			const sUri = oManifest?.dataSources?.[sDataSource]?.uri;
-
-			let sPath = sUri;
-			if (!sPath) {
-				sPath = (sDataSource === "mainService")
-					? "/odata/v4/EmployeeSrv/"
-					: "/odata/v4/eclaim-view-srv/";
-			}
-
-			return sPath.replace(/\/$/, "");
-		},
-
-		_entityUrl(sEntitySet, sDataSource = "mainService") {
-			const sBase = this._serviceRoot(sDataSource);
-			return new URL(`${sBase}/${sEntitySet}`, window.location.origin).toString();
-		},
-
-		async _getPARHeaderList() {
-			const oReq = this.getOwnerComponent().getModel('request_status');
-
-			const base = this._entityUrl("ZREQUEST_HEADER");
-			const orderby = "REQUEST_ID asc";
-			const query = [
-				`$orderby=${encodeURIComponent(orderby)}`,
-				`$count=true`,
-				`$format=json`
-			].join("&"); // IMPORTANT: use '&' (not &amp;)
-
-			const url = `${base}?${query}`;
-
-			try {
-				const res = await fetch(url, { headers: { "Accept": "application/json" } });
-				if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-				const data = await res.json();
-				const a = Array.isArray(data?.value) ? data.value : [];
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
 
 				a.forEach((it) => {
-					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = parseFloat(0);
+				if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
 				});
 
 				oReq.setProperty("/req_header_list", a);
-				oReq.setProperty("/req_header_count", a.length);
+				oReq.setProperty("/req_header_count", a.length); 
+
 				return a;
 			} catch (err) {
-				// eslint-disable-next-line no-console
-				console.error("Fetch failed:", err, { url });
+				console.error("OData bindList failed:", err);
 				oReq.setProperty("/req_header_list", []);
 				oReq.setProperty("/req_header_count", 0);
 				return [];
 			}
+		},
+
+		_checkFieldVisibility_ReqType: function () {
+
 		},
 
 		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

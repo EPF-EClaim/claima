@@ -228,6 +228,12 @@ annotate service.ZNUM_RANGE with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : PREFIX,
+                ![@UI.Importance]: #High,
+                Label            : 'Prefix'
+            },            
+            {
+                $Type            : 'UI.DataField',
                 Value            : RANGE_DESC,
                 ![@UI.Importance]: #High,
                 Label            : 'Range Description'
