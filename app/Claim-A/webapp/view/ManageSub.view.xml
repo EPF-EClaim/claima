@@ -1,0 +1,78 @@
+<mvc:View
+    controllerName="claima.controller.ManageSub"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    id="addSub_xmlview">
+
+    <Page id="page" title="{i18n>ManageSubTitle}">
+        <content>
+            <Table id="tblSubs"
+                   class="sapUiSmallMarginTop"
+                   mode="SingleSelectMaster"
+                   includeItemInSelection="true"
+                   selectionChange=".onSelectionChange"
+                   items="{ path:'local>/Substitutes' }"
+                   noDataText="{i18n>noData}">
+                <columns>
+                    <Column width="10rem"><Text text="{i18n>tableColumnName}" /></Column>
+                    <Column width="10rem"><Text text="{i18n>tableColumnPeriod}" /></Column>
+                    <Column width="10rem"><Text text="{i18n>tableColumnStart}" /></Column>
+                    <Column width="10rem"><Text text="{i18n>tableColumnEnd}" /></Column>
+                </columns>
+
+                <items>
+                    <ColumnListItem>
+                        <cells>
+                            <!-- <ObjectIdentifier
+                                title="{local>user}"
+                                text="{local>status}" /> -->
+                            <Text text="{local>user}" />
+                            <Text text="{local>periodText}" />
+                            <Text text="{local>start}" />
+                            <Text text="{local>end}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
+
+        <footer>
+            <OverflowToolbar>
+                <ToolbarSpacer />
+                <Button id="btnAdd"
+                        type="Emphasized"
+                        text="{i18n>addNew}"
+                        press=".onAdd" />
+                <Button id="Deletebtn"
+                        type="Transparent"
+                        text="{i18n>delete}"
+                        visible="{vm>/hasSelection}"
+                        press=".onDelete" />
+            </OverflowToolbar>
+        </footer>
+
+        <!-- Add Substitute Dialog (inline; no fragment) -->
+        <Dialog id="dlgAdd" title="{i18n>addDlgTitle}" type="Message">
+            <content>
+                <VBox class="sapUiSmallMargin">
+                    <Label text="{i18n>enterUser}" labelFor="inpUser"/>
+                    <Input id="inpUser" width="100%" valueLiveUpdate="true" />
+
+                    <Label text="{i18n>tableColumnPeriod}" />
+                    <DateRangeSelection
+                        id="drs"
+                        displayFormat="medium"
+                        valueFormat="yyyy-MM-dd"
+                        placeholder="{i18n>periodPlaceholder}"/>
+                </VBox>
+            </content>
+            <beginButton>
+                <Button text="{i18n>save}" type="Emphasized" press=".onSave"/>
+            </beginButton>
+            <endButton>
+                <Button text="{i18n>cancel}" press=".onCancel"/>
+            </endButton>
+        </Dialog>
+    </Page>
+</mvc:View>
