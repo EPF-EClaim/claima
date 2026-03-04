@@ -94,6 +94,16 @@
                 id="pageContainer"
                 >
                 <pages>
+                    <!-- Claim Submission -->
+                    <NavContainer
+                        id="navcontainer_claimsubmission"
+                    >
+                        <mvc:XMLView
+                            id="view_claimsubmission"
+                            viewName="claima.view.ClaimSubmission"
+                        />
+                    </NavContainer>
+
                     <Page
                         id="expensereport"
                         showHeader="false"
