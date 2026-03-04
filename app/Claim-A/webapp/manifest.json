@@ -422,7 +422,7 @@
                     "target": "Dashboard"
                 },
                 {
-                    "pattern": "RequestForm",
+                    "pattern": "RequestForm/{request_id}",
                     "name": "RequestForm",
                     "target": "RequestForm"
                 },
@@ -430,6 +430,11 @@
                     "pattern": "MyApproval",
                     "name": "MyApproval",
                     "target": "MyApproval"
+                },
+                {
+                    "pattern": "RequestForm",
+                    "name": "RequestFormNew",
+                    "target": "RequestForm"
                 },
                 {
                     "pattern": "RequestFormStatus",

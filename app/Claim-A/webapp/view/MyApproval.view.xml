@@ -1,140 +1,125 @@
 <mvc:View xmlns:table="sap.ui.table" xmlns:form="sap.ui.layout.form" xmlns:f="sap.f"
-	height="100%"
-	xmlns:mvc="sap.ui.core.mvc"
-	xmlns="sap.m"
+    height="100%"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
     xmlns:core="sap.ui.core"
-	controllerName="claima.controller.MyApproval"
+    controllerName="claima.controller.MyApproval"
     id="my_approval_xmlview">
 
-    <Page  
-        id="my_approval_status"
-        floatingFooter="true"
-        showHeader="false">
+    <Page id="my_approval_status" floatingFooter="true" showHeader="false">
         <content>
-        <VBox>
-        <VBox
-            class="roundedBox sapUiSmallMargin">
-            <Table
-                id="tb_myapproval"
-                headerText="My Pre-Approval Status"
-                mode="SingleSelectMaster"
-                width="auto"
-                items="{path: 'request_status>/req_header_list'}"
-                itemPress="openItemFromList"
-                growing="true"
-            >
-                <headerToolbar>
-                    <Toolbar>
-                        <!-- Title with inline count -->
-                        <Title
-                            text="{= ${i18n>nav_myrequest} + ' (' + ${request_status>/req_header_count} + ')'}"
-                        />
-                    </Toolbar>
-                </headerToolbar>
 
-                <columns>
-                    <Column>
-                        <Text text="Request ID" />
-                    </Column>
-                    <Column>
-                        <Text text="Purpose" />
-                    </Column>
-                    <Column>
-                        <Text text="Request Date" />
-                    </Column>
-                    <Column>
-                        <Text text="Status" />
-                    </Column>
-                    <Column>
-                        <Text text="Pre-Approval Amount (MYR)" />
-                    </Column>
-                </columns>
-
+            <IconTabBar id="itbApprovals"
+                        class="sapUiResponsiveContentPadding"
+                        expandable="false"
+                        selectedKey="PRE">
                 <items>
-                    <ColumnListItem type="Active">
-                        <cells>
-                            <Text text="{request_status>REQUEST_ID}" />
-                            <Text text="{request_status>OBJECTIVE_PURPOSE}" />
-                            <Text
-                                text="{
-                                    path: 'request_status>REQUEST_DATE',
-                                    type: 'sap.ui.model.odata.type.Date',
-                                    formatOptions: { pattern: 'dd MMM yyyy' } 
-                                }"
-                            />
-                            <Text text="{request_status>STATUS}" />
-                            <Text text="RM {
-                                    path: 'request_status>PREAPPROVAL_AMOUNT',
-                                    type: 'sap.ui.model.type.Float',
-                                    formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
-                                }" />
-                        </cells>
-                    </ColumnListItem>
-                </items>
-            </Table>
-        </VBox> 
-        <VBox
-            class="roundedBox sapUiSmallMargin">
-            <Table
-                id="tb_myapproval"
-                headerText="My Pre-Approval Status"
-                mode="SingleSelectMaster"
-                width="auto"
-                items="{path: 'request_status>/req_header_list'}"
-                itemPress="openItemFromList"
-                growing="true"
-            >
-                <headerToolbar>
-                    <Toolbar>
-                        <!-- Title with inline count -->
-                        <Title
-                            text="{= ${i18n>nav_myrequest} + ' (' + ${request_status>/req_header_count} + ')'}"
-                        />
-                    </Toolbar>
-                </headerToolbar>
 
-                <columns>
-                    <Column>
-                        <Text text="Request ID" />
-                    </Column>
-                    <Column>
-                        <Text text="Purpose" />
-                    </Column>
-                    <Column>
-                        <Text text="Request Date" />
-                    </Column>
-                    <Column>
-                        <Text text="Status" />
-                    </Column>
-                    <Column>
-                        <Text text="Pre-Approval Amount (MYR)" />
-                    </Column>
-                </columns>
+                    <!-- Tab 1: Pre-Approval -->
+                    <IconTabFilter key="PRE" text="Pre-Approval" icon="sap-icon://approvals">
+                        <VBox class="roundedBox sapUiSmallMargin">
+                            <Table
+                                id="tb_myapproval"
+                                headerText="My Pre-Approval Status"
+                                mode="SingleSelectMaster"
+                                width="auto"
+                                itemPress="openItemFromList"
+                                growing="true"
+                                items="{
+                                    path: 'request_status>/req_header_list'
+                                }">
 
-                <items>
-                    <ColumnListItem type="Active">
-                        <cells>
-                            <Text text="{request_status>REQUEST_ID}" />
-                            <Text text="{request_status>OBJECTIVE_PURPOSE}" />
-                            <Text
-                                text="{
-                                    path: 'request_status>REQUEST_DATE',
-                                    type: 'sap.ui.model.odata.type.Date',
-                                    formatOptions: { pattern: 'dd MMM yyyy' } 
-                                }"
-                            />
-                            <Text text="{request_status>STATUS}" />
-                            <Text text="RM {
-                                    path: 'request_status>PREAPPROVAL_AMOUNT',
-                                    type: 'sap.ui.model.type.Float',
-                                    formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
-                                }" />
-                        </cells>
-                    </ColumnListItem>
+                                <headerToolbar>
+                                    <Toolbar>
+                                        <Title text="{= ${i18n>nav_myrequest} + ' (' + ${request_status>/req_header_count} + ')'}"/>
+                                    </Toolbar>
+                                </headerToolbar>
+
+                                <columns>
+                                    <Column><Text text="Request ID" /></Column>
+                                    <Column><Text text="Purpose" /></Column>
+                                    <Column><Text text="Request Date" /></Column>
+                                    <Column><Text text="Status" /></Column>
+                                    <Column><Text text="Pre-Approval Amount (MYR)" /></Column>
+                                </columns>
+
+                                <items>
+                                    <ColumnListItem type="Active">
+                                        <cells>
+                                            <Text text="{request_status>REQUEST_ID}" />
+                                            <Text text="{request_status>OBJECTIVE_PURPOSE}" />
+                                            <Text text="{
+                                                path: 'request_status>REQUEST_DATE',
+                                                type: 'sap.ui.model.odata.type.Date',
+                                                formatOptions: { pattern: 'dd MMM yyyy' }
+                                            }"/>
+                                            <Text text="{request_status>STATUS}" />
+                                            <Text text="RM {
+                                                path: 'request_status>PREAPPROVAL_AMOUNT',
+                                                type: 'sap.ui.model.type.Float',
+                                                formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
+                                            }"/>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+                    </IconTabFilter>
+
+                    <!-- Tab 2: Approval -->
+                    <IconTabFilter key="APP" text="Approval" icon="sap-icon://accept">
+                        <VBox class="roundedBox sapUiSmallMargin">
+                            <Table
+                                id="tb_myapproval_app"
+                                headerText="My Approval Status"
+                                mode="SingleSelectMaster"
+                                width="auto"
+                                itemPress="openItemFromList"
+                                growing="true"
+                                items="{
+                                    path: 'request_status>/req_header_list'
+                                }">
+
+                                <headerToolbar>
+                                    <Toolbar>
+                                        <Title text="{= ${i18n>nav_approval} + ' (' + ${request_status>/req_header_count} + ')'}"/>
+                                    </Toolbar>
+                                </headerToolbar>
+
+                                <columns>
+                                    <Column><Text text="Request ID" /></Column>
+                                    <Column><Text text="Purpose" /></Column>
+                                    <Column><Text text="Request Date" /></Column>
+                                    <Column><Text text="Status" /></Column>
+                                    <Column><Text text="Pre-Approval Amount (MYR)" /></Column>
+                                </columns>
+
+                                <items>
+                                    <ColumnListItem type="Active">
+                                        <cells>
+                                            <Text text="{request_status>REQUEST_ID}" />
+                                            <Text text="{request_status>OBJECTIVE_PURPOSE}" />
+                                            <Text text="{
+                                                path: 'request_status>REQUEST_DATE',
+                                                type: 'sap.ui.model.odata.type.Date',
+                                                formatOptions: { pattern: 'dd MMM yyyy' }
+                                            }"/>
+                                            <Text text="{request_status>STATUS}" />
+                                            <Text text="RM {
+                                                path: 'request_status>PREAPPROVAL_AMOUNT',
+                                                type: 'sap.ui.model.type.Float',
+                                                formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
+                                            }"/>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+                    </IconTabFilter>
+
                 </items>
-            </Table>
-        </VBox> 
-        </VBox> 
+            </IconTabBar>
+
         </content>
     </Page>
-</mvc:View> 
+</mvc:View>
