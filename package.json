@@ -43,6 +43,12 @@
       "deploy-format": "hdbtable"
     },
     "requires": {
+      "IS_NonProd_Conn": { 
+        "kind": "odata",
+        "credentials": {
+          "destination": "IS_NonProd_Conn"
+        }
+      },
       "[production]": {
         "db": "hana-cloud",
         "auth": "xsuaa"

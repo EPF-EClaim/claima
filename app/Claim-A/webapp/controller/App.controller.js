@@ -1,4 +1,3 @@
-
 sap.ui.define([
 	"sap/ui/Device",
 	"sap/ui/core/mvc/Controller",
@@ -70,7 +69,51 @@ sap.ui.define([
 			});
 
 		},
+		
+		onSendEmail: async function (ApproverName,SubmissionDate,ClaimantName,InstanceID,ClaimType,ClaimID,RecipientName,Action,ReceiverEmail,CCEmail,EmailTitle,EmailBody){
 
+			var urlEmail = "/odata/v4/EmployeeSrv/sendEmail";
+
+			// var testPayload ={
+			// 	"ApproverName":"test",
+			// 	"SubmissionDate":"12/01/2025",
+			// 	"ClaimantName":"Vincent",
+			// 	"InstanceID":"123",
+			// 	"ClaimType":"test",
+			// 	"ClaimID":"test12341",
+			// 	"RecipientName":"vincent",
+			// 	"Action":"",
+			// 	"ReceiverEmail":"dick.soon.yong@my.ey.com",
+			// 	"CCEmail":"",
+			// 	"EmailTitle":"Auto-Approved Claim Submission",
+			// 	"EmailBody":"Dear Sender, your claim has been auto approved"
+			// }
+
+			var Payload ={
+				"ApproverName":ApproverName,
+				"SubmissionDate":SubmissionDate,
+				"ClaimantName":ClaimantName,
+				"InstanceID":InstanceID,
+				"ClaimType":ClaimType,
+				"ClaimID":ClaimID,
+				"RecipientName":RecipientName,
+				"Action":Action,
+				"ReceiverEmail":ReceiverEmail,
+				"CCEmail":CCEmail,
+				"EmailTitle":EmailTitle,
+				"EmailBody":EmailBody
+			}
+
+			const sendEmail = await fetch(urlEmail, {
+				method: "POST",
+				headers: { "Content-Type": "application/json", "Accept": "application/json" },
+				body: JSON.stringify(payload)
+			});
+			if (!sendEmail.ok) {
+				alert("Error");
+			}
+
+		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
 			var oNavigationList = this.byId("navigationList");
