@@ -138,11 +138,12 @@
                     <u:FileUploader
                         id="fileuploader_claiminput_attachment"
                         name="fileUploaderClaimInputAttachment"
-                        uploadUrl="upload/"
+                        uploadUrl="/SuccessFactors_API/odata/v2/Attachment"
                         uploadComplete="onUploadComplete_ClaimInput_Attachment"
+                        maximumFileSize='5'
                         typeMissmatch="onTypeMissmatch_ClaimInput_Attachment"
                         style="Emphasized"
-                        fileType="pdf"
+                        fileType="pdf,png,jpg,jpeg,doc,docx"
                     >
                     </u:FileUploader>
 

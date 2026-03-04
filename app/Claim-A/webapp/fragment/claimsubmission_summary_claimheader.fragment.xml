@@ -4,10 +4,29 @@
 	xmlns:f="sap.ui.layout.form"
 	xmlns:core="sap.ui.core">
 	<VBox class="sapUiSmallMargin">
+		<!-- Claim Header Toolbar -->
+		<Toolbar>
+			<!-- Claim Header -->
+			<Title
+				text="{i18n>title_claimsummary_claimheader}"
+				level="H2"
+			/>
+
+			<!-- space -->
+			<ToolbarSpacer />
+
+			<!-- Attachment -->
+			<Button
+				id="button_claimsummary_viewattachment"
+				text="{i18n>button_claimsummary_viewattachment}"
+				press="onView_ClaimSummary_Attachment"
+				enabled="true"
+			/>
+		</Toolbar>
+
 		<f:SimpleForm
 			editable="false"
 			layout="ColumnLayout"
-			title="{i18n>simpleform_claimsummary_claimheader}"
 			labelSpanXL="5"
 			labelSpanL="5"
 			labelSpanM="5"

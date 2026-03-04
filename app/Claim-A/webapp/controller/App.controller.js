@@ -788,10 +788,10 @@ sap.ui.define([
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
 				var isUploadSuccess = this._onUpload_ClaimInput_Attachment();
-				if (!isUploadSuccess) {
-					// don't proceed claim submission if attachment upload fails
-					return;
-				}
+				// if (!isUploadSuccess) {
+				// 	// don't proceed claim submission if attachment upload fails
+				// 	return;
+				// }
 			}
 			// validate date range
 			//// trip start/end date
@@ -836,36 +836,88 @@ sap.ui.define([
 		_onUpload_ClaimInput_Attachment: function () {
 			// check if file can be uploaded
 			var oFileUploader = this.byId("fileuploader_claiminput_attachment");
-			oFileUploader.checkFileReadable().then(function () {
-				oFileUploader.upload();
-				return true;
-			}, function (error) {
-				MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_error"));
-			}).then(function () {
-				oFileUploader.clear();
-				return false;
+
+			var fileName = oFileUploader.getValue();
+			// var fileType = oFileUploader.getMimeType();
+			var domRef = oFileUploader.getFocusDomRef();
+			var file = domRef.files[0];
+			// convert file to base64
+			var that = this;
+			var fileString = null;
+			var reader = new FileReader();
+			reader.onload = async function (oEvent) {
+				var base64String = oEvent.currentTarget.result.replace("data:" + file.type + ";base64,", "");
+				that.fileString = base64String;
+			};
+			reader.readAsDataURL(file);
+
+			// Write to Success Factors API
+			var sServiceUrl = "/SuccessFactors_API/odata/v2/Attachment"; 
+
+			fetch(sServiceUrl, 
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						__metadata: {
+							uri: 'Attachment'
+						},
+						deletable: true,
+						fileName: fileName,
+						moduleCategory: 'UNSPECIFIED',
+						module: 'DEFAULT',
+						userId: 'SFAPI',
+						viewable: true,
+						searchable: true,
+						fileContent: fileString
+					}) 
+				}
+			)
+			.then(r => r.json())
+			.then((res) => {
+				if (!res.error) {
+					MessageToast.show("Test upload OK");
+					return true;
+				} else {
+					MessageToast.show(res.error.code, res.error.message);
+					return false;
+				};
 			});
+
+			// oFileUploader.checkFileReadable().then(function () {
+			// 	// oFileUploader.addHeaderParameter(new sap.ui.unified.FileUploaderParameter({
+			// 	// 					name: "slug",
+			// 	// 					value: oFileUploader.getValue()
+			// 	// 				}));
+			// 	// oFileUploader.addHeaderParameter(new sap.ui.unified.FileUploaderParameter({
+			// 	// 					name: "x-csrf-token",
+			// 	// 					value: _this.oDataModel.getSecurityToken()
+			// 	// 				}));
+			// 	oFileUploader.upload();
+			// 	return true;
+			// }, function (error) {
+			// 	MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_error"));
+			// }).then(function () {
+			// 	oFileUploader.clear();
+			// 	return false;
+			// });
 		},
 
 		onUploadComplete_ClaimInput_Attachment: function (oEvent) {
-			// Please note that the event response should be taken from the event parameters but for our test example, it is hardcoded.
-
-			var sResponse = "File upload complete. Status: 200",
-				iHttpStatusCode = parseInt(/\d{3}/.exec(sResponse)[0]),
-				sMessage;
-
-			if (sResponse) {
-				sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
-				MessageToast.show(sMessage);
-			}
+			var iHttpStatusCode = oEvent.getParameters("status");
+			var sResponse = oEvent.getParameters("response");
+			var sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
+			MessageToast.show(sMessage);
 		},
 
 		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			var aFileTypes = oEvent.getSource().getFileType();
-			aFileTypes.map(function (sType) {
-				return "*." + sType;
-			});
 			MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_mismatch", [this.byId("fileuploader_claiminput_attachment").getValue()]));
+		},
+		
+		onFileSizeExceed_ClaimInput_Attachment: function (oEvent) {
+			MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_filesize"));
 		},
 		
 		_validDateRange: function (startdate, enddate) {
