@@ -427,6 +427,11 @@
                     "target": "RequestForm"
                 },
                 {
+                    "pattern": "MyApproval",
+                    "name": "MyApproval",
+                    "target": "MyApproval"
+                },
+                {
                     "pattern": "RequestFormStatus",
                     "name": "RequestFormStatus",
                     "target": "RequestFormStatus"
@@ -3530,6 +3535,14 @@
                     "id": "RequestForm",
                     "path": "claima.view",
                     "name": "RequestForm",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
+                "MyApproval": {
+                    "id": "MyApproval",
+                    "path": "claima.view",
+                    "name": "MyApproval",
                     "type": "View",
                     "viewType": "XML",
                     "transition": "slide"
