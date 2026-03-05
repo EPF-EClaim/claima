@@ -337,6 +337,7 @@ sap.ui.define([
 						"lender_name": null,
 						"course_code": null,
 						"project_code": null,
+						"attachment_email_approver": null,
 					}
 				},
 				"claim_items": [],

@@ -220,6 +220,8 @@ sap.ui.define([
 					"study_levels_id": null,
 					"claim_type_id": null,
 					"vehicle_class_id": null,
+					"attachment_file_1": null,
+					"attachment_file_2": null,
 				}
 			});
 			//// set input
@@ -306,38 +308,7 @@ sap.ui.define([
 				oPage.insertContent(oVBox, 1);
 			});
 			// set new claim submission model;
-			this._testClaimItem();
-		},
-
-		_testClaimItem: function () {
-			// change footer buttons
-			this._displayFooterButtons("claimsubmission_claimdetails_input");
-
-			// set claim item model
-			var oInputModel = this._getNewClaimItemModel("claimitem_input");
-
-			// update claim item selection
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			this.byId("select_claimdetails_input_claimitem").bindAggregation("items", {
-				path: "employee>/ZCLAIM_TYPE_ITEM",
-				filters: [new sap.ui.model.Filter('CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"))],
-				// sorter: [
-				// 	{ path: 'CLAIM_TYPE_ITEM_DESC' },
-				// 	{ path: 'CLAIM_TYPE_ITEM_ID' },
-				// ],
-				parameters: {
-					$expand: {
-						"ZCLAIM_CATEGORY": {
-							$select: "CLAIM_CATEGORY_DESC"
-						}
-					},
-					$select: "CATEGORY_ID"
-				},
-				template: new sap.ui.core.Item({
-					key: "{employee>CLAIM_TYPE_ITEM_ID}",
-					text: "{employee>CLAIM_TYPE_ITEM_DESC}"
-				})
-			});
+			this._onInit_ClaimDetails_Input();
 		},
 
 		onScanReceipt_ClaimSummary: function () {
@@ -400,13 +371,98 @@ sap.ui.define([
 			}
 		},
 
-		onSave_ClaimDetails: async function () {
+		_onInit_ClaimDetails_Input: function () {
+			// change footer buttons
+			this._displayFooterButtons("claimsubmission_claimdetails_input");
+
+			// set claim item model
+			var oInputModel = this._getNewClaimItemModel("claimitem_input");
+
+			// update selection fields
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			this._setClaimDetailSelection(oClaimSubmissionModel);
+		},
+
+		_setClaimDetailSelection: function (oModel) {
+			//// Claim Item
+			this.byId("select_claimdetails_input_claimitem").bindAggregation("items", {
+				path: "employee>/ZCLAIM_TYPE_ITEM",
+				filters: [new sap.ui.model.Filter('CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id"))],
+				sorter: [
+					{ path: 'CLAIM_TYPE_ITEM_DESC' },
+					{ path: 'CLAIM_TYPE_ITEM_ID' },
+				],
+				parameters: {
+					$expand: {
+						"ZCLAIM_CATEGORY": {
+							$select: "CLAIM_CATEGORY_DESC"
+						}
+					},
+					$select: "CATEGORY_ID"
+				},
+				template: new sap.ui.core.Item({
+					key: "{employee>CLAIM_TYPE_ITEM_ID}",
+					text: "{employee>CLAIM_TYPE_ITEM_DESC}"
+				})
+			});
+			//// Type of Professional Body
+			this._setClaimDetailSelectionMaster("select_claimdetails_input_type_of_professional_body", "ZPROFESIONAL_BODY");
+			//// Funeral Transportation
+			this._setClaimDetailSelectionMaster("select_claimdetails_input_funeral_transportation", "ZTRANSPORT_PASSING");
+			//// Level of Studies
+			this._setClaimDetailSelectionMaster("select_claimdetails_input_study_levels_id", "ZSTUDY_LEVELS");
+			//// Type of Vehicle
+			this._setClaimDetailSelectionMaster("select_claimdetails_input_vehicle_type", "ZVEHICLE_TYPE");
+			//// Vehicle Ownership ID (Sendiri/Penjabat)
+			this._setClaimDetailSelectionMaster("select_claimdetails_input_vehicle_ownership_id", "ZVEHICLE_OWNERSHIP");
+			//// Type of Fare
+			this._setClaimDetailSelectionMaster("select_claimdetails_input_fare_type_id", "ZFARE_TYPE");
+			//// Vehicle Class
+			this._setClaimDetailSelectionMaster("select_claimdetails_input_vehicle_class_id", "ZVEHICLE_CLASS");
+			//// Flight Class
+			this._setClaimDetailSelectionMaster("select_claimdetails_input_flight_class", "ZFLIGHT_CLASS");
+			//// Location Type
+			this._setClaimDetailSelectionMaster("select_claimdetails_input_location_type", "ZLOC_TYPE");
+			//// Room Type
+			this._setClaimDetailSelectionMaster("select_claimdetails_input_room_type", "ZROOM_TYPE");
+			//// Country
+			this._setClaimDetailSelectionMaster("select_claimdetails_input_country", "ZCOUNTRY");
+			//// Region (Semenanjung/Sabah/Sarawak)
+			this._setClaimDetailSelectionMaster("select_claimdetails_input_region", "ZREGION");
+			//// Area (Negara/Wilayah)
+			this._setClaimDetailSelectionMaster("select_claimdetails_input_area", "ZAREA");
+			//// Lodging Category
+			this._setClaimDetailSelectionMaster("select_claimdetails_input_lodging_category", "ZLODGING_CAT", "LODGING_CATEGORY");
+			//// Category/Purpose (Mobile)
+			this._setClaimDetailSelectionMaster("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
+		},
+
+		_setClaimDetailSelectionMaster: function (oId, oTable, oField) {
+			if (this.byId(oId).getVisible()) {
+				if (!oField) {
+					var oField = oTable.slice(1);
+				}
+				this.byId(oId).bindAggregation("items", {
+					path: "employee>/" + oTable,
+					sorter: [
+						{ path: oField + '_DESC' },
+						{ path: oField + '_ID' },
+					],
+					template: new sap.ui.core.Item({
+						key: "{employee>" + oField + "_ID}",
+						text: "{employee>" + oField + "_DESC}"
+					})
+				});
+			}
+		},
+
+		onSave_ClaimDetails_Input: async function () {
 			// validate required fields
 			if (
 				!this.byId("select_claimdetails_input_claimitem").getSelectedItem() ||
-				!this.byId("input_claimdetails_input_amt").getValue() ||
-				!this.byId("datepicker_claimdetails_input_tripstartdate").getValue() ||
-				!this.byId("datepicker_claimdetails_input_tripenddate").getValue()
+				!this.byId("input_claimdetails_input_amount").getValue() ||
+				!this.byId("datepicker_claimdetails_input_startdate").getValue() ||
+				!this.byId("datepicker_claimdetails_input_enddate").getValue()
 			) {
 				// stop claim submission if values empty
 				MessageToast.show(this._getTexti18n("msg_claiminput_required"));
@@ -414,7 +470,7 @@ sap.ui.define([
 			}
 			// validate date range
 			//// trip start/end date
-			if (!this._validDateRange("datepicker_claimdetails_input_tripstartdate", "datepicker_claimdetails_input_tripenddate")) {
+			if (!this._validDateRange("datepicker_claimdetails_input_startdate", "datepicker_claimdetails_input_enddate")) {
 				// stop claim details if incomplete
 				return;
 			}
@@ -438,7 +494,7 @@ sap.ui.define([
 			oClaimSubmissionModel.setProperty("/claim_items_count", oClaimSubmissionModel.getProperty("/claim_items").length);
 
 			// return to claim item screen
-			this.onCancel_ClaimDetails();
+			this.onCancel_ClaimDetails_Input();
 		},
 		
 		_validDateRange: function (startdate, enddate) {
@@ -461,7 +517,7 @@ sap.ui.define([
 			}
 		},
 
-		onCancel_ClaimDetails: async function () {
+		onCancel_ClaimDetails_Input: async function () {
 			// show claim details screen
 			var oPage = this.byId("page_claimsubmission");
 			var oClaimItemFragment = this._getFormFragment("claimsubmission_claimdetails_input");

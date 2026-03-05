@@ -20,7 +20,7 @@
 				id="button_claimsummary_viewattachment"
 				text="{i18n>button_claimsummary_viewattachment}"
 				press="onView_ClaimSummary_Attachment"
-				enabled="true"
+				enabled="false"
 			/>
 		</Toolbar>
 

@@ -47,7 +47,7 @@
 					<!-- Save (Claim Details) -->
 					<Button
 						id="button_claimdetails_input_save"
-						press="onSave_ClaimDetails"
+						press="onSave_ClaimDetails_Input"
 						text="Save"
 						visible="false"
 					/>
@@ -55,7 +55,7 @@
 					<!-- Cancel (Claim Details) -->
 					<Button
 						id="button_claimdetails_input_cancel"
-						press="onCancel_ClaimDetails"
+						press="onCancel_ClaimDetails_Input"
 						text="Cancel"
 						visible="false"
 					/>
