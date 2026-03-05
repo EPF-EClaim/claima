@@ -24,13 +24,16 @@ sap.ui.define([
   const REQ_DET_TABLE_ID = "analyticsreqtab";          // Request Details
 
   // ===== Entity roots (for reference only) =====
-  const ENTITY_CLAIM_SUM = "/ZEMP_CLAIM_REPORT_SUMMARY";
-  const ENTITY_REQ_SUM = "/ZEMP_REQUEST_REPORT_SUMMARY";
-  const ENTITY_CLAIM_DET = "/ZEMP_CLAIM_REPORT_DETAILS";
-  const ENTITY_REQ_DET = "/ZEMP_REQUEST_REPORT_DETAILS";
+  /*   const ENTITY_CLAIM_SUM = "/ZEMP_CLAIM_REPORT_SUMMARY";
+    const ENTITY_REQ_SUM = "/ZEMP_REQUEST_REPORT_SUMMARY";
+    const ENTITY_CLAIM_DET = "/ZEMP_CLAIM_REPORT_DETAILS";
+    const ENTITY_REQ_DET = "/ZEMP_REQUEST_REPORT_DETAILS"; */
 
   return Controller.extend("claima.controller.analytics", {
 
+
+    onInit: function () {
+    },
     /* ===========================================================
      *  NAVIGATION + DIALOG
      * =========================================================== */
@@ -77,18 +80,76 @@ sap.ui.define([
 
     _openFragment: function (sFragmentPath) {
       this._mDialogs ??= {};
+
       if (!this._mDialogs[sFragmentPath]) {
         Fragment.load({
           id: this.getView().getId(),
           name: sFragmentPath,
           controller: this
-        }).then(d => {
-          this.getView().addDependent(d);
-          this._mDialogs[sFragmentPath] = d;
-          d.open();
+        }).then(dialog => {
+
+          this.getView().addDependent(dialog);
+          this._mDialogs[sFragmentPath] = dialog;
+
+          this._applyCostCenterAccess(dialog);
+
+          dialog.open();
         });
       } else {
+        // Fragment already loaded → just apply permission
+        this._applyCostCenterAccess(this._mDialogs[sFragmentPath]);
+
         this._mDialogs[sFragmentPath].open();
+      }
+    },
+
+    //Helper for enable/disable cc
+    _applyCostCenterAccess: function () {
+      const accessModel = this.getOwnerComponent().getModel("access");
+      const userType = accessModel?.getProperty("/userType");
+      const userCC = accessModel?.getProperty("/costcenters"); // array or string
+
+      const isAdmin = ["DTD Admin", "JKEW Admin"].includes(userType);
+
+      const ccMCB = this.byId("cc");         // MultiComboBox
+      const ccText = this.byId("ccText");    // Text input for non-admins
+
+      if (!ccMCB || !ccText) {
+        setTimeout(this._applyCostCenterAccess.bind(this), 0);
+        return;
+      }
+
+      if (isAdmin) {
+        // ADMIN: Show MultiComboBox, hide Text
+        ccMCB.setVisible(true);
+        ccText.setVisible(false);
+        ccMCB.setEditable(true);
+        ccMCB.setEnabled(true);
+
+      } else {
+        // NON-ADMIN: Show read-only text
+        ccMCB.setVisible(false);
+        ccText.setVisible(true);
+
+        // Convert array → joined text
+        const displayCC = Array.isArray(userCC) ? userCC.join(", ") : userCC;
+        ccText.setValue(displayCC);
+      }
+
+      // MultiComboBox selection (still needed for admin users)
+      const bindItems = ccMCB.getBinding("items");
+
+      const applySelection = () => {
+        if (isAdmin) return; // admin selects themselves
+
+        const keys = Array.isArray(userCC) ? userCC : (userCC ? [userCC] : []);
+        ccMCB.setSelectedKeys(keys); // invisible but needed for filtering
+      };
+
+      if (bindItems) {
+        bindItems.attachEventOnce("change", applySelection);
+      } else {
+        setTimeout(applySelection, 0);
       }
     },
 
@@ -185,8 +246,24 @@ sap.ui.define([
       this._addOrFilter(a, "GL_ACCOUNT", glKeys);
 
       // Cost Center (both)
-      const ccKeys = this._getKeys("cc");
-      this._addOrFilter(a, "COST_CENTER", ccKeys);
+      /*       const ccKeys = this._getKeys("cc");
+            this._addOrFilter(a, "COST_CENTER", ccKeys); */
+
+      //Cost Center - Replace with enable/disable depending on User Type
+      // Cost Center rules
+      const accessModel = this.getOwnerComponent().getModel("access");
+      const userType = accessModel?.getProperty("/userType");
+      const userCC = accessModel?.getProperty("/costcenters");
+
+      if (["DTD Admin", "JKEW Admin"].includes(userType)) {
+        // ADMIN → free selection
+        const ccKeys = this._getKeys("cc");
+        this._addOrFilter(a, "COST_CENTER", ccKeys);
+      } else {
+        // NON-ADMIN → force user's own CC
+        const enforcedCC = Array.isArray(userCC) ? userCC : [userCC];
+        this._addOrFilter(a, "COST_CENTER", enforcedCC);
+      }
 
       // Claim Type (Claim targets only)
       const claimTypeKeys = this._getKeys("claim_type");
@@ -269,7 +346,7 @@ sap.ui.define([
         return;
       }
 
-      
+
 
       // Fallback: if no back history, route to a known start page if you have one
       // Example if you keep a landing page cached:
@@ -409,7 +486,7 @@ sap.ui.define([
       };
       return map[this._analyticsTarget] || "Report";
     },
- 
+
     _getTodayString: function () {
       const d = new Date();
       const y = d.getFullYear();
@@ -706,12 +783,11 @@ sap.ui.define([
         { label: "Course Session", property: "SESSION_NUMBER", width: 12 },
         { label: "Purpose", property: "PURPOSE", width: 24 },
         { label: "Remarks", property: "REMARK", width: 24 },
-        { label: "Trip Start Date", property: "TRIP_START_DATE",  width: 14 },
+        { label: "Trip Start Date", property: "TRIP_START_DATE", width: 14 },
         { label: "Trip End Date", property: "TRIP_END_DATE", width: 14 },
         { label: "Location", property: "LOCATION", width: 40 },
         { label: "Claim ID", property: "CLAIM_ID", width: 14 },
         { label: "Claim Sub ID", property: "CLAIM_SUB_ID", width: 14 },
-        { label: "Item No", property: "", width: 14 },
         { label: "% Compensation", property: "PERCENTAGE_COMPENSATION", width: 14 },
         { label: "Account No", property: "ACCOUNT_NO", width: 14 },
         { label: "Amount", property: "AMOUNT", width: 14 },
@@ -769,6 +845,6 @@ sap.ui.define([
         { label: "Dependent Name", property: "DEPENDENT_NAME", width: 14 },
 
       ];
-    }
+    },
   });
 });
