@@ -77,17 +77,6 @@
                     </f:Card>
 
                     <f:Card
-                        id="ZAPP_FIELD_CTRL"
-                        class="sapUiSmallMargin"
-                        width="15rem"
-                        press="onOpenConfigTable"
-                    >
-                        <f:header>
-                            <cards:Header title="{i18n>conf_fieldctrl}" />
-                        </f:header>
-                    </f:Card>
-
-                    <f:Card
                         id="ZCLAIM_CATEGORY"
                         class="sapUiSmallMargin"
                         width="15rem"
