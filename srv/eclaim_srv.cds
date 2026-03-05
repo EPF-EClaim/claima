@@ -48,8 +48,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZCLAIM_TYPE_ITEM         as projection on ECLAIM.ZCLAIM_TYPE_ITEM;
 
-    entity ZAPP_FIELD_CTRL          as projection on ECLAIM.ZAPP_FIELD_CTRL;
-
     entity ZCLAIM_CATEGORY          as projection on ECLAIM.ZCLAIM_CATEGORY;
 
     entity ZSTATUS                  as projection on ECLAIM.ZSTATUS;
@@ -185,4 +183,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
     entity ZAPPROVER_DETAILS_PREAPPROVAL as projection on ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL;
 
     entity ZSUBSTITUTION_RULES as projection on ECLAIM.ZSUBSTITUTION_RULES;
+
+    entity ZDB_STRUCTURE as projection on ECLAIM.ZDB_STRUCTURE;
 };
