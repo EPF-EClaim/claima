@@ -4,14 +4,14 @@
     xmlns:f="sap.f"
 >
     <f:DynamicPage
-        id="myexpenserepo"
+        id="myexpenserepo1"
         headerExpanded="false"
         fitContent="true"
     >
         <!-- headerText="My Claim Status" -->
         <f:content>
             <Table
-                id="tb_myexpensetrepo"
+                id="tb_myexpensetrepo1"
                 mode="SingleSelectMaster"
                 width="auto"
                 items="{path:'employee>/ZCLAIM_HEADER'}"
