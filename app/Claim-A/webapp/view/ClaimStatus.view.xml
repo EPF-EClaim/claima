@@ -1,0 +1,90 @@
+<mvc:View
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:core="sap.ui.core"
+    controllerName="claima.controller.ClaimStatus"
+    height="100%">
+
+    <Page
+        id="claim_status_page"
+        showHeader="false"
+        floatingFooter="true">
+
+        <VBox class="roundedBox sapUiSmallMargin">
+
+            <Table
+                id="tb_myexpenserepo"
+                headerText="My Claim Status"
+                mode="SingleSelectMaster"
+                width="auto"
+                items="{path: 'employee>/ZCLAIM_HEADER'}"
+                itemPress="onRowPress"
+                growing="true">
+
+                <!-- Header with dynamic count -->
+                <headerToolbar>
+                    <Toolbar>
+                        <Title
+                            text="{= ${i18n>nav_myreport} + ' (' + ${employee>/ZCLAIM_HEADER/$count} + ')' }" />
+                    </Toolbar>
+                </headerToolbar>
+
+                <!-- Column structure now matches RequestFormStatus -->
+                <columns>
+                    <Column>
+                        <Text text="Purpose" />
+                    </Column>
+
+                    <Column>
+                        <Text text="Claim ID" />
+                    </Column>
+
+                    <Column>
+                        <Text text="Start Date" />
+                    </Column>
+
+                    <Column>
+                        <Text text="Status" />
+                    </Column>
+
+                    <Column>
+                        <Text text="Amount (MYR)" />
+                    </Column>
+                </columns>
+
+                <items>
+                    <ColumnListItem type="Active">
+                        <cells>
+
+                            <Text text="{employee>PURPOSE}" />
+
+                            <Text text="{employee>CLAIM_ID}" />
+
+                            <Text 
+                                text="{
+                                    path: 'employee>TRIP_START_DATE',
+                                    type: 'sap.ui.model.odata.type.Date',
+                                    formatOptions: { pattern: 'dd MMM yyyy' }
+                                }" />
+
+                            <Text text="{employee>STATUS_ID}" />
+
+                            <Text 
+                                text="RM {
+                                    path: 'employee>TOTAL_CLAIM_AMOUNT',
+                                    type: 'sap.ui.model.type.Float',
+                                    formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
+                                }" />
+
+                        </cells>
+                    </ColumnListItem>
+                </items>
+
+            </Table>
+
+        </VBox>
+
+    </Page>
+
+</mvc:View>

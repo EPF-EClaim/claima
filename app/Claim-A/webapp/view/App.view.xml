@@ -244,7 +244,7 @@
                     </content> 
                 </Page>
                 <!-- === My Claim Status Page (added) === -->
-                <Page
+    <!--             <Page
                     id="myreport"
                     showHeader="false"
                     class="sapUiNoContentPadding"
@@ -255,7 +255,7 @@
                             type="XML"
                         />
                     </content>
-                </Page>
+                </Page> -->
             </NavContainer>
         </tnt:mainContents>
     </tnt:ToolPage>

@@ -13,6 +13,7 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.ClaimSubmission", {
 		onInit: function () {
+
 			// Claim Submission Model
 			// // set "input" model data
 			// let oCurrent = this.getView().getModel("current");
@@ -27,7 +28,7 @@ sap.ui.define([
 				this._showInitFormFragment();
 			}
 		},
- 
+
 		_getInputModel: function () {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			if (oClaimSubmissionModel) {
@@ -348,7 +349,7 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			//// get claim item sub ID
 			oInputModel.setProperty("/claim_id", oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
-			oInputModel.setProperty("/claim_sub_id", ('00' + oClaimSubmissionModel.getProperty("/claim_items").length+1).slice(-3));
+			oInputModel.setProperty("/claim_sub_id", ('00' + oClaimSubmissionModel.getProperty("/claim_items").length + 1).slice(-3));
 			//// get claim type from claim header
 			oInputModel.setProperty("/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
 			//// get claim category key
@@ -364,7 +365,7 @@ sap.ui.define([
 			// return to claim item screen
 			this.onCancel_ClaimDetails();
 		},
-		
+
 		_validDateRange: function (startdate, enddate) {
 			var startDateValue = this.byId(startdate).getValue();
 			var endDateValue = this.byId(enddate).getValue();
@@ -374,8 +375,8 @@ sap.ui.define([
 				return false;
 			}
 			// check if end date earlier than start date
-			var startDateUnix 	= new Date (startDateValue).valueOf();
-			var endDateUnix 	= new Date (endDateValue).valueOf();
+			var startDateUnix = new Date(startDateValue).valueOf();
+			var endDateUnix = new Date(endDateValue).valueOf();
 			if (startDateUnix > endDateUnix) {
 				MessageToast.show(this._getTexti18n("msg_daterange_order"));
 				return false;
@@ -499,8 +500,8 @@ sap.ui.define([
 
 		_getHanaDate: function (date) {
 			if (date) {
-				var oDate = new Date (date);
-				var oDateString = oDate.getFullYear() + '-' + ('0' + (oDate.getMonth()+1)).slice(-2) + '-' + ('0' + oDate.getDate()).slice(-2);
+				var oDate = new Date(date);
+				var oDateString = oDate.getFullYear() + '-' + ('0' + (oDate.getMonth() + 1)).slice(-2) + '-' + ('0' + oDate.getDate()).slice(-2);
 				return oDateString;
 			} else {
 				return null;
@@ -509,7 +510,7 @@ sap.ui.define([
 
 		_getHanaTime: function (time) {
 			if (time) {
-				var oDate = new Date (time);
+				var oDate = new Date(time);
 				var oTimeString = ('0' + oDate.getHours()).slice(-2) + ':' + ('0' + oDate.getMinutes()).slice(-2) + ':' + ('0' + oDate.getSeconds()).slice(-2);
 				return oTimeString;
 			} else {
@@ -599,7 +600,220 @@ sap.ui.define([
 			else {
 				return this.getView().getModel("i18n").getResourceBundle().getText(i18nKey);
 			}
+		},
+
+		//Start Add - Aiman Salim - 03/03/2026 - Add for excel functionality.
+
+		_sanitizeFileName: function (s) {
+			return (s || "")
+				.replace(/[\\/:*?"<>|]/g, "_")
+				.replace(/\s+/g, " ")
+				.trim()
+				.substring(0, 80);
+		},
+
+		_getTodayString: function () {
+			const d = new Date();
+			const y = d.getFullYear();
+			const m = String(d.getMonth() + 1).padStart(2, "0");
+			const day = String(d.getDate()).padStart(2, "0");
+			return `${y}-${m}-${day}`;
+		},
+
+		_getExcelFileName: function () {
+			const input = this.getView().getModel("claimsubmission_input")?.getData() || {};
+			const id = input?.claim_header?.claim_id ?? "Claim";
+			return this._sanitizeFileName(`Claim_${id}_${this._getTodayString()}.xlsx`);
+		},
+
+		_toDate: function (val) {
+
+			if (!val) return null;
+
+			// ISO 8601 with or without milliseconds
+			if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}T/i.test(val)) {
+				const d = new Date(val);
+				if (!isNaN(d.getTime())) {
+					return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+				}
+				return null;
+			}
+
+			// YYYY-MM-DD
+			if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+				const [y, m, d] = val.split("-").map(Number);
+				return new Date(Date.UTC(y, m - 1, d));
+			}
+
+			// JS Date
+			if (val instanceof Date && !isNaN(val.getTime())) {
+				return new Date(Date.UTC(val.getFullYear(), val.getMonth(), val.getDate()));
+			}
+
+			// SAP Edm.Date { year, month, day }
+			if (typeof val === "object" && val.year && val.month && val.day) {
+				return new Date(Date.UTC(val.year, val.month - 1, val.day));
+			}
+
+			return null;
+		},
+
+		onDownloadExcelReport: async function () {
+			const oView = this.getView();
+			const XLSX = window.XLSX;
+			const that = this;
+
+			function _num(val) {
+				if (val === null || val === undefined || val === "") return null;
+				const n = Number(val);
+				return Number.isFinite(n) ? n : null;
+			}
+
+			function _applyColumnMeta(ws, columns, startDataRow) {
+				ws["!cols"] = columns.map(c => ({ wch: c.width || 12 }));
+
+				const ref = ws["!ref"];
+				if (!ref) return;
+
+				const range = XLSX.utils.decode_range(ref);
+
+				for (let c = 0; c < columns.length; c++) {
+					const meta = columns[c];
+					if (!meta.type) continue;
+
+					for (let r = startDataRow; r <= range.e.r; r++) {
+						const addr = XLSX.utils.encode_cell({ c, r });
+						const cell = ws[addr];
+						if (!cell) continue;
+
+						// FORCE DATE FORMAT YYYY-MM-DD
+
+						if (meta.type === "date") {
+							const dt = that._toDate(cell.v);
+
+							if (dt) {
+								cell.t = "d";
+								cell.v = dt;
+								cell.z = "yyyy-mm-dd";
+							} else {
+								// clear invalid date to avoid showing 1970-01-01
+								delete ws[addr];
+							}
+						}
+
+
+						// Numbers
+						if (meta.type === "number") {
+							const n = _num(cell.v);
+							if (n === null) {
+								delete ws[addr];
+							} else {
+								cell.t = "n";
+								cell.v = n;
+								cell.z = meta.scale === 2 ? "#,##0.00" : "#,##0";
+							}
+						}
+					}
+				}
+			}
+
+			try {
+				oView.setBusy(true);
+
+				const input = oView.getModel("claimsubmission_input")?.getData();
+				if (!input) {
+					sap.m.MessageToast.show("No claim data loaded.");
+					return;
+				}
+
+				const header = input.claim_header || {};
+				const items = input.claim_items || [];
+
+				// -------------------------------
+				// Build Header Row
+				// -------------------------------
+				const headerRow = {
+					"Claim ID": header.claim_id || "",
+					"Purpose": header.purpose || "",
+					"Trip Start Date": header.trip_start_date,
+					"Trip End Date": header.trip_end_date,
+					"Event Start Date": header.event_start_date,
+					"Event End Date": header.event_end_date,
+					"Location": header.location || "",
+					"Comment": header.comment || "",
+					"Cost Center": header.cost_center || "",
+					"Alternate Cost Center": header.alternate_cost_center || "",
+					"Total Claim Amount": header.total_claim_amount,
+					"Cash Advance": header.cash_advance_amount,
+					"Final Amount To Receive": header.final_amount_to_receive
+				};
+
+				const headerColumns = [
+					{ label: "Claim ID", property: "Claim ID", width: 18 },
+					{ label: "Purpose", property: "Purpose", width: 30 },
+					{ label: "Trip Start Date", property: "Trip Start Date", type: "date", width: 18 },
+					{ label: "Trip End Date", property: "Trip End Date", type: "date", width: 18 },
+					{ label: "Event Start Date", property: "Event Start Date", type: "date", width: 18 },
+					{ label: "Event End Date", property: "Event End Date", type: "date", width: 18 },
+					{ label: "Location", property: "Location", width: 20 },
+					{ label: "Comment", property: "Comment", width: 30 },
+					{ label: "Cost Center", property: "Cost Center", width: 18 },
+					{ label: "Alternate Cost Center", property: "Alternate Cost Center", width: 20 },
+					{ label: "Total Claim Amount", property: "Total Claim Amount", type: "number", scale: 2, width: 18 },
+					{ label: "Cash Advance", property: "Cash Advance", type: "number", scale: 2, width: 18 },
+					{ label: "Final Amount To Receive", property: "Final Amount To Receive", type: "number", scale: 2, width: 18 }
+				];
+
+				const headerLabels = headerColumns.map(c => c.label);
+				const headerValues = headerColumns.map(c => headerRow[c.property] ?? "");
+
+				const wsHeader = XLSX.utils.aoa_to_sheet([headerLabels, headerValues]);
+				_applyColumnMeta(wsHeader, headerColumns, 1);
+
+				// -------------------------------
+				// Items Sheet
+				// -------------------------------
+				const itemsColumns = [
+					{ label: "Start Date", property: "start_date", type: "date", width: 18 },
+					{ label: "Receipt No", property: "receipt_number", width: 18 },
+					{ label: "Claim Type", property: "claim_type_item_id", width: 20 },
+					{ label: "Amount", property: "amount", type: "number", scale: 2, width: 14 },
+					{ label: "Category", property: "staff_category", width: 18 }
+				];
+
+				const itemsLabels = itemsColumns.map(c => c.label);
+
+				const itemRows = items.map(it => {
+					return itemsColumns.map(c => {
+						if (c.type === "date") return that._toDate(it[c.property]);
+						if (c.type === "number") return _num(it[c.property]);
+						return it[c.property] ?? "";
+					});
+				});
+
+				const wsItems = XLSX.utils.aoa_to_sheet([itemsLabels, ...itemRows]);
+				_applyColumnMeta(wsItems, itemsColumns, 1);
+
+				const wb = XLSX.utils.book_new();
+				XLSX.utils.book_append_sheet(wb, wsHeader, "Header");
+				XLSX.utils.book_append_sheet(wb, wsItems, "Items");
+
+				XLSX.writeFile(wb, this._getExcelFileName(), {
+					bookType: "xlsx",
+					cellDates: true,
+					compression: true
+				});
+
+			} catch (e) {
+				console.error("Excel export failed:", e);
+				sap.m.MessageToast.show("Excel export failed.");
+			} finally {
+				oView.setBusy(false);
+			}
 		}
+
+		//End
+
 
 	});
 });
