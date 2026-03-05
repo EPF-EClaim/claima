@@ -711,7 +711,6 @@ sap.ui.define([
         { label: "Location", property: "LOCATION", width: 40 },
         { label: "Claim ID", property: "CLAIM_ID", width: 14 },
         { label: "Claim Sub ID", property: "CLAIM_SUB_ID", width: 14 },
-        { label: "Item No", property: "", width: 14 },
         { label: "% Compensation", property: "PERCENTAGE_COMPENSATION", width: 14 },
         { label: "Account No", property: "ACCOUNT_NO", width: 14 },
         { label: "Amount", property: "AMOUNT", width: 14 },
@@ -769,6 +768,6 @@ sap.ui.define([
         { label: "Dependent Name", property: "DEPENDENT_NAME", width: 14 },
 
       ];
-    }
+    },
   });
 });
