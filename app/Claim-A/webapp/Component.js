@@ -33,7 +33,7 @@ sap.ui.define([
                 this.getRouter().initialize();
 
                 var jQueryScript = document.createElement('script');
-                jQueryScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.10.0/jszip.js');
+                jQueryScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/jszip.js');
                 document.head.appendChild(jQueryScript);
             
             

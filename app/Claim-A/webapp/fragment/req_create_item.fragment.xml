@@ -10,13 +10,18 @@
     <VBox
         id="request_create_item_fragment" 
         backgroundDesign="Solid"
-        class="roundedBox sapUiSmallMargin"
+        class="roundedBox sapUiSmallMargin sapUiTinyMarginTop"
         rowGap="1rem">
         <VBox width="100%" height="100%" rowGap="1rem">
             <OverflowToolbar height="3rem">
                 <Title text="{i18n>req_form_detail_title}" titleStyle="H4" />
                 <ToolbarSpacer />
-                <MenuButton text="{i18n>req_b_save_request}" buttonMode="Split" defaultAction="onSave" beforeMenuOpen="onBeforeMenuOpen" useDefaultActionOnly="true" enabled="{= ${request>/view} !== 'view' }">
+                <MenuButton text="{i18n>req_b_save_request}" 
+                    buttonMode="Split" 
+                    defaultAction="onSave" 
+                    beforeMenuOpen="onBeforeMenuOpen" 
+                    useDefaultActionOnly="true" 
+                    enabled="{= ${request>/view} !== 'view' }">
                     <menu>
                         <Menu itemSelected="onMenuAction">
                             <MenuItem text="{i18n>req_b_save_n_add}" press=".onSaveAddAnother" />
@@ -42,7 +47,47 @@
                                 <!-- Claim Type -->
                                 <form:FormElement label="{i18n>req_i_claim_type}" >
                                     <form:fields>
-                                        <Text text="{request>/req_header/claimtype}" />
+                                        <Text 
+                                            id="i_claim_type"
+                                            text="{request>/req_header/claimtype}"  />
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Claim Type Item -->
+                                <form:FormElement label="{i18n>req_i_claim_type_item}">
+                                    <form:fields>
+                                        <Select 
+                                            id="i_claim_type_item"
+                                            selectedKey="{request>/req_item/claim_type_item_id}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            items="{path: 'request>/claim_type_items',
+                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            <items>
+                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
+                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Number of Days -1 -->
+                                <form:FormElement label="{i18n>req_i_no_of_days}" >
+                                    <form:fields>
+                                        <Text 
+                                            id="i_no_of_days_1"
+                                            text="{request>/req_header/no_of_days}" />
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Purpose -->
+                                <form:FormElement label="{i18n>req_i_purpose}">
+                                    <form:fields>
+                                        <m:Input 
+                                            id="i_purpose" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/purpose}"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -50,11 +95,116 @@
                                 <form:FormElement label="{i18n>req_i_est_amt}">
                                     <form:fields>
                                         <m:Input 
-                                            id="estAmount" 
+                                            id="i_amount" 
                                             type="Number" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/est_amount}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Dependent (Dropdown) -->
+                                <form:FormElement label="{i18n>req_i_dependent}">
+                                    <form:fields>
+                                        <Select 
+                                            id="i_dependant" 
+                                            selectedKey="{request>/req_item/dependent}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            items="{path: 'request>/ZEMP_DEPENDENT',
+                                                    sorter: { path: 'DEPENDENT_NO', descending: false }}">
+                                            <items>
+                                                <core:Item key="{request>DEPENDENT_NO}" 
+                                                        text="{request>LEGAL_NAME}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Remarks -->
+                                <form:FormElement label="{i18n>req_i_remarks}">
+                                    <form:fields>
+                                        <m:TextArea 
+                                            id="i_remarks" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/remark}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Course Title -->
+                                <form:FormElement label="{i18n>req_i_course}">
+                                    <form:fields>
+                                        <m:Input 
+                                            id="i_course_title" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/course}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Sport Representation -->
+                                <form:FormElement label="{i18n>req_i_sport_rep}">
+                                    <form:fields>
+                                        <CheckBox 
+                                            id="i_sport_rep"
+                                            selected="{request>/req_item/sport_rep}" />
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Club Membership -->
+                                <form:FormElement label="{i18n>req_i_club_membership}">
+                                    <form:fields>
+                                        <CheckBox 
+                                            id="i_club_membership"
+                                            selected="{request>/req_item/club_membership}" />
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Attachment 1 -->
+                                <form:FormElement label="{i18n>req_attach1}">
+                                    <form:fields>
+                                        <unified:FileUploader
+                                            id="i_attachment_1"
+                                            change=".onImportChange"
+                                            value="{request>/req_item/doc1}" />
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Category/Purpose (Mobile) -->
+                                <form:FormElement label="{i18n>req_i_cat_purpose}">
+                                    <form:fields>
+                                        <Select 
+                                            id="i_category_purpose" 
+                                            selectedKey="{request>/req_item/cat_purpose}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            items="{path: 'request>/claim_type_items',
+                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            <items>
+                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
+                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Attachment 2 -->
+                                <form:FormElement label="{i18n>req_attach2}">
+                                    <form:fields>
+                                        <unified:FileUploader
+                                            id="i_attachment_2"
+                                            change=".onImportChange"
+                                            value="{request>/req_item/doc2}" />
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Number of Days -2 -->
+                                <form:FormElement label="{i18n>req_i_no_of_days}" >
+                                    <form:fields>
+                                        <Text 
+                                            id="i_no_of_days_2" 
+                                            text="{request>/req_header/no_of_days}" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -72,68 +222,6 @@
                                     </form:fields>
                                 </form:FormElement>
 
-                                <!-- Location -->
-                                <form:FormElement label="{i18n>req_i_location}">
-                                    <form:fields>
-                                        <m:Input 
-                                            id="i_location" 
-                                            textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/location}"/>
-                                    </form:fields>
-                                </form:FormElement>
-
-                                <!-- Attachment 1 -->
-                                <form:FormElement label="{i18n>req_attach1}">
-                                    <form:fields>
-                                        <unified:FileUploader
-                                            id="i_attachment1"
-                                            change=".onImportChange"
-                                            value="{request>/req_item/doc1}" />
-                                    </form:fields>
-                                </form:FormElement>
-
-                                <!-- Estimated Participants -->
-                                <form:FormElement label="{i18n>req_i_estparticipant}"
-                                                visible="{= ${request>/req_header/grptype} === 'group'}">
-                                    <form:fields>
-                                        <m:Input 
-                                            id="estNoOfParticipant" 
-                                            type="Number" 
-                                            textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/est_no_participant}"/>
-                                    </form:fields>
-                                </form:FormElement>
-
-                                <!-- Claim Type Item -->
-                                <form:FormElement label="{i18n>req_i_claim_type_item}">
-                                    <form:fields>
-                                        <Select selectedKey="{request>/req_item/claim_type_item_id}" 
-                                                required="true" 
-                                                forceSelection="false"
-                                                items="{path: 'request>/claim_type_items',
-                                                        sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
-                                            <items>
-                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
-                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
-                                            </items>
-                                        </Select>
-                                    </form:fields>
-                                </form:FormElement>
-
-                                <!-- Cash Advance -->
-                                <form:FormElement label="{i18n>req_i_cashadv}">
-                                    <form:fields>
-                                        <m:Select id="cash_adv" selectedKey="{request>/req_item/cash_advance}" enabled="{= ${request>/view} !== 'view' }">
-                                            <items>
-                                                <core:Item key="no_cashadv" text="No"/>
-                                                <core:Item key="yes_cashadv" text="Yes"/>
-                                            </items>
-                                        </m:Select>
-                                    </form:fields>
-                                </form:FormElement>
-
                                 <!-- End Date -->
                                 <form:FormElement label="{i18n>req_i_end_date}">
                                     <form:fields>
@@ -148,24 +236,384 @@
                                     </form:fields>
                                 </form:FormElement>
 
-                                <!-- Remarks -->
-                                <form:FormElement label="{i18n>req_i_remarks}">
+                                <!-- Vehicle Ownership -->
+                                <form:FormElement label="{i18n>req_i_vehicle}">
                                     <form:fields>
-                                        <m:TextArea 
-                                            id="i_remarks" 
-                                            textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/remark}"/>
+                                        <Select 
+                                            id="i_vehicle_ownership" 
+                                            selectedKey="{request>/req_item/vehicle_ownership}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            items="{path: 'request>/claim_type_items',
+                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            <items>
+                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
+                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                            </items>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 
-                                <!-- Attachment 2 -->
-                                <form:FormElement label="{i18n>req_attach2}">
+                                <!-- Room Type -->
+                                <form:FormElement label="{i18n>req_i_room_type}">
                                     <form:fields>
-                                        <unified:FileUploader
-                                            id="i_attachment2"
-                                            change=".onImportChange"
-                                            value="{request>/req_item/doc2}" />
+                                        <Select 
+                                            id="i_room_type" 
+                                            selectedKey="{request>/req_item/room_type}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            items="{path: 'request>/claim_type_items',
+                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            <items>
+                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
+                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Country -->
+                                <form:FormElement label="{i18n>req_i_country}">
+                                    <form:fields>
+                                        <Select 
+                                            id="i_country" 
+                                            selectedKey="{request>/req_item/country}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            items="{path: 'request>/claim_type_items',
+                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            <items>
+                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
+                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Location -->
+                                <form:FormElement label="{i18n>req_i_location}">
+                                    <form:fields>
+                                        <m:Input 
+                                            id="i_location" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/location}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Negara/Wilayah -->
+                                <form:FormElement label="{i18n>req_i_negara_wilayah}">
+                                    <form:fields>
+                                        <Select 
+                                            id="i_negara_wilayah" 
+                                            selectedKey="{request>/req_item/area}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            items="{path: 'request>/claim_type_items',
+                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            <items>
+                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
+                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Number of Family Member -->
+                                <form:FormElement label="{i18n>req_i_no_of_fami_mem}">
+                                    <form:fields>
+                                        <m:Input 
+                                            id="i_no_of_family_member"
+                                            type="Number"
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/no_of_family_member}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Type of Vehicle -->
+                                <form:FormElement label="{i18n>req_i_vehicle_type}">
+                                    <form:fields>
+                                        <Select 
+                                            id="i_type_of_vehicle"
+                                            selectedKey="{request>/req_item/type_of_vehicle}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            items="{path: 'request>/claim_type_items',
+                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            <items>
+                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
+                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Kilometer -->
+                                <form:FormElement label="{i18n>req_i_kilometer}">
+                                    <form:fields>
+                                        <Text 
+                                            id="i_kilometer"
+                                            text="{request>/req_header/kilometer}" />
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Rate Per Kilometer -->
+                                <form:FormElement label="{i18n>req_i_rate_pkm}">
+                                    <form:fields>
+                                        <Text 
+                                            id="i_rate_per_kilometer"
+                                            text="{request>/req_header/rate_per_kilometer}" />
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Toll -->
+                                <form:FormElement label="{i18n>req_i_toll}">
+                                    <form:fields>
+                                        <m:Input 
+                                            id="i_toll" 
+                                            type="Number" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/toll_amt}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Flight Class -->
+                                <form:FormElement label="{i18n>req_i_flight_class}">
+                                    <form:fields>
+                                        <Select 
+                                            id="i_flight_class"
+                                            selectedKey="{request>/req_item/flight_class}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            items="{path: 'request>/claim_type_items',
+                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            <items>
+                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
+                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Location Type-->
+                                <form:FormElement label="{i18n>req_i_location_type}">
+                                    <form:fields>
+                                        <Select 
+                                            id="i_location_type"
+                                            selectedKey="{request>/req_item/location_type}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            items="{path: 'request>/claim_type_items',
+                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            <items>
+                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
+                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- From State -->
+                                <form:FormElement label="{i18n>req_i_from_state}" >
+                                    <form:fields>
+                                        <Text 
+                                            id="i_from_state"
+                                            text="{request>/req_item/from_state}" />
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- From Location -->
+                                <form:FormElement label="{i18n>req_i_from_location}">
+                                    <form:fields>
+                                        <m:Input 
+                                            id="i_from_location" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/from_location}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- To State -->
+                                <form:FormElement label="{i18n>req_i_to_state}" >
+                                    <form:fields>
+                                        <Text 
+                                            id="i_to_state"
+                                            text="{request>/req_item/to_state}" />
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- To Location -->
+                                <form:FormElement label="{i18n>req_i_to_location}">
+                                    <form:fields>
+                                        <m:Input 
+                                            id="i_to_location" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/to_location}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Mode of Transfer-->
+                                <form:FormElement label="{i18n>req_i_transfer_mode}">
+                                    <form:fields>
+                                        <Select 
+                                            id="i_mode_of_transfer"
+                                            selectedKey="{request>/req_item/mode_of_transfer}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            items="{path: 'request>/claim_type_items',
+                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            <items>
+                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
+                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Tarikh Pindah -->
+                                <form:FormElement label="{i18n>req_i_tarikh_pindah}">
+                                    <form:fields>
+                                        <m:DatePicker
+                                            id="i_tarikh_pindah"
+                                            displayFormat="dd MMM yyyy"
+                                            valueFormat="yyyy-MM-dd"
+                                            placeholder="eg: 01 Jan 1990"
+                                            value="{request>/req_item/tarikh_pindah}"
+                                            textAlign="Begin"
+                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Number of Days -3 -->
+                                <form:FormElement label="{i18n>req_i_no_of_days}" >
+                                    <form:fields>
+                                        <Text 
+                                            id="i_no_of_days_3"
+                                            text="{request>/req_header/no_of_days}" />
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Semenanjung/Sarawak/Sabah -->
+                                <form:FormElement label="{i18n>req_i_sss}">
+                                    <form:fields>
+                                        <Select 
+                                            id="i_sss"
+                                            selectedKey="{request>/req_item/sss}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            items="{path: 'request>/claim_type_items',
+                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            <items>
+                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
+                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Marriage Category -->
+                                <form:FormElement label="{i18n>req_i_marriage}">
+                                    <form:fields>
+                                        <Select 
+                                            id="i_marriage_cat"
+                                            selectedKey="{request>/req_item/marriage_cat}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            items="{path: 'request>/claim_type_items',
+                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            <items>
+                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
+                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Member Cube Eligible -->
+                                <form:FormElement label="{i18n>req_i_cube_eligible}">
+                                    <form:fields>
+                                        <m:Input 
+                                            id="i_cube_eligible" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/cube_eligible}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Departure Time -->
+                                <form:FormElement label="{i18n>req_i_departure_time}">
+                                    <form:fields>
+                                        <m:TimePicker
+                                            id="i_departure_time"
+                                            displayFormat="dd MMM yyyy"
+                                            valueFormat="yyyy-MM-dd"
+                                            placeholder="eg: 01 Jan 1990"
+                                            value="{request>/req_item/departure_time}"
+                                            textAlign="Begin"
+                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Arrival Time -->
+                                <form:FormElement label="{i18n>req_i_arrival_time}">
+                                    <form:fields>
+                                        <m:TimePicker
+                                            id="i_arrival_time"
+                                            displayFormat="dd MMM yyyy"
+                                            valueFormat="yyyy-MM-dd"
+                                            placeholder="eg: 01 Jan 1990"
+                                            value="{request>/req_item/arrival_time}"
+                                            textAlign="Begin"
+                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Lodging Category -->
+                                <form:FormElement label="{i18n>req_i_lodging}">
+                                    <form:fields>
+                                        <Select 
+                                            id="i_lodging_cat"
+                                            selectedKey="{request>/req_item/lodging_cat}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            items="{path: 'request>/claim_type_items',
+                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            <items>
+                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
+                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Estimated Participants -->
+                                <form:FormElement label="{i18n>req_i_estparticipant}"
+                                                visible="{= ${request>/req_header/grptype} === 'group'}">
+                                    <form:fields>
+                                        <m:Input 
+                                            id="i_no_of_participant" 
+                                            type="Number" 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/est_no_participant}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Cash Advance -->
+                                <form:FormElement label="{i18n>req_i_cashadv}">
+                                    <form:fields>
+                                        <m:Select 
+                                            id="i_cash_adv" 
+                                            selectedKey="{request>/req_item/cash_advance}" 
+                                            enabled="{= ${request>/view} !== 'view' }">
+                                            <items>
+                                                <core:Item key="no_cashadv" text="No"/>
+                                                <core:Item key="yes_cashadv" text="Yes"/>
+                                            </items>
+                                        </m:Select>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -208,7 +656,7 @@
                                     change=".onUploadParticipants"
                                     showValueHelp="true"
                                     valueHelpRequest=".onValueHelpRequest"
-                                    enabled="{= ${request>/req_header/grptype} === 'group' || ${request>/view} !== 'view'}">
+                                    enabled="{= ${request>/req_header/grptype} === 'GRP' || ${request>/view} !== 'view'}">
                                     <suggestionColumns>
                                         <Column><Label text="EEID"/></Column>
                                         <Column><Label text="Name"/></Column>
@@ -241,14 +689,21 @@
                         <table:Column width="15rem">
                             <Label text="{i18n>req_p_alloc_amt}"></Label>
                             <table:template>
-                                <Input id="alloc_amount" textAlign="End" value="{request>ALLOCATED_AMOUNT}" type="Number"
+                                <Input 
+                                    id="alloc_amount" 
+                                    textAlign="End" 
+                                    value="{request>ALLOCATED_AMOUNT}" 
+                                    type="Number"
                                     enabled="{= ${request>/view} !== 'view'}"></Input>
                             </table:template>
                         </table:Column>
                         <table:rowActionTemplate>
                             <table:RowAction>
                                 <table:items>
-                                    <table:RowActionItem type="Delete" press="onRowDeleteParticipant" visible="{= ${request>/view} !== 'view' }"></table:RowActionItem>
+                                    <table:RowActionItem 
+                                        type="Delete" 
+                                        press="onRowDeleteParticipant" 
+                                        visible="{= ${request>/view} !== 'view' }" />
                                 </table:items>
                             </table:RowAction>
                         </table:rowActionTemplate>

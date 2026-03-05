@@ -427,8 +427,13 @@
                     "target": "Dashboard"
                 },
                 {
-                    "pattern": "RequestForm",
+                    "pattern": "RequestForm/{request_id}",
                     "name": "RequestForm",
+                    "target": "RequestForm"
+                },
+                {
+                    "pattern": "RequestForm",
+                    "name": "RequestFormNew",
                     "target": "RequestForm"
                 },
                 {
