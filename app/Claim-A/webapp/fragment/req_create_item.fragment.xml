@@ -72,19 +72,21 @@
                                 </form:FormElement>
 
                                 <!-- Number of Days -1 -->
-                                <form:FormElement label="{i18n>req_i_no_of_days}" >
+                                <form:FormElement label="{i18n>req_i_no_of_days}"
+                                            visible="false"
+                                            id="i_no_of_days_1" >
                                     <form:fields>
                                         <Text 
-                                            id="i_no_of_days_1"
                                             text="{request>/req_header/no_of_days}" />
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Purpose -->
-                                <form:FormElement label="{i18n>req_i_purpose}">
+                                <form:FormElement label="{i18n>req_i_purpose}"
+                                            visible="false"
+                                            id="i_purpose"  >
                                     <form:fields>
                                         <m:Input 
-                                            id="i_purpose" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/purpose}"/>
@@ -92,10 +94,11 @@
                                 </form:FormElement>
 
                                 <!-- Estimated Amount -->
-                                <form:FormElement label="{i18n>req_i_est_amt}">
+                                <form:FormElement label="{i18n>req_i_est_amt}"
+                                            visible="false"
+                                            id="i_amount"  >
                                     <form:fields>
                                         <m:Input 
-                                            id="i_amount" 
                                             type="Number" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
@@ -104,10 +107,11 @@
                                 </form:FormElement>
 
                                 <!-- Dependent (Dropdown) -->
-                                <form:FormElement label="{i18n>req_i_dependent}">
+                                <form:FormElement label="{i18n>req_i_dependent}"
+                                            visible="false"
+                                            id="i_dependant"  >
                                     <form:fields>
                                         <Select 
-                                            id="i_dependant" 
                                             selectedKey="{request>/req_item/dependent}" 
                                             required="true" 
                                             forceSelection="false"
@@ -122,10 +126,11 @@
                                 </form:FormElement>
 
                                 <!-- Remarks -->
-                                <form:FormElement label="{i18n>req_i_remarks}">
+                                <form:FormElement label="{i18n>req_i_remarks}"
+                                            visible="false"
+                                            id="i_remarks"  >
                                     <form:fields>
                                         <m:TextArea 
-                                            id="i_remarks" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/remark}"/>
@@ -133,10 +138,11 @@
                                 </form:FormElement>
 
                                 <!-- Course Title -->
-                                <form:FormElement label="{i18n>req_i_course}">
+                                <form:FormElement label="{i18n>req_i_course}"
+                                            visible="false"
+                                            id="i_course_title"  >
                                     <form:fields>
                                         <m:Input 
-                                            id="i_course_title" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/course}"/>
@@ -144,38 +150,42 @@
                                 </form:FormElement>
 
                                 <!-- Sport Representation -->
-                                <form:FormElement label="{i18n>req_i_sport_rep}">
+                                <form:FormElement label="{i18n>req_i_sport_rep}"
+                                            visible="false"
+                                            id="i_sport_rep" >
                                     <form:fields>
                                         <CheckBox 
-                                            id="i_sport_rep"
                                             selected="{request>/req_item/sport_rep}" />
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Club Membership -->
-                                <form:FormElement label="{i18n>req_i_club_membership}">
+                                <form:FormElement label="{i18n>req_i_club_membership}"
+                                            visible="false"
+                                            id="i_club_membership" >
                                     <form:fields>
                                         <CheckBox 
-                                            id="i_club_membership"
                                             selected="{request>/req_item/club_membership}" />
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Attachment 1 -->
-                                <form:FormElement label="{i18n>req_attach1}">
+                                <form:FormElement label="{i18n>req_attach1}"
+                                            visible="false"
+                                            id="i_attachment_1" >
                                     <form:fields>
                                         <unified:FileUploader
-                                            id="i_attachment_1"
                                             change=".onImportChange"
                                             value="{request>/req_item/doc1}" />
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Category/Purpose (Mobile) -->
-                                <form:FormElement label="{i18n>req_i_cat_purpose}">
+                                <form:FormElement label="{i18n>req_i_cat_purpose}"
+                                            visible="false"
+                                            id="i_category_purpose"  >
                                     <form:fields>
                                         <Select 
-                                            id="i_category_purpose" 
                                             selectedKey="{request>/req_item/cat_purpose}" 
                                             required="true" 
                                             forceSelection="false"
@@ -190,29 +200,32 @@
                                 </form:FormElement>
 
                                 <!-- Attachment 2 -->
-                                <form:FormElement label="{i18n>req_attach2}">
+                                <form:FormElement label="{i18n>req_attach2}"
+                                            visible="false"
+                                            id="i_attachment_2" >
                                     <form:fields>
                                         <unified:FileUploader
-                                            id="i_attachment_2"
                                             change=".onImportChange"
                                             value="{request>/req_item/doc2}" />
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Number of Days -2 -->
-                                <form:FormElement label="{i18n>req_i_no_of_days}" >
+                                <form:FormElement label="{i18n>req_i_no_of_days}"
+                                            visible="false"
+                                            id="i_no_of_days_2"  >
                                     <form:fields>
                                         <Text 
-                                            id="i_no_of_days_2" 
                                             text="{request>/req_header/no_of_days}" />
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Start Date -->
-                                <form:FormElement label="{i18n>req_i_start_date}">
+                                <form:FormElement label="{i18n>req_i_start_date}"
+                                            visible="false"
+                                            id="i_start_date" >
                                     <form:fields>
                                         <m:DatePicker
-                                            id="i_start_date"
                                             displayFormat="dd MMM yyyy"
                                             valueFormat="yyyy-MM-dd"
                                             placeholder="eg: 01 Jan 1990"
@@ -223,10 +236,11 @@
                                 </form:FormElement>
 
                                 <!-- End Date -->
-                                <form:FormElement label="{i18n>req_i_end_date}">
+                                <form:FormElement label="{i18n>req_i_end_date}"
+                                            visible="false"
+                                            id="i_end_date" >
                                     <form:fields>
                                         <m:DatePicker
-                                            id="i_end_date"
                                             displayFormat="dd MMM yyyy"
                                             valueFormat="yyyy-MM-dd"
                                             placeholder="eg: 01 Jan 1990"
@@ -237,10 +251,11 @@
                                 </form:FormElement>
 
                                 <!-- Vehicle Ownership -->
-                                <form:FormElement label="{i18n>req_i_vehicle}">
+                                <form:FormElement label="{i18n>req_i_vehicle}"
+                                            visible="false"
+                                            id="i_vehicle_ownership"  >
                                     <form:fields>
                                         <Select 
-                                            id="i_vehicle_ownership" 
                                             selectedKey="{request>/req_item/vehicle_ownership}" 
                                             required="true" 
                                             forceSelection="false"
@@ -255,10 +270,11 @@
                                 </form:FormElement>
 
                                 <!-- Room Type -->
-                                <form:FormElement label="{i18n>req_i_room_type}">
+                                <form:FormElement label="{i18n>req_i_room_type}"
+                                            visible="false"
+                                            id="i_room_type"  >
                                     <form:fields>
                                         <Select 
-                                            id="i_room_type" 
                                             selectedKey="{request>/req_item/room_type}" 
                                             required="true" 
                                             forceSelection="false"
@@ -273,10 +289,11 @@
                                 </form:FormElement>
 
                                 <!-- Country -->
-                                <form:FormElement label="{i18n>req_i_country}">
+                                <form:FormElement label="{i18n>req_i_country}"
+                                            visible="false"
+                                            id="i_country"  >
                                     <form:fields>
                                         <Select 
-                                            id="i_country" 
                                             selectedKey="{request>/req_item/country}" 
                                             required="true" 
                                             forceSelection="false"
@@ -291,10 +308,11 @@
                                 </form:FormElement>
 
                                 <!-- Location -->
-                                <form:FormElement label="{i18n>req_i_location}">
+                                <form:FormElement label="{i18n>req_i_location}"
+                                            visible="false"
+                                            id="i_location"  >
                                     <form:fields>
                                         <m:Input 
-                                            id="i_location" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/location}"/>
@@ -302,10 +320,11 @@
                                 </form:FormElement>
 
                                 <!-- Negara/Wilayah -->
-                                <form:FormElement label="{i18n>req_i_negara_wilayah}">
+                                <form:FormElement label="{i18n>req_i_negara_wilayah}"
+                                            visible="false"
+                                            id="i_negara_wilayah"  >
                                     <form:fields>
                                         <Select 
-                                            id="i_negara_wilayah" 
                                             selectedKey="{request>/req_item/area}" 
                                             required="true" 
                                             forceSelection="false"
@@ -320,10 +339,11 @@
                                 </form:FormElement>
 
                                 <!-- Number of Family Member -->
-                                <form:FormElement label="{i18n>req_i_no_of_fami_mem}">
+                                <form:FormElement label="{i18n>req_i_no_of_fami_mem}"
+                                            visible="false"
+                                            id="i_no_of_family_member" >
                                     <form:fields>
                                         <m:Input 
-                                            id="i_no_of_family_member"
                                             type="Number"
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
@@ -332,10 +352,11 @@
                                 </form:FormElement>
 
                                 <!-- Type of Vehicle -->
-                                <form:FormElement label="{i18n>req_i_vehicle_type}">
+                                <form:FormElement label="{i18n>req_i_vehicle_type}"
+                                            visible="false"
+                                            id="i_type_of_vehicle" >
                                     <form:fields>
                                         <Select 
-                                            id="i_type_of_vehicle"
                                             selectedKey="{request>/req_item/type_of_vehicle}" 
                                             required="true" 
                                             forceSelection="false"
@@ -350,28 +371,31 @@
                                 </form:FormElement>
 
                                 <!-- Kilometer -->
-                                <form:FormElement label="{i18n>req_i_kilometer}">
+                                <form:FormElement label="{i18n>req_i_kilometer}"
+                                            visible="false"
+                                            id="i_kilometer" >
                                     <form:fields>
                                         <Text 
-                                            id="i_kilometer"
                                             text="{request>/req_header/kilometer}" />
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Rate Per Kilometer -->
-                                <form:FormElement label="{i18n>req_i_rate_pkm}">
+                                <form:FormElement label="{i18n>req_i_rate_pkm}"
+                                            visible="false"
+                                            id="i_rate_per_kilometer" >
                                     <form:fields>
                                         <Text 
-                                            id="i_rate_per_kilometer"
                                             text="{request>/req_header/rate_per_kilometer}" />
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Toll -->
-                                <form:FormElement label="{i18n>req_i_toll}">
+                                <form:FormElement label="{i18n>req_i_toll}"
+                                            visible="false"
+                                            id="i_toll"  >
                                     <form:fields>
                                         <m:Input 
-                                            id="i_toll" 
                                             type="Number" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
@@ -380,10 +404,11 @@
                                 </form:FormElement>
 
                                 <!-- Flight Class -->
-                                <form:FormElement label="{i18n>req_i_flight_class}">
+                                <form:FormElement label="{i18n>req_i_flight_class}"
+                                            visible="false"
+                                            id="i_flight_class" >
                                     <form:fields>
                                         <Select 
-                                            id="i_flight_class"
                                             selectedKey="{request>/req_item/flight_class}" 
                                             required="true" 
                                             forceSelection="false"
@@ -398,10 +423,11 @@
                                 </form:FormElement>
 
                                 <!-- Location Type-->
-                                <form:FormElement label="{i18n>req_i_location_type}">
+                                <form:FormElement label="{i18n>req_i_location_type}"
+                                            visible="false"
+                                            id="i_location_type" >
                                     <form:fields>
                                         <Select 
-                                            id="i_location_type"
                                             selectedKey="{request>/req_item/location_type}" 
                                             required="true" 
                                             forceSelection="false"
@@ -416,19 +442,21 @@
                                 </form:FormElement>
 
                                 <!-- From State -->
-                                <form:FormElement label="{i18n>req_i_from_state}" >
+                                <form:FormElement label="{i18n>req_i_from_state}"
+                                            visible="false"
+                                            id="i_from_state" >
                                     <form:fields>
                                         <Text 
-                                            id="i_from_state"
                                             text="{request>/req_item/from_state}" />
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- From Location -->
-                                <form:FormElement label="{i18n>req_i_from_location}">
+                                <form:FormElement label="{i18n>req_i_from_location}"
+                                            visible="false"
+                                            id="i_from_location"  >
                                     <form:fields>
                                         <m:Input 
-                                            id="i_from_location" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/from_location}"/>
@@ -436,19 +464,21 @@
                                 </form:FormElement>
 
                                 <!-- To State -->
-                                <form:FormElement label="{i18n>req_i_to_state}" >
+                                <form:FormElement label="{i18n>req_i_to_state}"
+                                            visible="false"
+                                            id="i_to_state" >
                                     <form:fields>
                                         <Text 
-                                            id="i_to_state"
                                             text="{request>/req_item/to_state}" />
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- To Location -->
-                                <form:FormElement label="{i18n>req_i_to_location}">
+                                <form:FormElement label="{i18n>req_i_to_location}"
+                                            visible="false"
+                                            id="i_to_location"  >
                                     <form:fields>
                                         <m:Input 
-                                            id="i_to_location" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/to_location}"/>
@@ -456,10 +486,11 @@
                                 </form:FormElement>
 
                                 <!-- Mode of Transfer-->
-                                <form:FormElement label="{i18n>req_i_transfer_mode}">
+                                <form:FormElement label="{i18n>req_i_transfer_mode}"
+                                            visible="false"
+                                            id="i_mode_of_transfer" >
                                     <form:fields>
                                         <Select 
-                                            id="i_mode_of_transfer"
                                             selectedKey="{request>/req_item/mode_of_transfer}" 
                                             required="true" 
                                             forceSelection="false"
@@ -474,10 +505,11 @@
                                 </form:FormElement>
 
                                 <!-- Tarikh Pindah -->
-                                <form:FormElement label="{i18n>req_i_tarikh_pindah}">
+                                <form:FormElement label="{i18n>req_i_tarikh_pindah}"
+                                            visible="false"
+                                            id="i_tarikh_pindah" >
                                     <form:fields>
                                         <m:DatePicker
-                                            id="i_tarikh_pindah"
                                             displayFormat="dd MMM yyyy"
                                             valueFormat="yyyy-MM-dd"
                                             placeholder="eg: 01 Jan 1990"
@@ -488,19 +520,21 @@
                                 </form:FormElement>
 
                                 <!-- Number of Days -3 -->
-                                <form:FormElement label="{i18n>req_i_no_of_days}" >
+                                <form:FormElement label="{i18n>req_i_no_of_days}"
+                                            visible="false"
+                                            id="i_no_of_days_3" >
                                     <form:fields>
                                         <Text 
-                                            id="i_no_of_days_3"
                                             text="{request>/req_header/no_of_days}" />
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- Semenanjung/Sarawak/Sabah -->
-                                <form:FormElement label="{i18n>req_i_sss}">
+                                <form:FormElement label="{i18n>req_i_sss}"
+                                            visible="false"
+                                            id="i_sss" >
                                     <form:fields>
                                         <Select 
-                                            id="i_sss"
                                             selectedKey="{request>/req_item/sss}" 
                                             required="true" 
                                             forceSelection="false"
@@ -515,10 +549,11 @@
                                 </form:FormElement>
 
                                 <!-- Marriage Category -->
-                                <form:FormElement label="{i18n>req_i_marriage}">
+                                <form:FormElement label="{i18n>req_i_marriage}"
+                                            visible="false"
+                                            id="i_marriage_cat" >
                                     <form:fields>
                                         <Select 
-                                            id="i_marriage_cat"
                                             selectedKey="{request>/req_item/marriage_cat}" 
                                             required="true" 
                                             forceSelection="false"
@@ -533,10 +568,11 @@
                                 </form:FormElement>
 
                                 <!-- Member Cube Eligible -->
-                                <form:FormElement label="{i18n>req_i_cube_eligible}">
+                                <form:FormElement label="{i18n>req_i_cube_eligible}"
+                                            visible="false"
+                                            id="i_cube_eligible"  >
                                     <form:fields>
                                         <m:Input 
-                                            id="i_cube_eligible" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/cube_eligible}"/>
@@ -544,10 +580,11 @@
                                 </form:FormElement>
 
                                 <!-- Departure Time -->
-                                <form:FormElement label="{i18n>req_i_departure_time}">
+                                <form:FormElement label="{i18n>req_i_departure_time}"
+                                            visible="false"
+                                            id="i_departure_time">
                                     <form:fields>
                                         <m:TimePicker
-                                            id="i_departure_time"
                                             displayFormat="dd MMM yyyy"
                                             valueFormat="yyyy-MM-dd"
                                             placeholder="eg: 01 Jan 1990"
@@ -558,10 +595,11 @@
                                 </form:FormElement>
 
                                 <!-- Arrival Time -->
-                                <form:FormElement label="{i18n>req_i_arrival_time}">
+                                <form:FormElement label="{i18n>req_i_arrival_time}"
+                                            visible="false"
+                                            id="i_arrival_time">
                                     <form:fields>
                                         <m:TimePicker
-                                            id="i_arrival_time"
                                             displayFormat="dd MMM yyyy"
                                             valueFormat="yyyy-MM-dd"
                                             placeholder="eg: 01 Jan 1990"
@@ -572,10 +610,11 @@
                                 </form:FormElement>
 
                                 <!-- Lodging Category -->
-                                <form:FormElement label="{i18n>req_i_lodging}">
+                                <form:FormElement label="{i18n>req_i_lodging}"
+                                            visible="false"
+                                            id="i_lodging_cat">
                                     <form:fields>
                                         <Select 
-                                            id="i_lodging_cat"
                                             selectedKey="{request>/req_item/lodging_cat}" 
                                             required="true" 
                                             forceSelection="false"
@@ -591,10 +630,10 @@
 
                                 <!-- Estimated Participants -->
                                 <form:FormElement label="{i18n>req_i_estparticipant}"
-                                                visible="{= ${request>/req_header/grptype} === 'group'}">
+                                            visible="false"
+                                            id="i_no_of_participant" >
                                     <form:fields>
                                         <m:Input 
-                                            id="i_no_of_participant" 
                                             type="Number" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
@@ -603,10 +642,11 @@
                                 </form:FormElement>
 
                                 <!-- Cash Advance -->
-                                <form:FormElement label="{i18n>req_i_cashadv}">
+                                <form:FormElement label="{i18n>req_i_cashadv}"
+                                            visible="false"
+                                            id="i_cash_adv" >
                                     <form:fields>
                                         <m:Select 
-                                            id="i_cash_adv" 
                                             selectedKey="{request>/req_item/cash_advance}" 
                                             enabled="{= ${request>/view} !== 'view' }">
                                             <items>

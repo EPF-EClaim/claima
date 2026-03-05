@@ -35,7 +35,13 @@
                     <OverflowToolbar height="3rem">
                         <Title text="{i18n>req_form_header_title}" titleStyle="H3"/>
                         <ToolbarSpacer />
-                        <Button type="Default" icon="sap-icon://cause" />
+                        <Button
+                            type="Default"
+                            icon="sap-icon://excel-attachment"
+                            text="Download"
+                            id="PARDownloadExcelBtn"
+                            press=".onDownloadExcelReport"
+                        />
                     </OverflowToolbar>
                     <form:Form 
                         id="req_header1"

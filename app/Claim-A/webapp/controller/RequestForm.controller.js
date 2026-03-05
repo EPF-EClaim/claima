@@ -24,32 +24,32 @@ sap.ui.define([
 			this._fragments = Object.create(null);
 
 			// URL Access
-			const oRouter = this.getOwnerComponent().getRouter();
-			oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
+			// const oRouter = this.getOwnerComponent().getRouter();
+			// oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
 		},
 
 		/* =========================================================
 		* URL Access
 		* ======================================================= */
 		
-		_onMatched(oEvent) {
-			let sRequestId = oEvent.getParameter("arguments").request_id;
+		// _onMatched(oEvent) {
+		// 	let sRequestId = oEvent.getParameter("arguments").request_id;
 
-			try { sRequestId = decodeURIComponent(sRequestId); } catch (e) {}
+		// 	try { sRequestId = decodeURIComponent(sRequestId); } catch (e) {}
 
-			console.log("Deep-link request ID:", sRequestId);
+		// 	console.log("Deep-link request ID:", sRequestId);
 
-			const oReqModel = this.getOwnerComponent().getModel("request");
-			oReqModel.setProperty("/req_header/reqid", sRequestId);
+		// 	const oReqModel = this.getOwnerComponent().getModel("request");
+		// 	oReqModel.setProperty("/req_header/reqid", sRequestId);
 
-			// 3. Load data for this request ID
-			this._loadRequest(sRequestId);
-		},
+		// 	// 3. Load data for this request ID
+		// 	this._loadRequest(sRequestId);
+		// },
 
-		_loadRequest: function (sReqId) {
-			this._getHeader(sReqId);
-			this._getItemList(sReqId);
-		},
+		// _loadRequest: function (sReqId) {
+		// 	this._getHeader(sReqId);
+		// 	this._getItemList(sReqId);
+		// },
 
 		/* =========================================================
 		* Helpers: Model
@@ -372,7 +372,7 @@ sap.ui.define([
 
 		async onAddItem(oEvent) {
 			await this._showItemCreate("create");
-			this._getClaimTypeItemSelection();
+			this._loadSelections();
 
 			const oReq = this._getReqModel();
 			const data = oReq.getData();
@@ -1228,8 +1228,7 @@ sap.ui.define([
 				})],
 				{
 					$$ownRequest: true,
-					$$groupId: "$auto",
-					$$top: 1
+					$$groupId: "$auto"
 				}
 			);
 
@@ -1237,10 +1236,32 @@ sap.ui.define([
 				const aCtx = await oListBinding.requestContexts(0, 1);
 				const a = aCtx[0]?.getObject();
 
-				if (a.PREAPPROVAL_AMOUNT == null) {a.PREAPPROVAL_AMOUNT = 0.0;}
+				oReq.setProperty("/req_header", {
+					purpose        : a.OBJECTIVE_PURPOSE || "",
+					reqtype        : a.REQUEST_TYPE_DESC || "",
+					tripstartdate  : a.TRIP_START_DATE || "",
+					tripenddate    : a.TRIP_END_DATE || "",
+					eventstartdate : a.EVENT_START_DATE || "",
+					eventenddate   : a.EVENT_END_DATE || "",
+					grptype        : a.IND_OR_GROUP_DESC || "",
+					location       : a.LOCATION || "",
+					transport      : a.TYPE_OF_TRANSPORTATION || "",
+					altcostcenter  : a.ALTERNATE_COST_CENTER || "",
+					doc1           : a.ATTACHMENT1 || "",
+					doc2           : a.ATTACHMENT2 || "",
+					comment        : a.REMARK || "",
+					eventdetail1   : a.EVENT_FIELD1 || "",
+					eventdetail2   : a.EVENT_FIELD2 || "",
+					eventdetail3   : a.EVENT_FIELD3 || "",
+					eventdetail4   : a.EVENT_FIELD4 || "",
+					reqid          : a.REQUEST_ID || "",
+					reqstatus      : a.STATUS_DESC || "",
+					costcenter     : a.COST_CENTER || "",
+					cashadvamt     : a.CASH_ADVANCE || 0,
+					reqamt         : a.PREAPPROVAL_AMOUNT || 0,
+					claimtype	   : a.CLAIM_TYPE_DESC || ""
+                });
 
-				oReq.setProperty("/req_header", a[0]); 
-				return a;
 			} catch (err) {
 				console.error("OData V4 bindList failed:", err);
 				oReq.setProperty("/req_header", a); 
@@ -1385,7 +1406,7 @@ sap.ui.define([
 		async _getClaimTypeItemSelection() {
 			const oReq   = this._getReqModel();
 			const data   = oReq.getData();
-			const claim_type_id = data.req_header.claimtype;
+			const claim_type_id = data.req_header.claimtype_id;
 
 			if (!claim_type_id) {
 				oReq.setProperty("/claim_type_items", []);
@@ -1578,13 +1599,14 @@ sap.ui.define([
 		* Excel Files Logics 
 		* ======================================================= */
 
-		onExport: function() {
+		onExport() {
 			var oModel = this.getView().getModel("request");
 			var aData = oModel.getProperty("/participant") || [];
 			
 			// Logic: If the array is empty OR the first row's EEID is falsy, export an empty list.
 			// Otherwise, export the full list.
 			var aExportData = (aData.length > 0 && aData[0].PARTICIPANTS_ID) ? aData : [];
+			var filename = this._getExcelFileName("participant");
 
 			var aCols = this._createColumnConfig();
 			var oSettings = {
@@ -1592,7 +1614,7 @@ sap.ui.define([
 					columns: aCols 
 				},
 				dataSource: aExportData,
-				fileName: "Pre-Approval Request Participant Data.xlsx",
+				fileName: filename,
 				worker: false // Set to false for small datasets or if debugging
 			};
 
@@ -1606,7 +1628,7 @@ sap.ui.define([
 				});
 		},
 
-        _createColumnConfig: function() {
+        _createColumnConfig() {
             return [
                 { label: 'PARTICIPANTS_ID', property: 'PARTICIPANTS_ID', type: 'string' },
                 { label: 'PARTICIPANT_NAME', property: 'PARTICIPANT_NAME', type: 'string' },
@@ -1635,6 +1657,420 @@ sap.ui.define([
 			}.bind(this);
 
 			reader.readAsArrayBuffer(file);
+		},
+		
+		_sanitizeFileName(s) {
+			return (s || "")
+				.replace(/[\\/:*?"<>|]/g, "_")
+				.replace(/\s+/g, " ")
+				.trim()
+				.substring(0, 80);
+		},
+
+		_getTodayString() {
+			const d = new Date();
+			const y = d.getFullYear();
+			const m = String(d.getMonth() + 1).padStart(2, "0");
+			const day = String(d.getDate()).padStart(2, "0");
+			return `${y}-${m}-${day}`;
+		},
+
+		_getExcelFileName(is_participant) {
+			if (is_participant == 'participant') {
+				const input = this.getOwnerComponent().getModel("request")?.getData() || {};
+				const id = input?.req_header?.reqid || "";
+				const subid = input?.req_item?.req_subid || "";
+
+				return this._sanitizeFileName(`Pre_Approval_Request_${id}_${subid}_Participant_Data.xlsx`);
+			} else {
+				const input = this.getOwnerComponent().getModel("request")?.getData() || {};
+				const id = input?.req_header?.reqid || "";
+
+				return this._sanitizeFileName(`Pre_Approval_Request_${id}_${this._getTodayString()}.xlsx`);
+			}
+		},
+
+		_toDate(val) {
+
+			if (!val) return null;
+
+			// ISO 8601 with or without milliseconds
+			if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}T/i.test(val)) {
+				const d = new Date(val);
+				if (!isNaN(d.getTime())) {
+					return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+				}
+				return null;
+			}
+
+			// YYYY-MM-DD
+			if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+				const [y, m, d] = val.split("-").map(Number);
+				return new Date(Date.UTC(y, m - 1, d));
+			}
+
+			// JS Date
+			if (val instanceof Date && !isNaN(val.getTime())) {
+				return new Date(Date.UTC(val.getFullYear(), val.getMonth(), val.getDate()));
+			}
+
+			// SAP Edm.Date { year, month, day }
+			if (typeof val === "object" && val.year && val.month && val.day) {
+				return new Date(Date.UTC(val.year, val.month - 1, val.day));
+			}
+
+			return null;
+		},
+
+		async onDownloadExcelReport() {
+			const oView = this.getView();
+			const XLSX = window.XLSX;
+			const that = this;
+
+			function _num(val) {
+				if (val === null || val === undefined || val === "") return null;
+				const n = Number(val);
+				return Number.isFinite(n) ? n : null;
+			}
+
+			function _applyColumnMeta(ws, columns, startDataRow) {
+				ws["!cols"] = columns.map(c => ({ wch: c.width || 12 }));
+
+				const ref = ws["!ref"];
+				if (!ref) return;
+
+				const range = XLSX.utils.decode_range(ref);
+
+				for (let c = 0; c < columns.length; c++) {
+					const meta = columns[c];
+					if (!meta.type) continue;
+
+					for (let r = startDataRow; r <= range.e.r; r++) {
+						const addr = XLSX.utils.encode_cell({ c, r });
+						const cell = ws[addr];
+						if (!cell) continue;
+
+						// FORCE DATE FORMAT YYYY-MM-DD
+
+						if (meta.type === "date") {
+							const dt = that._toDate(cell.v);
+
+							if (dt) {
+								cell.t = "d";
+								cell.v = dt;
+								cell.z = "yyyy-mm-dd";
+							} else {
+								// clear invalid date to avoid showing 1970-01-01
+								delete ws[addr];
+							}
+						}
+
+
+						// Numbers
+						if (meta.type === "number") {
+							const n = _num(cell.v);
+							if (n === null) {
+								delete ws[addr];
+							} else {
+								cell.t = "n";
+								cell.v = n;
+								cell.z = meta.scale === 2 ? "#,##0.00" : "#,##0";
+							}
+						}
+					}
+				}
+			}
+
+			try {
+				oView.setBusy(true);
+
+				const input = this.getOwnerComponent().getModel("request")?.getData();
+				if (!input) {
+					sap.m.MessageToast.show("No request data loaded.");
+					return;
+				}
+
+				const header = input.req_header || {};
+				const items = input.req_item_rows || [];
+				const item_part = await this._getParticipantsList(header.reqid);
+
+				// -------------------------------
+				// Build Header Row
+				// -------------------------------
+				const headerRow = {
+					"Request ID"				: header.reqid,
+					"Purpose"					: header.purpose,
+					"Trip Start Date"			: header.tripstartdate,
+					"Trip End Date"				: header.tripenddate,
+					"Event Start Date"			: header.eventstartdate,
+					"Event End Date"			: header.eventenddate,
+					"Location"					: header.location 				|| "",
+					"Individual/Group"			: header.grptype 				|| "",
+					"Type of Transportation"	: header.transport 				|| "",
+					"Request Status"			: header.reqstatus,
+					"Cost Center"				: header.cc,
+					"Alternate Cost Center"		: header.acc 					|| "-",
+					"Cash Advance (MYR)"		: header.cashadvamt,
+					"Pre Approval Amount (MYR)"	: header.reqamt,
+					"Request Type"				: header.reqtype,
+					"Comment"					: header.comment 				|| "",
+					"Claim Type"				: header.claimtype,
+				};
+
+				const headerColumns = [
+					{ label: "Request ID", 					property: "Request ID", 				type: "string" },
+					{ label: "Purpose", 					property: "Purpose", 					type: "string" },
+					{ label: "Trip Start Date", 			property: "Trip Start Date", 			type: "date" },
+					{ label: "Trip End Date", 				property: "Trip End Date", 				type: "date" },
+					{ label: "Event Start Date", 			property: "Event Start Date", 			type: "date" },
+					{ label: "Event End Date", 				property: "Event End Date", 			type: "date" },
+					{ label: "Location", 					property: "Location", 					type: "string" },
+					{ label: "Individual/Group", 			property: "Individual/Group", 			type: "string" },
+					{ label: "Type of Transportation",		property: "Type of Transportation",		type: "string" },
+					{ label: "Request Status",		 		property: "Request Status",		 		type: "string" },
+					{ label: "Cost Center", 				property: "Cost Center", 				type: "string" },
+					{ label: "Alternate Cost Center",		property: "Alternate Cost Center",		type: "string" },
+					{ label: "Cash Advance (MYR)",			property: "Cash Advance (MYR)",		 	type: "number", scale: 2 },
+					{ label: "Pre Approval Amount (MYR)", 	property: "Pre Approval Amount (MYR)", 	type: "number", scale: 2 },
+					{ label: "Request Type", 				property: "Request Type", 			 	type: "string" },
+					{ label: "Comment", 					property: "Comment", 				 	type: "string" },
+					{ label: "Claim Type", 					property: "Claim Type", 				type: "string" }
+				];
+
+				const headerLabels = headerColumns.map(c => c.label);
+				const headerValues = headerColumns.map(c => headerRow[c.property] ?? "");
+
+				const wsHeader = XLSX.utils.aoa_to_sheet([headerLabels, headerValues]);
+				_applyColumnMeta(wsHeader, headerColumns, 1);
+
+				// -------------------------------
+				// Items Sheet
+				// -------------------------------
+				const itemsColumns = [
+					{ label: "Employee ID",						property: "EMP_ID",							type: "string" },
+					{ label: "Request ID",						property: "REQUEST_ID",						type: "string" },
+					{ label: "Request Sub ID",					property: "REQUEST_SUB_ID",					type: "string" },
+					{ label: "Claim Type ID",					property: "CLAIM_TYPE_ID",					type: "string" },
+					{ label: "Claim Type Desc",					property: "CLAIM_TYPE_DESC",				type: "string" },
+					{ label: "GL Account",						property: "GL_ACCOUNT",						type: "string" },
+					{ label: "Claim Type Item ID",				property: "CLAIM_TYPE_ITEM_ID",				type: "string" },
+					{ label: "Claim Type Item Desc",			property: "CLAIM_TYPE_ITEM_DESC",			type: "string" },
+					{ label: "Cost Center",						property: "COST_CENTER",					type: "string" },
+					{ label: "Material Code",					property: "MATERIAL_CODE",					type: "string" },
+					{ label: "Number of days",					property: "NO_OF_DAYS",						type: "number" },
+					{ label: "Purpose",							property: "PURPOSE",						type: "string" },
+					{ label: "Est. Amount (MYR)",				property: "EST_AMOUNT",						type: "string" },
+					{ label: "Dependent",						property: "DEPENDENT",						type: "string" },
+					{ label: "Dependent Name",					property: "LEGAL_NAME",						type: "string" },
+					{ label: "Dependent Relationship",			property: "RELATIONSHIP",					type: "string" },
+					{ label: "Remarks/Justification",			property: "REMARK",							type: "string" },
+					{ label: "Course Title",					property: "COURSE TITLE",					type: "string" },
+					{ label: "KWSP Sport Represent",			property: "KWSP_SPORTS_REPRESENTATION",		type: "string" },
+					{ label: "Sport Represent Desc",			property: "SPORTS_REPRESENTATION_DESC",		type: "string" },
+					{ label: "Declare Club Membership",			property: "DECLARE_CLUB_MEMBERSHIP",		type: "string" },
+					{ label: "Category/Purpose (Mobile) ID",	property: "MOBILE_CATEGORY_PURPOSE_ID",		type: "string" },
+					{ label: "Category/Purpose (Mobile) Desc",	property: "MOBILE_CATEGORY_PURPOSE_DESC",	type: "string" },
+					{ label: "Attachment 1",					property: "ATTACHMENT 1",					type: "string" },
+					{ label: "Attachment 2",					property: "ATTACHMENT 2",					type: "string" },
+					{ label: "Start Date",						property: "START DATE",						type: "date" },
+					{ label: "End Date",						property: "END DATE",						type: "date" },
+					{ label: "Vehicle Ownership ID",			property: "VEHICLE OWNERSHIP_ID",			type: "string" },
+					{ label: "Vehicle Ownership Desc",			property: "VEHICLE OWNERSHIP_DESC",			type: "string" },
+					{ label: "Room Type",						property: "ROOM TYPE",						type: "string" },
+					{ label: "Room Type Desc",					property: "ROOM_TYPE_DESC",					type: "string" },
+					{ label: "Country",							property: "COUNTRY",						type: "string" },
+					{ label: "Location",						property: "LOCATION",						type: "string" },
+					{ label: "Negara/Wilayah",					property: "AREA",							type: "string" },
+					{ label: "Description",						property: "AREA_DESC",						type: "string" },
+					{ label: "Number of Family Member",			property: "FAMILY_COUNT",					type: "number" },
+					{ label: "Vehicle Type",					property: "VEHICLE_TYPE",					type: "string" },
+					{ label: "vehicle Type Desc",				property: "VEHICLE_TYPE_DESC",				type: "string" },
+					{ label: "Kilometer",						property: "KILOMETER",						type: "number" },
+					{ label: "Rate per KM ID",					property: "RATE PER KM (RATE_KM_ID)",		type: "string" },
+					{ label: "Rate",							property: "RATE",							type: "number" },
+					{ label: "Toll",							property: "TOLL",							type: "string" },
+					{ label: "Flight Class ID",					property: "FLIGHT CLASS",					type: "string" },
+					{ label: "Flight Class Desc",				property: "FLIGHT_CLASS_DESC",				type: "string" },
+					{ label: "Location Type",					property: "LOCATION TYPE",					type: "string" },
+					{ label: "Location Type Desc",				property: "LOC_TYPE_DESC",					type: "string" },
+					{ label: "From State",						property: "FROM STATE",						type: "string" },
+					{ label: "From Location",					property: "FROM LOCATION",					type: "string" },
+					{ label: "From Location (Office)",			property: "FROM_LOCATION_OFFICE",			type: "string" },
+					{ label: "To State",						property: "TO STATE",						type: "string" },
+					{ label: "To Location",						property: "TO LOCATION",					type: "string" },
+					{ label: "To Location (Office)",			property: "TO_LOCATION_OFFICE",				type: "string" },
+					{ label: "Mode of Transfer",				property: "MODE OF TRANSFER",				type: "string" },
+					{ label: "Tarikh Pindah",					property: "TARIKH PINDAH",					type: "date" },
+					{ label: "Region",							property: "REGION",							type: "string" },
+					{ label: "Region Description",				property: "REGION_DESC",					type: "string" },
+					{ label: "Marriage Category ID",			property: "MARRIAGE_CATEGORY",				type: "string" },
+					{ label: "Marriage Category Desc",			property: "MARRIAGE_CATEGORY_DESC",			type: "string" },
+					{ label: "Member Cube (Eligible)",			property: "MEMBER CUBE ELIGIBLE",			type: "string" },
+					{ label: "Member Cube (Actual)",			property: "MEMBER CUBE ACTUAL",				type: "string" },
+					{ label: "Departure Time",					property: "DEPARTURE TIME",					type: "time" },
+					{ label: "Arrival Time",					property: "ARRIVAL TIME",					type: "time" },
+					{ label: "Lodging Category ID",				property: "LODGING CATEGORY",				type: "string" },
+					{ label: "Lodging Category Desc",			property: "LODGING_CATEGORY_DESC",			type: "string" },
+					{ label: "Estimated Participants",			property: "ESTIMATED PARTICIPANTS",			type: "string" },
+					{ label: "Cash Advance (Yes/No)",			property: "CASH ADVANCE",					type: "string" }
+				];
+
+				const itemsLabels = itemsColumns.map(c => c.label);
+
+				const itemRows = items.map(it => {
+					return itemsColumns.map(c => {
+						if (c.type === "date") return that._toDate(it[c.property]);
+						if (c.type === "number") return _num(it[c.property]);
+						return it[c.property] ?? "";
+					});
+				});
+
+				const wsItems = XLSX.utils.aoa_to_sheet([itemsLabels, ...itemRows]);
+				_applyColumnMeta(wsItems, itemsColumns, 1);
+
+				// -------------------------------
+				// Build Item Participants Row
+				// -------------------------------
+
+				const itemPartColumns = [
+					{ label: "Request ID",				property: "REQUEST_ID",			type: "string", width: 15 },
+					{ label: "Request Sub ID",			property: "REQUEST_SUB_ID",		type: "string", width: 15 },
+					{ label: "Participant ID", 			property: "PARTICIPANTS_ID",	type: "string", width: 13 },
+					{ label: "Participant Name",		property: "NAME", 				type: "string", width: 20 },
+					{ label: "Cost Center", 			property: "CC", 				type: "string", width: 13 },
+					{ label: "Allocated Amount (MYR)",	property: "ALLOCATED_AMOUNT",	type: "string", width: 21 }
+				];
+
+				const itemPartLabels = itemPartColumns.map(c => c.label);
+				const itemPartValues = item_part.map(it => {
+					return itemPartColumns.map(c => {
+						if (c.type === "date") return that._toDate(it[c.property]);
+						if (c.type === "number") return _num(it[c.property]);
+						return it[c.property] ?? "";
+					});
+				});
+
+				const wsItemParts = XLSX.utils.aoa_to_sheet([itemPartLabels, ...itemPartValues]);
+				_applyColumnMeta(wsItemParts, itemPartColumns, 1);
+
+				const wb = XLSX.utils.book_new();
+				XLSX.utils.book_append_sheet(wb, wsHeader, "Header");
+				XLSX.utils.book_append_sheet(wb, wsItems, "Items");
+				XLSX.utils.book_append_sheet(wb, wsItemParts, "Participants");
+
+				XLSX.writeFile(wb, this._getExcelFileName(), {
+					bookType: "xlsx",
+					cellDates: true,
+					compression: true
+				});
+
+			} catch (e) {
+				console.error("Excel export failed:", e);
+				sap.m.MessageToast.show("Excel export failed.");
+			} finally {
+				oView.setBusy(false);
+			}
+		},
+
+		async _getParticipantsList(reqid) {
+			const oModel = this.getOwnerComponent().getModel('employee_view');
+			const oListBinding = oModel.bindList(
+				"/ZEMP_REQUEST_PART_VIEW",
+				null,
+				[new sap.ui.model.Sorter("REQUEST_SUB_ID", false)],
+				[new sap.ui.model.Filter({
+					path: "REQUEST_ID",
+					operator: sap.ui.model.FilterOperator.EQ,
+					value1: reqid
+				})],
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto"
+				}
+			);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+				return a;
+			} catch (err) {
+				console.error("OData V4 bindList failed:", err);
+				return [];
+			}
+		},
+
+		/* =========================================================
+		* Create Item Selection Items
+		* ======================================================= */
+
+		_loadSelections() {
+			this._getClaimTypeItemSelection();
+			this.getDependent();
+			this.checkFieldVisibility();
+		},
+
+		getDependent() {
+			const oReq = this._getReqModel();
+			const empId  = oReq.getProperty("/user");
+			const oMainModel = this.getOwnerComponent().getModel();
+			const oListBinding = oMainModel.bindList("/ZEMP_DEPENDENT", null, null, [
+				new Filter("EMP_ID", FilterOperator.EQ, empId)
+			]);
+
+			oListBinding.requestContexts().then((aContexts) => {
+				const aData = aContexts.map(oCtx => oCtx.getObject());
+				this._getReqModel().setProperty('/ZEMP_DEPENDENT', aData);
+			}).catch(err => console.error("RequestType Load Failed", err));
+		},
+
+		/* =========================================================
+		* Budget Checking Functions
+		* ======================================================= */
+
+		async budgetChecking() {
+			const oModel = this.getOwnerComponent().getModel();
+			var sYYYY = String(new Date().getFullYear());
+			var sFundCenter = String("")
+
+			const oListBinding = oModel.bindList("/ZBUDGET", null, null, [
+				new sap.ui.model.Filter("YEAR", "EQ", sYYYY)
+			]);
+
+			try {
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					return {
+						eeid: oData.EEID,
+						name: oData.NAME,
+						cc: oData.CC
+					};
+				} else {
+					console.warn("No employee found with ID: " + sEEID);
+					return null;
+				}
+			} catch (oError) {
+				console.error("Error fetching employee detail", oError);
+			}
+			
+		},
+
+		/* =========================================================
+		* Approver Functions 
+		* ======================================================= */
+
+		checkFieldVisibility(oEvent) {
+			let fields = ["i_amount", "i_remarks", "i_course_title", "i_attachment_1", "i_attachment_2", "i_start_date", "i_end_date"];
+
+			fields.forEach((id) => {
+				const control = this.getView().byId(id);
+				if (control) {
+					control.setVisible(true);
+				} else {
+					console.warn("Control not found:", id);
+				}
+			});
 		},
 
 		/* =========================================================

@@ -71,7 +71,7 @@ sap.ui.define([
 
 
 			this._ensureRequestModelDefaults();
-			var oUserModel = new sap.ui.model.json.JSONModel({ email: 'jefry.yap@my.ey.com' });
+			var oUserModel = new sap.ui.model.json.JSONModel({ email: 'Jefry.Yap@my.ey.com' });
 			this.getView().setModel(oUserModel, 'user');
 
 			var userModelData = this.getView().getModel('user').getData();
@@ -1541,7 +1541,7 @@ sap.ui.define([
 					oReqModel.setProperty("/eeid", emp_data.eeid);
 
 					var oRouter = this.getOwnerComponent().getRouter();
-					oRouter.navTo("RequestForm");
+					oRouter.navTo("RequestFormNew");
 				}).catch(err => {
 					sap.m.MessageToast.show("Creation failed: " + err.message);
 				});
