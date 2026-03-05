@@ -322,165 +322,6 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
     ]}
 );
 
-annotate service.ZAPP_FIELD_CTRL with @(
-    cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [
-        CLAIM_TYPE_ID,
-        CLAIM_TYPE_ITEM_ID
-    ],
-    Capabilities      : {
-        Deletable : true,
-        Updatable : true,
-        Insertable: true
-    },
-    odata.draft.enabled,
-
-    UI                : {
-        CreateHidden: false,
-        DeleteHidden: false,
-        HeaderInfo  : {
-            $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZAPP_FIELD_CTRL',
-            TypeNamePlural: 'ZAPP_FIELD_CTRL',
-        },
-        LineItem    : [
-            {
-                $Type            : 'UI.DataField',
-                Value            : CLAIM_TYPE_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim Type ID'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : CLAIM_TYPE_ITEM_ID,
-                ![@UI.Importance]: #High,
-                Label            : 'Claim Type Item ID'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD01,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 1'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD02,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 2'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD03,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 3'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD04,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 4'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD05,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 5'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD06,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 6'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD07,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 7'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD08,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 8'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD09,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 9'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD10,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 10'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD11,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 11'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD12,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 12'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD13,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 13'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD14,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 14'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD15,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 15'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD16,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 16'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD17,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 17'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD18,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 18'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD19,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 19'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : FIELD20,
-                ![@UI.Importance]: #High,
-                Label            : 'Field 20'
-            },
-        ]
-    }
-);
-
 annotate service.ZCLAIM_CATEGORY with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
@@ -3792,3 +3633,209 @@ annotate service.ZTRAVEL_DAYS with @(
         ]
     }
 );
+
+annotate service.ZDB_STRUCTURE with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [APP_CONTROL_ID],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZDB_STRUCTURE',
+            TypeNamePlural: 'ZDB_STRUCTURE',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : APP_CONTROL_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'App Control Number'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBMISSION_TYPE,
+                ![@UI.Importance]: #High,
+                Label            : 'Submission Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COMPONENT_LEVEL,
+                ![@UI.Importance]: #High,
+                Label            : 'Component Level'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REQUEST_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Request Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ITEM_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type Item ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FIELD,
+                ![@UI.Importance]: #High,
+                Label            : 'Field'
+            },                        
+        ]
+    }
+);
+
+annotate service.ZBUDGET with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey: [YEAR, INTERNAL_ORDER, COMMITMENT_ITEM, FUND_CENTER, MATERIAL_GROUP],
+    Capabilities      : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                : {
+        CreateHidden: false,
+        DeleteHidden: false,
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZBUDGET',
+            TypeNamePlural: 'ZBUDGET',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : YEAR,
+                ![@UI.Importance]: #High,
+                Label            : 'Year'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : INTERNAL_ORDER,
+                ![@UI.Importance]: #High,
+                Label            : 'Internal Order'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COMMITMENT_ITEM,
+                ![@UI.Importance]: #High,
+                Label            : 'Commitment Item'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FUND_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Fund Center'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MATERIAL_GROUP,
+                ![@UI.Importance]: #High,
+                Label            : 'Material Group'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ORIGINAL_BUDGET,
+                ![@UI.Importance]: #High,
+                Label            : 'Original Budget'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VIREMENT_IN,
+                ![@UI.Importance]: #High,
+                Label            : 'Virement In'
+            },  
+            {
+                $Type            : 'UI.DataField',
+                Value            : VIREMENT_OUT,
+                ![@UI.Importance]: #High,
+                Label            : 'Virement Out'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUPPLEMENT,
+                ![@UI.Importance]: #High,
+                Label            : 'Supplement'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RETURN,
+                ![@UI.Importance]: #High,
+                Label            : 'Return'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CURRENT_BUDGET,
+                ![@UI.Importance]: #High,
+                Label            : 'Current Budget'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : COMMITMENT,
+                ![@UI.Importance]: #High,
+                Label            : 'Commitment'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ACTUAL,
+                ![@UI.Importance]: #High,
+                Label            : 'Actual'
+            },  
+            {
+                $Type            : 'UI.DataField',
+                Value            : CONSUMED,
+                ![@UI.Importance]: #High,
+                Label            : 'Consumed'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : BUDGET_BALANCE,
+                ![@UI.Importance]: #High,
+                Label            : 'Budget Balance'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PROJECT_CODE,
+                ![@UI.Importance]: #High,
+                Label            : 'Project Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : BUDGET_OWNER_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Budget Owner'
+            },   
+            {
+                $Type            : 'UI.DataField',
+                Value            : WBS_CODE,
+                ![@UI.Importance]: #High,
+                Label            : 'WBS'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CURRENCY,
+                ![@UI.Importance]: #High,
+                Label            : 'Currency'
+            },                                                        
+        ]
+    }
+);
+
+
