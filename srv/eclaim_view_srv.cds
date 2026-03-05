@@ -11,8 +11,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         },
         {
             grant: '*',
-            to   : ['Claimant'],
-            where: (EMP_ID = '$user.id')
+            to   : ['Claimant']
         }
     ]) as
         projection on ECLAIM.ZREQUEST_HEADER {
@@ -327,13 +326,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             grant: 'READ',
             to   : [
-                'Admin_System'
+                'Admin_System',
+                'DTD_Admin'
             ]
         },
         {
             grant: 'READ',
-            to   : 'Admin_CC',
-            where: (COST_CENTER = '$user.COST_CENTER')
+            to   : 'Admin_CC'
         }
     ]) as
         projection on ECLAIM.ZCLAIM_HEADER {
@@ -385,13 +384,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             grant: 'READ',
             to   : [
-                'Admin_System'
+                'Admin_System',
+                'DTD_Admin'
             ]
         },
         {
             grant: 'READ',
-            to   : 'Admin_CC',
-            where: (COST_CENTER = '$user.COST_CENTER')
+            to   : 'Admin_CC'
         }
     ]) as
         projection on ECLAIM.ZCLAIM_HEADER {
@@ -509,13 +508,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             grant: 'READ',
             to   : [
-                'Admin_System'
+                'Admin_System',
+                'DTD_Admin'
             ]
         },
         {
             grant: 'READ',
-            to   : 'Admin_CC',
-            where: (COST_CENTER = '$user.attr')
+            to   : 'Admin_CC'
         }
     ]) as
         projection on ECLAIM.ZREQUEST_HEADER {
@@ -566,13 +565,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             grant: 'READ',
             to   : [
-                'Admin_System'
+                'Admin_System',
+                'DTD_Admin'
             ]
         },
         {
             grant: 'READ',
-            to   : 'Admin_CC',
-            where: (COST_CENTER = '$user.COST_CENTER')
+            to   : 'Admin_CC'
         }
     ]) as
         projection on ECLAIM.ZREQUEST_HEADER {
