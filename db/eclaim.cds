@@ -282,6 +282,7 @@ entity ZCLAIM_TYPE : managed {
 
 entity ZNUM_RANGE : managed {
     key RANGE_ID   : String  @mandatory  @Common.Label: 'RANGE_ID';
+        PREFIX     : String  @mandatory  @Common.Label: 'PREFIX';
         RANGE_DESC : String  @Common.Label: 'RANGE_DESC';
         ![FROM]    : String  @Common.Label: 'FROM';
         TO         : String  @Common.Label: 'TO';
@@ -1216,7 +1217,7 @@ entity ZELIGIBILITY_RULE : managed {
         ASSIGNED_APPROVER         : String         @Common.Label: 'Assigned Approver';
         CONFIRMATION_DATE         : Date           @Common.Label: 'Confirmation Date';
         PERSONAL_GRADE            : String         @Common.Label: 'Personal Grade';
-        ROLE_ID                      : String         @Common.Label: 'Role';
+        ROLE_ID                   : String         @Common.Label: 'Role';
         POSITION_NO_DESC          : String         @Common.Label: 'Position Number/Description';
         MOBILE_PHONE_BILL         : String         @Common.Label: 'Mobile Phone Bill';
         ELIGIBLE_AMOUNT           : Decimal(16, 2) @Common.Label: 'Eligible Amount';
@@ -1255,7 +1256,7 @@ entity ZELIGIBILITY_RULE : managed {
                                         on ZROLE.ROLE_ID = ROLE_ID;
         ZMARITAL_STAT             : Association to ZMARITAL_STAT
                                         on ZMARITAL_STAT.MARRIAGE_CATEGORY_ID = MARITAL_STATUS;
-        ZEMP_DEPENDENT_TYPE       : Association to ZEMP_DEPENDENT_TYPE          
+        ZEMP_DEPENDENT_TYPE       : Association to ZEMP_DEPENDENT_TYPE
                                         on ZEMP_DEPENDENT_TYPE.DEPENDENT_TYPE_ID = DEPENDENT_TYPE_ID;
         ZVEHICLE_OWNERSHIP        : Association to ZVEHICLE_OWNERSHIP
                                         on ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_ID = VEHICLE_OWNERSHIP_ID;
@@ -1285,4 +1286,58 @@ entity ZELIGIBILITY_RULE : managed {
                                         on ZCURRENCY.CURRENCY_ID = CURRENCY;
         ZROOM_TYPE                : Association to ZROOM_TYPE
                                         on ZROOM_TYPE.ROOM_TYPE_ID = ROOM_TYPE_ID;
+}
+
+entity ZAPPROVER_DETAILS_CLAIMS : managed {
+    key CLAIM_ID               : String  @mandatory;
+    key LEVEL                  : Integer @mandatory;
+    key APPROVER_ID            : String  @mandatory;
+    key SUBSTITUTE_APPROVER_ID : String  @mandatory;
+    key STATUS                 : String  @mandatory;
+        REJECT_REASON_ID       : String;
+        PROCESS_TIMESTAMP      : Timestamp;
+        COMMENT                : String;
+        ZEMP_MASTER_APPROVER   : Association to one ZEMP_MASTER
+                                     on ZEMP_MASTER_APPROVER.EEID = APPROVER_ID;
+        ZEMP_MASTER_SUBS       : Association to one ZEMP_MASTER
+                                     on ZEMP_MASTER_SUBS.EEID = SUBSTITUTE_APPROVER_ID;
+        ZREJECT_REASON         : Association to ZREJECT_REASON
+                                     on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
+        ZSTATUS                : Association to one ZSTATUS
+                                     on ZSTATUS.STATUS_ID = STATUS;
+        ZCLAIM_HEADER          : Association to ZCLAIM_HEADER
+                                     on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
+}
+
+entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
+    key PREAPPROVAL_ID         : String  @mandatory;
+    key LEVEL                  : Integer @mandatory;
+    key APPROVER_ID            : String  @mandatory;
+    key SUBSTITUTE_APPROVER_ID : String  @mandatory;
+    key STATUS                 : String  @mandatory;
+        REJECT_REASON_ID       : String;
+        PROCESS_TIMESTAMP      : Timestamp;
+        COMMENT                : String;
+        ZEMP_MASTER_APPROVER   : Association to one ZEMP_MASTER
+                                     on ZEMP_MASTER_APPROVER.EEID = APPROVER_ID;
+        ZEMP_MASTER_SUBS       : Association to one ZEMP_MASTER
+                                     on ZEMP_MASTER_SUBS.EEID = SUBSTITUTE_APPROVER_ID;
+        ZREJECT_REASON         : Association to ZREJECT_REASON
+                                     on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
+        ZSTATUS                : Association to one ZSTATUS
+                                     on ZSTATUS.STATUS_ID = STATUS;
+        ZREQUEST_HEADER        : Association to one ZREQUEST_HEADER
+                                     on ZREQUEST_HEADER.EMP_ID = PREAPPROVAL_ID;                                     
+}
+
+entity ZSUBSTITUTION_RULES : managed {
+    key SUBSTITUTE_RULE_ID : String(10) @mandatory;
+    key USER_ID            : String     @mandatory;
+    key SUBSTITUTE_ID      : String     @mandatory;
+    key VALID_FROM         : Date       @mandatory;
+    key VALID_TO           : Date       @mandatory;
+        ZEMP_MASTER_USER   : Association to one ZEMP_MASTER
+                                 on ZEMP_MASTER_USER.EEID = USER_ID;
+        ZEMP_MASTER_SUBS   : Association to one ZEMP_MASTER
+                                 on ZEMP_MASTER_SUBS.EEID = SUBSTITUTE_ID;
 }

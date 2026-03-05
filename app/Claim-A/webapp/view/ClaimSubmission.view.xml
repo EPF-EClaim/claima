@@ -9,8 +9,7 @@
 	<Page
 		id="page_claimsubmission"
         showHeader="false"
-        enableScrolling="true"
-	> 
+        enableScrolling="true"> 
 		<!-- content here -->
 		<footer>
 			<Toolbar>
@@ -44,7 +43,24 @@
 						press="onBack_ClaimSubmission"
 						text="{i18n>button_claimsubmission_back}"
 					/>
+
+					<!-- Save (Claim Details) -->
+					<Button
+						id="button_claimdetails_input_save"
+						press="onSave_ClaimDetails"
+						text="Save"
+						visible="false"
+					/>
+
+					<!-- Cancel (Claim Details) -->
+					<Button
+						id="button_claimdetails_input_cancel"
+						press="onCancel_ClaimDetails"
+						text="Cancel"
+						visible="false"
+					/>
 			</Toolbar>
 		</footer>
 	</Page>
+	
 </mvc:View>
