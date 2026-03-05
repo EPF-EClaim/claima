@@ -417,6 +417,11 @@
                     "target": "Analytics"
                 },
                 {
+                    "pattern": "ClaimStatus",
+                    "name": "ClaimStatus",
+                    "target": "ClaimStatus"
+                },
+                {
                     "pattern": "Dashboard",
                     "name": "Dashboard",
                     "target": "Dashboard"
@@ -3519,6 +3524,14 @@
                     "id": "Analytics",
                     "path": "claima.view",
                     "name": "Analytics",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
+                "ClaimStatus": {
+                    "id": "ClaimStatus",
+                    "path": "claima.view",
+                    "name": "ClaimStatus",
                     "type": "View",
                     "viewType": "XML",
                     "transition": "slide"
