@@ -24,19 +24,16 @@ sap.ui.define([
   const REQ_DET_TABLE_ID = "analyticsreqtab";          // Request Details
 
   // ===== Entity roots (for reference only) =====
-  const ENTITY_CLAIM_SUM = "/ZEMP_CLAIM_REPORT_SUMMARY";
-  const ENTITY_REQ_SUM = "/ZEMP_REQUEST_REPORT_SUMMARY";
-  const ENTITY_CLAIM_DET = "/ZEMP_CLAIM_REPORT_DETAILS";
-  const ENTITY_REQ_DET = "/ZEMP_REQUEST_REPORT_DETAILS";
+  /*   const ENTITY_CLAIM_SUM = "/ZEMP_CLAIM_REPORT_SUMMARY";
+    const ENTITY_REQ_SUM = "/ZEMP_REQUEST_REPORT_SUMMARY";
+    const ENTITY_CLAIM_DET = "/ZEMP_CLAIM_REPORT_DETAILS";
+    const ENTITY_REQ_DET = "/ZEMP_REQUEST_REPORT_DETAILS"; */
 
   return Controller.extend("claima.controller.analytics", {
 
 
     onInit: function () {
-
     },
-
-
     /* ===========================================================
      *  NAVIGATION + DIALOG
      * =========================================================== */
@@ -81,24 +78,6 @@ sap.ui.define([
       }
     },
 
-    /*     _openFragment: function (sFragmentPath) {
-          this._mDialogs ??= {};
-          if (!this._mDialogs[sFragmentPath]) {
-            Fragment.load({
-              id: this.getView().getId(),
-              name: sFragmentPath,
-              controller: this
-            }).then(d => {
-              this.getView().addDependent(d);
-              this._mDialogs[sFragmentPath] = d;
-    
-              d.open();
-            });
-          } else {
-            this._mDialogs[sFragmentPath].open();
-          }
-        }, */
-
     _openFragment: function (sFragmentPath) {
       this._mDialogs ??= {};
 
@@ -130,79 +109,49 @@ sap.ui.define([
       const userType = accessModel?.getProperty("/userType");
       const userCC = accessModel?.getProperty("/costcenters"); // array or string
 
-      const ccField = this.byId("cc");
-      if (!ccField) {
+      const isAdmin = ["DTD Admin", "JKEW Admin"].includes(userType);
+
+      const ccMCB = this.byId("cc");         // MultiComboBox
+      const ccText = this.byId("ccText");    // Text input for non-admins
+
+      if (!ccMCB || !ccText) {
         setTimeout(this._applyCostCenterAccess.bind(this), 0);
         return;
       }
 
-      const isAdmin = ["DTD Admin", "JKEW Admin"].includes(userType);
+      if (isAdmin) {
+        // ADMIN: Show MultiComboBox, hide Text
+        ccMCB.setVisible(true);
+        ccText.setVisible(false);
+        ccMCB.setEditable(true);
+        ccMCB.setEnabled(true);
 
-      // Always wait until items are loaded once (OData V4 list binding)
-      const bindItems = ccField.getBinding("items");
+      } else {
+        // NON-ADMIN: Show read-only text
+        ccMCB.setVisible(false);
+        ccText.setVisible(true);
+
+        // Convert array → joined text
+        const displayCC = Array.isArray(userCC) ? userCC.join(", ") : userCC;
+        ccText.setValue(displayCC);
+      }
+
+      // MultiComboBox selection (still needed for admin users)
+      const bindItems = ccMCB.getBinding("items");
+
       const applySelection = () => {
-        if (!isAdmin) {
-          const keys = Array.isArray(userCC) ? userCC : (userCC ? [userCC] : []);
-          ccField.setSelectedKeys(keys);
+        if (isAdmin) return; // admin selects themselves
 
-          // Disable to prevent typing + token deletion
-          ccField.setEnabled(false);
-          // (Optional) also setEditable(false) to keep visual enabled state but non-editable
-          // ccField.setEditable(false);
-        } else {
-          ccField.setEnabled(true);
-        }
+        const keys = Array.isArray(userCC) ? userCC : (userCC ? [userCC] : []);
+        ccMCB.setSelectedKeys(keys); // invisible but needed for filtering
       };
 
-      if (bindItems && bindItems.attachEvent) {
-        // V4: "change" event fires on data arrival
-        const once = (fn) => {
-          const handler = () => { bindItems.detachEvent("change", handler); fn(); };
-          bindItems.attachEvent("change", handler);
-        };
-
-        // If data already present, apply now; else wait once
-        if (bindItems.getContexts(0, 1)?.length) {
-          applySelection();
-        } else {
-          once(applySelection);
-        }
+      if (bindItems) {
+        bindItems.attachEventOnce("change", applySelection);
       } else {
-        // Fallback: next tick
         setTimeout(applySelection, 0);
       }
     },
-    /*    _applyCostCenterAccess: function () {
-   
-         const accessModel = this.getOwnerComponent().getModel("access");
-         const userType = accessModel?.getProperty("/userType");
-         const userCC = accessModel?.getProperty("/costcenters");   // array or string
-   
-         const ccField = this.byId("cc");
-   
-         if (!ccField) {
-           setTimeout(this._applyCostCenterAccess.bind(this), 0);
-           return;
-         }
-   
-         const allowed = ["DTD Admin", "JKEW Admin"];
-         const isAdmin = allowed.includes(userType);
-   
-         // ==============
-         // 1. UI Control
-         // ==============
-         ccField.setEnabled(isAdmin);
-   
-         if (!isAdmin) {
-           // Non-admin behavior:
-           // Apply user CC as the only selected CC
-           if (Array.isArray(userCC)) {
-             ccField.setSelectedKeys(userCC);
-           } else {
-             ccField.setSelectedKeys([userCC]);
-           }
-         }
-       }, */
 
     onCloseDialog: function (oEvent) {
       let oCtrl = oEvent.getSource();

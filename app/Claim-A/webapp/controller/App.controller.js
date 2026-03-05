@@ -64,21 +64,13 @@ sap.ui.define([
 			const ctx = oModel.bindContext("/getUserType()");
 			ctx.requestObject().then(oData => {
 				this._userType = oData.userType || "UNKNOWN";
+				this.costcenters = oData.costcenters || "UNKNOWN"; //Added by Aiman Salim 06/03/2026
 			}).catch(err => {
 				console.error("getUserType failed:", err);
 				this._userType = "UNKNOWN";
-			});
-
-			//Start Add - Aiman Salim 05/03/2026 - Added for Cost Center
-			const ctx2 = oModel.bindContext("/getUserType()");
-			ctx2.requestObject().then(oData => {
-				this.costcenters = oData.costcenters || "UNKNOWN";
-			}).catch(err => {
-				console.error("getUserType failed:", err);
+				console.error("getUserType failed:", err); //Added by Aiman Salim 06/03/2026
 				this.costcenters = "UNKNOWN";
 			});
-			//End Add - Aiman Salim 05/03/2026 - Added for Cost Center
-
 
 			this._ensureRequestModelDefaults();
 			var oUserModel = new sap.ui.model.json.JSONModel({ email: 'jefry.yap@my.ey.com' });
