@@ -192,25 +192,6 @@ service eclaim_srv {
         }
     ])                                   as projection on ECLAIM.ZCLAIM_TYPE_ITEM;
 
-    entity ZAPP_FIELD_CTRL @(restrict: [
-        {
-            grant: 'READ',
-            to   : [
-                'Approver',
-                'Admin_CC',
-                'Admin_System'
-            ]
-        },
-        {
-            grant: ['READ'],
-            to   : ['Claimant']
-        },
-        {
-            grant: '*',
-            to   : 'DTD_Admin'
-        }
-    ])                                   as projection on ECLAIM.ZAPP_FIELD_CTRL;
-
     entity ZCLAIM_CATEGORY @(restrict: [
         {
             grant: 'READ',
