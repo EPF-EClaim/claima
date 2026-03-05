@@ -240,6 +240,8 @@ entity ZREQUEST_ITEM : managed {
         ZEMP_DEPENDENT             : Association to ZEMP_DEPENDENT
                                          on  ZEMP_DEPENDENT.DEPENDENT_NO = DEPENDENT
                                          and ZEMP_DEPENDENT.RELATIONSHIP = DEPENDENT_RELATIONSHIP;
+        ZSPORTS_REPRESENTATION     : Association to ZSPORTS_REPRESENTATION
+                                         on ZSPORTS_REPRESENTATION.SPORTS_REPRESENTATION_ID = KWSP_SPORTS_REPRESENTATION;
 }
 
 entity ZREQ_ITEM_PART : managed {
@@ -282,6 +284,7 @@ entity ZCLAIM_TYPE : managed {
 
 entity ZNUM_RANGE : managed {
     key RANGE_ID   : String  @mandatory  @Common.Label: 'RANGE_ID';
+        PREFIX     : String  @mandatory  @Common.Label: 'PREFIX';
         RANGE_DESC : String  @Common.Label: 'RANGE_DESC';
         ![FROM]    : String  @Common.Label: 'FROM';
         TO         : String  @Common.Label: 'TO';
@@ -605,77 +608,36 @@ entity ZCLAIM_TYPE_ITEM : managed {
                                    on ZSUBMISSION_TYPE.SUBMISSION_TYPE_ID = SUBMISSION_TYPE;
 }
 
-entity ZAPP_FIELD_CTRL : managed {
-    key CLAIM_TYPE_ID      : String
-        @mandatory
-        @Common.Label: 'Claim Type Id';
-    key CLAIM_TYPE_ITEM_ID : String
-        @mandatory
-        @Common.Label: 'Claim Type Item Id';
-        FIELD01            : Boolean
-        @Common.Label: 'Field01';
-        FIELD02            : Boolean
-        @Common.Label: 'Field02';
-        FIELD03            : Boolean
-        @Common.Label: 'Field03';
-        FIELD04            : Boolean
-        @Common.Label: 'Field04';
-        FIELD05            : Boolean
-        @Common.Label: 'Field05';
-        FIELD06            : Boolean
-        @Common.Label: 'Field06';
-        FIELD07            : Boolean
-        @Common.Label: 'Field07';
-        FIELD08            : Boolean
-        @Common.Label: 'Field08';
-        FIELD09            : Boolean
-        @Common.Label: 'Field09';
-        FIELD10            : Boolean
-        @Common.Label: 'Field10';
-        FIELD11            : Boolean
-        @Common.Label: 'Field11';
-        FIELD12            : Boolean
-        @Common.Label: 'Field12';
-        FIELD13            : Boolean
-        @Common.Label: 'Field13';
-        FIELD14            : Boolean
-        @Common.Label: 'Field14';
-        FIELD15            : Boolean
-        @Common.Label: 'Field15';
-        FIELD16            : Boolean
-        @Common.Label: 'Field16';
-        FIELD17            : Boolean
-        @Common.Label: 'Field17';
-        FIELD18            : Boolean
-        @Common.Label: 'Field18';
-        FIELD19            : Boolean
-        @Common.Label: 'Field19';
-        FIELD20            : Boolean
-        @Common.Label: 'Field20';
-}
-
 entity ZBUDGET : managed {
-    key YEAR            : Integer;
-    key COMMITMENT_ITEM : String;
-    key FUND_CENTER     : Integer;
-    key MATERIAL_GROUP  : Integer;
-        ORIGINAL_BUDGET : Decimal;
-        VIREMENT_IN     : Decimal;
-        VIREMENT_OUT    : Decimal;
-        SUPPLEMENT      : Decimal;
-        RETURN          : Decimal;
-        CURR_BUDGET     : Decimal;
-        COMMITMENT      : Decimal;
-        ACTUAL          : Decimal;
-        CONSUMED        : Decimal;
-        BUDGET_BALANCE  : Decimal;
-        PROJECT_CODE    : String;
-        BUDGET_OWNER_ID : String;
-        WBS_CODE        : Integer;
-        IO              : String;
-        CURRENCY        : String;
+    key YEAR            : String         @mandatory  @Common.Label: 'Year';
+    key INTERNAL_ORDER  : String         @mandatory  @Common.Label: 'Internal Order';
+    key COMMITMENT_ITEM : String         @mandatory  @Common.Label: 'Commitment Item';
+    key FUND_CENTER     : String         @mandatory  @Common.Label: 'Fund Center';
+    key MATERIAL_GROUP  : String         @mandatory  @Common.Label: 'Material Group';
+        ORIGINAL_BUDGET : Decimal(16, 2) @Common.Label: 'Original Budget';
+        VIREMENT_IN     : Decimal(16, 2) @Common.Label: 'Virement In';
+        VIREMENT_OUT    : Decimal(16, 2) @Common.Label: 'Virement Out';
+        SUPPLEMENT      : Decimal(16, 2) @Common.Label: 'Supplement';
+        RETURN          : Decimal(16, 2) @Common.Label: 'Return';
+        CURRENT_BUDGET  : Decimal(16, 2) @Common.Label: 'Current Budget';
+        COMMITMENT      : Decimal(16, 2) @Common.Label: 'Commitment';
+        ACTUAL          : Decimal(16, 2) @Common.Label: 'Actual';
+        CONSUMED        : Decimal(16, 2) @Common.Label: 'Consumed';
+        BUDGET_BALANCE  : Decimal(16, 2) @Common.Label: 'Budget Balance';
+        PROJECT_CODE    : String         @Common.Label: 'Project Code';
+        BUDGET_OWNER_ID : String         @Common.Label: 'Budget Owner';
+        WBS_CODE        : String         @Common.Label: 'WBS';
+        CURRENCY        : String         @Common.Label: 'Currency';
         ZCOST_CENTER    : Association to ZCOST_CENTER
                               on ZCOST_CENTER.COST_CENTER_ID = FUND_CENTER;
+        ZINTERNAL_ORDER : Association to ZINTERNAL_ORDER
+                              on ZINTERNAL_ORDER.IO_ID = INTERNAL_ORDER;
+        ZGL_ACCOUNT     : Association to ZGL_ACCOUNT
+                              on ZGL_ACCOUNT.GL_ACCOUNT_ID = COMMITMENT_ITEM;
+        ZPROJECT_HDR    : Association to ZPROJECT_HDR
+                              on ZPROJECT_HDR.PROJECT_CODE_IO = PROJECT_CODE;
+        ZMATERIAL_GROUP : Association to ZMATERIAL_GROUP
+                              on ZMATERIAL_GROUP.MATERIAL_CODE_ID = MATERIAL_GROUP
 }
 
 entity ZCLAIM_CATEGORY : managed {
@@ -1296,6 +1258,16 @@ entity ZAPPROVER_DETAILS_CLAIMS : managed {
         REJECT_REASON_ID       : String;
         PROCESS_TIMESTAMP      : Timestamp;
         COMMENT                : String;
+        ZEMP_MASTER_APPROVER   : Association to one ZEMP_MASTER
+                                     on ZEMP_MASTER_APPROVER.EEID = APPROVER_ID;
+        ZEMP_MASTER_SUBS       : Association to one ZEMP_MASTER
+                                     on ZEMP_MASTER_SUBS.EEID = SUBSTITUTE_APPROVER_ID;
+        ZREJECT_REASON         : Association to ZREJECT_REASON
+                                     on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
+        ZSTATUS                : Association to one ZSTATUS
+                                     on ZSTATUS.STATUS_ID = STATUS;
+        ZCLAIM_HEADER          : Association to ZCLAIM_HEADER
+                                     on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
 }
 
 entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
@@ -1307,12 +1279,36 @@ entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
         REJECT_REASON_ID       : String;
         PROCESS_TIMESTAMP      : Timestamp;
         COMMENT                : String;
+        ZEMP_MASTER_APPROVER   : Association to one ZEMP_MASTER
+                                     on ZEMP_MASTER_APPROVER.EEID = APPROVER_ID;
+        ZEMP_MASTER_SUBS       : Association to one ZEMP_MASTER
+                                     on ZEMP_MASTER_SUBS.EEID = SUBSTITUTE_APPROVER_ID;
+        ZREJECT_REASON         : Association to ZREJECT_REASON
+                                     on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
+        ZSTATUS                : Association to one ZSTATUS
+                                     on ZSTATUS.STATUS_ID = STATUS;
+        ZREQUEST_HEADER        : Association to one ZREQUEST_HEADER
+                                     on ZREQUEST_HEADER.EMP_ID = PREAPPROVAL_ID;
 }
 
 entity ZSUBSTITUTION_RULES : managed {
-    key SUBSTITUTE_ID      : String @mandatory;
-    key USER_ID            : String @mandatory;
-    key SUBSTITUTE_USER_ID : String @mandatory;
-    key VALID_FROM         : Date   @mandatory;
-    key VALID_TO           : Date   @mandatory;
+    key SUBSTITUTE_RULE_ID : String(10) @mandatory;
+    key USER_ID            : String     @mandatory;
+    key SUBSTITUTE_ID      : String     @mandatory;
+    key VALID_FROM         : Date       @mandatory;
+    key VALID_TO           : Date       @mandatory;
+        ZEMP_MASTER_USER   : Association to one ZEMP_MASTER
+                                 on ZEMP_MASTER_USER.EEID = USER_ID;
+        ZEMP_MASTER_SUBS   : Association to one ZEMP_MASTER
+                                 on ZEMP_MASTER_SUBS.EEID = SUBSTITUTE_ID;
+}
+
+entity ZDB_STRUCTURE : managed {
+    key APP_CONTROL_ID     : String  @mandatory  @Common.Label: 'App Control Number';
+        SUBMISSION_TYPE    : String  @Common.Label: 'Submission Type';
+        COMPONENT_LEVEL    : String  @Common.Label: 'Component Level';
+        REQUEST_TYPE_ID    : String  @Common.Label: 'Request Type ID';
+        CLAIM_TYPE_ID      : String  @Common.Label: 'Claim Type ID';
+        CLAIM_TYPE_ITEM_ID : String  @Common.Label: 'Claim Type Item ID';
+        FIELD              : String  @Common.Label: 'Field';
 }

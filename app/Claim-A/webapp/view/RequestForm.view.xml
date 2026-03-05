@@ -1,8 +1,23 @@
-<mvc:View xmlns:form="sap.ui.layout.form" xmlns:f="sap.f"
+<mvc:View 
 	height="100%"
+    xmlns:form="sap.ui.layout.form" 
+    xmlns:f="sap.f"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns="sap.m"
     xmlns:core="sap.ui.core"
+    xmlns:unified="sap.ui.unified" 
+    xmlns:columnmenu="sap.m.table.columnmenu" 
+    xmlns:table="sap.ui.table" 
+    xmlns:m="sap.m"
+    xmlns:tnt="sap.tnt"
+    xmlns:cards="sap.f.cards"
+    xmlns:l="sap.ui.layout"
+    xmlns:cssgrid="sap.ui.layout.cssgrid"
+    xmlns:w="sap.ui.integration.widgets"
+    xmlns:card="sap.f.cards"
+    xmlns:Icon="sap.ui.core.Icon"
+    xmlns:ShellBar="sap.f.ShellBar"
+    xmlns:layout="sap.ui.layout"
 	controllerName="claima.controller.RequestForm"
     id="request_form_xmlview">
 
@@ -10,15 +25,148 @@
         id="request_form"
         floatingFooter="true"
         showHeader="false">
+        <content>
+            <VBox >
+                <VBox
+                    id="request_form_header_box1" 
+                    backgroundDesign="Solid"
+                    class="roundedBox sapUiSmallMargin sapUiTinyMarginBottom"
+                    rowGap="1rem">
+                    <OverflowToolbar height="3rem">
+                        <Title text="{i18n>req_form_header_title}" titleStyle="H3"/>
+                        <ToolbarSpacer />
+                        <Button type="Default" icon="sap-icon://cause" />
+                    </OverflowToolbar>
+                    <form:Form 
+                        id="req_header1"
+                        layout="ColumnLayout"
+                        editable="false" >
+                        <form:layout><form:ColumnLayout columnsL="2" columnsM="2" /></form:layout>
+                        <form:formContainers>
+                            <form:FormContainer >
+                                <form:formElements>
+                                    <form:FormElement label="{i18n>req_purpose}"><form:fields><Text text="{request>/req_header/purpose}" /></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_id}"><form:fields><Text text="{request>/req_header/reqid}" /></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_tripstartdate}"><form:fields><Text text="{request>/req_header/tripstartdate}" /></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_tripenddate}"><form:fields><Text text="{request>/req_header/tripenddate}" /></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_eventstartdate}"><form:fields><Text text="{request>/req_header/eventstartdate}" /></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_eventenddate}"><form:fields><Text text="{request>/req_header/eventenddate}" /></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_location}"><form:fields><Text text="{request>/req_header/location}" /></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_grptype}"><form:fields><Text text="{request>/req_header/grptype}" /></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_transport}"><form:fields><Text text="{request>/req_header/transport}" /></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_status}"><form:fields><Text text="{request>/req_header/reqstatus}" /></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_cc}"><form:fields><Text text="{request>/req_header/costcenter}"/></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_acc}"><form:fields><Text text="{request>/req_header/altcostcenter}" /></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_caa}">
+                                        <form:fields><Text text="{
+                                                path: 'request>/req_header/cashadvamt',
+                                                type: 'sap.ui.model.type.Float',
+                                                formatOptions: {
+                                                    minFractionDigits: 2,
+                                                    maxFractionDigits: 2,
+                                                    groupingEnabled: true
+                                                }}" 
+                                            textDirection="RTL"></Text></form:fields>
+                                    </form:FormElement>
+                                    <form:FormElement label="{i18n>req_amt}">
+                                        <form:fields><Text text="{
+                                                path: 'request>/req_header/reqamt',
+                                                type: 'sap.ui.model.type.Float',
+                                                formatOptions: {
+                                                    minFractionDigits: 2,
+                                                    maxFractionDigits: 2,
+                                                    groupingEnabled: true
+                                                }}" 
+                                            textDirection="RTL"></Text></form:fields>
+                                    </form:FormElement>
+                                    <form:FormElement label="{i18n>req_rtype}"><form:fields><Text text="{request>/req_header/reqtype}" /></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_comment}"><form:fields><Text text="{request>/req_header/comment}"/></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_attach1}"><form:fields><Text text="{request>/req_header/doc1}"/></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_attach2}"><form:fields><Text text="{request>/req_header/doc2}"/></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_claimtype}"><form:fields><Text text="{request>/req_header/claimtype}"/></form:fields></form:FormElement>
+                                </form:formElements>
+                            </form:FormContainer>
+                        </form:formContainers>
+                    </form:Form>
+                </VBox>
+                <VBox
+                    id="request_item_list_fragment_d" 
+                    backgroundDesign="Solid"
+                    class="roundedBox sapUiSmallMargin sapUiTinyMarginTop"
+                    rowGap="1rem">
+                    <VBox width="100%" rowGap="1rem">
+                        <OverflowToolbar
+                            height="3rem"
+                            style="Clear">
+                            <m:Title text="{i18n>req_form_detail_title} ({= ${request>/list_count} })" titleStyle="H3" />
+                            <m:ToolbarSpacer />
+                            <m:Button text="{i18n>req_b_create_item}"   type="Emphasized"   icon="sap-icon://add"   press=".onAddItem"          enabled="{= ${request>/view} === 'list' }" />
+                            <m:Button text="{i18n>req_b_delete}"        type="Default"                              press=".onRowDeleteReqItem" enabled="{= ${request>/view} === 'list' }" />
+                        </OverflowToolbar>
+                        <VBox rowGap="1rem">
+                            <table:Table 
+                                id="req_item_table_d"
+                                rows="{request>/req_item_rows}"
+                                columnHeaderHeight="3rem"
+                                selectionMode="MultiToggle"
+                                ariaLabelledBy="title"
+                                width="auto"
+                                rowActionCount="2">
+                                <table:Column  width="25rem">
+                                    <m:Label text="{i18n>req_i_claim_type_item}"></m:Label>
+                                    <table:template>
+                                        <m:Text text="{request>CLAIM_TYPE_ITEM_DESC}" wrapping="false" />
+                                    </table:template>
+                                </table:Column>
+                                <table:Column  width="15rem">
+                                    <m:Label text="{i18n>req_i_est_amt}"></m:Label>
+                                    <table:template>
+                                        <unified:Currency value="{request>EST_AMOUNT}" 
+                                                        currency="MYR" 
+                                                        useSymbol="true"/>
+                                    </table:template>
+                                </table:Column>
+                                <table:Column  width="15rem">
+                                    <m:Label text="{i18n>req_i_estparticipant}"></m:Label>
+                                    <table:template>
+                                        <m:Text text="{request>EST_NO_PARTICIPANT}" />
+                                    </table:template>
+                                </table:Column>
+                                <table:rowActionTemplate>
+                                    <table:RowAction> 
+                                        <table:items>
+                                            <table:RowActionItem type="Delete"      press=".onRowDeleteReqItem" visible="{= ${request>/view} === 'list' }" />
+                                            <table:RowActionItem type="Custom"      press=".onOpenItemEdit"     visible="{= ${request>/view} === 'list' }"  icon="sap-icon://edit"  text="Edit"/>
+                                            <table:RowActionItem type="Navigation"  press=".onOpenItemView"     visible="{= ${request>/view} === 'view' || ${request>/view} === 'approver' }" />
+                                        </table:items>
+                                    </table:RowAction>
+                                </table:rowActionTemplate>
+                            </table:Table>
+                        </VBox>
+                    </VBox>
+                </VBox>
+            </VBox>
+        </content>
         <footer>
             <OverflowToolbar >
                 <ToolbarSpacer />
-                <Button id="req_back_scr"       type="Back"         text="Back"             press=".onBackView"             visible="{= ${request>/view} === 'view' }"/>
-                <Button id="req_back"           type="Back"         text="Back"             press=".onBack"                 visible="{= ${request>/view} === 'list' }"/>
-                <Button id="req_delete"         type="Default"      text="Delete Request"   press=".onDeleteRequest"        visible="{= ${request>/view} === 'list' }"/>
-                <Button id="req_submit"         type="Default"      text="Submit Request"   press=".onSubmitRequest"        visible="{= ${request>/view} === 'list' }"/>
-                <Button id="req_item_cancel"    type="Default"      text="Cancel"           press=".onCancelItem"           visible="{= ${request>/view} === 'create' || ${request>/view} === 'i_edit' }"/>
-                <Button id="req_item_save"      type="Default"      text="Save"             press=".onSaveItem"             visible="{= ${request>/view} === 'create' || ${request>/view} === 'i_edit' }"/>
+                <!-- Header Level -->
+                <Button id="req_back"           type="Back"     text="Back"             press=".onBack"             visible="{= ${request>/view} === 'list' }"/>
+                <Button id="req_delete"         type="Default"  text="Delete Request"   press=".onDeleteRequest"    visible="{= ${request>/view} === 'list' }"/>
+                <Button id="req_submit"         type="Default"  text="Submit Request"   press=".onSubmitRequest"    visible="{= ${request>/view} === 'list' }"/>
+
+                <!-- Item Level -->
+                <Button id="req_item_cancel"    type="Default"  text="Cancel"           press=".onCancelItem"       visible="{= ${request>/view} === 'create' || ${request>/view} === 'i_edit' }"/>
+                <Button id="req_item_save"      type="Default"  text="Save"             press=".onSaveItem"         visible="{= ${request>/view} === 'create' || ${request>/view} === 'i_edit' }"/>
+                
+                <!-- View Mode -->
+                <Button id="req_back_scr"       type="Back"     text="Back"             press=".onBackView"         visible="{= ${request>/view} === 'view' }"/>
+
+                <!-- Approver -->
+                <Button id="req_back_scr_appr"  type="Back"     text="Back"                     press=".onBackView"         visible="{= ${request>/view} === 'approver' }"/>
+                <Button id="req_reject"         type="Default"  text="Reject"                   press=".onRejectRequest"    visible="{= ${request>/view} === 'approver' }"/>
+                <Button id="req_send_back"      type="Default"  text="Send Back to Employee"    press=".onSendBackRequest"  visible="{= ${request>/view} === 'approver' }"/>
+                <Button id="req_approve"        type="Default"  text="Approve"                  press=".onApproveRequest"   visible="{= ${request>/view} === 'approver' }"/>
             </OverflowToolbar>
         </footer>
     </Page>

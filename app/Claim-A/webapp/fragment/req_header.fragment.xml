@@ -4,7 +4,7 @@
     xmlns:core="sap.ui.core"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:f="sap.f">
-    <VBox
+    <!-- <VBox
         id="request_form_header_box1" 
         backgroundDesign="Solid"
         class="roundedBox sapUiSmallMargin"
@@ -137,5 +137,5 @@
                 </form:FormContainer>
             </form:formContainers>
         </form:Form>
-    </VBox>
+    </VBox> -->
 </core:FragmentDefinition>

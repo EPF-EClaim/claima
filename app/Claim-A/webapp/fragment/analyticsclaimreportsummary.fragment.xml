@@ -7,7 +7,7 @@
     <Page
         id="analyticsClaimReportSumPage"
         title="{i18n>ana_poptitle}"
-    > 
+    >
         <content>
             <f:DynamicPage id="analyticsClaimSumDynPage">
                 <f:title>
@@ -85,9 +85,7 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>employee_id}" />
                                 <table:template>
-                                    <Text
-                                        text="{employee_view>EMP_ID}"
-                                    />
+                                    <Text text="{employee_view>EMP_ID}" />
                                 </table:template>
                             </table:Column>
 
@@ -105,9 +103,7 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>claim_id}" />
                                 <table:template>
-                                    <Text
-                                        text="{employee_view>CLAIM_ID}"
-                                    />
+                                    <Text text="{employee_view>CLAIM_ID}" />
                                 </table:template>
                             </table:Column>
 
@@ -125,7 +121,7 @@
                                 <table:template>
                                     <Text
                                         text="{
-                                            path: 'employee_view>APPROVED_DATE',
+                                            path: 'employee_view>REQUEST_DATE',
                                             type: 'sap.ui.model.odata.type.Date',
                                             formatOptions: { pattern: 'dd MMM yyyy' }
                                         }"
@@ -319,7 +315,6 @@
 
                             <!-- total_claim_amt -->
                             <table:Column
-
                                 width="14rem"
                                 hAlign="End"
                             >
@@ -345,17 +340,17 @@
                             </table:Column>
 
                             <!-- final_amt_receive (computed in controller) -->
-                            <!--                             <table:Column
+                            <table:Column
                                 width="14rem"
                                 hAlign="End"
                             >
                                 <Label text="{i18n>final_amt_receive}" />
                                 <table:template>
                                     <Text
-                                        text="{employee_view>FINAL_AMOUNT_RECEIVE}"
+                                        text="{employee_view>FINAL_AMOUNT_TO_RECEIVE}"
                                     />
                                 </table:template>
-                            </table:Column> -->
+                            </table:Column>
 
                             <!-- course_code -->
                             <table:Column width="12rem">
@@ -377,7 +372,9 @@
                             <table:Column width="20rem">
                                 <Label text="{i18n>course_session}" />
                                 <table:template>
-                                    <Text text="{employee_view>COURSE_DESC}" />
+                                    <Text
+                                        text="{employee_view>SESSION_NUMBER}"
+                                    />
                                 </table:template>
                             </table:Column>
 

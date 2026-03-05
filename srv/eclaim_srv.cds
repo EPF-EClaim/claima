@@ -48,8 +48,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZCLAIM_TYPE_ITEM         as projection on ECLAIM.ZCLAIM_TYPE_ITEM;
 
-    entity ZAPP_FIELD_CTRL          as projection on ECLAIM.ZAPP_FIELD_CTRL;
-
     entity ZCLAIM_CATEGORY          as projection on ECLAIM.ZCLAIM_CATEGORY;
 
     entity ZSTATUS                  as projection on ECLAIM.ZSTATUS;
@@ -139,6 +137,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
     type UserInfo {
         id       : String;
         userType : String;
+        costcenters: String;
     }
 
     function getUserType()                                         returns UserInfo;
@@ -178,4 +177,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
     entity ZWORKFLOW_STEP           as projection on ECLAIM.ZWORKFLOW_STEP;
 
     entity ZWORKFLOW_RULE           as projection on ECLAIM.ZWORKFLOW_RULE;
+    
+    entity ZAPPROVER_DETAILS_CLAIMS as projection on ECLAIM.ZAPPROVER_DETAILS_CLAIMS;
+
+    entity ZAPPROVER_DETAILS_PREAPPROVAL as projection on ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL;
+
+    entity ZSUBSTITUTION_RULES as projection on ECLAIM.ZSUBSTITUTION_RULES;
+
+    entity ZDB_STRUCTURE as projection on ECLAIM.ZDB_STRUCTURE;
 };
