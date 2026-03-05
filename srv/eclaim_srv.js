@@ -18,13 +18,13 @@ const { target } = require('@sap/cds/lib/ql/cds.ql-infer');
 //     req.error(400, `Fail creating record: ${error.message}`);
 //   }
 // }
-const { ZRISK, ZRATE_KM } = srv.entities;
-this.before('NEW', ZRATE_KM, async(req) => {
-    const { START_DATE, END_DATE } = req.data;
-    if (END_DATE && START_DATE && new Date(END_DATE) < new Date(START_DATE)) {
-      req.error(400,'End date should not be earlier than start date', 'END_DATE');
-    }
-  });
+// const { ZRISK, ZRATE_KM } = srv.entities;
+// this.before('NEW', ZRATE_KM, async(req) => {
+//     const { START_DATE, END_DATE } = req.data;
+//     if (END_DATE && START_DATE && new Date(END_DATE) < new Date(START_DATE)) {
+//       req.error(400,'End date should not be earlier than start date', 'END_DATE');
+//     }
+//   });
 
 module.exports = (srv) => {
 
