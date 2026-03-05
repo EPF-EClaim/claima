@@ -69,6 +69,16 @@ sap.ui.define([
 				this._userType = "UNKNOWN";
 			});
 
+			//Start Add - Aiman Salim 05/03/2026 - Added for Cost Center
+			const ctx2 = oModel.bindContext("/getUserType()");
+			ctx2.requestObject().then(oData => {
+				this.costcenters = oData.costcenters || "UNKNOWN";
+			}).catch(err => {
+				console.error("getUserType failed:", err);
+				this.costcenters = "UNKNOWN";
+			});
+			//End Add - Aiman Salim 05/03/2026 - Added for Cost Center
+
 
 			this._ensureRequestModelDefaults();
 			var oUserModel = new sap.ui.model.json.JSONModel({ email: 'jefry.yap@my.ey.com' });
@@ -112,6 +122,15 @@ sap.ui.define([
 				sap.m.MessageToast.show("Please wait… loading your access.");
 				return;
 			}
+
+			//Aiman Salim - 05/03/2026 - Added to make it global usage;
+			const oUserAccessModel = new sap.ui.model.json.JSONModel({
+				userType: this._userType,
+				costcenters: this.costcenters,
+			});
+			this.getOwnerComponent().setModel(oUserAccessModel, "access");
+			//Aiman Salim - 05/03/2026 - Added to make it global;
+
 			//End EY_ATHIRAH
 
 			switch (oKey) {
@@ -691,7 +710,7 @@ sap.ui.define([
 
 		_getJsonDate: function (date) {
 			if (date) {
-				var oDate = new Date (date);
+				var oDate = new Date(date);
 				var oDateString = oDate.toLocaleString('default', { day: '2-digit' }) + " " + oDate.toLocaleString('default', { month: 'short' }) + " " + oDate.toLocaleString('default', { year: 'numeric' });
 				return oDateString;
 			} else {
@@ -890,7 +909,7 @@ sap.ui.define([
 			});
 			MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_mismatch", [this.byId("fileuploader_claiminput_attachment").getValue()]));
 		},
-		
+
 		_validDateRange: function (startdate, enddate) {
 			var startDateValue = this.byId(startdate).getValue();
 			var endDateValue = this.byId(enddate).getValue();
@@ -900,8 +919,8 @@ sap.ui.define([
 				return false;
 			}
 			// check if end date earlier than start date
-			var startDateUnix 	= new Date (startDateValue).valueOf();
-			var endDateUnix 	= new Date (endDateValue).valueOf();
+			var startDateUnix = new Date(startDateValue).valueOf();
+			var endDateUnix = new Date(endDateValue).valueOf();
 			if (startDateUnix > endDateUnix) {
 				MessageToast.show(this._getTexti18n("msg_daterange_order"));
 				return false;
@@ -1303,16 +1322,16 @@ sap.ui.define([
 		_ensureRequestModelDefaults: function () {
 			const oReq = this._getReqModel();
 			const data = oReq.getData() || {};
-			data.user 			   = data.user;
-			data.req_header        = { reqid: "", grptype: "IND" };
+			data.user = data.user;
+			data.req_header = { reqid: "", grptype: "IND" };
 			// data.req_item_rows     = Array.isArray(data.req_item_rows) ? data.req_item_rows : [];
-			data.req_item_rows     = [];
-			data.req_item          = data.req_item || {
+			data.req_item_rows = [];
+			data.req_item = data.req_item || {
 				cash_advance: "no_cashadv"
 			};
-			data.participant       = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
-			data.view              = "view";
-			data.list_count        = data.list_count ?? 0;
+			data.participant = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
+			data.view = "view";
+			data.list_count = data.list_count ?? 0;
 			oReq.setData(data);
 		},
 
@@ -1553,11 +1572,11 @@ sap.ui.define([
 				const a = aCtx.map((ctx) => ctx.getObject());
 
 				a.forEach((it) => {
-				if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
+					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
 				});
 
 				oReq.setProperty("/req_header_list", a);
-				oReq.setProperty("/req_header_count", a.length); 
+				oReq.setProperty("/req_header_count", a.length);
 
 				return a;
 			} catch (err) {
@@ -1610,7 +1629,7 @@ sap.ui.define([
 				oNav.to(oRoot.createId("myrequest"));
 			}
 		},
- 
+
 		_getTexti18n: function (i18nKey, array_i18nParameters) {
 			if (array_i18nParameters) {
 				return this.getView().getModel("i18n").getResourceBundle().getText(i18nKey, array_i18nParameters);
@@ -1652,7 +1671,7 @@ sap.ui.define([
 			});
 
 		}
-			
+
 
 	});
 });

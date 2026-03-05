@@ -37,7 +37,7 @@
                     width="100%"
                     required="false"
                     items="{employee>/ZSTATUS}">
-                    <core:Item key="{employee>STATUS_ID}" text="{employee>STATUS}" />
+                    <core:Item key="{employee>STATUS_ID}" text="{employee>STATUS_DESC}" />
                 </MultiComboBox>
 
                 <!-- Payment Date -->
@@ -167,10 +167,6 @@
                     items="{employee>/ZINDIV_GROUP}">
                     <core:Item key="{employee>IND_OR_GROUP_ID}" text="{employee>IND_OR_GROUP_DESC}" />
                 </MultiComboBox>
-
-                <!-- Amount -->
-<!--                 <Label text="Amount" />
-                <TextArea id="amount" textAlign="Begin" /> -->
 
                 <!-- Employee Name -->
                 <Label text="Employee name" />

@@ -31,6 +31,12 @@ sap.ui.define([
 
   return Controller.extend("claima.controller.analytics", {
 
+
+    onInit: function () {
+
+    },
+
+
     /* ===========================================================
      *  NAVIGATION + DIALOG
      * =========================================================== */
@@ -75,22 +81,128 @@ sap.ui.define([
       }
     },
 
+    /*     _openFragment: function (sFragmentPath) {
+          this._mDialogs ??= {};
+          if (!this._mDialogs[sFragmentPath]) {
+            Fragment.load({
+              id: this.getView().getId(),
+              name: sFragmentPath,
+              controller: this
+            }).then(d => {
+              this.getView().addDependent(d);
+              this._mDialogs[sFragmentPath] = d;
+    
+              d.open();
+            });
+          } else {
+            this._mDialogs[sFragmentPath].open();
+          }
+        }, */
+
     _openFragment: function (sFragmentPath) {
       this._mDialogs ??= {};
+
       if (!this._mDialogs[sFragmentPath]) {
         Fragment.load({
           id: this.getView().getId(),
           name: sFragmentPath,
           controller: this
-        }).then(d => {
-          this.getView().addDependent(d);
-          this._mDialogs[sFragmentPath] = d;
-          d.open();
+        }).then(dialog => {
+
+          this.getView().addDependent(dialog);
+          this._mDialogs[sFragmentPath] = dialog;
+
+          this._applyCostCenterAccess(dialog);
+
+          dialog.open();
         });
       } else {
+        // Fragment already loaded → just apply permission
+        this._applyCostCenterAccess(this._mDialogs[sFragmentPath]);
+
         this._mDialogs[sFragmentPath].open();
       }
     },
+
+    //Helper for enable/disable cc
+    _applyCostCenterAccess: function () {
+      const accessModel = this.getOwnerComponent().getModel("access");
+      const userType = accessModel?.getProperty("/userType");
+      const userCC = accessModel?.getProperty("/costcenters"); // array or string
+
+      const ccField = this.byId("cc");
+      if (!ccField) {
+        setTimeout(this._applyCostCenterAccess.bind(this), 0);
+        return;
+      }
+
+      const isAdmin = ["DTD Admin", "JKEW Admin"].includes(userType);
+
+      // Always wait until items are loaded once (OData V4 list binding)
+      const bindItems = ccField.getBinding("items");
+      const applySelection = () => {
+        if (!isAdmin) {
+          const keys = Array.isArray(userCC) ? userCC : (userCC ? [userCC] : []);
+          ccField.setSelectedKeys(keys);
+
+          // Disable to prevent typing + token deletion
+          ccField.setEnabled(false);
+          // (Optional) also setEditable(false) to keep visual enabled state but non-editable
+          // ccField.setEditable(false);
+        } else {
+          ccField.setEnabled(true);
+        }
+      };
+
+      if (bindItems && bindItems.attachEvent) {
+        // V4: "change" event fires on data arrival
+        const once = (fn) => {
+          const handler = () => { bindItems.detachEvent("change", handler); fn(); };
+          bindItems.attachEvent("change", handler);
+        };
+
+        // If data already present, apply now; else wait once
+        if (bindItems.getContexts(0, 1)?.length) {
+          applySelection();
+        } else {
+          once(applySelection);
+        }
+      } else {
+        // Fallback: next tick
+        setTimeout(applySelection, 0);
+      }
+    },
+    /*    _applyCostCenterAccess: function () {
+   
+         const accessModel = this.getOwnerComponent().getModel("access");
+         const userType = accessModel?.getProperty("/userType");
+         const userCC = accessModel?.getProperty("/costcenters");   // array or string
+   
+         const ccField = this.byId("cc");
+   
+         if (!ccField) {
+           setTimeout(this._applyCostCenterAccess.bind(this), 0);
+           return;
+         }
+   
+         const allowed = ["DTD Admin", "JKEW Admin"];
+         const isAdmin = allowed.includes(userType);
+   
+         // ==============
+         // 1. UI Control
+         // ==============
+         ccField.setEnabled(isAdmin);
+   
+         if (!isAdmin) {
+           // Non-admin behavior:
+           // Apply user CC as the only selected CC
+           if (Array.isArray(userCC)) {
+             ccField.setSelectedKeys(userCC);
+           } else {
+             ccField.setSelectedKeys([userCC]);
+           }
+         }
+       }, */
 
     onCloseDialog: function (oEvent) {
       let oCtrl = oEvent.getSource();
@@ -185,8 +297,24 @@ sap.ui.define([
       this._addOrFilter(a, "GL_ACCOUNT", glKeys);
 
       // Cost Center (both)
-      const ccKeys = this._getKeys("cc");
-      this._addOrFilter(a, "COST_CENTER", ccKeys);
+      /*       const ccKeys = this._getKeys("cc");
+            this._addOrFilter(a, "COST_CENTER", ccKeys); */
+
+      //Cost Center - Replace with enable/disable depending on User Type
+      // Cost Center rules
+      const accessModel = this.getOwnerComponent().getModel("access");
+      const userType = accessModel?.getProperty("/userType");
+      const userCC = accessModel?.getProperty("/costcenters");
+
+      if (["DTD Admin", "JKEW Admin"].includes(userType)) {
+        // ADMIN → free selection
+        const ccKeys = this._getKeys("cc");
+        this._addOrFilter(a, "COST_CENTER", ccKeys);
+      } else {
+        // NON-ADMIN → force user's own CC
+        const enforcedCC = Array.isArray(userCC) ? userCC : [userCC];
+        this._addOrFilter(a, "COST_CENTER", enforcedCC);
+      }
 
       // Claim Type (Claim targets only)
       const claimTypeKeys = this._getKeys("claim_type");
@@ -269,7 +397,7 @@ sap.ui.define([
         return;
       }
 
-      
+
 
       // Fallback: if no back history, route to a known start page if you have one
       // Example if you keep a landing page cached:
@@ -409,7 +537,7 @@ sap.ui.define([
       };
       return map[this._analyticsTarget] || "Report";
     },
- 
+
     _getTodayString: function () {
       const d = new Date();
       const y = d.getFullYear();
@@ -706,7 +834,7 @@ sap.ui.define([
         { label: "Course Session", property: "SESSION_NUMBER", width: 12 },
         { label: "Purpose", property: "PURPOSE", width: 24 },
         { label: "Remarks", property: "REMARK", width: 24 },
-        { label: "Trip Start Date", property: "TRIP_START_DATE",  width: 14 },
+        { label: "Trip Start Date", property: "TRIP_START_DATE", width: 14 },
         { label: "Trip End Date", property: "TRIP_END_DATE", width: 14 },
         { label: "Location", property: "LOCATION", width: 40 },
         { label: "Claim ID", property: "CLAIM_ID", width: 14 },
