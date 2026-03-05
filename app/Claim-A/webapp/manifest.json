@@ -387,6 +387,20 @@
                     ]
                 },
                 {
+                    "pattern": "ZBUDGET",
+                    "name": "ZBUDGET",
+                    "target": [
+                        "ZBUDGET"
+                    ]
+                },
+                {
+                    "pattern": "ZDB_STRUCTURE",
+                    "name": "ZDB_STRUCTURE",
+                    "target": [
+                        "ZDB_STRUCTURE"
+                    ]
+                },
+                {
                     "pattern": "ZOFFICE_LOCATION",
                     "name": "ZOFFICE_LOCATION",
                     "target": [
@@ -3462,6 +3476,114 @@
                         }
                     }
                 },
+                "ZBUDGET": {
+                    "type": "Component",
+                    "id": "ZBUDGET",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZBUDGET",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "YEAR,INTERNAL_ORDER,COMMITMENT_ITEM,FUND_CENTER,MATERIAL_GROUP,ORIGINAL_BUDGET,VIREMENT_IN,VIREMENT_OUT,SUPPLEMENT,RETURN,CURRENT_BUDGET,COMMITMENT,ACTUAL,CONSUMED,BUDGET_BALANCE,PROJECT_CODE,BUDGET_OWNER_ID,WBS_CODE,CURRENCY"
+                                        },
+                                        "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZDB_STRUCTURE": {
+                    "type": "Component",
+                    "id": "ZDB_STRUCTURE",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZDB_STRUCTURE",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "APP_CONTROL_ID,SUBMISSION_TYPE,COMPONENT_LEVEL,REQUEST_TYPE_ID,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,FIELD"
+                                        },
+                                        "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
                 "ZCLAIM_TYPE": {
                     "id": "ConfigTable",
                     "path": "claima.view",
@@ -3752,3 +3874,4 @@
         "service": "claimabackend.service"
     }
 }
+

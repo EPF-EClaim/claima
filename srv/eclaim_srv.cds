@@ -1221,5 +1221,5 @@ service eclaim_srv {
 
     entity ZAPPROVER_DETAILS_PREAPPROVAL as projection on ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL;
 
-    entity ZSUBSTITUTION_RULES           as projection on ECLAIM.ZSUBSTITUTION_RULES;
+    entity ZSUBSTITUTION_RULES as projection on ECLAIM.ZSUBSTITUTION_RULES;
 };
