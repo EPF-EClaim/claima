@@ -1602,12 +1602,11 @@ sap.ui.define([
 
 		onClickNavigate: function (oEvent) {
 			let id = oEvent.getParameters().id;
-			var oRoot = this.getOwnerComponent().getRootControl();
-			var oNav = oRoot.byId("pageContainer");
-			if (id.includes("dashboard-claim")) {
-				oNav.to(oRoot.createId("myreport"));
+			var oRouter = this.getOwnerComponent().getRouter();
+			if (id.includes("dashboard-claim")) {	
+				oRouter.navTo("ClaimStatus");
 			} else if (id.includes("request")) {
-				oNav.to(oRoot.createId("myrequest"));
+				oRouter.navTo("RequestFormStatus");
 			}
 		},
  
