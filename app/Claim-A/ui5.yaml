@@ -26,6 +26,11 @@ server:
             - /resources
             - /test-resources
           url: https://sapui5.hana.ondemand.com
+        backend:
+        - path: /SuccessFactors_API
+          pathPrefix: /
+          url: https://api44preview.sapsf.com
+          destination: Conn_SF_DEV_API
           #
     - name: fiori-tools-appreload
       afterMiddleware: compression
