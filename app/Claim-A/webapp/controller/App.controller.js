@@ -1830,8 +1830,8 @@ sap.ui.define([
 						var oUserModel = new sap.ui.model.json.JSONModel({ email: email });
 						that.getView().setModel(oUserModel, 'user');
 
-						// const emp_data = await this._getEmpIdDetail(email);
-						const oReqModel = this._getReqModel().getData();
+						const emp_data = await that._getEmpIdDetail(email);
+						const oReqModel = that._getReqModel().getData();
 						oReqModel.user = emp_data.eeid;
 						that._getReqModel().setData(oReqModel);
 
