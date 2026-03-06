@@ -75,11 +75,11 @@ sap.ui.define([
 			this._ensureRequestModelDefaults();
 			// var oUserModel = new sap.ui.model.json.JSONModel({ email: 'Jefry.Yap@my.ey.com' });
 			// this.getView().setModel(oUserModel, 'user');
-			// var userModelData = this.getView().getModel('user').getData();
-			// const emp_data = await this._getEmpIdDetail(userModelData.email);
-			// const oReqModel = this._getReqModel().getData();
-			// oReqModel.user = emp_data.eeid;
-			// this._getReqModel().setData(oReqModel);
+			var userModelData = this.getView().getModel('user').getData();
+			const emp_data = await this._getEmpIdDetail(userModelData.email);
+			const oReqModel = this._getReqModel().getData();
+			oReqModel.user = emp_data.eeid;
+			this._getReqModel().setData(oReqModel);
 
 		},
 
@@ -1829,8 +1829,7 @@ sap.ui.define([
 						var oUserModel = new sap.ui.model.json.JSONModel({ email: email });
 						that.getView().setModel(oUserModel, 'user');
 
-						var userModelData = this.getView().getModel('user').getData();
-						const emp_data = await this._getEmpIdDetail(userModelData.email);
+						const emp_data = await this._getEmpIdDetail(email);
 						const oReqModel = this._getReqModel().getData();
 						oReqModel.user = emp_data.eeid;
 						this._getReqModel().setData(oReqModel);
