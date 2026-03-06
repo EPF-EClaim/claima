@@ -1016,6 +1016,11 @@ entity ZWORKFLOW_RULE : managed {
         EMPLOYEE_COST_CENTER  : String(9);
         OUTCOME_WORKFLOW_CODE : String(3);
         REMARK                : String(255);
+        REQUEST_TYPE_ID       : String;
+        CASH_ADVANCE          : Boolean;
+        TRIP_START_DATE       : Date;
+        ZREQUEST_TYPE         : Association to ZREQUEST_TYPE
+                                    on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
 }
 
 entity ZCURRENCY : managed {
