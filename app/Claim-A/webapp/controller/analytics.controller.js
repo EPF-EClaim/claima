@@ -78,31 +78,6 @@ sap.ui.define([
       }
     },
 
-    /*     _openFragment: function (sFragmentPath) {
-          this._mDialogs ??= {};
-    
-          if (!this._mDialogs[sFragmentPath]) {
-            Fragment.load({
-              id: this.getView().getId(),
-              name: sFragmentPath,
-              controller: this
-            }).then(dialog => {
-    
-              this.getView().addDependent(dialog);
-              this._mDialogs[sFragmentPath] = dialog;
-    
-              this._applyCostCenterAccess(dialog);
-    
-              dialog.open();
-            });
-          } else {
-            // Fragment already loaded → just apply permission
-            this._applyCostCenterAccess(this._mDialogs[sFragmentPath]);
-    
-            this._mDialogs[sFragmentPath].open();
-          }
-        }, */
-
     _openFragment: function (sFragmentPath) {
       this._mDialogs ??= {};
 
@@ -283,12 +258,6 @@ sap.ui.define([
         statusCtrl.setSelectedKeys?.([]);
         statusCtrl.setValue?.("");
       }
-
-      // NOTE on Cost Center:
-      // We intentionally did NOT clear cc (MultiComboBox with id "cc") here.
-      // After this reset, we will call _applyCostCenterAccess() to:
-      // - Admins: keep CC control visible and empty (free selection)
-      // - Non-admins: enforce user's CC selection even if invisible (for filtering)
     },
 
 
@@ -379,11 +348,6 @@ sap.ui.define([
       const glKeys = this._getKeys("glcode");
       this._addOrFilter(a, "GL_ACCOUNT", glKeys);
 
-      // Cost Center (both)
-      /*       const ccKeys = this._getKeys("cc");
-            this._addOrFilter(a, "COST_CENTER", ccKeys); */
-
-      //Cost Center - Replace with enable/disable depending on User Type
       // Cost Center rules
       const accessModel = this.getOwnerComponent().getModel("access");
       const userType = accessModel?.getProperty("/userType");
@@ -479,13 +443,6 @@ sap.ui.define([
         oNav.back();
         return;
       }
-
-
-
-      // Fallback: if no back history, route to a known start page if you have one
-      // Example if you keep a landing page cached:
-      // const oStart = oRoot.byId("analyticsLandingPage");
-      // if (oStart) { oNav.to(oStart, "slide"); }
     },
 
     _navToFragmentTarget: async function (sTarget) {
@@ -521,9 +478,6 @@ sap.ui.define([
 
       const oPage = this._pages[sTarget];
       oNav.to(oPage, "slide");
-
-      // In OData V4 we DON'T need dataReceived for Days Approved; it's computed via formatter.
-      // setTimeout(() => this._attachCalculatedFields(), 300); // ← no longer needed
 
       return oPage;
     },
