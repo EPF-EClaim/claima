@@ -97,7 +97,13 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>preappreq_date}" />
                                 <table:template>
-                                    <Text text="{ path: 'employee_view>APPROVED_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>REQUEST_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
                                 </table:template>
                             </table:Column>
 
@@ -111,7 +117,13 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>submitted_date}" />
                                 <table:template>
-                                    <Text text="{ path: 'employee_view>SUBMITTED_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>SUBMITTED_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
                                 </table:template>
                             </table:Column>
 
@@ -126,7 +138,13 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>final_app_date}" />
                                 <table:template>
-                                    <Text text="{ path: 'employee_view>LAST_APPROVED_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>LAST_APPROVED_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
                                 </table:template>
                             </table:Column>
 
@@ -134,7 +152,13 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>last_send_date}" />
                                 <table:template>
-                                    <Text text="{ path: 'employee_view>LAST_SEND_BACK_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>LAST_SEND_BACK_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
                                 </table:template>
                             </table:Column>
 
@@ -161,7 +185,13 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>cash_adv_recei_date}" />
                                 <table:template>
-                                    <Text text="{ path: 'employee_view>CASH_ADVANCE_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>CASH_ADVANCE_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
                                 </table:template>
                             </table:Column>
 
@@ -169,7 +199,13 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>payment_date}" />
                                 <table:template>
-                                    <Text text="{ path: 'employee_view>PAYMENT_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>PAYMENT_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
                                 </table:template>
                             </table:Column>
 
@@ -227,14 +263,14 @@
                             <table:Column width="14rem" hAlign="End">
                                 <Label text="{i18n>cash_adv}" />
                                 <table:template>
-                                    <Text text="{ path: 'employee_view>CASH_ADVANCE_AMOUT', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" />
+                                    <Text text="{ path: 'employee_view>CASH_ADVANCE_AMOUNT', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" />
                                 </table:template>
                             </table:Column>
 
                             <!-- final_amt_receive (computed in controller) -->
                             <table:Column width="14rem" hAlign="End">
                                 <Label text="{i18n>final_amt_receive}" />
-                                <table:template><Text text="{employee_view>FINAL_AMOUNT_RECEIVE}" /></table:template>
+                                <table:template><Text text="{employee_view>FINAL_AMOUNT_TO_RECEIVE}" /></table:template>
                             </table:Column>
 
                             <!-- course_code -->
@@ -252,7 +288,7 @@
                             <!-- course_session -->
                             <table:Column width="20rem">
                                 <Label text="{i18n>course_session}" />
-                                <table:template><Text text="{employee_view>COURSE_DESC}" /></table:template>
+                                <table:template><Text text="{employee_view>SESSION_NUMBER}" /></table:template>
                             </table:Column>
 
                             <!-- purpose -->
@@ -272,7 +308,13 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>req_tripstartdate}" />
                                 <table:template>
-                                    <Text text="{ path: 'employee_view>TRIP_START_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>TRIP_START_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
                                 </table:template>
                             </table:Column>
 
@@ -280,7 +322,13 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>req_tripenddate}" />
                                 <table:template>
-                                    <Text text="{ path: 'employee_view>TRIP_END_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>TRIP_END_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
                                 </table:template>
                             </table:Column>
 
@@ -302,12 +350,6 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>claim_sub_id}" />
                                 <table:template><Text text="{employee_view>CLAIM_SUB_ID}" /></table:template>
-                            </table:Column>
-
-                            <!-- item_no (not explicit in metadata; left blank or map if available) -->
-                            <table:Column width="10rem">
-                                <Label text="{i18n>item_no}" />
-                                <table:template><Text text="{employee_view>ITEM_NO}" /></table:template>
                             </table:Column>
 
                             <!-- compensation -->
@@ -336,7 +378,13 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>bill_date}" />
                                 <table:template>
-                                    <Text text="{ path: 'employee_view>BILL_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>BILL_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
                                 </table:template>
                             </table:Column>
 
@@ -380,7 +428,13 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>req_i_end_date}" />
                                 <table:template>
-                                    <Text text="{ path: 'employee_view>END_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>END_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
                                 </table:template>
                             </table:Column>
 
@@ -399,7 +453,7 @@
                             <!-- fromloc -->
                             <table:Column width="14rem">
                                 <Label text="{i18n>fromloc}" />
-                                <table:template><Text text="{employee_view>FROM_LOCATION_DESC}" /></table:template>
+                                <table:template><Text text="{employee_view>FROM_LOCATION}" /></table:template>
                             </table:Column>
 
                             <!-- fromloc_office -->
@@ -478,7 +532,13 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>receipt_date}" />
                                 <table:template>
-                                    <Text text="{ path: 'employee_view>RECEIPT_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>RECEIPT_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
                                 </table:template>
                             </table:Column>
 
@@ -510,7 +570,13 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>start_date}" />
                                 <table:template>
-                                    <Text text="{ path: 'employee_view>START_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>START_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
                                 </table:template>
                             </table:Column>
 
@@ -568,7 +634,13 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>req_tripstartdate}" />
                                 <table:template>
-                                    <Text text="{ path: 'employee_view>TRIP_START_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>TRIP_START_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
                                 </table:template>
                             </table:Column>
 
@@ -582,7 +654,13 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>req_tripenddate}" />
                                 <table:template>
-                                    <Text text="{ path: 'employee_view>TRIP_END_DATE', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }" />
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>TRIP_END_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
                                 </table:template>
                             </table:Column>
 

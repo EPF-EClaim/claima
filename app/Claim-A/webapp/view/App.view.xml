@@ -253,7 +253,7 @@
                     </content> 
                 </Page>
                 <!-- === My Claim Status Page (added) === -->
-                <Page
+    <!--             <Page
                     id="myreport"
                     showHeader="false"
                     class="sapUiNoContentPadding"
@@ -264,7 +264,7 @@
                             type="XML"
                         />
                     </content>
-                </Page>
+                </Page>-->
                 <!-- === Manage My Substitution Page (added) === -->
                 <Page
                     id="mysubstitution"
@@ -277,7 +277,7 @@
                             viewName="claima.view.ManageSub"
                         />
                     </content> 
-                </Page>
+                </Page> 
             </NavContainer>
         </tnt:mainContents>
     </tnt:ToolPage>

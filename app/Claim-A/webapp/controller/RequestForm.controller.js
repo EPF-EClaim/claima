@@ -24,32 +24,32 @@ sap.ui.define([
 			this._fragments = Object.create(null);
 
 			// URL Access
-			const oRouter = this.getOwnerComponent().getRouter();
-			oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
+			// const oRouter = this.getOwnerComponent().getRouter();
+			// oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
 		},
 
 		/* =========================================================
-		* URL Access
+		* URL Access (later)
 		* ======================================================= */
 		
-		_onMatched(oEvent) {
-			let sRequestId = oEvent.getParameter("arguments").request_id;
+		// _onMatched(oEvent) {
+		// 	let sRequestId = oEvent.getParameter("arguments").request_id;
 
-			try { sRequestId = decodeURIComponent(sRequestId); } catch (e) {}
+		// 	try { sRequestId = decodeURIComponent(sRequestId); } catch (e) {}
 
-			console.log("Deep-link request ID:", sRequestId);
+		// 	console.log("Deep-link request ID:", sRequestId);
 
-			const oReqModel = this.getOwnerComponent().getModel("request");
-			oReqModel.setProperty("/req_header/reqid", sRequestId);
+		// 	const oReqModel = this.getOwnerComponent().getModel("request");
+		// 	oReqModel.setProperty("/req_header/reqid", sRequestId);
 
-			// 3. Load data for this request ID
-			this._loadRequest(sRequestId);
-		},
+		// 	// 3. Load data for this request ID
+		// 	this._loadRequest(sRequestId);
+		// },
 
-		_loadRequest: function (sReqId) {
-			this._getHeader(sReqId);
-			this._getItemList(sReqId);
-		},
+		// _loadRequest: function (sReqId) {
+		// 	this._getHeader(sReqId);
+		// 	this._getItemList(sReqId);
+		// },
 
 		/* =========================================================
 		* Helpers: Model
@@ -226,23 +226,37 @@ sap.ui.define([
 		},
 
 		async _updateHeaderStatusToDeleted(empId, reqId) {
-			const oReqJson = this._getReqModel();
-			const oModel   = this.getOwnerComponent().getModel();
+			const oReq = this._getReqModel();
+			const oModel = this.getOwnerComponent().getModel();
 			const sUpdateGroupId = "$auto";
 
-			const literal = (v) => /^\d+$/.test(String(v)) ? String(Number(v)) : `'${String(v).replace(/'/g, "''")}'`;
-
-			const sPath = `/ZREQUEST_HEADER(EMP_ID=${literal(empId)},REQUEST_ID=${literal(reqId)})`;
-			const oCtxBinding = oModel.bindContext(sPath, null, { $$updateGroupId: sUpdateGroupId, $$ownRequest: true });
+			const oListBinding = oModel.bindList("/ZREQUEST_HEADER", null, null, [
+				new sap.ui.model.Filter("EMP_ID", sap.ui.model.FilterOperator.EQ, empId),
+				new sap.ui.model.Filter("REQUEST_ID", sap.ui.model.FilterOperator.EQ, reqId)
+			], {
+				$$updateGroupId: sUpdateGroupId,
+				$$ownRequest: true 
+			});
 
 			try {
-				await oCtxBinding.requestObject();
+				const aCtx = await oListBinding.requestContexts(0, 1);
 
-				const oCtx = oCtxBinding.getBoundContext();
+				if (!aCtx || aCtx.length === 0) {
+					throw new Error(`Header not found for EMP_ID=${empId}, REQUEST_ID=${reqId}`);
+				}
+
+				const oCtx = aCtx[0];
+
+				const oData = oCtx.getObject();
+				if (oData?.STATUS === "DELETED") {
+					oReq.setProperty("/req_header/status", "DELETED");
+					return;
+				}
+
 				oCtx.setProperty("STATUS", "DELETED");
-				await oModel.submitBatch(sUpdateGroupId);
 
-				oReqJson.setProperty("/req_header/status", "DELETED");
+				await oModel.submitBatch(sUpdateGroupId);
+				oReq.setProperty("/req_header/status", "DELETED");
 			} catch (err) {
 				console.error("Update header to DELETED failed:", err);
 				throw err;
@@ -259,8 +273,12 @@ sap.ui.define([
 				return;
 			}
 
-			const reqId = String(data.req_header.reqid || "").trim();
-			const empId  = oReq.getProperty("/user");
+			const reqId 		= String(data.req_header.reqid || "").trim();
+			const empId  		= oReq.getProperty("/user");
+			const reqDate 		= data.req_header.reqdate;
+			const proj			= null;
+			const reqCC 		= data.req_header.costcenter;
+			const reqClaimType 	= data.req_header.claimtype;
 
 			if (!reqId || !empId) {
 				sap.m.MessageToast.show("EMP ID or Request ID missing");
@@ -279,50 +297,45 @@ sap.ui.define([
 						try {
 							sap.ui.core.BusyIndicator.show(0);
 
-							const oModel = this.getOwnerComponent().getModel(); 
+							// budget checking
+							const result = this.budgetChecking(reqDate, proj, reqCC, reqClaimType, rows);
 
-							const oListBinding = oModel.bindList(
-								"/ZREQUEST_HEADER",
-								null,
-								null,
-								[
-									new sap.ui.model.Filter({
-										path: "EMP_ID",
-										operator: sap.ui.model.FilterOperator.EQ,
-										value1: empId
-									}),
-									new sap.ui.model.Filter({
-										path: "REQUEST_ID",
-										operator: sap.ui.model.FilterOperator.EQ,
-										value1: reqId
-									})
-								],
-								{
-									$$ownRequest: true,
-									$$groupId: "$auto",
-									$$updateGroupId: "$auto"
+							if (result.passed) {
+								const oModel = this.getOwnerComponent().getModel(); 
+
+								const oListBinding = oModel.bindList("/ZREQUEST_HEADER", null,null,
+									[
+										new sap.ui.model.Filter({ path: "EMP_ID", operator: sap.ui.model.FilterOperator.EQ, value1: empId }),
+										new sap.ui.model.Filter({ path: "REQUEST_ID", operator: sap.ui.model.FilterOperator.EQ, value1: reqId })
+									],
+									{
+										$$ownRequest: true,
+										$$groupId: "$auto",
+										$$updateGroupId: "$auto"
+									}
+								);
+
+								const aCtx = await oListBinding.requestContexts(0, 1);
+								const oCtx = aCtx[0];
+
+								if (!oCtx) {
+									throw new Error("Request not found for submit.");
 								}
-							);
 
-							const aCtx = await oListBinding.requestContexts(0, 1);
-							const oCtx = aCtx[0];
+								oCtx.setProperty("STATUS", "PENDING APPROVAL");
+								oCtx.setProperty("CASH_ADVANCE", parseFloat(data.req_header.cashadvamt));
+								oCtx.setProperty("PREAPPROVAL_AMOUNT", parseFloat(data.req_header.reqamt));
 
-							if (!oCtx) {
-								throw new Error("Request not found for submit.");
+								await oModel.submitBatch("$auto");
+								
+								sap.m.MessageToast.show("Request submitted successfully");
+
+								this.getPARHeaderList(empId);
+								const oRouter = this.getOwnerComponent().getRouter();
+								oRouter.navTo("RequestFormStatus");
+							} else {
+								MessageToast.show(`Please inform Cost Center owner to increase the budget for Claim Item ${result.aErrors} before submit Pre-Approval Request`);
 							}
-
-							oCtx.setProperty("STATUS", "PENDING APPROVAL");
-							oCtx.setProperty("CASH_ADVANCE", parseFloat(data.req_header.cashadvamt));
-							oCtx.setProperty("PREAPPROVAL_AMOUNT", parseFloat(data.req_header.reqamt));
-
-							await oModel.submitBatch("$auto");
-
-							sap.m.MessageToast.show("Request submitted successfully");
-
-							const oRouter = this.getOwnerComponent().getRouter();
-							oRouter.navTo("RequestFormStatus");
-							this.getPARHeaderList(empId);
-
 						} catch (e) {
 							sap.m.MessageToast.show(e.message || "Submission failed");
 						} finally {
@@ -372,20 +385,14 @@ sap.ui.define([
 
 		async onAddItem(oEvent) {
 			await this._showItemCreate("create");
-			this._getClaimTypeItemSelection();
+			this._loadSelections();
 
 			const oReq = this._getReqModel();
 			const data = oReq.getData();
 
 			data.req_item = {
-				claim_type_item_id: "CTI1",
-				est_amount: "",
-				est_no_participant: "",
-				cash_advance: "no_cashadv",
-				start_date: "",
-				end_date: "",
-				location: "",
-				remarks: ""
+				claim_type_item_id: "",
+				cash_advance: "no_cashadv"
 			};
 
 			if (data.req_header.grptype === 'individual') {
@@ -487,6 +494,7 @@ sap.ui.define([
 			this._showItemCreate(oReq.getProperty("/view"));
 			await this._loadParticipantsForItem(reqId, subId);
 			await this._getClaimTypeItemSelection();
+			this.getFieldVisibility_ClaimTypeItem(oEvent);
 		},
 
 		async _loadParticipantsForItem(reqId, subId) {
@@ -532,6 +540,8 @@ sap.ui.define([
 					ALLOCATED_AMOUNT: p.ALLOCATED_AMOUNT ?? ""
 				}));
 
+				aMapped.push({ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" });
+
 				oReq.setProperty(
 					"/participant",
 					aMapped.length
@@ -556,9 +566,9 @@ sap.ui.define([
 				} else {
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("RequestFormStatus");
+					this._ensureRequestModelDefaults();
 				}
 			}
-			this._ensureRequestModelDefaults();
 		},
 
 		/* =========================================================
@@ -566,7 +576,7 @@ sap.ui.define([
 		* ======================================================= */
 
 		async onRowDeleteReqItem(oEvent) {
-			const oTable = this.byId("req_item_table_d"); 
+			const oTable = this._resolveControl("req_item_table_d", "request") || this._resolveControl("req_item_table", "request");
 			const oReq   = this._getReqModel();
 			const aRows  = oReq.getProperty("/req_item_rows") || [];
 
@@ -1021,8 +1031,8 @@ sap.ui.define([
 				}
 
 				if (isEdit) {
-					const requestSubId = String(data.req_item.req_subid || "").trim();
-					if (!requestSubId) throw new Error("Missing Request Sub ID for edit");
+					const subId = String(data.req_item.req_subid || "").trim();
+					if (!subId) throw new Error("Missing Request Sub ID for edit");
 
 					const oList = oModel.bindList(
 						"/ZREQUEST_ITEM",
@@ -1048,7 +1058,7 @@ sap.ui.define([
 					oItemCtx.setProperty("LOCATION",           data.req_item.location  || "");
 					oItemCtx.setProperty("REMARK",             data.req_item.remark    || "");
 
-					await this._replaceParticipantsForItem(reqId, requestSubId, data.participant);
+					await this._replaceParticipantsForItem(reqId, subId, data.participant);
 
 					await oModel.submitBatch("itemSave");
 
@@ -1176,7 +1186,7 @@ sap.ui.define([
 					{
 					REQUEST_ID:       requestId,
 					REQUEST_SUB_ID:   requestSubId,
-					PARTICIPANTS_ID:  cast(pid),
+					PARTICIPANTS_ID:  pid,
 					ALLOCATED_AMOUNT: alloc
 					},
 					true
@@ -1228,8 +1238,7 @@ sap.ui.define([
 				})],
 				{
 					$$ownRequest: true,
-					$$groupId: "$auto",
-					$$top: 1
+					$$groupId: "$auto"
 				}
 			);
 
@@ -1237,10 +1246,32 @@ sap.ui.define([
 				const aCtx = await oListBinding.requestContexts(0, 1);
 				const a = aCtx[0]?.getObject();
 
-				if (a.PREAPPROVAL_AMOUNT == null) {a.PREAPPROVAL_AMOUNT = 0.0;}
+				oReq.setProperty("/req_header", {
+					purpose        : a.OBJECTIVE_PURPOSE || "",
+					reqtype        : a.REQUEST_TYPE_DESC || "",
+					tripstartdate  : a.TRIP_START_DATE || "",
+					tripenddate    : a.TRIP_END_DATE || "",
+					eventstartdate : a.EVENT_START_DATE || "",
+					eventenddate   : a.EVENT_END_DATE || "",
+					grptype        : a.IND_OR_GROUP_DESC || "",
+					location       : a.LOCATION || "",
+					transport      : a.TYPE_OF_TRANSPORTATION || "",
+					altcostcenter  : a.ALTERNATE_COST_CENTER || "",
+					doc1           : a.ATTACHMENT1 || "",
+					doc2           : a.ATTACHMENT2 || "",
+					comment        : a.REMARK || "",
+					eventdetail1   : a.EVENT_FIELD1 || "",
+					eventdetail2   : a.EVENT_FIELD2 || "",
+					eventdetail3   : a.EVENT_FIELD3 || "",
+					eventdetail4   : a.EVENT_FIELD4 || "",
+					reqid          : a.REQUEST_ID || "",
+					reqstatus      : a.STATUS_DESC || "",
+					costcenter     : a.COST_CENTER || "",
+					cashadvamt     : a.CASH_ADVANCE || 0,
+					reqamt         : a.PREAPPROVAL_AMOUNT || 0,
+					claimtype	   : a.CLAIM_TYPE_DESC || ""
+                });
 
-				oReq.setProperty("/req_header", a[0]); 
-				return a;
 			} catch (err) {
 				console.error("OData V4 bindList failed:", err);
 				oReq.setProperty("/req_header", a); 
@@ -1382,63 +1413,6 @@ sap.ui.define([
 			}
 		}, 
 
-		async _getClaimTypeItemSelection() {
-			const oReq   = this._getReqModel();
-			const data   = oReq.getData();
-			const claim_type_id = data.req_header.claimtype;
-
-			if (!claim_type_id) {
-				oReq.setProperty("/claim_type_items", []);
-				return [];
-			}
-
-			const oModel = this.getOwnerComponent().getModel();
-
-			try {
-				const oListBinding = oModel.bindList(
-					"/ZCLAIM_TYPE_ITEM",
-					null,
-					[
-						new sap.ui.model.Sorter("CLAIM_TYPE_ID", false)
-					],
-					[
-						new sap.ui.model.Filter({
-							path: "CLAIM_TYPE_ID",
-							operator: sap.ui.model.FilterOperator.EQ,
-							value1: claim_type_id
-						}),
-						new sap.ui.model.Filter({
-							path: "CATEGORY_ID",
-							operator: sap.ui.model.FilterOperator.EQ,
-							value1: "PREAPPROVAL"
-						}),
-						new sap.ui.model.Filter({
-							path: "CATEGORY_ID",
-							operator: sap.ui.model.FilterOperator.EQ,
-							value1: "AUTOAPPROVE"
-						})
-					],
-					{
-						$$ownRequest: true,
-						$$groupId: "$auto",
-						$count: true,
-						$select: "CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC"
-					}
-				);
-
-				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				const a = aCtx.map((ctx) => ctx.getObject());
-
-				oReq.setProperty("/claim_type_items", a);
-				return a;
-
-			} catch (err) {
-				console.error("ODataV4 load claim type items failed:", err);
-				oReq.setProperty("/claim_type_items", []);
-				return [];
-			}
-		},
-
 		// My Pre-Approval Request Status function
 		getPARHeaderList: async function (emp_id) {
 			const oReq = this.getOwnerComponent().getModel("request_status");
@@ -1578,13 +1552,14 @@ sap.ui.define([
 		* Excel Files Logics 
 		* ======================================================= */
 
-		onExport: function() {
+		onExport() {
 			var oModel = this.getView().getModel("request");
 			var aData = oModel.getProperty("/participant") || [];
 			
 			// Logic: If the array is empty OR the first row's EEID is falsy, export an empty list.
 			// Otherwise, export the full list.
 			var aExportData = (aData.length > 0 && aData[0].PARTICIPANTS_ID) ? aData : [];
+			var filename = this._getExcelFileName("participant");
 
 			var aCols = this._createColumnConfig();
 			var oSettings = {
@@ -1592,7 +1567,7 @@ sap.ui.define([
 					columns: aCols 
 				},
 				dataSource: aExportData,
-				fileName: "Pre-Approval Request Participant Data.xlsx",
+				fileName: filename,
 				worker: false // Set to false for small datasets or if debugging
 			};
 
@@ -1606,7 +1581,7 @@ sap.ui.define([
 				});
 		},
 
-        _createColumnConfig: function() {
+        _createColumnConfig() {
             return [
                 { label: 'PARTICIPANTS_ID', property: 'PARTICIPANTS_ID', type: 'string' },
                 { label: 'PARTICIPANT_NAME', property: 'PARTICIPANT_NAME', type: 'string' },
@@ -1631,10 +1606,660 @@ sap.ui.define([
 				const oReqModel = this._getReqModel();
 				oReqModel.setProperty("/participant", jsonData);
 
-				// MessageToast.show("Upload successful!");
+				
+				var fu = this.byId("participant_list_upload");
+				fu.clear();
+
 			}.bind(this);
 
 			reader.readAsArrayBuffer(file);
+		},
+		
+		_sanitizeFileName(s) {
+			return (s || "")
+				.replace(/[\\/:*?"<>|]/g, "_")
+				.replace(/\s+/g, " ")
+				.trim()
+				.substring(0, 80);
+		},
+
+		_getTodayString() {
+			const d = new Date();
+			const y = d.getFullYear();
+			const m = String(d.getMonth() + 1).padStart(2, "0");
+			const day = String(d.getDate()).padStart(2, "0");
+			return `${y}-${m}-${day}`;
+		},
+
+		_getExcelFileName(is_participant) {
+			if (is_participant == 'participant') {
+				const input = this.getOwnerComponent().getModel("request")?.getData() || {};
+				const id = input?.req_header?.reqid || "";
+				const subid = input?.req_item?.req_subid || "";
+
+				return this._sanitizeFileName(`Pre_Approval_Request_${id}_${subid}_Participant_Data.xlsx`);
+			} else {
+				const input = this.getOwnerComponent().getModel("request")?.getData() || {};
+				const id = input?.req_header?.reqid || "";
+
+				return this._sanitizeFileName(`Pre_Approval_Request_${id}_${this._getTodayString()}.xlsx`);
+			}
+		},
+
+		_toDate(val) {
+
+			if (!val) return null;
+
+			// ISO 8601 with or without milliseconds
+			if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}T/i.test(val)) {
+				const d = new Date(val);
+				if (!isNaN(d.getTime())) {
+					return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+				}
+				return null;
+			}
+
+			// YYYY-MM-DD
+			if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+				const [y, m, d] = val.split("-").map(Number);
+				return new Date(Date.UTC(y, m - 1, d));
+			}
+
+			// JS Date
+			if (val instanceof Date && !isNaN(val.getTime())) {
+				return new Date(Date.UTC(val.getFullYear(), val.getMonth(), val.getDate()));
+			}
+
+			// SAP Edm.Date { year, month, day }
+			if (typeof val === "object" && val.year && val.month && val.day) {
+				return new Date(Date.UTC(val.year, val.month - 1, val.day));
+			}
+
+			return null;
+		},
+
+		async onDownloadExcelReport() {
+			const oView = this.getView();
+			const XLSX = window.XLSX;
+			const that = this;
+
+			function _num(val) {
+				if (val === null || val === undefined || val === "") return null;
+				const n = Number(val);
+				return Number.isFinite(n) ? n : null;
+			}
+
+			function _applyColumnMeta(ws, columns, startDataRow) {
+				ws["!cols"] = columns.map(c => ({ wch: c.width || 12 }));
+
+				const ref = ws["!ref"];
+				if (!ref) return;
+
+				const range = XLSX.utils.decode_range(ref);
+
+				for (let c = 0; c < columns.length; c++) {
+					const meta = columns[c];
+					if (!meta.type) continue;
+
+					for (let r = startDataRow; r <= range.e.r; r++) {
+						const addr = XLSX.utils.encode_cell({ c, r });
+						const cell = ws[addr];
+						if (!cell) continue;
+
+						// FORCE DATE FORMAT YYYY-MM-DD
+
+						if (meta.type === "date") {
+							const dt = that._toDate(cell.v);
+
+							if (dt) {
+								cell.t = "d";
+								cell.v = dt;
+								cell.z = "yyyy-mm-dd";
+							} else {
+								// clear invalid date to avoid showing 1970-01-01
+								delete ws[addr];
+							}
+						}
+
+
+						// Numbers
+						if (meta.type === "number") {
+							const n = _num(cell.v);
+							if (n === null) {
+								delete ws[addr];
+							} else {
+								cell.t = "n";
+								cell.v = n;
+								cell.z = meta.scale === 2 ? "#,##0.00" : "#,##0";
+							}
+						}
+					}
+				}
+			}
+
+			try {
+				oView.setBusy(true);
+
+				const input = this.getOwnerComponent().getModel("request")?.getData();
+				if (!input) {
+					sap.m.MessageToast.show("No request data loaded.");
+					return;
+				}
+
+				const header = input.req_header || {};
+				const items = input.req_item_rows || [];
+				const item_part = await this._getParticipantsList(header.reqid);
+
+				// -------------------------------
+				// Build Header Row
+				// -------------------------------
+				const headerRow = {
+					"Request ID"				: header.reqid,
+					"Purpose"					: header.purpose,
+					"Trip Start Date"			: header.tripstartdate,
+					"Trip End Date"				: header.tripenddate,
+					"Event Start Date"			: header.eventstartdate,
+					"Event End Date"			: header.eventenddate,
+					"Location"					: header.location 				|| "",
+					"Individual/Group"			: header.grptype 				|| "",
+					"Type of Transportation"	: header.transport 				|| "",
+					"Request Status"			: header.reqstatus,
+					"Cost Center"				: header.cc,
+					"Alternate Cost Center"		: header.acc 					|| "-",
+					"Cash Advance (MYR)"		: header.cashadvamt,
+					"Pre Approval Amount (MYR)"	: header.reqamt,
+					"Request Type"				: header.reqtype,
+					"Comment"					: header.comment 				|| "",
+					"Claim Type"				: header.claimtype,
+				};
+
+				const headerColumns = [
+					{ label: "Request ID", 					property: "Request ID", 				type: "string" },
+					{ label: "Purpose", 					property: "Purpose", 					type: "string" },
+					{ label: "Trip Start Date", 			property: "Trip Start Date", 			type: "date" },
+					{ label: "Trip End Date", 				property: "Trip End Date", 				type: "date" },
+					{ label: "Event Start Date", 			property: "Event Start Date", 			type: "date" },
+					{ label: "Event End Date", 				property: "Event End Date", 			type: "date" },
+					{ label: "Location", 					property: "Location", 					type: "string" },
+					{ label: "Individual/Group", 			property: "Individual/Group", 			type: "string" },
+					{ label: "Type of Transportation",		property: "Type of Transportation",		type: "string" },
+					{ label: "Request Status",		 		property: "Request Status",		 		type: "string" },
+					{ label: "Cost Center", 				property: "Cost Center", 				type: "string" },
+					{ label: "Alternate Cost Center",		property: "Alternate Cost Center",		type: "string" },
+					{ label: "Cash Advance (MYR)",			property: "Cash Advance (MYR)",		 	type: "number", scale: 2 },
+					{ label: "Pre Approval Amount (MYR)", 	property: "Pre Approval Amount (MYR)", 	type: "number", scale: 2 },
+					{ label: "Request Type", 				property: "Request Type", 			 	type: "string" },
+					{ label: "Comment", 					property: "Comment", 				 	type: "string" },
+					{ label: "Claim Type", 					property: "Claim Type", 				type: "string" }
+				];
+
+				const headerLabels = headerColumns.map(c => c.label);
+				const headerValues = headerColumns.map(c => headerRow[c.property] ?? "");
+
+				const wsHeader = XLSX.utils.aoa_to_sheet([headerLabels, headerValues]);
+				_applyColumnMeta(wsHeader, headerColumns, 1);
+
+				// -------------------------------
+				// Items Sheet
+				// -------------------------------
+				const itemsColumns = [
+					{ label: "Employee ID",						property: "EMP_ID",							type: "string" },
+					{ label: "Request ID",						property: "REQUEST_ID",						type: "string" },
+					{ label: "Request Sub ID",					property: "REQUEST_SUB_ID",					type: "string" },
+					{ label: "Claim Type ID",					property: "CLAIM_TYPE_ID",					type: "string" },
+					{ label: "Claim Type Desc",					property: "CLAIM_TYPE_DESC",				type: "string" },
+					{ label: "GL Account",						property: "GL_ACCOUNT",						type: "string" },
+					{ label: "Claim Type Item ID",				property: "CLAIM_TYPE_ITEM_ID",				type: "string" },
+					{ label: "Claim Type Item Desc",			property: "CLAIM_TYPE_ITEM_DESC",			type: "string" },
+					{ label: "Cost Center",						property: "COST_CENTER",					type: "string" },
+					{ label: "Material Code",					property: "MATERIAL_CODE",					type: "string" },
+					{ label: "Number of days",					property: "NO_OF_DAYS",						type: "number" },
+					{ label: "Purpose",							property: "PURPOSE",						type: "string" },
+					{ label: "Est. Amount (MYR)",				property: "EST_AMOUNT",						type: "string" },
+					{ label: "Dependent",						property: "DEPENDENT",						type: "string" },
+					{ label: "Dependent Name",					property: "LEGAL_NAME",						type: "string" },
+					{ label: "Dependent Relationship",			property: "RELATIONSHIP",					type: "string" },
+					{ label: "Remarks/Justification",			property: "REMARK",							type: "string" },
+					{ label: "Course Title",					property: "COURSE TITLE",					type: "string" },
+					{ label: "KWSP Sport Represent",			property: "KWSP_SPORTS_REPRESENTATION",		type: "string" },
+					{ label: "Sport Represent Desc",			property: "SPORTS_REPRESENTATION_DESC",		type: "string" },
+					{ label: "Declare Club Membership",			property: "DECLARE_CLUB_MEMBERSHIP",		type: "string" },
+					{ label: "Category/Purpose (Mobile) ID",	property: "MOBILE_CATEGORY_PURPOSE_ID",		type: "string" },
+					{ label: "Category/Purpose (Mobile) Desc",	property: "MOBILE_CATEGORY_PURPOSE_DESC",	type: "string" },
+					{ label: "Attachment 1",					property: "ATTACHMENT 1",					type: "string" },
+					{ label: "Attachment 2",					property: "ATTACHMENT 2",					type: "string" },
+					{ label: "Start Date",						property: "START DATE",						type: "date" },
+					{ label: "End Date",						property: "END DATE",						type: "date" },
+					{ label: "Vehicle Ownership ID",			property: "VEHICLE OWNERSHIP_ID",			type: "string" },
+					{ label: "Vehicle Ownership Desc",			property: "VEHICLE OWNERSHIP_DESC",			type: "string" },
+					{ label: "Room Type",						property: "ROOM TYPE",						type: "string" },
+					{ label: "Room Type Desc",					property: "ROOM_TYPE_DESC",					type: "string" },
+					{ label: "Country",							property: "COUNTRY",						type: "string" },
+					{ label: "Location",						property: "LOCATION",						type: "string" },
+					{ label: "Negara/Wilayah",					property: "AREA",							type: "string" },
+					{ label: "Description",						property: "AREA_DESC",						type: "string" },
+					{ label: "Number of Family Member",			property: "FAMILY_COUNT",					type: "number" },
+					{ label: "Vehicle Type",					property: "VEHICLE_TYPE",					type: "string" },
+					{ label: "vehicle Type Desc",				property: "VEHICLE_TYPE_DESC",				type: "string" },
+					{ label: "Kilometer",						property: "KILOMETER",						type: "number" },
+					{ label: "Rate per KM ID",					property: "RATE PER KM (RATE_KM_ID)",		type: "string" },
+					{ label: "Rate",							property: "RATE",							type: "number" },
+					{ label: "Toll",							property: "TOLL",							type: "string" },
+					{ label: "Flight Class ID",					property: "FLIGHT CLASS",					type: "string" },
+					{ label: "Flight Class Desc",				property: "FLIGHT_CLASS_DESC",				type: "string" },
+					{ label: "Location Type",					property: "LOCATION TYPE",					type: "string" },
+					{ label: "Location Type Desc",				property: "LOC_TYPE_DESC",					type: "string" },
+					{ label: "From State",						property: "FROM STATE",						type: "string" },
+					{ label: "From Location",					property: "FROM LOCATION",					type: "string" },
+					{ label: "From Location (Office)",			property: "FROM_LOCATION_OFFICE",			type: "string" },
+					{ label: "To State",						property: "TO STATE",						type: "string" },
+					{ label: "To Location",						property: "TO LOCATION",					type: "string" },
+					{ label: "To Location (Office)",			property: "TO_LOCATION_OFFICE",				type: "string" },
+					{ label: "Mode of Transfer",				property: "MODE OF TRANSFER",				type: "string" },
+					{ label: "Tarikh Pindah",					property: "TARIKH PINDAH",					type: "date" },
+					{ label: "Region",							property: "REGION",							type: "string" },
+					{ label: "Region Description",				property: "REGION_DESC",					type: "string" },
+					{ label: "Marriage Category ID",			property: "MARRIAGE_CATEGORY",				type: "string" },
+					{ label: "Marriage Category Desc",			property: "MARRIAGE_CATEGORY_DESC",			type: "string" },
+					{ label: "Member Cube (Eligible)",			property: "MEMBER CUBE ELIGIBLE",			type: "string" },
+					{ label: "Member Cube (Actual)",			property: "MEMBER CUBE ACTUAL",				type: "string" },
+					{ label: "Departure Time",					property: "DEPARTURE TIME",					type: "time" },
+					{ label: "Arrival Time",					property: "ARRIVAL TIME",					type: "time" },
+					{ label: "Lodging Category ID",				property: "LODGING CATEGORY",				type: "string" },
+					{ label: "Lodging Category Desc",			property: "LODGING_CATEGORY_DESC",			type: "string" },
+					{ label: "Estimated Participants",			property: "ESTIMATED PARTICIPANTS",			type: "string" },
+					{ label: "Cash Advance (Yes/No)",			property: "CASH ADVANCE",					type: "string" }
+				];
+
+				const itemsLabels = itemsColumns.map(c => c.label);
+
+				const itemRows = items.map(it => {
+					return itemsColumns.map(c => {
+						if (c.type === "date") return that._toDate(it[c.property]);
+						if (c.type === "number") return _num(it[c.property]);
+						return it[c.property] ?? "";
+					});
+				});
+
+				const wsItems = XLSX.utils.aoa_to_sheet([itemsLabels, ...itemRows]);
+				_applyColumnMeta(wsItems, itemsColumns, 1);
+
+				// -------------------------------
+				// Build Item Participants Row
+				// -------------------------------
+
+				const itemPartColumns = [
+					{ label: "Request ID",				property: "REQUEST_ID",			type: "string", width: 15 },
+					{ label: "Request Sub ID",			property: "REQUEST_SUB_ID",		type: "string", width: 15 },
+					{ label: "Participant ID", 			property: "PARTICIPANTS_ID",	type: "string", width: 13 },
+					{ label: "Participant Name",		property: "NAME", 				type: "string", width: 20 },
+					{ label: "Cost Center", 			property: "CC", 				type: "string", width: 13 },
+					{ label: "Allocated Amount (MYR)",	property: "ALLOCATED_AMOUNT",	type: "string", width: 21 }
+				];
+
+				const itemPartLabels = itemPartColumns.map(c => c.label);
+				const itemPartValues = item_part.map(it => {
+					return itemPartColumns.map(c => {
+						if (c.type === "date") return that._toDate(it[c.property]);
+						if (c.type === "number") return _num(it[c.property]);
+						return it[c.property] ?? "";
+					});
+				});
+
+				const wsItemParts = XLSX.utils.aoa_to_sheet([itemPartLabels, ...itemPartValues]);
+				_applyColumnMeta(wsItemParts, itemPartColumns, 1);
+
+				const wb = XLSX.utils.book_new();
+				XLSX.utils.book_append_sheet(wb, wsHeader, "Header");
+				XLSX.utils.book_append_sheet(wb, wsItems, "Items");
+				XLSX.utils.book_append_sheet(wb, wsItemParts, "Participants");
+
+				XLSX.writeFile(wb, this._getExcelFileName(), {
+					bookType: "xlsx",
+					cellDates: true,
+					compression: true
+				});
+
+			} catch (e) {
+				console.error("Excel export failed:", e);
+				sap.m.MessageToast.show("Excel export failed.");
+			} finally {
+				oView.setBusy(false);
+			}
+		},
+
+		async _getParticipantsList(reqid) {
+			const oModel = this.getOwnerComponent().getModel('employee_view');
+			const oListBinding = oModel.bindList(
+				"/ZEMP_REQUEST_PART_VIEW",
+				null,
+				[new sap.ui.model.Sorter("REQUEST_SUB_ID", false)],
+				[new sap.ui.model.Filter({
+					path: "REQUEST_ID",
+					operator: sap.ui.model.FilterOperator.EQ,
+					value1: reqid
+				})],
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto"
+				}
+			);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+				return a;
+			} catch (err) {
+				console.error("OData V4 bindList failed:", err);
+				return [];
+			}
+		},
+
+		/* =========================================================
+		* Create Item Selection Items
+		* ======================================================= */
+
+		_loadSelections() {
+			this._getClaimTypeItemSelection();
+			this.getDependent();
+		},
+
+		async _getClaimTypeItemSelection() {
+			const oReq   = this._getReqModel();
+			const data   = oReq.getData();
+			const claim_type_id = data.req_header.claimtype;
+
+			if (!claim_type_id) {
+				oReq.setProperty("/claim_type_items", []);
+				return [];
+			}
+
+			const oModel = this.getOwnerComponent().getModel();
+
+			try {
+				const oListBinding = oModel.bindList(
+					"/ZCLAIM_TYPE_ITEM",
+					null,
+					[
+						new sap.ui.model.Sorter("CLAIM_TYPE_ID", false)
+					],
+					[
+						new sap.ui.model.Filter({
+							path: "CLAIM_TYPE_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: claim_type_id
+						}),
+						new sap.ui.model.Filter({
+							path: "CATEGORY_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: "PREAPPROVAL"
+						}),
+						new sap.ui.model.Filter({
+							path: "CATEGORY_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: "AUTOAPPROVE"
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$count: true,
+						$select: "CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC"
+					}
+				);
+
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+				oReq.setProperty("/claim_type_items", a);
+				return a;
+
+			} catch (err) {
+				console.error("ODataV4 load claim type items failed:", err);
+				oReq.setProperty("/claim_type_items", []);
+				return [];
+			}
+		},
+
+		getDependent() {
+			const oReq = this._getReqModel();
+			const empId  = oReq.getProperty("/user");
+			const oMainModel = this.getOwnerComponent().getModel();
+			const oListBinding = oMainModel.bindList("/ZEMP_DEPENDENT", null, null, [
+				new Filter("EMP_ID", FilterOperator.EQ, empId)
+			]);
+
+			oListBinding.requestContexts().then((aContexts) => {
+				const aData = aContexts.map(oCtx => oCtx.getObject());
+				this._getReqModel().setProperty('/ZEMP_DEPENDENT', aData);
+			}).catch(err => console.error("RequestType Load Failed", err));
+		},
+
+		/* =========================================================
+		* Budget Checking Functions
+		* ======================================================= */
+
+		async budgetChecking(date, proj_code, cost_center, claim_type, rows) {
+			const oModel = this.getOwnerComponent().getModel();
+
+			const sDate = new Date(date);
+			const sYYYY = String(sDate.getFullYear());
+			const sInternalOrder = String(proj_code);
+			const sFundCenter = String(cost_center);
+
+			const aErrors = []; 
+
+			for (const row of rows) {
+				const sGLAccount = this._getGLAccount(claim_type);
+				const sMaterialCode = this._getMaterialCode(row.claim_type_item_id);
+
+				const oListBinding = oModel.bindList("/ZBUDGET", null, null, [
+					new sap.ui.model.Filter("YEAR", "EQ", sYYYY),
+					new sap.ui.model.Filter("INTERNAL_CODE", "EQ", sInternalOrder),		// Project Code
+					new sap.ui.model.Filter("FUND_CENTER", "EQ", sFundCenter),			// Cost Center
+					new sap.ui.model.Filter("COMMITMENT_ITEM", "EQ", sGLAccount),		// GL Accont
+					new sap.ui.model.Filter("MATERIAL_GROUP", "EQ", sMaterialCode)		// Material Code
+				]);
+
+				try {
+					const aContexts = await oListBinding.requestContexts(0, 1);
+
+					if (aContexts.length === 0) {
+						aErrors.push(
+							`Budget record not found for Claim Item ${row.claim_type_item_id}`
+						);
+						continue;
+					}
+
+					const oData = aContexts[0].getObject();
+
+					if (oData.BUDGET_BALANCE < row.est_amount) {
+						aErrors.push(
+							`Please inform Cost Center owner to increase the budget for Claim Item ${row.claim_type_item_id} before submit Pre-Approval Request`
+						);
+					}
+
+				} catch (err) {
+					console.error("Budget check error:", err);
+					aErrors.push(
+						`System error while checking Claim Item ${row.claim_type_item_id}`
+					);
+				}
+			}
+
+			return {
+				passed: aErrors.length === 0,
+				messages: aErrors.join(',')
+			};
+		},
+
+		// function helpers for budget checking
+		async _getGLAccount(claim_type) {
+			const oModel = this.getOwnerComponent().getModel();
+
+			const oListBinding = oModel.bindList("/ZCLAIM_TYPE", null, null, [
+				new sap.ui.model.Filter("CLAIM_TYPE_ID", "EQ", claim_type)
+			]);
+
+			try {
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					return oData.GL_ACCOUNT;
+				} else {
+					console.warn("This Claim Type is not found");
+					return "";
+				}
+			} catch (oError) {
+				console.error("Error fetching Claim Type detail", oError);
+			}
+			
+		},
+
+		async _getMaterialCode(claim_type_item) {
+			const oModel = this.getOwnerComponent().getModel();
+
+			const oListBinding = oModel.bindList("/ZCLAIM_TYPE_ITEM", null, null, [
+				new sap.ui.model.Filter("CLAIM_TYPE_ITEM_ID", "EQ", claim_type_item)
+			]);
+
+			try {
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					return oData.MATERIAL_CODE;
+				} else {
+					console.warn("This Claim Type Item is not found");
+					return "";
+				}
+			} catch (oError) {
+				console.error("Error fetching Claim Type Item detail", oError);
+			}
+			
+		},
+
+		/* =========================================================
+		* Field Visibility Functions 
+		* ======================================================= */
+
+		getFieldVisibility_ClaimTypeItem: async function (oEvent) {
+			const oModel = this.getOwnerComponent().getModel();
+
+			const claimTypeItemFromSelect = oEvent?.getSource?.().getSelectedKey?.();
+			const claimTypeItemFromModel  = this._getReqModel().getProperty("/req_item/claim_type_item_id");
+			const claim_type_item = claimTypeItemFromSelect || claimTypeItemFromModel;
+
+			if (!claim_type_item) {
+				console.warn("No req_type found yet.");
+				return;
+			}
+
+			const oListBinding = oModel.bindList("/ZDB_STRUCTURE", null, null, [
+				new sap.ui.model.Filter("SUBMISSION_TYPE", "EQ", "PREAPPROVAL_R"),
+				new sap.ui.model.Filter("COMPONENT_LEVEL", "EQ", "ITEM"),
+				new sap.ui.model.Filter("CLAIM_TYPE_ITEM_ID", "EQ", claim_type_item)
+			]);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+
+				if (!aCtx || aCtx.length === 0) {
+					console.warn("No configuration rows for claim type item:", claim_type_item);
+					this._setAllControlsVisible(false);
+					return;
+				}
+				const oData = aCtx[0].getObject();
+				
+				const aFieldIds = oData.FIELD.replace(/[\[\]\s]/g, "").split(",");
+
+				if (aFieldIds != []) {
+					this._setAllControlsVisible(false);
+					aFieldIds.forEach(id => {
+						const control = this._resolveControl(id, "request");
+						if (control && typeof control.setVisible === "function") {
+							control.setVisible(true);
+						} else {
+							console.warn("Control not found or not visible-capable:", id);
+						}
+					});
+				} else {
+					this._setAllControlsVisible(false);
+				}
+
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				this._loadClaimTypeSelectionData(false);
+			} 
+		},
+
+		_setAllControlsVisible: function (bVisible) {
+			const aControlIds = [
+				"i_no_of_days_1",
+				"i_purpose",
+				"i_amount",
+				"i_dependent",
+				"i_remarks",
+				"i_course_title",
+				"i_sport_rep",
+				"i_club_membership",
+				"i_attachment_1",
+				"i_category_purpose",
+				"i_attachment_2",
+				"i_no_of_days_2",
+				"i_start_date",
+				"i_end_date",
+				"i_vehicle_ownership",
+				"i_room_type",
+				"i_country",
+				"i_location",
+				"i_negara_wilayah",
+				"i_no_of_family_member",
+				"i_type_of_vehicle",
+				"i_kilometer",
+				"i_rate_per_kilometer",
+				"i_toll",
+				"i_flight_class",
+				"i_location_type",
+				"i_from_state",
+				"i_from_location",
+				"i_to_state",
+				"i_to_location",
+				"i_mode_of_transfer",
+				"i_tarikh_pindah",
+				"i_no_of_days_3",
+				"i_sss",
+				"i_marriage_cat",
+				"i_cube_eligible",
+				"i_departure_time",
+				"i_arrival_time",
+				"i_lodging_cat",
+				"i_no_of_participant",
+				"i_cash_adv"
+			];
+
+			aControlIds.forEach(id => {
+				const c = this._resolveControl(id, "request");
+				if (c && typeof c.setVisible === "function") {
+					c.setVisible(bVisible);
+				}
+			});
+		},
+
+		_resolveControl: function (sId, sFragmentId) {
+			let c = this.getView().byId(sId);
+			if (c) return c;
+
+			if (sFragmentId) {
+				c = sap.ui.core.Fragment.byId(this.getView().createId(sFragmentId), sId);
+				if (c) return c;
+
+				c = sap.ui.core.Fragment.byId(sFragmentId, sId);
+				if (c) return c;
+			}
+
+			return sap.ui.getCore().byId(`${sFragmentId}--${sId}`) || sap.ui.getCore().byId(sId);
 		},
 
 		/* =========================================================
