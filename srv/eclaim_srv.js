@@ -1,5 +1,7 @@
 const cds = require('@sap/cds');
 const { INSERT, UPDATE, UPSERT } = require('@sap/cds/lib/ql/cds-ql');
+const express = require('express');
+const app = express();
 
 module.exports = (srv) => {
 
@@ -74,7 +76,7 @@ module.exports = (srv) => {
 
       // 2. Query your ZEMP_MASTER table using your Email column name
       const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });  // <— use your real column name here
-      console.log("Result",result);
+      console.log("Result", result);
       return {
         id: email,
         userType: result?.USER_TYPE || "UNKNOWN",
@@ -82,4 +84,20 @@ module.exports = (srv) => {
       };
     });
 
+  srv.on('runjob', req => {
+    console.log('==> [APP JOB LOG] Job is running . . .');
+    
+    return { responseArray : [{
+            "message": "finished"
+        }] }; 
+
+    }
+  );
+
+  /* const port = process.env.PORT || 5000;
+
+  app.listen(port, function () {
+    console.log('listening');
+  })
+ */
 }
