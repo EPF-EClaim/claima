@@ -37,73 +37,104 @@ sap.ui.define([
 		* ======================================================= */
 
         async openItemFromList(oEvent) {
-            try {
-                this.getView().setBusy(true);
+			try {
+				this.getView().setBusy(true);
 
-                const oReqModel = this._getReqModel();
-                const oTable    = this.byId("tb_myrequestform");
+				const oReqModel = this._getReqModel();
+				const oTable    = this.byId("tb_myrequestform");
 
-                oReqModel.setProperty("/view", "view");
+				let oCtx = oEvent?.getParameter?.("listItem")?.getBindingContext("request");
 
-                let oCtx = oEvent?.getParameter?.("listItem")?.getBindingContext("request");
-
-                if (!oCtx) {
+				if (!oCtx) {
 					const oSelected = oTable.getSelectedItem?.();
 					if (oSelected) {
 						oCtx = oSelected.getBindingContext("request_status");
 					}
-                }
-
-                if (!oCtx) {
-                	sap.m.MessageToast.show("Select an item to open");
-                	return;
-                }
-
-                const row   = oCtx.getObject(); 
-
-                oReqModel.setProperty("/req_header", {
-					purpose        : row.OBJECTIVE_PURPOSE || "",
-					reqtype        : row.REQUEST_TYPE_ID || "",
-					tripstartdate  : row.TRIP_START_DATE || "",
-					tripenddate    : row.TRIP_END_DATE || "",
-					eventstartdate : row.EVENT_START_DATE || "",
-					eventenddate   : row.EVENT_END_DATE || "",
-					grptype        : row.IND_OR_GROUP || "",
-					location       : row.LOCATION || "",
-					transport      : row.TYPE_OF_TRANSPORTATION || "",
-					altcostcenter  : row.ALTERNATE_COST_CENTER || "",
-					doc1           : row.ATTACHMENT1 || "",
-					doc2           : row.ATTACHMENT2 || "",
-					comment        : "",
-					eventdetail1   : row.EVENT_FIELD1 || "",
-					eventdetail2   : row.EVENT_FIELD2 || "",
-					eventdetail3   : row.EVENT_FIELD3 || "",
-					eventdetail4   : row.EVENT_FIELD4 || "",
-					reqid          : row.REQUEST_ID || "",
-					reqstatus      : row.STATUS || "",
-					costcenter     : row.COST_CENTER || "",
-					cashadvamt     : row.CASH_ADVANCE || 0,
-					reqamt         : row.PREAPPROVAL_AMOUNT || 0,
-					claimtype	   : row.CLAIM_TYPE_ID || ""
-                });
-
-                this._getItemList(row.REQUEST_ID);
-
-				if (row.STATUS == 'DRAFT') {
-                	oReqModel.setProperty("/view", "list");
 				}
 
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("RequestForm", {request_id: encodeURIComponent(row.REQUEST_ID)});
-            } catch (e) {
-                jQuery.sap.log.error("openItemFromList failed: " + e);
-                sap.m.MessageToast.show("Failed to open the selected item.");
-            } finally {
-                this.getView().setBusy(false);
-            }
-        },
+				if (!oCtx) {
+					sap.m.MessageToast.show("Select an item to open");
+					return;
+				}
 
-        
+				const row = oCtx.getObject();
+				const sReqId = row.REQUEST_ID;
+
+				const oModel = this.getOwnerComponent().getModel('employee_view');
+				const oListBinding = oModel.bindList(
+					"/ZEMP_REQUEST_VIEW",
+					null,
+					null,
+					[
+						new sap.ui.model.Filter({
+							path: "REQUEST_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: sReqId
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId   : "$auto"
+					}
+				);
+
+				const aCtx = await oListBinding.requestContexts(0, 1);
+				const oData = aCtx[0]?.getObject();
+
+				if (!oData) {
+					sap.m.MessageToast.show("No data found for request " + sReqId);
+					oReqModel.setProperty("/req_header", {});
+					return;
+				}
+
+				oReqModel.setProperty("/req_header", {
+					purpose       	: oData.OBJECTIVE_PURPOSE     	|| "",
+					reqtype       	: oData.REQUEST_TYPE_DESC     	|| "",
+					tripstartdate 	: oData.TRIP_START_DATE       	|| "",
+					tripenddate   	: oData.TRIP_END_DATE         	|| "",
+					eventstartdate	: oData.EVENT_START_DATE      	|| "",
+					eventenddate  	: oData.EVENT_END_DATE        	|| "",
+					grptype       	: oData.IND_OR_GROUP_DESC     	|| "",
+					location      	: oData.LOCATION              	|| "",
+					transport     	: oData.TYPE_OF_TRANSPORTATION	|| "",
+					altcostcenter 	: oData.ALTERNATE_COST_CENTER 	|| "",
+					doc1          	: oData.ATTACHMENT1           	|| "",
+					doc2          	: oData.ATTACHMENT2           	|| "",
+					comment       	: oData.REMARK                	|| "",
+					eventdetail1  	: oData.EVENT_FIELD1          	|| "",
+					eventdetail2  	: oData.EVENT_FIELD2          	|| "",
+					eventdetail3  	: oData.EVENT_FIELD3          	|| "",
+					eventdetail4  	: oData.EVENT_FIELD4          	|| "",
+					reqid         	: oData.REQUEST_ID            	|| "",
+					reqstatus     	: oData.STATUS_DESC           	|| "",
+					reqstatus_id  	: oData.STATUS_ID			  	|| "",
+					costcenter    	: oData.COST_CENTER           	|| "",
+					cashadvamt    	: oData.CASH_ADVANCE          	|| 0,
+					reqamt        	: oData.PREAPPROVAL_AMOUNT    	|| 0,
+					claimtype     	: oData.CLAIM_TYPE_ID       	|| "",
+					claimtypedesc  	: oData.CLAIM_TYPE_DESC		  	|| "",
+					reqdate			: oData.REQUEST_DATE
+				});
+
+				await this._getItemList(sReqId);
+
+				if (row.STATUS === "CREATED") {
+					oReqModel.setProperty("/view", "list");
+				}
+
+				const oRouter = this.getOwnerComponent().getRouter();
+				oRouter.navTo("RequestForm", {
+					request_id: encodeURIComponent(sReqId)
+				});
+
+			} catch (e) {
+				jQuery.sap.log.error("openItemFromList failed: " + e);
+				sap.m.MessageToast.show("Failed to open the selected item.");
+			} finally {
+				this.getView().setBusy(false);
+			}
+		},
+		
         async _getItemList(req_id) {
 			const oReq = this._getReqModel();
 

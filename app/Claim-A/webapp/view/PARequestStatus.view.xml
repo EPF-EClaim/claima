@@ -23,7 +23,6 @@
             >
                 <headerToolbar>
                     <Toolbar>
-                        <!-- Title with inline count -->
                         <Title
                             text="{= ${i18n>nav_myrequest} + ' (' + ${request_status>/req_header_count} + ')'}"
                         />
@@ -31,19 +30,19 @@
                 </headerToolbar>
 
                 <columns>
-                    <Column>
-                        <Text text="Request ID" />
-                    </Column>
-                    <Column>
-                        <Text text="Purpose" />
-                    </Column>
-                    <Column>
+                    <Column width="10rem">
                         <Text text="Request Date" />
                     </Column>
-                    <Column>
+                    <Column width="10rem">
+                        <Text text="Request ID" />
+                    </Column>
+                    <Column width="50rem">
+                        <Text text="Purpose" />
+                    </Column>
+                    <Column width="10rem">
                         <Text text="Status" />
                     </Column>
-                    <Column>
+                    <Column width="10rem">
                         <Text text="Pre-Approval Amount (MYR)" />
                     </Column>
                 </columns>
@@ -51,8 +50,6 @@
                 <items>
                     <ColumnListItem type="Active">
                         <cells>
-                            <Text text="{request_status>REQUEST_ID}" />
-                            <Text text="{request_status>OBJECTIVE_PURPOSE}" />
                             <Text
                                 text="{
                                     path: 'request_status>REQUEST_DATE',
@@ -60,7 +57,9 @@
                                     formatOptions: { pattern: 'dd MMM yyyy' } 
                                 }"
                             />
-                            <Text text="{request_status>STATUS}" />
+                            <Text text="{request_status>REQUEST_ID}" />
+                            <Text text="{request_status>OBJECTIVE_PURPOSE}" />
+                            <Text text="{request_status>STATUS_DESC}" />
                             <Text text="RM {
                                     path: 'request_status>PREAPPROVAL_AMOUNT',
                                     type: 'sap.ui.model.type.Float',
