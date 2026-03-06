@@ -1216,5 +1216,8 @@ service eclaim_srv {
 
     entity ZSUBSTITUTION_RULES      as projection on ECLAIM.ZSUBSTITUTION_RULES;
 
-    entity ZDB_STRUCTURE            as projection on ECLAIM.ZDB_STRUCTURE;
+    entity ZDB_STRUCTURE as projection on ECLAIM.ZDB_STRUCTURE;
+
+    function runjob() returns Response;
+    
 };

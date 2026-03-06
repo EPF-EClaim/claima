@@ -1,21 +1,7 @@
 const cds = require('@sap/cds');
-const { UPSERT } = require('@sap/cds/lib/ql/cds-ql');
-
-// const _insert = async function (entities, req) {
-//   try {
-//     var reqdata = req;
-//     if (!reqdata || reqdata.length === 0) {
-//       throw new Error('No Data Sent')
-//     }
-//     const tx = cds.tx(req);
-//     const results = await tx.run(
-//       UPSERT(reqdata).into(entities)
-//     );
-//     return 'Records updated';
-//   } catch (error) {
-//     req.error(400, `Fail creating record: ${error.message}`);
-//   }
-// }
+const { INSERT, UPDATE, UPSERT } = require('@sap/cds/lib/ql/cds-ql');
+const express = require('express');
+const app = express();
 
 module.exports = (srv) => {
 
@@ -112,4 +98,20 @@ module.exports = (srv) => {
       };
     });
 
+  srv.on('runjob', req => {
+    console.log('==> [APP JOB LOG] Job is running . . .');
+    
+    return { responseArray : [{
+            "message": "finished"
+        }] }; 
+
+    }
+  );
+
+  /* const port = process.env.PORT || 5000;
+
+  app.listen(port, function () {
+    console.log('listening');
+  })
+ */
 }
