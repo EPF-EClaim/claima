@@ -54,19 +54,19 @@ service eclaim_srv {
 
     entity ZEMP_MASTER @(restrict: [
         {
-            grant: [
-                'READ',
-                'UPDATE'
-            ],
-            to   : ['DTD_Admin']
+            grant: ['*'],
+            to   : [
+                'DTD_Admin',
+                'Approver'
+            ]
         },
         {
             grant: ['READ'],
             to   : [
                 'Claimant',
                 'Admin_CC',
-                'Admin_System',
-                'Approver'
+                'Admin_System'
+
             ]
         }
     ])                              as projection on ECLAIM.ZEMP_MASTER;
