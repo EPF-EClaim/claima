@@ -600,8 +600,7 @@ service eclaim_srv {
             grant: 'READ',
             to   : [
                 'Approver',
-                'Admin_CC',
-                'Admin_System'
+                'Admin_CC'
             ]
         },
         {
@@ -613,7 +612,7 @@ service eclaim_srv {
         },
         {
             grant: '*',
-            to   : ['DTD_Admin']
+            to   : ['DTD_Admin', 'Admin_System']
         }
     ])                                   as projection on ECLAIM.ZBUDGET;
 
