@@ -29,7 +29,7 @@ sap.ui.define([
 		},
 
 		/* =========================================================
-		* URL Access
+		* URL Access (later)
 		* ======================================================= */
 		
 		// _onMatched(oEvent) {
@@ -226,23 +226,37 @@ sap.ui.define([
 		},
 
 		async _updateHeaderStatusToDeleted(empId, reqId) {
-			const oReqJson = this._getReqModel();
-			const oModel   = this.getOwnerComponent().getModel();
+			const oReq = this._getReqModel();
+			const oModel = this.getOwnerComponent().getModel();
 			const sUpdateGroupId = "$auto";
 
-			const literal = (v) => /^\d+$/.test(String(v)) ? String(Number(v)) : `'${String(v).replace(/'/g, "''")}'`;
-
-			const sPath = `/ZREQUEST_HEADER(EMP_ID=${literal(empId)},REQUEST_ID=${literal(reqId)})`;
-			const oCtxBinding = oModel.bindContext(sPath, null, { $$updateGroupId: sUpdateGroupId, $$ownRequest: true });
+			const oListBinding = oModel.bindList("/ZREQUEST_HEADER", null, null, [
+				new sap.ui.model.Filter("EMP_ID", sap.ui.model.FilterOperator.EQ, empId),
+				new sap.ui.model.Filter("REQUEST_ID", sap.ui.model.FilterOperator.EQ, reqId)
+			], {
+				$$updateGroupId: sUpdateGroupId,
+				$$ownRequest: true 
+			});
 
 			try {
-				await oCtxBinding.requestObject();
+				const aCtx = await oListBinding.requestContexts(0, 1);
 
-				const oCtx = oCtxBinding.getBoundContext();
+				if (!aCtx || aCtx.length === 0) {
+					throw new Error(`Header not found for EMP_ID=${empId}, REQUEST_ID=${reqId}`);
+				}
+
+				const oCtx = aCtx[0];
+
+				const oData = oCtx.getObject();
+				if (oData?.STATUS === "DELETED") {
+					oReq.setProperty("/req_header/status", "DELETED");
+					return;
+				}
+
 				oCtx.setProperty("STATUS", "DELETED");
-				await oModel.submitBatch(sUpdateGroupId);
 
-				oReqJson.setProperty("/req_header/status", "DELETED");
+				await oModel.submitBatch(sUpdateGroupId);
+				oReq.setProperty("/req_header/status", "DELETED");
 			} catch (err) {
 				console.error("Update header to DELETED failed:", err);
 				throw err;
@@ -259,8 +273,12 @@ sap.ui.define([
 				return;
 			}
 
-			const reqId = String(data.req_header.reqid || "").trim();
-			const empId  = oReq.getProperty("/user");
+			const reqId 		= String(data.req_header.reqid || "").trim();
+			const empId  		= oReq.getProperty("/user");
+			const reqDate 		= data.req_header.reqdate;
+			const proj			= null;
+			const reqCC 		= data.req_header.costcenter;
+			const reqClaimType 	= data.req_header.claimtype;
 
 			if (!reqId || !empId) {
 				sap.m.MessageToast.show("EMP ID or Request ID missing");
@@ -279,50 +297,45 @@ sap.ui.define([
 						try {
 							sap.ui.core.BusyIndicator.show(0);
 
-							const oModel = this.getOwnerComponent().getModel(); 
+							// budget checking
+							const result = this.budgetChecking(reqDate, proj, reqCC, reqClaimType, rows);
 
-							const oListBinding = oModel.bindList(
-								"/ZREQUEST_HEADER",
-								null,
-								null,
-								[
-									new sap.ui.model.Filter({
-										path: "EMP_ID",
-										operator: sap.ui.model.FilterOperator.EQ,
-										value1: empId
-									}),
-									new sap.ui.model.Filter({
-										path: "REQUEST_ID",
-										operator: sap.ui.model.FilterOperator.EQ,
-										value1: reqId
-									})
-								],
-								{
-									$$ownRequest: true,
-									$$groupId: "$auto",
-									$$updateGroupId: "$auto"
+							if (result.passed) {
+								const oModel = this.getOwnerComponent().getModel(); 
+
+								const oListBinding = oModel.bindList("/ZREQUEST_HEADER", null,null,
+									[
+										new sap.ui.model.Filter({ path: "EMP_ID", operator: sap.ui.model.FilterOperator.EQ, value1: empId }),
+										new sap.ui.model.Filter({ path: "REQUEST_ID", operator: sap.ui.model.FilterOperator.EQ, value1: reqId })
+									],
+									{
+										$$ownRequest: true,
+										$$groupId: "$auto",
+										$$updateGroupId: "$auto"
+									}
+								);
+
+								const aCtx = await oListBinding.requestContexts(0, 1);
+								const oCtx = aCtx[0];
+
+								if (!oCtx) {
+									throw new Error("Request not found for submit.");
 								}
-							);
 
-							const aCtx = await oListBinding.requestContexts(0, 1);
-							const oCtx = aCtx[0];
+								oCtx.setProperty("STATUS", "PENDING APPROVAL");
+								oCtx.setProperty("CASH_ADVANCE", parseFloat(data.req_header.cashadvamt));
+								oCtx.setProperty("PREAPPROVAL_AMOUNT", parseFloat(data.req_header.reqamt));
 
-							if (!oCtx) {
-								throw new Error("Request not found for submit.");
+								await oModel.submitBatch("$auto");
+								
+								sap.m.MessageToast.show("Request submitted successfully");
+
+								this.getPARHeaderList(empId);
+								const oRouter = this.getOwnerComponent().getRouter();
+								oRouter.navTo("RequestFormStatus");
+							} else {
+								MessageToast.show(`Please inform Cost Center owner to increase the budget for Claim Item ${result.aErrors} before submit Pre-Approval Request`);
 							}
-
-							oCtx.setProperty("STATUS", "PENDING APPROVAL");
-							oCtx.setProperty("CASH_ADVANCE", parseFloat(data.req_header.cashadvamt));
-							oCtx.setProperty("PREAPPROVAL_AMOUNT", parseFloat(data.req_header.reqamt));
-
-							await oModel.submitBatch("$auto");
-
-							sap.m.MessageToast.show("Request submitted successfully");
-
-							const oRouter = this.getOwnerComponent().getRouter();
-							oRouter.navTo("RequestFormStatus");
-							this.getPARHeaderList(empId);
-
 						} catch (e) {
 							sap.m.MessageToast.show(e.message || "Submission failed");
 						} finally {
@@ -378,14 +391,8 @@ sap.ui.define([
 			const data = oReq.getData();
 
 			data.req_item = {
-				claim_type_item_id: "CTI1",
-				est_amount: "",
-				est_no_participant: "",
-				cash_advance: "no_cashadv",
-				start_date: "",
-				end_date: "",
-				location: "",
-				remarks: ""
+				claim_type_item_id: "",
+				cash_advance: "no_cashadv"
 			};
 
 			if (data.req_header.grptype === 'individual') {
@@ -487,6 +494,7 @@ sap.ui.define([
 			this._showItemCreate(oReq.getProperty("/view"));
 			await this._loadParticipantsForItem(reqId, subId);
 			await this._getClaimTypeItemSelection();
+			this.getFieldVisibility_ClaimTypeItem(oEvent);
 		},
 
 		async _loadParticipantsForItem(reqId, subId) {
@@ -532,6 +540,8 @@ sap.ui.define([
 					ALLOCATED_AMOUNT: p.ALLOCATED_AMOUNT ?? ""
 				}));
 
+				aMapped.push({ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" });
+
 				oReq.setProperty(
 					"/participant",
 					aMapped.length
@@ -556,9 +566,9 @@ sap.ui.define([
 				} else {
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("RequestFormStatus");
+					this._ensureRequestModelDefaults();
 				}
 			}
-			this._ensureRequestModelDefaults();
 		},
 
 		/* =========================================================
@@ -566,7 +576,7 @@ sap.ui.define([
 		* ======================================================= */
 
 		async onRowDeleteReqItem(oEvent) {
-			const oTable = this.byId("req_item_table_d"); 
+			const oTable = this._resolveControl("req_item_table_d", "request") || this._resolveControl("req_item_table", "request");
 			const oReq   = this._getReqModel();
 			const aRows  = oReq.getProperty("/req_item_rows") || [];
 
@@ -1021,8 +1031,8 @@ sap.ui.define([
 				}
 
 				if (isEdit) {
-					const requestSubId = String(data.req_item.req_subid || "").trim();
-					if (!requestSubId) throw new Error("Missing Request Sub ID for edit");
+					const subId = String(data.req_item.req_subid || "").trim();
+					if (!subId) throw new Error("Missing Request Sub ID for edit");
 
 					const oList = oModel.bindList(
 						"/ZREQUEST_ITEM",
@@ -1048,7 +1058,7 @@ sap.ui.define([
 					oItemCtx.setProperty("LOCATION",           data.req_item.location  || "");
 					oItemCtx.setProperty("REMARK",             data.req_item.remark    || "");
 
-					await this._replaceParticipantsForItem(reqId, requestSubId, data.participant);
+					await this._replaceParticipantsForItem(reqId, subId, data.participant);
 
 					await oModel.submitBatch("itemSave");
 
@@ -1176,7 +1186,7 @@ sap.ui.define([
 					{
 					REQUEST_ID:       requestId,
 					REQUEST_SUB_ID:   requestSubId,
-					PARTICIPANTS_ID:  cast(pid),
+					PARTICIPANTS_ID:  pid,
 					ALLOCATED_AMOUNT: alloc
 					},
 					true
@@ -1403,63 +1413,6 @@ sap.ui.define([
 			}
 		}, 
 
-		async _getClaimTypeItemSelection() {
-			const oReq   = this._getReqModel();
-			const data   = oReq.getData();
-			const claim_type_id = data.req_header.claimtype_id;
-
-			if (!claim_type_id) {
-				oReq.setProperty("/claim_type_items", []);
-				return [];
-			}
-
-			const oModel = this.getOwnerComponent().getModel();
-
-			try {
-				const oListBinding = oModel.bindList(
-					"/ZCLAIM_TYPE_ITEM",
-					null,
-					[
-						new sap.ui.model.Sorter("CLAIM_TYPE_ID", false)
-					],
-					[
-						new sap.ui.model.Filter({
-							path: "CLAIM_TYPE_ID",
-							operator: sap.ui.model.FilterOperator.EQ,
-							value1: claim_type_id
-						}),
-						new sap.ui.model.Filter({
-							path: "CATEGORY_ID",
-							operator: sap.ui.model.FilterOperator.EQ,
-							value1: "PREAPPROVAL"
-						}),
-						new sap.ui.model.Filter({
-							path: "CATEGORY_ID",
-							operator: sap.ui.model.FilterOperator.EQ,
-							value1: "AUTOAPPROVE"
-						})
-					],
-					{
-						$$ownRequest: true,
-						$$groupId: "$auto",
-						$count: true,
-						$select: "CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC"
-					}
-				);
-
-				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				const a = aCtx.map((ctx) => ctx.getObject());
-
-				oReq.setProperty("/claim_type_items", a);
-				return a;
-
-			} catch (err) {
-				console.error("ODataV4 load claim type items failed:", err);
-				oReq.setProperty("/claim_type_items", []);
-				return [];
-			}
-		},
-
 		// My Pre-Approval Request Status function
 		getPARHeaderList: async function (emp_id) {
 			const oReq = this.getOwnerComponent().getModel("request_status");
@@ -1653,7 +1606,10 @@ sap.ui.define([
 				const oReqModel = this._getReqModel();
 				oReqModel.setProperty("/participant", jsonData);
 
-				// MessageToast.show("Upload successful!");
+				
+				var fu = this.byId("participant_list_upload");
+				fu.clear();
+
 			}.bind(this);
 
 			reader.readAsArrayBuffer(file);
@@ -2006,7 +1962,63 @@ sap.ui.define([
 		_loadSelections() {
 			this._getClaimTypeItemSelection();
 			this.getDependent();
-			this.checkFieldVisibility();
+		},
+
+		async _getClaimTypeItemSelection() {
+			const oReq   = this._getReqModel();
+			const data   = oReq.getData();
+			const claim_type_id = data.req_header.claimtype;
+
+			if (!claim_type_id) {
+				oReq.setProperty("/claim_type_items", []);
+				return [];
+			}
+
+			const oModel = this.getOwnerComponent().getModel();
+
+			try {
+				const oListBinding = oModel.bindList(
+					"/ZCLAIM_TYPE_ITEM",
+					null,
+					[
+						new sap.ui.model.Sorter("CLAIM_TYPE_ID", false)
+					],
+					[
+						new sap.ui.model.Filter({
+							path: "CLAIM_TYPE_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: claim_type_id
+						}),
+						new sap.ui.model.Filter({
+							path: "CATEGORY_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: "PREAPPROVAL"
+						}),
+						new sap.ui.model.Filter({
+							path: "CATEGORY_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: "AUTOAPPROVE"
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$count: true,
+						$select: "CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC"
+					}
+				);
+
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+				oReq.setProperty("/claim_type_items", a);
+				return a;
+
+			} catch (err) {
+				console.error("ODataV4 load claim type items failed:", err);
+				oReq.setProperty("/claim_type_items", []);
+				return [];
+			}
 		},
 
 		getDependent() {
@@ -2027,13 +2039,66 @@ sap.ui.define([
 		* Budget Checking Functions
 		* ======================================================= */
 
-		async budgetChecking() {
+		async budgetChecking(date, proj_code, cost_center, claim_type, rows) {
 			const oModel = this.getOwnerComponent().getModel();
-			var sYYYY = String(new Date().getFullYear());
-			var sFundCenter = String("")
 
-			const oListBinding = oModel.bindList("/ZBUDGET", null, null, [
-				new sap.ui.model.Filter("YEAR", "EQ", sYYYY)
+			const sDate = new Date(date);
+			const sYYYY = String(sDate.getFullYear());
+			const sInternalOrder = String(proj_code);
+			const sFundCenter = String(cost_center);
+
+			const aErrors = []; 
+
+			for (const row of rows) {
+				const sGLAccount = this._getGLAccount(claim_type);
+				const sMaterialCode = this._getMaterialCode(row.claim_type_item_id);
+
+				const oListBinding = oModel.bindList("/ZBUDGET", null, null, [
+					new sap.ui.model.Filter("YEAR", "EQ", sYYYY),
+					new sap.ui.model.Filter("INTERNAL_CODE", "EQ", sInternalOrder),		// Project Code
+					new sap.ui.model.Filter("FUND_CENTER", "EQ", sFundCenter),			// Cost Center
+					new sap.ui.model.Filter("COMMITMENT_ITEM", "EQ", sGLAccount),		// GL Accont
+					new sap.ui.model.Filter("MATERIAL_GROUP", "EQ", sMaterialCode)		// Material Code
+				]);
+
+				try {
+					const aContexts = await oListBinding.requestContexts(0, 1);
+
+					if (aContexts.length === 0) {
+						aErrors.push(
+							`Budget record not found for Claim Item ${row.claim_type_item_id}`
+						);
+						continue;
+					}
+
+					const oData = aContexts[0].getObject();
+
+					if (oData.BUDGET_BALANCE < row.est_amount) {
+						aErrors.push(
+							`Please inform Cost Center owner to increase the budget for Claim Item ${row.claim_type_item_id} before submit Pre-Approval Request`
+						);
+					}
+
+				} catch (err) {
+					console.error("Budget check error:", err);
+					aErrors.push(
+						`System error while checking Claim Item ${row.claim_type_item_id}`
+					);
+				}
+			}
+
+			return {
+				passed: aErrors.length === 0,
+				messages: aErrors.join(',')
+			};
+		},
+
+		// function helpers for budget checking
+		async _getGLAccount(claim_type) {
+			const oModel = this.getOwnerComponent().getModel();
+
+			const oListBinding = oModel.bindList("/ZCLAIM_TYPE", null, null, [
+				new sap.ui.model.Filter("CLAIM_TYPE_ID", "EQ", claim_type)
 			]);
 
 			try {
@@ -2041,36 +2106,160 @@ sap.ui.define([
 
 				if (aContexts.length > 0) {
 					const oData = aContexts[0].getObject();
-					return {
-						eeid: oData.EEID,
-						name: oData.NAME,
-						cc: oData.CC
-					};
+					return oData.GL_ACCOUNT;
 				} else {
-					console.warn("No employee found with ID: " + sEEID);
-					return null;
+					console.warn("This Claim Type is not found");
+					return "";
 				}
 			} catch (oError) {
-				console.error("Error fetching employee detail", oError);
+				console.error("Error fetching Claim Type detail", oError);
+			}
+			
+		},
+
+		async _getMaterialCode(claim_type_item) {
+			const oModel = this.getOwnerComponent().getModel();
+
+			const oListBinding = oModel.bindList("/ZCLAIM_TYPE_ITEM", null, null, [
+				new sap.ui.model.Filter("CLAIM_TYPE_ITEM_ID", "EQ", claim_type_item)
+			]);
+
+			try {
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					return oData.MATERIAL_CODE;
+				} else {
+					console.warn("This Claim Type Item is not found");
+					return "";
+				}
+			} catch (oError) {
+				console.error("Error fetching Claim Type Item detail", oError);
 			}
 			
 		},
 
 		/* =========================================================
-		* Approver Functions 
+		* Field Visibility Functions 
 		* ======================================================= */
 
-		checkFieldVisibility(oEvent) {
-			let fields = ["i_amount", "i_remarks", "i_course_title", "i_attachment_1", "i_attachment_2", "i_start_date", "i_end_date"];
+		getFieldVisibility_ClaimTypeItem: async function (oEvent) {
+			const oModel = this.getOwnerComponent().getModel();
 
-			fields.forEach((id) => {
-				const control = this.getView().byId(id);
-				if (control) {
-					control.setVisible(true);
+			const claimTypeItemFromSelect = oEvent?.getSource?.().getSelectedKey?.();
+			const claimTypeItemFromModel  = this._getReqModel().getProperty("/req_item/claim_type_item_id");
+			const claim_type_item = claimTypeItemFromSelect || claimTypeItemFromModel;
+
+			if (!claim_type_item) {
+				console.warn("No req_type found yet.");
+				return;
+			}
+
+			const oListBinding = oModel.bindList("/ZDB_STRUCTURE", null, null, [
+				new sap.ui.model.Filter("SUBMISSION_TYPE", "EQ", "PREAPPROVAL_R"),
+				new sap.ui.model.Filter("COMPONENT_LEVEL", "EQ", "ITEM"),
+				new sap.ui.model.Filter("CLAIM_TYPE_ITEM_ID", "EQ", claim_type_item)
+			]);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+
+				if (!aCtx || aCtx.length === 0) {
+					console.warn("No configuration rows for claim type item:", claim_type_item);
+					this._setAllControlsVisible(false);
+					return;
+				}
+				const oData = aCtx[0].getObject();
+				
+				const aFieldIds = oData.FIELD.replace(/[\[\]\s]/g, "").split(",");
+
+				if (aFieldIds != []) {
+					this._setAllControlsVisible(false);
+					aFieldIds.forEach(id => {
+						const control = this._resolveControl(id, "request");
+						if (control && typeof control.setVisible === "function") {
+							control.setVisible(true);
+						} else {
+							console.warn("Control not found or not visible-capable:", id);
+						}
+					});
 				} else {
-					console.warn("Control not found:", id);
+					this._setAllControlsVisible(false);
+				}
+
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				this._loadClaimTypeSelectionData(false);
+			} 
+		},
+
+		_setAllControlsVisible: function (bVisible) {
+			const aControlIds = [
+				"i_no_of_days_1",
+				"i_purpose",
+				"i_amount",
+				"i_dependent",
+				"i_remarks",
+				"i_course_title",
+				"i_sport_rep",
+				"i_club_membership",
+				"i_attachment_1",
+				"i_category_purpose",
+				"i_attachment_2",
+				"i_no_of_days_2",
+				"i_start_date",
+				"i_end_date",
+				"i_vehicle_ownership",
+				"i_room_type",
+				"i_country",
+				"i_location",
+				"i_negara_wilayah",
+				"i_no_of_family_member",
+				"i_type_of_vehicle",
+				"i_kilometer",
+				"i_rate_per_kilometer",
+				"i_toll",
+				"i_flight_class",
+				"i_location_type",
+				"i_from_state",
+				"i_from_location",
+				"i_to_state",
+				"i_to_location",
+				"i_mode_of_transfer",
+				"i_tarikh_pindah",
+				"i_no_of_days_3",
+				"i_sss",
+				"i_marriage_cat",
+				"i_cube_eligible",
+				"i_departure_time",
+				"i_arrival_time",
+				"i_lodging_cat",
+				"i_no_of_participant",
+				"i_cash_adv"
+			];
+
+			aControlIds.forEach(id => {
+				const c = this._resolveControl(id, "request");
+				if (c && typeof c.setVisible === "function") {
+					c.setVisible(bVisible);
 				}
 			});
+		},
+
+		_resolveControl: function (sId, sFragmentId) {
+			let c = this.getView().byId(sId);
+			if (c) return c;
+
+			if (sFragmentId) {
+				c = sap.ui.core.Fragment.byId(this.getView().createId(sFragmentId), sId);
+				if (c) return c;
+
+				c = sap.ui.core.Fragment.byId(sFragmentId, sId);
+				if (c) return c;
+			}
+
+			return sap.ui.getCore().byId(`${sFragmentId}--${sId}`) || sap.ui.getCore().byId(sId);
 		},
 
 		/* =========================================================

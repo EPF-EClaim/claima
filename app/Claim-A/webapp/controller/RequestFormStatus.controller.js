@@ -111,13 +111,14 @@ sap.ui.define([
 					costcenter    	: oData.COST_CENTER           	|| "",
 					cashadvamt    	: oData.CASH_ADVANCE          	|| 0,
 					reqamt        	: oData.PREAPPROVAL_AMOUNT    	|| 0,
-					claimtype     	: oData.CLAIM_TYPE_DESC       	|| "",
-					claimtype_id  	: oData.CLAIM_TYPE_ID		  	|| ""
+					claimtype     	: oData.CLAIM_TYPE_ID       	|| "",
+					claimtypedesc  	: oData.CLAIM_TYPE_DESC		  	|| "",
+					reqdate			: oData.REQUEST_DATE
 				});
 
 				await this._getItemList(sReqId);
 
-				if (row.STATUS === "DRAFT") {
+				if (row.STATUS === "CREATED") {
 					oReqModel.setProperty("/view", "list");
 				}
 
