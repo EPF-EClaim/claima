@@ -352,12 +352,6 @@
                                 <table:template><Text text="{employee_view>CLAIM_SUB_ID}" /></table:template>
                             </table:Column>
 
-                            <!-- item_no (not explicit in metadata; left blank or map if available) -->
-                            <table:Column width="10rem">
-                                <Label text="{i18n>item_no}" />
-                                <table:template><Text text="{employee_view>ITEM_NO}" /></table:template>
-                            </table:Column>
-
                             <!-- compensation -->
                             <table:Column width="12rem" hAlign="End">
                                 <Label text="{i18n>compensation}" />

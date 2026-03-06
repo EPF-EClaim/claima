@@ -64,11 +64,13 @@ sap.ui.define([
 			const ctx = oModel.bindContext("/getUserType()");
 			ctx.requestObject().then(oData => {
 				this._userType = oData.userType || "UNKNOWN";
+				this.costcenters = oData.costcenters || "UNKNOWN"; //Added by Aiman Salim 06/03/2026
 			}).catch(err => {
 				console.error("getUserType failed:", err);
 				this._userType = "UNKNOWN";
+				console.error("getUserType failed:", err); //Added by Aiman Salim 06/03/2026
+				this.costcenters = "UNKNOWN";
 			});
-
 
 			this._ensureRequestModelDefaults();
 			var oUserModel = new sap.ui.model.json.JSONModel({ email: 'jefry.yap@my.ey.com' });
@@ -112,6 +114,15 @@ sap.ui.define([
 				sap.m.MessageToast.show("Please wait… loading your access.");
 				return;
 			}
+
+			//Aiman Salim - 05/03/2026 - Added to make it global usage;
+			const oUserAccessModel = new sap.ui.model.json.JSONModel({
+				userType: this._userType,
+				costcenters: this.costcenters,
+			});
+			this.getOwnerComponent().setModel(oUserAccessModel, "access");
+			//Aiman Salim - 05/03/2026 - Added to make it global;
+
 			//End EY_ATHIRAH
 
 			switch (oKey) {
@@ -301,6 +312,7 @@ sap.ui.define([
 						"category": null,
 					}
 				},
+				"is_new": false,
 				"claim_header": {
 					"claim_id": null,
 					"emp_id": null,
@@ -360,6 +372,7 @@ sap.ui.define([
 						"lender_name": null,
 						"course_code": null,
 						"project_code": null,
+						"attachment_email_approver": null,
 					}
 				},
 				"claim_items": [],
@@ -367,6 +380,10 @@ sap.ui.define([
 				"reportnumber": {
 					"reportno": null,
 					"current": null
+				},
+				"attachment": {
+					"fileName": null,
+					"fileContent": null
 				}
 			});
 			//// set input
@@ -429,10 +446,10 @@ sap.ui.define([
 				this.byId("select_claimprocess_claimitem").bindAggregation("items", {
 					path: "employee>/ZCLAIM_TYPE_ITEM",
 					filters: [new sap.ui.model.Filter('CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, claimType.getKey())],
-					// sorter: [
-					// 	{ path: 'CLAIM_TYPE_ITEM_DESC' },
-					// 	{ path: 'CLAIM_TYPE_ITEM_ID' },
-					// ],
+					sorter: [
+						new sap.ui.model.Sorter('CLAIM_TYPE_ITEM_DESC'),
+						new sap.ui.model.Sorter('CLAIM_TYPE_ITEM_ID')
+					],
 					parameters: {
 						$expand: {
 							"ZCLAIM_CATEGORY": {
@@ -651,6 +668,9 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/total_claim_amount", "0.00");
 			oInputModel.setProperty("/claim_header/final_amount_to_receive", "0.00");
 			oInputModel.setProperty("/claim_header/cash_advance_amount", "0.00");
+			if (!oInputModel.getProperty("/claim_header/preapproved_amount")) {
+				oInputModel.setProperty("/claim_header/preapproved_amount", "0.00");
+			}
 			//// include description in data
 			oInputModel.setProperty("/claim_header/descr/status_id", this._getTexti18n("value_claiminput_status_draft"));
 			oInputModel.setProperty("/claim_header/descr/claim_type_id", oInputModel.getProperty("/claimtype/descr/type"));
@@ -691,7 +711,7 @@ sap.ui.define([
 
 		_getJsonDate: function (date) {
 			if (date) {
-				var oDate = new Date (date);
+				var oDate = new Date(date);
 				var oDateString = oDate.toLocaleString('default', { day: '2-digit' }) + " " + oDate.toLocaleString('default', { month: 'short' }) + " " + oDate.toLocaleString('default', { year: 'numeric' });
 				return oDateString;
 			} else {
@@ -810,7 +830,7 @@ sap.ui.define([
 			}
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
-				var isUploadSuccess = this._onUpload_ClaimInput_Attachment();
+				var isUploadSuccess = await this._onUpload_ClaimInput_Attachment();
 				if (!isUploadSuccess) {
 					// don't proceed claim submission if attachment upload fails
 					return;
@@ -856,41 +876,98 @@ sap.ui.define([
 			this.byId("pageContainer").to(oClaimSubmissionPage);
 		},
 
-		_onUpload_ClaimInput_Attachment: function () {
-			// check if file can be uploaded
-			var oFileUploader = this.byId("fileuploader_claiminput_attachment");
-			oFileUploader.checkFileReadable().then(function () {
-				oFileUploader.upload();
+		_onUpload_ClaimInput_Attachment: async function () {
+			// get claim submission model
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+
+			// Write to Success Factors API
+			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment"; 
+
+			try {
+				const response = await fetch(sServiceUrl, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						__metadata: {
+							uri: 'Attachment'
+						},
+						deletable: true,
+						fileName: oInputModel.getProperty("/attachment/fileName"),
+						moduleCategory: 'UNSPECIFIED',
+						module: 'DEFAULT',
+						userId: 'SFAPI',
+						viewable: true,
+						searchable: true,
+						fileContent: oInputModel.getProperty("/attachment/fileContent")
+					}) 
+				});
+
+				if (!response.ok) {
+					const errText = await response.text().catch(() => "");
+					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
+				}
+
+				const data = await response.text();
+
+				// turn XML into JSON
+				const parser = new DOMParser();
+				const xmlDoc = parser.parseFromString(data, 'text/xml');
+				const jsonData = {};
+
+				const nodes = xmlDoc.documentElement.childNodes;
+				for (let i = 0; i < nodes.length; i++) {
+					const node = nodes[i];
+					if (node.nodeType === 1) {
+						jsonData[node.nodeName] = node.textContent.trim();
+					}
+				}
+
+				// get generated attachment number
+				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(')+1,jsonData.id.indexOf(')')-1);
+				oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
+				oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
 				return true;
-			}, function (error) {
-				MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_error"));
-			}).then(function () {
-				oFileUploader.clear();
+			} catch (error) {
+				console.log("Error uploading attachment: " + error);
+				MessageToast.show("Error uploading attachment: " + error);
 				return false;
-			});
-		},
-
-		onUploadComplete_ClaimInput_Attachment: function (oEvent) {
-			// Please note that the event response should be taken from the event parameters but for our test example, it is hardcoded.
-
-			var sResponse = "File upload complete. Status: 200",
-				iHttpStatusCode = parseInt(/\d{3}/.exec(sResponse)[0]),
-				sMessage;
-
-			if (sResponse) {
-				sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
-				MessageToast.show(sMessage);
 			}
 		},
 
-		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			var aFileTypes = oEvent.getSource().getFileType();
-			aFileTypes.map(function (sType) {
-				return "*." + sType;
+		onChange_ClaimInput_Attachment: function (oEvent) {
+			// check if file can be uploaded
+			var fileName = oEvent.getSource().getValue();
+			var domRef = oEvent.getSource().getFocusDomRef();
+			var file = domRef.files[0];
+			var reader = new FileReader();
+
+			reader.addEventListener("load", () => {
+				var oInputModel = this.getView().getModel("claimsubmission_input");
+				if (oInputModel) {
+					oInputModel.setProperty("/attachment/fileName", fileName);
+					oInputModel.setProperty("/attachment/fileContent", reader.result.replace("data:" + file.type + ";base64,", ""));
+				}
 			});
-			MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_mismatch", [this.byId("fileuploader_claiminput_attachment").getValue()]));
+
+			if (file) {
+				reader.readAsDataURL(file);
+			}
 		},
 
+		onUploadComplete_ClaimInput_Attachment: function (oEvent) {
+			var iHttpStatusCode = oEvent.getParameters("status");
+			var sResponse = oEvent.getParameters("response");
+			var sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
+			MessageToast.show(sMessage);
+		},
+
+		onFileSizeExceed_ClaimInput_Attachment: function (oEvent) {
+			MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_filesize"));
+		},
+
+		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
+			MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_mismatch", [this.byId("fileuploader_claiminput_attachment").getValue()]));
+		},
 		_validDateRange: function (startdate, enddate) {
 			var startDateValue = this.byId(startdate).getValue();
 			var endDateValue = this.byId(enddate).getValue();
@@ -1303,16 +1380,16 @@ sap.ui.define([
 		_ensureRequestModelDefaults: function () {
 			const oReq = this._getReqModel();
 			const data = oReq.getData() || {};
-			data.user 			   = data.user;
-			data.req_header        = { reqid: "", grptype: "IND" };
+			data.user = data.user;
+			data.req_header = { reqid: "", grptype: "IND" };
 			// data.req_item_rows     = Array.isArray(data.req_item_rows) ? data.req_item_rows : [];
-			data.req_item_rows     = [];
-			data.req_item          = data.req_item || {
+			data.req_item_rows = [];
+			data.req_item = data.req_item || {
 				cash_advance: "no_cashadv"
 			};
-			data.participant       = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
-			data.view              = "view";
-			data.list_count        = data.list_count ?? 0;
+			data.participant = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
+			data.view = "view";
+			data.list_count = data.list_count ?? 0;
 			oReq.setData(data);
 		},
 
@@ -1553,11 +1630,11 @@ sap.ui.define([
 				const a = aCtx.map((ctx) => ctx.getObject());
 
 				a.forEach((it) => {
-				if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
+					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
 				});
 
 				oReq.setProperty("/req_header_list", a);
-				oReq.setProperty("/req_header_count", a.length); 
+				oReq.setProperty("/req_header_count", a.length);
 
 				return a;
 			} catch (err) {
@@ -1609,7 +1686,7 @@ sap.ui.define([
 				oRouter.navTo("RequestFormStatus");
 			}
 		},
- 
+
 		_getTexti18n: function (i18nKey, array_i18nParameters) {
 			if (array_i18nParameters) {
 				return this.getView().getModel("i18n").getResourceBundle().getText(i18nKey, array_i18nParameters);
@@ -1651,7 +1728,7 @@ sap.ui.define([
 			});
 
 		}
-			
+
 
 	});
 });

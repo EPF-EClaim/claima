@@ -28,6 +28,12 @@
       "csrfProtection": true
     },
     {
+      "source": "^/SuccessFactors_API/(.*)$",
+      "target": "/$1",
+      "destination": "Conn_SF_DEV_API"
+    },
+
+    {
       "source": "^(.*)$",
       "target": "$1",
       "service": "html5-apps-repo-rt",

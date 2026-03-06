@@ -934,6 +934,7 @@ service eclaim_srv {
     type UserInfo {
         id       : String;
         userType : String;
+        costcenters: String;
     }
 
     function getUserType()                                         returns UserInfo;
