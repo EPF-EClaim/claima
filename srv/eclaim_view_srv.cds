@@ -449,7 +449,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         },
         {
             grant: 'READ',
-            to   : 'Admin_CC'
+            to   : 'Admin_CC', 
+            where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
     ]) as
         projection on ECLAIM.ZCLAIM_HEADER {
@@ -573,7 +574,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         },
         {
             grant: 'READ',
-            to   : 'Admin_CC'
+            to   : 'Admin_CC',
+            where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
     ]) as
         projection on ECLAIM.ZREQUEST_HEADER {
