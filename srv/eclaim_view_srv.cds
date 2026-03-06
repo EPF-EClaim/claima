@@ -11,7 +11,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         },
         {
             grant: '*',
-            to   : ['Claimant']
+            to   : ['Claimant'], 
+            where: 'EMP_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
     ]) as
         projection on ECLAIM.ZREQUEST_HEADER {
