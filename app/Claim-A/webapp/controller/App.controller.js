@@ -71,7 +71,7 @@ sap.ui.define([
 
 
 			this._ensureRequestModelDefaults();
-			var oUserModel = new sap.ui.model.json.JSONModel({ email: 'jefry.yap@my.ey.com' });
+			var oUserModel = new sap.ui.model.json.JSONModel({ email: 'farisha.razak@my.ey.com' });
 			this.getView().setModel(oUserModel, 'user');
 
 			var userModelData = this.getView().getModel('user').getData();
