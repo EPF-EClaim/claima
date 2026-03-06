@@ -78,30 +78,65 @@ sap.ui.define([
       }
     },
 
+    /*     _openFragment: function (sFragmentPath) {
+          this._mDialogs ??= {};
+    
+          if (!this._mDialogs[sFragmentPath]) {
+            Fragment.load({
+              id: this.getView().getId(),
+              name: sFragmentPath,
+              controller: this
+            }).then(dialog => {
+    
+              this.getView().addDependent(dialog);
+              this._mDialogs[sFragmentPath] = dialog;
+    
+              this._applyCostCenterAccess(dialog);
+    
+              dialog.open();
+            });
+          } else {
+            // Fragment already loaded → just apply permission
+            this._applyCostCenterAccess(this._mDialogs[sFragmentPath]);
+    
+            this._mDialogs[sFragmentPath].open();
+          }
+        }, */
+
     _openFragment: function (sFragmentPath) {
       this._mDialogs ??= {};
+
+      const afterLoad = (dialog) => {
+        this.getView().addDependent(dialog);
+        this._mDialogs[sFragmentPath] = dialog;
+
+        // 1) Clear all filter controls
+        this._resetAnalyticsDialogControls(dialog);
+
+        // 2) Re-apply Cost Center access (this will enforce non-admin CC)
+        this._applyCostCenterAccess(dialog);
+
+        // 3) Open
+        dialog.open();
+      };
 
       if (!this._mDialogs[sFragmentPath]) {
         Fragment.load({
           id: this.getView().getId(),
           name: sFragmentPath,
           controller: this
-        }).then(dialog => {
-
-          this.getView().addDependent(dialog);
-          this._mDialogs[sFragmentPath] = dialog;
-
-          this._applyCostCenterAccess(dialog);
-
-          dialog.open();
-        });
+        }).then(afterLoad);
       } else {
-        // Fragment already loaded → just apply permission
-        this._applyCostCenterAccess(this._mDialogs[sFragmentPath]);
+        const dlg = this._mDialogs[sFragmentPath];
 
-        this._mDialogs[sFragmentPath].open();
+        // If already loaded, we still do the reset each time before opening
+        this._resetAnalyticsDialogControls(dlg);
+        this._applyCostCenterAccess(dlg);
+
+        dlg.open();
       }
     },
+
 
     //Helper for enable/disable cc
     _applyCostCenterAccess: function () {
@@ -158,6 +193,105 @@ sap.ui.define([
       while (oCtrl && !oCtrl.isA("sap.m.Dialog")) oCtrl = oCtrl.getParent();
       oCtrl?.close();
     },
+
+    //Reset Helper to reset Dialog Box;
+
+    /**
+ * Reset all filter controls in the analytics dialog.
+ * - Clears DatePickers / DateRanges
+ * - Clears MultiComboBox selections
+ * - Clears Select, MultiInput tokens, Input value states
+ * - Preserves CC rule by letting _applyCostCenterAccess() re-apply afterwards
+ */
+    _resetAnalyticsDialogControls: function (oDialog) {
+      if (!oDialog) return;
+
+      // 1) Generic clearing for typical controls living inside the dialog
+      const aAll = oDialog.findAggregatedObjects(true, function (o) {
+        return o?.isA?.("sap.ui.core.Control");
+      }) || [];
+
+      aAll.forEach(oCtrl => {
+        // Value state reset (if any)
+        if (oCtrl.setValueState) {
+          oCtrl.setValueState("None");
+          if (oCtrl.setValueStateText) oCtrl.setValueStateText("");
+        }
+
+        // MultiComboBox
+        if (oCtrl.isA && oCtrl.isA("sap.m.MultiComboBox")) {
+          // Do NOT clear Cost Center here; we will handle CC afterward
+          if (oCtrl.getId().endsWith("--cc")) return;
+          oCtrl.setSelectedKeys([]);
+          if (oCtrl.setValue) oCtrl.setValue(""); // clear typed value if any (filter)
+        }
+
+        // Select
+        if (oCtrl.isA && oCtrl.isA("sap.m.Select")) {
+          oCtrl.setSelectedKey("");
+        }
+
+        // MultiInput (tokens)
+        if (oCtrl.isA && oCtrl.isA("sap.m.MultiInput")) {
+          if (oCtrl.removeAllTokens) oCtrl.removeAllTokens();
+          if (oCtrl.setValue) oCtrl.setValue("");
+        }
+
+        // Input
+        if (oCtrl.isA && oCtrl.isA("sap.m.Input")) {
+          if (oCtrl.setValue) oCtrl.setValue("");
+        }
+
+        // DatePicker
+        if (oCtrl.isA && oCtrl.isA("sap.m.DatePicker")) {
+          oCtrl.setDateValue(null);
+          if (oCtrl.setSecondDateValue) oCtrl.setSecondDateValue(null);
+          if (oCtrl.setValue) oCtrl.setValue("");
+        }
+
+        // DateRangeSelection (if you use it)
+        if (oCtrl.isA && oCtrl.isA("sap.m.DateRangeSelection")) {
+          oCtrl.setDateValue(null);
+          oCtrl.setSecondDateValue(null);
+          if (oCtrl.setValue) oCtrl.setValue("");
+        }
+      });
+
+      // 2) Explicitly clear your known date fields (IDs from your code)
+      const clearDateById = (id) => {
+        const c = this.byId(id);
+        if (!c) return;
+        c.setDateValue?.(null);
+        c.setSecondDateValue?.(null);
+        c.setValue?.("");
+        c.setValueState?.("None");
+      };
+
+      [
+        "analytics_tripstartdate",
+        "analytics_tripenddate",
+        "analytics_eventstartdate",
+        "analytics_eventenddate",
+        "analytics_paydate"
+      ].forEach(clearDateById);
+
+      // 3) If Status has Required, clear error and selection
+      const statusCtrl = this.byId("status");
+      if (statusCtrl) {
+        statusCtrl.setValueState?.("None");
+        // It's a MultiComboBox in your code → clear selections now
+        statusCtrl.setSelectedKeys?.([]);
+        statusCtrl.setValue?.("");
+      }
+
+      // NOTE on Cost Center:
+      // We intentionally did NOT clear cc (MultiComboBox with id "cc") here.
+      // After this reset, we will call _applyCostCenterAccess() to:
+      // - Admins: keep CC control visible and empty (free selection)
+      // - Non-admins: enforce user's CC selection even if invisible (for filtering)
+    },
+
+
 
     /* ===========================================================
      *  FILTERING (ENTITY‑AWARE)
