@@ -9,7 +9,7 @@ annotate service.ZRISK with @(
         Updatable : true,
         Insertable: true
     },
-    // odata.draft.enabled,
+    odata.draft.enabled,
 
     UI                             : {
         CreateHidden: false,
@@ -54,6 +54,19 @@ annotate service.ZRISK with @(
 
     }
 );
+
+annotate service.ZRISK with {
+    START_DATE @Common.FieldControl: #Optional;
+    END_DATE   @Common.FieldControl: #Optional
+
+    @assert: [{
+        $Type     : 'Common.AssertExpression',
+        expression: 'END_DATE == null || START_DATE == null || END_DATE >= START_DATE',
+        message   : 'End date should not be earlier than start date',
+        targets   : [END_DATE]
+    }]
+};
+
 
 annotate service.ZREQUEST_TYPE with @(
     cds.autoexpose,
@@ -231,7 +244,7 @@ annotate service.ZNUM_RANGE with @(
                 Value            : PREFIX,
                 ![@UI.Importance]: #High,
                 Label            : 'Prefix'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : RANGE_DESC,
@@ -1443,7 +1456,7 @@ annotate service.ZREGION with @(
 );
 
 annotate service.ZRATE_KM with @(
-    Aggregation.defaultFilter: 'IsActiveEntity eq true',
+    Aggregation.defaultFilter      : 'IsActiveEntity eq true',
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey             : [RATE_KM_ID],
@@ -1510,7 +1523,7 @@ annotate service.ZRATE_KM with @(
 );
 
 // annotate service.ZRATE_KM with {
-    // DraftAdministrativeData @odata.draft.IsActiveEntity: true;
+// DraftAdministrativeData @odata.draft.IsActiveEntity: true;
 //     END_DATE                @assert                    : ( case
 //                                                               when END_DATE < START_DATE
 //                                                                    then 'End date should not be earlier than start date' end);
@@ -3645,15 +3658,15 @@ annotate service.ZTRAVEL_DAYS with @(
 annotate service.ZDB_STRUCTURE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [APP_CONTROL_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [APP_CONTROL_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3703,7 +3716,7 @@ annotate service.ZDB_STRUCTURE with @(
                 Value            : FIELD,
                 ![@UI.Importance]: #High,
                 Label            : 'Field'
-            },                        
+            },
         ]
     }
 );
@@ -3711,15 +3724,21 @@ annotate service.ZDB_STRUCTURE with @(
 annotate service.ZBUDGET with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [YEAR, INTERNAL_ORDER, COMMITMENT_ITEM, FUND_CENTER, MATERIAL_GROUP],
-    Capabilities      : {
+    Common.SemanticKey             : [
+        YEAR,
+        INTERNAL_ORDER,
+        COMMITMENT_ITEM,
+        FUND_CENTER,
+        MATERIAL_GROUP
+    ],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3769,7 +3788,7 @@ annotate service.ZBUDGET with @(
                 Value            : VIREMENT_IN,
                 ![@UI.Importance]: #High,
                 Label            : 'Virement In'
-            },  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : VIREMENT_OUT,
@@ -3793,7 +3812,7 @@ annotate service.ZBUDGET with @(
                 Value            : CURRENT_BUDGET,
                 ![@UI.Importance]: #High,
                 Label            : 'Current Budget'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : COMMITMENT,
@@ -3805,7 +3824,7 @@ annotate service.ZBUDGET with @(
                 Value            : ACTUAL,
                 ![@UI.Importance]: #High,
                 Label            : 'Actual'
-            },  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CONSUMED,
@@ -3829,7 +3848,7 @@ annotate service.ZBUDGET with @(
                 Value            : BUDGET_OWNER_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Budget Owner'
-            },   
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : WBS_CODE,
@@ -3841,9 +3860,7 @@ annotate service.ZBUDGET with @(
                 Value            : CURRENCY,
                 ![@UI.Importance]: #High,
                 Label            : 'Currency'
-            },                                                        
+            },
         ]
     }
 );
-
-

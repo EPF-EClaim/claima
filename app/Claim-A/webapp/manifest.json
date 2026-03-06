@@ -1131,17 +1131,6 @@
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
-                                        },
-                                        "newCreate": {
-                                            "press": "claima.ext.controller.Config.onClickCreate",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": false,
-                                            "text": "Create",
-                                            "position": {
-                                                "placement": "After",
-                                                "anchor": "newCopy"
-                                            }
                                         }
                                     }
                                 }

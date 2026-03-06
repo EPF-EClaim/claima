@@ -3,53 +3,30 @@ const { message } = require('@sap/cds/lib/log/cds-error');
 const { UPSERT } = require('@sap/cds/lib/ql/cds-ql');
 const { target } = require('@sap/cds/lib/ql/cds.ql-infer');
 
-// const _insert = async function (entities, req) {
-//   try {
-//     var reqdata = req;
-//     if (!reqdata || reqdata.length === 0) {
-//       throw new Error('No Data Sent')
-//     }
-//     const tx = cds.tx(req);
-//     const results = await tx.run(
-//       UPSERT(reqdata).into(entities)
-//     );
-//     return 'Records updated';
-//   } catch (error) {
-//     req.error(400, `Fail creating record: ${error.message}`);
-//   }
-// }
-// const { ZRISK, ZRATE_KM } = srv.entities;
-// this.before('NEW', ZRATE_KM, async(req) => {
-//     const { START_DATE, END_DATE } = req.data;
-//     if (END_DATE && START_DATE && new Date(END_DATE) < new Date(START_DATE)) {
-//       req.error(400,'End date should not be earlier than start date', 'END_DATE');
-//     }
-//   });
-
 module.exports = (srv) => {
 
-  const { ZRISK, ZRATE_KM } = srv.entities;
+  // const { ZRISK, ZRATE_KM } = srv.entities;
 
-  srv.before('CREATE', ZRISK, (req) => {
-    const { START_DATE, END_DATE } = req.data || {}
-    if (START_DATE != null && END_DATE != null && new Date(END_DATE) < new Date(START_DATE)) {
-      req.error(400, 'End Date must be greater than or equal to Start Date.', { target: 'END_DATE' })
-    }
-  });
+  // srv.before('CREATE', ZRISK, (req) => {
+  //   const { START_DATE, END_DATE } = req.data || {}
+  //   if (START_DATE != null && END_DATE != null && new Date(END_DATE) < new Date(START_DATE)) {
+  //     req.error(400, 'End Date must be greater than or equal to Start Date.', { target: 'END_DATE' })
+  //   }
+  // });
 
-  srv.on('NEW', ZRATE_KM, async(req) => {
-    const { START_DATE, END_DATE } = req.data;
-    if (END_DATE && START_DATE && new Date(END_DATE) < new Date(START_DATE)) {
-      req.error(400,'End date should not be earlier than start date', 'END_DATE');
-    }
-  });
+  // srv.on('NEW', ZRATE_KM, async(req) => {
+  //   const { START_DATE, END_DATE } = req.data;
+  //   if (END_DATE && START_DATE && new Date(END_DATE) < new Date(START_DATE)) {
+  //     req.error(400,'End date should not be earlier than start date', 'END_DATE');
+  //   }
+  // });
 
-  srv.before('SAVE', ZRATE_KM.drafts, async(req) => {
-    const { START_DATE, END_DATE } = req.data;
-    if (END_DATE && START_DATE && new Date(END_DATE) < new Date(START_DATE)) {
-      req.error(400,'End date should not be earlier than start date', 'END_DATE');
-    }
-  });
+  // srv.before('SAVE', ZRATE_KM.drafts, async(req) => {
+  //   const { START_DATE, END_DATE } = req.data;
+  //   if (END_DATE && START_DATE && new Date(END_DATE) < new Date(START_DATE)) {
+  //     req.error(400,'End date should not be earlier than start date', 'END_DATE');
+  //   }
+  // });
 
   srv.on('batchCreateEmployee', async (req) => {
     const { ZEMP_MASTER } = srv.entities;
