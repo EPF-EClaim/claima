@@ -57,7 +57,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
     entity ZEMP_REQUEST_ITEM_VIEW @(restrict: [
         {
             grant: '*',
-            to   : ['Claimant']
+            to   : ['Claimant'], 
+            where: (createdBy = $user)
         },
         {
             grant: [
@@ -143,7 +144,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
     entity ZEMP_REQUEST_PART_VIEW @(restrict: [
         {
             grant: '*',
-            to   : ['Claimant']
+            to   : ['Claimant'],
+            where: (createdBy = $user)
         },
         {
             grant: [
@@ -166,7 +168,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
     entity ZEMP_CLAIM_HEADER_VIEW @(restrict: [
         {
             grant: '*',
-            to   : ['Claimant']
+            to   : ['Claimant'], 
+            where: (createdBy = $user)
         },
         {
             grant: [
@@ -226,7 +229,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
     entity ZEMP_CLAIM_ITEM_VIEW @(restrict: [
         {
             grant: '*',
-            to   : ['Claimant']
+            to   : ['Claimant'], 
+            where: (createdBy = $user)
         },
         {
             grant: [
@@ -324,7 +328,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
     entity ZEMP_REQUEST_STATUS @(restrict: [
         {
             grant: '*',
-            to   : ['Claimant']
+            to   : ['Claimant'], 
+            where: (createdBy = $user)
         },
         {
             grant: [
@@ -352,7 +357,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
     entity ZEMP_CLAIM_STATUS_HEADER @(restrict: [
         {
             grant: '*',
-            to   : ['Claimant']
+            to   : ['Claimant'],
+            where: (createdBy = $user)
         },
         {
             grant: [
@@ -373,7 +379,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
     entity ZEMP_CLAIM_STATUS_ITEM @(restrict: [
         {
             grant: '*',
-            to   : ['Claimant']
+            to   : ['Claimant'], 
+            where: (createdBy = $user)
         },
         {
             grant: [
@@ -401,7 +408,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         },
         {
             grant: 'READ',
-            to   : 'Admin_CC'
+            to   : 'Admin_CC', 
+            where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
     ]) as
         projection on ECLAIM.ZCLAIM_HEADER {
@@ -645,7 +653,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         },
         {
             grant: 'READ',
-            to   : 'Admin_CC'
+            to   : 'Admin_CC', 
+            where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
     ]) as
         projection on ECLAIM.ZREQUEST_HEADER {
