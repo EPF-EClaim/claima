@@ -36,7 +36,9 @@ entity ZEMP_REQUEST_VIEW
         ZCOST_CENTER.COST_CENTER_DESC, 
         CASH_ADVANCE,
         PREAPPROVAL_AMOUNT,
-        TOTAL_AMOUNT
+        TOTAL_AMOUNT,
+        REQUEST_DATE,
+        createdBy
 };
 
 
