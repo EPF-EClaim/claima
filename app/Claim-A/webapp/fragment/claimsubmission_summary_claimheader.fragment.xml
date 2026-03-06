@@ -6,16 +6,31 @@
 >
     <VBox class="sapUiSmallMargin">
         <OverflowToolbar height="3rem">
+            <!-- Claim Header -->
             <Title
-                text="{i18n>simpleform_claimsummary_claimheader}"
+                text="{i18n>title_claimsummary_claimheader}"
+                level="H2"
             />
+
+            <!-- space -->
             <ToolbarSpacer />
+
+            <!-- Download details -->
             <Button
                 type="Default"
                 icon="sap-icon://excel-attachment"
                 text="Download details"
                 id="btnExcelDownload2"
                 press=".onDownloadExcelReport"
+            />
+
+            <!-- Attachment -->
+            <Button
+                id="button_claimsummary_viewattachment"
+                icon="sap-icon://attachment"
+                text="{i18n>button_claimsummary_viewattachment}"
+                press="onView_ClaimSummary_Attachment"
+                enabled="false"
             />
         </OverflowToolbar>
         <f:SimpleForm

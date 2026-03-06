@@ -64,24 +64,22 @@ sap.ui.define([
 			const ctx = oModel.bindContext("/getUserType()");
 			ctx.requestObject().then(oData => {
 				this._userType = oData.userType || "UNKNOWN";
+				this.costcenters = oData.costcenters || "UNKNOWN"; //Added by Aiman Salim 06/03/2026
 			}).catch(err => {
 				console.error("getUserType failed:", err);
 				this._userType = "UNKNOWN";
+				console.error("getUserType failed:", err); //Added by Aiman Salim 06/03/2026
+				this.costcenters = "UNKNOWN";
 			});
 
-
 			this._ensureRequestModelDefaults();
-			var oUserModel = new sap.ui.model.json.JSONModel({ email: 'jefry.yap@my.ey.com' });
-			this.getView().setModel(oUserModel, 'user');
-
+			// var oUserModel = new sap.ui.model.json.JSONModel({ email: 'Jefry.Yap@my.ey.com' });
+			// this.getView().setModel(oUserModel, 'user');
 			var userModelData = this.getView().getModel('user').getData();
 			const emp_data = await this._getEmpIdDetail(userModelData.email);
-
 			const oReqModel = this._getReqModel().getData();
 			oReqModel.user = emp_data.eeid;
 			this._getReqModel().setData(oReqModel);
-
-			this._userId = emp_data.eeid;
 
 		},
 
@@ -97,7 +95,7 @@ sap.ui.define([
 			const oItem = oEvent.getParameter("item"),
 				sText = oItem.getText();
 		},
-		onNavItemSelect: function (oEvent) {
+		onNavItemSelect: async function (oEvent) {
 			var oItem = oEvent.getParameter("item");
 			var oKey = oItem.getKey();
 			var oRouter = this.getOwnerComponent().getRouter();
@@ -112,6 +110,15 @@ sap.ui.define([
 				sap.m.MessageToast.show("Please wait… loading your access.");
 				return;
 			}
+
+			//Aiman Salim - 05/03/2026 - Added to make it global usage;
+			const oUserAccessModel = new sap.ui.model.json.JSONModel({
+				userType: this._userType,
+				costcenters: this.costcenters,
+			});
+			this.getOwnerComponent().setModel(oUserAccessModel, "access");
+			//Aiman Salim - 05/03/2026 - Added to make it global;
+
 			//End EY_ATHIRAH
 
 			switch (oKey) {
@@ -122,7 +129,7 @@ sap.ui.define([
 					this.onClickMyRequest();
 					break;
 				case "myrequest":
-					this.getPARHeaderList(this._userId);
+					this.getPARHeaderList();
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("RequestFormStatus");
 					break;
@@ -301,6 +308,7 @@ sap.ui.define([
 						"category": null,
 					}
 				},
+				"is_new": false,
 				"claim_header": {
 					"claim_id": null,
 					"emp_id": null,
@@ -360,6 +368,7 @@ sap.ui.define([
 						"lender_name": null,
 						"course_code": null,
 						"project_code": null,
+						"attachment_email_approver": null,
 					}
 				},
 				"claim_items": [],
@@ -367,6 +376,10 @@ sap.ui.define([
 				"reportnumber": {
 					"reportno": null,
 					"current": null
+				},
+				"attachment": {
+					"fileName": null,
+					"fileContent": null
 				}
 			});
 			//// set input
@@ -429,10 +442,10 @@ sap.ui.define([
 				this.byId("select_claimprocess_claimitem").bindAggregation("items", {
 					path: "employee>/ZCLAIM_TYPE_ITEM",
 					filters: [new sap.ui.model.Filter('CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, claimType.getKey())],
-					// sorter: [
-					// 	{ path: 'CLAIM_TYPE_ITEM_DESC' },
-					// 	{ path: 'CLAIM_TYPE_ITEM_ID' },
-					// ],
+					sorter: [
+						new sap.ui.model.Sorter('CLAIM_TYPE_ITEM_DESC'),
+						new sap.ui.model.Sorter('CLAIM_TYPE_ITEM_ID')
+					],
 					parameters: {
 						$expand: {
 							"ZCLAIM_CATEGORY": {
@@ -651,6 +664,9 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/total_claim_amount", "0.00");
 			oInputModel.setProperty("/claim_header/final_amount_to_receive", "0.00");
 			oInputModel.setProperty("/claim_header/cash_advance_amount", "0.00");
+			if (!oInputModel.getProperty("/claim_header/preapproved_amount")) {
+				oInputModel.setProperty("/claim_header/preapproved_amount", "0.00");
+			}
 			//// include description in data
 			oInputModel.setProperty("/claim_header/descr/status_id", this._getTexti18n("value_claiminput_status_draft"));
 			oInputModel.setProperty("/claim_header/descr/claim_type_id", oInputModel.getProperty("/claimtype/descr/type"));
@@ -691,7 +707,7 @@ sap.ui.define([
 
 		_getJsonDate: function (date) {
 			if (date) {
-				var oDate = new Date (date);
+				var oDate = new Date(date);
 				var oDateString = oDate.toLocaleString('default', { day: '2-digit' }) + " " + oDate.toLocaleString('default', { month: 'short' }) + " " + oDate.toLocaleString('default', { year: 'numeric' });
 				return oDateString;
 			} else {
@@ -810,7 +826,7 @@ sap.ui.define([
 			}
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
-				var isUploadSuccess = this._onUpload_ClaimInput_Attachment();
+				var isUploadSuccess = await this._onUpload_ClaimInput_Attachment();
 				if (!isUploadSuccess) {
 					// don't proceed claim submission if attachment upload fails
 					return;
@@ -856,41 +872,98 @@ sap.ui.define([
 			this.byId("pageContainer").to(oClaimSubmissionPage);
 		},
 
-		_onUpload_ClaimInput_Attachment: function () {
-			// check if file can be uploaded
-			var oFileUploader = this.byId("fileuploader_claiminput_attachment");
-			oFileUploader.checkFileReadable().then(function () {
-				oFileUploader.upload();
+		_onUpload_ClaimInput_Attachment: async function () {
+			// get claim submission model
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+
+			// Write to Success Factors API
+			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment"; 
+
+			try {
+				const response = await fetch(sServiceUrl, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						__metadata: {
+							uri: 'Attachment'
+						},
+						deletable: true,
+						fileName: oInputModel.getProperty("/attachment/fileName"),
+						moduleCategory: 'UNSPECIFIED',
+						module: 'DEFAULT',
+						userId: 'SFAPI',
+						viewable: true,
+						searchable: true,
+						fileContent: oInputModel.getProperty("/attachment/fileContent")
+					}) 
+				});
+
+				if (!response.ok) {
+					const errText = await response.text().catch(() => "");
+					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
+				}
+
+				const data = await response.text();
+
+				// turn XML into JSON
+				const parser = new DOMParser();
+				const xmlDoc = parser.parseFromString(data, 'text/xml');
+				const jsonData = {};
+
+				const nodes = xmlDoc.documentElement.childNodes;
+				for (let i = 0; i < nodes.length; i++) {
+					const node = nodes[i];
+					if (node.nodeType === 1) {
+						jsonData[node.nodeName] = node.textContent.trim();
+					}
+				}
+
+				// get generated attachment number
+				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(')+1,jsonData.id.indexOf(')')-1);
+				oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
+				oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
 				return true;
-			}, function (error) {
-				MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_error"));
-			}).then(function () {
-				oFileUploader.clear();
+			} catch (error) {
+				console.log("Error uploading attachment: " + error);
+				MessageToast.show("Error uploading attachment: " + error);
 				return false;
-			});
-		},
-
-		onUploadComplete_ClaimInput_Attachment: function (oEvent) {
-			// Please note that the event response should be taken from the event parameters but for our test example, it is hardcoded.
-
-			var sResponse = "File upload complete. Status: 200",
-				iHttpStatusCode = parseInt(/\d{3}/.exec(sResponse)[0]),
-				sMessage;
-
-			if (sResponse) {
-				sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
-				MessageToast.show(sMessage);
 			}
 		},
 
-		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			var aFileTypes = oEvent.getSource().getFileType();
-			aFileTypes.map(function (sType) {
-				return "*." + sType;
+		onChange_ClaimInput_Attachment: function (oEvent) {
+			// check if file can be uploaded
+			var fileName = oEvent.getSource().getValue();
+			var domRef = oEvent.getSource().getFocusDomRef();
+			var file = domRef.files[0];
+			var reader = new FileReader();
+
+			reader.addEventListener("load", () => {
+				var oInputModel = this.getView().getModel("claimsubmission_input");
+				if (oInputModel) {
+					oInputModel.setProperty("/attachment/fileName", fileName);
+					oInputModel.setProperty("/attachment/fileContent", reader.result.replace("data:" + file.type + ";base64,", ""));
+				}
 			});
+
+			if (file) {
+				reader.readAsDataURL(file);
+			}
+		},
+
+		onUploadComplete_ClaimInput_Attachment: function (oEvent) {
+			var iHttpStatusCode = oEvent.getParameters("status");
+			var sResponse = oEvent.getParameters("response");
+			var sMessage = iHttpStatusCode === 200 ? sResponse + " (Upload Success)" : sResponse + " (Upload Error)";
+			MessageToast.show(sMessage);
+		},
+
+		onFileSizeExceed_ClaimInput_Attachment: function (oEvent) {
+			MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_filesize"));
+		},
+
+		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
 			MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_mismatch", [this.byId("fileuploader_claiminput_attachment").getValue()]));
 		},
-		
 		_validDateRange: function (startdate, enddate) {
 			var startDateValue = this.byId(startdate).getValue();
 			var endDateValue = this.byId(enddate).getValue();
@@ -900,8 +973,8 @@ sap.ui.define([
 				return false;
 			}
 			// check if end date earlier than start date
-			var startDateUnix 	= new Date (startDateValue).valueOf();
-			var endDateUnix 	= new Date (endDateValue).valueOf();
+			var startDateUnix = new Date(startDateValue).valueOf();
+			var endDateUnix = new Date(endDateValue).valueOf();
 			if (startDateUnix > endDateUnix) {
 				MessageToast.show(this._getTexti18n("msg_daterange_order"));
 				return false;
@@ -1305,14 +1378,13 @@ sap.ui.define([
 			const data = oReq.getData() || {};
 			data.user 			   = data.user;
 			data.req_header        = { reqid: "", grptype: "IND" };
-			// data.req_item_rows     = Array.isArray(data.req_item_rows) ? data.req_item_rows : [];
 			data.req_item_rows     = [];
 			data.req_item          = data.req_item || {
 				cash_advance: "no_cashadv"
 			};
 			data.participant       = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
 			data.view              = "view";
-			data.list_count        = data.list_count ?? 0;
+			data.list_count        = 0;
 			oReq.setData(data);
 		},
 
@@ -1320,7 +1392,6 @@ sap.ui.define([
 			this._ensureRequestModelDefaults();
 			this._loadDefaultSelection();
 			this._loadReqTypeSelectionData();
-			this._loadClaimTypeSelectionData();
 
 			if (!this.oDialogFragment) {
 				this.oDialogFragment = await Fragment.load({
@@ -1389,7 +1460,7 @@ sap.ui.define([
 				const sCostCenter = emp_data ? emp_data.cc : "";
 
 				const oPayload = {
-					EMP_ID: this._userId,
+					EMP_ID: emp_data.eeid,
 					REQUEST_ID: oResult.reqNo,
 					REQUEST_TYPE_ID: oInputData.reqtype,
 					OBJECTIVE_PURPOSE: oInputData.purpose,
@@ -1405,8 +1476,9 @@ sap.ui.define([
 					EVENT_END_DATE: oInputData.eventenddate,
 					TRIP_START_DATE: oInputData.tripstartdate,
 					TRIP_END_DATE: oInputData.tripenddate,
-					STATUS: "DRAFT",
-					CLAIM_TYPE_ID: oInputData.claimtype
+					STATUS: "CREATED",
+					CLAIM_TYPE_ID: oInputData.claimtype,
+					REQUEST_DATE: new Date().toISOString().slice(0, 10)
 				};
 
 				const oContext = oListBinding.create(oPayload);
@@ -1416,20 +1488,62 @@ sap.ui.define([
 					this.oDialogFragment.close();
 
 					oReqModel.setProperty("/view", 'list');
-					oReqModel.setProperty("/req_header/reqid", oResult.reqNo);
-					oReqModel.setProperty("/req_header/reqstatus", 'DRAFT');
-					oReqModel.setProperty("/req_header/costcenter", sCostCenter);
-					oReqModel.setProperty("/eeid", emp_data.eeid);
+					this._getHeaderView(oResult.reqNo)
 
 					var oRouter = this.getOwnerComponent().getRouter();
-					oRouter.navTo("RequestForm");
+					oRouter.navTo("RequestFormNew");
 				}).catch(err => {
 					sap.m.MessageToast.show("Creation failed: " + err.message);
 				});
 			}
 		},
 
+		async _getHeaderView(reqid) {
+			
+			const oReqModel = this._getReqModel();
+			const oModel = this.getOwnerComponent().getModel("employee_view");
+			const oListBinding = oModel.bindList("/ZEMP_REQUEST_VIEW", null, null, [
+				new sap.ui.model.Filter("REQUEST_ID", "EQ", reqid)
+			]);
 
+			try {
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					oReqModel.setProperty("/req_header", {
+						purpose       	: oData.OBJECTIVE_PURPOSE || "",
+						reqid         	: oData.REQUEST_ID || "",
+						tripstartdate 	: oData.TRIP_START_DATE || "",
+						tripenddate   	: oData.TRIP_END_DATE || "",
+						eventstartdate	: oData.EVENT_START_DATE || "",
+						eventenddate  	: oData.EVENT_END_DATE || "",
+						location      	: oData.LOCATION || "",
+						grptype       	: oData.IND_OR_GROUP || "",
+						transport     	: oData.TYPE_OF_TRANSPORTATION || "",
+						reqstatus		: oData.STATUS_DESC || "",
+						costcenter    	: oData.COST_CENTER || "",
+						altcostcenter 	: oData.ALTERNATE_COST_CENTER || "",
+						cashadvamt    	: oData.CASH_ADVANCE || 0,
+						reqamt        	: oData.PREAPPROVAL_AMOUNT || 0,
+						reqtype       	: oData.REQUEST_TYPE_DESC || "",
+						comment       	: oData.REMARK || "",
+						doc1          	: oData.ATTACHMENT1 || "",
+						doc2          	: oData.ATTACHMENT2 || "",
+						claimtype	  	: oData.CLAIM_TYPE_ID || "",
+						claimtypedesc  	: oData.CLAIM_TYPE_DESC || "",
+						reqdate			: oData.REQUEST_DATE
+					});
+					
+				} else {
+					console.warn("Request Id " + reqid + " not found");
+
+				}
+			} catch (oError) {
+				console.error("Error fetching Header view", oError);
+				return null; // Return null so the app doesn't crash
+			}
+		},
 
 		// get backend data
 		async _getEmpIdDetail(sEMAIL) {
@@ -1484,15 +1598,19 @@ sap.ui.define([
 			}).catch(err => console.error("RequestType Load Failed", err));
 		},
 
-		_loadClaimTypeSelectionData: function () {
-			const oMainModel = this.getOwnerComponent().getModel();
-			const oListBinding = oMainModel.bindList("/ZCLAIM_TYPE");
+		_loadClaimTypeSelectionData: function (req_type) {
+			if (req_type) {
+				const oMainModel = this.getOwnerComponent().getModel();
+				const oListBinding = oMainModel.bindList("/ZCLAIM_TYPE", null, null, [
+					new Filter("CATEGORY_ID", FilterOperator.EQ, req_type)
+				]);
 
-			oListBinding.requestContexts().then((aContexts) => {
-				const aData = aContexts.map(oCtx => oCtx.getObject());
-				const oTypeModel = new JSONModel({ types: aData });
-				this.getView().setModel(oTypeModel, "claim_type_list");
-			}).catch(err => console.error("ClaimType Load Failed", err));
+				oListBinding.requestContexts().then((aContexts) => {
+					const aData = aContexts.map(oCtx => oCtx.getObject());
+					const oTypeModel = new JSONModel({ types: aData });
+					this.getView().setModel(oTypeModel, "claim_type_list");
+				}).catch(err => console.error("ClaimType Load Failed", err));
+			}
 		},
 
 		_getCurrentReqNumber: async function (range_id) {
@@ -1533,13 +1651,13 @@ sap.ui.define([
 		},
 
 		// My Pre-Approval Request Status function
-		getPARHeaderList: async function (emp_id) {
+		getPARHeaderList: async function () {
 			const oReq = this.getOwnerComponent().getModel("request_status");
-			const oModel = this.getOwnerComponent().getModel();
+			const oModel = this.getOwnerComponent().getModel("employee_view");
 
-			const oListBinding = oModel.bindList("/ZREQUEST_HEADER", undefined,
-				[new Sorter("REQUEST_ID")],
-				[new Filter({ path: "EMP_ID", operator: FilterOperator.EQ, value1: String(emp_id) })],
+			const oListBinding = oModel.bindList("/ZEMP_REQUEST_VIEW", undefined,
+				[new Sorter("STATUS", true)],
+				null,
 				{
 					$$ownRequest: true,
 					$$groupId: "$auto",
@@ -1553,11 +1671,11 @@ sap.ui.define([
 				const a = aCtx.map((ctx) => ctx.getObject());
 
 				a.forEach((it) => {
-				if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
+					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
 				});
 
 				oReq.setProperty("/req_header_list", a);
-				oReq.setProperty("/req_header_count", a.length); 
+				oReq.setProperty("/req_header_count", a.length);
 
 				return a;
 			} catch (err) {
@@ -1568,8 +1686,81 @@ sap.ui.define([
 			}
 		},
 
-		_checkFieldVisibility_ReqType: function () {
+		getFieldVisibility_ReqType: async function (oEvent) {
+			const oModel = this.getOwnerComponent().getModel();
 
+			const reqTypeFromSelect = oEvent?.getSource?.().getSelectedKey?.();
+			const reqTypeFromModel  = this._getReqModel().getProperty("/req_header/reqtype");
+			const req_type = reqTypeFromSelect || reqTypeFromModel;
+
+			if (!req_type) {
+				console.warn("No req_type found yet.");
+				return;
+			}
+
+			const oListBinding = oModel.bindList("/ZDB_STRUCTURE", null, null, [
+				new sap.ui.model.Filter("SUBMISSION_TYPE", "EQ", "PREAPPROVAL_R"),
+				new sap.ui.model.Filter("COMPONENT_LEVEL", "EQ", "HEADER"),
+				new sap.ui.model.Filter("REQUEST_TYPE_ID", "EQ", req_type)
+			]);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+
+				if (!aCtx || aCtx.length === 0) {
+					console.warn("No configuration rows for req_type:", req_type);
+					this._setAllHeaderControlsVisible(false);
+					return;
+				}
+				const oData = aCtx[0].getObject();
+				
+				const aFieldIds = oData.FIELD.replace(/[\[\]\s]/g, "").split(",");
+
+				if (aFieldIds != []) {
+					this._setAllHeaderControlsVisible(false);
+					aFieldIds.forEach(id => {
+						const control = this._resolveControl(id, "request");
+						if (control && typeof control.setVisible === "function") {
+							control.setVisible(true);
+						} else {
+							console.warn("Control not found or not visible-capable:", id);
+						}
+					});
+				} else {
+					this._setAllHeaderControlsVisible(false);
+				}
+
+				this._loadClaimTypeSelectionData(req_type);
+
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				this._setAllHeaderControlsVisible(false);
+			} 
+		},
+
+		_setAllHeaderControlsVisible: function (bVisible) {
+			const aHeaderControlIds = ["req_tripstartdate", "req_tripenddate", "req_eventstartdate", "req_eventenddate", "req_grptype", "req_location", "req_transport", "req_acc", "req_attachment_1", "req_attachment_2", "req_comment"];
+			aHeaderControlIds.forEach(id => {
+				const c = this._resolveControl(id, "request");
+				if (c && typeof c.setVisible === "function") {
+					c.setVisible(bVisible);
+				}
+			});
+		},
+
+		_resolveControl: function (sId, sFragmentId) {
+			let c = this.getView().byId(sId);
+			if (c) return c;
+
+			if (sFragmentId) {
+				c = sap.ui.core.Fragment.byId(this.getView().createId(sFragmentId), sId);
+				if (c) return c;
+
+				c = sap.ui.core.Fragment.byId(sFragmentId, sId);
+				if (c) return c;
+			}
+
+			return sap.ui.getCore().byId(`${sFragmentId}--${sId}`) || sap.ui.getCore().byId(sId);
 		},
 
 		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1609,7 +1800,7 @@ sap.ui.define([
 				oRouter.navTo("RequestFormStatus");
 			}
 		},
- 
+
 		_getTexti18n: function (i18nKey, array_i18nParameters) {
 			if (array_i18nParameters) {
 				return this.getView().getModel("i18n").getResourceBundle().getText(i18nKey, array_i18nParameters);
@@ -1638,6 +1829,11 @@ sap.ui.define([
 						var oUserModel = new sap.ui.model.json.JSONModel({ email: email });
 						that.getView().setModel(oUserModel, 'user');
 
+						const emp_data = await this._getEmpIdDetail(email);
+						const oReqModel = this._getReqModel().getData();
+						oReqModel.user = emp_data.eeid;
+						this._getReqModel().setData(oReqModel);
+
 						sap.m.MessageToast.show('Email: ' + email);
 					} else {
 						sap.m.MessageToast.show('Email is empty or not provided for this user.');
@@ -1651,7 +1847,7 @@ sap.ui.define([
 			});
 
 		}
-			
+
 
 	});
 });

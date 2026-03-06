@@ -9,7 +9,8 @@
     "@sap-cloud-sdk/resilience": "^4",
     "@sap/xssec": "^4",
     "express": "^4",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "xml-js": "^1.6.11"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^2",
