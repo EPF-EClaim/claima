@@ -15,7 +15,7 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
 	"sap/ui/export/Spreadsheet",
-
+	"claima/utils/common"
 ], function (
 	Device,
 	Controller,
@@ -31,7 +31,8 @@ sap.ui.define([
 	Filter,
 	FilterOperator,
 	Sorter,
-	Spreadsheet
+	Spreadsheet,
+	Common
 ) {
 	"use strict";
 
@@ -72,15 +73,13 @@ sap.ui.define([
 				this.costcenters = "UNKNOWN";
 			});
 
-			this._ensureRequestModelDefaults();
-			// var oUserModel = new sap.ui.model.json.JSONModel({ email: 'Jefry.Yap@my.ey.com' });
-			// this.getView().setModel(oUserModel, 'user');
-
-			// var userModelData = this.getView().getModel('user').getData();
-			// const emp_data = await this._getEmpIdDetail(userModelData.email);
-			// const oReqModel = this._getReqModel().getData();
-			// oReqModel.user = emp_data.eeid;
-			// this._getReqModel().setData(oReqModel);
+			Common._ensureRequestModelDefaults(this._getReqModel());
+			var oUserModel = new sap.ui.model.json.JSONModel({ email: "Jefry.Yap@my.ey.com" });
+			this.getView().setModel(oUserModel, 'user');
+			const emp_data = await this._getEmpIdDetail("Jefry.Yap@my.ey.com");
+			const oReqModel = this._getReqModel().getData();
+			oReqModel.user = emp_data.eeid;
+			this._getReqModel().setData(oReqModel);
 
 		},
 
@@ -130,7 +129,10 @@ sap.ui.define([
 					this.onClickMyRequest();
 					break;
 				case "myrequest":
-					this.getPARHeaderList();
+					const oReq = this.getOwnerComponent().getModel("request_status");
+					const oModel = this.getOwnerComponent().getModel('employee_view');
+
+					Common.getPARHeaderList(oReq, oModel);
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("RequestFormStatus");
 					break;
@@ -1374,23 +1376,22 @@ sap.ui.define([
 			return this.getOwnerComponent().getModel("request");
 		},
 
-		_ensureRequestModelDefaults: function () {
-			const oReq = this._getReqModel();
-			const data = oReq.getData() || {};
-			data.user 			   = data.user;
-			data.req_header        = { reqid: "", grptype: "IND" };
-			data.req_item_rows     = [];
-			data.req_item          = data.req_item || {
-				cash_advance: "no_cashadv"
-			};
-			data.participant       = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
-			data.view              = "view";
-			data.list_count        = 0;
-			oReq.setData(data);
-		},
+		// _ensureRequestModelDefaults: function () {
+		// 	const oReq = this._getReqModel();
+		// 	const data = oReq.getData() || {};
+		// 	data.req_header        = { reqid: "", grptype: "IND" };
+		// 	data.req_item_rows     = [];
+		// 	data.req_item          = data.req_item || {
+		// 		cash_advance: "no_cashadv"
+		// 	};
+		// 	data.participant       = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
+		// 	data.view              = "view";
+		// 	data.list_count        = 0;
+		// 	oReq.setData(data);
+		// },
 
 		onClickMyRequest: async function () {
-			this._ensureRequestModelDefaults();
+			Common._ensureRequestModelDefaults(this._getReqModel());
 			this._loadDefaultSelection();
 			this._loadReqTypeSelectionData();
 
@@ -1520,7 +1521,7 @@ sap.ui.define([
 						eventstartdate	: oData.EVENT_START_DATE || "",
 						eventenddate  	: oData.EVENT_END_DATE || "",
 						location      	: oData.LOCATION || "",
-						grptype       	: oData.IND_OR_GROUP || "",
+						grptype       	: oData.IND_OR_GROUP_DESC || "",
 						transport     	: oData.TYPE_OF_TRANSPORTATION || "",
 						reqstatus		: oData.STATUS_DESC || "",
 						costcenter    	: oData.COST_CENTER || "",
@@ -1648,42 +1649,6 @@ sap.ui.define([
 			} catch (e) {
 				console.error("Update Failed", e);
 				return false;
-			}
-		},
-
-		// My Pre-Approval Request Status function
-		getPARHeaderList: async function () {
-			const oReq = this.getOwnerComponent().getModel("request_status");
-			const oModel = this.getOwnerComponent().getModel("employee_view");
-
-			const oListBinding = oModel.bindList("/ZEMP_REQUEST_VIEW", undefined,
-				[new Sorter("STATUS", true)],
-				null,
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-					$$updateGroupId: "$auto",
-					$count: true
-				}
-			);
-
-			try {
-				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				const a = aCtx.map((ctx) => ctx.getObject());
-
-				a.forEach((it) => {
-					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
-				});
-
-				oReq.setProperty("/req_header_list", a);
-				oReq.setProperty("/req_header_count", a.length);
-
-				return a;
-			} catch (err) {
-				console.error("OData bindList failed:", err);
-				oReq.setProperty("/req_header_list", []);
-				oReq.setProperty("/req_header_count", 0);
-				return [];
 			}
 		},
 
