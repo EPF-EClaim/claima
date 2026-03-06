@@ -2,6 +2,7 @@
 	xmlns="sap.m"
 	xmlns:l="sap.ui.layout"
 	xmlns:core="sap.ui.core"
+	core:require="{FloatType: 'sap/ui/model/type/Float'}"
 >
 	<VBox class="sapUiSmallMargin">
 		<!-- Claim Item Toolbar -->
@@ -33,14 +34,14 @@
 						<MenuItem
 							id="menuitem_claimsummary_createclaim"
 							text="{i18n>menuitem_claimsummary_createclaim}"
-							press=".onCreateClaim_ClaimSummary"
+							press="onCreateClaim_ClaimSummary"
 						/>
 
 						<!-- Scan Receipt -->
 						<MenuItem
 							id="menuitem_claimsummary_scanreceipt"
 							text="{i18n>menuitem_claimsummary_scanreceipt}"
-							press=".onScanReceipt_ClaimSummary"
+							press="onScanReceipt_ClaimSummary"
 						/>
 					</Menu>
 				</menu>
@@ -50,7 +51,7 @@
 			<Button
 				id="button_claimsummary_edit"
 				text="{i18n>button_claimsummary_edit}"
-				press=".onEdit_ClaimSummary"
+				press="onEdit_ClaimSummary"
 				enabled="false"
 			/>
 
@@ -58,14 +59,14 @@
 			<Button
 				id="button_claimsummary_scanreceipt"
 				text="{i18n>button_claimsummary_scanreceipt}"
-				press=".onScanReceipt_ClaimSummary"
+				press="onScanReceipt_ClaimSummary"
 			/>
 
 			<!-- Duplicate -->
 			<Button
 				id="button_claimsummary_duplicate"
 				text="{i18n>button_claimsummary_duplicate}"
-				press=".onDuplicate_ClaimSummary"
+				press="onDuplicate_ClaimSummary"
 				enabled="false"
 			/>
 
@@ -73,7 +74,7 @@
 			<Button
 				id="button_claimsummary_delete"
 				text="{i18n>button_claimsummary_delete}"
-				press=".onDelete_ClaimSummary"
+				press="onDelete_ClaimSummary"
 				enabled="false"
 			/>
 		</Toolbar>
@@ -155,7 +156,17 @@
 						<Text text="{claimsubmission_input>descr/claim_type_item_id}" />
 
 						<!-- Amount -->
-						<Text text="{claimsubmission_input>amount}" />
+						<Text
+							text="{
+								path: 'claimsubmission_input>amount',
+								type: 'FloatType',
+								formatOptions: {
+									minFractionDigits: 2,
+									maxFractionDigits: 2,
+									preserveDecimals: false
+								}
+							}"
+						/>
 
 						<!-- Category -->
 						<Text text="{claimsubmission_input>descr/claim_category}" />

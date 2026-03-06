@@ -3,7 +3,9 @@
 	xmlns:l="sap.ui.layout"
 	xmlns:f="sap.ui.layout.form"
 	xmlns:core="sap.ui.core"
-	core:require="{FloatType: 'sap/ui/model/type/Float'}">
+	xmlns:u="sap.ui.unified"
+	core:require="{FloatType: 'sap/ui/model/type/Float'}"
+>
 	<VBox class="sapUiSmallMargin">
 		<f:SimpleForm
 			editable="false"
@@ -35,7 +37,7 @@
 				<Select
 					id="select_claimdetails_input_claimitem"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_type_item_id}"
+					selectedKey="{claimitem_input>/claim_item/claim_type_item_id}"
 					change="onSelect_ClaimDetails_ClaimItem"
 					liveChange="onSelect_ClaimDetails_ClaimItem"
 					required="true"
@@ -46,7 +48,7 @@
 				<Label text="{i18n>label_claimdetails_input_category}" />
 				<Input
 					id="input_claimdetails_input_category"
-					value="{claimitem_input>/descr/claim_category}"
+					value="{claimitem_input>/claim_item/descr/claim_category}"
 					editable="false"
 				/>
 			
@@ -54,7 +56,7 @@
 				<Label text="{i18n>label_claimdetails_input_anggota}" />
 				<Input
 					id="input_claimdetails_input_anggota_name"
-					value="{claimitem_input>/anggota_name}"
+					value="{claimitem_input>/claim_item/anggota_name}"
 					visible="false"
 				/>
 			
@@ -62,7 +64,7 @@
 				<Label text="{i18n>label_claimdetails_input_dependent}" />
 				<Input
 					id="input_claimdetails_input_dependent_name"
-					value="{claimitem_input>/dependent_name}"
+					value="{claimitem_input>/claim_item/dependent_name}"
 					visible="false"
 				/>
 			
@@ -71,7 +73,7 @@
 				<Select
 					id="select_claimdetails_input_type_of_professional_body"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/type_of_professional_body}"
+					selectedKey="{claimitem_input>/claim_item/type_of_professional_body}"
 					change="onSelect_ClaimDetails_ProfBodyType"
 					liveChange="onSelect_ClaimDetails_ProfBodyType"
 					visible="false"
@@ -82,7 +84,7 @@
 				<Label text="{i18n>label_claimdetails_input_policyno}" />
 				<Input
 					id="input_claimdetails_input_policy_number"
-					value="{claimitem_input>/policy_number}"
+					value="{claimitem_input>/claim_item/policy_number}"
 					visible="false"
 				/>
 			
@@ -91,7 +93,7 @@
 				<Select
 					id="select_claimdetails_input_funeral_transportation"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/funeral_transportation}"
+					selectedKey="{claimitem_input>/claim_item/funeral_transportation}"
 					change="onSelect_ClaimDetails_FuneralTransport"
 					liveChange="onSelect_ClaimDetails_FuneralTransport"
 					visible="false"
@@ -103,8 +105,13 @@
 				<Input
 					id="input_claimdetails_input_actual_amount"
 					value="{
-						path: 'claimitem_input>/actual_amount',
-						type: 'FloatType'
+						path: 'claimitem_input>/claim_item/actual_amount',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
 					}"
 					visible="false"
 				/>
@@ -122,8 +129,13 @@
 				<Input
 					id="input_claimdetails_input_request_approval_amount"
 					value="{
-						path: 'claimitem_input>/request_approval_amount',
-						type: 'FloatType'
+						path: 'claimitem_input>/claim_item/request_approval_amount',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
 					}"
 					visible="false"
 				/>
@@ -131,10 +143,15 @@
 				<!-- Amount (MYR) -->
 				<Label text="{i18n>label_claimdetails_input_amount}" />
 				<Input
-					id="input_claimdetails_input_amt"
+					id="input_claimdetails_input_amount"
 					value="{
-						path: 'claimitem_input>/amount',
-						type: 'FloatType'
+						path: 'claimitem_input>/claim_item/amount',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
 					}"
 					required="true"
 				/>
@@ -143,7 +160,7 @@
 				<Label text="{i18n>label_claimdetails_input_compensation}" />
 				<Input
 					id="input_claimdetails_input_percentage_compensation"
-					value="{claimitem_input>/percentage_compensation}"
+					value="{claimitem_input>/claim_item/percentage_compensation}"
 					type="Number"
 					visible="false"
 				/>
@@ -152,7 +169,7 @@
 				<Label text="{i18n>label_claimdetails_input_coursetitle}" />
 				<Input
 					id="input_claimdetails_input_course_title"
-					value="{claimitem_input>/course_title}"
+					value="{claimitem_input>/claim_item/course_title}"
 					visible="false"
 				/>
 
@@ -161,7 +178,7 @@
 				<Select
 					id="select_claimdetails_input_study_levels_id"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/study_levels_id}"
+					selectedKey="{claimitem_input>/claim_item/study_levels_id}"
 					change="onSelect_ClaimDetails_LevelStudies"
 					liveChange="onSelect_ClaimDetails_LevelStudies"
 					visible="false"
@@ -172,7 +189,7 @@
 				<Label text="{i18n>label_claimdetails_input_receiptno}" />
 				<Input
 					id="input_claimdetails_input_receipt_number"
-					value="{claimitem_input>/receipt_number}"
+					value="{claimitem_input>/claim_item/receipt_number}"
 					visible="false"
 				/>
 
@@ -180,7 +197,7 @@
 				<Label text="{i18n>label_claimdetails_input_receiptdate}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_receipt_date"
-					value="{claimitem_input>/receipt_date}"
+					value="{claimitem_input>/claim_item/receipt_date}"
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
 				/>
@@ -189,7 +206,7 @@
 				<Label text="{i18n>label_claimdetails_input_purpose}" />
 				<Input
 					id="input_claimdetails_input_purpose"
-					value="{claimitem_input>/purpose}"
+					value="{claimitem_input>/claim_item/purpose}"
 					visible="false"
 				/>
 
@@ -197,7 +214,7 @@
 				<Label text="{i18n>label_claimdetails_input_startdate}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_startdate"
-					value="{claimitem_input>/start_date}"
+					value="{claimitem_input>/claim_item/start_date}"
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
 				/>
@@ -206,7 +223,7 @@
 				<Label text="{i18n>label_claimdetails_input_enddate}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_enddate"
-					value="{claimitem_input>/end_date}"
+					value="{claimitem_input>/claim_item/end_date}"
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
 				/>
@@ -215,7 +232,7 @@
 				<Label text="{i18n>label_claimdetails_input_numberofdays}" />
 				<Input
 					id="input_claimdetails_input_no_of_days"
-					value="{claimitem_input>/no_of_days}"
+					value="{claimitem_input>/claim_item/no_of_days}"
 					type="Number"
 					visible="false"
 				/>
@@ -225,7 +242,7 @@
 				<Select
 					id="select_claimdetails_input_vehicle_type"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/vehicle_type}"
+					selectedKey="{claimitem_input>/claim_item/vehicle_type}"
 					change="onSelect_ClaimDetails_VehicleType"
 					liveChange="onSelect_ClaimDetails_VehicleType"
 					visible="false"
@@ -237,7 +254,7 @@
 				<Select
 					id="select_claimdetails_input_vehicle_ownership_id"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/vehicle_ownership_id}"
+					selectedKey="{claimitem_input>/claim_item/vehicle_ownership_id}"
 					change="onSelect_ClaimDetails_VehicleOwnership"
 					liveChange="onSelect_ClaimDetails_VehicleOwnership"
 					visible="false"
@@ -249,8 +266,13 @@
 				<Input
 					id="input_claimdetails_input_km"
 					value="{
-						path: 'claimitem_input>/km',
-						type: 'FloatType'
+						path: 'claimitem_input>/claim_item/km',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
 					}"
 					visible="false"
 				/>
@@ -259,7 +281,7 @@
 				<Label text="{i18n>label_claimdetails_input_km_rate}" />
 				<Input
 					id="input_claimdetails_input_rate_per_km"
-					value="{claimitem_input>/descr/rate_per_km}"
+					value="{claimitem_input>/claim_item/descr/rate_per_km}"
 					editable="false"
 					visible="false"
 				/>
@@ -269,7 +291,7 @@
 				<Select
 					id="select_claimdetails_input_fare_type_id"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/fare_type_id}"
+					selectedKey="{claimitem_input>/claim_item/fare_type_id}"
 					change="onSelect_ClaimDetails_FareType"
 					liveChange="onSelect_ClaimDetails_FareType"
 					visible="false"
@@ -281,7 +303,7 @@
 				<Select
 					id="select_claimdetails_input_vehicle_class_id"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/vehicle_class_id}"
+					selectedKey="{claimitem_input>/claim_item/vehicle_class_id}"
 					change="onSelect_ClaimDetails_VehicleClass"
 					liveChange="onSelect_ClaimDetails_VehicleClass"
 					visible="false"
@@ -293,7 +315,7 @@
 				<Select
 					id="select_claimdetails_input_flight_class"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/flight_class}"
+					selectedKey="{claimitem_input>/claim_item/flight_class}"
 					change="onSelect_ClaimDetails_FlightClass"
 					liveChange="onSelect_ClaimDetails_FlightClass"
 					visible="false"
@@ -305,8 +327,13 @@
 				<Input
 					id="input_claimdetails_input_toll"
 					value="{
-						path: 'claimitem_input>/toll',
-						type: 'FloatType'
+						path: 'claimitem_input>/claim_item/toll',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
 					}"
 					visible="false"
 				/>
@@ -323,7 +350,7 @@
 				<Select
 					id="select_claimdetails_input_location_type"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/location_type}"
+					selectedKey="{claimitem_input>/claim_item/location_type}"
 					change="onSelect_ClaimDetails_LocationType"
 					liveChange="onSelect_ClaimDetails_LocationType"
 					visible="false"
@@ -334,7 +361,7 @@
 				<Label text="{i18n>label_claimdetails_input_state_from}" />
 				<Input
 					id="input_claimdetails_input_from_state_id"
-					value="{claimitem_input>/from_state_id}"
+					value="{claimitem_input>/claim_item/from_state_id}"
 					visible="false"
 				/>
 
@@ -342,7 +369,7 @@
 				<Label text="{i18n>label_claimdetails_input_location_from}" />
 				<Input
 					id="input_claimdetails_input_from_location"
-					value="{claimitem_input>/from_location}"
+					value="{claimitem_input>/claim_item/from_location}"
 					visible="false"
 				/>
 
@@ -350,7 +377,7 @@
 				<Label text="{i18n>label_claimdetails_input_state_to}" />
 				<Input
 					id="input_claimdetails_input_to_state_id"
-					value="{claimitem_input>/to_state_id}"
+					value="{claimitem_input>/claim_item/to_state_id}"
 					visible="false"
 				/>
 
@@ -358,7 +385,7 @@
 				<Label text="{i18n>label_claimdetails_input_location_to}" />
 				<Input
 					id="input_claimdetails_input_to_location"
-					value="{claimitem_input>/to_location}"
+					value="{claimitem_input>/claim_item/to_location}"
 					visible="false"
 				/>
 
@@ -367,7 +394,7 @@
 				<Select
 					id="select_claimdetails_input_room_type"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/room_type}"
+					selectedKey="{claimitem_input>/claim_item/room_type}"
 					change="onSelect_ClaimDetails_RoomType"
 					liveChange="onSelect_ClaimDetails_RoomType"
 					visible="false"
@@ -379,7 +406,7 @@
 				<Select
 					id="select_claimdetails_input_country"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/country}"
+					selectedKey="{claimitem_input>/claim_item/country}"
 					change="onSelect_ClaimDetails_Country"
 					liveChange="onSelect_ClaimDetails_Country"
 					visible="false"
@@ -390,7 +417,7 @@
 				<Label text="{i18n>label_claimdetails_input_location}" />
 				<Input
 					id="input_claimdetails_input_location"
-					value="{claimitem_input>/location}"
+					value="{claimitem_input>/claim_item/location}"
 					visible="false"
 				/>
 
@@ -405,7 +432,7 @@
 				<Label text="{i18n>label_claimdetails_input_currencycode}" />
 				<Input
 					id="input_claimdetails_input_currency_code"
-					value="{claimitem_input>/currency_code}"
+					value="{claimitem_input>/claim_item/currency_code}"
 					maxLength="3"
 					visible="false"
 				/>
@@ -415,8 +442,13 @@
 				<Input
 					id="input_claimdetails_input_currency_rate"
 					value="{
-						path: 'claimitem_input>/currency_rate',
-						type: 'FloatType'
+						path: 'claimitem_input>/claim_item/currency_rate',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
 					}"
 					visible="false"
 				/>
@@ -426,8 +458,13 @@
 				<Input
 					id="input_claimdetails_input_currency_amount"
 					value="{
-						path: 'claimitem_input>/currency_amount',
-						type: 'FloatType'
+						path: 'claimitem_input>/claim_item/currency_amount',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
 					}"
 					visible="false"
 				/>
@@ -436,7 +473,7 @@
 				<Label text="{i18n>label_claimdetails_input_trip_startdate}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_trip_start_date"
-					value="{claimitem_input>/trip_start_date}"
+					value="{claimitem_input>/claim_item/trip_start_date}"
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
 				/>
@@ -445,7 +482,7 @@
 				<Label text="{i18n>label_claimdetails_input_time_depart}" />
 				<TimePicker
 					id="timepicker_claimdetails_input_departure_time"
-					value="{claimitem_input>/departure_time}"
+					value="{claimitem_input>/claim_item/departure_time}"
 					visible="false"
 					displayFormat="HH:mm"
 				/>
@@ -454,7 +491,7 @@
 				<Label text="{i18n>label_claimdetails_input_trip_enddate}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_trip_end_date"
-					value="{claimitem_input>/trip_end_date}"
+					value="{claimitem_input>/claim_item/trip_end_date}"
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
 				/>
@@ -463,7 +500,7 @@
 				<Label text="{i18n>label_claimdetails_input_time_arrive}" />
 				<TimePicker
 					id="timepicker_claimdetails_input_arrival_time"
-					value="{claimitem_input>/arrival_time}"
+					value="{claimitem_input>/claim_item/arrival_time}"
 					visible="false"
 					displayFormat="HH:mm"
 				/>
@@ -472,7 +509,7 @@
 				<Label text="{i18n>label_claimdetails_input_lodging_address}" />
 				<Input
 					id="input_claimdetails_input_lodging_address"
-					value="{claimitem_input>/lodging_address}"
+					value="{claimitem_input>/claim_item/lodging_address}"
 					visible="false"
 				/>
 
@@ -481,7 +518,7 @@
 				<Select
 					id="select_claimdetails_input_region"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/region}"
+					selectedKey="{claimitem_input>/claim_item/region}"
 					change="onSelect_ClaimDetails_Region"
 					liveChange="onSelect_ClaimDetails_Region"
 					visible="false"
@@ -493,7 +530,7 @@
 				<Select
 					id="select_claimdetails_input_area"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/area}"
+					selectedKey="{claimitem_input>/claim_item/area}"
 					change="onSelect_ClaimDetails_Area"
 					liveChange="onSelect_ClaimDetails_Area"
 					visible="false"
@@ -505,7 +542,7 @@
 				<Select
 					id="select_claimdetails_input_lodging_category"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/lodging_category}"
+					selectedKey="{claimitem_input>/claim_item/lodging_category}"
 					change="onSelect_ClaimDetails_LodgingCategory"
 					liveChange="onSelect_ClaimDetails_LodgingCategory"
 					visible="false"
@@ -516,7 +553,7 @@
 				<Label text="{i18n>label_claimdetails_input_familyno}" />
 				<Input
 					id="input_claimdetails_input_no_of_family_member"
-					value="{claimitem_input>/no_of_family_member}"
+					value="{claimitem_input>/claim_item/no_of_family_member}"
 					type="Number"
 					visible="false"
 				/>
@@ -526,7 +563,7 @@
 				<Select
 					id="select_claimdetails_input_mobile_category_purpose_id"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/mobile_category_purpose_id}"
+					selectedKey="{claimitem_input>/claim_item/mobile_category_purpose_id}"
 					change="onSelect_ClaimDetails_CatPurpose"
 					liveChange="onSelect_ClaimDetails_CatPurpose"
 					visible="false"
@@ -537,7 +574,7 @@
 				<Label text="{i18n>label_claimdetails_input_billno}" />
 				<Input
 					id="input_claimdetails_input_bill_no"
-					value="{claimitem_input>/bill_no}"
+					value="{claimitem_input>/claim_item/bill_no}"
 					visible="false"
 				/>
 
@@ -545,7 +582,7 @@
 				<Label text="{i18n>label_claimdetails_input_accountno}" />
 				<Input
 					id="input_claimdetails_input_account_no"
-					value="{claimitem_input>/account_no}"
+					value="{claimitem_input>/claim_item/account_no}"
 					visible="false"
 				/>
 
@@ -553,7 +590,7 @@
 				<Label text="{i18n>label_claimdetails_input_billdate}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_bill_date"
-					value="{claimitem_input>/bill_date}"
+					value="{claimitem_input>/claim_item/bill_date}"
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
 				/>
@@ -562,7 +599,7 @@
 				<Label text="{i18n>label_claimdetails_input_phoneno}" />
 				<Input
 					id="input_claimdetails_input_phone_no"
-					value="{claimitem_input>/phone_no}"
+					value="{claimitem_input>/claim_item/phone_no}"
 					visible="false"
 				/>
 			
@@ -586,7 +623,7 @@
 				<Label text="{i18n>label_claimdetails_input_remarks}" />
 				<Input
 					id="input_claimdetails_input_remarks"
-					value="{claimitem_input>/remark}"
+					value="{claimitem_input>/claim_item/remark}"
 				/>
 
 				<!-- Attachment 1 -->
@@ -607,7 +644,7 @@
 				<Label text="{i18n>label_claimdetails_input_attachment1}" />
 				<Input
 					id="input_claimdetails_input_attachment1"
-					value="{claimitem_input>/descr/attachment_file_1}"
+					value="{claimitem_input>/claim_item/descr/attachment_file_1}"
 					enabled="false"
 					editable="false"
 					visible="false"
@@ -631,7 +668,7 @@
 				<Label text="{i18n>label_claimdetails_input_attachment2}" />
 				<Input
 					id="input_claimdetails_input_attachment2"
-					value="{claimitem_input>/descr/attachment_file_2}"
+					value="{claimitem_input>/claim_item/descr/attachment_file_2}"
 					enabled="false"
 					editable="false"
 					visible="false"
