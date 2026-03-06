@@ -11,7 +11,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         },
         {
             grant: '*',
-            to   : ['Claimant'], 
+            to   : ['Claimant'],
             where: 'EMP_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
     ]) as
@@ -48,7 +48,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCOST_CENTER.COST_CENTER_DESC,
                 CASH_ADVANCE,
                 PREAPPROVAL_AMOUNT,
-                TOTAL_AMOUNT
+                TOTAL_AMOUNT,
+                REQUEST_DATE,
+                createdBy
         };
 
 
@@ -450,7 +452,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         },
         {
             grant: 'READ',
-            to   : 'Admin_CC', 
+            to   : 'Admin_CC',
             where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
     ]) as
