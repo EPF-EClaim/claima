@@ -134,6 +134,10 @@ sap.ui.define([
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("RequestFormStatus");
 					break;
+				case "mysubstitution":
+					var oRouter = this.getOwnerComponent().getRouter();
+					oRouter.navTo("ManageSub");
+					break;
 				case "config":
 					//Start EY_ATHIRAH
 					if (type === "DTD Admin") {

@@ -136,7 +136,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 CASH_ADVANCE,
                 EMP_ID,
                 FROM_LOCATION_OFFICE,
-                TO_LOCATION_OFFICE
+                TO_LOCATION_OFFICE,
+                createdBy
         };
 
     entity ZEMP_REQUEST_PART_VIEW @(restrict: [
@@ -158,7 +159,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             key PARTICIPANTS_ID,
                 ALLOCATED_AMOUNT,
                 ZEMP_MASTER.NAME,
-                ZEMP_MASTER.CC
+                ZEMP_MASTER.CC,
+                createdBy
         };
 
     entity ZEMP_CLAIM_HEADER_VIEW @(restrict: [
@@ -217,7 +219,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.NAME,
                 ZEMP_MASTER.POS,
                 ZEMP_MASTER.GRADE,
-                ZEMP_MASTER.JOB_GROUP
+                ZEMP_MASTER.JOB_GROUP,
+                createdBy
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW @(restrict: [
@@ -314,7 +317,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TRANSFER_DATE,
                 NO_OF_DAYS,
                 FAMILY_COUNT,
-                FUNERAL_TRANSPORTATION
+                FUNERAL_TRANSPORTATION,
+                createdBy
         };
 
     entity ZEMP_REQUEST_STATUS @(restrict: [
@@ -341,7 +345,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 EVENT_START_DATE,
                 PREAPPROVAL_AMOUNT,
                 TOTAL_AMOUNT,
-                EMP_ID
+                EMP_ID,
+                createdBy
         };
 
     entity ZEMP_CLAIM_STATUS_HEADER @(restrict: [
@@ -361,7 +366,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             key CLAIM_ID,
                 STATUS_ID,
                 ZSTATUS.STATUS_DESC,
-                EMP_ID
+                EMP_ID,
+                createdBy
         };
 
     entity ZEMP_CLAIM_STATUS_ITEM @(restrict: [
@@ -381,7 +387,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             key CLAIM_ID,
             key CLAIM_SUB_ID,
                 START_DATE,
-                AMOUNT
+                AMOUNT,
+                createdBy
         };
 
     entity ZEMP_CLAIM_REPORT_SUMMARY @(restrict: [
@@ -439,7 +446,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZTRAIN_COURSE_PART.COURSE_ID,
                 ZTRAIN_COURSE_PART.COURSE_DESC,
                 ZTRAIN_COURSE_PART.SESSION_NUMBER,
-                LAST_SEND_BACK_DATE
+                LAST_SEND_BACK_DATE,
+                createdBy
         };
 
     entity ZEMP_CLAIM_REPORT_DETAILS @(restrict: [
@@ -564,7 +572,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZTRAIN_COURSE_PART.COURSE_ID,
                 ZTRAIN_COURSE_PART.COURSE_DESC,
                 ZTRAIN_COURSE_PART.SESSION_NUMBER,
-                LAST_SEND_BACK_DATE
+                LAST_SEND_BACK_DATE,
+                createdBy
         };
 
     entity ZEMP_REQUEST_REPORT_SUMMARY @(restrict: [
@@ -622,7 +631,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 SUBMITTED_DATE,
                 CLAIM_TYPE_ID,
                 ZCLAIM_TYPE.CLAIM_TYPE_DESC,
-                ZCLAIM_TYPE.GL_ACCOUNT
+                ZCLAIM_TYPE.GL_ACCOUNT,
+                createdBy
         };
 
     entity ZEMP_REQUEST_REPORT_DETAILS @(restrict: [
@@ -699,6 +709,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 CASH_ADVANCE_DATE           as PAYMENT_DATE,
                 CLAIM_TYPE_ID               as CLAIM_TYPE_HEADER,
                 ZCLAIM_TYPE.CLAIM_TYPE_DESC as CLAIM_TYPE_DESC_HEADER,
-                ZCLAIM_TYPE.GL_ACCOUNT
+                ZCLAIM_TYPE.GL_ACCOUNT,
+                createdBy
         }
 }
