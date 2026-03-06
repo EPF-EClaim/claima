@@ -448,6 +448,11 @@
                     "target": "RequestFormStatus"
                 },
                 {
+                    "pattern": "ManageSub",
+                    "name": "ManageSub",
+                    "target": "ManageSub"
+                },
+                {
                     "pattern": "ZEMP_DEPENDENT",
                     "name": "ZEMP_DEPENDENT",
                     "target": "ZEMP_DEPENDENT"
@@ -567,6 +572,7 @@
                     "id": "Dashboard",
                     "name": "App"
                 },
+
                 "ZPROJECT_HDR": {
                     "type": "Component",
                     "id": "ZPROJECT_HDR",
@@ -3616,6 +3622,15 @@
                     "id": "RequestFormStatus",
                     "path": "claima.view",
                     "name": "PARequestStatus",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
+
+                "ManageSub": {
+                    "id": "ManageSub",
+                    "path": "claima.view",
+                    "name": "ManageSub",
                     "type": "View",
                     "viewType": "XML",
                     "transition": "slide"
