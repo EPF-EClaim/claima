@@ -14,6 +14,32 @@
 		<footer>
 			<Toolbar>
 				<ToolbarSpacer/>
+					<!-- (Approver) -->
+					<!-- Reject -->
+					<Button
+						id="button_claimapprover_reject"
+						press="onReject_ClaimApprover"
+						text="{i18n>button_claimapprover_reject}"
+						visible="false"
+					/>
+
+					<!-- Back to Employee -->
+					<Button
+						id="button_claimapprover_backtoemp"
+						press="onBackToEmployee_ClaimApprover"
+						text="{i18n>button_claimapprover_backtoemp}"
+						visible="false"
+					/>
+
+					<!-- Reject -->
+					<Button
+						id="button_claimapprover_approve"
+						press="onApprove_ClaimApprover"
+						text="{i18n>button_claimapprover_approve}"
+						visible="false"
+					/>
+
+					<!-- (Claim Summary) -->
 					<!-- Save Draft -->
 					<Button
 						id="button_claimsubmission_savedraft"
@@ -44,19 +70,20 @@
 						text="{i18n>button_claimsubmission_back}"
 					/>
 
-					<!-- Save (Claim Details) -->
+					<!-- (Claim Details) -->
+					<!-- Save -->
 					<Button
 						id="button_claimdetails_input_save"
-						press="onSave_ClaimDetails"
-						text="Save"
+						press="onSave_ClaimDetails_Input"
+						text="{i18n>button_claimdetails_input_save}"
 						visible="false"
 					/>
 
-					<!-- Cancel (Claim Details) -->
+					<!-- Cancel -->
 					<Button
 						id="button_claimdetails_input_cancel"
-						press="onCancel_ClaimDetails"
-						text="Cancel"
+						press="onCancel_ClaimDetails_Input"
+						text="{i18n>button_claimdetails_input_cancel}"
 						visible="false"
 					/>
 			</Toolbar>

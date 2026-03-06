@@ -77,7 +77,8 @@ module.exports = (srv) => {
       console.log("Result",result);
       return {
         id: email,
-        userType: result?.USER_TYPE || "UNKNOWN"
+        userType: result?.USER_TYPE || "UNKNOWN",
+        costcenters: result?.CC || "UNKNOWN"
       };
     });
 

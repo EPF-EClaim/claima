@@ -24,13 +24,16 @@ sap.ui.define([
   const REQ_DET_TABLE_ID = "analyticsreqtab";          // Request Details
 
   // ===== Entity roots (for reference only) =====
-  const ENTITY_CLAIM_SUM = "/ZEMP_CLAIM_REPORT_SUMMARY";
-  const ENTITY_REQ_SUM = "/ZEMP_REQUEST_REPORT_SUMMARY";
-  const ENTITY_CLAIM_DET = "/ZEMP_CLAIM_REPORT_DETAILS";
-  const ENTITY_REQ_DET = "/ZEMP_REQUEST_REPORT_DETAILS";
+  /*   const ENTITY_CLAIM_SUM = "/ZEMP_CLAIM_REPORT_SUMMARY";
+    const ENTITY_REQ_SUM = "/ZEMP_REQUEST_REPORT_SUMMARY";
+    const ENTITY_CLAIM_DET = "/ZEMP_CLAIM_REPORT_DETAILS";
+    const ENTITY_REQ_DET = "/ZEMP_REQUEST_REPORT_DETAILS"; */
 
   return Controller.extend("claima.controller.analytics", {
 
+
+    onInit: function () {
+    },
     /* ===========================================================
      *  NAVIGATION + DIALOG
      * =========================================================== */
@@ -77,18 +80,86 @@ sap.ui.define([
 
     _openFragment: function (sFragmentPath) {
       this._mDialogs ??= {};
+
+      const afterLoad = (dialog) => {
+        this.getView().addDependent(dialog);
+        this._mDialogs[sFragmentPath] = dialog;
+
+        // 1) Clear all filter controls
+        this._resetAnalyticsDialogControls(dialog);
+
+        // 2) Re-apply Cost Center access (this will enforce non-admin CC)
+        this._applyCostCenterAccess(dialog);
+
+        // 3) Open
+        dialog.open();
+      };
+
       if (!this._mDialogs[sFragmentPath]) {
         Fragment.load({
           id: this.getView().getId(),
           name: sFragmentPath,
           controller: this
-        }).then(d => {
-          this.getView().addDependent(d);
-          this._mDialogs[sFragmentPath] = d;
-          d.open();
-        });
+        }).then(afterLoad);
       } else {
-        this._mDialogs[sFragmentPath].open();
+        const dlg = this._mDialogs[sFragmentPath];
+
+        // If already loaded, we still do the reset each time before opening
+        this._resetAnalyticsDialogControls(dlg);
+        this._applyCostCenterAccess(dlg);
+
+        dlg.open();
+      }
+    },
+
+
+    //Helper for enable/disable cc
+    _applyCostCenterAccess: function () {
+      const accessModel = this.getOwnerComponent().getModel("access");
+      const userType = accessModel?.getProperty("/userType");
+      const userCC = accessModel?.getProperty("/costcenters"); // array or string
+
+      const isAdmin = ["DTD Admin", "JKEW Admin"].includes(userType);
+
+      const ccMCB = this.byId("cc");         // MultiComboBox
+      const ccText = this.byId("ccText");    // Text input for non-admins
+
+      if (!ccMCB || !ccText) {
+        setTimeout(this._applyCostCenterAccess.bind(this), 0);
+        return;
+      }
+
+      if (isAdmin) {
+        // ADMIN: Show MultiComboBox, hide Text
+        ccMCB.setVisible(true);
+        ccText.setVisible(false);
+        ccMCB.setEditable(true);
+        ccMCB.setEnabled(true);
+
+      } else {
+        // NON-ADMIN: Show read-only text
+        ccMCB.setVisible(false);
+        ccText.setVisible(true);
+
+        // Convert array → joined text
+        const displayCC = Array.isArray(userCC) ? userCC.join(", ") : userCC;
+        ccText.setValue(displayCC);
+      }
+
+      // MultiComboBox selection (still needed for admin users)
+      const bindItems = ccMCB.getBinding("items");
+
+      const applySelection = () => {
+        if (isAdmin) return; // admin selects themselves
+
+        const keys = Array.isArray(userCC) ? userCC : (userCC ? [userCC] : []);
+        ccMCB.setSelectedKeys(keys); // invisible but needed for filtering
+      };
+
+      if (bindItems) {
+        bindItems.attachEventOnce("change", applySelection);
+      } else {
+        setTimeout(applySelection, 0);
       }
     },
 
@@ -97,6 +168,99 @@ sap.ui.define([
       while (oCtrl && !oCtrl.isA("sap.m.Dialog")) oCtrl = oCtrl.getParent();
       oCtrl?.close();
     },
+
+    //Reset Helper to reset Dialog Box;
+
+    /**
+ * Reset all filter controls in the analytics dialog.
+ * - Clears DatePickers / DateRanges
+ * - Clears MultiComboBox selections
+ * - Clears Select, MultiInput tokens, Input value states
+ * - Preserves CC rule by letting _applyCostCenterAccess() re-apply afterwards
+ */
+    _resetAnalyticsDialogControls: function (oDialog) {
+      if (!oDialog) return;
+
+      // 1) Generic clearing for typical controls living inside the dialog
+      const aAll = oDialog.findAggregatedObjects(true, function (o) {
+        return o?.isA?.("sap.ui.core.Control");
+      }) || [];
+
+      aAll.forEach(oCtrl => {
+        // Value state reset (if any)
+        if (oCtrl.setValueState) {
+          oCtrl.setValueState("None");
+          if (oCtrl.setValueStateText) oCtrl.setValueStateText("");
+        }
+
+        // MultiComboBox
+        if (oCtrl.isA && oCtrl.isA("sap.m.MultiComboBox")) {
+          // Do NOT clear Cost Center here; we will handle CC afterward
+          if (oCtrl.getId().endsWith("--cc")) return;
+          oCtrl.setSelectedKeys([]);
+          if (oCtrl.setValue) oCtrl.setValue(""); // clear typed value if any (filter)
+        }
+
+        // Select
+        if (oCtrl.isA && oCtrl.isA("sap.m.Select")) {
+          oCtrl.setSelectedKey("");
+        }
+
+        // MultiInput (tokens)
+        if (oCtrl.isA && oCtrl.isA("sap.m.MultiInput")) {
+          if (oCtrl.removeAllTokens) oCtrl.removeAllTokens();
+          if (oCtrl.setValue) oCtrl.setValue("");
+        }
+
+        // Input
+        if (oCtrl.isA && oCtrl.isA("sap.m.Input")) {
+          if (oCtrl.setValue) oCtrl.setValue("");
+        }
+
+        // DatePicker
+        if (oCtrl.isA && oCtrl.isA("sap.m.DatePicker")) {
+          oCtrl.setDateValue(null);
+          if (oCtrl.setSecondDateValue) oCtrl.setSecondDateValue(null);
+          if (oCtrl.setValue) oCtrl.setValue("");
+        }
+
+        // DateRangeSelection (if you use it)
+        if (oCtrl.isA && oCtrl.isA("sap.m.DateRangeSelection")) {
+          oCtrl.setDateValue(null);
+          oCtrl.setSecondDateValue(null);
+          if (oCtrl.setValue) oCtrl.setValue("");
+        }
+      });
+
+      // 2) Explicitly clear your known date fields (IDs from your code)
+      const clearDateById = (id) => {
+        const c = this.byId(id);
+        if (!c) return;
+        c.setDateValue?.(null);
+        c.setSecondDateValue?.(null);
+        c.setValue?.("");
+        c.setValueState?.("None");
+      };
+
+      [
+        "analytics_tripstartdate",
+        "analytics_tripenddate",
+        "analytics_eventstartdate",
+        "analytics_eventenddate",
+        "analytics_paydate"
+      ].forEach(clearDateById);
+
+      // 3) If Status has Required, clear error and selection
+      const statusCtrl = this.byId("status");
+      if (statusCtrl) {
+        statusCtrl.setValueState?.("None");
+        // It's a MultiComboBox in your code → clear selections now
+        statusCtrl.setSelectedKeys?.([]);
+        statusCtrl.setValue?.("");
+      }
+    },
+
+
 
     /* ===========================================================
      *  FILTERING (ENTITY‑AWARE)
@@ -184,9 +348,20 @@ sap.ui.define([
       const glKeys = this._getKeys("glcode");
       this._addOrFilter(a, "GL_ACCOUNT", glKeys);
 
-      // Cost Center (both)
-      const ccKeys = this._getKeys("cc");
-      this._addOrFilter(a, "COST_CENTER", ccKeys);
+      // Cost Center rules
+      const accessModel = this.getOwnerComponent().getModel("access");
+      const userType = accessModel?.getProperty("/userType");
+      const userCC = accessModel?.getProperty("/costcenters");
+
+      if (["DTD Admin", "JKEW Admin"].includes(userType)) {
+        // ADMIN → free selection
+        const ccKeys = this._getKeys("cc");
+        this._addOrFilter(a, "COST_CENTER", ccKeys);
+      } else {
+        // NON-ADMIN → force user's own CC
+        const enforcedCC = Array.isArray(userCC) ? userCC : [userCC];
+        this._addOrFilter(a, "COST_CENTER", enforcedCC);
+      }
 
       // Claim Type (Claim targets only)
       const claimTypeKeys = this._getKeys("claim_type");
@@ -268,13 +443,6 @@ sap.ui.define([
         oNav.back();
         return;
       }
-
-      
-
-      // Fallback: if no back history, route to a known start page if you have one
-      // Example if you keep a landing page cached:
-      // const oStart = oRoot.byId("analyticsLandingPage");
-      // if (oStart) { oNav.to(oStart, "slide"); }
     },
 
     _navToFragmentTarget: async function (sTarget) {
@@ -310,9 +478,6 @@ sap.ui.define([
 
       const oPage = this._pages[sTarget];
       oNav.to(oPage, "slide");
-
-      // In OData V4 we DON'T need dataReceived for Days Approved; it's computed via formatter.
-      // setTimeout(() => this._attachCalculatedFields(), 300); // ← no longer needed
 
       return oPage;
     },
@@ -409,7 +574,7 @@ sap.ui.define([
       };
       return map[this._analyticsTarget] || "Report";
     },
- 
+
     _getTodayString: function () {
       const d = new Date();
       const y = d.getFullYear();
@@ -523,33 +688,32 @@ sap.ui.define([
           { label: "Employee ID", property: "EMP_ID", width: 12 },
           { label: "Request Type", property: "REQUEST_TYPE_DESC", width: 16 },
           { label: "Pre-Approval Request ID", property: "REQUEST_ID", width: 14 },
-          { label: "Pre-Approval Request Date", property: "REQUEST_DATE", type: "date", width: 14 },
-          { label: "Submitted Date", property: "SUBMITTED_DATE", type: "date", width: 14 },
+          { label: "Pre-Approval Request Date", property: "REQUEST_DATE", width: 14 },
+          { label: "Submitted Date", property: "SUBMITTED_DATE", width: 14 },
           { label: "Approval 1", property: "APPROVER1", width: 20 },
           { label: "Approval 2", property: "APPROVER2", width: 20 },
           { label: "Approval 3", property: "APPROVER3", width: 20 },
           { label: "Approval 4", property: "APPROVER4", width: 20 },
           { label: "Approval 5", property: "APPROVER5", width: 20 },
-          { label: "Final Approved Date", property: "LAST_APPROVED_DATE", type: "date", width: 14 },
-          { label: "Last Send Back Date", property: "LAST_SEND_BACK_DATE", type: "date", width: 14 },
+          { label: "Final Approved Date", property: "LAST_APPROVED_DATE", width: 14 },
+          { label: "Last Send Back Date", property: "LAST_SEND_BACK_DATE", width: 14 },
           { label: "DAY(S) APPROVED", property: "DAYS_APPROVED", type: "number", scale: 0, width: 8 },
-          { label: "Cash Advance Received Date", property: "CASH_ADVANCE_DATE", type: "date", width: 14 },
-          { label: "Payment Date", property: "PAYMENT_DATE", type: "date", width: 14 },
+          { label: "Cash Advance Received Date", property: "CASH_ADVANCE_DATE", width: 14 },
+          { label: "Payment Date", property: "PAYMENT_DATE", width: 14 },
           { label: "Pre-Approval Request  Status", property: "STATUS", width: 14 },
           { label: "Cost Center", property: "COST_CENTER", width: 12 },
           { label: "Cost Center Text", property: "COST_CENTER_DESC", width: 12 },
-          { label: "Alternate Cost Center Code", property: "ALTERNATE_COST_CENTRE", width: 12 },
+          { label: "Alternate Cost Center Code", property: "ALTERNATE_COST_CENTER", width: 12 },
           { label: "Alternate Cost Center Text", property: "ALT_COST_CENTER_DESC", width: 12 },
           { label: "GL No (Claim Item)", property: "GL_ACCOUNT", width: 12 },
-          { label: "Code Material (Claim Item)", property: "MATERIAL_CODE", width: 12 },
           { label: "Total Request Amount", property: "TOTAL_AMOUNT", type: "number", scale: 2, width: 16 },
-          { label: "Cash Advance", property: "CASH_ADVANCE_AMOUNT", type: "number", scale: 2, width: 16 },
+          { label: "Cash Advance", property: "CASH_ADVANCE", type: "number", scale: 2, width: 16 },
           { label: "Purpose", property: "OBJECTIVE_PURPOSE", width: 24 },
           { label: "Remarks", property: "REMARK", width: 24 },
-          { label: "Trip Start Date", property: "TRIP_START_DATE", type: "date", width: 14 },
-          { label: "Trip End Date", property: "TRIP_END_DATE", type: "date", width: 14 },
-          { label: "Event Start Date", property: "EVENT_START_DATE", type: "date", width: 14 },
-          { label: "Event End Date", property: "EVENT_END_DATE", type: "date", width: 14 },
+          { label: "Trip Start Date", property: "TRIP_START_DATE", width: 14 },
+          { label: "Trip End Date", property: "TRIP_END_DATE", width: 14 },
+          { label: "Event Start Date", property: "EVENT_START_DATE", width: 14 },
+          { label: "Event End Date", property: "EVENT_END_DATE", width: 14 },
           { label: "Location", property: "LOCATION", width: 40 },
           { label: "Type of Transportation", property: "TYPE_OF_TRANSPORTATION", width: 40 }
         ];
@@ -616,47 +780,47 @@ sap.ui.define([
           { label: "Pre-Approval Request ID", property: "REQUEST_ID", width: 14 },
           { label: "Pre-Approval Request Sub ID", property: "REQUEST_SUB_ID", width: 14 },
           { label: "Pre-Approval Request Date", property: "REQUEST_DATE", width: 14 },
-          { label: "Submitted Date", property: "SUBMITTED_DATE", type: "date", width: 14 },
+          { label: "Submitted Date", property: "SUBMITTED_DATE", width: 14 },
           { label: "Approval 1", property: "APPROVER1", width: 20 },
           { label: "Approval 2", property: "APPROVER2", width: 20 },
           { label: "Approval 3", property: "APPROVER3", width: 20 },
           { label: "Approval 4", property: "APPROVER4", width: 20 },
           { label: "Approval 5", property: "APPROVER5", width: 20 },
-          { label: "Final Approved Date", property: "LAST_APPROVED_DATE", type: "date", width: 14 },
-          { label: "Last Send Back Date", property: "LAST_SEND_BACK_DATE", type: "date", width: 14 },
+          { label: "Final Approved Date", property: "LAST_APPROVED_DATE", width: 14 },
+          { label: "Last Send Back Date", property: "LAST_SEND_BACK_DATE", width: 14 },
           { label: "DAY(S) APPROVED", property: "DAYS_APPROVED", type: "number", scale: 0, width: 8 },
-          { label: "Cash Advance Received Date", property: "CASH_ADVANCE_DATE", type: "date", width: 14 },
-          { label: "Payment Date", property: "PAYMENT_DATE", type: "date", width: 14 },
+          { label: "Cash Advance Received Date", property: "CASH_ADVANCE_DATE", width: 14 },
+          { label: "Payment Date", property: "PAYMENT_DATE", width: 14 },
           { label: "Pre-Approval Request  Status", property: "STATUS", width: 14 },
           { label: "Cost Center", property: "COST_CENTER", width: 12 },
           { label: "Cost Center Text", property: "COST_CENTER_DESC", width: 12 },
-          { label: "Alternate Cost Center Code", property: "ALTERNATE_COST_CENTRE", width: 12 },
+          { label: "Alternate Cost Center Code", property: "ALTERNATE_COST_CENTER", width: 12 },
           { label: "Alternate Cost Center Text", property: "ALT_COST_CENTER_DESC", width: 12 },
           { label: "GL No (Claim Item)", property: "GL_ACCOUNT", width: 12 },
           { label: "Code Material (Claim Item)", property: "MATERIAL_CODE", width: 12 },
           { label: "Total Request Amount", property: "TOTAL_AMOUNT", type: "number", scale: 2, width: 16 },
-          { label: "Cash Advance", property: "CASH_ADVANCE_AMOUNT", type: "number", scale: 2, width: 16 },
+          { label: "Cash Advance", property: "CASH_ADVANCE", type: "number", scale: 2, width: 16 },
           { label: "Purpose", property: "OBJECTIVE_PURPOSE", width: 24 },
           { label: "Remarks", property: "REMARK", width: 24 },
-          { label: "Trip Start Date", property: "TRIP_START_DATE", type: "date", width: 14 },
-          { label: "Trip End Date", property: "TRIP_END_DATE", type: "date", width: 14 },
-          { label: "Event Start Date", property: "EVENT_START_DATE", type: "date", width: 14 },
-          { label: "Event End Date", property: "EVENT_END_DATE", type: "date", width: 14 },
+          { label: "Trip Start Date", property: "TRIP_START_DATE", width: 14 },
+          { label: "Trip End Date", property: "TRIP_END_DATE", width: 14 },
+          { label: "Event Start Date", property: "EVENT_START_DATE", width: 14 },
+          { label: "Event End Date", property: "EVENT_END_DATE", width: 14 },
           { label: "Location", property: "LOCATION", width: 40 },
           { label: "Type of Transportation", property: "TYPE_OF_TRANSPORTATION", width: 40 },
           { label: "Claim/Request Item", property: "LOCATION", width: 40 },
           { label: "Estimated Amount", property: "EST_AMOUNT", type: "number", scale: 2, width: 16 },
           { label: "Estimated Number of Participant", property: "EST_NO_PARTICIPANT", type: "number", scale: 2, width: 16 },
           { label: "Cash Advance", property: "CASH_ADVANCE", type: "number", scale: 2, width: 16 },
-          { label: "Start Date", property: "START_DATE", type: "date", width: 14 },
-          { label: "End Date", property: "END_DATE", type: "date", width: 14 },
+          { label: "Start Date", property: "START_DATE", width: 14 },
+          { label: "End Date", property: "END_DATE", width: 14 },
           { label: "Remarks", property: "REMARK", width: 24 },
           { label: "Berdasarkan terma keahlian kelab, sila nyatakan sama ada keahlian ini boleh dipindah milik atau tidak?", property: "DECLARE_CLUB_MEMBERSHIP", width: 24 },
           { label: "Mewakili KWSP dalam aktiviti sukan anjuran pengurusan KWSP atau Pihak Luar", property: "KWSP_SPORTS_REPRESENTATION", width: 24 },
           { label: "Disclaimer: Sebarang penyertaan dalam sukan anjuran jabatan dan cawangan masing-masing adalah tidak layak membuat tuntutan", property: "SPORTS_CLAIM_DISCLAIMER", width: 24 },
           { label: "Vehicle (Sendiri/Pejabat)", property: "VEHICLE_TYPE", width: 24 },
           { label: "Mode of Transfer", property: "MODE_OF_TRANSFER", width: 24 },
-          { label: "Tarikh Pindah", property: "TRANSFER_DATE", type: "date", width: 14 },
+          { label: "Tarikh Pindah", property: "TRANSFER_DATE", width: 14 },
           { label: "Number of Days", property: "NO_OF_DAYS", type: "number", scale: 0, width: 16 },
           { label: "Marriage Category", property: "MARRIAGE_CATEGORY", width: 24 },
           { label: "Number of family member (per head)", property: "FAMILY_COUNT", type: "number", scale: 0, width: 16 },
@@ -706,12 +870,11 @@ sap.ui.define([
         { label: "Course Session", property: "SESSION_NUMBER", width: 12 },
         { label: "Purpose", property: "PURPOSE", width: 24 },
         { label: "Remarks", property: "REMARK", width: 24 },
-        { label: "Trip Start Date", property: "TRIP_START_DATE",  width: 14 },
+        { label: "Trip Start Date", property: "TRIP_START_DATE", width: 14 },
         { label: "Trip End Date", property: "TRIP_END_DATE", width: 14 },
         { label: "Location", property: "LOCATION", width: 40 },
         { label: "Claim ID", property: "CLAIM_ID", width: 14 },
         { label: "Claim Sub ID", property: "CLAIM_SUB_ID", width: 14 },
-        { label: "Item No", property: "", width: 14 },
         { label: "% Compensation", property: "PERCENTAGE_COMPENSATION", width: 14 },
         { label: "Account No", property: "ACCOUNT_NO", width: 14 },
         { label: "Amount", property: "AMOUNT", width: 14 },
@@ -769,6 +932,6 @@ sap.ui.define([
         { label: "Dependent Name", property: "DEPENDENT_NAME", width: 14 },
 
       ];
-    }
+    },
   });
 });
