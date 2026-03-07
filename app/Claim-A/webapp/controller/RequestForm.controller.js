@@ -60,22 +60,6 @@ sap.ui.define([
 			return this.getOwnerComponent().getModel("request");
 		},
 
-		_ensureRequestModelDefaults: function () {
-			const oReq = this._getReqModel();
-			const data = oReq.getData() || {};
-			data.user 			   = data.user;
-			data.req_header        = { reqid: "", grptype: "IND" };
-			// data.req_item_rows     = Array.isArray(data.req_item_rows) ? data.req_item_rows : [];
-			data.req_item_rows     = [];
-			data.req_item          = data.req_item || {
-				cash_advance: "no_cashadv"
-			};
-			data.participant       = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
-			data.view              = "view";
-			data.list_count        = data.list_count ?? 0;
-			oReq.setData(data);
-		},
-
 		/* =========================================================
 		* Helpers: Fragment Management
 		* ======================================================= */
@@ -155,7 +139,7 @@ sap.ui.define([
 						text: "Confirm",
 						press: async function () {
 							this.oBackDialog.close();
-							this._ensureRequestModelDefaults();
+							Common._ensureRequestModelDefaults(oReqModel);
 							var oHistory = History.getInstance();
 							var sPreviousHash = oHistory.getPreviousHash();
 							if (sPreviousHash) {
@@ -332,6 +316,7 @@ sap.ui.define([
 								await oModel.submitBatch("$auto");
 								
 								sap.m.MessageToast.show("Request submitted successfully");
+								oReq.setProperty("/view", 'view');
 								
 								Common.getPARHeaderList(oReqList, oViewModel);
 								const oRouter = this.getOwnerComponent().getRouter();
@@ -450,7 +435,7 @@ sap.ui.define([
 			return this._openItemFromList(oEvent, /* bEdit = */ true);
 		},
 		
-		async _openItemFromList (oEvent, bEdit) {
+		_openItemFromList (oEvent, bEdit) {
 			const oReq   = this._getReqModel();
 			const oTable = this.byId("req_item_table");
 
@@ -495,8 +480,8 @@ sap.ui.define([
 			oReq.setProperty("/view", bEdit ? "i_edit" : "view");
 
 			this._showItemCreate(oReq.getProperty("/view"));
-			await this._loadParticipantsForItem(reqId, subId);
-			await this._getClaimTypeItemSelection();
+			this._loadParticipantsForItem(reqId, subId);
+			this._getClaimTypeItemSelection();
 			this.getFieldVisibility_ClaimTypeItem(oEvent);
 		},
 
@@ -557,11 +542,14 @@ sap.ui.define([
 			}
 		},
 
-		async onBackView() {
+		onBackView() {
+			var oReqModel = this._getReqModel();
 			var oCreate = this.byId('request_create_item_fragment');
 			if (oCreate) {
-				await this._showItemList('view');
+				this._showItemList('view');
+				oReqModel.setProperty('/req_item', {});
 			} else {
+				Common._ensureRequestModelDefaults(oReqModel);
 				var oHistory = History.getInstance();
 				var sPreviousHash = oHistory.getPreviousHash();
 				if (sPreviousHash) {
@@ -569,7 +557,6 @@ sap.ui.define([
 				} else {
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("RequestFormStatus");
-					this._ensureRequestModelDefaults();
 				}
 			}
 		},
@@ -778,7 +765,7 @@ sap.ui.define([
 
 		appendNewRow(oEvent) {
 			const oReq = this._getReqModel();
-			if (oReq.getProperty("/req_header/grptype") !== "group") return;
+			if (oReq.getProperty("/req_header/grptype") !== "Group") return;
 
 			const src  = oEvent.getSource();
 			const sVal = (oEvent.getParameter && oEvent.getParameter("value"))
@@ -1204,13 +1191,14 @@ sap.ui.define([
 			await oModel.submitBatch(sGroup);
 		},
 
-		async onCancelItem() {
+		onCancelItem() {
 			const oReq      = this._getReqModel();
 			const data      = oReq.getData();
 			const reqId     = String(data.req_header.reqid || "").trim();
+			oReq.setProperty('/req_item', {})
 			
-			await this._getItemList(reqId);
-			await this._showItemList('list');
+			this._getItemList(reqId);
+			this._showItemList('list');
 		},
 
 		/* =========================================================
@@ -1939,17 +1927,16 @@ sap.ui.define([
 					"/ZCLAIM_TYPE_ITEM",
 					null,
 					[
-						new sap.ui.model.Sorter("CLAIM_TYPE_ID", false)
+						new sap.ui.model.Sorter("CLAIM_TYPE_ITEM_ID", false)
 					],
 					[
-						new sap.ui.model.Filter({ path: "CLAIM_TYPE_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_type_id }),
-						new sap.ui.model.Filter({ path: "CATEGORY_ID", operator: sap.ui.model.FilterOperator.EQ, value1: "PREAPPROVAL" }),
+						new sap.ui.model.Filter({ path: "CLAIM_TYPE_ID", operator: "EQ", value1: claim_type_id }),
+						new sap.ui.model.Filter({ path: "CATEGORY_ID", operator: 'EQ', value1: "PREAPPROVE" }),
 						new sap.ui.model.Filter({ path: "CATEGORY_ID", operator: sap.ui.model.FilterOperator.EQ, value1: "AUTOAPPROVE" })
 					],
 					{
 						$$ownRequest: true,
 						$$groupId: "$auto",
-						$count: true,
 						$select: "CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,CLAIM_TYPE_ITEM_DESC"
 					}
 				);

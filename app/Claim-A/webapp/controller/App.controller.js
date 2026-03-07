@@ -131,7 +131,8 @@ sap.ui.define([
 				case "myrequest":
 					const oReq = this.getOwnerComponent().getModel("request_status");
 					const oModel = this.getOwnerComponent().getModel('employee_view');
-
+					
+					Common._ensureRequestModelDefaults(this._getReqModel());
 					Common.getPARHeaderList(oReq, oModel);
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("RequestFormStatus");

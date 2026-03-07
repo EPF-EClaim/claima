@@ -271,6 +271,30 @@
                                     </form:fields>
                                 </form:FormElement>
 
+                                <!-- Start Time -->
+                                <form:FormElement label="{i18n>req_i_start_date}"
+                                            visible="false"
+                                            id="i_start_time" >
+                                    <form:fields>
+                                        <m:TimePicker
+                                            value="{request>/req_item/start_time}"
+                                            textAlign="Begin"
+                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- End Time -->
+                                <form:FormElement label="{i18n>req_i_end_date}"
+                                            visible="false"
+                                            id="i_end_time" >
+                                    <form:fields>
+                                        <m:TimePicker
+                                            value="{request>/req_item/end_time}"
+                                            textAlign="Begin"
+                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                    </form:fields>
+                                </form:FormElement>
+
                                 <!-- Vehicle Ownership -->
                                 <form:FormElement label="{i18n>req_i_vehicle}"
                                             visible="false"
