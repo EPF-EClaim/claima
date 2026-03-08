@@ -1,7 +1,7 @@
 const cds = require('@sap/cds');
-const { message } = require('@sap/cds/lib/log/cds-error');
-const { UPSERT } = require('@sap/cds/lib/ql/cds-ql');
-const { target } = require('@sap/cds/lib/ql/cds.ql-infer');
+const { INSERT, UPDATE, UPSERT } = require('@sap/cds/lib/ql/cds-ql');
+const express = require('express');
+const app = express();
 
 module.exports = (srv) => {
 
@@ -112,4 +112,20 @@ module.exports = (srv) => {
       };
     });
 
+  srv.on('runjob', req => {
+    console.log('==> [APP JOB LOG] Job is running . . .');
+    
+    return { responseArray : [{
+            "message": "finished"
+        }] }; 
+
+    }
+  );
+
+  /* const port = process.env.PORT || 5000;
+
+  app.listen(port, function () {
+    console.log('listening');
+  })
+ */
 }

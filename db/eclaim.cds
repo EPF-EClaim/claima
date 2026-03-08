@@ -65,74 +65,76 @@ entity ZEMP_MASTER : managed {
 }
 
 entity ZREQUEST_HEADER : managed {
-    key REQUEST_ID              : String @mandatory;
-        EMP_ID                  : String;
-        REQUEST_TYPE_ID         : String;
-        CLAIM_TYPE_ID           : String;
-        OBJECTIVE_PURPOSE       : String;
-        TRIP_START_DATE         : Date;
-        TRIP_END_DATE           : Date;
-        EVENT_START_DATE        : Date;
-        EVENT_END_DATE          : Date;
-        APPROVED_DATE           : Date;
-        REQUEST_DATE            : Date;
-        IND_OR_GROUP            : String;
-        REMARK                  : String;
-        ALTERNATE_COST_CENTER   : String;
-        PREAPPROVAL_AMOUNT      : Decimal(16, 2);
-        TOTAL_AMOUNT            : Decimal(16, 2);
-        ATTACHMENT1             : String;
-        ATTACHMENT2             : String;
-        LOCATION                : String;
-        TYPE_OF_TRANSPORTATION  : String;
-        EVENT_FIELD1            : String;
-        EVENT_FIELD2            : String;
-        EVENT_FIELD3            : String;
-        EVENT_FIELD4            : String;
-        EVENT_FIELD5            : String;
-        STATUS                  : String;
-        COST_CENTER             : String;
-        CASH_ADVANCE            : Decimal(16, 2);
-        CASH_ADVANCE_DATE       : Date;
-        LAST_APPROVED_DATE      : Date;
-        LAST_APPROVED_TIME      : Time;
-        TRAVEL_ALONE_FAMILY     : String(1);
-        TRAVEL_FAMILY_NOW_LATER : String(1);
-        LAST_SEND_BACK_DATE     : Date;
-        LAST_SEND_BACK_TIME     : Time;
-        REJECT_REASON_ID        : String;
-        REJECT_REASON_DATE      : Date;
-        REJECT_REASON_TIME      : Time;
-        SEND_BACK_REASON_ID     : String;
-        APPROVER1               : String(6);
-        APPROVER2               : String(6);
-        APPROVER3               : String(6);
-        APPROVER4               : String(6);
-        APPROVER5               : String(6);
-        LAST_MODIFIED_DATE      : Date;
-        SUBMITTED_DATE          : Date;
-        ZREQUEST_ITEM           : Composition of many ZREQUEST_ITEM
-                                      on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
-        ZREQUEST_TYPE           : Association to one ZREQUEST_TYPE
-                                      on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
-        ZSTATUS                 : Association to one ZSTATUS
-                                      on ZSTATUS.STATUS_ID = STATUS;
-        ZCOST_CENTER            : Association to one ZCOST_CENTER
-                                      on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
-        ZEMP_MASTER             : Association to one ZEMP_MASTER
-                                      on ZEMP_MASTER.EEID = EMP_ID;
-        ZINDIV_GROUP            : Association to ZINDIV_GROUP
-                                      on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
-        COSTCENTER              : Association to ZCOST_CENTER
-                                      on COSTCENTER.COST_CENTER_ID = ALTERNATE_COST_CENTER;
-        ZCLAIM_HEADER           : Association to ZCLAIM_HEADER
-                                      on ZCLAIM_HEADER.REQUEST_ID = REQUEST_ID;
-        ZREJECT_REASON          : Association to ZREJECT_REASON
-                                      on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
-        ZSENDBACK_REASON        : Association to ZREJECT_REASON
-                                      on ZSENDBACK_REASON.REASON_ID = SEND_BACK_REASON_ID;
-        ZCLAIM_TYPE             : Association to one ZCLAIM_TYPE
-                                      on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
+    key REQUEST_ID                    : String @mandatory;
+        EMP_ID                        : String;
+        REQUEST_TYPE_ID               : String;
+        CLAIM_TYPE_ID                 : String;
+        OBJECTIVE_PURPOSE             : String;
+        TRIP_START_DATE               : Date;
+        TRIP_END_DATE                 : Date;
+        EVENT_START_DATE              : Date;
+        EVENT_END_DATE                : Date;
+        APPROVED_DATE                 : Date;
+        REQUEST_DATE                  : Date;
+        IND_OR_GROUP                  : String;
+        REMARK                        : String;
+        ALTERNATE_COST_CENTER         : String;
+        PREAPPROVAL_AMOUNT            : Decimal(16, 2);
+        TOTAL_AMOUNT                  : Decimal(16, 2);
+        ATTACHMENT1                   : String;
+        ATTACHMENT2                   : String;
+        LOCATION                      : String;
+        TYPE_OF_TRANSPORTATION        : String;
+        EVENT_FIELD1                  : String;
+        EVENT_FIELD2                  : String;
+        EVENT_FIELD3                  : String;
+        EVENT_FIELD4                  : String;
+        EVENT_FIELD5                  : String;
+        STATUS                        : String;
+        COST_CENTER                   : String;
+        CASH_ADVANCE                  : Decimal(16, 2);
+        CASH_ADVANCE_DATE             : Date;
+        LAST_APPROVED_DATE            : Date;
+        LAST_APPROVED_TIME            : Time;
+        TRAVEL_ALONE_FAMILY           : String(1);
+        TRAVEL_FAMILY_NOW_LATER       : String(1);
+        LAST_SEND_BACK_DATE           : Date;
+        LAST_SEND_BACK_TIME           : Time;
+        REJECT_REASON_ID              : String;
+        REJECT_REASON_DATE            : Date;
+        REJECT_REASON_TIME            : Time;
+        SEND_BACK_REASON_ID           : String;
+        APPROVER1                     : String(6);
+        APPROVER2                     : String(6);
+        APPROVER3                     : String(6);
+        APPROVER4                     : String(6);
+        APPROVER5                     : String(6);
+        LAST_MODIFIED_DATE            : Date;
+        SUBMITTED_DATE                : Date;
+        ZREQUEST_ITEM                 : Composition of many ZREQUEST_ITEM
+                                            on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
+        ZREQUEST_TYPE                 : Association to one ZREQUEST_TYPE
+                                            on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
+        ZSTATUS                       : Association to one ZSTATUS
+                                            on ZSTATUS.STATUS_ID = STATUS;
+        ZCOST_CENTER                  : Association to one ZCOST_CENTER
+                                            on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
+        ZEMP_MASTER                   : Association to one ZEMP_MASTER
+                                            on ZEMP_MASTER.EEID = EMP_ID;
+        ZINDIV_GROUP                  : Association to ZINDIV_GROUP
+                                            on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
+        COSTCENTER                    : Association to ZCOST_CENTER
+                                            on COSTCENTER.COST_CENTER_ID = ALTERNATE_COST_CENTER;
+        ZCLAIM_HEADER                 : Association to ZCLAIM_HEADER
+                                            on ZCLAIM_HEADER.REQUEST_ID = REQUEST_ID;
+        ZREJECT_REASON                : Association to ZREJECT_REASON
+                                            on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
+        ZSENDBACK_REASON              : Association to ZREJECT_REASON
+                                            on ZSENDBACK_REASON.REASON_ID = SEND_BACK_REASON_ID;
+        ZCLAIM_TYPE                   : Association to one ZCLAIM_TYPE
+                                            on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
+        ZAPPROVER_DETAILS_PREAPPROVAL : Composition of many ZAPPROVER_DETAILS_PREAPPROVAL
+                                            on ZAPPROVER_DETAILS_PREAPPROVAL.PREAPPROVAL_ID = REQUEST_ID;
 }
 
 entity ZREQUEST_ITEM : managed {
@@ -367,6 +369,8 @@ entity ZCLAIM_HEADER : managed {
                                              on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
         ZSENDBACK_REASON               : Association to ZREJECT_REASON
                                              on ZSENDBACK_REASON.REASON_ID = SEND_BACK_REASON_ID;
+        ZAPPROVER_DETAILS_CLAIMS       : Composition of many ZAPPROVER_DETAILS_CLAIMS
+                                             on ZAPPROVER_DETAILS_CLAIMS.CLAIM_ID = CLAIM_ID;
 }
 
 entity ZCLAIM_ITEM : managed {
@@ -609,7 +613,7 @@ entity ZCLAIM_TYPE_ITEM : managed {
 }
 
 entity ZBUDGET : managed {
-    key YEAR            : String         @mandatory  @Common.Label: 'Year';
+    key YEAR            : String(4)      @mandatory  @Common.Label: 'Year';
     key INTERNAL_ORDER  : String         @mandatory  @Common.Label: 'Internal Order';
     key COMMITMENT_ITEM : String         @mandatory  @Common.Label: 'Commitment Item';
     key FUND_CENTER     : String         @mandatory  @Common.Label: 'Fund Center';
@@ -1012,6 +1016,11 @@ entity ZWORKFLOW_RULE : managed {
         EMPLOYEE_COST_CENTER  : String(9);
         OUTCOME_WORKFLOW_CODE : String(3);
         REMARK                : String(255);
+        REQUEST_TYPE_ID       : String;
+        CASH_ADVANCE          : Boolean;
+        TRIP_START_DATE       : Date;
+        ZREQUEST_TYPE         : Association to ZREQUEST_TYPE
+                                    on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
 }
 
 entity ZCURRENCY : managed {
@@ -1252,9 +1261,9 @@ entity ZELIGIBILITY_RULE : managed {
 entity ZAPPROVER_DETAILS_CLAIMS : managed {
     key CLAIM_ID               : String  @mandatory;
     key LEVEL                  : Integer @mandatory;
-    key APPROVER_ID            : String  @mandatory;
-    key SUBSTITUTE_APPROVER_ID : String  @mandatory;
-    key STATUS                 : String  @mandatory;
+        APPROVER_ID            : String;
+        SUBSTITUTE_APPROVER_ID : String;
+        STATUS                 : String;
         REJECT_REASON_ID       : String;
         PROCESS_TIMESTAMP      : Timestamp;
         COMMENT                : String;
@@ -1266,16 +1275,14 @@ entity ZAPPROVER_DETAILS_CLAIMS : managed {
                                      on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
         ZSTATUS                : Association to one ZSTATUS
                                      on ZSTATUS.STATUS_ID = STATUS;
-        ZCLAIM_HEADER          : Association to ZCLAIM_HEADER
-                                     on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
 }
 
 entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
     key PREAPPROVAL_ID         : String  @mandatory;
     key LEVEL                  : Integer @mandatory;
-    key APPROVER_ID            : String  @mandatory;
-    key SUBSTITUTE_APPROVER_ID : String  @mandatory;
-    key STATUS                 : String  @mandatory;
+        APPROVER_ID            : String;
+        SUBSTITUTE_APPROVER_ID : String;
+        STATUS                 : String;
         REJECT_REASON_ID       : String;
         PROCESS_TIMESTAMP      : Timestamp;
         COMMENT                : String;
@@ -1287,8 +1294,6 @@ entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
                                      on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
         ZSTATUS                : Association to one ZSTATUS
                                      on ZSTATUS.STATUS_ID = STATUS;
-        ZREQUEST_HEADER        : Association to one ZREQUEST_HEADER
-                                     on ZREQUEST_HEADER.EMP_ID = PREAPPROVAL_ID;
 }
 
 entity ZSUBSTITUTION_RULES : managed {

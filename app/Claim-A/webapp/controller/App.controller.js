@@ -75,11 +75,12 @@ sap.ui.define([
 			this._ensureRequestModelDefaults();
 			// var oUserModel = new sap.ui.model.json.JSONModel({ email: 'Jefry.Yap@my.ey.com' });
 			// this.getView().setModel(oUserModel, 'user');
-			var userModelData = this.getView().getModel('user').getData();
-			const emp_data = await this._getEmpIdDetail(userModelData.email);
-			const oReqModel = this._getReqModel().getData();
-			oReqModel.user = emp_data.eeid;
-			this._getReqModel().setData(oReqModel);
+
+			// var userModelData = this.getView().getModel('user').getData();
+			// const emp_data = await this._getEmpIdDetail(userModelData.email);
+			// const oReqModel = this._getReqModel().getData();
+			// oReqModel.user = emp_data.eeid;
+			// this._getReqModel().setData(oReqModel);
 
 		},
 
@@ -132,6 +133,10 @@ sap.ui.define([
 					this.getPARHeaderList();
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("RequestFormStatus");
+					break;
+				case "mysubstitution":
+					var oRouter = this.getOwnerComponent().getRouter();
+					oRouter.navTo("ManageSub");
 					break;
 				case "config":
 					//Start EY_ATHIRAH
@@ -1829,10 +1834,10 @@ sap.ui.define([
 						var oUserModel = new sap.ui.model.json.JSONModel({ email: email });
 						that.getView().setModel(oUserModel, 'user');
 
-						const emp_data = await this._getEmpIdDetail(email);
-						const oReqModel = this._getReqModel().getData();
+						const emp_data = await that._getEmpIdDetail(email);
+						const oReqModel = that._getReqModel().getData();
 						oReqModel.user = emp_data.eeid;
-						this._getReqModel().setData(oReqModel);
+						that._getReqModel().setData(oReqModel);
 
 						sap.m.MessageToast.show('Email: ' + email);
 					} else {

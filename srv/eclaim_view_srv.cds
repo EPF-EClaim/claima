@@ -36,7 +36,9 @@ entity ZEMP_REQUEST_VIEW
         ZCOST_CENTER.COST_CENTER_DESC, 
         CASH_ADVANCE,
         PREAPPROVAL_AMOUNT,
-        TOTAL_AMOUNT
+        TOTAL_AMOUNT,
+        REQUEST_DATE,
+        createdBy
 };
 
 
@@ -110,7 +112,8 @@ entity ZEMP_REQUEST_ITEM_VIEW
         CASH_ADVANCE,
         EMP_ID,
         FROM_LOCATION_OFFICE,
-        TO_LOCATION_OFFICE
+        TO_LOCATION_OFFICE,
+        createdBy
   };
 
 entity ZEMP_REQUEST_PART_VIEW
@@ -120,7 +123,8 @@ entity ZEMP_REQUEST_PART_VIEW
     key PARTICIPANTS_ID,
         ALLOCATED_AMOUNT,
         ZEMP_MASTER.NAME,
-        ZEMP_MASTER.CC
+        ZEMP_MASTER.CC,
+        createdBy
   };
 
 entity ZEMP_CLAIM_HEADER_VIEW
@@ -167,7 +171,8 @@ entity ZEMP_CLAIM_HEADER_VIEW
         ZEMP_MASTER.NAME,
         ZEMP_MASTER.POS,
         ZEMP_MASTER.GRADE,
-        ZEMP_MASTER.JOB_GROUP
+        ZEMP_MASTER.JOB_GROUP,
+        createdBy
   };
 
 entity ZEMP_CLAIM_ITEM_VIEW
@@ -252,7 +257,8 @@ entity ZEMP_CLAIM_ITEM_VIEW
         TRANSFER_DATE,
         NO_OF_DAYS,
         FAMILY_COUNT,
-        FUNERAL_TRANSPORTATION
+        FUNERAL_TRANSPORTATION,
+        createdBy
   };
 
 entity ZEMP_REQUEST_STATUS
@@ -267,7 +273,8 @@ entity ZEMP_REQUEST_STATUS
         EVENT_START_DATE,
         PREAPPROVAL_AMOUNT,
         TOTAL_AMOUNT,
-        EMP_ID
+        EMP_ID,
+        createdBy
   };
 
 entity ZEMP_CLAIM_STATUS_HEADER
@@ -275,7 +282,8 @@ entity ZEMP_CLAIM_STATUS_HEADER
     key CLAIM_ID,
         STATUS_ID,
         ZSTATUS.STATUS_DESC,
-        EMP_ID
+        EMP_ID,
+        createdBy
   };
 
 entity ZEMP_CLAIM_STATUS_ITEM
@@ -283,7 +291,8 @@ entity ZEMP_CLAIM_STATUS_ITEM
     key CLAIM_ID,
     key CLAIM_SUB_ID,
          START_DATE,
-         AMOUNT
+         AMOUNT,
+         createdBy
   };
 
 entity ZEMP_CLAIM_REPORT_SUMMARY
@@ -329,7 +338,8 @@ entity ZEMP_CLAIM_REPORT_SUMMARY
         ZTRAIN_COURSE_PART.COURSE_ID,
         ZTRAIN_COURSE_PART.COURSE_DESC,
         ZTRAIN_COURSE_PART.SESSION_NUMBER,
-        LAST_SEND_BACK_DATE
+        LAST_SEND_BACK_DATE,
+        createdBy
   };
 
 entity ZEMP_CLAIM_REPORT_DETAILS
@@ -441,7 +451,8 @@ entity ZEMP_CLAIM_REPORT_DETAILS
         ZTRAIN_COURSE_PART.COURSE_ID,
         ZTRAIN_COURSE_PART.COURSE_DESC,
         ZTRAIN_COURSE_PART.SESSION_NUMBER,
-        LAST_SEND_BACK_DATE                        
+        LAST_SEND_BACK_DATE,
+        createdBy                        
   };
 
 entity ZEMP_REQUEST_REPORT_SUMMARY
@@ -486,7 +497,8 @@ entity ZEMP_REQUEST_REPORT_SUMMARY
         SUBMITTED_DATE,  
         CLAIM_TYPE_ID,
         ZCLAIM_TYPE.CLAIM_TYPE_DESC,
-        ZCLAIM_TYPE.GL_ACCOUNT
+        ZCLAIM_TYPE.GL_ACCOUNT,
+        createdBy
   };
 
 entity ZEMP_REQUEST_REPORT_DETAILS 
@@ -551,7 +563,8 @@ entity ZEMP_REQUEST_REPORT_DETAILS
         CASH_ADVANCE_DATE as PAYMENT_DATE,
         CLAIM_TYPE_ID as CLAIM_TYPE_HEADER,
         ZCLAIM_TYPE.CLAIM_TYPE_DESC as CLAIM_TYPE_DESC_HEADER,
-        ZCLAIM_TYPE.GL_ACCOUNT 
+        ZCLAIM_TYPE.GL_ACCOUNT,
+        createdBy 
 }; 
 };
 
