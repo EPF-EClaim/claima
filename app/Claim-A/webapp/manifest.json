@@ -457,7 +457,7 @@
                     "target": "RequestFormStatus"
                 },
                 {
-                    "pattern": "claims/{claimId}",
+                    "pattern": "ClaimSubmission/{claim_id}",
                     "name": "ClaimSubmission",
                     "target": "ClaimSubmission"
                 },

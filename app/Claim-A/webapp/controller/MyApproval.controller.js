@@ -116,7 +116,8 @@ sap.ui.define([
  */
         async _loadRequestById(sRequestId) {
             const oReq = this._getReqModel();
-            const oModel = this.getOwnerComponent().getModel("employee_view");
+            //const oModel = this.getOwnerComponent().getModel("employee_view");
+            const oModel = await this._ensureModelReady("employee_view");
             const sReq = String(sRequestId);
 
             // Build a shared filter for both calls
@@ -293,7 +294,7 @@ sap.ui.define([
 
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("ClaimSubmission", {
-                    claimId: String(sClaimId)   // <-- use the exact argument name
+                    claim_id: String(sClaimId)   // <-- use the exact argument name
                 });
 
 
@@ -359,7 +360,8 @@ sap.ui.define([
 
             const oClaimInput = this._getClaimInputModel()
 
-            const oModel = this.getOwnerComponent().getModel("employee_view");
+            //const oModel = this.getOwnerComponent().getModel("employee_view");
+            const oModel = await this._ensureModelReady("employee_view");
             const sId = String(sClaimId);
 
             const aFilters = [new sap.ui.model.Filter("CLAIM_ID", sap.ui.model.FilterOperator.EQ, sId)];
@@ -451,7 +453,43 @@ sap.ui.define([
                 oClaimInput.setProperty("/claim_items_count", 0);
                 return { header: null, items: [] };
             }
-        }
+        },
+
+        // Wait until a named model exists on the Component.
+        _waitForModel(name) {
+            return new Promise((resolve) => {
+                const check = () => {
+                    const m = this.getOwnerComponent().getModel(name);
+                    if (m) {
+                        resolve(m);
+                    } else {
+                        setTimeout(check, 40);
+                    }
+                };
+                check();
+            });
+        },
+
+        // For V4: wait for metadata to be available.
+        // For V2 models, fallback to metadataLoaded if present.
+        async _ensureModelReady(name) {
+            const oModel = await this._waitForModel(name);
+            // V4 meta ready
+            if (oModel?.getMetaModel?.()?.requestObject) {
+                try {
+                    await oModel.getMetaModel().requestObject("/$EntityContainer");
+                } catch (e) {
+                    // swallow; some backends may restrict $EntityContainer; any requestObject call will do
+                    await oModel.getMetaModel().requestObject("/");
+                }
+                return oModel;
+            }
+            // V2 meta ready
+            if (oModel?.metadataLoaded) {
+                await oModel.metadataLoaded();
+            }
+            return oModel;
+        },
 
     });
 });
