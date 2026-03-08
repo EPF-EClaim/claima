@@ -586,7 +586,6 @@
                     "id": "Dashboard",
                     "name": "App"
                 },
-
                 "ZPROJECT_HDR": {
                     "type": "Component",
                     "id": "ZPROJECT_HDR",
@@ -3656,7 +3655,6 @@
                     "viewType": "XML",
                     "transition": "slide"
                 },
-
                 "ManageSub": {
                     "id": "ManageSub",
                     "path": "claima.view",
@@ -3899,4 +3897,3 @@
         "service": "claimabackend.service"
     }
 }
-

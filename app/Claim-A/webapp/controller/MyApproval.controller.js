@@ -243,7 +243,6 @@ sap.ui.define([
                 cashadvamt: o.CASH_ADVANCE || 0,       // will be recalculated from items below anyway
                 reqamt: o.PREAPPROVAL_AMOUNT || 0, // will be recalculated from items
                 claimtype: o.CLAIM_TYPE_ID || "",
-                claimtype: o.CLAIM_TYPE_ID || "",
                 claimtypedesc: o.CLAIM_TYPE_DESC || "",
                 reqdate: o.REQUEST_DATE
             };
@@ -342,15 +341,15 @@ sap.ui.define([
                 status_id: o.STATUS || "",
                 total_claim_amount: o.TOTAL_CLAIM_AMOUNT || 0,
                 cash_advance_amount: o.CASH_ADVANCE_AMOUNT || 0,
-                final_amount_to_receive: o.FINAL_AMOUNT_RECEIVE || 0,
+                final_amount_to_receive: o.FINAL_AMOUNT_TO_RECEIVE || 0,
 
                 // optional nested descr fields if you have them
-                descr: {
+/*                 descr: {
                     purpose: o.PURPOSE || "",
                     cost_center: "",
                     alternate_cost_center: "",
                     status_id: o.STATUS_ID || ""
-                }
+                } */
             };
 
 
