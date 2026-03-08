@@ -5,6 +5,7 @@ sap.ui.define([
 	"sap/ui/model/json/JSONModel",
 	"sap/m/Popover",
 	"sap/ui/core/Fragment",
+	"sap/ui/core/BusyIndicator",
 	"sap/m/Button",
 	"sap/m/Dialog",
 	"sap/m/MessageToast",
@@ -22,6 +23,7 @@ sap.ui.define([
 	JSONModel,
 	Popover,
 	Fragment,
+	BusyIndicator,
 	Button,
 	Dialog,
 	MessageToast,
@@ -885,6 +887,7 @@ sap.ui.define([
 			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment"; 
 
 			try {
+				BusyIndicator.show(0);
 				const response = await fetch(sServiceUrl, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
@@ -927,10 +930,14 @@ sap.ui.define([
 				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(')+1,jsonData.id.indexOf(')')-1);
 				oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
 				oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
+
+				BusyIndicator.hide();
 				return true;
 			} catch (error) {
 				console.log("Error uploading attachment: " + error);
 				MessageToast.show("Error uploading attachment: " + error);
+				
+				BusyIndicator.hide();
 				return false;
 			}
 		},
@@ -967,8 +974,9 @@ sap.ui.define([
 		},
 
 		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_mismatch", [this.byId("fileuploader_claiminput_attachment").getValue()]));
+			MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_mismatch"));
 		},
+
 		_validDateRange: function (startdate, enddate) {
 			var startDateValue = this.byId(startdate).getValue();
 			var endDateValue = this.byId(enddate).getValue();
@@ -1046,7 +1054,7 @@ sap.ui.define([
 			}
 			//// attachment email approval
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
-				this.byId("fileuploader_claiminput_attachment").setValue(null);
+				this.byId("fileuploader_claiminput_attachment").clear();
 			}
 			//// comment
 			if (this.byId("input_claiminput_comment").getValue()) {
