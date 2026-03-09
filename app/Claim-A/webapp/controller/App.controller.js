@@ -135,12 +135,14 @@ sap.ui.define([
 					oRouter.navTo("RequestFormStatus");
 					break;
 				case "mysubstitution":
-					var oRouter = this.getOwnerComponent().getRouter();
-					oRouter.navTo("ManageSub");
+					if (type === "Approver") {
+						var oRouter = this.getOwnerComponent().getRouter();
+						oRouter.navTo("ManageSub");
+					}
 					break;
 				case "config":
 					//Start EY_ATHIRAH
-					if (type === "DTD Admin") {
+					if (type === "DTD Admin" || type === "JKEW Admin") {
 						oRouter.navTo("Configuration");
 					} else {
 						var message = this._getTexti18n("msg_unauthorized_config");
@@ -168,6 +170,8 @@ sap.ui.define([
 					break;
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
 				case "approval":
+					if (type === "Approver") {
+					}
 					break;
 				default:
 					// navigate to page with ID same as the key
@@ -882,7 +886,7 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 
 			// Write to Success Factors API
-			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment"; 
+			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment";
 
 			try {
 				const response = await fetch(sServiceUrl, {
@@ -900,7 +904,7 @@ sap.ui.define([
 						viewable: true,
 						searchable: true,
 						fileContent: oInputModel.getProperty("/attachment/fileContent")
-					}) 
+					})
 				});
 
 				if (!response.ok) {
@@ -924,7 +928,7 @@ sap.ui.define([
 				}
 
 				// get generated attachment number
-				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(')+1,jsonData.id.indexOf(')')-1);
+				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(') + 1, jsonData.id.indexOf(')') - 1);
 				oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
 				oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
 				return true;
@@ -1381,15 +1385,15 @@ sap.ui.define([
 		_ensureRequestModelDefaults: function () {
 			const oReq = this._getReqModel();
 			const data = oReq.getData() || {};
-			data.user 			   = data.user;
-			data.req_header        = { reqid: "", grptype: "IND" };
-			data.req_item_rows     = [];
-			data.req_item          = data.req_item || {
+			data.user = data.user;
+			data.req_header = { reqid: "", grptype: "IND" };
+			data.req_item_rows = [];
+			data.req_item = data.req_item || {
 				cash_advance: "no_cashadv"
 			};
-			data.participant       = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
-			data.view              = "view";
-			data.list_count        = 0;
+			data.participant = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
+			data.view = "view";
+			data.list_count = 0;
 			oReq.setData(data);
 		},
 
@@ -1504,7 +1508,7 @@ sap.ui.define([
 		},
 
 		async _getHeaderView(reqid) {
-			
+
 			const oReqModel = this._getReqModel();
 			const oModel = this.getOwnerComponent().getModel("employee_view");
 			const oListBinding = oModel.bindList("/ZEMP_REQUEST_VIEW", null, null, [
@@ -1517,29 +1521,29 @@ sap.ui.define([
 				if (aContexts.length > 0) {
 					const oData = aContexts[0].getObject();
 					oReqModel.setProperty("/req_header", {
-						purpose       	: oData.OBJECTIVE_PURPOSE || "",
-						reqid         	: oData.REQUEST_ID || "",
-						tripstartdate 	: oData.TRIP_START_DATE || "",
-						tripenddate   	: oData.TRIP_END_DATE || "",
-						eventstartdate	: oData.EVENT_START_DATE || "",
-						eventenddate  	: oData.EVENT_END_DATE || "",
-						location      	: oData.LOCATION || "",
-						grptype       	: oData.IND_OR_GROUP || "",
-						transport     	: oData.TYPE_OF_TRANSPORTATION || "",
-						reqstatus		: oData.STATUS_DESC || "",
-						costcenter    	: oData.COST_CENTER || "",
-						altcostcenter 	: oData.ALTERNATE_COST_CENTER || "",
-						cashadvamt    	: oData.CASH_ADVANCE || 0,
-						reqamt        	: oData.PREAPPROVAL_AMOUNT || 0,
-						reqtype       	: oData.REQUEST_TYPE_DESC || "",
-						comment       	: oData.REMARK || "",
-						doc1          	: oData.ATTACHMENT1 || "",
-						doc2          	: oData.ATTACHMENT2 || "",
-						claimtype	  	: oData.CLAIM_TYPE_ID || "",
-						claimtypedesc  	: oData.CLAIM_TYPE_DESC || "",
-						reqdate			: oData.REQUEST_DATE
+						purpose: oData.OBJECTIVE_PURPOSE || "",
+						reqid: oData.REQUEST_ID || "",
+						tripstartdate: oData.TRIP_START_DATE || "",
+						tripenddate: oData.TRIP_END_DATE || "",
+						eventstartdate: oData.EVENT_START_DATE || "",
+						eventenddate: oData.EVENT_END_DATE || "",
+						location: oData.LOCATION || "",
+						grptype: oData.IND_OR_GROUP || "",
+						transport: oData.TYPE_OF_TRANSPORTATION || "",
+						reqstatus: oData.STATUS_DESC || "",
+						costcenter: oData.COST_CENTER || "",
+						altcostcenter: oData.ALTERNATE_COST_CENTER || "",
+						cashadvamt: oData.CASH_ADVANCE || 0,
+						reqamt: oData.PREAPPROVAL_AMOUNT || 0,
+						reqtype: oData.REQUEST_TYPE_DESC || "",
+						comment: oData.REMARK || "",
+						doc1: oData.ATTACHMENT1 || "",
+						doc2: oData.ATTACHMENT2 || "",
+						claimtype: oData.CLAIM_TYPE_ID || "",
+						claimtypedesc: oData.CLAIM_TYPE_DESC || "",
+						reqdate: oData.REQUEST_DATE
 					});
-					
+
 				} else {
 					console.warn("Request Id " + reqid + " not found");
 
@@ -1695,7 +1699,7 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel();
 
 			const reqTypeFromSelect = oEvent?.getSource?.().getSelectedKey?.();
-			const reqTypeFromModel  = this._getReqModel().getProperty("/req_header/reqtype");
+			const reqTypeFromModel = this._getReqModel().getProperty("/req_header/reqtype");
 			const req_type = reqTypeFromSelect || reqTypeFromModel;
 
 			if (!req_type) {
@@ -1718,7 +1722,7 @@ sap.ui.define([
 					return;
 				}
 				const oData = aCtx[0].getObject();
-				
+
 				const aFieldIds = oData.FIELD.replace(/[\[\]\s]/g, "").split(",");
 
 				if (aFieldIds != []) {
@@ -1740,7 +1744,7 @@ sap.ui.define([
 			} catch (err) {
 				console.error("OData bindList failed:", err);
 				this._setAllHeaderControlsVisible(false);
-			} 
+			}
 		},
 
 		_setAllHeaderControlsVisible: function (bVisible) {
@@ -1799,7 +1803,7 @@ sap.ui.define([
 		onClickNavigate: function (oEvent) {
 			let id = oEvent.getParameters().id;
 			var oRouter = this.getOwnerComponent().getRouter();
-			if (id.includes("dashboard-claim")) {	
+			if (id.includes("dashboard-claim")) {
 				oRouter.navTo("ClaimStatus");
 			} else if (id.includes("request")) {
 				oRouter.navTo("RequestFormStatus");
