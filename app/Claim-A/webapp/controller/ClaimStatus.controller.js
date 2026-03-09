@@ -23,7 +23,52 @@ sap.ui.define([
       if (!oComp.getModel("claimsubmission_input")) {
         oComp.setModel(new JSONModel(), "claimsubmission_input");
       }
+
+      const oTbl = this.byId("tb_myexpenserepo");
+      const oBinding = oTbl.getBinding("items");
+      if (oBinding) {
+        // Example: sort by CLAIM_ID descending or a date field if available
+        oBinding.sort(new sap.ui.model.Sorter("CLAIM_ID", /* descending */ true));
+      }
+
+
+      // === Auto-refresh on every navigation to this route ===
+      const oRouter = this.getOwnerComponent().getRouter();
+      this._fnRouteMatched = this._onRouteMatched.bind(this); // keep a ref for detach
+      oRouter.getRoute("ClaimStatus").attachPatternMatched(this._fnRouteMatched);
     },
+
+
+    // Fired every time the "ClaimStatus" route is navigated to
+    _onRouteMatched: function () {
+      this._refreshClaimList();
+    },
+
+    // Force a server-side refresh so newly created/changed records are fetched
+    _refreshClaimList: function () {
+      try {
+        const oTable = this.byId("tb_myexpenserepo");
+        if (!oTable) {
+          // If the table isn't there yet (lifecycle/timing), retry shortly
+          setTimeout(() => this._refreshClaimList(), 60);
+          return;
+        }
+
+        const oBinding = oTable.getBinding("items"); // V4 ListBinding expected
+        if (oBinding && typeof oBinding.refresh === "function") {
+          // true => force a re-read from the backend for this binding
+          oBinding.refresh(true);
+        }
+
+        // OPTIONAL: ensure newest items appear on top after refresh
+         oBinding.sort(new sap.ui.model.Sorter("CLAIM_ID", /* bDescending */ true));
+        // If you have a proper date field like SUBMITTED_DATE or LAST_MODIFIED_DATE, sort by that instead.
+
+      } catch (e) {
+        jQuery.sap.log.error("ClaimStatus refresh failed: " + e);
+      }
+    },
+
 
     //---------------------------------------------------------------------
     // Build key path for OData read

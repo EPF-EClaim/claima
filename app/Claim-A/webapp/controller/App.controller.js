@@ -1814,6 +1814,7 @@ sap.ui.define([
 				return [];
 			}
 		},
+		//END - Aiman Salim
 
 		getFieldVisibility_ReqType: async function (oEvent) {
 			const oModel = this.getOwnerComponent().getModel();
