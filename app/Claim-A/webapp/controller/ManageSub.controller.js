@@ -279,7 +279,7 @@ sap.ui.define([
 
       const oModel = this.getOwnerComponent().getModel();
 
-      let sEntitySetPath = "/ZSUBSTITUTE_RULES";
+      let sEntitySetPath = "/ZSUBSTITUTION_RULES";
       const oTable = this.byId("tblSubs");
       const oBinding = oTable && oTable.getBinding && oTable.getBinding("items");
       if (oBinding && typeof oBinding.getPath === "function" && oBinding.getPath()) {
@@ -289,7 +289,7 @@ sap.ui.define([
       // Overlap (inclusive): existing.VALID_TO >= newStart AND existing.VALID_FROM <= newEnd
       const aFilters = [
         new sap.ui.model.Filter("USER_ID",        sap.ui.model.FilterOperator.EQ, sUserId),
-        new sap.ui.model.Filter("SUBSTITUTE_ID",  sap.ui.model.FilterOperator.EQ, sSubstituteId),
+        //new sap.ui.model.Filter("SUBSTITUTE_ID",  sap.ui.model.FilterOperator.EQ, sSubstituteId),
         new sap.ui.model.Filter("VALID_TO",       sap.ui.model.FilterOperator.GE, sStart),
         new sap.ui.model.Filter("VALID_FROM",     sap.ui.model.FilterOperator.LE, sEnd)
       ];

@@ -499,11 +499,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 PURPOSE,
                 LOCATION,
                 CLAIM_TYPE_ID,
-                ZCLAIM_TYPE.GL_ACCOUNT,
                 ZCLAIM_TYPE.CLAIM_TYPE_DESC,
                 ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
                 ZCLAIM_ITEM.ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_DESC,
-                ZCLAIM_ITEM.ZCLAIM_TYPE_ITEM.MATERIAL_CODE,
                 ZCLAIM_ITEM.REMARK,
                 ZCLAIM_ITEM.TRIP_START_DATE,
                 ZCLAIM_ITEM.TRIP_START_TIME,
@@ -569,6 +567,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.ZSTATE.STATE_DESC   as FROM_STATE_DESC,
                 ZCLAIM_ITEM.TO_STATE_ID,
                 ZCLAIM_ITEM.ZTOSTATE.STATE_DESC as TO_STATE_DESC,
+                ZCLAIM_ITEM.GL_ACCOUNT,
+                ZCLAIM_ITEM.MATERIAL_CODE,
                 ZREQUEST_HEADER.REQUEST_ID,
                 ZREQUEST_HEADER.REQUEST_DATE,
                 APPROVER1,
@@ -682,7 +682,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.CLAIM_TYPE_ID,
                 ZREQUEST_ITEM.CLAIM_TYPE_ITEM_ID,
                 ZREQUEST_ITEM.ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_DESC,
-                ZREQUEST_ITEM.ZCLAIM_TYPE_ITEM.MATERIAL_CODE,
                 ZREQUEST_ITEM.EST_AMOUNT,
                 ZREQUEST_ITEM.EST_NO_PARTICIPANT,
                 REQUEST_DATE,
@@ -706,7 +705,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.TRANSFER_DATE,
                 ZREQUEST_ITEM.NO_OF_DAYS,
                 ZREQUEST_ITEM.MARRIAGE_CATEGORY,
+                ZREQUEST_ITEM.ZMARITAL_CAT.MARRIAGE_CATEGORY_DESC,
                 ZREQUEST_ITEM.FAMILY_COUNT,
+                ZREQUEST_ITEM.GL_ACCOUNT,
+                ZREQUEST_ITEM.MATERIAL_CODE,
                 APPROVER1,
                 APPROVER2,
                 APPROVER3,
@@ -718,7 +720,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 CASH_ADVANCE_DATE           as PAYMENT_DATE,
                 CLAIM_TYPE_ID               as CLAIM_TYPE_HEADER,
                 ZCLAIM_TYPE.CLAIM_TYPE_DESC as CLAIM_TYPE_DESC_HEADER,
-                ZCLAIM_TYPE.GL_ACCOUNT,
                 createdBy
         };
 
@@ -739,7 +740,11 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_HEADER.ZEMP_MASTER.EMAIL as EMPLOYEE_EMAIL,
                 ZREQUEST_HEADER.REQUEST_DATE,
                 ZREQUEST_HEADER.CASH_ADVANCE,
-                ZREQUEST_HEADER.PREAPPROVAL_AMOUNT
+                ZREQUEST_HEADER.PREAPPROVAL_AMOUNT,
+                REJECT_REASON_ID,
+                ZREJECT_REASON.REASON_DESC,
+                PROCESS_TIMESTAMP,
+                COMMENT
         };
 
     entity ZEMP_APPROVER_CLAIM_DETAILS   as
@@ -759,6 +764,28 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_HEADER.PURPOSE,
                 ZCLAIM_HEADER.SUBMITTED_DATE,
                 ZCLAIM_HEADER.FINAL_AMOUNT_TO_RECEIVE,
-                ZCLAIM_HEADER.TOTAL_CLAIM_AMOUNT
+                ZCLAIM_HEADER.TOTAL_CLAIM_AMOUNT,
+                REJECT_REASON_ID,
+                ZREJECT_REASON.REASON_DESC,
+                PROCESS_TIMESTAMP,
+                COMMENT
         };
-}
+
+    entity ZEMP_CLAIM_DETAILS            as
+        projection on ECLAIM.ZCLAIM_HEADER {
+            key CLAIM_ID,
+            key ZCLAIM_ITEM.CLAIM_SUB_ID,
+                EMP_ID,
+                SUBMITTED_DATE,
+                SUBMISSION_TYPE,
+                CASH_ADVANCE_AMOUNT,
+                FINAL_AMOUNT_TO_RECEIVE,
+                LAST_MODIFIED_DATE,
+                ZCLAIM_ITEM.ACCOUNT_NO,
+                ZCLAIM_ITEM.AMOUNT,
+                ZCLAIM_ITEM.RECEIPT_DATE,
+                ZCLAIM_ITEM.COST_CENTER,
+                ZCLAIM_ITEM.GL_ACCOUNT,
+                ZCLAIM_ITEM.MATERIAL_CODE
+        }
+};

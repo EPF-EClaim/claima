@@ -144,6 +144,9 @@ sap.ui.define([
 					if (type === "Approver") {
 						var oRouter = this.getOwnerComponent().getRouter();
 						oRouter.navTo("ManageSub");
+					} else {
+						var message = this._getTexti18n("msg_unauthorized_substitution");
+						sap.m.MessageBox.error(message);
 					}
 					break;
 				case "config":
@@ -173,10 +176,15 @@ sap.ui.define([
 					break;
 				//Start Aiman Salim 08/03/2026 - Added for MyApproval
 				case "approval":
-					this.getMyApproverPAReq();
-					this.getMyApproverClaim();
-					var oRouter = this.getOwnerComponent().getRouter();
-					oRouter.navTo("MyApproval");
+					if (type === "Approver") {
+						this.getMyApproverPAReq();
+						this.getMyApproverClaim();
+						var oRouter = this.getOwnerComponent().getRouter();
+						oRouter.navTo("MyApproval");
+					} else {
+						var message = this._getTexti18n("msg_unauthorized_approval");
+						sap.m.MessageBox.error(message);
+					}
 					break;
 				//End Aiman Salim 08/03/2026 - Added for MyApproval
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
@@ -949,7 +957,7 @@ sap.ui.define([
 			} catch (error) {
 				console.log("Error uploading attachment: " + error);
 				MessageToast.show("Error uploading attachment: " + error);
-				
+
 				BusyIndicator.hide();
 				return false;
 			}
