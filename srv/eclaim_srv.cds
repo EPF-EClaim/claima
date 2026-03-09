@@ -142,17 +142,16 @@ service eclaim_srv {
         {
             grant: 'READ',
             to   : [
-                'Approver',
                 'Admin_CC',
                 'Admin_System'
             ]
         },
         {
-            grant: [
-                'READ',
-                'WRITE'
-            ],
-            to   : ['Claimant']
+            grant: ['*'],
+            to   : [
+                'Claimant',
+                'Approver'
+            ]
         },
         {
             grant: '*',
@@ -940,10 +939,10 @@ service eclaim_srv {
     ])                              as projection on ECLAIM.ZINSURANCE_PROVIDER;
 
     type UserInfo {
-        id       : String;
-        userType : String;
-        costcenters: String;
-        userId: String;
+        id          : String;
+        userType    : String;
+        costcenters : String;
+        userId      : String;
     }
 
     function getUserType()                                         returns UserInfo;
@@ -1217,8 +1216,8 @@ service eclaim_srv {
 
     entity ZSUBSTITUTION_RULES      as projection on ECLAIM.ZSUBSTITUTION_RULES;
 
-    entity ZDB_STRUCTURE as projection on ECLAIM.ZDB_STRUCTURE;
+    entity ZDB_STRUCTURE            as projection on ECLAIM.ZDB_STRUCTURE;
 
-    function runjob() returns Response;
-    
+    function runjob()                                              returns Response;
+
 };
