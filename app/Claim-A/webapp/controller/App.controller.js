@@ -1707,9 +1707,30 @@ sap.ui.define([
 			const oReq = this.getOwnerComponent().getModel("request_status");
 			const oModel = this.getOwnerComponent().getModel("employee_view");
 
+			const userID = this.userId;
+			const oApproverOrSub = new sap.ui.model.Filter({
+				filters: [
+					new sap.ui.model.Filter("APPROVER_ID", sap.ui.model.FilterOperator.EQ, userID),
+					new sap.ui.model.Filter("SUBSTITUTE_APPROVER_ID", sap.ui.model.FilterOperator.EQ, userID)
+				],
+				and: false // OR condition between the two
+			});
+
+			const oStatusPending = new sap.ui.model.Filter(
+				"STATUS",
+				sap.ui.model.FilterOperator.EQ,
+				"PENDING APPROVAL" // use the exact code/value your backend expects
+			);
+			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
+			const oCombined = new sap.ui.model.Filter({
+				filters: [oApproverOrSub, oStatusPending],
+				and: true // AND between groups
+			});
+
+
 			const oListBinding = oModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
-				[new Sorter("STATUS", true)],
-				null,
+				[new sap.ui.model.Sorter("STATUS", true)], // desc by STATUS
+				[oCombined],
 				{
 					$$ownRequest: true,
 					$$groupId: "$auto",
