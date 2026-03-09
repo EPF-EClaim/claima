@@ -28,6 +28,7 @@ sap.ui.define(['sap/ui/core/mvc/ControllerExtension',
 						sap.m.MessageToast.show("End date cannot be earlier than start date");
 						return Promise.reject();
 					}
+					return Promise.resolve();
 				}
 			}
 		}
