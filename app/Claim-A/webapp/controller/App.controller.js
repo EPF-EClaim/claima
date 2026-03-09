@@ -5,6 +5,7 @@ sap.ui.define([
 	"sap/ui/model/json/JSONModel",
 	"sap/m/Popover",
 	"sap/ui/core/Fragment",
+	"sap/ui/core/BusyIndicator",
 	"sap/m/Button",
 	"sap/m/Dialog",
 	"sap/m/MessageToast",
@@ -22,6 +23,7 @@ sap.ui.define([
 	JSONModel,
 	Popover,
 	Fragment,
+	BusyIndicator,
 	Button,
 	Dialog,
 	MessageToast,
@@ -65,11 +67,14 @@ sap.ui.define([
 			ctx.requestObject().then(oData => {
 				this._userType = oData.userType || "UNKNOWN";
 				this.costcenters = oData.costcenters || "UNKNOWN"; //Added by Aiman Salim 06/03/2026
+				this.userId = oData.userId || "UNKNOWN";
 			}).catch(err => {
 				console.error("getUserType failed:", err);
 				this._userType = "UNKNOWN";
 				console.error("getUserType failed:", err); //Added by Aiman Salim 06/03/2026
 				this.costcenters = "UNKNOWN";
+				console.error("getUserType failed:", err); //Added by Aiman Salim 08/03/2026
+				this.userId = "UNKNOWN";
 			});
 
 			this._ensureRequestModelDefaults();
@@ -116,6 +121,7 @@ sap.ui.define([
 			const oUserAccessModel = new sap.ui.model.json.JSONModel({
 				userType: this._userType,
 				costcenters: this.costcenters,
+				userId: this._userId, // 08/03/2026 - Added to fetch emp id
 			});
 			this.getOwnerComponent().setModel(oUserAccessModel, "access");
 			//Aiman Salim - 05/03/2026 - Added to make it global;
@@ -165,14 +171,19 @@ sap.ui.define([
 					//var oRouter = this.getComponent().getRouter().navTo("ClaimStatus");
 					oRouter.navTo("ClaimStatus")
 					break;
+				//Start Aiman Salim 08/03/2026 - Added for MyApproval
+				case "approval":
+					this.getMyApproverPAReq();
+					this.getMyApproverClaim();
+					var oRouter = this.getOwnerComponent().getRouter();
+					oRouter.navTo("MyApproval");
+					break;
+				//End Aiman Salim 08/03/2026 - Added for MyApproval
+				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
 				case "dashboard":
 					oRouter.navTo("Dashboard");
 					break;
-				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
-				case "approval":
-					if (type === "Approver") {
-					}
-					break;
+
 				default:
 					// navigate to page with ID same as the key
 					var oPage = this.byId(oKey); // make sure your NavContainer has a page with this ID
@@ -889,6 +900,7 @@ sap.ui.define([
 			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment";
 
 			try {
+				BusyIndicator.show(0);
 				const response = await fetch(sServiceUrl, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
@@ -931,10 +943,14 @@ sap.ui.define([
 				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(') + 1, jsonData.id.indexOf(')') - 1);
 				oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
 				oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
+
+				BusyIndicator.hide();
 				return true;
 			} catch (error) {
 				console.log("Error uploading attachment: " + error);
 				MessageToast.show("Error uploading attachment: " + error);
+				
+				BusyIndicator.hide();
 				return false;
 			}
 		},
@@ -971,8 +987,9 @@ sap.ui.define([
 		},
 
 		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_mismatch", [this.byId("fileuploader_claiminput_attachment").getValue()]));
+			MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_mismatch"));
 		},
+
 		_validDateRange: function (startdate, enddate) {
 			var startDateValue = this.byId(startdate).getValue();
 			var endDateValue = this.byId(enddate).getValue();
@@ -1050,7 +1067,7 @@ sap.ui.define([
 			}
 			//// attachment email approval
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
-				this.byId("fileuploader_claiminput_attachment").setValue(null);
+				this.byId("fileuploader_claiminput_attachment").clear();
 			}
 			//// comment
 			if (this.byId("input_claiminput_comment").getValue()) {
@@ -1691,6 +1708,119 @@ sap.ui.define([
 				console.error("OData bindList failed:", err);
 				oReq.setProperty("/req_header_list", []);
 				oReq.setProperty("/req_header_count", 0);
+				return [];
+			}
+		},
+
+		//Aiman Salim - 08/03/2026 - MyApproval - My Pre-Approval Request Status;
+		getMyApproverPAReq: async function () {
+			const oReq = this.getOwnerComponent().getModel("request_status");
+			const oModel = this.getOwnerComponent().getModel("employee_view");
+
+			const userID = this.userId;
+			const oApproverOrSub = new sap.ui.model.Filter({
+				filters: [
+					new sap.ui.model.Filter("APPROVER_ID", sap.ui.model.FilterOperator.EQ, userID),
+					new sap.ui.model.Filter("SUBSTITUTE_APPROVER_ID", sap.ui.model.FilterOperator.EQ, userID)
+				],
+				and: false // OR condition between the two
+			});
+
+			const oStatusPending = new sap.ui.model.Filter(
+				"STATUS",
+				sap.ui.model.FilterOperator.EQ,
+				"PENDING APPROVAL" // use the exact code/value your backend expects
+			);
+			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
+			const oCombined = new sap.ui.model.Filter({
+				filters: [oApproverOrSub, oStatusPending],
+				and: true // AND between groups
+			});
+
+
+			const oListBinding = oModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
+				[new sap.ui.model.Sorter("STATUS", true)], // desc by STATUS
+				[oCombined],
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$$updateGroupId: "$auto",
+					$count: true
+				}
+			);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+				a.forEach((it) => {
+					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
+				});
+
+				oReq.setProperty("/req_header_list", a);
+				oReq.setProperty("/req_header_count", a.length);
+
+				return a;
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				oReq.setProperty("/req_header_list", []);
+				oReq.setProperty("/req_header_count", 0);
+				return [];
+			}
+		},
+		//MyApproval - Claim Request Status;
+
+		getMyApproverClaim: async function () {
+			const oReq = this.getOwnerComponent().getModel("claim_status");
+			const oModel = this.getOwnerComponent().getModel("employee_view");
+
+			const userID = this.userId;
+			const oApproverOrSub = new sap.ui.model.Filter({
+				filters: [
+					new sap.ui.model.Filter("APPROVER_ID", sap.ui.model.FilterOperator.EQ, userID),
+					new sap.ui.model.Filter("SUBSTITUTE_APPROVER_ID", sap.ui.model.FilterOperator.EQ, userID)
+				],
+				and: false // OR condition between the two
+			});
+
+			const oStatusPending = new sap.ui.model.Filter(
+				"STATUS",
+				sap.ui.model.FilterOperator.EQ,
+				"PENDING APPROVAL" // use the exact code/value your backend expects
+			);
+			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
+			const oCombined = new sap.ui.model.Filter({
+				filters: [oApproverOrSub, oStatusPending],
+				and: true // AND between groups
+			});
+			const oListBinding = oModel.bindList("/ZEMP_APPROVER_CLAIM_DETAILS", undefined,
+				[new sap.ui.model.Sorter("STATUS", true)], // desc by STATUS
+				[oCombined],
+
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$$updateGroupId: "$auto",
+					$count: true
+				}
+			);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+				a.forEach((it) => {
+					if (it.TOTAL_CLAIM_AMOUNT == null) it.TOTAL_CLAIM_AMOUNT = 0.0;
+				});
+
+				oReq.setProperty("/claim_header_list", a);
+				oReq.setProperty("/claim_header_count", a.length);
+
+				return a;
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				oReq.setProperty("/claim_header_list", []);
+				oReq.setProperty("/claim_header_count", 0);
 				return [];
 			}
 		},

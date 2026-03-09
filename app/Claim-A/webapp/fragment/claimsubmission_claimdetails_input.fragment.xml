@@ -154,6 +154,7 @@
 						}
 					}"
 					required="true"
+					visible="false"
 				/>
 			
 				<!-- % Compensation -->
@@ -219,6 +220,15 @@
 					displayFormat="dd-MMM-yyyy"
 				/>
 				
+				<!-- Start Time -->
+				<Label text="{i18n>label_claimdetails_input_starttime}" />
+				<TimePicker
+					id="timepicker_claimdetails_input_starttime"
+					value="{claimitem_input>/claim_item/start_time}"
+					visible="false"
+					displayFormat="HH:mm"
+				/>
+
 				<!-- End Date -->
 				<Label text="{i18n>label_claimdetails_input_enddate}" />
 				<DatePicker
@@ -226,6 +236,15 @@
 					value="{claimitem_input>/claim_item/end_date}"
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
+				/>
+
+				<!-- End Time -->
+				<Label text="{i18n>label_claimdetails_input_endtime}" />
+				<TimePicker
+					id="timepicker_claimdetails_input_endtime"
+					value="{claimitem_input>/claim_item/end_time}"
+					visible="false"
+					displayFormat="HH:mm"
 				/>
 
 				<!-- Number of Days -->
@@ -343,6 +362,7 @@
 				<CheckBox
 					id="checkbox_claimdetails_input_parking"
 					visible="false"
+					wrapping="true"
 				/>
 			
 				<!-- Location Type -->
@@ -426,6 +446,7 @@
 				<CheckBox
 					id="checkbox_claimdetails_input_needforeigncurrency"
 					visible="false"
+					wrapping="true"
 				/>
 			
 				<!-- Currency Code -->
@@ -607,16 +628,18 @@
 				<Label text="{i18n>label_claimdetails_input_disclaimer}" />
 				<CheckBox
 					id="checkbox_claimdetails_input_disclaimer"
-					text="{i18n>/checkbox_claimdetails_input_disclaimer}"
+					text="{i18n>checkbox_claimdetails_input_disclaimer}"
 					visible="false"
+					wrapping="true"
 				/>
 			
 				<!-- Disclaimer (Galakan) -->
 				<Label text="{i18n>label_claimdetails_input_disclaimer}" />
 				<CheckBox
 					id="checkbox_claimdetails_input_disclaimer_galakan"
-					text="{i18n>/checkbox_claimdetails_input_disclaimer_galakan}"
+					text="{i18n>checkbox_claimdetails_input_disclaimer_galakan}"
 					visible="false"
+					wrapping="true"
 				/>
 			
 				<!-- Remarks -->
@@ -624,6 +647,7 @@
 				<Input
 					id="input_claimdetails_input_remarks"
 					value="{claimitem_input>/claim_item/remark}"
+					visible="false"
 				/>
 
 				<!-- Attachment 1 -->
@@ -631,48 +655,34 @@
 				<u:FileUploader
 					id="fileuploader_claimdetails_input_attachment1"
 					name="fileUploaderClaimDetailsInputAttachment1"
-					uploadUrl="/SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
-					uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment1"
-					maximumFileSize='5'
-					typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment1"
+					uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
+					change="onChange_ClaimDetails_Input_Attachment($event ,'1')"
+					uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
+					maximumFileSize='5.0'
+					fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
+					typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
 					style="Emphasized"
-					fileType="pdf,png,jpg,jpeg,doc,docx"
+					fileType="pdf,png,jpg,jpeg"
+					visible="false"
 				>
 				</u:FileUploader>
-				
-				<!-- Attachment 1 (existing) -->
-				<Label text="{i18n>label_claimdetails_input_attachment1}" />
-				<Input
-					id="input_claimdetails_input_attachment1"
-					value="{claimitem_input>/claim_item/descr/attachment_file_1}"
-					enabled="false"
-					editable="false"
-					visible="false"
-				/>
 				
 				<!-- Attachment 2 -->
 				<Label text="{i18n>label_claimdetails_input_attachment2}" />
 				<u:FileUploader
 					id="fileuploader_claimdetails_input_attachment2"
 					name="fileUploaderClaimDetailsInputAttachment2"
-					uploadUrl="/SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
-					uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment2"
-					maximumFileSize='5'
-					typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment2"
+					uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
+					change="onChange_ClaimDetails_Input_Attachment($event ,'2')"
+					uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
+					maximumFileSize='5.0'
+					fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
+					typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
 					style="Emphasized"
-					fileType="pdf,png,jpg,jpeg,doc,docx"
+					fileType="pdf,png,jpg,jpeg"
+					visible="false"
 				>
 				</u:FileUploader>
-				
-				<!-- Attachment 2 (existing) -->
-				<Label text="{i18n>label_claimdetails_input_attachment2}" />
-				<Input
-					id="input_claimdetails_input_attachment2"
-					value="{claimitem_input>/claim_item/descr/attachment_file_2}"
-					enabled="false"
-					editable="false"
-					visible="false"
-				/>
 			</f:content>
 		</f:SimpleForm>
 	</VBox>
