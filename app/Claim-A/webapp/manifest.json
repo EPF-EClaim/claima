@@ -115,6 +115,10 @@
             "request_status": {
                 "type": "sap.ui.model.json.JSONModel",
                 "uri": "model/request_status.json"
+            },
+            "claim_status": {
+                "type": "sap.ui.model.json.JSONModel",
+                "uri": "model/claim_status.json"
             }
         },
         "resources": {
@@ -428,6 +432,11 @@
                     "target": "ClaimStatus"
                 },
                 {
+                    "pattern": "MyApproval",
+                    "name": "MyApproval",
+                    "target": "MyApproval"
+                },
+                {
                     "pattern": "Dashboard",
                     "name": "Dashboard",
                     "target": "Dashboard"
@@ -446,6 +455,11 @@
                     "pattern": "RequestFormStatus",
                     "name": "RequestFormStatus",
                     "target": "RequestFormStatus"
+                },
+                {
+                    "pattern": "ClaimSubmission/{claim_id}",
+                    "name": "ClaimSubmission",
+                    "target": "ClaimSubmission"
                 },
                 {
                     "pattern": "ManageSub",
@@ -3601,6 +3615,14 @@
                     "viewType": "XML",
                     "transition": "slide"
                 },
+                "MyApproval": {
+                    "id": "MyApproval",
+                    "path": "claima.view",
+                    "name": "MyApproval",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
                 "Dashboard": {
                     "id": "Dashboard",
                     "path": "claima.view",
@@ -3621,6 +3643,14 @@
                     "id": "RequestFormStatus",
                     "path": "claima.view",
                     "name": "PARequestStatus",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
+                "ClaimSubmission": {
+                    "id": "ClaimSubmission",
+                    "path": "claima.view",
+                    "name": "ClaimSubmission",
                     "type": "View",
                     "viewType": "XML",
                     "transition": "slide"

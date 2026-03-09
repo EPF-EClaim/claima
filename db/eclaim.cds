@@ -1275,6 +1275,8 @@ entity ZAPPROVER_DETAILS_CLAIMS : managed {
                                      on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
         ZSTATUS                : Association to one ZSTATUS
                                      on ZSTATUS.STATUS_ID = STATUS;
+        ZCLAIM_HEADER          : Association to ZCLAIM_HEADER
+                                     on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
 }
 
 entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
@@ -1294,6 +1296,8 @@ entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
                                      on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
         ZSTATUS                : Association to one ZSTATUS
                                      on ZSTATUS.STATUS_ID = STATUS;
+        ZREQUEST_HEADER        : Association to ZREQUEST_HEADER
+                                     on ZREQUEST_HEADER.REQUEST_ID = PREAPPROVAL_ID;
 }
 
 entity ZSUBSTITUTION_RULES : managed {
