@@ -145,7 +145,7 @@
                         fileSizeExceed="onFileSizeExceed_ClaimInput_Attachment"
                         typeMissmatch="onTypeMissmatch_ClaimInput_Attachment"
                         style="Emphasized"
-                        fileType="pdf,png,jpg,jpeg,doc,docx"
+                        fileType="pdf,png,jpg,jpeg"
                     >
                     </u:FileUploader>
 

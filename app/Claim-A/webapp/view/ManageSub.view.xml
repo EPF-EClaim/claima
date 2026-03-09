@@ -1,17 +1,22 @@
 <mvc:View
     controllerName="claima.controller.ManageSub"
     xmlns:mvc="sap.ui.core.mvc"
+    xmlns:f="sap.f"
     xmlns="sap.m"
     xmlns:core="sap.ui.core"
     id="addSub_xmlview">
 
-    <Page id="page" title="{i18n>ManageSubTitle}">
+    <Page id="page" showHeader="false">
         <content>
+            <VBox class= "roundedBox sapUiSmallMargin">
             <Table id="tblSubs"
                    class="sapUiSmallMarginTop"
                    mode="SingleSelectMaster"
                    includeItemInSelection="true"
                    selectionChange=".onSelectionChange"
+                   width="auto"
+                   growing="true"
+                   noDataText="{i18n>noData}"
                    items="{
                      path: '/ZSUBSTITUTION_RULES',
                      parameters: {
@@ -19,11 +24,19 @@
                        , $expand: 'ZEMP_MASTER_SUBS',
                          $select: 'SUBSTITUTE_ID,VALID_FROM,VALID_TO,ZEMP_MASTER_SUBS/EMAIL'   
                      }
-                   }"
-                   noDataText="{i18n>noData}">
+                   }">
 
+                   <headerToolbar>
+                        <Toolbar>
+                            <Title
+                                text="{i18n>ManageSubTitle}"/>
+                        </Toolbar>
+                    </headerToolbar>
+                 
+                 
                 <columns>
                     <Column width="12rem"><Text text="{i18n>tableColumnName}" /></Column>
+                    <Column width="16rem"><Text text="Email" /></Column>
                     <Column width="12rem"><Text text="{i18n>tableColumnPeriod}" /></Column>
                     <Column width="10rem"><Text text="{i18n>tableColumnStart}" /></Column>
                     <Column width="10rem"><Text text="{i18n>tableColumnEnd}" /></Column>
@@ -34,6 +47,9 @@
                         <cells>
                             <!-- Subsitute Column -->
                             <Text text="{SUBSTITUTE_ID}" />
+
+                            <!-- NEW: Email (from expanded nav property) -->
+                            <Text text="{ZEMP_MASTER_SUBS/EMAIL}" />
     
                             <Text text="{
                             parts: ['VALID_FROM','VALID_TO'],
@@ -54,15 +70,11 @@
                               formatOptions: { style: 'medium' }
                             }" />
 
-                            <!-- Substitution Period -->
-                            <Text text="{
-                            parts: ['VALID_FROM','VALID_TO'],
-                            formatter: '.fmtPeriodMessage'
-                            }"/>
                         </cells>
                     </ColumnListItem>
                 </items>
             </Table>
+            </VBox>
         </content>
 
         <footer>

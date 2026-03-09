@@ -144,13 +144,24 @@ sap.ui.define([
       if (!oEmp) {
         const oInp = this.byId("inpUser");
         oInp.setValueState("Error");
-        oInp.setValueStateText(this._i18n("employeeNotFound") || "Employee not found in ZEMP_MASTER.");
-        MessageBox.error(this._i18n("employeeNotFound") || "Employee not found in ZEMP_MASTER.");
+        oInp.setValueStateText(this._i18n("empNotFound") || "Employee not found in ZEMP_MASTER.");
+        MessageBox.error(this._i18n("empNotFound") || "Employee not found in ZEMP_MASTER.");
         return;
       } else {
         this.byId("inpUser").setValueState("Success");
         this.byId("inpUser").setValueStateText(`Matched: ${oEmp.EEID} — ${oEmp.EMAIL || ""}`);
       }
+
+      try {
+          const bOverlap = await this._hasOverlappingRule(sUserId, oEmp.EEID, dStart, dEnd);
+          if (bOverlap) {
+            MessageBox.error(this._i18n("overlappingRuleSameSubOnly") || "A substitution already exists for the same user & substitute within the selected period.");
+            return;
+          }
+        } catch (e) {
+          MessageBox.error(this._i18n("backendUnavailable") || "Failed to check overlap. Please try again.");
+          return;
+        }
 
       // Map UI -> backend fields
       const toISO = (d) => {
@@ -240,7 +251,7 @@ sap.ui.define([
 						name: oData.NAME
 					};
 				} else {
-					console.warn("No employee found with ID: " + sEEID);
+					console.warn("No employee found with email: " + sEMAIL);
 					return null;
 				}
 			} catch (oError) {
@@ -268,7 +279,7 @@ sap.ui.define([
 
       const oModel = this.getOwnerComponent().getModel();
 
-      let sEntitySetPath = "/ZSUBSTITUTE_RULES";
+      let sEntitySetPath = "/ZSUBSTITUTION_RULES";
       const oTable = this.byId("tblSubs");
       const oBinding = oTable && oTable.getBinding && oTable.getBinding("items");
       if (oBinding && typeof oBinding.getPath === "function" && oBinding.getPath()) {
@@ -278,7 +289,7 @@ sap.ui.define([
       // Overlap (inclusive): existing.VALID_TO >= newStart AND existing.VALID_FROM <= newEnd
       const aFilters = [
         new sap.ui.model.Filter("USER_ID",        sap.ui.model.FilterOperator.EQ, sUserId),
-        new sap.ui.model.Filter("SUBSTITUTE_ID",  sap.ui.model.FilterOperator.EQ, sSubstituteId),
+        //new sap.ui.model.Filter("SUBSTITUTE_ID",  sap.ui.model.FilterOperator.EQ, sSubstituteId),
         new sap.ui.model.Filter("VALID_TO",       sap.ui.model.FilterOperator.GE, sStart),
         new sap.ui.model.Filter("VALID_FROM",     sap.ui.model.FilterOperator.LE, sEnd)
       ];
@@ -288,7 +299,7 @@ sap.ui.define([
         null,
         null,
         aFilters,
-        { $select: "SUBSTITUTE_RULE_ID,USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO" }
+        { $select: "USER_ID,SUBSTITUTE_ID,VALID_FROM,VALID_TO" }
       );
 
       try {
@@ -384,7 +395,7 @@ sap.ui.define([
               oVM.setProperty("/subInfo", info);
             } else {
               oInp.setValueState("Error");
-              oInp.setValueStateText(this._i18n("employeeNotFound") || "Employee not found in ZEMP_MASTER.");
+              oInp.setValueStateText(this._i18n("empNotFound") || "Employee not found in ZEMP_MASTER.");
               oVM.setProperty("/subValid", false);
               oVM.setProperty("/subInfo", "");
             }

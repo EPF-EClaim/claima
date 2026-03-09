@@ -3886,6 +3886,15 @@
                     "model/data.json"
                 ]
             }
+        },
+        "extends": {
+            "extensions": {
+                "sap.ui.controllerExtensions": {
+                    "sap.fe.templates.ListReport.ListReportController": {
+                        "controllerName": "claima.ext.controller.Common"
+                    }
+                }
+            }
         }
     },
     "sap.fiori": {
