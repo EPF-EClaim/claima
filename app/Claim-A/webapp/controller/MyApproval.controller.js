@@ -40,6 +40,29 @@ sap.ui.define([
             return this.getOwnerComponent().getModel("claim_status");
         },
 
+        //Manual Navigation for Claim Submission
+
+
+        _getRootAndContainer: function () {
+            const oRootView = this.getOwnerComponent().getRootControl();
+            if (!oRootView) throw new Error("Root view not available");
+            const oPageContainer = oRootView.byId("pageContainer");
+            if (!oPageContainer) throw new Error("pageContainer not found in Root view");
+            return { oRootView, oPageContainer };
+        },
+
+        /** Navigate manually to Claim Submission (same style as ClaimStatus.controller) */
+        _navToClaimSubmissionManual: function () {
+            const { oRootView, oPageContainer } = this._getRootAndContainer();
+            const oClaimSubmission = oRootView.byId("navcontainer_claimsubmission"); // <-- matches App.view.xml
+            if (!oClaimSubmission) {
+                sap.m.MessageToast.show("Claim Submission page not found.");
+                return;
+            }
+            oPageContainer.to(oClaimSubmission);
+        },
+
+
 
         /* =========================================================
         * Main Logic
@@ -284,7 +307,7 @@ sap.ui.define([
                     row.CLAIMID ||
                     null;
 
-                if (!sClaimId) {
+                /* if (!sClaimId) {
                     sap.m.MessageToast.show("Claim ID is missing on the selected row.");
                     return;
                 }
@@ -294,8 +317,19 @@ sap.ui.define([
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("ClaimSubmission", {
                     claim_id: String(sClaimId)   // <-- use the exact argument name
-                });
+                }); */
 
+
+                if (!sClaimId) {
+                    sap.m.MessageToast.show("Claim ID is missing on the selected row.");
+                    return;
+                }
+
+                // Load claim header + items and populate claimsubmission_input model
+                await this._loadClaimById(String(sClaimId));
+
+                // === Manual navigation to Claim Submission (like ClaimStatus.controller) ===
+                this._navToClaimSubmissionManual();
 
             } catch (e) {
                 sap.base.Log.error("openItemFromClaimList failed:", e);
@@ -304,6 +338,26 @@ sap.ui.define([
                 this.getView().setBusy(false);
             }
         },
+
+
+        /*         _getClaimInputModel: function () {
+                    // Try view first (if you intend view-scope)
+                    let oModel = this.getView().getModel("claimsubmission_input");
+                    if (oModel) return oModel;
+        
+                    // Fallback to component-scope
+                    oModel = this.getOwnerComponent().getModel("claimsubmission_input");
+                    if (oModel) return oModel;
+        
+                    // Last resort: create at component so other views can reuse it
+                    oModel = new sap.ui.model.json.JSONModel({
+                        claim_header: {},
+                        claim_items: [],
+                        claim_items_count: 0
+                    });
+                    this.getOwnerComponent().setModel(oModel, "claimsubmission_input");
+                    return oModel;
+                }, */
 
 
         _getClaimInputModel: function () {
@@ -326,6 +380,7 @@ sap.ui.define([
         },
 
 
+
         _mapClaimHeaderToForm(o) {
             return {
                 purpose: o.PURPOSE || "",
@@ -344,12 +399,12 @@ sap.ui.define([
                 final_amount_to_receive: o.FINAL_AMOUNT_TO_RECEIVE || 0,
 
                 // optional nested descr fields if you have them
-/*                 descr: {
-                    purpose: o.PURPOSE || "",
-                    cost_center: "",
-                    alternate_cost_center: "",
-                    status_id: o.STATUS_ID || ""
-                } */
+                /*                 descr: {
+                                    purpose: o.PURPOSE || "",
+                                    cost_center: "",
+                                    alternate_cost_center: "",
+                                    status_id: o.STATUS_ID || ""
+                                } */
             };
 
 
