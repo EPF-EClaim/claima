@@ -115,6 +115,10 @@
             "request_status": {
                 "type": "sap.ui.model.json.JSONModel",
                 "uri": "model/request_status.json"
+            },
+            "claim_status": {
+                "type": "sap.ui.model.json.JSONModel",
+                "uri": "model/claim_status.json"
             }
         },
         "resources": {
@@ -421,6 +425,11 @@
                     "target": "ClaimStatus"
                 },
                 {
+                    "pattern": "MyApproval",
+                    "name": "MyApproval",
+                    "target": "MyApproval"
+                },
+                {
                     "pattern": "Dashboard",
                     "name": "Dashboard",
                     "target": "Dashboard"
@@ -439,6 +448,11 @@
                     "pattern": "RequestFormStatus",
                     "name": "RequestFormStatus",
                     "target": "RequestFormStatus"
+                },
+                {
+                    "pattern": "ClaimSubmission/{claim_id}",
+                    "name": "ClaimSubmission",
+                    "target": "ClaimSubmission"
                 },
                 {
                     "pattern": "ManageSub",
@@ -570,7 +584,6 @@
                     "id": "Dashboard",
                     "name": "App"
                 },
-
                 "ZPROJECT_HDR": {
                     "type": "Component",
                     "id": "ZPROJECT_HDR",
@@ -3609,6 +3622,14 @@
                     "viewType": "XML",
                     "transition": "slide"
                 },
+                "MyApproval": {
+                    "id": "MyApproval",
+                    "path": "claima.view",
+                    "name": "MyApproval",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
                 "Dashboard": {
                     "id": "Dashboard",
                     "path": "claima.view",
@@ -3633,7 +3654,14 @@
                     "viewType": "XML",
                     "transition": "slide"
                 },
-
+                "ClaimSubmission": {
+                    "id": "ClaimSubmission",
+                    "path": "claima.view",
+                    "name": "ClaimSubmission",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
                 "ManageSub": {
                     "id": "ManageSub",
                     "path": "claima.view",
@@ -3864,6 +3892,15 @@
                     "manifest.json",
                     "model/data.json"
                 ]
+            }
+        },
+        "extends": {
+            "extensions": {
+                "sap.ui.controllerExtensions": {
+                    "sap.fe.templates.ListReport.ListReportController": {
+                        "controllerName": "claima.ext.controller.Common"
+                    }
+                }
             }
         }
     },

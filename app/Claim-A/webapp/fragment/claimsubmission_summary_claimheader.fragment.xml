@@ -29,7 +29,7 @@
                 id="button_claimsummary_viewattachment"
                 icon="sap-icon://attachment"
                 text="{i18n>button_claimsummary_viewattachment}"
-                press="onView_ClaimSummary_Attachment"
+                press="onView_Claim_Attachment('parent')"
                 enabled="false"
             />
         </OverflowToolbar>

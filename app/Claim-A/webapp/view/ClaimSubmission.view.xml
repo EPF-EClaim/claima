@@ -60,6 +60,7 @@
 						id="button_claimsubmission_submitreport"
 						press="onSubmitReport_ClaimSubmission"
 						text="{i18n>button_claimsubmission_submitreport}"
+						type="Emphasized"
 						enabled="false"
 					/>
 
@@ -76,6 +77,7 @@
 						id="button_claimdetails_input_save"
 						press="onSave_ClaimDetails_Input"
 						text="{i18n>button_claimdetails_input_save}"
+						type="Emphasized"
 						visible="false"
 					/>
 

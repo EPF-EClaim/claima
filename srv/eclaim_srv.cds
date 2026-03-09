@@ -940,9 +940,10 @@ service eclaim_srv {
     ])                              as projection on ECLAIM.ZINSURANCE_PROVIDER;
 
     type UserInfo {
-        id          : String;
-        userType    : String;
-        costcenters : String;
+        id       : String;
+        userType : String;
+        costcenters: String;
+        userId: String;
     }
 
     function getUserType()                                         returns UserInfo;
