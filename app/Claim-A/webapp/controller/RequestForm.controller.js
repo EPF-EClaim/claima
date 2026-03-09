@@ -1992,12 +1992,12 @@ sap.ui.define([
 						new sap.ui.model.Filter({
 							path: "CATEGORY_ID",
 							operator: sap.ui.model.FilterOperator.EQ,
-							value1: "PREAPPROVAL"
+							value1: "ST0003"
 						}),
 						new sap.ui.model.Filter({
 							path: "CATEGORY_ID",
 							operator: sap.ui.model.FilterOperator.EQ,
-							value1: "AUTOAPPROVE"
+							value1: "ST0002"
 						})
 					],
 					{
