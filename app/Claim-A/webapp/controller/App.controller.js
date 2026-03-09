@@ -165,6 +165,8 @@ sap.ui.define([
 				// Start Aiman Salim 03/03/2026 - Added for MyClaim
 				case "myreport":
 					//var oRouter = this.getComponent().getRouter().navTo("ClaimStatus");
+					this.getCLAIMHeaderList();
+					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("ClaimStatus")
 					break;
 				//Start Aiman Salim 08/03/2026 - Added for MyApproval
@@ -1811,6 +1813,43 @@ sap.ui.define([
 				console.error("OData bindList failed:", err);
 				oReq.setProperty("/claim_header_list", []);
 				oReq.setProperty("/claim_header_count", 0);
+				return [];
+			}
+		},
+
+		//For MyClaimStatus
+
+		getCLAIMHeaderList: async function () {
+			const oReq = this.getOwnerComponent().getModel("claim_status");
+			const oModel = this.getOwnerComponent().getModel("employee_view");
+
+			const oListBinding = oModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", undefined,
+				[new Sorter("STATUS", true)],
+				null,
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$$updateGroupId: "$auto",
+					$count: true
+				}
+			);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+				a.forEach((it) => {
+					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
+				});
+
+				oReq.setProperty("/req_header_list", a);
+				oReq.setProperty("/req_header_count", a.length);
+
+				return a;
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				oReq.setProperty("/req_header_list", []);
+				oReq.setProperty("/req_header_count", 0);
 				return [];
 			}
 		},

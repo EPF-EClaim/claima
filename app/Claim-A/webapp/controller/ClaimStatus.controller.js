@@ -9,203 +9,266 @@ sap.ui.define([
 
     onInit: function () {
 
-      // set employee model alias
-      if (!this.getView().getModel("employee")) {
-        const oDefault = this.getOwnerComponent().getModel();
-        if (oDefault) {
-          this.getView().setModel(oDefault, "employee");
-        }
-      }
-
-      const oComp = this.getOwnerComponent();
-
-      // ensure models exist at component level
-      if (!oComp.getModel("claimsubmission_input")) {
-        oComp.setModel(new JSONModel(), "claimsubmission_input");
-      }
-
-      const oTbl = this.byId("tb_myexpenserepo");
-      const oBinding = oTbl.getBinding("items");
-      if (oBinding) {
-        // Example: sort by CLAIM_ID descending or a date field if available
-        oBinding.sort(new sap.ui.model.Sorter("CLAIM_ID", /* descending */ true));
-      }
-
-
-      // === Auto-refresh on every navigation to this route ===
-      const oRouter = this.getOwnerComponent().getRouter();
-      this._fnRouteMatched = this._onRouteMatched.bind(this); // keep a ref for detach
-      oRouter.getRoute("ClaimStatus").attachPatternMatched(this._fnRouteMatched);
     },
 
-
-    // Fired every time the "ClaimStatus" route is navigated to
-    _onRouteMatched: function () {
-      this._refreshClaimList();
+    _getClaimModel() {
+      return this.getOwnerComponent().getModel("claim");
     },
 
-    // Force a server-side refresh so newly created/changed records are fetched
-    _refreshClaimList: function () {
-      try {
-        const oTable = this.byId("tb_myexpenserepo");
-        if (!oTable) {
-          // If the table isn't there yet (lifecycle/timing), retry shortly
-          setTimeout(() => this._refreshClaimList(), 60);
-          return;
-        }
-
-        const oBinding = oTable.getBinding("items"); // V4 ListBinding expected
-        if (oBinding && typeof oBinding.refresh === "function") {
-          // true => force a re-read from the backend for this binding
-          oBinding.refresh(true);
-        }
-
-        // OPTIONAL: ensure newest items appear on top after refresh
-         oBinding.sort(new sap.ui.model.Sorter("CLAIM_ID", /* bDescending */ true));
-        // If you have a proper date field like SUBMITTED_DATE or LAST_MODIFIED_DATE, sort by that instead.
-
-      } catch (e) {
-        jQuery.sap.log.error("ClaimStatus refresh failed: " + e);
-      }
+    _getClaimStatModel() {
+      return this.getOwnerComponent().getModel("claim_status");
     },
 
+    //Manual Navigation for Claim Submission
 
-    //---------------------------------------------------------------------
-    // Build key path for OData read
-    //---------------------------------------------------------------------
-    _getClaimHeaderKeyPath: function (sClaimId) {
-      if (!sClaimId) throw new Error("Missing Claim ID");
-      return `/ZCLAIM_HEADER('${encodeURIComponent(String(sClaimId))}')`;
+
+    _getRootAndContainer: function () {
+      const oRootView = this.getOwnerComponent().getRootControl();
+      if (!oRootView) throw new Error("Root view not available");
+      const oPageContainer = oRootView.byId("pageContainer");
+      if (!oPageContainer) throw new Error("pageContainer not found in Root view");
+      return { oRootView, oPageContainer };
     },
 
-    //---------------------------------------------------------------------
-    // Main Row Press Handler
-    //---------------------------------------------------------------------
-    onRowPress: async function (oEvent) {
-
-      const oItem = oEvent.getParameter("listItem");
-      const oCtx = oItem && oItem.getBindingContext("employee");
-      if (!oCtx) {
-        MessageToast.show("No context found.");
+    /** Navigate manually to Claim Submission (same style as ClaimStatus.controller) */
+    _navToClaimSubmissionManual: function () {
+      const { oRootView, oPageContainer } = this._getRootAndContainer();
+      const oClaimSubmission = oRootView.byId("navcontainer_claimsubmission"); // <-- matches App.view.xml
+      if (!oClaimSubmission) {
+        sap.m.MessageToast.show("Claim Submission page not found.");
         return;
       }
+      oPageContainer.to(oClaimSubmission);
+    },
 
-      const oModel = this.getView().getModel("employee");
-      const oComp = this.getOwnerComponent();
-
+    async onRowPress(oEvent) {
       try {
         this.getView().setBusy(true);
 
-        const oRow = await oCtx.requestObject();
-        const sClaimId = String(oRow.CLAIM_ID || "").trim();
+        const oListItem = oEvent?.getParameter("listItem");
+
+        let oCtx =
+          oListItem?.getBindingContext("claim_status") ||
+          oListItem?.getBindingContext("request_status") ||
+          oListItem?.getBindingContext() || null;
+
+        if (!oCtx) {
+          const oTable = this.byId("tb_myapproval_claim"); // adjust ID if different
+          const oSelected = oTable?.getSelectedItem?.();
+          if (oSelected) {
+            oCtx =
+              oSelected.getBindingContext("claim_status") ||
+              oSelected.getBindingContext("request_status") ||
+              oSelected.getBindingContext();
+          }
+        }
+
+        if (!oCtx) {
+          sap.m.MessageToast.show("Select a claim to open");
+          return;
+        }
+
+        const row = oCtx.getObject();
+
+        const sClaimId =
+          row.CLAIM_ID ||
+          row.CLAIM_REQUEST_ID ||
+          row.CLAIMID ||
+          null;
+
         if (!sClaimId) {
-          MessageToast.show("Selected row has no CLAIM_ID.");
+          sap.m.MessageToast.show("Claim ID is missing on the selected row.");
           return;
         }
 
-        // Read full header + items
-        const sKey = this._getClaimHeaderKeyPath(sClaimId);
+        // Load claim header + items and populate claimsubmission_input model
+        await this._loadClaimById(String(sClaimId));
 
-        const oCtxHeader = oModel.bindContext(sKey, null, {
-          $select:
-            "CLAIM_ID,PURPOSE,LOCATION,STATUS_ID,TOTAL_CLAIM_AMOUNT," +
-            "COST_CENTER,ALTERNATE_COST_CENTER,EVENT_START_DATE,EVENT_END_DATE," +
-            "TRIP_START_DATE,TRIP_END_DATE,CASH_ADVANCE_AMOUNT,COMMENT",
+        // === Manual navigation to Claim Submission (like ClaimStatus.controller) ===
+        this._navToClaimSubmissionManual();
 
-          $expand: {
-            ZCLAIM_ITEM: {
-              $select:
-                "TRIP_START_DATE,RECEIPT_NUMBER,CLAIM_TYPE_ITEM_ID,AMOUNT," +
-                "CLAIM_CATEGORY"
-            }
-          }
-        }).getBoundContext();
-
-        const oHeaderFull = await oCtxHeader.requestObject();
-        const oHeaderData = {
-          claim_id: oHeaderFull.CLAIM_ID,
-          purpose: oHeaderFull.PURPOSE || "",
-          trip_start_date: oHeaderFull.TRIP_START_DATE || null,
-          trip_end_date: oHeaderFull.TRIP_END_DATE || null,
-          event_start_date: oHeaderFull.EVENT_START_DATE || null,
-          event_end_date: oHeaderFull.EVENT_END_DATE || null,
-          comment: oHeaderFull.COMMENT || "",
-          location: oHeaderFull.LOCATION || "",
-          cost_center: oHeaderFull.COST_CENTER || "",
-          alternate_cost_center: oHeaderFull.ALTERNATE_COST_CENTER || "",
-          total_claim_amount: oHeaderFull.TOTAL_CLAIM_AMOUNT || 0,
-          cash_advance_amount: oHeaderFull.CASH_ADVANCE_AMOUNT || 0,
-          final_amount_to_receive: oHeaderFull.FINAL_AMOUNT_RECEIVE || 0,
-
-          descr: {
-            purpose: oHeaderFull.PURPOSE || "",
-            cost_center: "",
-            alternate_cost_center: "",
-            status_id: oHeaderFull.STATUS_ID || ""
-          }
-        };
-
-        const aItems = (oHeaderFull.ZCLAIM_ITEM || []).map((x, i) => ({
-          claim_sub_id: String(i + 1).padStart(3, "0"),
-          start_date: x.TRIP_START_DATE || null,
-          receipt_number: x.RECEIPT_NUMBER || "",
-          amount: Number(x.AMOUNT || 0),
-          currency: "MYR",
-          claim_type_item_id: x.CLAIM_TYPE_ITEM_ID || "",
-          staff_category: x.CLAIM_CATEGORY || "",
-
-          descr: {
-            claim_type_item_id: x.CLAIM_TYPE_ITEM_ID || "",
-            claim_category: x.CLAIM_CATEGORY || ""
-          }
-        }));
-
-        //-----------------------------------------------------------------
-        //  — Build Final claimsubmission_input Model
-        //-----------------------------------------------------------------
-        const oClaimSubmissionInput = {
-          claim_header: oHeaderData,
-          claim_items: aItems,
-          claim_items_count: aItems.length
-        };
-
-        oComp.getModel("claimsubmission_input").setData(oClaimSubmissionInput);
-
-        //-----------------------------------------------------------------
-        //  — Navigate to Claim Submission Page
-        //-----------------------------------------------------------------
-
-        // === NAVIGATION (inside onRowPress) ===
-        var oRootView = this.getOwnerComponent().getRootControl();
-        if (!oRootView) {
-          console.error("Root view not available");
-          return;
-        }
-
-        var oPageContainer = oRootView.byId("pageContainer");
-        var oClaimSubmission = oRootView.byId("navcontainer_claimsubmission");
-
-        if (!oPageContainer) {
-          console.error("Cannot find pageContainer in App.view");
-          MessageToast.show("Navigation container not found.");
-          return;
-        }
-
-        if (!oClaimSubmission) {
-          console.error("Cannot find navcontainer_claimsubmission in App.view");
-          MessageToast.show("Claim Submission page not found.");
-          return;
-        }
-
-        oPageContainer.to(oClaimSubmission);
-
-
-      } catch (err) {
-        console.error("onRowPress error:", err);
-        MessageToast.show("Failed to load claim header/items.");
+      } catch (e) {
+        sap.base.Log.error("openItemFromClaimList failed:", e);
+        sap.m.MessageToast.show("Failed to open the selected claim.");
       } finally {
         this.getView().setBusy(false);
       }
-    }
+    },
+    _getClaimInputModel: function () {
+      // Try view first (if you intend view-scope)
+      let oModel = this.getView().getModel("claimsubmission_input");
+      if (oModel) return oModel;
+
+      // Fallback to component-scope
+      oModel = this.getOwnerComponent().getModel("claimsubmission_input");
+      if (oModel) return oModel;
+
+      // Last resort: create at component so other views can reuse it
+      oModel = new sap.ui.model.json.JSONModel({
+        claim_header: {},
+        claim_items: [],
+        claim_items_count: 0
+      });
+      this.getOwnerComponent().setModel(oModel, "claimsubmission_input");
+      return oModel;
+    },
+
+    _mapClaimHeaderToForm(o) {
+      return {
+        purpose: o.PURPOSE || "",
+        claim_id: o.CLAIM_ID || "",
+        trip_start_date: o.TRIP_START_DATE || "",
+        trip_end_date: o.TRIP_END_DATE || "",
+        event_start_date: o.EVENT_START_DATE || "",
+        event_end_date: o.EVENT_END_DATE || "",
+        comment: o.COMMENT || "",
+        location: o.LOCATION || "",
+        cost_center: o.COST_CENTER || "",
+        alternate_cost_center: o.ALTERNATE_COST_CENTER || "",
+        status_id: o.STATUS || "",
+        total_claim_amount: o.TOTAL_CLAIM_AMOUNT || 0,
+        cash_advance_amount: o.CASH_ADVANCE_AMOUNT || 0,
+        final_amount_to_receive: o.FINAL_AMOUNT_TO_RECEIVE || 0,
+      };
+
+
+    },
+
+    async _loadClaimById(sClaimId) {
+
+      const oClaimInput = this._getClaimInputModel()
+
+      //const oModel = this.getOwnerComponent().getModel("employee_view");
+      const oModel = await this._ensureModelReady("employee_view");
+      const sId = String(sClaimId);
+
+      const aFilters = [new sap.ui.model.Filter("CLAIM_ID", sap.ui.model.FilterOperator.EQ, sId)];
+
+      // Header binding
+      const oHeaderBinding = oModel.bindList(
+        "/ZEMP_CLAIM_HEADER_VIEW", // <-- adjust if different
+        null,
+        null,
+        aFilters,
+        {
+          $$ownRequest: true,
+          $count: true,
+          $select: [
+            "CLAIM_ID", "REQUEST_ID", "PURPOSE", "TRIP_START_DATE", "TRIP_END_DATE",
+            "EVENT_START_DATE", "EVENT_END_DATE", "COMMENT", "LOCATION", "COST_CENTER",
+            "ALTERNATE_COST_CENTER", "STATUS_ID", "STATUS_DESC",
+            "TOTAL_CLAIM_AMOUNT", "PREAPPROVED_AMOUNT", "CASH_ADVANCE_AMOUNT", "FINAL_AMOUNT_TO_RECEIVE"
+          ]
+        }
+      );
+
+      // Items binding
+      const oItemBinding = oModel.bindList(
+        "/ZEMP_CLAIM_ITEM_VIEW", // <-- adjust if different
+        null,
+        [new sap.ui.model.Sorter("CLAIM_SUB_ID", false)],
+        aFilters,
+        {
+          $$ownRequest: true,
+          $count: true,
+          $select: [
+            "CLAIM_ID", "CLAIM_SUB_ID", "START_DATE", "RECEIPT_NUMBER",
+            "CLAIM_TYPE_ID", "CLAIM_TYPE_ITEM_ID", "AMOUNT", "CLAIM_CATEGORY"
+          ]
+        }
+      );
+
+      try {
+        const [aHeaderCtx, aItemCtx] = await Promise.all([
+          oHeaderBinding.requestContexts(0, 1),
+          oItemBinding.requestContexts(0, Infinity)
+        ]);
+
+        // Header
+        const oHeaderRaw = aHeaderCtx[0]?.getObject();
+        if (!oHeaderRaw) {
+          sap.m.MessageToast.show("No claim header found for the selected item.");
+          oClaimInput.setProperty("/claim_header", {});
+          oClaimInput.setProperty("/claim_items", []);
+          oClaimInput.setProperty("/claim_items_count", 0);
+          return { header: null, items: [] };
+        }
+
+        const oHeader = this._mapClaimHeaderToForm(oHeaderRaw);
+        oClaimInput.setProperty("/claim_header", oHeader);
+
+        // Items
+        const aItems = aItemCtx.map(ctx => ctx.getObject()).map(it => ({
+          // Map to the fragment's structure
+          claim_sub_id: it.CLAIM_SUB_ID,
+          start_date: it.START_DATE,
+          receipt_number: it.RECEIPT_NUMBER,
+          amount: it.AMOUNT != null ? parseFloat(it.AMOUNT) : 0,
+          // Provide `descr/*` fields the fragment uses
+          descr: {
+            claim_type_id: it.CLAIM_TYPE_ID || "",
+            claim_type_item_id: it.CLAIM_TYPE_ITEM_ID || "",
+            claim_category: it.CLAIM_CATEGORY || ""
+          }
+        }));
+
+        // Derive totals from items (just in case)
+        const nTotal = aItems.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+
+        // Only overwrite header totals if header had null/0 (tweak to your preference)
+        if (!oHeader.total_claim_amount) {
+          oClaimInput.setProperty("/claim_header/total_claim_amount", nTotal);
+        }
+
+        oClaimInput.setProperty("/claim_items", aItems);
+        oClaimInput.setProperty("/claim_items_count", aItems.length);
+
+        return { header: oHeaderRaw, items: aItems };
+      } catch (err) {
+        console.error("Failed to load claim header/items:", err);
+        oClaimInput.setProperty("/claim_header", {});
+        oClaimInput.setProperty("/claim_items", []);
+        oClaimInput.setProperty("/claim_items_count", 0);
+        return { header: null, items: [] };
+      }
+    },
+
+    // Wait until a named model exists on the Component.
+    _waitForModel(name) {
+      return new Promise((resolve) => {
+        const check = () => {
+          const m = this.getOwnerComponent().getModel(name);
+          if (m) {
+            resolve(m);
+          } else {
+            setTimeout(check, 40);
+          }
+        };
+        check();
+      });
+    },
+
+    // For V4: wait for metadata to be available.
+    // For V2 models, fallback to metadataLoaded if present.
+    async _ensureModelReady(name) {
+      const oModel = await this._waitForModel(name);
+      // V4 meta ready
+      if (oModel?.getMetaModel?.()?.requestObject) {
+        try {
+          await oModel.getMetaModel().requestObject("/$EntityContainer");
+        } catch (e) {
+          // swallow; some backends may restrict $EntityContainer; any requestObject call will do
+          await oModel.getMetaModel().requestObject("/");
+        }
+        return oModel;
+      }
+      // V2 meta ready
+      if (oModel?.metadataLoaded) {
+        await oModel.metadataLoaded();
+      }
+      return oModel;
+    },
+
+
   });
 });
