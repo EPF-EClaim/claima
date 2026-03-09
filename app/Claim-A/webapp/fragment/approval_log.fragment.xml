@@ -1,0 +1,72 @@
+<core:FragmentDefinition 
+xmlns:table2="sap.ui.mdc.table" 
+    xmlns:form2="sap.fe.macros.form"
+    xmlns="sap.m"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:f="sap.f"
+    xmlns:unified="sap.ui.unified"
+    xmlns:table="sap.ui.table"
+    xmlns:mdc="sap.ui.mdc" >
+    <VBox 
+        id="req_approval_log" 
+        backgroundDesign="Solid"
+        class="roundedBox sapUiSmallMargin sapUiTinyMarginTop"
+        rowGap="1rem">
+        <VBox rowGap="1rem">
+            <OverflowToolbar
+                height="3rem"
+                style="Clear">
+                <Title text="{i18n>appr_log_title}" titleStyle="H3" />
+            </OverflowToolbar>
+            <table:Table 
+                id="approval_log_table"
+                rows="{approval_log>/approvers}"
+                columnHeaderHeight="3rem"
+                selectionMode="None"
+                ariaLabelledBy="title"
+                width="auto">
+                <table:Column  width="5rem">
+                    <Label text="{i18n>appr_level}"></Label>
+                    <table:template>
+                        <Text text="{approval_log>LEVEL}" />
+                    </table:template>
+                </table:Column>
+                <table:Column  width="20rem">
+                    <Label text="{i18n>appr_approver}"></Label>
+                    <table:template>
+                        <Text text="{approval_log>APPROVER_ID}" />
+                    </table:template>
+                </table:Column>
+                <table:Column  width="20rem">
+                    <Label text="{i18n>appr_sub}"></Label>
+                    <table:template>
+                        <Text text="{approval_log>SUBSTITUTE_APPROVER_ID}" />
+                    </table:template>
+                </table:Column>
+                <table:Column  width="10rem">
+                    <Label text="{i18n>appr_status}"></Label>
+                    <table:template>
+                        <Text text="{approval_log>STATUS}" />
+                    </table:template>
+                </table:Column>
+                <table:Column  width="10rem">
+                    <Label text="{i18n>appr_timestamp}"></Label>
+                    <table:template>
+                        <Text text="{approval_log>PROCESS_TIMESTAMP}" />
+                    </table:template>
+                </table:Column>
+                <table:Column  width="25rem">
+                    <Label text="{i18n>appr_comment}"></Label>
+                    <table:template>
+                        <TextArea 
+                            textAlign="Begin" 
+                            enabled="false"
+                            value="{approval_log>COMMENT}"/>
+                    </table:template>
+                </table:Column>
+            </table:Table>
+        </VBox>
+    </VBox>
+</core:FragmentDefinition>

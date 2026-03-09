@@ -15,7 +15,7 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
 	"sap/ui/export/Spreadsheet",
-	"claima/utils/common"
+	"claima/utils/PARequestSharedFunction"
 ], function (
 	Device,
 	Controller,
@@ -32,7 +32,7 @@ sap.ui.define([
 	FilterOperator,
 	Sorter,
 	Spreadsheet,
-	Common
+	PARequestSharedFunction
 ) {
 	"use strict";
 
@@ -57,7 +57,7 @@ sap.ui.define([
 
 			// sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
 			var oRouter = this.getOwnerComponent().getRouter();
-			oRouter.navTo("Dashboard");
+			// oRouter.navTo("Dashboard");
 
 			this._loadCurrentUser();
 
@@ -73,14 +73,13 @@ sap.ui.define([
 				this.costcenters = "UNKNOWN";
 			});
 
-			Common._ensureRequestModelDefaults(this._getReqModel());
+			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
 			var oUserModel = new sap.ui.model.json.JSONModel({ email: "Jefry.Yap@my.ey.com" });
 			this.getView().setModel(oUserModel, 'user');
 			const emp_data = await this._getEmpIdDetail("Jefry.Yap@my.ey.com");
 			const oReqModel = this._getReqModel().getData();
 			oReqModel.user = emp_data.eeid;
 			this._getReqModel().setData(oReqModel);
-
 		},
 
 		onCollapseExpandPress: function () {
@@ -129,13 +128,7 @@ sap.ui.define([
 					this.onClickMyRequest();
 					break;
 				case "myrequest":
-					const oReq = this.getOwnerComponent().getModel("request_status");
-					const oModel = this.getOwnerComponent().getModel('employee_view');
-					
-					Common._ensureRequestModelDefaults(this._getReqModel());
-					Common.getPARHeaderList(oReq, oModel);
-					var oRouter = this.getOwnerComponent().getRouter();
-					oRouter.navTo("RequestFormStatus");
+					this._navToPARStatus();
 					break;
 				case "mysubstitution":
 					var oRouter = this.getOwnerComponent().getRouter();
@@ -1396,7 +1389,7 @@ sap.ui.define([
 		// },
 
 		onClickMyRequest: async function () {
-			Common._ensureRequestModelDefaults(this._getReqModel());
+			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
 			this._loadDefaultSelection();
 			this._loadReqTypeSelectionData();
 
@@ -1734,6 +1727,16 @@ sap.ui.define([
 			return sap.ui.getCore().byId(`${sFragmentId}--${sId}`) || sap.ui.getCore().byId(sId);
 		},
 
+		_navToPARStatus() {
+			const oReq = this.getOwnerComponent().getModel("request_status");
+			const oModel = this.getOwnerComponent().getModel('employee_view');
+			
+			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
+			PARequestSharedFunction.getPARHeaderList(oReq, oModel);
+			var oRouter = this.getOwnerComponent().getRouter();
+			oRouter.navTo("RequestFormStatus");
+		},
+
 		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		// End of Request Form Controller
 		// ==================================================
@@ -1768,7 +1771,7 @@ sap.ui.define([
 			if (id.includes("dashboard-claim")) {	
 				oRouter.navTo("ClaimStatus");
 			} else if (id.includes("request")) {
-				oRouter.navTo("RequestFormStatus");
+				this._navToPARStatus();
 			}
 		},
 

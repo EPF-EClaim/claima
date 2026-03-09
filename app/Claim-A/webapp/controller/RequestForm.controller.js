@@ -12,8 +12,27 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
-	"claima/utils/common"
-], function (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator, History, Filter, FilterOperator, Sorter, Common) {
+	"claima/utils/PARequestSharedFunction",
+	"claima/utils/budgetCheck",
+	"claima/utils/ApprovalLog"
+], function (
+	Controller, 
+	MessageToast, 
+	JSONModel, 
+	Dialog, 
+	Button, 
+	Label, 
+	Fragment, 
+	Spreadsheet, 
+	BusyIndicator, 
+	History, 
+	Filter, 
+	FilterOperator, 
+	Sorter, 
+	PARequestSharedFunction,
+	budgetCheck,
+	ApprovalLog
+) {
 	"use strict";
  
 	return Controller.extend("claima.controller.RequestForm", {
@@ -30,7 +49,7 @@ sap.ui.define([
 		},
 
 		/* =========================================================
-		* URL Access (later)
+		* URL Access
 		* ======================================================= */
 		
 		_onMatched(oEvent) {
@@ -40,16 +59,22 @@ sap.ui.define([
 
 			console.log("Deep-link request ID:", sRequestId);
 
-			const oReqModel = this.getOwnerComponent().getModel("request");
+			const oReqModel = this._getReqModel();
 			oReqModel.setProperty("/req_header/reqid", sRequestId);
 
 			// 3. Load data for this request ID
 			this._loadRequest(sRequestId);
 		},
 
-		_loadRequest: function (sReqId) {
-			this._getHeader(sReqId);
-			this._getItemList(sReqId);
+		async _loadRequest(sReqId) {
+			await this._getHeader(sReqId);
+			await this._getItemList(sReqId);
+			
+			var status = this._getReqModel().getProperty("/req_header/reqstatus");
+			if(status != 'DRAFT' && status != 'DELETED') {
+				ApprovalLog._showApprovalLog(this);
+			}
+			PARequestSharedFunction._determineCurrentState(this, this._getReqModel());
 		},
 
 		/* =========================================================
@@ -101,6 +126,7 @@ sap.ui.define([
 			if (!oPage) return;
 
 			await this._removeByLocalId(this.byId("request_item_list_fragment_d") ? "request_item_list_fragment_d" : "request_item_list_fragment");
+			await this._removeByLocalId("req_approval_log");
 
 			const oCreate = await this._getFormFragment("req_create_item");
 			await this._replaceContentAt(oPage, 1, oCreate);
@@ -114,8 +140,14 @@ sap.ui.define([
 
 			await this._removeByLocalId("request_create_item_fragment");
 
-			const oCreate = await this._getFormFragment("req_item_list");
-			await this._replaceContentAt(oPage, 1, oCreate);
+			const oList = await this._getFormFragment("req_item_list");
+			await this._replaceContentAt(oPage, 1, oList);
+			
+			var status = this._getReqModel().getProperty("/req_header/reqstatus");
+			if(status != 'DRAFT' && status != 'DELETED') {
+				const oApproval = await this._getFormFragment("approval_log");
+				await this._replaceContentAt(oPage, 2, oApproval);
+			}
 
 			this._getReqModel().setProperty("/view", state);
 		},
@@ -139,7 +171,8 @@ sap.ui.define([
 						text: "Confirm",
 						press: async function () {
 							this.oBackDialog.close();
-							Common._ensureRequestModelDefaults(oReqModel);
+							PARequestSharedFunction._ensureRequestModelDefaults(oReqModel);
+							await this._removeByLocalId("req_approval_log");
 							var oHistory = History.getInstance();
 							var sPreviousHash = oHistory.getPreviousHash();
 							if (sPreviousHash) {
@@ -161,6 +194,7 @@ sap.ui.define([
 			const oReq   = this._getReqModel();
 			const empId  = oReq.getProperty("/user");
 			const reqId  = String(oReq.getProperty("/req_header/reqid") || "").trim();
+			const oModel = this.getOwnerComponent().getModel();
 
 			if (!empId || !reqId) {
 				sap.m.MessageToast.show("EMP ID or Request ID missing");
@@ -184,6 +218,15 @@ sap.ui.define([
 						sap.ui.core.BusyIndicator.show(0);
 
 						await this._updateHeaderStatusToDeleted(empId, reqId);
+						// if (oReq.getProperty('/req_header/reqstatus') == 'PENDING' || oReq.getProperty('/req_header/reqstatus') == 'PENDING APPROVAL') {
+						// 	// budget release
+						// 	const dataRow = rows.map(({ CLAIM_TYPE_ITEM_ID, EST_AMOUNT, CASH_ADVANCE }) => ({
+						// 		claim_type_item: CLAIM_TYPE_ITEM_ID,
+						// 		amount: EST_AMOUNT,
+						// 		is_cashadv: CASH_ADVANCE
+						// 	}));
+						// 	await budgetCheck.budgetProcessing(oModel, dataset, 'REQ', 'release');
+						// }
 
 						sap.m.MessageToast.show("Request deleted");
 						this.oDeleteDialog.close();
@@ -257,14 +300,15 @@ sap.ui.define([
 			if (!rows.length) {
 				this._showMustAddClaimDialog();
 				return;
-			}
+			} 
 
-			const reqId 		= String(data.req_header.reqid || "").trim();
-			const empId  		= oReq.getProperty("/user");
-			const reqDate 		= data.req_header.reqdate;
-			const proj			= 1;
-			const reqCC 		= data.req_header.costcenter;
-			const reqClaimType 	= data.req_header.claimtype;
+			const submissionType	= "REQ";
+			const reqId 			= String(data.req_header.reqid || "").trim();
+			const empId  			= oReq.getProperty("/user");
+			const reqDate 			= data.req_header.reqdate;
+			const proj				= "1";
+			const reqCC 			= data.req_header.costcenter;
+			const reqClaimType 		= data.req_header.claimtype;
 
 			if (!reqId || !empId) {
 				sap.m.MessageToast.show("EMP ID or Request ID missing");
@@ -286,7 +330,12 @@ sap.ui.define([
 							const oViewModel = this.getOwnerComponent().getModel('employee_view'); 
 
 							// budget checking
-							const result = await Common.budgetChecking(oModel, reqDate, proj, reqCC, reqClaimType, rows);
+							const dataRow = rows.map(({ CLAIM_TYPE_ITEM_ID, EST_AMOUNT, CASH_ADVANCE }) => ({
+								claim_type_item: CLAIM_TYPE_ITEM_ID,
+								amount: EST_AMOUNT,
+								is_cashadv: CASH_ADVANCE
+							}));
+							const result = await budgetCheck.budgetChecking(oModel, submissionType, reqDate, proj, reqCC, reqClaimType, dataRow);
 
 							if (result.passed) {
 
@@ -318,7 +367,7 @@ sap.ui.define([
 								sap.m.MessageToast.show("Request submitted successfully");
 								oReq.setProperty("/view", 'view');
 								
-								Common.getPARHeaderList(oReqList, oViewModel);
+								PARequestSharedFunction.getPARHeaderList(oReqList, oViewModel);
 								const oRouter = this.getOwnerComponent().getRouter();
 								oRouter.navTo("RequestFormStatus");
 							} else {
@@ -542,14 +591,15 @@ sap.ui.define([
 			}
 		},
 
-		onBackView() {
+		async onBackView() {
 			var oReqModel = this._getReqModel();
 			var oCreate = this.byId('request_create_item_fragment');
 			if (oCreate) {
 				this._showItemList('view');
 				oReqModel.setProperty('/req_item', {});
 			} else {
-				Common._ensureRequestModelDefaults(oReqModel);
+				PARequestSharedFunction._ensureRequestModelDefaults(oReqModel);
+				await this._removeByLocalId("req_approval_log");
 				var oHistory = History.getInstance();
 				var sPreviousHash = oHistory.getPreviousHash();
 				if (sPreviousHash) {
@@ -1016,7 +1066,7 @@ sap.ui.define([
 					0
 				);
 				if (alloc_total > estAmt) {
-					sap.m.MessageToast.show("Allocated Amount cannot exceed Estimated Amount");
+					sap.m.MessageToast.show("Please ensure that the total amount in the participant list does NOT exceeds the Estimated Amount entered in the Request Details section.");
 					return;
 				}
 
@@ -1931,8 +1981,7 @@ sap.ui.define([
 					],
 					[
 						new sap.ui.model.Filter({ path: "CLAIM_TYPE_ID", operator: "EQ", value1: claim_type_id }),
-						new sap.ui.model.Filter({ path: "CATEGORY_ID", operator: 'EQ', value1: "PREAPPROVE" }),
-						new sap.ui.model.Filter({ path: "CATEGORY_ID", operator: sap.ui.model.FilterOperator.EQ, value1: "AUTOAPPROVE" })
+						new sap.ui.model.Filter({ path: "CATEGORY_ID", operator: 'NE', value1: "ST0001" })
 					],
 					{
 						$$ownRequest: true,
@@ -2088,7 +2137,6 @@ sap.ui.define([
 				"i_cube_eligible",
 				"i_departure_time",
 				"i_arrival_time",
-				"i_no_of_participant",
 				"i_cash_adv"
 			];
 

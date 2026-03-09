@@ -10,7 +10,7 @@
     <VBox
         id="request_create_item_fragment" 
         backgroundDesign="Solid"
-        class="roundedBox sapUiSmallMargin sapUiTinyMarginTop"
+        class="roundedBox sapUiSmallMargin sapUiTinyMarginTop sapUiTinyMarginBottom"
         rowGap="1rem">
         <VBox width="100%" height="100%" rowGap="1rem">
             <OverflowToolbar height="3rem">
@@ -708,7 +708,7 @@
 
                                 <!-- Estimated Participants -->
                                 <form:FormElement label="{i18n>req_i_estparticipant}"
-                                            visible="false"
+                                            visible="{= ${request>/req_header/grptype} === 'GRP' || ${request>/req_header/grptype} === 'Group' }"
                                             id="i_no_of_participant" >
                                     <form:fields>
                                         <m:Input 
