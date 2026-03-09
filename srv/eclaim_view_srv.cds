@@ -10,9 +10,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             to   : ['Approver']
         },
         {
-            grant: '*',
+            grant: 'READ',
             to   : ['Claimant'],
             where: 'EMP_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
+        },
+        {
+            grant: 'WRITE',
+            to   : ['Claimant']
         }
     ])                                   as
         projection on ECLAIM.ZREQUEST_HEADER {
@@ -56,9 +60,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
     entity ZEMP_REQUEST_ITEM_VIEW @(restrict: [
         {
-            grant: '*',
+            grant: 'READ',
             to   : ['Claimant'],
             where: (createdBy = $user)
+        },
+        {
+            grant: 'WRITE',
+            to   : ['Claimant']
         },
         {
             grant: [
@@ -143,9 +151,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
     entity ZEMP_REQUEST_PART_VIEW @(restrict: [
         {
-            grant: '*',
+            grant: 'READ',
             to   : ['Claimant'],
             where: (createdBy = $user)
+        },
+        {
+            grant: 'WRITE',
+            to   : ['Claimant']
         },
         {
             grant: [
@@ -167,9 +179,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
     entity ZEMP_CLAIM_HEADER_VIEW @(restrict: [
         {
-            grant: '*',
+            grant: 'READ',
             to   : ['Claimant'],
             where: (createdBy = $user)
+        },
+        {
+            grant: 'WRITE',
+            to   : ['Claimant']
         },
         {
             grant: [
@@ -228,9 +244,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
     entity ZEMP_CLAIM_ITEM_VIEW @(restrict: [
         {
-            grant: '*',
+            grant: 'READ',
             to   : ['Claimant'],
             where: (createdBy = $user)
+        },
+        {
+            grant: 'WRITE',
+            to   : ['Claimant']
         },
         {
             grant: [
@@ -327,9 +347,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
     entity ZEMP_REQUEST_STATUS @(restrict: [
         {
-            grant: '*',
+            grant: 'READ',
             to   : ['Claimant'],
             where: (createdBy = $user)
+        },
+        {
+            grant: 'WRITE',
+            to   : ['Claimant']
         },
         {
             grant: [
@@ -356,9 +380,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
     entity ZEMP_CLAIM_STATUS_HEADER @(restrict: [
         {
-            grant: '*',
+            grant: 'READ',
             to   : ['Claimant'],
             where: (createdBy = $user)
+        },
+        {
+            grant: 'WRITE',
+            to   : ['Claimant']
         },
         {
             grant: [
@@ -378,9 +406,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
     entity ZEMP_CLAIM_STATUS_ITEM @(restrict: [
         {
-            grant: '*',
+            grant: 'READ',
             to   : ['Claimant'],
             where: (createdBy = $user)
+        },
+        {
+            grant: 'WRITE',
+            to   : ['Claimant']
         },
         {
             grant: [

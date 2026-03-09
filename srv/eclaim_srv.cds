@@ -12,12 +12,6 @@ service eclaim_srv {
 
     action   batchCreateCostCenter(costcenters: many ZCOST_CENTER) returns Response;
 
-    @odata.singleton
-    entity FeatureControl {
-        operationHidden  : Boolean;
-        operationEnabled : Boolean;
-    }
-
     entity ZREQUEST_TYPE @(restrict: [
         {
             grant: 'READ',
@@ -32,8 +26,7 @@ service eclaim_srv {
             grant: '*',
             to   : 'DTD_Admin'
         }
-    ], 
-    )                              as projection on ECLAIM.ZREQUEST_TYPE;
+    ])                              as projection on ECLAIM.ZREQUEST_TYPE;
 
     entity ZCLAIM_ITEM @(restrict: [
         {
@@ -53,11 +46,18 @@ service eclaim_srv {
         }
     ])                              as projection on ECLAIM.ZCLAIM_ITEM;
 
-    entity ZREQUEST_HEADER @(restrict: [{
-        grant: '*',
-        to   : 'Claimant',
-        where: (createdBy = $user)
-    }])                             as projection on ECLAIM.ZREQUEST_HEADER;
+    entity ZREQUEST_HEADER @(restrict: [
+        {
+            grant: 'WRITE',
+            to   : 'Claimant'
+
+        },
+        {
+            grant: 'READ',
+            to   : 'Claimant',
+            where: (createdBy = $user)
+        }
+    ])                              as projection on ECLAIM.ZREQUEST_HEADER;
 
     entity ZEMP_MASTER @(restrict: [
         {
@@ -118,10 +118,15 @@ service eclaim_srv {
             to   : ['Approver']
         },
         {
-            grant: ['*'],
+            grant: 'WRITE',
+            to   : ['Claimant']
+        },
+        {
+            grant: 'READ',
             to   : ['Claimant'],
             where: (createdBy = $user)
         }
+
     ])                              as projection on ECLAIM.ZREQUEST_ITEM;
 
     entity ZREQ_ITEM_PART @(restrict: [
@@ -133,17 +138,27 @@ service eclaim_srv {
             to   : ['Approver']
         },
         {
-            grant: '*',
+            grant: 'READ',
             to   : ['Claimant'],
             where: (createdBy = $user)
+        },
+        {
+            grant: 'WRITE',
+            to   : ['Claimant']
         }
     ])                              as projection on ECLAIM.ZREQ_ITEM_PART;
 
-    entity ZCLAIM_HEADER @(restrict: [{
-        grant: '*',
-        to   : 'Claimant',
-        where: (createdBy = $user)
-    }])                             as projection on ECLAIM.ZCLAIM_HEADER;
+    entity ZCLAIM_HEADER @(restrict: [
+        {
+            grant: 'READ',
+            to   : 'Claimant',
+            where: (createdBy = $user)
+        },
+        {
+            grant: ['WRITE'],
+            to   : 'Claimant'
+        }
+    ])                              as projection on ECLAIM.ZCLAIM_HEADER;
 
     entity ZNUM_RANGE @(restrict: [
         {
@@ -1222,9 +1237,13 @@ service eclaim_srv {
     }])                             as projection on ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL;
 
     entity ZSUBSTITUTION_RULES @(restrict: [{
-        grant: '*',
+        grant: 'WRITE',
+        to   : 'Approver'
+    }, 
+    {
+        grant: 'READ',
         to   : 'Approver',
-        where: 'USER_ID  = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
+        where: (createdBy = $user) 
     }])                             as projection on ECLAIM.ZSUBSTITUTION_RULES;
 
     entity ZDB_STRUCTURE            as projection on ECLAIM.ZDB_STRUCTURE;

@@ -109,19 +109,6 @@ module.exports = (srv) => {
     }
   );
 
-  this.on ('READ', FeatureControl, async (req) => {
-    let operationHidden = true
-
-    if (req.user.is('DTD_Admin')) {
-      operationHidden = false
-    }
-
-    return {
-      operationHidden: operationHidden,
-      operationEnabled: !operationHidden,
-    }
-  })
-
   /* const port = process.env.PORT || 5000;
 
   app.listen(port, function () {
