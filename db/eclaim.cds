@@ -1018,7 +1018,8 @@ entity ZWORKFLOW_RULE : managed {
         REMARK                : String(255);
         REQUEST_TYPE_ID       : String;
         CASH_ADVANCE          : Boolean;
-        TRIP_START_DATE       : Date;
+        TRIP_START_DATE       : String(2);
+        RULE                  : String(15);
         ZREQUEST_TYPE         : Association to ZREQUEST_TYPE
                                     on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
 }
