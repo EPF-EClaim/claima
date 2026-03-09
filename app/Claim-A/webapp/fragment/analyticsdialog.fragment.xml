@@ -88,7 +88,7 @@
                 >
                     <core:Item
                         key="{employee>COURSE_ID}"
-                        text="{employee>COURSE_DESC}"
+                        text="{= ${employee>COURSE_ID} + ' - ' + ${employee>COURSE_DESC}}"
                     />
                 </MultiComboBox>
 
@@ -101,7 +101,7 @@
                 >
                     <core:Item
                         key="{employee>DEPARTMENT_ID}"
-                        text="{employee>DEPARTMENT_DESC}"
+                        text="{= ${employee>DEPARTMENT_ID} + ' - ' + ${employee>DEPARTMENT_DESC}}"
                     />
                 </MultiComboBox>
 
@@ -114,7 +114,7 @@
                 >
                     <core:Item
                         key="{employee>GL_ACCOUNT_ID}"
-                        text="{employee>GL_ACCOUNT_DESC}"
+                        text="{= ${employee>GL_ACCOUNT_ID} + ' - ' + ${employee>GL_ACCOUNT_DESC}}"
                     />
                 </MultiComboBox>
 

@@ -307,19 +307,6 @@ sap.ui.define([
                     row.CLAIMID ||
                     null;
 
-                /* if (!sClaimId) {
-                    sap.m.MessageToast.show("Claim ID is missing on the selected row.");
-                    return;
-                }
-
-                await this._loadClaimById(String(sClaimId));
-
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("ClaimSubmission", {
-                    claim_id: String(sClaimId)   // <-- use the exact argument name
-                }); */
-
-
                 if (!sClaimId) {
                     sap.m.MessageToast.show("Claim ID is missing on the selected row.");
                     return;
@@ -338,28 +325,6 @@ sap.ui.define([
                 this.getView().setBusy(false);
             }
         },
-
-
-        /*         _getClaimInputModel: function () {
-                    // Try view first (if you intend view-scope)
-                    let oModel = this.getView().getModel("claimsubmission_input");
-                    if (oModel) return oModel;
-        
-                    // Fallback to component-scope
-                    oModel = this.getOwnerComponent().getModel("claimsubmission_input");
-                    if (oModel) return oModel;
-        
-                    // Last resort: create at component so other views can reuse it
-                    oModel = new sap.ui.model.json.JSONModel({
-                        claim_header: {},
-                        claim_items: [],
-                        claim_items_count: 0
-                    });
-                    this.getOwnerComponent().setModel(oModel, "claimsubmission_input");
-                    return oModel;
-                }, */
-
-
         _getClaimInputModel: function () {
             // Try view first (if you intend view-scope)
             let oModel = this.getView().getModel("claimsubmission_input");
@@ -379,8 +344,6 @@ sap.ui.define([
             return oModel;
         },
 
-
-
         _mapClaimHeaderToForm(o) {
             return {
                 purpose: o.PURPOSE || "",
@@ -397,14 +360,6 @@ sap.ui.define([
                 total_claim_amount: o.TOTAL_CLAIM_AMOUNT || 0,
                 cash_advance_amount: o.CASH_ADVANCE_AMOUNT || 0,
                 final_amount_to_receive: o.FINAL_AMOUNT_TO_RECEIVE || 0,
-
-                // optional nested descr fields if you have them
-                /*                 descr: {
-                                    purpose: o.PURPOSE || "",
-                                    cost_center: "",
-                                    alternate_cost_center: "",
-                                    status_id: o.STATUS_ID || ""
-                                } */
             };
 
 
