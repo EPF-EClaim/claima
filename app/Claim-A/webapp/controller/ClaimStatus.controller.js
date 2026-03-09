@@ -16,7 +16,7 @@ sap.ui.define([
     },
 
     _getClaimStatModel() {
-      return this.getOwnerComponent().getModel("claim_status");
+      return this.getOwnerComponent().getModel("claim_status2");
     },
 
     //Manual Navigation for Claim Submission
@@ -48,7 +48,7 @@ sap.ui.define([
         const oListItem = oEvent?.getParameter("listItem");
 
         let oCtx =
-          oListItem?.getBindingContext("claim_status") ||
+          oListItem?.getBindingContext("claim_status2") ||
           oListItem?.getBindingContext("request_status") ||
           oListItem?.getBindingContext() || null;
 
@@ -57,7 +57,7 @@ sap.ui.define([
           const oSelected = oTable?.getSelectedItem?.();
           if (oSelected) {
             oCtx =
-              oSelected.getBindingContext("claim_status") ||
+              oSelected.getBindingContext("claim_status2") ||
               oSelected.getBindingContext("request_status") ||
               oSelected.getBindingContext();
           }

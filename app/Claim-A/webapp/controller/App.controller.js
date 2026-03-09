@@ -1838,11 +1838,11 @@ sap.ui.define([
 		//For MyClaimStatus
 
 		getCLAIMHeaderList: async function () {
-			const oReq = this.getOwnerComponent().getModel("claim_status");
+			const oReq = this.getOwnerComponent().getModel("claim_status2");
 			const oModel = this.getOwnerComponent().getModel("employee_view");
 
 			const oListBinding = oModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", undefined,
-				[new Sorter("STATUS", true)],
+				[new Sorter("STATUS_ID", true)],
 				null,
 				{
 					$$ownRequest: true,
@@ -1856,18 +1856,18 @@ sap.ui.define([
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 				const a = aCtx.map((ctx) => ctx.getObject());
 
-				a.forEach((it) => {
+/* 				a.forEach((it) => {
 					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
-				});
+				}); */
 
-				oReq.setProperty("/req_header_list", a);
-				oReq.setProperty("/req_header_count", a.length);
+				oReq.setProperty("/claim_header_list", a);
+				oReq.setProperty("/claim_header_count", a.length);
 
 				return a;
 			} catch (err) {
 				console.error("OData bindList failed:", err);
-				oReq.setProperty("/req_header_list", []);
-				oReq.setProperty("/req_header_count", 0);
+				oReq.setProperty("/claim_header_list", []);
+				oReq.setProperty("/claim_header_count", 0);
 				return [];
 			}
 		},
