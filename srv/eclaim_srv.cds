@@ -6,6 +6,12 @@ service eclaim_srv {
         message : String;
     };
 
+    @odata.singleton
+    entity FeatureControl {
+        operationHidden : Boolean;
+        operationEnabled : Boolean;
+    }
+
     action   batchCreateEmployee(employees: many ZEMP_MASTER)      returns Response;
 
     action   batchCreateDependent(dependents: many ZEMP_DEPENDENT) returns Response;
