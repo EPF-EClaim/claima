@@ -86,7 +86,7 @@
 
                                 <headerToolbar>
                                     <Toolbar>
-                                        <Title text="{= ${i18n>nav_approval} + ' (' + ${claim_status>/claim_header_count} + ')'}"/>
+                                        <Title text="{= ${i18n>claimform} + ' (' + ${claim_status>/claim_header_count} + ')'}"/>
                                     </Toolbar>
                                 </headerToolbar>
 
