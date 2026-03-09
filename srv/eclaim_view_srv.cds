@@ -3,13 +3,6 @@ using {ECLAIM} from '../db/eclaim';
 service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
     entity ZEMP_REQUEST_VIEW @(restrict: [
         {
-            grant: [
-                'READ',
-                'UPDATE'
-            ],
-            to   : ['Approver']
-        },
-        {
             grant: 'READ',
             to   : ['Claimant'],
             where: 'EMP_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
@@ -67,13 +60,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             grant: 'WRITE',
             to   : ['Claimant']
-        },
-        {
-            grant: [
-                'READ',
-                'UPDATE'
-            ],
-            to   : ['Approver']
         }
     ])                                   as
         projection on ECLAIM.ZREQUEST_ITEM {
@@ -158,13 +144,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             grant: 'WRITE',
             to   : ['Claimant']
-        },
-        {
-            grant: [
-                'READ',
-                'UPDATE'
-            ],
-            to   : ['Approver']
         }
     ])                                   as
         projection on ECLAIM.ZREQ_ITEM_PART {
@@ -186,13 +165,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             grant: 'WRITE',
             to   : ['Claimant']
-        },
-        {
-            grant: [
-                'READ',
-                'UPDATE'
-            ],
-            to   : ['Approver']
         }
     ])                                   as
         projection on ECLAIM.ZCLAIM_HEADER {
@@ -251,14 +223,14 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             grant: 'WRITE',
             to   : ['Claimant']
-        },
-        {
-            grant: [
-                'READ',
-                'UPDATE'
-            ],
-            to   : ['Approver']
         }
+        // {
+        //     grant: [
+        //         'READ',
+        //         'UPDATE'
+        //     ],
+        //     to   : ['Approver']
+        // }
     ])                                   as
         projection on ECLAIM.ZCLAIM_ITEM {
             key CLAIM_ID,
@@ -354,14 +326,14 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             grant: 'WRITE',
             to   : ['Claimant']
-        },
-        {
-            grant: [
-                'READ',
-                'UPDATE'
-            ],
-            to   : ['Approver']
         }
+        // {
+        //     grant: [
+        //         'READ',
+        //         'UPDATE'
+        //     ],
+        //     to   : ['Approver']
+        // }
     ])                                   as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
@@ -387,14 +359,14 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             grant: 'WRITE',
             to   : ['Claimant']
-        },
-        {
-            grant: [
-                'READ',
-                'UPDATE'
-            ],
-            to   : ['Approver']
         }
+        // {
+        //     grant: [
+        //         'READ',
+        //         'UPDATE'
+        //     ],
+        //     to   : ['Approver']
+        // }
     ])                                   as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
@@ -413,14 +385,14 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             grant: 'WRITE',
             to   : ['Claimant']
-        },
-        {
-            grant: [
-                'READ',
-                'UPDATE'
-            ],
-            to   : ['Approver']
         }
+        // {
+        //     grant: [
+        //         'READ',
+        //         'UPDATE'
+        //     ],
+        //     to   : ['Approver']
+        // }
     ])                                   as
         projection on ECLAIM.ZCLAIM_ITEM {
             key CLAIM_ID,

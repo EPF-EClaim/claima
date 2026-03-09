@@ -154,7 +154,8 @@ service eclaim_srv {
         }
     ])                              as projection on ECLAIM.ZREQ_ITEM_PART;
 
-    entity ZCLAIM_HEADER @(restrict: [
+    entity ZCLAIM_HEADER 
+    @(restrict: [
         {
             grant: 'READ',
             to   : 'Claimant',
@@ -164,7 +165,8 @@ service eclaim_srv {
             grant: ['WRITE'],
             to   : 'Claimant'
         }
-    ])                              as projection on ECLAIM.ZCLAIM_HEADER;
+    ])                    
+              as projection on ECLAIM.ZCLAIM_HEADER;
 
     entity ZNUM_RANGE @(restrict: [
         {
