@@ -1011,14 +1011,15 @@ entity ZWORKFLOW_RULE : managed {
         RISK_LEVEL            : String(1);
         THRESHOLD_AMOUNT      : Decimal(7, 2);
         THRESHOLD_VALUE       : String(2);
-        RECEIPT_DAY           : Date;
-        RECEIPT_AGE           : Integer;
+        RECEIPT_DAY           : Integer;
+        RECEIPT_AGE           : String;
         EMPLOYEE_COST_CENTER  : String(9);
         OUTCOME_WORKFLOW_CODE : String(3);
         REMARK                : String(255);
         REQUEST_TYPE_ID       : String;
         CASH_ADVANCE          : Boolean;
-        TRIP_START_DATE       : Date;
+        TRIP_START_DATE       : String(2);
+        RULE                  : String(15);
         ZREQUEST_TYPE         : Association to ZREQUEST_TYPE
                                     on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
 }
@@ -1275,6 +1276,8 @@ entity ZAPPROVER_DETAILS_CLAIMS : managed {
                                      on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
         ZSTATUS                : Association to one ZSTATUS
                                      on ZSTATUS.STATUS_ID = STATUS;
+        ZCLAIM_HEADER          : Association to ZCLAIM_HEADER
+                                     on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
 }
 
 entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
@@ -1294,6 +1297,8 @@ entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
                                      on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
         ZSTATUS                : Association to one ZSTATUS
                                      on ZSTATUS.STATUS_ID = STATUS;
+        ZREQUEST_HEADER        : Association to ZREQUEST_HEADER
+                                     on ZREQUEST_HEADER.REQUEST_ID = PREAPPROVAL_ID;
 }
 
 entity ZSUBSTITUTION_RULES : managed {

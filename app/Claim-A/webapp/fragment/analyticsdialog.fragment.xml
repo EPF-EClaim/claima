@@ -88,7 +88,7 @@
                 >
                     <core:Item
                         key="{employee>COURSE_ID}"
-                        text="{employee>COURSE_DESC}"
+                        text="{= ${employee>COURSE_ID} + ' - ' + ${employee>COURSE_DESC}}"
                     />
                 </MultiComboBox>
 
@@ -101,7 +101,7 @@
                 >
                     <core:Item
                         key="{employee>DEPARTMENT_ID}"
-                        text="{employee>DEPARTMENT_DESC}"
+                        text="{= ${employee>DEPARTMENT_ID} + ' - ' + ${employee>DEPARTMENT_DESC}}"
                     />
                 </MultiComboBox>
 
@@ -114,7 +114,7 @@
                 >
                     <core:Item
                         key="{employee>GL_ACCOUNT_ID}"
-                        text="{employee>GL_ACCOUNT_DESC}"
+                        text="{= ${employee>GL_ACCOUNT_ID} + ' - ' + ${employee>GL_ACCOUNT_DESC}}"
                     />
                 </MultiComboBox>
 
@@ -137,7 +137,7 @@
                     />
                 </MultiComboBox>
 
-                 <Label text="Cost Center" />
+                <Label text="Cost Center" />
 
                 <!-- NON-ADMIN: Read-only Text -->
                 <Input
@@ -224,7 +224,9 @@
                 <MultiComboBox
                     id="emp_name"
                     width="100%"
-                    items="{employee>/ZEMP_MASTER}"
+                    items="{ 
+                    path: 'employee>/ZEMP_MASTER',
+                    length: 1000 }"
                 >
                     <core:Item
                         key="{employee>EEID}"
@@ -264,23 +266,22 @@
         </f:SimpleForm>
 
         <!-- Buttons -->
-        <HBox
-            alignItems="Center"
-            justifyContent="End"
-            class="sapUiSmallMarginEnd"
-            columnGap="0.5rem"
-        >
+        <beginButton>
             <Button
                 id="analytics_placeholder_create"
                 press="onClickCreateRequest_ana"
                 text="{i18n>submitbtn}"
                 type="Emphasized"
             />
-            <Button
+        </beginButton>
+            
+        <endButton>
+        <Button
                 id="analytics_placeholder_cancel"
                 press="onClickCancel_ana"
                 text="{i18n>req_b_cancel}"
             />
-        </HBox>
+        
+        </endButton>
     </Dialog>
 </core:FragmentDefinition>

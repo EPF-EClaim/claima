@@ -43,14 +43,14 @@
 					<!-- Save Draft -->
 					<Button
 						id="button_claimsubmission_savedraft"
-						press="onSaveDraft_ClaimSubmission"
+						press="onAction_ClaimSubmission_Toolbar('Save Draft')"
 						text="{i18n>button_claimsubmission_savedraft}"
 					/>
 
 					<!-- Delete Report -->
 					<Button
 						id="button_claimsubmission_deletereport"
-						press="onDeleteReport_ClaimSubmission"
+						press="onAction_ClaimSubmission_Toolbar('Delete Report')"
 						text="{i18n>button_claimsubmission_deletereport}"
 						enabled="false"
 					/>
@@ -58,15 +58,16 @@
 					<!-- Submit Report -->
 					<Button
 						id="button_claimsubmission_submitreport"
-						press="onSubmitReport_ClaimSubmission"
+						press="onAction_ClaimSubmission_Toolbar('Submit Report')"
 						text="{i18n>button_claimsubmission_submitreport}"
+						type="Emphasized"
 						enabled="false"
 					/>
 
 					<!-- Back -->
 					<Button
 						id="button_claimsubmission_back"
-						press="onBack_ClaimSubmission"
+						press="onAction_ClaimSubmission_Toolbar('Back')"
 						text="{i18n>button_claimsubmission_back}"
 					/>
 
@@ -76,6 +77,7 @@
 						id="button_claimdetails_input_save"
 						press="onSave_ClaimDetails_Input"
 						text="{i18n>button_claimdetails_input_save}"
+						type="Emphasized"
 						visible="false"
 					/>
 
