@@ -141,12 +141,14 @@ sap.ui.define([
 					oRouter.navTo("RequestFormStatus");
 					break;
 				case "mysubstitution":
-					var oRouter = this.getOwnerComponent().getRouter();
-					oRouter.navTo("ManageSub");
+					if (type === "Approver") {
+						var oRouter = this.getOwnerComponent().getRouter();
+						oRouter.navTo("ManageSub");
+					}
 					break;
 				case "config":
 					//Start EY_ATHIRAH
-					if (type === "DTD Admin") {
+					if (type === "DTD Admin" || type === "JKEW Admin") {
 						oRouter.navTo("Configuration");
 					} else {
 						var message = this._getTexti18n("msg_unauthorized_config");
@@ -181,7 +183,7 @@ sap.ui.define([
 				case "dashboard":
 					oRouter.navTo("Dashboard");
 					break;
-
+				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
 				default:
 					// navigate to page with ID same as the key
 					var oPage = this.byId(oKey); // make sure your NavContainer has a page with this ID
