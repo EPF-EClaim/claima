@@ -40,6 +40,29 @@ sap.ui.define([
             return this.getOwnerComponent().getModel("claim_status");
         },
 
+        //Manual Navigation for Claim Submission
+
+
+        _getRootAndContainer: function () {
+            const oRootView = this.getOwnerComponent().getRootControl();
+            if (!oRootView) throw new Error("Root view not available");
+            const oPageContainer = oRootView.byId("pageContainer");
+            if (!oPageContainer) throw new Error("pageContainer not found in Root view");
+            return { oRootView, oPageContainer };
+        },
+
+        /** Navigate manually to Claim Submission (same style as ClaimStatus.controller) */
+        _navToClaimSubmissionManual: function () {
+            const { oRootView, oPageContainer } = this._getRootAndContainer();
+            const oClaimSubmission = oRootView.byId("navcontainer_claimsubmission"); // <-- matches App.view.xml
+            if (!oClaimSubmission) {
+                sap.m.MessageToast.show("Claim Submission page not found.");
+                return;
+            }
+            oPageContainer.to(oClaimSubmission);
+        },
+
+
 
         /* =========================================================
         * Main Logic
@@ -289,13 +312,11 @@ sap.ui.define([
                     return;
                 }
 
+                // Load claim header + items and populate claimsubmission_input model
                 await this._loadClaimById(String(sClaimId));
 
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("ClaimSubmission", {
-                    claim_id: String(sClaimId)   // <-- use the exact argument name
-                });
-
+                // === Manual navigation to Claim Submission (like ClaimStatus.controller) ===
+                this._navToClaimSubmissionManual();
 
             } catch (e) {
                 sap.base.Log.error("openItemFromClaimList failed:", e);
@@ -304,8 +325,6 @@ sap.ui.define([
                 this.getView().setBusy(false);
             }
         },
-
-
         _getClaimInputModel: function () {
             // Try view first (if you intend view-scope)
             let oModel = this.getView().getModel("claimsubmission_input");
@@ -325,7 +344,6 @@ sap.ui.define([
             return oModel;
         },
 
-
         _mapClaimHeaderToForm(o) {
             return {
                 purpose: o.PURPOSE || "",
@@ -342,14 +360,6 @@ sap.ui.define([
                 total_claim_amount: o.TOTAL_CLAIM_AMOUNT || 0,
                 cash_advance_amount: o.CASH_ADVANCE_AMOUNT || 0,
                 final_amount_to_receive: o.FINAL_AMOUNT_TO_RECEIVE || 0,
-
-                // optional nested descr fields if you have them
-/*                 descr: {
-                    purpose: o.PURPOSE || "",
-                    cost_center: "",
-                    alternate_cost_center: "",
-                    status_id: o.STATUS_ID || ""
-                } */
             };
 
 

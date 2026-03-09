@@ -172,6 +172,8 @@ sap.ui.define([
 				// Start Aiman Salim 03/03/2026 - Added for MyClaim
 				case "myreport":
 					//var oRouter = this.getComponent().getRouter().navTo("ClaimStatus");
+					this.getCLAIMHeaderList();
+					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("ClaimStatus")
 					break;
 				//Start Aiman Salim 08/03/2026 - Added for MyApproval
@@ -1759,7 +1761,7 @@ sap.ui.define([
 			const oStatusPending = new sap.ui.model.Filter(
 				"STATUS",
 				sap.ui.model.FilterOperator.EQ,
-				"PENDING APPROVAL" // use the exact code/value your backend expects
+				"PENDING" // use the exact code/value your backend expects
 			);
 			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
 			const oCombined = new sap.ui.model.Filter({
@@ -1816,7 +1818,7 @@ sap.ui.define([
 			const oStatusPending = new sap.ui.model.Filter(
 				"STATUS",
 				sap.ui.model.FilterOperator.EQ,
-				"PENDING APPROVAL" // use the exact code/value your backend expects
+				"PENDING" // use the exact code/value your backend expects
 			);
 			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
 			const oCombined = new sap.ui.model.Filter({
@@ -1854,6 +1856,44 @@ sap.ui.define([
 				return [];
 			}
 		},
+
+		//For MyClaimStatus
+
+		getCLAIMHeaderList: async function () {
+			const oReq = this.getOwnerComponent().getModel("claim_status2");
+			const oModel = this.getOwnerComponent().getModel("employee_view");
+
+			const oListBinding = oModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", undefined,
+				[new Sorter("STATUS_ID", true)],
+				null,
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$$updateGroupId: "$auto",
+					$count: true
+				}
+			);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+/* 				a.forEach((it) => {
+					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
+				}); */
+
+				oReq.setProperty("/claim_header_list", a);
+				oReq.setProperty("/claim_header_count", a.length);
+
+				return a;
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				oReq.setProperty("/claim_header_list", []);
+				oReq.setProperty("/claim_header_count", 0);
+				return [];
+			}
+		},
+		//END - Aiman Salim
 
 		getFieldVisibility_ReqType: async function (oEvent) {
 			const oModel = this.getOwnerComponent().getModel();
