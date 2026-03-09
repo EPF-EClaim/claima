@@ -12,6 +12,12 @@ service eclaim_srv {
 
     action   batchCreateCostCenter(costcenters: many ZCOST_CENTER) returns Response;
 
+    @odata.singleton
+    entity FeatureControl {
+        operationHidden  : Boolean;
+        operationEnabled : Boolean;
+    }
+
     entity ZREQUEST_TYPE @(restrict: [
         {
             grant: 'READ',
@@ -26,7 +32,8 @@ service eclaim_srv {
             grant: '*',
             to   : 'DTD_Admin'
         }
-    ])                              as projection on ECLAIM.ZREQUEST_TYPE;
+    ], 
+    )                              as projection on ECLAIM.ZREQUEST_TYPE;
 
     entity ZCLAIM_ITEM @(restrict: [
         {
