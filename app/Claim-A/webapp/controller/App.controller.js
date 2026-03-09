@@ -145,7 +145,7 @@ sap.ui.define([
 						var oRouter = this.getOwnerComponent().getRouter();
 						oRouter.navTo("ManageSub");
 					} else {
-						var message = this._getTexti18n("msg_unauthorized_analytic");
+						var message = this._getTexti18n("msg_unauthorized_substitution");
 						sap.m.MessageBox.error(message);
 					}
 					break;
@@ -182,7 +182,7 @@ sap.ui.define([
 						var oRouter = this.getOwnerComponent().getRouter();
 						oRouter.navTo("MyApproval");
 					} else {
-						var message = this._getTexti18n("msg_unauthorized_analytic");
+						var message = this._getTexti18n("msg_unauthorized_approval");
 						sap.m.MessageBox.error(message);
 					}
 					break;
