@@ -572,7 +572,6 @@
                     "id": "Dashboard",
                     "name": "App"
                 },
-
                 "ZPROJECT_HDR": {
                     "type": "Component",
                     "id": "ZPROJECT_HDR",
@@ -3646,7 +3645,6 @@
                     "viewType": "XML",
                     "transition": "slide"
                 },
-
                 "ManageSub": {
                     "id": "ManageSub",
                     "path": "claima.view",
@@ -3878,6 +3876,15 @@
                     "model/data.json"
                 ]
             }
+        },
+        "extends": {
+            "extensions": {
+                "sap.ui.controllerExtensions": {
+                    "sap.fe.templates.ListReport.ListReportController#claima::ZRISK": {
+                        "controllerName": "claima.ext.controller.Common"
+                    }
+                }
+            }
         }
     },
     "sap.fiori": {
@@ -3889,4 +3896,3 @@
         "service": "claimabackend.service"
     }
 }
-
