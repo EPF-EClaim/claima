@@ -1214,7 +1214,11 @@ service eclaim_srv {
         to   : 'Approver'
     }])                             as projection on ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL;
 
-    entity ZSUBSTITUTION_RULES      as projection on ECLAIM.ZSUBSTITUTION_RULES;
+    entity ZSUBSTITUTION_RULES @(restrict: [{
+        grant: '*',
+        to   : 'Approver',
+        where: 'USER_ID  = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
+    }])                             as projection on ECLAIM.ZSUBSTITUTION_RULES;
 
     entity ZDB_STRUCTURE            as projection on ECLAIM.ZDB_STRUCTURE;
 
