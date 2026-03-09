@@ -1011,8 +1011,8 @@ entity ZWORKFLOW_RULE : managed {
         RISK_LEVEL            : String(1);
         THRESHOLD_AMOUNT      : Decimal(7, 2);
         THRESHOLD_VALUE       : String(2);
-        RECEIPT_DAY           : Date;
-        RECEIPT_AGE           : Integer;
+        RECEIPT_DAY           : Integer;
+        RECEIPT_AGE           : String;
         EMPLOYEE_COST_CENTER  : String(9);
         OUTCOME_WORKFLOW_CODE : String(3);
         REMARK                : String(255);
