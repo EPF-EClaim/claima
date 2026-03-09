@@ -1305,10 +1305,10 @@ sap.ui.define([
 				const headerColumns = [
 					{ label: "Claim ID", property: "Claim ID", width: 18 },
 					{ label: "Purpose", property: "Purpose", width: 30 },
-					{ label: "Trip Start Date", property: "Trip Start Date", type: "date", width: 18 },
-					{ label: "Trip End Date", property: "Trip End Date", type: "date", width: 18 },
-					{ label: "Event Start Date", property: "Event Start Date", type: "date", width: 18 },
-					{ label: "Event End Date", property: "Event End Date", type: "date", width: 18 },
+					{ label: "Trip Start Date", property: "Trip Start Date", width: 18 },
+					{ label: "Trip End Date", property: "Trip End Date", width: 18 },
+					{ label: "Event Start Date", property: "Event Start Date", width: 18 },
+					{ label: "Event End Date", property: "Event End Date", width: 18 },
 					{ label: "Location", property: "Location", width: 20 },
 					{ label: "Comment", property: "Comment", width: 30 },
 					{ label: "Cost Center", property: "Cost Center", width: 18 },
@@ -1328,7 +1328,7 @@ sap.ui.define([
 				// Items Sheet
 				// -------------------------------
 				const itemsColumns = [
-					{ label: "Start Date", property: "start_date", type: "date", width: 18 },
+					{ label: "Start Date", property: "start_date", width: 18 },
 					{ label: "Receipt No", property: "receipt_number", width: 18 },
 					{ label: "Claim Type", property: "claim_type_item_id", width: 20 },
 					{ label: "Amount", property: "amount", type: "number", scale: 2, width: 14 },
