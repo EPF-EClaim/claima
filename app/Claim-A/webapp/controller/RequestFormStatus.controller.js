@@ -7,17 +7,19 @@ sap.ui.define([
 	"sap/m/Label",
 	"sap/ui/core/Fragment",
 	"sap/ui/export/Spreadsheet",
-	"sap/ui/core/BusyIndicator"
-], function (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator) {
+	"sap/ui/core/BusyIndicator",
+	"claima/utils/PARequestSharedFunction"
+], function (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator, PARequestSharedFunction) {
 	"use strict";
 
-	return Controller.extend("claima.controller.RequestForm", {
+	return Controller.extend("claima.controller.RequestFormStatus", {
  
 		/* =========================================================
 		* Lifecycle
 		* ======================================================= */
 		async onInit() {
-
+			// initialize PAR Status List
+			PARequestSharedFunction.getPARHeaderList(this._getReqStatModel(), this._getViewModel());
 		},
 
 		/* =========================================================
@@ -31,10 +33,16 @@ sap.ui.define([
 		_getReqStatModel() {
 			return this.getOwnerComponent().getModel("request_status");
 		},
+
+		_getViewModel() {
+			return this.getOwnerComponent().getModel("employee_view");
+		},
 		
 		/* =========================================================
 		* Main Logic
 		* ======================================================= */
+
+
 
         async openItemFromList(oEvent) {
 			try {

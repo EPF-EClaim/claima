@@ -128,16 +128,16 @@
 			    <Label text="{i18n>req_acc}" />
 			    <Select 
 					id="req_acc"
-					width="100%" 
-						selectedKey="{request>/req_header/altcostcenter}" 
-						required="false" 
-						visible="false">
-					<core:Item key="none" text="" />
-					<core:Item key="cc1" text="CC1" />
-					<core:Item key="cc2" text="CC2" />
-					<core:Item key="cc3" text="CC3" />
-					<core:Item key="cc4" text="CC4" />
-					<core:Item key="cc5" text="CC5" />
+					selectedKey="{request>/req_header/altcostcenter}" 
+					required="true" 
+					forceSelection="false"
+					visible="false"
+					items="{path: 'employee>/ZCOST_CENTER',
+							sorter: { path: 'COST_CENTER_ID', descending: false }}">
+					<items>
+						<core:Item key="{employee>COST_CENTER_ID}" 
+								text="{employee>COST_CENTER_DESC}" />
+					</items>
 				</Select>
 
 			    <Label text="{i18n>req_attach1}" />
@@ -162,6 +162,21 @@
 					required="true"
 					value="{request>/req_header/comment}"
 					visible="false" />
+
+				<Label text="{i18n>req_project}" />
+				<Select 
+					id="req_project"
+					selectedKey="{request>/req_header/projectcode}" 
+					required="true" 
+					forceSelection="false"
+					visible="false"
+					items="{path: 'employee>/ZPROJECT_HDR',
+							sorter: { path: 'PROJECT_CODE_IO', descending: false }}">
+					<items>
+						<core:Item key="{employee>PROJECT_CODE_IO}" 
+								text="{employee>PROJECT_CODE_IO} :: {employee>PROJECT_DESC}" />
+					</items>
+				</Select>
 								
 			</f:content>
         </f:SimpleForm>
