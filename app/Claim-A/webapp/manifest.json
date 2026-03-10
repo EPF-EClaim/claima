@@ -123,6 +123,10 @@
             "claim_status2": {
                 "type": "sap.ui.model.json.JSONModel",
                 "uri": "model/claim_status2.json"
+            },
+            "approval_log": {
+                "type": "sap.ui.model.json.JSONModel",
+                "uri": "model/approval_log.json"
             }
 
 
