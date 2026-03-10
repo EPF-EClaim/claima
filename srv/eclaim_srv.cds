@@ -16,7 +16,8 @@ service eclaim_srv {
         YEAR           : String(4);
         INTERNAL_ORDER : String;
         FUND_CENTER    : String;
-        MATERIAL_GROUP : String
+        MATERIAL_GROUP : String;
+        AMOUNT         : Decimal(15, 2);
     }
 
     action   batchCreateEmployee(employees: many ZEMP_MASTER)      returns Response;
@@ -25,7 +26,7 @@ service eclaim_srv {
 
     action   batchCreateCostCenter(costcenters: many ZCOST_CENTER) returns Response;
 
-    action   budgetchecking(budget: budgetdata  )                       returns Response;
+    action   budgetchecking(budget: many budgetdata)               returns Response;
 
     entity ZEMP_MASTER                   as projection on ECLAIM.ZEMP_MASTER;
 
