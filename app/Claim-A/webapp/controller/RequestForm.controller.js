@@ -42,6 +42,10 @@ sap.ui.define([
 		/* =========================================================
 		* Lifecycle
 		* ======================================================= */
+
+		_ReqAttachmentFile1: null, 
+		_ReqAttachmentFile2: null,
+		
 		async onInit() {
 			this._fragments = Object.create(null);
 
@@ -392,6 +396,119 @@ sap.ui.define([
 		/* =========================================================
 		* Header & Item List Area
 		* ======================================================= */
+
+		async onDocLinkPress( oEvent ) {
+			var attachmentID = oEvent.getSource().getText();
+
+			var sServiceUrl =
+				"SuccessFactors_API/odata/v2/Attachment('" + attachmentID + "')";
+
+			try {
+				const response = await fetch(sServiceUrl, { 
+						method: "GET" 
+				});
+
+				if (!response.ok) {
+				const errText = await response.text().catch(() => "");
+					throw new Error("HTTP " + response.status + " " + response.statusText + ": " + errText);
+				}
+
+				const xmlText = await response.text();
+
+				// turn XML into JSON
+				const parser = new DOMParser();
+				const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+				// Check XML parsing errors
+				const parseError = xmlDoc.querySelector("parsererror");
+				if (parseError) {
+					console.log("Failed to parse XML response.")
+					throw new Error("Failed to parse XML response.");
+				}
+
+				// get content from xmlDoc
+				const content = xmlDoc.querySelector("content");
+				if (!content) {
+					console.log("No attachment details found (missing <content>).")
+					throw new Error("No attachment details found (missing <content>).");
+				}
+
+				const props = content.querySelector("properties");
+				if (!props) {
+					console.log("No attachment details found (missing <properties>).")
+					throw new Error("No attachment details found (missing <properties>).");
+				}
+
+				const jsonData = {};
+
+				// Only iterate element nodes
+				const contentNodes = props.children;
+				for (let i = 0; i < contentNodes.length; i++) {
+					const node = contentNodes[i];
+					jsonData[node.localName] = (node.textContent || "").trim();
+				}
+
+				// Validate required fields
+				if (!jsonData.fileContent) {
+					throw new Error("Attachment fileContent is empty or missing.");
+				}
+				if (!jsonData.mimeType) {
+					jsonData.mimeType = "application/pdf"; // fallback
+				}
+				if (!jsonData.fileName) {
+					jsonData.fileName = "Attachment";
+				}
+
+				// Convert base64 -> Blob
+				const base64Encoded = jsonData.fileContent;
+				// Decode base64 into bytes (note: atob works for base64)
+				const decoded = atob(base64Encoded);
+				const byteArray = new Uint8Array(decoded.length);
+
+				for (let i = 0; i < decoded.length; i++) {
+					byteArray[i] = decoded.charCodeAt(i);
+				}
+
+				const blob = new Blob([byteArray], { type: jsonData.mimeType });
+				const pdfUrl = URL.createObjectURL(blob);
+
+				// Create/reuse PDFViewer
+				if (!this._PDFViewer) {
+				this._PDFViewer = new sap.m.PDFViewer({
+					isTrustedSource: true,
+					width: "auto"
+				});
+
+				this.getView().addDependent(this._PDFViewer);
+
+				// Optional: cleanup object URL when viewer closes
+				this._PDFViewer.attachEventOnce("afterClose", function () {
+					try {
+					URL.revokeObjectURL(pdfUrl);
+					} catch (e) {
+					// ignore cleanup errors
+					}
+				});
+				}
+
+				console.log(pdfUrl);
+
+				// Update viewer properties each time
+				// this._PDFViewer.setTitle(
+				// 	this._getTexti18n("pdfviewer_claimsummary_attachment", [jsonData.fileName])
+				// );
+				this._PDFViewer.setSource(pdfUrl);
+
+				// Register blob as trusted/whitelisted (older UI5)
+				jQuery.sap.addUrlWhitelist("blob");
+
+				// Open viewer
+				this._PDFViewer.open();
+			} catch (error) {
+				console.log("Error viewing attachment: ", error);
+				MessageToast.show("Error viewing attachment: " + (error.message || error));
+			}
+		},
 
 		async onAddItem(oEvent) {
 			await this._showItemCreate("create");
@@ -1087,6 +1204,21 @@ sap.ui.define([
 
 				const requestSubId = String(nr.result);
 
+				const oReqModel = this.getView().getModel("request");
+				const oData = oReqModel.getProperty("/req_item");
+
+				if (oData.doc1) {
+					var attachment_1 = await this.getFileAsBinary("i_attachment_1_file");
+					var attachment1_ID = await this.postFilesToSF( oData.doc1, attachment_1 );
+				}
+				if (oData.doc2) {
+					var attachment_2 = await this.getFileAsBinary("i_attachment_2_file");
+					var attachment2_ID = await this.postFilesToSF( oData.doc2, attachment_2 );
+				}
+				
+				console.log(attachment1_ID)
+				console.log(attachment2_ID)
+
 				const oItemCtx = oModel.bindList("/ZREQUEST_ITEM").create(
 					{
 						REQUEST_ID			:	reqId,
@@ -1098,7 +1230,9 @@ sap.ui.define([
 						START_DATE			:	data.req_item.start_date || null,
 						END_DATE			:	data.req_item.end_date   || null,
 						LOCATION			:	data.req_item.location  || "",
-						REMARK				:	data.req_item.remark    || ""
+						REMARK				:	data.req_item.remark    || "",
+						ATTACHMENT1			: 	attachment1_ID,
+						ATTACHMENT2       	:  	attachment2_ID
 					},                  
 					{ $$updateGroupId: "itemCreate" }
 				);
@@ -1134,6 +1268,194 @@ sap.ui.define([
 				sap.m.MessageToast.show(e.message || "Save failed");
 			} finally {
 				sap.ui.core.BusyIndicator.hide();
+			}
+		},
+
+		onImportChange1( oEvent ) {
+			this._ReqAttachmentFile1 = oEvent.getParameters("files").files[0];
+		},
+		
+		onImportChange2( oEvent ) {
+			this._ReqAttachmentFile2 = oEvent.getParameters("files").files[0];
+		},
+
+		getFileAsBinary: function( attachmentID ){ 
+		
+			return new Promise ((resolve, reject) => {
+
+				const file =
+				attachmentID === 'i_attachment_1_file'
+					? this._ReqAttachmentFile1
+					: this._ReqAttachmentFile2;
+
+				// Validate file presence
+				if (!file) {
+					reject(new Error('No file selected.'));
+					sap.ui.core.BusyIndicator.hide();
+					return;
+				}
+
+				// Validate type
+				const check = this.isAllowedFile(file);
+				if (!check.ok) {
+					reject(new Error(check.reason));
+					MessageToast.show(new Error(check.reason));
+					sap.ui.core.BusyIndicator.hide();
+					return;
+				}
+				
+				var reader = new FileReader();
+				reader.onload = (e) => {
+					var vContent = e.currentTarget.result;
+					console.log(vContent.split(",")[1])
+					resolve(vContent.split(",")[1]);
+				}
+				
+				reader.onerror = (e) => {
+					reject(new Error(`Failed to read file: ${e?.target?.error?.message || 'Unknown error'}`));
+				};
+
+				if (attachmentID == 'i_attachment_1_file') {
+					reader.readAsDataURL(this._ReqAttachmentFile1);
+				}
+				else if (attachmentID == 'i_attachment_2_file'){
+					reader.readAsDataURL(this._ReqAttachmentFile2);
+				}
+			})
+		},
+
+		isAllowedFile(file) {
+			
+			const ALLOWED_MIME_TYPES = new Set([
+				'application/pdf',
+				'image/jpeg',
+				'image/png',
+			]);
+
+			const ALLOWED_EXTENSIONS = new Set([
+				'pdf', 'jpg', 'jpeg', 'png'
+			]);
+
+			if (!file) return { ok: false, reason: 'No file provided.' };
+
+				// Prefer MIME type check
+				const mime = (file.type || '').toLowerCase().trim();
+				if (mime) {
+					// Allow any image/* plus application/pdf, but also restrict to known image types above for safety.
+					const isPdf = mime === 'application/pdf';
+					const isImage = mime.startsWith('image/') && ALLOWED_MIME_TYPES.has(mime);
+					if (isPdf || isImage) {
+					return { ok: true };
+					}
+				}
+
+				// Fallback to extension if MIME is missing or generic (e.g., application/octet-stream)
+				const name = file.name || '';
+				const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
+				if (ALLOWED_EXTENSIONS.has(ext)) {
+					return { ok: true };
+				}
+
+				return { ok: false, reason: 'Only PDF and image files are allowed.' };
+		},
+
+		postMDF: async function ( reqID, reqSubID, attachment1, attachment2) {
+		// Write to Success Factors API
+			var sServiceUrl = "SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS_Parent"; 
+
+			try {
+				const response = await fetch(sServiceUrl, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({				
+						__metadata: {
+							uri: cust_EPF_CLAIM_ATTACHMENTS
+						},
+						Claim_Sub_ID: reqID,
+						cust_EPF_CLAIM_ATTACHMENTS_Parent_Claim_ID: reqSubID,
+
+						cust_attachment1Nav: {
+							__metadata: {
+							uri: `Attachment('${attachment1}')`
+							}
+						},
+						...( String(attachment2).trim().length > 0 && attachment2 ? {
+								cust_Parent_attachment2Nav : {
+									__metadata : {
+										uri: `Attachment('${attachment2}')`
+									}
+								}
+							} : {}
+						)
+					}) 
+				});
+				
+				if (!response.ok) {
+					const errText = await response.text().catch(() => "");
+					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
+				}
+				else {
+					console.log("MDF Updated")
+				}
+
+			} catch (error) {
+				console.log("Error creating MDF: " + error);
+				MessageToast.show("Error creating MDF: " + error);
+				return false;
+			}	
+		},
+
+		postFilesToSF: async function (fileName, fileString) {
+
+			// Write to Success Factors API
+			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment"; 
+
+			try {
+				const response = await fetch(sServiceUrl, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						__metadata: {
+							uri: 'Attachment'
+						},
+						deletable: true,
+						fileName: fileName,
+						moduleCategory: 'UNSPECIFIED',
+						module: 'DEFAULT',
+						userId: 'SFAPI',
+						viewable: true,
+						searchable: true,
+						fileContent: fileString
+					}) 
+				});
+
+				if (!response.ok) {
+					const errText = await response.text().catch(() => "");
+					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
+				}
+
+				const data = await response.text();
+
+				// turn XML into JSON
+				const parser = new DOMParser();
+				const xmlDoc = parser.parseFromString(data, 'text/xml');
+				const jsonData = {};
+
+				const nodes = xmlDoc.documentElement.childNodes;
+				for (let i = 0; i < nodes.length; i++) {
+					const node = nodes[i];
+					if (node.nodeType === 1) {
+						jsonData[node.nodeName] = node.textContent.trim();
+					}
+				}
+
+				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(')+1,jsonData.id.indexOf(')')-1);
+
+				return attachmentNumber;
+			} catch (error) {
+				console.log("Error uploading attachment: " + error);
+				MessageToast.show("Error uploading attachment: " + error);
+				return false;
 			}
 		},
 
