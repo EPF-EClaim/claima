@@ -134,9 +134,19 @@ annotate service.ZCLAIM_TYPE with @(
             },
             {
                 $Type: 'UI.DataField',
-                Value: CATEGORY_ID,
-                Label: 'Category ID'
+                Value:  REQUEST_TYPE,
+                Label: 'Request Type'
             },
+            {
+                $Type: 'UI.DataField',
+                Value: IND_OR_GROUP,
+                Label: 'Individual/Group'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: PROJECT_CLAIM,
+                Label: 'Project Claim'
+            },                                    
             {
                 $Type: 'UI.DataField',
                 Value: START_DATE,
@@ -518,6 +528,12 @@ annotate service.ZROOM_TYPE with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : LEVEL,
+                ![@UI.Importance]: #High,
+                Label            : 'Level'
+            },            
+            {
+                $Type            : 'UI.DataField',
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
@@ -570,6 +586,12 @@ annotate service.ZFLIGHT_CLASS with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Flight Class Description'
             },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LEVEL,
+                ![@UI.Importance]: #High,
+                Label            : 'Level'
+            },            
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
@@ -2732,6 +2754,12 @@ annotate service.ZVEHICLE_CLASS with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : LEVEL,
+                ![@UI.Importance]: #High,
+                Label            : 'Level'
+            },            
+            {
+                $Type            : 'UI.DataField',
                 Value            : START_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'Start Date'
@@ -3000,6 +3028,12 @@ annotate service.ZTRANSFER_MODE with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Mode of Transfer Description'
             },
+            {
+                $Type            : 'UI.DataField',
+                Value            : NUMBER_OF_DAYS,
+                ![@UI.Importance]: #High,
+                Label            : 'Number of Days'
+            },            
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
