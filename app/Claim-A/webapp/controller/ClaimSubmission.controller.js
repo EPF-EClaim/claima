@@ -46,6 +46,11 @@ sap.ui.define([
 			}
 		},
  
+		onExit: function() {
+			this.getView().removeEventDelegate(this._navContainerDelegate);
+			this._navContainerDelegate = null;
+		},
+
 		_showInitFormFragment: function () {
 			var oPage = this.byId("page_claimsubmission");
 
@@ -237,86 +242,61 @@ sap.ui.define([
 			return this.getView().getModel(modelName);
 		},
 
-		onView_Claim_Attachment: async function (oLevel, fieldNumber) {
+		onView_Claim_Attachment: function (oLevel, fieldNumber) {
+			var that = this;
 			// Write to Success Factors API
 			var fileName = "";
 			if (oLevel == 'parent') {
 				// get parent attachment
 				var oInputModel = this.getView().getModel("claimsubmission_input");
-				var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment('" + oInputModel.getProperty("/claim_header/attachment_email_approver") + "')";
+				var sServiceUrl = "/SuccessFactors_API/odata/v2/Attachment('" + oInputModel.getProperty("/claim_header/attachment_email_approver") + "')";
 				var pdfViewer_title = this._getTexti18n("pdfviewer_claimsummary_attachment", [oInputModel.getProperty("/claim_header/descr/attachment_email_approver")]);
 			}
 			else {
 				// get child attachment
 				var oInputModel = this.getView().getModel("claimitem_input");
-				var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment('" + oInputModel.getProperty("/claim_item/attachment_file_" + fieldNumber) + "')";
+				var sServiceUrl = "/SuccessFactors_API/odata/v2/Attachment('" + oInputModel.getProperty("/claim_item/attachment_file_" + fieldNumber) + "')";
 				var pdfViewer_title = this._getTexti18n("pdfviewer_claimdetails_input_attachment" + fieldNumber, [oInputModel.getProperty("/claim_item/descr/attachment_email_" + fieldNumber)]);
 			}
 
-			try {
-				BusyIndicator.show(0);
-
-				const response = await fetch(sServiceUrl, {
-					method: "GET",
-				});
-
-				if (!response.ok) {
-					const errText = await response.text().catch(() => "");
-					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
-				}
-
-				const data = await response.text();
-
-				// turn XML into JSON
-				const parser = new DOMParser();
-				const xmlDoc = parser.parseFromString(data, 'text/xml');
-				const jsonData = {};
-
-				// get content from xmlDoc
-				var content = xmlDoc.querySelector('content');
-				if (content) {
-					var contentNodes = content.querySelector('properties').childNodes;
-				} else {
-					throw new Error(`No attachment details found`);
-				}
-				if (contentNodes) {
-					for (let i = 0; i < contentNodes.length; i++) {
-						const node = contentNodes[i];
-						if (node.nodeType === 1) {
-							jsonData[node.localName] = node.textContent.trim();
-						}
-					}
-
+			BusyIndicator.show(0);
+			$.ajax({
+				type: "GET",
+				contentType: "application/json",
+				url: sServiceUrl,
+				dataType: "json",
+				async: false,
+				success: function (data, textStatus, jqXHR) {
 					// show attachment in PDF viewer
-					var base64EncodedPDF = jsonData.fileContent;
+					var base64EncodedPDF = data.d.fileContent;
 					var decodedPdfContent = atob(base64EncodedPDF);
 					var byteArray = new Uint8Array(decodedPdfContent.length)
 					for(var i=0; i<decodedPdfContent.length; i++){
 						byteArray[i] = decodedPdfContent.charCodeAt(i);
 					}
-					var blob = new Blob([byteArray.buffer], { type: jsonData.mimeType });
+					var blob = new Blob([byteArray.buffer], { type: data.d.mimeType });
 					var _pdfurl = URL.createObjectURL(blob);
 					
-					this._PDFViewer = new PDFViewer({
+					that._PDFViewer = new PDFViewer({
 						isTrustedSource : true,
 						title: pdfViewer_title,
 						width:"auto",
 						source:_pdfurl
 					});
-					this.getView().addDependent(this._pdfViewer);
+					that.getView().addDependent(that._pdfViewer);
 					jQuery.sap.addUrlWhitelist("blob"); // register blob url as whitelist
 				
 					BusyIndicator.hide();
-					this._PDFViewer.open();
-				} else {
-					throw new Error(`No attachment details found`);
+					that._PDFViewer.open();
+				},
+				error: function (xhr) {
+					console.log("Error viewing attachment: " + xhr.status + xhr.responseText);
+					MessageToast.show("Error viewing attachment: " + xhr.status + xhr.responseText);
+
+					BusyIndicator.hide();
+					return false;
 				}
-			} catch (error) {
-				console.log("Error viewing attachment: " + error);
-				MessageToast.show("Error viewing attachment: " + error);
-				
-				BusyIndicator.hide();
-			}
+			});
 		},
 
 		onCreateClaim_ClaimSummary: async function (indexNumber) {
@@ -776,7 +756,7 @@ sap.ui.define([
 			// validate attachment
 			//// attachment 1
 			if (this.byId("fileuploader_claimdetails_input_attachment1").getValue()) {
-				var isUploadSuccess = await this._onUpload_ClaimDetails_Input_Attachment(1);
+				var isUploadSuccess = this._onUpload_ClaimDetails_Input_Attachment(1);
 				if (!isUploadSuccess) {
 					// don't proceed claim submission if attachment upload fails
 					return;
@@ -784,7 +764,7 @@ sap.ui.define([
 			}
 			//// attachment 2
 			if (this.byId("fileuploader_claimdetails_input_attachment2").getValue()) {
-				var isUploadSuccess = await this._onUpload_ClaimDetails_Input_Attachment(2);
+				var isUploadSuccess = this._onUpload_ClaimDetails_Input_Attachment(2);
 				if (!isUploadSuccess) {
 					// don't proceed claim submission if attachment upload fails
 					return;
@@ -848,68 +828,88 @@ sap.ui.define([
 			this.onCancel_ClaimDetails_Input();
 		},
 
-		_onUpload_ClaimDetails_Input_Attachment: async function (fieldNumber) {
+		_onUpload_ClaimDetails_Input_Attachment: function (fieldNumber) {
+			var success;
 			// get claim submission model
 			var oInputModel = this.getView().getModel("claimitem_input");
 
-			// Write to Success Factors API
-			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment"; 
+			// get csrf token
+			var tokenModel = sap.ui.getCore().getModel("oToken");
+			if (!tokenModel) {
+				this._fetchToken();
+				tokenModel = sap.ui.getCore().getModel("oToken");
+			}
+			var tokenData = tokenModel.getData();
+			var token = tokenData["csrfToken"];
+			if (!token) {
+				// cannot proceed without token
+				sap.ui.getCore().setModel(null,"oToken");
+				return false;
+			}
 
-			try {
-				BusyIndicator.show(0);
-
-				const response = await fetch(sServiceUrl, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
+			BusyIndicator.show(0);
+			$.ajax({
+				type: "POST",
+				contentType: "application/json",
+				url: "/SuccessFactors_API/odata/v2/Attachment",
+				dataType: "json",
+				async: false,
+				'X-CSRF-Token': token,
+				data: JSON.stringify({
 						__metadata: {
 							uri: 'Attachment'
 						},
 						deletable: true,
-						fileName: oInputModel.getProperty("/attachments/attachment" + fieldNumber + "/fileName"),
+						fileName: oInputModel.getProperty("/attachment/fileName"),
 						moduleCategory: 'UNSPECIFIED',
 						module: 'DEFAULT',
 						userId: 'SFAPI',
 						viewable: true,
 						searchable: true,
-						fileContent: oInputModel.getProperty("/attachments/attachment" + fieldNumber + "/fileContent")
-					}) 
-				});
+						fileContent: oInputModel.getProperty("/attachment/fileContent")
+					}),
+				success: function (data, textStatus, jqXHR) {
+					// get generated attachment number
+					oInputModel.setProperty("/claim_item/attachment_file_" + fieldNumber, data.d.attachmentId);
+					oInputModel.setProperty("/claim_item/descr/attachment_file_" + fieldNumber, data.d.fileName);
 
-				if (!response.ok) {
-					const errText = await response.text().catch(() => "");
-					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
+					BusyIndicator.hide();
+					success = true;
+				},
+				error: function (xhr) {
+					console.log("Error uploading attachment " + fieldNumber + ": " + xhr.status + xhr.responseText);
+					MessageToast.show("Error uploading attachment " + fieldNumber + ": " + xhr.status + xhr.responseText);
+
+					BusyIndicator.hide();
+					success = false;
 				}
+			});
+			return success;
+		},
 
-				const data = await response.text();
+		_fetchToken: function () {
+			var token = {			
+				"csrfToken" : ""
+			};
 
-				// turn XML into JSON
-				const parser = new DOMParser();
-				const xmlDoc = parser.parseFromString(data, 'text/xml');
-				const jsonData = {};
+			var oToken = new JSONModel(token);
+			sap.ui.getCore().setModel(oToken,"oToken");
+			var tokenModel = sap.ui.getCore().getModel("oToken").getData();
 
-				const nodes = xmlDoc.documentElement.childNodes;
-				for (let i = 0; i < nodes.length; i++) {
-					const node = nodes[i];
-					if (node.nodeType === 1) {
-						jsonData[node.nodeName] = node.textContent.trim();
-					}
+			$.ajax({
+				type: "GET",
+				contentType: "application/json",
+				url: "/SuccessFactors_API/odata/v2/",
+				async: false,
+				'X-CSRF-Token': "Fetch",
+				success: function (data, textStatus, jqXHR) {
+					// get token
+					tokenModel["csrfToken"] = jqXHR.getResponseHeader('X-Csrf-Token');
+				},
+				error: function (xhr) {
+					console.log("Error getting token: " + xhr.status + xhr.responseText);
 				}
-
-				// get generated attachment number
-				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(')+1,jsonData.id.indexOf(')')-1);
-				oInputModel.setProperty("/claim_item/attachment_file_" + fieldNumber, attachmentNumber);
-				oInputModel.setProperty("/claim_item/descr/attachment_file_" + fieldNumber, oInputModel.getProperty("/attachments/attachment" + fieldNumber + "/fileName"));
-				
-				BusyIndicator.hide();
-				return true;
-			} catch (error) {
-				console.log("Error uploading attachment " + fieldNumber + ": " + error);
-				MessageToast.show("Error uploading attachment " + fieldNumber + ": " + error);
-				
-				BusyIndicator.hide();
-				return false;
-			}
+			});
 		},
 
 		onChange_ClaimDetails_Input_Attachment: function (oEvent, fieldNumber) {
