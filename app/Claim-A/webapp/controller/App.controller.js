@@ -1655,7 +1655,7 @@ sap.ui.define([
 			if (req_type) {
 				const oMainModel = this.getOwnerComponent().getModel();
 				const oListBinding = oMainModel.bindList("/ZCLAIM_TYPE", null, null, [
-					new Filter("CATEGORY_ID", FilterOperator.EQ, req_type)
+					new Filter("REQUEST_TYPE", FilterOperator.EQ, req_type)
 				]);
 
 				oListBinding.requestContexts().then((aContexts) => {

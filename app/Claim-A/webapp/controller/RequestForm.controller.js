@@ -14,7 +14,8 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"claima/utils/PARequestSharedFunction",
 	"claima/utils/budgetCheck",
-	"claima/utils/ApprovalLog"
+	"claima/utils/ApprovalLog",
+	'claima/utils/Utility'
 ], function (
 	Controller, 
 	MessageToast, 
@@ -31,7 +32,8 @@ sap.ui.define([
 	Sorter, 
 	PARequestSharedFunction,
 	budgetCheck,
-	ApprovalLog
+	ApprovalLog,
+	Utility
 ) {
 	"use strict";
  
@@ -335,35 +337,10 @@ sap.ui.define([
 
 							if (result.passed) {
 
-								const oListBinding = oModel.bindList("/ZREQUEST_HEADER", null,null,
-									[
-										new sap.ui.model.Filter({ path: "EMP_ID", operator: sap.ui.model.FilterOperator.EQ, value1: empId }),
-										new sap.ui.model.Filter({ path: "REQUEST_ID", operator: sap.ui.model.FilterOperator.EQ, value1: reqId })
-									],
-									{
-										$$ownRequest: true,
-										$$groupId: "$auto",
-										$$updateGroupId: "$auto"
-									}
-								);
-
-								const aCtx = await oListBinding.requestContexts(0, 1);
-								const oCtx = aCtx[0];
-
-								if (!oCtx) {
-									throw new Error("Request not found for submit.");
-								}
-
-								oCtx.setProperty("STATUS", "PENDING");
-								oCtx.setProperty("CASH_ADVANCE", parseFloat(data.req_header.cashadvamt));
-								oCtx.setProperty("PREAPPROVAL_AMOUNT", parseFloat(data.req_header.reqamt));
-
-								await oModel.submitBatch("$auto");
-								
-								sap.m.MessageToast.show("Request submitted successfully");
+								await Utility._updateStatus(oModel, reqId, 'PENDING');
 								oReq.setProperty("/view", 'view');
 								
-								PARequestSharedFunction.getPARHeaderList(oReqList, oViewModel);
+								await PARequestSharedFunction.getPARHeaderList(oReqList, oViewModel);
 								const oRouter = this.getOwnerComponent().getRouter();
 								oRouter.navTo("RequestFormStatus");
 							} else {
