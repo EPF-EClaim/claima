@@ -22,7 +22,7 @@ xmlns:table2="sap.ui.mdc.table"
             </OverflowToolbar>
             <table:Table 
                 id="approval_log_table"
-                rows="{approval_log>/approvers}"
+                rows="{approval_log>/approval}"
                 columnHeaderHeight="3rem"
                 selectionMode="None"
                 ariaLabelledBy="title"
@@ -36,13 +36,13 @@ xmlns:table2="sap.ui.mdc.table"
                 <table:Column  width="20rem">
                     <Label text="{i18n>appr_approver}"></Label>
                     <table:template>
-                        <Text text="{approval_log>APPROVER_ID}" />
+                        <Text text="{approval_log>APPROVER_NAME}" />
                     </table:template>
                 </table:Column>
                 <table:Column  width="20rem">
                     <Label text="{i18n>appr_sub}"></Label>
                     <table:template>
-                        <Text text="{approval_log>SUBSTITUTE_APPROVER_ID}" />
+                        <Text text="{approval_log>SUBSTITUTE_NAME}" />
                     </table:template>
                 </table:Column>
                 <table:Column  width="10rem">
@@ -60,10 +60,7 @@ xmlns:table2="sap.ui.mdc.table"
                 <table:Column  width="25rem">
                     <Label text="{i18n>appr_comment}"></Label>
                     <table:template>
-                        <TextArea 
-                            textAlign="Begin" 
-                            enabled="false"
-                            value="{approval_log>COMMENT}"/>
+                        <Text text="{approval_log>COMMENT}"/>
                     </table:template>
                 </table:Column>
             </table:Table>

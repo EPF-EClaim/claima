@@ -60,7 +60,7 @@ sap.ui.define([
 						aErrors.push(row.claim_type_item);
 					} else {
 						if (aErrors.length == 0) {
-							if (submission_type == 'CLM' || (submission_type == 'REQ' && row.is_cashadv == true)) {
+							if (submission_type == 'CLM') {
 								dataset.push({
 									yyyy			: sYYYY,
 									fund_center		: sFundCenter,
