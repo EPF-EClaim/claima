@@ -89,14 +89,14 @@ sap.ui.define([
 			const oReqModel = this._getReqModel().getData();
 			oReqModel.user = emp_data.eeid;
 			this._getReqModel().setData(oReqModel);
-
+			
 			var claimID = "CLM26000000209";
             var PARID = "REQ26000000164";
 
             this.onClaimsApproverDetermination(claimID);
             this.onPARApproverDetermination(PARID);
 		},
-		
+
         onClaimsApproverDetermination: async function (claimID){
 			//test variables
 			var empID = 1900668;
@@ -642,6 +642,7 @@ sap.ui.define([
 				oInputModel.setProperty("/emp_master/descr/direct_supperior", "test direct supperior");
 				oInputModel.setProperty("/emp_master/descr/employee_type", "test employee type");
 			}
+		},
 		_onInit_ClaimProcess: function () {
 			// placeholder - set employee data
 			var oInputModel = this.getView().getModel("claimsubmission_input");

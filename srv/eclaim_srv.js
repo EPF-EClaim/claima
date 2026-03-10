@@ -146,28 +146,29 @@ module.exports = (srv) => {
   })
  */
 
-      srv.on('sendEmail' , async(req) => {
-      const ISserivce = await cds.connect.to('IS_NonProd_Conn');
-      var path = "/http/EmailNotification_BTP_DEV";
-      var test; 
-      ISserivce.send({
-        method: 'POST',
-        path: path,
-        data: {
-          "ApproverName":req.data.ApproverName,
-          "SubmissionDate":req.data.SubmissionDate,
-          "ClaimantName":req.data.ClaimantName,
-          "InstanceID":req.data.InstanceID,
-          "ClaimType":req.data.ClaimType,
-          "ClaimID":req.data.ClaimID,
-          "RecipientName":req.data.RecipientName,
-          "Action":req.data.Action,
-          "ReceiverEmail":req.data.ReceiverEmail,
-          "CCEmail":req.data.CCEmail,
-          "EmailTitle":req.data.EmailTitle,
-          "EmailBody":req.data.EmailBody,
-          "NextApproverName" : req.data.NextApproverName
-        }
-      });
+  srv.on('sendEmail' , async(req) => {
+    const ISserivce = await cds.connect.to('IS_NonProd_Conn');
+    var path = "/http/EmailNotification_BTP_DEV";
+    var test; 
+    ISserivce.send({
+      method: 'POST',
+      path: path,
+      data: {
+        "ApproverName":req.data.ApproverName,
+        "SubmissionDate":req.data.SubmissionDate,
+        "ClaimantName":req.data.ClaimantName,
+        "InstanceID":req.data.InstanceID,
+        "ClaimType":req.data.ClaimType,
+        "ClaimID":req.data.ClaimID,
+        "RecipientName":req.data.RecipientName,
+        "Action":req.data.Action,
+        "ReceiverEmail":req.data.ReceiverEmail,
+        "CCEmail":req.data.CCEmail,
+        "EmailTitle":req.data.EmailTitle,
+        "EmailBody":req.data.EmailBody,
+        "NextApproverName" : req.data.NextApproverName
+      }
     });
+  });
+
 }
