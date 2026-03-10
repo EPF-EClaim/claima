@@ -1,5 +1,5 @@
 const cds = require('@sap/cds');
-const { INSERT, UPDATE, UPSERT } = require('@sap/cds/lib/ql/cds-ql');
+const { INSERT, UPDATE, UPSERT, SELECT } = require('@sap/cds/lib/ql/cds-ql');
 const express = require('express');
 const app = express();
 
@@ -87,14 +87,41 @@ module.exports = (srv) => {
 
   srv.on('runjob', req => {
     console.log('==> [APP JOB LOG] Job is running . . .');
-    
-    return { responseArray : [{
-            "message": "finished"
-        }] }; 
 
-    }
+    return {
+      responseArray: [{
+        "message": "finished"
+      }]
+    };
+
+  }
   );
 
+  srv.on('READ', 'FeatureControl', async (req) => {
+    const emailFromToken =
+      req.user?.attr?.email ||
+      req.user?.attr?.mail ||
+      req.user?.attr?.user_name ||
+      req.user?.attr?.login_name ||
+      req.user?.id ||
+      "";
+    const email = String(emailFromToken).trim().toLowerCase();
+    const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
+    const user_type = result?.USER_TYPE;
+    let operationHidden = true;
+
+
+    if (user_type === "JKEW Admin") {
+      operationHidden = true;   
+    } else if (user_type === "DTD Admin") {
+      operationHidden = false;  
+    }
+
+    return {
+      operationHidden: operationHidden,
+      operationEnabled: !operationHidden,
+    }
+  })
   /* const port = process.env.PORT || 5000;
 
   app.listen(port, function () {

@@ -12,8 +12,8 @@ annotate service.ZRISK with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: { $edmJson: { $Path: '/service/FeatureControl/operationHidden'} },
+        DeleteHidden: { $edmJson: { $Path: '/service/FeatureControl/operationHidden'} },
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZRISK',
