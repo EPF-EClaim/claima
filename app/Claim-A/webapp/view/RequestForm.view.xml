@@ -89,7 +89,7 @@
                                     <form:FormElement label="{i18n>req_comment}"><form:fields><Text text="{request>/req_header/comment}"/></form:fields></form:FormElement>
                                     <form:FormElement label="{i18n>req_attach1}"><form:fields><Link text="{request>/req_header/doc1}"/></form:fields></form:FormElement>
                                     <form:FormElement label="{i18n>req_attach2}"><form:fields><Link text="{request>/req_header/doc2}"/></form:fields></form:FormElement>
-                                    <form:FormElement label="{i18n>req_claimtype}"><form:fields><Text text="{request>/req_header/claimtypedesc}"/></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_claimtype}" ><form:fields><Text text="{request>/req_header/claimtypedesc}"/></form:fields></form:FormElement>
                                 </form:formElements>
                             </form:FormContainer>
                         </form:formContainers>
@@ -98,7 +98,7 @@
                 <VBox
                     id="request_item_list_fragment_d" 
                     backgroundDesign="Solid"
-                    class="roundedBox sapUiSmallMargin sapUiTinyMarginTop"
+                    class="roundedBox sapUiSmallMargin sapUiTinyMarginTop sapUiTinyMarginBottom"
                     rowGap="1rem">
                     <VBox width="100%" rowGap="1rem">
                         <OverflowToolbar
@@ -156,6 +156,9 @@
         <footer>
             <OverflowToolbar >
                 <ToolbarSpacer />
+                <!-- View Mode -->
+                <Button id="req_back_scr"       type="Back"     text="Back"             press=".onBackView"         visible="{= ${request>/view} === 'view' }"/>
+
                 <!-- Header Level -->
                 <Button id="req_back"           type="Back"     text="Back"             press=".onBack"             visible="{= ${request>/view} === 'list' }"/>
                 <Button id="req_delete"         type="Default"  text="Delete Request"   press=".onDeleteRequest"    visible="{= ${request>/view} === 'list' }"/>
@@ -164,9 +167,6 @@
                 <!-- Item Level -->
                 <Button id="req_item_cancel"    type="Default"  text="Cancel"           press=".onCancelItem"       visible="{= ${request>/view} === 'create' || ${request>/view} === 'i_edit' }"/>
                 <Button id="req_item_save"      type="Default"  text="Save"             press=".onSaveItem"         visible="{= ${request>/view} === 'create' || ${request>/view} === 'i_edit' }"/>
-                
-                <!-- View Mode -->
-                <Button id="req_back_scr"       type="Back"     text="Back"             press=".onBackView"         visible="{= ${request>/view} === 'view' }"/>
 
                 <!-- Approver -->
                 <Button id="req_back_scr_appr"  type="Back"     text="Back"                     press=".onBackView"         visible="{= ${request>/view} === 'approver' }"/>

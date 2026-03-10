@@ -30,19 +30,19 @@
                 </headerToolbar>
 
                 <columns>
-                    <Column width="10rem">
+                    <Column >
                         <Text text="Request Date" />
                     </Column>
-                    <Column width="10rem">
+                    <Column >
                         <Text text="Request ID" />
                     </Column>
-                    <Column width="50rem">
+                    <Column >
                         <Text text="Purpose" />
                     </Column>
-                    <Column width="10rem">
+                    <Column >
                         <Text text="Status" />
                     </Column>
-                    <Column width="10rem">
+                    <Column>
                         <Text text="Pre-Approval Amount (MYR)" />
                     </Column>
                 </columns>
