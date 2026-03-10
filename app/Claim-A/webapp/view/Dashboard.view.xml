@@ -122,12 +122,17 @@
                                 </OverflowToolbar>
                             </headerToolbar>
                             <VBox>
-                                <ScrollContainer height="140px" vertical="true" horizontal="false">
+                                <ScrollContainer
+                                    height="140px"
+                                    vertical="true"
+                                    horizontal="false"
+                                >
                                     <Table
                                         items="{ path: '/ZCLAIM_HEADER', sorter : { path : 'TRIP_START_DATE' } }"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
-                                        inset="false" fixedLayout="true"
+                                        inset="false"
+                                        fixedLayout="true"
                                     >
                                         <columns>
                                             <Column demandPopin="true">
@@ -156,8 +161,12 @@
                                                 <cells>
                                                     <Text text="{PURPOSE}" />
                                                     <Text text="{STATUS_ID}" />
-                                                    <Text text="{TRIP_START_DATE}" />
-                                                    <Text text="{TOTAL_CLAIM_AMOUNT}" />
+                                                    <Text
+                                                        text="{TRIP_START_DATE}"
+                                                    />
+                                                    <Text
+                                                        text="{TOTAL_CLAIM_AMOUNT}"
+                                                    />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>
@@ -200,12 +209,17 @@
                                 </OverflowToolbar>
                             </headerToolbar>
                             <VBox>
-                                <ScrollContainer height="140px" vertical="true" horizontal="false">
+                                <ScrollContainer
+                                    height="140px"
+                                    vertical="true"
+                                    horizontal="false"
+                                >
                                     <Table
                                         items="{ path: '/ZREQUEST_HEADER', sorter : { path : 'REQUEST_DATE' } }"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
-                                        noDataText="No data available">
+                                        noDataText="No data available"
+                                    >
                                         <columns>
                                             <Column demandPopin="true">
                                                 <header>
@@ -231,10 +245,16 @@
                                         <items>
                                             <ColumnListItem>
                                                 <cells>
-                                                    <Text text="{OBJECTIVE_PURPOSE}" />
+                                                    <Text
+                                                        text="{OBJECTIVE_PURPOSE}"
+                                                    />
                                                     <Text text="{STATUS}" />
-                                                    <Text text="{REQUEST_DATE}" />
-                                                    <Text text="{PREAPPROVAL_AMOUNT}" />
+                                                    <Text
+                                                        text="{REQUEST_DATE}"
+                                                    />
+                                                    <Text
+                                                        text="{PREAPPROVAL_AMOUNT}"
+                                                    />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>
@@ -276,32 +296,53 @@
                                 </OverflowToolbar>
                             </headerToolbar>
                             <VBox>
-                                <ScrollContainer height="140px" vertical="true" horizontal="false">
+                                <ScrollContainer
+                                    height="140px"
+                                    vertical="true"
+                                    horizontal="false"
+                                >
                                     <Table
-                                        items="{ path: '' }"
+                                        items="{ path: 'employee_view>/ZAPPROVAL_SUMMARY', sorter : { path : 'TRIP_START_DATE' } }"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
-                                    > 
+                                    >
                                         <columns>
-                                            <Column
-                                                demandPopin="true"
-                                                hAlign="Left"
-                                            />
-                                            <Column demandPopin="true" />
-                                            <Column demandPopin="true" />
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text text="Purpose" />
+                                                </header>
+                                            </Column>
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text text="Status" />
+                                                </header>
+                                            </Column>
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text text="Start Date" />
+                                                </header>
+                                            </Column>
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text text="Amount" />
+                                                </header>
+                                            </Column>
                                         </columns>
                                         <items>
                                             <ColumnListItem>
                                                 <cells>
                                                     <Text
-                                                        text="{employee>REQUEST_GROUP_ID}"
+                                                        text="{employee_view>PURPOSE}"
                                                     />
                                                     <Text
-                                                        text="{employee>REQUEST_GROUP_DESC}"
+                                                        text="{employee_view>STATUS}"
                                                     />
                                                     <Text
-                                                        text="{employee>END_DATE}"
+                                                        text="{employee_view>TRIP_START_DATE}"
+                                                    />
+                                                    <Text
+                                                        text="{employee_view>TOTAL_CLAIM_AMOUNT}"
                                                     />
                                                 </cells>
                                             </ColumnListItem>

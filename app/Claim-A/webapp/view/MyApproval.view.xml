@@ -1,0 +1,133 @@
+<mvc:View xmlns:table="sap.ui.table" xmlns:form="sap.ui.layout.form" xmlns:f="sap.f"
+    height="100%"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    controllerName="claima.controller.MyApproval"
+    id="my_approval_xmlview">
+
+    <Page id="my_approval_status" floatingFooter="true" showHeader="false">
+        <content>
+
+            <IconTabBar id="itbApprovals"
+                        class="sapUiResponsiveContentPadding"
+                        expandable="false"
+                        selectedKey="PRE">
+                <items>
+
+                    <!-- Tab 1: Pre-Approval -->
+                    <IconTabFilter key="PRE" text="Pre-Approval" icon="sap-icon://approvals" count="{request_status>/req_header_count}">
+                        <VBox class="roundedBox sapUiSmallMargin">
+                            <Table
+                                id="tb_myapproval_req"
+                                headerText="My Approvals - Request Forms"
+                                mode="SingleSelectMaster"
+                                width="auto"
+                                itemPress="openItemFromList"
+                                growing="true"
+                                items="{
+                                    path: 'request_status>/req_header_list'
+                                }">
+
+                                <headerToolbar>
+                                    <Toolbar>
+                                        <Title text="{= ${i18n>reqform} + ' (' + ${request_status>/req_header_count} + ')'}"/>
+                                    </Toolbar>
+                                </headerToolbar>
+
+                                <columns>
+                                    <Column><Text text="{i18n>requestPurpose}" /></Column>
+                                    <Column><Text text="{i18n>employee_name}" /></Column>
+                                    <Column><Text text="{i18n>reqDate}" /></Column>
+                                    <Column><Text text="{i18n>amtcash}" /></Column>
+                                    <Column><Text text="{i18n>amtreq}" /></Column>
+                                </columns>
+
+                                <items>
+                                    <ColumnListItem type="Active">
+                                        <cells>
+                                            <Text text="{request_status>OBJECTIVE_PURPOSE}" />
+                                            <Text text="{request_status>EMPLOYEE_NAME}" />
+                                            <Text text="{
+                                                path: 'request_status>REQUEST_DATE',
+                                                type: 'sap.ui.model.odata.type.Date',
+                                                formatOptions: { pattern: 'dd MMM yyyy' }
+                                            }"/>
+                                            <Text text="RM {
+                                                path: 'request_status>CASH_ADVANCE',
+                                                type: 'sap.ui.model.type.Float',
+                                                formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
+                                            }"/>
+                                            <Text text="RM {
+                                                path: 'request_status>PREAPPROVAL_AMOUNT',
+                                                type: 'sap.ui.model.type.Float',
+                                                formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
+                                            }"/>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+                    </IconTabFilter>
+
+                    <!-- Tab 2: Claim -->
+                    <IconTabFilter key="APP" text="Claim" icon="sap-icon://accept" count="{claim_status>/claim_header_count}">
+                        <VBox class="roundedBox sapUiSmallMargin">
+                            <Table
+                                id="tb_myapproval_claim"
+                                headerText="My Approvals - Claim"
+                                mode="SingleSelectMaster"
+                                width="auto"
+                                itemPress="openItemFromClaimList"
+                                growing="true"
+                                items="{
+                                    path: 'claim_status>/claim_header_list'
+                                }">
+
+                                <headerToolbar>
+                                    <Toolbar>
+                                        <Title text="{= ${i18n>claimform} + ' (' + ${claim_status>/claim_header_count} + ')'}"/>
+                                    </Toolbar>
+                                </headerToolbar>
+
+                                <columns>
+                                    <Column><Text text="{i18n>claimPurpose}" /></Column>
+                                    <Column><Text text="{i18n>employee_name}" /></Column>
+                                    <Column><Text text="{i18n>claimDate}" /></Column>
+                                    <Column><Text text="{i18n>amtdue}" /></Column>
+                                    <Column><Text text="{i18n>amtreq}" /></Column>
+                                </columns>
+
+                                <items>
+                                    <ColumnListItem type="Active">
+                                        <cells>
+                                            <Text text="{claim_status>PURPOSE}" />
+                                            <Text text="{claim_status>EMPLOYEE_NAME}" />
+                                            <Text text="{
+                                                path: 'claim_status>SUBMITTED_DATE',
+                                                type: 'sap.ui.model.odata.type.Date',
+                                                formatOptions: { pattern: 'dd MMM yyyy' }
+                                            }"/>
+                                            <Text text="{
+                                                path: 'claim_status>FINAL_AMOUNT_TO_RECEIVE',
+                                                type: 'sap.ui.model.type.Float',
+                                                formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
+                                            }"/>
+                                            <Text text="{
+                                                path: 'claim_status>TOTAL_CLAIM_AMOUNT',
+                                                type: 'sap.ui.model.type.Float',
+                                                formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
+                                            }"/>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+                    </IconTabFilter>
+
+                </items>
+            </IconTabBar>
+
+        </content>
+    </Page>
+</mvc:View>

@@ -1,0 +1,52 @@
+<core:FragmentDefinition
+    xmlns:unified="sap.ui.unified"
+    xmlns:l="sap.ui.layout"
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+>
+    <Dialog
+        title="Report Filter"
+        contentWidth="50%"
+        class="requestDialog"
+    >
+        <f:SimpleForm
+            id="approver_create_form"
+            editable="true"
+            layout="ResponsiveGridLayout"
+            labelSpanXL="2"
+            labelSpanL="2"
+            labelSpanM="2"
+            labelSpanS="12"
+            adjustLabelSpan="true"
+            emptySpanXL="0"
+            emptySpanL="0"
+            emptySpanM="0"
+            emptySpanS="0"
+            columnsXL="2"
+            columnsL="2"
+            columnsM="2"
+        >
+        </f:SimpleForm>
+
+        <!-- Buttons -->
+        <beginButton>
+            <Button
+                id="approver_placeholder_create"
+                press="onClickCreate_app"
+                text="{i18n>submitbtn}"
+                type="Emphasized"
+            />
+        </beginButton>
+            
+        <endButton>
+        <Button
+                id="approver_placeholder_cancel"
+                press="onClickCancel_app"
+                text="{i18n>req_b_cancel}"
+            />
+        
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

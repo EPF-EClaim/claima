@@ -25,7 +25,8 @@
 						required="true" 
 						forceSelection="false"
 						items="{path: 'req_type_list>/types',
-								sorter: { path: 'REQUEST_TYPE_ID', descending: false }}">
+								sorter: { path: 'REQUEST_TYPE_ID', descending: false }}"
+						change=".getFieldVisibility_ReqType">
 					<items>
 						<core:Item key="{req_type_list>REQUEST_TYPE_ID}" 
 								text="{req_type_list>REQUEST_TYPE_DESC}" />
@@ -46,7 +47,7 @@
 
 			    <Label text="{i18n>req_tripstartdate}"/>
 				<DatePicker
-                    id="request_tripstartdate"
+                    id="req_tripstartdate"
                     displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
                     placeholder="eg: 01 Jan 1990"
@@ -54,13 +55,11 @@
 					textAlign="Begin"
 					required="{= ${request>/req_header/reqtype} === 'RT0001' || 
 								${request>/req_header/reqtype} === 'RT0004' }"
-					visible="{= ${request>/req_header/reqtype} === 'RT0001' || 
-								${request>/req_header/reqtype} === 'RT0003'  || 
-								${request>/req_header/reqtype} === 'RT0004' }"/>
+					visible="false"/>
 
 				<Label text="{i18n>req_tripenddate}" />
 				<DatePicker
-                    id="request_tripenddate"
+                    id="req_tripenddate"
                     displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
                     placeholder="eg: 01 Jan 1990"
@@ -68,13 +67,11 @@
 					textAlign="Begin"
 					required="{= ${request>/req_header/reqtype} === 'RT0001' || 
 								${request>/req_header/reqtype} === 'RT0004' }"
-					visible="{= ${request>/req_header/reqtype} === 'RT0001' || 
-								${request>/req_header/reqtype} === 'RT0003'  || 
-								${request>/req_header/reqtype} === 'RT0004' }"/>
+					visible="false"/>
 
 				<Label text="{i18n>req_eventstartdate}"/>
 				<DatePicker
-                    id="request_eventstartdate"
+                    id="req_eventstartdate"
                     displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
                     placeholder="eg: 01 Jan 1990"
@@ -82,12 +79,11 @@
 					textAlign="Begin"
 					required="{= ${request>/req_header/reqtype} === 'RT0001' || 
 								${request>/req_header/reqtype} === 'RT0003' }"
-					visible="{= ${request>/req_header/reqtype} === 'RT0001' || 
-								${request>/req_header/reqtype} === 'RT0003' }"/>
+					visible="false"/>
 
 				<Label text="{i18n>req_eventenddate}" />
 				<DatePicker
-                    id="request_eventenddate"
+                    id="req_eventenddate"
                     displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
                     placeholder="eg: 01 Jan 1990"
@@ -95,121 +91,92 @@
 					textAlign="Begin"
 					required="{= ${request>/req_header/reqtype} === 'RT0001' || 
 								${request>/req_header/reqtype} === 'RT0003' }"
-					visible="{= ${request>/req_header/reqtype} === 'RT0001' || 
-								${request>/req_header/reqtype} === 'RT0003' }" />	
+					visible="false" />	
 
 				<Label text="{i18n>req_grptype}" />
-				<Select width="100%" 
+				<Select 
+					id="req_grptype"
+					selectedKey="{request>/req_header/grptype}" 
 						required="true" 
-						selectedKey="{request>/req_header/grptype}"
+						forceSelection="false"
 						enabled="{= ${request>/req_header/reqtype} !== 'RT0004'}"
-						visible="{= ${request>/req_header/reqtype} === 'RT0001' || 
-									${request>/req_header/reqtype} === 'RT0002'  || 
-									${request>/req_header/reqtype} === 'RT0003'  || 
-									${request>/req_header/reqtype} === 'RT0004' }">
-					<!-- <core:Item key="none" text="" /> -->
-					<core:Item key="individual" text="Individual" />
-					<core:Item key="group" text="Group" />
+						visible="false"
+						items="{path: 'indiv_list>/types',
+								sorter: { path: 'IND_OR_GROUP_ID', descending: false }}">
+					<items>
+						<core:Item key="{indiv_list>IND_OR_GROUP_ID}" 
+								text="{indiv_list>IND_OR_GROUP_DESC}" />
+					</items>
 				</Select>
 
 			    <Label text="{i18n>req_location}" />
 			    <Input 
-					id="request_location"
+					id="req_location"
 					textAlign="Begin"
 					value="{request>/req_header/location}"
 					required="{= ${request>/req_header/reqtype} === 'RT0001' || 
 								${request>/req_header/reqtype} === 'RT0003' }"
-					visible="{= ${request>/req_header/reqtype} === 'RT0001' || 
-								${request>/req_header/reqtype} === 'RT0003'  || 
-								${request>/req_header/reqtype} === 'RT0004' }"/>
+					visible="false"/>
 
 			    <Label text="{i18n>req_transport}" />
 				<Input 
 					id="req_transport"
 					value="{request>/req_header/transport}"
 					required="{= ${request>/req_header/reqtype} === 'RT0001' }"
-					visible="{= ${request>/req_header/reqtype} === 'RT0001' || 
-								${request>/req_header/reqtype} === 'RT0003'  || 
-								${request>/req_header/reqtype} === 'RT0004' }" />
+					visible="false" />
 
 			    <Label text="{i18n>req_acc}" />
-			    <Select width="100%" 
-						selectedKey="{request>/req_header/altcostcenter}" 
-						required="false" 
-						visible="{= ${request>/req_header/reqtype} === 'RT0001' || 
-									${request>/req_header/reqtype} === 'RT0003'  || 
-									${request>/req_header/reqtype} === 'RT0004' }">
-					<core:Item key="none" text="" />
-					<core:Item key="cc1" text="CC1" />
-					<core:Item key="cc2" text="CC2" />
-					<core:Item key="cc3" text="CC3" />
-					<core:Item key="cc4" text="CC4" />
-					<core:Item key="cc5" text="CC5" />
+			    <Select 
+					id="req_acc"
+					selectedKey="{request>/req_header/altcostcenter}" 
+					required="true" 
+					forceSelection="false"
+					visible="false"
+					items="{path: 'employee>/ZCOST_CENTER',
+							sorter: { path: 'COST_CENTER_ID', descending: false }}">
+					<items>
+						<core:Item key="{employee>COST_CENTER_ID}" 
+								text="{employee>COST_CENTER_DESC}" />
+					</items>
 				</Select>
 
 			    <Label text="{i18n>req_attach1}" />
 			    <unified:FileUploader
 					id="req_attachment_1"
-					change=".onImportChange"
+					change="onImportChange1"
 					value="{request>/req_header/doc1}"
 					required="true"
-					visible="{= ${request>/req_header/reqtype} === 'RT0001' || 
-								${request>/req_header/reqtype} === 'RT0002' || 
-								${request>/req_header/reqtype} === 'RT0003'  || 
-								${request>/req_header/reqtype} === 'RT0004' }" />
+					visible="false" />
 
 			    <Label text="{i18n>req_attach2}" />
 			    <unified:FileUploader
 					id="req_attachment_2"
-					change=".onImportChange"
+					change="onImportChange2"
 					value="{request>/req_header/doc2}"
-					visible="{= ${request>/req_header/reqtype} === 'RT0001' || 
-								${request>/req_header/reqtype} === 'RT0002' || 
-								${request>/req_header/reqtype} === 'RT0003'  || 
-								${request>/req_header/reqtype} === 'RT0004' }" />
+					visible="false" />
 
 			    <Label text="{i18n>req_comment}" />
 			    <TextArea
-					id="request_comment"
+					id="req_comment"
 					textAlign="Begin"
 					required="true"
 					value="{request>/req_header/comment}"
-					visible="{= ${request>/req_header/reqtype} === 'RT0001' || 
-								${request>/req_header/reqtype} === 'RT0002' || 
-								${request>/req_header/reqtype} === 'RT0003'  || 
-								${request>/req_header/reqtype} === 'RT0004' }" />
+					visible="false" />
 
-				<Label text="{i18n>req_event1}" />
-			    <TextArea 
-					id="req_event_detail_1"
-					textAlign="Begin"
-					value="{request>/req_header/eventdetail1}"
-					required="{= ${request>/req_header/reqtype} === 'RT0003' }"
-					visible="{= ${request>/req_header/reqtype} === 'RT0003' }"/>
-								
-			    <Label text="{i18n>req_event2}" />
-			    <TextArea 
-					id="req_event_detail_2"
-					textAlign="Begin"
-					value="{request>/req_header/eventdetail2}"
-					required="{= ${request>/req_header/reqtype} === 'RT0003' }"
-					visible="{= ${request>/req_header/reqtype} === 'RT0003' }"/>
-
-				<Label text="{i18n>req_event3}" />
-			    <TextArea 
-					id="req_event_detail_3"
-					textAlign="Begin"
-					value="{request>/req_header/eventdetail3}"
-					required="{= ${request>/req_header/reqtype} === 'RT0003' }"
-					visible="{= ${request>/req_header/reqtype} === 'RT0003' }"/>
-
-				<Label text="{i18n>req_event4}" />
-			    <TextArea 
-					id="req_event_detail_4"
-					textAlign="Begin"
-					value="{request>/req_header/eventdetail4}"
-					required="{= ${request>/req_header/reqtype} === 'RT0003' }"
-					visible="{= ${request>/req_header/reqtype} === 'RT0003' }"/>
+				<Label text="{i18n>req_project}" />
+				<Select 
+					id="req_project"
+					selectedKey="{request>/req_header/projectcode}" 
+					required="true" 
+					forceSelection="false"
+					visible="false"
+					items="{path: 'employee>/ZPROJECT_HDR',
+							sorter: { path: 'PROJECT_CODE_IO', descending: false }}">
+					<items>
+						<core:Item key="{employee>PROJECT_CODE_IO}" 
+								text="{employee>PROJECT_CODE_IO} :: {employee>PROJECT_DESC}" />
+					</items>
+				</Select>
 								
 			</f:content>
         </f:SimpleForm>

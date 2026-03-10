@@ -77,17 +77,6 @@
                     </f:Card>
 
                     <f:Card
-                        id="ZAPP_FIELD_CTRL"
-                        class="sapUiSmallMargin"
-                        width="15rem"
-                        press="onOpenConfigTable"
-                    >
-                        <f:header>
-                            <cards:Header title="{i18n>conf_fieldctrl}" />
-                        </f:header>
-                    </f:Card>
-
-                    <f:Card
                         id="ZCLAIM_CATEGORY"
                         class="sapUiSmallMargin"
                         width="15rem"
@@ -659,7 +648,27 @@
                         <f:header>
                             <cards:Header title="ZMOBILE_CATEGORY_PURPOSE" />
                         </f:header>
-                    </f:Card>                                                                                                                                                                                                                                                                                                   
+                    </f:Card>  
+                    <f:Card
+                        id="ZBUDGET"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZBUDGET" />
+                        </f:header>
+                    </f:Card>  
+                    <f:Card
+                        id="ZDB_STRUCTURE"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZDB_STRUCTURE" />
+                        </f:header>
+                    </f:Card>                                                                                                                                                                                                                                                                                                                                           
                 </f:GridContainer>
             </ScrollContainer>
         </content>

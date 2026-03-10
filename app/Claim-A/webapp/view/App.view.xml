@@ -72,6 +72,14 @@
                         enabled="true"
                         expanded="false"
                     />
+
+                    <tnt:NavigationListItem
+                        key="mysubstitution"
+                        text="{i18n>nav_substitute}"
+                        icon="sap-icon://company-view"
+                        enabled="true"
+                        expanded="false"
+                    />
                     <tnt:NavigationListItem
                         key="analytics"
                         text="{i18n>nav_analytics}"
@@ -86,6 +94,7 @@
                         enabled="true"
                         expanded="false"
                     />
+
                 </tnt:NavigationList>
             </tnt:SideNavigation>
         </tnt:sideContent>
@@ -94,6 +103,16 @@
                 id="pageContainer"
                 >
                 <pages>
+                    <!-- Claim Submission -->
+                    <NavContainer
+                        id="navcontainer_claimsubmission"
+                    >
+                        <mvc:XMLView
+                            id="view_claimsubmission"
+                            viewName="claima.view.ClaimSubmission"
+                        />
+                    </NavContainer>
+
                     <Page
                         id="expensereport"
                         showHeader="false"
@@ -234,7 +253,7 @@
                     </content> 
                 </Page>
                 <!-- === My Claim Status Page (added) === -->
-                <Page
+    <!--             <Page
                     id="myreport"
                     showHeader="false"
                     class="sapUiNoContentPadding"
@@ -245,7 +264,20 @@
                             type="XML"
                         />
                     </content>
-                </Page>
+                </Page>-->
+                <!-- === Manage My Substitution Page (added) === -->
+                <Page
+                    id="mysubstitution"
+                    showHeader="false"
+                    class="sapUiContentPadding"
+                >
+                    <content>
+                        <mvc:XMLView
+                            id="add_sub"
+                            viewName="claima.view.ManageSub"
+                        />
+                    </content> 
+                </Page> 
             </NavContainer>
         </tnt:mainContents>
     </tnt:ToolPage>

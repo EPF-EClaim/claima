@@ -185,6 +185,20 @@
                                 </table:template>
                             </table:Column>
 
+                            <!-- last_send_date -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>last_send_date}" />
+                                <table:template>
+                                    <Text
+                                        text="{
+                                            path: 'employee_view>LAST_SEND_BACK_DATE',
+                                            type: 'sap.ui.model.odata.type.Date',
+                                            formatOptions: { pattern: 'dd MMM yyyy' }
+                                        }"
+                                    />
+                                </table:template>
+                            </table:Column>
+
                             <!-- Days Approved (computed locally; no backend field) -->
                             <table:Column
                                 width="12rem"
