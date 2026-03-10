@@ -3,6 +3,7 @@
     xmlns:l="sap.ui.layout"
     xmlns:f="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
+	core:require="{FloatType: 'sap/ui/model/type/Float'}"
 >
     <VBox class="sapUiSmallMargin">
         <OverflowToolbar height="3rem">
