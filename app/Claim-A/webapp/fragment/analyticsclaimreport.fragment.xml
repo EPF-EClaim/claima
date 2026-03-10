@@ -666,7 +666,7 @@
 
                             <!-- trip_end_time  -->
                             <table:Column width="10rem">
-                                <Label text="{i18n>trip_start_time}" />
+                                <Label text="{i18n>trip_end_time}" />
                                 <table:template><Text text="{employee_view>TRIP_END_TIME}" /></table:template>
                             </table:Column>
 

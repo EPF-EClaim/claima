@@ -79,12 +79,12 @@ sap.ui.define([
 			});
 
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			// var oUserModel = new sap.ui.model.json.JSONModel({ email: "Jefry.Yap@my.ey.com" });
-			// this.getView().setModel(oUserModel, 'user');
-			// const emp_data = await this._getEmpIdDetail("Jefry.Yap@my.ey.com");
-			// const oReqModel = this._getReqModel().getData();
-			// oReqModel.user = emp_data.eeid;
-			// this._getReqModel().setData(oReqModel);
+			var oUserModel = new sap.ui.model.json.JSONModel({ email: "Jefry.Yap@my.ey.com" });
+			this.getView().setModel(oUserModel, 'user');
+			const emp_data = await this._getEmpIdDetail("Jefry.Yap@my.ey.com");
+			const oReqModel = this._getReqModel().getData();
+			oReqModel.user = emp_data.eeid;
+			this._getReqModel().setData(oReqModel);
 		},
 
 		onCollapseExpandPress: function () {
@@ -855,7 +855,7 @@ sap.ui.define([
 			}
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
-				var isUploadSuccess = await this._onUpload_ClaimInput_Attachment();
+				var isUploadSuccess = this._onUpload_ClaimInput_Attachment();
 				if (!isUploadSuccess) {
 					// don't proceed claim submission if attachment upload fails
 					return;
@@ -901,19 +901,34 @@ sap.ui.define([
 			this.byId("pageContainer").to(oClaimSubmissionPage);
 		},
 
-		_onUpload_ClaimInput_Attachment: async function () {
+		_onUpload_ClaimInput_Attachment: function () {
+			var success;
 			// get claim submission model
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 
-			// Write to Success Factors API
-			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment";
+			// get csrf token
+			var tokenModel = sap.ui.getCore().getModel("oToken");
+			if (!tokenModel) {
+				this._fetchToken();
+				tokenModel = sap.ui.getCore().getModel("oToken");
+			}
+			var tokenData = tokenModel.getData();
+			var token = tokenData["csrfToken"];
+			if (!token) {
+				// cannot proceed without token
+				sap.ui.getCore().setModel(null,"oToken");
+				return false;
+			}
 
-			try {
-				BusyIndicator.show(0);
-				const response = await fetch(sServiceUrl, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
+			BusyIndicator.show(0);
+			$.ajax({
+				type: "POST",
+				contentType: "application/json",
+				url: "/SuccessFactors_API/odata/v2/Attachment",
+				dataType: "json",
+				async: false,
+				'X-CSRF-Token': token,
+				data: JSON.stringify({
 						__metadata: {
 							uri: 'Attachment'
 						},
@@ -925,43 +940,49 @@ sap.ui.define([
 						viewable: true,
 						searchable: true,
 						fileContent: oInputModel.getProperty("/attachment/fileContent")
-					})
-				});
+					}),
+				success: function (data, textStatus, jqXHR) {
+					// get generated attachment number
+					oInputModel.setProperty("/claim_header/attachment_email_approver", data.d.attachmentId);
+					oInputModel.setProperty("/claim_header/descr/attachment_email_approver", data.d.fileName);
 
-				if (!response.ok) {
-					const errText = await response.text().catch(() => "");
-					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
+					BusyIndicator.hide();
+					success = true;
+				},
+				error: function (xhr) {
+					console.log("Error uploading attachment: " + xhr.status + xhr.responseText);
+					MessageToast.show("Error uploading attachment: " + xhr.status + xhr.responseText);
+
+					BusyIndicator.hide();
+					success = false;
 				}
+			});
+			return success;
+		},
 
-				const data = await response.text();
+		_fetchToken: function () {
+			var token = {			
+				"csrfToken" : ""
+			};
 
-				// turn XML into JSON
-				const parser = new DOMParser();
-				const xmlDoc = parser.parseFromString(data, 'text/xml');
-				const jsonData = {};
+			var oToken = new JSONModel(token);
+			sap.ui.getCore().setModel(oToken,"oToken");
+			var tokenModel = sap.ui.getCore().getModel("oToken").getData();
 
-				const nodes = xmlDoc.documentElement.childNodes;
-				for (let i = 0; i < nodes.length; i++) {
-					const node = nodes[i];
-					if (node.nodeType === 1) {
-						jsonData[node.nodeName] = node.textContent.trim();
-					}
+			$.ajax({
+				type: "GET",
+				contentType: "application/json",
+				url: "/SuccessFactors_API/odata/v2/",
+				async: false,
+				'X-CSRF-Token': "Fetch",
+				success: function (data, textStatus, jqXHR) {
+					// get token
+					tokenModel["csrfToken"] = jqXHR.getResponseHeader('X-Csrf-Token');
+				},
+				error: function (xhr) {
+					console.log("Error getting token: " + xhr.status + xhr.responseText);
 				}
-
-				// get generated attachment number
-				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(') + 1, jsonData.id.indexOf(')') - 1);
-				oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
-				oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
-
-				BusyIndicator.hide();
-				return true;
-			} catch (error) {
-				console.log("Error uploading attachment: " + error);
-				MessageToast.show("Error uploading attachment: " + error);
-
-				BusyIndicator.hide();
-				return false;
-			}
+			});
 		},
 
 		onChange_ClaimInput_Attachment: function (oEvent) {
@@ -1616,7 +1637,7 @@ sap.ui.define([
 						effective_date: oData.EFFECTIVE_DATE,
 					};
 				} else {
-					console.warn("No employee found with ID: " + sEEID);
+					console.warn("No employee found with email: " + sEMAIL);
 					return null;
 				}
 			} catch (oError) {
@@ -1655,7 +1676,7 @@ sap.ui.define([
 			if (req_type) {
 				const oMainModel = this.getOwnerComponent().getModel();
 				const oListBinding = oMainModel.bindList("/ZCLAIM_TYPE", null, null, [
-					new Filter("CATEGORY_ID", FilterOperator.EQ, req_type)
+					new Filter("REQUEST_TYPE", FilterOperator.EQ, req_type)
 				]);
 
 				oListBinding.requestContexts().then((aContexts) => {
