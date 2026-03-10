@@ -72,6 +72,9 @@ sap.ui.define([
 			
 			var status = this._getReqModel().getProperty("/req_header/reqstatus");
 			if(status != 'DRAFT' && status != 'DELETED') {
+				const oReq = this.getOwnerComponent().getModel('approval_log');
+				const oViewModel = this.getOwnerComponent().getModel('employee_view');
+				ApprovalLog.getApproverList(oReq, oViewModel, sReqId);
 				ApprovalLog._showApprovalLog(this);
 			}
 			PARequestSharedFunction._determineCurrentState(this, this._getReqModel());
@@ -145,6 +148,9 @@ sap.ui.define([
 			
 			var status = this._getReqModel().getProperty("/req_header/reqstatus");
 			if(status != 'DRAFT' && status != 'DELETED') {
+				const oReq = this.getOwnerComponent().getModel('approval_log');
+				const oViewModel = this.getOwnerComponent().getModel('employee_view');
+				ApprovalLog.getApproverList(oReq, oViewModel, oReq.getProperty('req_header/reqid'));
 				const oApproval = await this._getFormFragment("approval_log");
 				await this._replaceContentAt(oPage, 2, oApproval);
 			}
@@ -218,15 +224,6 @@ sap.ui.define([
 						sap.ui.core.BusyIndicator.show(0);
 
 						await this._updateHeaderStatusToDeleted(empId, reqId);
-						// if (oReq.getProperty('/req_header/reqstatus') == 'PENDING' || oReq.getProperty('/req_header/reqstatus') == 'PENDING APPROVAL') {
-						// 	// budget release
-						// 	const dataRow = rows.map(({ CLAIM_TYPE_ITEM_ID, EST_AMOUNT, CASH_ADVANCE }) => ({
-						// 		claim_type_item: CLAIM_TYPE_ITEM_ID,
-						// 		amount: EST_AMOUNT,
-						// 		is_cashadv: CASH_ADVANCE
-						// 	}));
-						// 	await budgetCheck.budgetProcessing(oModel, dataset, 'REQ', 'release');
-						// }
 
 						sap.m.MessageToast.show("Request deleted");
 						this.oDeleteDialog.close();
@@ -332,8 +329,7 @@ sap.ui.define([
 							// budget checking
 							const dataRow = rows.map(({ CLAIM_TYPE_ITEM_ID, EST_AMOUNT, CASH_ADVANCE }) => ({
 								claim_type_item: CLAIM_TYPE_ITEM_ID,
-								amount: EST_AMOUNT,
-								is_cashadv: CASH_ADVANCE
+								amount: EST_AMOUNT
 							}));
 							const result = await budgetCheck.budgetChecking(oModel, submissionType, reqDate, proj, reqCC, reqClaimType, dataRow);
 
@@ -1322,6 +1318,7 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel('employee_view');
 
 			const sReq = String(req_id);
+			const sEmp = String(oReq.getProperty('/user'));
 
 			const oListBinding = oModel.bindList(
 				"/ZEMP_REQUEST_ITEM_VIEW",
@@ -1360,6 +1357,7 @@ sap.ui.define([
 				oReq.setProperty("/req_header/reqamt", req_amt);
 				oReq.setProperty("/req_item_rows", a);
 				oReq.setProperty("/list_count", a.length);
+				this.updateRequestAmount(sEmp, sReq, cashadv_amt, req_amt);
 
 				return a;
 			} catch (err) {
@@ -1367,6 +1365,41 @@ sap.ui.define([
 				oReq.setProperty("/req_item_rows", []);
 				oReq.setProperty("/list_count", 0);
 				return [];
+			}
+		},
+
+		async updateRequestAmount(empId, reqId, cashadvamt, reqamt) {
+			try {
+				sap.ui.core.BusyIndicator.show(0);
+				const oModel = this.getOwnerComponent().getModel();
+
+				const oListBinding = oModel.bindList("/ZREQUEST_HEADER", null,null,
+					[
+						new sap.ui.model.Filter({ path: "EMP_ID", operator: sap.ui.model.FilterOperator.EQ, value1: empId }),
+						new sap.ui.model.Filter({ path: "REQUEST_ID", operator: sap.ui.model.FilterOperator.EQ, value1: reqId })
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$$updateGroupId: "$auto"
+					}
+				);
+
+				const aCtx = await oListBinding.requestContexts(0, 1);
+				const oCtx = aCtx[0];
+
+				if (!oCtx) {
+					throw new Error("Request not found for submit.");
+				}
+
+				oCtx.setProperty("CASH_ADVANCE", parseFloat(cashadvamt));
+				oCtx.setProperty("PREAPPROVAL_AMOUNT", parseFloat(reqamt));
+
+				await oModel.submitBatch("$auto");
+			} catch (e) {
+				sap.m.MessageToast.show(e.message || "Submission failed");
+			} finally {
+				sap.ui.core.BusyIndicator.hide();
 			}
 		},
 

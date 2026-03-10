@@ -46,7 +46,7 @@ sap.ui.define([
             let oListBinding;
 
             if (submission_type == "REQ") {
-                oListBinding = oModel.bindList("/ZAPPROVER_DETAILS_PREAPPROVAL", undefined,
+                oListBinding = oModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
                     null,[new Filter("PREAPPROVAL_ID", "EQ", id)],
                     {
                         $$ownRequest: true,
@@ -55,7 +55,7 @@ sap.ui.define([
                     }
                 );
             } else if (submission_type == "CLM") {
-                oListBinding = oModel.bindList("/ZAPPROVER_DETAILS_CLAIMS", undefined,
+                oListBinding = oModel.bindList("/ZEMP_APPROVER_CLAIM_DETAILS", undefined,
                     null,[new Filter("CLAIM_ID", "EQ", id)],
                     {
                         $$ownRequest: true,
@@ -69,14 +69,12 @@ sap.ui.define([
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 				const a = aCtx.map((ctx) => ctx.getObject());
                 
-				oReq.setProperty("/req_header_list", a);
-				oReq.setProperty("/req_header_count", a.length);
+				oReq.setProperty("/approval", a);
 
 				return a;
 			} catch (err) {
 				console.error("OData bindList failed:", err);
-				oReq.setProperty("/req_header_list", []);
-				oReq.setProperty("/req_header_count", 0);
+				oReq.setProperty("/approval", []);
 				return [];
 			}
 		},
