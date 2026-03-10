@@ -854,7 +854,9 @@ sap.ui.define([
 				url: "/SuccessFactors_API/odata/v2/Attachment",
 				dataType: "json",
 				async: false,
-				'X-CSRF-Token': token,
+				headers: {
+					'X-CSRF-Token': token,
+				},
 				data: JSON.stringify({
 						__metadata: {
 							uri: 'Attachment'
@@ -901,7 +903,9 @@ sap.ui.define([
 				contentType: "application/json",
 				url: "/SuccessFactors_API/odata/v2/",
 				async: false,
-				'X-CSRF-Token': "Fetch",
+				headers: {
+					'X-CSRF-Token': "Fetch",
+				},
 				success: function (data, textStatus, jqXHR) {
 					// get token
 					tokenModel["csrfToken"] = jqXHR.getResponseHeader('X-Csrf-Token');
