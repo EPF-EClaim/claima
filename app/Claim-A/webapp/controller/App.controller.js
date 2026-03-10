@@ -901,19 +901,18 @@ sap.ui.define([
 			this.byId("pageContainer").to(oClaimSubmissionPage);
 		},
 
-		_onUpload_ClaimInput_Attachment: async function () {
+		_onUpload_ClaimInput_Attachment: function () {
 			// get claim submission model
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 
-			// Write to Success Factors API
-			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment";
-
-			try {
-				BusyIndicator.show(0);
-				const response = await fetch(sServiceUrl, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
+			BusyIndicator.show(0);
+			$.ajax({
+				type: "POST",
+				contentType: "application/json",
+				url: "/SuccessFactors_API/odata/v2/Attachment",
+				dataType: "json",
+				async: false,
+				data: JSON.stringify({
 						__metadata: {
 							uri: 'Attachment'
 						},
@@ -925,43 +924,24 @@ sap.ui.define([
 						viewable: true,
 						searchable: true,
 						fileContent: oInputModel.getProperty("/attachment/fileContent")
-					})
-				});
+					}),
+				success: function (data, textStatus, jqXHR) {
+					// get generated attachment number
+					var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(') + 1, jsonData.id.indexOf(')') - 1);
+					oInputModel.setProperty("/claim_header/attachment_email_approver", data.attachmentId);
+					oInputModel.setProperty("/claim_header/descr/attachment_email_approver", data.fileName);
 
-				if (!response.ok) {
-					const errText = await response.text().catch(() => "");
-					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
+					BusyIndicator.hide();
+					return true;
+				},
+				error: function (xhr) {
+					console.log("Error uploading attachment: " + xhr.status + xhr.responseText);
+					MessageToast.show("Error uploading attachment: " + xhr.status + xhr.responseText);
+
+					BusyIndicator.hide();
+					return false;
 				}
-
-				const data = await response.text();
-
-				// turn XML into JSON
-				const parser = new DOMParser();
-				const xmlDoc = parser.parseFromString(data, 'text/xml');
-				const jsonData = {};
-
-				const nodes = xmlDoc.documentElement.childNodes;
-				for (let i = 0; i < nodes.length; i++) {
-					const node = nodes[i];
-					if (node.nodeType === 1) {
-						jsonData[node.nodeName] = node.textContent.trim();
-					}
-				}
-
-				// get generated attachment number
-				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(') + 1, jsonData.id.indexOf(')') - 1);
-				oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
-				oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
-
-				BusyIndicator.hide();
-				return true;
-			} catch (error) {
-				console.log("Error uploading attachment: " + error);
-				MessageToast.show("Error uploading attachment: " + error);
-
-				BusyIndicator.hide();
-				return false;
-			}
+			});
 		},
 
 		onChange_ClaimInput_Attachment: function (oEvent) {
