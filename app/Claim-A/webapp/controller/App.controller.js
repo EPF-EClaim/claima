@@ -1586,7 +1586,7 @@ sap.ui.define([
 		async _getEmpIdDetail(sEMAIL) {
 			const oModel = this.getOwnerComponent().getModel();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new sap.ui.model.Filter("EMAIL", "EQ", sEMAIL)
+				new sap.ui.model.Filter("tolower(EMAIL)", "EQ", "tolower(" + sEMAIL + ")")
 			]);
 
 			try {
@@ -1619,7 +1619,7 @@ sap.ui.define([
 						effective_date: oData.EFFECTIVE_DATE,
 					};
 				} else {
-					console.warn("No employee found with ID: " + sEEID);
+					console.warn("No employee found with email: " + sEMAIL);
 					return null;
 				}
 			} catch (oError) {
