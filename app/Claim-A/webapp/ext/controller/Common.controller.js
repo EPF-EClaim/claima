@@ -12,8 +12,7 @@ sap.ui.define(['sap/ui/core/mvc/ControllerExtension',
 			 * @memberOf claima.ext.controller.Common
 			 */
 			onInit: function () {
-				// you can access the Fiori elements extensionAPI via this.base.getExtensionAPI
-				var oModel = this.base.getExtensionAPI().getModel();
+			
 			},
 
 			editFlow: {

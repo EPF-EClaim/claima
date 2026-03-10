@@ -110,8 +110,8 @@ module.exports = (srv) => {
     const email = String(emailFromToken).trim().toLowerCase();
     const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
     const user_type = result?.USER_TYPE;
-    let operationHidden = true;
 
+    let operationHidden = true;
 
     if (user_type === "JKEW Admin") {
       operationHidden = true;
@@ -123,6 +123,13 @@ module.exports = (srv) => {
       operationHidden: operationHidden,
       operationEnabled: !operationHidden,
     }
+  });
+
+  srv.on('budgetchecking', async(req) => {
+    const { ZBUDGET } = srv.entities;
+    var { input } = req.data;
+
+    
   })
   /* const port = process.env.PORT || 5000;
 

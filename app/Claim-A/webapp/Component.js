@@ -1,11 +1,12 @@
 sap.ui.define([
     "sap/fe/core/AppComponent",
     "claima/model/models",
-    // "sap/ui/model/odata/v4/ODataModel"
+    "sap/ui/model/odata/v4/ODataModel"
 ],
     // (UIComponent, 
     (AppComponent,
-        models) => {
+        models,
+        ODataModel) => {
         "use strict";
 
         // return UIComponent.extend("claima.Component", {
@@ -42,15 +43,17 @@ sap.ui.define([
                 jQueryScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/xlsx.js');
                 document.head.appendChild(jQueryScript);
 
-                // const fcModel = new ODataModel({
-                //     serviceUrl: "/EmployeeSrv/",
-                //     operationMode: "Server",      
-                // });
-                // this.setModel(fcModel, "fc");
+                const fcModel = new ODataModel({
+                    serviceUrl: "/odata/v4/EmployeeSrv/",
+                    operationMode: "Server",
+                });
+                this.setModel(fcModel, "fc");
 
-                // fcModel.bindContext("/FeatureControl").requestObject().catch(function () {
+                fcModel.getMetaModel().requestObject("/").then(() => {
+                    return fcModel.bindContext("/FeatureControl").requestObject();
+                }).catch(() => {
+                });
 
-                // });
             }
         });
     });

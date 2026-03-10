@@ -124,8 +124,6 @@
                 "type": "sap.ui.model.json.JSONModel",
                 "uri": "model/claim_status2.json"
             }
-
-
         },
         "resources": {
             "css": [
@@ -1134,14 +1132,13 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,                               
-                                            "enabled": true,
+                                            "visible": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${fc>/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3912,3 +3909,4 @@
         "service": "claimabackend.service"
     }
 }
+
