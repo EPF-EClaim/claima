@@ -1,5 +1,5 @@
 const cds = require('@sap/cds');
-const { INSERT, UPDATE, UPSERT, SELECT } = require('@sap/cds/lib/ql/cds-ql');
+const { INSERT, UPDATE, UPSERT, SELECT, where } = require('@sap/cds/lib/ql/cds-ql');
 const express = require('express');
 const app = express();
 
@@ -128,14 +128,32 @@ module.exports = (srv) => {
   srv.on('budgetchecking', async(req) => {
     const { ZBUDGET } = srv.entities;
     var { input } = req.data;
+    const condition = {};
+    let message;
 
-    // input.forEach(entry => {
-    //   if(entry.YEAR != null && entry.INTERNAL_ORDER != null && entry.FUND_CENTER != null
-    //     && entry.MATERIAL_GROUP != null 
-    //   ){
-        
-    //   }
-    // });
+    input.forEach(entry => {
+      if(entry.YEAR != null){
+        condition.YEAR = entry.YEAR;
+      }
+      if(entry.INTERNAL_ORDER != null){
+        condition.INTERNAL_ORDER = entry.INTERNAL_ORDER;
+      }
+      if(entry.COMMITMENT_ITEM != null){
+        condition.COMMITMENT_ITEM = entry.COMMITMENT_ITEM;
+      }
+      if(entry.MATERIAL_GROUP != null){
+        condition.MATERIAL_GROUP = entry.MATERIAL_GROUP;
+      }
+      if(entry.FUND_CENTER != null){
+        condition.FUND_CENTER = entry.FUND_CENTER;
+      }
+      try{
+      let budget = SELECT.one.from(ZBUDGET).where(condition).forUpdate();
+      let check = entry.AMOUNT < budget?.BUDGET_BALANCE ? true: false;
+      } catch (e) {
+        message = "Locking timeout"
+      }
+    });
 
     
   })
