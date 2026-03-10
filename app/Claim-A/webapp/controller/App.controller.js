@@ -142,13 +142,13 @@ sap.ui.define([
 					this._navToPARStatus();
 					break;
 				case "mysubstitution":
-					if (type === "Approver" || type === "Super Admin") {
+					// if (type === "Approver" || type === "Super Admin") {
 						var oRouter = this.getOwnerComponent().getRouter();
 						oRouter.navTo("ManageSub");
-					} else {
-						var message = this._getTexti18n("msg_unauthorized_substitution");
-						sap.m.MessageBox.error(message);
-					}
+					// } else {
+					// 	var message = this._getTexti18n("msg_unauthorized_substitution");
+					// 	sap.m.MessageBox.error(message);
+					// }
 					break;
 				case "config":
 					//Start EY_ATHIRAH
