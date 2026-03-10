@@ -625,13 +625,29 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 CASH_ADVANCE_AMOUNT,
                 FINAL_AMOUNT_TO_RECEIVE,
                 LAST_MODIFIED_DATE,
-                ZCLAIM_ITEM.ACCOUNT_NO,
                 ZCLAIM_ITEM.AMOUNT,
                 ZCLAIM_ITEM.RECEIPT_DATE,
                 ZCLAIM_ITEM.COST_CENTER,
                 ZCLAIM_ITEM.GL_ACCOUNT,
                 ZCLAIM_ITEM.MATERIAL_CODE
-        };
+        }
+
+    entity ZEMP_CASH_ADVANCE_DETAILS     as
+        projection on ECLAIM.ZCLAIM_HEADER {
+            key CLAIM_ID,
+            key ZCLAIM_ITEM.CLAIM_SUB_ID,
+                EMP_ID,
+                SUBMISSION_TYPE,
+                LAST_MODIFIED_DATE,
+                SUBMITTED_DATE,
+                CASH_ADVANCE_AMOUNT,
+                FINAL_AMOUNT_TO_RECEIVE,
+                ZCLAIM_ITEM.RECEIPT_DATE,
+                ZCLAIM_ITEM.AMOUNT,
+                ZCLAIM_ITEM.COST_CENTER,
+                ZCLAIM_ITEM.GL_ACCOUNT,
+                ZCLAIM_ITEM.MATERIAL_CODE
+        }
 
     entity ZAPPROVAL_SUMMARY             as
             select from ECLAIM.ZCLAIM_HEADER as CLAIM_HEADER
@@ -646,7 +662,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                     CLAIM_APPROVER.APPROVER_ID as APPROVER_ID
             }
             where
-                STATUS_ID = 'PENDING'and APPROVER_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)
+                STATUS_ID = 'PENDING'
         union all
             select from ECLAIM.ZREQUEST_HEADER as REQUEST_HEADER
             left join ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as REQUEST_APPROVER
@@ -660,5 +676,5 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                     REQUEST_APPROVER.APPROVER_ID as APPROVER_ID
             }
             where
-                REQUEST_HEADER.STATUS = 'PENDING' and APPROVER_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)
+                REQUEST_HEADER.STATUS = 'PENDING'
 };

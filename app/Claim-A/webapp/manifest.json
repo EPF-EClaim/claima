@@ -119,7 +119,13 @@
             "claim_status": {
                 "type": "sap.ui.model.json.JSONModel",
                 "uri": "model/claim_status.json"
+            },
+            "claim_status2": {
+                "type": "sap.ui.model.json.JSONModel",
+                "uri": "model/claim_status2.json"
             }
+
+
         },
         "resources": {
             "css": [

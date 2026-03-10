@@ -471,13 +471,13 @@
                             <!-- location -->
                             <table:Column width="16rem">
                                 <Label text="{i18n>location}" />
-                                <table:template><Text text="{employee_view>LOCATION}" /></table:template>
+                                <table:template><Text text="{employee_view>LOCATION_ITEM}" /></table:template>
                             </table:Column>
 
                             <!-- location_type -->
                             <table:Column width="12rem">
                                 <Label text="{i18n>location_type}" />
-                                <table:template><Text text="{employee_view>LOCATION_TYPE}" /></table:template>
+                                <table:template><Text text="{employee_view>LOC_TYPE_DESC}" /></table:template>
                             </table:Column>
 
                             <!-- lodging_add -->
@@ -501,7 +501,7 @@
                             <!-- wilayah -->
                             <table:Column width="12rem">
                                 <Label text="{i18n>wilayah}" />
-                                <table:template><Text text="{employee_view>REGION}" /></table:template>
+                                <table:template><Text text="{employee_view>AREA_DESC}" /></table:template>
                             </table:Column>
 
                             <!-- num_fm -->
@@ -563,7 +563,7 @@
                             <!-- semenanjung_or_sabah_sarawak -->
                             <table:Column width="18rem">
                                 <Label text="{i18n>semenanjung_or_sabah_sarawak}" />
-                                <table:template><Text text="{employee_view>AREA_DESC}" /></table:template>
+                                <table:template><Text text="{employee_view>REGION}" /></table:template>
                             </table:Column>
 
                             <!-- start_date -->
@@ -624,10 +624,10 @@
                                 <table:template><Text text="{employee_view>VEHICLE_TYPE_DESC}" /></table:template>
                             </table:Column>
 
-                            <!-- vehicle -->
+                            <!-- vehicle fare -->
                             <table:Column width="12rem">
                                 <Label text="{i18n>vehicle}" />
-                                <table:template><Text text="{employee_view>VEHICLE_TYPE}" /></table:template>
+                                <table:template><Text text="{employee_view>VEHICLE_FARE}" /></table:template>
                             </table:Column>
 
                             <!-- req_tripstartdate -->
@@ -644,10 +644,10 @@
                                 </table:template>
                             </table:Column>
 
-                            <!-- trip_start_time (no distinct field; reuse START_TIME if needed) -->
+                            <!-- trip_start_time  -->
                             <table:Column width="10rem">
                                 <Label text="{i18n>trip_start_time}" />
-                                <table:template><Text text="{employee_view>START_TIME}" /></table:template>
+                                <table:template><Text text="{employee_view>TRIP_START_TIME}" /></table:template>
                             </table:Column>
 
                             <!-- req_tripenddate -->
@@ -662,6 +662,12 @@
                                         }"
                                     />
                                 </table:template>
+                            </table:Column>
+
+                            <!-- trip_end_time  -->
+                            <table:Column width="10rem">
+                                <Label text="{i18n>trip_start_time}" />
+                                <table:template><Text text="{employee_view>TRIP_END_TIME}" /></table:template>
                             </table:Column>
 
                             <!-- travel_duration_days -->

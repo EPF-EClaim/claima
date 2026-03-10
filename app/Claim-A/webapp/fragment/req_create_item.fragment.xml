@@ -10,7 +10,7 @@
     <VBox
         id="request_create_item_fragment" 
         backgroundDesign="Solid"
-        class="roundedBox sapUiSmallMargin sapUiTinyMarginTop"
+        class="roundedBox sapUiSmallMargin sapUiTinyMarginTop sapUiTinyMarginBottom"
         rowGap="1rem">
         <VBox width="100%" height="100%" rowGap="1rem">
             <OverflowToolbar height="3rem">
@@ -117,6 +117,7 @@
                                             selectedKey="{request>/req_item/dependent}" 
                                             required="true" 
                                             forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
                                             items="{path: 'request>/ZEMP_DEPENDENT',
                                                     sorter: { path: 'DEPENDENT_NO', descending: false }}">
                                             <items>
@@ -156,8 +157,20 @@
                                             visible="false"
                                             id="i_sport_rep" >
                                     <form:fields>
-                                        <CheckBox 
-                                            selected="{request>/req_item/sport_rep}" />
+                                        <Select 
+                                            selectedKey="{request>/req_item/sport_rep}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZSPORTS_REPRESENTATION',
+                                                    sorter: { path: 'SPORTS_REPRESENTATION_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                            <items>
+                                                <core:Item key="{employee>SPORTS_REPRESENTATION_ID}" 
+                                                        text="{employee>SPORTS_REPRESENTATION_DESC}" />
+                                            </items>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -167,7 +180,8 @@
                                             id="i_club_membership" >
                                     <form:fields>
                                         <CheckBox 
-                                            selected="{request>/req_item/club_membership}" />
+                                            selected="{request>/req_item/club_membership}"
+                                            enabled="{= ${request>/view} !== 'view' }" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -178,7 +192,8 @@
                                     <form:fields>
                                         <unified:FileUploader
                                             change=".onImportChange"
-                                            value="{request>/req_item/doc1}" />
+                                            value="{request>/req_item/doc1}"
+                                            enabled="{= ${request>/view} !== 'view' }" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -191,11 +206,14 @@
                                             selectedKey="{request>/req_item/cat_purpose}" 
                                             required="true" 
                                             forceSelection="false"
-                                            items="{path: 'request>/claim_type_items',
-                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZMOBILE_CATEGORY_PURPOSE',
+                                                    sorter: { path: 'MOBILE_CATEGORY_PURPOSE_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
                                             <items>
-                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
-                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                                <core:Item key="{employee>MOBILE_CATEGORY_PURPOSE_ID}" 
+                                                        text="{employee>MOBILE_CATEGORY_PURPOSE_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
@@ -208,7 +226,8 @@
                                     <form:fields>
                                         <unified:FileUploader
                                             change=".onImportChange"
-                                            value="{request>/req_item/doc2}" />
+                                            value="{request>/req_item/doc2}"
+                                            enabled="{= ${request>/view} !== 'view' }" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -252,6 +271,30 @@
                                     </form:fields>
                                 </form:FormElement>
 
+                                <!-- Start Time -->
+                                <form:FormElement label="{i18n>req_i_start_date}"
+                                            visible="false"
+                                            id="i_start_time" >
+                                    <form:fields>
+                                        <m:TimePicker
+                                            value="{request>/req_item/start_time}"
+                                            textAlign="Begin"
+                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- End Time -->
+                                <form:FormElement label="{i18n>req_i_end_date}"
+                                            visible="false"
+                                            id="i_end_time" >
+                                    <form:fields>
+                                        <m:TimePicker
+                                            value="{request>/req_item/end_time}"
+                                            textAlign="Begin"
+                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                    </form:fields>
+                                </form:FormElement>
+
                                 <!-- Vehicle Ownership -->
                                 <form:FormElement label="{i18n>req_i_vehicle}"
                                             visible="false"
@@ -261,11 +304,14 @@
                                             selectedKey="{request>/req_item/vehicle_ownership}" 
                                             required="true" 
                                             forceSelection="false"
-                                            items="{path: 'request>/claim_type_items',
-                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZVEHICLE_OWNERSHIP',
+                                                    sorter: { path: 'VEHICLE_OWNERSHIP_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
                                             <items>
-                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
-                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                                <core:Item key="{employee>VEHICLE_OWNERSHIP_ID}" 
+                                                        text="{employee>VEHICLE_OWNERSHIP_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
@@ -280,11 +326,14 @@
                                             selectedKey="{request>/req_item/room_type}" 
                                             required="true" 
                                             forceSelection="false"
-                                            items="{path: 'request>/claim_type_items',
-                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZROOM_TYPE',
+                                                    sorter: { path: 'ROOM_TYPE_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
                                             <items>
-                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
-                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                                <core:Item key="{employee>ROOM_TYPE_ID}" 
+                                                        text="{employee>ROOM_TYPE_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
@@ -299,6 +348,7 @@
                                             selectedKey="{request>/req_item/country}" 
                                             required="true" 
                                             forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
                                             items="{path: 'request>/claim_type_items',
                                                     sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
                                             <items>
@@ -330,11 +380,14 @@
                                             selectedKey="{request>/req_item/area}" 
                                             required="true" 
                                             forceSelection="false"
-                                            items="{path: 'request>/claim_type_items',
-                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZAREA',
+                                                    sorter: { path: 'AREA_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
                                             <items>
-                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
-                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                                <core:Item key="{employee>AREA_ID}" 
+                                                        text="{employee>AREA_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
@@ -362,17 +415,20 @@
                                             selectedKey="{request>/req_item/type_of_vehicle}" 
                                             required="true" 
                                             forceSelection="false"
-                                            items="{path: 'request>/claim_type_items',
-                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZVEHICLE_TYPE',
+                                                    sorter: { path: 'VEHICLE_TYPE_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
                                             <items>
-                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
-                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                                <core:Item key="{employee>VEHICLE_TYPE_ID}" 
+                                                        text="{employee>VEHICLE_TYPE_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
                                 </form:FormElement>
 
-                                <!-- Kilometer -->
+                                <!-- Kilometer (NOT USED FOR NOW)-->
                                 <form:FormElement label="{i18n>req_i_kilometer}"
                                             visible="false"
                                             id="i_kilometer" >
@@ -382,7 +438,7 @@
                                     </form:fields>
                                 </form:FormElement>
 
-                                <!-- Rate Per Kilometer -->
+                                <!-- Rate Per Kilometer (NOT USED FOR NOW)-->
                                 <form:FormElement label="{i18n>req_i_rate_pkm}"
                                             visible="false"
                                             id="i_rate_per_kilometer" >
@@ -414,11 +470,14 @@
                                             selectedKey="{request>/req_item/flight_class}" 
                                             required="true" 
                                             forceSelection="false"
-                                            items="{path: 'request>/claim_type_items',
-                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZFLIGHT_CLASS',
+                                                    sorter: { path: 'FLIGHT_CLASS_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
                                             <items>
-                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
-                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                                <core:Item key="{employee>FLIGHT_CLASS_ID}" 
+                                                        text="{employee>FLIGHT_CLASS_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
@@ -433,11 +492,14 @@
                                             selectedKey="{request>/req_item/location_type}" 
                                             required="true" 
                                             forceSelection="false"
-                                            items="{path: 'request>/claim_type_items',
-                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZLOC_TYPE',
+                                                    sorter: { path: 'LOC_TYPE_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
                                             <items>
-                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
-                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                                <core:Item key="{employee>LOC_TYPE_ID}" 
+                                                        text="{employee>LOC_TYPE_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
@@ -456,12 +518,24 @@
                                 <!-- From Location -->
                                 <form:FormElement label="{i18n>req_i_from_location}"
                                             visible="false"
-                                            id="i_from_location"  >
+                                            id="i_from_location" >
                                     <form:fields>
                                         <m:Input 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/from_location}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- From Location Office-->
+                                <form:FormElement label="{i18n>req_i_from_location_office}"
+                                            visible="false"
+                                            id="i_from_location_office" >
+                                    <form:fields>
+                                        <m:Input 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/from_location_office}"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -487,6 +561,18 @@
                                     </form:fields>
                                 </form:FormElement>
 
+                                <!-- To Location Office -->
+                                <form:FormElement label="{i18n>req_i_to_location_office}"
+                                            visible="false"
+                                            id="i_to_location_office"  >
+                                    <form:fields>
+                                        <m:Input 
+                                            textAlign="Begin" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            value="{request>/req_item/to_location_office}"/>
+                                    </form:fields>
+                                </form:FormElement>
+
                                 <!-- Mode of Transfer-->
                                 <form:FormElement label="{i18n>req_i_transfer_mode}"
                                             visible="false"
@@ -496,11 +582,14 @@
                                             selectedKey="{request>/req_item/mode_of_transfer}" 
                                             required="true" 
                                             forceSelection="false"
-                                            items="{path: 'request>/claim_type_items',
-                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZTRANSFER_MODE',
+                                                    sorter: { path: 'TRANSFER_MODE_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
                                             <items>
-                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
-                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                                <core:Item key="{employee>TRANSFER_MODE_ID}" 
+                                                        text="{employee>TRANSFER_MODE_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
@@ -540,11 +629,14 @@
                                             selectedKey="{request>/req_item/sss}" 
                                             required="true" 
                                             forceSelection="false"
-                                            items="{path: 'request>/claim_type_items',
-                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZREGION',
+                                                    sorter: { path: 'REGION_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
                                             <items>
-                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
-                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                                <core:Item key="{employee>REGION_ID}" 
+                                                        text="{employee>REGION_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
@@ -559,11 +651,14 @@
                                             selectedKey="{request>/req_item/marriage_cat}" 
                                             required="true" 
                                             forceSelection="false"
-                                            items="{path: 'request>/claim_type_items',
-                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZMARITAL_CAT',
+                                                    sorter: { path: 'MARRIAGE_CATEGORY_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
                                             <items>
-                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
-                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                                <core:Item key="{employee>MARRIAGE_CATEGORY_ID}" 
+                                                        text="{employee>MARRIAGE_CATEGORY_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
@@ -611,28 +706,9 @@
                                     </form:fields>
                                 </form:FormElement>
 
-                                <!-- Lodging Category -->
-                                <form:FormElement label="{i18n>req_i_lodging}"
-                                            visible="false"
-                                            id="i_lodging_cat">
-                                    <form:fields>
-                                        <Select 
-                                            selectedKey="{request>/req_item/lodging_cat}" 
-                                            required="true" 
-                                            forceSelection="false"
-                                            items="{path: 'request>/claim_type_items',
-                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
-                                            <items>
-                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
-                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
-                                            </items>
-                                        </Select>
-                                    </form:fields>
-                                </form:FormElement>
-
                                 <!-- Estimated Participants -->
                                 <form:FormElement label="{i18n>req_i_estparticipant}"
-                                            visible="false"
+                                            visible="{= ${request>/req_header/grptype} === 'GRP' || ${request>/req_header/grptype} === 'Group' }"
                                             id="i_no_of_participant" >
                                     <form:fields>
                                         <m:Input 
