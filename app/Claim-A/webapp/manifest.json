@@ -128,8 +128,6 @@
                 "type": "sap.ui.model.json.JSONModel",
                 "uri": "model/approval_log.json"
             }
-
-
         },
         "resources": {
             "css": [
@@ -1139,13 +1137,12 @@
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
                                             "visible": true,
-                                            "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${fc>/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3916,3 +3913,4 @@
         "service": "claimabackend.service"
     }
 }
+
