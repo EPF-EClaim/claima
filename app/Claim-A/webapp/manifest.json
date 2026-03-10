@@ -1134,7 +1134,7 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": true,                               
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"

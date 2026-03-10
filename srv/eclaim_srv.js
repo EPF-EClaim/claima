@@ -98,6 +98,8 @@ module.exports = (srv) => {
   );
 
   srv.on('READ', 'FeatureControl', async (req) => {
+    const { ZEMP_MASTER } = srv.entities;
+
     const emailFromToken =
       req.user?.attr?.email ||
       req.user?.attr?.mail ||
@@ -112,9 +114,9 @@ module.exports = (srv) => {
 
 
     if (user_type === "JKEW Admin") {
-      operationHidden = true;   
+      operationHidden = true;
     } else if (user_type === "DTD Admin") {
-      operationHidden = false;  
+      operationHidden = false;
     }
 
     return {
