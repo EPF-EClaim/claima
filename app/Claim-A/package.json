@@ -42,6 +42,12 @@
   "private": true,
   "cds": {
     "requires": {
+       "IS_NonProd_Conn": { 
+        "kind": "odata",
+        "credentials": {
+          "destination": "IS_NonProd_Conn"
+        }
+      },
       "[production]": {
         "auth": "xsuaa"
       }
