@@ -24,6 +24,11 @@
       "destination": "srv-api"
     },
     {
+      "source": "^/SuccessFactors_API/(.*)$",
+      "target": "/$1",
+      "destination": "Conn_SF_DEV_API"
+    },
+    {
       "source": "^(?:/app|/app/.*)?/test-resources/(.*)$",
       "target": "/test-resources/$1",
       "authenticationType": "xsuaa",
