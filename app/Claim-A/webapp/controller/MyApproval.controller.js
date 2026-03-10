@@ -229,6 +229,7 @@ sap.ui.define([
                 oReq.setProperty("/req_header/reqamt", req_amt);
                 oReq.setProperty("/req_item_rows", aItems);
                 oReq.setProperty("/list_count", aItems.length);
+                oReq.setProperty("/view", "approver");
 
                 return { header: oHeader, items: aItems };
             } catch (err) {
