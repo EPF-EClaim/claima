@@ -96,14 +96,14 @@ entity ZREQUEST_HEADER : managed {
         CASH_ADVANCE_DATE             : Date;
         LAST_APPROVED_DATE            : Date;
         LAST_APPROVED_TIME            : Time;
-        TRAVEL_ALONE_FAMILY           : String(1);
-        TRAVEL_FAMILY_NOW_LATER       : String(1);
+        TRAVEL_ALONE_FAMILY           : String(2);
+        TRAVEL_FAMILY_NOW_LATER       : String(2);
         LAST_SEND_BACK_DATE           : Date;
         LAST_SEND_BACK_TIME           : Time;
-        REJECT_REASON_ID              : String;
+        REJECT_REASON_ID              : String(3);
         REJECT_REASON_DATE            : Date;
         REJECT_REASON_TIME            : Time;
-        SEND_BACK_REASON_ID           : String;
+        SEND_BACK_REASON_ID           : String(3);
         APPROVER1                     : String(6);
         APPROVER2                     : String(6);
         APPROVER3                     : String(6);
@@ -111,6 +111,8 @@ entity ZREQUEST_HEADER : managed {
         APPROVER5                     : String(6);
         LAST_MODIFIED_DATE            : Date;
         SUBMITTED_DATE                : Date;
+        TRANSFER_MODE_ID              : String(2);
+        PROJECT_CODE                  : String;
         ZREQUEST_ITEM                 : Composition of many ZREQUEST_ITEM
                                             on ZREQUEST_ITEM.REQUEST_ID = REQUEST_ID;
         ZREQUEST_TYPE                 : Association to one ZREQUEST_TYPE
@@ -135,6 +137,14 @@ entity ZREQUEST_HEADER : managed {
                                             on ZCLAIM_TYPE.CLAIM_TYPE_ID = CLAIM_TYPE_ID;
         ZAPPROVER_DETAILS_PREAPPROVAL : Composition of many ZAPPROVER_DETAILS_PREAPPROVAL
                                             on ZAPPROVER_DETAILS_PREAPPROVAL.PREAPPROVAL_ID = REQUEST_ID;
+        ZTRANSFER_MODE                : Association to ZTRANSFER_MODE
+                                            on ZTRANSFER_MODE.TRANSFER_MODE_ID = TRANSFER_MODE_ID;
+        ZPROJECT_HDR                  : Association to ZPROJECT_HDR
+                                            on ZPROJECT_HDR.PROJECT_CODE_IO = PROJECT_CODE;
+        ZFAMILY_TIMING                : Association to ZFAMILY_TIMING
+                                            on ZFAMILY_TIMING.FAMILY_TIMING_ID = TRAVEL_FAMILY_NOW_LATER;
+        ZTRAVEL_TYPE                  : Association to ZTRAVEL_TYPE
+                                            on ZTRAVEL_TYPE.TRAVEL_TYPE_ID = TRAVEL_ALONE_FAMILY
 }
 
 entity ZREQUEST_ITEM : managed {
@@ -152,7 +162,7 @@ entity ZREQUEST_ITEM : managed {
         SEND_TO_SF                 : Boolean;
         LOCATION                   : String;
         DECLARE_CLUB_MEMBERSHIP    : Boolean;
-        KWSP_SPORTS_REPRESENTATION : String;
+        KWSP_SPORTS_REPRESENTATION : String(2);
         SPORTS_CLAIM_DISCLAIMER    : Boolean;
         VEHICLE_OWNERSHIP_ID       : String;
         MODE_OF_TRANSFER           : String;
@@ -167,7 +177,7 @@ entity ZREQUEST_ITEM : managed {
         ATTACHMENT1                : String;
         ATTACHMENT2                : String;
         PURPOSE                    : String;
-        MOBILE_CATEGORY_PURPOSE_ID : String;
+        MOBILE_CATEGORY_PURPOSE_ID : String(2);
         KILOMETER                  : Decimal(6, 2);
         RATE_PER_KM                : String;
         FLIGHT_CLASS               : String;
@@ -193,6 +203,8 @@ entity ZREQUEST_ITEM : managed {
         DEPENDENT_RELATIONSHIP     : String;
         METER_CUBE_ENTITLED        : Decimal(6, 2);
         METER_CUBE_ACTUAL          : Decimal(6, 2);
+        FARE_TYPE_ID               : String(2);
+        VEHICLE_CLASS_ID           : String(2);
         ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
                                          on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT               : Association to one ZMARITAL_CAT
@@ -244,6 +256,10 @@ entity ZREQUEST_ITEM : managed {
                                          and ZEMP_DEPENDENT.RELATIONSHIP = DEPENDENT_RELATIONSHIP;
         ZSPORTS_REPRESENTATION     : Association to ZSPORTS_REPRESENTATION
                                          on ZSPORTS_REPRESENTATION.SPORTS_REPRESENTATION_ID = KWSP_SPORTS_REPRESENTATION;
+        ZFARE_TYPE                 : Association to ZFARE_TYPE
+                                         on ZFARE_TYPE.FARE_TYPE_ID = FARE_TYPE_ID;
+        ZVEHICLE_CLASS             : Association to ZVEHICLE_CLASS
+                                         on ZVEHICLE_CLASS.VEHICLE_CLASS_ID = VEHICLE_CLASS_ID;
 }
 
 entity ZREQ_ITEM_PART : managed {
@@ -273,15 +289,20 @@ entity ZCLAIM_TYPE : managed {
     key CLAIM_TYPE_ID    : String  @mandatory  @Common.Label: 'Claim Type ID';
         CLAIM_TYPE_DESC  : String  @Common.Label    : 'Claim Type Description';
         GL_ACCOUNT       : String  @Common.Label    : 'GL Account';
-        CATEGORY_ID      : String  @Common.Label    : 'Category ID';
         END_DATE         : Date    @Common.Label    : 'End Date';
         START_DATE       : Date    @Common.Label    : 'Start Date';
         STATUS           : String  @Common.Label    : 'Status';
+        REQUEST_TYPE     : String  @Common.Label    : 'Request Type';
+        IND_OR_GROUP     : String  @Common.Label    : 'Individual/Group';
+        PROJECT_CLAIM    : Boolean @Common.Label    : 'Project Claim';
         ZCLAIM_TYPE_ITEM : Composition of many ZCLAIM_TYPE_ITEM
                                on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID
                                    @assert.integrity: false;
-        ZCLAIM_CATEGORY  : Association to ZCLAIM_CATEGORY
-                               on ZCLAIM_CATEGORY.CLAIM_CAT_ID = CATEGORY_ID;
+        ZREQUEST_TYPE    : Association to ZREQUEST_TYPE
+                               on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE;
+        ZINDIV_GROUP     : Association to ZINDIV_GROUP
+                               on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
+
 }
 
 entity ZNUM_RANGE : managed {
@@ -319,10 +340,10 @@ entity ZCLAIM_HEADER : managed {
         LAST_APPROVED_TIME             : Time;
         LAST_SEND_BACK_DATE            : Date;
         LAST_SEND_BACK_TIME            : Time;
-        REJECT_REASON_ID               : String;
+        REJECT_REASON_ID               : String(3);
         REJECT_REASON_DATE             : Date;
         REJECT_REASON_TIME             : Time;
-        SEND_BACK_REASON_ID            : String;
+        SEND_BACK_REASON_ID            : String(3);
         PAYMENT_DATE                   : Date;
         LOCATION                       : String;
         SPOUSE_OFFICE_ADDRESS          : String;
@@ -438,24 +459,24 @@ entity ZCLAIM_ITEM : managed {
         ANGGOTA_ID                 : String;
         ANGGOTA_NAME               : String;
         DEPENDENT_NAME             : String;
-        TYPE_OF_PROFESSIONAL_BODY  : String;
+        TYPE_OF_PROFESSIONAL_BODY  : String(3);
         DISCLAIMER_GALAKAN         : String;
         VEHICLE_OWNERSHIP_ID       : String;
-        MODE_OF_TRANSFER           : String;
+        MODE_OF_TRANSFER           : String(2);
         TRANSFER_DATE              : Date;
         NO_OF_DAYS                 : Integer;
         FAMILY_COUNT               : Integer;
-        FUNERAL_TRANSPORTATION     : String;
+        FUNERAL_TRANSPORTATION     : String(2);
         COST_CENTER                : String;
         GL_ACCOUNT                 : String;
         MATERIAL_CODE              : String;
         COURSE_TITLE               : String;
         PURPOSE                    : String;
-        MOBILE_CATEGORY_PURPOSE_ID : String;
-        STUDY_LEVELS_ID            : String;
+        MOBILE_CATEGORY_PURPOSE_ID : String(2);
+        STUDY_LEVELS_ID            : String(2);
         ACTUAL_AMOUNT              : Decimal(16, 2);
-        FARE_TYPE_ID               : String;
-        VEHICLE_CLASS_ID           : String;
+        FARE_TYPE_ID               : String(2);
+        VEHICLE_CLASS_ID           : String(2);
         NEED_FOREIGN_CURRENCY      : Boolean;
         CURRENCY_CODE              : String;
         CURRENCY_RATE              : Decimal(6, 2);
@@ -466,9 +487,9 @@ entity ZCLAIM_ITEM : managed {
         DEPENDENT                  : String;
         DEPENDENT_RELATIONSHIP     : String;
         POLICY_NUMBER              : String;
-        INSURANCE_PROVIDER_ID      : String;
+        INSURANCE_PROVIDER_ID      : String(3);
         INSURANCE_PROVIDER_NAME    : String;
-        INSURANCE_PACKAGE_ID       : String;
+        INSURANCE_PACKAGE_ID       : String(2);
         INSURANCE_PURCHASE_DATE    : Date;
         INSURANCE_CERT_START_DATE  : Date;
         INSURANCE_CERT_END_DATE    : Date;
@@ -663,6 +684,7 @@ entity ZSTATUS : managed {
 entity ZROOM_TYPE : managed {
     key ROOM_TYPE_ID   : String  @mandatory  @Common.Label: 'Room Type ID';
         ROOM_TYPE_DESC : String  @Common.Label: 'Room Type Description';
+        LEVEL          : Integer @Common.Label: 'Level';
         START_DATE     : Date    @Common.Label: 'Start Date';
         END_DATE       : Date    @Common.Label: 'End Date';
         STATUS         : String  @Common.Label: 'Status';
@@ -671,6 +693,7 @@ entity ZROOM_TYPE : managed {
 entity ZFLIGHT_CLASS : managed {
     key FLIGHT_CLASS_ID   : String  @mandatory  @Common.Label: 'Flight Class ID';
         FLIGHT_CLASS_DESC : String  @Common.Label: 'Flight Class Description';
+        LEVEL             : Integer @Common.Label: 'Level';
         START_DATE        : Date    @Common.Label: 'Start Date';
         END_DATE          : Date    @Common.Label: 'End Date';
         STATUS            : String  @Common.Label: 'Status';
@@ -983,12 +1006,12 @@ entity ZLENDER_NAME : managed {
 }
 
 entity ZREJECT_REASON : managed {
-    key REASON_ID   : String  @mandatory  @Common.Label: 'Reason ID';
-    key REASON_TYPE : String  @mandatory  @Common.Label: 'Reason Type';
-    key START_DATE  : Date    @mandatory  @Common.Label: 'Start Date';
-    key END_DATE    : Date    @mandatory  @Common.Label: 'End Date';
-        STATUS      : String  @Common.Label: 'Status';
-        REASON_DESC : String  @Common.Label: 'Reason Text';
+    key REASON_ID   : String(3)  @mandatory  @Common.Label: 'Reason ID';
+    key REASON_TYPE : String     @mandatory  @Common.Label: 'Reason Type';
+    key START_DATE  : Date       @mandatory  @Common.Label: 'Start Date';
+    key END_DATE    : Date       @mandatory  @Common.Label: 'End Date';
+        STATUS      : String     @Common.Label: 'Status';
+        REASON_DESC : String     @Common.Label: 'Reason Text';
 }
 
 entity ZWORKFLOW_STEP : managed {
@@ -1033,133 +1056,135 @@ entity ZCURRENCY : managed {
 }
 
 entity ZMOBILE_CATEGORY_PURPOSE : managed {
-    key MOBILE_CATEGORY_PURPOSE_ID   : String  @mandatory  @Common.Label: 'Category/Purpose (Mobile) ID';
-        MOBILE_CATEGORY_PURPOSE_DESC : String  @Common.Label: 'Category/Purpose (Mobile) Description';
-        START_DATE                   : Date    @Common.Label: 'Start Date';
-        END_DATE                     : Date    @Common.Label: 'End Date';
-        STATUS                       : String  @Common.Label: 'Status';
+    key MOBILE_CATEGORY_PURPOSE_ID   : String(2)  @mandatory  @Common.Label: 'Category/Purpose (Mobile) ID';
+        MOBILE_CATEGORY_PURPOSE_DESC : String     @Common.Label: 'Category/Purpose (Mobile) Description';
+        START_DATE                   : Date       @Common.Label: 'Start Date';
+        END_DATE                     : Date       @Common.Label: 'End Date';
+        STATUS                       : String     @Common.Label: 'Status';
 
 }
 
 entity ZVEHICLE_CLASS : managed {
-    key VEHICLE_CLASS_ID   : String  @mandatory  @Common.Label: 'Vehicle Class ID';
-        VEHICLE_CLASS_DESC : String  @Common.Label: 'Vehicle Class Description';
-        START_DATE         : Date    @Common.Label: 'Start Date';
-        END_DATE           : Date    @Common.Label: 'End Date';
-        STATUS             : String  @Common.Label: 'Status';
+    key VEHICLE_CLASS_ID   : String(2)  @mandatory  @Common.Label: 'Vehicle Class ID';
+        VEHICLE_CLASS_DESC : String     @Common.Label: 'Vehicle Class Description';
+        LEVEL              : Integer    @Common.Label: 'Level';
+        START_DATE         : Date       @Common.Label: 'Start Date';
+        END_DATE           : Date       @Common.Label: 'End Date';
+        STATUS             : String     @Common.Label: 'Status';
 
 }
 
 entity ZINSURANCE_PROVIDER : managed {
-    key INSURANCE_PROVIDER_ID   : String  @mandatory  @Common.Label: 'Insurance Provider ID';
-        INSURANCE_PROVIDER_DESC : String  @Common.Label: 'Insurance Provider Description';
-        START_DATE              : Date    @Common.Label: 'Start Date';
-        END_DATE                : Date    @Common.Label: 'End Date';
-        STATUS                  : String  @Common.Label: 'Status';
+    key INSURANCE_PROVIDER_ID   : String(3)  @mandatory  @Common.Label: 'Insurance Provider ID';
+        INSURANCE_PROVIDER_DESC : String     @Common.Label: 'Insurance Provider Description';
+        START_DATE              : Date       @Common.Label: 'Start Date';
+        END_DATE                : Date       @Common.Label: 'End Date';
+        STATUS                  : String     @Common.Label: 'Status';
 }
 
 entity ZINSURANCE_PACKAGE : managed {
-    key INSURANCE_PACKAGE_ID    : String  @mandatory  @Common.Label: 'Insurance Package ID';
-        ZINSURANCE_PACKAGE_DESC : String  @Common.Label: 'Insurance Package Description';
-        START_DATE              : Date    @Common.Label: 'Start Date';
-        END_DATE                : Date    @Common.Label: 'End Date';
-        STATUS                  : String  @Common.Label: 'Status';
+    key INSURANCE_PACKAGE_ID    : String(2)  @mandatory  @Common.Label: 'Insurance Package ID';
+        ZINSURANCE_PACKAGE_DESC : String     @Common.Label: 'Insurance Package Description';
+        START_DATE              : Date       @Common.Label: 'Start Date';
+        END_DATE                : Date       @Common.Label: 'End Date';
+        STATUS                  : String     @Common.Label: 'Status';
 }
 
 entity ZPROFESIONAL_BODY : managed {
-    key PROFESIONAL_BODY_ID   : String  @mandatory  @Common.Label: 'Type of Profesional Body ID';
-        PROFESIONAL_BODY_DESC : String  @Common.Label: 'Type of Profesional Body Description';
-        START_DATE            : Date    @Common.Label: 'Start Date';
-        END_DATE              : Date    @Common.Label: 'End Date';
-        STATUS                : String  @Common.Label: 'Status';
+    key PROFESIONAL_BODY_ID   : String(3)  @mandatory  @Common.Label: 'Type of Profesional Body ID';
+        PROFESIONAL_BODY_DESC : String     @Common.Label: 'Type of Profesional Body Description';
+        START_DATE            : Date       @Common.Label: 'Start Date';
+        END_DATE              : Date       @Common.Label: 'End Date';
+        STATUS                : String     @Common.Label: 'Status';
 }
 
 entity ZSTUDY_LEVELS : managed {
-    key STUDY_LEVELS_ID   : String  @mandatory  @Common.Label: 'Level of Studies ID';
-        STUDY_LEVELS_DESC : String  @Common.Label: 'Level of Studies Description';
-        START_DATE        : Date    @Common.Label: 'Start Date';
-        END_DATE          : Date    @Common.Label: 'End Date';
-        STATUS            : String  @Common.Label: 'Status';
+    key STUDY_LEVELS_ID   : String(2)  @mandatory  @Common.Label: 'Level of Studies ID';
+        STUDY_LEVELS_DESC : String     @Common.Label: 'Level of Studies Description';
+        START_DATE        : Date       @Common.Label: 'Start Date';
+        END_DATE          : Date       @Common.Label: 'End Date';
+        STATUS            : String     @Common.Label: 'Status';
 }
 
 entity ZTRANSFER_MODE : managed {
-    key TRANSFER_MODE_ID   : String  @mandatory  @Common.Label: 'Mode of Transfer ID';
-        TRANSFER_MODE_DESC : String  @Common.Label: 'Mode of Transfer Description';
-        START_DATE         : Date    @Common.Label: 'Start Date';
-        END_DATE           : Date    @Common.Label: 'End Date';
-        STATUS             : String  @Common.Label: 'Status';
+    key TRANSFER_MODE_ID   : String(2)  @mandatory  @Common.Label: 'Mode of Transfer ID';
+        TRANSFER_MODE_DESC : String     @Common.Label: 'Mode of Transfer Description';
+        NUMBER_OF_DAYS     : Integer    @Common.Label: 'Number of Days';
+        START_DATE         : Date       @Common.Label: 'Start Date';
+        END_DATE           : Date       @Common.Label: 'End Date';
+        STATUS             : String     @Common.Label: 'Status';
 }
 
 entity ZTRANSPORT_PASSING : managed {
-    key TRANSPORT_PASSING_ID   : String  @mandatory  @Common.Label: 'Transportation of the passing (dead) ID';
-        TRANSPORT_PASSING_DESC : String  @Common.Label: 'Transportation of the passing (dead) Description';
-        START_DATE             : Date    @Common.Label: 'Start Date';
-        END_DATE               : Date    @Common.Label: 'End Date';
-        STATUS                 : String  @Common.Label: 'Status';
+    key TRANSPORT_PASSING_ID   : String(2)  @mandatory  @Common.Label: 'Transportation of the passing (dead) ID';
+        TRANSPORT_PASSING_DESC : String     @Common.Label: 'Transportation of the passing (dead) Description';
+        START_DATE             : Date       @Common.Label: 'Start Date';
+        END_DATE               : Date       @Common.Label: 'End Date';
+        STATUS                 : String     @Common.Label: 'Status';
 }
 
 entity ZTRAVEL_TYPE : managed {
-    key TRAVEL_TYPE_ID   : String  @mandatory  @Common.Label: 'Travel (Sendirian/With Family) ID';
-        TRAVEL_TYPE_DESC : String  @Common.Label: 'Travel (Sendirian/With Family) Description';
-        START_DATE       : Date    @Common.Label: 'Start Date';
-        END_DATE         : Date    @Common.Label: 'End Date';
-        STATUS           : String  @Common.Label: 'Status';
+    key TRAVEL_TYPE_ID   : String(2)  @mandatory  @Common.Label: 'Travel (Sendirian/With Family) ID';
+        TRAVEL_TYPE_DESC : String     @Common.Label: 'Travel (Sendirian/With Family) Description';
+        START_DATE       : Date       @Common.Label: 'Start Date';
+        END_DATE         : Date       @Common.Label: 'End Date';
+        STATUS           : String     @Common.Label: 'Status';
 }
 
 entity ZFAMILY_TIMING : managed {
-    key FAMILY_TIMING_ID   : String  @mandatory  @Common.Label: 'With Family Now or Later ID';
-        FAMILY_TIMING_DESC : String  @Common.Label: 'With Family Now or Later Description';
-        START_DATE         : Date    @Common.Label: 'Start Date';
-        END_DATE           : Date    @Common.Label: 'End Date';
-        STATUS             : String  @Common.Label: 'Status';
+    key FAMILY_TIMING_ID   : String(2)  @mandatory  @Common.Label: 'With Family Now or Later ID';
+        FAMILY_TIMING_DESC : String     @Common.Label: 'With Family Now or Later Description';
+        START_DATE         : Date       @Common.Label: 'Start Date';
+        END_DATE           : Date       @Common.Label: 'End Date';
+        STATUS             : String     @Common.Label: 'Status';
 }
 
 entity ZSPORTS_REPRESENTATION : managed {
-    key SPORTS_REPRESENTATION_ID   : String  @mandatory  @Common.Label: 'Represent KWSP in Sport Activity ID';
-        SPORTS_REPRESENTATION_DESC : String  @Common.Label: 'Represent KWSP in Sport Activity Description';
-        START_DATE                 : Date    @Common.Label: 'Start Date';
-        END_DATE                   : Date    @Common.Label: 'End Date';
-        STATUS                     : String  @Common.Label: 'Status';
+    key SPORTS_REPRESENTATION_ID   : String(2)  @mandatory  @Common.Label: 'Represent KWSP in Sport Activity ID';
+        SPORTS_REPRESENTATION_DESC : String     @Common.Label: 'Represent KWSP in Sport Activity Description';
+        START_DATE                 : Date       @Common.Label: 'Start Date';
+        END_DATE                   : Date       @Common.Label: 'End Date';
+        STATUS                     : String     @Common.Label: 'Status';
 }
 
 entity ZPOSITION_EVENT_REASON : managed {
-    key POSITION_EVENT_REASON_ID   : String  @mandatory  @Common.Label: 'Position Event Reason ID';
-        POSITION_EVENT_REASON_DESC : String  @Common.Label: 'Position Event Reason Description';
-        START_DATE                 : Date    @Common.Label: 'Start Date';
-        END_DATE                   : Date    @Common.Label: 'End Date';
-        STATUS                     : String  @Common.Label: 'Status';
+    key POSITION_EVENT_REASON_ID   : String(4)  @mandatory  @Common.Label: 'Position Event Reason ID';
+        POSITION_EVENT_REASON_DESC : String     @Common.Label: 'Position Event Reason Description';
+        START_DATE                 : Date       @Common.Label: 'Start Date';
+        END_DATE                   : Date       @Common.Label: 'End Date';
+        STATUS                     : String     @Common.Label: 'Status';
 }
 
 entity ZEMP_DEPENDENT_TYPE : managed {
-    key DEPENDENT_TYPE_ID   : String  @mandatory  @Common.Label: 'Dependent Type ID';
-        DEPENDENT_TYPE_DESC : String  @Common.Label: 'Dependent Type Description';
-        START_DATE          : Date    @Common.Label: 'Start Date';
-        END_DATE            : Date    @Common.Label: 'End Date';
-        STATUS              : String  @Common.Label: 'Status';
+    key DEPENDENT_TYPE_ID   : String(2)  @mandatory  @Common.Label: 'Dependent Type ID';
+        DEPENDENT_TYPE_DESC : String     @Common.Label: 'Dependent Type Description';
+        START_DATE          : Date       @Common.Label: 'Start Date';
+        END_DATE            : Date       @Common.Label: 'End Date';
+        STATUS              : String     @Common.Label: 'Status';
 }
 
 entity ZCLAIM_BASIS : managed {
-    key CLAIM_BASIS_ID   : String  @mandatory  @Common.Label: 'Claim Basis ID';
-        CLAIM_BASIS_DESC : String  @Common.Label: 'Claim Basis Description';
-        START_DATE       : Date    @Common.Label: 'Start Date';
-        END_DATE         : Date    @Common.Label: 'End Date';
-        STATUS           : String  @Common.Label: 'Status';
+    key CLAIM_BASIS_ID   : String(2)  @mandatory  @Common.Label: 'Claim Basis ID';
+        CLAIM_BASIS_DESC : String     @Common.Label: 'Claim Basis Description';
+        START_DATE       : Date       @Common.Label: 'Start Date';
+        END_DATE         : Date       @Common.Label: 'End Date';
+        STATUS           : String     @Common.Label: 'Status';
 }
 
 entity ZHOTEL_LODGING : managed {
-    key HOTEL_LODGING_ID   : String  @mandatory  @Common.Label: 'Hotel/Lodjing ID';
-        HOTEL_LODGING_DESC : String  @Common.Label: 'Hotel/Lodjing Description';
-        START_DATE         : Date    @Common.Label: 'Start Date';
-        END_DATE           : Date    @Common.Label: 'End Date';
-        STATUS             : String  @Common.Label: 'Status';
+    key HOTEL_LODGING_ID   : String(2)  @mandatory  @Common.Label: 'Hotel/Lodjing ID';
+        HOTEL_LODGING_DESC : String     @Common.Label: 'Hotel/Lodjing Description';
+        START_DATE         : Date       @Common.Label: 'Start Date';
+        END_DATE           : Date       @Common.Label: 'End Date';
+        STATUS             : String     @Common.Label: 'Status';
 }
 
 entity ZFARE_TYPE : managed {
-    key FARE_TYPE_ID   : String  @mandatory  @Common.Label: 'Fare Type ID';
-        FARE_TYPE_DESC : String  @Common.Label: 'Fare Type Description';
-        START_DATE     : Date    @Common.Label: 'Start Date';
-        END_DATE       : Date    @Common.Label: 'End Date';
-        STATUS         : String  @Common.Label: 'Status';
+    key FARE_TYPE_ID   : String(2)  @mandatory  @Common.Label: 'Fare Type ID';
+        FARE_TYPE_DESC : String     @Common.Label: 'Fare Type Description';
+        START_DATE     : Date       @Common.Label: 'Start Date';
+        END_DATE       : Date       @Common.Label: 'End Date';
+        STATUS         : String     @Common.Label: 'Status';
 }
 
 entity ZMETER_CUBE : managed {
@@ -1199,27 +1224,27 @@ entity ZELIGIBILITY_RULE : managed {
         CLAIM_YEARS               : Integer        @Common.Label: 'Allowed to claim up to ? Years';
         SUBSIDIESED_RATE          : Decimal(5, 2)  @Common.Label: 'Subsidiesed Rate';
         MARITAL_STATUS            : String         @Common.Label: 'Marital Status';
-        DEPENDENT_TYPE_ID         : String         @Common.Label: 'Anggota/spouse/anak';
+        DEPENDENT_TYPE_ID         : String(2)      @Common.Label: 'Anggota/spouse/anak';
         VEHICLE_OWNERSHIP_ID      : String         @Common.Label: 'Kenderaan Sendiri/Pejabat';
         CLAIMABLE_PERIOD_DAYS     : Integer        @Common.Label: 'Claimable Period (Days)';
         REGION_ID                 : String         @Common.Label: 'Semenanjung or Sabah/Sarawak/Labuan';
         MAXIMUM_DAYS              : Integer        @Common.Label: 'Maximum Days';
-        CLAIM_BASIS_ID            : String         @Common.Label: 'Based on Receipt/Max amount';
-        TRANSFER_MODE_ID          : String         @Common.Label: 'Mode of Transfer';
-        EVENT_REASON              : String         @Common.Label: 'Event Reason';
+        CLAIM_BASIS_ID            : String(2)      @Common.Label: 'Based on Receipt/Max amount';
+        TRANSFER_MODE_ID          : String(2)      @Common.Label: 'Mode of Transfer';
+        EVENT_REASON              : String(4)      @Common.Label: 'Event Reason';
         NO_OF_NIGHT               : Integer        @Common.Label: 'Number of Nights';
         VEHICLE_TYPE_ID           : String         @Common.Label: 'Vehicle Type';
         RATE                      : Decimal(5, 2)  @Common.Label: 'Rate';
         MARRIAGE_CATEGORY         : String         @Common.Label: 'Marriage Category';
         FLIGHT_CLASS_ID           : String         @Common.Label: 'Flight Class';
-        HOTEL_LODGING_ID          : String         @Common.Label: 'Hotel/Lodjing';
-        TRANSPORT_CLASS           : String         @Common.Label: 'Train/Boat Class';
-        TRANSPORT_PASSING_ID      : String         @Common.Label: 'Transportation of The Passing (Dead)';
-        INSURANCE_PACKAGE_ID      : String         @Common.Label: 'Insurance Package';
+        HOTEL_LODGING_ID          : String(2)      @Common.Label: 'Hotel/Lodjing';
+        TRANSPORT_CLASS           : String(2)      @Common.Label: 'Train/Boat Class';
+        TRANSPORT_PASSING_ID      : String(2)      @Common.Label: 'Transportation of The Passing (Dead)';
+        INSURANCE_PACKAGE_ID      : String(2)      @Common.Label: 'Insurance Package';
         TRAVEL_DAYS_ID            : String         @Common.Label: 'Number of Days Category (Travel Insurance)';
         START_DATE                : Date           @Common.Label: 'Start Date';
         END_DATE                  : Date           @Common.Label: 'End Date';
-        CURRENCY                  : String         @Common.Label: 'Currency';
+        CURRENCY                  : String(3)      @Common.Label: 'Currency';
         ROOM_TYPE_ID              : String         @Common.Label: 'Room Type';
         ZEMP_TYPE                 : Association to ZEMP_TYPE
                                         on ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;
@@ -1265,7 +1290,7 @@ entity ZAPPROVER_DETAILS_CLAIMS : managed {
         APPROVER_ID            : String;
         SUBSTITUTE_APPROVER_ID : String;
         STATUS                 : String;
-        REJECT_REASON_ID       : String;
+        REJECT_REASON_ID       : String(3);
         PROCESS_TIMESTAMP      : Timestamp;
         COMMENT                : String;
         ZEMP_MASTER_APPROVER   : Association to one ZEMP_MASTER
@@ -1286,7 +1311,7 @@ entity ZAPPROVER_DETAILS_PREAPPROVAL : managed {
         APPROVER_ID            : String;
         SUBSTITUTE_APPROVER_ID : String;
         STATUS                 : String;
-        REJECT_REASON_ID       : String;
+        REJECT_REASON_ID       : String(3);
         PROCESS_TIMESTAMP      : Timestamp;
         COMMENT                : String;
         ZEMP_MASTER_APPROVER   : Association to one ZEMP_MASTER

@@ -14,7 +14,8 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"claima/utils/PARequestSharedFunction",
 	"claima/utils/budgetCheck",
-	"claima/utils/ApprovalLog"
+	"claima/utils/ApprovalLog",
+	'claima/utils/Utility'
 ], function (
 	Controller, 
 	MessageToast, 
@@ -31,7 +32,8 @@ sap.ui.define([
 	Sorter, 
 	PARequestSharedFunction,
 	budgetCheck,
-	ApprovalLog
+	ApprovalLog,
+	Utility
 ) {
 	"use strict";
  
@@ -40,6 +42,10 @@ sap.ui.define([
 		/* =========================================================
 		* Lifecycle
 		* ======================================================= */
+
+		_ReqAttachmentFile1: null, 
+		_ReqAttachmentFile2: null,
+		
 		async onInit() {
 			this._fragments = Object.create(null);
 
@@ -72,6 +78,9 @@ sap.ui.define([
 			
 			var status = this._getReqModel().getProperty("/req_header/reqstatus");
 			if(status != 'DRAFT' && status != 'DELETED') {
+				const oReq = this.getOwnerComponent().getModel('approval_log');
+				const oViewModel = this.getOwnerComponent().getModel('employee_view');
+				ApprovalLog.getApproverList(oReq, oViewModel, sReqId);
 				ApprovalLog._showApprovalLog(this);
 			}
 			PARequestSharedFunction._determineCurrentState(this, this._getReqModel());
@@ -145,6 +154,9 @@ sap.ui.define([
 			
 			var status = this._getReqModel().getProperty("/req_header/reqstatus");
 			if(status != 'DRAFT' && status != 'DELETED') {
+				const oReq = this.getOwnerComponent().getModel('approval_log');
+				const oViewModel = this.getOwnerComponent().getModel('employee_view');
+				ApprovalLog.getApproverList(oReq, oViewModel, oReq.getProperty('req_header/reqid'));
 				const oApproval = await this._getFormFragment("approval_log");
 				await this._replaceContentAt(oPage, 2, oApproval);
 			}
@@ -218,15 +230,6 @@ sap.ui.define([
 						sap.ui.core.BusyIndicator.show(0);
 
 						await this._updateHeaderStatusToDeleted(empId, reqId);
-						// if (oReq.getProperty('/req_header/reqstatus') == 'PENDING' || oReq.getProperty('/req_header/reqstatus') == 'PENDING APPROVAL') {
-						// 	// budget release
-						// 	const dataRow = rows.map(({ CLAIM_TYPE_ITEM_ID, EST_AMOUNT, CASH_ADVANCE }) => ({
-						// 		claim_type_item: CLAIM_TYPE_ITEM_ID,
-						// 		amount: EST_AMOUNT,
-						// 		is_cashadv: CASH_ADVANCE
-						// 	}));
-						// 	await budgetCheck.budgetProcessing(oModel, dataset, 'REQ', 'release');
-						// }
 
 						sap.m.MessageToast.show("Request deleted");
 						this.oDeleteDialog.close();
@@ -332,42 +335,16 @@ sap.ui.define([
 							// budget checking
 							const dataRow = rows.map(({ CLAIM_TYPE_ITEM_ID, EST_AMOUNT, CASH_ADVANCE }) => ({
 								claim_type_item: CLAIM_TYPE_ITEM_ID,
-								amount: EST_AMOUNT,
-								is_cashadv: CASH_ADVANCE
+								amount: EST_AMOUNT
 							}));
 							const result = await budgetCheck.budgetChecking(oModel, submissionType, reqDate, proj, reqCC, reqClaimType, dataRow);
 
 							if (result.passed) {
 
-								const oListBinding = oModel.bindList("/ZREQUEST_HEADER", null,null,
-									[
-										new sap.ui.model.Filter({ path: "EMP_ID", operator: sap.ui.model.FilterOperator.EQ, value1: empId }),
-										new sap.ui.model.Filter({ path: "REQUEST_ID", operator: sap.ui.model.FilterOperator.EQ, value1: reqId })
-									],
-									{
-										$$ownRequest: true,
-										$$groupId: "$auto",
-										$$updateGroupId: "$auto"
-									}
-								);
-
-								const aCtx = await oListBinding.requestContexts(0, 1);
-								const oCtx = aCtx[0];
-
-								if (!oCtx) {
-									throw new Error("Request not found for submit.");
-								}
-
-								oCtx.setProperty("STATUS", "PENDING");
-								oCtx.setProperty("CASH_ADVANCE", parseFloat(data.req_header.cashadvamt));
-								oCtx.setProperty("PREAPPROVAL_AMOUNT", parseFloat(data.req_header.reqamt));
-
-								await oModel.submitBatch("$auto");
-								
-								sap.m.MessageToast.show("Request submitted successfully");
+								await Utility._updateStatus(oModel, reqId, 'PENDING');
 								oReq.setProperty("/view", 'view');
 								
-								PARequestSharedFunction.getPARHeaderList(oReqList, oViewModel);
+								await PARequestSharedFunction.getPARHeaderList(oReqList, oViewModel);
 								const oRouter = this.getOwnerComponent().getRouter();
 								oRouter.navTo("RequestFormStatus");
 							} else {
@@ -419,6 +396,119 @@ sap.ui.define([
 		/* =========================================================
 		* Header & Item List Area
 		* ======================================================= */
+
+		async onDocLinkPress( oEvent ) {
+			var attachmentID = oEvent.getSource().getText();
+
+			var sServiceUrl =
+				"SuccessFactors_API/odata/v2/Attachment('" + attachmentID + "')";
+
+			try {
+				const response = await fetch(sServiceUrl, { 
+						method: "GET" 
+				});
+
+				if (!response.ok) {
+				const errText = await response.text().catch(() => "");
+					throw new Error("HTTP " + response.status + " " + response.statusText + ": " + errText);
+				}
+
+				const xmlText = await response.text();
+
+				// turn XML into JSON
+				const parser = new DOMParser();
+				const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+				// Check XML parsing errors
+				const parseError = xmlDoc.querySelector("parsererror");
+				if (parseError) {
+					console.log("Failed to parse XML response.")
+					throw new Error("Failed to parse XML response.");
+				}
+
+				// get content from xmlDoc
+				const content = xmlDoc.querySelector("content");
+				if (!content) {
+					console.log("No attachment details found (missing <content>).")
+					throw new Error("No attachment details found (missing <content>).");
+				}
+
+				const props = content.querySelector("properties");
+				if (!props) {
+					console.log("No attachment details found (missing <properties>).")
+					throw new Error("No attachment details found (missing <properties>).");
+				}
+
+				const jsonData = {};
+
+				// Only iterate element nodes
+				const contentNodes = props.children;
+				for (let i = 0; i < contentNodes.length; i++) {
+					const node = contentNodes[i];
+					jsonData[node.localName] = (node.textContent || "").trim();
+				}
+
+				// Validate required fields
+				if (!jsonData.fileContent) {
+					throw new Error("Attachment fileContent is empty or missing.");
+				}
+				if (!jsonData.mimeType) {
+					jsonData.mimeType = "application/pdf"; // fallback
+				}
+				if (!jsonData.fileName) {
+					jsonData.fileName = "Attachment";
+				}
+
+				// Convert base64 -> Blob
+				const base64Encoded = jsonData.fileContent;
+				// Decode base64 into bytes (note: atob works for base64)
+				const decoded = atob(base64Encoded);
+				const byteArray = new Uint8Array(decoded.length);
+
+				for (let i = 0; i < decoded.length; i++) {
+					byteArray[i] = decoded.charCodeAt(i);
+				}
+
+				const blob = new Blob([byteArray], { type: jsonData.mimeType });
+				const pdfUrl = URL.createObjectURL(blob);
+
+				// Create/reuse PDFViewer
+				if (!this._PDFViewer) {
+				this._PDFViewer = new sap.m.PDFViewer({
+					isTrustedSource: true,
+					width: "auto"
+				});
+
+				this.getView().addDependent(this._PDFViewer);
+
+				// Optional: cleanup object URL when viewer closes
+				this._PDFViewer.attachEventOnce("afterClose", function () {
+					try {
+					URL.revokeObjectURL(pdfUrl);
+					} catch (e) {
+					// ignore cleanup errors
+					}
+				});
+				}
+
+				console.log(pdfUrl);
+
+				// Update viewer properties each time
+				// this._PDFViewer.setTitle(
+				// 	this._getTexti18n("pdfviewer_claimsummary_attachment", [jsonData.fileName])
+				// );
+				this._PDFViewer.setSource(pdfUrl);
+
+				// Register blob as trusted/whitelisted (older UI5)
+				jQuery.sap.addUrlWhitelist("blob");
+
+				// Open viewer
+				this._PDFViewer.open();
+			} catch (error) {
+				console.log("Error viewing attachment: ", error);
+				MessageToast.show("Error viewing attachment: " + (error.message || error));
+			}
+		},
 
 		async onAddItem(oEvent) {
 			await this._showItemCreate("create");
@@ -1114,6 +1204,21 @@ sap.ui.define([
 
 				const requestSubId = String(nr.result);
 
+				const oReqModel = this.getView().getModel("request");
+				const oData = oReqModel.getProperty("/req_item");
+
+				if (oData.doc1) {
+					var attachment_1 = await this.getFileAsBinary("i_attachment_1_file");
+					var attachment1_ID = await this.postFilesToSF( oData.doc1, attachment_1 );
+				}
+				if (oData.doc2) {
+					var attachment_2 = await this.getFileAsBinary("i_attachment_2_file");
+					var attachment2_ID = await this.postFilesToSF( oData.doc2, attachment_2 );
+				}
+				
+				console.log(attachment1_ID)
+				console.log(attachment2_ID)
+
 				const oItemCtx = oModel.bindList("/ZREQUEST_ITEM").create(
 					{
 						REQUEST_ID			:	reqId,
@@ -1125,7 +1230,9 @@ sap.ui.define([
 						START_DATE			:	data.req_item.start_date || null,
 						END_DATE			:	data.req_item.end_date   || null,
 						LOCATION			:	data.req_item.location  || "",
-						REMARK				:	data.req_item.remark    || ""
+						REMARK				:	data.req_item.remark    || "",
+						ATTACHMENT1			: 	attachment1_ID,
+						ATTACHMENT2       	:  	attachment2_ID
 					},                  
 					{ $$updateGroupId: "itemCreate" }
 				);
@@ -1161,6 +1268,194 @@ sap.ui.define([
 				sap.m.MessageToast.show(e.message || "Save failed");
 			} finally {
 				sap.ui.core.BusyIndicator.hide();
+			}
+		},
+
+		onImportChange1( oEvent ) {
+			this._ReqAttachmentFile1 = oEvent.getParameters("files").files[0];
+		},
+		
+		onImportChange2( oEvent ) {
+			this._ReqAttachmentFile2 = oEvent.getParameters("files").files[0];
+		},
+
+		getFileAsBinary: function( attachmentID ){ 
+		
+			return new Promise ((resolve, reject) => {
+
+				const file =
+				attachmentID === 'i_attachment_1_file'
+					? this._ReqAttachmentFile1
+					: this._ReqAttachmentFile2;
+
+				// Validate file presence
+				if (!file) {
+					reject(new Error('No file selected.'));
+					sap.ui.core.BusyIndicator.hide();
+					return;
+				}
+
+				// Validate type
+				const check = this.isAllowedFile(file);
+				if (!check.ok) {
+					reject(new Error(check.reason));
+					MessageToast.show(new Error(check.reason));
+					sap.ui.core.BusyIndicator.hide();
+					return;
+				}
+				
+				var reader = new FileReader();
+				reader.onload = (e) => {
+					var vContent = e.currentTarget.result;
+					console.log(vContent.split(",")[1])
+					resolve(vContent.split(",")[1]);
+				}
+				
+				reader.onerror = (e) => {
+					reject(new Error(`Failed to read file: ${e?.target?.error?.message || 'Unknown error'}`));
+				};
+
+				if (attachmentID == 'i_attachment_1_file') {
+					reader.readAsDataURL(this._ReqAttachmentFile1);
+				}
+				else if (attachmentID == 'i_attachment_2_file'){
+					reader.readAsDataURL(this._ReqAttachmentFile2);
+				}
+			})
+		},
+
+		isAllowedFile(file) {
+			
+			const ALLOWED_MIME_TYPES = new Set([
+				'application/pdf',
+				'image/jpeg',
+				'image/png',
+			]);
+
+			const ALLOWED_EXTENSIONS = new Set([
+				'pdf', 'jpg', 'jpeg', 'png'
+			]);
+
+			if (!file) return { ok: false, reason: 'No file provided.' };
+
+				// Prefer MIME type check
+				const mime = (file.type || '').toLowerCase().trim();
+				if (mime) {
+					// Allow any image/* plus application/pdf, but also restrict to known image types above for safety.
+					const isPdf = mime === 'application/pdf';
+					const isImage = mime.startsWith('image/') && ALLOWED_MIME_TYPES.has(mime);
+					if (isPdf || isImage) {
+					return { ok: true };
+					}
+				}
+
+				// Fallback to extension if MIME is missing or generic (e.g., application/octet-stream)
+				const name = file.name || '';
+				const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
+				if (ALLOWED_EXTENSIONS.has(ext)) {
+					return { ok: true };
+				}
+
+				return { ok: false, reason: 'Only PDF and image files are allowed.' };
+		},
+
+		postMDF: async function ( reqID, reqSubID, attachment1, attachment2) {
+		// Write to Success Factors API
+			var sServiceUrl = "SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS_Parent"; 
+
+			try {
+				const response = await fetch(sServiceUrl, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({				
+						__metadata: {
+							uri: cust_EPF_CLAIM_ATTACHMENTS
+						},
+						Claim_Sub_ID: reqID,
+						cust_EPF_CLAIM_ATTACHMENTS_Parent_Claim_ID: reqSubID,
+
+						cust_attachment1Nav: {
+							__metadata: {
+							uri: `Attachment('${attachment1}')`
+							}
+						},
+						...( String(attachment2).trim().length > 0 && attachment2 ? {
+								cust_Parent_attachment2Nav : {
+									__metadata : {
+										uri: `Attachment('${attachment2}')`
+									}
+								}
+							} : {}
+						)
+					}) 
+				});
+				
+				if (!response.ok) {
+					const errText = await response.text().catch(() => "");
+					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
+				}
+				else {
+					console.log("MDF Updated")
+				}
+
+			} catch (error) {
+				console.log("Error creating MDF: " + error);
+				MessageToast.show("Error creating MDF: " + error);
+				return false;
+			}	
+		},
+
+		postFilesToSF: async function (fileName, fileString) {
+
+			// Write to Success Factors API
+			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment"; 
+
+			try {
+				const response = await fetch(sServiceUrl, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						__metadata: {
+							uri: 'Attachment'
+						},
+						deletable: true,
+						fileName: fileName,
+						moduleCategory: 'UNSPECIFIED',
+						module: 'DEFAULT',
+						userId: 'SFAPI',
+						viewable: true,
+						searchable: true,
+						fileContent: fileString
+					}) 
+				});
+
+				if (!response.ok) {
+					const errText = await response.text().catch(() => "");
+					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
+				}
+
+				const data = await response.text();
+
+				// turn XML into JSON
+				const parser = new DOMParser();
+				const xmlDoc = parser.parseFromString(data, 'text/xml');
+				const jsonData = {};
+
+				const nodes = xmlDoc.documentElement.childNodes;
+				for (let i = 0; i < nodes.length; i++) {
+					const node = nodes[i];
+					if (node.nodeType === 1) {
+						jsonData[node.nodeName] = node.textContent.trim();
+					}
+				}
+
+				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(')+1,jsonData.id.indexOf(')')-1);
+
+				return attachmentNumber;
+			} catch (error) {
+				console.log("Error uploading attachment: " + error);
+				MessageToast.show("Error uploading attachment: " + error);
+				return false;
 			}
 		},
 
@@ -1322,6 +1617,7 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel('employee_view');
 
 			const sReq = String(req_id);
+			const sEmp = String(oReq.getProperty('/user'));
 
 			const oListBinding = oModel.bindList(
 				"/ZEMP_REQUEST_ITEM_VIEW",
@@ -1360,6 +1656,7 @@ sap.ui.define([
 				oReq.setProperty("/req_header/reqamt", req_amt);
 				oReq.setProperty("/req_item_rows", a);
 				oReq.setProperty("/list_count", a.length);
+				this.updateRequestAmount(sEmp, sReq, cashadv_amt, req_amt);
 
 				return a;
 			} catch (err) {
@@ -1367,6 +1664,41 @@ sap.ui.define([
 				oReq.setProperty("/req_item_rows", []);
 				oReq.setProperty("/list_count", 0);
 				return [];
+			}
+		},
+
+		async updateRequestAmount(empId, reqId, cashadvamt, reqamt) {
+			try {
+				sap.ui.core.BusyIndicator.show(0);
+				const oModel = this.getOwnerComponent().getModel();
+
+				const oListBinding = oModel.bindList("/ZREQUEST_HEADER", null,null,
+					[
+						new sap.ui.model.Filter({ path: "EMP_ID", operator: sap.ui.model.FilterOperator.EQ, value1: empId }),
+						new sap.ui.model.Filter({ path: "REQUEST_ID", operator: sap.ui.model.FilterOperator.EQ, value1: reqId })
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$$updateGroupId: "$auto"
+					}
+				);
+
+				const aCtx = await oListBinding.requestContexts(0, 1);
+				const oCtx = aCtx[0];
+
+				if (!oCtx) {
+					throw new Error("Request not found for submit.");
+				}
+
+				oCtx.setProperty("CASH_ADVANCE", parseFloat(cashadvamt));
+				oCtx.setProperty("PREAPPROVAL_AMOUNT", parseFloat(reqamt));
+
+				await oModel.submitBatch("$auto");
+			} catch (e) {
+				sap.m.MessageToast.show(e.message || "Submission failed");
+			} finally {
+				sap.ui.core.BusyIndicator.hide();
 			}
 		},
 

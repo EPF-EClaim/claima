@@ -8,8 +8,16 @@ service eclaim_srv {
 
     @odata.singleton
     entity FeatureControl {
-        operationHidden : Boolean;
+        operationHidden  : Boolean;
         operationEnabled : Boolean;
+    }
+
+    type budgetdata {
+        YEAR           : String(4);
+        INTERNAL_ORDER : String;
+        FUND_CENTER    : String;
+        MATERIAL_GROUP : String;
+        AMOUNT         : Decimal(15, 2);
     }
 
     action   batchCreateEmployee(employees: many ZEMP_MASTER)      returns Response;
@@ -104,7 +112,9 @@ service eclaim_srv {
             key CLAIM_TYPE_ID,
                 CLAIM_TYPE_DESC,
                 GL_ACCOUNT,
-                CATEGORY_ID,
+                IND_OR_GROUP,
+                REQUEST_TYPE,
+                PROJECT_CLAIM,
                 createdAt,
                 createdBy,
                 modifiedAt,
@@ -154,8 +164,7 @@ service eclaim_srv {
         }
     ])                              as projection on ECLAIM.ZREQ_ITEM_PART;
 
-    entity ZCLAIM_HEADER 
-    @(restrict: [
+    entity ZCLAIM_HEADER @(restrict: [
         {
             grant: 'READ',
             to   : 'Claimant',
@@ -165,8 +174,7 @@ service eclaim_srv {
             grant: ['WRITE'],
             to   : 'Claimant'
         }
-    ])                    
-              as projection on ECLAIM.ZCLAIM_HEADER;
+    ])                              as projection on ECLAIM.ZCLAIM_HEADER;
 
     entity ZNUM_RANGE @(restrict: [
         {
@@ -1244,15 +1252,17 @@ service eclaim_srv {
         to   : 'Approver'
     }])                             as projection on ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL;
 
-    entity ZSUBSTITUTION_RULES @(restrict: [{
-        grant: 'WRITE',
-        to   : 'Approver'
-    }, 
-    {
-        grant: 'READ',
-        to   : 'Approver',
-        where: (createdBy = $user) 
-    }])                             as projection on ECLAIM.ZSUBSTITUTION_RULES;
+    entity ZSUBSTITUTION_RULES @(restrict: [
+        {
+            grant: 'WRITE',
+            to   : 'Approver'
+        },
+        {
+            grant: 'READ',
+            to   : 'Approver',
+            where: (createdBy = $user)
+        }
+    ])                              as projection on ECLAIM.ZSUBSTITUTION_RULES;
 
     entity ZDB_STRUCTURE            as projection on ECLAIM.ZDB_STRUCTURE;
 

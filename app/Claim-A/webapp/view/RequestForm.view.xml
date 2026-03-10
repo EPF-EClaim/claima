@@ -87,9 +87,9 @@
                                     </form:FormElement>
                                     <form:FormElement label="{i18n>req_rtype}"><form:fields><Text text="{request>/req_header/reqtype}" /></form:fields></form:FormElement>
                                     <form:FormElement label="{i18n>req_comment}"><form:fields><Text text="{request>/req_header/comment}"/></form:fields></form:FormElement>
-                                    <form:FormElement label="{i18n>req_attach1}"><form:fields><Link text="{request>/req_header/doc1}"/></form:fields></form:FormElement>
-                                    <form:FormElement label="{i18n>req_attach2}"><form:fields><Link text="{request>/req_header/doc2}"/></form:fields></form:FormElement>
-                                    <form:FormElement label="{i18n>req_claimtype}" ><form:fields><Text text="{request>/req_header/claimtypedesc}"/></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_attach1}"><form:fields><Link id="attachment1" press="onDocLinkPress" text="{request>/req_header/doc1}"/></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_attach2}"><form:fields><Link id="attachment2" press="onDocLinkPress" text="{request>/req_header/doc2}"/></form:fields></form:FormElement>
+                                    <form:FormElement label="{i18n>req_claimtype}"><form:fields><Text text="{request>/req_header/claimtypedesc}"/></form:fields></form:FormElement>
                                 </form:formElements>
                             </form:FormContainer>
                         </form:formContainers>

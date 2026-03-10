@@ -61,41 +61,36 @@ sap.ui.define([
 		},
 
 		_determineCurrentState(that, oReq) {
-			switch (oReq.getProperty('/req_header/reqstatus')) {
-				case 'DRAFT' || 'RETURN':
-					that.byId('req_back_scr').setVisible(false);
-					that.byId("req_back").setVisible(true);
-					that.byId("req_delete").setVisible(true);
-					that.byId("req_submit").setVisible(true);
-					oReq.setProperty('/view', 'list');
-					break;
-				case 'DELETE':
-					that.byId('req_back_scr').setVisible(true);
-					that.byId("req_back").setVisible(false);
-					that.byId("req_delete").setVisible(false);
-					that.byId("req_submit").setVisible(false);
-					oReq.setProperty('/view', 'view');
-					break;
-				case 'APPROVED':
-					that.byId('req_back_scr').setVisible(true);
-					that.byId("req_back").setVisible(false);
-					that.byId("req_delete").setVisible(false);
-					that.byId("req_submit").setVisible(true);
-					oReq.setProperty('/view', 'view');
-					that.byId('req_submit').setVisible(true);
-					break;
-				case 'PENDING APPROVAL':
-					that.byId('req_back_scr').setVisible(true);
-					that.byId("req_back").setVisible(false);
-					that.byId("req_delete").setVisible(true);
-					that.byId("req_submit").setVisible(false);
-					oReq.setProperty('/view', 'view');
-					that.byId('req_delete').setVisible(true);
-					break;
-				default:
-					oReq.setProperty('/view', 'view');
-					break;
-					
+			if (oReq.getProperty('/view') != 'approver') {
+				switch (oReq.getProperty('/req_header/reqstatus')) {
+					case 'DRAFT' || 'RETURN':
+						that.byId('req_back_scr').setVisible(false);
+						that.byId("req_back").setVisible(true);
+						that.byId("req_delete").setVisible(true);
+						that.byId("req_submit").setVisible(true);
+						break;
+					case 'DELETE':
+						that.byId('req_back_scr').setVisible(true);
+						that.byId("req_back").setVisible(false);
+						that.byId("req_delete").setVisible(false);
+						that.byId("req_submit").setVisible(false);
+						break;
+					case 'APPROVED':
+						that.byId('req_back_scr').setVisible(true);
+						that.byId("req_back").setVisible(false);
+						that.byId("req_delete").setVisible(false);
+						that.byId("req_submit").setVisible(true);
+						break;
+					case 'PENDING APPROVAL':
+						that.byId('req_back_scr').setVisible(true);
+						that.byId("req_back").setVisible(false);
+						that.byId("req_delete").setVisible(true);
+						that.byId("req_submit").setVisible(false);
+						break;
+					default:
+						oReq.setProperty('/view', 'view');
+						break;
+				}
 			}
 		}
 

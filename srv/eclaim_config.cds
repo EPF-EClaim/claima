@@ -19,8 +19,8 @@ annotate service.ZRISK with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: { $edmJson: { $Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden' } },
-        DeleteHidden:  { $edmJson: { $Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden' } },
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZRISK',
@@ -75,14 +75,14 @@ annotate service.ZREQUEST_TYPE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
-        HeaderInfo  : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden : {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo   : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZREQUEST_TYPE',
             TypeNamePlural: 'ZREQUEST_TYPE',
         },
-        LineItem    : [
+        LineItem     : [
             {
                 $Type            : 'UI.DataField',
                 Value            : REQUEST_TYPE_ID,
@@ -142,9 +142,19 @@ annotate service.ZCLAIM_TYPE with @(
             },
             {
                 $Type: 'UI.DataField',
-                Value: CATEGORY_ID,
-                Label: 'Category ID'
+                Value:  REQUEST_TYPE,
+                Label: 'Request Type'
             },
+            {
+                $Type: 'UI.DataField',
+                Value: IND_OR_GROUP,
+                Label: 'Individual/Group'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: PROJECT_CLAIM,
+                Label: 'Project Claim'
+            },                                    
             {
                 $Type: 'UI.DataField',
                 Value: START_DATE,
@@ -239,7 +249,7 @@ annotate service.ZNUM_RANGE with @(
                 Value            : PREFIX,
                 ![@UI.Importance]: #High,
                 Label            : 'Prefix'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : RANGE_DESC,
@@ -342,8 +352,8 @@ annotate service.ZCLAIM_CATEGORY with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZCLAIM_CATEGORY',
@@ -396,8 +406,8 @@ annotate service.ZSTATUS with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZSTATUS',
@@ -450,8 +460,8 @@ annotate service.ZLODGING_CAT with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZLODGING_CAT',
@@ -504,8 +514,8 @@ annotate service.ZROOM_TYPE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZROOM_TYPE',
@@ -524,6 +534,12 @@ annotate service.ZROOM_TYPE with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Room Type Description'
             },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LEVEL,
+                ![@UI.Importance]: #High,
+                Label            : 'Level'
+            },            
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
@@ -558,8 +574,8 @@ annotate service.ZFLIGHT_CLASS with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZFLIGHT_CLASS',
@@ -578,6 +594,12 @@ annotate service.ZFLIGHT_CLASS with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Flight Class Description'
             },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LEVEL,
+                ![@UI.Importance]: #High,
+                Label            : 'Level'
+            },            
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
@@ -612,14 +634,14 @@ annotate service.ZCOUNTRY with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
-        HeaderInfo  : {
+        CCreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden : {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo   : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZCOUNTRY',
             TypeNamePlural: 'ZCOUNTRY',
         },
-        LineItem    : [
+        LineItem     : [
             {
                 $Type            : 'UI.DataField',
                 Value            : COUNTRY_ID,
@@ -666,8 +688,8 @@ annotate service.ZAREA with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZAREA',
@@ -720,8 +742,8 @@ annotate service.ZMARITAL_STAT with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZMARITAL_STAT',
@@ -774,8 +796,8 @@ annotate service.ZVEHICLE_TYPE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZVEHICLE_TYPE',
@@ -831,8 +853,8 @@ annotate service.ZSTATE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZSTATE',
@@ -892,8 +914,8 @@ annotate service.ZEMP_MASTER with @(
     },
 
     UI                             : {
-        CreateHidden: true,
-        DeleteHidden: true,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZEMP_MASTER',
@@ -1114,8 +1136,8 @@ annotate service.ZJOB_GROUP with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZJOB_GROUP',
@@ -1168,8 +1190,8 @@ annotate service.ZDEPARTMENT with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZDEPARTMENT',
@@ -1246,8 +1268,8 @@ annotate service.ZROLE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZROLE',
@@ -1300,8 +1322,8 @@ annotate service.ZUSER_TYPE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZUSER_TYPE',
@@ -1354,8 +1376,8 @@ annotate service.ZEMP_TYPE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZEMP_TYPE',
@@ -1408,8 +1430,8 @@ annotate service.ZREGION with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZREGION',
@@ -1462,8 +1484,8 @@ annotate service.ZRATE_KM with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZRATE_KM',
@@ -1528,8 +1550,8 @@ annotate service.ZSUBMISSION_TYPE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZSUBMISSION_TYPE',
@@ -1586,8 +1608,8 @@ annotate service.ZOFFICE_LOCATION with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZOFFICE_LOCATION',
@@ -1663,8 +1685,8 @@ annotate service.ZOFFICE_DISTANCE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZOFFICE_DISTANCE',
@@ -1735,8 +1757,8 @@ annotate service.ZLOC_TYPE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZLOC_TYPE',
@@ -1789,8 +1811,8 @@ annotate service.ZMATERIAL_GROUP with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZMATERIAL_GROUP',
@@ -1843,8 +1865,8 @@ annotate service.ZINDIV_GROUP with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZINDIV_GROUP',
@@ -1897,8 +1919,8 @@ annotate service.ZVEHICLE_OWNERSHIP with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZVEHICLE_OWNERSHIP',
@@ -1951,8 +1973,8 @@ annotate service.ZEMP_RELATIONSHIP with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZEMP_RELATIONSHIP',
@@ -2005,8 +2027,8 @@ annotate service.ZMARITAL_CAT with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZMARITAL_CAT',
@@ -2059,8 +2081,8 @@ annotate service.ZPROJECT_HDR with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZPROJECT_HDR',
@@ -2137,8 +2159,8 @@ annotate service.ZBRANCH with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZBRANCH',
@@ -2201,8 +2223,8 @@ annotate service.ZEMP_CA_PAYMENT with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZEMP_CA_PAYMENT',
@@ -2255,8 +2277,8 @@ annotate service.ZPERDIEM_ENT with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZPERDIEM_ENT',
@@ -2321,8 +2343,8 @@ annotate service.ZHOUSING_LOAN_SCHEME with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZHOUSING_LOAN_SCHEME',
@@ -2375,8 +2397,8 @@ annotate service.ZLENDER_NAME with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZLENDER_NAME',
@@ -2434,8 +2456,8 @@ annotate service.ZREJECT_REASON with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZREJECT_REASON',
@@ -2494,8 +2516,8 @@ annotate service.ZCURRENCY with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZCURRENCY',
@@ -2550,8 +2572,8 @@ annotate service.ZEMP_DEPENDENT with @(
         Insertable: true
     },
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZEMP_DEPENDENT',
@@ -2664,8 +2686,8 @@ annotate service.ZMOBILE_CATEGORY_PURPOSE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZMOBILE_CATEGORY_PURPOSE',
@@ -2718,8 +2740,8 @@ annotate service.ZVEHICLE_CLASS with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZVEHICLE_CLASS',
@@ -2738,6 +2760,12 @@ annotate service.ZVEHICLE_CLASS with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Vehicle Class Description'
             },
+            {
+                $Type            : 'UI.DataField',
+                Value            : LEVEL,
+                ![@UI.Importance]: #High,
+                Label            : 'Level'
+            },            
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
@@ -2772,8 +2800,8 @@ annotate service.ZINSURANCE_PROVIDER with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZINSURANCE_PROVIDER',
@@ -2826,8 +2854,8 @@ annotate service.ZINSURANCE_PACKAGE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZINSURANCE_PACKAGE',
@@ -2880,8 +2908,8 @@ annotate service.ZPROFESIONAL_BODY with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZPROFESIONAL_BODY',
@@ -2934,8 +2962,8 @@ annotate service.ZSTUDY_LEVELS with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZSTUDY_LEVELS',
@@ -2988,8 +3016,8 @@ annotate service.ZTRANSFER_MODE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZTRANSFER_MODE',
@@ -3008,6 +3036,12 @@ annotate service.ZTRANSFER_MODE with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Mode of Transfer Description'
             },
+            {
+                $Type            : 'UI.DataField',
+                Value            : NUMBER_OF_DAYS,
+                ![@UI.Importance]: #High,
+                Label            : 'Number of Days'
+            },            
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
@@ -3042,8 +3076,8 @@ annotate service.ZTRANSPORT_PASSING with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZTRANSPORT_PASSING',
@@ -3096,8 +3130,8 @@ annotate service.ZTRAVEL_TYPE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZTRAVEL_TYPE',
@@ -3150,8 +3184,8 @@ annotate service.ZFAMILY_TIMING with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZFAMILY_TIMING',
@@ -3204,8 +3238,8 @@ annotate service.ZSPORTS_REPRESENTATION with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZSPORTS_REPRESENTATION',
@@ -3258,8 +3292,8 @@ annotate service.ZPOSITION_EVENT_REASON with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZPOSITION_EVENT_REASON',
@@ -3312,8 +3346,8 @@ annotate service.ZEMP_DEPENDENT_TYPE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZEMP_DEPENDENT_TYPE',
@@ -3366,8 +3400,8 @@ annotate service.ZCLAIM_BASIS with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZCLAIM_BASIS',
@@ -3420,8 +3454,8 @@ annotate service.ZHOTEL_LODGING with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZHOTEL_LODGING',
@@ -3474,8 +3508,8 @@ annotate service.ZFARE_TYPE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZFARE_TYPE',
@@ -3528,8 +3562,8 @@ annotate service.ZMETER_CUBE with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZMETER_CUBE',
@@ -3600,8 +3634,8 @@ annotate service.ZTRAVEL_DAYS with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZTRAVEL_DAYS',
@@ -3645,17 +3679,17 @@ annotate service.ZTRAVEL_DAYS with @(
 annotate service.ZDB_STRUCTURE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [APP_CONTROL_ID],
-    Capabilities      : {
+    Common.SemanticKey             : [APP_CONTROL_ID],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
-        CreateHidden: false,
-        DeleteHidden: false,
+    UI                             : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZDB_STRUCTURE',
@@ -3703,7 +3737,7 @@ annotate service.ZDB_STRUCTURE with @(
                 Value            : FIELD,
                 ![@UI.Importance]: #High,
                 Label            : 'Field'
-            },                        
+            },
         ]
     }
 );
@@ -3711,15 +3745,21 @@ annotate service.ZDB_STRUCTURE with @(
 annotate service.ZBUDGET with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey: [YEAR, INTERNAL_ORDER, COMMITMENT_ITEM, FUND_CENTER, MATERIAL_GROUP],
-    Capabilities      : {
+    Common.SemanticKey             : [
+        YEAR,
+        INTERNAL_ORDER,
+        COMMITMENT_ITEM,
+        FUND_CENTER,
+        MATERIAL_GROUP
+    ],
+    Capabilities                   : {
         Deletable : true,
         Updatable : true,
         Insertable: true
     },
     odata.draft.enabled,
 
-    UI                : {
+    UI                             : {
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
@@ -3769,7 +3809,7 @@ annotate service.ZBUDGET with @(
                 Value            : VIREMENT_IN,
                 ![@UI.Importance]: #High,
                 Label            : 'Virement In'
-            },  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : VIREMENT_OUT,
@@ -3793,7 +3833,7 @@ annotate service.ZBUDGET with @(
                 Value            : CURRENT_BUDGET,
                 ![@UI.Importance]: #High,
                 Label            : 'Current Budget'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : COMMITMENT,
@@ -3805,7 +3845,7 @@ annotate service.ZBUDGET with @(
                 Value            : ACTUAL,
                 ![@UI.Importance]: #High,
                 Label            : 'Actual'
-            },  
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CONSUMED,
@@ -3829,7 +3869,7 @@ annotate service.ZBUDGET with @(
                 Value            : BUDGET_OWNER_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Budget Owner'
-            },   
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : WBS_CODE,
@@ -3841,9 +3881,7 @@ annotate service.ZBUDGET with @(
                 Value            : CURRENCY,
                 ![@UI.Importance]: #High,
                 Label            : 'Currency'
-            },                                                        
+            },
         ]
     }
 );
-
-

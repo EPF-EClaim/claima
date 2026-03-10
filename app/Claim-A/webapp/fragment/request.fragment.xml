@@ -143,7 +143,7 @@
 			    <Label text="{i18n>req_attach1}" />
 			    <unified:FileUploader
 					id="req_attachment_1"
-					change=".onImportChange"
+					change="onImportChange1"
 					value="{request>/req_header/doc1}"
 					required="true"
 					visible="false" />
@@ -151,7 +151,7 @@
 			    <Label text="{i18n>req_attach2}" />
 			    <unified:FileUploader
 					id="req_attachment_2"
-					change=".onImportChange"
+					change="onImportChange2"
 					value="{request>/req_header/doc2}"
 					visible="false" />
 
