@@ -129,13 +129,13 @@ module.exports = (srv) => {
     const { ZBUDGET } = srv.entities;
     var { input } = req.data;
 
-    input.forEach(entry => {
-      if(entry.YEAR != null && entry.INTERNAL_ORDER != null && entry.FUND_CENTER != null
-        && entry.MATERIAL_GROUP != null 
-      ){
+    // input.forEach(entry => {
+    //   if(entry.YEAR != null && entry.INTERNAL_ORDER != null && entry.FUND_CENTER != null
+    //     && entry.MATERIAL_GROUP != null 
+    //   ){
         
-      }
-    });
+    //   }
+    // });
 
     
   })
