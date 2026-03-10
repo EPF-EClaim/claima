@@ -19,8 +19,8 @@ annotate service.ZRISK with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: { $edmJson: { $Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden' } },
+        DeleteHidden:  { $edmJson: { $Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden' } },
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZRISK',

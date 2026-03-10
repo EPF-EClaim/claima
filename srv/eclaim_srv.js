@@ -101,13 +101,28 @@ module.exports = (srv) => {
 
   srv.on('runjob', req => {
     console.log('==> [APP JOB LOG] Job is running . . .');
-    
-    return { responseArray : [{
-            "message": "finished"
-        }] }; 
 
-    }
+    return {
+      responseArray: [{
+        "message": "finished"
+      }]
+    };
+
+  }
   );
+
+  srv.on('READ', 'FeatureControl', async (req) => {
+    let operationHidden = true;
+    
+    if (req.user.is('DTD_Admin')) {
+      operationHidden = false;
+    }
+
+    return {
+      operationHidden: operationHidden,
+      operationEnabled: !operationHidden
+    }
+  })
 
   /* const port = process.env.PORT || 5000;
 

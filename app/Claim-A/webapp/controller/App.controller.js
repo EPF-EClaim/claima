@@ -1583,7 +1583,7 @@ sap.ui.define([
 		async _getEmpIdDetail(sEMAIL) {
 			const oModel = this.getOwnerComponent().getModel();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new sap.ui.model.Filter("tolower(EMAIL)", "EQ", "tolower(" + sEMAIL + ")")
+				new sap.ui.model.Filter("EMAIL", "EQ", sEMAIL)
 			]);
 
 			try {
