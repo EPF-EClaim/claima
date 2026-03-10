@@ -51,7 +51,7 @@
 			<Button
 				id="button_claimsummary_createclaim"
 				text="{i18n>menuitem_claimsummary_createclaim}"
-				press="onCreateClaim_ClaimSummary"
+				press="onCreateClaim_ClaimSummary()"
 			/>
 
 			<!-- Edit -->

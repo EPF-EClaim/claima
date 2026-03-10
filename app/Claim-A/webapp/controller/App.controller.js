@@ -172,6 +172,8 @@ sap.ui.define([
 				// Start Aiman Salim 03/03/2026 - Added for MyClaim
 				case "myreport":
 					//var oRouter = this.getComponent().getRouter().navTo("ClaimStatus");
+					this.getCLAIMHeaderList();
+					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("ClaimStatus")
 					break;
 				//Start Aiman Salim 08/03/2026 - Added for MyApproval
@@ -425,10 +427,12 @@ sap.ui.define([
 			//// set employee data
 			var sUserId = sap.ushell ? sap.ushell.Container.getUser().getId() : null;
 			var emp_data = await this._getEmpIdDetail(sUserId);
-			// var sCostCenter = emp_data ? emp_data.cc : "";
 
 			//// placeholder - set placeholder data
-			if (!emp_data) {
+			if (emp_data) {
+				oInputModel.setProperty("/emp_master", emp_data);
+			}
+			else {
 				oInputModel.setProperty("/emp_master/eeid", "DEFAULT_USER");
 				oInputModel.setProperty("/emp_master/name", "NAME11380");
 				oInputModel.setProperty("/emp_master/grade", "G3");
@@ -520,7 +524,7 @@ sap.ui.define([
 				var oInputModel = this.getView().getModel("claimsubmission_input");
 
 				// enable 'Request Form' selection
-				if (categoryId == 'PREAPPROVAL') {
+				if (categoryId == 'ST0003') {
 					if (!this.byId("select_claimprocess_requestform").getEnabled()) {
 						this.byId("select_claimprocess_requestform").bindAggregation("items", {
 							path: "employee>/ZREQUEST_HEADER",
@@ -558,7 +562,7 @@ sap.ui.define([
 				}
 
 				// enable 'Start Claim' button if not Pre-Approval
-				if (categoryId != 'PREAPPROVAL') {
+				if (categoryId != 'ST0003') {
 					this.byId("button_claimprocess_startclaim").setEnabled(true);
 				}
 			}
@@ -673,8 +677,9 @@ sap.ui.define([
 			// set data for claim header
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var lastModifiedDate = this._getJsonDate(new Date());
+			oInputModel.setProperty("/is_new", true);
 			oInputModel.setProperty("/claim_header/emp_id", oInputModel.getProperty("/emp_master/eeid"));
-			oInputModel.setProperty("/claim_header/status_id", "DRAFT");
+			// oInputModel.setProperty("/claim_header/status_id", "CREATED");
 			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 			oInputModel.setProperty("/claim_header/claim_type_id", oInputModel.getProperty("/claimtype/type"));
 			oInputModel.setProperty("/claim_header/submission_type", oInputModel.getProperty("/claimtype/category"));
@@ -696,7 +701,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/preapproved_amount", "0.00");
 			}
 			//// include description in data
-			oInputModel.setProperty("/claim_header/descr/status_id", this._getTexti18n("value_claiminput_status_draft"));
+			// oInputModel.setProperty("/claim_header/descr/status_id", this._getTexti18n("value_claiminput_status_draft"));
 			oInputModel.setProperty("/claim_header/descr/claim_type_id", oInputModel.getProperty("/claimtype/descr/type"));
 			oInputModel.setProperty("/claim_header/descr/submission_type", oInputModel.getProperty("/claimtype/descr/category"));
 			oInputModel.setProperty("/claim_header/descr/cost_center", oInputModel.getProperty("/emp_master/descr/cc"));
@@ -704,7 +709,7 @@ sap.ui.define([
 
 			// pre-approval request values
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			if (oInputModel.getProperty("/claimtype/category") == 'PREAPPROVAL') {
+			if (oInputModel.getProperty("/claimtype/category") == 'ST0003') {
 				// make Pre-Approval Request, Approve Amount visible
 				this.byId("text_claiminput_preapprovalreq").setVisible(true);
 				this.byId("text_claiminput_amtapproved").setVisible(true);
@@ -884,13 +889,13 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_header/descr/alternate_cost_center", altCostCenter.getBindingContext("employee").getObject("COST_CENTER_DESC"));
 				}
 			}
-			//// get claim report number for Claim ID
-			var currentReportNumber = await this.getCurrentReportNumber();
-			if (currentReportNumber) {
-				oInputModel.setProperty("/claim_header/claim_id", currentReportNumber.reportNo);
-				oInputModel.setProperty("/reportnumber/reportno", currentReportNumber.reportNo);
-				oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
-			}
+			// //// get claim report number for Claim ID
+			// var currentReportNumber = await this.getCurrentReportNumber();
+			// if (currentReportNumber) {
+			// 	oInputModel.setProperty("/claim_header/claim_id", currentReportNumber.reportNo);
+			// 	oInputModel.setProperty("/reportnumber/reportno", currentReportNumber.reportNo);
+			// 	oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
+			// }
 
 			// close Claim Input dialog
 			this.oDialog_ClaimInput.close();
@@ -1594,7 +1599,26 @@ sap.ui.define([
 					return {
 						eeid: oData.EEID,
 						name: oData.NAME,
-						cc: oData.CC
+						grade: oData.GRADE,
+						cc: oData.CC,
+						pos: oData.POS,
+						dep: oData.DEP,
+						unit_section: oData.UNIT_SECTION,
+						marital: oData.MARITAL,
+						office_location: oData.OFFICE_LOCATION,
+						address_line1: oData.ADDRESS_LINE1,
+						address_line2: oData.ADDRESS_LINE2,
+						address_line3: oData.ADDRESS_LINE3,
+						postcode: oData.POSTCODE,
+						state: oData.STATE,
+						country: oData.COUNTRY,
+						email: oData.EMAIL,
+						direct_supperior: oData.DIRECT_SUPPERIOR,
+						employee_type: oData.EMPLOYEE_TYPE,
+						position_name: oData.POSITION_NAME,
+						position_start_date: oData.POSITION_START_DATE,
+						position_event_reason: oData.POSITION_EVENT_REASON,
+						effective_date: oData.EFFECTIVE_DATE,
 					};
 				} else {
 					console.warn("No employee found with ID: " + sEEID);
@@ -1737,7 +1761,7 @@ sap.ui.define([
 			const oStatusPending = new sap.ui.model.Filter(
 				"STATUS",
 				sap.ui.model.FilterOperator.EQ,
-				"PENDING APPROVAL" // use the exact code/value your backend expects
+				"PENDING" // use the exact code/value your backend expects
 			);
 			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
 			const oCombined = new sap.ui.model.Filter({
@@ -1794,7 +1818,7 @@ sap.ui.define([
 			const oStatusPending = new sap.ui.model.Filter(
 				"STATUS",
 				sap.ui.model.FilterOperator.EQ,
-				"PENDING APPROVAL" // use the exact code/value your backend expects
+				"PENDING" // use the exact code/value your backend expects
 			);
 			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
 			const oCombined = new sap.ui.model.Filter({
@@ -1832,6 +1856,44 @@ sap.ui.define([
 				return [];
 			}
 		},
+
+		//For MyClaimStatus
+
+		getCLAIMHeaderList: async function () {
+			const oReq = this.getOwnerComponent().getModel("claim_status2");
+			const oModel = this.getOwnerComponent().getModel("employee_view");
+
+			const oListBinding = oModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", undefined,
+				[new Sorter("STATUS_ID", true)],
+				null,
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$$updateGroupId: "$auto",
+					$count: true
+				}
+			);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+/* 				a.forEach((it) => {
+					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
+				}); */
+
+				oReq.setProperty("/claim_header_list", a);
+				oReq.setProperty("/claim_header_count", a.length);
+
+				return a;
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				oReq.setProperty("/claim_header_list", []);
+				oReq.setProperty("/claim_header_count", 0);
+				return [];
+			}
+		},
+		//END - Aiman Salim
 
 		getFieldVisibility_ReqType: async function (oEvent) {
 			const oModel = this.getOwnerComponent().getModel();
