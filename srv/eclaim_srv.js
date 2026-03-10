@@ -75,7 +75,7 @@ module.exports = (srv) => {
       console.log("Derived email (local):", email);
 
       // 2. Query your ZEMP_MASTER table using your Email column name
-      const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });  // <— use your real column name here
+      const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: 'nur.ain.mohamad@my.ey.com' });  // <— use your real column name here
       console.log("Result", result);
       return {
         id: email,
@@ -108,14 +108,14 @@ module.exports = (srv) => {
       req.user?.id ||
       "";
     const email = String(emailFromToken).trim().toLowerCase();
-    const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
+    const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: 'nur.ain.mohamad@my.ey.com' });
     const user_type = result?.USER_TYPE;
 
     let operationHidden = true;
 
     if (user_type === "JKEW Admin") {
       operationHidden = true;
-    } else if (user_type === "DTD Admin") {
+    } else if (user_type === "DTD Admin" || user_type === "Super Admin") {
       operationHidden = false;
     }
 
@@ -125,38 +125,44 @@ module.exports = (srv) => {
     }
   });
 
-  srv.on('budgetchecking', async(req) => {
+  srv.on('budgetchecking', async (req) => {
     const { ZBUDGET } = srv.entities;
     var { input } = req.data;
     const condition = {};
     let message;
 
-    input.forEach(entry => {
-      if(entry.YEAR != null){
-        condition.YEAR = entry.YEAR;
-      }
-      if(entry.INTERNAL_ORDER != null){
-        condition.INTERNAL_ORDER = entry.INTERNAL_ORDER;
-      }
-      if(entry.COMMITMENT_ITEM != null){
-        condition.COMMITMENT_ITEM = entry.COMMITMENT_ITEM;
-      }
-      if(entry.MATERIAL_GROUP != null){
-        condition.MATERIAL_GROUP = entry.MATERIAL_GROUP;
-      }
-      if(entry.FUND_CENTER != null){
-        condition.FUND_CENTER = entry.FUND_CENTER;
-      }
-      try{
-      let budget = SELECT.one.from(ZBUDGET).where(condition).forUpdate();
-      let check = entry.AMOUNT < budget?.BUDGET_BALANCE ? true: false;
-      } catch (e) {
-        message = "Locking timeout"
-      }
-    });
-
-    
+//  if (entry.YEAR != null) {
+//             condition.YEAR = entry.YEAR;
+//           }
+//           if (entry.INTERNAL_ORDER != null) {
+//             condition.INTERNAL_ORDER = entry.INTERNAL_ORDER;
+//           }
+//           if (entry.COMMITMENT_ITEM != null) {
+//             condition.COMMITMENT_ITEM = entry.COMMITMENT_ITEM;
+//           }
+//           if (entry.MATERIAL_GROUP != null) {
+//             condition.MATERIAL_GROUP = entry.MATERIAL_GROUP;
+//           }
+//           if (entry.FUND_CENTER != null) {
+//             condition.FUND_CENTER = entry.FUND_CENTER;
+//           }
+    //   return await cds.tx(async (tx) => {
+    //     try {
+    //       input.forEach(entry => {
+    //       } )
+    //     })
+    //   }
+    // )
   })
+
+  // let budget = await tx.run(SELECT.one.from(ZBUDGET).where(condition).forUpdate());
+  // let check = entry.AMOUNT < budget?.BUDGET_BALANCE ? true : false;
+  // })
+  //     }
+  // }))
+
+
+
   /* const port = process.env.PORT || 5000;
 
   app.listen(port, function () {

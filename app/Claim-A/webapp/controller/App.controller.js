@@ -155,7 +155,7 @@ sap.ui.define([
 					if (type === "DTD Admin" || type === "JKEW Admin" || type === "Super Admin") {
 						oRouter.navTo("Configuration");
 					} else {
-						var message = this._getTexti18n("msg_unauthorized_config");
+						var message = this._getTexti18n("msg_unauthorized_role");
 						sap.m.MessageBox.error(message);
 					}
 					//End EY_ATHIRAH
@@ -165,7 +165,7 @@ sap.ui.define([
 					if (type === "JKEW Admin" || type === "DTD Admin" || type === "GA Admin" || type === "Super Admin") {
 						oRouter.navTo("Analytics")
 					} else {
-						var message = this._getTexti18n("msg_unauthorized_analytic");
+						var message = this._getTexti18n("msg_unauthorized_role");
 						sap.m.MessageBox.error(message);
 					}
 					break;
@@ -185,7 +185,7 @@ sap.ui.define([
 						var oRouter = this.getOwnerComponent().getRouter();
 						oRouter.navTo("MyApproval");
 					} else {
-						var message = this._getTexti18n("msg_unauthorized_approval");
+						var message = this._getTexti18n("msg_unauthorized_role");
 						sap.m.MessageBox.error(message);
 					}
 					break;
