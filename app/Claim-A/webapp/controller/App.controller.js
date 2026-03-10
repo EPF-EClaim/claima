@@ -855,7 +855,7 @@ sap.ui.define([
 			}
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
-				var isUploadSuccess = await this._onUpload_ClaimInput_Attachment();
+				var isUploadSuccess = this._onUpload_ClaimInput_Attachment();
 				if (!isUploadSuccess) {
 					// don't proceed claim submission if attachment upload fails
 					return;
@@ -902,8 +902,23 @@ sap.ui.define([
 		},
 
 		_onUpload_ClaimInput_Attachment: function () {
+			var success;
 			// get claim submission model
 			var oInputModel = this.getView().getModel("claimsubmission_input");
+
+			// get csrf token
+			var tokenModel = sap.ui.getCore().getModel("oToken");
+			if (!tokenModel) {
+				this._fetchToken();
+				tokenModel = sap.ui.getCore().getModel("oToken");
+			}
+			var tokenData = tokenModel.getData();
+			var token = tokenData["csrfToken"];
+			if (!token) {
+				// cannot proceed without token
+				sap.ui.getCore().setModel(null,"oToken");
+				return false;
+			}
 
 			BusyIndicator.show(0);
 			$.ajax({
@@ -912,6 +927,7 @@ sap.ui.define([
 				url: "/SuccessFactors_API/odata/v2/Attachment",
 				dataType: "json",
 				async: false,
+				'X-CSRF-Token': token,
 				data: JSON.stringify({
 						__metadata: {
 							uri: 'Attachment'
@@ -927,19 +943,44 @@ sap.ui.define([
 					}),
 				success: function (data, textStatus, jqXHR) {
 					// get generated attachment number
-					var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(') + 1, jsonData.id.indexOf(')') - 1);
-					oInputModel.setProperty("/claim_header/attachment_email_approver", data.attachmentId);
-					oInputModel.setProperty("/claim_header/descr/attachment_email_approver", data.fileName);
+					oInputModel.setProperty("/claim_header/attachment_email_approver", data.d.attachmentId);
+					oInputModel.setProperty("/claim_header/descr/attachment_email_approver", data.d.fileName);
 
 					BusyIndicator.hide();
-					return true;
+					success = true;
 				},
 				error: function (xhr) {
 					console.log("Error uploading attachment: " + xhr.status + xhr.responseText);
 					MessageToast.show("Error uploading attachment: " + xhr.status + xhr.responseText);
 
 					BusyIndicator.hide();
-					return false;
+					success = false;
+				}
+			});
+			return success;
+		},
+
+		_fetchToken: function () {
+			var token = {			
+				"csrfToken" : ""
+			};
+
+			var oToken = new JSONModel(token);
+			sap.ui.getCore().setModel(oToken,"oToken");
+			var tokenModel = sap.ui.getCore().getModel("oToken").getData();
+
+			$.ajax({
+				type: "GET",
+				contentType: "application/json",
+				url: "/SuccessFactors_API/odata/v2/",
+				async: false,
+				'X-CSRF-Token': "Fetch",
+				success: function (data, textStatus, jqXHR) {
+					// get token
+					tokenModel["csrfToken"] = jqXHR.getResponseHeader('X-Csrf-Token');
+				},
+				error: function (xhr) {
+					console.log("Error getting token: " + xhr.status + xhr.responseText);
 				}
 			});
 		},
