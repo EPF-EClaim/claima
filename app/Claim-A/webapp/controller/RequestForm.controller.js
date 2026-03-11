@@ -347,7 +347,7 @@ sap.ui.define([
 
 								if (result.passed) {
 
-								await Utility._updateStatus(oModel, reqId, 'PENDING');
+								await Utility._updateStatus(oModel, reqId, 'PENDING_APPROVAL');
 								oReq.setProperty("/view", 'view');
 								
 								await PARequestSharedFunction.getPARHeaderList(oReqList, oViewModel);
@@ -1138,6 +1138,25 @@ sap.ui.define([
 			oReq.setData(data);
 		},
 
+		
+		async deleteAttachment(attachmentID) {
+			var url = `SuccessFactors_API/odata/v2/Attachment(attachmentId=${attachmentID})`; 
+
+			const response = await fetch(url, {
+				method: 'DELETE',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
+
+			if (!response.ok) {
+				const text = await response.text().catch(() => '');
+				throw new Error(`Delete failed: ${response.status} ${response.statusText} ${text}`);
+			}
+
+			return true; 
+		},
+
 		async onSave() {
 			const oReq = this._getReqModel();
 			const data = oReq.getData();
@@ -1250,7 +1269,7 @@ sap.ui.define([
 
 					const alloc = parseFloat(p.ALLOCATED_AMOUNT || 0);
 
-					oModel.bindList("/ZREQ_ITEM_PART").create(
+					const oContent = oModel.bindList("/ZREQ_ITEM_PART").create(
 						{
 							REQUEST_ID: reqId,
 							REQUEST_SUB_ID: requestSubId,
@@ -1259,11 +1278,15 @@ sap.ui.define([
 						},
 						{ $$updateGroupId: "itemCreate" }
 					);
+
+					oContent.created().then(() => {
+						this.postMDF(reqId, requestSubId, attachment1_ID, attachment2_ID);
+					})
 				}
 
 				await oModel.submitBatch("itemCreate");
 
-				await this.updateCurrentReqNumber("NR03", nr.current);
+				// await this.updateCurrentReqNumber("NR03", nr.current);
 
 				await this._getItemList(reqId);
 				await this._showItemList("list");
@@ -1367,7 +1390,7 @@ sap.ui.define([
 
 		postMDF: async function ( reqID, reqSubID, attachment1, attachment2) {
 		// Write to Success Factors API
-			var sServiceUrl = "SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS_Parent"; 
+			var sServiceUrl = "SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"; 
 
 			try {
 				const response = await fetch(sServiceUrl, {
@@ -1375,10 +1398,10 @@ sap.ui.define([
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({				
 						__metadata: {
-							uri: cust_EPF_CLAIM_ATTACHMENTS
+							uri: 'cust_EPF_CLAIM_ATTACHMENTS'
 						},
-						Claim_Sub_ID: reqID,
-						cust_EPF_CLAIM_ATTACHMENTS_Parent_Claim_ID: reqSubID,
+						Claim_Sub_ID: reqSubID,
+						cust_EPF_CLAIM_ATTACHMENTS_Parent_Claim_ID: reqID,
 
 						cust_attachment1Nav: {
 							__metadata: {
@@ -1712,16 +1735,9 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel();
 
 			try {
-				const oListBinding = oModel.bindList(
-					"/ZNUM_RANGE",
-					null,
-					null,
+				const oListBinding = oModel.bindList("/ZNUM_RANGE", null, null,
 					[
-						new sap.ui.model.Filter({
-							path: "RANGE_ID",
-							operator: sap.ui.model.FilterOperator.EQ,
-							value1: range_id
-						})
+						new Filter({ path: "RANGE_ID", operator: sap.ui.model.FilterOperator.EQ, value1: range_id })
 					],
 					{
 						$$ownRequest: true,
@@ -1750,34 +1766,6 @@ sap.ui.define([
 
 			} catch (err) {
 				console.error("Error fetching number range:", err);
-				return null;
-			}
-		},
-
-		async updateCurrentReqNumber(rangeId, currentNumber) {
-			const oModel = this.getOwnerComponent().getModel();
-			const sGroup = "updateRange";
-			const nextNumber = currentNumber + 1;
-
-			try {
-				const sPath = `/ZNUM_RANGE(RANGE_ID='${rangeId.replace(/'/g, "''")}')`;
-
-				const oCtxBinding = oModel.bindContext(sPath, null, {
-					$$updateGroupId: sGroup,
-					$$ownRequest: true
-				});
-
-				await oCtxBinding.requestObject();
-				const oCtx = oCtxBinding.getBoundContext();
-
-				oCtx.setProperty("CURRENT", String(nextNumber));
-
-				await oModel.submitBatch(sGroup);
-
-				return { CURRENT: nextNumber };
-
-			} catch (err) {
-				console.error("Error updating number range:", err);
 				return null;
 			}
 		},

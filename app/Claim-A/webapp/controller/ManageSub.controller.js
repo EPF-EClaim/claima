@@ -21,8 +21,25 @@ sap.ui.define([
         today: this._fmtYMD(new Date()), // yyyy-MM-dd in local time
         subValid: false,
         subInfo: "",
+        isApprover: false,
+        canDelete: false
       });
       this.getView().setModel(oVM, "vm");
+      
+    // Resolve user type via function import
+      const oModel = this.getOwnerComponent().getModel();
+      const ctx = oModel.bindContext("/getUserType()");
+      ctx.requestObject().then((oData) => {
+        const sType = (oData && oData.userType) || "UNKNOWN";
+        oVM.setProperty("/isApprover", sType === "Approver");
+
+        // Recompute delete visibility with current selection state
+        oVM.setProperty(
+          "/canDelete",
+          oVM.getProperty("/isApprover") && oVM.getProperty("/hasSelection")
+        );
+      }).catch(() => {
+      });
 
       const oTable = this.byId("tblSubs");
       oTable.attachEventOnce("updateFinished", () => {
@@ -333,9 +350,14 @@ sap.ui.define([
     // SELECTION + DELETE (OData V4)
     // ============================================================
     onSelectionChange: function (oEvent) {
+      const vm = this.getView().getModel("vm");
       const bHasSelection = !!oEvent.getSource().getSelectedItem();
-      this.getView().getModel("vm").setProperty("/hasSelection", bHasSelection);
-    },
+      vm.setProperty("/hasSelection", bHasSelection);
+        vm.setProperty(
+          "/canDelete",
+          vm.getProperty("/isApprover") && bHasSelection
+        );
+      },
 
     onDelete: function () {
       const oTable = this.byId("tblSubs");

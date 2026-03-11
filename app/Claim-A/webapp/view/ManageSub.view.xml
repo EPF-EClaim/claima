@@ -36,7 +36,7 @@
                  
                 <columns>
                     <Column width="12rem"><Text text="{i18n>tableColumnName}" /></Column>
-                    <Column width="16rem"><Text text="Email" /></Column>
+                    <Column width="16rem"><Text text="Asignee Email" /></Column>
                     <Column width="12rem"><Text text="{i18n>tableColumnPeriod}" /></Column>
                     <Column width="10rem"><Text text="{i18n>tableColumnStart}" /></Column>
                     <Column width="10rem"><Text text="{i18n>tableColumnEnd}" /></Column>
@@ -83,11 +83,12 @@
                 <Button id="btnAdd"
                         type="Emphasized"
                         text="{i18n>addNew}"
-                        press=".onAdd" />
+                        press=".onAdd" 
+                        visible="{vm>/isApprover}"/>
                 <Button id="Deletebtn"
                         type="Transparent"
                         text="{i18n>delete}"
-                        visible="{vm>/hasSelection}"
+                        visible="{vm>/canDelete}"
                         press=".onDelete" />
             </OverflowToolbar>
         </footer>

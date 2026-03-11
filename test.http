@@ -4,16 +4,35 @@ Content-Type: application/json
    {
     "budget": [
       {
-      "YEAR": "2027",
-      "INTERNAL_ORDER": "IO01",
-      "FUND_CENTER": "00012", 
-      "MATERIAL_GROUP": "0013"
-    }, 
+      "YEAR": "2026",
+      "INTERNAL_ORDER": "1",
+      "FUND_CENTER": "100010102", 
+      "MATERIAL_GROUP": "732002001", 
+      "COMMITMENT_ITEM": "732002",
+      "AMOUNT": 100.00, 
+      "INDICATOR": "CLM", 
+      "ACTION": "SUBMIT"
+     },
     {
-      "YEAR": "2027",
-      "INTERNAL_ORDER": "IO01",
-      "FUND_CENTER": "00012", 
-      "MATERIAL_GROUP": "0013"
+      "YEAR": "2026",
+      "INTERNAL_ORDER": "1",
+      "FUND_CENTER": "100010102", 
+      "MATERIAL_GROUP": "732002001", 
+      "COMMITMENT_ITEM": "732002",
+      "AMOUNT": 90, 
+      "INDICATOR": "CLM", 
+      "ACTION": "SUBMIT"
+    }
+    ,
+    {
+      "YEAR": "2026",
+      "INTERNAL_ORDER": "1",
+      "FUND_CENTER": "100010105", 
+      "MATERIAL_GROUP": "732002001", 
+      "COMMITMENT_ITEM": "732002",
+      "AMOUNT": 50, 
+      "INDICATOR": "CLM", 
+      "ACTION": "SUBMIT"
     }
     ]
    }

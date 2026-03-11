@@ -13,11 +13,32 @@ service eclaim_srv {
     }
 
     type budgetdata {
-        YEAR           : String(4);
-        INTERNAL_ORDER : String;
-        FUND_CENTER    : String;
-        MATERIAL_GROUP : String;
-        AMOUNT         : Decimal(15, 2);
+        YEAR            : String(4);
+        INTERNAL_ORDER  : String;
+        FUND_CENTER     : String;
+        MATERIAL_GROUP  : String;
+        COMMITMENT_ITEM : String;
+        AMOUNT          : Decimal;
+        INDICATOR       : String; //CLM and REQ
+        ACTION          : String; //Submit, Reject, Approve
+    }
+
+    type BudgetResult {
+        YEAR               : String;
+        INTERNAL_ORDER     : String;
+        FUND_CENTER        : String;
+        MATERIAL_GROUP     : String;
+        COMMITMENT_ITEM    : String;
+        AMOUNT             : Decimal(15, 2);
+        PREV_CONSUMED      : Decimal(15, 2);
+        NEW_CONSUMED       : Decimal(15, 2);
+        PREV_ACTUAL        : Decimal(15, 2);
+        NEW_ACTUAL         : Decimal(15, 2);
+        PREV_COMMITMENT    : Decimal(15, 2);
+        NEW_COMMITMENT     : Decimal(15, 2);
+        PREV_BUDGETBALANCE : Decimal(15, 2);
+        NEW_BUDGETBALANCE  : Decimal(15, 2);
+        STATUS             : String;
     }
 
     action   batchCreateEmployee(employees: many ZEMP_MASTER)      returns Response;
@@ -26,7 +47,7 @@ service eclaim_srv {
 
     action   batchCreateCostCenter(costcenters: many ZCOST_CENTER) returns Response;
 
-    action   budgetchecking(budget: many budgetdata)               returns Response;
+    action   budgetchecking(budget: many budgetdata)               returns many BudgetResult;
 
     entity ZEMP_MASTER                   as projection on ECLAIM.ZEMP_MASTER;
 
