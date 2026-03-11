@@ -47,6 +47,9 @@ service eclaim_srv {
 
     action   batchCreateCostCenter(costcenters: many ZCOST_CENTER) returns Response;
 
+    action   budgetchecking(budget: many budgetdata)               returns many BudgetResult;
+
+
     entity ZREQUEST_TYPE @(restrict: [
         {
             grant: 'READ',
@@ -62,8 +65,6 @@ service eclaim_srv {
             to   : 'DTD_Admin'
         }
     ])                              as projection on ECLAIM.ZREQUEST_TYPE;
-
-    action   budgetchecking(budget: many budgetdata)               returns many BudgetResult;
 
     entity ZCLAIM_ITEM @(restrict: [
         {

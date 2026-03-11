@@ -247,7 +247,10 @@ module.exports = (srv) => {
 
           await tx.run(
             UPDATE(ZBUDGET)
-              .set({ CONSUMED: parseFloat(newConsumed).toFixed(2), COMMITMENT: parseFloat(newCommitment).toFixed(2), BUDGET_BALANCE: parseFloat(newBudgetBalance).toFixed(2), ACTUAL: parseFloat(newActual).toFixed(2)  })
+              .set({ CONSUMED: parseFloat(newConsumed).toFixed(2),
+                 COMMITMENT: parseFloat(newCommitment).toFixed(2),
+                  BUDGET_BALANCE: parseFloat(newBudgetBalance).toFixed(2),
+                   ACTUAL: parseFloat(newActual).toFixed(2)  })
               .where(condition)
           );
 
