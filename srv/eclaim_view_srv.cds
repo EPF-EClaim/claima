@@ -778,23 +778,21 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 COMMENT
         };
 
-entity ZEMP_CLAIM_DETAILS
-  as projection on ECLAIM.ZCLAIM_HEADER {
-    key CLAIM_ID,
-    key ZCLAIM_ITEM.CLAIM_SUB_ID,   
-        EMP_ID,
-        SUBMITTED_DATE,
-        SUBMISSION_TYPE,
-        CASH_ADVANCE_AMOUNT,
-        FINAL_AMOUNT_TO_RECEIVE,
-        LAST_MODIFIED_DATE,
-        ZCLAIM_ITEM.AMOUNT,
-        ZCLAIM_ITEM.RECEIPT_DATE,
-        ZCLAIM_ITEM.COST_CENTER,
-        ZCLAIM_ITEM.GL_ACCOUNT,
-        ZCLAIM_ITEM.MATERIAL_CODE,
-        TRIP_START_DATE,
-        ZREQUEST_HEADER.REQUEST_ID,
-        ZREQUEST_HEADER.ZREQUEST_ITEM.SEND_TO_SF
-  }
+    entity ZEMP_CLAIM_DETAILS            as
+        projection on ECLAIM.ZCLAIM_HEADER {
+            key CLAIM_ID,
+            key ZCLAIM_ITEM.CLAIM_SUB_ID,
+                EMP_ID,
+                SUBMITTED_DATE,
+                SUBMISSION_TYPE,
+                CASH_ADVANCE_AMOUNT,
+                FINAL_AMOUNT_TO_RECEIVE,
+                LAST_MODIFIED_DATE,
+                ZCLAIM_ITEM.AMOUNT,
+                ZCLAIM_ITEM.RECEIPT_DATE,
+                ZCLAIM_ITEM.COST_CENTER,
+                ZCLAIM_ITEM.GL_ACCOUNT,
+                ZCLAIM_ITEM.MATERIAL_CODE,
+                TRIP_START_DATE
+        }
 };
