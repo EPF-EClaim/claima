@@ -123,9 +123,11 @@
             "claim_status2": {
                 "type": "sap.ui.model.json.JSONModel",
                 "uri": "model/claim_status2.json"
+            },
+            "approval_log": {
+                "type": "sap.ui.model.json.JSONModel",
+                "uri": "model/approval_log.json"
             }
-
-
         },
         "resources": {
             "css": [
@@ -1135,13 +1137,12 @@
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
                                             "visible": true,
-                                            "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${fc>/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2047,7 +2048,7 @@
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "ROOM_TYPE_ID,ROOM_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                                            "creationFields": "ROOM_TYPE_ID,ROOM_TYPE_DESC,START_DATE,END_DATE,STATUS,LEVEL"
                                         }
                                     },
                                     "actions": {
@@ -2102,7 +2103,7 @@
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "FLIGHT_CLASS_ID,FLIGHT_CLASS_DESC,START_DATE,END_DATE,STATUS"
+                                            "creationFields": "FLIGHT_CLASS_ID,FLIGHT_CLASS_DESC,START_DATE,END_DATE,STATUS,LEVEL"
                                         }
                                     },
                                     "actions": {
@@ -3130,7 +3131,7 @@
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "TRANSFER_MODE_ID,TRANSFER_MODE_DESC,START_DATE,END_DATE,STATUS"
+                                            "creationFields": "TRANSFER_MODE_ID,TRANSFER_MODE_DESC,START_DATE,END_DATE,STATUS,NUMBER_OF_DAYS"
                                         }
                                     },
                                     "actions": {
@@ -3400,7 +3401,7 @@
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "VEHICLE_CLASS_ID,VEHICLE_CLASS_DESC,START_DATE,END_DATE,STATUS"
+                                            "creationFields": "VEHICLE_CLASS_ID,VEHICLE_CLASS_DESC,START_DATE,END_DATE,STATUS,LEVEL"
                                         }
                                     },
                                     "actions": {
@@ -3912,3 +3913,4 @@
         "service": "claimabackend.service"
     }
 }
+

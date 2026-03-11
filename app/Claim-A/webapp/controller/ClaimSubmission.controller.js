@@ -46,6 +46,11 @@ sap.ui.define([
 			}
 		},
  
+		onExit: function() {
+			this.getView().removeEventDelegate(this._navContainerDelegate);
+			this._navContainerDelegate = null;
+		},
+
 		_showInitFormFragment: function () {
 			var oPage = this.byId("page_claimsubmission");
 
@@ -237,86 +242,61 @@ sap.ui.define([
 			return this.getView().getModel(modelName);
 		},
 
-		onView_Claim_Attachment: async function (oLevel, fieldNumber) {
+		onView_Claim_Attachment: function (oLevel, fieldNumber) {
+			var that = this;
 			// Write to Success Factors API
 			var fileName = "";
 			if (oLevel == 'parent') {
 				// get parent attachment
 				var oInputModel = this.getView().getModel("claimsubmission_input");
-				var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment('" + oInputModel.getProperty("/claim_header/attachment_email_approver") + "')";
+				var sServiceUrl = "/SuccessFactors_API/odata/v2/Attachment('" + oInputModel.getProperty("/claim_header/attachment_email_approver") + "')";
 				var pdfViewer_title = this._getTexti18n("pdfviewer_claimsummary_attachment", [oInputModel.getProperty("/claim_header/descr/attachment_email_approver")]);
 			}
 			else {
 				// get child attachment
 				var oInputModel = this.getView().getModel("claimitem_input");
-				var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment('" + oInputModel.getProperty("/claim_item/attachment_file_" + fieldNumber) + "')";
+				var sServiceUrl = "/SuccessFactors_API/odata/v2/Attachment('" + oInputModel.getProperty("/claim_item/attachment_file_" + fieldNumber) + "')";
 				var pdfViewer_title = this._getTexti18n("pdfviewer_claimdetails_input_attachment" + fieldNumber, [oInputModel.getProperty("/claim_item/descr/attachment_email_" + fieldNumber)]);
 			}
 
-			try {
-				BusyIndicator.show(0);
-
-				const response = await fetch(sServiceUrl, {
-					method: "GET",
-				});
-
-				if (!response.ok) {
-					const errText = await response.text().catch(() => "");
-					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
-				}
-
-				const data = await response.text();
-
-				// turn XML into JSON
-				const parser = new DOMParser();
-				const xmlDoc = parser.parseFromString(data, 'text/xml');
-				const jsonData = {};
-
-				// get content from xmlDoc
-				var content = xmlDoc.querySelector('content');
-				if (content) {
-					var contentNodes = content.querySelector('properties').childNodes;
-				} else {
-					throw new Error(`No attachment details found`);
-				}
-				if (contentNodes) {
-					for (let i = 0; i < contentNodes.length; i++) {
-						const node = contentNodes[i];
-						if (node.nodeType === 1) {
-							jsonData[node.localName] = node.textContent.trim();
-						}
-					}
-
+			BusyIndicator.show(0);
+			$.ajax({
+				type: "GET",
+				contentType: "application/json",
+				url: sServiceUrl,
+				dataType: "json",
+				async: false,
+				success: function (data, textStatus, jqXHR) {
 					// show attachment in PDF viewer
-					var base64EncodedPDF = jsonData.fileContent;
+					var base64EncodedPDF = data.d.fileContent;
 					var decodedPdfContent = atob(base64EncodedPDF);
 					var byteArray = new Uint8Array(decodedPdfContent.length)
 					for(var i=0; i<decodedPdfContent.length; i++){
 						byteArray[i] = decodedPdfContent.charCodeAt(i);
 					}
-					var blob = new Blob([byteArray.buffer], { type: jsonData.mimeType });
+					var blob = new Blob([byteArray.buffer], { type: data.d.mimeType });
 					var _pdfurl = URL.createObjectURL(blob);
 					
-					this._PDFViewer = new PDFViewer({
+					that._PDFViewer = new PDFViewer({
 						isTrustedSource : true,
 						title: pdfViewer_title,
 						width:"auto",
 						source:_pdfurl
 					});
-					this.getView().addDependent(this._pdfViewer);
+					that.getView().addDependent(that._pdfViewer);
 					jQuery.sap.addUrlWhitelist("blob"); // register blob url as whitelist
 				
 					BusyIndicator.hide();
-					this._PDFViewer.open();
-				} else {
-					throw new Error(`No attachment details found`);
+					that._PDFViewer.open();
+				},
+				error: function (xhr) {
+					console.log("Error viewing attachment: " + xhr.status + xhr.responseText);
+					MessageToast.show("Error viewing attachment: " + xhr.status + xhr.responseText);
+
+					BusyIndicator.hide();
+					return false;
 				}
-			} catch (error) {
-				console.log("Error viewing attachment: " + error);
-				MessageToast.show("Error viewing attachment: " + error);
-				
-				BusyIndicator.hide();
-			}
+			});
 		},
 
 		onCreateClaim_ClaimSummary: async function (indexNumber) {
@@ -776,7 +756,7 @@ sap.ui.define([
 			// validate attachment
 			//// attachment 1
 			if (this.byId("fileuploader_claimdetails_input_attachment1").getValue()) {
-				var isUploadSuccess = await this._onUpload_ClaimDetails_Input_Attachment(1);
+				var isUploadSuccess = this._onUpload_ClaimDetails_Input_Attachment(1);
 				if (!isUploadSuccess) {
 					// don't proceed claim submission if attachment upload fails
 					return;
@@ -784,7 +764,7 @@ sap.ui.define([
 			}
 			//// attachment 2
 			if (this.byId("fileuploader_claimdetails_input_attachment2").getValue()) {
-				var isUploadSuccess = await this._onUpload_ClaimDetails_Input_Attachment(2);
+				var isUploadSuccess = this._onUpload_ClaimDetails_Input_Attachment(2);
 				if (!isUploadSuccess) {
 					// don't proceed claim submission if attachment upload fails
 					return;
@@ -848,68 +828,92 @@ sap.ui.define([
 			this.onCancel_ClaimDetails_Input();
 		},
 
-		_onUpload_ClaimDetails_Input_Attachment: async function (fieldNumber) {
+		_onUpload_ClaimDetails_Input_Attachment: function (fieldNumber) {
+			var success;
 			// get claim submission model
 			var oInputModel = this.getView().getModel("claimitem_input");
 
-			// Write to Success Factors API
-			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment"; 
+			// get csrf token
+			var tokenModel = sap.ui.getCore().getModel("oToken");
+			if (!tokenModel) {
+				this._fetchToken();
+				tokenModel = sap.ui.getCore().getModel("oToken");
+			}
+			var tokenData = tokenModel.getData();
+			var token = tokenData["csrfToken"];
+			if (!token) {
+				// cannot proceed without token
+				sap.ui.getCore().setModel(null,"oToken");
+				return false;
+			}
 
-			try {
-				BusyIndicator.show(0);
-
-				const response = await fetch(sServiceUrl, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
+			BusyIndicator.show(0);
+			$.ajax({
+				type: "POST",
+				contentType: "application/json",
+				url: "/SuccessFactors_API/odata/v2/Attachment",
+				dataType: "json",
+				async: false,
+				headers: {
+					'X-CSRF-Token': token,
+				},
+				data: JSON.stringify({
 						__metadata: {
 							uri: 'Attachment'
 						},
 						deletable: true,
-						fileName: oInputModel.getProperty("/attachments/attachment" + fieldNumber + "/fileName"),
+						fileName: oInputModel.getProperty("/attachment/fileName"),
 						moduleCategory: 'UNSPECIFIED',
 						module: 'DEFAULT',
 						userId: 'SFAPI',
 						viewable: true,
 						searchable: true,
-						fileContent: oInputModel.getProperty("/attachments/attachment" + fieldNumber + "/fileContent")
-					}) 
-				});
+						fileContent: oInputModel.getProperty("/attachment/fileContent")
+					}),
+				success: function (data, textStatus, jqXHR) {
+					// get generated attachment number
+					oInputModel.setProperty("/claim_item/attachment_file_" + fieldNumber, data.d.attachmentId);
+					oInputModel.setProperty("/claim_item/descr/attachment_file_" + fieldNumber, data.d.fileName);
 
-				if (!response.ok) {
-					const errText = await response.text().catch(() => "");
-					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
+					BusyIndicator.hide();
+					success = true;
+				},
+				error: function (xhr) {
+					console.log("Error uploading attachment " + fieldNumber + ": " + xhr.status + xhr.responseText);
+					MessageToast.show("Error uploading attachment " + fieldNumber + ": " + xhr.status + xhr.responseText);
+
+					BusyIndicator.hide();
+					success = false;
 				}
+			});
+			return success;
+		},
 
-				const data = await response.text();
+		_fetchToken: function () {
+			var token = {			
+				"csrfToken" : ""
+			};
 
-				// turn XML into JSON
-				const parser = new DOMParser();
-				const xmlDoc = parser.parseFromString(data, 'text/xml');
-				const jsonData = {};
+			var oToken = new JSONModel(token);
+			sap.ui.getCore().setModel(oToken,"oToken");
+			var tokenModel = sap.ui.getCore().getModel("oToken").getData();
 
-				const nodes = xmlDoc.documentElement.childNodes;
-				for (let i = 0; i < nodes.length; i++) {
-					const node = nodes[i];
-					if (node.nodeType === 1) {
-						jsonData[node.nodeName] = node.textContent.trim();
-					}
+			$.ajax({
+				type: "GET",
+				contentType: "application/json",
+				url: "/SuccessFactors_API/odata/v2/",
+				async: false,
+				headers: {
+					'X-CSRF-Token': "Fetch",
+				},
+				success: function (data, textStatus, jqXHR) {
+					// get token
+					tokenModel["csrfToken"] = jqXHR.getResponseHeader('X-Csrf-Token');
+				},
+				error: function (xhr) {
+					console.log("Error getting token: " + xhr.status + xhr.responseText);
 				}
-
-				// get generated attachment number
-				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(')+1,jsonData.id.indexOf(')')-1);
-				oInputModel.setProperty("/claim_item/attachment_file_" + fieldNumber, attachmentNumber);
-				oInputModel.setProperty("/claim_item/descr/attachment_file_" + fieldNumber, oInputModel.getProperty("/attachments/attachment" + fieldNumber + "/fileName"));
-				
-				BusyIndicator.hide();
-				return true;
-			} catch (error) {
-				console.log("Error uploading attachment " + fieldNumber + ": " + error);
-				MessageToast.show("Error uploading attachment " + fieldNumber + ": " + error);
-				
-				BusyIndicator.hide();
-				return false;
-			}
+			});
 		},
 
 		onChange_ClaimDetails_Input_Attachment: function (oEvent, fieldNumber) {
@@ -985,182 +989,6 @@ sap.ui.define([
 			this._displayFooterButtons("claimsubmission_summary_claimitem");
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 			this._setEnabledToolbarFooter();
-		},
-
-		_updateClaimSubmission: async function (oAction) {
-			// get input model
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-			//// update last modified date
-			var lastModifiedDate = this._getJsonDate(new Date());
-			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
-
-			// assign report number to new claim
-			if (oInputModel.getProperty("/is_new")) {
-				var currentReportNumber = await this._getCurrentReportNumber('NR02');
-				if (currentReportNumber) {
-					oInputModel.setProperty("/claim_header/claim_id", currentReportNumber.result);
-					oInputModel.setProperty("/reportnumber/reportno", currentReportNumber.result);
-					oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
-				}
-				else {
-					console.log("No claim ID available");
-					MessageToast.show("No claim ID available");
-					return;
-				}
-			}
-			//// set status for new claim as draft
-			if (oInputModel.getProperty("/is_new")) {
-				oInputModel.setProperty("/claim_header/status_id", "CREATED");
-				oInputModel.setProperty("/claim_header/descr/status_id", "DRAFT");
-			}
-			//// change status based on oAction
-			switch (oAction) {
-				case 'Delete Report':
-					oInputModel.setProperty("/claim_header/status_id", "DELETED");
-					oInputModel.setProperty("/claim_header/descr/status_id", "DELETED");
-					break;
-				case 'Submit Report':
-					oInputModel.setProperty("/claim_header/status_id", "PENDING");
-					oInputModel.setProperty("/claim_header/descr/status_id", "PENDING APPROVAL");
-					var submittedDate = this._getJsonDate(new Date());
-					oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
-					break;
-				default:
-					break;
-			}
-
-			// set body for update
-			var oBody = new JSONModel({
-				EMP_ID: oInputModel.getProperty("/claim_header/emp_id"),
-				PURPOSE: oInputModel.getProperty("/claim_header/purpose"),
-				TRIP_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")),
-				TRIP_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")),
-				EVENT_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/event_start_date")),
-				EVENT_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/event_end_date")),
-				SUBMISSION_TYPE: oInputModel.getProperty("/claim_header/submission_type"),
-				COMMENT: oInputModel.getProperty("/claim_header/comment"),
-				ALTERNATE_COST_CENTER: oInputModel.getProperty("/claim_header/alternate_cost_center"),
-				COST_CENTER: oInputModel.getProperty("/claim_header/cost_center"),
-				REQUEST_ID: oInputModel.getProperty("/claim_header/request_id"),
-				ATTACHMENT_EMAIL_APPROVER: oInputModel.getProperty("/claim_header/attachment_email_approver"),
-				STATUS_ID: oInputModel.getProperty("/claim_header/status_id"),
-				CLAIM_TYPE_ID: oInputModel.getProperty("/claim_header/claim_type_id"),
-				TOTAL_CLAIM_AMOUNT: parseFloat(oInputModel.getProperty("/claim_header/total_claim_amount")).toFixed(2),
-				FINAL_AMOUNT_TO_RECEIVE: parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive")).toFixed(2),
-				LAST_MODIFIED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
-				SUBMITTED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
-				LAST_APPROVED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_approved_date")),
-				LAST_APPROVED_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/last_approved_time")),
-				PAYMENT_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/payment_date")),
-				LOCATION: oInputModel.getProperty("/claim_header/location"),
-				SPOUSE_OFFICE_ADDRESS: oInputModel.getProperty("/claim_header/spouse_office_address"),
-				HOUSE_COMPLETION_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/house_completion_date")),
-				MOVE_IN_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/move_in_date")),
-				HOUSING_LOAN_SCHEME: oInputModel.getProperty("/claim_header/housing_loan_scheme"),
-				LENDER_NAME: oInputModel.getProperty("/claim_header/lender_name"),
-				SPECIFY_DETAILS: oInputModel.getProperty("/claim_header/specify_details"),
-				NEW_HOUSE_ADDRESS: oInputModel.getProperty("/claim_header/new_house_address"),
-				DIST_OLD_HOUSE_TO_OFFICE_KM: parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_office_km")),
-				DIST_OLD_HOUSE_TO_NEW_HOUSE_KM: parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_new_house_km")),
-				APPROVER1: oInputModel.getProperty("/claim_header/approver1"),
-				APPROVER2: oInputModel.getProperty("/claim_header/approver2"),
-				APPROVER3: oInputModel.getProperty("/claim_header/approver3"),
-				APPROVER4: oInputModel.getProperty("/claim_header/approver4"),
-				APPROVER5: oInputModel.getProperty("/claim_header/approver5"),
-				LAST_SEND_BACK_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_send_back_date")),
-				COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
-				PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
-				CASH_ADVANCE_AMOUNT: parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount")).toFixed(2),
-				PREAPPROVED_AMOUNT: parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount")).toFixed(2),
-				REJECT_REASON_ID: oInputModel.getProperty("/claim_header/reject_reason_id"),
-				SEND_BACK_REASON_ID: oInputModel.getProperty("/claim_header/send_back_reason_id"),
-				LAST_SEND_BACK_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/last_send_back_time")),
-				REJECT_REASON_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
-				REJECT_REASON_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time"))
-			});
-			//// addon for new claim
-			if (oInputModel.getProperty("/is_new")) {
-				oBody.setProperty("/CLAIM_ID", oInputModel.getProperty("/claim_header/claim_id"));
-			}
-
-			try {
-				BusyIndicator.show(0);
-
-				const oModel = this.getOwnerComponent().getModel();
-				var oListBinding;
-
-				if (oInputModel.getProperty("/is_new")) {
-					oListBinding = oModel.bindList("/ZCLAIM_HEADER");
-					const oContext = oListBinding.create(oBody.getData());
-					oContext.created().then(() => {
-						switch (oAction) {
-							case 'Save Draft':
-								MessageToast.show(this._getTexti18n("msg_claimsubmission_created"));
-								break;
-							case 'Submit Report':
-								MessageToast.show(this._getTexti18n("msg_claimsubmission_pending"));
-								break;
-							default:
-								throw new Error("Invalid action selected: " + oAction);
-						}
-						this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
-						this._returnToDashboard();
-					}).catch(err => {
-						console.log("Creation failed: " + err.message);
-						MessageToast.show("Creation failed: " + err.message);
-					});
-				}
-				else {
-					oListBinding = oModel.bindList("/ZCLAIM_HEADER", null,null,
-						[
-							new sap.ui.model.Filter({ path: "CLAIM_ID", operator: sap.ui.model.FilterOperator.EQ, value1: oInputModel.getProperty("/claim_header/claim_id") })
-						],
-						{
-							$$ownRequest: true,
-							$$groupId: "$auto",
-							$$updateGroupId: "$auto"
-						}
-					);
-
-					const aCtx = await oListBinding.requestContexts(0, 1);
-					const oCtx = aCtx[0];
-
-					if (!oCtx) {
-						throw new Error("Claim not reachable.");
-					}
-
-					switch (oAction) {
-						case 'Save Draft':
-							for (const [key, value] of Object.entries(oBody.getData())) {
-								oCtx.setProperty(key, value);
-							}
-							var oMsg = this._getTexti18n("msg_claimsubmission_changed");
-							break;
-						case 'Delete Report':
-							oCtx.setProperty("STATUS_ID", "DELETED");
-							oMsg = this._getTexti18n("msg_claimsubmission_deleted");
-							break;
-						case 'Submit Report':
-							oCtx.setProperty("STATUS_ID", "PENDING");
-							oMsg = this._getTexti18n("msg_claimsubmission_pending");
-							break;
-						default:
-							throw new Error("Invalid action selected: " + oAction);
-					}
-
-					await oModel.submitBatch("$auto");
-					
-					MessageToast.show(oMsg);
-
-					this._returnToDashboard();
-				}
-
-			} catch (e) {
-				console.log(e.message || "Submission failed");
-				MessageToast.show(e.message || "Submission failed");
-			} finally {
-				BusyIndicator.hide();
-			}
 		},
 
 		_updateClaimSubmission: async function (oAction) {
