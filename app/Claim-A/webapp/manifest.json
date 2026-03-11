@@ -2330,7 +2330,7 @@
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
+                                            "creationFields": "MARRIAGE_STATUS_ID,MARRIAGE_STATUS_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {

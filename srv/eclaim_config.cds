@@ -744,15 +744,15 @@ annotate service.ZMARITAL_STAT with @(
         LineItem    : [
             {
                 $Type            : 'UI.DataField',
-                Value            : MARRIAGE_CATEGORY_ID,
+                Value            : MARRIAGE_STATUS_ID,
                 ![@UI.Importance]: #High,
-                Label            : 'Marriage Category ID'
+                Label            : 'Marriage Status ID'
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : MARRIAGE_CATEGORY_DESC,
+                Value            : MARRIAGE_STATUS_DESC,
                 ![@UI.Importance]: #High,
-                Label            : 'Marriage Category Description'
+                Label            : 'Marriage Status Description'
             },
             {
                 $Type            : 'UI.DataField',
