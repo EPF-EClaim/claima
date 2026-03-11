@@ -27,8 +27,9 @@
     {
       "source": "^/SuccessFactors_API/(.*)$",
       "target": "/$1",
-      "destination": "Conn_SF_DEV_API",
-      "csrfProtection": "false"
+      "authenticationType": "basic",
+      "csrfProtection": false,
+      "destination": "Conn_SF_DEV_API"
     }
   ],
   "welcomeFile": "/claima/index.html"
