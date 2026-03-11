@@ -50,24 +50,28 @@
                     text="Edit"
                     press="onEdit"
                     enabled="{view>/hasSelection}"
+                    visible="{= ${/FeatureControl/operationEnabled} === true }"
                 />
                 <Button
                     id="CopyItem"
                     text="Copy"
                     press="onCopy"
                     enabled="{view>/hasSelection}"
+                    visible="{= ${/FeatureControl/operationEnabled} === true }"
                 />
                 <Button
                     id="CreateItem"
                     text="Create"
                     press="onCreate"
                     enabled="true"
+                    visible="{= ${/FeatureControl/operationEnabled} === true }"
                 />
                 <Button
                     id="DeleteItem"
                     text="Delete"
                     press="onDelete"
                     enabled="{view>/hasSelection}"
+                    visible="{= ${/FeatureControl/operationEnabled} === true }"
                 />
             </Toolbar>
 
