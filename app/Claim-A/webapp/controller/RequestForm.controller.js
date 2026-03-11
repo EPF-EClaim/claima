@@ -341,7 +341,7 @@ sap.ui.define([
 
 							if (result.passed) {
 
-								await Utility._updateStatus(oModel, reqId, 'PENDING');
+								await Utility._updateStatus(oModel, reqId, 'PENDING_APPROVAL');
 								oReq.setProperty("/view", 'view');
 								
 								await PARequestSharedFunction.getPARHeaderList(oReqList, oViewModel);
@@ -1257,7 +1257,7 @@ sap.ui.define([
 
 				await oModel.submitBatch("itemCreate");
 
-				await this.updateCurrentReqNumber("NR03", nr.current);
+				// await this.updateCurrentReqNumber("NR03", nr.current);
 
 				await this._getItemList(reqId);
 				await this._showItemList("list");
@@ -1706,22 +1706,15 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel();
 
 			try {
-				const oListBinding = oModel.bindList(
-				"/ZNUM_RANGE",
-				null,
-				null,
-				[
-					new sap.ui.model.Filter({
-					path: "RANGE_ID",
-					operator: sap.ui.model.FilterOperator.EQ,
-					value1: range_id
-					})
-				],
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-					$select: "RANGE_ID,CURRENT"
-				}
+				const oListBinding = oModel.bindList("/ZNUM_RANGE", null, null,
+					[
+						new Filter({ path: "RANGE_ID", operator: sap.ui.model.FilterOperator.EQ, value1: range_id })
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$select: "RANGE_ID,CURRENT"
+					}
 				);
 
 				const aCtx = await oListBinding.requestContexts(0, 1);
@@ -1747,34 +1740,6 @@ sap.ui.define([
 				return null;
 			}
 		},
-
-		async updateCurrentReqNumber(rangeId, currentNumber) {
-			const oModel = this.getOwnerComponent().getModel();
-			const sGroup = "updateRange";
-			const nextNumber = currentNumber + 1;
-
-			try {
-				const sPath = `/ZNUM_RANGE(RANGE_ID='${rangeId.replace(/'/g, "''")}')`;
-
-				const oCtxBinding = oModel.bindContext(sPath, null, {
-				$$updateGroupId: sGroup,
-				$$ownRequest: true
-				});
-
-				await oCtxBinding.requestObject();
-				const oCtx = oCtxBinding.getBoundContext();
-
-				oCtx.setProperty("CURRENT", String(nextNumber));
-
-				await oModel.submitBatch(sGroup);
-
-				return { CURRENT: nextNumber };
-
-			} catch (err) {
-				console.error("Error updating number range:", err);
-				return null;
-			}
-		}, 
 
 		/* =========================================================
 		* Participant Value Help 
