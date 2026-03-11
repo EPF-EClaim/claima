@@ -1,12 +1,10 @@
 sap.ui.define([
     "sap/fe/core/AppComponent",
-    "claima/model/models",
-    "sap/ui/model/odata/v4/ODataModel"
+    "claima/model/models"
 ],
     // (UIComponent, 
     (AppComponent,
-        models,
-        ODataModel) => {
+        models) => {
         "use strict";
 
         // return UIComponent.extend("claima.Component", {
@@ -42,17 +40,6 @@ sap.ui.define([
                 var jQueryScript = document.createElement('script');
                 jQueryScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/xlsx.js');
                 document.head.appendChild(jQueryScript);
-
-                const fcModel = new ODataModel({
-                    serviceUrl: "/odata/v4/EmployeeSrv/",
-                    operationMode: "Server",
-                });
-                this.setModel(fcModel, "fc");
-
-                fcModel.getMetaModel().requestObject("/").then(() => {
-                    return fcModel.bindContext("/FeatureControl").requestObject();
-                }).catch(() => {
-                });
 
             }
         });

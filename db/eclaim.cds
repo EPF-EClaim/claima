@@ -76,7 +76,7 @@ entity ZREQUEST_HEADER : managed {
         EVENT_END_DATE                : Date;
         APPROVED_DATE                 : Date;
         REQUEST_DATE                  : Date;
-        IND_OR_GROUP                  : String;
+        IND_OR_GROUP                  : String(4);
         REMARK                        : String;
         ALTERNATE_COST_CENTER         : String;
         PREAPPROVAL_AMOUNT            : Decimal(16, 2);
@@ -286,18 +286,18 @@ entity ZREQUEST_TYPE : managed {
 }
 
 entity ZCLAIM_TYPE : managed {
-    key CLAIM_TYPE_ID    : String  @mandatory  @Common.Label: 'Claim Type ID';
-        CLAIM_TYPE_DESC  : String  @Common.Label    : 'Claim Type Description';
-        GL_ACCOUNT       : String  @Common.Label    : 'GL Account';
-        END_DATE         : Date    @Common.Label    : 'End Date';
-        START_DATE       : Date    @Common.Label    : 'Start Date';
-        STATUS           : String  @Common.Label    : 'Status';
-        REQUEST_TYPE     : String  @Common.Label    : 'Request Type';
-        IND_OR_GROUP     : String  @Common.Label    : 'Individual/Group';
-        PROJECT_CLAIM    : Boolean @Common.Label    : 'Project Claim';
+    key CLAIM_TYPE_ID    : String    @mandatory  @Common.Label: 'Claim Type ID';
+        CLAIM_TYPE_DESC  : String    @Common.Label    : 'Claim Type Description';
+        GL_ACCOUNT       : String    @Common.Label    : 'GL Account';
+        END_DATE         : Date      @Common.Label    : 'End Date';
+        START_DATE       : Date      @Common.Label    : 'Start Date';
+        STATUS           : String    @Common.Label    : 'Status';
+        REQUEST_TYPE     : String    @Common.Label    : 'Request Type';
+        IND_OR_GROUP     : String(4) @Common.Label    : 'Individual/Group';
+        PROJECT_CLAIM    : Boolean   @Common.Label    : 'Project Claim';
         ZCLAIM_TYPE_ITEM : Composition of many ZCLAIM_TYPE_ITEM
                                on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID
-                                   @assert.integrity: false;
+                                     @assert.integrity: false;
         ZREQUEST_TYPE    : Association to ZREQUEST_TYPE
                                on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE;
         ZINDIV_GROUP     : Association to ZINDIV_GROUP
@@ -493,7 +493,7 @@ entity ZCLAIM_ITEM : managed {
         INSURANCE_PURCHASE_DATE    : Date;
         INSURANCE_CERT_START_DATE  : Date;
         INSURANCE_CERT_END_DATE    : Date;
-        TRAVEL_DAYS_ID             : String;
+        TRAVEL_DAYS_ID             : String(2);
         METER_CUBE_ENTITLED        : Decimal(6, 2);
         METER_CUBE_ACTUAL          : Decimal(6, 2);
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
@@ -612,17 +612,18 @@ entity ZRISK : managed {
 }
 
 entity ZCLAIM_TYPE_ITEM : managed {
-    key CLAIM_TYPE_ID        : String  @mandatory  @Common.Label: 'Claim Type ID';
-    key CLAIM_TYPE_ITEM_ID   : String  @mandatory  @Common.Label: 'Claim Type Item Id';
-        CLAIM_TYPE_ITEM_DESC : String  @Common.Label: 'Claim Type Item Description';
-        END_DATE             : Date    @Common.Label: 'End Date';
-        START_DATE           : Date    @Common.Label: 'Start Date';
-        STATUS               : String  @Common.Label: 'Status';
-        CATEGORY_ID          : String  @Common.Label: 'Category ID';
-        COST_CENTER          : String  @Common.Label: 'Cost Center';
-        MATERIAL_CODE        : String  @Common.Label: 'Material Code';
-        RISK                 : String  @Common.Label: 'Risk';
-        SUBMISSION_TYPE      : String  @Common.Label: 'Submission Type';
+    key CLAIM_TYPE_ID        : String    @mandatory  @Common.Label: 'Claim Type ID';
+    key CLAIM_TYPE_ITEM_ID   : String    @mandatory  @Common.Label: 'Claim Type Item Id';
+        CLAIM_TYPE_ITEM_DESC : String    @Common.Label: 'Claim Type Item Description';
+        END_DATE             : Date      @Common.Label: 'End Date';
+        START_DATE           : Date      @Common.Label: 'Start Date';
+        STATUS               : String    @Common.Label: 'Status';
+        CATEGORY_ID          : String    @Common.Label: 'Category ID';
+        COST_CENTER          : String    @Common.Label: 'Cost Center';
+        MATERIAL_CODE        : String    @Common.Label: 'Material Code';
+        RISK                 : String    @Common.Label: 'Risk';
+        SUBMISSION_TYPE      : String    @Common.Label: 'Submission Type';
+        IND_OR_GROUP         : String(4) @Common.Label: 'Individual/Group';
         ZCLAIM_CATEGORY      : Association to ZCLAIM_CATEGORY
                                    on ZCLAIM_CATEGORY.CLAIM_CAT_ID = CATEGORY_ID;
         ZCOST_CENTER         : Association to ZCOST_CENTER
@@ -631,6 +632,8 @@ entity ZCLAIM_TYPE_ITEM : managed {
                                    on ZRISK.RISK_ID = RISK;
         ZSUBMISSION_TYPE     : Association to ZSUBMISSION_TYPE
                                    on ZSUBMISSION_TYPE.SUBMISSION_TYPE_ID = SUBMISSION_TYPE;
+        ZINDIV_GROUP         : Association to ZINDIV_GROUP
+                                   on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
 }
 
 entity ZBUDGET : managed {
@@ -872,11 +875,11 @@ entity ZMATERIAL_GROUP : managed {
 }
 
 entity ZINDIV_GROUP : managed {
-    key IND_OR_GROUP_ID   : String  @mandatory  @Common.Label: 'Individual/Group ID';
-        IND_OR_GROUP_DESC : String  @Common.Label: 'Individual/Group ID Description';
-        START_DATE        : Date    @Common.Label: 'Start Date';
-        END_DATE          : Date    @Common.Label: 'End Date';
-        STATUS            : String  @Common.Label: 'Status';
+    key IND_OR_GROUP_ID   : String(4)  @mandatory  @Common.Label: 'Individual/Group ID';
+        IND_OR_GROUP_DESC : String     @Common.Label: 'Individual/Group ID Description';
+        START_DATE        : Date       @Common.Label: 'Start Date';
+        END_DATE          : Date       @Common.Label: 'End Date';
+        STATUS            : String     @Common.Label: 'Status';
 }
 
 entity ZTRAIN_COURSE_PART : managed {
@@ -987,6 +990,11 @@ entity ZPERDIEM_ENT : managed {
     key EFFECTIVE_END_DATE   : Date          @mandatory  @Common.Label: 'Effective End Date';
         CURRENCY             : String        @Common.Label: 'Currency';
         AMOUNT               : Decimal(7, 2) @Common.Label: 'Amount';
+        CLAIM_TYPE_ID        : String        @Common.Label: 'Claim Type ID';
+        CLAIM_TYPE_ITEM_ID   : String        @Common.Label: 'Claim Type Item ID';
+        ZCLAIM_TYPE_ITEM     : Association to one ZCLAIM_TYPE_ITEM
+                                   on  ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID
+                                   and ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID      = CLAIM_TYPE_ID;
 }
 
 entity ZHOUSING_LOAN_SCHEME : managed {
@@ -1188,7 +1196,7 @@ entity ZFARE_TYPE : managed {
 }
 
 entity ZMETER_CUBE : managed {
-    key METER_CUBE_ID     : String        @mandatory  @Common.Label: 'Meter Cube ID';
+    key METER_CUBE_ID     : String(2)     @mandatory  @Common.Label: 'Meter Cube ID';
         MARITAL_STATUS    : String        @Common.Label: 'Marital Status';
         DEPENDENT_TYPE_ID : String        @Common.Label: 'Dependent Type ID';
         AGE               : Integer       @Common.Label: 'Age';
@@ -1199,11 +1207,11 @@ entity ZMETER_CUBE : managed {
 }
 
 entity ZTRAVEL_DAYS : managed {
-    key TRAVEL_DAYS_ID   : String  @mandatory  @Common.Label: 'Travel Days ID';
-        TRAVEL_DAYS_DESC : String  @Common.Label: 'Travel Days Description';
-        START_DATE       : Date    @Common.Label: 'Start Date';
-        END_DATE         : Date    @Common.Label: 'End Date';
-        STATUS           : String  @Common.Label: 'Status';
+    key TRAVEL_DAYS_ID   : String(2)  @mandatory  @Common.Label: 'Travel Days ID';
+        TRAVEL_DAYS_DESC : String     @Common.Label: 'Travel Days Description';
+        START_DATE       : Date       @Common.Label: 'Start Date';
+        END_DATE         : Date       @Common.Label: 'End Date';
+        STATUS           : String     @Common.Label: 'Status';
 }
 
 entity ZELIGIBILITY_RULE : managed {
@@ -1246,6 +1254,10 @@ entity ZELIGIBILITY_RULE : managed {
         END_DATE                  : Date           @Common.Label: 'End Date';
         CURRENCY                  : String(3)      @Common.Label: 'Currency';
         ROOM_TYPE_ID              : String         @Common.Label: 'Room Type';
+        IND_OR_GROUP              : String(4)      @Common.Label: 'Individual or Group';
+        TRAVEL_HOURS              : Integer        @Common.Label: 'Travel Hours';
+        AGING_NUMBER              : Integer        @Common.Label: 'Aging Number';
+        AGING_PERIOD              : String(2)      @Common.Label: 'Period Number';
         ZEMP_TYPE                 : Association to ZEMP_TYPE
                                         on ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;
         ZROLE                     : Association to ZROLE
@@ -1282,6 +1294,8 @@ entity ZELIGIBILITY_RULE : managed {
                                         on ZCURRENCY.CURRENCY_ID = CURRENCY;
         ZROOM_TYPE                : Association to ZROOM_TYPE
                                         on ZROOM_TYPE.ROOM_TYPE_ID = ROOM_TYPE_ID;
+        ZINDIV_GROUP              : Association to ZINDIV_GROUP
+                                        on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
 }
 
 entity ZAPPROVER_DETAILS_CLAIMS : managed {

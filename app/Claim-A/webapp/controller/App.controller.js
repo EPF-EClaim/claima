@@ -160,7 +160,7 @@ sap.ui.define([
 					if (type === "DTD Admin" || type === "JKEW Admin" || type === "Super Admin") {
 						oRouter.navTo("Configuration");
 					} else {
-						var message = this._getTexti18n("msg_unauthorized_config");
+						var message = this._getTexti18n("msg_unauthorized_role");
 						sap.m.MessageBox.error(message);
 					}
 					//End EY_ATHIRAH
@@ -170,7 +170,7 @@ sap.ui.define([
 					if (type === "JKEW Admin" || type === "DTD Admin" || type === "GA Admin" || type === "Super Admin") {
 						oRouter.navTo("Analytics")
 					} else {
-						var message = this._getTexti18n("msg_unauthorized_analytic");
+						var message = this._getTexti18n("msg_unauthorized_role");
 						sap.m.MessageBox.error(message);
 					}
 					break;
@@ -190,7 +190,7 @@ sap.ui.define([
 						var oRouter = this.getOwnerComponent().getRouter();
 						oRouter.navTo("MyApproval");
 					} else {
-						var message = this._getTexti18n("msg_unauthorized_approval");
+						var message = this._getTexti18n("msg_unauthorized_role");
 						sap.m.MessageBox.error(message);
 					}
 					break;
@@ -244,6 +244,7 @@ sap.ui.define([
 
 		// Functions - Claim Submission
 		onNav_ClaimSubmission: async function () {
+			BusyIndicator.show();
 			// load Claim Process dialog
 			var oName = "claima.fragment.claimsubmission_claimprocess"
 			this.oDialog_ClaimProcess ??= await this.loadFragment({
@@ -256,6 +257,7 @@ sap.ui.define([
 			else {
 				MessageToast.show(this._getTexti18n("msg_nav_error_fragment", [oName]));
 			}
+			BusyIndicator.hide();
 		},
 
 		_getNewEmployeeModel: function (modelName) {
@@ -947,6 +949,7 @@ sap.ui.define([
 				headers: {
 					'X-CSRF-Token': token,
 				},
+				crossDomain: true,
 				data: JSON.stringify({
 						__metadata: {
 							uri: 'Attachment'
