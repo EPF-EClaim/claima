@@ -38,7 +38,7 @@
       "source": "^/SuccessFactors_API/(.*)$",
       "target": "/$1",
       "authenticationType": "basic",
-      "csrfProtection": false,
+      "csrfProtection": true,
       "destination": "Conn_SF_DEV_API"
     }
   ],
