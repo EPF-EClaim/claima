@@ -33,6 +33,13 @@
       "target": "/test-resources/$1",
       "authenticationType": "xsuaa",
       "destination": "srv-api"
+    },
+    {
+      "source": "^/SuccessFactors_API/(.*)$",
+      "target": "/$1",
+      "authenticationType": "basic",
+      "csrfProtection": false,
+      "destination": "Conn_SF_DEV_API"
     }
   ],
   "welcomeFile": "/claima/index.html"
