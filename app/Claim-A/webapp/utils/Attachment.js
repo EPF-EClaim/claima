@@ -46,9 +46,10 @@ sap.ui.define([
                 body: JSON.stringify({
                     __metadata: { uri: "Attachment" },
                     deletable: true,
-                    fileName,
+                    fileName: fileName,
                     moduleCategory: "UNSPECIFIED",
                     module: "DEFAULT",
+                    userId: "SFAPI",
                     viewable: true,
                     searchable: true,
                     fileContent: fileBase64   // base64 only, no "data:*;base64," prefix
