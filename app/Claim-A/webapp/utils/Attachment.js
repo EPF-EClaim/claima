@@ -40,15 +40,15 @@ sap.ui.define([
                 headers: {
                     "x-csrf-token": csrf,
                     "Content-Type": "application/json",
-                    "Accept": "application/json"
+                    "Accept": "application/json",
+                    "X-Requested-With": "XMLHttpRequest"
                 },
-                credentials: "include",
                 body: JSON.stringify({
                     __metadata: { uri: "Attachment" },
                     deletable: true,
                     fileName: fileName,
                     moduleCategory: "UNSPECIFIED",
-                    module: "DEFAULT",
+                    module: "EMPLOYEE_CENTRAL",
                     userId: "SFAPI",
                     viewable: true,
                     searchable: true,
