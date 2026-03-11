@@ -81,6 +81,12 @@
                                 <table:template><Text text="{employee_view>CLAIM_ID}" /></table:template>
                             </table:Column>
 
+                            <!-- claim_sub_id -->
+                            <table:Column width="12rem">
+                                <Label text="{i18n>claim_sub_id}" />
+                                <table:template><Text text="{employee_view>CLAIM_SUB_ID}" /></table:template>
+                            </table:Column>
+
                             <!-- claim_type -->
                             <table:Column width="14rem">
                                 <Label text="{i18n>claim_type}" />
@@ -339,18 +345,6 @@
                             </table:Column>
 
                             <!-- ==== Detail view fields (kept sequence) ==== -->
-
-                            <!-- claim_id (again as per MDC) -->
-                            <table:Column width="12rem">
-                                <Label text="{i18n>claim_id}" />
-                                <table:template><Text text="{employee_view>CLAIM_ID}" /></table:template>
-                            </table:Column>
-
-                            <!-- claim_sub_id -->
-                            <table:Column width="12rem">
-                                <Label text="{i18n>claim_sub_id}" />
-                                <table:template><Text text="{employee_view>CLAIM_SUB_ID}" /></table:template>
-                            </table:Column>
 
                             <!-- compensation -->
                             <table:Column width="12rem" hAlign="End">
