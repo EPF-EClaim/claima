@@ -49,7 +49,6 @@ sap.ui.define([
                     fileName,
                     moduleCategory: "UNSPECIFIED",
                     module: "DEFAULT",
-                    userId: "SFAPI",
                     viewable: true,
                     searchable: true,
                     fileContent: fileBase64   // base64 only, no "data:*;base64," prefix
