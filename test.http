@@ -8,14 +8,20 @@ Content-Type: application/json
       "INTERNAL_ORDER": "1",
       "FUND_CENTER": "100010102", 
       "MATERIAL_GROUP": "732002001", 
-      "AMOUNT": 100.00
+      "COMMITMENT_ITEM": "732002",
+      "AMOUNT": 100.00, 
+      "INDICATOR": "CLM", 
+      "ACTION": "SUBMIT"
      },
     {
       "YEAR": "2026",
       "INTERNAL_ORDER": "1",
       "FUND_CENTER": "100010102", 
       "MATERIAL_GROUP": "732002001", 
-      "AMOUNT": 90
+      "COMMITMENT_ITEM": "732002",
+      "AMOUNT": 90, 
+      "INDICATOR": "CLM", 
+      "ACTION": "REJECT"
     }
     ,
     {
@@ -23,14 +29,10 @@ Content-Type: application/json
       "INTERNAL_ORDER": "1",
       "FUND_CENTER": "100010105", 
       "MATERIAL_GROUP": "732002001", 
-      "AMOUNT": 50
-    }, 
-    {
-      "YEAR": "2030",
-      "INTERNAL_ORDER": "1",
-      "FUND_CENTER": "100010105", 
-      "MATERIAL_GROUP": "732002001", 
-      "AMOUNT": 50
+      "COMMITMENT_ITEM": "732002",
+      "AMOUNT": 50, 
+      "INDICATOR": "CLM", 
+      "ACTION": "APPROVE"
     }
     ]
    }
