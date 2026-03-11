@@ -21,7 +21,7 @@ Content-Type: application/json
       "COMMITMENT_ITEM": "732002",
       "AMOUNT": 90, 
       "INDICATOR": "CLM", 
-      "ACTION": "REJECT"
+      "ACTION": "SUBMIT"
     }
     ,
     {
@@ -32,7 +32,7 @@ Content-Type: application/json
       "COMMITMENT_ITEM": "732002",
       "AMOUNT": 50, 
       "INDICATOR": "CLM", 
-      "ACTION": "APPROVE"
+      "ACTION": "SUBMIT"
     }
     ]
    }

@@ -159,6 +159,9 @@ module.exports = (srv) => {
     const { ZBUDGET } = srv.entities;
     const { budget } = req.data;
 
+    const toNum = (v) => Number(v) || 0;
+    const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+
     const tx = cds.tx(req);
     const results = [];
     let error = false;
@@ -180,7 +183,7 @@ module.exports = (srv) => {
         let budgetRecord = entry.INDICATOR === "CLM" ? await tx.run(
           SELECT.one.from(ZBUDGET)
             .where(condition)
-            .forShareLock()
+            .forShareLock() //lock the record, others may still have access to read the selected record
         ) : await tx.run(SELECT.one.from(ZBUDGET)
           .where(condition));
 
@@ -212,7 +215,7 @@ module.exports = (srv) => {
         const bSufficient = entry.AMOUNT <= budgetRecord.BUDGET_BALANCE;
 
         if (bSufficient) {
-          continue; //proceed with all checking and update once all satisfy condition
+          continue;
         } else {
           error = true;
 
@@ -233,9 +236,11 @@ module.exports = (srv) => {
           });
         }
       }
+      //all records having sufficient balance
+      //do not proceed if any of the record doesnt have sufficient amount
+      if (error === false) {  
 
-      if (error === false) {  //all records having sufficient balance
-        for (var entry of budget) {
+        for (var entry of budget) {       
           condition = {};
 
           if (entry.YEAR) condition.YEAR = entry.YEAR;
@@ -247,17 +252,16 @@ module.exports = (srv) => {
           var newBudget = await tx.run(SELECT.one.from(ZBUDGET).where(condition));
 
           if (entry.ACTION === "SUBMIT") {
-            newCommitment = parseFloat(newBudget.COMMITMENT).toFixed(2) + parseFloat(entry.AMOUNT).toFixed(2);
-            newConsumed = parseFloat(newBudget.COMMITMENT).toFixed(2) + parseFloat(newBudget.ACTUAL).toFixed(2);
-            newBudgetBalance = parseFloat(newBudget.CURRENT_BUDGET).toFixed(2) - parseFloat(newBudget.CONSUMED).toFixed(2);
-            newActual = parseFloat(newBudget.ACTUAL).toFixed(2);
+            newCommitment = round2(toNum(newBudget.COMMITMENT) + toNum(entry.AMOUNT));
+            newConsumed = round2(toNum(newBudget.COMMITMENT) + toNum(newBudget.ACTUAL));
+            newBudgetBalance = round2(toNum(newBudget.CURRENT_BUDGET) - toNum(newBudget.CONSUMED));
+            newActual = round2(toNum(newBudget.ACTUAL));
+          } else if (entry.ACTION === "REJECT" || entry.ACTION === "APPROVE") {
+            newCommitment =  round2(toNum(newBudget.COMMITMENT) - toNum(entry.AMOUNT ));
+            newConsumed = round2(toNum(newBudget.COMMITMENT) + toNum(newBudget.ACTUAL));
+            newBudgetBalance = round2(toNum(newBudget.CURRENT_BUDGET) - toNum(newBudget.CONSUMED));
+            newActual = entry.ACTION === "APPROVE" ? round2(toNum(newBudget.ACTUAL) + toNum(entry.AMOUNT)) : round2(toNum(newBudget.ACTUAL));
           }
-          // else if (entry.ACTION === "REJECT" || entry.ACTION === "APPROVE") {
-          //   newCommitment = parseFloat(( newBudget.COMMITMENT - entry.AMOUNT ).toFixed(2));
-          //   newConsumed = parseFloat((newBudget.COMMITMENT + newBudget.ACTUAL).toFixed(2));
-          //   newBudgetBalance = parseFloat((newBudget.CURRENT_BUDGET - newBudget.CONSUMED).toFixed(2));
-          //   newActual = entry.ACTION === "APPROVE" ? parseFloat((newBudget.ACTUAL + entry.AMOUNT).toFixed(2)) : parseFloat((newBudget.ACTUAL).toFixed(2));
-          // }
 
           await tx.run(
             UPDATE(ZBUDGET)
@@ -270,39 +274,38 @@ module.exports = (srv) => {
               .where(condition)
           );
 
-
-
           results.push({
             YEAR: entry.YEAR,
             INTERNAL_ORDER: entry.INTERNAL_ORDER,
             FUND_CENTER: entry.FUND_CENTER,
             MATERIAL_GROUP: entry.MATERIAL_GROUP,
             COMMITMENT_ITEM: entry.COMMITMENT_ITEM,
-            AMOUNT: entry.AMOUNT,
-            PREV_CONSUMED: newBudget.CONSUMED,
+            AMOUNT: round2(toNum(entry.AMOUNT)),
+            PREV_CONSUMED: round2(toNum(newBudget.CONSUMED)),
             NEW_CONSUMED: newConsumed,
-            PREV_ACTUAL: newBudget.ACTUAL,
+            PREV_ACTUAL: round2(toNum(newBudget.ACTUAL)),
             NEW_ACTUAL: newActual,
-            PREV_COMMITMENT: newBudget.COMMITMENT,
+            PREV_COMMITMENT: round2(toNum(newBudget.COMMITMENT)),
             NEW_COMMITMENT: newCommitment,
-            PREV_BUDGETBALANCE: newBudget.BUDGET_BALANCE,
+            PREV_BUDGETBALANCE: round2(toNum(newBudget.BUDGET_BALANCE)),
             NEW_BUDGETBALANCE: newBudgetBalance,
             STATUS: 'Record updated'
           });
-        }
+
+        }  
+
         await tx.commit();
+
       } else {
         await tx.rollback();
       }
 
-      return { message: JSON.stringify(results) };
+      return { results };
     } catch (error) {
       await tx.rollback();
       req.error(400, `Budget checking failed: ${error.message}`);
     }
-  });
-
-
+});
 
 
   /* const port = process.env.PORT || 5000;
