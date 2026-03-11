@@ -16,7 +16,8 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
 	"sap/ui/export/Spreadsheet",
-	"claima/utils/PARequestSharedFunction"
+	"claima/utils/PARequestSharedFunction",
+	"claima/utils/Attachment"
 
 ], function (
 	Device,
@@ -35,7 +36,8 @@ sap.ui.define([
 	FilterOperator,
 	Sorter,
 	Spreadsheet,
-	PARequestSharedFunction
+	PARequestSharedFunction,
+	Attachment
 ) {
 	"use strict";
 
@@ -63,8 +65,11 @@ sap.ui.define([
 			this.getView().setModel(oItemsModel, "items");
 
 			// sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
-			var oRouter = this.getOwnerComponent().getRouter();
-			oRouter.navTo("Dashboard");
+			var sHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
+			if (!sHash || sHash === "") {
+				var oRouter = this.getOwnerComponent().getRouter();
+				oRouter.navTo("Dashboard");
+			}
 
 			this._loadCurrentUser();
 
@@ -84,12 +89,12 @@ sap.ui.define([
 			});
 
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			var oUserModel = new sap.ui.model.json.JSONModel({ email: "Jefry.Yap@my.ey.com" });
-			this.getView().setModel(oUserModel, 'user');
-			const emp_data = await this._getEmpIdDetail("Jefry.Yap@my.ey.com");
-			const oReqModel = this._getReqModel().getData();
-			oReqModel.user = emp_data.eeid;
-			this._getReqModel().setData(oReqModel);
+			// var oUserModel = new sap.ui.model.json.JSONModel({ email: "Jefry.Yap@my.ey.com" });
+			// this.getView().setModel(oUserModel, 'user');
+			// const emp_data = await this._getEmpIdDetail("Jefry.Yap@my.ey.com");
+			// const oReqModel = this._getReqModel().getData();
+			// oReqModel.user = emp_data.eeid;
+			// this._getReqModel().setData(oReqModel);
 		},
 
 		onCollapseExpandPress: function () {
@@ -1441,20 +1446,6 @@ sap.ui.define([
 			return this.getOwnerComponent().getModel("request");
 		},
 
-		// _ensureRequestModelDefaults: function () {
-		// 	const oReq = this._getReqModel();
-		// 	const data = oReq.getData() || {};
-		// 	data.req_header        = { reqid: "", grptype: "IND" };
-		// 	data.req_item_rows     = [];
-		// 	data.req_item          = data.req_item || {
-		// 		cash_advance: "no_cashadv"
-		// 	};
-		// 	data.participant       = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
-		// 	data.view              = "view";
-		// 	data.list_count        = 0;
-		// 	oReq.setData(data);
-		// },
-
 		onClickMyRequest: async function () {
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
 			this._loadDefaultSelection();
@@ -1490,8 +1481,6 @@ sap.ui.define([
 				'RT0002': ['purpose', 'reqtype', 'grptype', 'comment'],
 				'RT0003': ['purpose', 'reqtype', 'eventstartdate', 'eventenddate', 'grptype', 'location', 'comment', 'eventdetail1', 'eventdetail2', 'eventdetail3', 'eventdetail4'],
 				'RT0004': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'grptype', 'comment'],
-				'RT0005': ['purpose', 'reqtype'],
-				'RT0006': ['purpose', 'reqtype']
 			};
 
 			const fieldsToCheck = mandatoryFields[oData.reqtype] || ['purpose'];
@@ -1512,11 +1501,13 @@ sap.ui.define([
 				MessageToast.show(message);
 			} else {
 				var attachment_1 = await this.getFileAsBinary("req_attachment_1");
-				var attachment1_ID = await this.postFilesToSF( oData.doc1, attachment_1 );
+				// var attachment1_ID = await this.postFilesToSF( oData.doc1, attachment_1 );
+				var attachment1_ID = await Attachment.postAttachment( oData.doc1, attachment_1 );
 				oData.doc1 = attachment1_ID;
 				if (oData.doc2) {
 					var attachment_2 = await this.getFileAsBinary("req_attachment_2");
-					var attachment2_ID = await this.postFilesToSF( oData.doc2, attachment_2 );
+					// var attachment2_ID = await this.postFilesToSF( oData.doc2, attachment_2 );
+					var attachment2_ID = await Attachment.postAttachment( oData.doc2, attachment_2 );
 					oData.doc2 = attachment2_ID;
 				}
 				this.createRequestHeader(oData, oReqModel);
@@ -1708,6 +1699,24 @@ sap.ui.define([
 				MessageToast.show("Error creating MDF: " + error);
 				return false;
 			}	
+		},
+
+		async deleteAttachment(attachmentID) {
+			var url = `SuccessFactors_API/odata/v2/Attachment(attachmentId=${attachmentID})`; 
+
+			const response = await fetch(url, {
+				method: 'DELETE',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
+
+			if (!response.ok) {
+				const text = await response.text().catch(() => '');
+				throw new Error(`Delete failed: ${response.status} ${response.statusText} ${text}`);
+			}
+
+			return true; 
 		},
 
 		createRequestHeader: async function (oInputData, oReqModel) {
