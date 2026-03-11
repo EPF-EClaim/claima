@@ -857,6 +857,7 @@ sap.ui.define([
 				headers: {
 					'X-CSRF-Token': token,
 				},
+				crossDomain: true,
 				data: JSON.stringify({
 						__metadata: {
 							uri: 'Attachment'
