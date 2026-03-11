@@ -142,30 +142,30 @@ sap.ui.define([
 					this._navToPARStatus();
 					break;
 				case "mysubstitution":
-					if (type === "Approver") {
+					// if (type === "Approver" || type === "Super Admin") {
 						var oRouter = this.getOwnerComponent().getRouter();
 						oRouter.navTo("ManageSub");
-					} else {
-						var message = this._getTexti18n("msg_unauthorized_substitution");
-						sap.m.MessageBox.error(message);
-					}
+					// } else {
+					// 	var message = this._getTexti18n("msg_unauthorized_substitution");
+					// 	sap.m.MessageBox.error(message);
+					// }
 					break;
 				case "config":
 					//Start EY_ATHIRAH
-					if (type === "DTD Admin" || type === "JKEW Admin") {
+					if (type === "DTD Admin" || type === "JKEW Admin" || type === "Super Admin") {
 						oRouter.navTo("Configuration");
 					} else {
-						var message = this._getTexti18n("msg_unauthorized_config");
+						var message = this._getTexti18n("msg_unauthorized_role");
 						sap.m.MessageBox.error(message);
 					}
 					//End EY_ATHIRAH
 					break;
 				// Start Aiman Salim 10/02/2026 - Added for analytics
 				case "analytics":
-					if (type === "JKEW Admin" || type === "DTD Admin" || type === "GA Admin") {
+					if (type === "JKEW Admin" || type === "DTD Admin" || type === "GA Admin" || type === "Super Admin") {
 						oRouter.navTo("Analytics")
 					} else {
-						var message = this._getTexti18n("msg_unauthorized_analytic");
+						var message = this._getTexti18n("msg_unauthorized_role");
 						sap.m.MessageBox.error(message);
 					}
 					break;
@@ -179,13 +179,13 @@ sap.ui.define([
 					break;
 				//Start Aiman Salim 08/03/2026 - Added for MyApproval
 				case "approval":
-					if (type === "Approver") {
+					if (type === "Approver" || type === "Super Admin") {
 						this.getMyApproverPAReq();
 						this.getMyApproverClaim();
 						var oRouter = this.getOwnerComponent().getRouter();
 						oRouter.navTo("MyApproval");
 					} else {
-						var message = this._getTexti18n("msg_unauthorized_approval");
+						var message = this._getTexti18n("msg_unauthorized_role");
 						sap.m.MessageBox.error(message);
 					}
 					break;
@@ -932,7 +932,9 @@ sap.ui.define([
 				url: "/SuccessFactors_API/odata/v2/Attachment",
 				dataType: "json",
 				async: false,
-				'X-CSRF-Token': token,
+				headers: {
+					'X-CSRF-Token': token,
+				},
 				data: JSON.stringify({
 						__metadata: {
 							uri: 'Attachment'
@@ -979,7 +981,9 @@ sap.ui.define([
 				contentType: "application/json",
 				url: "/SuccessFactors_API/odata/v2/",
 				async: false,
-				'X-CSRF-Token': "Fetch",
+				headers: {
+					'X-CSRF-Token': "Fetch",
+				},
 				success: function (data, textStatus, jqXHR) {
 					// get token
 					tokenModel["csrfToken"] = jqXHR.getResponseHeader('X-Csrf-Token');

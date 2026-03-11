@@ -28,24 +28,28 @@
                         text="Edit"
                         press="onEdit"
                         enabled="{view>/hasSelection}"
+                        visible="{= ${/FeatureControl/operationEnabled} === true }"
                     />
                     <Button
                         id="CopyHeader"
                         text="Copy"
                         press="onCopy"
                         enabled="{view>/hasSelection}"
+                        visible="{= ${/FeatureControl/operationEnabled} === true }"
                     />
                     <Button
                         id="CreateHeader"
                         text="Create"
                         press="onCreate"
                         enabled="true"
+                        visible="{= ${/FeatureControl/operationEnabled} === true }"
                     />
                     <Button
                         id="DeleteHeader"
                         text="Delete"
                         press="onDelete"
                         enabled="{view>/hasSelection}"
+                        visible="{= ${/FeatureControl/operationEnabled} === true }"
                     />
                 </Toolbar>
 
@@ -68,17 +72,23 @@
                             <Text text="GL Account" />
                         </Column>
                         <Column>
-                            <Text text="Category ID" />
-                        </Column>
-                        <Column>
                             <Text text="End Date" />
                         </Column>
                         <Column>
                             <Text text="Start Date" />
                         </Column>
                         <Column>
-                            <Text text="Status" />
+                            <Text text="Request Type" />
                         </Column>
+                        <Column>
+                            <Text text="Individual/Group" />
+                        </Column>
+                        <Column>
+                            <Text text="Project Claim" />
+                        </Column>     
+                        <Column>
+                            <Text text="Status" />
+                        </Column>                                                                                           
                         <Column width="2rem">
                             <Text text="" />
                         </Column>
@@ -93,11 +103,15 @@
 
                                 <Text text="{GL_ACCOUNT}" />
 
-                                <Text text="{CATEGORY_ID}" />
-
                                 <Text text="{END_DATE}"/>
 
                                 <Text text="{START_DATE}" />
+
+                                <Text text="{REQUEST_TYPE}" />
+
+                                <Text text="{IND_OR_GROUP}" />
+
+                                <Text text="{PROJECT_CLAIM}" />
 
                                 <Text text="{STATUS}" />
 

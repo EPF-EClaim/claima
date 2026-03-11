@@ -1,0 +1,36 @@
+POST    http://localhost:4004/odata/v4/EmployeeSrv/budgetchecking
+Content-Type: application/json
+ 
+   {
+    "budget": [
+      {
+      "YEAR": "2026",
+      "INTERNAL_ORDER": "1",
+      "FUND_CENTER": "100010102", 
+      "MATERIAL_GROUP": "732002001", 
+      "AMOUNT": 100.00
+     },
+    {
+      "YEAR": "2026",
+      "INTERNAL_ORDER": "1",
+      "FUND_CENTER": "100010102", 
+      "MATERIAL_GROUP": "732002001", 
+      "AMOUNT": 90
+    }
+    ,
+    {
+      "YEAR": "2026",
+      "INTERNAL_ORDER": "1",
+      "FUND_CENTER": "100010105", 
+      "MATERIAL_GROUP": "732002001", 
+      "AMOUNT": 50
+    }, 
+    {
+      "YEAR": "2030",
+      "INTERNAL_ORDER": "1",
+      "FUND_CENTER": "100010105", 
+      "MATERIAL_GROUP": "732002001", 
+      "AMOUNT": 50
+    }
+    ]
+   }

@@ -328,7 +328,7 @@ sap.ui.define([
       // Status (entity-aware)
       if (isReq) {
         // Request must filter on STATUS (text)
-        const statusTexts = this._getSelectedItemTexts("status");
+        const statusTexts = this._getKeys("status");
         if (statusTexts.length) this._addOrFilter(a, "STATUS", statusTexts);
       } else {
         // Claim must filter on STATUS_ID (keys)

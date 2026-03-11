@@ -128,8 +128,6 @@
                 "type": "sap.ui.model.json.JSONModel",
                 "uri": "model/approval_log.json"
             }
-
-
         },
         "resources": {
             "css": [
@@ -614,7 +612,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -631,7 +629,7 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy",
@@ -641,7 +639,7 @@
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -673,7 +671,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -690,14 +688,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -729,7 +727,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -746,14 +744,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -785,7 +783,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -802,14 +800,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -841,7 +839,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -858,14 +856,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -897,7 +895,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -914,14 +912,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -953,7 +951,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -970,14 +968,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1009,7 +1007,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -1026,14 +1024,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1065,7 +1063,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -1082,14 +1080,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1138,14 +1136,13 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
-                                            "enabled": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1177,7 +1174,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -1194,14 +1191,14 @@
                                     "actions": {
                                         "copybtn": {
                                             "press": "claima.ext.controller.Config.onClickCopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1233,7 +1230,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -1246,7 +1243,7 @@
                                     "actions": {
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1278,7 +1275,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -1295,14 +1292,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1334,7 +1331,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -1351,14 +1348,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1390,7 +1387,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -1407,14 +1404,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1446,7 +1443,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -1463,14 +1460,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1502,7 +1499,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -1519,14 +1516,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1558,7 +1555,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
@@ -1575,14 +1572,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1632,14 +1629,14 @@
                                         },
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1686,14 +1683,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1731,6 +1728,15 @@
                                             "hideTableTitle": true
                                         },
                                         "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }f",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
                                     }
                                 }
                             },
@@ -1776,14 +1782,14 @@
                                         },
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1830,14 +1836,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1887,14 +1893,14 @@
                                         },
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1941,14 +1947,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit",
@@ -2002,14 +2008,14 @@
                                         },
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2051,20 +2057,20 @@
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "ROOM_TYPE_ID,ROOM_TYPE_DESC,START_DATE,END_DATE,STATUS"
+                                            "creationFields": "ROOM_TYPE_ID,ROOM_TYPE_DESC,START_DATE,END_DATE,STATUS,LEVEL"
                                         }
                                     },
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2106,20 +2112,20 @@
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "FLIGHT_CLASS_ID,FLIGHT_CLASS_DESC,START_DATE,END_DATE,STATUS"
+                                            "creationFields": "FLIGHT_CLASS_ID,FLIGHT_CLASS_DESC,START_DATE,END_DATE,STATUS,LEVEL"
                                         }
                                     },
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2166,14 +2172,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2221,14 +2227,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2276,14 +2282,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2330,14 +2336,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2384,14 +2390,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2438,14 +2444,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2492,14 +2498,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2546,14 +2552,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2600,14 +2606,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2654,14 +2660,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2708,14 +2714,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2762,14 +2768,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2816,14 +2822,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2870,14 +2876,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2924,14 +2930,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2978,14 +2984,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3032,14 +3038,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3086,14 +3092,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3134,20 +3140,20 @@
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "TRANSFER_MODE_ID,TRANSFER_MODE_DESC,START_DATE,END_DATE,STATUS"
+                                            "creationFields": "TRANSFER_MODE_ID,TRANSFER_MODE_DESC,START_DATE,END_DATE,STATUS,NUMBER_OF_DAYS"
                                         }
                                     },
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3194,14 +3200,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3248,14 +3254,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3302,14 +3308,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3356,14 +3362,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3404,20 +3410,20 @@
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "VEHICLE_CLASS_ID,VEHICLE_CLASS_DESC,START_DATE,END_DATE,STATUS"
+                                            "creationFields": "VEHICLE_CLASS_ID,VEHICLE_CLASS_DESC,START_DATE,END_DATE,STATUS,LEVEL"
                                         }
                                     },
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3464,14 +3470,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3572,14 +3578,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3691,7 +3697,7 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": true,
+                                            "column": false,
                                             "filter": false
                                         },
                                         "quickVariantSelection": {
