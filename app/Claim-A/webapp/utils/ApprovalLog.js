@@ -97,6 +97,7 @@ sap.ui.define([
 			var claimsAltCC = parseEmpData[0].ALTERNATE_COST_CENTER;
 			var claimsRequestID = parseEmpData[0].REQUEST_ID;
 			var claimsSubmissionType = parseEmpData[0].SUBMISSION_TYPE;
+			var claimsSubmissionDate = parseEmpData[0].SUBMITTED_DATE;
 
 			var ClaimsItemURL = "/odata/v4/EmployeeSrv/ZCLAIM_ITEM?$filter=CLAIM_ID%20eq%20'" + claimID + "'";
 			//claim items might need to loop to account for multiple items
@@ -160,24 +161,7 @@ sap.ui.define([
 			var allDeptEmployeeRole = "/odata/v4/EmployeeSrv/ZEMP_MASTER?$filter=DEP%20eq%20'" + departmentID + "' and ROLE%20ne%20null";
 			const approverDetailsRes = await fetch(allDeptEmployeeRole, { headers: { "Accept": "application/json" } });
 			const approverDetailsData = await approverDetailsRes.json();
-			const stringifyApproverDetails = JSON.stringify(approverDetailsData.value);
-			var parseApproverDetails = JSON.parse(stringifyApproverDetails);
-			var approverEmail = parseApproverDetails[0].EMAIL;
-			var approverRole = parseApproverDetails[0].ROLE;
-
-			// console.log("Checking for all required variables \n");
-			// console.log("claim type id = " + claimTypeID);
-			// console.log("claim CC = " + claimsCC);
-			// console.log("claims alt cc = " + claimsAltCC);
-			// console.log("claim total exp = " + claimItemTotalExpAmt);
-			// console.log("claim receipt date = " + claimItemReceiptDate);
-			// console.log("emp dept = " + empDept);
-			// console.log("emp role = " + empRole);
-			// console.log("emp cc = " + empCC);
-			// console.log("approver email = " + approverEmail);
-			// console.log("approver role = " + approverRole);
-			// console.log("claim request ID = " + claimsRequestID);
-			// console.log("claim submission type = " + claimsSubmissionType);
+			const approverDetailsDataArr = Array.isArray(approverDetailsData?.value) ? approverDetailsData.value : [];
 
 			//get all the workflow rules based on workflow type request type (submission type) and role. populate to array and check if there is anything that needs to be checked then pop out the ones that is not needed
 			//empRole, claimsSubmissionType, Workflow Type hardcode to CLM
@@ -191,11 +175,157 @@ sap.ui.define([
 			if (!workflowRuleRes.ok) throw new Error(`HTTP ${workflowRuleRes.status} ${workflowRuleRes.statusText}`);
 			const workflowRuleData = await workflowRuleRes.json();
 			const workflowRuleArr = Array.isArray(workflowRuleData?.value) ? workflowRuleData.value : [];
-			
+			let workflowRuleElimArr = [];
+			let nestedWorkflowRuleArr = [];
 			for(var i = 0; i < workflowRuleArr.length; i++){
-				console.log(workflowRuleArr[i]);
+				//console.log(workflowRuleArr[i]);
+				workflowRuleElimArr.push(workflowRuleArr[i].THRESHOLD_AMOUNT);
+				workflowRuleElimArr.push(workflowRuleArr[i].RECEIPT_DAY);
+				workflowRuleElimArr.push(workflowRuleArr[i].EMPLOYEE_COST_CENTER);
+				workflowRuleElimArr.push(workflowRuleArr[i].RISK_LEVEL);
+				workflowRuleElimArr.push(workflowRuleArr[i].OUTCOME_WORKFLOW_CODE);
+				workflowRuleElimArr.push(workflowRuleArr[i].THRESHOLD_VALUE);
+				workflowRuleElimArr.push(workflowRuleArr[i].RECEIPT_AGE);
+				
+				nestedWorkflowRuleArr.push(workflowRuleElimArr);
+				workflowRuleElimArr = [];
+			}
+			
+			var dateDiff = new Date(furthestReceiptDate) - new Date(claimsSubmissionDate);
+			dateDiff = dateDiff/86400000;
+
+			//dateDiff receipt age from submission date
+			//claimsOverallRisk; risk either L H or empty
+			//highestTotalExpAmt; highest amt
+			//empCCVal; whether match, not match or empty
+			//check if i need to check any of these values for rules
+
+			if(claimsCC != empCC){
+				empCCVal = "NE";
+			}else if (claimsCC == empCC){
+				empCCVal = "EQ";
+			}else{
+				empCCVal = "";
+			}
+			var threshholdVal, receiptAge;
+			var empCCVal = "";
+			let riskLevelWorkflowCodeArr = [];
+			let thresholdWorkflowCodeArr = [];
+			let empCCWorkflowCodeArr = [];
+			let receiptAgingWorkflowCodeArr = [];
+
+			for(var i = 0; i < nestedWorkflowRuleArr.length; i++){
+				if(claimsOverallRisk == nestedWorkflowRuleArr[i][3]){
+					riskLevelWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+				}
+
+				if(empCCVal == nestedWorkflowRuleArr[i][2]){
+					empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+				}
+
+				if(highestTotalExpAmt > nestedWorkflowRuleArr[i][0]){
+					threshholdVal = "GT";
+				}else if(highestTotalExpAmt < nestedWorkflowRuleArr[i][0]){
+					threshholdVal = "LE";
+				}else{
+					threshholdVal = "";
+				}
+
+				if(threshholdVal == nestedWorkflowRuleArr[i][5]){
+					thresholdWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+				}
+
+				if(empCCVal == nestedWorkflowRuleArr[i][2]){
+					empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+				}
+
+				if(dateDiff > nestedWorkflowRuleArr[i][1]){
+					receiptAge = "GT";
+				}else if(dateDiff < nestedWorkflowRuleArr[i][1]){
+					receiptAge = "LE";
+				}else{
+					receiptAge = "";
+				}
+
+				if(receiptAge == nestedWorkflowRuleArr[i][6]){
+					receiptAgingWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+				}
 			}
 
+			const commonWorkflowCode = [...new Set(riskLevelWorkflowCodeArr)].filter(item => 
+				new Set(thresholdWorkflowCodeArr).has(item) && new Set(empCCWorkflowCodeArr).has(item) && new Set(receiptAgingWorkflowCodeArr).has(item)
+			);
+
+			
+			console.log(riskLevelWorkflowCodeArr);
+			console.log(thresholdWorkflowCodeArr);
+			console.log(empCCWorkflowCodeArr);
+			console.log(receiptAgingWorkflowCodeArr);
+			console.log("\n");
+			console.log(commonWorkflowCode[0]);
+			//get approver levels and approvers
+			var workflowStepURL = "/odata/v4/EmployeeSrv/ZWORKFLOW_STEP?$filter=WORKFLOW_TYPE%20eq%20'CLM'%20and%20WORKFLOW_CODE%20eq%20'" + commonWorkflowCode[0]  + "'";
+			const workflowStepRes = await fetch(workflowStepURL, { headers: { "Accept": "application/json" } });
+			if (!workflowStepRes.ok) throw new Error(`HTTP ${workflowStepRes.status} ${workflowStepRes.statusText}`);
+			const workflowStepData = await workflowStepRes.json();
+			const stringifyworkflowStep = JSON.stringify(workflowStepData.value);
+			var parseworkflowStep = JSON.parse(stringifyworkflowStep);
+			var workflowName =  parseworkflowStep[0].WORKFLOW_NAME;
+			var workflowApprLvl =  parseworkflowStep[0].WORKFLOW_APPROVAL_LEVELS;
+			workflowApprLvl = 3;
+			workflowName = "CXO-Budget-HOS"
+			if(workflowApprLvl > 1){
+				var workflowApprStep = workflowName.split("-");
+			}
+
+			for(var i = 0; i < workflowApprStep.length; i++){
+				console.log(workflowApprStep[i]);
+			}
+			let apprEmpID = [];
+			for(var i = 0; i < approverDetailsDataArr.length; i++){
+				for(var x = 0; x < workflowApprStep.length; x++){
+					if(workflowApprStep[x] == approverDetailsDataArr[i].ROLE){
+						apprEmpID.push(approverDetailsDataArr[i].EEID)
+					}
+				}
+			}
+			let subEmpID = [];
+			//search for substitute
+			for(var i = 0; i < apprEmpID.length; i++){
+				var subURL = "/odata/v4/EmployeeSrv/ZSUBSTITUTION_RULES?$filter=USER_ID%20eq%20'" + apprEmpID[i] +  "'%20and%20VALID_FROM%20le%20'" + claimsSubmissionDate + "'%20and%20VALID_TO%20le%20'" +  claimsSubmissionDate + "'";
+				const subRes = await fetch(subURL, { headers: { "Accept": "application/json" } });
+				if (!subRes.ok) throw new Error(`HTTP ${subRes.status} ${subRes.statusText}`);
+				const subData = await subRes.json();
+				const stringifySubData = JSON.stringify(subData.value);
+				var parseSubData = JSON.parse(stringifySubData);
+				if(parseSubData[0] != null && parseSubData[0] != "" && parseSubData[0] != undefined){
+					parseSubData[0].SUBSTITUTE_ID = "test";
+					subEmpID.push(parseSubData[0].SUBSTITUTE_ID);
+				}else{
+					subEmpID.push(null);
+				}
+			}
+			
+			console.log(apprEmpID);
+			console.log(subEmpID);
+			//create ZAPPROVER DETAILS
+			console.log("this", this);
+			var oModel = this.getView().getModel();
+			var oBindList = oModel.bindList("/ZAPPROVER_DETAILS_CLAIMS");
+
+			var oContext = oBindList.create({
+				"CLAIM_ID": claimID,
+				"LEVEL": level,
+				"APPROVER_ID": apprEmpID[0],
+				"SUBSTITUTE_APPROVER_ID": subEmpID[0],
+				"STATUS": "PENDING"
+			});
+
+			oContext.created().then(function (){
+				console.log("yes")
+			}).catch(function(oError){
+				console.log(oError);
+			})	
 
         },
         onPARApproverDetermination: async function (PARID){
