@@ -87,6 +87,7 @@ sap.ui.define([
 			// Claim Item Model
 			var oClaimItemModel = new JSONModel({
 				"is_new": false,
+				"screen_array": [],
 				"claim_item": {
 					"claim_id": null,
 					"claim_sub_id": null,
@@ -300,6 +301,7 @@ sap.ui.define([
 		},
 
 		onCreateClaim_ClaimSummary: async function (indexNumber) {
+			BusyIndicator.show(0);
 			// show claim details screen
 			var oPage = this.byId("page_claimsubmission");
 			var oClaimItemFragment = this._getFormFragment("claimsubmission_summary_claimitem");
@@ -319,6 +321,7 @@ sap.ui.define([
 				this._onInit_ClaimDetails_Input();
 				this.getView().getModel("claimitem_input").setProperty("/is_new", true);
 			}
+			BusyIndicator.hide(0);
 		},
 
 		onScanReceipt_ClaimSummary: function () {
@@ -642,6 +645,11 @@ sap.ui.define([
 			await this.getFieldVisibility_ClaimTypeItem();
 			// set claim detail selection values
 			this._setClaimDetailSelectionMaster();
+
+			// check if provided/entitled meals is visible
+			if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
+				this.byId("input_claimdetails_input_amount").setEditable(false);
+			}
 		},
 
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
@@ -952,6 +960,306 @@ sap.ui.define([
 			MessageToast.show(this._getTexti18n("msg_claiminput_attachment_upload_mismatch"));
 		},
 		
+		onChange_ClaimDetails_DateRange: async function (startdate, enddate) {
+			// reset claim detail amounts
+			this._resetPerDiem();
+
+			var startDateValue = this.byId(startdate).getValue();
+			var endDateValue = this.byId(enddate).getValue();
+			// check for missing value
+			if (!startDateValue || !endDateValue) {
+				return;
+			}
+			// check if end date earlier than start date
+			var startDateUnix = new Date(startDateValue).valueOf();
+			var endDateUnix = new Date(endDateValue).valueOf();
+			if (startDateUnix > endDateUnix) {
+				return;
+			}
+			else {
+				// calculate per diem details
+				if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
+					await this._calculatePerDiem();
+				}
+			}
+		},
+
+		onChange_ClaimDetails_TimeRange: async function (startdate, starttime, enddate, endtime) {
+			// reset claim detail amounts
+			this._resetPerDiem();
+			
+			// check for missing value
+			var startDateValue = this.byId(startdate).getValue();
+			var endDateValue = this.byId(enddate).getValue();
+			if (!startDateValue || !endDateValue) {
+				return;
+			}
+			var startTimeValue = this.byId(starttime).getDateValue();
+			var endTimeValue = this.byId(endtime).getDateValue();
+			if (!startTimeValue || !endTimeValue) {
+				return;
+			}
+			// check if end datetime earlier than start datetime
+			var startDateUnix = new Date(startDateValue).valueOf();
+			startDateUnix = startDateUnix + new Date(startTimeValue).valueOf()
+			var endDateUnix = new Date(endDateValue).valueOf();
+			endDateUnix = endDateUnix + new Date(endTimeValue).valueOf()
+			if (startDateUnix > endDateUnix) {
+				return;
+			}
+			else {
+				// calculate per diem details
+				if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
+					await this._calculatePerDiem();
+				}
+			}
+		},
+
+		_resetPerDiem: function () {
+			// reset claim detail amounts
+			if (this.byId("input_claimdetails_input_travel_duration_day").getVisible()) {
+				this.byId("input_claimdetails_input_travel_duration_day").setValue("");
+			}
+			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
+				this.byId("input_claimdetails_input_travel_duration_hour").setValue("");
+			}
+			if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
+				this.byId("input_claimdetails_input_entitled_breakfast").setValue("");
+			}
+			if (this.byId("input_claimdetails_input_entitled_lunch").getVisible()) {
+				this.byId("input_claimdetails_input_entitled_lunch").setValue("");
+			}
+			if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
+				this.byId("input_claimdetails_input_entitled_dinner").setValue("");
+			}
+		},
+
+		onSelect_ClaimDetails_Region: async function () {
+			await this._calculatePerDiem();
+		},
+
+		_calculatePerDiem: async function () {
+			// check date/time values to be used for calculation
+			//// Start Date/Start Time/End Date/End Time
+			if (this.byId("datepicker_claimdetails_input_startdate").getVisible()) {
+				var startDate = "datepicker_claimdetails_input_startdate";
+				var startTime = "timepicker_claimdetails_input_starttime";
+				var endDate = "datepicker_claimdetails_input_enddate";
+				var endTime = "timepicker_claimdetails_input_endtime";
+			}
+			if (this.byId("datepicker_claimdetails_input_trip_start_date").getVisible()) {
+				startDate = "datepicker_claimdetails_input_trip_start_date";
+				startTime = "timepicker_claimdetails_input_trip_starttime";
+				endDate = "datepicker_claimdetails_input_trip_end_date";
+				endTime = "timepicker_claimdetails_input_trip_endtime";
+			}
+			// check if required fields have values
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (
+				( this.byId(startDate).getVisible() && !this.byId(startDate).getValue() ) ||
+				( this.byId(startTime).getVisible() && !this.byId(startTime).getValue() ) ||
+				( this.byId(endDate).getVisible() && !this.byId(endDate).getValue() ) ||
+				( this.byId(endTime).getVisible() && !this.byId(endTime).getValue() ) ||
+				( this.byId("select_claimdetails_input_region").getVisible() && !oInputModel.getProperty("/claim_item/region") )
+			) {
+				return;
+			}
+			// calculate travel duration (days/hours)
+			var startDateValue = this.byId(startDate).getValue();
+			var endDateValue = this.byId(endDate).getValue();
+			var startTimeValue = this.byId(startTime).getDateValue();
+			var endTimeValue = this.byId(endTime).getDateValue();
+			var startDateUnix = new Date(startDateValue).valueOf();
+			startDateUnix = startDateUnix + new Date(startTimeValue).valueOf()
+			var endDateUnix = new Date(endDateValue).valueOf();
+			endDateUnix = endDateUnix + new Date(endTimeValue).valueOf()
+
+			if (this.byId("input_claimdetails_input_travel_duration_day").getVisible()) {
+				var travelDays = (endDateUnix - startDateUnix) / 86400000;
+				this.byId("input_claimdetails_input_travel_duration_day").setValue(travelDays);
+			}
+			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
+				var travelHours = (endDateUnix - startDateUnix) / 3600000;
+				this.byId("input_claimdetails_input_travel_duration_hour").setValue(travelHours);
+			}
+
+			// get details from per diem table
+			BusyIndicator.show(0);
+			const oModel = this.getOwnerComponent().getModel();
+			const oListBinding = oModel.bindList("/ZPERDIEM_ENT", null, null, [
+				new sap.ui.model.Filter("LOCATION", "EQ", oInputModel.getProperty("/claim_item/region"))
+				// new sap.ui.model.Filter("EFFECTIVE_START_DATE", "LE", this.byId(startDate).getValue()),
+				// new sap.ui.model.Filter("EFFECTIVE_END_DATE", "GE", this.byId(endDate).getValue())
+			]);
+
+			try {
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					// get employee personal grade
+					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+					var empGrade = oClaimSubmissionModel.getProperty("/emp_master/grade");
+
+					// get amount from oData
+					const oData = aContexts[0].getObject();
+					var entBfast = parseFloat(oData.AMOUNT) * 0.2;
+					var entLunch = parseFloat(oData.AMOUNT) * 0.4;
+					var entDinner = parseFloat(oData.AMOUNT) * 0.4;
+
+					// assign entitled meal values
+					if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
+						this.byId("input_claimdetails_input_entitled_breakfast").setValue(entBfast);
+					}
+					if (this.byId("input_claimdetails_input_entitled_lunch").getVisible()) {
+						this.byId("input_claimdetails_input_entitled_lunch").setValue(entLunch);
+					}
+					if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
+						this.byId("input_claimdetails_input_entitled_dinner").setValue(entDinner);
+					}
+					this.onChange_ClaimDetails_ProvidedMeals();
+				} else {
+					console.warn("No entitled meal values found");
+					MessageToast.show("No entitled meal values found");
+				}
+				BusyIndicator.hide();
+			} catch (oError) {
+				console.error("Error fetching entitled meal values", oError);
+				MessageToast.show("Error fetching entitled meal values", oError);
+				BusyIndicator.hide();
+			}
+		},
+
+		onChange_ClaimDetails_ProvidedMeals: function () {
+			var provBfast = this.byId("input_claimdetails_input_provided_breakfast");
+			var provLunch = this.byId("input_claimdetails_input_provided_lunch");
+			var provDinner = this.byId("input_claimdetails_input_provided_dinner");
+			var entBfast = this.byId("input_claimdetails_input_entitled_breakfast");
+			var entLunch = this.byId("input_claimdetails_input_entitled_lunch");
+			var entDinner = this.byId("input_claimdetails_input_entitled_dinner");
+			var amount = 0.0;
+
+			// calculate total amount
+			if (this.byId("input_claimdetails_input_amount").getVisible()) {
+				this.byId("input_claimdetails_input_amount").setValue(amount);
+			}
+			else {
+				return;
+			}
+			//// breakfast
+			if (parseFloat(entBfast.getValue()) > 0.0 && parseFloat(provBfast.getValue()) > parseFloat(entBfast.getValue())) {
+				amount = amount + parseFloat(entBfast.getValue());
+				this.byId("input_claimdetails_input_amount").setValue(amount);
+			}
+			else if (!isNaN(parseFloat(provBfast.getValue()))) {
+				amount = amount + parseFloat(provBfast.getValue());
+				this.byId("input_claimdetails_input_amount").setValue(amount);
+			}
+			//// lunch
+			if (parseFloat(entLunch.getValue()) > 0.0 && parseFloat(provLunch.getValue()) > parseFloat(entLunch.getValue())) {
+				amount = amount + parseFloat(entLunch.getValue());
+				this.byId("input_claimdetails_input_amount").setValue(amount);
+			}
+			else if (!isNaN(parseFloat(provLunch.getValue()))) {
+				amount = amount + parseFloat(provLunch.getValue());
+				this.byId("input_claimdetails_input_amount").setValue(amount);
+			}
+			//// dinner
+			if (parseFloat(entDinner.getValue()) > 0.0 && parseFloat(provDinner.getValue()) > parseFloat(entDinner.getValue())) {
+				amount = amount + parseFloat(entDinner.getValue());
+				this.byId("input_claimdetails_input_amount").setValue(amount);
+			}
+			else if (!isNaN(parseFloat(provDinner.getValue()))) {
+				amount = amount + parseFloat(provDinner.getValue());
+				this.byId("input_claimdetails_input_amount").setValue(amount);
+			}
+		},
+
+		/* =========================================================
+		 * Mileage dialog (Fragment) — use a dedicated controller - For Google Maps
+		 * ========================================================= */
+
+		// <<< CHANGED: use the new lazy loader instead of openHelloDialog()
+		onValueHelpRequest: function () {
+			this._openMileageFrag(); // <<< CHANGED
+		},
+
+		// <<< ADDED: lazy-load the fragment + its own controller
+		_openMileageFrag: function () {
+			var oView = this.getView();
+
+			if (!this._pMileageFrag) {
+				this._pMileageFrag = new Promise((resolve, reject) => {
+
+					// Load the fragment controller class dynamically
+					sap.ui.require(["claima/controller/mileagecalculator.controller"], (MileageFragController) => {
+						try {
+							var oFragController = new MileageFragController();
+
+							// Pass host + fragment id prefix so Fragment.byId works inside the controller
+							oFragController.setHost(this, oView.getId());
+
+							// Load the fragment with id prefix
+							Fragment.load({
+								id: oView.getId(), // critical for byId() to resolve fragment controls
+								name: "claima.fragment.mileagecalculator",
+								controller: oFragController
+							}).then((oDialog) => {
+								// models + lifecycle
+								oView.addDependent(oDialog);
+
+								// Submit handler: push values back to your form inputs
+								oFragController.setSubmitHandler(function (res) {
+									// res = { from, to, km }
+
+									// Put into From input
+									var oFrom = this.byId("input_claimdetails_input_from_location");
+									if (oFrom) {
+										oFrom.setValue(res.from);
+										var b = oFrom.getBinding("value");
+										if (b) {
+											var m = b.getModel(), p = b.getPath();
+											m.setProperty(p.charAt(0) === "/" ? p : "/" + p, res.from);
+										}
+									}
+
+									// Put into To input
+									var oTo = this.byId("input_claimdetails_input_to_location");
+									if (oTo) {
+										oTo.setValue(res.to);
+										var b2 = oTo.getBinding("value");
+										if (b2) {
+											var m2 = b2.getModel(), p2 = b2.getPath();
+											m2.setProperty(p2.charAt(0) === "/" ? p2 : "/" + p2, res.to);
+										}
+									}
+
+									// Optional: push km to your model/input if you want
+									var oKm = this.byId("input_claimdetails_input_km");
+									if (oKm && oKm.getVisible()) { oKm.setValue(res.km); }
+
+								}.bind(this));
+
+								// Cache references
+								this._mileageFrag = { controller: oFragController, dialog: oDialog };
+								resolve(this._mileageFrag);
+							}).catch(reject);
+
+						} catch (e) {
+							reject(e);
+						}
+					}, reject);
+				});
+			}
+
+			// Open the dialog and prefill
+			this._pMileageFrag.then(function (ctx) {
+				var sFrom = (this.byId("input_claimdetails_input_from_location") && this.byId("input_claimdetails_input_from_location").getValue()) || "";
+				var sTo = (this.byId("input_claimdetails_input_to_location") && this.byId("input_claimdetails_input_to_location").getValue()) || "";
+				ctx.controller.prefill({ from: sFrom, to: sTo });
+				ctx.controller.open();
+			}.bind(this));
+		},
+
 		_validDateRange: function (startdate, enddate) {
 			var startDateValue = this.byId(startdate).getValue();
 			var endDateValue = this.byId(enddate).getValue();
@@ -979,6 +1287,11 @@ sap.ui.define([
 			if (oClaimItemFragment) {
 				// disable item visibility
 				this._setAllControlsVisible(false);
+
+				// check if amount is editable
+				if (!this.byId("input_claimdetails_input_amount").getEditable()) {
+					this.byId("input_claimdetails_input_amount").setEditable(true);
+				}
 
 				oClaimItemFragment.then(function (oVBox) {
 					oPage.removeContent(oVBox);
@@ -1455,6 +1768,7 @@ sap.ui.define([
 				const aFieldIds = oData.FIELD.replace(/[\[\]\s]/g, "").split(",");
 
 				if (aFieldIds != []) {
+					oInputModel.setProperty("/screen_array", aFieldIds);
 					this._setAllControlsVisible(false);
 					aFieldIds.forEach(id => {
 						const control = this._resolveControl(id, "claimsubmission_claimdetails_input");
