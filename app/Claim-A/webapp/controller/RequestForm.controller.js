@@ -1395,7 +1395,7 @@ sap.ui.define([
 							uri: 'cust_EPF_CLAIM_ATTACHMENTS'
 						},
 						Claim_Sub_ID: reqSubID,
-						cust_EPF_CLAIM_ATTACHMENTS_Parent_Claim_ID: reqI,
+						cust_EPF_CLAIM_ATTACHMENTS_Parent_Claim_ID: reqID,
 
 						cust_attachment1Nav: {
 							__metadata: {
