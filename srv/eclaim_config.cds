@@ -2318,7 +2318,19 @@ annotate service.ZPERDIEM_ENT with @(
                 Value            : AMOUNT,
                 ![@UI.Importance]: #High,
                 Label            : 'Amount'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ITEM_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type Item ID'
+            }                        
         ]
     }
 );
