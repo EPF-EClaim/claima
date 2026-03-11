@@ -49,7 +49,7 @@ sap.ui.define([
                     fileName,
                     moduleCategory: "UNSPECIFIED",
                     module: "DEFAULT",
-                    userId: "SFAPI",
+                    userId: "SFAPI@EPFSFDEV",
                     viewable: true,
                     searchable: true,
                     fileContent: fileBase64   // base64 only, no "data:*;base64," prefix
@@ -58,6 +58,7 @@ sap.ui.define([
 
             if (!res.ok) {
                 const errText = await res.text().catch(() => "");
+                console.log("Body:", await res.text());
                 throw new Error(`Attachment POST failed: ${res.status} ${res.statusText} ${errText}`);
             }
 

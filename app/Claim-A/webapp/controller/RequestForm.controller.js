@@ -161,7 +161,7 @@ sap.ui.define([
 				await this._replaceContentAt(oPage, 2, oApproval);
 			}
 
-			this._getReqModel().setProperty("/view", state);
+			PARequestSharedFunction._determineCurrentState(this, this._getReqModel());
 		},
 
 		/* =========================================================
