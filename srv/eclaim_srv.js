@@ -159,8 +159,6 @@ module.exports = (srv) => {
       operationHidden = true;
     } else if (user_type === "DTD Admin" || user_type === "Super Admin") {
       operationHidden = false;
-    } else if (user_type === "Super Admin") {
-      operationHidden = false;
     }
 
     return {
