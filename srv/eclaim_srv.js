@@ -75,7 +75,7 @@ module.exports = (srv) => {
       console.log("Derived email (local):", email);
 
       // 2. Query your ZEMP_MASTER table using your Email column name
-      const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: 'nur.ain.mohamad@my.ey.com' });  // <— use your real column name here
+      const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });  // <— use your real column name here
       console.log("Result", result);
       return {
         id: email,
@@ -108,7 +108,7 @@ module.exports = (srv) => {
       req.user?.id ||
       "";
     const email = String(emailFromToken).trim().toLowerCase();
-    const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: 'nur.ain.mohamad@my.ey.com' });
+    const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
     const user_type = result?.USER_TYPE;
 
     let operationHidden = true;
@@ -127,39 +127,96 @@ module.exports = (srv) => {
 
   srv.on('budgetchecking', async (req) => {
     const { ZBUDGET } = srv.entities;
-    var { input } = req.data;
-    const condition = {};
-    let message;
+    const { budget } = req.data;
 
-//  if (entry.YEAR != null) {
-//             condition.YEAR = entry.YEAR;
-//           }
-//           if (entry.INTERNAL_ORDER != null) {
-//             condition.INTERNAL_ORDER = entry.INTERNAL_ORDER;
-//           }
-//           if (entry.COMMITMENT_ITEM != null) {
-//             condition.COMMITMENT_ITEM = entry.COMMITMENT_ITEM;
-//           }
-//           if (entry.MATERIAL_GROUP != null) {
-//             condition.MATERIAL_GROUP = entry.MATERIAL_GROUP;
-//           }
-//           if (entry.FUND_CENTER != null) {
-//             condition.FUND_CENTER = entry.FUND_CENTER;
-//           }
-    //   return await cds.tx(async (tx) => {
-    //     try {
-    //       input.forEach(entry => {
-    //       } )
-    //     })
-    //   }
-    // )
-  })
+    const tx = cds.tx(req);
+    const results = [];
 
-  // let budget = await tx.run(SELECT.one.from(ZBUDGET).where(condition).forUpdate());
-  // let check = entry.AMOUNT < budget?.BUDGET_BALANCE ? true : false;
-  // })
-  //     }
-  // }))
+    try {
+      for (const entry of budget) {
+        var condition = {};
+
+        if (entry.YEAR) condition.YEAR = entry.YEAR;
+        if (entry.INTERNAL_ORDER) condition.INTERNAL_ORDER = entry.INTERNAL_ORDER;
+        if (entry.FUND_CENTER) condition.FUND_CENTER = entry.FUND_CENTER;
+        if (entry.MATERIAL_GROUP) condition.MATERIAL_GROUP = entry.MATERIAL_GROUP;
+
+        const budgetRecord = await tx.run(
+          SELECT.one.from(ZBUDGET)
+            .where(condition)
+            .forUpdate()
+        );
+
+        if (!budgetRecord) {
+          results.push({
+            YEAR: entry.YEAR,
+            INTERNAL_ORDER: entry.INTERNAL_ORDER,
+            FUND_CENTER: entry.FUND_CENTER,
+            MATERIAL_GROUP: entry.MATERIAL_GROUP,
+            AMOUNT: entry.AMOUNT,
+            PREV_CONSUMED: null,
+            NEW_CONSUMED: null,
+            PREV_ACTUAL: null,
+            NEW_ACTUAL: null,
+            PREV_COMMITMENT: null,
+            NEW_COMMITMENT: null,
+            STATUS: 'RECORD NOT FOUND'
+          });
+          continue;
+        }
+
+        const bSufficient = entry.AMOUNT <= budgetRecord.BUDGET_BALANCE;
+
+        if (bSufficient) {
+          let newCommitment = parseFloat((budgetRecord.COMMITMENT - entry.AMOUNT).toFixed(2));
+          let newConsumed = parseFloat((budgetRecord.CONSUMED - entry.AMOUNT).toFixed(2));
+          let newActual = parseFloat((budgetRecord.ACTUAL - entry.AMOUNT).toFixed(2));
+          let newBudgetBalance = parseFloat((budgetRecord.BUDGET_BALANCE - entry.AMOUNT).toFixed(2));
+
+          await tx.run(
+            UPDATE(ZBUDGET)
+              .set({ CONSUMED: newConsumed, COMMITMENT: newCommitment, ACTUAL: newActual, BUDGET_BALANCE: newBudgetBalance })
+              .where(condition)
+          );
+          results.push({
+            YEAR: entry.YEAR,
+            INTERNAL_ORDER: entry.INTERNAL_ORDER,
+            FUND_CENTER: entry.FUND_CENTER,
+            MATERIAL_GROUP: entry.MATERIAL_GROUP,
+            AMOUNT: entry.AMOUNT,
+            PREV_CONSUMED: budgetRecord.CONSUMED,
+            NEW_CONSUMED: newConsumed,
+            PREV_ACTUAL: budgetRecord.ACTUAL,
+            NEW_ACTUAL: newActual,
+            PREV_COMMITMENT: budgetRecord.COMMITMENT,
+            NEW_COMMITMENT: newCommitment,
+            PREV_BUDGETBALANCE: budgetRecord.BUDGET_BALANCE,
+            NEW_BUDGETBALANCE: newBudgetBalance,
+            STATUS: 'Success'
+          });
+        } else {
+          results.push({
+            YEAR: entry.YEAR,
+            INTERNAL_ORDER: entry.INTERNAL_ORDER,
+            FUND_CENTER: entry.FUND_CENTER,
+            MATERIAL_GROUP: entry.MATERIAL_GROUP,
+            AMOUNT: entry.AMOUNT,
+            PREV_CONSUMED: budgetRecord.CONSUMED,
+            NEW_CONSUMED: budgetRecord.CONSUMED,
+            PREV_ACTUAL: budgetRecord.ACTUAL,
+            NEW_ACTUAL: budgetRecord.ACTUAL,
+            PREV_COMMITMENT: budgetRecord.COMMITMENT,
+            NEW_COMMITMENT: budgetRecord.COMMITMENT,
+            STATUS: 'Failed to update. Insufficient balance'
+          });
+        }
+      }
+
+      return { message: JSON.stringify(results) };
+    } catch (error) {
+      req.error(400, `Budget checking failed: ${error.message}`);
+    }
+  });
 
 
 
