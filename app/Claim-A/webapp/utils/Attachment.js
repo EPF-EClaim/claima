@@ -1,23 +1,23 @@
 sap.ui.define([
-	"sap/ui/model/Filter",
-	"sap/ui/model/FilterOperator",
-	"sap/ui/model/Sorter",
-	"sap/m/MessageToast",
+    "sap/ui/model/Filter",
+    "sap/ui/model/FilterOperator",
+    "sap/ui/model/Sorter",
+    "sap/m/MessageToast",
 ], function (Filter, FilterOperator, Sorter, MessageToast) {
     "use strict";
 
     return {
 
-		/* =========================================================
-		* Attachments Upload
-		* ======================================================= */
+        /* =========================================================
+        * Attachments Upload
+        * ======================================================= */
 
-		async fetchCsrfToken() {
+        async fetchCsrfToken() {
             const res = await fetch("/SuccessFactors_API/odata/v2/Attachment?$top=1", {
                 method: "GET",
                 headers: {
-                "x-csrf-token": "Fetch",
-                "Accept": "application/json"
+                    "x-csrf-token": "Fetch",
+                    "Accept": "application/json"
                 },
                 credentials: "include"
             });
@@ -58,6 +58,9 @@ sap.ui.define([
 
             if (!res.ok) {
                 const errText = await res.text().catch(() => "");
+                console.log("Status:", res.status);
+                console.log("Headers:", [...res.headers.entries()]);
+                console.log("Body:", await res.text());
                 throw new Error(`Attachment POST failed: ${res.status} ${res.statusText} ${errText}`);
             }
 
@@ -66,7 +69,7 @@ sap.ui.define([
             const attachmentNumber = id.replace(/.*\('?(.*?)'?\).*/, "$1");
             return attachmentNumber;
         }
-        
+
 
 
     };
