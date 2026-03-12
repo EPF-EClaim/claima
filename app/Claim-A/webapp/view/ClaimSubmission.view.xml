@@ -18,7 +18,7 @@
 					<!-- Reject -->
 					<Button
 						id="button_claimapprover_reject"
-						press="onReject_ClaimApprover"
+						press="onAction_ClaimSubmission_Toolbar('Reject')"
 						text="{i18n>button_claimapprover_reject}"
 						visible="false"
 					/>
@@ -26,16 +26,17 @@
 					<!-- Back to Employee -->
 					<Button
 						id="button_claimapprover_backtoemp"
-						press="onBackToEmployee_ClaimApprover"
+						press="onAction_ClaimSubmission_Toolbar('Back to Employee')"
 						text="{i18n>button_claimapprover_backtoemp}"
 						visible="false"
 					/>
 
-					<!-- Reject -->
+					<!-- Approve -->
 					<Button
 						id="button_claimapprover_approve"
-						press="onApprove_ClaimApprover"
+						press="onAction_ClaimSubmission_Toolbar('Approve')"
 						text="{i18n>button_claimapprover_approve}"
+						type="Emphasized"
 						visible="false"
 					/>
 
