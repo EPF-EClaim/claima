@@ -41,13 +41,13 @@ service eclaim_srv {
         STATUS             : String;
     }
 
-    action   batchCreateEmployee(employees: many ZEMP_MASTER)      returns Response;
+    action   batchCreateEmployee(employees: many ZEMP_MASTER)          returns Response;
 
-    action   batchCreateDependent(dependents: many ZEMP_DEPENDENT) returns Response;
+    action   batchCreateDependent(dependents: many ZEMP_DEPENDENT)     returns Response;
 
-    action   batchCreateCostCenter(costcenters: many ZCOST_CENTER) returns Response;
+    action   batchCreateCostCenter(costcenters: many ZCOST_CENTER)     returns Response;
 
-    action   budgetchecking(budget: many budgetdata)               returns many BudgetResult;
+    action   budgetchecking(budget: many budgetdata)                   returns many BudgetResult;
 
     entity ZEMP_MASTER                   as projection on ECLAIM.ZEMP_MASTER;
 
@@ -180,7 +180,7 @@ service eclaim_srv {
         userId      : String;
     }
 
-    function getUserType()                                         returns UserInfo;
+    function getUserType()                                             returns UserInfo;
 
     entity ZINSURANCE_PACKAGE            as projection on ECLAIM.ZINSURANCE_PACKAGE;
 
@@ -226,11 +226,13 @@ service eclaim_srv {
 
     entity ZDB_STRUCTURE                 as projection on ECLAIM.ZDB_STRUCTURE;
 
-    function runjob()                                              returns Response;
+    function runjob()                                                  returns Response;
 
     type PreApproveClaims {
-        REQUEST_SUB_ID           : String;
+        REQUEST_ID     : String;
+        REQUEST_SUB_ID : String;
     }
-    action batchUpdatePreApproved(PreApprove: many PreApproveClaims) returns Response;
+
+    action   batchUpdatePreApproved(PreApprove: many PreApproveClaims) returns Response;
 
 };

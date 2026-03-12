@@ -316,129 +316,27 @@ module.exports = (srv) => {
       if (!PreApprove) {
         throw new Error('No Data Sent')
       }
+      const tx = cds.tx(req);
 
-      for (var entry of PreApprove); {
-        //remove dupe and empty values
-
-        // const uniqueClaimID = [...new Set(PreApprove.map(REQUEST_SUB_ID => String(REQUEST_SUB_ID).trim()).filter(Boolean))];
-
-        const tx = cds.tx(req);
-
-        // retrieve and lock data records
-        // const PreApprovedClaims = await tx.run(
-        //   SELECT.from(ZREQUEST_ITEM)
-        //     .where({ REQUEST_SUB_ID: entry })
-        //     // .columns('REQUEST_SUB_ID')
-        // );
-
-        // // if no records found
-        // if (PreApprovedClaims.length === 0) {
-        //   return req.error(404, 'No Matching Claims');
-        // }
-
-        // Filter matching and missing existing claims by id for troubleshoot
-        // const FoundClaimIDs = PreApprovedClaims.map(r => r.REQUEST_SUB_ID);
-        // const MissingClaimIDs = uniqueClaimID.filter(id => !FoundClaimIDs.includes(id));
-
-        // Set Send to SF as True (Success)
-        // const updateSendtoSF = { SEND_TO_SF: 'X' };
+      for (var entry of PreApprove) {
 
         const results = await tx.run(
-          UPDATE(ZREQUEST_ITEM).set({ SEND_TO_SF: 1 }).where({ REQUEST_SUB_ID: entry.REQUEST_SUB_ID })
+          UPDATE(ZREQUEST_ITEM).set({ SEND_TO_SF: 0 }).where({ REQUEST_ID: entry.REQUEST_ID, REQUEST_SUB_ID: entry.REQUEST_SUB_ID })
         );
-        await tx.commit();
+        
       }
-
-      
-      // console.log(PreApprovedClaims);
+      await tx.commit();
 
       const response = {
         success: true,
-        // PreApproved: PreApprovedClaims.length,
-        // Unique: [...new Set(PreApprove.map(REQUEST_SUB_ID => String(REQUEST_SUB_ID).trim()).filter(Boolean))],
         req: PreApprove,
-        entry: entry.REQUEST_SUB_ID,
-        result: PreApprove[0].REQUEST_SUB_ID
-        // updatedCount: results ?? FoundClaimIDs.length,
-        // field: SEND_TO_SF,
-        // value: 'X'
-        // ...FoundClaimIDs(MissingClaimIDs.length > 0 && {
-        //   warnings: [
-        //     `${MissingClaimIDs.length} Claim IDs were not found and skipped: ${MissingClaimIDs.join(', ')}`]
-        // })
       };
 
       req.notify(200, `Successfully updated "SEND_TO_SF" for`)
       return response;
 
-
     } catch (error) {
       req.error(400, `Fail updating record: ${error.message}`);
     }
   });
-
-  // srv.on('batchUpdatePreApproved', async (req) => {
-  //     const { ZREQUEST_ITEM } = srv.entities;
-
-  //     // check request if empty
-  //     try {
-  //       const { SubClaimID } = req.data;
-  //       if (!SubClaimID || SubClaimID.length === 0) {
-  //         throw new Error('No Data Sent')
-  //       }
-
-  //       //remove dupe and empty values
-  //       const uniqueClaimID = [...new Set(SubClaimID.map(id => String(id).trim()).filter(Boolean))];
-
-  //       const tx = cds.tx(req);
-
-  //       // retrieve and lock data records
-  //       const PreApprovedClaims = await tx.run(
-  //         SELECT.one.from(ZREQUEST_ITEM)
-  //           .where({ REQUEST_SUB_ID: { in: uniqueClaimID} })
-  //           .columns('REQUEST_SUB_ID')
-  //       );
-
-  //       // if no records found
-  //       if (PreApprovedClaims.length === 0){
-  //         return req.error(404, 'No Matching Claims');
-  //       }
-
-  //       // Filter matching and missing existing claims by id for troubleshoot
-  //       const FoundClaimIDs = PreApprovedClaims.map(r => r.REQUEST_SUB_ID);
-  //       const MissingClaimIDs = uniqueClaimID.filter(id => !FoundClaimIDs.includes(id));
-
-  //       // Set Send to SF as True (Success)
-  //       const updateSendtoSF = { [SEND_TO_SF]: 'X' };
-
-  //       const results = await tx.run(
-  //         UPDATE(RequestItems).set(updateSendtoSF).where({ REQUEST_SUB_ID: { in: FoundClaimIDs } }).into(ZREQUEST_ITEM)
-  //       );
-
-  //       const response = {
-  //         success: true,
-  //         updatedCount: results ?? FoundClaimIDs.length,
-  //         field: SEND_TO_SF,
-  //         value: 'x',
-  //         ...FoundClaimIDs(MissingClaimIDs.length > 0 && {
-  //           warnings: [
-  //             `${MissingClaimIDs.length} Claim IDs were not found and skipped: ${MissingClaimIDs.join(', ')}`]
-  //         })
-  //       };
-
-  //       req.notify(200, `Successfully updated "SEND_TO_SF" for ${FoundClaimIDs.length}`)
-  //       return response;
-
-
-  //     } catch (error) {
-  //       req.error(400, `Fail updating record: ${error.message}`);
-  //     }
-  //   });
-
-  /* const port = process.env.PORT || 5000;
-
-  app.listen(port, function () {
-    console.log('listening');
-  })
- */
 }
