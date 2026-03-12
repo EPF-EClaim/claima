@@ -228,4 +228,6 @@ service eclaim_srv {
 
     function runjob()                                              returns Response;
 
+    entity ZDISBURSEMENT_STATUS          as projection on ECLAIM.ZDISBURSEMENT_STATUS;
+
 };
