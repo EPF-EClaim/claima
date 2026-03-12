@@ -1,5 +1,6 @@
 const cds = require('@sap/cds');
 const { INSERT, UPDATE, UPSERT, SELECT, where } = require('@sap/cds/lib/ql/cds-ql');
+const { results } = require('@sap/cds/lib/utils/cds-utils');
 const express = require('express');
 const app = express();
 
@@ -238,9 +239,9 @@ module.exports = (srv) => {
       }
       //all records having sufficient balance
       //do not proceed if any of the record doesnt have sufficient amount
-      if (error === false) {  
+      if (error === false) {
 
-        for (var entry of budget) {       
+        for (var entry of budget) {
           condition = {};
 
           if (entry.YEAR) condition.YEAR = entry.YEAR;
@@ -257,7 +258,7 @@ module.exports = (srv) => {
             newBudgetBalance = round2(toNum(newBudget.CURRENT_BUDGET) - toNum(newBudget.CONSUMED));
             newActual = round2(toNum(newBudget.ACTUAL));
           } else if (entry.ACTION === "REJECT" || entry.ACTION === "APPROVE") {
-            newCommitment =  round2(toNum(newBudget.COMMITMENT) - toNum(entry.AMOUNT ));
+            newCommitment = round2(toNum(newBudget.COMMITMENT) - toNum(entry.AMOUNT));
             newConsumed = round2(toNum(newBudget.COMMITMENT) + toNum(newBudget.ACTUAL));
             newBudgetBalance = round2(toNum(newBudget.CURRENT_BUDGET) - toNum(newBudget.CONSUMED));
             newActual = entry.ACTION === "APPROVE" ? round2(toNum(newBudget.ACTUAL) + toNum(entry.AMOUNT)) : round2(toNum(newBudget.ACTUAL));
@@ -292,7 +293,7 @@ module.exports = (srv) => {
             STATUS: 'Record updated'
           });
 
-        }  
+        }
 
         await tx.commit();
 
@@ -305,13 +306,37 @@ module.exports = (srv) => {
       await tx.rollback();
       req.error(400, `Budget checking failed: ${error.message}`);
     }
-});
+  });
 
+  srv.on('batchUpdatePreApproved', async (req) => {
+    const { ZREQUEST_ITEM } = srv.entities;
+    // check request if empty
+    try {
+      const { PreApprove } = req.data;
+      if (!PreApprove) {
+        throw new Error('No Data Sent')
+      }
+      const tx = cds.tx(req);
 
-  /* const port = process.env.PORT || 5000;
+      for (var entry of PreApprove) {
 
-  app.listen(port, function () {
-    console.log('listening');
-  })
- */
+        const results = await tx.run(
+          UPDATE(ZREQUEST_ITEM).set({ SEND_TO_SF: 1 }).where({ REQUEST_ID: entry.REQUEST_ID, REQUEST_SUB_ID: entry.REQUEST_SUB_ID })
+        );
+        
+      }
+      await tx.commit();
+
+      const response = {
+        success: true,
+        req: PreApprove,
+      };
+
+      req.notify(200, `Successfully updated "SEND_TO_SF" for`)
+      return response;
+
+    } catch (error) {
+      req.error(400, `Fail updating record: ${error.message}`);
+    }
+  });
 }

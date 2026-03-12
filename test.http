@@ -1,38 +1,67 @@
-POST    http://localhost:4004/odata/v4/EmployeeSrv/budgetchecking
+POST    http://localhost:4004/odata/v4/EmployeeSrv/batchUpdatePreApproved
 Content-Type: application/json
  
-   {
-    "budget": [
-      {
-      "YEAR": "2026",
-      "INTERNAL_ORDER": "1",
-      "FUND_CENTER": "100010102", 
-      "MATERIAL_GROUP": "732002001", 
-      "COMMITMENT_ITEM": "732002",
-      "AMOUNT": 100.00, 
-      "INDICATOR": "CLM", 
-      "ACTION": "SUBMIT"
-     },
+{
+   "PreApprove": [
     {
-      "YEAR": "2026",
-      "INTERNAL_ORDER": "1",
-      "FUND_CENTER": "100010102", 
-      "MATERIAL_GROUP": "732002001", 
-      "COMMITMENT_ITEM": "732002",
-      "AMOUNT": 90, 
-      "INDICATOR": "CLM", 
-      "ACTION": "SUBMIT"
-    }
-    ,
+    "REQUEST_ID": "REQ26000000002",
+    "REQUEST_SUB_ID": "REQ26000000004"
+    },
     {
-      "YEAR": "2026",
-      "INTERNAL_ORDER": "1",
-      "FUND_CENTER": "100010105", 
-      "MATERIAL_GROUP": "732002001", 
-      "COMMITMENT_ITEM": "732002",
-      "AMOUNT": 50, 
-      "INDICATOR": "CLM", 
-      "ACTION": "SUBMIT"
+    "REQUEST_ID": "REQ26000000003",
+    "REQUEST_SUB_ID": "REQ26000000008"
+    },
+    {
+    "REQUEST_ID": "REQ2600000aaaa",
+    "REQUEST_SUB_ID": "REQ260000aaaa"  
+    },
+    {
+    "REQUEST_ID": "REQ26000000003",
+    "REQUEST_SUB_ID": "REQ26000000009"  
+    },
+    {
+    "REQUEST_ID": "REQ26000000004",
+    "REQUEST_SUB_ID": "REQ26000000010"  
     }
     ]
-   }
+}
+
+
+# POST    http://localhost:4004/odata/v4/EmployeeSrv/budgetchecking
+# Content-Type: application/json
+ 
+#    {
+#     "budget": [
+#       {
+#       "YEAR": "2026",
+#       "INTERNAL_ORDER": "1",
+#       "FUND_CENTER": "100010102", 
+#       "MATERIAL_GROUP": "732002001", 
+#       "COMMITMENT_ITEM": "732002",
+#       "AMOUNT": 100.00, 
+#       "INDICATOR": "CLM", 
+#       "ACTION": "SUBMIT"
+#      },
+#     {
+#       "YEAR": "2026",
+#       "INTERNAL_ORDER": "1",
+#       "FUND_CENTER": "100010102", 
+#       "MATERIAL_GROUP": "732002001", 
+#       "COMMITMENT_ITEM": "732002",
+#       "AMOUNT": 90, 
+#       "INDICATOR": "CLM", 
+#       "ACTION": "SUBMIT"
+#     }
+#     ,
+#     {
+#       "YEAR": "2026",
+#       "INTERNAL_ORDER": "1",
+#       "FUND_CENTER": "100010105", 
+#       "MATERIAL_GROUP": "732002001", 
+#       "COMMITMENT_ITEM": "732002",
+#       "AMOUNT": 50, 
+#       "INDICATOR": "CLM", 
+#       "ACTION": "SUBMIT"
+#     }
+#     ]
+#    }
