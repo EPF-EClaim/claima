@@ -1562,7 +1562,7 @@ sap.ui.define([
 
 						if (claimSaved) {
 							// determine claims approver
-							if (oCtx.getProperty("STATUS_ID", "PENDING")) {
+							if (oAction === 'Submit Report') {
 								var oModelAppr = this.getView().getModel();
 								ApprovalLog.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
 							}
@@ -1621,7 +1621,7 @@ sap.ui.define([
 
 					if (claimSaved) {
 						// determine claims approver
-						if (oCtx.getProperty("STATUS_ID", "PENDING")) {
+						if (oAction === 'Submit Report') {
 							var oModelAppr = this.getView().getModel();
 							ApprovalLog.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
 						}
