@@ -20,10 +20,10 @@
                 height="100%"
             >
                 <VBox>
-                    <HBox>
+                    <HBox width="80%" wrap="Wrap">
                         <Panel
-                            width="20rem"
-                            height="4rem"
+                            width="16rem"
+                            height="11rem"
                             class="sapUiSmallMarginBeginEnd sapUiMediumMarginTopBottom"
                         >
                             <HBox>
@@ -37,18 +37,20 @@
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
-                                <Title
-                                    level="H3"
-                                    text="{employee>/ZCLAIM_HEADER/$count}"
-                                    textAlign="Center"
-                                    class="sapUiSmallMarginBegin"
-                                />
                             </HBox>
+                            <Title
+                                level="H3"
+                                text="{employee>/ZCLAIM_HEADER/$count}"
+                                width="90%"
+                                textAlign="End"
+                                titleStyle="H2"
+                                class="sapUiSmallMarginBegin"
+                            />
                         </Panel>
                         <Panel
-                            width="20rem"
-                            height="4rem"
-                            class="sapUiMediumMarginBeginEnd sapUiMediumMarginTopBottom"
+                            width="16rem"
+                            height="11rem"
+                            class="sapUiSmallMarginBeginEnd sapUiMediumMarginTopBottom"
                         >
                             <HBox>
                                 <core:Icon
@@ -59,20 +61,22 @@
                                     level="H3"
                                     text="My Pre-Approval Status"
                                     textAlign="Center"
-                                    class="sapUiSmallMarginBegin"
-                                />
-                                <Title
-                                    level="H3"
-                                    text="{employee>/ZREQUEST_HEADER/$count}"
-                                    textAlign="Center"
-                                    class="sapUiSmallMarginBegin"
+                                    class="sapUiSmall   MarginBegin"
                                 />
                             </HBox>
+                            <Title
+                                level="H2"
+                                text="{employee>/ZREQUEST_HEADER/$count}"
+                                width="90%"
+                                textAlign="End"
+                                titleStyle="H2"
+                                class="sapUiSmallMarginBegin"
+                            />
                         </Panel>
                         <Panel
-                            width="20rem"
-                            height="4rem"
-                            class="sapUiMediumMarginBeginEnd sapUiMediumMarginTopBottom"
+                            width="16rem"
+                            height="11rem"
+                            class="sapUiSmallMarginBeginEnd sapUiMediumMarginTopBottom"
                         >
                             <HBox>
                                 <core:Icon
