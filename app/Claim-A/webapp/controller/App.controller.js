@@ -91,11 +91,22 @@ sap.ui.define([
 			oReqModel.user = emp_data.eeid;
 			this._getReqModel().setData(oReqModel);
 			
-			var claimID = "CLM26000000209";
-            var PARID = "REQ26000000002";
-			var oModelAppr = this.getView().getModel();
-            //ApprovalLog.onClaimsApproverDetermination(oModelAppr, claimID);
-            //ApprovalLog.onPARApproverDetermination(oModelAppr, PARID);
+			// var claimID = "CLM26000000209";
+            // var PARID = "REQ26000000002";
+			// var oModelAppr = this.getView().getModel();
+            // //ApprovalLog.onClaimsApproverDetermination(oModelAppr, claimID);
+            // ApprovalLog.onPARApproverDetermination(oModelAppr, PARID);
+			// //ApprovalLog.onSendEmail();
+		},
+		onPARTest: function(){
+			var PARID = this.byId("PARSubmissionTest").getValue();
+			var oModel = this.getView().getModel();
+			ApprovalLog.onPARApproverDetermination(oModel, PARID);
+		},
+		onClaimTest: function(){
+			var claimID = this.byId("claimSubmissionTest").getValue();
+			var oModel = this.getView().getModel();
+			ApprovalLog.onClaimsApproverDetermination(oModel, claimID);
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();

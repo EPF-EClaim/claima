@@ -80,9 +80,6 @@ sap.ui.define([
 		},
 
         onClaimsApproverDetermination: async function (oModel, claimID){
-			//test variables
-			var empID = 1900668;
-
 			// claim header
 			//var oModel = this.getView().getModel();
 			var oListBinding = oModel.bindList("/ZCLAIM_HEADER", null,null, [
@@ -91,11 +88,10 @@ sap.ui.define([
 			const aClaimHeaderContexts = await oListBinding.requestContexts();
 			const aClaimHeaderData = aClaimHeaderContexts.map(oContext => oContext.getObject());
 
-			//var empID = aData[0].EMP_ID commented for test
+			var empID = aClaimHeaderData[0].EMP_ID;
 			//var claimTypeID = aData[0].CLAIM_TYPE_ID;
 			var claimsCC = aClaimHeaderData[0].COST_CENTER;
 			var claimsAltCC = aClaimHeaderData[0].ALTERNATE_COST_CENTER;
-			var claimsRequestID = aClaimHeaderData[0].REQUEST_ID;
 			var claimsSubmissionType = aClaimHeaderData[0].SUBMISSION_TYPE;
 			var claimsSubmissionDate = aClaimHeaderData[0].SUBMITTED_DATE;
 			var claimSubmissionYear = new Date(aClaimHeaderData[0].SUBMITTED_DATE).getFullYear();
@@ -156,17 +152,16 @@ sap.ui.define([
 			const aEmpContexts = await oListBinding.requestContexts();
 			const aEmpData = aEmpContexts.map(oContext => oContext.getObject());
 
-			var departmentID =  aEmpData[0].DEP;
 			var empDept = aEmpData[0].DEP; //to set into the url
 			var empRole = aEmpData[0].ROLE;
 			var empCC = aEmpData[0].CC;
 
 			//JKEW dept = 0500000000
 			//array this. test dep id getting all emp with roles with the same dept id as claimant need to add loop to this as well
-			departmentID = 4300100000;
+			empDept = 4300100000;
 			//var oModel = this.getView().getModel();
 			var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-				new sap.ui.model.Filter({ path: "DEP", operator: "EQ", value1: departmentID }),
+				new sap.ui.model.Filter({ path: "DEP", operator: "EQ", value1: empDept }),
 				new sap.ui.model.Filter({ path: "ROLE", operator: "NE", value1: null })
 			], null);
 			const aAllEmpWithSameDepContexts = await oListBinding.requestContexts();
@@ -174,9 +169,8 @@ sap.ui.define([
 
 			//get all the workflow rules based on workflow type request type (submission type) and role. populate to array and check if there is anything that needs to be checked then pop out the ones that is not needed
 			//empRole, claimsSubmissionType, Workflow Type hardcode to CLM
-			claimsSubmissionType = "ST0001"; //for testing
 			if(empRole == null){
-				empRole = "HOS";
+				empRole = "";
 			}
 
 			if(empDept == "0500000000"){
@@ -220,7 +214,7 @@ sap.ui.define([
 			//highestTotalExpAmt; highest amt
 			//empCCVal; whether match, not match or empty
 			//check if i need to check any of these values for rules
-
+			var empCCVal;
 			if(claimsCC != empCC){
 				empCCVal = "NE";
 			}else if (claimsCC == empCC){
@@ -229,12 +223,10 @@ sap.ui.define([
 				empCCVal = "";
 			}
 			var threshholdVal, receiptAge;
-			var empCCVal = "";
 			let riskLevelWorkflowCodeArr = [];
 			let thresholdWorkflowCodeArr = [];
 			let empCCWorkflowCodeArr = [];
 			let receiptAgingWorkflowCodeArr = [];
-
 			for(var i = 0; i < nestedWorkflowRuleArr.length; i++){
 				if(claimsOverallRisk == nestedWorkflowRuleArr[i][3]){
 					riskLevelWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
@@ -243,7 +235,6 @@ sap.ui.define([
 				if(empCCVal == nestedWorkflowRuleArr[i][2]){
 					empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
 				}
-
 				if(highestTotalExpAmt > nestedWorkflowRuleArr[i][0]){
 					threshholdVal = "GT";
 				}else if(highestTotalExpAmt < nestedWorkflowRuleArr[i][0]){
@@ -251,6 +242,7 @@ sap.ui.define([
 				}else{
 					threshholdVal = "";
 				}
+
 
 				if(threshholdVal == nestedWorkflowRuleArr[i][5]){
 					thresholdWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
@@ -275,11 +267,12 @@ sap.ui.define([
 					receiptAgingWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
 				}
 			}
+
 			//filter for the only workflow code that is the same among all the rule checks
 			const commonWorkflowCode = [...new Set(riskLevelWorkflowCodeArr)].filter(item => 
 				new Set(thresholdWorkflowCodeArr).has(item) && new Set(empCCWorkflowCodeArr).has(item) && new Set(receiptAgingWorkflowCodeArr).has(item)
 			);
-			
+
 			//get approver levels and approvers
 			var oListBinding = oModel.bindList("/ZWORKFLOW_STEP", null,null, [
 				new sap.ui.model.Filter({ path: "WORKFLOW_TYPE", operator: "EQ", value1: "CLM" }),
@@ -291,8 +284,6 @@ sap.ui.define([
 			
 			var workflowName =  aWorkflowStepData[0].WORKFLOW_NAME;
 			var workflowApprLvl =  aWorkflowStepData[0].WORKFLOW_APPROVAL_LEVELS;
-			workflowApprLvl = 3;
-			workflowName = "CXO"
 			if(workflowApprLvl > 1){
 				var workflowApprStep = workflowName.split("-");
 			}else{
@@ -300,11 +291,9 @@ sap.ui.define([
 			}
 
 			let apprEmpID = [];
-			claimsAltCC = "4001";
 
 			for(var i = 0; i < workflowApprStep.length; i++){
 				for(var x = 0; x < aAllEmpWithSameDepData.length; x++){
-					//console.log(workflowApprStep[i] + approverDetailsDataArr[x].ROLE);
 					if(workflowApprStep[i] == aAllEmpWithSameDepData[x].ROLE){
 						apprEmpID.push(aAllEmpWithSameDepData[x].EEID)						
 					}else if(workflowApprStep[i] == "Budget" && x == 0){
@@ -315,19 +304,24 @@ sap.ui.define([
 						], null);
 						const aContexts = await oListBinding.requestContexts();
 						const aData = aContexts.map(oContext => oContext.getObject());
-						apprEmpID.push(aData[0].BUDGET_OWNER_ID);
+						//apprEmpID.push(aData[0].BUDGET_OWNER_ID);
+						var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+							new sap.ui.model.Filter({ path: "EMAIL", operator: "EQ", value1: aData[0].BUDGET_OWNER_ID })
+						], null);
+						const aEEIDContexts = await oListBinding.requestContexts();
+						const aEEIDData = aEEIDContexts.map(oContext => oContext.getObject());
+						apprEmpID.push(aEEIDData[0].EEID);
 					}
 				}
 			}
-
 			let subEmpID = [];
 			//search for substitute
 			for(var i = 0; i < apprEmpID.length; i++){
-
+				
 				var oListBinding = oModel.bindList("/ZSUBSTITUTION_RULES", null,null, [
 					new sap.ui.model.Filter({ path: "USER_ID", operator: "EQ", value1: apprEmpID[i] }),
 					new sap.ui.model.Filter({ path: "VALID_FROM", operator: "LE", value1: claimsSubmissionDate }),
-					new sap.ui.model.Filter({ path: "VALID_TO", operator: "LE", value1: claimsSubmissionDate })
+					new sap.ui.model.Filter({ path: "VALID_TO", operator: "GE", value1: claimsSubmissionDate })
 					
 				], null);
 				const aSubEmpContexts = await oListBinding.requestContexts();
@@ -339,7 +333,7 @@ sap.ui.define([
 					subEmpID.push(null);
 				}
 			}
-			
+
 			//create ZAPPROVER DETAILS (remove the comments when pushing to main)
 			var oBindList = oModel.bindList("/ZAPPROVER_DETAILS_CLAIMS");
 
@@ -352,19 +346,77 @@ sap.ui.define([
 					"STATUS": "'STAT02'"
 				});
 
-				oContext.created().then(function (){
+				oContext.created().then(async function (){
 					console.log("success")
+					if(i == 0){
+						var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+							new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: apprEmpID[0] })
+						], null);
+						const aApprNameContexts = await oListBinding.requestContexts();
+						const aApprNameData = aApprNameContexts.map(oContext => oContext.getObject());
+
+						var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+							new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: empID })
+						], null);
+						const aClaimantNameContexts = await oListBinding.requestContexts();
+						const aClaimantNameData = aClaimantNameContexts.map(oContext => oContext.getObject());
+
+						var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+							new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: apprEmpID[1] })
+						], null);
+						const aNextApprNameContexts = await oListBinding.requestContexts();
+						const aNextApprNameData = aNextApprNameContexts.map(oContext => oContext.getObject());
+
+						var oListBinding = oModel.bindList("/ZSUBMISSION_TYPE", null,null, [
+							new sap.ui.model.Filter({ path: "SUBMISSION_TYPE_ID", operator: "EQ", value1: claimsSubmissionType })
+						], null);
+						const aSubmissionTypeNameContexts = await oListBinding.requestContexts();
+						const aSubmissionTypeNameData = aSubmissionTypeNameContexts.map(oContext => oContext.getObject());
+
+						if(subEmpID[0] != null){
+
+							var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+							new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: subEmpID[0] })
+							], null);
+							const aApprNameContexts = await oListBinding.requestContexts();
+							const aApprNameData = aApprNameContexts.map(oContext => oContext.getObject());
+
+							var payload ={
+								"ApproverName":aApprNameData[0].NAME, 
+								"SubmissionDate":claimsSubmissionDate, 
+								"ClaimantName":aClaimantNameData[0].NAME, 
+								"ClaimType":aSubmissionTypeNameData[0].SUBMISSION_TYPE_DESC, 
+								"ClaimID":claimID, 
+								"RecipientName":aApprNameData[0].NAME, 
+								"Action": "Notify", 
+								"ReceiverEmail":aApprNameData[0].EMAIL, 
+								"NextApproverName" : aNextApprNameData[0].NAME 
+							}
+						}else{
+							var payload ={
+								"ApproverName":aApprNameData[0].NAME, 
+								"SubmissionDate":claimsSubmissionDate, 
+								"ClaimantName":aClaimantNameData[0].NAME, 
+								"ClaimType":aSubmissionTypeNameData[0].SUBMISSION_TYPE_DESC, 
+								"ClaimID":claimID, 
+								"RecipientName":aApprNameData[0].NAME, 
+								"Action": "Notify", 
+								"ReceiverEmail":aApprNameData[0].EMAIL, 
+								"NextApproverName" : aNextApprNameData[0].NAME 
+							}
+						}
+				}
 				}).catch(function(oError){
 					console.log(oError);
 				})	
 			}
+			
+
+
 
 
         },
         onPARApproverDetermination: async function (oModel, PARID){
-			//test variables
-			var empID = 1900668;
-
 			// request header
 			//var oModel = this.getView().getModel();
 			var oListBinding = oModel.bindList("/ZREQUEST_HEADER", null,null, [
@@ -373,7 +425,7 @@ sap.ui.define([
 			const aPARHeaderContexts = await oListBinding.requestContexts();
 			const aPARHeaderData = aPARHeaderContexts.map(oContext => oContext.getObject());
 
-			//var empID = aData[0].EMP_ID commented for test
+			var empID = aPARHeaderData[0].EMP_ID;
 			//var claimTypeID = aData[0].CLAIM_TYPE_ID;
 			var parCC = aPARHeaderData[0].COST_CENTER;
 			var parAltCC = aPARHeaderData[0].ALTERNATE_COST_CENTER; // for budget owner 
@@ -383,7 +435,6 @@ sap.ui.define([
 			var parTripStartDate = aPARHeaderData[0].TRIP_START_DATE;
 			
 			//request Item
-			//var oModel = this.getView().getModel();
 			var oListBinding = oModel.bindList("/ZREQUEST_ITEM", null,null, [
 				new sap.ui.model.Filter({ path: "REQUEST_ID", operator: "EQ", value1: PARID })
 			], null);
@@ -394,25 +445,18 @@ sap.ui.define([
 			for(var i = 0; i < aClaimsItemData.length; i++){
 				parCashAdvArr.push(aClaimsItemData[i].CASH_ADVANCE);
 			}
-			console.log(parCashAdvArr);
 
 			//get employee info
-			//var oModel = this.getView().getModel();
 			var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
 				new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: empID })
 			], null);
 			const aEmpContexts = await oListBinding.requestContexts();
 			const aEmpData = aEmpContexts.map(oContext => oContext.getObject());
 
-			//var departmentID =  aEmpData[0].DEP;
-			var empDept = aEmpData[0].DEP; //to set into the url
+			var empDept = aEmpData[0].DEP;
 			var empRole = aEmpData[0].ROLE;
 			var empCC = aEmpData[0].CC;
-			console.log(empDept + " " + empRole + " " + empCC);
 			//JKEW dept = 0500000000
-			//array this. test dep id getting all emp with roles with the same dept id as claimant need to add loop to this as well
-			empDept = 4300100000;
-			//var oModel = this.getView().getModel();
 			var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
 				new sap.ui.model.Filter({ path: "DEP", operator: "EQ", value1: empDept }),
 				new sap.ui.model.Filter({ path: "ROLE", operator: "NE", value1: null })
@@ -431,13 +475,7 @@ sap.ui.define([
 					empRole = "JKEW/" + empRole
 				}
 			}
-			console.log(empCC + " " + parCC);
-			
-			console.log(empRole);
-			console.log(aAllEmpWithSameDepData);
-			console.log(parSubmissionType);
-			parSubmissionType = 'RT0001';
-			empRole = "";
+
 			//get workflow rule
 			var oListBinding = oModel.bindList("/ZWORKFLOW_RULE", null,null, [
 				new sap.ui.model.Filter({ path: "WORKFLOW_TYPE", operator: "EQ", value1: "PRE" }),
@@ -447,7 +485,7 @@ sap.ui.define([
 			], null);
 			const aWorkflowRuleContexts = await oListBinding.requestContexts();
 			const aWorkflowRuleData = aWorkflowRuleContexts.map(oContext => oContext.getObject());
-			console.log(aWorkflowRuleData);
+
 			let workflowRuleElimArr = [];
 			let nestedWorkflowRuleArr = [];
 			for(var i = 0; i < aWorkflowRuleData.length; i++){
@@ -497,23 +535,12 @@ sap.ui.define([
 					}
 				}
 				
-
-
 			}
-			console.log(empCCVal);
-			console.log(parCashAdvArr);
-			console.log(tripStartAge);
-			console.log(empCCWorkflowCodeArr);
-			console.log(tripStartAgingWorkflowCodeArr);
-			console.log(cashAdvWorkflowCodeArr)
 
-			//&& new Set(empCCWorkflowCodeArr).has(item) && new Set(receiptAgingWorkflowCodeArr).has(item)
 			//filter for the only workflow code that is the same among all the rule checks
 			const commonWorkflowCode = [...new Set(empCCWorkflowCodeArr)].filter(item => 
 				new Set(tripStartAgingWorkflowCodeArr).has(item) && new Set(cashAdvWorkflowCodeArr).has(item)
 			);
-			console.log(nestedWorkflowRuleArr);
-			console.log(commonWorkflowCode[0]);
 
 			//get approver levels and approvers
 			var oListBinding = oModel.bindList("/ZWORKFLOW_STEP", null,null, [
@@ -526,8 +553,7 @@ sap.ui.define([
 			
 			var workflowName =  aWorkflowStepData[0].WORKFLOW_NAME;
 			var workflowApprLvl =  aWorkflowStepData[0].WORKFLOW_APPROVAL_LEVELS;
-			workflowApprLvl = 3;
-			workflowName = "CXO-HOD-HOS-Budget"
+
 			if(workflowApprLvl > 1){
 				var workflowApprStep = workflowName.split("-");
 			}else{
@@ -535,12 +561,9 @@ sap.ui.define([
 			}
 
 			let apprEmpID = [];
-			parAltCC = "4001";
-			console.log(aAllEmpWithSameDepData);
-			parSubmissionYear = 2026;
+
 			for(var i = 0; i < workflowApprStep.length; i++){
 				for(var x = 0; x < aAllEmpWithSameDepData.length; x++){
-					//console.log(workflowApprStep[i] + approverDetailsDataArr[x].ROLE);
 					if(workflowApprStep[i] == aAllEmpWithSameDepData[x].ROLE){
 						apprEmpID.push(aAllEmpWithSameDepData[x].EEID)						
 					}else if(workflowApprStep[i] == "Budget" && x == 0){
@@ -551,7 +574,13 @@ sap.ui.define([
 						], null);
 						const aContexts = await oListBinding.requestContexts();
 						const aData = aContexts.map(oContext => oContext.getObject());
-						apprEmpID.push(aData[0].BUDGET_OWNER_ID);
+						//apprEmpID.push(aData[0].BUDGET_OWNER_ID);
+						var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+							new sap.ui.model.Filter({ path: "EMAIL", operator: "EQ", value1: aData[0].BUDGET_OWNER_ID })
+						], null);
+						const aEEIDContexts = await oListBinding.requestContexts();
+						const aEEIDData = aEEIDContexts.map(oContext => oContext.getObject());
+						apprEmpID.push(aEEIDData[0].EEID);
 					}
 				}
 			}
@@ -562,7 +591,7 @@ sap.ui.define([
 				var oListBinding = oModel.bindList("/ZSUBSTITUTION_RULES", null,null, [
 					new sap.ui.model.Filter({ path: "USER_ID", operator: "EQ", value1: apprEmpID[i] }),
 					new sap.ui.model.Filter({ path: "VALID_FROM", operator: "LE", value1: parSubmissionDate }),
-					new sap.ui.model.Filter({ path: "VALID_TO", operator: "LE", value1: parSubmissionDate })
+					new sap.ui.model.Filter({ path: "VALID_TO", operator: "GE", value1: parSubmissionDate })
 					
 				], null);
 				const aSubEmpContexts = await oListBinding.requestContexts();
@@ -580,57 +609,82 @@ sap.ui.define([
 
 			for(var i = 0; i < workflowApprLvl; i++){
 				var oContext = oBindList.create({
-					"CLAIM_ID": claimID,
+					"PREAPPROVAL_ID": PARID,
 					"LEVEL": i+1,
 					"APPROVER_ID": apprEmpID[i],
 					"SUBSTITUTE_APPROVER_ID": subEmpID[i],
 					"STATUS": "'STAT02'"
 				});
 
-				oContext.created().then(function (){
+				oContext.created().then(async function (){
 					console.log("success")
+					if(i == 0){
+						var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+							new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: apprEmpID[0] })
+						], null);
+						const aApprNameContexts = await oListBinding.requestContexts();
+						const aApprNameData = aApprNameContexts.map(oContext => oContext.getObject());
+
+						var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+							new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: empID })
+						], null);
+						const aClaimantNameContexts = await oListBinding.requestContexts();
+						const aClaimantNameData = aClaimantNameContexts.map(oContext => oContext.getObject());
+
+						var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+							new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: apprEmpID[1] })
+						], null);
+						const aNextApprNameContexts = await oListBinding.requestContexts();
+						const aNextApprNameData = aNextApprNameContexts.map(oContext => oContext.getObject());
+
+						var oListBinding = oModel.bindList("/ZREQUEST_TYPE", null,null, [
+							new sap.ui.model.Filter({ path: "REQUEST_TYPE_ID", operator: "EQ", value1: parSubmissionType })
+						], null);
+						const aSubmissionTypeNameContexts = await oListBinding.requestContexts();
+						const aSubmissionTypeNameData = aSubmissionTypeNameContexts.map(oContext => oContext.getObject());
+
+						if(subEmpID[0] != null){
+
+							var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+							new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: subEmpID[0] })
+							], null);
+							const aApprNameContexts = await oListBinding.requestContexts();
+							const aApprNameData = aApprNameContexts.map(oContext => oContext.getObject());
+
+							var payload ={
+								"ApproverName":aApprNameData[0].NAME, 
+								"SubmissionDate":parSubmissionDate, 
+								"ClaimantName":aClaimantNameData[0].NAME, 
+								"ClaimType":aSubmissionTypeNameData[0].REQUEST_TYPE_DESC, 
+								"ClaimID":PARID, 
+								"RecipientName":aApprNameData[0].NAME, 
+								"Action": "Notify", 
+								"ReceiverEmail":aApprNameData[0].EMAIL, 
+								"NextApproverName" : aNextApprNameData[0].NAME 
+							}
+						}else{
+							var payload ={
+								"ApproverName":aApprNameData[0].NAME, 
+								"SubmissionDate":parSubmissionDate, 
+								"ClaimantName":aClaimantNameData[0].NAME, 
+								"ClaimType":aSubmissionTypeNameData[0].REQUEST_TYPE_DESC, 
+								"ClaimID":PARID, 
+								"RecipientName":aApprNameData[0].NAME, 
+								"Action": "Notify", 
+								"ReceiverEmail":aApprNameData[0].EMAIL, 
+								"NextApproverName" : aNextApprNameData[0].NAME 
+							}
+						}
+					}
 				}).catch(function(oError){
 					console.log(oError);
 				})	
 			}
-
         },
 		
-		onSendEmail: async function (ApproverName,SubmissionDate,ClaimantName,InstanceID,ClaimType,ClaimID,RecipientName,Action,ReceiverEmail,CCEmail,EmailTitle,EmailBody,NextApproverName){
+		onSendEmail: async function (payload){
 
 			var urlEmail = "/odata/v4/EmployeeSrv/sendEmail";
-
-			// var testPayload ={
-			// 	"ApproverName":"test",
-			// 	"SubmissionDate":"12/01/2025",
-			// 	"ClaimantName":"Vincent",
-			// 	"InstanceID":"123",
-			// 	"ClaimType":"test",
-			// 	"ClaimID":"test12341",
-			// 	"RecipientName":"vincent",
-			// 	"Action":"",
-			// 	"ReceiverEmail":"dick.soon.yong@my.ey.com",
-			// 	"CCEmail":"",
-			// 	"EmailTitle":"Auto-Approved Claim Submission",
-			// 	"EmailBody":"Dear Sender, your claim has been auto approved"
-			//	"NextApproverName" : "test"
-			// }
-
-			var Payload ={
-				"ApproverName":ApproverName,
-				"SubmissionDate":SubmissionDate,
-				"ClaimantName":ClaimantName,
-				"InstanceID":InstanceID,
-				"ClaimType":ClaimType,
-				"ClaimID":ClaimID,
-				"RecipientName":RecipientName,
-				"Action":Action,
-				"ReceiverEmail":ReceiverEmail,
-				"CCEmail":CCEmail,
-				"EmailTitle":EmailTitle,
-				"EmailBody":EmailBody,
-				"NextApproverName" : NextApproverName
-			}
 
 			const sendEmail = await fetch(urlEmail, {
 				method: "POST",
