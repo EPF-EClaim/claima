@@ -65,7 +65,7 @@ sap.ui.define([
         press: oController.onClickCancel_app.bind(oController)
       }),
       endButton: new Button(oView.createId("approver_placeholder_create"), {
-        text: "{i18n>submitbtn}",  // or "Approve Claim"
+        text: "{i18n>approve_btn}",  // or "Approve Claim"
         type: "Emphasized",
         press: oController.onClickCreate_app.bind(oController),
         // Optional UX: enable only when comment is filled

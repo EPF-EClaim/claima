@@ -19,7 +19,8 @@ sap.ui.define([
 	"claima/utils/RejectDialog",
 	"claima/utils/SendBackDialog",
 	'claima/utils/Utility',
-	"claima/utils/ApproverUtility"
+	"claima/utils/ApproverUtility",
+	"claima/utils/ResendRejectUtility"
 ], function (
 	Controller,
 	MessageToast,
@@ -41,7 +42,8 @@ sap.ui.define([
 	RejectDialog,
 	SendBackDialog,
 	Utility,
-	ApproverUtility
+	ApproverUtility,
+	ResendRejectUtility
 ) {
 	"use strict";
 
@@ -2514,14 +2516,19 @@ sap.ui.define([
 
 		onClickCreate_app: async function () {
 			// Minimal validation for reject flow (reason + comment)
-			const reqId = String(data.req_header.reqid || "").trim();
 			const oReject = this.getView().getModel("Reject");
 			const mode = oReject?.getProperty("/mode"); // "REJECT" here
 			const reason = oReject?.getProperty("/rejectReasonKey");
-			const comment = oReject?.getProperty("/approvalComment");
-			const id = reqId;        // e.g., "CLM001"
-			const userID = this.userId;     // logged-in user
-			const oModel = this.getOwnerComponent().getModel("employee_view");
+			const comment = oReject?.getProperty("/approvalComment")?.trim();
+			
+
+
+			const accessModel = this.getOwnerComponent().getModel("access");
+			const userId = accessModel?.getProperty("/userId");
+			const reqId = "REQ26000000002"
+			const id = reqId;
+			const userID = userId;
+			const oModel = this.getOwnerComponent().getModel();
 
 
 			if (mode === "REJECT") {
@@ -2541,35 +2548,102 @@ sap.ui.define([
 
 
 			try {
-				await ApproverUtility.approveMultiLevel(oModel, id, userID);
-				this._oApproveDialog.close();
+				await ApproverUtility.approveMultiLevel(oModel, id, userID, comment);
+				this.__approveDialog && this.__approveDialog.close();
 			} catch (e) {
 				sap.m.MessageToast.show(e.message);
 			}
+		},
+
+		onSendBack_app: async function () {
+			// Minimal validation for reject flow (reason + comment)
+			const oReject = this.getView().getModel("Reject");
+			const mode = oReject?.getProperty("/mode"); // "REJECT" here
+			const reason = oReject?.getProperty("/rejectReasonKey");
+			//const sendbackreason = oReject?.getProperty("/sendBackReasonKey");
+			const comment = oReject?.getProperty("/approvalComment")?.trim();
+
+			const accessModel = this.getOwnerComponent().getModel("access");
+			const userType = accessModel?.getProperty("/userType");
+			const userId = accessModel?.getProperty("/userId");
+			const reqId = "REQ26000000002"
+			const id = reqId;
+			const userID = "USER_0005";
+
+			//const displayUserId = Array.isArray(userId) ? userId.join(", ") : userCC;     // logged-in user
+			const oModel = this.getOwnerComponent().getModel();
 
 
-			try {
-				await ApproverUtility.rejectOrSendBack(oModel, id, userID, "REJECTED");
-				this.__rejectDialog.close();
-			} catch (e) {
-				sap.m.MessageToast.show(e.message);
+			if (mode === "REJECT") {
+				if (!reason) {
+					sap.m.MessageToast.show("Please select a Reject Reason.");
+					return;
+				}
+				if (!comment) {
+					sap.m.MessageToast.show("Please enter approval comment.");
+					return;
+				}
+				// TODO: Submit your reject action via OData here, then:
+				this.__rejectDialog && this.__rejectDialog.close();
+				sap.m.MessageToast.show("Rejected.");
+				return;
 			}
 
+
+
 			try {
-				await ApproverUtility.rejectOrSendBack(oModel, id, userID, "SEND BACK");
+				await ResendRejectUtility.rejectOrSendBackMultiLevel(oModel, id, userID, "SEND BACK", reason, comment);
 				this.__sendBackDialog.close();
 			} catch (e) {
 				sap.m.MessageToast.show(e.message);
 			}
 
+		},
+
+		onReject_app: async function () {
+
+			// Minimal validation for reject flow (reason + comment)
+			const oReject = this.getView().getModel("Reject");
+			const mode = oReject?.getProperty("/mode"); // "REJECT" here
+			const reason = oReject?.getProperty("/rejectReasonKey");
+			const comment = oReject?.getProperty("/approvalComment")?.trim();
+
+			const accessModel = this.getOwnerComponent().getModel("access");
+			const userType = accessModel?.getProperty("/userType");
+			const userId = accessModel?.getProperty("/userId");
+			const reqId = "REQ26000000002"
+			const id = reqId;
+			const userID = "USER_0005";
+
+			//const displayUserId = Array.isArray(userId) ? userId.join(", ") : userCC;     // logged-in user
+			const oModel = this.getOwnerComponent().getModel();
 
 
+			if (mode === "REJECT") {
+				if (!reason) {
+					sap.m.MessageToast.show("Please select a Reject Reason.");
+					return;
+				}
+				if (!comment) {
+					sap.m.MessageToast.show("Please enter approval comment.");
+					return;
+				}
+				// TODO: Submit your reject action via OData here, then:
+				this.__rejectDialog && this.__rejectDialog.close();
+				sap.m.MessageToast.show("Rejected.");
+				return;
+			}
 
-
-
-
+			try {
+				await ResendRejectUtility.rejectOrSendBackMultiLevel(oModel, id, userID, "REJECTED", reason, comment);
+				this.__rejectDialog.close();
+			} catch (e) {
+				sap.m.MessageToast.show(e.message);
+			}
 
 		},
+
+
 
 
 		onExit: function () {

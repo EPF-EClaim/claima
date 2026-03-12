@@ -79,14 +79,14 @@ sap.ui.define([
                 new Label({ text: "Send Back Reason", required: true }),
                 new Select(oView.createId("sendBackReasonSelect"), {
                     width: "100%",
-                    selectedKey: "{Reject>/sendBackReasonKey}",
+                    selectedKey: "{Reject>/rejectReasonKey}",
                     // change: oController.onSendBackReasonChange?.bind(oController),
                     items: {
                         // IMPORTANT: use your named OData model alias and correct path
-                        path: "Employee>/ZREJECT",
+                        path: "employee>/ZREJECT_REASON",
                         template: new Item({
-                            key: "{Employee>REASON_ID}",
-                            text: "{Employee>REASON_DESC}"
+                            key: "{employee>REASON_ID}",
+                            text: "{employee>REASON_DESC}"
                         }),
                         templateShareable: false
                     }
@@ -114,9 +114,9 @@ sap.ui.define([
                 press: oController.onClickCancel_app.bind(oController)
             }),
             endButton: new Button(oView.createId("sendback_placeholder_submit"), {
-                text: "{i18n>submitbtn}",  // or "Send Back"
+                text: "{i18n>sendback_btn}",  // or "Send Back"
                 type: "Emphasized",
-                press: oController.onClickCreate_app.bind(oController),
+                press: oController.onSendBack_app.bind(oController),
                 // Optional UX: enable only when reason+comment are provided
                 // enabled: "{= !!${Reject>/sendBackReasonKey} && !!${Reject>/approvalComment} }"
             })

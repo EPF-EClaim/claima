@@ -129,7 +129,7 @@ sap.ui.define([
 			const oUserAccessModel = new sap.ui.model.json.JSONModel({
 				userType: this._userType,
 				costcenters: this.costcenters,
-				userId: this._userId, // 08/03/2026 - Added to fetch emp id
+				userId: this.userId, // 08/03/2026 - Added to fetch emp id
 			});
 			this.getOwnerComponent().setModel(oUserAccessModel, "access");
 			//Aiman Salim - 05/03/2026 - Added to make it global;

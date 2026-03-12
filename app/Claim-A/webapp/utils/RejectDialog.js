@@ -110,9 +110,9 @@ sap.ui.define([
         press: oController.onClickCancel_app.bind(oController)
       }),
       endButton: new Button(oView.createId("reject_placeholder_submit"), {
-        text: "{i18n>submitbtn}",    // or "Reject"
+        text: "{i18n>reject_btn}",    // or "Reject"
         type: "Emphasized",
-        press: oController.onClickCreate_app.bind(oController),
+        press: oController.onReject_app.bind(oController),
         // Optional UX: enable only when reason+comment are provided
         // enabled: "{= !!${Reject>/rejectReasonKey} && !!${Reject>/approvalComment} }"
       })
