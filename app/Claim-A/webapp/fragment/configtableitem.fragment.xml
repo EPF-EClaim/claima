@@ -17,7 +17,7 @@
                 <Text text="Claim Type ID: " />
                 <Text text="{CLAIM_TYPE_ID}" />
             </HBox>
-            <HBox>
+            <HBox width="100%">
                 <Text text="Claim Type Description: " />
                 <Text text="{CLAIM_TYPE_DESC}" />
             </HBox>

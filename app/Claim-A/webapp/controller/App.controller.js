@@ -1821,8 +1821,9 @@ sap.ui.define([
 		// get backend data
 		async _getEmpIdDetail(sEMAIL) {
 			const oModel = this.getOwnerComponent().getModel();
+			var email = sEMAIL.toLowerCase();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new sap.ui.model.Filter("EMAIL", "EQ", sEMAIL.toLowerCase()) //change email to lowercase
+				new sap.ui.model.Filter("EMAIL", "EQ", email) //change email to lowercase
 			]);
 
 			try {
