@@ -1,0 +1,59 @@
+<mvc:View
+    controllerName="claima.controller.SendingIS"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.f"
+    id="addIS_xmlview">
+    <App id="app">
+        <Page title="Test to send claim details to SF">
+            <content>
+                <VBox class="sapUiSmallMargin">
+                    <Table id="idClaimTable"
+                           mode="SingleSelectLeft"
+                           items="{
+                               path: 'employee_view>/ZEMP_CLAIM_DETAILS',
+                               parameters: { $count: true }
+                           }">
+                        <columns>
+                            <Column><Text text="CLAIM ID"/></Column>
+                            <Column><Text text="EMPLOYEE ID"/></Column>
+                            <Column><Text text="LAST MODIFIED DATE"/></Column>
+                            <Column><Text text="SUBMITED DATE"/></Column>
+                            <Column><Text text="FINAL AMOUNT"/></Column>
+                            <Column><Text text="CLAIM SUB ID"/></Column>
+                            <Column><Text text="RECEIPT DATE"/></Column>
+                            <Column><Text text="AMOUNT"/></Column>
+                            <Column><Text text="COST CENTER"/></Column>
+                            <Column><Text text="GL ACC"/></Column>
+                            <Column><Text text="MATERIAL CODE"/></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <cells>
+                                <ObjectIdentifier title="{employee_view>CLAIM_ID}"/>
+                                <Text text="{employee_view>EMP_ID}"/>
+                                <Text text="{employee_view>LAST_MODIFIED_DATE}"/>
+                                <Text text="{employee_view>SUBMITTED_DATE}"/>
+                                <Text text="{employee_view>FINAL_AMOUNT_TO_RECEIVE}"/>
+                                <Text text="{employee_view>CLAIM_SUB_ID}"/>
+                                <Text text="{employee_view>RECEIPT_DATE}"/>
+                                <Text text="{employee_view>AMOUNT}"/>
+                                <Text text="{employee_view>COST_CENTER}"/>
+                                <Text text="{employee_view>GL_ACCOUNT}"/>
+                                <Text text="{employee_view>MATERIAL_CODE}"/>
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                    <Toolbar style="Clear">
+                        <ToolbarSpacer/>
+                        <Button text="Send to IS"
+                                type="Emphasized"
+                                press=".onSendToIS"/>
+                    </Toolbar>
+                </VBox>
+            </content>
+        </Page>
+    </App>
+</mvc:View>

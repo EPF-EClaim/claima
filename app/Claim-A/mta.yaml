@@ -26,6 +26,7 @@ modules:
     requires:
       - name: claima-auth
       - name: claima-db
+      - name: claima-destination
 
   - name: claima-db-deployer
     type: hdb
@@ -54,3 +55,9 @@ resources:
     parameters:
       service: hana
       service-plan: hdi-shared
+
+  - name: claima-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite

@@ -1,6 +1,13 @@
 using {ECLAIM} from '../db/eclaim';
 
+@path : 'eclaim-view-srv'
 service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
+
+    type Response : {
+        success : Boolean;
+        message : String;
+    };
+
     entity ZEMP_REQUEST_VIEW             as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
@@ -635,4 +642,19 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.MATERIAL_CODE,
                 TRIP_START_DATE
         }
+
+    action sendClaim(
+            CLAIM_ID                : String,
+            EMP_ID                  : String,
+            LAST_MODIFIED_DATE      : String,
+            SUBMITTED_DATE          : String,
+            FINAL_AMOUNT_TO_RECEIVE : String,
+            CLAIM_SUB_ID            : String,
+            RECEIPT_DATE            : String,
+            AMOUNT                  : String,
+            COST_CENTER             : String,
+            GL_ACCOUNT              : String,
+            MATERIAL_CODE           : String
+        ) returns Response;
+
 };

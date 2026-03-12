@@ -89,12 +89,12 @@ sap.ui.define([
 			});
 
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			// var oUserModel = new sap.ui.model.json.JSONModel({ email: "Jefry.Yap@my.ey.com" });
-			// this.getView().setModel(oUserModel, 'user');
-			// const emp_data = await this._getEmpIdDetail("Jefry.Yap@my.ey.com");
-			// const oReqModel = this._getReqModel().getData();
-			// oReqModel.user = emp_data.eeid;
-			// this._getReqModel().setData(oReqModel);
+			var oUserModel = new sap.ui.model.json.JSONModel({ email: "farisha.razak@my.ey.com" });
+			this.getView().setModel(oUserModel, 'user');
+			const emp_data = await this._getEmpIdDetail("farisha.razak@my.ey.com");
+			const oReqModel = this._getReqModel().getData();
+			oReqModel.user = emp_data.eeid;
+			this._getReqModel().setData(oReqModel);
 		},
 
 		onCollapseExpandPress: function () {
@@ -155,6 +155,11 @@ sap.ui.define([
 					// 	sap.m.MessageBox.error(message);
 					// }
 					break;
+				//to test the sending to IS 
+				case "mysendingIS":
+                    var oRouter = this.getOwnerComponent().getRouter();
+                    oRouter.navTo("SendingIS");
+                    break;
 				case "config":
 					//Start EY_ATHIRAH
 					if (type === "DTD Admin" || type === "JKEW Admin" || type === "Super Admin") {
