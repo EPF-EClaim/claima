@@ -580,6 +580,11 @@
                     "target": "ZVEHICLE_CLASS"
                 },
                 {
+                    "pattern": "ZDISBURSEMENT_STATUS",
+                    "name": "ZDISBURSEMENT_STATUS",
+                    "target": "ZDISBURSEMENT_STATUS"
+                },
+                {
                     "pattern": "ZMOBILE_CATEGORY_PURPOSE",
                     "name": "ZMOBILE_CATEGORY_PURPOSE",
                     "target": "ZMOBILE_CATEGORY_PURPOSE"
@@ -3572,6 +3577,60 @@
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "APP_CONTROL_ID,SUBMISSION_TYPE,COMPONENT_LEVEL,REQUEST_TYPE_ID,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,FIELD"
+                                        },
+                                        "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZDISBURSEMENT_STATUS": {
+                    "type": "Component",
+                    "id": "ZDISBURSEMENT_STATUS",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZDISBURSEMENT_STATUS",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "DISBURSEMENT_STATUS_ID,DISBURSEMENT_STATUS_DESC,START_DATE,END_DATE,STATUS"
                                         },
                                         "disableCopyToClipboard": true
                                     },
