@@ -228,4 +228,9 @@ service eclaim_srv {
 
     function runjob()                                              returns Response;
 
+    type PreApproveClaims {
+        REQUEST_SUB_ID           : String;
+    }
+    action batchUpdatePreApproved(PreApprove: many PreApproveClaims) returns Response;
+
 };
