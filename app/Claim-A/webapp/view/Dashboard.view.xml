@@ -19,10 +19,10 @@
                 horizontal="false"
                 height="100%"
             >
-                <VBox>
+                <VBox width="100%">
                     <HBox>
                         <Panel
-                            width="20rem"
+                            width="100%"
                             height="4rem"
                             class="sapUiSmallMarginBeginEnd sapUiMediumMarginTopBottom"
                         >
@@ -46,7 +46,7 @@
                             </HBox>
                         </Panel>
                         <Panel
-                            width="20rem"
+                            width="90%"
                             height="4rem"
                             class="sapUiMediumMarginBeginEnd sapUiMediumMarginTopBottom"
                         >
@@ -70,7 +70,7 @@
                             </HBox>
                         </Panel>
                         <Panel
-                            width="20rem"
+                            width="120%"
                             height="4rem"
                             class="sapUiMediumMarginBeginEnd sapUiMediumMarginTopBottom"
                         >
