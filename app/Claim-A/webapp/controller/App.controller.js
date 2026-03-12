@@ -46,8 +46,8 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.App", {
 
-		_ReqAttachmentFile1: null, 
-		_ReqAttachmentFile2: null,  
+		_ReqAttachmentFile1: null,
+		_ReqAttachmentFile2: null,
 
 		onInit: async function () {
 			// oReportModel
@@ -137,7 +137,7 @@ sap.ui.define([
 			//End EY_ATHIRAH
 
 			switch (oKey) {
-				case "sidenav_claimsubmission":
+				case "nav_claimsubmission":
 					this.onNav_ClaimSubmission();
 					break;
 				case "createrequest":
@@ -148,8 +148,8 @@ sap.ui.define([
 					break;
 				case "mysubstitution":
 					// if (type === "Approver" || type === "Super Admin") {
-						var oRouter = this.getOwnerComponent().getRouter();
-						oRouter.navTo("ManageSub");
+					var oRouter = this.getOwnerComponent().getRouter();
+					oRouter.navTo("ManageSub");
 					// } else {
 					// 	var message = this._getTexti18n("msg_unauthorized_substitution");
 					// 	sap.m.MessageBox.error(message);
@@ -307,9 +307,9 @@ sap.ui.define([
 					"unit_section": null,
 					"marital": null,
 					"job_group": null,
+					"office_location": null,
 					"state": null,
 					"country": null,
-					"direct_supperior": null,
 					"role": null,
 					"user_type": null,
 					"employee_type": null
@@ -352,6 +352,7 @@ sap.ui.define([
 					}
 				},
 				"is_new": false,
+				"is_approver": false,
 				"claim_header": {
 					"claim_id": null,
 					"emp_id": null,
@@ -438,44 +439,82 @@ sap.ui.define([
 			// set new claim submission model;
 			var oInputModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 			//// set employee data
-			var sUserId = sap.ushell ? sap.ushell.Container.getUser().getId() : null;
-			var emp_data = await this._getEmpIdDetail(sUserId);
-
-			//// placeholder - set placeholder data
+			var userModelData = this.getView().getModel('user').getData();
+			const emp_data = await this._getEmpIdDetail(userModelData.email);
 			if (emp_data) {
 				oInputModel.setProperty("/emp_master", emp_data);
+				await this._getEmpDataDescr(oInputModel);
 			}
-			else {
-				oInputModel.setProperty("/emp_master/eeid", "DEFAULT_USER");
-				oInputModel.setProperty("/emp_master/name", "NAME11380");
-				oInputModel.setProperty("/emp_master/grade", "G3");
-				oInputModel.setProperty("/emp_master/cc", "108S37362");
-				oInputModel.setProperty("/emp_master/pos", "10003793");
-				oInputModel.setProperty("/emp_master/dep", "3600100000");
-				oInputModel.setProperty("/emp_master/unit_section", "3700903102");
-				oInputModel.setProperty("/emp_master/marital", "M");
-				oInputModel.setProperty("/emp_master/office_location", "3700903100");
-				oInputModel.setProperty("/emp_master/address_line1", "EE ADDRESS1");
-				oInputModel.setProperty("/emp_master/address_line2", "EE ADDRESS2");
-				oInputModel.setProperty("/emp_master/address_line3", "EE ADDRESS3");
-				oInputModel.setProperty("/emp_master/postcode", "88888");
-				oInputModel.setProperty("/emp_master/state", "SEL");
-				oInputModel.setProperty("/emp_master/country", "MYS");
-				oInputModel.setProperty("/emp_master/email", "1900668smsm1@epf.gov.my.test.test");
-				oInputModel.setProperty("/emp_master/direct_supperior", "1902045");
-				oInputModel.setProperty("/emp_master/employee_type", "2378");
-				oInputModel.setProperty("/emp_master/position_name", "MAIN DUTY");
-				oInputModel.setProperty("/emp_master/position_start_date", "1993-06-16");
-				oInputModel.setProperty("/emp_master/position_event_reason", "Z302");
-				oInputModel.setProperty("/emp_master/effective_date", "1993-12-16");
-				oInputModel.setProperty("/emp_master/descr/cc", "SA Seb. Jaya-Penguatkuasaan");
-				oInputModel.setProperty("/emp_master/descr/dep", "Department 1");
-				oInputModel.setProperty("/emp_master/descr/unit_section", "test unit section");
-				oInputModel.setProperty("/emp_master/descr/marital", "Married");
-				oInputModel.setProperty("/emp_master/descr/state", "Selangor");
-				oInputModel.setProperty("/emp_master/descr/country", "Malaysia");
-				oInputModel.setProperty("/emp_master/descr/direct_supperior", "test direct supperior");
-				oInputModel.setProperty("/emp_master/descr/employee_type", "test employee type");
+		},
+
+		_getEmpDataDescr: async function (oModel) {
+			// cost center
+			if (oModel.getProperty("/emp_master/cc")) {
+				oModel.setProperty("/emp_master/descr/cc", await this._bindEclaimDescr("/ZCOST_CENTER", oModel.getProperty("/emp_master/cc"), 'COST_CENTER_ID', 'COST_CENTER_DESC'));
+			}
+			// department
+			if (oModel.getProperty("/emp_master/dep")) {
+				oModel.setProperty("/emp_master/descr/dep", await this._bindEclaimDescr("/ZDEPARTMENT", oModel.getProperty("/emp_master/dep"), 'DEPARTMENT_ID', 'DEPARTMENT_DESC'));
+			}
+			// branch / unit section
+			if (oModel.getProperty("/emp_master/unit_section")) {
+				oModel.setProperty("/emp_master/descr/unit_section", await this._bindEclaimDescr("/ZBRANCH", oModel.getProperty("/emp_master/unit_section"), 'BRANCH_ID', 'BRANCH_DESC'));
+			}
+			// // marital status
+			// if (oModel.getProperty("/emp_master/marital")) {
+			// 	oModel.setProperty("/emp_master/descr/marital", await this._bindEclaimDescr("/ZMARITAL_STAT", oModel.getProperty("/emp_master/marital"), 'MARRIAGE_CATEGORY_ID', 'MARRIAGE_CATEGORY_DESC'));
+			// }
+			// job group
+			if (oModel.getProperty("/emp_master/job_group")) {
+				oModel.setProperty("/emp_master/descr/job_group", await this._bindEclaimDescr("/ZJOB_GROUP", oModel.getProperty("/emp_master/job_group"), 'JOB_GROUP_ID', 'JOB_GROUP_DESC'));
+			}
+			// office location
+			if (oModel.getProperty("/emp_master/office_location")) {
+				oModel.setProperty("/emp_master/descr/office_location", await this._bindEclaimDescr("/ZOFFICE_LOCATION", oModel.getProperty("/emp_master/office_location"), 'LOCATION_ID', 'LOCATION_DESC', oModel.getProperty("/emp_master/state"), 'STATE_ID'));
+			}
+			// state
+			if (oModel.getProperty("/emp_master/state")) {
+				oModel.setProperty("/emp_master/descr/state", await this._bindEclaimDescr("/ZSTATE", oModel.getProperty("/emp_master/state"), 'STATE_ID', 'STATE_DESC', oModel.getProperty("/emp_master/country"), 'COUNTRY_ID'));
+			}
+			// country
+			if (oModel.getProperty("/emp_master/country")) {
+				oModel.setProperty("/emp_master/descr/country", await this._bindEclaimDescr("/ZCOUNTRY", oModel.getProperty("/emp_master/country"), 'COUNTRY_ID', 'COUNTRY_DESC'));
+			}
+			// role
+			if (oModel.getProperty("/emp_master/role")) {
+				oModel.setProperty("/emp_master/descr/role", await this._bindEclaimDescr("/ZROLE", oModel.getProperty("/emp_master/role"), 'ROLE_ID', 'ROLE_DESC'));
+			}
+			// user type
+			if (oModel.getProperty("/emp_master/user_type")) {
+				oModel.setProperty("/emp_master/descr/user_type", await this._bindEclaimDescr("/ZUSER_TYPE", oModel.getProperty("/emp_master/user_type"), 'USER_TYPE_ID', 'USER_TYPE_DESC'));
+			}
+			// employee type
+			if (oModel.getProperty("/emp_master/employee_type")) {
+				oModel.setProperty("/emp_master/descr/employee_type", await this._bindEclaimDescr("/ZEMP_TYPE", oModel.getProperty("/emp_master/employee_type"), 'EMP_TYPE_ID', 'EMP_TYPE_DESC'));
+			}
+		},
+
+		_bindEclaimDescr: async function (oTable, oInputValue, oFieldId, oFieldDescr, oInputValue2, oFieldId2) {
+			const oModel = this.getOwnerComponent().getModel();
+			var filterArray = [new sap.ui.model.Filter(oFieldId, "EQ", oInputValue)];
+			if (oFieldId2) {
+				filterArray = filterArray.concat(new sap.ui.model.Filter(oFieldId2, "EQ", oInputValue2));
+			}
+			const oListBinding = oModel.bindList(oTable, null, null, filterArray);
+
+			try {
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					return oData[oFieldDescr];
+				} else {
+					console.warn("No description found");
+					return null;
+				}
+			} catch (oError) {
+				console.error("Error fetching description: ", oError);
+				return null; // Return null so the app doesn't crash
 			}
 		},
 
@@ -493,11 +532,11 @@ sap.ui.define([
 					],
 					parameters: {
 						$expand: {
-							"ZCLAIM_CATEGORY": {
-								$select: "CLAIM_CATEGORY_DESC"
+							"ZSUBMISSION_TYPE": {
+								$select: "SUBMISSION_TYPE_DESC"
 							}
 						},
-						$select: "CATEGORY_ID"
+						$select: "SUBMISSION_TYPE"
 					},
 					template: new sap.ui.core.Item({
 						key: "{employee>CLAIM_TYPE_ITEM_ID}",
@@ -529,8 +568,8 @@ sap.ui.define([
 			var claimItem = oEvent.getParameters().selectedItem;
 			if (claimItem) {
 				// get category values from claim item
-				var categoryId = claimItem.getBindingContext("employee").getObject("CATEGORY_ID");
-				var claimCategoryDesc = claimItem.getBindingContext("employee").getObject("ZCLAIM_CATEGORY/CLAIM_CATEGORY_DESC");
+				var categoryId = claimItem.getBindingContext("employee").getObject("SUBMISSION_TYPE");
+				var claimCategoryDesc = claimItem.getBindingContext("employee").getObject("ZSUBMISSION_TYPE/SUBMISSION_TYPE_DESC");
 
 				// show claim item category in category input
 				this.byId("input_claimprocess_category").setValue(claimCategoryDesc);
@@ -604,7 +643,7 @@ sap.ui.define([
 			oInputModel.setProperty("/claimtype/descr/type", this.byId("select_claimprocess_claimtype")._getSelectedItemText());
 			oInputModel.setProperty("/claimtype/descr/item", this.byId("select_claimprocess_claimitem")._getSelectedItemText());
 			//// get claim item category ID
-			oInputModel.setProperty("/claimtype/category", this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("CATEGORY_ID"));
+			oInputModel.setProperty("/claimtype/category", this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("SUBMISSION_TYPE"));
 			//// get request form values
 			if (this.byId("select_claimprocess_requestform").getSelectedItem()) {
 				oInputModel.setProperty("/claimtype/requestform/objective_purpose", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("OBJECTIVE_PURPOSE"));
@@ -933,7 +972,7 @@ sap.ui.define([
 			var token = tokenData["csrfToken"];
 			if (!token) {
 				// cannot proceed without token
-				sap.ui.getCore().setModel(null,"oToken");
+				sap.ui.getCore().setModel(null, "oToken");
 				return false;
 			}
 
@@ -949,18 +988,18 @@ sap.ui.define([
 				},
 				crossDomain: true,
 				data: JSON.stringify({
-						__metadata: {
-							uri: 'Attachment'
-						},
-						deletable: true,
-						fileName: oInputModel.getProperty("/attachment/fileName"),
-						moduleCategory: 'UNSPECIFIED',
-						module: 'DEFAULT',
-						userId: 'SFAPI',
-						viewable: true,
-						searchable: true,
-						fileContent: oInputModel.getProperty("/attachment/fileContent")
-					}),
+					__metadata: {
+						uri: 'Attachment'
+					},
+					deletable: true,
+					fileName: oInputModel.getProperty("/attachment/fileName"),
+					moduleCategory: 'UNSPECIFIED',
+					module: 'DEFAULT',
+					userId: 'SFAPI',
+					viewable: true,
+					searchable: true,
+					fileContent: oInputModel.getProperty("/attachment/fileContent")
+				}),
 				success: function (data, textStatus, jqXHR) {
 					// get generated attachment number
 					oInputModel.setProperty("/claim_header/attachment_email_approver", data.d.attachmentId);
@@ -981,12 +1020,12 @@ sap.ui.define([
 		},
 
 		_fetchToken: function () {
-			var token = {			
-				"csrfToken" : ""
+			var token = {
+				"csrfToken": ""
 			};
 
 			var oToken = new JSONModel(token);
-			sap.ui.getCore().setModel(oToken,"oToken");
+			sap.ui.getCore().setModel(oToken, "oToken");
 			var tokenModel = sap.ui.getCore().getModel("oToken").getData();
 
 			$.ajax({
@@ -1507,12 +1546,12 @@ sap.ui.define([
 			} else {
 				var attachment_1 = await this.getFileAsBinary("req_attachment_1");
 				// var attachment1_ID = await this.postFilesToSF( oData.doc1, attachment_1 );
-				var attachment1_ID = await Attachment.postAttachment( oData.doc1, attachment_1 );
+				var attachment1_ID = await Attachment.postAttachment(oData.doc1, attachment_1);
 				oData.doc1 = attachment1_ID;
 				if (oData.doc2) {
 					var attachment_2 = await this.getFileAsBinary("req_attachment_2");
 					// var attachment2_ID = await this.postFilesToSF( oData.doc2, attachment_2 );
-					var attachment2_ID = await Attachment.postAttachment( oData.doc2, attachment_2 );
+					var attachment2_ID = await Attachment.postAttachment(oData.doc2, attachment_2);
 					oData.doc2 = attachment2_ID;
 				}
 				this.createRequestHeader(oData, oReqModel);
@@ -1520,16 +1559,16 @@ sap.ui.define([
 			sap.ui.core.BusyIndicator.hide();
 		},
 
-		onImportChange1( oEvent ) {
+		onImportChange1(oEvent) {
 			this._ReqAttachmentFile1 = oEvent.getParameters("files").files[0];
 		},
-		
-		onImportChange2( oEvent ) {
+
+		onImportChange2(oEvent) {
 			this._ReqAttachmentFile2 = oEvent.getParameters("files").files[0];
 		},
 
 		isAllowedFile(file) {
-			
+
 			const ALLOWED_MIME_TYPES = new Set([
 				'application/pdf',
 				'image/jpeg',
@@ -1542,36 +1581,36 @@ sap.ui.define([
 
 			if (!file) return { ok: false, reason: 'No file provided.' };
 
-				// Prefer MIME type check
-				const mime = (file.type || '').toLowerCase().trim();
-				if (mime) {
-					// Allow any image/* plus application/pdf, but also restrict to known image types above for safety.
-					const isPdf = mime === 'application/pdf';
-					const isImage = mime.startsWith('image/') && ALLOWED_MIME_TYPES.has(mime);
-					if (isPdf || isImage) {
-					return { ok: true };
-					}
-				}
-
-				// Fallback to extension if MIME is missing or generic (e.g., application/octet-stream)
-				const name = file.name || '';
-				const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
-				if (ALLOWED_EXTENSIONS.has(ext)) {
+			// Prefer MIME type check
+			const mime = (file.type || '').toLowerCase().trim();
+			if (mime) {
+				// Allow any image/* plus application/pdf, but also restrict to known image types above for safety.
+				const isPdf = mime === 'application/pdf';
+				const isImage = mime.startsWith('image/') && ALLOWED_MIME_TYPES.has(mime);
+				if (isPdf || isImage) {
 					return { ok: true };
 				}
+			}
 
-				return { ok: false, reason: 'Only PDF and image files are allowed.' };
+			// Fallback to extension if MIME is missing or generic (e.g., application/octet-stream)
+			const name = file.name || '';
+			const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
+			if (ALLOWED_EXTENSIONS.has(ext)) {
+				return { ok: true };
+			}
+
+			return { ok: false, reason: 'Only PDF and image files are allowed.' };
 		},
 
 
-		getFileAsBinary: function( attachmentID ){ 
+		getFileAsBinary: function (attachmentID) {
 
-			return new Promise ((resolve, reject) => {
+			return new Promise((resolve, reject) => {
 
 				const file =
-				attachmentID === 'req_attachment_1'
-					? this._ReqAttachmentFile1
-					: this._ReqAttachmentFile2;
+					attachmentID === 'req_attachment_1'
+						? this._ReqAttachmentFile1
+						: this._ReqAttachmentFile2;
 
 				// Validate file presence
 				if (!file) {
@@ -1594,7 +1633,7 @@ sap.ui.define([
 					var vContent = e.currentTarget.result;
 					resolve(vContent.split(",")[1]);
 				}
-				
+
 				reader.onerror = (e) => {
 					reject(new Error(`Failed to read file: ${e?.target?.error?.message || 'Unknown error'}`));
 				};
@@ -1611,7 +1650,7 @@ sap.ui.define([
 		postFilesToSF: async function (fileName, fileString) {
 
 			// Write to Success Factors API
-			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment"; 
+			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment";
 
 			try {
 				const response = await fetch(sServiceUrl, {
@@ -1629,7 +1668,7 @@ sap.ui.define([
 						viewable: true,
 						searchable: true,
 						fileContent: fileString
-					}) 
+					})
 				});
 
 				if (!response.ok) {
@@ -1652,7 +1691,7 @@ sap.ui.define([
 					}
 				}
 
-				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(')+1,jsonData.id.indexOf(')')-1);
+				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(') + 1, jsonData.id.indexOf(')') - 1);
 
 				return attachmentNumber;
 			} catch (error) {
@@ -1662,9 +1701,9 @@ sap.ui.define([
 			}
 		},
 
-		postMDF: async function ( reqID, attachment1, attachment2) {
-		// Write to Success Factors API
-			var sServiceUrl = "SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS_Parent"; 
+		postMDF: async function (reqID, attachment1, attachment2) {
+			// Write to Success Factors API
+			var sServiceUrl = "SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS_Parent";
 
 			try {
 				const response = await fetch(sServiceUrl, {
@@ -1675,22 +1714,22 @@ sap.ui.define([
 							uri: 'cust_EPF_CLAIM_ATTACHMENTS_Parent'
 						},
 						Claim_ID: reqID,
-						cust_Parent_attachment1Nav : {
-							__metadata : {
+						cust_Parent_attachment1Nav: {
+							__metadata: {
 								uri: `Attachment('${attachment1}')`
 							}
 						},
-						...( String(attachment2).trim().length > 0 && attachment2 ? {
-								cust_Parent_attachment2Nav : {
-									__metadata : {
-										uri: `Attachment('${attachment2}')`
-									}
+						...(String(attachment2).trim().length > 0 && attachment2 ? {
+							cust_Parent_attachment2Nav: {
+								__metadata: {
+									uri: `Attachment('${attachment2}')`
 								}
-							} : {}
+							}
+						} : {}
 						)
-					}) 
+					})
 				});
-				
+
 				if (!response.ok) {
 					const errText = await response.text().catch(() => "");
 					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
@@ -1703,11 +1742,11 @@ sap.ui.define([
 				console.log("Error creating MDF: " + error);
 				MessageToast.show("Error creating MDF: " + error);
 				return false;
-			}	
+			}
 		},
 
 		async deleteAttachment(attachmentID) {
-			var url = `SuccessFactors_API/odata/v2/Attachment(attachmentId=${attachmentID})`; 
+			var url = `SuccessFactors_API/odata/v2/Attachment(attachmentId=${attachmentID})`;
 
 			const response = await fetch(url, {
 				method: 'DELETE',
@@ -1721,7 +1760,7 @@ sap.ui.define([
 				throw new Error(`Delete failed: ${response.status} ${response.statusText} ${text}`);
 			}
 
-			return true; 
+			return true;
 		},
 
 		createRequestHeader: async function (oInputData, oReqModel) {
@@ -1790,27 +1829,27 @@ sap.ui.define([
 				if (aContexts.length > 0) {
 					const oData = aContexts[0].getObject();
 					oReqModel.setProperty("/req_header", {
-						purpose       	: oData.OBJECTIVE_PURPOSE || "",
-						reqid         	: oData.REQUEST_ID || "",
-						tripstartdate 	: oData.TRIP_START_DATE || "",
-						tripenddate   	: oData.TRIP_END_DATE || "",
-						eventstartdate	: oData.EVENT_START_DATE || "",
-						eventenddate  	: oData.EVENT_END_DATE || "",
-						location      	: oData.LOCATION || "",
-						grptype       	: oData.IND_OR_GROUP_DESC || "",
-						transport     	: oData.TYPE_OF_TRANSPORTATION || "",
-						reqstatus		: oData.STATUS_DESC || "",
-						costcenter    	: oData.COST_CENTER || "",
-						altcostcenter 	: oData.ALTERNATE_COST_CENTER || "",
-						cashadvamt    	: oData.CASH_ADVANCE || 0,
-						reqamt        	: oData.PREAPPROVAL_AMOUNT || 0,
-						reqtype       	: oData.REQUEST_TYPE_DESC || "",
-						comment       	: oData.REMARK || "",
-						doc1          	: oData.ATTACHMENT1 || "",
-						doc2          	: oData.ATTACHMENT2 || "",
-						claimtype	  	: oData.CLAIM_TYPE_ID || "",
-						claimtypedesc  	: oData.CLAIM_TYPE_DESC || "",
-						reqdate			: oData.REQUEST_DATE
+						purpose: oData.OBJECTIVE_PURPOSE || "",
+						reqid: oData.REQUEST_ID || "",
+						tripstartdate: oData.TRIP_START_DATE || "",
+						tripenddate: oData.TRIP_END_DATE || "",
+						eventstartdate: oData.EVENT_START_DATE || "",
+						eventenddate: oData.EVENT_END_DATE || "",
+						location: oData.LOCATION || "",
+						grptype: oData.IND_OR_GROUP_DESC || "",
+						transport: oData.TYPE_OF_TRANSPORTATION || "",
+						reqstatus: oData.STATUS_DESC || "",
+						costcenter: oData.COST_CENTER || "",
+						altcostcenter: oData.ALTERNATE_COST_CENTER || "",
+						cashadvamt: oData.CASH_ADVANCE || 0,
+						reqamt: oData.PREAPPROVAL_AMOUNT || 0,
+						reqtype: oData.REQUEST_TYPE_DESC || "",
+						comment: oData.REMARK || "",
+						doc1: oData.ATTACHMENT1 || "",
+						doc2: oData.ATTACHMENT2 || "",
+						claimtype: oData.CLAIM_TYPE_ID || "",
+						claimtypedesc: oData.CLAIM_TYPE_DESC || "",
+						reqdate: oData.REQUEST_DATE
 					});
 
 				} else {
@@ -1827,7 +1866,7 @@ sap.ui.define([
 		async _getEmpIdDetail(sEMAIL) {
 			const oModel = this.getOwnerComponent().getModel();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new sap.ui.model.Filter("EMAIL", "EQ", sEMAIL)
+				new sap.ui.model.Filter("EMAIL", "EQ", sEMAIL.toLowerCase()) //change email to lowercase
 			]);
 
 			try {
@@ -1843,7 +1882,9 @@ sap.ui.define([
 						pos: oData.POS,
 						dep: oData.DEP,
 						unit_section: oData.UNIT_SECTION,
+						b_place: oData.B_PLACE,
 						marital: oData.MARITAL,
+						job_group: oData.JOB_GROUP,
 						office_location: oData.OFFICE_LOCATION,
 						address_line1: oData.ADDRESS_LINE1,
 						address_line2: oData.ADDRESS_LINE2,
@@ -1851,13 +1892,35 @@ sap.ui.define([
 						postcode: oData.POSTCODE,
 						state: oData.STATE,
 						country: oData.COUNTRY,
+						contact_no: oData.CONTACT_NO,
 						email: oData.EMAIL,
 						direct_supperior: oData.DIRECT_SUPPERIOR,
+						role: oData.ROLE,
+						user_type: oData.USER_TYPE,
+						mobile_bill_eligibility: oData.MOBILE_BILL_ELIGIBILITY,
+						mobile_bill_elig_amount: oData.MOBILE_BILL_ELIG_AMOUNT,
 						employee_type: oData.EMPLOYEE_TYPE,
 						position_name: oData.POSITION_NAME,
 						position_start_date: oData.POSITION_START_DATE,
 						position_event_reason: oData.POSITION_EVENT_REASON,
+						confirmation_date: oData.CONFIRMATION_DATE,
 						effective_date: oData.EFFECTIVE_DATE,
+						updated_date: oData.UPDATED_DATE,
+						inserted_date: oData.INSERTED_DATE,
+						medical_insurance_entitlement: oData.MEDICAL_INSURANCE_ENTITLEMENT,
+						descr: {
+							cc: null,
+							dep: null,
+							unit_section: null,
+							marital: null,
+							job_group: null,
+							state: null,
+							country: null,
+							direct_supperior: null,
+							role: null,
+							user_type: null,
+							employee_type: null
+						}
 					};
 				} else {
 					console.warn("No employee found with email: " + sEMAIL);
@@ -2081,9 +2144,9 @@ sap.ui.define([
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 				const a = aCtx.map((ctx) => ctx.getObject());
 
-/* 				a.forEach((it) => {
-					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
-				}); */
+				/* 				a.forEach((it) => {
+									if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
+								}); */
 
 				oReq.setProperty("/claim_header_list", a);
 				oReq.setProperty("/claim_header_count", a.length);
@@ -2178,7 +2241,7 @@ sap.ui.define([
 		_navToPARStatus() {
 			const oReq = this.getOwnerComponent().getModel("request_status");
 			const oModel = this.getOwnerComponent().getModel('employee_view');
-			
+
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
 			PARequestSharedFunction.getPARHeaderList(oReq, oModel);
 			var oRouter = this.getOwnerComponent().getRouter();
@@ -2217,7 +2280,9 @@ sap.ui.define([
 			let id = oEvent.getParameters().id;
 			var oRouter = this.getOwnerComponent().getRouter();
 			if (id.includes("dashboard-claim")) {
-				oRouter.navTo("ClaimStatus");
+				this.getCLAIMHeaderList();
+				var oRouter = this.getOwnerComponent().getRouter();
+				oRouter.navTo("ClaimStatus")
 			} else if (id.includes("request")) {
 				this._navToPARStatus();
 			}
@@ -2251,7 +2316,7 @@ sap.ui.define([
 						var oUserModel = new sap.ui.model.json.JSONModel({ email: email });
 						that.getView().setModel(oUserModel, 'user');
 
-						const emp_data = await that._getEmpIdDetail(email);
+						const emp_data = await that._getEmpIdDetail(email.toLowerCase());
 						const oReqModel = that._getReqModel().getData();
 						oReqModel.user = emp_data.eeid;
 						that._getReqModel().setData(oReqModel);

@@ -13,11 +13,14 @@ service eclaim_srv {
     }
 
     type budgetdata {
-        YEAR           : String(4);
-        INTERNAL_ORDER : String;
-        FUND_CENTER    : String;
-        MATERIAL_GROUP : String;
-        AMOUNT         : Decimal;
+        YEAR            : String(4);
+        INTERNAL_ORDER  : String;
+        FUND_CENTER     : String;
+        MATERIAL_GROUP  : String;
+        COMMITMENT_ITEM : String;
+        AMOUNT          : Decimal;
+        INDICATOR       : String; //CLM and REQ
+        ACTION          : String; //Submit, Reject, Approve
     }
 
     type BudgetResult {
@@ -25,6 +28,7 @@ service eclaim_srv {
         INTERNAL_ORDER     : String;
         FUND_CENTER        : String;
         MATERIAL_GROUP     : String;
+        COMMITMENT_ITEM    : String;
         AMOUNT             : Decimal(15, 2);
         PREV_CONSUMED      : Decimal(15, 2);
         NEW_CONSUMED       : Decimal(15, 2);
@@ -223,5 +227,7 @@ service eclaim_srv {
     entity ZDB_STRUCTURE                 as projection on ECLAIM.ZDB_STRUCTURE;
 
     function runjob()                                              returns Response;
+
+    entity ZDISBURSEMENT_STATUS          as projection on ECLAIM.ZDISBURSEMENT_STATUS;
 
 };
