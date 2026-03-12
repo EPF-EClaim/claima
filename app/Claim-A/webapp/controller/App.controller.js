@@ -46,8 +46,8 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.App", {
 
-		_ReqAttachmentFile1: null, 
-		_ReqAttachmentFile2: null,  
+		_ReqAttachmentFile1: null,
+		_ReqAttachmentFile2: null,
 
 		onInit: async function () {
 			// oReportModel
@@ -148,8 +148,8 @@ sap.ui.define([
 					break;
 				case "mysubstitution":
 					// if (type === "Approver" || type === "Super Admin") {
-						var oRouter = this.getOwnerComponent().getRouter();
-						oRouter.navTo("ManageSub");
+					var oRouter = this.getOwnerComponent().getRouter();
+					oRouter.navTo("ManageSub");
 					// } else {
 					// 	var message = this._getTexti18n("msg_unauthorized_substitution");
 					// 	sap.m.MessageBox.error(message);
@@ -928,7 +928,7 @@ sap.ui.define([
 			var token = tokenData["csrfToken"];
 			if (!token) {
 				// cannot proceed without token
-				sap.ui.getCore().setModel(null,"oToken");
+				sap.ui.getCore().setModel(null, "oToken");
 				return false;
 			}
 
@@ -944,18 +944,18 @@ sap.ui.define([
 				},
 				crossDomain: true,
 				data: JSON.stringify({
-						__metadata: {
-							uri: 'Attachment'
-						},
-						deletable: true,
-						fileName: oInputModel.getProperty("/attachment/fileName"),
-						moduleCategory: 'UNSPECIFIED',
-						module: 'DEFAULT',
-						userId: 'SFAPI',
-						viewable: true,
-						searchable: true,
-						fileContent: oInputModel.getProperty("/attachment/fileContent")
-					}),
+					__metadata: {
+						uri: 'Attachment'
+					},
+					deletable: true,
+					fileName: oInputModel.getProperty("/attachment/fileName"),
+					moduleCategory: 'UNSPECIFIED',
+					module: 'DEFAULT',
+					userId: 'SFAPI',
+					viewable: true,
+					searchable: true,
+					fileContent: oInputModel.getProperty("/attachment/fileContent")
+				}),
 				success: function (data, textStatus, jqXHR) {
 					// get generated attachment number
 					oInputModel.setProperty("/claim_header/attachment_email_approver", data.d.attachmentId);
@@ -976,12 +976,12 @@ sap.ui.define([
 		},
 
 		_fetchToken: function () {
-			var token = {			
-				"csrfToken" : ""
+			var token = {
+				"csrfToken": ""
 			};
 
 			var oToken = new JSONModel(token);
-			sap.ui.getCore().setModel(oToken,"oToken");
+			sap.ui.getCore().setModel(oToken, "oToken");
 			var tokenModel = sap.ui.getCore().getModel("oToken").getData();
 
 			$.ajax({
@@ -1502,12 +1502,12 @@ sap.ui.define([
 			} else {
 				var attachment_1 = await this.getFileAsBinary("req_attachment_1");
 				// var attachment1_ID = await this.postFilesToSF( oData.doc1, attachment_1 );
-				var attachment1_ID = await Attachment.postAttachment( oData.doc1, attachment_1 );
+				var attachment1_ID = await Attachment.postAttachment(oData.doc1, attachment_1);
 				oData.doc1 = attachment1_ID;
 				if (oData.doc2) {
 					var attachment_2 = await this.getFileAsBinary("req_attachment_2");
 					// var attachment2_ID = await this.postFilesToSF( oData.doc2, attachment_2 );
-					var attachment2_ID = await Attachment.postAttachment( oData.doc2, attachment_2 );
+					var attachment2_ID = await Attachment.postAttachment(oData.doc2, attachment_2);
 					oData.doc2 = attachment2_ID;
 				}
 				this.createRequestHeader(oData, oReqModel);
@@ -1515,16 +1515,16 @@ sap.ui.define([
 			sap.ui.core.BusyIndicator.hide();
 		},
 
-		onImportChange1( oEvent ) {
+		onImportChange1(oEvent) {
 			this._ReqAttachmentFile1 = oEvent.getParameters("files").files[0];
 		},
-		
-		onImportChange2( oEvent ) {
+
+		onImportChange2(oEvent) {
 			this._ReqAttachmentFile2 = oEvent.getParameters("files").files[0];
 		},
 
 		isAllowedFile(file) {
-			
+
 			const ALLOWED_MIME_TYPES = new Set([
 				'application/pdf',
 				'image/jpeg',
@@ -1537,36 +1537,36 @@ sap.ui.define([
 
 			if (!file) return { ok: false, reason: 'No file provided.' };
 
-				// Prefer MIME type check
-				const mime = (file.type || '').toLowerCase().trim();
-				if (mime) {
-					// Allow any image/* plus application/pdf, but also restrict to known image types above for safety.
-					const isPdf = mime === 'application/pdf';
-					const isImage = mime.startsWith('image/') && ALLOWED_MIME_TYPES.has(mime);
-					if (isPdf || isImage) {
-					return { ok: true };
-					}
-				}
-
-				// Fallback to extension if MIME is missing or generic (e.g., application/octet-stream)
-				const name = file.name || '';
-				const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
-				if (ALLOWED_EXTENSIONS.has(ext)) {
+			// Prefer MIME type check
+			const mime = (file.type || '').toLowerCase().trim();
+			if (mime) {
+				// Allow any image/* plus application/pdf, but also restrict to known image types above for safety.
+				const isPdf = mime === 'application/pdf';
+				const isImage = mime.startsWith('image/') && ALLOWED_MIME_TYPES.has(mime);
+				if (isPdf || isImage) {
 					return { ok: true };
 				}
+			}
 
-				return { ok: false, reason: 'Only PDF and image files are allowed.' };
+			// Fallback to extension if MIME is missing or generic (e.g., application/octet-stream)
+			const name = file.name || '';
+			const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
+			if (ALLOWED_EXTENSIONS.has(ext)) {
+				return { ok: true };
+			}
+
+			return { ok: false, reason: 'Only PDF and image files are allowed.' };
 		},
 
 
-		getFileAsBinary: function( attachmentID ){ 
+		getFileAsBinary: function (attachmentID) {
 
-			return new Promise ((resolve, reject) => {
+			return new Promise((resolve, reject) => {
 
 				const file =
-				attachmentID === 'req_attachment_1'
-					? this._ReqAttachmentFile1
-					: this._ReqAttachmentFile2;
+					attachmentID === 'req_attachment_1'
+						? this._ReqAttachmentFile1
+						: this._ReqAttachmentFile2;
 
 				// Validate file presence
 				if (!file) {
@@ -1589,7 +1589,7 @@ sap.ui.define([
 					var vContent = e.currentTarget.result;
 					resolve(vContent.split(",")[1]);
 				}
-				
+
 				reader.onerror = (e) => {
 					reject(new Error(`Failed to read file: ${e?.target?.error?.message || 'Unknown error'}`));
 				};
@@ -1606,7 +1606,7 @@ sap.ui.define([
 		postFilesToSF: async function (fileName, fileString) {
 
 			// Write to Success Factors API
-			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment"; 
+			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment";
 
 			try {
 				const response = await fetch(sServiceUrl, {
@@ -1624,7 +1624,7 @@ sap.ui.define([
 						viewable: true,
 						searchable: true,
 						fileContent: fileString
-					}) 
+					})
 				});
 
 				if (!response.ok) {
@@ -1647,7 +1647,7 @@ sap.ui.define([
 					}
 				}
 
-				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(')+1,jsonData.id.indexOf(')')-1);
+				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(') + 1, jsonData.id.indexOf(')') - 1);
 
 				return attachmentNumber;
 			} catch (error) {
@@ -1657,9 +1657,9 @@ sap.ui.define([
 			}
 		},
 
-		postMDF: async function ( reqID, attachment1, attachment2) {
-		// Write to Success Factors API
-			var sServiceUrl = "SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS_Parent"; 
+		postMDF: async function (reqID, attachment1, attachment2) {
+			// Write to Success Factors API
+			var sServiceUrl = "SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS_Parent";
 
 			try {
 				const response = await fetch(sServiceUrl, {
@@ -1670,22 +1670,22 @@ sap.ui.define([
 							uri: 'cust_EPF_CLAIM_ATTACHMENTS_Parent'
 						},
 						Claim_ID: reqID,
-						cust_Parent_attachment1Nav : {
-							__metadata : {
+						cust_Parent_attachment1Nav: {
+							__metadata: {
 								uri: `Attachment('${attachment1}')`
 							}
 						},
-						...( String(attachment2).trim().length > 0 && attachment2 ? {
-								cust_Parent_attachment2Nav : {
-									__metadata : {
-										uri: `Attachment('${attachment2}')`
-									}
+						...(String(attachment2).trim().length > 0 && attachment2 ? {
+							cust_Parent_attachment2Nav: {
+								__metadata: {
+									uri: `Attachment('${attachment2}')`
 								}
-							} : {}
+							}
+						} : {}
 						)
-					}) 
+					})
 				});
-				
+
 				if (!response.ok) {
 					const errText = await response.text().catch(() => "");
 					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
@@ -1698,11 +1698,11 @@ sap.ui.define([
 				console.log("Error creating MDF: " + error);
 				MessageToast.show("Error creating MDF: " + error);
 				return false;
-			}	
+			}
 		},
 
 		async deleteAttachment(attachmentID) {
-			var url = `SuccessFactors_API/odata/v2/Attachment(attachmentId=${attachmentID})`; 
+			var url = `SuccessFactors_API/odata/v2/Attachment(attachmentId=${attachmentID})`;
 
 			const response = await fetch(url, {
 				method: 'DELETE',
@@ -1716,7 +1716,7 @@ sap.ui.define([
 				throw new Error(`Delete failed: ${response.status} ${response.statusText} ${text}`);
 			}
 
-			return true; 
+			return true;
 		},
 
 		createRequestHeader: async function (oInputData, oReqModel) {
@@ -1785,27 +1785,27 @@ sap.ui.define([
 				if (aContexts.length > 0) {
 					const oData = aContexts[0].getObject();
 					oReqModel.setProperty("/req_header", {
-						purpose       	: oData.OBJECTIVE_PURPOSE || "",
-						reqid         	: oData.REQUEST_ID || "",
-						tripstartdate 	: oData.TRIP_START_DATE || "",
-						tripenddate   	: oData.TRIP_END_DATE || "",
-						eventstartdate	: oData.EVENT_START_DATE || "",
-						eventenddate  	: oData.EVENT_END_DATE || "",
-						location      	: oData.LOCATION || "",
-						grptype       	: oData.IND_OR_GROUP_DESC || "",
-						transport     	: oData.TYPE_OF_TRANSPORTATION || "",
-						reqstatus		: oData.STATUS_DESC || "",
-						costcenter    	: oData.COST_CENTER || "",
-						altcostcenter 	: oData.ALTERNATE_COST_CENTER || "",
-						cashadvamt    	: oData.CASH_ADVANCE || 0,
-						reqamt        	: oData.PREAPPROVAL_AMOUNT || 0,
-						reqtype       	: oData.REQUEST_TYPE_DESC || "",
-						comment       	: oData.REMARK || "",
-						doc1          	: oData.ATTACHMENT1 || "",
-						doc2          	: oData.ATTACHMENT2 || "",
-						claimtype	  	: oData.CLAIM_TYPE_ID || "",
-						claimtypedesc  	: oData.CLAIM_TYPE_DESC || "",
-						reqdate			: oData.REQUEST_DATE
+						purpose: oData.OBJECTIVE_PURPOSE || "",
+						reqid: oData.REQUEST_ID || "",
+						tripstartdate: oData.TRIP_START_DATE || "",
+						tripenddate: oData.TRIP_END_DATE || "",
+						eventstartdate: oData.EVENT_START_DATE || "",
+						eventenddate: oData.EVENT_END_DATE || "",
+						location: oData.LOCATION || "",
+						grptype: oData.IND_OR_GROUP_DESC || "",
+						transport: oData.TYPE_OF_TRANSPORTATION || "",
+						reqstatus: oData.STATUS_DESC || "",
+						costcenter: oData.COST_CENTER || "",
+						altcostcenter: oData.ALTERNATE_COST_CENTER || "",
+						cashadvamt: oData.CASH_ADVANCE || 0,
+						reqamt: oData.PREAPPROVAL_AMOUNT || 0,
+						reqtype: oData.REQUEST_TYPE_DESC || "",
+						comment: oData.REMARK || "",
+						doc1: oData.ATTACHMENT1 || "",
+						doc2: oData.ATTACHMENT2 || "",
+						claimtype: oData.CLAIM_TYPE_ID || "",
+						claimtypedesc: oData.CLAIM_TYPE_DESC || "",
+						reqdate: oData.REQUEST_DATE
 					});
 
 				} else {
@@ -1822,7 +1822,7 @@ sap.ui.define([
 		async _getEmpIdDetail(sEMAIL) {
 			const oModel = this.getOwnerComponent().getModel();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new sap.ui.model.Filter("EMAIL", "EQ", sEMAIL)
+				new sap.ui.model.Filter("EMAIL", "EQ", sEMAIL.toLowerCase()) //change email to lowercase
 			]);
 
 			try {
@@ -2076,9 +2076,9 @@ sap.ui.define([
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 				const a = aCtx.map((ctx) => ctx.getObject());
 
-/* 				a.forEach((it) => {
-					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
-				}); */
+				/* 				a.forEach((it) => {
+									if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
+								}); */
 
 				oReq.setProperty("/claim_header_list", a);
 				oReq.setProperty("/claim_header_count", a.length);
@@ -2173,7 +2173,7 @@ sap.ui.define([
 		_navToPARStatus() {
 			const oReq = this.getOwnerComponent().getModel("request_status");
 			const oModel = this.getOwnerComponent().getModel('employee_view');
-			
+
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
 			PARequestSharedFunction.getPARHeaderList(oReq, oModel);
 			var oRouter = this.getOwnerComponent().getRouter();
@@ -2212,7 +2212,9 @@ sap.ui.define([
 			let id = oEvent.getParameters().id;
 			var oRouter = this.getOwnerComponent().getRouter();
 			if (id.includes("dashboard-claim")) {
-				oRouter.navTo("ClaimStatus");
+				this.getCLAIMHeaderList();
+				var oRouter = this.getOwnerComponent().getRouter();
+				oRouter.navTo("ClaimStatus")
 			} else if (id.includes("request")) {
 				this._navToPARStatus();
 			}
@@ -2246,7 +2248,7 @@ sap.ui.define([
 						var oUserModel = new sap.ui.model.json.JSONModel({ email: email });
 						that.getView().setModel(oUserModel, 'user');
 
-						const emp_data = await that._getEmpIdDetail(email);
+						const emp_data = await that._getEmpIdDetail(email.toLowerCase());
 						const oReqModel = that._getReqModel().getData();
 						oReqModel.user = emp_data.eeid;
 						that._getReqModel().setData(oReqModel);
