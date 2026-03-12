@@ -8,7 +8,7 @@ entity ZEMP_MASTER : managed {
         GRADE                         : String;
         CC                            : String;
         POS                           : String;
-        DEP                           : String;
+        DEP                           : String(10);
         UNIT_SECTION                  : String;
         B_PLACE                       : String;
         MARITAL                       : String(2);
@@ -636,7 +636,7 @@ entity ZBUDGET : managed {
         PROJECT_CODE    : String         @Common.Label: 'Project Code';
         BUDGET_OWNER_ID : String         @Common.Label: 'Budget Owner';
         WBS_CODE        : String         @Common.Label: 'WBS';
-        CURRENCY        : String         @Common.Label: 'Currency';
+        CURRENCY        : String(3)      @Common.Label: 'Currency';
         ZCOST_CENTER    : Association to ZCOST_CENTER
                               on ZCOST_CENTER.COST_CENTER_ID = FUND_CENTER;
         ZINTERNAL_ORDER : Association to ZINTERNAL_ORDER
@@ -646,7 +646,9 @@ entity ZBUDGET : managed {
         ZPROJECT_HDR    : Association to ZPROJECT_HDR
                               on ZPROJECT_HDR.PROJECT_CODE_IO = PROJECT_CODE;
         ZMATERIAL_GROUP : Association to ZMATERIAL_GROUP
-                              on ZMATERIAL_GROUP.MATERIAL_CODE_ID = MATERIAL_GROUP
+                              on ZMATERIAL_GROUP.MATERIAL_CODE_ID = MATERIAL_GROUP;
+        ZCURRENCY       : Association to ZCURRENCY
+                              on ZCURRENCY.CURRENCY_ID = CURRENCY;
 }
 
 entity ZCLAIM_CATEGORY : managed {
@@ -759,19 +761,19 @@ entity ZJOB_GROUP : managed {
         JOB_GROUP_DESC : String     @Common.Label: 'Job Group ID';
         START_DATE     : Date       @Common.Label: 'Start Date';
         END_DATE       : Date       @Common.Label: 'End Date';
-        STATUS         : String     @Common.Label: 'Status';
+        STATUS         : String(10) @Common.Label: 'Status';
 }
 
 entity ZDEPARTMENT : managed {
-    key DEPARTMENT_ID      : String  @mandatory  @Common.Label: 'Department ID';
-        DEPARTMENT_DESC    : String  @Common.Label: 'Department Description';
-        START_DATE         : Date    @Common.Label: 'Start Date';
-        END_DATE           : Date    @Common.Label: 'End Date';
-        STATUS             : String  @Common.Label: 'Status';
-        HEAD_OF_DEPARTMENT : String  @Common.Label: 'Head of Department';
-        SHORT_CODE         : String  @Common.Label: 'Short Code';
-        COST_CENTER        : String  @Common.Label: 'Cost Center';
-        DIVISION           : String  @Common.Label: 'Division';
+    key DEPARTMENT_ID      : String(10)  @mandatory  @Common.Label: 'Department ID';
+        DEPARTMENT_DESC    : String      @Common.Label: 'Department Description';
+        START_DATE         : Date        @Common.Label: 'Start Date';
+        END_DATE           : Date        @Common.Label: 'End Date';
+        STATUS             : String(10)  @Common.Label: 'Status';
+        HEAD_OF_DEPARTMENT : String      @Common.Label: 'Head of Department';
+        SHORT_CODE         : String      @Common.Label: 'Short Code';
+        COST_CENTER        : String      @Common.Label: 'Cost Center';
+        DIVISION           : String      @Common.Label: 'Division';
 }
 
 entity ZROLE : managed {
@@ -955,18 +957,21 @@ entity ZEMP_CA_PAYMENT : managed {
 }
 
 entity ZPERDIEM_ENT : managed {
-    key PERSONAL_GRADE_FROM  : String        @mandatory  @Common.Label: 'Personal Grade From';
-    key PERSONAL_GRADE_TO    : String        @mandatory  @Common.Label: 'Personal Grade To';
-    key LOCATION             : String        @mandatory  @Common.Label: 'Location';
+    key PERSONAL_GRADE       : String        @mandatory  @Common.Label: 'Personal Grade From';
+    key LOCATION             : String(2)     @mandatory  @Common.Label: 'Location';
+    key CLAIM_TYPE_ID        : String        @mandatory  @Common.Label: 'Claim Type ID';
+    key CLAIM_TYPE_ITEM_ID   : String        @mandatory  @Common.Label: 'Claim Type Item ID';
     key EFFECTIVE_START_DATE : Date          @mandatory  @Common.Label: 'Effective Start Date';
     key EFFECTIVE_END_DATE   : Date          @mandatory  @Common.Label: 'Effective End Date';
-        CURRENCY             : String        @Common.Label: 'Currency';
+        CURRENCY             : String(3)     @Common.Label: 'Currency';
         AMOUNT               : Decimal(7, 2) @Common.Label: 'Amount';
-        CLAIM_TYPE_ID        : String        @Common.Label: 'Claim Type ID';
-        CLAIM_TYPE_ITEM_ID   : String        @Common.Label: 'Claim Type Item ID';
         ZCLAIM_TYPE_ITEM     : Association to one ZCLAIM_TYPE_ITEM
                                    on  ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID
                                    and ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID      = CLAIM_TYPE_ID;
+        ZREGION              : Association to ZREGION
+                                   on ZREGION.REGION_ID = LOCATION;
+        ZCURRENCY            : Association to ZCURRENCY
+                                   on ZCURRENCY.CURRENCY_ID = CURRENCY;
 }
 
 entity ZHOUSING_LOAN_SCHEME : managed {
@@ -1040,7 +1045,7 @@ entity ZMOBILE_CATEGORY_PURPOSE : managed {
         MOBILE_CATEGORY_PURPOSE_DESC : String     @Common.Label: 'Category/Purpose (Mobile) Description';
         START_DATE                   : Date       @Common.Label: 'Start Date';
         END_DATE                     : Date       @Common.Label: 'End Date';
-        STATUS                       : String     @Common.Label: 'Status';
+        STATUS                       : String(10) @Common.Label: 'Status';
 
 }
 

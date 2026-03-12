@@ -635,4 +635,23 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.MATERIAL_CODE,
                 TRIP_START_DATE
         }
+
+    entity ZEMP_PREAPPROVAL_DETAILS            as
+        projection on ECLAIM.ZREQUEST_HEADER {
+            key REQUEST_ID,
+            key ZREQUEST_ITEM.REQUEST_SUB_ID,
+                EMP_ID,
+                SUBMITTED_DATE,
+                //SUBMISSION_TYPE,
+                CASH_ADVANCE as CASH_ADVANCE_AMOUNT,
+                //FINAL_AMOUNT_TO_RECEIVE,
+                LAST_MODIFIED_DATE,
+                ZREQUEST_ITEM.CASH_ADVANCE,
+                ZREQUEST_ITEM.EST_AMOUNT,
+                //ZCLAIM_ITEM.RECEIPT_DATE,
+                ZREQUEST_ITEM.COST_CENTER,
+                ZREQUEST_ITEM.GL_ACCOUNT,
+                ZREQUEST_ITEM.MATERIAL_CODE,
+                TRIP_START_DATE
+        }      
 };
