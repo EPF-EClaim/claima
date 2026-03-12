@@ -623,35 +623,27 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             key CLAIM_ID,
             key ZCLAIM_ITEM.CLAIM_SUB_ID,
                 EMP_ID,
-                SUBMITTED_DATE,
-                SUBMISSION_TYPE,
-                CASH_ADVANCE_AMOUNT,
-                FINAL_AMOUNT_TO_RECEIVE,
                 LAST_MODIFIED_DATE,
-                ZCLAIM_ITEM.AMOUNT,
+                SUBMITTED_DATE,
+                FINAL_AMOUNT_TO_RECEIVE,
                 ZCLAIM_ITEM.RECEIPT_DATE,
+                ZCLAIM_ITEM.AMOUNT,
                 ZCLAIM_ITEM.COST_CENTER,
                 ZCLAIM_ITEM.GL_ACCOUNT,
-                ZCLAIM_ITEM.MATERIAL_CODE,
-                TRIP_START_DATE
+                ZCLAIM_ITEM.MATERIAL_CODE
         }
 
-    entity ZEMP_PREAPPROVAL_DETAILS            as
+    entity ZEMP_PREAPPROVAL_DETAILS      as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
             key ZREQUEST_ITEM.REQUEST_SUB_ID,
                 EMP_ID,
-                SUBMITTED_DATE,
-                //SUBMISSION_TYPE,
-                CASH_ADVANCE as CASH_ADVANCE_AMOUNT,
-                //FINAL_AMOUNT_TO_RECEIVE,
                 LAST_MODIFIED_DATE,
-                ZREQUEST_ITEM.CASH_ADVANCE,
+                SUBMITTED_DATE,
+                CASH_ADVANCE,
                 ZREQUEST_ITEM.EST_AMOUNT,
-                //ZCLAIM_ITEM.RECEIPT_DATE,
                 ZREQUEST_ITEM.COST_CENTER,
                 ZREQUEST_ITEM.GL_ACCOUNT,
-                ZREQUEST_ITEM.MATERIAL_CODE,
                 TRIP_START_DATE
-        }      
+        }
 };
