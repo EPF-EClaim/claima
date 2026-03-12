@@ -321,7 +321,7 @@ module.exports = (srv) => {
       for (var entry of PreApprove) {
 
         const results = await tx.run(
-          UPDATE(ZREQUEST_ITEM).set({ SEND_TO_SF: 0 }).where({ REQUEST_ID: entry.REQUEST_ID, REQUEST_SUB_ID: entry.REQUEST_SUB_ID })
+          UPDATE(ZREQUEST_ITEM).set({ SEND_TO_SF: 1 }).where({ REQUEST_ID: entry.REQUEST_ID, REQUEST_SUB_ID: entry.REQUEST_SUB_ID })
         );
         
       }
