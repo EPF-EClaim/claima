@@ -137,7 +137,7 @@ sap.ui.define([
 			//End EY_ATHIRAH
 
 			switch (oKey) {
-				case "sidenav_claimsubmission":
+				case "nav_claimsubmission":
 					this.onNav_ClaimSubmission();
 					break;
 				case "createrequest":
@@ -302,9 +302,9 @@ sap.ui.define([
 					"unit_section": null,
 					"marital": null,
 					"job_group": null,
+					"office_location": null,
 					"state": null,
 					"country": null,
-					"direct_supperior": null,
 					"role": null,
 					"user_type": null,
 					"employee_type": null
@@ -347,6 +347,7 @@ sap.ui.define([
 					}
 				},
 				"is_new": false,
+				"is_approver": false,
 				"claim_header": {
 					"claim_id": null,
 					"emp_id": null,
@@ -433,44 +434,82 @@ sap.ui.define([
 			// set new claim submission model;
 			var oInputModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 			//// set employee data
-			var sUserId = sap.ushell ? sap.ushell.Container.getUser().getId() : null;
-			var emp_data = await this._getEmpIdDetail(sUserId);
-
-			//// placeholder - set placeholder data
+			var userModelData = this.getView().getModel('user').getData();
+			const emp_data = await this._getEmpIdDetail(userModelData.email);
 			if (emp_data) {
 				oInputModel.setProperty("/emp_master", emp_data);
+				await this._getEmpDataDescr(oInputModel);
 			}
-			else {
-				oInputModel.setProperty("/emp_master/eeid", "DEFAULT_USER");
-				oInputModel.setProperty("/emp_master/name", "NAME11380");
-				oInputModel.setProperty("/emp_master/grade", "G3");
-				oInputModel.setProperty("/emp_master/cc", "108S37362");
-				oInputModel.setProperty("/emp_master/pos", "10003793");
-				oInputModel.setProperty("/emp_master/dep", "3600100000");
-				oInputModel.setProperty("/emp_master/unit_section", "3700903102");
-				oInputModel.setProperty("/emp_master/marital", "M");
-				oInputModel.setProperty("/emp_master/office_location", "3700903100");
-				oInputModel.setProperty("/emp_master/address_line1", "EE ADDRESS1");
-				oInputModel.setProperty("/emp_master/address_line2", "EE ADDRESS2");
-				oInputModel.setProperty("/emp_master/address_line3", "EE ADDRESS3");
-				oInputModel.setProperty("/emp_master/postcode", "88888");
-				oInputModel.setProperty("/emp_master/state", "SEL");
-				oInputModel.setProperty("/emp_master/country", "MYS");
-				oInputModel.setProperty("/emp_master/email", "1900668smsm1@epf.gov.my.test.test");
-				oInputModel.setProperty("/emp_master/direct_supperior", "1902045");
-				oInputModel.setProperty("/emp_master/employee_type", "2378");
-				oInputModel.setProperty("/emp_master/position_name", "MAIN DUTY");
-				oInputModel.setProperty("/emp_master/position_start_date", "1993-06-16");
-				oInputModel.setProperty("/emp_master/position_event_reason", "Z302");
-				oInputModel.setProperty("/emp_master/effective_date", "1993-12-16");
-				oInputModel.setProperty("/emp_master/descr/cc", "SA Seb. Jaya-Penguatkuasaan");
-				oInputModel.setProperty("/emp_master/descr/dep", "Department 1");
-				oInputModel.setProperty("/emp_master/descr/unit_section", "test unit section");
-				oInputModel.setProperty("/emp_master/descr/marital", "Married");
-				oInputModel.setProperty("/emp_master/descr/state", "Selangor");
-				oInputModel.setProperty("/emp_master/descr/country", "Malaysia");
-				oInputModel.setProperty("/emp_master/descr/direct_supperior", "test direct supperior");
-				oInputModel.setProperty("/emp_master/descr/employee_type", "test employee type");
+		},
+
+		_getEmpDataDescr: async function (oModel) {
+			// cost center
+			if (oModel.getProperty("/emp_master/cc")) {
+				oModel.setProperty("/emp_master/descr/cc", await this._bindEclaimDescr("/ZCOST_CENTER", oModel.getProperty("/emp_master/cc"), 'COST_CENTER_ID', 'COST_CENTER_DESC'));
+			}
+			// department
+			if (oModel.getProperty("/emp_master/dep")) {
+				oModel.setProperty("/emp_master/descr/dep", await this._bindEclaimDescr("/ZDEPARTMENT", oModel.getProperty("/emp_master/dep"), 'DEPARTMENT_ID', 'DEPARTMENT_DESC'));
+			}
+			// branch / unit section
+			if (oModel.getProperty("/emp_master/unit_section")) {
+				oModel.setProperty("/emp_master/descr/unit_section", await this._bindEclaimDescr("/ZBRANCH", oModel.getProperty("/emp_master/unit_section"), 'BRANCH_ID', 'BRANCH_DESC'));
+			}
+			// // marital status
+			// if (oModel.getProperty("/emp_master/marital")) {
+			// 	oModel.setProperty("/emp_master/descr/marital", await this._bindEclaimDescr("/ZMARITAL_STAT", oModel.getProperty("/emp_master/marital"), 'MARRIAGE_CATEGORY_ID', 'MARRIAGE_CATEGORY_DESC'));
+			// }
+			// job group
+			if (oModel.getProperty("/emp_master/job_group")) {
+				oModel.setProperty("/emp_master/descr/job_group", await this._bindEclaimDescr("/ZJOB_GROUP", oModel.getProperty("/emp_master/job_group"), 'JOB_GROUP_ID', 'JOB_GROUP_DESC'));
+			}
+			// office location
+			if (oModel.getProperty("/emp_master/office_location")) {
+				oModel.setProperty("/emp_master/descr/office_location", await this._bindEclaimDescr("/ZOFFICE_LOCATION", oModel.getProperty("/emp_master/office_location"), 'LOCATION_ID', 'LOCATION_DESC', oModel.getProperty("/emp_master/state"), 'STATE_ID'));
+			}
+			// state
+			if (oModel.getProperty("/emp_master/state")) {
+				oModel.setProperty("/emp_master/descr/state", await this._bindEclaimDescr("/ZSTATE", oModel.getProperty("/emp_master/state"), 'STATE_ID', 'STATE_DESC', oModel.getProperty("/emp_master/country"), 'COUNTRY_ID'));
+			}
+			// country
+			if (oModel.getProperty("/emp_master/country")) {
+				oModel.setProperty("/emp_master/descr/country", await this._bindEclaimDescr("/ZCOUNTRY", oModel.getProperty("/emp_master/country"), 'COUNTRY_ID', 'COUNTRY_DESC'));
+			}
+			// role
+			if (oModel.getProperty("/emp_master/role")) {
+				oModel.setProperty("/emp_master/descr/role", await this._bindEclaimDescr("/ZROLE", oModel.getProperty("/emp_master/role"), 'ROLE_ID', 'ROLE_DESC'));
+			}
+			// user type
+			if (oModel.getProperty("/emp_master/user_type")) {
+				oModel.setProperty("/emp_master/descr/user_type", await this._bindEclaimDescr("/ZUSER_TYPE", oModel.getProperty("/emp_master/user_type"), 'USER_TYPE_ID', 'USER_TYPE_DESC'));
+			}
+			// employee type
+			if (oModel.getProperty("/emp_master/employee_type")) {
+				oModel.setProperty("/emp_master/descr/employee_type", await this._bindEclaimDescr("/ZEMP_TYPE", oModel.getProperty("/emp_master/employee_type"), 'EMP_TYPE_ID', 'EMP_TYPE_DESC'));
+			}
+		},
+
+		_bindEclaimDescr: async function (oTable, oInputValue, oFieldId, oFieldDescr, oInputValue2, oFieldId2) {
+			const oModel = this.getOwnerComponent().getModel();
+			var filterArray = [new sap.ui.model.Filter(oFieldId, "EQ", oInputValue)];
+			if (oFieldId2) {
+				filterArray = filterArray.concat(new sap.ui.model.Filter(oFieldId2, "EQ", oInputValue2));
+			}
+			const oListBinding = oModel.bindList(oTable, null, null, filterArray);
+
+			try {
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					return oData[oFieldDescr];
+				} else {
+					console.warn("No description found");
+					return null;
+				}
+			} catch (oError) {
+				console.error("Error fetching description: ", oError);
+				return null; // Return null so the app doesn't crash
 			}
 		},
 
@@ -488,11 +527,11 @@ sap.ui.define([
 					],
 					parameters: {
 						$expand: {
-							"ZCLAIM_CATEGORY": {
-								$select: "CLAIM_CATEGORY_DESC"
+							"ZSUBMISSION_TYPE": {
+								$select: "SUBMISSION_TYPE_DESC"
 							}
 						},
-						$select: "CATEGORY_ID"
+						$select: "SUBMISSION_TYPE"
 					},
 					template: new sap.ui.core.Item({
 						key: "{employee>CLAIM_TYPE_ITEM_ID}",
@@ -524,8 +563,8 @@ sap.ui.define([
 			var claimItem = oEvent.getParameters().selectedItem;
 			if (claimItem) {
 				// get category values from claim item
-				var categoryId = claimItem.getBindingContext("employee").getObject("CATEGORY_ID");
-				var claimCategoryDesc = claimItem.getBindingContext("employee").getObject("ZCLAIM_CATEGORY/CLAIM_CATEGORY_DESC");
+				var categoryId = claimItem.getBindingContext("employee").getObject("SUBMISSION_TYPE");
+				var claimCategoryDesc = claimItem.getBindingContext("employee").getObject("ZSUBMISSION_TYPE/SUBMISSION_TYPE_DESC");
 
 				// show claim item category in category input
 				this.byId("input_claimprocess_category").setValue(claimCategoryDesc);
@@ -599,7 +638,7 @@ sap.ui.define([
 			oInputModel.setProperty("/claimtype/descr/type", this.byId("select_claimprocess_claimtype")._getSelectedItemText());
 			oInputModel.setProperty("/claimtype/descr/item", this.byId("select_claimprocess_claimitem")._getSelectedItemText());
 			//// get claim item category ID
-			oInputModel.setProperty("/claimtype/category", this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("CATEGORY_ID"));
+			oInputModel.setProperty("/claimtype/category", this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("SUBMISSION_TYPE"));
 			//// get request form values
 			if (this.byId("select_claimprocess_requestform").getSelectedItem()) {
 				oInputModel.setProperty("/claimtype/requestform/objective_purpose", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("OBJECTIVE_PURPOSE"));
@@ -1838,7 +1877,9 @@ sap.ui.define([
 						pos: oData.POS,
 						dep: oData.DEP,
 						unit_section: oData.UNIT_SECTION,
+						b_place: oData.B_PLACE,
 						marital: oData.MARITAL,
+						job_group: oData.JOB_GROUP,
 						office_location: oData.OFFICE_LOCATION,
 						address_line1: oData.ADDRESS_LINE1,
 						address_line2: oData.ADDRESS_LINE2,
@@ -1846,13 +1887,35 @@ sap.ui.define([
 						postcode: oData.POSTCODE,
 						state: oData.STATE,
 						country: oData.COUNTRY,
+						contact_no: oData.CONTACT_NO,
 						email: oData.EMAIL,
 						direct_supperior: oData.DIRECT_SUPPERIOR,
+						role: oData.ROLE,
+						user_type: oData.USER_TYPE,
+						mobile_bill_eligibility: oData.MOBILE_BILL_ELIGIBILITY,
+						mobile_bill_elig_amount: oData.MOBILE_BILL_ELIG_AMOUNT,
 						employee_type: oData.EMPLOYEE_TYPE,
 						position_name: oData.POSITION_NAME,
 						position_start_date: oData.POSITION_START_DATE,
 						position_event_reason: oData.POSITION_EVENT_REASON,
+						confirmation_date: oData.CONFIRMATION_DATE,
 						effective_date: oData.EFFECTIVE_DATE,
+						updated_date: oData.UPDATED_DATE,
+						inserted_date: oData.INSERTED_DATE,
+						medical_insurance_entitlement: oData.MEDICAL_INSURANCE_ENTITLEMENT,
+						descr: {
+							cc: null,
+							dep: null,
+							unit_section: null,
+							marital: null,
+							job_group: null,
+							state: null,
+							country: null,
+							direct_supperior: null,
+							role: null,
+							user_type: null,
+							employee_type: null
+						}
 					};
 				} else {
 					console.warn("No employee found with email: " + sEMAIL);
