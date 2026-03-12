@@ -1,4 +1,5 @@
 {
+  "welcomeFile": "/claima/index.html",
   "authenticationMethod": "route",
   "logout": {
     "logoutEndpoint": "/app-logout",
@@ -33,9 +34,8 @@
       "source": "^/SuccessFactors_API/(.*)$",
       "target": "/$1",
       "authenticationType": "basic",
-      "csrfProtection": true,
+      "csrfProtection": false,
       "destination": "Conn_SF_DEV_API"
     }
-  ],
-  "welcomeFile": "/claima/index.html"
+  ]
 }
