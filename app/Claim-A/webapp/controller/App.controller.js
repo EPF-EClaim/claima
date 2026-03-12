@@ -1822,7 +1822,7 @@ sap.ui.define([
 		async _getEmpIdDetail(sEMAIL) {
 			const oModel = this.getOwnerComponent().getModel();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new sap.ui.model.Filter("EMAIL", "EQ", sEMAIL)
+				new sap.ui.model.Filter("EMAIL", "EQ", sEMAIL.toLowerCase()) //change email to lowercase
 			]);
 
 			try {
@@ -2248,7 +2248,7 @@ sap.ui.define([
 						var oUserModel = new sap.ui.model.json.JSONModel({ email: email });
 						that.getView().setModel(oUserModel, 'user');
 
-						const emp_data = await that._getEmpIdDetail(email);
+						const emp_data = await that._getEmpIdDetail(email.toLowerCase());
 						const oReqModel = that._getReqModel().getData();
 						oReqModel.user = emp_data.eeid;
 						that._getReqModel().setData(oReqModel);
