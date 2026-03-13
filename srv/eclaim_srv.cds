@@ -1,7 +1,7 @@
 using {ECLAIM} from '../db/eclaim';
 
 @path: 'EmployeeSrv'
-service eclaim_srv {
+service eclaim_srv @(requires: 'authenticated-user') {
     type Response {
         message : String;
     };
@@ -41,13 +41,13 @@ service eclaim_srv {
         STATUS             : String;
     }
 
-    action   batchCreateEmployee(employees: many ZEMP_MASTER)      returns Response;
+    action   batchCreateEmployee(employees: many ZEMP_MASTER)          returns Response;
 
-    action   batchCreateDependent(dependents: many ZEMP_DEPENDENT) returns Response;
+    action   batchCreateDependent(dependents: many ZEMP_DEPENDENT)     returns Response;
 
-    action   batchCreateCostCenter(costcenters: many ZCOST_CENTER) returns Response;
+    action   batchCreateCostCenter(costcenters: many ZCOST_CENTER)     returns Response;
 
-    action   budgetchecking(budget: many budgetdata)               returns many BudgetResult;
+    action   budgetchecking(budget: many budgetdata)                   returns many BudgetResult;
 
 
     entity ZREQUEST_TYPE @(restrict: [
@@ -1007,7 +1007,7 @@ service eclaim_srv {
         userId      : String;
     }
 
-    function getUserType()                                         returns UserInfo;
+    function getUserType()                                             returns UserInfo;
 
     entity ZINSURANCE_PACKAGE @(restrict: [
         {
@@ -1290,6 +1290,15 @@ service eclaim_srv {
 
     entity ZDB_STRUCTURE            as projection on ECLAIM.ZDB_STRUCTURE;
 
-    function runjob()                                              returns Response;
+    function runjob()                                                  returns Response;
+
+    type PreApproveClaims {
+        REQUEST_ID     : String;
+        REQUEST_SUB_ID : String;
+    }
+
+    action   batchUpdatePreApproved(PreApprove: many PreApproveClaims) returns Response;
+
+    entity ZDISBURSEMENT_STATUS          as projection on ECLAIM.ZDISBURSEMENT_STATUS;
 
 };

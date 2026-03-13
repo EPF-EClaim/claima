@@ -52,6 +52,7 @@
 				id="button_claimsummary_createclaim"
 				text="{i18n>menuitem_claimsummary_createclaim}"
 				press="onCreateClaim_ClaimSummary()"
+				type="Emphasized"
 			/>
 
 			<!-- Edit -->
@@ -91,6 +92,7 @@
 			id="table_claimsummary_claimitem"
 			inset="false"
 			mode="MultiSelect"
+			itemPress="onItemPress_ClaimSubmission"
 			items="{
 				path: 'claimsubmission_input>/claim_items',
 				sorter: {
@@ -149,7 +151,7 @@
 			</columns>
 
 			<items>
-				<ColumnListItem vAlign="Middle">
+				<ColumnListItem type="Active" vAlign="Middle">
 					<cells>
 						<!-- Item ID -->
 						<ObjectIdentifier text="{claimsubmission_input>claim_sub_id}" />
@@ -193,8 +195,8 @@
 							id="button_claimsummary_attachment1"
 							icon="sap-icon://attachment"
 							text="{i18n>button_claimdetails_input_viewattachment}"
-							press="onView_Claim_Attachment('child','1')"
-							visible="{= ${claimsubmission_input>attachment_file_1} !== null }"
+							press="onView_Claim_Attachment('child','1', ${claimsubmission_input>claim_sub_id})"
+							enabled="{= ${claimsubmission_input>attachment_file_1} !== null }"
 						/>
 
 						<!-- Attachment 2 -->
@@ -202,8 +204,8 @@
 							id="button_claimsummary_attachment2"
 							icon="sap-icon://attachment"
 							text="{i18n>button_claimdetails_input_viewattachment}"
-							press="onView_Claim_Attachment('child','2')"
-							visible="{= ${claimsubmission_input>attachment_file_2} !== null }"
+							press="onView_Claim_Attachment('child','2', ${claimsubmission_input>claim_sub_id})"
+							enabled="{= ${claimsubmission_input>attachment_file_2} !== null }"
 						/>
 					</cells>
 				</ColumnListItem>
