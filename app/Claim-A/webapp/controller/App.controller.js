@@ -131,7 +131,7 @@ sap.ui.define([
 			const oUserAccessModel = new sap.ui.model.json.JSONModel({
 				userType: this._userType,
 				costcenters: this.costcenters,
-				userId: this._userId, // 08/03/2026 - Added to fetch emp id
+				userId: this.userId, // 08/03/2026 - Added to fetch emp id
 			});
 			this.getOwnerComponent().setModel(oUserAccessModel, "access");
 			//Aiman Salim - 05/03/2026 - Added to make it global;
@@ -2016,8 +2016,9 @@ sap.ui.define([
 		// get backend data
 		async _getEmpIdDetail(sEMAIL) {
 			const oModel = this.getOwnerComponent().getModel();
+			var email = sEMAIL.toLowerCase();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new sap.ui.model.Filter("EMAIL", "EQ", sEMAIL.toLowerCase()) //change email to lowercase
+				new sap.ui.model.Filter("EMAIL", "EQ", email) //change email to lowercase
 			]);
 
 			try {

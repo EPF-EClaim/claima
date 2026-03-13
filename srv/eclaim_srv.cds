@@ -1,7 +1,7 @@
 using {ECLAIM} from '../db/eclaim';
 
 @path: 'EmployeeSrv'
-service eclaim_srv {
+service eclaim_srv @(requires: 'authenticated-user') {
     type Response {
         message : String;
     };
@@ -20,7 +20,7 @@ service eclaim_srv {
         COMMITMENT_ITEM : String;
         AMOUNT          : Decimal;
         INDICATOR       : String; //CLM and REQ
-        ACTION          : String; //Submit, Reject, Approve
+        ACTION          : String; //SUBMIT, REJECT, APPROVE
     }
 
     type BudgetResult {
