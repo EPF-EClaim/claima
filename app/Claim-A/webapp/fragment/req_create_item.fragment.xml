@@ -191,9 +191,9 @@
                                             id="i_attachment_1" >
                                     <form:fields>
                                         <unified:FileUploader
-                                            change=".onImportChange"
+                                            change=".onImportChange1"
                                             value="{request>/req_item/doc1}"
-                                            enabled="{= ${request>/view} !== 'view' }" />
+                                            id="i_attachment_1_file" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -225,9 +225,9 @@
                                             id="i_attachment_2" >
                                     <form:fields>
                                         <unified:FileUploader
-                                            change=".onImportChange"
+                                            change=".onImportChange2"
                                             value="{request>/req_item/doc2}"
-                                            enabled="{= ${request>/view} !== 'view' }" />
+                                            id="i_attachment_2_file" />
                                     </form:fields>
                                 </form:FormElement>
 

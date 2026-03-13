@@ -7,12 +7,12 @@
     xmlns:f="sap.ui.layout.form"
 >
     <Dialog
-        title="Report Filter"
+        title="Approve Claim"
         contentWidth="50%"
         class="requestDialog"
     >
         <f:SimpleForm
-            id="approver_create_form"
+            id="approver_approve_form"
             editable="true"
             layout="ResponsiveGridLayout"
             labelSpanXL="2"
@@ -28,25 +28,94 @@
             columnsL="2"
             columnsM="2"
         >
+            <!-- Purpose (display only) -->
+            <Label text="{i18n>purpose}" />
+            <Text
+                text="{request>/req_header/purpose}"
+                wrapping="false"
+            />
+
+            <!-- Claim ID (display only) -->
+            <Label text="{i18n>claim_id}" />
+            <Text
+                text="{request>/req_header/reqid}"
+                wrapping="false"
+            />
+
+            <!-- Reject Reason (required Select) -->
+            <VBox visible="{= ${Reject>/mode} === 'REJECT' }">
+                <Label
+                    text="Reject Reason"
+                    required="true"
+                />
+
+                <Select
+                    id="rejectReasonSelect"
+                    width="100%"
+                    selectedKey="{Reject>/rejectReasonKey}"
+                    change=".onRejectReasonChange"
+                    items="{ path: 'employee>/ZREJECT_REASON' }"
+                >
+                    <core:Item
+                        key="{employee>REASON_ID}"
+                        text="{employee>REASON_DESC}"
+                    />
+                </Select>
+            </VBox>
+
+            <!-- Reject Reason (required Select) -->
+            <VBox visible="{= ${Reject>/mode} === 'SENDBACK' }">
+                <Label
+                    text="Send Back Reason"
+                    required="true"
+                />
+
+                <Select
+                    id="sendBackReasonSelect"
+                    width="100%"
+                    selectedKey="{Reject>/sendBackReasonKey}"
+                    change=".onSendBackReasonChange"
+                    items="{ path: 'employee>/ZREJECT_REASON' }"
+                >
+                    <core:Item
+                        key="{employee>REASON_ID}"
+                        text="{employee>REASON_DESC}"
+                    />
+                </Select>
+            </VBox>
+
+            <!-- Approval Comment (required TextArea) -->
+            <Label
+                text="{i18n>approval_comment}"
+                required="true"
+            />
+            <TextArea
+                id="approvalCommentArea"
+                value="{Reject>/approvalComment}"
+                width="100%"
+                growing="true"
+                growingMaxLines="5"
+                placeholder="{i18n>approval_comment_placeholder}"
+                liveChange=".onApprovalCommentLiveChange"
+            />
         </f:SimpleForm>
 
         <!-- Buttons -->
         <beginButton>
+            <Button
+                id="approver_placeholder_cancel"
+                press="onClickCancel_app"
+                text="{i18n>req_b_cancel}"
+            />
+        </beginButton>
+
+        <endButton>
             <Button
                 id="approver_placeholder_create"
                 press="onClickCreate_app"
                 text="{i18n>submitbtn}"
                 type="Emphasized"
             />
-        </beginButton>
-            
-        <endButton>
-        <Button
-                id="approver_placeholder_cancel"
-                press="onClickCancel_app"
-                text="{i18n>req_b_cancel}"
-            />
-        
         </endButton>
     </Dialog>
 </core:FragmentDefinition>

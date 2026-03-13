@@ -328,7 +328,7 @@ sap.ui.define([
       // Status (entity-aware)
       if (isReq) {
         // Request must filter on STATUS (text)
-        const statusTexts = this._getSelectedItemTexts("status");
+        const statusTexts = this._getKeys("status");
         if (statusTexts.length) this._addOrFilter(a, "STATUS", statusTexts);
       } else {
         // Claim must filter on STATUS_ID (keys)
@@ -822,7 +822,7 @@ sap.ui.define([
           { label: "Mode of Transfer", property: "MODE_OF_TRANSFER", width: 24 },
           { label: "Tarikh Pindah", property: "TRANSFER_DATE", width: 14 },
           { label: "Number of Days", property: "NO_OF_DAYS", type: "number", scale: 0, width: 16 },
-          { label: "Marriage Category", property: "MARRIAGE_CATEGORY", width: 24 },
+          { label: "Marriage Category", property: "MARRIAGE_CATEGORY_DESC", width: 24 },
           { label: "Number of family member (per head)", property: "FAMILY_COUNT", type: "number", scale: 0, width: 16 },
           { label: "Total Participant", property: "EST_NO_PARTICIPANT", type: "number", scale: 0, width: 16 },
 

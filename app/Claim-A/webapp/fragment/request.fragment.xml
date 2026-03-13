@@ -45,6 +45,21 @@
 					</items>
 				</Select>
 
+				<Label text="{i18n>req_transfer_mode}" />
+				<Select 
+                    id="req_transfermode"
+					selectedKey="{request>/req_header/transfermode}" 
+					required="true" 
+					forceSelection="false"
+					visible="false"
+					items="{path: 'employee>/ZTRANSFER_MODE',
+							sorter: { path: 'TRANSFER_MODE_ID', descending: false }}">
+					<items>
+						<core:Item key="{employee>TRANSFER_MODE_ID}" 
+								text="{employee>TRANSFER_MODE_DESC}" />
+					</items>
+				</Select>
+
 			    <Label text="{i18n>req_tripstartdate}"/>
 				<DatePicker
                     id="req_tripstartdate"
@@ -129,7 +144,6 @@
 			    <Select 
 					id="req_acc"
 					selectedKey="{request>/req_header/altcostcenter}" 
-					required="true" 
 					forceSelection="false"
 					visible="false"
 					items="{path: 'employee>/ZCOST_CENTER',
@@ -143,7 +157,7 @@
 			    <Label text="{i18n>req_attach1}" />
 			    <unified:FileUploader
 					id="req_attachment_1"
-					change=".onImportChange"
+					change="onImportChange1"
 					value="{request>/req_header/doc1}"
 					required="true"
 					visible="false" />
@@ -151,7 +165,7 @@
 			    <Label text="{i18n>req_attach2}" />
 			    <unified:FileUploader
 					id="req_attachment_2"
-					change=".onImportChange"
+					change="onImportChange2"
 					value="{request>/req_header/doc2}"
 					visible="false" />
 

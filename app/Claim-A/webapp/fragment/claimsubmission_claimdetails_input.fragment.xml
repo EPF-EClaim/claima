@@ -7,6 +7,18 @@
 	core:require="{FloatType: 'sap/ui/model/type/Float'}"
 >
 	<VBox class="sapUiSmallMargin">
+        <OverflowToolbar height="3rem">
+            <!-- space -->
+            <ToolbarSpacer />
+
+            <!-- Return -->
+            <Button
+                id="button_claimdetails_input_return"
+                press="onCancel_ClaimDetails_Input"
+                text="{i18n>button_claimdetails_input_return}"
+                visible="false"
+            />
+        </OverflowToolbar>
 		<f:SimpleForm
 			editable="false"
 			layout="ColumnLayout"
@@ -31,7 +43,7 @@
 					id="text_claimdetails_input_claimtype"
 					text="{claimsubmission_input>/claim_header/descr/claim_type_id}"
 				/>
-				
+
 				<!-- Claim Item -->
 				<Label text="{i18n>label_claimdetails_input_claimitem}" />
 				<Select
@@ -51,7 +63,7 @@
 					value="{claimitem_input>/claim_item/descr/claim_category}"
 					editable="false"
 				/>
-			
+
 				<!-- Anggota Name -->
 				<Label text="{i18n>label_claimdetails_input_anggota}" />
 				<Input
@@ -59,7 +71,7 @@
 					value="{claimitem_input>/claim_item/anggota_name}"
 					visible="false"
 				/>
-			
+
 				<!-- Dependent Name -->
 				<Label text="{i18n>label_claimdetails_input_dependent}" />
 				<Input
@@ -67,7 +79,7 @@
 					value="{claimitem_input>/claim_item/dependent_name}"
 					visible="false"
 				/>
-			
+
 				<!-- Type of Professional Body -->
 				<Label text="{i18n>label_claimdetails_input_profbodytype}" />
 				<Select
@@ -87,7 +99,7 @@
 					value="{claimitem_input>/claim_item/policy_number}"
 					visible="false"
 				/>
-			
+
 				<!-- Funeral Transportation (Dalam Stesen/Luar Stesen/Flight) -->
 				<Label text="{i18n>label_claimdetails_input_funeraltransport}" />
 				<Select
@@ -115,7 +127,7 @@
 					}"
 					visible="false"
 				/>
-			
+
 				<!-- Subsidised Amount (MYR) (50% of actual) -->
 				<Label text="{i18n>label_claimdetails_input_amount_subsidised}" />
 				<Input
@@ -123,7 +135,7 @@
 					editable="false"
 					visible="false"
 				/>
-			
+
 				<!-- Request Approved Amount (MYR) -->
 				<Label text="{i18n>label_claimdetails_input_amount_reqapproved}" />
 				<Input
@@ -139,7 +151,7 @@
 					}"
 					visible="false"
 				/>
-			
+
 				<!-- Amount (MYR) -->
 				<Label text="{i18n>label_claimdetails_input_amount}" />
 				<Input
@@ -156,7 +168,7 @@
 					required="true"
 					visible="false"
 				/>
-			
+
 				<!-- % Compensation -->
 				<Label text="{i18n>label_claimdetails_input_compensation}" />
 				<Input
@@ -165,7 +177,7 @@
 					type="Number"
 					visible="false"
 				/>
-			
+
 				<!-- Course Title -->
 				<Label text="{i18n>label_claimdetails_input_coursetitle}" />
 				<Input
@@ -218,8 +230,9 @@
 					value="{claimitem_input>/claim_item/start_date}"
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
+					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_startdate','datepicker_claimdetails_input_enddate')"
 				/>
-				
+
 				<!-- Start Time -->
 				<Label text="{i18n>label_claimdetails_input_starttime}" />
 				<TimePicker
@@ -227,6 +240,7 @@
 					value="{claimitem_input>/claim_item/start_time}"
 					visible="false"
 					displayFormat="HH:mm"
+					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
 				/>
 
 				<!-- End Date -->
@@ -236,6 +250,7 @@
 					value="{claimitem_input>/claim_item/end_date}"
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
+					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_startdate','datepicker_claimdetails_input_enddate')"
 				/>
 
 				<!-- End Time -->
@@ -245,6 +260,7 @@
 					value="{claimitem_input>/claim_item/end_time}"
 					visible="false"
 					displayFormat="HH:mm"
+					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
 				/>
 
 				<!-- Number of Days -->
@@ -255,7 +271,7 @@
 					type="Number"
 					visible="false"
 				/>
-			
+
 				<!-- Type of Vehicle -->
 				<Label text="{i18n>label_claimdetails_input_typeofvehicle}" />
 				<Select
@@ -295,7 +311,7 @@
 					}"
 					visible="false"
 				/>
-			
+
 				<!-- Rate Per Kilometer -->
 				<Label text="{i18n>label_claimdetails_input_km_rate}" />
 				<Input
@@ -304,7 +320,7 @@
 					editable="false"
 					visible="false"
 				/>
-			
+
 				<!-- Type of Fare -->
 				<Label text="{i18n>label_claimdetails_input_faretype}" />
 				<Select
@@ -356,7 +372,7 @@
 					}"
 					visible="false"
 				/>
-			
+
 				<!-- Parking -->
 				<Label text="{i18n>label_claimdetails_input_parking}" />
 				<CheckBox
@@ -364,7 +380,7 @@
 					visible="false"
 					wrapping="true"
 				/>
-			
+
 				<!-- Location Type -->
 				<Label text="{i18n>label_claimdetails_input_locationtype}" />
 				<Select
@@ -390,6 +406,8 @@
 				<Input
 					id="input_claimdetails_input_from_location"
 					value="{claimitem_input>/claim_item/from_location}"
+					showValueHelp="true"
+					valueHelpRequest=".onValueHelpRequest"
 					visible="false"
 				/>
 
@@ -406,6 +424,8 @@
 				<Input
 					id="input_claimdetails_input_to_location"
 					value="{claimitem_input>/claim_item/to_location}"
+					showValueHelp="true"
+					valueHelpRequest=".onValueHelpRequest"
 					visible="false"
 				/>
 
@@ -448,7 +468,7 @@
 					visible="false"
 					wrapping="true"
 				/>
-			
+
 				<!-- Currency Code -->
 				<Label text="{i18n>label_claimdetails_input_currencycode}" />
 				<Input
@@ -473,7 +493,7 @@
 					}"
 					visible="false"
 				/>
-			
+
 				<!-- Currency Amount -->
 				<Label text="{i18n>label_claimdetails_input_currencyamt}" />
 				<Input
@@ -489,7 +509,7 @@
 					}"
 					visible="false"
 				/>
-			
+
 				<!-- Trip Start Date -->
 				<Label text="{i18n>label_claimdetails_input_trip_startdate}" />
 				<DatePicker
@@ -497,6 +517,17 @@
 					value="{claimitem_input>/claim_item/trip_start_date}"
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
+					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_trip_start_date','datepicker_claimdetails_input_trip_end_date')"
+				/>
+
+				<!-- Trip Start Time -->
+				<Label text="{i18n>label_claimdetails_input_trip_starttime}" />
+				<TimePicker
+					id="timepicker_claimdetails_input_trip_starttime"
+					value="{claimitem_input>/claim_item/trip_start_time}"
+					visible="false"
+					displayFormat="HH:mm"
+					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_starttime','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_endtime')"
 				/>
 
 				<!-- Departure Time -->
@@ -506,6 +537,7 @@
 					value="{claimitem_input>/claim_item/departure_time}"
 					visible="false"
 					displayFormat="HH:mm"
+					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
 				/>
 
 				<!-- Trip End Date -->
@@ -515,6 +547,17 @@
 					value="{claimitem_input>/claim_item/trip_end_date}"
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
+					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_trip_start_date','datepicker_claimdetails_input_trip_end_date')"
+				/>
+
+				<!-- Trip End Time -->
+				<Label text="{i18n>label_claimdetails_input_trip_endtime}" />
+				<TimePicker
+					id="timepicker_claimdetails_input_trip_endtime"
+					value="{claimitem_input>/claim_item/trip_end_time}"
+					visible="false"
+					displayFormat="HH:mm"
+					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_starttime','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_endtime')"
 				/>
 
 				<!-- Arrival Time -->
@@ -524,6 +567,143 @@
 					value="{claimitem_input>/claim_item/arrival_time}"
 					visible="false"
 					displayFormat="HH:mm"
+					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
+				/>
+
+				<!-- Travel Duration (days) -->
+				<Label text="{i18n>label_claimdetails_input_travel_duration_day}" />
+				<Input
+					id="input_claimdetails_input_travel_duration_day"
+					value="{
+						path: 'claimitem_input>/claim_item/travel_duration_day',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 1,
+							maxFractionDigits: 1,
+							preserveDecimals: false
+						}
+					}"
+					editable="false"
+					visible="false"
+				/>
+
+				<!-- Travel Duration (hours) -->
+				<Label text="{i18n>label_claimdetails_input_travel_duration_hour}" />
+				<Input
+					id="input_claimdetails_input_travel_duration_hour"
+					value="{
+						path: 'claimitem_input>/claim_item/travel_duration_hour',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 1,
+							maxFractionDigits: 1,
+							preserveDecimals: false
+						}
+					}"
+					editable="false"
+					visible="false"
+				/>
+
+				<!-- Provided Breakfast -->
+				<Label text="{i18n>label_claimdetails_input_provided_breakfast}" />
+				<Input
+					id="input_claimdetails_input_provided_breakfast"
+					value="{
+						path: 'claimitem_input>/claim_item/provided_breakfast',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
+					}"
+					visible="false"
+					change="onChange_ClaimDetails_ProvidedMeals"
+				/>
+
+				<!-- Provided Lunch -->
+				<Label text="{i18n>label_claimdetails_input_provided_lunch}" />
+				<Input
+					id="input_claimdetails_input_provided_lunch"
+					value="{
+						path: 'claimitem_input>/claim_item/provided_lunch',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
+					}"
+					visible="false"
+					change="onChange_ClaimDetails_ProvidedMeals"
+				/>
+
+				<!-- Provided Dinner -->
+				<Label text="{i18n>label_claimdetails_input_provided_dinner}" />
+				<Input
+					id="input_claimdetails_input_provided_dinner"
+					value="{
+						path: 'claimitem_input>/claim_item/provided_dinner',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
+					}"
+					visible="false"
+					change="onChange_ClaimDetails_ProvidedMeals"
+				/>
+
+				<!-- Entitled Breakfast -->
+				<Label text="{i18n>label_claimdetails_input_entitled_breakfast}" />
+				<Input
+					id="input_claimdetails_input_entitled_breakfast"
+					value="{
+						path: 'claimitem_input>/claim_item/entitled_breakfast',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
+					}"
+					editable="false"
+					visible="false"
+				/>
+
+				<!-- Entitled Lunch -->
+				<Label text="{i18n>label_claimdetails_input_entitled_lunch}" />
+				<Input
+					id="input_claimdetails_input_entitled_lunch"
+					value="{
+						path: 'claimitem_input>/claim_item/entitled_lunch',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
+					}"
+					editable="false"
+					visible="false"
+				/>
+
+				<!-- Entitled Dinner -->
+				<Label text="{i18n>label_claimdetails_input_entitled_dinner}" />
+				<Input
+					id="input_claimdetails_input_entitled_dinner"
+					value="{
+						path: 'claimitem_input>/claim_item/entitled_dinner',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
+					}"
+					editable="false"
+					visible="false"
 				/>
 
 				<!-- Lodging Address -->
@@ -578,7 +758,7 @@
 					type="Number"
 					visible="false"
 				/>
-			
+
 				<!-- Category/Purpose (Mobile) -->
 				<Label text="{i18n>label_claimdetails_input_cat_purpose}" />
 				<Select
@@ -623,7 +803,7 @@
 					value="{claimitem_input>/claim_item/phone_no}"
 					visible="false"
 				/>
-			
+
 				<!-- Disclaimer -->
 				<Label text="{i18n>label_claimdetails_input_disclaimer}" />
 				<CheckBox
@@ -632,7 +812,7 @@
 					visible="false"
 					wrapping="true"
 				/>
-			
+
 				<!-- Disclaimer (Galakan) -->
 				<Label text="{i18n>label_claimdetails_input_disclaimer}" />
 				<CheckBox
@@ -641,7 +821,7 @@
 					visible="false"
 					wrapping="true"
 				/>
-			
+
 				<!-- Remarks -->
 				<Label text="{i18n>label_claimdetails_input_remarks}" />
 				<Input
@@ -666,7 +846,16 @@
 					visible="false"
 				>
 				</u:FileUploader>
-				
+
+				<!-- Attachment 1 (Existing) -->
+				<!-- <Button
+					id="button_claimdetails_input_attachment1"
+					icon="sap-icon://attachment"
+					text="{i18n>button_claimdetails_input_viewattachment}"
+					press="onView_Claim_Attachment('child_det','1')"
+					enabled="{= ${claimitem_input>/attachment_file_1} !== null }"
+				/> -->
+
 				<!-- Attachment 2 -->
 				<Label text="{i18n>label_claimdetails_input_attachment2}" />
 				<u:FileUploader
@@ -682,6 +871,15 @@
 					fileType="pdf,png,jpg,jpeg"
 					visible="false"
 				>
+
+				<!-- Attachment 2 (Existing) -->
+				<!-- <Button
+					id="button_claimdetails_input_attachment2"
+					icon="sap-icon://attachment"
+					text="{i18n>button_claimdetails_input_viewattachment}"
+					press="onView_Claim_Attachment('child_det','2')"
+					enabled="{= ${claimitem_input>/attachment_file_2} !== null }"
+				/> -->
 				</u:FileUploader>
 			</f:content>
 		</f:SimpleForm>
