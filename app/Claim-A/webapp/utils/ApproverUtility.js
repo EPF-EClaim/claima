@@ -5,14 +5,20 @@ sap.ui.define([
 ], function (Filter, FilterOperator) {
     "use strict";
 
-    async function _approveMultiLevel(oModel, id, userID, comment) {
+    async function _approveMultiLevel(oModel, id, userID, comment, oModel2) {
+
 
         const submissionType = id.substring(0, 3);
         const sTable = submissionType === "REQ"
             ? "/ZAPPROVER_DETAILS_PREAPPROVAL"
             : "/ZAPPROVER_DETAILS_CLAIMS";
         const sField = submissionType === "REQ" ? "PREAPPROVAL_ID" : "CLAIM_ID";
-        
+        const sType = submissionType === "REQ" ? "Pre-Approval" : "Claim";
+
+        //Added for view;
+        const sTable2 = submissionType === "REQ"
+            ? "/ZEMP_APPROVER_REQUEST_DETAILS"
+            : "/ZEMP_APPROVER_CLAIM_DETAILS";
 
         // STEP 1: Get all approver rows for this ID
         const bindingAll = oModel.bindList(
@@ -37,6 +43,19 @@ sap.ui.define([
         if (!currentRow) {
             throw new Error("You are not the current processor for this Claim/Pre-approval or Claim/Pre-approval has been processed by another Approver");
         }
+
+
+        let matchedType = null;
+        let matchedID = null;
+
+        if (currentRow.APPROVER_ID === userID) {
+            matchedType = "APPROVER_ID";
+            matchedID = currentRow.APPROVER_ID;
+        } else if (currentRow.SUBSTITUTE_APPROVER_ID === userID) {
+            matchedType = "SUBSTITUTE_APPROVER_ID";
+            matchedID = currentRow.SUBSTITUTE_APPROVER_ID;
+        }
+
 
         const currentLevel = currentRow.LEVEL;
 
@@ -66,11 +85,138 @@ sap.ui.define([
             console.log("No further approvers found. Proceed to Final Approve Step");
         }
 
-        // STEP 5: Submit batch update
-        await oModel.submitBatch("$auto");
+        // STEP 5: Fetch data for Email
 
+
+        const bindingView = oModel2.bindList(
+            sTable2,
+            null,
+            null,
+            [new Filter(sField, FilterOperator.EQ, id)],
+            {
+                $$ownRequest: true
+            }
+        );
+
+        const aCtx_binding = await bindingView.requestContexts(0, Infinity);
+        const rows_binding = aCtx_binding.map(ctx => ctx.getObject());
+
+        const currentRow_level = rows_binding.find(r =>
+            Number(r.LEVEL) === Number(currentLevel)
+        );
+
+        let currentEmail = null;
+        let currentName = null;
+
+        if (matchedType === "APPROVER_ID") {
+            currentEmail = currentRow_level.APPROVER_EMAIL;
+            currentName = currentRow_level.APPROVER_NAME;
+        } else {
+            currentEmail = currentRow_level.SUBSTITUTE_EMAIL;
+            currentName = currentRow_level.SUBSTITUTE_NAME;
+        }
+
+        const nextRow_level = rows_binding.find(r =>
+            Number(r.LEVEL) === Number(nextLevel)
+        );
+
+        let nextApproverName = nextRow_level?.APPROVER_NAME || null;
+        let nextApproverEmail = nextRow_level?.APPROVER_EMAIL || null;
+        let nextSubName = nextRow_level?.SUBSTITUTE_NAME || null;
+        let nextSubEmail = nextRow_level?.SUBSTITUTE_EMAIL || null;
+
+        const submissionDate = currentRow_level?.REQUEST_DATE ?? null;
+        const claimantName = currentRow_level?.EMPLOYEE_NAME ?? null;
+        const claimantEmail = currentRow_level?.EMPLOYEE_EMAIL ?? null;
+
+
+        const isPresent = v => typeof v === "string" ? v.trim().length > 0 : !!v;
+        const hasSub = isPresent(nextSubName) && isPresent(nextSubEmail);
+        const payloads = [];
+
+
+        /*         const payload = {
+                    "ApproverName": currentName,
+                    "SubmissionDate": submissionDate,
+                    "ClaimantName": claimantName,
+                    "ClaimType": sType,
+                    "ClaimID": id,
+                    "RecipientName": nextApproverName,
+                    "Action": "Notify",
+                    "ReceiverEmail": nextApproverEmail,
+                    "NextApproverName": nextApproverName,
+                    "RejectReason": "N/A",
+                    "ApproverComments": comment
+                }
+                if (hasSub) {
+                    const payload_sub = {
+                        "ApproverName": currentName,
+                        "SubmissionDate": submissionDate,
+                        "ClaimantName": claimantName,
+                        "ClaimType": sType,
+                        "ClaimID": id,
+                        "RecipientName": nextSubName,
+                        "Action": "Notify",
+                        "ReceiverEmail": nextSubEmail,
+                        "NextApproverName": nextSubName,
+                        "RejectReason": "N/A",
+                        "ApproverComments": comment
+                    }
+                } */
+
+        payloads.push({
+            ApproverName: currentName,
+            SubmissionDate: submissionDate,
+            ClaimantName: claimantName,
+            ClaimType: sType,
+            ClaimID: id,
+            RecipientName: nextApproverName,
+            Action: "Notify",
+            ReceiverEmail: nextApproverEmail,
+            NextApproverName: nextApproverName,
+            RejectReason: "N/A",
+            ApproverComments: comment
+        });
+
+
+        // Sub Approver — only if BOTH fields exist
+        if (isPresent(nextSubName) && isPresent(nextSubEmail)) {
+            payloads.push({
+                ApproverName: currentName,
+                SubmissionDate: submissionDate,
+                ClaimantName: claimantName,
+                ClaimType: sType,
+                ClaimID: id,
+                RecipientName: nextSubName,
+                Action: "Notify",
+                ReceiverEmail: nextSubEmail,
+                NextApproverName: nextSubName,
+                RejectReason: "N/A",
+                ApproverComments: comment
+            });
+        }
+
+        // STEP 6: Submit batch update
+        await oModel.submitBatch("$auto");
         sap.m.MessageToast.show("Approval successful.");
+
+
+
+        return {
+            payloads,
+            info: {
+                currentLevel: Number(currentLevel),
+                nextLevel: Number(nextLevel),
+                type: sType,
+                id,
+                currentProcessor: { name: currentName, email: currentEmail, matchedType }
+            }
+        };
+
+
     }
+
+
 
     //For Reject resend
     async function _rejectOrSendBackMultiLevel(oModel, id, userID, actionStatus, sendbackreason, comment) {

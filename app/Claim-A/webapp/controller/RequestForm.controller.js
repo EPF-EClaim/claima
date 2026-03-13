@@ -19,7 +19,9 @@ sap.ui.define([
 	"claima/utils/RejectDialog",
 	"claima/utils/SendBackDialog",
 	'claima/utils/Utility',
-	"claima/utils/ApproverUtility"
+	"claima/utils/ApproverUtility",
+	"claima/utils/workflowApproval"
+
 ], function (
 	Controller,
 	MessageToast,
@@ -42,6 +44,7 @@ sap.ui.define([
 	SendBackDialog,
 	Utility,
 	ApproverUtility,
+	workflowApproval
 ) {
 	"use strict";
 
@@ -2526,6 +2529,7 @@ sap.ui.define([
 			const id = reqId;
 			const userID = userId;
 			const oModel = this.getOwnerComponent().getModel();
+			const oModel2 = this.getOwnerComponent().getModel("employee_view");
 
 
 			if (mode === "APPROVE") {
@@ -2538,15 +2542,67 @@ sap.ui.define([
 				sap.m.MessageToast.show("Rejected.");
 				return; */
 
-				try {
-					await ApproverUtility.approveMultiLevel(oModel, id, userID, comment);
+				/* try {
+					await ApproverUtility.approveMultiLevel(oModel, id, userID, comment, oModel2);
 					this.__approveDialog && this.__approveDialog.close();
 					const oRouter = this.getOwnerComponent().getRouter();
+
+
+					try {
+						const { payloads } = await ApproverUtility.approveMultiLevel(
+							oModel,
+							id,
+							userID,
+							comment,
+							oModel2
+						);
+
+						// Loop & send all payloads
+						for (const p of payloads) {
+							await workflowApproval.onSendEmailApprover(oModel, p);
+						}
+
+						this.__approveDialog && this.__approveDialog.close();
+						const oRouter = this.getOwnerComponent().getRouter();
+						setTimeout(() => oRouter.navTo("Dashboard", {}, true), 400);
+
+					} catch (e) {
+						sap.m.MessageToast.show(e.message);
+					}
 
 					setTimeout(() => {
 						oRouter.navTo("Dashboard", {}, true); // true = replace history
 					}, 400);
 
+
+				} catch (e) {
+					sap.m.MessageToast.show(e.message);
+				} */
+
+				try {
+
+					// 1. Approve + get payloads from util
+					const { payloads } = await ApproverUtility.approveMultiLevel(
+						oModel,
+						id,
+						userID,
+						comment,
+						oModel2
+					);
+
+					// 2. Send emails (1 or 2 depending on next approver / sub approver)
+					for (const p of payloads) {
+						await workflowApproval.onSendEmailApprover(oModel, p);
+					}
+
+					// 3. Close dialog
+					this.__approveDialog && this.__approveDialog.close();
+
+					// 4. Navigate back after small delay
+					const oRouter = this.getOwnerComponent().getRouter();
+					setTimeout(() => {
+						oRouter.navTo("Dashboard", {}, true);
+					}, 400);
 
 				} catch (e) {
 					sap.m.MessageToast.show(e.message);
