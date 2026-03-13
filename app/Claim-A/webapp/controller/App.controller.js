@@ -1,4 +1,3 @@
-
 sap.ui.define([
 	"sap/ui/Device",
 	"sap/ui/core/mvc/Controller",
@@ -17,8 +16,9 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"sap/ui/export/Spreadsheet",
 	"claima/utils/PARequestSharedFunction",
-	"claima/utils/Attachment"
-
+	"claima/utils/Attachment",
+	"claima/utils/ApprovalLog",
+	"claima/utils/workflowApproval"
 ], function (
 	Device,
 	Controller,
@@ -37,6 +37,8 @@ sap.ui.define([
 	Sorter,
 	Spreadsheet,
 	PARequestSharedFunction,
+	ApprovalLog,
+	workflowApproval,
 	Attachment
 ) {
 	"use strict";
@@ -95,8 +97,24 @@ sap.ui.define([
 			// const oReqModel = this._getReqModel().getData();
 			// oReqModel.user = emp_data.eeid;
 			// this._getReqModel().setData(oReqModel);
+			
+			// var claimID = "CLM26000000209";
+            // var PARID = "REQ26000000002";
+			// var oModelAppr = this.getView().getModel();
+            // //workflowApproval.onClaimsApproverDetermination(oModelAppr, claimID);
+            // workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
+			// //workflowApproval.onSendEmail();
 		},
-
+		onPARTest: function(){
+			var PARID = this.byId("PARSubmissionTest").getValue();
+			var oModel = this.getView().getModel();
+			workflowApproval.onPARApproverDetermination(oModel, PARID);
+		},
+		onClaimTest: function(){
+			var claimID = this.byId("claimSubmissionTest").getValue();
+			var oModel = this.getView().getModel();
+			workflowApproval.onClaimsApproverDetermination(oModel, claimID);
+		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
 			var oNavigationList = this.byId("navigationList");
@@ -511,6 +529,13 @@ sap.ui.define([
 				console.error("Error fetching description: ", oError);
 				return null; // Return null so the app doesn't crash
 			}
+		},
+		_onInit_ClaimProcess: function () {
+			// placeholder - set employee data
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			oInputModel.setProperty("/employee/eeid", "1900907");
+			oInputModel.setProperty("/employee/name", "Test Name");
+			oInputModel.setProperty("/employee/cc", "4001");
 		},
 
 		onSelect_ClaimProcess_ClaimType: function (oEvent) {
@@ -1801,6 +1826,12 @@ sap.ui.define([
 
 					oReqModel.setProperty("/view", 'list');
 					this._getHeaderView(oResult.reqNo)
+					oReqModel.setProperty("/req_header/reqid", oResult.reqNo);
+					oReqModel.setProperty("/req_header/reqstatus", 'DRAFT');
+					oReqModel.setProperty("/req_header/costcenter", sCostCenter);
+					oReqModel.setProperty("/eeid", emp_data.eeid);
+					this._getItemList(oResult.reqNo);
+					//oResult.reqNo send this to approval determination
 
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("RequestFormNew");
@@ -2329,7 +2360,6 @@ sap.ui.define([
 			});
 
 		}
-
 
 	});
 });
