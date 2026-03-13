@@ -52,7 +52,7 @@ sap.ui.define([
 				__metadata: {
 					type: "SFOData.cust_EPF_CLAIM_ATTACHMENTS_Parent" 
 				},
-				externalCode: reqID, 
+				Claim_ID: reqID, 
 				cust_Parent_attachment1Nav: {
 					__metadata: {
 						uri: `Attachment('${attachment1}')`
@@ -73,7 +73,7 @@ sap.ui.define([
 					method: "POST",
 					headers: { 
 						"Content-Type": "application/json",
-						"Accept": "application/json"
+						"Accept": "application/json" 
 					},
 					body: JSON.stringify(payload)
 				});

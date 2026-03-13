@@ -411,7 +411,7 @@ sap.ui.define([
 			var attachmentID = oEvent.getSource().getText();
 
 			var sServiceUrl =
-				"SuccessFactors_API/odata/v2/Attachment('" + attachmentID + "')";
+				"SuccessFactors_API/Attachment('" + attachmentID + "')";
 
 			try {
 				const response = await fetch(sServiceUrl, {
@@ -1144,7 +1144,7 @@ sap.ui.define([
 
 
 		async deleteAttachment(attachmentID) {
-			var url = `SuccessFactors_API/odata/v2/Attachment(attachmentId=${attachmentID})`;
+			var url = `SuccessFactors_API/Attachment(attachmentId=${attachmentID})`;
 
 			const response = await fetch(url, {
 				method: 'DELETE',
@@ -1394,7 +1394,7 @@ sap.ui.define([
 
 		postMDF: async function (reqID, reqSubID, attachment1, attachment2) {
 			// Write to Success Factors API
-			var sServiceUrl = "SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS";
+			var sServiceUrl = "SuccessFactors_API/cust_EPF_CLAIM_ATTACHMENTS";
 
 			try {
 				const response = await fetch(sServiceUrl, {
@@ -1441,7 +1441,7 @@ sap.ui.define([
 		postFilesToSF: async function (fileName, fileString) {
 
 			// Write to Success Factors API
-			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment";
+			var sServiceUrl = "SuccessFactors_API/Attachment";
 
 			try {
 				const response = await fetch(sServiceUrl, {
