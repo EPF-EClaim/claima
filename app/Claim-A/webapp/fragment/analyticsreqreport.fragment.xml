@@ -463,7 +463,7 @@
                              <!-- MARRIAGE_CATEGORY -->
                             <table:Column width="14rem">
                                 <Label text="{i18n>marriage_cat}" />
-                                <table:template><Text text="{employee_view>MARRIAGE_CATEGORY}" /></table:template>
+                                <table:template><Text text="{employee_view>MARRIAGE_CATEGORY_DESC}" /></table:template>
                             </table:Column>
 
                              <!-- FAMILY_COUNT -->
