@@ -11,37 +11,14 @@ sap.ui.define([
         /* =========================================================
         * Attachments Upload
         * ======================================================= */
-
-        async fetchCsrfToken() {
-            const res = await fetch("/SuccessFactors_API/odata/v2/Attachment?$top=1", {
-                method: "GET",
-                headers: {
-                    "x-csrf-token": "Fetch",
-                    "Accept": "application/json"
-                },
-                credentials: "include"
-            });
-
-            if (!res.ok) {
-                const body = await res.text().catch(() => "");
-                throw new Error(`CSRF GET failed: ${res.status} ${res.statusText} ${body}`);
-            }
-
-            const token = res.headers.get("x-csrf-token");
-            if (!token) throw new Error("No x-csrf-token header returned");
-            return token;
-        },
-
+       
         async postAttachment(fileName, fileBase64) {
-            const csrf = await this.fetchCsrfToken();
 
             const res = await fetch("/SuccessFactors_API/odata/v2/Attachment?$format=json", {
                 method: "POST",
                 headers: {
-                    "x-csrf-token": csrf,
                     "Content-Type": "application/json",
-                    "Accept": "application/json",
-                    "X-Requested-With": "XMLHttpRequest"
+                    "Accept": "application/json"
                 },
                 body: JSON.stringify({
                     __metadata: { uri: "Attachment" },
@@ -65,7 +42,7 @@ sap.ui.define([
             }
 
             const json = await res.json();
-            const id = json?.d?.id || json?.id || "";
+            const id = json?.d?.attachmentId || json?.attachmentId || "";
             const attachmentNumber = id.replace(/.*\('?(.*?)'?\).*/, "$1");
             return attachmentNumber;
         }
