@@ -33,12 +33,12 @@ sap.ui.define([
       oReject = new JSONModel();
       oView.setModel(oReject, "Reject");
     }
-/*     // Defaults for REJECT flow
+    // Defaults for REJECT flow
     oReject.setData(Object.assign({
       mode: "REJECT",
       rejectReasonKey: "",
       approvalComment: ""
-    }, oReject.getData() || {}), true); */
+    }, oReject.getData() || {}), true);
   }
 
   function applyRejectFilters(oController) {
@@ -113,6 +113,16 @@ sap.ui.define([
         text: "{i18n>reject_btn}",    // or "Reject"
         type: "Emphasized",
         press: oController.onReject_app.bind(oController),
+
+/*         enabled: {
+          parts: ["Reject>/rejectReasonKey", "Reject>/approvalComment"],
+          formatter: function (reason, comment) {
+            const hasReason = !!reason;
+            const hasComment = !!(comment && comment.trim().length > 0);
+            return hasReason && hasComment;
+          }
+        } */
+
         // Optional UX: enable only when reason+comment are provided
         // enabled: "{= !!${Reject>/rejectReasonKey} && !!${Reject>/approvalComment} }"
       })

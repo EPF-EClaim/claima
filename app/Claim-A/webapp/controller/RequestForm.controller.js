@@ -2530,34 +2530,29 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel();
 
 
-			if (mode === "REJECT") {
-				if (!reason) {
-					sap.m.MessageToast.show("Please select a Reject Reason.");
-					return;
-				}
+			if (mode === "APPROVE") {
 				if (!comment) {
 					sap.m.MessageToast.show("Please enter approval comment.");
 					return;
 				}
-				// TODO: Submit your reject action via OData here, then:
+				/* // TODO: Submit your reject action via OData here, then:
 				this.__rejectDialog && this.__rejectDialog.close();
 				sap.m.MessageToast.show("Rejected.");
-				return;
-			}
+				return; */
+
+				try {
+					await ApproverUtility.approveMultiLevel(oModel, id, userID, comment);
+					this.__approveDialog && this.__approveDialog.close();
+					const oRouter = this.getOwnerComponent().getRouter();
+
+					setTimeout(() => {
+						oRouter.navTo("Dashboard", {}, true); // true = replace history
+					}, 400);
 
 
-			try {
-				await ApproverUtility.approveMultiLevel(oModel, id, userID, comment);
-				this.__approveDialog && this.__approveDialog.close();
-				const oRouter = this.getOwnerComponent().getRouter();
-
-				setTimeout(() => {
-					oRouter.navTo("Dashboard", {}, true); // true = replace history
-				}, 400);
-
-
-			} catch (e) {
-				sap.m.MessageToast.show(e.message);
+				} catch (e) {
+					sap.m.MessageToast.show(e.message);
+				}
 			}
 		},
 
@@ -2580,7 +2575,7 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel();
 
 
-			if (mode === "REJECT") {
+			if (mode === "SENDBACK") {
 				if (!reason) {
 					sap.m.MessageToast.show("Please select a Reject Reason.");
 					return;
@@ -2590,25 +2585,22 @@ sap.ui.define([
 					return;
 				}
 				// TODO: Submit your reject action via OData here, then:
-				this.__rejectDialog && this.__rejectDialog.close();
+				/* this.__rejectDialog && this.__rejectDialog.close();
 				sap.m.MessageToast.show("Rejected.");
-				return;
+				return; */
+
+				try {
+					await ApproverUtility.rejectOrSendBackMultiLevel(oModel, id, userID, "STAT03", reason, comment);
+					this.__sendBackDialog.close();
+					const oRouter = this.getOwnerComponent().getRouter();
+
+					setTimeout(() => {
+						oRouter.navTo("Dashboard", {}, true); // true = replace history
+					}, 400);
+				} catch (e) {
+					sap.m.MessageToast.show(e.message);
+				}
 			}
-
-
-
-			try {
-				await ApproverUtility.rejectOrSendBackMultiLevel(oModel, id, userID, "STAT03", reason, comment);
-				this.__sendBackDialog.close();
-				const oRouter = this.getOwnerComponent().getRouter();
-
-				setTimeout(() => {
-					oRouter.navTo("Dashboard", {}, true); // true = replace history
-				}, 400);
-			} catch (e) {
-				sap.m.MessageToast.show(e.message);
-			}
-
 		},
 
 		onReject_app: async function () {
@@ -2638,23 +2630,24 @@ sap.ui.define([
 					sap.m.MessageToast.show("Please enter approval comment.");
 					return;
 				}
-				// TODO: Submit your reject action via OData here, then:
-				this.__rejectDialog && this.__rejectDialog.close();
-				sap.m.MessageToast.show("Rejected.");
-				return;
+				/* 				// TODO: Submit your reject action via OData here, then:
+								this.__rejectDialog && this.__rejectDialog.close();
+								sap.m.MessageToast.show("Rejected.");
+								return; */
+
+				try {
+					await ApproverUtility.rejectOrSendBackMultiLevel(oModel, id, userID, "STAT04", reason, comment);
+					this.__rejectDialog.close();
+					const oRouter = this.getOwnerComponent().getRouter();
+
+					setTimeout(() => {
+						oRouter.navTo("Dashboard", {}, true); // true = replace history
+					}, 400);
+				} catch (e) {
+					sap.m.MessageToast.show(e.message);
+				}
 			}
 
-			try {
-				await ApproverUtility.rejectOrSendBackMultiLevel(oModel, id, userID, "STAT04", reason, comment);
-				this.__rejectDialog.close();
-				const oRouter = this.getOwnerComponent().getRouter();
-
-				setTimeout(() => {
-					oRouter.navTo("Dashboard", {}, true); // true = replace history
-				}, 400);
-			} catch (e) {
-				sap.m.MessageToast.show(e.message);
-			}
 
 		},
 

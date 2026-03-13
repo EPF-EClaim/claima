@@ -68,6 +68,14 @@ sap.ui.define([
         text: "{i18n>approve_btn}",  // or "Approve Claim"
         type: "Emphasized",
         press: oController.onClickCreate_app.bind(oController),
+
+/*         enabled: {
+          parts: ["Reject>/approvalComment"],
+          formatter: function (v) {
+            return !!(v && v.trim().length > 0);
+          }
+        } */
+
         // Optional UX: enable only when comment is filled
         // enabled: "{= !!${Reject>/approvalComment} }"
       })
@@ -85,7 +93,7 @@ sap.ui.define([
     }
     return oController.__approveDialog;
   }
-  
+
 
   return {
     /**
