@@ -19,8 +19,7 @@ sap.ui.define([
 	"claima/utils/RejectDialog",
 	"claima/utils/SendBackDialog",
 	'claima/utils/Utility',
-	"claima/utils/ApproverUtility",
-	"claima/utils/ResendRejectUtility"
+	"claima/utils/ApproverUtility"
 ], function (
 	Controller,
 	MessageToast,
@@ -43,7 +42,6 @@ sap.ui.define([
 	SendBackDialog,
 	Utility,
 	ApproverUtility,
-	ResendRejectUtility
 ) {
 	"use strict";
 

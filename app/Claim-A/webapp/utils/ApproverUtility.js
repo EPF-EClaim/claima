@@ -55,8 +55,6 @@ sap.ui.define([
         ctxCurrent.setProperty("PROCESS_TIMESTAMP", tsLocal);
         ctxCurrent.setProperty("STATUS", "STAT05"); //APPROVED
 
-
-
         // STEP 4: Activate next level
         const nextLevel = currentLevel + 1;
         const ctxNext = aCtx.find(ctx => ctx.getObject().LEVEL === nextLevel);
@@ -126,7 +124,6 @@ sap.ui.define([
                 ctx.setProperty("STATUS", "STAT06");
             }
         });
-
         // 5) Update header (same group)
         const headerBinding = oModel.bindList(
             headerSet,
