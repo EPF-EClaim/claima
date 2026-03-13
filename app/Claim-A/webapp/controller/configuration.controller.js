@@ -29,8 +29,25 @@ sap.ui.define([
             oRouter.getRoute("ZCLAIM_TYPE").attachPatternMatched(this._onListRouteMatched, this);
         },
 
-        onOpenConfigTable: function (oEvent) {
+        onOpenConfigTable: async function (oEvent) {
             var oNavigation = oEvent.getSource().getId().split("--").pop();
+            const oModel = this.getView().getModel();
+            const oCtx = oModel.bindContext("/FeatureControl");
+
+            if (oNavigation === "ZEMP_MASTER" || oNavigation === "ZEMP_DEPENDENT") {
+                try {
+                    const oData = await oCtx.requestObject();
+                    if (oNavigation === "ZEMP_MASTER") {
+                        var sTable = oData.operationHidden === false && oNavigation === "ZEMP_MASTER" ? "ZEMP_MASTER_DTD" : oNavigation;
+                    } else {
+                        sTable = oData.operationHidden === false && oNavigation === "ZEMP_DEPENDENT" ? "ZEMP_DEPENDENT_DTD" : oNavigation;
+                    }
+                    oNavigation = sTable;
+                } catch (e) {
+                    sap.m.MessageToast.show("Error");
+                }
+            }
+
             var oRouter = this.getOwnerComponent().getRouter();
             oRouter.navTo(oNavigation);
         },
@@ -306,4 +323,3 @@ sap.ui.define([
         }
     });
 });
- 

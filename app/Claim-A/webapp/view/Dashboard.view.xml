@@ -302,7 +302,7 @@
                                     horizontal="false"
                                 >
                                     <Table
-                                        items="{ path: 'employee_view>/ZAPPROVAL_SUMMARY', sorter : { path : 'TRIP_START_DATE' } }"
+                                        items="{ path: '' }"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
@@ -333,16 +333,16 @@
                                             <ColumnListItem>
                                                 <cells>
                                                     <Text
-                                                        text="{employee_view>PURPOSE}"
+                                                        text=""
                                                     />
                                                     <Text
-                                                        text="{employee_view>STATUS}"
+                                                        text=""
                                                     />
                                                     <Text
-                                                        text="{employee_view>TRIP_START_DATE}"
+                                                        text=""
                                                     />
                                                     <Text
-                                                        text="{employee_view>TOTAL_CLAIM_AMOUNT}"
+                                                        text=""
                                                     />
                                                 </cells>
                                             </ColumnListItem>
