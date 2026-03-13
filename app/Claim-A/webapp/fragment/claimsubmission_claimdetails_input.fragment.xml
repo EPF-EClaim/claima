@@ -7,6 +7,18 @@
 	core:require="{FloatType: 'sap/ui/model/type/Float'}"
 >
 	<VBox class="sapUiSmallMargin">
+        <OverflowToolbar height="3rem">
+            <!-- space -->
+            <ToolbarSpacer />
+
+            <!-- Return -->
+            <Button
+                id="button_claimdetails_input_return"
+                press="onCancel_ClaimDetails_Input"
+                text="{i18n>button_claimdetails_input_return}"
+                visible="false"
+            />
+        </OverflowToolbar>
 		<f:SimpleForm
 			editable="false"
 			layout="ColumnLayout"
@@ -835,6 +847,15 @@
 				>
 				</u:FileUploader>
 
+				<!-- Attachment 1 (Existing) -->
+				<!-- <Button
+					id="button_claimdetails_input_attachment1"
+					icon="sap-icon://attachment"
+					text="{i18n>button_claimdetails_input_viewattachment}"
+					press="onView_Claim_Attachment('child_det','1')"
+					enabled="{= ${claimitem_input>/attachment_file_1} !== null }"
+				/> -->
+
 				<!-- Attachment 2 -->
 				<Label text="{i18n>label_claimdetails_input_attachment2}" />
 				<u:FileUploader
@@ -850,6 +871,15 @@
 					fileType="pdf,png,jpg,jpeg"
 					visible="false"
 				>
+
+				<!-- Attachment 2 (Existing) -->
+				<!-- <Button
+					id="button_claimdetails_input_attachment2"
+					icon="sap-icon://attachment"
+					text="{i18n>button_claimdetails_input_viewattachment}"
+					press="onView_Claim_Attachment('child_det','2')"
+					enabled="{= ${claimitem_input>/attachment_file_2} !== null }"
+				/> -->
 				</u:FileUploader>
 			</f:content>
 		</f:SimpleForm>

@@ -19,7 +19,7 @@
         <tnt:header>
             <f:ShellBar
                 showMenuButton="true"
-                homeIcon="images/EPF Logo Registered@2x.png"
+                homeIcon="./images/EPF Logo Registered@2x.png"
                 menuButtonPressed="onMenuButtonPress"
             />
         </tnt:header>
@@ -39,8 +39,8 @@
                         expanded="false"
                     />
                     <tnt:NavigationListItem
-                        key="sidenav_claimsubmission"
-                        text="{i18n>sidenav_claimsubmission}"
+                        key="nav_claimsubmission"
+                        text="{i18n>nav_claimsubmission}"
                         icon="sap-icon://add"
                         enabled="true"
                         expanded="false"

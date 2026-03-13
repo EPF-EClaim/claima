@@ -165,6 +165,7 @@
                 id="button_claiminput_claimsubmission"
                 press="onClaimSubmission_ClaimInput"
                 text="{i18n>button_claiminput_claimsubmission}"
+				type="Emphasized"
             />
 
             <!-- Cancel -->

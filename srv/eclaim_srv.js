@@ -319,11 +319,35 @@ module.exports = (srv) => {
     }
 });
 
+  srv.on('batchUpdatePreApproved', async (req) => {
+    const { ZREQUEST_ITEM } = srv.entities;
+    // check request if empty
+    try {
+      const { PreApprove } = req.data;
+      if (!PreApprove) {
+        throw new Error('No Data Sent')
+      }
+      const tx = cds.tx(req);
 
-  /* const port = process.env.PORT || 5000;
+      for (var entry of PreApprove) {
 
-  app.listen(port, function () {
-    console.log('listening');
-  })
- */
+        const results = await tx.run(
+          UPDATE(ZREQUEST_ITEM).set({ SEND_TO_SF: 1 }).where({ REQUEST_ID: entry.REQUEST_ID, REQUEST_SUB_ID: entry.REQUEST_SUB_ID })
+        );
+        
+      }
+      await tx.commit();
+
+      const response = {
+        success: true,
+        req: PreApprove,
+      };
+
+      req.notify(200, `Successfully updated "SEND_TO_SF" for`)
+      return response;
+
+    } catch (error) {
+      req.error(400, `Fail updating record: ${error.message}`);
+    }
+  });
 }
