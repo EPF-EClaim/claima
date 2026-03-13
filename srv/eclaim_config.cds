@@ -76,13 +76,13 @@ annotate service.ZREQUEST_TYPE with @(
 
     UI                             : {
         CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
-        DeleteHidden : {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
-        HeaderInfo   : {
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZREQUEST_TYPE',
             TypeNamePlural: 'ZREQUEST_TYPE',
         },
-        LineItem     : [
+        LineItem    : [
             {
                 $Type            : 'UI.DataField',
                 Value            : REQUEST_TYPE_ID,
@@ -142,7 +142,17 @@ annotate service.ZCLAIM_TYPE with @(
             },
             {
                 $Type: 'UI.DataField',
-                Value:  REQUEST_TYPE,
+                Value: END_DATE,
+                Label: 'End Date'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: START_DATE,
+                Label: 'Start Date'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: REQUEST_TYPE,
                 Label: 'Request Type'
             },
             {
@@ -154,16 +164,6 @@ annotate service.ZCLAIM_TYPE with @(
                 $Type: 'UI.DataField',
                 Value: PROJECT_CLAIM,
                 Label: 'Project Claim'
-            },                                    
-            {
-                $Type: 'UI.DataField',
-                Value: START_DATE,
-                Label: 'Start Date'
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: END_DATE,
-                Label: 'End Date'
             },
             {
                 $Type: 'UI.DataField',
@@ -190,8 +190,8 @@ annotate service.ZCLAIM_TYPE with @(
             },
             {
                 $Type: 'UI.DataField',
-                Value: CATEGORY_ID,
-                Label: 'Category ID'
+                Value: END_DATE,
+                Label: 'End Date'
             },
             {
                 $Type: 'UI.DataField',
@@ -200,8 +200,18 @@ annotate service.ZCLAIM_TYPE with @(
             },
             {
                 $Type: 'UI.DataField',
-                Value: END_DATE,
-                Label: 'End Date'
+                Value: REQUEST_TYPE,
+                Label: 'Request Type'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: IND_OR_GROUP,
+                Label: 'Individual/Group'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: PROJECT_CLAIM,
+                Label: 'Project Claim'
             },
             {
                 $Type: 'UI.DataField',
@@ -539,7 +549,7 @@ annotate service.ZROOM_TYPE with @(
                 Value            : LEVEL,
                 ![@UI.Importance]: #High,
                 Label            : 'Level'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
@@ -599,7 +609,7 @@ annotate service.ZFLIGHT_CLASS with @(
                 Value            : LEVEL,
                 ![@UI.Importance]: #High,
                 Label            : 'Level'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
@@ -635,13 +645,13 @@ annotate service.ZCOUNTRY with @(
 
     UI                             : {
         CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
-        DeleteHidden : {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
-        HeaderInfo   : {
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'ZCOUNTRY',
             TypeNamePlural: 'ZCOUNTRY',
         },
-        LineItem     : [
+        LineItem    : [
             {
                 $Type            : 'UI.DataField',
                 Value            : COUNTRY_ID,
@@ -2338,7 +2348,7 @@ annotate service.ZPERDIEM_ENT with @(
                 Value            : CLAIM_TYPE_ITEM_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Claim Type Item ID'
-            }                        
+            }
         ]
     }
 );
@@ -2777,7 +2787,7 @@ annotate service.ZVEHICLE_CLASS with @(
                 Value            : LEVEL,
                 ![@UI.Importance]: #High,
                 Label            : 'Level'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,
@@ -3053,7 +3063,7 @@ annotate service.ZTRANSFER_MODE with @(
                 Value            : NUMBER_OF_DAYS,
                 ![@UI.Importance]: #High,
                 Label            : 'Number of Days'
-            },            
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : START_DATE,

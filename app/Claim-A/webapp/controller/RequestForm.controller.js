@@ -56,7 +56,7 @@ sap.ui.define([
 		_ReqAttachmentFile1: null,
 		_ReqAttachmentFile2: null,
 
-		async onInit() {
+		onInit() {
 			this._fragments = Object.create(null);
 
 			// URL Access
@@ -82,9 +82,9 @@ sap.ui.define([
 			this._loadRequest(sRequestId);
 		},
 
-		async _loadRequest(sReqId) {
-			await this._getHeader(sReqId);
-			await this._getItemList(sReqId);
+		_loadRequest(sReqId) {
+			this._getHeader(sReqId);
+			this._getItemList(sReqId);
 
 			var status = this._getReqModel().getProperty("/req_header/reqstatus");
 			if (status != 'DRAFT' && status != 'DELETED') {
