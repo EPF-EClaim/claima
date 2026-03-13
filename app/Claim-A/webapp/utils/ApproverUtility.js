@@ -203,8 +203,6 @@ sap.ui.define([
                 currentProcessor: { name: currentName, email: currentEmail, matchedType }
             }
         };
-
-
     }
 
     function todayYMD() {
@@ -212,9 +210,6 @@ sap.ui.define([
         const pad = n => String(n).padStart(2, "0");
         return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
     }
-
-
-
 
     //For Reject and SendBack resend
     async function _rejectOrSendBackMultiLevel(oModel, id, userID, actionStatus, reason, comment, oModel2) {
@@ -294,7 +289,10 @@ sap.ui.define([
         );
         const [hctx] = await headerBinding.requestContexts(0, 1);
         if (hctx) {
-            hctx.setProperty("STATUS", actionStatus);          // STAT04/STAT03 at header
+
+            const headerStatusField = isPre ? "STATUS" : "STATUS_ID";
+            hctx.setProperty(headerStatusField, actionStatus); // STAT04/STAT03
+
         }
 
 
@@ -314,12 +312,22 @@ sap.ui.define([
 
         // Map rows
         const dataset = budgetRows.map(r => {
-            const yyyy = r.REQUEST_DATE ? r.REQUEST_DATE.substring(0, 4) : null;
+
+            const yyyy = isPre
+                ? (r.REQUEST_DATE ? String(r.REQUEST_DATE).substring(0, 4) : null)
+                : (r.SUBMITTED_DATE ? String(r.SUBMITTED_DATE).substring(0, 4) : null);
+
 
             const useAlt = r.USE_ALT_COST_CENTER === "X" || r.ALT_SELECTED === "X";
             const fund_center = useAlt
                 ? (r.ALTERNATE_COST_CENTER)
                 : (r.COST_CENTER);
+
+
+            const amount = isPre
+                ? Number(r.TOTAL_AMOUNT || 0)
+                : Number(r.TOTAL_CLAIM_AMOUNT || r.TOTAL_AMOUNT || 0);
+
 
             return {
                 yyyy,
@@ -327,7 +335,7 @@ sap.ui.define([
                 commitment_item: r.GL_ACCOUNT,
                 material_code: r.MATERIAL_CODE,
                 project_code: "1",
-                amount: Number(r.TOTAL_AMOUNT)
+                amount
             };
         });
 
@@ -361,11 +369,12 @@ sap.ui.define([
             currentName = currentRow_level.SUBSTITUTE_NAME;
         }
 
-        const submissionDate = currentRow_level?.REQUEST_DATE ?? null;
         const claimantName = currentRow_level?.EMPLOYEE_NAME ?? null;
         const claimantEmail = currentRow_level?.EMPLOYEE_EMAIL ?? null;
 
         const payloads = [];
+
+
 
         //Email to Next Approver
         payloads.push({

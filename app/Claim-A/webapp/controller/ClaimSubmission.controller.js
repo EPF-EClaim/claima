@@ -589,73 +589,105 @@ sap.ui.define([
 							this.onBack_ClaimSubmission();
 						}.bind(this)
 					);
-					// // confirm dialog
-					// var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-					// if (oClaimSubmissionModel.getProperty("is_new")) {
-					// 	// new claim submission
-					// 	this._newDialog(
-					// 		this._getTexti18n("dialog_claimsubmission_back"),
-					// 		this._getTexti18n("label_claimsubmission_back_create"),
-					// 		function () {
-					// 			this.onBack_ClaimSubmission();
-					// 		}.bind(this)
-					// 	);
-					// }
-					// else if (oClaimSubmissionModel.getProperty("is_approver")) {
-					// 	// new claim submission
-					// 	this._newDialog(
-					// 		this._getTexti18n("dialog_claimsubmission_back"),
-					// 		this._getTexti18n("label_claimapprover_back"),
-					// 		function () {
-					// 			this.onBack_ClaimSubmission();
-					// 		}.bind(this)
-					// 	);
-					// }
-					// else {
-					// 	// new claim submission
-					// 	this._newDialog(
-					// 		this._getTexti18n("dialog_claimsubmission_back"),
-					// 		this._getTexti18n("label_claimsubmission_back_change"),
-					// 		function () {
-					// 			this.onBack_ClaimSubmission();
-					// 		}.bind(this)
-					// 	);
-					// }
-					// break;
+				// // confirm dialog
+				// var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+				// if (oClaimSubmissionModel.getProperty("is_new")) {
+				// 	// new claim submission
+				// 	this._newDialog(
+				// 		this._getTexti18n("dialog_claimsubmission_back"),
+				// 		this._getTexti18n("label_claimsubmission_back_create"),
+				// 		function () {
+				// 			this.onBack_ClaimSubmission();
+				// 		}.bind(this)
+				// 	);
+				// }
+				// else if (oClaimSubmissionModel.getProperty("is_approver")) {
+				// 	// new claim submission
+				// 	this._newDialog(
+				// 		this._getTexti18n("dialog_claimsubmission_back"),
+				// 		this._getTexti18n("label_claimapprover_back"),
+				// 		function () {
+				// 			this.onBack_ClaimSubmission();
+				// 		}.bind(this)
+				// 	);
+				// }
+				// else {
+				// 	// new claim submission
+				// 	this._newDialog(
+				// 		this._getTexti18n("dialog_claimsubmission_back"),
+				// 		this._getTexti18n("label_claimsubmission_back_change"),
+				// 		function () {
+				// 			this.onBack_ClaimSubmission();
+				// 		}.bind(this)
+				// 	);
+				// }
+				// break;
 				//// Reject
-				case 'Reject':
-					{
-						let oReject = this.getView().getModel("Reject");
-						if (!oReject) {
-							oReject = new sap.ui.model.json.JSONModel({ mode: "", approvalComment: "" });
-							this.getView().setModel(oReject, "Reject");
-						}
-						oReject.setProperty("/mode", "APPROVE_CLAIM");  // <<< IMPORTANT
+				//// Reject
 
-						try {
-							ApproveDialog.open(this);
-						} catch (e) {
-							sap.m.MessageBox.error("Failed to open Approve Dialog:\n" + (e?.message || e));
-						}
-						break;
+				case 'Reject': {
+					
+					// Ensure form model
+					let oReject = this.getView().getModel("Reject");
+					if (!oReject) {
+						oReject = new sap.ui.model.json.JSONModel({ rejectReasonKey: "", approvalComment: "" });
+						this.getView().setModel(oReject, "Reject");
+					} else {
+						oReject.setProperty("/rejectReasonKey", "");
+						oReject.setProperty("/approvalComment", "");
 					}
+
+					// Ensure UI state model (Claim)
+					let oType = this.getView().getModel("Type");
+					if (!oType) {
+						oType = new sap.ui.model.json.JSONModel({ mode: "" });
+						this.getView().setModel(oType, "Type");
+					}
+					oType.setProperty("/mode", "REJECT_CLAIM");
+
+					try {
+						RejectDialog.open(this);
+					} catch (e) {
+						sap.m.MessageBox.error("Failed to open Reject Dialog:\n" + (e?.message || e));
+					}
+					break;
+				}
+
 				//// Back to Employee
 				case 'Back to Employee':
+
 					{
+						// 1) Ensure Reject model (form data: reason + comment)
 						let oReject = this.getView().getModel("Reject");
 						if (!oReject) {
-							oReject = new sap.ui.model.json.JSONModel({ mode: "", approvalComment: "" });
+							oReject = new sap.ui.model.json.JSONModel({
+								sendBackReasonKey: "",
+								approvalComment: ""
+							});
 							this.getView().setModel(oReject, "Reject");
+						} else {
+							// clear previous values each time you open
+							oReject.setProperty("/sendBackReasonKey", "");
+							oReject.setProperty("/approvalComment", "");
 						}
-						oReject.setProperty("/mode", "APPROVE_CLAIM");  // <<< IMPORTANT
 
+						// 2) Ensure Type model (UI state: dialog mode)
+						let oType = this.getView().getModel("Type");
+						if (!oType) {
+							oType = new sap.ui.model.json.JSONModel({ mode: "" });
+							this.getView().setModel(oType, "Type");
+						}
+						oType.setProperty("/mode", "SENDBACK_CLAIM");  // <<< IMPORTANT
+
+						// 3) Open SendBackDialog (not ApproveDialog)
 						try {
-							ApproveDialog.open(this);
+							SendBackDialog.open(this);
 						} catch (e) {
-							sap.m.MessageBox.error("Failed to open Approve Dialog:\n" + (e?.message || e));
+							sap.m.MessageBox.error("Failed to open Send Back Dialog:\n" + (e?.message || e));
 						}
 						break;
 					}
+
 				//// Approve
 
 
@@ -682,7 +714,7 @@ sap.ui.define([
 			}
 		},
 
-		// For Approval Process. 
+		// Aiman Salim - 14/03/2026 - For Approval Process. 
 
 		onClickCancel_app: function () {
 			// Close via the stored instance (ApproveDialog keeps it on controller as __approveDialog)
@@ -744,6 +776,159 @@ sap.ui.define([
 				}
 			}
 
+		},
+
+		onReject_ClaimSubmission: async function () {
+			// quick visual trace
+			 console.log("[onReject_ClaimSubmission] fired");
+			const oReject = this.getView().getModel("Reject");
+			const reason = oReject?.getProperty("/rejectReasonKey");
+			const comment = oReject?.getProperty("/approvalComment")?.trim();
+
+			if (!reason) { sap.m.MessageToast.show("Please select a Reject Reason."); return; }
+			if (!comment) { sap.m.MessageToast.show("Please enter approval comment."); return; }
+
+			try {
+				sap.ui.core.BusyIndicator.show(0);
+
+				const oModelMain = this.getOwnerComponent().getModel();
+				const oModelView = this.getOwnerComponent().getModel("employee_view");
+				const accessModel = this.getOwnerComponent().getModel("access");
+				const userId = accessModel?.getProperty("/userId");
+
+				const claimModel = this.getView().getModel("claimsubmission_input");
+				const claimId = claimModel?.getProperty("/claim_header/claim_id")?.trim();
+
+				const reject_status = "STAT04"; // REJECT
+
+				// Utility handles details + header status (use STATUS_ID for claim header)
+				const { payloads, dataset, submissionType } =
+					await ApproverUtility.rejectOrSendBackMultiLevel(
+						oModelMain,
+						claimId,
+						userId,
+						reject_status,
+						reason,
+						comment,
+						oModelView
+					);
+
+				// Budget release if required by your process
+				await budgetCheck.budgetProcessing(
+					oModelMain,
+					dataset,
+					submissionType,
+					"release"
+				);
+
+				// Emails
+				for (const p of payloads) {
+					await workflowApproval.onSendEmailApprover(oModelMain, p);
+				}
+
+				// Close & navigate
+				if (this.__rejectDialog) this.__rejectDialog.close();
+				setTimeout(() => {
+					this.getOwnerComponent().getRouter().navTo("Dashboard", {}, true);
+				}, 400);
+
+			} catch (e) {
+				sap.m.MessageToast.show(e.message || "Reject failed");
+			} finally {
+				sap.ui.core.BusyIndicator.hide();
+			}
+		},
+
+
+
+		onClickCancel_app: function () {
+			if (this.__approveDialog) { this.__approveDialog.close(); }
+			if (this.__sendBackDialog) { this.__sendBackDialog.close(); }
+			if (this.__rejectDialog) { this.__rejectDialog.close(); }
+		},
+
+		//End Approval
+
+		onSendBack_ClaimSubmission: async function () {
+			const oReject = this.getView().getModel("Reject");
+			const reason = oReject?.getProperty("/sendBackReasonKey");
+			const comment = oReject?.getProperty("/approvalComment")?.trim();
+
+			if (!reason) { sap.m.MessageToast.show("Please select a Send Back Reason."); return; }
+			if (!comment) { sap.m.MessageToast.show("Please enter approval comment."); return; }
+
+			try {
+				sap.ui.core.BusyIndicator.show(0);
+
+				const oModelMain = this.getOwnerComponent().getModel();
+				const oModelView = this.getOwnerComponent().getModel("employee_view");
+				const accessModel = this.getOwnerComponent().getModel("access");
+				const userId = accessModel?.getProperty("/userId");
+
+				const claimModel = this.getView().getModel("claimsubmission_input");
+				const claimId = claimModel?.getProperty("/claim_header/claim_id")?.trim();
+
+				const reject_status = "STAT03"; // SEND BACK
+
+				const { payloads, dataset, submissionType } =
+					await ApproverUtility.rejectOrSendBackMultiLevel(
+						oModelMain,
+						claimId,
+						userId,
+						reject_status,
+						reason,
+						comment,
+						oModelView
+					);
+
+				// Budget release if applicable for your process
+				await budgetCheck.budgetProcessing(
+					oModelMain,
+					dataset,
+					submissionType,
+					"release"
+				);
+
+				// Send emails
+				for (const p of payloads) {
+					await workflowApproval.onSendEmailApprover(oModelMain, p);
+				}
+
+				// Close dialog
+				this.__sendBackDialog && this.__sendBackDialog.close();
+
+				// Navigate out
+				setTimeout(() => {
+					this.getOwnerComponent().getRouter().navTo("Dashboard", {}, true);
+				}, 400);
+
+			} catch (e) {
+				sap.m.MessageToast.show(e.message || "Send Back failed");
+			} finally {
+				sap.ui.core.BusyIndicator.hide();
+			}
+		},
+
+		// Example: wire this to your "Back to Employee" or "Send Back" action
+		onOpenSendBack_Claim: function () {
+			// Ensure form model
+			let oReject = this.getView().getModel("Reject");
+			if (!oReject) {
+				oReject = new sap.ui.model.json.JSONModel({ sendBackReasonKey: "", approvalComment: "" });
+				this.getView().setModel(oReject, "Reject");
+			}
+			oReject.setProperty("/sendBackReasonKey", "");
+			oReject.setProperty("/approvalComment", "");
+
+			// Ensure UI state model
+			let oType = this.getView().getModel("Type");
+			if (!oType) {
+				oType = new sap.ui.model.json.JSONModel({ mode: "" });
+				this.getView().setModel(oType, "Type");
+			}
+			oType.setProperty("/mode", "SENDBACK_CLAIM");
+
+			SendBackDialog.open(this);
 		},
 
 		_displayFooterButtons: function (oId) {
@@ -1023,7 +1208,7 @@ sap.ui.define([
 			if (oInputModel.getProperty("/is_new")) {
 				oInputModel.setProperty("/claim_item/claim_id", oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
 				var claimSubId = oClaimSubmissionModel.getProperty("/claim_items").length + 1;
-				var totalClaimSubId = ( oInputModel.getProperty("/claim_item/claim_id") ?? "" ) + ('' + '00' + claimSubId).slice(-3);
+				var totalClaimSubId = (oInputModel.getProperty("/claim_item/claim_id") ?? "") + ('' + '00' + claimSubId).slice(-3);
 				oInputModel.setProperty("/claim_item/claim_sub_id", totalClaimSubId);
 			}
 			//// get claim type from claim header
@@ -1680,7 +1865,7 @@ sap.ui.define([
 				if (oInputModel.getProperty("/is_new")) {
 					oListBinding = oModel.bindList("/ZCLAIM_HEADER");
 					const oContext = oListBinding.create(oBody.getData());
-					oContext.created().then( async () => {
+					oContext.created().then(async () => {
 						switch (oAction) {
 							case 'Save Draft':
 								MessageToast.show(this._getTexti18n("msg_claimsubmission_created"));
@@ -1774,7 +1959,7 @@ sap.ui.define([
 					if (oInputModel.getProperty("/claim_items_count") > 0) {
 						await this._updateClaimItems();
 					}
-					
+
 					// determine claims approver
 					if (oAction === 'Submit Report') {
 						var oModelAppr = this.getView().getModel();
@@ -1933,7 +2118,7 @@ sap.ui.define([
 					const oModel = this.getOwnerComponent().getModel();
 					var oListBinding;
 
-					oListBinding = oModel.bindList("/ZCLAIM_ITEM", null,null,
+					oListBinding = oModel.bindList("/ZCLAIM_ITEM", null, null,
 						[
 							new sap.ui.model.Filter({ path: "CLAIM_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_item.claim_id }),
 							new sap.ui.model.Filter({ path: "CLAIM_SUB_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_item.claim_sub_id })
@@ -1966,7 +2151,7 @@ sap.ui.define([
 					}
 
 					await oModel.submitBatch("$auto");
-					
+
 					console.log("Save claim item success");
 				} catch (e) {
 					console.log(e.message || "Submission failed");

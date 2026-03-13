@@ -2520,42 +2520,58 @@ sap.ui.define([
 
 
 		onRejectRequest: function () {
+			// 1) Ensure form model
 			let oReject = this.getView().getModel("Reject");
 			if (!oReject) {
-				oReject = new sap.ui.model.json.JSONModel({ mode: "", approvalComment: "" });
+				oReject = new sap.ui.model.json.JSONModel({ rejectReasonKey: "", approvalComment: "" });
 				this.getView().setModel(oReject, "Reject");
+			} else {
+				oReject.setProperty("/rejectReasonKey", "");
+				oReject.setProperty("/approvalComment", "");
 			}
-			oReject.setProperty("/mode", "APPROVE_REQ");  // <<< IMPORTANT
 
-			try {
-				RejectDialog.open(this);
-			} catch (e) {
-				sap.m.MessageBox.error("Failed to open Approve Dialog:\n" + (e?.message || e));
+			// 2) Ensure UI state model
+			let oType = this.getView().getModel("Type");
+			if (!oType) {
+				oType = new sap.ui.model.json.JSONModel({ mode: "" });
+				this.getView().setModel(oType, "Type");
 			}
-			//RejectDialog.open(this);
+			oType.setProperty("/mode", "REJECT_REQ");
+
+			RejectDialog.open(this);
 		},
 
 		onSendBackRequest: function () {
+			// Ensure form model
 			let oReject = this.getView().getModel("Reject");
 			if (!oReject) {
-				oReject = new sap.ui.model.json.JSONModel({ mode: "", approvalComment: "" });
+				oReject = new sap.ui.model.json.JSONModel({ sendBackReasonKey: "", approvalComment: "" });
 				this.getView().setModel(oReject, "Reject");
 			}
-			oReject.setProperty("/mode", "APPROVE_REQ");  // <<< IMPORTANT
+			oReject.setProperty("/sendBackReasonKey", "");
+			oReject.setProperty("/approvalComment", "");
 
-			try {
-				SendBackDialog.open(this);
-			} catch (e) {
-				sap.m.MessageBox.error("Failed to open Approve Dialog:\n" + (e?.message || e));
+			// Ensure UI state model
+			let oType = this.getView().getModel("Type");
+			if (!oType) {
+				oType = new sap.ui.model.json.JSONModel({ mode: "" });
+				this.getView().setModel(oType, "Type");
 			}
-			//SendBackDialog.open(this);
+			oType.setProperty("/mode", "SENDBACK_REQ");
+
+			SendBackDialog.open(this);
 		},
+
+
 
 
 		onClickCancel_app: function () {
-			// Close via the stored instance (util keeps it on controller)
-			this.__approveDialog && this.__approveDialog.close();
+			if (this.__approveDialog) { this.__approveDialog.close(); }
+			if (this.__sendBackDialog) { this.__sendBackDialog.close(); }
+			if (this.__rejectDialog) { this.__rejectDialog.close(); }
 		},
+
+
 
 		onClickCreate_app: async function () {
 			// Minimal validation for reject flow (reason + comment)
@@ -2611,153 +2627,146 @@ sap.ui.define([
 			}
 		},
 
+		/**
+ * Submit handler for Send Back (STAT03) - PRE-APPROVAL REQUEST
+ * Called by SendBackDialog endButton (see dialog's robust handler binding).
+ */
 		onSendBack_app: async function () {
-			// Minimal validation for reject flow (reason + comment)
 			const oReject = this.getView().getModel("Reject");
-			const mode = oReject?.getProperty("/mode"); // "REJECT" here
-			const reason = oReject?.getProperty("/rejectReasonKey");
-			//const sendbackreason = oReject?.getProperty("/sendBackReasonKey");
+
+			// Read inputs
+			const reason = oReject?.getProperty("/sendBackReasonKey");
 			const comment = oReject?.getProperty("/approvalComment")?.trim();
-			const oModel2 = this.getOwnerComponent().getModel("employee_view");
-			const accessModel = this.getOwnerComponent().getModel("access");
-			const userId = accessModel?.getProperty("/userId");
-			const requestModel = this.getView().getModel("request");
-			const reqId = requestModel?.getProperty("/req_header/reqid")?.trim();
-			const id = reqId;
-			const userID = userId;
-			const reject_status = "STAT03";
 
+			// Client-side validation (dialog also disables button, but keep server-safe checks)
+			if (!reason) { sap.m.MessageToast.show("Please select a Send Back Reason."); return; }
+			if (!comment) { sap.m.MessageToast.show("Please enter approval comment."); return; }
 
-			//const displayUserId = Array.isArray(userId) ? userId.join(", ") : userCC;     // logged-in user
-			const oModel = this.getOwnerComponent().getModel();
+			try {
+				sap.ui.core.BusyIndicator.show(0);
 
+				// Models
+				const oModelMain = this.getOwnerComponent().getModel();               // OData main
+				const oModelView = this.getOwnerComponent().getModel("employee_view");// OData views
+				const accessModel = this.getOwnerComponent().getModel("access");
 
-			if (mode === "SENDBACK") {
-				if (!reason) {
-					sap.m.MessageToast.show("Please select a Reject Reason.");
-					return;
+				// Who & what
+				const userId = accessModel?.getProperty("/userId");
+				const requestModel = this.getOwnerComponent().getModel("request");
+				const reqId = requestModel?.getProperty("/req_header/reqid")?.trim();
+
+				if (!userId || !reqId) {
+					throw new Error("Missing User ID or Request ID.");
 				}
-				if (!comment) {
-					sap.m.MessageToast.show("Please enter approval comment.");
-					return;
-				}
-				try {
 
-					// 1. SendBack + get payloads from util
-					const { payloads, dataset, submissionType } = await ApproverUtility.rejectOrSendBackMultiLevel(
-						oModel,
-						id,
-						userID,
+				// STAT03 = SEND BACK
+				const reject_status = "STAT03";
+
+				// 1) Update approval rows + header, build dataset & email payloads
+				const { payloads, dataset, submissionType } =
+					await ApproverUtility.rejectOrSendBackMultiLevel(
+						oModelMain,
+						reqId,       // id
+						userId,      // approver user id
 						reject_status,
 						reason,
 						comment,
-						oModel2
+						oModelView
 					);
 
-					await budgetCheck.budgetProcessingTest(
-						oModel,
-						dataset,
-						submissionType,
-						"release"
-					);
+				// 2) Budget release (if your finance process requires release on send back)
+				await budgetCheck.budgetProcessing(
+					oModelMain,
+					dataset,          // budget rows from the view
+					submissionType,   // "REQ"
+					"release"
+				);
 
-					// 2. Send emails
-					for (const p of payloads) {
-						await workflowApproval.onSendEmailApprover(oModel, p);
-					}
-
-					// 3. Close dialog
-					this.__sendBackDialog.close();
-
-					// 4. Navigate back after small delay
-					const oRouter = this.getOwnerComponent().getRouter();
-					setTimeout(() => {
-						oRouter.navTo("Dashboard", {}, true);
-					}, 400);
-
-				} catch (e) {
-					sap.m.MessageToast.show(e.message);
+				// 3) Send notifications
+				const oMailModel = this.getOwnerComponent().getModel();
+				for (const p of payloads) {
+					await workflowApproval.onSendEmailApprover(oMailModel, p);
 				}
 
+				// 4) Close dialog
+				if (this.__sendBackDialog) {
+					this.__sendBackDialog.close();
+				}
+
+				// 5) Navigate back
+				setTimeout(() => {
+					const oRouter = this.getOwnerComponent().getRouter();
+					oRouter.navTo("Dashboard", {}, true);
+				}, 400);
+
+			} catch (e) {
+				sap.m.MessageToast.show(e.message || "Send Back failed");
+			} finally {
+				sap.ui.core.BusyIndicator.hide();
 			}
 		},
 
 		onReject_app: async function () {
-
-			// Minimal validation for reject flow (reason + comment)
 			const oReject = this.getView().getModel("Reject");
-			const mode = oReject?.getProperty("/mode"); // "REJECT" here
 			const reason = oReject?.getProperty("/rejectReasonKey");
 			const comment = oReject?.getProperty("/approvalComment")?.trim();
-			const accessModel = this.getOwnerComponent().getModel("access");
-			const userId = accessModel?.getProperty("/userId");
-			const requestModel = this.getView().getModel("request");
-			const reqId = requestModel?.getProperty("/req_header/reqid")?.trim();
-			const id = reqId;
-			const userID = userId;
-			const reject_status = "STAT04";
 
+			if (!reason) { sap.m.MessageToast.show("Please select a Reject Reason."); return; }
+			if (!comment) { sap.m.MessageToast.show("Please enter approval comment."); return; }
 
-			//const displayUserId = Array.isArray(userId) ? userId.join(", ") : userCC;     // logged-in user
-			const oModel = this.getOwnerComponent().getModel();
-			const oModel2 = this.getOwnerComponent().getModel("employee_view");
+			try {
+				sap.ui.core.BusyIndicator.show(0);
 
+				const oModelMain = this.getOwnerComponent().getModel();
+				const oModelView = this.getOwnerComponent().getModel("employee_view");
+				const accessModel = this.getOwnerComponent().getModel("access");
+				const userId = accessModel?.getProperty("/userId");
 
-			if (mode === "REJECT") {
-				if (!reason) {
-					sap.m.MessageToast.show("Please select a Reject Reason.");
-					return;
-				}
-				if (!comment) {
-					sap.m.MessageToast.show("Please enter approval comment.");
-					return;
-				}
-				try {
+				const reqModel = this.getView().getModel("request");
+				const reqId = reqModel?.getProperty("/req_header/reqid")?.trim();
 
-					// 1. Reject + get payloads from util
-					const { payloads, dataset, submissionType } = await ApproverUtility.rejectOrSendBackMultiLevel(
-						oModel,
-						id,
-						userID,
+				const reject_status = "STAT04"; // REJECT
+
+				const { payloads, dataset, submissionType } =
+					await ApproverUtility.rejectOrSendBackMultiLevel(
+						oModelMain,
+						reqId,
+						userId,
 						reject_status,
 						reason,
 						comment,
-						oModel2
+						oModelView
 					);
 
-					await budgetCheck.budgetProcessingTest(
-						oModel,
-						dataset,
-						submissionType,
-						"release"
-					);
+				// Budget release if applicable
+				await budgetCheck.budgetProcessing(oModelMain, dataset, submissionType, "release");
 
-					// 2. Send emails 
-					for (const p of payloads) {
-						await workflowApproval.onSendEmailApprover(oModel, p);
-					}
-
-					// 3. Close dialog
-					//this.__approveDialog && this.__approveDialog.close();
-
-					// 4. Navigate back after small delay
-					const oRouter = this.getOwnerComponent().getRouter();
-					setTimeout(() => {
-						oRouter.navTo("Dashboard", {}, true);
-					}, 400);
-
-				} catch (e) {
-					sap.m.MessageToast.show(e.message);
+				for (const p of payloads) {
+					await workflowApproval.onSendEmailApprover(oModelMain, p);
 				}
 
+				this.__rejectDialog && this.__rejectDialog.close();
+
+				setTimeout(() => this.getOwnerComponent().getRouter().navTo("Dashboard", {}, true), 400);
+
+			} catch (e) {
+				sap.m.MessageToast.show(e.message || "Reject failed");
+			} finally {
+				sap.ui.core.BusyIndicator.hide();
 			}
-
-
 		},
 
+
+
 		onExit: function () {
-			RejectDialog.destroy(this);
-		}
+			try {
+				RejectDialog.destroy(this);
+			} catch (e) { }
+			try {
+				SendBackDialog.destroy(this);
+			} catch (e) { }
+		},
+
 
 
 
