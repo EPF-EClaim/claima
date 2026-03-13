@@ -129,7 +129,7 @@ sap.ui.define([
 			const oUserAccessModel = new sap.ui.model.json.JSONModel({
 				userType: this._userType,
 				costcenters: this.costcenters,
-				userId: this._userId, // 08/03/2026 - Added to fetch emp id
+				userId: this.userId, // 08/03/2026 - Added to fetch emp id
 			});
 			this.getOwnerComponent().setModel(oUserAccessModel, "access");
 			//Aiman Salim - 05/03/2026 - Added to make it global;
@@ -2022,7 +2022,7 @@ sap.ui.define([
 			const oStatusPending = new sap.ui.model.Filter(
 				"STATUS",
 				sap.ui.model.FilterOperator.EQ,
-				"PENDING" // use the exact code/value your backend expects
+				"STAT02" // use the exact code/value your backend expects
 			);
 			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
 			const oCombined = new sap.ui.model.Filter({
@@ -2079,7 +2079,7 @@ sap.ui.define([
 			const oStatusPending = new sap.ui.model.Filter(
 				"STATUS",
 				sap.ui.model.FilterOperator.EQ,
-				"PENDING" // use the exact code/value your backend expects
+				"PENDING APPROVAL" // use the exact code/value your backend expects
 			);
 			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
 			const oCombined = new sap.ui.model.Filter({
