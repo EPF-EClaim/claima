@@ -2311,7 +2311,7 @@ sap.ui.define([
 					],
 					[
 						new sap.ui.model.Filter({ path: "CLAIM_TYPE_ID", operator: "EQ", value1: claim_type_id }),
-						new sap.ui.model.Filter({ path: "CATEGORY_ID", operator: 'NE', value1: "ST0001" })
+						new sap.ui.model.Filter({ path: "SUBMISSION_TYPE", operator: 'NE', value1: "ST0001" })
 					],
 					{
 						$$ownRequest: true,

@@ -668,7 +668,17 @@
                         <f:header>
                             <cards:Header title="ZDB_STRUCTURE" />
                         </f:header>
-                    </f:Card>                                                                                                                                                                                                                                                                                                                                           
+                    </f:Card>  
+                    <f:Card
+                        id="ZDISBURSEMENT_STATUS"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="ZDISBURSEMENT_STATUS" />
+                        </f:header>
+                    </f:Card>                                                                                                                                                                                                                                                                                                                                         
                 </f:GridContainer>
             </ScrollContainer>
         </content>
