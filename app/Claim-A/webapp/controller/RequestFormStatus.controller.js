@@ -17,7 +17,7 @@ sap.ui.define([
 		/* =========================================================
 		* Lifecycle
 		* ======================================================= */
-		async onInit() {
+		onInit() {
 			// initialize PAR Status List
 			PARequestSharedFunction.getPARHeaderList(this._getReqStatModel(), this._getViewModel());
 		},

@@ -19,10 +19,10 @@
                 horizontal="false"
                 height="100%"
             >
-                <VBox>
+                <VBox width="100%">
                     <HBox>
                         <Panel
-                            width="20rem"
+                            width="100%"
                             height="4rem"
                             class="sapUiSmallMarginBeginEnd sapUiMediumMarginTopBottom"
                         >
@@ -46,7 +46,7 @@
                             </HBox>
                         </Panel>
                         <Panel
-                            width="20rem"
+                            width="90%"
                             height="4rem"
                             class="sapUiMediumMarginBeginEnd sapUiMediumMarginTopBottom"
                         >
@@ -70,7 +70,7 @@
                             </HBox>
                         </Panel>
                         <Panel
-                            width="20rem"
+                            width="120%"
                             height="4rem"
                             class="sapUiMediumMarginBeginEnd sapUiMediumMarginTopBottom"
                         >
@@ -215,7 +215,7 @@
                                     horizontal="false"
                                 >
                                     <Table
-                                        items="{ path: '/ZREQUEST_HEADER', sorter : { path : 'REQUEST_DATE' } }"
+                                        items="{ path: 'employee_view>/ZEMP_REQUEST_VIEW', sorter : { path : 'REQUEST_DATE' } }"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
@@ -302,7 +302,7 @@
                                     horizontal="false"
                                 >
                                     <Table
-                                        items="{ path: 'employee_view>/ZAPPROVAL_SUMMARY', sorter : { path : 'TRIP_START_DATE' } }"
+                                        items="{ path: '' }"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
@@ -333,16 +333,16 @@
                                             <ColumnListItem>
                                                 <cells>
                                                     <Text
-                                                        text="{employee_view>PURPOSE}"
+                                                        text=""
                                                     />
                                                     <Text
-                                                        text="{employee_view>STATUS}"
+                                                        text=""
                                                     />
                                                     <Text
-                                                        text="{employee_view>TRIP_START_DATE}"
+                                                        text=""
                                                     />
                                                     <Text
-                                                        text="{employee_view>TOTAL_CLAIM_AMOUNT}"
+                                                        text=""
                                                     />
                                                 </cells>
                                             </ColumnListItem>
