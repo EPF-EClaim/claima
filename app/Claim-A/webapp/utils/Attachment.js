@@ -43,46 +43,53 @@ sap.ui.define([
             return attachmentNumber;
         },
 
-        postMDF: async function (reqID, attachment1, attachment2) {
-			// Write to Success Factors API
-			var sServiceUrl = "/SuccessFactors_API/cust_EPF_CLAIM_ATTACHMENTS_Parent";
+        async postMDF(reqID, attachment1, attachment2) {
+			const sServiceUrl = "/SuccessFactors_API/cust_EPF_CLAIM_ATTACHMENTS_Parent";
+
+			const hasAttachment2 = attachment2 && String(attachment2).trim().length > 0;
+
+			const payload = {
+				__metadata: {
+					type: "SFOData.cust_EPF_CLAIM_ATTACHMENTS_Parent" 
+				},
+				externalCode: reqID, 
+				cust_Parent_attachment1Nav: {
+					__metadata: {
+						uri: `Attachment('${attachment1}')`
+					}
+				}
+			};
+
+			if (hasAttachment2) {
+				payload.cust_Parent_attachment2Nav = {
+					__metadata: {
+						uri: `Attachment('${attachment2}')`
+					}
+				};
+			}
 
 			try {
 				const response = await fetch(sServiceUrl, {
 					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						__metadata: {
-							uri: 'cust_EPF_CLAIM_ATTACHMENTS_Parent'
-						},
-						Claim_ID: reqID,
-						cust_Parent_attachment1Nav: {
-							__metadata: {
-								uri: `Attachment('${attachment1}')`
-							}
-						},
-						...(String(attachment2).trim().length > 0 && attachment2 ? {
-							cust_Parent_attachment2Nav: {
-								__metadata: {
-									uri: `Attachment('${attachment2}')`
-								}
-							}
-						} : {}
-						)
-					})
+					headers: { 
+						"Content-Type": "application/json",
+						"Accept": "application/json"
+					},
+					body: JSON.stringify(payload)
 				});
 
 				if (!response.ok) {
-					const errText = await response.text().catch(() => "");
-					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
-				}
-				else {
-					console.log("MDF Updated")
+					const errData = await response.json().catch(() => ({}));
+					const message = errData?.error?.message?.value || response.statusText;
+					throw new Error(`HTTP ${response.status}: ${message}`);
 				}
 
+				console.log("MDF Updated successfully");
+				return true;
+
 			} catch (error) {
-				console.log("Error creating MDF: " + error);
-				MessageToast.show("Error creating MDF: " + error);
+				console.error("Error creating MDF:", error);
+				MessageToast.show("Error creating MDF: " + error.message);
 				return false;
 			}
 		},
