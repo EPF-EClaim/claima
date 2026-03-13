@@ -2316,9 +2316,9 @@ sap.ui.define([
 			oRouter.navTo("Dashboard");
 		},
 
-		onReject_ClaimSubmission: function () {
+/* 		onReject_ClaimSubmission: function () {
 			// reject code here
-		},
+		}, */
 
 		onBackToEmp_ClaimSubmission: function () {
 			// back to employee code here
