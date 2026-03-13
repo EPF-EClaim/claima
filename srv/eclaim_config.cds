@@ -1,5 +1,12 @@
 using {eclaim_srv as service} from './eclaim_srv';
 
+annotate service.ZRISK with {
+    END_DATE @assert: (case
+                           when END_DATE < START_DATE
+                                then 'End date should not be earlier than start date'
+                       end);
+};
+
 annotate service.ZRISK with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
@@ -54,6 +61,7 @@ annotate service.ZRISK with @(
 
     }
 );
+
 
 annotate service.ZREQUEST_TYPE with @(
     cds.autoexpose,
@@ -3886,6 +3894,60 @@ annotate service.ZBUDGET with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Currency'
             },
+        ]
+    }
+);
+
+annotate service.ZDISBURSEMENT_STATUS with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [DISBURSEMENT_STATUS_ID],
+    Capabilities                   : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                             : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ZDISBURSEMENT_STATUS',
+            TypeNamePlural: 'ZDISBURSEMENT_STATUS',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : DISBURSEMENT_STATUS_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Disbursement Status ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DISBURSEMENT_STATUS_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Disbursement Status Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
         ]
     }
 );

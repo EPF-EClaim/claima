@@ -7,6 +7,7 @@
     "@sap-cloud-sdk/connectivity": "^4",
     "@sap-cloud-sdk/http-client": "^4",
     "@sap-cloud-sdk/resilience": "^4",
+    "@sap/approuter": "^20.10.0",
     "@sap/xssec": "^4",
     "express": "^4",
     "xlsx": "^0.18.5",
@@ -36,6 +37,11 @@
         "limit": "10mb"
       }
     },
+    "log": {
+      "levels": {
+        "auth": "debug"
+      }
+    },
     "fiori": {
       "lean_draft": true,
       "bypass_draft": true
@@ -51,7 +57,23 @@
       "connectivity": true,
       "[hybrid]": {
         "db": "hana-cloud",
-        "auth": "mocked"
+        "auth": {
+          "kind": "mocked",
+          "users": {
+            "nur.ain.mohamad": {
+              "password": "test123",
+              "roles": [
+                "Claimant"
+              ]
+            },
+            "nurin.athirah@my.ey.com": {
+              "password": "test123",
+              "roles": [
+                "DTD_Admin"
+              ]
+            }
+          }
+        }
       },
       "app-front": true,
       "html5-repo": true,
