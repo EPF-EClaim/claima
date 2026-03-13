@@ -16,7 +16,8 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"sap/ui/export/Spreadsheet",
 	"claima/utils/PARequestSharedFunction",
-	"claima/utils/ApprovalLog"
+	"claima/utils/ApprovalLog",
+	"claima/utils/workflowApproval"
 ], function (
 	Device,
 	Controller,
@@ -35,7 +36,8 @@ sap.ui.define([
 	Sorter,
 	Spreadsheet,
 	PARequestSharedFunction,
-	ApprovalLog
+	ApprovalLog,
+	workflowApproval
 ) {
 	"use strict";
 
@@ -94,19 +96,19 @@ sap.ui.define([
 			// var claimID = "CLM26000000209";
             // var PARID = "REQ26000000002";
 			// var oModelAppr = this.getView().getModel();
-            // //ApprovalLog.onClaimsApproverDetermination(oModelAppr, claimID);
-            // ApprovalLog.onPARApproverDetermination(oModelAppr, PARID);
-			// //ApprovalLog.onSendEmail();
+            // //workflowApproval.onClaimsApproverDetermination(oModelAppr, claimID);
+            // workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
+			// //workflowApproval.onSendEmail();
 		},
 		onPARTest: function(){
 			var PARID = this.byId("PARSubmissionTest").getValue();
 			var oModel = this.getView().getModel();
-			ApprovalLog.onPARApproverDetermination(oModel, PARID);
+			workflowApproval.onPARApproverDetermination(oModel, PARID);
 		},
 		onClaimTest: function(){
 			var claimID = this.byId("claimSubmissionTest").getValue();
 			var oModel = this.getView().getModel();
-			ApprovalLog.onClaimsApproverDetermination(oModel, claimID);
+			workflowApproval.onClaimsApproverDetermination(oModel, claimID);
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
