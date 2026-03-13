@@ -1825,7 +1825,7 @@ sap.ui.define([
 					EVENT_END_DATE: oInputData.eventenddate,
 					TRIP_START_DATE: oInputData.tripstartdate,
 					TRIP_END_DATE: oInputData.tripenddate,
-					STATUS: "CREATED",
+					STATUS: "STAT01",
 					CLAIM_TYPE_ID: oInputData.claimtype,
 					REQUEST_DATE: new Date().toISOString().slice(0, 10)
 				};
