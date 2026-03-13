@@ -95,7 +95,7 @@ sap.ui.define([
           width: "100%",
           growing: true,
           growingMaxLines: 5,
-          placeholder: "{i18n>approval_comment_placeholder}"
+          placeholder: "{i18n>reject_comment_placeholder}"
           // liveChange: oController.onApprovalCommentLiveChange?.bind(oController)
         })
       ]

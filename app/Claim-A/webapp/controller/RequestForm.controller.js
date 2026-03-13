@@ -2520,12 +2520,11 @@ sap.ui.define([
 			const mode = oReject?.getProperty("/mode"); // "REJECT" here
 			const reason = oReject?.getProperty("/rejectReasonKey");
 			const comment = oReject?.getProperty("/approvalComment")?.trim();
-			
-
-
 			const accessModel = this.getOwnerComponent().getModel("access");
 			const userId = accessModel?.getProperty("/userId");
-			const reqId = "REQ26000000002"
+			const requestModel = this.getView().getModel("request");
+			const reqId = requestModel?.getProperty("/req_header/reqid")?.trim();
+
 			const id = reqId;
 			const userID = userId;
 			const oModel = this.getOwnerComponent().getModel();
@@ -2550,6 +2549,13 @@ sap.ui.define([
 			try {
 				await ApproverUtility.approveMultiLevel(oModel, id, userID, comment);
 				this.__approveDialog && this.__approveDialog.close();
+				const oRouter = this.getOwnerComponent().getRouter();
+
+				setTimeout(() => {
+					oRouter.navTo("Dashboard", {}, true); // true = replace history
+				}, 400);
+
+
 			} catch (e) {
 				sap.m.MessageToast.show(e.message);
 			}
@@ -2564,11 +2570,11 @@ sap.ui.define([
 			const comment = oReject?.getProperty("/approvalComment")?.trim();
 
 			const accessModel = this.getOwnerComponent().getModel("access");
-			const userType = accessModel?.getProperty("/userType");
 			const userId = accessModel?.getProperty("/userId");
-			const reqId = "REQ26000000002"
+			const requestModel = this.getView().getModel("request");
+			const reqId = requestModel?.getProperty("/req_header/reqid")?.trim();
 			const id = reqId;
-			const userID = "USER_0005";
+			const userID = userId;
 
 			//const displayUserId = Array.isArray(userId) ? userId.join(", ") : userCC;     // logged-in user
 			const oModel = this.getOwnerComponent().getModel();
@@ -2592,8 +2598,13 @@ sap.ui.define([
 
 
 			try {
-				await ResendRejectUtility.rejectOrSendBackMultiLevel(oModel, id, userID, "SEND BACK", reason, comment);
+				await ApproverUtility.rejectOrSendBackMultiLevel(oModel, id, userID, "STAT03", reason, comment);
 				this.__sendBackDialog.close();
+				const oRouter = this.getOwnerComponent().getRouter();
+
+				setTimeout(() => {
+					oRouter.navTo("Dashboard", {}, true); // true = replace history
+				}, 400);
 			} catch (e) {
 				sap.m.MessageToast.show(e.message);
 			}
@@ -2607,13 +2618,12 @@ sap.ui.define([
 			const mode = oReject?.getProperty("/mode"); // "REJECT" here
 			const reason = oReject?.getProperty("/rejectReasonKey");
 			const comment = oReject?.getProperty("/approvalComment")?.trim();
-
 			const accessModel = this.getOwnerComponent().getModel("access");
-			const userType = accessModel?.getProperty("/userType");
 			const userId = accessModel?.getProperty("/userId");
-			const reqId = "REQ26000000002"
+			const requestModel = this.getView().getModel("request");
+			const reqId = requestModel?.getProperty("/req_header/reqid")?.trim();
 			const id = reqId;
-			const userID = "USER_0005";
+			const userID = userId;
 
 			//const displayUserId = Array.isArray(userId) ? userId.join(", ") : userCC;     // logged-in user
 			const oModel = this.getOwnerComponent().getModel();
@@ -2635,8 +2645,13 @@ sap.ui.define([
 			}
 
 			try {
-				await ResendRejectUtility.rejectOrSendBackMultiLevel(oModel, id, userID, "REJECTED", reason, comment);
+				await ApproverUtility.rejectOrSendBackMultiLevel(oModel, id, userID, "STAT04", reason, comment);
 				this.__rejectDialog.close();
+				const oRouter = this.getOwnerComponent().getRouter();
+
+				setTimeout(() => {
+					oRouter.navTo("Dashboard", {}, true); // true = replace history
+				}, 400);
 			} catch (e) {
 				sap.m.MessageToast.show(e.message);
 			}

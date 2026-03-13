@@ -20,7 +20,7 @@ sap.ui.define([
     // Defaults for approve flow
     oReject.setData(Object.assign({
       mode: "APPROVE",
-      approvalComment: ""
+      approvalComment: "",
     }, oReject.getData() || {}), true);
   }
 
