@@ -1,4 +1,4 @@
-POST    http://localhost:4004/odata/v4/EmployeeSrv/batchUpdatePreApproved
+POST    http://localhost:4004/odata/v4/EmployeeSrv/budgetchecking
 Content-Type: application/json
  
 {

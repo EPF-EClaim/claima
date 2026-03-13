@@ -36,13 +36,18 @@ sap.ui.define([
 				const sGLAccount = await this._getGLAccount(oModel, claim_type);
 				const sMaterialCode = await this._getMaterialCode(oModel, row.claim_type_item);
 
-				const oListBinding = oModel.bindList("/ZBUDGET", null, null, [
+				// set filters
+				var oFilter = [
 					new Filter("YEAR", "EQ", sYYYY),
-					new Filter("INTERNAL_ORDER", "EQ", sInternalOrder),	// Project Code
 					new Filter("FUND_CENTER", "EQ", sFundCenter),			// Cost Center
 					new Filter("COMMITMENT_ITEM", "EQ", sGLAccount),		// GL Accont
 					new Filter("MATERIAL_GROUP", "EQ", sMaterialCode)		// Material Code
-				]);
+				];
+				if (proj_code) { // proj_code is not null
+					oFilter.push(new Filter("INTERNAL_ORDER", "EQ", sInternalOrder));	// Project Code
+				}
+
+				const oListBinding = oModel.bindList("/ZBUDGET", null, null, oFilter);
 
 				try {
 					const aContexts = await oListBinding.requestContexts(0, 1);
