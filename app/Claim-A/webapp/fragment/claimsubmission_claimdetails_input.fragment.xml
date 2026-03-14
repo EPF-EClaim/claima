@@ -835,14 +835,16 @@
 				<u:FileUploader
 					id="fileuploader_claimdetails_input_attachment1"
 					name="fileUploaderClaimDetailsInputAttachment1"
+					placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
 					uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
 					change="onChange_ClaimDetails_Input_Attachment($event ,'1')"
 					uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
 					maximumFileSize='5.0'
 					fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
+					mimeType="application/pdf,image/png,image/jpeg"
 					typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
+					multiple="false"
 					style="Emphasized"
-					fileType="pdf,png,jpg,jpeg"
 					visible="false"
 				>
 				</u:FileUploader>
@@ -863,14 +865,16 @@
 				<u:FileUploader
 					id="fileuploader_claimdetails_input_attachment2"
 					name="fileUploaderClaimDetailsInputAttachment2"
+					placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
 					uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
 					change="onChange_ClaimDetails_Input_Attachment($event ,'2')"
 					uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
 					maximumFileSize='5.0'
 					fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
+					mimeType="application/pdf,image/png,image/jpeg"
 					typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
+					multiple="false"
 					style="Emphasized"
-					fileType="pdf,png,jpg,jpeg"
 					visible="false"
 				>
 				</u:FileUploader>

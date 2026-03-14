@@ -360,6 +360,7 @@ sap.ui.define([
 						}
 					},
 					"requestform_amt": null,
+					"req_emailapprove": null,
 					"descr": {
 						"type": null,
 						"item": null,
@@ -599,7 +600,7 @@ sap.ui.define([
 
 				// enable 'Request Form' selection
 				if (categoryId == 'ST0003') {
-					if (!this.byId("select_claimprocess_requestform").getEnabled()) {
+					if (!this.byId("select_claimprocess_requestform").getVisible()) {
 						this.byId("select_claimprocess_requestform").bindAggregation("items", {
 							path: "employee>/ZREQUEST_HEADER",
 							filters: [
@@ -624,6 +625,18 @@ sap.ui.define([
 						this.byId("select_claimprocess_requestform").setEditable(true);
 						this.byId("select_claimprocess_requestform").setSelectedItem(null);
 
+						// enable 'Use email approval?' switch
+						if (!this.byId("switch_claimprocess_req_emailapprove").getEnabled()) {
+							// check if function is within grace period
+							var currentDateUnix = new Date().valueOf();
+							var endGraceDateUnix = new Date('2026-10-01').valueOf();
+							if (currentDateUnix < endGraceDateUnix) {
+								// current date within grace period
+								this.byId("switch_claimprocess_req_emailapprove").setEnabled(true);
+								this.byId("switch_claimprocess_req_emailapprove").setVisible(true);
+							}
+						}
+
 						// enable 'Create Pre-Approval Request' button
 						this.byId("button_claimprocess_preapproval").setEnabled(true);
 						this.byId("button_claimprocess_preapproval").setVisible(true);
@@ -644,8 +657,36 @@ sap.ui.define([
 
 		onSelect_ClaimProcess_RequestForm: function () {
 			// enable 'Start Claim' button if not already enabled
-			if (!this.byId("button_claimprocess_startclaim").getEnabled()) {
+			if (!this.byId("button_claimprocess_startclaim").getEnabled() && this.byId("select_claimprocess_requestform").getSelectedItem()) {
 				this.byId("button_claimprocess_startclaim").setEnabled(true);
+			}
+		},
+
+		onSwitch_ClaimProcess_Req_EmailApprove: function (oEvent) {
+			var oState = oEvent.getSource().getState();
+			switch (oState) {
+				case true:
+					// disable request form field
+					if (this.byId("select_claimprocess_requestform").getEnabled()) {
+						this.byId("select_claimprocess_requestform").setEnabled(false);
+					}
+
+					// enable 'Start Claim' button if not already enabled
+					if (!this.byId("button_claimprocess_startclaim").getEnabled()) {
+						this.byId("button_claimprocess_startclaim").setEnabled(true);
+					}
+					break;
+				case false:
+					// enable request form field
+					if (!this.byId("select_claimprocess_requestform").getEnabled()) {
+						this.byId("select_claimprocess_requestform").setEnabled(true);
+					}
+
+					// disable 'Start Claim' button if request form has no value
+					if (this.byId("button_claimprocess_startclaim").getEnabled() && !this.byId("select_claimprocess_requestform").getSelectedItem()) {
+						this.byId("button_claimprocess_startclaim").setEnabled(false);
+					}
+					break;
 			}
 		},
 
@@ -667,7 +708,7 @@ sap.ui.define([
 			//// get claim item category ID
 			oInputModel.setProperty("/claimtype/category", this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("SUBMISSION_TYPE"));
 			//// get request form values
-			if (this.byId("select_claimprocess_requestform").getSelectedItem()) {
+			if (this.byId("select_claimprocess_requestform").getSelectedItem() && !this.byId("switch_claimprocess_req_emailapprove").getState()) {
 				oInputModel.setProperty("/claimtype/requestform/objective_purpose", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("OBJECTIVE_PURPOSE"));
 				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT"));
 				oInputModel.setProperty("/claimtype/requestform/trip_start_date", this._getJsonDate(this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("TRIP_START_DATE")));
@@ -676,6 +717,9 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/event_end_date", this._getJsonDate(this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("EVENT_END_DATE")));
 				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("ALTERNATE_COST_CENTER"));
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("COSTCENTER/COST_CENTER_DESC"));
+			}
+			if (this.byId("switch_claimprocess_req_emailapprove").getEnabled()) {
+				oInputModel.setProperty("/claimtype/req_emailapprove", this.byId("switch_claimprocess_req_emailapprove").getState());
 			}
 
 			// close Claim Process dialog
@@ -719,7 +763,7 @@ sap.ui.define([
 			}
 
 			// reset request form
-			if (this.byId("select_claimprocess_requestform").getEnabled()) {
+			if (this.byId("select_claimprocess_requestform").getVisible()) {
 				this._reset_ClaimProcess_RequestForm();
 			}
 
@@ -736,6 +780,12 @@ sap.ui.define([
 			this.byId("select_claimprocess_requestform").setVisible(false);
 			this.byId("select_claimprocess_requestform").setEditable(false);
 			this.byId("select_claimprocess_requestform").setSelectedItem(null);
+
+			// disable 'Use email approval?' switch
+			if (this.byId("switch_claimprocess_req_emailapprove").getEnabled()) {
+				this.byId("switch_claimprocess_req_emailapprove").setEnabled(false);
+				this.byId("switch_claimprocess_req_emailapprove").setVisible(false);
+			}
 
 			// disable 'Create Pre-Approval Request' button
 			this.byId("button_claimprocess_preapproval").setEnabled(false);
@@ -787,27 +837,39 @@ sap.ui.define([
 				// make Pre-Approval Request, Approve Amount visible
 				this.byId("text_claiminput_preapprovalreq").setVisible(true);
 				this.byId("text_claiminput_amtapproved").setVisible(true);
-				//// disable editing if dates already set from request
-				if (oInputModel.getProperty("/claimtype/requestform/trip_start_date")) {
-					this.byId("datepicker_claiminput_tripstartdate").setEditable(false);
-				}
-				if (oInputModel.getProperty("/claimtype/requestform/trip_end_date")) {
-					this.byId("datepicker_claiminput_tripenddate").setEditable(false);
-				}
-				if (oInputModel.getProperty("/claimtype/requestform/event_start_date")) {
-					this.byId("datepicker_claiminput_eventstartdate").setEditable(false);
-				}
-				if (oInputModel.getProperty("/claimtype/requestform/event_end_date")) {
-					this.byId("datepicker_claiminput_eventenddate").setEditable(false);
-				}
-				//// disable editing alternate cost center if already set from request
-				if (oInputModel.getProperty("/claimtype/requestform/alternate_cost_center")) {
-					this.byId("select_claiminput_altcc").setEnabled(false);
-					this.byId("select_claiminput_altcc").setEditable(false);
-					this.byId("select_claiminput_altcc").setVisible(false);
+				switch (oInputModel.getProperty("/claimtype/req_emailapprove")) {
+					case true:
+                        // set text for using email approval
+						oInputModel.setProperty("/claim_header/request_id", "");
+						oInputModel.setProperty("/claim_header/descr/request_id", this._getTexti18n("text_claiminput_preapprovalreq_email"));
 
-					this.byId("input_claiminput_altcc").setEnabled(true);
-					this.byId("input_claiminput_altcc").setVisible(true);
+						// require attachment email approval
+						this.byId("fileuploader_claiminput_attachment").setRequired(true);
+						break;
+					default:
+						//// disable editing if dates already set from request
+						if (oInputModel.getProperty("/claimtype/requestform/trip_start_date")) {
+							this.byId("datepicker_claiminput_tripstartdate").setEditable(false);
+						}
+						if (oInputModel.getProperty("/claimtype/requestform/trip_end_date")) {
+							this.byId("datepicker_claiminput_tripenddate").setEditable(false);
+						}
+						if (oInputModel.getProperty("/claimtype/requestform/event_start_date")) {
+							this.byId("datepicker_claiminput_eventstartdate").setEditable(false);
+						}
+						if (oInputModel.getProperty("/claimtype/requestform/event_end_date")) {
+							this.byId("datepicker_claiminput_eventenddate").setEditable(false);
+						}
+						//// disable editing alternate cost center if already set from request
+						if (oInputModel.getProperty("/claimtype/requestform/alternate_cost_center")) {
+							this.byId("select_claiminput_altcc").setEnabled(false);
+							this.byId("select_claiminput_altcc").setEditable(false);
+							this.byId("select_claiminput_altcc").setVisible(false);
+
+							this.byId("input_claiminput_altcc").setEnabled(true);
+							this.byId("input_claiminput_altcc").setVisible(true);
+						}
+						break;
 				}
 			}
 		},
@@ -842,7 +904,7 @@ sap.ui.define([
 			}
 		},
 
-		_getNonNaN: function (iNumber) {
+		_nonNan: function (iNumber) {
 			if (isNaN(iNumber)) {
 				return 0;
 			} else {
@@ -960,15 +1022,22 @@ sap.ui.define([
 
 		onClaimSubmission_ClaimInput: async function () {
 			// validate required fields
-			if (
-				!this.byId("input_claiminput_purpose").getValue() ||
-				!this.byId("datepicker_claiminput_tripstartdate").getValue() ||
-				!this.byId("datepicker_claiminput_tripenddate").getValue() ||
-				!this.byId("input_claiminput_comment").getValue()
-			) {
-				// stop claim submission if values empty
-				MessageToast.show(this._getTexti18n("msg_claiminput_required"));
-				return;
+			var reqFields = [
+				"input_claiminput_purpose",
+				"datepicker_claiminput_tripstartdate",
+				"datepicker_claiminput_tripenddate",
+				"input_claiminput_comment",
+			];
+			//// add attachment field if using email approval
+			if (this.byId("fileuploader_claiminput_attachment").getRequired()) {
+				reqFields.push("fileuploader_claiminput_attachment");
+			}
+			for (let i = 0; i < reqFields.length; i++) {
+				if (!this.byId(reqFields[i]).getValue()) {
+					// stop claim submission if values empty
+					MessageToast.show(this._getTexti18n("msg_claiminput_required"));
+					return;
+				}
 			}
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
@@ -1048,8 +1117,8 @@ sap.ui.define([
 				ATTACHMENT_EMAIL_APPROVER: oInputModel.getProperty("/claim_header/attachment_email_approver"),
 				STATUS_ID: oInputModel.getProperty("/claim_header/status_id"),
 				CLAIM_TYPE_ID: oInputModel.getProperty("/claim_header/claim_type_id"),
-				TOTAL_CLAIM_AMOUNT: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/total_claim_amount"))).toFixed(2),
-				FINAL_AMOUNT_TO_RECEIVE: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
+				TOTAL_CLAIM_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/total_claim_amount"))).toFixed(2),
+				FINAL_AMOUNT_TO_RECEIVE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
 				LAST_MODIFIED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
 				SUBMITTED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
 				LAST_APPROVED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_approved_date")),
@@ -1063,8 +1132,8 @@ sap.ui.define([
 				LENDER_NAME: oInputModel.getProperty("/claim_header/lender_name"),
 				SPECIFY_DETAILS: oInputModel.getProperty("/claim_header/specify_details"),
 				NEW_HOUSE_ADDRESS: oInputModel.getProperty("/claim_header/new_house_address"),
-				DIST_OLD_HOUSE_TO_OFFICE_KM: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_office_km"))),
-				DIST_OLD_HOUSE_TO_NEW_HOUSE_KM: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_new_house_km"))),
+				DIST_OLD_HOUSE_TO_OFFICE_KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_office_km"))),
+				DIST_OLD_HOUSE_TO_NEW_HOUSE_KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_new_house_km"))),
 				APPROVER1: oInputModel.getProperty("/claim_header/approver1"),
 				APPROVER2: oInputModel.getProperty("/claim_header/approver2"),
 				APPROVER3: oInputModel.getProperty("/claim_header/approver3"),
@@ -1073,8 +1142,8 @@ sap.ui.define([
 				LAST_SEND_BACK_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_send_back_date")),
 				COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
 				PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
-				CASH_ADVANCE_AMOUNT: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
-				PREAPPROVED_AMOUNT: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2),
+				CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
+				PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2),
 				REJECT_REASON_ID: oInputModel.getProperty("/claim_header/reject_reason_id"),
 				SEND_BACK_REASON_ID: oInputModel.getProperty("/claim_header/send_back_reason_id"),
 				LAST_SEND_BACK_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/last_send_back_time")),
@@ -1326,6 +1395,9 @@ sap.ui.define([
 			//// attachment email approval
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
 				this.byId("fileuploader_claiminput_attachment").clear();
+			}
+			if (this.byId("fileuploader_claiminput_attachment").getRequired()) {
+				this.byId("fileuploader_claiminput_attachment").setRequired(false);
 			}
 			//// comment
 			if (this.byId("input_claiminput_comment").getValue()) {
@@ -2371,7 +2443,7 @@ sap.ui.define([
 					text: this._getTexti18n("button_claimsummary_cancel"),
 					press: function () {
 						this.oDialog.close();
-					}
+					}.bind(this)
 				})
 			});
 			this.oDialog.open();
