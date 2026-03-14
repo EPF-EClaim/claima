@@ -215,7 +215,7 @@
                                     horizontal="false"
                                 >
                                     <Table
-                                        items="{ path: '/ZREQUEST_HEADER', sorter : { path : 'REQUEST_DATE' } }"
+                                        items="{ path: 'employee_view>/ZEMP_REQUEST_VIEW', sorter : { path : 'REQUEST_DATE' } }"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
