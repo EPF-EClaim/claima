@@ -676,7 +676,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="ZDISBURSEMENT_STATUS" />
+                            <cards:Header title="Cash Advance Payment Disbursement Bypass" />
                         </f:header>
                     </f:Card>                                                                                                                                                                                                                                                                                                                                         
                 </f:GridContainer>
