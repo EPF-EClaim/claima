@@ -13,7 +13,7 @@ entity ZEMP_MASTER : managed {
         B_PLACE                       : String;
         MARITAL                       : String(2);
         JOB_GROUP                     : String(8);
-        OFFICE_LOCATION               : String;
+        OFFICE_LOCATION               : String(10);
         ADDRESS_LINE1                 : String;
         ADDRESS_LINE2                 : String;
         ADDRESS_LINE3                 : String;
@@ -171,7 +171,7 @@ entity ZREQUEST_ITEM : managed {
         MARRIAGE_CATEGORY          : String(2);
         FAMILY_COUNT               : Integer;
         COST_CENTER                : String;
-        GL_ACCOUNT                 : String;
+        GL_ACCOUNT                 : String(6);
         MATERIAL_CODE              : String;
         COURSE_TITLE               : String;
         ATTACHMENT1                : String;
@@ -186,9 +186,9 @@ entity ZREQUEST_ITEM : managed {
         FROM_STATE_ID              : String(4); //office distance
         TO_STATE_ID                : String(4); //office distance
         TO_LOCATION                : String; //free text
-        TO_LOCATION_OFFICE         : String; //office distance
+        TO_LOCATION_OFFICE         : String(10); //office distance
         FROM_LOCATION              : String; //free text
-        FROM_LOCATION_OFFICE       : String; //office distance
+        FROM_LOCATION_OFFICE       : String(10); //office distance
         TOLL                       : Decimal(16, 2);
         VEHICLE_TYPE               : String(2);
         DEPARTURE_TIME             : Time;
@@ -260,6 +260,8 @@ entity ZREQUEST_ITEM : managed {
                                          on ZFARE_TYPE.FARE_TYPE_ID = FARE_TYPE_ID;
         ZVEHICLE_CLASS             : Association to ZVEHICLE_CLASS
                                          on ZVEHICLE_CLASS.VEHICLE_CLASS_ID = VEHICLE_CLASS_ID;
+        ZGL_ACCOUNT                : Association to ZGL_ACCOUNT
+                                         on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
 }
 
 entity ZREQ_ITEM_PART : managed {
@@ -397,7 +399,7 @@ entity ZCLAIM_ITEM : managed {
         CLAIM_TYPE_ID              : String;
         CLAIM_TYPE_ITEM_ID         : String;
         PERCENTAGE_COMPENSATION    : Decimal(5, 2);
-        ACCOUNT_NO                 : String;
+        ACCOUNT_NO                 : String(255);
         AMOUNT                     : Decimal(16, 2);
         ATTACHMENT_FILE_1          : String;
         ATTACHMENT_FILE_2          : String;
@@ -412,7 +414,7 @@ entity ZCLAIM_ITEM : managed {
         END_TIME                   : Time;
         FLIGHT_CLASS               : String;
         FROM_LOCATION              : String; //free text
-        FROM_LOCATION_OFFICE       : String; //office distance
+        FROM_LOCATION_OFFICE       : String(10); //office distance
         KM                         : Decimal(6, 2);
         LOCATION                   : String;
         LOCATION_TYPE              : String(6);
@@ -433,7 +435,7 @@ entity ZCLAIM_ITEM : managed {
         FROM_STATE_ID              : String(4); //office distance
         TO_STATE_ID                : String(4); //office distance
         TO_LOCATION                : String; //free text
-        TO_LOCATION_OFFICE         : String; //office distance
+        TO_LOCATION_OFFICE         : String(10); //office distance
         TOLL                       : Decimal(16, 2);
         TOTAL_EXP_AMOUNT           : Decimal(16, 2);
         VEHICLE_TYPE               : String(2);
@@ -464,7 +466,7 @@ entity ZCLAIM_ITEM : managed {
         FAMILY_COUNT               : Integer;
         FUNERAL_TRANSPORTATION     : String(2);
         COST_CENTER                : String;
-        GL_ACCOUNT                 : String;
+        GL_ACCOUNT                 : String(6);
         MATERIAL_CODE              : String;
         COURSE_TITLE               : String;
         PURPOSE                    : String;
@@ -525,8 +527,6 @@ entity ZCLAIM_ITEM : managed {
         ZOFFICE_DISTANCE1          : Association to ZOFFICE_DISTANCE
                                          on  ZOFFICE_DISTANCE1.TO_LOCATION_ID = TO_LOCATION_OFFICE
                                          and ZOFFICE_DISTANCE1.TO_STATE_ID    = TO_STATE_ID;
-        ZGL_ACCOUNT                : Association to ZGL_ACCOUNT
-                                         on ZGL_ACCOUNT.GL_ACCOUNT_ID = ACCOUNT_NO;
         ZCOSTCENTER                : Association to ZCOST_CENTER
                                          on ZCOSTCENTER.COST_CENTER_ID = COST_CENTER;
         ZSTATE                     : Association to ZSTATE
@@ -566,6 +566,8 @@ entity ZCLAIM_ITEM : managed {
                                          on ZTRANSFER_MODE.TRANSFER_MODE_ID = MODE_OF_TRANSFER;
         ZPROFESIONAL_BODY          : Association to ZPROFESIONAL_BODY
                                          on ZPROFESIONAL_BODY.PROFESIONAL_BODY_ID = TYPE_OF_PROFESSIONAL_BODY;
+        ZGL_ACCOUNT                : Association to ZGL_ACCOUNT
+                                         on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
 }
 
 entity ZLODGING_CAT : managed {
@@ -622,7 +624,7 @@ entity ZCLAIM_TYPE_ITEM : managed {
 entity ZBUDGET : managed {
     key YEAR            : String(4)      @mandatory  @Common.Label: 'Year';
     key INTERNAL_ORDER  : String         @mandatory  @Common.Label: 'Internal Order';
-    key COMMITMENT_ITEM : String         @mandatory  @Common.Label: 'Commitment Item';
+    key COMMITMENT_ITEM : String(6)      @mandatory  @Common.Label: 'Commitment Item';
     key FUND_CENTER     : String         @mandatory  @Common.Label: 'Fund Center';
     key MATERIAL_GROUP  : String         @mandatory  @Common.Label: 'Material Group';
         ORIGINAL_BUDGET : Decimal(16, 2) @Common.Label: 'Original Budget';
@@ -811,34 +813,34 @@ entity ZSUBMISSION_TYPE : managed {
 }
 
 entity ZOFFICE_LOCATION : managed {
-    key LOCATION_ID    : String     @mandatory  @Common.Label: 'Location ID';
-    key STATE_ID       : String(4)  @mandatory  @Common.Label: 'State ID';
-        LOCATION_DESC  : String     @Common.Label: 'Location Description';
-        LOCATION_GROUP : String     @Common.Label: 'Location Group';
-        LEGAL_ENTITY   : String     @Common.Label: 'Legal Entity';
-        START_DATE     : Date       @Common.Label: 'Start Date';
-        END_DATE       : Date       @Common.Label: 'End Date';
-        STATUS         : String     @Common.Label: 'Status';
+    key LOCATION_ID    : String(10)  @mandatory  @Common.Label: 'Location ID';
+    key STATE_ID       : String(4)   @mandatory  @Common.Label: 'State ID';
+        LOCATION_DESC  : String      @Common.Label: 'Location Description';
+        LOCATION_GROUP : String      @Common.Label: 'Location Group';
+        LEGAL_ENTITY   : String      @Common.Label: 'Legal Entity';
+        START_DATE     : Date        @Common.Label: 'Start Date';
+        END_DATE       : Date        @Common.Label: 'End Date';
+        STATUS         : String(10)  @Common.Label: 'Status';
 
 }
 
 entity ZOFFICE_DISTANCE : managed {
-    key FROM_STATE_ID    : String(4)  @mandatory  @Common.Label: 'From State ID';
-    key FROM_LOCATION_ID : String     @mandatory  @Common.Label: 'From Location ID';
-    key TO_STATE_ID      : String(4)  @mandatory  @Common.Label: 'To State ID';
-    key TO_LOCATION_ID   : String     @mandatory  @Common.Label: 'To Location ID';
-        MILEAGE          : String     @Common.Label: 'Mileage';
-        START_DATE       : Date       @Common.Label: 'Start Date';
-        END_DATE         : Date       @Common.Label: 'End Date';
-        STATUS           : String     @Common.Label: 'Status';
+    key FROM_STATE_ID    : String(4)   @mandatory  @Common.Label: 'From State ID';
+    key FROM_LOCATION_ID : String(10)  @mandatory  @Common.Label: 'From Location ID';
+    key TO_STATE_ID      : String(4)   @mandatory  @Common.Label: 'To State ID';
+    key TO_LOCATION_ID   : String(10)  @mandatory  @Common.Label: 'To Location ID';
+        MILEAGE          : String      @Common.Label: 'Mileage';
+        START_DATE       : Date        @Common.Label: 'Start Date';
+        END_DATE         : Date        @Common.Label: 'End Date';
+        STATUS           : String(10)  @Common.Label: 'Status';
 }
 
 entity ZGL_ACCOUNT : managed {
-    key GL_ACCOUNT_ID   : String  @mandatory  @Common.Label: 'GL Account ID';
-        GL_ACCOUNT_DESC : String  @Common.Label: 'GL Account Description';
-        START_DATE      : Date    @Common.Label: 'Start Date';
-        END_DATE        : Date    @Common.Label: 'End Date';
-        STATUS          : String  @Common.Label: 'Status';
+    key GL_ACCOUNT_ID   : String(6)  @mandatory  @Common.Label: 'GL Account ID';
+        GL_ACCOUNT_DESC : String     @Common.Label: 'GL Account Description';
+        START_DATE      : Date       @Common.Label: 'Start Date';
+        END_DATE        : Date       @Common.Label: 'End Date';
+        STATUS          : String(10) @Common.Label: 'Status';
 }
 
 entity ZMATERIAL_GROUP : managed {
@@ -880,7 +882,7 @@ entity ZMARITAL_CAT : managed {
         MARRIAGE_CATEGORY_DESC : String     @Common.Label: 'Marriage Category Description';
         START_DATE             : Date       @Common.Label: 'Start Date';
         END_DATE               : Date       @Common.Label: 'End Date';
-        STATUS                 : String     @Common.Label: 'Status';
+        STATUS                 : String(10) @Common.Label: 'Status';
 }
 
 entity ZINTERNAL_ORDER : managed {
@@ -927,15 +929,15 @@ entity ZEMP_DEPENDENT : managed {
 
 
 entity ZPROJECT_HDR : managed {
-    key PROJECT_CODE_IO : String  @mandatory  @Common.Label: 'Project Code(IO)';
-        PROJECT_DESC    : String  @Common.Label: 'Project Description';
-        GL_ACCOUNT      : String  @Common.Label: 'GL Account';
-        COST_CENTER     : String  @Common.Label: 'Cost Center';
-        STATUS          : String  @Common.Label: 'Status';
-        BUFFER_FIELD1   : String  @Common.Label: 'Buffer Field 1';
-        BUFFER_FIELD2   : String  @Common.Label: 'Buffer Field 2';
-        START_DATE      : Date    @Common.Label: 'Start Date';
-        END_DATE        : Date    @Common.Label: 'End Date';
+    key PROJECT_CODE_IO : String    @mandatory  @Common.Label: 'Project Code(IO)';
+        PROJECT_DESC    : String    @Common.Label: 'Project Description';
+        GL_ACCOUNT      : String(6) @Common.Label: 'GL Account';
+        COST_CENTER     : String    @Common.Label: 'Cost Center';
+        STATUS          : String    @Common.Label: 'Status';
+        BUFFER_FIELD1   : String    @Common.Label: 'Buffer Field 1';
+        BUFFER_FIELD2   : String    @Common.Label: 'Buffer Field 2';
+        START_DATE      : Date      @Common.Label: 'Start Date';
+        END_DATE        : Date      @Common.Label: 'End Date';
         ZGL_ACCOUNT     : Association to ZGL_ACCOUNT
                               on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
         ZCOST_CENTER    : Association to ZCOST_CENTER
