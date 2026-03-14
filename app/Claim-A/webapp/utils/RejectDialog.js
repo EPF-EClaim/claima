@@ -26,30 +26,40 @@ sap.ui.define([
 ) {
   "use strict";
 
-  function ensureRejectModel(oController) {
+  // Ensure models BEFORE creating bound controls
+  function ensureModels(oController) {
     const oView = oController.getView();
+
+    // Reject (form data)
     let oReject = oView.getModel("Reject");
     if (!oReject) {
-      oReject = new JSONModel();
+      oReject = new JSONModel({ rejectReasonKey: "", approvalComment: "" });
       oView.setModel(oReject, "Reject");
+    } else if (!oReject.getData()) {
+      oReject.setData({ rejectReasonKey: "", approvalComment: "" });
     }
-    // Defaults for REJECT flow
-    oReject.setData(Object.assign({
-      mode: "REJECT",
-      rejectReasonKey: "",
-      approvalComment: ""
-    }, oReject.getData() || {}), true);
+
+    // Type (dialog UI state)
+    let oType = oView.getModel("Type");
+    if (!oType) {
+      oType = new JSONModel({ mode: "" }); // REJECT_REQ | REJECT_CLAIM
+      oView.setModel(oType, "Type");
+    } else if (!oType.getData()) {
+      oType.setData({ mode: "" });
+    }
   }
 
   function applyRejectFilters(oController) {
-    // Filter dropdown items to REJECT + ACTIVE
-    const oRejectSelect = oController.byId("rejectReasonSelect");
-    const oBinding = oRejectSelect && oRejectSelect.getBinding("items");
+    const oSelect = oController.byId("rejectReasonSelect");
+    const oBinding = oSelect && oSelect.getBinding("items");
     if (oBinding) {
       oBinding.filter([
         new Filter("REASON_TYPE", FilterOperator.EQ, "REJECT"),
         new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
       ]);
+    } else {
+      // eslint-disable-next-line no-console
+      console.warn("[RejectDialog] items binding not found on rejectReasonSelect.");
     }
   }
 
@@ -64,27 +74,58 @@ sap.ui.define([
       emptySpanXL: 0, emptySpanL: 0, emptySpanM: 0, emptySpanS: 0,
       columnsXL: 2, columnsL: 2, columnsM: 2,
       content: [
-        // Purpose
-        new Label({ text: "{i18n>purpose}" }),
-        new Text({ text: "{request>/req_header/purpose}", wrapping: false }),
+        // ----- Pre-Approval (Request) fields -----
+        new Label({
+          text: "{i18n>purpose}",
+          visible: "{= ${Type>/mode} === 'REJECT_REQ' }"
+        }),
+        new Text({
+          text: "{request>/req_header/purpose}",
+          wrapping: false,
+          visible: "{= ${Type>/mode} === 'REJECT_REQ' }"
+        }),
+        new Label({
+          text: "{i18n>preappreq_id}",
+          visible: "{= ${Type>/mode} === 'REJECT_REQ' }"
+        }),
+        new Text({
+          text: "{request>/req_header/reqid}",
+          wrapping: false,
+          visible: "{= ${Type>/mode} === 'REJECT_REQ' }"
+        }),
 
-        // Pre-Approval ID
-        new Label({ text: "{i18n>preappreq_id}" }),
-        new Text({ text: "{request>/req_header/reqid}", wrapping: false }),
+        // ----- Claim fields -----
+        new Label({
+          text: "{i18n>purpose}",
+          visible: "{= ${Type>/mode} === 'REJECT_CLAIM' }"
+        }),
+        new Text({
+          text: "{claimsubmission_input>/claim_header/purpose}",
+          wrapping: false,
+          visible: "{= ${Type>/mode} === 'REJECT_CLAIM' }"
+        }),
+        new Label({
+          text: "{i18n>label_claimsummary_claimheader_claimid}",
+          visible: "{= ${Type>/mode} === 'REJECT_CLAIM' }"
+        }),
+        new Text({
+          text: "{claimsubmission_input>/claim_header/claim_id}",
+          wrapping: false,
+          visible: "{= ${Type>/mode} === 'REJECT_CLAIM' }"
+        }),
 
         // Reject Reason (required)
-        new Label({ text: "Reject Reason", required: true }),
+        new Label({ text: "{i18n>reject_reason}", required: true }),
         new Select(oView.createId("rejectReasonSelect"), {
           width: "100%",
           selectedKey: "{Reject>/rejectReasonKey}",
-          // Optional: wire to a controller handler if you want
-          // change: oController.onRejectReasonChange?.bind(oController),
           items: {
-            path: "employee>/ZREJECT_REASON",   // <-- use your named model alias
+            path: "employee>/ZREJECT_REASON", // model alias must exist
             template: new Item({
               key: "{employee>REASON_ID}",
               text: "{employee>REASON_DESC}"
-            })
+            }),
+            templateShareable: false
           }
         }),
 
@@ -95,51 +136,50 @@ sap.ui.define([
           width: "100%",
           growing: true,
           growingMaxLines: 5,
+          valueLiveUpdate: true, // live update while typing
           placeholder: "{i18n>reject_comment_placeholder}"
-          // liveChange: oController.onApprovalCommentLiveChange?.bind(oController)
         })
       ]
     });
 
+    // Resolve handlers at creation (fallbacks)
+    const cancelHandler =
+      oController.onClickCancel_app ||
+      oController.onRejectCancel ||
+      function () { this.__rejectDialog && this.__rejectDialog.close(); };
+
+    const submitHandler =
+      oController.onReject_app ||               // RequestForm
+      oController.onReject_ClaimSubmission ||   // ClaimSubmission
+      function () { sap.m.MessageToast.show("No Reject handler implemented."); };
+
     const oDialog = new Dialog({
-      title: "{i18n>reject_claim}", // or "Reject Claim" if you don't have the key
+      title: "{i18n>reject_claim}",           // default; will be overwritten in open()
       contentWidth: "50%",
       content: [oForm],
       beginButton: new Button(oView.createId("reject_placeholder_cancel"), {
         text: "{i18n>req_b_cancel}",
-        press: oController.onClickCancel_app.bind(oController)
+        press: cancelHandler.bind(oController)
       }),
       endButton: new Button(oView.createId("reject_placeholder_submit"), {
-        text: "{i18n>reject_btn}",    // or "Reject"
+        text: "{i18n>reject_btn}",
         type: "Emphasized",
-        press: oController.onReject_app.bind(oController),
-
-/*         enabled: {
-          parts: ["Reject>/rejectReasonKey", "Reject>/approvalComment"],
-          formatter: function (reason, comment) {
-            const hasReason = !!reason;
-            const hasComment = !!(comment && comment.trim().length > 0);
-            return hasReason && hasComment;
-          }
-        } */
-
-        // Optional UX: enable only when reason+comment are provided
-        // enabled: "{= !!${Reject>/rejectReasonKey} && !!${Reject>/approvalComment} }"
+        enabled: "{= !!${Reject>/rejectReasonKey} && !!${Reject>/approvalComment} }",
+        press: submitHandler.bind(oController)
       })
     });
 
-    // Filter items after dialog opens to ensure binding is established
     oDialog.attachAfterOpen(function () {
       applyRejectFilters(oController);
     });
 
-    oDialog.addStyleClass("requestDialog"); // keep your CSS class if used
+    oDialog.addStyleClass("requestDialog");
     oView.addDependent(oDialog);
     return oDialog;
   }
 
-  // Singleton per controller instance (view-scoped)
   function getOrCreate(oController) {
+    ensureModels(oController);
     if (!oController.__rejectDialog) {
       oController.__rejectDialog = createRejectDialog(oController);
     }
@@ -147,20 +187,48 @@ sap.ui.define([
   }
 
   return {
-    /**
-     * Public API: Open Reject dialog
-     * @param {sap.ui.core.mvc.Controller} oController
-     */
     open: function (oController) {
-      ensureRejectModel(oController);
       const oDlg = getOrCreate(oController);
+
+      // 🔒 Always rewire endButton press to the CURRENT controller handler
+      try {
+        const btn = oDlg.getEndButton();
+        const handler =
+          oController.onReject_app ||
+          oController.onReject_ClaimSubmission ||
+          function () { sap.m.MessageToast.show("No Reject handler implemented."); };
+
+        // detach previous, attach new
+        if (btn.__rejHandler) btn.detachPress(btn.__rejHandler);
+        btn.__rejHandler = function () {
+          try {
+            return handler.apply(oController, arguments);
+          } catch (e) {
+            sap.m.MessageBox.error("Reject failed:\n" + (e?.message || e));
+            // eslint-disable-next-line no-console
+            console.error("[RejectDialog] handler error", e);
+          }
+        };
+        btn.attachPress(btn.__rejHandler);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn("[RejectDialog] Failed to wire endButton handler:", e);
+      }
+
+      // Title by mode
+      try {
+        const rb = oController.getOwnerComponent().getModel("i18n").getResourceBundle();
+        const mode = oController.getView().getModel("Type").getProperty("/mode");
+        const title = mode === "REJECT_REQ"
+          ? (rb.getText("reject_request") || rb.getText("reject_claim"))
+          : rb.getText("reject_claim");
+        oDlg.setTitle(title);
+      } catch (e) { /* ignore */ }
+
       oDlg.open();
       return oDlg;
     },
 
-    /**
-     * Optional cleanup
-     */
     destroy: function (oController) {
       if (oController.__rejectDialog) {
         oController.__rejectDialog.destroy();
