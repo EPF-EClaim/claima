@@ -2284,6 +2284,7 @@ sap.ui.define([
 
 		onBack_ClaimSubmission: function () {
 			// remove approval log fragment
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oPage = this.byId("page_claimsubmission");
 			var oApprovalLogFragment = this._getFormFragment("approval_log");
 			if (oApprovalLogFragment) {
