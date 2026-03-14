@@ -47,32 +47,32 @@ sap.ui.define([
 			// enable additional functionality if 1 or more claim items exist
 			if (oClaimSubmissionModel) {
 				this._setEnabledToolbarFooter();
-			}
 
-			// show approval log fragment for user
-			if (oClaimSubmissionModel.getProperty("/claim_header/status_id" === 'STAT02') || oClaimSubmissionModel.getProperty("/is_approver")) {
-				var oPage = this.byId("page_claimsubmission");
-				this._getFormFragment("approval_log").then(function (oVBox) {
-					oPage.insertContent(oVBox, 2);
-				});
-			}
-
-			// change screen details if approver
-			if (oClaimSubmissionModel.getProperty("/is_approver")) {
-				// update footer buttons
-				this._displayFooterButtons("claimsubmission_approver");
-
-				// table changes
-				if (this.byId("button_claimsummary_edit")) {
-					//// hide buttons
-					if (this.byId("button_claimsummary_createclaim").getVisible()) { this.byId("button_claimsummary_createclaim").setVisible(false); }
-					if (this.byId("button_claimsummary_edit").getVisible()) { this.byId("button_claimsummary_edit").setVisible(false); }
-					if (this.byId("button_claimsummary_duplicate").getVisible()) { this.byId("button_claimsummary_duplicate").setVisible(false); }
-					if (this.byId("button_claimsummary_delete").getVisible()) { this.byId("button_claimsummary_delete").setVisible(false); }
+				// show approval log fragment for user
+				if (oClaimSubmissionModel.getProperty("/claim_header/status_id" === 'STAT02') || oClaimSubmissionModel.getProperty("/is_approver")) {
+					var oPage = this.byId("page_claimsubmission");
+					this._getFormFragment("approval_log").then(function (oVBox) {
+						oPage.insertContent(oVBox, 2);
+					});
 				}
 
-				// table properties
-				this.byId("table_claimsummary_claimitem").setMode(sap.m.ListMode.SingleSelectMaster);
+				// change screen details if approver
+				if (oClaimSubmissionModel.getProperty("/is_approver")) {
+					// update footer buttons
+					this._displayFooterButtons("claimsubmission_approver");
+
+					// table changes
+					if (this.byId("button_claimsummary_edit")) {
+						//// hide buttons
+						if (this.byId("button_claimsummary_createclaim").getVisible()) { this.byId("button_claimsummary_createclaim").setVisible(false); }
+						if (this.byId("button_claimsummary_edit").getVisible()) { this.byId("button_claimsummary_edit").setVisible(false); }
+						if (this.byId("button_claimsummary_duplicate").getVisible()) { this.byId("button_claimsummary_duplicate").setVisible(false); }
+						if (this.byId("button_claimsummary_delete").getVisible()) { this.byId("button_claimsummary_delete").setVisible(false); }
+					}
+
+					// table properties
+					this.byId("table_claimsummary_claimitem").setMode(sap.m.ListMode.SingleSelectMaster);
+				}
 			}
 		},
  
@@ -1486,110 +1486,110 @@ sap.ui.define([
 		},
 
 		_updateClaimSubmission: async function (oAction) {
-			// get input model
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-			//// update last modified date
-			var lastModifiedDate = this._getJsonDate(new Date());
-			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
-
-			// assign report number to new claim
-			if (oInputModel.getProperty("/is_new")) {
-				var currentReportNumber = await this._getCurrentReportNumber('NR02');
-				if (currentReportNumber) {
-					oInputModel.setProperty("/claim_header/claim_id", currentReportNumber.result);
-					oInputModel.setProperty("/reportnumber/reportno", currentReportNumber.result);
-					oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
-				}
-				else {
-					console.log("No claim ID available");
-					MessageToast.show("No claim ID available");
-				}
-			}
-			//// set status for new claim as draft
-			if (oInputModel.getProperty("/is_new")) {
-				oInputModel.setProperty("/claim_header/status_id", "STAT01");
-				oInputModel.setProperty("/claim_header/descr/status_id", "DRAFT");
-			}
-			//// change status based on oAction
-			switch (oAction) {
-				case 'Delete Report':
-					oInputModel.setProperty("/claim_header/status_id", "STAT07");
-					oInputModel.setProperty("/claim_header/descr/status_id", "CANCELLED");
-					break;
-				case 'Submit Report':
-					var prevStatus = new JSONModel({
-						status_id: oInputModel.getProperty("/claim_header/status_id"),
-						descr: {
-							status_id: oInputModel.getProperty("/claim_header/descr/status_id")
-						}
-					});
-					oInputModel.setProperty("/claim_header/status_id", "STAT02");
-					oInputModel.setProperty("/claim_header/descr/status_id", "PENDING APPROVAL");
-					if (!oInputModel.getProperty("/claim_header/submitted_date")) {
-						var submittedDate = this._getJsonDate(new Date());
-						oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
-					}
-					break;
-				default:
-					break;
-			}
-
-			// set body for update
-			var oBody = new JSONModel({
-				EMP_ID: oInputModel.getProperty("/claim_header/emp_id"),
-				PURPOSE: oInputModel.getProperty("/claim_header/purpose"),
-				TRIP_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")),
-				TRIP_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")),
-				EVENT_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/event_start_date")),
-				EVENT_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/event_end_date")),
-				SUBMISSION_TYPE: oInputModel.getProperty("/claim_header/submission_type"),
-				COMMENT: oInputModel.getProperty("/claim_header/comment"),
-				ALTERNATE_COST_CENTER: oInputModel.getProperty("/claim_header/alternate_cost_center"),
-				COST_CENTER: oInputModel.getProperty("/claim_header/cost_center"),
-				REQUEST_ID: oInputModel.getProperty("/claim_header/request_id"),
-				ATTACHMENT_EMAIL_APPROVER: oInputModel.getProperty("/claim_header/attachment_email_approver"),
-				STATUS_ID: oInputModel.getProperty("/claim_header/status_id"),
-				CLAIM_TYPE_ID: oInputModel.getProperty("/claim_header/claim_type_id"),
-				TOTAL_CLAIM_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/total_claim_amount"))).toFixed(2),
-				FINAL_AMOUNT_TO_RECEIVE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
-				LAST_MODIFIED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
-				SUBMITTED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
-				LAST_APPROVED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_approved_date")),
-				LAST_APPROVED_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/last_approved_time")),
-				PAYMENT_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/payment_date")),
-				LOCATION: oInputModel.getProperty("/claim_header/location"),
-				SPOUSE_OFFICE_ADDRESS: oInputModel.getProperty("/claim_header/spouse_office_address"),
-				HOUSE_COMPLETION_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/house_completion_date")),
-				MOVE_IN_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/move_in_date")),
-				HOUSING_LOAN_SCHEME: oInputModel.getProperty("/claim_header/housing_loan_scheme"),
-				LENDER_NAME: oInputModel.getProperty("/claim_header/lender_name"),
-				SPECIFY_DETAILS: oInputModel.getProperty("/claim_header/specify_details"),
-				NEW_HOUSE_ADDRESS: oInputModel.getProperty("/claim_header/new_house_address"),
-				DIST_OLD_HOUSE_TO_OFFICE_KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_office_km"))),
-				DIST_OLD_HOUSE_TO_NEW_HOUSE_KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_new_house_km"))),
-				APPROVER1: oInputModel.getProperty("/claim_header/approver1"),
-				APPROVER2: oInputModel.getProperty("/claim_header/approver2"),
-				APPROVER3: oInputModel.getProperty("/claim_header/approver3"),
-				APPROVER4: oInputModel.getProperty("/claim_header/approver4"),
-				APPROVER5: oInputModel.getProperty("/claim_header/approver5"),
-				LAST_SEND_BACK_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_send_back_date")),
-				COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
-				PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
-				CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
-				PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2),
-				REJECT_REASON_ID: oInputModel.getProperty("/claim_header/reject_reason_id"),
-				SEND_BACK_REASON_ID: oInputModel.getProperty("/claim_header/send_back_reason_id"),
-				LAST_SEND_BACK_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/last_send_back_time")),
-				REJECT_REASON_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
-				REJECT_REASON_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time"))
-			});
-			//// addon for new claim
-			if (oInputModel.getProperty("/is_new")) {
-				oBody.setProperty("/CLAIM_ID", oInputModel.getProperty("/claim_header/claim_id"));
-			}
-
 			try {
 				BusyIndicator.show(0);
+
+				// get input model
+				var oInputModel = this.getView().getModel("claimsubmission_input");
+				//// update last modified date
+				var lastModifiedDate = this._getJsonDate(new Date());
+				oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
+
+				// assign report number to new claim
+				if (oInputModel.getProperty("/is_new")) {
+					var currentReportNumber = await this._getCurrentReportNumber('NR02');
+					if (currentReportNumber) {
+						oInputModel.setProperty("/claim_header/claim_id", currentReportNumber.result);
+						oInputModel.setProperty("/reportnumber/reportno", currentReportNumber.result);
+						oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
+					}
+					else {
+						console.log("No claim ID available");
+						MessageToast.show("No claim ID available");
+					}
+				}
+				//// set status for new claim as draft
+				if (oInputModel.getProperty("/is_new")) {
+					oInputModel.setProperty("/claim_header/status_id", "STAT01");
+					oInputModel.setProperty("/claim_header/descr/status_id", "DRAFT");
+				}
+				//// change status based on oAction
+				switch (oAction) {
+					case 'Delete Report':
+						oInputModel.setProperty("/claim_header/status_id", "STAT07");
+						oInputModel.setProperty("/claim_header/descr/status_id", "CANCELLED");
+						break;
+					case 'Submit Report':
+						var prevStatus = new JSONModel({
+							status_id: oInputModel.getProperty("/claim_header/status_id"),
+							descr: {
+								status_id: oInputModel.getProperty("/claim_header/descr/status_id")
+							}
+						});
+						oInputModel.setProperty("/claim_header/status_id", "STAT02");
+						oInputModel.setProperty("/claim_header/descr/status_id", "PENDING APPROVAL");
+						if (!oInputModel.getProperty("/claim_header/submitted_date")) {
+							var submittedDate = this._getJsonDate(new Date());
+							oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
+						}
+						break;
+					default:
+						break;
+				}
+
+				// set body for update
+				var oBody = new JSONModel({
+					EMP_ID: oInputModel.getProperty("/claim_header/emp_id"),
+					PURPOSE: oInputModel.getProperty("/claim_header/purpose"),
+					TRIP_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")),
+					TRIP_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")),
+					EVENT_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/event_start_date")),
+					EVENT_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/event_end_date")),
+					SUBMISSION_TYPE: oInputModel.getProperty("/claim_header/submission_type"),
+					COMMENT: oInputModel.getProperty("/claim_header/comment"),
+					ALTERNATE_COST_CENTER: oInputModel.getProperty("/claim_header/alternate_cost_center"),
+					COST_CENTER: oInputModel.getProperty("/claim_header/cost_center"),
+					REQUEST_ID: oInputModel.getProperty("/claim_header/request_id"),
+					ATTACHMENT_EMAIL_APPROVER: oInputModel.getProperty("/claim_header/attachment_email_approver"),
+					STATUS_ID: oInputModel.getProperty("/claim_header/status_id"),
+					CLAIM_TYPE_ID: oInputModel.getProperty("/claim_header/claim_type_id"),
+					TOTAL_CLAIM_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/total_claim_amount"))).toFixed(2),
+					FINAL_AMOUNT_TO_RECEIVE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
+					LAST_MODIFIED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
+					SUBMITTED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
+					LAST_APPROVED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_approved_date")),
+					LAST_APPROVED_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/last_approved_time")),
+					PAYMENT_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/payment_date")),
+					LOCATION: oInputModel.getProperty("/claim_header/location"),
+					SPOUSE_OFFICE_ADDRESS: oInputModel.getProperty("/claim_header/spouse_office_address"),
+					HOUSE_COMPLETION_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/house_completion_date")),
+					MOVE_IN_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/move_in_date")),
+					HOUSING_LOAN_SCHEME: oInputModel.getProperty("/claim_header/housing_loan_scheme"),
+					LENDER_NAME: oInputModel.getProperty("/claim_header/lender_name"),
+					SPECIFY_DETAILS: oInputModel.getProperty("/claim_header/specify_details"),
+					NEW_HOUSE_ADDRESS: oInputModel.getProperty("/claim_header/new_house_address"),
+					DIST_OLD_HOUSE_TO_OFFICE_KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_office_km"))),
+					DIST_OLD_HOUSE_TO_NEW_HOUSE_KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_new_house_km"))),
+					APPROVER1: oInputModel.getProperty("/claim_header/approver1"),
+					APPROVER2: oInputModel.getProperty("/claim_header/approver2"),
+					APPROVER3: oInputModel.getProperty("/claim_header/approver3"),
+					APPROVER4: oInputModel.getProperty("/claim_header/approver4"),
+					APPROVER5: oInputModel.getProperty("/claim_header/approver5"),
+					LAST_SEND_BACK_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_send_back_date")),
+					COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
+					PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
+					CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
+					PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2),
+					REJECT_REASON_ID: oInputModel.getProperty("/claim_header/reject_reason_id"),
+					SEND_BACK_REASON_ID: oInputModel.getProperty("/claim_header/send_back_reason_id"),
+					LAST_SEND_BACK_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/last_send_back_time")),
+					REJECT_REASON_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
+					REJECT_REASON_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time"))
+				});
+				//// addon for new claim
+				if (oInputModel.getProperty("/is_new")) {
+					oBody.setProperty("/CLAIM_ID", oInputModel.getProperty("/claim_header/claim_id"));
+				}
 
 				const oModel = this.getOwnerComponent().getModel();
 				var oListBinding;
