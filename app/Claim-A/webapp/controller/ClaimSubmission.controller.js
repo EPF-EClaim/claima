@@ -589,6 +589,7 @@ sap.ui.define([
 							this.onBack_ClaimSubmission();
 						}.bind(this)
 					);
+					break;
 				// // confirm dialog
 				// var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 				// if (oClaimSubmissionModel.getProperty("is_new")) {
@@ -685,8 +686,8 @@ sap.ui.define([
 						} catch (e) {
 							sap.m.MessageBox.error("Failed to open Send Back Dialog:\n" + (e?.message || e));
 						}
-						break;
 					}
+					break;
 
 				//// Approve
 
@@ -707,8 +708,8 @@ sap.ui.define([
 					oType.setProperty("/mode", "APPROVE_CLAIM");
 
 					ApproveDialog.open(this);
-					break;
 				}
+				break;
 
 
 			}
@@ -1952,7 +1953,11 @@ sap.ui.define([
 								claim_type_item: claim_type_item_id,
 								amount: amount
 							}));
-							var budgetCc = oInputModel.getProperty("/claim_header/cost_center") || oInputModel.getProperty("/claim_header/alternate_cost_center") || null;
+							var budgetCc = oInputModel.getProperty("/claim_header/cost_center") || oInputModel.getProperty("/claim_header/alternate_cost_center");
+							if (!budgetCc) {
+								MessageToast.show("No cost center found for claim");
+								return;
+							}
 							const result = await budgetCheck.budgetChecking(
 								oModel,
 								"CLM",
