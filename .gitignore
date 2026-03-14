@@ -39,3 +39,6 @@ db/.env
 app/Claim-A/gen/db/.env
 # auto generated wildcard
 gen/db/.env
+# added by cds
+.cdsrc-private.json
+

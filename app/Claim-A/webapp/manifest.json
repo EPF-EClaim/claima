@@ -413,13 +413,6 @@
                     ]
                 },
                 {
-                    "pattern": "ZDB_STRUCTURE",
-                    "name": "ZDB_STRUCTURE",
-                    "target": [
-                        "ZDB_STRUCTURE"
-                    ]
-                },
-                {
                     "pattern": "ZOFFICE_LOCATION",
                     "name": "ZOFFICE_LOCATION",
                     "target": [
@@ -600,6 +593,11 @@
                     "pattern": "ZMOBILE_CATEGORY_PURPOSE",
                     "name": "ZMOBILE_CATEGORY_PURPOSE",
                     "target": "ZMOBILE_CATEGORY_PURPOSE"
+                },
+                {
+                    "pattern": "ZDB_STRUCTURE",
+                    "name": "ZDB_STRUCTURE",
+                    "target": "ZDB_STRUCTURE"
                 }
             ],
             "targets": {
@@ -1794,7 +1792,7 @@
                                     "actions": {
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }f",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2176,6 +2174,60 @@
                                             "name": "CreationDialog",
                                             "creationFields": "FLIGHT_CLASS_ID,FLIGHT_CLASS_DESC,START_DATE,END_DATE,STATUS,LEVEL"
                                         }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZDB_STRUCTURE": {
+                    "type": "Component",
+                    "id": "ZDB_STRUCTURE",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZDB_STRUCTURE",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "APP_CONTROL_ID,SUBMISSION_TYPE,COMPONENT_LEVEL,REQUEST_TYPE_ID,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,FIELD"
+                                        },
+                                        "disableCopyToClipboard": true
                                     },
                                     "actions": {
                                         "newCopy": {
@@ -3594,60 +3646,6 @@
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
                                             "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
-                                        }
-                                    }
-                                }
-                            },
-                            "hideFilterBar": true,
-                            "initialLoad": "Enabled",
-                            "navigation": {}
-                        }
-                    }
-                },
-                "ZDB_STRUCTURE": {
-                    "type": "Component",
-                    "id": "ZDB_STRUCTURE",
-                    "name": "sap.fe.templates.ListReport",
-                    "options": {
-                        "settings": {
-                            "contextPath": "/ZDB_STRUCTURE",
-                            "variantManagement": "None",
-                            "controlConfiguration": {
-                                "@com.sap.vocabularies.UI.v1.LineItem": {
-                                    "tableSettings": {
-                                        "type": "ResponsiveTable",
-                                        "createMode": "inline",
-                                        "initialLoad": "Enabled",
-                                        "enableExport": true,
-                                        "selectAll": false,
-                                        "selectionMode": "Single",
-                                        "personalization": {
-                                            "column": false
-                                        },
-                                        "quickVariantSelection": {
-                                            "hideTableTitle": true
-                                        },
-                                        "enableMassEdit": false,
-                                        "creationMode": {
-                                            "name": "CreationDialog",
-                                            "creationFields": "APP_CONTROL_ID,SUBMISSION_TYPE,COMPONENT_LEVEL,REQUEST_TYPE_ID,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,FIELD"
-                                        },
-                                        "disableCopyToClipboard": true
-                                    },
-                                    "actions": {
-                                        "newCopy": {
-                                            "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Copy"
-                                        },
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"

@@ -1,4 +1,3 @@
-
 sap.ui.define([
 	"sap/ui/Device",
 	"sap/ui/core/mvc/Controller",
@@ -18,8 +17,9 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"sap/ui/export/Spreadsheet",
 	"claima/utils/PARequestSharedFunction",
-	"claima/utils/Attachment"
-
+	"claima/utils/Attachment",
+	"claima/utils/ApprovalLog",
+	"claima/utils/workflowApproval"
 ], function (
 	Device,
 	Controller,
@@ -39,6 +39,8 @@ sap.ui.define([
 	Sorter,
 	Spreadsheet,
 	PARequestSharedFunction,
+	ApprovalLog,
+	workflowApproval,
 	Attachment
 ) {
 	"use strict";
@@ -97,8 +99,24 @@ sap.ui.define([
 			// const oReqModel = this._getReqModel().getData();
 			// oReqModel.user = emp_data.eeid;
 			// this._getReqModel().setData(oReqModel);
+			
+			// var claimID = "CLM26000000209";
+            // var PARID = "REQ26000000002";
+			// var oModelAppr = this.getView().getModel();
+            // //workflowApproval.onClaimsApproverDetermination(oModelAppr, claimID);
+            // workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
+			// //workflowApproval.onSendEmail();
 		},
-
+		onPARTest: function(){
+			var PARID = this.byId("PARSubmissionTest").getValue();
+			var oModel = this.getView().getModel();
+			workflowApproval.onPARApproverDetermination(oModel, PARID);
+		},
+		onClaimTest: function(){
+			var claimID = this.byId("claimSubmissionTest").getValue();
+			var oModel = this.getView().getModel();
+			workflowApproval.onClaimsApproverDetermination(oModel, claimID);
+		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
 			var oNavigationList = this.byId("navigationList");
@@ -201,7 +219,7 @@ sap.ui.define([
 				case "dashboard":
 					oRouter.navTo("Dashboard");
 					break;
-
+				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
 				default:
 					// navigate to page with ID same as the key
 					var oPage = this.byId(oKey); // make sure your NavContainer has a page with this ID
@@ -514,6 +532,13 @@ sap.ui.define([
 				console.error("Error fetching description: ", oError);
 				return null; // Return null so the app doesn't crash
 			}
+		},
+		_onInit_ClaimProcess: function () {
+			// placeholder - set employee data
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			oInputModel.setProperty("/employee/eeid", "1900907");
+			oInputModel.setProperty("/employee/name", "Test Name");
+			oInputModel.setProperty("/employee/cc", "4001");
 		},
 
 		onSelect_ClaimProcess_ClaimType: function (oEvent) {
@@ -1737,8 +1762,9 @@ sap.ui.define([
 
 		onClickCreateRequest: async function () {
 			sap.ui.core.BusyIndicator.show(0);
-			const oReqModel = this.getView().getModel("request");
+			const oReqModel = this._getReqModel();
 			const oData = oReqModel.getProperty("/req_header");
+			const emp_id = oReqModel.getProperty('/user');
 			let okcode = true;
 			let message = '';
 
@@ -1768,13 +1794,11 @@ sap.ui.define([
 				MessageToast.show(message);
 			} else {
 				var attachment_1 = await this.getFileAsBinary("req_attachment_1");
-				// var attachment1_ID = await this.postFilesToSF( oData.doc1, attachment_1 );
-				var attachment1_ID = await Attachment.postAttachment(oData.doc1, attachment_1);
+				var attachment1_ID = await Attachment.postAttachment(oData.doc1, attachment_1, emp_id);
 				oData.doc1 = attachment1_ID;
 				if (oData.doc2) {
 					var attachment_2 = await this.getFileAsBinary("req_attachment_2");
-					// var attachment2_ID = await this.postFilesToSF( oData.doc2, attachment_2 );
-					var attachment2_ID = await Attachment.postAttachment(oData.doc2, attachment_2);
+					var attachment2_ID = await Attachment.postAttachment(oData.doc2, attachment_2, emp_id);
 					oData.doc2 = attachment2_ID;
 				}
 				this.createRequestHeader(oData, oReqModel);
@@ -1825,7 +1849,6 @@ sap.ui.define([
 			return { ok: false, reason: 'Only PDF and image files are allowed.' };
 		},
 
-
 		getFileAsBinary: function (attachmentID) {
 
 			return new Promise((resolve, reject) => {
@@ -1870,122 +1893,6 @@ sap.ui.define([
 			})
 		},
 
-		postFilesToSF: async function (fileName, fileString) {
-
-			// Write to Success Factors API
-			var sServiceUrl = "SuccessFactors_API/odata/v2/Attachment";
-
-			try {
-				const response = await fetch(sServiceUrl, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						__metadata: {
-							uri: 'Attachment'
-						},
-						deletable: true,
-						fileName: fileName,
-						moduleCategory: 'UNSPECIFIED',
-						module: 'DEFAULT',
-						userId: 'SFAPI',
-						viewable: true,
-						searchable: true,
-						fileContent: fileString
-					})
-				});
-
-				if (!response.ok) {
-					const errText = await response.text().catch(() => "");
-					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
-				}
-
-				const data = await response.text();
-
-				// turn XML into JSON
-				const parser = new DOMParser();
-				const xmlDoc = parser.parseFromString(data, 'text/xml');
-				const jsonData = {};
-
-				const nodes = xmlDoc.documentElement.childNodes;
-				for (let i = 0; i < nodes.length; i++) {
-					const node = nodes[i];
-					if (node.nodeType === 1) {
-						jsonData[node.nodeName] = node.textContent.trim();
-					}
-				}
-
-				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(') + 1, jsonData.id.indexOf(')') - 1);
-
-				return attachmentNumber;
-			} catch (error) {
-				console.log("Error uploading attachment: " + error);
-				MessageToast.show("Error uploading attachment: " + error);
-				return false;
-			}
-		},
-
-		postMDF: async function (reqID, attachment1, attachment2) {
-			// Write to Success Factors API
-			var sServiceUrl = "SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS_Parent";
-
-			try {
-				const response = await fetch(sServiceUrl, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						__metadata: {
-							uri: 'cust_EPF_CLAIM_ATTACHMENTS_Parent'
-						},
-						Claim_ID: reqID,
-						cust_Parent_attachment1Nav: {
-							__metadata: {
-								uri: `Attachment('${attachment1}')`
-							}
-						},
-						...(String(attachment2).trim().length > 0 && attachment2 ? {
-							cust_Parent_attachment2Nav: {
-								__metadata: {
-									uri: `Attachment('${attachment2}')`
-								}
-							}
-						} : {}
-						)
-					})
-				});
-
-				if (!response.ok) {
-					const errText = await response.text().catch(() => "");
-					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
-				}
-				else {
-					console.log("MDF Updated")
-				}
-
-			} catch (error) {
-				console.log("Error creating MDF: " + error);
-				MessageToast.show("Error creating MDF: " + error);
-				return false;
-			}
-		},
-
-		async deleteAttachment(attachmentID) {
-			var url = `SuccessFactors_API/odata/v2/Attachment(attachmentId=${attachmentID})`;
-
-			const response = await fetch(url, {
-				method: 'DELETE',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			});
-
-			if (!response.ok) {
-				const text = await response.text().catch(() => '');
-				throw new Error(`Delete failed: ${response.status} ${response.statusText} ${text}`);
-			}
-
-			return true;
-		},
-
 		createRequestHeader: async function (oInputData, oReqModel) {
 			const oMainModel = this.getOwnerComponent().getModel();
 			const oResult = await this._getCurrentReqNumber('NR01');
@@ -2015,20 +1922,26 @@ sap.ui.define([
 					EVENT_END_DATE: oInputData.eventenddate,
 					TRIP_START_DATE: oInputData.tripstartdate,
 					TRIP_END_DATE: oInputData.tripenddate,
-					STATUS: "CREATED",
+					STATUS: "STAT01",
 					CLAIM_TYPE_ID: oInputData.claimtype,
 					REQUEST_DATE: new Date().toISOString().slice(0, 10)
 				};
 
 				const oContext = oListBinding.create(oPayload);
 
-				oContext.created().then(() => {
-					this._updateCurrentReqNumber(oResult.current);
-					this.postMDF(oResult.reqNo, oInputData.doc1, oInputData.doc2)
+				oContext.created().then(async () => {
+					await this._updateCurrentReqNumber(oResult.current);
+					await Attachment.postMDF(oResult.reqNo, oInputData.doc1, oInputData.doc2)
 					this.oDialogFragment.close();
 
 					oReqModel.setProperty("/view", 'list');
 					this._getHeaderView(oResult.reqNo)
+					oReqModel.setProperty("/req_header/reqid", oResult.reqNo);
+					oReqModel.setProperty("/req_header/reqstatus", 'DRAFT');
+					oReqModel.setProperty("/req_header/costcenter", sCostCenter);
+					oReqModel.setProperty("/eeid", emp_data.eeid);
+					this._getItemList(oResult.reqNo);
+					//oResult.reqNo send this to approval determination
 
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("RequestFormNew");

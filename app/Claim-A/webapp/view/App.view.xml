@@ -1,3 +1,4 @@
+
 <mvc:View
     controllerName="claima.controller.App"
     xmlns="sap.m"
