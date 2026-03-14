@@ -175,6 +175,13 @@
                     ]
                 },
                 {
+                    "pattern": "ZNUM_RANGE_DTD",
+                    "name": "ZNUM_RANGE_DTD",
+                    "target": [
+                        "ZNUM_RANGE_DTD"
+                    ]
+                },
+                {
                     "pattern": "ZCLAIM_CATEGORY",
                     "name": "ZCLAIM_CATEGORY",
                     "target": [
@@ -1792,7 +1799,49 @@
                                     "actions": {
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": false,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZNUM_RANGE_DTD": {
+                    "type": "Component",
+                    "id": "ZNUM_RANGE_DTD",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZNUM_RANGE",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
