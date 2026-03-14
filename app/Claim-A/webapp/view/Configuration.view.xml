@@ -94,7 +94,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Claim ID Number Sequence" />
+                            <cards:Header title="Claim/Request Submission" />
                         </f:header>
                     </f:Card>
 

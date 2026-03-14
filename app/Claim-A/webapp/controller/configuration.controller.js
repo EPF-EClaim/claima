@@ -34,13 +34,15 @@ sap.ui.define([
             const oModel = this.getView().getModel();
             const oCtx = oModel.bindContext("/FeatureControl");
 
-            if (oNavigation === "ZEMP_MASTER" || oNavigation === "ZEMP_DEPENDENT") {
+            if (oNavigation === "ZEMP_MASTER" || oNavigation === "ZEMP_DEPENDENT" || oNavigation === "ZNUM_RANGE") {
                 try {
                     const oData = await oCtx.requestObject();
                     if (oNavigation === "ZEMP_MASTER") {
                         var sTable = oData.operationHidden === false && oNavigation === "ZEMP_MASTER" ? "ZEMP_MASTER_DTD" : oNavigation;
-                    } else {
+                    } else if (oNavigation === "ZEMP_DEPENDENT"){
                         sTable = oData.operationHidden === false && oNavigation === "ZEMP_DEPENDENT" ? "ZEMP_DEPENDENT_DTD" : oNavigation;
+                    } else if(oNavigation === "ZNUM_RANGE"){
+                        sTable = oData.operationHidden === false && oNavigation === "ZNUM_RANGE" ? "ZNUM_RANGE_DTD" : oNavigation;
                     }
                     oNavigation = sTable;
                 } catch (e) {
