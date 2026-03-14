@@ -410,8 +410,7 @@ sap.ui.define([
 		async onDocLinkPress(oEvent) {
 			var attachmentID = oEvent.getSource().getText();
 
-			var sServiceUrl =
-				"SuccessFactors_API/Attachment('" + attachmentID + "')";
+			var sServiceUrl = `SuccessFactors_API/Attachment('${attachmentID}')`;
 
 			try {
 				const response = await fetch(sServiceUrl, {
