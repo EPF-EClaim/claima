@@ -190,7 +190,6 @@ sap.ui.define([
     open: function (oController) {
       const oDlg = getOrCreate(oController);
 
-      // 🔒 Always rewire endButton press to the CURRENT controller handler
       try {
         const btn = oDlg.getEndButton();
         const handler =
