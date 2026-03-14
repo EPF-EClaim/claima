@@ -246,14 +246,14 @@
                                             <ColumnListItem>
                                                 <cells>
                                                     <Text
-                                                        text="{OBJECTIVE_PURPOSE}"
+                                                        text="{employee_view>OBJECTIVE_PURPOSE}"
                                                     />
-                                                    <Text text="{STATUS}" />
+                                                    <Text text="{employee_view>STATUS}" />
                                                     <Text
-                                                        text="{REQUEST_DATE}"
+                                                        text="{employee_view>REQUEST_DATE}"
                                                     />
                                                     <Text
-                                                        text="{PREAPPROVAL_AMOUNT}"
+                                                        text="{employee_view>PREAPPROVAL_AMOUNT}"
                                                     />
                                                 </cells>
                                             </ColumnListItem>
