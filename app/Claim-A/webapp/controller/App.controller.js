@@ -817,7 +817,7 @@ sap.ui.define([
 			}
 		},
 
-		_getNonNaN: function (iNumber) {
+		_nonNan: function (iNumber) {
 			if (isNaN(iNumber)) {
 				return 0;
 			} else {
@@ -1023,8 +1023,8 @@ sap.ui.define([
 				ATTACHMENT_EMAIL_APPROVER: oInputModel.getProperty("/claim_header/attachment_email_approver"),
 				STATUS_ID: oInputModel.getProperty("/claim_header/status_id"),
 				CLAIM_TYPE_ID: oInputModel.getProperty("/claim_header/claim_type_id"),
-				TOTAL_CLAIM_AMOUNT: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/total_claim_amount"))).toFixed(2),
-				FINAL_AMOUNT_TO_RECEIVE: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
+				TOTAL_CLAIM_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/total_claim_amount"))).toFixed(2),
+				FINAL_AMOUNT_TO_RECEIVE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
 				LAST_MODIFIED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
 				SUBMITTED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
 				LAST_APPROVED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_approved_date")),
@@ -1038,8 +1038,8 @@ sap.ui.define([
 				LENDER_NAME: oInputModel.getProperty("/claim_header/lender_name"),
 				SPECIFY_DETAILS: oInputModel.getProperty("/claim_header/specify_details"),
 				NEW_HOUSE_ADDRESS: oInputModel.getProperty("/claim_header/new_house_address"),
-				DIST_OLD_HOUSE_TO_OFFICE_KM: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_office_km"))),
-				DIST_OLD_HOUSE_TO_NEW_HOUSE_KM: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_new_house_km"))),
+				DIST_OLD_HOUSE_TO_OFFICE_KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_office_km"))),
+				DIST_OLD_HOUSE_TO_NEW_HOUSE_KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_new_house_km"))),
 				APPROVER1: oInputModel.getProperty("/claim_header/approver1"),
 				APPROVER2: oInputModel.getProperty("/claim_header/approver2"),
 				APPROVER3: oInputModel.getProperty("/claim_header/approver3"),
@@ -1048,8 +1048,8 @@ sap.ui.define([
 				LAST_SEND_BACK_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_send_back_date")),
 				COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
 				PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
-				CASH_ADVANCE_AMOUNT: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
-				PREAPPROVED_AMOUNT: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2),
+				CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
+				PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2),
 				REJECT_REASON_ID: oInputModel.getProperty("/claim_header/reject_reason_id"),
 				SEND_BACK_REASON_ID: oInputModel.getProperty("/claim_header/send_back_reason_id"),
 				LAST_SEND_BACK_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/last_send_back_time")),

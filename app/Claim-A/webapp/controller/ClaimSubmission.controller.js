@@ -1182,6 +1182,7 @@ sap.ui.define([
 				return;
 			}
 			// check if required fields have values
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (
 				( this.byId(startDate).getVisible() && !this.byId(startDate).getValue() ) ||
@@ -1198,60 +1199,81 @@ sap.ui.define([
 			var startTimeValue = this.byId(startTime).getDateValue();
 			var endTimeValue = this.byId(endTime).getDateValue();
 			var startDateUnix = new Date(startDateValue).valueOf();
-			startDateUnix = startDateUnix + new Date(startTimeValue).valueOf()
+			startDateUnix = startDateUnix + new Date(startTimeValue).valueOf();
 			var endDateUnix = new Date(endDateValue).valueOf();
-			endDateUnix = endDateUnix + new Date(endTimeValue).valueOf()
+			endDateUnix = endDateUnix + new Date(endTimeValue).valueOf();
 
 			if (this.byId("input_claimdetails_input_travel_duration_day").getVisible()) {
-				var travelDays = (endDateUnix - startDateUnix) / 86400000;
+				var travelDays = Math.floor((endDateUnix - startDateUnix) / 86400000); // round down days
 				this.byId("input_claimdetails_input_travel_duration_day").setValue(travelDays);
 			}
 			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
-				var travelHours = (endDateUnix - startDateUnix) / 3600000;
+				var travelHours = Math.floor((endDateUnix - startDateUnix) / 3600000); // round down hours
 				this.byId("input_claimdetails_input_travel_duration_hour").setValue(travelHours);
 			}
 
 			// get details from per diem table
 			BusyIndicator.show(0);
 			const oModel = this.getOwnerComponent().getModel();
-			const oListBinding = oModel.bindList("/ZPERDIEM_ENT", null, [
-				new sap.ui.model.Sorter("PERSONAL_GRADE_FROM", true), // desc by grade
-			], [
+			const oListBinding = oModel.bindList("/ZPERDIEM_ENT", null, null, [
+				new sap.ui.model.Filter("PERSONAL_GRADE", "EQ", oClaimSubmissionModel.getProperty("/emp_master/grade")),
 				new sap.ui.model.Filter("LOCATION", "EQ", oInputModel.getProperty("/claim_item/region")),
+				new sap.ui.model.Filter("CLAIM_TYPE_ID", "EQ", oInputModel.getProperty("/claim_item/claim_type_id")),
+				new sap.ui.model.Filter("CLAIM_TYPE_ITEM_ID", "EQ", oInputModel.getProperty("/claim_item/claim_type_item_id")),
 				new sap.ui.model.Filter("EFFECTIVE_START_DATE", "LE", this._getHanaDate(this.byId(startDate).getValue())),
 				new sap.ui.model.Filter("EFFECTIVE_END_DATE", "GE", this._getHanaDate(this.byId(endDate).getValue()))
 			]);
 
 			try {
-				const aContexts = await oListBinding.requestContexts();
+				const aContexts = await oListBinding.requestContexts(0, 1);
 
 				if (aContexts.length > 0) {
-					// get employee personal grade
-					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-					var empGrade = oClaimSubmissionModel.getProperty("/emp_master/grade");
-					var empGradeLetter = empGrade.match(/\d+/g);
-					var empGradeNum = empGrade.match(/[a-zA-Z]+/g);
+					// // get employee personal grade
+					// var empGrade = oClaimSubmissionModel.getProperty("/emp_master/grade");
+					// var empGradeLetter = empGrade.match(/\d+/g);
+					// var empGradeNum = empGrade.match(/[a-zA-Z]+/g);
 
-					var oDataId = 0;
-					for (let i = 0; i < aContexts.length; i++) {
-						var oGrade = aContexts[i].getObject().PERSONAL_GRADE_FROM;
-						var oGradeLetter = oGrade.match(/\d+/g);
-						if (oGradeLetter !== empGradeLetter) {
-							continue;
-						}
-						var oGradeNum = oGrade.match(/[a-zA-Z]+/g);
-						if (oGradeNum > empGradeNum) {
-							continue;
-						}
-						oDataId = i;
-						break;
-					}
+					// var oDataId = 0;
+					// for (let i = 0; i < aContexts.length; i++) {
+					// 	var oGrade = aContexts[i].getObject().PERSONAL_GRADE_FROM;
+					// 	var oGradeLetter = oGrade.match(/\d+/g);
+					// 	if (oGradeLetter !== empGradeLetter) {
+					// 		continue;
+					// 	}
+					// 	var oGradeNum = oGrade.match(/[a-zA-Z]+/g);
+					// 	if (oGradeNum > empGradeNum) {
+					// 		continue;
+					// 	}
+					// 	oDataId = i;
+					// 	break;
+					// }
 
 					// get amount from oData
-					var oData = aContexts[oDataId].getObject();
+					var oData = aContexts[0].getObject();
 					var entBfast = parseFloat(oData.AMOUNT) * 0.2;
 					var entLunch = parseFloat(oData.AMOUNT) * 0.4;
 					var entDinner = parseFloat(oData.AMOUNT) * 0.4;
+					//// modifier based on travel duration (hours)
+					if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
+						if (this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 24) {
+							// full meal allowance
+							entBfast = entBfast * this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+							entLunch = entLunch * this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+							entDinner = entDinner * this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+						}
+						else if (this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 8) {
+							// daily allowance (half of meal allowance)
+							entBfast = entBfast / 2;
+							entLunch = entLunch / 2;
+							entDinner = entDinner / 2;
+						}
+						else { // if (this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) < 8)
+							// no meal allowance
+							entBfast = entBfast * 0;
+							entLunch = entLunch * 0;
+							entDinner = entDinner * 0;
+						}
+					}
 
 					// assign entitled meal values
 					if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
@@ -1528,8 +1550,8 @@ sap.ui.define([
 				ATTACHMENT_EMAIL_APPROVER: oInputModel.getProperty("/claim_header/attachment_email_approver"),
 				STATUS_ID: oInputModel.getProperty("/claim_header/status_id"),
 				CLAIM_TYPE_ID: oInputModel.getProperty("/claim_header/claim_type_id"),
-				TOTAL_CLAIM_AMOUNT: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/total_claim_amount"))).toFixed(2),
-				FINAL_AMOUNT_TO_RECEIVE: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
+				TOTAL_CLAIM_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/total_claim_amount"))).toFixed(2),
+				FINAL_AMOUNT_TO_RECEIVE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
 				LAST_MODIFIED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
 				SUBMITTED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
 				LAST_APPROVED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_approved_date")),
@@ -1543,8 +1565,8 @@ sap.ui.define([
 				LENDER_NAME: oInputModel.getProperty("/claim_header/lender_name"),
 				SPECIFY_DETAILS: oInputModel.getProperty("/claim_header/specify_details"),
 				NEW_HOUSE_ADDRESS: oInputModel.getProperty("/claim_header/new_house_address"),
-				DIST_OLD_HOUSE_TO_OFFICE_KM: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_office_km"))),
-				DIST_OLD_HOUSE_TO_NEW_HOUSE_KM: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_new_house_km"))),
+				DIST_OLD_HOUSE_TO_OFFICE_KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_office_km"))),
+				DIST_OLD_HOUSE_TO_NEW_HOUSE_KM: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/dist_old_house_to_new_house_km"))),
 				APPROVER1: oInputModel.getProperty("/claim_header/approver1"),
 				APPROVER2: oInputModel.getProperty("/claim_header/approver2"),
 				APPROVER3: oInputModel.getProperty("/claim_header/approver3"),
@@ -1553,8 +1575,8 @@ sap.ui.define([
 				LAST_SEND_BACK_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_send_back_date")),
 				COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
 				PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
-				CASH_ADVANCE_AMOUNT: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
-				PREAPPROVED_AMOUNT: this._getNonNaN(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2),
+				CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
+				PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2),
 				REJECT_REASON_ID: oInputModel.getProperty("/claim_header/reject_reason_id"),
 				SEND_BACK_REASON_ID: oInputModel.getProperty("/claim_header/send_back_reason_id"),
 				LAST_SEND_BACK_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/last_send_back_time")),
@@ -1723,9 +1745,9 @@ sap.ui.define([
 					CLAIM_ID: claim_item.claim_id,
 					CLAIM_SUB_ID: claim_item.claim_sub_id,
 					CLAIM_TYPE_ITEM_ID: claim_item.claim_type_item_id,
-					PERCENTAGE_COMPENSATION: this._getNonNaN(parseFloat(claim_item.percentage_compensation)).toFixed(2),
+					PERCENTAGE_COMPENSATION: this._nonNan(parseFloat(claim_item.percentage_compensation)).toFixed(2),
 					ACCOUNT_NO: claim_item.account_no,
-					AMOUNT: this._getNonNaN(parseFloat(claim_item.amount)).toFixed(2),
+					AMOUNT: this._nonNan(parseFloat(claim_item.amount)).toFixed(2),
 					ATTACHMENT_FILE_1: claim_item.attachment_file_1,
 					ATTACHMENT_FILE_2: claim_item.attachment_file_2,
 					BILL_NO: claim_item.bill_no,
@@ -1740,7 +1762,7 @@ sap.ui.define([
 					FLIGHT_CLASS: claim_item.flight_class,
 					FROM_LOCATION: claim_item.from_location,
 					FROM_LOCATION_OFFICE: claim_item.from_location_office,
-					KM: this._getNonNaN(parseFloat(claim_item.km)).toFixed(2),
+					KM: this._nonNan(parseFloat(claim_item.km)).toFixed(2),
 					LOCATION: claim_item.location,
 					LOCATION_TYPE: claim_item.location_type,
 					LODGING_CATEGORY: claim_item.lodging_category,
@@ -1748,7 +1770,7 @@ sap.ui.define([
 					MARRIAGE_CATEGORY: claim_item.marriage_category,
 					AREA: claim_item.area,
 					NO_OF_FAMILY_MEMBER: claim_item.no_of_family_member,
-					PARKING: this._getNonNaN(parseFloat(claim_item.parking)),
+					PARKING: this._nonNan(parseFloat(claim_item.parking)),
 					PHONE_NO: claim_item.phone_no,
 					RATE_PER_KM: claim_item.rate_per_km,
 					RECEIPT_DATE: this._getHanaDate(claim_item.receipt_date),
@@ -1760,16 +1782,16 @@ sap.ui.define([
 					TO_STATE_ID: claim_item.to_state_id,
 					TO_LOCATION: claim_item.to_location,
 					TO_LOCATION_OFFICE: claim_item.to_location_office,
-					TOLL: this._getNonNaN(parseFloat(claim_item.toll)).toFixed(2),
-					TOTAL_EXP_AMOUNT: this._getNonNaN(parseFloat(claim_item.total_exp_amount)).toFixed(2),
+					TOLL: this._nonNan(parseFloat(claim_item.toll)).toFixed(2),
+					TOTAL_EXP_AMOUNT: this._nonNan(parseFloat(claim_item.total_exp_amount)).toFixed(2),
 					VEHICLE_TYPE: claim_item.vehicle_type,
 					VEHICLE_FARE: claim_item.vehicle_fare,
 					TRIP_START_DATE: this._getHanaDate(claim_item.trip_start_date),
 					TRIP_END_DATE: this._getHanaDate(claim_item.trip_end_date),
 					EVENT_START_DATE: this._getHanaDate(claim_item.event_start_date),
 					EVENT_END_DATE: this._getHanaDate(claim_item.event_end_date),
-					TRAVEL_DURATION_DAY: this._getNonNaN(parseFloat(claim_item.travel_duration_day)).toFixed(1),
-					TRAVEL_DURATION_HOUR: this._getNonNaN(parseFloat(claim_item.travel_duration_hour)).toFixed(1),
+					TRAVEL_DURATION_DAY: this._nonNan(parseFloat(claim_item.travel_duration_day)).toFixed(1),
+					TRAVEL_DURATION_HOUR: this._nonNan(parseFloat(claim_item.travel_duration_hour)).toFixed(1),
 					PROVIDED_BREAKFAST: claim_item.provided_breakfast,
 					PROVIDED_LUNCH: claim_item.provided_lunch,
 					PROVIDED_DINNER: claim_item.provided_dinner,
@@ -1793,13 +1815,13 @@ sap.ui.define([
 					GL_ACCOUNT: claim_item.gl_account,
 					MATERIAL_CODE: claim_item.material_code,
 					VEHICLE_OWNERSHIP_ID: claim_item.vehicle_ownership_id,
-					ACTUAL_AMOUNT: this._getNonNaN(parseFloat(claim_item.actual_amount)).toFixed(2),
+					ACTUAL_AMOUNT: this._nonNan(parseFloat(claim_item.actual_amount)).toFixed(2),
 					ARRIVAL_TIME: this._getHanaTime(claim_item.arrival_time),
 					CLAIM_TYPE_ID: claim_item.claim_type_id,
 					COURSE_TITLE: claim_item.course_title,
-					CURRENCY_AMOUNT: this._getNonNaN(parseFloat(claim_item.currency_amount)).toFixed(2),
-					CURRENCY_CODE: this._getNonNaN(parseFloat(claim_item.currency_code)).toFixed(2),
-					CURRENCY_RATE: this._getNonNaN(parseFloat(claim_item.currency_rate)).toFixed(2),
+					CURRENCY_AMOUNT: this._nonNan(parseFloat(claim_item.currency_amount)).toFixed(2),
+					CURRENCY_CODE: this._nonNan(parseFloat(claim_item.currency_code)).toFixed(2),
+					CURRENCY_RATE: this._nonNan(parseFloat(claim_item.currency_rate)).toFixed(2),
 					DEPARTURE_TIME: this._getHanaTime(claim_item.departure_time),
 					DEPENDENT: claim_item.dependent,
 					DEPENDENT_RELATIONSHIP: claim_item.dependent_relationship,
@@ -1811,8 +1833,8 @@ sap.ui.define([
 					INSURANCE_PROVIDER_ID: claim_item.insurance_provider_id,
 					INSURANCE_PROVIDER_NAME: claim_item.insurance_provider_name,
 					INSURANCE_PURCHASE_DATE: this._getHanaDate(claim_item.insurance_purchase_date),
-					METER_CUBE_ACTUAL: this._getNonNaN(parseFloat(claim_item.meter_cube_actual)).toFixed(2),
-					METER_CUBE_ENTITLED: this._getNonNaN(parseFloat(claim_item.meter_cube_entitled)).toFixed(2),
+					METER_CUBE_ACTUAL: this._nonNan(parseFloat(claim_item.meter_cube_actual)).toFixed(2),
+					METER_CUBE_ENTITLED: this._nonNan(parseFloat(claim_item.meter_cube_entitled)).toFixed(2),
 					MOBILE_CATEGORY_PURPOSE_ID: claim_item.mobile_category_purpose_id,
 					NEED_FOREIGN_CURRENCY: claim_item.need_foreign_currency,
 					POLICY_NUMBER: claim_item.policy_number,
@@ -1901,7 +1923,7 @@ sap.ui.define([
 			}
 		},
 
-		_getNonNaN: function (iNumber) {
+		_nonNan: function (iNumber) {
 			if (isNaN(iNumber)) {
 				return 0;
 			} else {
