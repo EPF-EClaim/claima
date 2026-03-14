@@ -1718,133 +1718,9 @@ sap.ui.define([
 		_updateClaimItems: async function () {
 			// get input model
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			//// update last modified date
-			var lastModifiedDate = this._getJsonDate(new Date());
-			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
-
-			// // assign report number to new claim
-			// if (oInputModel.getProperty("/is_new")) {
-			// 	var currentReportNumber = oInputModel.getProperty("/claim_header/claim_id");
-			// 	if (currentReportNumber) {
-			// 		oInputModel.getProperty("/claim_items").forEach((claim_item) => {
-			// 			claim_item.claim_id = currentReportNumber;
-			// 			claim_item.claim_sub_id = currentReportNumber + claim_item.claim_sub_id;
-			// 		})
-			// 	}
-			// 	else {
-			// 		console.log("No claim ID available");
-			// 		MessageToast.show("No claim ID available");
-			// 		return false;
-			// 	}
-			// }
 
 			// for each item
 			oInputModel.getProperty("/claim_items").forEach(async (claim_item) => {
-				// set body for update
-				var oBody = new JSONModel({
-					CLAIM_ID: claim_item.claim_id,
-					CLAIM_SUB_ID: claim_item.claim_sub_id,
-					CLAIM_TYPE_ITEM_ID: claim_item.claim_type_item_id,
-					PERCENTAGE_COMPENSATION: this._nonNan(parseFloat(claim_item.percentage_compensation)).toFixed(2),
-					ACCOUNT_NO: claim_item.account_no,
-					AMOUNT: this._nonNan(parseFloat(claim_item.amount)).toFixed(2),
-					ATTACHMENT_FILE_1: claim_item.attachment_file_1,
-					ATTACHMENT_FILE_2: claim_item.attachment_file_2,
-					BILL_NO: claim_item.bill_no,
-					BILL_DATE: this._getHanaDate(claim_item.bill_date),
-					CLAIM_CATEGORY: claim_item.claim_category,
-					COUNTRY: claim_item.country,
-					DISCLAIMER: claim_item.disclaimer,
-					START_DATE: this._getHanaDate(claim_item.start_date),
-					END_DATE: this._getHanaDate(claim_item.end_date),
-					START_TIME: this._getHanaTime(claim_item.start_time),
-					END_TIME: this._getHanaTime(claim_item.end_time),
-					FLIGHT_CLASS: claim_item.flight_class,
-					FROM_LOCATION: claim_item.from_location,
-					FROM_LOCATION_OFFICE: claim_item.from_location_office,
-					KM: this._nonNan(parseFloat(claim_item.km)).toFixed(2),
-					LOCATION: claim_item.location,
-					LOCATION_TYPE: claim_item.location_type,
-					LODGING_CATEGORY: claim_item.lodging_category,
-					LODGING_ADDRESS: claim_item.lodging_address,
-					MARRIAGE_CATEGORY: claim_item.marriage_category,
-					AREA: claim_item.area,
-					NO_OF_FAMILY_MEMBER: claim_item.no_of_family_member,
-					PARKING: this._nonNan(parseFloat(claim_item.parking)),
-					PHONE_NO: claim_item.phone_no,
-					RATE_PER_KM: claim_item.rate_per_km,
-					RECEIPT_DATE: this._getHanaDate(claim_item.receipt_date),
-					RECEIPT_NUMBER: claim_item.receipt_number,
-					REMARK: claim_item.remark,
-					ROOM_TYPE: claim_item.room_type,
-					REGION: claim_item.region,
-					FROM_STATE_ID: claim_item.from_state_id,
-					TO_STATE_ID: claim_item.to_state_id,
-					TO_LOCATION: claim_item.to_location,
-					TO_LOCATION_OFFICE: claim_item.to_location_office,
-					TOLL: this._nonNan(parseFloat(claim_item.toll)).toFixed(2),
-					TOTAL_EXP_AMOUNT: this._nonNan(parseFloat(claim_item.total_exp_amount)).toFixed(2),
-					VEHICLE_TYPE: claim_item.vehicle_type,
-					VEHICLE_FARE: claim_item.vehicle_fare,
-					TRIP_START_DATE: this._getHanaDate(claim_item.trip_start_date),
-					TRIP_END_DATE: this._getHanaDate(claim_item.trip_end_date),
-					EVENT_START_DATE: this._getHanaDate(claim_item.event_start_date),
-					EVENT_END_DATE: this._getHanaDate(claim_item.event_end_date),
-					TRAVEL_DURATION_DAY: this._nonNan(parseFloat(claim_item.travel_duration_day)).toFixed(1),
-					TRAVEL_DURATION_HOUR: this._nonNan(parseFloat(claim_item.travel_duration_hour)).toFixed(1),
-					PROVIDED_BREAKFAST: claim_item.provided_breakfast,
-					PROVIDED_LUNCH: claim_item.provided_lunch,
-					PROVIDED_DINNER: claim_item.provided_dinner,
-					ENTITLED_BREAKFAST: claim_item.entitled_breakfast,
-					ENTITLED_LUNCH: claim_item.entitled_lunch,
-					ENTITLED_DINNER: claim_item.entitled_dinner,
-					ANGGOTA_ID: claim_item.anggota_id,
-					ANGGOTA_NAME: claim_item.anggota_name,
-					DEPENDENT_NAME: claim_item.dependent_name,
-					TYPE_OF_PROFESSIONAL_BODY: claim_item.type_of_professional_body,
-					DISCLAIMER_GALAKAN: claim_item.disclaimer_galakan,
-					MODE_OF_TRANSFER: claim_item.mode_of_transfer,
-					TRANSFER_DATE: this._getHanaDate(claim_item.transfer_date),
-					NO_OF_DAYS: claim_item.no_of_days,
-					FAMILY_COUNT: claim_item.family_count,
-					FUNERAL_TRANSPORTATION: claim_item.funeral_transportation,
-					ROUND_TRIP: claim_item.round_trip,
-					TRIP_END_TIME: this._getHanaTime(claim_item.trip_end_time),
-					TRIP_START_TIME: this._getHanaTime(claim_item.trip_start_time),
-					COST_CENTER: claim_item.cost_center,
-					GL_ACCOUNT: claim_item.gl_account,
-					MATERIAL_CODE: claim_item.material_code,
-					VEHICLE_OWNERSHIP_ID: claim_item.vehicle_ownership_id,
-					ACTUAL_AMOUNT: this._nonNan(parseFloat(claim_item.actual_amount)).toFixed(2),
-					ARRIVAL_TIME: this._getHanaTime(claim_item.arrival_time),
-					CLAIM_TYPE_ID: claim_item.claim_type_id,
-					COURSE_TITLE: claim_item.course_title,
-					CURRENCY_AMOUNT: this._nonNan(parseFloat(claim_item.currency_amount)).toFixed(2),
-					CURRENCY_CODE: this._nonNan(parseFloat(claim_item.currency_code)).toFixed(2),
-					CURRENCY_RATE: this._nonNan(parseFloat(claim_item.currency_rate)).toFixed(2),
-					DEPARTURE_TIME: this._getHanaTime(claim_item.departure_time),
-					DEPENDENT: claim_item.dependent,
-					DEPENDENT_RELATIONSHIP: claim_item.dependent_relationship,
-					EMP_ID: claim_item.emp_id,
-					FARE_TYPE_ID: claim_item.fare_type_id,
-					INSURANCE_CERT_END_DATE: this._getHanaDate(claim_item.insurance_cert_end_date),
-					INSURANCE_CERT_START_DATE: this._getHanaDate(claim_item.insurance_cert_start_date),
-					INSURANCE_PACKAGE_ID: claim_item.insurance_package_id,
-					INSURANCE_PROVIDER_ID: claim_item.insurance_provider_id,
-					INSURANCE_PROVIDER_NAME: claim_item.insurance_provider_name,
-					INSURANCE_PURCHASE_DATE: this._getHanaDate(claim_item.insurance_purchase_date),
-					METER_CUBE_ACTUAL: this._nonNan(parseFloat(claim_item.meter_cube_actual)).toFixed(2),
-					METER_CUBE_ENTITLED: this._nonNan(parseFloat(claim_item.meter_cube_entitled)).toFixed(2),
-					MOBILE_CATEGORY_PURPOSE_ID: claim_item.mobile_category_purpose_id,
-					NEED_FOREIGN_CURRENCY: claim_item.need_foreign_currency,
-					POLICY_NUMBER: claim_item.policy_number,
-					PURPOSE: claim_item.purpose,
-					REQUEST_APPROVAL_AMOUNT: claim_item.request_approval_amount,
-					STUDY_LEVELS_ID: claim_item.study_levels_id,
-					TRAVEL_DAYS_ID: claim_item.travel_days_id,
-					VEHICLE_CLASS_ID: claim_item.vehicle_class_id
-				});
-
 				 try {
 					BusyIndicator.show(0);
 
@@ -1863,6 +1739,111 @@ sap.ui.define([
 						}
 					);
 
+					// set body for update
+					var oBody = new JSONModel({
+						CLAIM_ID: claim_item.claim_id,
+						CLAIM_SUB_ID: claim_item.claim_sub_id,
+						CLAIM_TYPE_ITEM_ID: claim_item.claim_type_item_id,
+						PERCENTAGE_COMPENSATION: this._nonNan(parseFloat(claim_item.percentage_compensation)).toFixed(2),
+						ACCOUNT_NO: claim_item.account_no,
+						AMOUNT: this._nonNan(parseFloat(claim_item.amount)).toFixed(2),
+						ATTACHMENT_FILE_1: claim_item.attachment_file_1,
+						ATTACHMENT_FILE_2: claim_item.attachment_file_2,
+						BILL_NO: claim_item.bill_no,
+						BILL_DATE: this._getHanaDate(claim_item.bill_date),
+						CLAIM_CATEGORY: claim_item.claim_category,
+						COUNTRY: claim_item.country,
+						DISCLAIMER: claim_item.disclaimer,
+						START_DATE: this._getHanaDate(claim_item.start_date),
+						END_DATE: this._getHanaDate(claim_item.end_date),
+						START_TIME: this._getHanaTime(claim_item.start_time),
+						END_TIME: this._getHanaTime(claim_item.end_time),
+						FLIGHT_CLASS: claim_item.flight_class,
+						FROM_LOCATION: claim_item.from_location,
+						FROM_LOCATION_OFFICE: claim_item.from_location_office,
+						KM: this._nonNan(parseFloat(claim_item.km)).toFixed(2),
+						LOCATION: claim_item.location,
+						LOCATION_TYPE: claim_item.location_type,
+						LODGING_CATEGORY: claim_item.lodging_category,
+						LODGING_ADDRESS: claim_item.lodging_address,
+						MARRIAGE_CATEGORY: claim_item.marriage_category,
+						AREA: claim_item.area,
+						NO_OF_FAMILY_MEMBER: claim_item.no_of_family_member,
+						PARKING: this._nonNan(parseFloat(claim_item.parking)),
+						PHONE_NO: claim_item.phone_no,
+						RATE_PER_KM: claim_item.rate_per_km,
+						RECEIPT_DATE: this._getHanaDate(claim_item.receipt_date),
+						RECEIPT_NUMBER: claim_item.receipt_number,
+						REMARK: claim_item.remark,
+						ROOM_TYPE: claim_item.room_type,
+						REGION: claim_item.region,
+						FROM_STATE_ID: claim_item.from_state_id,
+						TO_STATE_ID: claim_item.to_state_id,
+						TO_LOCATION: claim_item.to_location,
+						TO_LOCATION_OFFICE: claim_item.to_location_office,
+						TOLL: this._nonNan(parseFloat(claim_item.toll)).toFixed(2),
+						TOTAL_EXP_AMOUNT: this._nonNan(parseFloat(claim_item.total_exp_amount)).toFixed(2),
+						VEHICLE_TYPE: claim_item.vehicle_type,
+						VEHICLE_FARE: claim_item.vehicle_fare,
+						TRIP_START_DATE: this._getHanaDate(claim_item.trip_start_date),
+						TRIP_END_DATE: this._getHanaDate(claim_item.trip_end_date),
+						EVENT_START_DATE: this._getHanaDate(claim_item.event_start_date),
+						EVENT_END_DATE: this._getHanaDate(claim_item.event_end_date),
+						TRAVEL_DURATION_DAY: this._nonNan(parseFloat(claim_item.travel_duration_day)).toFixed(1),
+						TRAVEL_DURATION_HOUR: this._nonNan(parseFloat(claim_item.travel_duration_hour)).toFixed(1),
+						PROVIDED_BREAKFAST: claim_item.provided_breakfast,
+						PROVIDED_LUNCH: claim_item.provided_lunch,
+						PROVIDED_DINNER: claim_item.provided_dinner,
+						ENTITLED_BREAKFAST: claim_item.entitled_breakfast,
+						ENTITLED_LUNCH: claim_item.entitled_lunch,
+						ENTITLED_DINNER: claim_item.entitled_dinner,
+						ANGGOTA_ID: claim_item.anggota_id,
+						ANGGOTA_NAME: claim_item.anggota_name,
+						DEPENDENT_NAME: claim_item.dependent_name,
+						TYPE_OF_PROFESSIONAL_BODY: claim_item.type_of_professional_body,
+						DISCLAIMER_GALAKAN: claim_item.disclaimer_galakan,
+						MODE_OF_TRANSFER: claim_item.mode_of_transfer,
+						TRANSFER_DATE: this._getHanaDate(claim_item.transfer_date),
+						NO_OF_DAYS: claim_item.no_of_days,
+						FAMILY_COUNT: claim_item.family_count,
+						FUNERAL_TRANSPORTATION: claim_item.funeral_transportation,
+						ROUND_TRIP: claim_item.round_trip,
+						TRIP_END_TIME: this._getHanaTime(claim_item.trip_end_time),
+						TRIP_START_TIME: this._getHanaTime(claim_item.trip_start_time),
+						COST_CENTER: claim_item.cost_center,
+						GL_ACCOUNT: claim_item.gl_account,
+						MATERIAL_CODE: claim_item.material_code,
+						VEHICLE_OWNERSHIP_ID: claim_item.vehicle_ownership_id,
+						ACTUAL_AMOUNT: this._nonNan(parseFloat(claim_item.actual_amount)).toFixed(2),
+						ARRIVAL_TIME: this._getHanaTime(claim_item.arrival_time),
+						CLAIM_TYPE_ID: claim_item.claim_type_id,
+						COURSE_TITLE: claim_item.course_title,
+						CURRENCY_AMOUNT: this._nonNan(parseFloat(claim_item.currency_amount)).toFixed(2),
+						CURRENCY_CODE: this._nonNan(parseFloat(claim_item.currency_code)).toFixed(2),
+						CURRENCY_RATE: this._nonNan(parseFloat(claim_item.currency_rate)).toFixed(2),
+						DEPARTURE_TIME: this._getHanaTime(claim_item.departure_time),
+						DEPENDENT: claim_item.dependent,
+						DEPENDENT_RELATIONSHIP: claim_item.dependent_relationship,
+						EMP_ID: claim_item.emp_id,
+						FARE_TYPE_ID: claim_item.fare_type_id,
+						INSURANCE_CERT_END_DATE: this._getHanaDate(claim_item.insurance_cert_end_date),
+						INSURANCE_CERT_START_DATE: this._getHanaDate(claim_item.insurance_cert_start_date),
+						INSURANCE_PACKAGE_ID: claim_item.insurance_package_id,
+						INSURANCE_PROVIDER_ID: claim_item.insurance_provider_id,
+						INSURANCE_PROVIDER_NAME: claim_item.insurance_provider_name,
+						INSURANCE_PURCHASE_DATE: this._getHanaDate(claim_item.insurance_purchase_date),
+						METER_CUBE_ACTUAL: this._nonNan(parseFloat(claim_item.meter_cube_actual)).toFixed(2),
+						METER_CUBE_ENTITLED: this._nonNan(parseFloat(claim_item.meter_cube_entitled)).toFixed(2),
+						MOBILE_CATEGORY_PURPOSE_ID: claim_item.mobile_category_purpose_id,
+						NEED_FOREIGN_CURRENCY: claim_item.need_foreign_currency,
+						POLICY_NUMBER: claim_item.policy_number,
+						PURPOSE: claim_item.purpose,
+						REQUEST_APPROVAL_AMOUNT: claim_item.request_approval_amount,
+						STUDY_LEVELS_ID: claim_item.study_levels_id,
+						TRAVEL_DAYS_ID: claim_item.travel_days_id,
+						VEHICLE_CLASS_ID: claim_item.vehicle_class_id
+					});
+
 					const aCtx = await oListBinding.requestContexts(0, 1);
 					const oCtx = aCtx[0];
 
@@ -1878,14 +1859,15 @@ sap.ui.define([
 							MessageToast.show("Item creation failed: " + err.message);
 						});
 					}
+					else {
+						for (const [key, value] of Object.entries(oBody.getData())) {
+							oCtx.setProperty(key, value);
+						}
 
-					for (const [key, value] of Object.entries(oBody.getData())) {
-						oCtx.setProperty(key, value);
+						await oModel.submitBatch("$auto");
+						
+						console.log("Save claim item success");
 					}
-
-					await oModel.submitBatch("$auto");
-					
-					console.log("Save claim item success");
 				} catch (e) {
 					console.log(e.message || "Submission failed");
 					MessageToast.show(e.message || "Submission failed");
@@ -2079,7 +2061,7 @@ sap.ui.define([
 					text: this._getTexti18n("button_claimsummary_cancel"),
 					press: function () {
 						this.oDialog.close();
-					}
+					}.bind(this)
 				})
 			});
 			this.oDialog.open();

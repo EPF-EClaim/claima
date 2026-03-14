@@ -2530,7 +2530,7 @@ sap.ui.define([
 					text: this._getTexti18n("button_claimsummary_cancel"),
 					press: function () {
 						this.oDialog.close();
-					}
+					}.bind(this)
 				})
 			});
 			this.oDialog.open();
