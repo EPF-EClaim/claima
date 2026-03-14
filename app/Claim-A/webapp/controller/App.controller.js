@@ -533,13 +533,6 @@ sap.ui.define([
 				return null; // Return null so the app doesn't crash
 			}
 		},
-		_onInit_ClaimProcess: function () {
-			// placeholder - set employee data
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-			oInputModel.setProperty("/employee/eeid", "1900907");
-			oInputModel.setProperty("/employee/name", "Test Name");
-			oInputModel.setProperty("/employee/cc", "4001");
-		},
 
 		onSelect_ClaimProcess_ClaimType: function (oEvent) {
 			// validate claim type
