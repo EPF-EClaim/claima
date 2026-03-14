@@ -1,156 +1,228 @@
+
 // claima/utils/SendBackDialog.js
 sap.ui.define([
-    "sap/ui/model/json/JSONModel",
-    "sap/m/Dialog",
-    "sap/m/Button",
-    "sap/m/Label",
-    "sap/m/Text",
-    "sap/m/TextArea",
-    "sap/m/Select",
-    "sap/ui/core/Item",
-    "sap/ui/layout/form/SimpleForm",
-    "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator"
+  "sap/ui/model/json/JSONModel",
+  "sap/m/Dialog",
+  "sap/m/Button",
+  "sap/m/Label",
+  "sap/m/Text",
+  "sap/m/TextArea",
+  "sap/m/Select",
+  "sap/ui/core/Item",
+  "sap/ui/layout/form/SimpleForm",
+  "sap/ui/model/Filter",
+  "sap/ui/model/FilterOperator"
 ], function (
-    JSONModel,
-    Dialog,
-    Button,
-    Label,
-    Text,
-    TextArea,
-    Select,
-    Item,
-    SimpleForm,
-    Filter,
-    FilterOperator
+  JSONModel,
+  Dialog,
+  Button,
+  Label,
+  Text,
+  TextArea,
+  Select,
+  Item,
+  SimpleForm,
+  Filter,
+  FilterOperator
 ) {
-    "use strict";
+  "use strict";
 
-    function ensureSendBackModel(oController) {
-        const oView = oController.getView();
-        let oReject = oView.getModel("Reject");
-        if (!oReject) {
-            oReject = new JSONModel();
-            oView.setModel(oReject, "Reject");
-        }
-        // Defaults for SENDBACK flow
-        oReject.setData(Object.assign({
-            mode: "SENDBACK",
-            sendBackReasonKey: "",
-            approvalComment: ""
-        }, oReject.getData() || {}), true);
+  /**
+   * Ensure the two view-scoped models exist BEFORE creating bound controls:
+   *  - "Reject" holds form data: sendBackReasonKey, approvalComment
+   *  - "Type"   holds UI state:  mode = SENDBACK_REQ | SENDBACK_CLAIM
+   */
+  function ensureModels(oController) {
+    const oView = oController.getView();
+
+    // Reject (form data)
+    let oReject = oView.getModel("Reject");
+    if (!oReject) {
+      oReject = new JSONModel({
+        sendBackReasonKey: "",
+        approvalComment: ""
+      });
+      oView.setModel(oReject, "Reject");
+    } else if (!oReject.getData()) {
+      oReject.setData({ sendBackReasonKey: "", approvalComment: "" });
     }
 
-    function applySendBackFilters(oController) {
-        // Filter dropdown items to SENDBACK + ACTIVE
-        const oSelect = oController.byId("sendBackReasonSelect");
-        const oBinding = oSelect && oSelect.getBinding("items");
-        if (oBinding) {
-            oBinding.filter([
-                new Filter("REASON_TYPE", FilterOperator.EQ, "SENDBACK"),
-                new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
-            ]);
-        } else {
-            // eslint-disable-next-line no-console
-            console.warn("[SendBackDialog] items binding not found on sendBackReasonSelect.");
-        }
+    // Type (dialog UI state)
+    let oType = oView.getModel("Type");
+    if (!oType) {
+      oType = new JSONModel({ mode: "" }); // SENDBACK_REQ | SENDBACK_CLAIM
+      oView.setModel(oType, "Type");
+    } else if (!oType.getData()) {
+      oType.setData({ mode: "" });
     }
+  }
 
-    function createSendBackDialog(oController) {
-        const oView = oController.getView();
+  function applySendBackFilters(oController) {
+    // Filter dropdown items to SENDBACK + ACTIVE
+    const oSelect = oController.byId("sendBackReasonSelect");
+    const oBinding = oSelect && oSelect.getBinding("items");
+    if (oBinding) {
+      oBinding.filter([
+        new Filter("REASON_TYPE", FilterOperator.EQ, "SENDBACK"),
+        new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
+      ]);
+    } else {
+      // eslint-disable-next-line no-console
+      console.warn("[SendBackDialog] items binding not found on sendBackReasonSelect.");
+    }
+  }
 
-        const oForm = new SimpleForm(oView.createId("approver_sendback_form"), {
-            editable: true,
-            layout: "ResponsiveGridLayout",
-            labelSpanXL: 2, labelSpanL: 2, labelSpanM: 2, labelSpanS: 12,
-            adjustLabelSpan: true,
-            emptySpanXL: 0, emptySpanL: 0, emptySpanM: 0, emptySpanS: 0,
-            columnsXL: 2, columnsL: 2, columnsM: 2,
-            content: [
-                // Purpose
-                new Label({ text: "{i18n>purpose}" }),
-                new Text({ text: "{request>/req_header/purpose}", wrapping: false }),
+  function createSendBackDialog(oController) {
+    const oView = oController.getView();
 
-                // Pre-Approval ID
-                new Label({ text: "{i18n>preappreq_id}" }),
-                new Text({ text: "{request>/req_header/reqid}", wrapping: false }),
+    const oForm = new SimpleForm(oView.createId("approver_sendback_form"), {
+      editable: true,
+      layout: "ResponsiveGridLayout",
+      labelSpanXL: 2, labelSpanL: 2, labelSpanM: 2, labelSpanS: 12,
+      adjustLabelSpan: true,
+      emptySpanXL: 0, emptySpanL: 0, emptySpanM: 0, emptySpanS: 0,
+      columnsXL: 2, columnsL: 2, columnsM: 2,
+      content: [
+        // ----- Pre-Approval (Request) fields -----
+        new Label({
+          text: "{i18n>purpose}",
+          visible: "{= ${Type>/mode} === 'SENDBACK_REQ' }"
+        }),
+        new Text({
+          text: "{request>/req_header/purpose}",
+          wrapping: false,
+          visible: "{= ${Type>/mode} === 'SENDBACK_REQ' }"
+        }),
+        new Label({
+          text: "{i18n>preappreq_id}",
+          visible: "{= ${Type>/mode} === 'SENDBACK_REQ' }"
+        }),
+        new Text({
+          text: "{request>/req_header/reqid}",
+          wrapping: false,
+          visible: "{= ${Type>/mode} === 'SENDBACK_REQ' }"
+        }),
 
-                // Send Back Reason (required)
-                new Label({ text: "Send Back Reason", required: true }),
-                new Select(oView.createId("sendBackReasonSelect"), {
-                    width: "100%",
-                    selectedKey: "{Reject>/rejectReasonKey}",
-                    // change: oController.onSendBackReasonChange?.bind(oController),
-                    items: {
-                        // IMPORTANT: use your named OData model alias and correct path
-                        path: "employee>/ZREJECT_REASON",
-                        template: new Item({
-                            key: "{employee>REASON_ID}",
-                            text: "{employee>REASON_DESC}"
-                        }),
-                        templateShareable: false
-                    }
-                }),
+        // ----- Claim fields -----
+        new Label({
+          text: "{i18n>purpose}",
+          visible: "{= ${Type>/mode} === 'SENDBACK_CLAIM' }"
+        }),
+        new Text({
+          text: "{claimsubmission_input>/claim_header/purpose}",
+          wrapping: false,
+          visible: "{= ${Type>/mode} === 'SENDBACK_CLAIM' }"
+        }),
+        new Label({
+          text: "{i18n>label_claimsummary_claimheader_claimid}",
+          visible: "{= ${Type>/mode} === 'SENDBACK_CLAIM' }"
+        }),
+        new Text({
+          text: "{claimsubmission_input>/claim_header/claim_id}",
+          wrapping: false,
+          visible: "{= ${Type>/mode} === 'SENDBACK_CLAIM' }"
+        }),
 
-                // Comment (required)
-                new Label({ text: "{i18n>approval_comment}", required: true }),
-                new TextArea(oView.createId("sendBackApprovalCommentArea"), {
-                    value: "{Reject>/approvalComment}",
-                    width: "100%",
-                    growing: true,
-                    growingMaxLines: 5,
-                    placeholder: "{i18n>send_comment_placeholder}"
-                    // liveChange: oController.onApprovalCommentLiveChange?.bind(oController)
-                })
-            ]
-        });
-
-        const oDialog = new Dialog({
-            title: "{i18n>sendback_claim}", // or "Send Back"
-            contentWidth: "50%",
-            content: [oForm],
-            beginButton: new Button(oView.createId("sendback_placeholder_cancel"), {
-                text: "{i18n>req_b_cancel}",
-                press: oController.onClickCancel_app.bind(oController)
+        // Send Back Reason (required)
+        new Label({ text: "{i18n>sendback_reason}", required: true }),
+        new Select(oView.createId("sendBackReasonSelect"), {
+          width: "100%",
+          // IMPORTANT: bind to sendBackReasonKey (not rejectReasonKey)
+          selectedKey: "{Reject>/sendBackReasonKey}",
+          items: {
+            path: "employee>/ZREJECT_REASON", // adjust if your model alias differs
+            template: new Item({
+              key: "{employee>REASON_ID}",
+              text: "{employee>REASON_DESC}"
             }),
-            endButton: new Button(oView.createId("sendback_placeholder_submit"), {
-                text: "{i18n>sendback_btn}",  // or "Send Back"
-                type: "Emphasized",
-                press: oController.onSendBack_app.bind(oController),
-                // Optional UX: enable only when reason+comment are provided
-                // enabled: "{= !!${Reject>/sendBackReasonKey} && !!${Reject>/approvalComment} }"
-            })
-        });
+            templateShareable: false
+          }
+        }),
 
-        oDialog.attachAfterOpen(function () {
-            applySendBackFilters(oController);
-        });
+        // Comment (required)
+        new Label({ text: "{i18n>approval_comment}", required: true }),
+        new TextArea(oView.createId("sendBackApprovalCommentArea"), {
+          value: "{Reject>/approvalComment}",
+          width: "100%",
+          growing: true,
+          growingMaxLines: 5,
+          placeholder: "{i18n>send_comment_placeholder}"
+        })
+      ]
+    });
 
-        oDialog.addStyleClass("requestDialog");
-        oView.addDependent(oDialog);
-        return oDialog;
+    // Robust handler resolution to support both controllers
+    const cancelHandler =
+      oController.onClickCancel_app ||
+      oController.onSendBackCancel ||
+      function () { this.__sendBackDialog && this.__sendBackDialog.close(); };
+
+    const submitHandler =
+      oController.onSendBack_app ||               // RequestForm
+      oController.onSendBack_ClaimSubmission ||   // ClaimSubmission
+      function () { sap.m.MessageToast.show("No Send Back handler implemented."); };
+
+    const oDialog = new Dialog({
+      // Will set dynamically in open()
+      title: "{i18n>sendback_claim}",
+      contentWidth: "50%",
+      content: [oForm],
+      beginButton: new Button(oView.createId("sendback_placeholder_cancel"), {
+        text: "{i18n>req_b_cancel}",
+        press: cancelHandler.bind(oController)
+      }),
+      endButton: new Button(oView.createId("sendback_placeholder_submit"), {
+        text: "{i18n>sendback_btn}",
+        type: "Emphasized",
+        // UX: enable only when both reason and comment present
+        enabled: "{= !!${Reject>/sendBackReasonKey} && !!${Reject>/approvalComment} }",
+        press: submitHandler.bind(oController)
+      })
+    });
+
+    oDialog.attachAfterOpen(function () {
+      applySendBackFilters(oController);
+    });
+
+    oDialog.addStyleClass("requestDialog");
+    oView.addDependent(oDialog);
+    return oDialog;
+  }
+
+  // View-scoped singleton
+  function getOrCreate(oController) {
+    // Ensure models BEFORE creating bound controls
+    ensureModels(oController);
+
+    if (!oController.__sendBackDialog) {
+      oController.__sendBackDialog = createSendBackDialog(oController);
     }
+    return oController.__sendBackDialog;
+  }
 
-    // Singleton per controller instance (view-scoped)
-    function getOrCreate(oController) {
-        if (!oController.__sendBackDialog) {
-            oController.__sendBackDialog = createSendBackDialog(oController);
-        }
-        return oController.__sendBackDialog;
+  return {
+    open: function (oController) {
+      const oDlg = getOrCreate(oController);
+
+      // Dynamic title per mode (safer than cross-model expressions)
+      try {
+        const rb = oController.getOwnerComponent().getModel("i18n").getResourceBundle();
+        const mode = oController.getView().getModel("Type").getProperty("/mode");
+        const title = mode === "SENDBACK_REQ"
+          ? (rb.getText("sendback_request") || rb.getText("sendback_claim"))
+          : rb.getText("sendback_claim");
+        oDlg.setTitle(title);
+      } catch (e) { /* ignore if i18n unavailable */ }
+
+      oDlg.open();
+      return oDlg;
+    },
+
+    destroy: function (oController) {
+      if (oController.__sendBackDialog) {
+        oController.__sendBackDialog.destroy();
+        oController.__sendBackDialog = null;
+      }
     }
-
-    return {
-        open: function (oController) {
-            ensureSendBackModel(oController);
-            const oDlg = getOrCreate(oController);
-            oDlg.open();
-            return oDlg;
-        },
-        destroy: function (oController) {
-            if (oController.__sendBackDialog) {
-                oController.__sendBackDialog.destroy();
-                oController.__sendBackDialog = null;
-            }
-        }
-    };
+  };
 });

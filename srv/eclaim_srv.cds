@@ -1007,7 +1007,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
         userId      : String;
     }
 
-    function getUserType()                                             returns UserInfo;
+    function getUserType()                                         returns UserInfo;
+        
+    action sendEmail(ApproverName: String,SubmissionDate: String,ClaimantName: String,InstanceID: String,ClaimType: String,ClaimID: String,RecipientName: String,Action: String,
+                       ReceiverEmail: String,CCEmail: String,EmailTitle: String,EmailBody: String, NextApproverName: String) returns Response; 
 
     entity ZINSURANCE_PACKAGE @(restrict: [
         {

@@ -183,6 +183,79 @@ sap.ui.define([
 			}
 			
 		},
+		//For testing only
+		async budgetProcessingTest(oModel, dataset, submission_type, process) {
+			for (const row of dataset) {
+				let oListBinding;
+
+				if (submission_type == 'CLM') {
+					oListBinding = oModel.bindList("/ZBUDGET", null, null, [
+						new Filter("YEAR", "EQ", row.yyyy),
+						new Filter("INTERNAL_ORDER", "EQ", row.project_code),		// Project Code
+						new Filter("FUND_CENTER", "EQ", row.fund_center),			// Cost Center
+						new Filter("COMMITMENT_ITEM", "EQ", row.commitment_item),	// GL Accont
+						new Filter("MATERIAL_GROUP", "EQ", row.material_code)		// Material Code
+					]);
+				} else if (submission_type == 'REQ') {
+					// get cash advance cost center and gl account
+					oListBinding = oModel.bindList("/ZBUDGET", null, null, [
+						new Filter("YEAR", "EQ", row.yyyy),
+						new Filter("INTERNAL_ORDER", "EQ", '-'),		// Project Code
+						new Filter("FUND_CENTER", "EQ", '100000000'),	// Cost Center
+						new Filter("COMMITMENT_ITEM", "EQ", '214005'),	// GL Accont
+						new Filter("MATERIAL_GROUP", "EQ", '-')			// Material Code
+					]);
+				}
+				try {
+					const aCtx = await oListBinding.requestContexts(0, 1);
+					if (!aCtx || aCtx.length === 0) {
+						console.error("Budget record not found for row:", row);
+						continue; 
+					}
+
+					const oCtx = aCtx[0];
+					const oCurrentData = oCtx.getObject();
+					const fAmount = parseFloat(row.amount || 0);
+
+					let fNewCommitment, fNewActual, fNewConsumed, fNewBalance;
+					switch (process) {
+						case 'lock':
+							fNewCommitment 	= 	(parseFloat(oCurrentData.COMMITMENT) || 0) 		- fAmount;
+							fNewActual 		= 	(parseFloat(oCurrentData.ACTUAL) || 0);
+							fNewConsumed 	= 	(parseFloat(oCurrentData.CONSUMED) || 0) 		- fAmount;
+							fNewBalance 	= 	(parseFloat(oCurrentData.BUDGET_BALANCE) || 0) 	- fAmount;
+							break;
+						case 'release':
+							fNewCommitment 	= 	(parseFloat(oCurrentData.COMMITMENT) || 0) 		- fAmount;
+							fNewActual 		= 	(parseFloat(oCurrentData.ACTUAL) || 0);
+							fNewConsumed 	= 	(parseFloat(oCurrentData.CONSUMED) || 0) 		- fAmount;
+							fNewBalance 	= 	(parseFloat(oCurrentData.BUDGET_BALANCE) || 0) 	+ fAmount;
+							break;
+						case 'approve':
+							fNewCommitment 	= 	(parseFloat(oCurrentData.COMMITMENT) || 0) 		- fAmount;
+							fNewActual 		= 	(parseFloat(oCurrentData.ACTUAL) || 0) 			- fAmount;
+							fNewConsumed 	= 	(parseFloat(oCurrentData.CONSUMED) || 0) 		- fAmount;
+							fNewBalance 	= 	(parseFloat(oCurrentData.BUDGET_BALANCE) || 0) 	- fAmount;
+							break;
+					}
+
+					oCtx.setProperty("COMMITMENT", fNewCommitment);
+					oCtx.setProperty("ACTUAL", fNewActual);
+					oCtx.setProperty("CONSUMED", fNewConsumed);
+					oCtx.setProperty("BUDGET_BALANCE", fNewBalance);
+					
+					await oModel.submitBatch("budgetUpdateGroup");
+					
+					if (oModel.hasPendingChanges("budgetUpdateGroup")) {
+						throw new Error("Batch update failed on server.");
+					}
+					
+				} catch (err) {
+					console.error("Error updating budget for row:", row, err);
+				}
+			}
+			
+		},
 
 		/* =========================================================
 		* Budget Checking Helper Functions
