@@ -2033,26 +2033,42 @@ sap.ui.define([
 		_updateClaimItems: async function () {
 			// get input model
 			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var itemCountDb = 0;
+			var delItems = [];
 
-			// for each item
-			oInputModel.getProperty("/claim_items").forEach(async (claim_item) => {
+			// count existing items from database
+			try {
+				var oModel = this.getOwnerComponent().getModel();
+				var oListBinding;
+
+				oListBinding = oModel.bindList("/ZCLAIM_ITEM", null,
+					[new sap.ui.model.Sorter("CLAIM_SUB_ID", false)],
+					[new sap.ui.model.Filter({ path: "CLAIM_ID", operator: sap.ui.model.FilterOperator.EQ, value1: oInputModel.getProperty("/claim_header/claim_id") })],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$$updateGroupId: "$auto"
+					}
+				);
+
+				var aCtx = await oListBinding.requestContexts();
+				itemCountDb = aCtx.length;
+
+				if (itemCountDb > oInputModel.getProperty("/claim_items").length) {
+					for (let i = oInputModel.getProperty("/claim_items").length; i < itemCountDb; i++) {
+						var oCtx = aCtx[i];
+						delItems.push(oCtx);
+					}
+				}
+			} catch (e) {
+				console.log(e.message);
+			}
+
+			// for each item to be saved
+			oInputModel.getProperty("/claim_items").forEach(async (claim_item, i) => {
 				 try {
-					BusyIndicator.show(0);
-
-					const oModel = this.getOwnerComponent().getModel();
-					var oListBinding;
-
-					oListBinding = oModel.bindList("/ZCLAIM_ITEM", null, null,
-						[
-							new sap.ui.model.Filter({ path: "CLAIM_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_item.claim_id }),
-							new sap.ui.model.Filter({ path: "CLAIM_SUB_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_item.claim_sub_id })
-						],
-						{
-							$$ownRequest: true,
-							$$groupId: "$auto",
-							$$updateGroupId: "$auto"
-						}
-					);
+					oModel = this.getOwnerComponent().getModel();
+					oListBinding = null;
 
 					// set body for update
 					var oBody = new JSONModel({
@@ -2159,14 +2175,10 @@ sap.ui.define([
 						VEHICLE_CLASS_ID: claim_item.vehicle_class_id
 					});
 
-					const aCtx = await oListBinding.requestContexts(0, 1);
-					const oCtx = aCtx[0];
-
-					if (!oCtx) {
-						console.log("Claim item not found in database; creating new item");
+					if (i >= itemCountDb) {
 						// create new item
 						oListBinding = oModel.bindList("/ZCLAIM_ITEM");
-						const oContext = oListBinding.create(oBody.getData());
+						var oContext = oListBinding.create(oBody.getData());
 						oContext.created().then(() => {
 							console.log("New claim item created");
 						}).catch(err => {
@@ -2175,17 +2187,60 @@ sap.ui.define([
 						});
 					}
 					else {
-						for (const [key, value] of Object.entries(oBody.getData())) {
-							oCtx.setProperty(key, value);
-						}
+						oListBinding = oModel.bindList("/ZCLAIM_ITEM", null,null,
+							[
+								new sap.ui.model.Filter({ path: "CLAIM_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_item.claim_id }),
+								new sap.ui.model.Filter({ path: "CLAIM_SUB_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_item.claim_sub_id })
+							],
+							{
+								$$ownRequest: true,
+								$$groupId: "$auto",
+								$$updateGroupId: "$auto"
+							}
+						);
 
-						await oModel.submitBatch("$auto");
-						
-						console.log("Save claim item success");
+						aCtx = await oListBinding.requestContexts(0, 1);
+						oCtx = aCtx[0];
+
+						if (!oCtx) {
+							throw new Error("Claim item not found in database");
+						}
+						else {
+							for (const [key, value] of Object.entries(oBody.getData())) {
+								oCtx.setProperty(key, value);
+							}
+
+							await oModel.submitBatch("$auto");
+							
+							console.log("Save claim item success");
+						}
 					}
 				} catch (e) {
 					console.log(e.message || "Submission failed");
 					MessageToast.show(e.message || "Submission failed");
+				}
+			})
+
+			// for each item to be deleted
+			delItems.forEach(async (claim_item) => {
+				try {
+					oModel = this.getOwnerComponent().getModel();
+					oListBinding = null;
+
+					oListBinding = oModel.bindList("/ZCLAIM_ITEM", null, null,
+						[
+							new sap.ui.model.Filter({ path: "CLAIM_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_item.CLAIM_ID }),
+							new sap.ui.model.Filter({ path: "CLAIM_SUB_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_item.CLAIM_SUB_ID })
+						]
+					);
+
+					oCtx.delete().then( function() {
+						console.log("Claim item deleted");
+					}).catch( function(oError) {
+						console.error(oError);
+					});
+				} catch (e) {
+					console.error(e.message);
 				}
 			})
 		},
