@@ -1,17 +1,13 @@
 <mvc:View xmlns:table="sap.ui.table" xmlns:form="sap.ui.layout.form" xmlns:f="sap.f"
-	height="100%"
-	xmlns:mvc="sap.ui.core.mvc"
-	xmlns="sap.m"
+    height="100%"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
     xmlns:core="sap.ui.core"
-	controllerName="claima.controller.RequestFormStatus"
+    controllerName="claima.controller.RequestFormStatus"
     id="request_status_xmlview">
 
-    <Page  
-        id="request_form_status"
-        floatingFooter="true"
-        showHeader="false">
-        <VBox
-            class="roundedBox sapUiSmallMargin">
+    <Page id="request_form_status" floatingFooter="true" showHeader="false">
+        <VBox class="roundedBox sapUiSmallMargin">
             <Table
                 id="tb_myrequestform"
                 headerText="My Pre-Approval Status"
@@ -19,34 +15,89 @@
                 width="auto"
                 items="{path: 'request_status>/req_header_list'}"
                 itemPress="openItemFromList"
-                growing="true"
-            >
+                growing="true">
+
                 <headerToolbar>
                     <Toolbar>
-                        <Title
-                            text="{= ${i18n>nav_myrequest} + ' (' + ${request_status>/req_header_count} + ')'}"
-                        />
+                        <Title text="{= ${i18n>nav_myrequest} + ' (' + ${request_status>/req_header_count} + ')'}" />
+                        <ToolbarSpacer/>
+                        <Button text="Reset Sort" type="Transparent" icon="sap-icon://refresh" press="onResetSort"/>
                     </Toolbar>
                 </headerToolbar>
 
                 <columns>
-                    <Column >
-                        <Text text="Request Date" />
-                    </Column>
-                    <Column >
-                        <Text text="Request ID" />
-                    </Column>
-                    <Column >
-                        <Text text="Purpose" />
-                    </Column>
-                    <Column >
-                        <Text text="Status" />
-                    </Column>
+                    <!-- REQUEST_DATE -->
                     <Column>
-                        <Text text="Pre-Approval Amount (MYR)" />
+                        <header>
+                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                <Text text="Request Date"/>
+                                <Button type="Transparent" icon="sap-icon://sort" tooltip="Sort by Request Date" press="onSortToggle">
+                                    <customData>
+                                        <core:CustomData key="path" value="REQUEST_DATE"/>
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>
+
+                    <!-- REQUEST_ID -->
+                    <Column>
+                        <header>
+                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                <Text text="Request ID"/>
+                                <Button type="Transparent" icon="sap-icon://sort" tooltip="Sort by Request ID" press="onSortToggle">
+                                    <customData>
+                                        <core:CustomData key="path" value="REQUEST_ID"/>
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>
+
+                    <!-- OBJECTIVE_PURPOSE -->
+                    <Column>
+                        <header>
+                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                <Text text="Purpose"/>
+                                <Button type="Transparent" icon="sap-icon://sort" tooltip="Sort by Purpose" press="onSortToggle">
+                                    <customData>
+                                        <core:CustomData key="path" value="OBJECTIVE_PURPOSE"/>
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>
+
+                    <!-- STATUS_DESC -->
+                    <Column>
+                        <header>
+                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                <Text text="Status"/>
+                                <Button type="Transparent" icon="sap-icon://sort" tooltip="Sort by Status" press="onSortToggle">
+                                    <customData>
+                                        <core:CustomData key="path" value="STATUS_DESC"/>
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>
+
+                    <!-- PREAPPROVAL_AMOUNT -->
+                    <Column hAlign="End">
+                        <header>
+                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                <Text text="Pre-Approval Amount (MYR)"/>
+                                <Button type="Transparent" icon="sap-icon://sort" tooltip="Sort by Amount" press="onSortToggle">
+                                    <customData>
+                                        <core:CustomData key="path" value="PREAPPROVAL_AMOUNT"/>
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
                     </Column>
                 </columns>
 
+                <!-- items unchanged -->
                 <items>
                     <ColumnListItem type="Active">
                         <cells>
@@ -71,4 +122,4 @@
             </Table>
         </VBox>
     </Page>
-</mvc:View> 
+</mvc:View>
