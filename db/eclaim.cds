@@ -706,8 +706,8 @@ entity ZAREA : managed {
 }
 
 entity ZLOC_TYPE : managed {
-    key LOC_TYPE_ID   : String(6)  @mandatory  @Common.Label: 'LOC_TYPE_ID';
-        LOC_TYPE_DESC : String     @Common.Label: 'LOC_TYPE_DESC';
+    key LOC_TYPE_ID   : String(6)  @mandatory  @Common.Label: 'Location Type ID';
+        LOC_TYPE_DESC : String     @Common.Label: 'Location Type Description';
         START_DATE    : Date       @Common.Label: 'Start Date';
         END_DATE      : Date       @Common.Label: 'End Date';
         STATUS        : String(10) @Common.Label: 'Status';
@@ -963,22 +963,22 @@ entity ZEMP_CA_PAYMENT : managed {
 }
 
 entity ZPERDIEM_ENT : managed {
-    key PERSONAL_GRADE       : String        @mandatory  @Common.Label: 'Personal Grade From';
-    key LOCATION             : String(2)     @mandatory  @Common.Label: 'Location';
-    key CLAIM_TYPE_ID        : String        @mandatory  @Common.Label: 'Claim Type ID';
-    key CLAIM_TYPE_ITEM_ID   : String        @mandatory  @Common.Label: 'Claim Type Item ID';
-    key EFFECTIVE_START_DATE : Date          @mandatory  @Common.Label: 'Effective Start Date';
-    key EFFECTIVE_END_DATE   : Date          @mandatory  @Common.Label: 'Effective End Date';
-        CURRENCY             : String(3)     @Common.Label: 'Currency';
-        AMOUNT               : Decimal(7, 2) @Common.Label: 'Amount';
-        STATUS               : String(10)    @Common.Label: 'Status';
-        ZCLAIM_TYPE_ITEM     : Association to one ZCLAIM_TYPE_ITEM
-                                   on  ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID
-                                   and ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID      = CLAIM_TYPE_ID;
-        ZREGION              : Association to ZREGION
-                                   on ZREGION.REGION_ID = LOCATION;
-        ZCURRENCY            : Association to ZCURRENCY
-                                   on ZCURRENCY.CURRENCY_ID = CURRENCY;
+    key PERSONAL_GRADE     : String        @mandatory  @Common.Label: 'Personal Grade From';
+    key LOCATION           : String(2)     @mandatory  @Common.Label: 'Location';
+    key CLAIM_TYPE_ID      : String        @mandatory  @Common.Label: 'Claim Type ID';
+    key CLAIM_TYPE_ITEM_ID : String        @mandatory  @Common.Label: 'Claim Type Item ID';
+    key START_DATE         : Date          @mandatory  @Common.Label: 'Start Date';
+    key END_DATE           : Date          @mandatory  @Common.Label: 'End Date';
+        CURRENCY           : String(3)     @Common.Label: 'Currency';
+        AMOUNT             : Decimal(7, 2) @Common.Label: 'Amount';
+        STATUS             : String(10)    @Common.Label: 'Status';
+        ZCLAIM_TYPE_ITEM   : Association to one ZCLAIM_TYPE_ITEM
+                                 on  ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID
+                                 and ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID      = CLAIM_TYPE_ID;
+        ZREGION            : Association to ZREGION
+                                 on ZREGION.REGION_ID = LOCATION;
+        ZCURRENCY          : Association to ZCURRENCY
+                                 on ZCURRENCY.CURRENCY_ID = CURRENCY;
 }
 
 entity ZHOUSING_LOAN_SCHEME : managed {

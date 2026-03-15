@@ -3,24 +3,24 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
 ], function (Filter, FilterOperator, Sorter) {
-    "use strict";
+	"use strict";
 
-    return {
-        
+	return {
+
 		/* =========================================================
 		* JSONModel Reset
 		* ======================================================= */
 
-        _ensureRequestModelDefaults(oReq) {
+		_ensureRequestModelDefaults(oReq) {
 			const data = oReq.getData() || {};
-			data.req_header        = { reqid: "", grptype: "IND" };
-			data.req_item_rows     = [];
-			data.req_item          = data.req_item || {
+			data.req_header = { reqid: "", grptype: "IND" };
+			data.req_item_rows = [];
+			data.req_item = data.req_item || {
 				cash_advance: "no_cashadv"
 			};
-			data.participant       = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
-			data.view              = "view";
-			data.list_count        = 0;
+			data.participant = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
+			data.view = "view";
+			data.list_count = 0;
 			oReq.setData(data);
 		},
 
@@ -31,7 +31,7 @@ sap.ui.define([
 		async getPARHeaderList(oReq, oModel) {
 
 			const oListBinding = oModel.bindList("/ZEMP_REQUEST_VIEW", undefined,
-				[new Sorter("REQUEST_ID", true)],null,
+				[new Sorter("REQUEST_ID", true)], null,
 				{
 					$$ownRequest: true,
 					$$groupId: "$auto",
@@ -45,7 +45,7 @@ sap.ui.define([
 				const a = aCtx.map((ctx) => ctx.getObject());
 
 				a.forEach((it) => {
-				    if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
+					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
 				});
 
 				oReq.setProperty("/req_header_list", a);
@@ -96,7 +96,41 @@ sap.ui.define([
 						break;
 				}
 			}
-		}
+		},
 
-    };
+		//Aiman Salim - Added to fetch with filter last modified date;
+
+		async getPARHeaderList_withfilterlastmod(oReq, oModel) {
+
+			const oListBinding = oModel.bindList("/ZEMP_REQUEST_VIEW", undefined,
+				[new Sorter("modifiedAt", true)], null,
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$$updateGroupId: "$auto",
+					$count: true
+				}
+			);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+				a.forEach((it) => {
+					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
+				});
+
+				oReq.setProperty("/req_header_list", a);
+				oReq.setProperty("/req_header_count", a.length);
+
+				return a;
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				oReq.setProperty("/req_header_list", []);
+				oReq.setProperty("/req_header_count", 0);
+				return [];
+			}
+		},
+
+	};
 });

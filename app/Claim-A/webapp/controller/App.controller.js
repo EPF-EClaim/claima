@@ -72,6 +72,12 @@ sap.ui.define([
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
 
+			const oSession = new sap.ui.model.json.JSONModel({
+				userType: "UNKNOWN",
+			});
+			this.getView().setModel(oSession, "session");
+
+
 			// sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
 			var sHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
 			if (!sHash || sHash === "") {
@@ -100,6 +106,12 @@ sap.ui.define([
 				oImageModel.setProperty("/initials", sInitials);
 				oImageModel.setProperty("/userName", sname);
 				oImageModel.setProperty("/position", sposition);
+
+				// save userId to model
+				var oUserIdModel = new JSONModel({ "userId": oData.userId });
+				//// set input
+				this.getView().setModel(oUserIdModel, "userId");
+				oSession.setProperty("/userType", this._userType);
 			}).catch(err => {
 				console.error("getUserType failed:", err);
 				this._userType = "UNKNOWN";
@@ -1517,21 +1529,21 @@ sap.ui.define([
 
 			try {
 				var oListBinding = oModel.bindList(
-				"/ZNUM_RANGE",
-				null,
-				null,
-				[
-					new sap.ui.model.Filter({
-					path: "RANGE_ID",
-					operator: sap.ui.model.FilterOperator.EQ,
-					value1: range_id
-					})
-				],
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-					$select: "RANGE_ID,CURRENT,PREFIX"
-				}
+					"/ZNUM_RANGE",
+					null,
+					null,
+					[
+						new sap.ui.model.Filter({
+							path: "RANGE_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: range_id
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$select: "RANGE_ID,CURRENT,PREFIX"
+					}
 				);
 
 				var aCtx = await oListBinding.requestContexts(0, 1);
@@ -1553,20 +1565,20 @@ sap.ui.define([
 
 				// verify result is not in database
 				oListBinding = oModel.bindList(
-				"/ZCLAIM_HEADER",
-				null,
-				null,
-				[
-					new sap.ui.model.Filter({
-					path: "CLAIM_ID",
-					operator: sap.ui.model.FilterOperator.EQ,
-					value1: result
-					})
-				],
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-				}
+					"/ZCLAIM_HEADER",
+					null,
+					null,
+					[
+						new sap.ui.model.Filter({
+							path: "CLAIM_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: result
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+					}
 				);
 
 				aCtx = await oListBinding.requestContexts(0, 1);
@@ -2314,7 +2326,7 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel("employee_view");
 
 			const oListBinding = oModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", undefined,
-				[new Sorter("STATUS_ID", true)],
+				[new Sorter("LAST_MODIFIED_DATE", true)],
 				null,
 				{
 					$$ownRequest: true,
@@ -2427,7 +2439,10 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel('employee_view');
 
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			PARequestSharedFunction.getPARHeaderList(oReq, oModel);
+			//Start of add Aiman Salim 15/03/2026 - Replace with Filter using Last Modified date
+			//PARequestSharedFunction.getPARHeaderList(oReq, oModel);
+			PARequestSharedFunction.getPARHeaderList_withfilterlastmod(oReq, oModel);
+			//End of add Aiman Salim 15/03/2026 - Replace with Filter using Last Modified date
 			var oRouter = this.getOwnerComponent().getRouter();
 			oRouter.navTo("RequestFormStatus");
 		},
@@ -2463,12 +2478,27 @@ sap.ui.define([
 		onClickNavigate: function (oEvent) {
 			let id = oEvent.getParameters().id;
 			var oRouter = this.getOwnerComponent().getRouter();
+
+			const userType = this.getView().getModel("session")?.getProperty("/userType")
+				|| this._userType
+				|| "UNKNOWN";
+
 			if (id.includes("dashboard-claim")) {
 				this.getCLAIMHeaderList();
 				var oRouter = this.getOwnerComponent().getRouter();
 				oRouter.navTo("ClaimStatus")
 			} else if (id.includes("request")) {
 				this._navToPARStatus();
+			} else if (id.includes("approval")) {
+				if (userType === "Approver") {
+					this.getMyApproverPAReq();
+					this.getMyApproverClaim();
+					oRouter.navTo("MyApproval");
+				}
+				else {
+					var message = this._getTexti18n("msg_unauthorized_role");
+					sap.m.MessageBox.error(message);
+				}
 			}
 		},
 
@@ -2573,7 +2603,9 @@ sap.ui.define([
 									type: "Transparent",
 									width: "100%",
 									press: function () {
-										window.location.href = "/logout";
+										const sUrl = sap.ui.require.toUrl("/router/logged-out.html");
+										window.location.replace(sUrl);
+
 									}
 								})
 							]
@@ -2613,7 +2645,6 @@ sap.ui.define([
 				pageId: "navcontainer_claimsubmission"
 			});
 
-		}
-
+		},
 	});
 });

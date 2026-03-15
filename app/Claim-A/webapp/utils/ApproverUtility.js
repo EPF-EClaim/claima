@@ -297,8 +297,6 @@ sap.ui.define([
 
 
         // 6) Release Budget Lock
-
-
         const budgetBinding = oModel2.bindList(
             sTable3,
             null,

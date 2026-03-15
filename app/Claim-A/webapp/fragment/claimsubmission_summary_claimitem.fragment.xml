@@ -129,14 +129,14 @@
 					<Text text="{i18n>columntext_claimsummary_claimitem}" />
 				</Column>
 
-				<!-- Category -->
-				<Column>
-					<Text text="{i18n>columntext_claimsummary_category}" />
-				</Column>
-
 				<!-- Amount -->
 				<Column>
 					<Text text="{i18n>columntext_claimsummary_amt}" />
+				</Column>
+
+				<!-- Remarks -->
+				<Column>
+					<Text text="{i18n>columntext_claimsummary_remarks}" />
 				</Column>
 
 				<!-- Attachment 1 -->
@@ -174,9 +174,6 @@
 						<!-- Claim Item -->
 						<Text text="{claimsubmission_input>descr/claim_type_item_id}" />
 
-						<!-- Category -->
-						<Text text="{claimsubmission_input>descr/claim_category}" />
-
 						<!-- Amount -->
 						<Text
 							text="{
@@ -189,6 +186,9 @@
 								}
 							}"
 						/>
+
+						<!-- Remarks -->
+						<Text text="{claimsubmission_input>remark}" />
 
 						<!-- Attachment 1 -->
 						<Button

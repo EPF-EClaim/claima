@@ -85,6 +85,12 @@
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
+                                <Title
+                                    level="H3"
+                                    text="{employee_view>/ZEMP_APPROVER_DETAILS/$count}"
+                                    textAlign="Center"
+                                    class="sapUiSmallMarginBegin"
+                                />
                             </HBox>
                         </Panel>
                     </HBox>
@@ -129,7 +135,7 @@
                                 >
                                     <Table
                                         id="claimtable"
-                                        items="{ path: 'employee_view>/ZEMP_CLAIM_HEADER_VIEW', sorter : { path : 'TRIP_START_DATE' } }"
+                                        items="{ path: 'employee_view>/ZEMP_CLAIM_HEADER_VIEW', sorter : { path : 'LAST_MODIFIED_DATE', descending : true } }"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
                                         mode="SingleSelectMaster"
@@ -138,6 +144,11 @@
                                         itemPress="onRowPress"
                                     >
                                         <columns>
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text text="Claim ID" />
+                                                </header>
+                                            </Column>
                                             <Column demandPopin="true">
                                                 <header>
                                                     <Text text="Purpose" />
@@ -155,15 +166,22 @@
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Amount" />
+                                                    <Text text="Amount(MYR)" />
                                                 </header>
                                             </Column>
                                         </columns>
                                         <items>
                                             <ColumnListItem type="Active">
                                                 <cells>
-                                                    <Text text="{employee_view>PURPOSE}" />
-                                                    <Text text="{employee_view>STATUS_DESC}" />
+                                                    <Text
+                                                        text="{employee_view>CLAIM_ID}"
+                                                    />
+                                                    <Text
+                                                        text="{employee_view>PURPOSE}"
+                                                    />
+                                                    <Text
+                                                        text="{employee_view>STATUS_DESC}"
+                                                    />
                                                     <Text
                                                         text="{employee_view>TRIP_START_DATE}"
                                                     />
@@ -197,7 +215,7 @@
                                     />
                                     <Title
                                         level="H3"
-                                        text="{i18n>myrequest} ({employee>/ZREQUEST_HEADER/$count})"
+                                        text="{i18n>myrequest} ({employee_view>/ZEMP_REQUEST_VIEW/$count})"
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"
                                     />
@@ -218,7 +236,7 @@
                                     horizontal="false"
                                 >
                                     <Table
-                                        items="{ path: 'employee_view>/ZEMP_REQUEST_VIEW', sorter : { path : 'REQUEST_DATE' } }"
+                                        items="{ path: 'employee_view>/ZEMP_REQUEST_VIEW', sorter : { path : 'modifiedAt', descending: true } }"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
@@ -226,6 +244,11 @@
                                         itemPress="openItemFromList"
                                     >
                                         <columns>
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text text="Request ID" />
+                                                </header>
+                                            </Column>
                                             <Column demandPopin="true">
                                                 <header>
                                                     <Text text="Purpose" />
@@ -243,7 +266,7 @@
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Amount" />
+                                                    <Text text="Amount(MYR)" />
                                                 </header>
                                             </Column>
                                         </columns>
@@ -251,9 +274,14 @@
                                             <ColumnListItem type="Active">
                                                 <cells>
                                                     <Text
+                                                        text="{employee_view>REQUEST_ID}"
+                                                    />
+                                                    <Text
                                                         text="{employee_view>OBJECTIVE_PURPOSE}"
                                                     />
-                                                    <Text text="{employee_view>STATUS_DESC}" />
+                                                    <Text
+                                                        text="{employee_view>STATUS_DESC}"
+                                                    />
                                                     <Text
                                                         text="{employee_view>REQUEST_DATE}"
                                                     />
@@ -286,7 +314,7 @@
                                     />
                                     <Title
                                         level="H3"
-                                        text="{i18n>approval}"
+                                        text="{i18n>approval} ({employee_view>/ZEMP_APPROVER_DETAILS/$count})"
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"
                                     />
@@ -307,12 +335,19 @@
                                     horizontal="false"
                                 >
                                     <Table
-                                        items="{ path: '' }"
+                                        items="{ path: 'employee_view>/ZEMP_APPROVER_DETAILS'}"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
                                     >
                                         <columns>
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text
+                                                        text="Claim ID/Request ID"
+                                                    />
+                                                </header>
+                                            </Column>
                                             <Column demandPopin="true">
                                                 <header>
                                                     <Text text="Purpose" />
@@ -330,7 +365,7 @@
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Amount" />
+                                                    <Text text="Amount(MYR)" />
                                                 </header>
                                             </Column>
                                         </columns>
@@ -338,16 +373,19 @@
                                             <ColumnListItem>
                                                 <cells>
                                                     <Text
-                                                        text=""
+                                                        text="{employee_view>ID}"
                                                     />
                                                     <Text
-                                                        text=""
+                                                        text="{employee_view>PURPOSE}"
                                                     />
                                                     <Text
-                                                        text=""
+                                                        text="{employee_view>STATUS_DESC}"
                                                     />
                                                     <Text
-                                                        text=""
+                                                        text="{employee_view>REQUEST_DATE}"
+                                                    />
+                                                    <Text
+                                                        text="{employee_view>AMOUNT}"
                                                     />
                                                 </cells>
                                             </ColumnListItem>
