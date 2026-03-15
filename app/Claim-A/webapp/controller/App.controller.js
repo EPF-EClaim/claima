@@ -2314,7 +2314,7 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel("employee_view");
 
 			const oListBinding = oModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", undefined,
-				[new Sorter("STATUS_ID", true)],
+				[new Sorter("LAST_MODIFIED_DATE", true)],
 				null,
 				{
 					$$ownRequest: true,
@@ -2427,7 +2427,10 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel('employee_view');
 
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			PARequestSharedFunction.getPARHeaderList(oReq, oModel);
+			//Start of add Aiman Salim 15/03/2026 - Replace with Filter using Last Modified date
+			//PARequestSharedFunction.getPARHeaderList(oReq, oModel);
+			PARequestSharedFunction.getPARHeaderList_withfilterlastmod(oReq, oModel);
+			//End of add Aiman Salim 15/03/2026 - Replace with Filter using Last Modified date
 			var oRouter = this.getOwnerComponent().getRouter();
 			oRouter.navTo("RequestFormStatus");
 		},
