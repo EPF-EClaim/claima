@@ -172,7 +172,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.POS,
                 ZEMP_MASTER.GRADE,
                 ZEMP_MASTER.JOB_GROUP,
-                createdBy
+                createdBy,
+                modifiedAt
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW          as
@@ -673,4 +674,33 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.MATERIAL_CODE,
                 createdBy
         };
+
+    entity ZEMP_APPROVER_DETAILS as
+        select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request
+        { 
+            key PREAPPROVAL_ID as ID,
+            STATUS,
+            ZSTATUS.STATUS_DESC as STATUS_DESC,
+            ZREQUEST_HEADER.OBJECTIVE_PURPOSE,
+                APPROVER_ID,
+                ZEMP_MASTER_APPROVER.NAME         as APPROVER_NAME,
+                ZEMP_MASTER_APPROVER.EMAIL        as APPROVER_EMAIL,
+                ZREQUEST_HEADER.REQUEST_DATE,
+                ZREQUEST_HEADER.CASH_ADVANCE,
+                ZREQUEST_HEADER.PREAPPROVAL_AMOUNT } 
+                where ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'  
+        UNION ALL
+        select from ECLAIM.ZAPPROVER_DETAILS_CLAIMS as claim
+        {
+            key CLAIM_ID,
+                STATUS,
+                ZSTATUS.STATUS_DESC as STATUS_DESC,
+                ZCLAIM_HEADER.PURPOSE,
+                APPROVER_ID,
+                ZEMP_MASTER_APPROVER.NAME       as APPROVER_NAME,
+                ZEMP_MASTER_APPROVER.EMAIL      as APPROVER_EMAIL,
+                ZCLAIM_HEADER.SUBMITTED_DATE,
+                ZCLAIM_HEADER.FINAL_AMOUNT_TO_RECEIVE,
+                ZCLAIM_HEADER.TOTAL_CLAIM_AMOUNT }
+                where ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'     
 };
