@@ -2,8 +2,8 @@
 sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    // "./FinalApproveStep"
-], function (Filter, FilterOperator) {
+    "claima/utils/FinalApproveStep"
+], function (Filter, FilterOperator, FinalApproveStep) {
     "use strict";
 
     async function _approveMultiLevel(oModel, id, userID, comment, oModel2) {
@@ -84,7 +84,8 @@ sap.ui.define([
         } else {
             // No next level → final approval
             console.log("No further approvers found. Proceed to Final Approve Step");
-            FinalApproveStep.onFinalApprove(oModel, payload.claimID, 'STAT05');
+            
+            FinalApproveStep.onFinalApprove(oModel2, id, 'STAT05', oModel);
         }
 
         // STEP 5: Fetch data for Email
@@ -296,7 +297,6 @@ sap.ui.define([
             hctx.setProperty(headerStatusField, actionStatus); // STAT04/STAT03
 
         }
-
 
         // 6) Release Budget Lock
         const budgetBinding = oModel2.bindList(
