@@ -723,7 +723,7 @@ sap.ui.define([
 				this.__approveDialog.close();
 			}
 		},
-
+		//Button config for Approve
 		onClickCreate_app: async function () {
 			// Approve flow for CLAIM submission
 			const oReject = this.getView().getModel("Reject");
@@ -778,7 +778,7 @@ sap.ui.define([
 			}
 
 		},
-
+		//Button config for Reject
 		onReject_ClaimSubmission: async function () {
 			// quick visual trace
 			 console.log("[onReject_ClaimSubmission] fired");
@@ -839,17 +839,7 @@ sap.ui.define([
 				sap.ui.core.BusyIndicator.hide();
 			}
 		},
-
-
-
-		onClickCancel_app: function () {
-			if (this.__approveDialog) { this.__approveDialog.close(); }
-			if (this.__sendBackDialog) { this.__sendBackDialog.close(); }
-			if (this.__rejectDialog) { this.__rejectDialog.close(); }
-		},
-
-		//End Approval
-
+		//Button config for Send Back
 		onSendBack_ClaimSubmission: async function () {
 			const oReject = this.getView().getModel("Reject");
 			const reason = oReject?.getProperty("/sendBackReasonKey");
@@ -909,6 +899,16 @@ sap.ui.define([
 				sap.ui.core.BusyIndicator.hide();
 			}
 		},
+
+		onClickCancel_app: function () {
+			if (this.__approveDialog) { this.__approveDialog.close(); }
+			if (this.__sendBackDialog) { this.__sendBackDialog.close(); }
+			if (this.__rejectDialog) { this.__rejectDialog.close(); }
+		},
+
+		//End Approval
+
+		
 
 		// Example: wire this to your "Back to Employee" or "Send Back" action
 		onOpenSendBack_Claim: function () {
