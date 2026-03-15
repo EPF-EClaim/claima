@@ -1521,7 +1521,7 @@
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "PERSONAL_GRADE_FROM,PERSONAL_GRADE_TO,LOCATION,EFFECTIVE_START_DATE,EFFECTIVE_END_DATE,CURRENCY,AMOUNT,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID"
+                                            "creationFields": "PERSONAL_GRADE,LOCATION,EFFECTIVE_START_DATE,EFFECTIVE_END_DATE,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,CURRENCY,AMOUNT"
                                         }
                                     },
                                     "actions": {
