@@ -1517,21 +1517,21 @@ sap.ui.define([
 
 			try {
 				var oListBinding = oModel.bindList(
-				"/ZNUM_RANGE",
-				null,
-				null,
-				[
-					new sap.ui.model.Filter({
-					path: "RANGE_ID",
-					operator: sap.ui.model.FilterOperator.EQ,
-					value1: range_id
-					})
-				],
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-					$select: "RANGE_ID,CURRENT,PREFIX"
-				}
+					"/ZNUM_RANGE",
+					null,
+					null,
+					[
+						new sap.ui.model.Filter({
+							path: "RANGE_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: range_id
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$select: "RANGE_ID,CURRENT,PREFIX"
+					}
 				);
 
 				var aCtx = await oListBinding.requestContexts(0, 1);
@@ -1553,20 +1553,20 @@ sap.ui.define([
 
 				// verify result is not in database
 				oListBinding = oModel.bindList(
-				"/ZCLAIM_HEADER",
-				null,
-				null,
-				[
-					new sap.ui.model.Filter({
-					path: "CLAIM_ID",
-					operator: sap.ui.model.FilterOperator.EQ,
-					value1: result
-					})
-				],
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-				}
+					"/ZCLAIM_HEADER",
+					null,
+					null,
+					[
+						new sap.ui.model.Filter({
+							path: "CLAIM_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: result
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+					}
 				);
 
 				aCtx = await oListBinding.requestContexts(0, 1);
@@ -2314,7 +2314,7 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel("employee_view");
 
 			const oListBinding = oModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", undefined,
-				[new Sorter("STATUS_ID", true)],
+				[new Sorter("LAST_MODIFIED_DATE", true)],
 				null,
 				{
 					$$ownRequest: true,
@@ -2427,7 +2427,10 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel('employee_view');
 
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			PARequestSharedFunction.getPARHeaderList(oReq, oModel);
+			//Start of add Aiman Salim 15/03/2026 - Replace with Filter using Last Modified date
+			//PARequestSharedFunction.getPARHeaderList(oReq, oModel);
+			PARequestSharedFunction.getPARHeaderList_withfilterlastmod(oReq, oModel);
+			//End of add Aiman Salim 15/03/2026 - Replace with Filter using Last Modified date
 			var oRouter = this.getOwnerComponent().getRouter();
 			oRouter.navTo("RequestFormStatus");
 		},
@@ -2573,7 +2576,9 @@ sap.ui.define([
 									type: "Transparent",
 									width: "100%",
 									press: function () {
-										window.location.href = "/logout";
+										const sUrl = sap.ui.require.toUrl("/router/logged-out.html");
+										window.location.replace(sUrl);
+
 									}
 								})
 							]
@@ -2613,7 +2618,6 @@ sap.ui.define([
 				pageId: "navcontainer_claimsubmission"
 			});
 
-		}
-
+		},
 	});
 });

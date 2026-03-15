@@ -36,7 +36,7 @@ sap.ui.define([
 	workflowApproval
 ) {
 	"use strict";
-
+	
 	return Controller.extend("claima.controller.ClaimSubmission", {
 		onInit: function () {
 			this._navContainerDelegate = { onBeforeShow: this.onBeforeShow };
@@ -726,7 +726,7 @@ sap.ui.define([
 				this.__approveDialog.close();
 			}
 		},
-
+		//Button config for Approve
 		onClickCreate_app: async function () {
 			// Approve flow for CLAIM submission
 			const oReject = this.getView().getModel("Reject");
@@ -781,7 +781,7 @@ sap.ui.define([
 			}
 
 		},
-
+		//Button config for Reject
 		onReject_ClaimSubmission: async function () {
 			// quick visual trace
 			 console.log("[onReject_ClaimSubmission] fired");
@@ -842,17 +842,7 @@ sap.ui.define([
 				sap.ui.core.BusyIndicator.hide();
 			}
 		},
-
-
-
-		onClickCancel_app: function () {
-			if (this.__approveDialog) { this.__approveDialog.close(); }
-			if (this.__sendBackDialog) { this.__sendBackDialog.close(); }
-			if (this.__rejectDialog) { this.__rejectDialog.close(); }
-		},
-
-		//End Approval
-
+		//Button config for Send Back
 		onSendBack_ClaimSubmission: async function () {
 			const oReject = this.getView().getModel("Reject");
 			const reason = oReject?.getProperty("/sendBackReasonKey");
@@ -912,6 +902,16 @@ sap.ui.define([
 				sap.ui.core.BusyIndicator.hide();
 			}
 		},
+
+		onClickCancel_app: function () {
+			if (this.__approveDialog) { this.__approveDialog.close(); }
+			if (this.__sendBackDialog) { this.__sendBackDialog.close(); }
+			if (this.__rejectDialog) { this.__rejectDialog.close(); }
+		},
+
+		//End Approval
+
+		
 
 		// Example: wire this to your "Back to Employee" or "Send Back" action
 		onOpenSendBack_Claim: function () {
@@ -1046,13 +1046,6 @@ sap.ui.define([
 		onSelect_ClaimDetails_ClaimItem: async function (oEvent) {
 			// validate claim item
 			var claimItem = oEvent.getParameters().selectedItem;
-			if (claimItem) {
-				// get category values from claim item
-				var claimCategoryDesc = claimItem.getBindingContext("employee").getObject("ZSUBMISSION_TYPE/SUBMISSION_TYPE_DESC");
-
-				// show claim item category in category input
-				this.byId("input_claimdetails_input_category").setValue(claimCategoryDesc);
-			}
 
 			// set app visibility controls
 			await this.getFieldVisibility_ClaimTypeItem();
@@ -1103,7 +1096,10 @@ sap.ui.define([
 			//// Claim Item
 			this.byId("select_claimdetails_input_claimitem").bindAggregation("items", {
 				path: "employee>/ZCLAIM_TYPE_ITEM",
-				filters: [new sap.ui.model.Filter('CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id"))],
+				filters: [
+					new sap.ui.model.Filter('CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id")),
+					new sap.ui.model.Filter('SUBMISSION_TYPE', sap.ui.model.FilterOperator.EQ, oModel.getProperty("/claim_header/submission_type"))
+				],
 				sorter: [
 					new sap.ui.model.Sorter('CLAIM_TYPE_ITEM_DESC'),
 					new sap.ui.model.Sorter('CLAIM_TYPE_ITEM_ID')
@@ -1154,6 +1150,8 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_area", "ZAREA");
 			//// Lodging Category
 			this._setClaimDetailSelectionField("select_claimdetails_input_lodging_category", "ZLODGING_CAT", "LODGING_CATEGORY");
+			//// Category/Purpose
+			this._setClaimDetailSelectionField("select_claimdetails_input_claim_category", "ZCLAIM_CATEGORY");
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
 		},
@@ -1227,12 +1225,9 @@ sap.ui.define([
 			}
 			//// get claim type from claim header
 			oInputModel.setProperty("/claim_item/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
-			//// get claim category key
-			oInputModel.setProperty("/claim_item/claim_category", this.byId("select_claimdetails_input_claimitem").getSelectedItem().getBindingContext("employee").getObject("SUBMISSION_TYPE"));
 			//// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/descr/claim_type_id"));
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
-			oInputModel.setProperty("/claim_item/descr/claim_category", this.byId("input_claimdetails_input_category").getValue());
 			// add claim item details to claim submission model
 			if (oInputModel.getProperty("/is_new")) {
 				oClaimSubmissionModel.setProperty("/claim_items", oClaimSubmissionModel.getProperty("/claim_items").concat(oInputModel.getProperty("/claim_item")));
@@ -1777,15 +1772,16 @@ sap.ui.define([
 				oClaimItemFragment.then(function (oVBox) {
 					oPage.removeContent(oVBox);
 				});
+
+				const fpromise = await this._getFormFragment("claimsubmission_summary_claimitem").then(function (oVBox) {
+					oPage.insertContent(oVBox, 1);
+				});
+				if (!oClaimSubmissionModel.getProperty("/is_approver")) {
+					this._displayFooterButtons("claimsubmission_summary_claimitem");
+					this._setEnabledToolbarFooter();
+				}
+				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 			}
-			const fpromise = await this._getFormFragment("claimsubmission_summary_claimitem").then(function (oVBox) {
-				oPage.insertContent(oVBox, 1);
-			});
-			if (!oClaimSubmissionModel.getProperty("/is_approver")) {
-				this._displayFooterButtons("claimsubmission_summary_claimitem");
-				this._setEnabledToolbarFooter();
-			}
-			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 		},
 
 		_updateClaimSubmission: async function (oAction) {
@@ -2004,17 +2000,15 @@ sap.ui.define([
 					if (oInputModel.getProperty("/claim_items_count") > 0) {
 						await this._updateClaimItems();
 					}
-					MessageToast.show(oMsg);
-					// this._returnToDashboard();
 
 					// determine claims approver
 					if (oAction === 'Submit Report') {
 						var oModelAppr = this.getView().getModel();
 						// ApprovalLog.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
 					}
-					else if (oAction === 'Delete Report') {
-						this._disableDeleteReport();						
-					}
+					
+					MessageToast.show(oMsg);
+					this.onBack_ClaimSubmission();
 				}
 
 			} catch (e) {
@@ -2216,8 +2210,8 @@ sap.ui.define([
 						}
 					}
 				} catch (e) {
-					console.log(e.message || "Submission failed");
-					MessageToast.show(e.message || "Submission failed");
+					console.log(e.message || "Claim update failed");
+					MessageToast.show(e.message || "Claim update failed");
 				}
 			})
 
@@ -2591,6 +2585,7 @@ sap.ui.define([
 				"select_claimdetails_input_area",
 				"select_claimdetails_input_lodging_category",
 				"input_claimdetails_input_no_of_family_member",
+				"select_claimdetails_input_claim_category",
 				"select_claimdetails_input_mobile_category_purpose_id",
 				"input_claimdetails_input_bill_no",
 				"input_claimdetails_input_account_no",
@@ -2714,6 +2709,7 @@ sap.ui.define([
 				"select_claimdetails_input_area",
 				"select_claimdetails_input_lodging_category",
 				"input_claimdetails_input_no_of_family_member",
+				"select_claimdetails_input_claim_category",
 				"select_claimdetails_input_mobile_category_purpose_id",
 				"input_claimdetails_input_bill_no",
 				"input_claimdetails_input_account_no",
