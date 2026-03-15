@@ -18,8 +18,9 @@
     <tnt:ToolPage id="toolPage">
         <tnt:header>
             <f:ShellBar
+            id="shellbar"
                 showMenuButton="true"
-                homeIcon="./images/EPF Logo Registered@2x.png"
+                homeIcon="{imageModel>/homeIcon}"
                 menuButtonPressed="onMenuButtonPress"
             />
         </tnt:header>

@@ -106,6 +106,11 @@ sap.ui.define([
 			// //workflowApproval.onClaimsApproverDetermination(oModelAppr, claimID);
 			// workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
 			// //workflowApproval.onSendEmail();
+
+			const oImageModel = new sap.ui.model.json.JSONModel({
+				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png")
+			});
+			this.getView().setModel(oImageModel, "imageModel");
 		},
 		onPARTest: function () {
 			var PARID = this.byId("PARSubmissionTest").getValue();
