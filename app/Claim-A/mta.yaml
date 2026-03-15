@@ -55,7 +55,6 @@ resources:
     parameters:
       service: hana
       service-plan: hdi-shared
-
   - name: claima-destination
     type: org.cloudfoundry.managed-service
     parameters:

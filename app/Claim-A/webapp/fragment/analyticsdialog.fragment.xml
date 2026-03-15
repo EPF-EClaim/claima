@@ -7,7 +7,7 @@
     xmlns:f="sap.ui.layout.form"
 >
     <Dialog
-        title="Report Filter"
+        title="{i18n>filter}" 
         contentWidth="50%"
         class="requestDialog"
     >

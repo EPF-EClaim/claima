@@ -1,15 +1,26 @@
 const cds = require('@sap/cds');
 const { INSERT, UPDATE, UPSERT, SELECT, where } = require('@sap/cds/lib/ql/cds-ql');
-const { results } = require('@sap/cds/lib/utils/cds-utils');
 const express = require('express');
 const app = express();
 
 module.exports = (srv) => {
 
+  const { ZRISK } = srv.entities;
+
+  srv.before('CREATE', ZRISK, (req) => {
+    const { START_DATE, END_DATE } = req.data || {}
+    if (START_DATE != null && END_DATE != null && new Date(END_DATE) < new Date(START_DATE)) {
+      req.error(400, 'End Date must be greater than or equal to Start Date.', { target: 'END_DATE' })
+    }
+  })
+
   srv.on('batchCreateEmployee', async (req) => {
     const { ZEMP_MASTER } = srv.entities;
+    // _insert(ZEMP_MASTER, req);
     try {
       const { employees } = req.data;
+
+
       if (!employees || employees.length === 0) {
         throw new Error('No Data Sent')
       }
@@ -26,6 +37,7 @@ module.exports = (srv) => {
 
     srv.on('batchCreateCostCenter', async (req) => {
       const { ZCOST_CENTER } = srv.entities;
+      // _insert(ZCOST_CENTER, req);
       try {
         const { costcenters } = req.data;
         if (!costcenters || costcenters.length === 0) {
@@ -44,6 +56,7 @@ module.exports = (srv) => {
 
     srv.on('batchCreateDependent', async (req) => {
       const { ZEMP_DEPENDENT } = srv.entities;
+      // _insert(ZEMP_DEPENDENT, req);
       try {
         const { dependents } = req.data;
         if (!dependents || dependents.length === 0) {
@@ -117,6 +130,8 @@ module.exports = (srv) => {
     if (user_type === "JKEW Admin") {
       operationHidden = true;
     } else if (user_type === "DTD Admin" || user_type === "Super Admin") {
+      operationHidden = false;
+    } else if (user_type === "Super Admin") {
       operationHidden = false;
     }
 
@@ -216,7 +231,7 @@ module.exports = (srv) => {
         const bSufficient = entry.AMOUNT <= budgetRecord.BUDGET_BALANCE;
 
         if (bSufficient) {
-          continue;
+          continue; //proceed with all checking and update once all satisfy condition
         } else {
           error = true;
 
@@ -239,9 +254,9 @@ module.exports = (srv) => {
       }
       //all records having sufficient balance
       //do not proceed if any of the record doesnt have sufficient amount
-      if (error === false) {
+      if (error === false) {  
 
-        for (var entry of budget) {
+        for (var entry of budget) {       
           condition = {};
 
           if (entry.YEAR) condition.YEAR = entry.YEAR;
@@ -258,7 +273,7 @@ module.exports = (srv) => {
             newBudgetBalance = round2(toNum(newBudget.CURRENT_BUDGET) - toNum(newBudget.CONSUMED));
             newActual = round2(toNum(newBudget.ACTUAL));
           } else if (entry.ACTION === "REJECT" || entry.ACTION === "APPROVE") {
-            newCommitment = round2(toNum(newBudget.COMMITMENT) - toNum(entry.AMOUNT));
+            newCommitment =  round2(toNum(newBudget.COMMITMENT) - toNum(entry.AMOUNT ));
             newConsumed = round2(toNum(newBudget.COMMITMENT) + toNum(newBudget.ACTUAL));
             newBudgetBalance = round2(toNum(newBudget.CURRENT_BUDGET) - toNum(newBudget.CONSUMED));
             newActual = entry.ACTION === "APPROVE" ? round2(toNum(newBudget.ACTUAL) + toNum(entry.AMOUNT)) : round2(toNum(newBudget.ACTUAL));
@@ -293,7 +308,7 @@ module.exports = (srv) => {
             STATUS: 'Record updated'
           });
 
-        }
+        }  
 
         await tx.commit();
 
@@ -306,7 +321,7 @@ module.exports = (srv) => {
       await tx.rollback();
       req.error(400, `Budget checking failed: ${error.message}`);
     }
-  });
+});
 
   srv.on('batchUpdatePreApproved', async (req) => {
     const { ZREQUEST_ITEM } = srv.entities;
@@ -338,5 +353,31 @@ module.exports = (srv) => {
     } catch (error) {
       req.error(400, `Fail updating record: ${error.message}`);
     }
-  })
+  });
+
+  srv.on('sendEmail' , async(req) => {
+    const ISserivce = await cds.connect.to('IS_NonProd_Conn');
+    var path = "/http/EmailNotification_BTP_DEV";
+    var test; 
+    ISserivce.send({
+      method: 'POST',
+      path: path,
+      data: {
+        "ApproverName":req.data.ApproverName,
+        "SubmissionDate":req.data.SubmissionDate,
+        "ClaimantName":req.data.ClaimantName,
+        "InstanceID":req.data.InstanceID,
+        "ClaimType":req.data.ClaimType,
+        "ClaimID":req.data.ClaimID,
+        "RecipientName":req.data.RecipientName,
+        "Action":req.data.Action,
+        "ReceiverEmail":req.data.ReceiverEmail,
+        "CCEmail":req.data.CCEmail,
+        "EmailTitle":req.data.EmailTitle,
+        "EmailBody":req.data.EmailBody,
+        "NextApproverName" : req.data.NextApproverName
+      }
+    });
+  });
+
 }
