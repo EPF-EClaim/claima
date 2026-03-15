@@ -1304,6 +1304,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   batchUpdatePreApproved(PreApprove: many PreApproveClaims) returns Response;
 
+    function updateDisbursementStatus()                                returns array of Response;
+    
     entity ZDISBURSEMENT_STATUS          as projection on ECLAIM.ZDISBURSEMENT_STATUS;
 
 };
