@@ -355,9 +355,5 @@
                 </VBox>
             </ScrollContainer>
         </content>
-        <Input id="claimSubmissionTest"></Input>
-        <Button press="onClaimTest" text="For Claim" />
-        <Input id="PARSubmissionTest"></Input>
-        <Button press="onPARTest" text="For Pre-Approval" />
     </Page>
 </mvc:View>

@@ -53,19 +53,26 @@ sap.ui.define([
 			const aClaimItemsContexts = await oListBinding.requestContexts();
 			const aClaimsItemData = aClaimItemsContexts.map(oContext => oContext.getObject());
 
-			let claimItemTotalExpAmtArr = [];
+            //Need to change the checking from total_exp_amount to amount
+			//let claimItemTotalExpAmtArr = [];
+            let claimItemAmountArr = [];
 			let claimItemReceiptDateArr = [];
 			let claimTypeItemIDArr = [];
 			for(var i = 0; i < aClaimsItemData.length; i++){
 
-				claimItemTotalExpAmtArr.push(parseFloat(aClaimsItemData[i].TOTAL_EXP_AMOUNT));
+                //Need to change the checking from total_exp_amount to amount
+				//claimItemTotalExpAmtArr.push(parseFloat(aClaimsItemData[i].TOTAL_EXP_AMOUNT));
+                claimItemTotalAmountArr.push(parseFloat(aClaimsItemData[i].AMOUNT));
 				claimItemReceiptDateArr.push(new Date(aClaimsItemData[i].RECEIPT_DATE));
 				claimTypeItemIDArr.push(aClaimsItemData[i].CLAIM_TYPE_ITEM_ID);
 			}
 			
 			// furthest date + high amount among all the claim items
 			var furthestReceiptDate = new Date(Math.max(...claimItemReceiptDateArr)).toLocaleDateString('en-CA');
-			var highestTotalExpAmt = Math.max(...claimItemTotalExpAmtArr);
+
+            //Need to change the checking from total_exp_amount to amount
+			//var highestTotalExpAmt = Math.max(...claimItemTotalExpAmtArr);
+            highestAmount = Math.max(...claimItemTotalAmountArr);
 
 			var claimsOverallRisk;
 			let claimsTypeItemRiskArr = [];
@@ -167,48 +174,79 @@ sap.ui.define([
 			//empCCVal; whether match, not match or empty
 			//check if i need to check any of these values for rules
 			var empCCVal;
-			if(claimsAltCC != "" || claimsAltCC != null){
-				empCCVal = "NE";
-			}else if (claimsCC == empCC){
+            //Modify logic to use == instead of !=
+			//if(claimsAltCC != "" || claimsAltCC != null){
+			//	empCCVal = "NE";
+            //}else if (claimsCC == empCC){
+			//	empCCVal = "EQ";
+			//}else{
+			//	empCCVal = null;
+			//}
+            if(claimsAltCC == "" || claimsAltCC == null) {  
 				empCCVal = "EQ";
-			}else{
-				empCCVal = null;
-			}
+            }else{
+                empCCVal = "NE";
+            }
+			
 			var threshholdVal, receiptAge;
 			let riskLevelWorkflowCodeArr = [];
 			let thresholdWorkflowCodeArr = [];
 			let empCCWorkflowCodeArr = [];
 			let receiptAgingWorkflowCodeArr = [];
 			for(var i = 0; i < nestedWorkflowRuleArr.length; i++){
-				if(claimsOverallRisk == nestedWorkflowRuleArr[i][3]){
-					riskLevelWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
-				}
+				//if(claimsOverallRisk == nestedWorkflowRuleArr[i][3]){
+				//	riskLevelWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+				//}
 
-				if(empCCVal == nestedWorkflowRuleArr[i][2]){
+                if(nestedWorkflowRuleArr[i][3] == null){
+                    riskLevelWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+                }else if(claimsOverallRisk == nestedWorkflowRuleArr[i][3]){
+                    riskLevelWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+                }
+				//if(empCCVal == nestedWorkflowRuleArr[i][2]){
+				//	empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+				//}
+
+                if(nestedWorkflowRuleArr[i][2] == null){
+                }else if(empCCVal == nestedWorkflowRuleArr[i][2]){
 					empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
 				}
 
-				if(highestTotalExpAmt > nestedWorkflowRuleArr[i][0]){
+                //Need to change the checking from total_exp_amount to amount
+                if(highestAmount > nestedWorkflowRuleArr[i][0]){
 					threshholdVal = "GT";
-				}else if(highestTotalExpAmt < nestedWorkflowRuleArr[i][0]){
+				//}else if(highestTotalExpAmt < nestedWorkflowRuleArr[i][0]){
+                }else if(highestAmount < nestedWorkflowRuleArr[i][0]){    
 					threshholdVal = "LE";
 				}else{
 					threshholdVal = null;
 				}
 
-				if(threshholdVal == nestedWorkflowRuleArr[i][5]){
+				//if(threshholdVal == nestedWorkflowRuleArr[i][5]){
+				//	thresholdWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+				//}
+
+                if(nestedWorkflowRuleArr[i][5] == null){
+                    thresholdWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+                }else if(threshholdVal == nestedWorkflowRuleArr[i][5]){
 					thresholdWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
 				}
 
 				if(dateDiff > nestedWorkflowRuleArr[i][1]){
 					receiptAge = "GT";
-				}else if(dateDiff < nestedWorkflowRuleArr[i][1]){
+				}else if(dateDiff <= nestedWorkflowRuleArr[i][1]){
 					receiptAge = "LE";
 				}else{
 					receiptAge = null;
 				}
 
-				if(receiptAge == nestedWorkflowRuleArr[i][6]){
+				//if(receiptAge == nestedWorkflowRuleArr[i][6]){
+				//	receiptAgingWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+				//}
+
+                if(nestedWorkflowRuleArr[i][6] == null){
+                    receiptAgingWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+                }else if(receiptAge == nestedWorkflowRuleArr[i][6]){
 					receiptAgingWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
 				}
 			}
