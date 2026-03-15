@@ -1203,6 +1203,7 @@ entity ZELIGIBILITY_RULE : managed {
     key CLAIM_TYPE_ITEM_ID        : String         @mandatory  @Common.Label: 'Claim Type Item ID';
     key ROLE_ID                   : String(3)      @mandatory  @Common.Label: 'Role';
     key POSITION_NO_DESC          : String         @mandatory  @Common.Label: 'Position Number/Description';
+    key ROW_COUNT                 : Integer        @mandatory  @Common.Label: 'Row Count';
     key START_DATE                : Date           @mandatory  @Common.Label: 'Start Date';
     key END_DATE                  : Date           @mandatory  @Common.Label: 'End Date';
         EMPLOYEE_TYPE             : String         @Common.Label: 'Employee Type';
