@@ -2428,6 +2428,7 @@ sap.ui.define([
 
 		_returnToDashboard: function () {
 			var oRouter = this.getOwnerComponent().getRouter();
+			var sHash = sap.ui.core.routing.HashChanger.getInstance().replaceHash("");
 			oRouter.navTo("Dashboard");
 		},
 
