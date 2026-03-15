@@ -15,18 +15,18 @@
           "name": "db"
         }
       },
-      "destinations": {
+      "auth": {
         "binding": {
           "type": "cf",
           "apiEndpoint": "https://api.cf.ap11.hana.ondemand.com",
           "org": "EMPLOYEES PROVIDENT FUND BOARD",
           "space": "EPF_SF_IS_NonProd_Space",
-          "instance": "claima-backend-destination",
-          "key": "claima-backend-destination-key"
+          "instance": "claima-backend-auth",
+          "key": "claima-backend-auth-key"
         },
-        "kind": "destinations",
+        "kind": "mocked",
         "vcap": {
-          "name": "destinations"
+          "name": "auth"
         }
       }
     }

@@ -138,14 +138,16 @@
                     <u:FileUploader
                         id="fileuploader_claiminput_attachment"
                         name="fileUploaderClaimInputAttachment"
+                        placeholder="{i18n>text_claiminput_attachment_filetypes}"
                         uploadUrl="SuccessFactors_API/odata/v2/Attachment"
                         change="onChange_ClaimInput_Attachment"
                         uploadComplete="onUploadComplete_ClaimInput_Attachment"
                         maximumFileSize='5.0'
                         fileSizeExceed="onFileSizeExceed_ClaimInput_Attachment"
+                        mimeType="application/pdf,image/png,image/jpeg"
                         typeMissmatch="onTypeMissmatch_ClaimInput_Attachment"
+                        multiple="false"
                         style="Emphasized"
-                        fileType="pdf,png,jpg,jpeg"
                     >
                     </u:FileUploader>
 
@@ -163,8 +165,9 @@
             <!-- Claim Submission -->
             <Button
                 id="button_claiminput_claimsubmission"
-                press="onClaimSubmission_ClaimInput"
+                press="onAction_ClaimInput"
                 text="{i18n>button_claiminput_claimsubmission}"
+				type="Emphasized"
             />
 
             <!-- Cancel -->

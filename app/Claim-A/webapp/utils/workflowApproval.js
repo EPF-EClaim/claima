@@ -26,6 +26,33 @@ sap.ui.define([
             })
 
 		},
+
+        //Aiman Added for MyApproval
+        onSendEmailApprover: async function (oModel, payload){
+         
+            var stringifyPayload = JSON.stringify(payload);
+            var parsePayload = JSON.parse(stringifyPayload);
+
+            var oAction = oModel.bindContext("/sendEmail(...)");
+            oAction.setParameter("ApproverName" , parsePayload.ApproverName);
+            oAction.setParameter("SubmissionDate" , parsePayload.SubmissionDate);
+            oAction.setParameter("ClaimantName" , parsePayload.ClaimantName);
+            oAction.setParameter("ClaimType" , parsePayload.ClaimType);
+            oAction.setParameter("ClaimID" , parsePayload.ClaimID);
+            oAction.setParameter("RecipientName" , parsePayload.RecipientName);
+            oAction.setParameter("Action" , parsePayload.Action);
+            oAction.setParameter("ReceiverEmail" , parsePayload.ReceiverEmail);
+            oAction.setParameter("NextApproverName" , parsePayload.NextApproverName);
+            oAction.setParameter("RejectReason" , parsePayload.RejectReason);
+            oAction.setParameter("ApproverComments" , parsePayload.ApproverComments);
+
+            oAction.execute().then(function (){
+                console.log("email sent");
+            }).catch(function (){
+                console.log("email not sent");
+            })
+
+		},
         onClaimsApproverDetermination: async function (oModel, claimID){
 			// claim header
 			//var oModel = this.getView().getModel();

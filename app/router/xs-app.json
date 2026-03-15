@@ -1,6 +1,12 @@
 {
+  "welcomeFile": "/claima/index.html",
   "authenticationMethod": "route",
+  "logout": {
+    "logoutEndpoint": "/app-logout",
+    "logoutPage": "/"
+  },
   "routes": [
+     
     {
       "source": "^/user-api/currentUser$",
       "target": "/currentUser",
@@ -31,6 +37,5 @@
       "csrfProtection": false,
       "destination": "Conn_SF_DEV_API"
     }
-  ],
-  "welcomeFile": "/claima/index.html"
+  ]
 }

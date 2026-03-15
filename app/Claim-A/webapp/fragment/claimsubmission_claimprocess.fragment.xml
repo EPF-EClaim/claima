@@ -77,6 +77,22 @@
                         liveChange="onSelect_ClaimProcess_RequestForm"
                     >
                     </Select>
+
+                    <!-- Email Approval -->
+                    <Label text="{i18n>label_claimprocess_req_emailapprove}" />
+                    <Switch
+                        id="switch_claimprocess_req_emailapprove"
+                        state="false"
+                        customTextOn="{i18n>switch_claimprocess_req_emailapprove_yes}"
+                        customTextOff="{i18n>switch_claimprocess_req_emailapprove_no}"
+                        enabled="false"
+                        visible="false"
+                        change="onSwitch_ClaimProcess_Req_EmailApprove"
+                    >
+                        <layoutData>
+                            <FlexItemData growFactor="1" />
+                        </layoutData>
+                    </Switch>
                 </f:content>
             </f:SimpleForm>
      

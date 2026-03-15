@@ -175,6 +175,13 @@
                     ]
                 },
                 {
+                    "pattern": "ZNUM_RANGE_DTD",
+                    "name": "ZNUM_RANGE_DTD",
+                    "target": [
+                        "ZNUM_RANGE_DTD"
+                    ]
+                },
+                {
                     "pattern": "ZCLAIM_CATEGORY",
                     "name": "ZCLAIM_CATEGORY",
                     "target": [
@@ -294,6 +301,13 @@
                     ]
                 },
                 {
+                    "pattern": "ZEMP_MASTER_DTD",
+                    "name": "ZEMP_MASTER_DTD",
+                    "target": [
+                        "ZEMP_MASTER_DTD"
+                    ]
+                },
+                {
                     "pattern": "ZREGION",
                     "name": "ZREGION",
                     "target": [
@@ -406,13 +420,6 @@
                     ]
                 },
                 {
-                    "pattern": "ZDB_STRUCTURE",
-                    "name": "ZDB_STRUCTURE",
-                    "target": [
-                        "ZDB_STRUCTURE"
-                    ]
-                },
-                {
                     "pattern": "ZOFFICE_LOCATION",
                     "name": "ZOFFICE_LOCATION",
                     "target": [
@@ -478,6 +485,11 @@
                     "pattern": "ZEMP_DEPENDENT",
                     "name": "ZEMP_DEPENDENT",
                     "target": "ZEMP_DEPENDENT"
+                },
+                {
+                    "pattern": "ZEMP_DEPENDENT_DTD",
+                    "name": "ZEMP_DEPENDENT_DTD",
+                    "target": "ZEMP_DEPENDENT_DTD"
                 },
                 {
                     "pattern": "ZREJECT_REASON",
@@ -580,9 +592,19 @@
                     "target": "ZVEHICLE_CLASS"
                 },
                 {
+                    "pattern": "ZDISBURSEMENT_STATUS",
+                    "name": "ZDISBURSEMENT_STATUS",
+                    "target": "ZDISBURSEMENT_STATUS"
+                },
+                {
                     "pattern": "ZMOBILE_CATEGORY_PURPOSE",
                     "name": "ZMOBILE_CATEGORY_PURPOSE",
                     "target": "ZMOBILE_CATEGORY_PURPOSE"
+                },
+                {
+                    "pattern": "ZDB_STRUCTURE",
+                    "name": "ZDB_STRUCTURE",
+                    "target": "ZDB_STRUCTURE"
                 }
             ],
             "targets": {
@@ -1243,7 +1265,52 @@
                                     "actions": {
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": false,
+                                            "enabled": false,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZEMP_MASTER_DTD": {
+                    "type": "Component",
+                    "id": "ZEMP_MASTER_DTD",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_MASTER",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": true,
+                                        "enableMassEdit": false
+                                    },
+                                    "actions": {
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1732,7 +1799,49 @@
                                     "actions": {
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }f",
+                                            "visible": false,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZNUM_RANGE_DTD": {
+                    "type": "Component",
+                    "id": "ZNUM_RANGE_DTD",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZNUM_RANGE",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": true,
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2139,6 +2248,60 @@
                         }
                     }
                 },
+                "ZDB_STRUCTURE": {
+                    "type": "Component",
+                    "id": "ZDB_STRUCTURE",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZDB_STRUCTURE",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "APP_CONTROL_ID,SUBMISSION_TYPE,COMPONENT_LEVEL,REQUEST_TYPE_ID,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,FIELD"
+                                        },
+                                        "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
                 "ZAREA": {
                     "type": "Component",
                     "id": "ZAREA",
@@ -2330,7 +2493,7 @@
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "MARRIAGE_CATEGORY_ID,MARRIAGE_CATEGORY_DESC,START_DATE,END_DATE,STATUS"
+                                            "creationFields": "MARRIAGE_STATUS_ID,MARRIAGE_STATUS_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -3545,13 +3708,13 @@
                         }
                     }
                 },
-                "ZDB_STRUCTURE": {
+                "ZDISBURSEMENT_STATUS": {
                     "type": "Component",
-                    "id": "ZDB_STRUCTURE",
+                    "id": "ZDISBURSEMENT_STATUS",
                     "name": "sap.fe.templates.ListReport",
                     "options": {
                         "settings": {
-                            "contextPath": "/ZDB_STRUCTURE",
+                            "contextPath": "/ZDISBURSEMENT_STATUS",
                             "variantManagement": "None",
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
@@ -3571,7 +3734,7 @@
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "APP_CONTROL_ID,SUBMISSION_TYPE,COMPONENT_LEVEL,REQUEST_TYPE_ID,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,FIELD"
+                                            "creationFields": "DISBURSEMENT_STATUS_ID,DISBURSEMENT_STATUS_DESC,START_DATE,END_DATE,STATUS"
                                         },
                                         "disableCopyToClipboard": true
                                     },
@@ -3682,6 +3845,51 @@
                 "ZEMP_DEPENDENT": {
                     "type": "Component",
                     "id": "ZEMP_DEPENDENT",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_DEPENDENT",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": false
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true,
+                                            "showCounts": true
+                                        },
+                                        "disableCopyToClipboard": true,
+                                        "enableMassEdit": false
+                                    },
+                                    "actions": {
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": false,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {}
+                        }
+                    }
+                },
+                "ZEMP_DEPENDENT_DTD": {
+                    "type": "Component",
+                    "id": "ZEMP_DEPENDENT_DTD",
                     "name": "sap.fe.templates.ListReport",
                     "options": {
                         "settings": {

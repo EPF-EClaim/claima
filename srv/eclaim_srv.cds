@@ -1,7 +1,7 @@
 using {ECLAIM} from '../db/eclaim';
 
 @path: 'EmployeeSrv'
-service eclaim_srv {
+service eclaim_srv @(requires: 'authenticated-user') {
     type Response {
         message : String;
     };
@@ -13,11 +13,14 @@ service eclaim_srv {
     }
 
     type budgetdata {
-        YEAR           : String(4);
-        INTERNAL_ORDER : String;
-        FUND_CENTER    : String;
-        MATERIAL_GROUP : String;
-        AMOUNT         : Decimal;
+        YEAR            : String(4);
+        INTERNAL_ORDER  : String;
+        FUND_CENTER     : String;
+        MATERIAL_GROUP  : String;
+        COMMITMENT_ITEM : String;
+        AMOUNT          : Decimal;
+        INDICATOR       : String; //CLM and REQ
+        ACTION          : String; //SUBMIT, REJECT, APPROVE
     }
 
     type BudgetResult {
@@ -25,6 +28,7 @@ service eclaim_srv {
         INTERNAL_ORDER     : String;
         FUND_CENTER        : String;
         MATERIAL_GROUP     : String;
+        COMMITMENT_ITEM    : String;
         AMOUNT             : Decimal(15, 2);
         PREV_CONSUMED      : Decimal(15, 2);
         NEW_CONSUMED       : Decimal(15, 2);
@@ -37,21 +41,23 @@ service eclaim_srv {
         STATUS             : String;
     }
 
-    action   batchCreateEmployee(employees: many ZEMP_MASTER)      returns Response;
+    action   batchCreateEmployee(employees: many ZEMP_MASTER)          returns Response;
 
-    action   batchCreateDependent(dependents: many ZEMP_DEPENDENT) returns Response;
+    action   batchCreateDependent(dependents: many ZEMP_DEPENDENT)     returns Response;
 
-    action   batchCreateCostCenter(costcenters: many ZCOST_CENTER) returns Response;
+    action   batchCreateCostCenter(costcenters: many ZCOST_CENTER)     returns Response;
 
-    action   budgetchecking(budget: many budgetdata)               returns many BudgetResult;
+    action   budgetchecking(budget: many budgetdata)                   returns many BudgetResult;
 
-    entity ZEMP_MASTER                   as projection on ECLAIM.ZEMP_MASTER;
 
     entity ZREQUEST_TYPE                 as projection on ECLAIM.ZREQUEST_TYPE;
 
     entity ZCLAIM_ITEM                   as projection on ECLAIM.ZCLAIM_ITEM;
 
     entity ZREQUEST_HEADER               as projection on ECLAIM.ZREQUEST_HEADER;
+
+    entity ZEMP_MASTER                   as projection on ECLAIM.ZEMP_MASTER;
+
 
     entity ZCLAIM_TYPE                   as
         projection on ECLAIM.ZCLAIM_TYPE {
@@ -176,10 +182,21 @@ service eclaim_srv {
         userId      : String;
     }
 
-    function getUserType()                                         returns UserInfo;
-        
-    action sendEmail(ApproverName: String,SubmissionDate: String,ClaimantName: String,InstanceID: String,ClaimType: String,ClaimID: String,RecipientName: String,Action: String,
-                       ReceiverEmail: String,CCEmail: String,EmailTitle: String,EmailBody: String, NextApproverName: String) returns Response; 
+    function getUserType()                                             returns UserInfo;
+
+    action   sendEmail(ApproverName: String,
+                       SubmissionDate: String,
+                       ClaimantName: String,
+                       InstanceID: String,
+                       ClaimType: String,
+                       ClaimID: String,
+                       RecipientName: String,
+                       Action: String,
+                       ReceiverEmail: String,
+                       CCEmail: String,
+                       EmailTitle: String,
+                       EmailBody: String,
+                       NextApproverName: String)                       returns Response;
 
     entity ZINSURANCE_PACKAGE            as projection on ECLAIM.ZINSURANCE_PACKAGE;
 
@@ -225,6 +242,15 @@ service eclaim_srv {
 
     entity ZDB_STRUCTURE                 as projection on ECLAIM.ZDB_STRUCTURE;
 
-    function runjob()                                              returns Response;
+    function runjob()                                                  returns Response;
+
+    type PreApproveClaims {
+        REQUEST_ID     : String;
+        REQUEST_SUB_ID : String;
+    }
+
+    action   batchUpdatePreApproved(PreApprove: many PreApproveClaims) returns Response;
+
+    entity ZDISBURSEMENT_STATUS          as projection on ECLAIM.ZDISBURSEMENT_STATUS;
 
 };
