@@ -95,7 +95,9 @@ module.exports = (srv) => {
         id: email,
         userType: result?.USER_TYPE || "UNKNOWN",
         costcenters: result?.CC || "UNKNOWN",
-        userId: result?.EEID || "UNKNOWN"
+        userId: result?.EEID || "UNKNOWN",
+        name: result?.NAME || "UNKNOWN", 
+        position: result?.POSITION_NAME || "UNKNOWN"
       };
     });
 
