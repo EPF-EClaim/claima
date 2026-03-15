@@ -36,7 +36,7 @@ sap.ui.define([
 	workflowApproval
 ) {
 	"use strict";
-
+	
 	return Controller.extend("claima.controller.ClaimSubmission", {
 		onInit: function () {
 			this._navContainerDelegate = { onBeforeShow: this.onBeforeShow };
