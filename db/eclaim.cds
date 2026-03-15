@@ -706,8 +706,8 @@ entity ZAREA : managed {
 }
 
 entity ZLOC_TYPE : managed {
-    key LOC_TYPE_ID   : String(6)  @mandatory  @Common.Label: 'LOC_TYPE_ID';
-        LOC_TYPE_DESC : String     @Common.Label: 'LOC_TYPE_DESC';
+    key LOC_TYPE_ID   : String(6)  @mandatory  @Common.Label: 'Location Type ID';
+        LOC_TYPE_DESC : String     @Common.Label: 'Location Type Description';
         START_DATE    : Date       @Common.Label: 'Start Date';
         END_DATE      : Date       @Common.Label: 'End Date';
         STATUS        : String(10) @Common.Label: 'Status';
