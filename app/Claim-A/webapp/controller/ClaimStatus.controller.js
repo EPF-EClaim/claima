@@ -652,11 +652,34 @@ sap.ui.define([
 			var oTable = this.byId("tb_myexpenserepo");
 			var oBinding = oTable && oTable.getBinding("items");
 			if (oBinding) {
-				oBinding.sort(null); // clears sorters; reload without $orderby
+				oBinding.sort(null); // clears sorters; backend reload without $orderby
 			}
+
+			// Clear sort state memory
 			this._mSortState = {};
-			// Optionally reset header sort buttons' icons back to "sap-icon://sort" if you assign IDs.
-		}
+
+			// Reset header icons back to neutral
+			this._resetSortIcons(oTable);
+		},
+
+		/** Reset all sort button icons inside a table to neutral "sort" */
+		_resetSortIcons: function (oTable) {
+			if (!oTable) { return; }
+
+			// Loop through table columns and search their header content
+			oTable.getColumns().forEach(function (oCol) {
+				var oHeader = oCol.getHeader();
+				if (oHeader && oHeader.findAggregatedObjects) {
+					// Find all sap.m.Button controls that have data("path") - our sort buttons
+					var aSortBtns = oHeader.findAggregatedObjects(true, function (oCtrl) {
+						return oCtrl.isA("sap.m.Button") && !!oCtrl.data("path");
+					});
+					aSortBtns.forEach(function (oBtn) {
+						oBtn.setIcon("sap-icon://sort"); // back to neutral
+					});
+				}
+			});
+		},
 
 	});
 });

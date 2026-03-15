@@ -234,14 +234,36 @@ sap.ui.define([
 			);
 		},
 
+
 		onResetSort: function () {
-			var oBinding = this.byId("tb_myrequestform")?.getBinding("items");
+			var oTable = this.byId("tb_myrequestform");
+			var oBinding = oTable?.getBinding("items");
 			if (oBinding) {
 				oBinding.sort(null); // clear sorters -> reload without $orderby
 			}
+			// Clear state
 			this._mSortState = {};
-			// If you assign IDs to header sort buttons, reset their icons back to "sap-icon://sort".
+			this._resetSortIcons(oTable);
+		},
+
+		_resetSortIcons: function (oTable) {
+			if (!oTable) { return; }
+			oTable.getColumns().forEach(function (oCol) {
+				var oHeader = oCol.getHeader();
+				if (oHeader && oHeader.findAggregatedObjects) {
+					// Find all sap.m.Buttons that carry data("path") -> our sort buttons
+					var aSortBtns = oHeader.findAggregatedObjects(true, function (oCtrl) {
+						return oCtrl.isA("sap.m.Button") && !!oCtrl.data("path");
+					});
+					aSortBtns.forEach(function (oBtn) {
+						oBtn.setIcon("sap-icon://sort");
+					});
+				}
+			});
 		}
+
+
+
 
 
 
