@@ -1517,21 +1517,21 @@ sap.ui.define([
 
 			try {
 				var oListBinding = oModel.bindList(
-				"/ZNUM_RANGE",
-				null,
-				null,
-				[
-					new sap.ui.model.Filter({
-					path: "RANGE_ID",
-					operator: sap.ui.model.FilterOperator.EQ,
-					value1: range_id
-					})
-				],
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-					$select: "RANGE_ID,CURRENT,PREFIX"
-				}
+					"/ZNUM_RANGE",
+					null,
+					null,
+					[
+						new sap.ui.model.Filter({
+							path: "RANGE_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: range_id
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$select: "RANGE_ID,CURRENT,PREFIX"
+					}
 				);
 
 				var aCtx = await oListBinding.requestContexts(0, 1);
@@ -1553,20 +1553,20 @@ sap.ui.define([
 
 				// verify result is not in database
 				oListBinding = oModel.bindList(
-				"/ZCLAIM_HEADER",
-				null,
-				null,
-				[
-					new sap.ui.model.Filter({
-					path: "CLAIM_ID",
-					operator: sap.ui.model.FilterOperator.EQ,
-					value1: result
-					})
-				],
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-				}
+					"/ZCLAIM_HEADER",
+					null,
+					null,
+					[
+						new sap.ui.model.Filter({
+							path: "CLAIM_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: result
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+					}
 				);
 
 				aCtx = await oListBinding.requestContexts(0, 1);
@@ -2573,7 +2573,9 @@ sap.ui.define([
 									type: "Transparent",
 									width: "100%",
 									press: function () {
-										window.location.href = "/logout";
+										const sUrl = sap.ui.require.toUrl("/router/logged-out.html");
+										window.location.replace(sUrl);
+
 									}
 								})
 							]
