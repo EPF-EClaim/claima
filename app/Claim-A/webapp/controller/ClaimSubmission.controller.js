@@ -60,8 +60,11 @@ sap.ui.define([
 			if (oClaimSubmissionModel) {
 				this._setEnabledToolbarFooter();
 
+				// disable 'Delete Report' if claim already cancelled
+				this._disableDeleteReport();
+
 				// show approval log fragment for user
-				if (oClaimSubmissionModel.getProperty("/claim_header/status_id" === 'STAT02') || oClaimSubmissionModel.getProperty("/is_approver")) {
+				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === 'STAT02' || oClaimSubmissionModel.getProperty("/is_approver")) {
 					var oPage = this.byId("page_claimsubmission");
 					this._getFormFragment("approval_log").then(function (oVBox) {
 						oPage.insertContent(oVBox, 2);
@@ -1030,6 +1033,16 @@ sap.ui.define([
 			}
 		},
 
+		_disableDeleteReport: function () {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === 'STAT07' && this.byId("button_claimsubmission_deletereport")) {
+				this.byId("button_claimsubmission_deletereport").setEnabled(false);
+			}
+			else {
+				this.byId("button_claimsubmission_deletereport").setEnabled(true);
+			}
+		},
+
 		onSelect_ClaimDetails_ClaimItem: async function (oEvent) {
 			// validate claim item
 			var claimItem = oEvent.getParameters().selectedItem;
@@ -1788,7 +1801,12 @@ sap.ui.define([
 				// assign report number to new claim
 				if (oInputModel.getProperty("/is_new")) {
 					var currentReportNumber = await this._getCurrentReportNumber('NR02');
-					if (currentReportNumber) {
+					var retries = 5;
+					while (retries-- > 0 && currentReportNumber.result === 'X') {
+						await this._updateCurrentReportNumber('NR02', currentReportNumber.current);
+						currentReportNumber = await this._getCurrentReportNumber('NR02');
+					}
+					if (!isNaN(currentReportNumber.result.slice(-1))) {
 						oInputModel.setProperty("/claim_header/claim_id", currentReportNumber.result);
 						oInputModel.setProperty("/reportnumber/reportno", currentReportNumber.result);
 						oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
@@ -1986,14 +2004,17 @@ sap.ui.define([
 					if (oInputModel.getProperty("/claim_items_count") > 0) {
 						await this._updateClaimItems();
 					}
+					MessageToast.show(oMsg);
+					// this._returnToDashboard();
 
 					// determine claims approver
 					if (oAction === 'Submit Report') {
 						var oModelAppr = this.getView().getModel();
 						// ApprovalLog.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
 					}
-					MessageToast.show(oMsg);
-					// this._returnToDashboard();
+					else if (oAction === 'Delete Report') {
+						this._disableDeleteReport();						
+					}
 				}
 
 			} catch (e) {
@@ -2211,7 +2232,7 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel();
 
 			try {
-				const oListBinding = oModel.bindList(
+				var oListBinding = oModel.bindList(
 					"/ZNUM_RANGE",
 					null,
 					null,
@@ -2229,24 +2250,53 @@ sap.ui.define([
 					}
 				);
 
-				const aCtx = await oListBinding.requestContexts(0, 1);
-				const oCtx = aCtx[0];
+				var aCtx = await oListBinding.requestContexts(0, 1);
+				var oCtx = aCtx[0];
 
 				if (!oCtx) {
 					throw new Error(`${range_id} not found`);
 				}
 
-				const row = oCtx.getObject();
+				var row = oCtx.getObject();
 				if (row.CURRENT == null) {
 					throw new Error(`${range_id} missing CURRENT`);
 				}
 
-				const current = Number(row.CURRENT);
-				const prefix = row.PREFIX;
-				const yy = String(new Date().getFullYear()).slice(-2);
-				const result = `${prefix}${yy}${String(current).padStart(9, "0")}`;
+				var current = Number(row.CURRENT);
+				var prefix = row.PREFIX;
+				var yy = String(new Date().getFullYear()).slice(-2);
+				var result = `${prefix}${yy}${String(current).padStart(9, "0")}`;
 
-				return { result, current };
+				// verify result is not in database
+				oListBinding = oModel.bindList(
+				"/ZCLAIM_HEADER",
+				null,
+				null,
+				[
+					new sap.ui.model.Filter({
+					path: "CLAIM_ID",
+					operator: sap.ui.model.FilterOperator.EQ,
+					value1: result
+					})
+				],
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+				}
+				);
+
+				aCtx = await oListBinding.requestContexts(0, 1);
+				oCtx = aCtx[0];
+
+				if (!oCtx) {
+					return { result, current };
+				}
+				else {
+					row = oCtx.getObject();
+					console.warn(`Claim ${oCtx.CLAIM_ID} already exists in DB, please update number range`);
+					result = 'X';
+					return { result, current };
+				}
 
 			} catch (err) {
 				console.error("Error fetching number range:", err);
