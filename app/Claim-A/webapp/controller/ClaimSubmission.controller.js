@@ -593,42 +593,7 @@ sap.ui.define([
 						}.bind(this)
 					);
 					break;
-				// // confirm dialog
-				// var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-				// if (oClaimSubmissionModel.getProperty("is_new")) {
-				// 	// new claim submission
-				// 	this._newDialog(
-				// 		this._getTexti18n("dialog_claimsubmission_back"),
-				// 		this._getTexti18n("label_claimsubmission_back_create"),
-				// 		function () {
-				// 			this.onBack_ClaimSubmission();
-				// 		}.bind(this)
-				// 	);
-				// }
-				// else if (oClaimSubmissionModel.getProperty("is_approver")) {
-				// 	// new claim submission
-				// 	this._newDialog(
-				// 		this._getTexti18n("dialog_claimsubmission_back"),
-				// 		this._getTexti18n("label_claimapprover_back"),
-				// 		function () {
-				// 			this.onBack_ClaimSubmission();
-				// 		}.bind(this)
-				// 	);
-				// }
-				// else {
-				// 	// new claim submission
-				// 	this._newDialog(
-				// 		this._getTexti18n("dialog_claimsubmission_back"),
-				// 		this._getTexti18n("label_claimsubmission_back_change"),
-				// 		function () {
-				// 			this.onBack_ClaimSubmission();
-				// 		}.bind(this)
-				// 	);
-				// }
-				// break;
 				//// Reject
-				//// Reject
-
 				case 'Reject': {
 					
 					// Ensure form model
@@ -770,6 +735,8 @@ sap.ui.define([
 					// 4) Navigate back after small delay (optional)
 					setTimeout(() => {
 						const oRouter = this.getOwnerComponent().getRouter();
+						this.getOwnerComponent().getModel("employee")?.refresh();
+						this.getOwnerComponent().getModel("employee_view")?.refresh();
 						oRouter.navTo("Dashboard", {}, true);
 					}, 400);
 
@@ -833,6 +800,8 @@ sap.ui.define([
 				// Close & navigate
 				if (this.__rejectDialog) this.__rejectDialog.close();
 				setTimeout(() => {
+					this.getOwnerComponent().getModel("employee")?.refresh();
+					this.getOwnerComponent().getModel("employee_view")?.refresh();
 					this.getOwnerComponent().getRouter().navTo("Dashboard", {}, true);
 				}, 400);
 
@@ -903,6 +872,8 @@ sap.ui.define([
 
 				// Navigate out
 				setTimeout(() => {
+					this.getOwnerComponent().getModel("employee")?.refresh();
+					this.getOwnerComponent().getModel("employee_view")?.refresh();
 					this.getOwnerComponent().getRouter().navTo("Dashboard", {}, true);
 				}, 400);
 
@@ -2412,7 +2383,9 @@ sap.ui.define([
 				// return to approver screen
 				this.getMyApproverPAReq();
 				this.getMyApproverClaim();
+				
 				var oRouter = this.getOwnerComponent().getRouter();
+				var sHash = sap.ui.core.routing.HashChanger.getInstance().replaceHash("");
 				oRouter.navTo("MyApproval");
 			}
 			else {
@@ -2423,6 +2396,8 @@ sap.ui.define([
 		_returnToDashboard: function () {
 			var oRouter = this.getOwnerComponent().getRouter();
 			var sHash = sap.ui.core.routing.HashChanger.getInstance().replaceHash("");
+			this.getOwnerComponent().getModel("employee")?.refresh();
+			this.getOwnerComponent().getModel("employee_view")?.refresh();
 			oRouter.navTo("Dashboard");
 		},
 
@@ -2957,8 +2932,11 @@ sap.ui.define([
 		getMyApproverPAReq: async function () {
 			const oReq = this.getOwnerComponent().getModel("request_status");
 			const oModel = this.getOwnerComponent().getModel("employee_view");
+			var userID;
 
-			const userID = this.userId;
+			if (this.getView().getModel("userId")) {
+				userID = this.getView().getModel("userId").getProperty("/userId");
+			}
 			const oApproverOrSub = new sap.ui.model.Filter({
 				filters: [
 					new sap.ui.model.Filter("APPROVER_ID", sap.ui.model.FilterOperator.EQ, userID),
@@ -3014,8 +2992,11 @@ sap.ui.define([
 		getMyApproverClaim: async function () {
 			const oReq = this.getOwnerComponent().getModel("claim_status");
 			const oModel = this.getOwnerComponent().getModel("employee_view");
+			var userID;
 
-			const userID = this.userId;
+			if (this.getView().getModel("userId")) {
+				userID = this.getView().getModel("userId").getProperty("/userId");
+			}
 			const oApproverOrSub = new sap.ui.model.Filter({
 				filters: [
 					new sap.ui.model.Filter("APPROVER_ID", sap.ui.model.FilterOperator.EQ, userID),

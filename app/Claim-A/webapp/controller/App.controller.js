@@ -100,6 +100,11 @@ sap.ui.define([
 				oImageModel.setProperty("/initials", sInitials);
 				oImageModel.setProperty("/userName", sname);
 				oImageModel.setProperty("/position", sposition);
+
+				// save userId to model
+				var oUserIdModel = new JSONModel({ "userId": oData.userId });
+				//// set input
+				this.getView().setModel(oUserIdModel, "userId");
 			}).catch(err => {
 				console.error("getUserType failed:", err);
 				this._userType = "UNKNOWN";
