@@ -2615,7 +2615,7 @@ sap.ui.define([
 									type: "Transparent",
 									width: "100%",
 									press: function () {
-										const sUrl = sap.ui.require.toUrl("/claima/do/logout");
+										const sUrl = sap.ui.require.toUrl("/do/logout");
 										window.location.replace(sUrl);
 
 									}
