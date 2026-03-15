@@ -476,6 +476,7 @@ sap.ui.define([
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			// get value from selected items
+			BusyIndicator.show(0);
 			jQuery.each(items,
 				function (id, value) {
 					itemSubId = value.getCells()[0].getText();
@@ -503,6 +504,7 @@ sap.ui.define([
 
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
+			BusyIndicator.hide();
 		},
 
 		onDelete_ClaimSummary: function (items) {
@@ -1921,11 +1923,11 @@ sap.ui.define([
 						throw new Error("Claim not reachable.");
 					}
 
+					for (const [key, value] of Object.entries(oBody.getData())) {
+						oCtx.setProperty(key, value);
+					}
 					switch (oAction) {
 						case 'Save Draft':
-							for (const [key, value] of Object.entries(oBody.getData())) {
-								oCtx.setProperty(key, value);
-							}
 							var oMsg = this._getTexti18n("msg_claimsubmission_changed");
 							break;
 						case 'Delete Report':
