@@ -77,7 +77,6 @@ sap.ui.define([
 				oReq.setProperty("/approval", []);
 				return [];
 			}
-		},
-
-    };
+		}
+	}
 });

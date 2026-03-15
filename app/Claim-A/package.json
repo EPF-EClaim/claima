@@ -50,7 +50,8 @@
       },
       "[production]": {
         "auth": "xsuaa"
-      }
+      },
+      "destinations": true
     }
   },
   "sapuxLayer": "CUSTOMER_BASE"

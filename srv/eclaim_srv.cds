@@ -20,7 +20,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         COMMITMENT_ITEM : String;
         AMOUNT          : Decimal;
         INDICATOR       : String; //CLM and REQ
-        ACTION          : String; //Submit, Reject, Approve
+        ACTION          : String; //SUBMIT, REJECT, APPROVE
     }
 
     type BudgetResult {
@@ -49,13 +49,15 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     action   budgetchecking(budget: many budgetdata)                   returns many BudgetResult;
 
-    entity ZEMP_MASTER                   as projection on ECLAIM.ZEMP_MASTER;
 
     entity ZREQUEST_TYPE                 as projection on ECLAIM.ZREQUEST_TYPE;
 
     entity ZCLAIM_ITEM                   as projection on ECLAIM.ZCLAIM_ITEM;
 
     entity ZREQUEST_HEADER               as projection on ECLAIM.ZREQUEST_HEADER;
+
+    entity ZEMP_MASTER                   as projection on ECLAIM.ZEMP_MASTER;
+
 
     entity ZCLAIM_TYPE                   as
         projection on ECLAIM.ZCLAIM_TYPE {
@@ -181,6 +183,20 @@ service eclaim_srv @(requires: 'authenticated-user') {
     }
 
     function getUserType()                                             returns UserInfo;
+
+    action   sendEmail(ApproverName: String,
+                       SubmissionDate: String,
+                       ClaimantName: String,
+                       InstanceID: String,
+                       ClaimType: String,
+                       ClaimID: String,
+                       RecipientName: String,
+                       Action: String,
+                       ReceiverEmail: String,
+                       CCEmail: String,
+                       EmailTitle: String,
+                       EmailBody: String,
+                       NextApproverName: String)                       returns Response;
 
     entity ZINSURANCE_PACKAGE            as projection on ECLAIM.ZINSURANCE_PACKAGE;
 

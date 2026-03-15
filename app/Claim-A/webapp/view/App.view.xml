@@ -1,3 +1,4 @@
+
 <mvc:View
     controllerName="claima.controller.App"
     xmlns="sap.m"
@@ -18,7 +19,7 @@
         <tnt:header>
             <f:ShellBar
                 showMenuButton="true"
-                homeIcon="images/EPF Logo Registered@2x.png"
+                homeIcon="./images/EPF Logo Registered@2x.png"
                 menuButtonPressed="onMenuButtonPress"
             />
         </tnt:header>

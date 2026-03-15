@@ -68,24 +68,28 @@ sap.ui.define([
 						that.byId("req_back").setVisible(true);
 						that.byId("req_delete").setVisible(true);
 						that.byId("req_submit").setVisible(true);
+						oReq.setProperty('/view', 'list');
 						break;
 					case 'DELETE':
 						that.byId('req_back_scr').setVisible(true);
 						that.byId("req_back").setVisible(false);
 						that.byId("req_delete").setVisible(false);
 						that.byId("req_submit").setVisible(false);
+						oReq.setProperty('/view', 'view');
 						break;
 					case 'APPROVED':
 						that.byId('req_back_scr').setVisible(true);
 						that.byId("req_back").setVisible(false);
 						that.byId("req_delete").setVisible(false);
 						that.byId("req_submit").setVisible(true);
+						oReq.setProperty('/view', 'list');
 						break;
 					case 'PENDING APPROVAL':
 						that.byId('req_back_scr').setVisible(true);
 						that.byId("req_back").setVisible(false);
 						that.byId("req_delete").setVisible(true);
 						that.byId("req_submit").setVisible(false);
+						oReq.setProperty('/view', 'view');
 						break;
 					default:
 						oReq.setProperty('/view', 'view');

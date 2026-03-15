@@ -835,52 +835,60 @@
 				<u:FileUploader
 					id="fileuploader_claimdetails_input_attachment1"
 					name="fileUploaderClaimDetailsInputAttachment1"
+					placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
 					uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
 					change="onChange_ClaimDetails_Input_Attachment($event ,'1')"
 					uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
 					maximumFileSize='5.0'
 					fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
+					mimeType="application/pdf,image/png,image/jpeg"
 					typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
+					multiple="false"
 					style="Emphasized"
-					fileType="pdf,png,jpg,jpeg"
 					visible="false"
 				>
 				</u:FileUploader>
 
 				<!-- Attachment 1 (Existing) -->
-				<!-- <Button
+				<Label text="{i18n>label_claimdetails_input_attachment1}" />
+				<Button
 					id="button_claimdetails_input_attachment1"
 					icon="sap-icon://attachment"
 					text="{i18n>button_claimdetails_input_viewattachment}"
 					press="onView_Claim_Attachment('child_det','1')"
-					enabled="{= ${claimitem_input>/attachment_file_1} !== null }"
-				/> -->
+					enabled="{= ${claimitem_input>/claim_item/attachment_file_1} !== null }"
+					visible="false"
+				/>
 
 				<!-- Attachment 2 -->
 				<Label text="{i18n>label_claimdetails_input_attachment2}" />
 				<u:FileUploader
 					id="fileuploader_claimdetails_input_attachment2"
 					name="fileUploaderClaimDetailsInputAttachment2"
+					placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
 					uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
 					change="onChange_ClaimDetails_Input_Attachment($event ,'2')"
 					uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
 					maximumFileSize='5.0'
 					fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
+					mimeType="application/pdf,image/png,image/jpeg"
 					typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
+					multiple="false"
 					style="Emphasized"
-					fileType="pdf,png,jpg,jpeg"
 					visible="false"
 				>
+				</u:FileUploader>
 
 				<!-- Attachment 2 (Existing) -->
-				<!-- <Button
+				<Label text="{i18n>label_claimdetails_input_attachment2}" />
+				<Button
 					id="button_claimdetails_input_attachment2"
 					icon="sap-icon://attachment"
 					text="{i18n>button_claimdetails_input_viewattachment}"
 					press="onView_Claim_Attachment('child_det','2')"
-					enabled="{= ${claimitem_input>/attachment_file_2} !== null }"
-				/> -->
-				</u:FileUploader>
+					enabled="{= ${claimitem_input>/claim_item/attachment_file_2} !== null }"
+					visible="false"
+				/>
 			</f:content>
 		</f:SimpleForm>
 	</VBox>
