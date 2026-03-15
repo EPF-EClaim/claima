@@ -19,7 +19,9 @@ sap.ui.define([
 	"claima/utils/PARequestSharedFunction",
 	"claima/utils/Attachment",
 	"claima/utils/ApprovalLog",
-	"claima/utils/workflowApproval"
+	"claima/utils/workflowApproval",
+	"claima/utils/claimstatus",
+	"claima/utils/claim"
 ], function (
 	Device,
 	Controller,
@@ -41,7 +43,9 @@ sap.ui.define([
 	PARequestSharedFunction,
 	ApprovalLog,
 	workflowApproval,
-	Attachment
+	Attachment,
+	claimstatus,
+	claim
 ) {
 	"use strict";
 
@@ -74,6 +78,13 @@ sap.ui.define([
 				var oRouter = this.getOwnerComponent().getRouter();
 				oRouter.navTo("Dashboard");
 			}
+			const oImageModel = new sap.ui.model.json.JSONModel({
+				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png"),
+				initials: "",
+				userName: "",
+				position: ""
+			});
+			this.getView().setModel(oImageModel, "imageModel");
 
 			this._loadCurrentUser();
 
@@ -83,6 +94,12 @@ sap.ui.define([
 				this._userType = oData.userType || "UNKNOWN";
 				this.costcenters = oData.costcenters || "UNKNOWN"; //Added by Aiman Salim 06/03/2026
 				this.userId = oData.userId || "UNKNOWN";
+				const sname = oData.name || "";
+				const sposition = oData.position;
+				const sInitials = sname.substring(0, 2).toUpperCase();
+				oImageModel.setProperty("/initials", sInitials);
+				oImageModel.setProperty("/userName", sname);
+				oImageModel.setProperty("/position", sposition);
 			}).catch(err => {
 				console.error("getUserType failed:", err);
 				this._userType = "UNKNOWN";
@@ -99,20 +116,20 @@ sap.ui.define([
 			// const oReqModel = this._getReqModel().getData();
 			// oReqModel.user = emp_data.eeid;
 			// this._getReqModel().setData(oReqModel);
-			
+
 			// var claimID = "CLM26000000209";
-            // var PARID = "REQ26000000002";
+			// var PARID = "REQ26000000002";
 			// var oModelAppr = this.getView().getModel();
-            // //workflowApproval.onClaimsApproverDetermination(oModelAppr, claimID);
-            // workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
+			// //workflowApproval.onClaimsApproverDetermination(oModelAppr, claimID);
+			// workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
 			// //workflowApproval.onSendEmail();
 		},
-		onPARTest: function(){
+		onPARTest: function () {
 			var PARID = this.byId("PARSubmissionTest").getValue();
 			var oModel = this.getView().getModel();
 			workflowApproval.onPARApproverDetermination(oModel, PARID);
 		},
-		onClaimTest: function(){
+		onClaimTest: function () {
 			var claimID = this.byId("claimSubmissionTest").getValue();
 			var oModel = this.getView().getModel();
 			workflowApproval.onClaimsApproverDetermination(oModel, claimID);
@@ -217,6 +234,8 @@ sap.ui.define([
 				//End Aiman Salim 08/03/2026 - Added for MyApproval
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
 				case "dashboard":
+					this.getOwnerComponent().getModel("employee")?.refresh();
+					this.getOwnerComponent().getModel("employee_view")?.refresh();
 					oRouter.navTo("Dashboard");
 					break;
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
@@ -832,7 +851,7 @@ sap.ui.define([
 				this.byId("text_claiminput_amtapproved").setVisible(true);
 				switch (oInputModel.getProperty("/claimtype/req_emailapprove")) {
 					case true:
-                        // set text for using email approval
+						// set text for using email approval
 						oInputModel.setProperty("/claim_header/request_id", "");
 						oInputModel.setProperty("/claim_header/descr/request_id", this._getTexti18n("text_claiminput_preapprovalreq_email"));
 
@@ -1164,7 +1183,7 @@ sap.ui.define([
 				if (oInputModel.getProperty("/is_new")) {
 					oListBinding = oModel.bindList("/ZCLAIM_HEADER");
 					const oContext = oListBinding.create(oBody.getData());
-					oContext.created().then( async () => {
+					oContext.created().then(async () => {
 						claimSaved = true;
 						await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
 
@@ -1578,8 +1597,8 @@ sap.ui.define([
 				const sPath = `/ZNUM_RANGE(RANGE_ID='${rangeId.replace(/'/g, "''")}')`;
 
 				const oCtxBinding = oModel.bindContext(sPath, null, {
-				$$updateGroupId: sGroup,
-				$$ownRequest: true
+					$$updateGroupId: sGroup,
+					$$ownRequest: true
 				});
 
 				await oCtxBinding.requestObject();
@@ -1595,7 +1614,7 @@ sap.ui.define([
 				console.error("Error updating number range:", err);
 				return null;
 			}
-		}, 
+		},
 
 		onPressClaimDetails: function () {
 			this.getView().byId("expensetypescr").setVisible(false);
@@ -2458,7 +2477,7 @@ sap.ui.define([
 				title: title,
 				type: "Message",
 				state: "None",
-				content: [ new Label({ text: content }) ],
+				content: [new Label({ text: content })],
 				beginButton: new Button({
 					type: "Emphasized",
 					text: this._getTexti18n("button_claimsummary_confirm"),
@@ -2520,6 +2539,78 @@ sap.ui.define([
 					console.error('currentUser failed:', xhr.status, xhr.responseText);
 					sap.m.MessageToast.show('Failed to load user info (currentUser).');
 				}
+			});
+
+		},
+
+		onAvatarPress: function (oEvent) {
+			const oAvatar = oEvent.getSource();
+
+			if (!this._oAvatarPopover) {
+				this._oAvatarPopover = new sap.m.Popover({
+					placement: "Bottom",
+					showHeader: false,
+					content: [
+						new sap.m.VBox({
+							class: "sapUiSmallMargin",
+							items: [
+								new sap.m.Text({
+									text: "{imageModel>/userName}",
+									width: "100%",
+									textAlign: sap.ui.core.TextAlign.Center
+								}),
+								// new sap.m.ToolbarSeparator(),
+								new sap.m.Text({
+									text: "{imageModel>/position}",
+									width: "100%",
+									textAlign: sap.ui.core.TextAlign.Center
+								}),
+
+								// new sap.m.ToolbarSeparator(),
+								// Sign out button
+								new sap.m.Button({
+									text: "Sign Out",
+									type: "Transparent",
+									width: "100%",
+									press: function () {
+										window.location.href = "/logout";
+									}
+								})
+							]
+						})
+					]
+				});
+				this.getView().addDependent(this._oAvatarPopover);
+			}
+
+			// toggle open/close
+			if (this._oAvatarPopover.isOpen()) {
+				this._oAvatarPopover.close();
+			} else {
+				this._oAvatarPopover.openBy(oAvatar);
+			}
+		},
+
+		async openItemFromList(oEvent) {
+			claimstatus.onRowPress({
+				controller: this,
+				event: oEvent,
+				keyProp: "REQUEST_ID",
+				routeName: "RequestForm",
+				modelName: "employee_view",
+				paramName: "request_id"
+			});
+		},
+
+		async onRowPress(oEvent) {
+
+			claim.onRowPress({
+				controller: this,
+				event: oEvent,
+				modelName: "employee_view",
+				keyProp: "CLAIM_ID",
+				navContainerId: "pageContainer",
+				pageId: "navcontainer_claimsubmission"
 			});
 
 		}
