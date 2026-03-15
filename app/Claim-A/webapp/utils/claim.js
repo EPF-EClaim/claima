@@ -7,9 +7,9 @@ sap.ui.define([
 ], function (MessageToast, JSONModel, Filter, FilterOperator, Sorter) {
   "use strict";
 
-  // ---------------------------
-  // Helpers
-  // ---------------------------
+  /* ---------------------------
+   * Helpers
+   * --------------------------- */
   function _parseKeyFromV4Path(path, keyProp) {
     // e.g. /ZEMP_CLAIM_HEADER_VIEW(CLAIM_ID='202600000001')
     const re = new RegExp("\\(.*" + keyProp + "='([^']+)'.*\\)");
@@ -50,17 +50,17 @@ sap.ui.define([
     let oModel = controller.getView().getModel("claimsubmission_input");
     if (oModel) return oModel;
 
-    // 2) component scope
+    // 2) component
     oModel = controller.getOwnerComponent().getModel("claimsubmission_input");
     if (oModel) return oModel;
 
-    // 3) create (default approver=true as in your code)
+    // 3) init
     oModel = new JSONModel({
       claim_header: {},
       claim_items: [],
       claim_items_count: 0,
       is_new: false,
-      is_approver: true
+      is_approver: false
     });
     controller.getOwnerComponent().setModel(oModel, "claimsubmission_input");
     return oModel;
@@ -131,19 +131,24 @@ sap.ui.define([
     };
   }
 
-  // ---------------------------
-  // Data fetchers (moved from controller)
-  // ---------------------------
+  /* ---------------------------
+   * Description helpers
+   * --------------------------- */
   async function _bindEclaimDescr(controller, table, inputValue, idField, descField, inputValue2, idField2) {
     const oModel = controller.getOwnerComponent().getModel();
     let filters = [ new Filter(idField, FilterOperator.EQ, inputValue) ];
-    if (idField2) filters = filters.concat(new Filter(idField2, FilterOperator.EQ, inputValue2));
+    if (idField2) filters.push(new Filter(idField2, FilterOperator.EQ, inputValue2));
 
     const list = oModel.bindList(table, null, null, filters);
-    const aCtx = await list.requestContexts(0, 1);
-    if (aCtx.length > 0) {
-      const row = aCtx[0].getObject();
-      return row[descField];
+    try {
+      const aCtx = await list.requestContexts(0, 1);
+      if (aCtx.length > 0) {
+        const row = aCtx[0].getObject();
+        return row[descField];
+      }
+    } catch (e) {
+      // ignore; will return null
+      // console.error("Descr lookup failed", e);
     }
     return null;
   }
@@ -154,50 +159,55 @@ sap.ui.define([
       new Filter("EEID", FilterOperator.EQ, sEEID)
     ]);
 
-    const aCtx = await list.requestContexts(0, 1);
-    if (aCtx.length === 0) return null;
+    try {
+      const aCtx = await list.requestContexts(0, 1);
+      if (aCtx.length === 0) return null;
 
-    const o = aCtx[0].getObject();
-    return {
-      eeid: o.EEID,
-      name: o.NAME,
-      grade: o.GRADE,
-      cc: o.CC,
-      pos: o.POS,
-      dep: o.DEP,
-      unit_section: o.UNIT_SECTION,
-      b_place: o.B_PLACE,
-      marital: o.MARITAL,
-      job_group: o.JOB_GROUP,
-      office_location: o.OFFICE_LOCATION,
-      address_line1: o.ADDRESS_LINE1,
-      address_line2: o.ADDRESS_LINE2,
-      address_line3: o.ADDRESS_LINE3,
-      postcode: o.POSTCODE,
-      state: o.STATE,
-      country: o.COUNTRY,
-      contact_no: o.CONTACT_NO,
-      email: o.EMAIL,
-      direct_supperior: o.DIRECT_SUPPERIOR,
-      role: o.ROLE,
-      user_type: o.USER_TYPE,
-      mobile_bill_eligibility: o.MOBILE_BILL_ELIGIBILITY,
-      mobile_bill_elig_amount: o.MOBILE_BILL_ELIG_AMOUNT,
-      employee_type: o.EMPLOYEE_TYPE,
-      position_name: o.POSITION_NAME,
-      position_start_date: o.POSITION_START_DATE,
-      position_event_reason: o.POSITION_EVENT_REASON,
-      confirmation_date: o.CONFIRMATION_DATE,
-      effective_date: o.EFFECTIVE_DATE,
-      updated_date: o.UPDATED_DATE,
-      inserted_date: o.INSERTED_DATE,
-      medical_insurance_entitlement: o.MEDICAL_INSURANCE_ENTITLEMENT,
-      descr: {
-        cc: null, dep: null, unit_section: null, marital: null, job_group: null,
-        state: null, country: null, direct_supperior: null, role: null,
-        user_type: null, employee_type: null
-      }
-    };
+      const o = aCtx[0].getObject();
+      return {
+        eeid: o.EEID,
+        name: o.NAME,
+        grade: o.GRADE,
+        cc: o.CC,
+        pos: o.POS,
+        dep: o.DEP,
+        unit_section: o.UNIT_SECTION,
+        b_place: o.B_PLACE,
+        marital: o.MARITAL,
+        job_group: o.JOB_GROUP,
+        office_location: o.OFFICE_LOCATION,
+        address_line1: o.ADDRESS_LINE1,
+        address_line2: o.ADDRESS_LINE2,
+        address_line3: o.ADDRESS_LINE3,
+        postcode: o.POSTCODE,
+        state: o.STATE,
+        country: o.COUNTRY,
+        contact_no: o.CONTACT_NO,
+        email: o.EMAIL,
+        direct_supperior: o.DIRECT_SUPPERIOR,
+        role: o.ROLE,
+        user_type: o.USER_TYPE,
+        mobile_bill_eligibility: o.MOBILE_BILL_ELIGIBILITY,
+        mobile_bill_elig_amount: o.MOBILE_BILL_ELIG_AMOUNT,
+        employee_type: o.EMPLOYEE_TYPE,
+        position_name: o.POSITION_NAME,
+        position_start_date: o.POSITION_START_DATE,
+        position_event_reason: o.POSITION_EVENT_REASON,
+        confirmation_date: o.CONFIRMATION_DATE,
+        effective_date: o.EFFECTIVE_DATE,
+        updated_date: o.UPDATED_DATE,
+        inserted_date: o.INSERTED_DATE,
+        medical_insurance_entitlement: o.MEDICAL_INSURANCE_ENTITLEMENT,
+        descr: {
+          cc: null, dep: null, unit_section: null, marital: null, job_group: null,
+          state: null, country: null, direct_supperior: null, role: null,
+          user_type: null, employee_type: null
+        }
+      };
+    } catch (oError) {
+      // console.error("Error fetching employee detail", oError);
+      return null;
+    }
   }
 
   async function _getEmpDataDescr(controller, oClaimInput) {
@@ -225,14 +235,14 @@ sap.ui.define([
         await _bindEclaimDescr(controller, "/ZJOB_GROUP",
           oClaimInput.getProperty("/emp_master/job_group"), "JOB_GROUP_ID", "JOB_GROUP_DESC"));
     }
-    // office location
+    // office location (depends on state)
     if (oClaimInput.getProperty("/emp_master/office_location")) {
       oClaimInput.setProperty("/emp_master/descr/office_location",
         await _bindEclaimDescr(controller, "/ZOFFICE_LOCATION",
           oClaimInput.getProperty("/emp_master/office_location"), "LOCATION_ID", "LOCATION_DESC",
           oClaimInput.getProperty("/emp_master/state"), "STATE_ID"));
     }
-    // state
+    // state (depends on country)
     if (oClaimInput.getProperty("/emp_master/state")) {
       oClaimInput.setProperty("/emp_master/descr/state",
         await _bindEclaimDescr(controller, "/ZSTATE",
@@ -280,9 +290,9 @@ sap.ui.define([
     }
   }
 
-  // ---------------------------
-  // Load Claim (header + items)
-  // ---------------------------
+  /* ---------------------------
+   * Load Claim (header + items)
+   * --------------------------- */
   async function loadClaimById(controller, sClaimId) {
     const oClaimInput = _getClaimInputModel(controller);
     const oModel = await ensureModelReady(controller, "employee_view");
@@ -295,7 +305,7 @@ sap.ui.define([
       $$ownRequest: true, $count: true, $select: ["*"]
     });
 
-    // Items (values + desc come from same view; we’ll map twice)
+    // Items (desc fields are present in the same view with *_DESC)
     const itm = oModel.bindList("/ZEMP_CLAIM_ITEM_VIEW", null, [ new Sorter("CLAIM_SUB_ID", false) ], filters, {
       $$ownRequest: true, $count: true, $select: ["*"]
     });
@@ -315,12 +325,13 @@ sap.ui.define([
         return { header: null, items: [] };
       }
 
+      // Map header
       const header = _mapClaimHeaderToForm(rawHdr);
       oClaimInput.setProperty("/claim_header", header);
       await _getClaimHeaderDataDescr(controller, oClaimInput);
 
+      // Map items (values + descr)
       const items = aItm.map(ctx => ctx.getObject()).map(it => ({
-        // values
         claim_id: it.CLAIM_ID,
         claim_sub_id: it.CLAIM_SUB_ID,
         claim_type_item_id: it.CLAIM_TYPE_ITEM_ID,
@@ -423,7 +434,7 @@ sap.ui.define([
         travel_days_id: it.TRAVEL_DAYS_ID,
         vehicle_class_id: it.VEHICLE_CLASS_ID,
 
-        // descr (from same view *_DESC fields)
+        // Descriptions (from *_DESC fields)
         descr: {
           claim_type_item_id: it.CLAIM_TYPE_ITEM_DESC,
           claim_category: it.CLAIM_CATEGORY_DESC,
@@ -462,7 +473,7 @@ sap.ui.define([
         }
       }));
 
-      // derive totals if needed
+      // Derive totals if header empty
       const nTotal = items.reduce((s, it) => s + (Number(it.amount) || 0), 0);
       if (!header.total_claim_amount) {
         oClaimInput.setProperty("/claim_header/total_claim_amount", nTotal);
@@ -471,7 +482,7 @@ sap.ui.define([
       oClaimInput.setProperty("/claim_items", items);
       oClaimInput.setProperty("/claim_items_count", items.length);
 
-      // enrich employee master
+      // Enrich employee master
       const empData = await _getEmpIdDetail(controller, oClaimInput.getProperty("/claim_header/emp_id"));
       if (empData) {
         oClaimInput.setProperty("/emp_master", empData);
@@ -480,7 +491,7 @@ sap.ui.define([
 
       return { header: rawHdr, items };
     } catch (err) {
-      console.error("Failed to load claim header/items:", err);
+      // console.error("Failed to load claim header/items:", err);
       oClaimInput.setProperty("/claim_header", {});
       oClaimInput.setProperty("/claim_items", []);
       oClaimInput.setProperty("/claim_items_count", 0);
@@ -488,9 +499,9 @@ sap.ui.define([
     }
   }
 
-  // ---------------------------
-  // Navigation (NavContainer → Page)
-  // ---------------------------
+  /* ---------------------------
+   * Navigation (NavContainer → Page)
+   * --------------------------- */
   async function navToClaimPage(controller, { navContainerId = "pageContainer", pageId = "navcontainer_claimsubmission" } = {}) {
     const root = controller.getOwnerComponent().getRootControl();
     if (!root) throw new Error("Root view not available");
@@ -506,9 +517,9 @@ sap.ui.define([
     nav.to(page);
   }
 
-  // ---------------------------
-  // Main: onRowPress
-  // ---------------------------
+  /* ---------------------------
+   * Main: onRowPress
+   * --------------------------- */
   async function onRowPress({
     controller,
     event,
@@ -529,18 +540,16 @@ sap.ui.define([
         item?.getBindingContext() ||
         null;
 
-      // fallback via selected row if needed
+      // fallback: selected row on known tables
       if (!ctx) {
-        const table =
-          controller.byId("tb_myapproval_claim") || // your approver table
-          controller.byId("claimtable");            // dashboard table
-        const selected = table?.getSelectedItem?.();
-        if (selected) {
+        const t = controller.byId("tb_myapproval_claim") || controller.byId("claimtable");
+        const sel = t?.getSelectedItem?.();
+        if (sel) {
           ctx =
-            selected.getBindingContext(modelName) ||
-            selected.getBindingContext("claim_status2") ||
-            selected.getBindingContext("request_status") ||
-            selected.getBindingContext();
+            sel.getBindingContext(modelName) ||
+            sel.getBindingContext("claim_status2") ||
+            sel.getBindingContext("request_status") ||
+            sel.getBindingContext();
         }
       }
 
@@ -549,10 +558,10 @@ sap.ui.define([
       let id = ctx.getProperty(keyProp) || _parseKeyFromV4Path(ctx.getPath?.(), keyProp);
       if (!id) { MessageToast.show(`${keyProp} is missing on the selected row.`); return; }
 
-      // 1) Load claim
+      // 1) Load data
       await loadClaimById(controller, String(id));
 
-      // 2) Navigate to page in NavContainer
+      // 2) Navigate
       await navToClaimPage(controller, { navContainerId, pageId });
 
     } catch (e) {
@@ -563,9 +572,9 @@ sap.ui.define([
     }
   }
 
-  // ---------------------------
-  // Public API
-  // ---------------------------
+  /* ---------------------------
+   * Public API
+   * --------------------------- */
   return {
     onRowPress,
     loadClaimById,
