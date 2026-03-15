@@ -27,22 +27,9 @@
                             class="sapUiSmallMarginBeginEnd sapUiMediumMarginTopBottom"
                         >
                             <HBox>
-                                <core:Icon
-                                    src="sap-icon://document-text"
-                                    size="25px"
-                                />
-                                <Title
-                                    level="H3"
-                                    text="My Claim Status"
-                                    textAlign="Center"
-                                    class="sapUiSmallMarginBegin"
-                                />
-                                <Title
-                                    level="H3"
-                                    text="{employee>/ZCLAIM_HEADER/$count}"
-                                    textAlign="Center"
-                                    class="sapUiSmallMarginBegin"
-                                />
+                                <core:Icon src="sap-icon://document-text" size="25px" />
+                                <Title level="H3" text="My Claim Status" textAlign="Center" class="sapUiSmallMarginBegin" />
+                                <Title level="H3" text="{employee>/ZCLAIM_HEADER/$count}" textAlign="Center" class="sapUiSmallMarginBegin" />
                             </HBox>
                         </Panel>
                         <Panel
@@ -51,43 +38,23 @@
                             class="sapUiMediumMarginBeginEnd sapUiMediumMarginTopBottom"
                         >
                             <HBox>
-                                <core:Icon
-                                    src="sap-icon://activity-items"
-                                    size="25px"
-                                />
-                                <Title
-                                    level="H3"
-                                    text="My Pre-Approval Status"
-                                    textAlign="Center"
-                                    class="sapUiSmallMarginBegin"
-                                />
-                                <Title
-                                    level="H3"
-                                    text="{employee>/ZREQUEST_HEADER/$count}"
-                                    textAlign="Center"
-                                    class="sapUiSmallMarginBegin"
-                                />
+                                <core:Icon src="sap-icon://activity-items" size="25px" />
+                                <Title level="H3" text="My Pre-Approval Status" textAlign="Center" class="sapUiSmallMarginBegin" />
+                                <Title level="H3" text="{employee>/ZREQUEST_HEADER/$count}" textAlign="Center" class="sapUiSmallMarginBegin" />
                             </HBox>
                         </Panel>
+
                         <Panel
                             width="120%"
                             height="4rem"
                             class="sapUiMediumMarginBeginEnd sapUiMediumMarginTopBottom"
                         >
                             <HBox>
-                                <core:Icon
-                                    src="sap-icon://sys-enter"
-                                    size="25px"
-                                />
+                                <core:Icon src="sap-icon://sys-enter" size="25px" />
+                                <Title level="H3" text="Required Approval" textAlign="Center" class="sapUiSmallMarginBegin" />
                                 <Title
                                     level="H3"
-                                    text="Required Approval"
-                                    textAlign="Center"
-                                    class="sapUiSmallMarginBegin"
-                                />
-                                <Title
-                                    level="H3"
-                                    text="{employee_view>/ZEMP_APPROVER_DETAILS/$count}"
+                                    text="{= ${dashboardModel>/approvals}.length }"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
@@ -102,37 +69,15 @@
                             class="sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom"
                         >
                             <headerToolbar>
-                                <OverflowToolbar
-                                    design="Transparent"
-                                    class="myCardHeaderSticky"
-                                    width="100%"
-                                >
-                                    <core:Icon
-                                        src="sap-icon://document-text"
-                                        size="25px"
-                                    />
-                                    <Title
-                                        level="H3"
-                                        text="{i18n>myexpensesreport} ({employee>/ZCLAIM_HEADER/$count})"
-                                        textAlign="Center"
-                                        class="sapUiSmallMarginBegin"
-                                    />
+                                <OverflowToolbar design="Transparent" class="myCardHeaderSticky" width="100%">
+                                    <core:Icon src="sap-icon://document-text" size="25px" />
+                                    <Title level="H3" text="{i18n>myexpensesreport} ({employee>/ZCLAIM_HEADER/$count})" textAlign="Center" class="sapUiSmallMarginBegin" />
                                     <ToolbarSpacer />
-                                    <Button
-                                        id="dashboard-claim"
-                                        text="See All"
-                                        class="sapUiLargeMarginBegin"
-                                        type="Transparent"
-                                        press="onClickNavigate"
-                                    />
+                                    <Button id="dashboard-claim" text="See All" class="sapUiLargeMarginBegin" type="Transparent" press="onClickNavigate" />
                                 </OverflowToolbar>
                             </headerToolbar>
                             <VBox>
-                                <ScrollContainer
-                                    height="140px"
-                                    vertical="true"
-                                    horizontal="false"
-                                >
+                                <ScrollContainer height="140px" vertical="true" horizontal="false">
                                     <Table
                                         id="claimtable"
                                         items="{ path: 'employee_view>/ZEMP_CLAIM_HEADER_VIEW', sorter : { path : 'LAST_MODIFIED_DATE', descending : true } }"
@@ -144,50 +89,20 @@
                                         itemPress="onRowPress"
                                     >
                                         <columns>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Claim ID" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Purpose" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Status" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Start Date" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Amount(MYR)" />
-                                                </header>
-                                            </Column>
+                                            <Column demandPopin="true"><header><Text text="Claim ID" /></header></Column>
+                                            <Column demandPopin="true"><header><Text text="Purpose" /></header></Column>
+                                            <Column demandPopin="true"><header><Text text="Status" /></header></Column>
+                                            <Column demandPopin="true"><header><Text text="Start Date" /></header></Column>
+                                            <Column demandPopin="true"><header><Text text="Amount(MYR)" /></header></Column>
                                         </columns>
                                         <items>
                                             <ColumnListItem type="Active">
                                                 <cells>
-                                                    <Text
-                                                        text="{employee_view>CLAIM_ID}"
-                                                    />
-                                                    <Text
-                                                        text="{employee_view>PURPOSE}"
-                                                    />
-                                                    <Text
-                                                        text="{employee_view>STATUS_DESC}"
-                                                    />
-                                                    <Text
-                                                        text="{employee_view>TRIP_START_DATE}"
-                                                    />
-                                                    <Text
-                                                        text="{employee_view>TOTAL_CLAIM_AMOUNT}"
-                                                    />
+                                                    <Text text="{employee_view>CLAIM_ID}" />
+                                                    <Text text="{employee_view>PURPOSE}" />
+                                                    <Text text="{employee_view>STATUS_DESC}" />
+                                                    <Text text="{employee_view>TRIP_START_DATE}" />
+                                                    <Text text="{employee_view>TOTAL_CLAIM_AMOUNT}" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>
@@ -204,37 +119,15 @@
                             class="sapUiSmallMarginBeginEnd sapUiTinyMarginTopBottom"
                         >
                             <headerToolbar>
-                                <OverflowToolbar
-                                    design="Transparent"
-                                    class="myCardHeaderSticky"
-                                    width="100%"
-                                >
-                                    <core:Icon
-                                        src="sap-icon://activity-items"
-                                        size="25px"
-                                    />
-                                    <Title
-                                        level="H3"
-                                        text="{i18n>myrequest} ({employee_view>/ZEMP_REQUEST_VIEW/$count})"
-                                        textAlign="Center"
-                                        class="sapUiSmallMarginBegin"
-                                    />
+                                <OverflowToolbar design="Transparent" class="myCardHeaderSticky" width="100%">
+                                    <core:Icon src="sap-icon://activity-items" size="25px" />
+                                    <Title level="H3" text="{i18n>myrequest} ({employee_view>/ZEMP_REQUEST_VIEW/$count})" textAlign="Center" class="sapUiSmallMarginBegin" />
                                     <ToolbarSpacer />
-                                    <Button
-                                        id="dashboard-request"
-                                        text="See All"
-                                        class="sapUiLargeMarginBegin"
-                                        type="Transparent"
-                                        press="onClickNavigate"
-                                    />
+                                    <Button id="dashboard-request" text="See All" class="sapUiLargeMarginBegin" type="Transparent" press="onClickNavigate" />
                                 </OverflowToolbar>
                             </headerToolbar>
                             <VBox>
-                                <ScrollContainer
-                                    height="140px"
-                                    vertical="true"
-                                    horizontal="false"
-                                >
+                                <ScrollContainer height="140px" vertical="true" horizontal="false">
                                     <Table
                                         items="{ path: 'employee_view>/ZEMP_REQUEST_VIEW', sorter : { path : 'modifiedAt', descending: true } }"
                                         growing="true"
@@ -244,50 +137,20 @@
                                         itemPress="openItemFromList"
                                     >
                                         <columns>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Request ID" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Purpose" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Status" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Start Date" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Amount(MYR)" />
-                                                </header>
-                                            </Column>
+                                            <Column demandPopin="true"><header><Text text="Request ID" /></header></Column>
+                                            <Column demandPopin="true"><header><Text text="Purpose" /></header></Column>
+                                            <Column demandPopin="true"><header><Text text="Status" /></header></Column>
+                                            <Column demandPopin="true"><header><Text text="Start Date" /></header></Column>
+                                            <Column demandPopin="true"><header><Text text="Amount(MYR)" /></header></Column>
                                         </columns>
                                         <items>
                                             <ColumnListItem type="Active">
                                                 <cells>
-                                                    <Text
-                                                        text="{employee_view>REQUEST_ID}"
-                                                    />
-                                                    <Text
-                                                        text="{employee_view>OBJECTIVE_PURPOSE}"
-                                                    />
-                                                    <Text
-                                                        text="{employee_view>STATUS_DESC}"
-                                                    />
-                                                    <Text
-                                                        text="{employee_view>REQUEST_DATE}"
-                                                    />
-                                                    <Text
-                                                        text="{employee_view>PREAPPROVAL_AMOUNT}"
-                                                    />
+                                                    <Text text="{employee_view>REQUEST_ID}" />
+                                                    <Text text="{employee_view>OBJECTIVE_PURPOSE}" />
+                                                    <Text text="{employee_view>STATUS_DESC}" />
+                                                    <Text text="{employee_view>REQUEST_DATE}" />
+                                                    <Text text="{employee_view>PREAPPROVAL_AMOUNT}" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>
@@ -296,6 +159,7 @@
                             </VBox>
                         </Panel>
                     </VBox>
+
                     <VBox>
                         <Panel
                             width="80%"
@@ -303,90 +167,41 @@
                             class="sapUiSmallMarginBeginEnd sapUiTinyMarginTopBottom"
                         >
                             <headerToolbar>
-                                <OverflowToolbar
-                                    design="Transparent"
-                                    class="myCardHeaderSticky"
-                                    width="100%"
-                                >
-                                    <core:Icon
-                                        src="sap-icon://sys-enter"
-                                        size="25px"
-                                    />
+                                <OverflowToolbar design="Transparent" class="myCardHeaderSticky" width="100%">
+                                    <core:Icon src="sap-icon://sys-enter" size="25px" />
                                     <Title
                                         level="H3"
-                                        text="{i18n>approval} ({employee_view>/ZEMP_APPROVER_DETAILS/$count})"
+                                        text="{i18n>approval} ({= ${dashboardModel>/approvals}.length })"
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"
                                     />
                                     <ToolbarSpacer />
-                                    <Button
-                                        id="dashboard-approval"
-                                        text="See All"
-                                        class="sapUiLargeMarginBegin"
-                                        type="Transparent"
-                                        press="onClickNavigate"
-                                    />
+                                    <Button id="dashboard-approval" text="See All" class="sapUiLargeMarginBegin" type="Transparent" press="onClickNavigate" />
                                 </OverflowToolbar>
                             </headerToolbar>
                             <VBox>
-                                <ScrollContainer
-                                    height="140px"
-                                    vertical="true"
-                                    horizontal="false"
-                                >
+                                <ScrollContainer height="140px" vertical="true" horizontal="false">
                                     <Table
-                                        items="{ path: 'employee_view>/ZEMP_APPROVER_DETAILS'}"
+                                        items="{dashboardModel>/approvals}"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
                                     >
                                         <columns>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text
-                                                        text="Claim ID/Request ID"
-                                                    />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Purpose" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Status" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Start Date" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Amount(MYR)" />
-                                                </header>
-                                            </Column>
+                                            <Column demandPopin="true"><header><Text text="Claim ID/Request ID" /></header></Column>
+                                            <Column demandPopin="true"><header><Text text="Purpose" /></header></Column>
+                                            <Column demandPopin="true"><header><Text text="Status" /></header></Column>
+                                            <Column demandPopin="true"><header><Text text="Start Date" /></header></Column>
+                                            <Column demandPopin="true"><header><Text text="Amount(MYR)" /></header></Column>
                                         </columns>
                                         <items>
                                             <ColumnListItem>
                                                 <cells>
-                                                    <Text
-                                                        text="{employee_view>ID}"
-                                                    />
-                                                    <Text
-                                                        text="{employee_view>PURPOSE}"
-                                                    />
-                                                    <Text
-                                                        text="{employee_view>STATUS_DESC}"
-                                                    />
-                                                    <Text
-                                                        text="{employee_view>REQUEST_DATE}"
-                                                    />
-                                                    <Text
-                                                        text="{employee_view>AMOUNT}"
-                                                    />
+                                                    <Text text="{dashboardModel>ID}" />
+                                                    <Text text="{dashboardModel>PURPOSE}" />
+                                                    <Text text="{dashboardModel>STATUS_DESC}" />
+                                                    <Text text="{dashboardModel>REQUEST_DATE}" />
+                                                    <Text text="{dashboardModel>AMOUNT}" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>
