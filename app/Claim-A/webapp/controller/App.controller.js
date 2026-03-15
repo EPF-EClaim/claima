@@ -19,7 +19,9 @@ sap.ui.define([
 	"claima/utils/PARequestSharedFunction",
 	"claima/utils/Attachment",
 	"claima/utils/ApprovalLog",
-	"claima/utils/workflowApproval"
+	"claima/utils/workflowApproval",
+	"claima/utils/claimstatus",
+	"claima/utils/claim"
 ], function (
 	Device,
 	Controller,
@@ -41,7 +43,9 @@ sap.ui.define([
 	PARequestSharedFunction,
 	ApprovalLog,
 	workflowApproval,
-	Attachment
+	Attachment,
+	claimstatus,
+	claim
 ) {
 	"use strict";
 
@@ -77,7 +81,8 @@ sap.ui.define([
 			const oImageModel = new sap.ui.model.json.JSONModel({
 				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png"),
 				initials: "",
-				userName: ""
+				userName: "",
+				position: ""
 			});
 			this.getView().setModel(oImageModel, "imageModel");
 
@@ -90,9 +95,11 @@ sap.ui.define([
 				this.costcenters = oData.costcenters || "UNKNOWN"; //Added by Aiman Salim 06/03/2026
 				this.userId = oData.userId || "UNKNOWN";
 				const sname = oData.name || "";
+				const sposition = oData.position;
 				const sInitials = sname.substring(0, 2).toUpperCase();
 				oImageModel.setProperty("/initials", sInitials);
-				oImageModel.setProperty("/userName", sName);
+				oImageModel.setProperty("/userName", sname);
+				oImageModel.setProperty("/position", sposition);
 			}).catch(err => {
 				console.error("getUserType failed:", err);
 				this._userType = "UNKNOWN";
@@ -2512,33 +2519,22 @@ sap.ui.define([
 						new sap.m.VBox({
 							class: "sapUiSmallMargin",
 							items: [
-								// Avatar inside popover
-								new sap.m.HBox({
-									class: "sapUiSmallMarginBottom",
-									items: [
-										new sap.m.Avatar({
-											initials: "{imageModel>/initials}",
-											displaySize: "M"
-										}),
-										new sap.m.VBox({
-											class: "sapUiSmallMarginBegin",
-											items: [
-												new sap.m.Title({
-													text: "{imageModel>/userName}"
-												}),
-												new sap.m.Text({
-													text: "{imageModel>/userType}"
-												})
-											]
-										})
-									]
+								new sap.m.Text({
+									text: "{imageModel>/userName}",
+									width: "100%",
+									textAlign: sap.ui.core.TextAlign.Center
 								}),
-								// Divider
-								new sap.m.ToolbarSeparator(),
+								// new sap.m.ToolbarSeparator(),
+								new sap.m.Text({
+									text: "{imageModel>/position}",
+									width: "100%",
+									textAlign: sap.ui.core.TextAlign.Center
+								}),
+
+								// new sap.m.ToolbarSeparator(),
 								// Sign out button
 								new sap.m.Button({
 									text: "Sign Out",
-									icon: "sap-icon://log",
 									type: "Transparent",
 									width: "100%",
 									press: function () {
@@ -2559,6 +2555,30 @@ sap.ui.define([
 				this._oAvatarPopover.openBy(oAvatar);
 			}
 		},
+
+		async openItemFromList(oEvent) {
+			claimstatus.onRowPress({
+				controller: this,
+				event: oEvent,
+				keyProp: "REQUEST_ID",
+				routeName: "RequestForm",
+				modelName: "employee_view",
+				paramName: "request_id"
+			});
+		},
+
+		async onRowPress(oEvent) {
+
+			claim.onRowPress({
+				controller: this,
+				event: oEvent,
+				modelName: "employee_view",
+				keyProp: "CLAIM_ID",
+				navContainerId: "pageContainer",
+				pageId: "navcontainer_claimsubmission"
+			});
+
+		}
 
 	});
 });
