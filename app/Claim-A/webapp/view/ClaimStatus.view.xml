@@ -86,7 +86,7 @@
                         </header>
                     </Column>
 
-                    <Column hAlign="End">
+                    <Column>
                         <header>
                             <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
                                 <Text text="Amount (MYR)"/>
