@@ -971,6 +971,7 @@ entity ZPERDIEM_ENT : managed {
     key EFFECTIVE_END_DATE   : Date          @mandatory  @Common.Label: 'Effective End Date';
         CURRENCY             : String(3)     @Common.Label: 'Currency';
         AMOUNT               : Decimal(7, 2) @Common.Label: 'Amount';
+        STATUS               : String(10)    @Common.Label: 'Status';
         ZCLAIM_TYPE_ITEM     : Association to one ZCLAIM_TYPE_ITEM
                                    on  ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID
                                    and ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID      = CLAIM_TYPE_ID;
@@ -1241,6 +1242,7 @@ entity ZELIGIBILITY_RULE : managed {
         TRAVEL_HOURS              : Integer        @Common.Label: 'Travel Hours';
         AGING_NUMBER              : Integer        @Common.Label: 'Aging Number';
         AGING_PERIOD              : String(2)      @Common.Label: 'Period Number';
+        STATUS                    : String(10)     @Common.Label: 'Status';
         ZEMP_TYPE                 : Association to ZEMP_TYPE
                                         on ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;
         ZROLE                     : Association to ZROLE
