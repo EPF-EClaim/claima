@@ -1,7 +1,8 @@
 // claima/utils/ApprovalFlow.js
 sap.ui.define([
     "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator"
+    "sap/ui/model/FilterOperator",
+    // "./FinalApproveStep"
 ], function (Filter, FilterOperator) {
     "use strict";
 
@@ -83,6 +84,7 @@ sap.ui.define([
         } else {
             // No next level → final approval
             console.log("No further approvers found. Proceed to Final Approve Step");
+            FinalApproveStep.onFinalApprove(oModel, payload.claimID, 'STAT05');
         }
 
         // STEP 5: Fetch data for Email

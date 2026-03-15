@@ -204,6 +204,10 @@ sap.ui.define([
 					// 	sap.m.MessageBox.error(message);
 					// }
 					break;
+				case "mysendingIS":
+                    var oRouter = this.getOwnerComponent().getRouter();
+                    oRouter.navTo("SendingIS");
+                    break;
 				case "config":
 					//Start EY_ATHIRAH
 					if (type === "DTD Admin" || type === "JKEW Admin" || type === "Super Admin") {
