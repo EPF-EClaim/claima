@@ -8,18 +8,21 @@ sap.ui.define([
 	"sap/ui/core/Fragment",
 	"sap/ui/export/Spreadsheet",
 	"sap/ui/core/BusyIndicator",
-	"claima/utils/PARequestSharedFunction"
-], function (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator, PARequestSharedFunction) {
+	"claima/utils/PARequestSharedFunction",
+	"sap/ui/model/Sorter"
+], function (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator, PARequestSharedFunction, Sorter) {
 	"use strict";
 
 	return Controller.extend("claima.controller.RequestFormStatus", {
- 
+
 		/* =========================================================
 		* Lifecycle
 		* ======================================================= */
 		onInit() {
 			// initialize PAR Status List
 			PARequestSharedFunction.getPARHeaderList(this._getReqStatModel(), this._getViewModel());
+			//For Sort
+			this._mSortState = {};
 		},
 
 		/* =========================================================
@@ -37,19 +40,19 @@ sap.ui.define([
 		_getViewModel() {
 			return this.getOwnerComponent().getModel("employee_view");
 		},
-		
+
 		/* =========================================================
 		* Main Logic
 		* ======================================================= */
 
 
 
-        async openItemFromList(oEvent) {
+		async openItemFromList(oEvent) {
 			try {
 				this.getView().setBusy(true);
 
 				const oReqModel = this._getReqModel();
-				const oTable    = this.byId("tb_myrequestform");
+				const oTable = this.byId("tb_myrequestform");
 
 				let oCtx = oEvent?.getParameter?.("listItem")?.getBindingContext("request");
 
@@ -82,7 +85,7 @@ sap.ui.define([
 					],
 					{
 						$$ownRequest: true,
-						$$groupId   : "$auto"
+						$$groupId: "$auto"
 					}
 				);
 
@@ -96,32 +99,32 @@ sap.ui.define([
 				}
 
 				oReqModel.setProperty("/req_header", {
-					purpose       	: oData.OBJECTIVE_PURPOSE     	|| "",
-					reqtype       	: oData.REQUEST_TYPE_DESC     	|| "",
-					tripstartdate 	: oData.TRIP_START_DATE       	|| "",
-					tripenddate   	: oData.TRIP_END_DATE         	|| "",
-					eventstartdate	: oData.EVENT_START_DATE      	|| "",
-					eventenddate  	: oData.EVENT_END_DATE        	|| "",
-					grptype       	: oData.IND_OR_GROUP_DESC     	|| "",
-					location      	: oData.LOCATION              	|| "",
-					transport     	: oData.TYPE_OF_TRANSPORTATION	|| "",
-					altcostcenter 	: oData.ALTERNATE_COST_CENTER 	|| "",
-					doc1          	: oData.ATTACHMENT1           	|| "",
-					doc2          	: oData.ATTACHMENT2           	|| "",
-					comment       	: oData.REMARK                	|| "",
-					eventdetail1  	: oData.EVENT_FIELD1          	|| "",
-					eventdetail2  	: oData.EVENT_FIELD2          	|| "",
-					eventdetail3  	: oData.EVENT_FIELD3          	|| "",
-					eventdetail4  	: oData.EVENT_FIELD4          	|| "",
-					reqid         	: oData.REQUEST_ID            	|| "",
-					reqstatus     	: oData.STATUS_DESC           	|| "",
-					reqstatus_id  	: oData.STATUS_ID			  	|| "",
-					costcenter    	: oData.COST_CENTER           	|| "",
-					cashadvamt    	: oData.CASH_ADVANCE          	|| 0,
-					reqamt        	: oData.PREAPPROVAL_AMOUNT    	|| 0,
-					claimtype     	: oData.CLAIM_TYPE_ID       	|| "",
-					claimtypedesc  	: oData.CLAIM_TYPE_DESC		  	|| "",
-					reqdate			: oData.REQUEST_DATE
+					purpose: oData.OBJECTIVE_PURPOSE || "",
+					reqtype: oData.REQUEST_TYPE_DESC || "",
+					tripstartdate: oData.TRIP_START_DATE || "",
+					tripenddate: oData.TRIP_END_DATE || "",
+					eventstartdate: oData.EVENT_START_DATE || "",
+					eventenddate: oData.EVENT_END_DATE || "",
+					grptype: oData.IND_OR_GROUP_DESC || "",
+					location: oData.LOCATION || "",
+					transport: oData.TYPE_OF_TRANSPORTATION || "",
+					altcostcenter: oData.ALTERNATE_COST_CENTER || "",
+					doc1: oData.ATTACHMENT1 || "",
+					doc2: oData.ATTACHMENT2 || "",
+					comment: oData.REMARK || "",
+					eventdetail1: oData.EVENT_FIELD1 || "",
+					eventdetail2: oData.EVENT_FIELD2 || "",
+					eventdetail3: oData.EVENT_FIELD3 || "",
+					eventdetail4: oData.EVENT_FIELD4 || "",
+					reqid: oData.REQUEST_ID || "",
+					reqstatus: oData.STATUS_DESC || "",
+					reqstatus_id: oData.STATUS_ID || "",
+					costcenter: oData.COST_CENTER || "",
+					cashadvamt: oData.CASH_ADVANCE || 0,
+					reqamt: oData.PREAPPROVAL_AMOUNT || 0,
+					claimtype: oData.CLAIM_TYPE_ID || "",
+					claimtypedesc: oData.CLAIM_TYPE_DESC || "",
+					reqdate: oData.REQUEST_DATE
 				});
 
 				await this._getItemList(sReqId);
@@ -142,8 +145,8 @@ sap.ui.define([
 				this.getView().setBusy(false);
 			}
 		},
-		
-        async _getItemList(req_id) {
+
+		async _getItemList(req_id) {
 			const oReq = this._getReqModel();
 
 			if (!req_id) {
@@ -202,6 +205,46 @@ sap.ui.define([
 				return [];
 			}
 		},
-		
+
+		//Added for sorter;
+
+
+		onSortToggle: function (oEvent) {
+			var sPath = oEvent.getSource().data("path");
+			if (!sPath) { return; }
+
+			var oTable = this.byId("tb_myrequestform");
+			if (!oTable) { return; }
+
+			var oBinding = oTable.getBinding("items");
+			if (!oBinding) { return; }
+
+			// Toggle current direction for this path
+			var bDesc = !!this._mSortState[sPath];
+
+			// OData V4: do NOT pass a comparator; backend applies $orderby
+			var oSorter = new Sorter(sPath, bDesc);
+
+			oBinding.sort([oSorter]); // triggers a backend request with $orderby
+
+			// Flip for next click and update the icon for feedback
+			this._mSortState[sPath] = !bDesc;
+			oEvent.getSource().setIcon(
+				this._mSortState[sPath] ? "sap-icon://sort-descending" : "sap-icon://sort-ascending"
+			);
+		},
+
+		onResetSort: function () {
+			var oBinding = this.byId("tb_myrequestform")?.getBinding("items");
+			if (oBinding) {
+				oBinding.sort(null); // clear sorters -> reload without $orderby
+			}
+			this._mSortState = {};
+			// If you assign IDs to header sort buttons, reset their icons back to "sap-icon://sort".
+		}
+
+
+
+
 	});
 });
