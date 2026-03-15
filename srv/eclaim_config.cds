@@ -2273,9 +2273,10 @@ annotate service.ZPERDIEM_ENT with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey             : [
-        PERSONAL_GRADE_FROM,
-        PERSONAL_GRADE_TO,
+        PERSONAL_GRADE,        
         LOCATION,
+        CLAIM_TYPE_ID,
+        CLAIM_TYPE_ITEM_ID,
         EFFECTIVE_START_DATE,
         EFFECTIVE_END_DATE
     ],
@@ -2297,22 +2298,16 @@ annotate service.ZPERDIEM_ENT with @(
         LineItem    : [
             {
                 $Type            : 'UI.DataField',
-                Value            : PERSONAL_GRADE_FROM,
+                Value            : PERSONAL_GRADE,
                 ![@UI.Importance]: #High,
-                Label            : 'Personal Grade From'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : PERSONAL_GRADE_TO,
-                ![@UI.Importance]: #High,
-                Label            : 'Personal Grade To'
+                Label            : 'Personal Grade'
             },
             {
                 $Type            : 'UI.DataField',
                 Value            : LOCATION,
                 ![@UI.Importance]: #High,
                 Label            : 'Location'
-            },
+            },                                               
             {
                 $Type            : 'UI.DataField',
                 Value            : EFFECTIVE_START_DATE,
