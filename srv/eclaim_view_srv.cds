@@ -37,7 +37,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 PREAPPROVAL_AMOUNT,
                 TOTAL_AMOUNT,
                 REQUEST_DATE,
-                createdBy
+                createdBy, 
+                modifiedAt
         };
 
 
