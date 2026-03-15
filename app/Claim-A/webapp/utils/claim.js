@@ -1,124 +1,313 @@
 sap.ui.define([
   "sap/m/MessageToast",
+  "sap/ui/model/json/JSONModel",
   "sap/ui/model/Filter",
   "sap/ui/model/FilterOperator",
   "sap/ui/model/Sorter"
-], function (MessageToast, Filter, FilterOperator, Sorter) {
+], function (MessageToast, JSONModel, Filter, FilterOperator, Sorter) {
   "use strict";
 
-  // ------------------------------ helpers ------------------------------
-
-  function parseKeyFromV4Path(path, keyProp) {
-    // e.g. "/ZEMP_CLAIM_HEADER_VIEW(CLAIM_ID='12345')"
+  // ---------------------------
+  // Helpers
+  // ---------------------------
+  function _parseKeyFromV4Path(path, keyProp) {
+    // e.g. /ZEMP_CLAIM_HEADER_VIEW(CLAIM_ID='202600000001')
     const re = new RegExp("\\(.*" + keyProp + "='([^']+)'.*\\)");
     const m = re.exec(path || "");
     return m ? m[1] : null;
   }
 
-  function getClaimInputModel(controller) {
-    let oModel = controller.getView()?.getModel("claimsubmission_input");
-    if (oModel) return oModel;
-
-    oModel = controller.getOwnerComponent().getModel("claimsubmission_input");
-    if (oModel) return oModel;
-
-    oModel = new sap.ui.model.json.JSONModel({
-      claim_header: {},
-      claim_items: [],
-      claim_items_count: 0
-    });
-    controller.getOwnerComponent().setModel(oModel, "claimsubmission_input");
-    return oModel;
-  }
-
-  function mapClaimHeaderToForm(o) {
-    return {
-      purpose: o.PURPOSE || "",
-      claim_id: o.CLAIM_ID || "",
-      trip_start_date: o.TRIP_START_DATE || "",
-      trip_end_date: o.TRIP_END_DATE || "",
-      event_start_date: o.EVENT_START_DATE || "",
-      event_end_date: o.EVENT_END_DATE || "",
-      comment: o.COMMENT || "",
-      location: o.LOCATION || "",
-      cost_center: o.COST_CENTER || "",
-      alternate_cost_center: o.ALTERNATE_COST_CENTER || "",
-      status_id: o.STATUS || "",
-      total_claim_amount: o.TOTAL_CLAIM_AMOUNT || 0,
-      cash_advance_amount: o.CASH_ADVANCE_AMOUNT || 0,
-      final_amount_to_receive: o.FINAL_AMOUNT_TO_RECEIVE || 0
-    };
-  }
-
-  function waitForModel(controller, name) {
+  function _waitForModel(controller, name) {
     return new Promise((resolve) => {
       const check = () => {
         const m = controller.getOwnerComponent().getModel(name);
-        if (m) { resolve(m); } else { setTimeout(check, 40); }
+        if (m) resolve(m); else setTimeout(check, 40);
       };
       check();
     });
   }
 
   async function ensureModelReady(controller, name) {
-    const oModel = await waitForModel(controller, name);
-    // V4
+    const oModel = await _waitForModel(controller, name);
+    // OData V4
     if (oModel?.getMetaModel?.()?.requestObject) {
       try {
         await oModel.getMetaModel().requestObject("/$EntityContainer");
-      } catch (e) {
+      } catch (_e) {
         await oModel.getMetaModel().requestObject("/");
       }
       return oModel;
     }
-    // V2
+    // OData V2
     if (oModel?.metadataLoaded) {
       await oModel.metadataLoaded();
     }
     return oModel;
   }
 
-  // ------------------------------ data loading ------------------------------
+  function _getClaimInputModel(controller) {
+    // 1) try view
+    let oModel = controller.getView().getModel("claimsubmission_input");
+    if (oModel) return oModel;
 
-  async function loadClaimById({ controller, claimId }) {
-    const oClaimInput = getClaimInputModel(controller);
+    // 2) component scope
+    oModel = controller.getOwnerComponent().getModel("claimsubmission_input");
+    if (oModel) return oModel;
+
+    // 3) create (default approver=true as in your code)
+    oModel = new JSONModel({
+      claim_header: {},
+      claim_items: [],
+      claim_items_count: 0,
+      is_new: false,
+      is_approver: true
+    });
+    controller.getOwnerComponent().setModel(oModel, "claimsubmission_input");
+    return oModel;
+  }
+
+  function _mapClaimHeaderToForm(o) {
+    return {
+      claim_id: o.CLAIM_ID,
+      emp_id: o.EMP_ID,
+      purpose: o.PURPOSE,
+      trip_start_date: o.TRIP_START_DATE,
+      trip_end_date: o.TRIP_END_DATE,
+      event_start_date: o.EVENT_START_DATE,
+      event_end_date: o.EVENT_END_DATE,
+      submission_type: o.SUBMISSION_TYPE,
+      comment: o.COMMENT,
+      alternate_cost_center: o.ALTERNATE_COST_CENTER,
+      cost_center: o.COST_CENTER,
+      request_id: o.REQUEST_ID,
+      attachment_email_approver: o.ATTACHMENT_EMAIL_APPROVER,
+      status_id: o.STATUS_ID,
+      claim_type_id: o.CLAIM_TYPE_ID,
+      total_claim_amount: o.TOTAL_CLAIM_AMOUNT,
+      final_amount_to_receive: o.FINAL_AMOUNT_TO_RECEIVE,
+      last_modified_date: o.LAST_MODIFIED_DATE,
+      submitted_date: o.SUBMITTED_DATE,
+      last_approved_date: o.LAST_APPROVED_DATE,
+      last_approved_time: o.LAST_APPROVED_TIME,
+      payment_date: o.PAYMENT_DATE,
+      location: o.LOCATION,
+      spouse_office_address: o.SPOUSE_OFFICE_ADDRESS,
+      house_completion_date: o.HOUSE_COMPLETION_DATE,
+      move_in_date: o.MOVE_IN_DATE,
+      housing_loan_scheme: o.HOUSING_LOAN_SCHEME,
+      lender_name: o.LENDER_NAME,
+      specify_details: o.SPECIFY_DETAILS,
+      new_house_address: o.NEW_HOUSE_ADDRESS,
+      dist_old_house_to_office_km: o.DIST_OLD_HOUSE_TO_OFFICE_KM,
+      dist_old_house_to_new_house_km: o.DIST_OLD_HOUSE_TO_NEW_HOUSE_KM,
+      approver1: null,
+      approver2: null,
+      approver3: null,
+      approver4: null,
+      approver5: null,
+      last_send_back_date: null,
+      course_code: null,
+      project_code: null,
+      cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
+      preapproved_amount: o.PREAPPROVED_AMOUNT,
+      reject_reason_id: null,
+      send_back_reason_id: null,
+      last_send_back_time: null,
+      reject_reason_date: null,
+      reject_reason_time: null,
+      descr: {
+        submission_type: null,
+        alternate_cost_center: o.ALT_COST_CENTER_DESC,
+        cost_center: o.COST_CENTER_DESC,
+        request_id: null,
+        status_id: o.STATUS_DESC,
+        claim_type_id: o.CLAIM_TYPE_DESC,
+        housing_loan_scheme: null,
+        lender_name: null,
+        course_code: null,
+        project_code: null,
+        attachment_email_approver: null
+      }
+    };
+  }
+
+  // ---------------------------
+  // Data fetchers (moved from controller)
+  // ---------------------------
+  async function _bindEclaimDescr(controller, table, inputValue, idField, descField, inputValue2, idField2) {
+    const oModel = controller.getOwnerComponent().getModel();
+    let filters = [ new Filter(idField, FilterOperator.EQ, inputValue) ];
+    if (idField2) filters = filters.concat(new Filter(idField2, FilterOperator.EQ, inputValue2));
+
+    const list = oModel.bindList(table, null, null, filters);
+    const aCtx = await list.requestContexts(0, 1);
+    if (aCtx.length > 0) {
+      const row = aCtx[0].getObject();
+      return row[descField];
+    }
+    return null;
+  }
+
+  async function _getEmpIdDetail(controller, sEEID) {
+    const oModel = controller.getOwnerComponent().getModel();
+    const list = oModel.bindList("/ZEMP_MASTER", null, null, [
+      new Filter("EEID", FilterOperator.EQ, sEEID)
+    ]);
+
+    const aCtx = await list.requestContexts(0, 1);
+    if (aCtx.length === 0) return null;
+
+    const o = aCtx[0].getObject();
+    return {
+      eeid: o.EEID,
+      name: o.NAME,
+      grade: o.GRADE,
+      cc: o.CC,
+      pos: o.POS,
+      dep: o.DEP,
+      unit_section: o.UNIT_SECTION,
+      b_place: o.B_PLACE,
+      marital: o.MARITAL,
+      job_group: o.JOB_GROUP,
+      office_location: o.OFFICE_LOCATION,
+      address_line1: o.ADDRESS_LINE1,
+      address_line2: o.ADDRESS_LINE2,
+      address_line3: o.ADDRESS_LINE3,
+      postcode: o.POSTCODE,
+      state: o.STATE,
+      country: o.COUNTRY,
+      contact_no: o.CONTACT_NO,
+      email: o.EMAIL,
+      direct_supperior: o.DIRECT_SUPPERIOR,
+      role: o.ROLE,
+      user_type: o.USER_TYPE,
+      mobile_bill_eligibility: o.MOBILE_BILL_ELIGIBILITY,
+      mobile_bill_elig_amount: o.MOBILE_BILL_ELIG_AMOUNT,
+      employee_type: o.EMPLOYEE_TYPE,
+      position_name: o.POSITION_NAME,
+      position_start_date: o.POSITION_START_DATE,
+      position_event_reason: o.POSITION_EVENT_REASON,
+      confirmation_date: o.CONFIRMATION_DATE,
+      effective_date: o.EFFECTIVE_DATE,
+      updated_date: o.UPDATED_DATE,
+      inserted_date: o.INSERTED_DATE,
+      medical_insurance_entitlement: o.MEDICAL_INSURANCE_ENTITLEMENT,
+      descr: {
+        cc: null, dep: null, unit_section: null, marital: null, job_group: null,
+        state: null, country: null, direct_supperior: null, role: null,
+        user_type: null, employee_type: null
+      }
+    };
+  }
+
+  async function _getEmpDataDescr(controller, oClaimInput) {
+    // cost center
+    if (oClaimInput.getProperty("/emp_master/cc")) {
+      oClaimInput.setProperty("/emp_master/descr/cc",
+        await _bindEclaimDescr(controller, "/ZCOST_CENTER",
+          oClaimInput.getProperty("/emp_master/cc"), "COST_CENTER_ID", "COST_CENTER_DESC"));
+    }
+    // department
+    if (oClaimInput.getProperty("/emp_master/dep")) {
+      oClaimInput.setProperty("/emp_master/descr/dep",
+        await _bindEclaimDescr(controller, "/ZDEPARTMENT",
+          oClaimInput.getProperty("/emp_master/dep"), "DEPARTMENT_ID", "DEPARTMENT_DESC"));
+    }
+    // branch / unit section
+    if (oClaimInput.getProperty("/emp_master/unit_section")) {
+      oClaimInput.setProperty("/emp_master/descr/unit_section",
+        await _bindEclaimDescr(controller, "/ZBRANCH",
+          oClaimInput.getProperty("/emp_master/unit_section"), "BRANCH_ID", "BRANCH_DESC"));
+    }
+    // job group
+    if (oClaimInput.getProperty("/emp_master/job_group")) {
+      oClaimInput.setProperty("/emp_master/descr/job_group",
+        await _bindEclaimDescr(controller, "/ZJOB_GROUP",
+          oClaimInput.getProperty("/emp_master/job_group"), "JOB_GROUP_ID", "JOB_GROUP_DESC"));
+    }
+    // office location
+    if (oClaimInput.getProperty("/emp_master/office_location")) {
+      oClaimInput.setProperty("/emp_master/descr/office_location",
+        await _bindEclaimDescr(controller, "/ZOFFICE_LOCATION",
+          oClaimInput.getProperty("/emp_master/office_location"), "LOCATION_ID", "LOCATION_DESC",
+          oClaimInput.getProperty("/emp_master/state"), "STATE_ID"));
+    }
+    // state
+    if (oClaimInput.getProperty("/emp_master/state")) {
+      oClaimInput.setProperty("/emp_master/descr/state",
+        await _bindEclaimDescr(controller, "/ZSTATE",
+          oClaimInput.getProperty("/emp_master/state"), "STATE_ID", "STATE_DESC",
+          oClaimInput.getProperty("/emp_master/country"), "COUNTRY_ID"));
+    }
+    // country
+    if (oClaimInput.getProperty("/emp_master/country")) {
+      oClaimInput.setProperty("/emp_master/descr/country",
+        await _bindEclaimDescr(controller, "/ZCOUNTRY",
+          oClaimInput.getProperty("/emp_master/country"), "COUNTRY_ID", "COUNTRY_DESC"));
+    }
+    // role
+    if (oClaimInput.getProperty("/emp_master/role")) {
+      oClaimInput.setProperty("/emp_master/descr/role",
+        await _bindEclaimDescr(controller, "/ZROLE",
+          oClaimInput.getProperty("/emp_master/role"), "ROLE_ID", "ROLE_DESC"));
+    }
+    // user type
+    if (oClaimInput.getProperty("/emp_master/user_type")) {
+      oClaimInput.setProperty("/emp_master/descr/user_type",
+        await _bindEclaimDescr(controller, "/ZUSER_TYPE",
+          oClaimInput.getProperty("/emp_master/user_type"), "USER_TYPE_ID", "USER_TYPE_DESC"));
+    }
+    // employee type
+    if (oClaimInput.getProperty("/emp_master/employee_type")) {
+      oClaimInput.setProperty("/emp_master/descr/employee_type",
+        await _bindEclaimDescr(controller, "/ZEMP_TYPE",
+          oClaimInput.getProperty("/emp_master/employee_type"), "EMP_TYPE_ID", "EMP_TYPE_DESC"));
+    }
+  }
+
+  async function _getClaimHeaderDataDescr(controller, oClaimInput) {
+    // submission type
+    if (oClaimInput.getProperty("/claim_header/submission_type")) {
+      oClaimInput.setProperty("/claim_header/descr/submission_type",
+        await _bindEclaimDescr(controller, "/ZSUBMISSION_TYPE",
+          oClaimInput.getProperty("/claim_header/submission_type"), "SUBMISSION_TYPE_ID", "SUBMISSION_TYPE_DESC"));
+    }
+    // request ID
+    if (oClaimInput.getProperty("/claim_header/request_id")) {
+      oClaimInput.setProperty("/claim_header/descr/request_id",
+        await _bindEclaimDescr(controller, "/ZREQUEST_HEADER",
+          oClaimInput.getProperty("/claim_header/request_id"), "REQUEST_ID", "OBJECTIVE_PURPOSE"));
+    }
+  }
+
+  // ---------------------------
+  // Load Claim (header + items)
+  // ---------------------------
+  async function loadClaimById(controller, sClaimId) {
+    const oClaimInput = _getClaimInputModel(controller);
     const oModel = await ensureModelReady(controller, "employee_view");
-    const aFilters = [ new Filter("CLAIM_ID", FilterOperator.EQ, String(claimId)) ];
+    const sId = String(sClaimId);
 
-    const oHeaderBinding = oModel.bindList(
-      "/ZEMP_CLAIM_HEADER_VIEW",
-      null, null, aFilters,
-      {
-        $$ownRequest: true, $count: true,
-        $select: [
-          "CLAIM_ID", "REQUEST_ID", "PURPOSE", "TRIP_START_DATE", "TRIP_END_DATE",
-          "EVENT_START_DATE", "EVENT_END_DATE", "COMMENT", "LOCATION", "COST_CENTER",
-          "ALTERNATE_COST_CENTER", "STATUS_ID", "STATUS_DESC",
-          "TOTAL_CLAIM_AMOUNT", "PREAPPROVED_AMOUNT", "CASH_ADVANCE_AMOUNT", "FINAL_AMOUNT_TO_RECEIVE"
-        ]
-      }
-    );
+    const filters = [ new Filter("CLAIM_ID", FilterOperator.EQ, sId) ];
 
-    const oItemBinding = oModel.bindList(
-      "/ZEMP_CLAIM_ITEM_VIEW",
-      null, [ new Sorter("CLAIM_SUB_ID", false) ], aFilters,
-      {
-        $$ownRequest: true, $count: true,
-        $select: [
-          "CLAIM_ID", "CLAIM_SUB_ID", "START_DATE", "RECEIPT_NUMBER",
-          "CLAIM_TYPE_ID", "CLAIM_TYPE_ITEM_ID", "AMOUNT", "CLAIM_CATEGORY"
-        ]
-      }
-    );
+    // Header
+    const hdr = oModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", null, null, filters, {
+      $$ownRequest: true, $count: true, $select: ["*"]
+    });
+
+    // Items (values + desc come from same view; we’ll map twice)
+    const itm = oModel.bindList("/ZEMP_CLAIM_ITEM_VIEW", null, [ new Sorter("CLAIM_SUB_ID", false) ], filters, {
+      $$ownRequest: true, $count: true, $select: ["*"]
+    });
 
     try {
-      const [aHeaderCtx, aItemCtx] = await Promise.all([
-        oHeaderBinding.requestContexts(0, 1),
-        oItemBinding.requestContexts(0, Infinity)
+      const [aHdr, aItm] = await Promise.all([
+        hdr.requestContexts(0, 1),
+        itm.requestContexts(0, Infinity)
       ]);
 
-      const oHeaderRaw = aHeaderCtx[0]?.getObject();
-      if (!oHeaderRaw) {
+      const rawHdr = aHdr[0]?.getObject();
+      if (!rawHdr) {
         MessageToast.show("No claim header found for the selected item.");
         oClaimInput.setProperty("/claim_header", {});
         oClaimInput.setProperty("/claim_items", []);
@@ -126,34 +315,171 @@ sap.ui.define([
         return { header: null, items: [] };
       }
 
-      const oHeader = mapClaimHeaderToForm(oHeaderRaw);
-      oClaimInput.setProperty("/claim_header", oHeader);
+      const header = _mapClaimHeaderToForm(rawHdr);
+      oClaimInput.setProperty("/claim_header", header);
+      await _getClaimHeaderDataDescr(controller, oClaimInput);
 
-      const aItems = aItemCtx
-        .map(ctx => ctx.getObject())
-        .map(it => ({
-          claim_sub_id: it.CLAIM_SUB_ID,
-          start_date: it.START_DATE,
-          receipt_number: it.RECEIPT_NUMBER,
-          amount: it.AMOUNT != null ? parseFloat(it.AMOUNT) : 0,
-          descr: {
-            claim_type_id: it.CLAIM_TYPE_ID || "",
-            claim_type_item_id: it.CLAIM_TYPE_ITEM_ID || "",
-            claim_category: it.CLAIM_CATEGORY || ""
-          }
-        }));
+      const items = aItm.map(ctx => ctx.getObject()).map(it => ({
+        // values
+        claim_id: it.CLAIM_ID,
+        claim_sub_id: it.CLAIM_SUB_ID,
+        claim_type_item_id: it.CLAIM_TYPE_ITEM_ID,
+        percentage_compensation: it.PERCENTAGE_COMPENSATION,
+        account_no: it.ACCOUNT_NO,
+        amount: it.AMOUNT != null ? parseFloat(it.AMOUNT) : 0,
+        attachment_file_1: it.ATTACHMENT_FILE_1,
+        attachment_file_2: it.ATTACHMENT_FILE_2,
+        bill_no: it.BILL_NO,
+        bill_date: it.BILL_DATE,
+        claim_category: it.CLAIM_CATEGORY,
+        country: it.COUNTRY,
+        disclaimer: it.DISCLAIMER,
+        start_date: it.START_DATE,
+        end_date: it.END_DATE,
+        start_time: it.START_TIME,
+        end_time: it.END_TIME,
+        flight_class: it.FLIGHT_CLASS,
+        from_location: it.FROM_LOCATION,
+        from_location_office: it.FROM_LOCATION_OFFICE,
+        km: it.KM,
+        location: it.LOCATION,
+        location_type: it.LOCATION_TYPE,
+        lodging_category: it.LODGING_CATEGORY,
+        lodging_address: it.LODGING_ADDRESS,
+        marriage_category: it.MARRIAGE_CATEGORY,
+        area: it.AREA,
+        no_of_family_member: it.NO_OF_FAMILY_MEMBER,
+        parking: it.PARKING,
+        phone_no: it.PHONE_NO,
+        rate_per_km: it.RATE_PER_KM,
+        receipt_date: it.RECEIPT_DATE,
+        receipt_number: it.RECEIPT_NUMBER,
+        remark: it.REMARK,
+        room_type: it.ROOM_TYPE,
+        region: it.REGION,
+        from_state_id: it.FROM_STATE_ID,
+        to_state_id: it.TO_STATE_ID,
+        to_location: it.TO_LOCATION,
+        to_location_office: it.TO_LOCATION_OFFICE,
+        toll: it.TOLL,
+        total_exp_amount: it.TOTAL_EXP_AMOUNT,
+        vehicle_type: it.VEHICLE_TYPE,
+        vehicle_fare: it.VEHICLE_FARE,
+        trip_start_date: it.TRIP_START_DATE,
+        trip_end_date: it.TRIP_END_DATE,
+        event_start_date: it.EVENT_START_DATE,
+        event_end_date: it.EVENT_END_DATE,
+        travel_duration_day: it.TRAVEL_DURATION_DAY,
+        travel_duration_hour: it.TRAVEL_DURATION_HOUR,
+        provided_breakfast: it.PROVIDED_BREAKFAST,
+        provided_lunch: it.PROVIDED_LUNCH,
+        provided_dinner: it.PROVIDED_DINNER,
+        entitled_breakfast: it.ENTITLED_BREAKFAST,
+        entitled_lunch: it.ENTITLED_LUNCH,
+        entitled_dinner: it.ENTITLED_DINNER,
+        anggota_id: it.ANGGOTA_ID,
+        anggota_name: it.ANGGOTA_NAME,
+        dependent_name: it.DEPENDENT_NAME,
+        type_of_professional_body: it.TYPE_OF_PROFESSIONAL_BODY,
+        disclaimer_galakan: it.DISCLAIMER_GALAKAN,
+        mode_of_transfer: it.MODE_OF_TRANSFER,
+        transfer_date: it.TRANSFER_DATE,
+        no_of_days: it.NO_OF_DAYS,
+        family_count: it.FAMILY_COUNT,
+        funeral_transportation: it.FUNERAL_TRANSPORTATION,
+        round_trip: it.ROUND_TRIP,
+        trip_end_time: it.TRIP_END_TIME,
+        trip_start_time: it.TRIP_START_TIME,
+        cost_center: it.COST_CENTER,
+        gl_account: it.GL_ACCOUNT,
+        material_code: it.MATERIAL_CODE,
+        vehicle_ownership_id: it.VEHICLE_OWNERSHIP_ID,
+        actual_amount: it.ACTUAL_AMOUNT,
+        arrival_time: it.ARRIVAL_TIME,
+        claim_type_id: it.CLAIM_TYPE_ID,
+        course_title: it.COURSE_TITLE,
+        currency_amount: it.CURRENCY_AMOUNT,
+        currency_code: it.CURRENCY_CODE,
+        currency_rate: it.CURRENCY_RATE,
+        departure_time: it.DEPARTURE_TIME,
+        dependent: it.DEPENDENT,
+        dependent_relationship: it.DEPENDENT_RELATIONSHIP,
+        emp_id: it.EMP_ID,
+        fare_type_id: it.FARE_TYPE_ID,
+        insurance_cert_end_date: it.INSURANCE_CERT_END_DATE,
+        insurance_cert_start_date: it.INSURANCE_CERT_START_DATE,
+        insurance_package_id: it.INSURANCE_PACKAGE_ID,
+        insurance_provider_id: it.INSURANCE_PROVIDER_ID,
+        insurance_provider_name: it.INSURANCE_PROVIDER_NAME,
+        insurance_purchase_date: it.INSURANCE_PURCHASE_DATE,
+        meter_cube_actual: it.METER_CUBE_ACTUAL,
+        meter_cube_entitled: it.METER_CUBE_ENTITLED,
+        mobile_category_purpose_id: it.MOBILE_CATEGORY_PURPOSE_ID,
+        need_foreign_currency: it.NEED_FOREIGN_CURRENCY,
+        policy_number: it.POLICY_NUMBER,
+        purpose: it.PURPOSE,
+        request_approval_amount: it.REQUEST_APPROVAL_AMOUNT,
+        study_levels_id: it.STUDY_LEVELS_ID,
+        travel_days_id: it.TRAVEL_DAYS_ID,
+        vehicle_class_id: it.VEHICLE_CLASS_ID,
 
-      const nTotal = aItems.reduce((s, it) => s + (Number(it.amount) || 0), 0);
-      if (!oHeader.total_claim_amount) {
+        // descr (from same view *_DESC fields)
+        descr: {
+          claim_type_item_id: it.CLAIM_TYPE_ITEM_DESC,
+          claim_category: it.CLAIM_CATEGORY_DESC,
+          country: it.COUNTRY_DESC,
+          flight_class: it.FLIGHT_CLASS_DESC,
+          from_location_office: null,
+          location_type: it.LOC_TYPE_DESC,
+          lodging_category: it.LODGING_CATEGORY_DESC,
+          marriage_category: it.MARRIAGE_CATEGORY_DESC,
+          area: it.AREA_DESC,
+          rate_per_km: null,
+          room_type: it.ROOM_TYPE_DESC,
+          region: it.REGION_DESC,
+          from_state_id: null,
+          to_state_id: null,
+          to_location_office: null,
+          vehicle_type: it.VEHICLE_TYPE_DESC,
+          type_of_professional_body: null,
+          mode_of_transfer: null,
+          no_of_days: null,
+          funeral_transportation: null,
+          material_code: null,
+          vehicle_ownership_id: it.VEHICLE_OWNERSHIP_DESC,
+          dependent: null,
+          dependent_relationship: null,
+          fare_type_id: null,
+          insurance_package_id: null,
+          insurance_provider_id: null,
+          meter_cube_entitled: null,
+          mobile_category_purpose_id: null,
+          study_levels_id: null,
+          claim_type_id: it.CLAIM_TYPE_DESC,
+          vehicle_class_id: null,
+          attachment_file_1: null,
+          attachment_file_2: null
+        }
+      }));
+
+      // derive totals if needed
+      const nTotal = items.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+      if (!header.total_claim_amount) {
         oClaimInput.setProperty("/claim_header/total_claim_amount", nTotal);
       }
 
-      oClaimInput.setProperty("/claim_items", aItems);
-      oClaimInput.setProperty("/claim_items_count", aItems.length);
+      oClaimInput.setProperty("/claim_items", items);
+      oClaimInput.setProperty("/claim_items_count", items.length);
 
-      return { header: oHeaderRaw, items: aItems };
+      // enrich employee master
+      const empData = await _getEmpIdDetail(controller, oClaimInput.getProperty("/claim_header/emp_id"));
+      if (empData) {
+        oClaimInput.setProperty("/emp_master", empData);
+        await _getEmpDataDescr(controller, oClaimInput);
+      }
+
+      return { header: rawHdr, items };
     } catch (err) {
-      // log & reset
       console.error("Failed to load claim header/items:", err);
       oClaimInput.setProperty("/claim_header", {});
       oClaimInput.setProperty("/claim_items", []);
@@ -162,54 +488,34 @@ sap.ui.define([
     }
   }
 
-  // ------------------------------ navigation (fragment) ------------------------------
+  // ---------------------------
+  // Navigation (NavContainer → Page)
+  // ---------------------------
+  async function navToClaimPage(controller, { navContainerId = "pageContainer", pageId = "navcontainer_claimsubmission" } = {}) {
+    const root = controller.getOwnerComponent().getRootControl();
+    if (!root) throw new Error("Root view not available");
 
-  async function openClaimDialog({ controller, fragmentName, fragmentId }) {
-    if (!controller._claimSubmissionDialog) {
-      controller._claimSubmissionDialog = await controller.loadFragment({ name: fragmentName, id: fragmentId });
-      controller.getView().addDependent(controller._claimSubmissionDialog);
-    }
-    controller._claimSubmissionDialog.open();
-  }
+    const nav = root.byId(navContainerId);
+    if (!nav) throw new Error(`NavContainer '${navContainerId}' not found`);
 
-  async function navToClaimPage({
-    controller,
-    navContainerId = "pageContainer",
-    pageId = "navcontainer_claimsubmission",
-    fragmentNameIfMissing // if page not found, load a fragment that returns a sap.m.Page
-  }) {
-    const oRootView = controller.getOwnerComponent().getRootControl();
-    if (!oRootView) throw new Error("Root view not available");
-
-    const oPageContainer = oRootView.byId(navContainerId);
-    if (!oPageContainer) throw new Error(`NavContainer '${navContainerId}' not found`);
-
-    let page = oRootView.byId(pageId);
-
-    if (!page && fragmentNameIfMissing) {
-      page = await controller.loadFragment({ name: fragmentNameIfMissing });
-      oPageContainer.addPage(page);
-    }
-
+    const page = root.byId(pageId);
     if (!page) {
       MessageToast.show("Claim Submission page not found.");
       return;
     }
-
-    oPageContainer.to(page);
+    nav.to(page);
   }
 
-  // ------------------------------ main entry: onRowPress ------------------------------
-
+  // ---------------------------
+  // Main: onRowPress
+  // ---------------------------
   async function onRowPress({
     controller,
     event,
     modelName = "employee_view",
     keyProp = "CLAIM_ID",
-    listId, 
-
-    fragmentDialogName, fragmentDialogId,               
-    navContainerId, pageId, fragmentNameIfMissing       
+    navContainerId,
+    pageId
   }) {
     const view = controller.getView();
     try {
@@ -220,55 +526,50 @@ sap.ui.define([
         item?.getBindingContext(modelName) ||
         item?.getBindingContext("claim_status2") ||
         item?.getBindingContext("request_status") ||
-        item?.getBindingContext() || null;
+        item?.getBindingContext() ||
+        null;
 
-      if (!ctx && listId) {
-        const oTable = controller.byId(listId);
-        const oSelected = oTable?.getSelectedItem?.();
-        if (oSelected) {
+      // fallback via selected row if needed
+      if (!ctx) {
+        const table =
+          controller.byId("tb_myapproval_claim") || // your approver table
+          controller.byId("claimtable");            // dashboard table
+        const selected = table?.getSelectedItem?.();
+        if (selected) {
           ctx =
-            oSelected.getBindingContext(modelName) ||
-            oSelected.getBindingContext("claim_status2") ||
-            oSelected.getBindingContext("request_status") ||
-            oSelected.getBindingContext();
+            selected.getBindingContext(modelName) ||
+            selected.getBindingContext("claim_status2") ||
+            selected.getBindingContext("request_status") ||
+            selected.getBindingContext();
         }
       }
 
       if (!ctx) { MessageToast.show("Select a claim to open"); return; }
 
-      let id = ctx.getProperty(keyProp) || parseKeyFromV4Path(ctx.getPath?.(), keyProp);
+      let id = ctx.getProperty(keyProp) || _parseKeyFromV4Path(ctx.getPath?.(), keyProp);
       if (!id) { MessageToast.show(`${keyProp} is missing on the selected row.`); return; }
 
-      // 1) Load data
-      await loadClaimById({ controller, claimId: String(id) });
+      // 1) Load claim
+      await loadClaimById(controller, String(id));
 
-      // 2) Navigate: Dialog or Page
-      if (fragmentDialogName) {
-        await openClaimDialog({ controller, fragmentName: fragmentDialogName, fragmentId: fragmentDialogId });
-        return;
-      }
+      // 2) Navigate to page in NavContainer
+      await navToClaimPage(controller, { navContainerId, pageId });
 
-      if (navContainerId && pageId) {
-        await navToClaimPage({ controller, navContainerId, pageId, fragmentNameIfMissing });
-        return;
-      }
-
-      MessageToast.show("No navigation mode provided.");
     } catch (e) {
-      console.error("onRowPress failed:", e);
+      sap.base?.Log?.error?.("onRowPress failed:", e);
       MessageToast.show("Failed to open the selected claim.");
     } finally {
       view?.setBusy(false);
     }
   }
 
-  // ------------------------------ public API ------------------------------
-
+  // ---------------------------
+  // Public API
+  // ---------------------------
   return {
     onRowPress,
     loadClaimById,
     navToClaimPage,
-    openClaimDialog,
-    ensureModelReady // exported in case you need it elsewhere
+    ensureModelReady
   };
 });
