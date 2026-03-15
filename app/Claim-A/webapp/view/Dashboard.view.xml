@@ -129,7 +129,7 @@
                                 >
                                     <Table
                                         id="claimtable"
-                                        items="{ path: 'employee_view>/ZEMP_CLAIM_HEADER_VIEW', sorter : { path : 'TRIP_START_DATE' } }"
+                                        items="{ path: 'employee_view>/ZEMP_CLAIM_HEADER_VIEW', sorter : { path : 'LAST_MODIFIED_DATE', descending : true } }"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
                                         mode="SingleSelectMaster"
@@ -138,6 +138,11 @@
                                         itemPress="onRowPress"
                                     >
                                         <columns>
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text text="Claim ID" />
+                                                </header>
+                                            </Column>
                                             <Column demandPopin="true">
                                                 <header>
                                                     <Text text="Purpose" />
@@ -162,8 +167,15 @@
                                         <items>
                                             <ColumnListItem type="Active">
                                                 <cells>
-                                                    <Text text="{employee_view>PURPOSE}" />
-                                                    <Text text="{employee_view>STATUS_DESC}" />
+                                                    <Text
+                                                        text="{employee_view>CLAIM_ID}"
+                                                    />
+                                                    <Text
+                                                        text="{employee_view>PURPOSE}"
+                                                    />
+                                                    <Text
+                                                        text="{employee_view>STATUS_DESC}"
+                                                    />
                                                     <Text
                                                         text="{employee_view>TRIP_START_DATE}"
                                                     />
@@ -197,7 +209,7 @@
                                     />
                                     <Title
                                         level="H3"
-                                        text="{i18n>myrequest} ({employee>/ZREQUEST_HEADER/$count})"
+                                        text="{i18n>myrequest} ({employee_view>/ZEMP_REQUEST_VIEW/$count})"
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"
                                     />
@@ -218,7 +230,7 @@
                                     horizontal="false"
                                 >
                                     <Table
-                                        items="{ path: 'employee_view>/ZEMP_REQUEST_VIEW', sorter : { path : 'REQUEST_DATE' } }"
+                                        items="{ path: 'employee_view>/ZEMP_REQUEST_VIEW', sorter : { path : 'modifiedAt', descending: true } }"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
@@ -226,6 +238,11 @@
                                         itemPress="openItemFromList"
                                     >
                                         <columns>
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text text="Request ID" />
+                                                </header>
+                                            </Column>
                                             <Column demandPopin="true">
                                                 <header>
                                                     <Text text="Purpose" />
@@ -251,9 +268,14 @@
                                             <ColumnListItem type="Active">
                                                 <cells>
                                                     <Text
+                                                        text="{employee_view>REQUEST_ID}"
+                                                    />
+                                                    <Text
                                                         text="{employee_view>OBJECTIVE_PURPOSE}"
                                                     />
-                                                    <Text text="{employee_view>STATUS_DESC}" />
+                                                    <Text
+                                                        text="{employee_view>STATUS_DESC}"
+                                                    />
                                                     <Text
                                                         text="{employee_view>REQUEST_DATE}"
                                                     />
@@ -337,18 +359,10 @@
                                         <items>
                                             <ColumnListItem>
                                                 <cells>
-                                                    <Text
-                                                        text=""
-                                                    />
-                                                    <Text
-                                                        text=""
-                                                    />
-                                                    <Text
-                                                        text=""
-                                                    />
-                                                    <Text
-                                                        text=""
-                                                    />
+                                                    <Text text="" />
+                                                    <Text text="" />
+                                                    <Text text="" />
+                                                    <Text text="" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>

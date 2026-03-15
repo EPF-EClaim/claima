@@ -2613,7 +2613,6 @@ sap.ui.define([
 				pageId: "navcontainer_claimsubmission"
 			});
 
-		}
-
+		},
 	});
 });
