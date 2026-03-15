@@ -118,7 +118,7 @@ sap.ui.define([
         new Label({ text: "{i18n>reject_reason}", required: true }),
         new Select(oView.createId("rejectReasonSelect"), {
           width: "100%",
-          //selectedKey: "{Reject>/rejectReasonKey}",
+          selectedKey: "{Reject>/rejectReasonKey}",
           items: {
             path: "employee>/ZREJECT_REASON", // model alias must exist
             template: new Item({
