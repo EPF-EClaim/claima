@@ -99,20 +99,20 @@ sap.ui.define([
 			// const oReqModel = this._getReqModel().getData();
 			// oReqModel.user = emp_data.eeid;
 			// this._getReqModel().setData(oReqModel);
-			
+
 			// var claimID = "CLM26000000209";
-            // var PARID = "REQ26000000002";
+			// var PARID = "REQ26000000002";
 			// var oModelAppr = this.getView().getModel();
-            // //workflowApproval.onClaimsApproverDetermination(oModelAppr, claimID);
-            // workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
+			// //workflowApproval.onClaimsApproverDetermination(oModelAppr, claimID);
+			// workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
 			// //workflowApproval.onSendEmail();
 		},
-		onPARTest: function(){
+		onPARTest: function () {
 			var PARID = this.byId("PARSubmissionTest").getValue();
 			var oModel = this.getView().getModel();
 			workflowApproval.onPARApproverDetermination(oModel, PARID);
 		},
-		onClaimTest: function(){
+		onClaimTest: function () {
 			var claimID = this.byId("claimSubmissionTest").getValue();
 			var oModel = this.getView().getModel();
 			workflowApproval.onClaimsApproverDetermination(oModel, claimID);
@@ -217,6 +217,8 @@ sap.ui.define([
 				//End Aiman Salim 08/03/2026 - Added for MyApproval
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
 				case "dashboard":
+					this.getOwnerComponent().getModel("employee")?.refresh();
+					this.getOwnerComponent().getModel("employee_view")?.refresh();
 					oRouter.navTo("Dashboard");
 					break;
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
@@ -832,7 +834,7 @@ sap.ui.define([
 				this.byId("text_claiminput_amtapproved").setVisible(true);
 				switch (oInputModel.getProperty("/claimtype/req_emailapprove")) {
 					case true:
-                        // set text for using email approval
+						// set text for using email approval
 						oInputModel.setProperty("/claim_header/request_id", "");
 						oInputModel.setProperty("/claim_header/descr/request_id", this._getTexti18n("text_claiminput_preapprovalreq_email"));
 
@@ -1158,7 +1160,7 @@ sap.ui.define([
 				if (oInputModel.getProperty("/is_new")) {
 					oListBinding = oModel.bindList("/ZCLAIM_HEADER");
 					const oContext = oListBinding.create(oBody.getData());
-					oContext.created().then( async () => {
+					oContext.created().then(async () => {
 						claimSaved = true;
 						await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
 
@@ -1492,21 +1494,21 @@ sap.ui.define([
 
 			try {
 				const oListBinding = oModel.bindList(
-				"/ZNUM_RANGE",
-				null,
-				null,
-				[
-					new sap.ui.model.Filter({
-					path: "RANGE_ID",
-					operator: sap.ui.model.FilterOperator.EQ,
-					value1: range_id
-					})
-				],
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-					$select: "RANGE_ID,CURRENT,PREFIX"
-				}
+					"/ZNUM_RANGE",
+					null,
+					null,
+					[
+						new sap.ui.model.Filter({
+							path: "RANGE_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: range_id
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$select: "RANGE_ID,CURRENT,PREFIX"
+					}
 				);
 
 				const aCtx = await oListBinding.requestContexts(0, 1);
@@ -1543,8 +1545,8 @@ sap.ui.define([
 				const sPath = `/ZNUM_RANGE(RANGE_ID='${rangeId.replace(/'/g, "''")}')`;
 
 				const oCtxBinding = oModel.bindContext(sPath, null, {
-				$$updateGroupId: sGroup,
-				$$ownRequest: true
+					$$updateGroupId: sGroup,
+					$$ownRequest: true
 				});
 
 				await oCtxBinding.requestObject();
@@ -1560,7 +1562,7 @@ sap.ui.define([
 				console.error("Error updating number range:", err);
 				return null;
 			}
-		}, 
+		},
 
 		onPressClaimDetails: function () {
 			this.getView().byId("expensetypescr").setVisible(false);
@@ -2423,7 +2425,7 @@ sap.ui.define([
 				title: title,
 				type: "Message",
 				state: "None",
-				content: [ new Label({ text: content }) ],
+				content: [new Label({ text: content })],
 				beginButton: new Button({
 					type: "Emphasized",
 					text: this._getTexti18n("button_claimsummary_confirm"),
