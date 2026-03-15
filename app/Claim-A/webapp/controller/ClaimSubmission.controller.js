@@ -60,8 +60,8 @@ sap.ui.define([
 			if (oClaimSubmissionModel) {
 				this._setEnabledToolbarFooter();
 
-				// disable 'Delete Report' if claim already cancelled
-				this._disableDeleteReport();
+				// disable footer buttons if claim already cancelled
+				this._disableFooterButtons();
 
 				// show approval log fragment for user
 				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === 'STAT02' || oClaimSubmissionModel.getProperty("/is_approver")) {
@@ -72,10 +72,7 @@ sap.ui.define([
 				}
 
 				// change screen details if approver
-				if (oClaimSubmissionModel.getProperty("/is_approver")) {
-					// update footer buttons
-					this._displayFooterButtons("claimsubmission_approver");
-
+				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === "STAT07" || oClaimSubmissionModel.getProperty("/is_approver")) {
 					// table changes
 					if (this.byId("button_claimsummary_edit")) {
 						//// hide buttons
@@ -87,6 +84,10 @@ sap.ui.define([
 
 					// table properties
 					this.byId("table_claimsummary_claimitem").setMode(sap.m.ListMode.SingleSelectMaster);
+				}
+				if (oClaimSubmissionModel.getProperty("/is_approver")) {
+					// update footer buttons
+					this._displayFooterButtons("claimsubmission_approver");
 				}
 			}
 		},
@@ -456,7 +457,7 @@ sap.ui.define([
 
 		onItemPress_ClaimSubmission: function (oEvent) {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			if (!oInputModel.getProperty("/is_approver")) {
+			if (oInputModel.getProperty("/claim_header/status_id") !== "STAT07" && !oInputModel.getProperty("/is_approver")) {
 				return;
 			}
 
@@ -1006,13 +1007,17 @@ sap.ui.define([
 			}
 		},
 
-		_disableDeleteReport: function () {
+		_disableFooterButtons: function () {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === 'STAT07' && this.byId("button_claimsubmission_deletereport")) {
+			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === 'STAT07') {
+				this.byId("button_claimsubmission_savedraft").setEnabled(false);
 				this.byId("button_claimsubmission_deletereport").setEnabled(false);
+				this.byId("button_claimsubmission_submitreport").setEnabled(false);
 			}
 			else {
+				this.byId("button_claimsubmission_savedraft").setEnabled(true);
 				this.byId("button_claimsubmission_deletereport").setEnabled(true);
+				this.byId("button_claimsubmission_submitreport").setEnabled(true);
 			}
 		},
 
@@ -1057,7 +1062,7 @@ sap.ui.define([
 			this._setClaimDetailSelection(oClaimSubmissionModel);
 
 			// approver view changes
-			if (oClaimSubmissionModel.getProperty("/is_approver")) {
+			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === "STAT07" || oClaimSubmissionModel.getProperty("/is_approver")) {
 				if (!this.byId("button_claimdetails_input_return").getVisible()) {
 					this.byId("button_claimdetails_input_return").setVisible(true);
 				}
@@ -1735,7 +1740,7 @@ sap.ui.define([
 				}
 
 				// approver view changes
-				if (oClaimSubmissionModel.getProperty("/is_approver")) {
+				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === "STAT07" || oClaimSubmissionModel.getProperty("/is_approver")) {
 					if (this.byId("button_claimdetails_input_return").getVisible()) {
 						this.byId("button_claimdetails_input_return").setVisible(false);
 					}
@@ -1749,9 +1754,11 @@ sap.ui.define([
 				const fpromise = await this._getFormFragment("claimsubmission_summary_claimitem").then(function (oVBox) {
 					oPage.insertContent(oVBox, 1);
 				});
+				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== "STAT07" && !oClaimSubmissionModel.getProperty("/is_approver")) {
+					this._setEnabledToolbarFooter();
+				}
 				if (!oClaimSubmissionModel.getProperty("/is_approver")) {
 					this._displayFooterButtons("claimsubmission_summary_claimitem");
-					this._setEnabledToolbarFooter();
 				}
 				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 			}
@@ -2366,10 +2373,7 @@ sap.ui.define([
 			}
 
 			// reset UI from approver page
-			if (oClaimSubmissionModel.getProperty("/is_approver")) {
-				// update footer buttons
-				this._displayFooterButtons("claimsubmission_summary_claimitem");
-
+			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === "STAT07" || oClaimSubmissionModel.getProperty("/is_approver")) {
 				// table changes
 				if (this.byId("button_claimsummary_edit")) {
 					//// hide buttons
@@ -2381,6 +2385,10 @@ sap.ui.define([
 
 				// table properties
 				this.byId("table_claimsummary_claimitem").setMode(sap.m.ListMode.MultiSelect);
+			}
+			if (oClaimSubmissionModel.getProperty("/is_approver")) {
+				// update footer buttons
+				this._displayFooterButtons("claimsubmission_summary_claimitem");
 
 				// return to approver screen
 				this.getMyApproverPAReq();
