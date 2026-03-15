@@ -198,7 +198,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
                        CCEmail: String,
                        EmailTitle: String,
                        EmailBody: String,
-                       NextApproverName: String)                       returns Response;
+                       NextApproverName: String,
+                       RejectReason: String,
+                       ApproverComments: String)                       returns Response;
 
     entity ZINSURANCE_PACKAGE            as projection on ECLAIM.ZINSURANCE_PACKAGE;
 

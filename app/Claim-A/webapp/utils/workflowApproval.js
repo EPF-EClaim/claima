@@ -89,7 +89,7 @@ sap.ui.define([
 
                 //Need to change the checking from total_exp_amount to amount
 				//claimItemTotalExpAmtArr.push(parseFloat(aClaimsItemData[i].TOTAL_EXP_AMOUNT));
-                claimItemTotalAmountArr.push(parseFloat(aClaimsItemData[i].AMOUNT));
+                claimItemAmountArr.push(parseFloat(aClaimsItemData[i].AMOUNT));
 				claimItemReceiptDateArr.push(new Date(aClaimsItemData[i].RECEIPT_DATE));
 				claimTypeItemIDArr.push(aClaimsItemData[i].CLAIM_TYPE_ITEM_ID);
 			}
@@ -99,7 +99,7 @@ sap.ui.define([
 
             //Need to change the checking from total_exp_amount to amount
 			//var highestTotalExpAmt = Math.max(...claimItemTotalExpAmtArr);
-            highestAmount = Math.max(...claimItemTotalAmountArr);
+            var highestAmount = Math.max(...claimItemAmountArr);
 
 			var claimsOverallRisk;
 			let claimsTypeItemRiskArr = [];

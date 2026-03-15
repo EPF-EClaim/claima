@@ -221,7 +221,7 @@ sap.ui.define([
         const headerSet = isPre ? "/ZREQUEST_HEADER" : "/ZCLAIM_HEADER";
         const idField = isPre ? "PREAPPROVAL_ID" : "CLAIM_ID";
         const sField_header = submissionType === "REQ" ? "REQUEST_ID" : "CLAIM_ID";
-        const sAction = actionStatus === "STAT04" ? "REJECT" : "SEND BACK";
+        const sAction = actionStatus === "STAT04" ? "Reject" : "SEND BACK";
         const sType = submissionType === "REQ" ? "Pre-Approval" : "Claim";
         //Added for view;
         const sTable2 = submissionType === "REQ" ? "/ZEMP_APPROVER_REQUEST_DETAILS" : "/ZEMP_APPROVER_CLAIM_DETAILS";
