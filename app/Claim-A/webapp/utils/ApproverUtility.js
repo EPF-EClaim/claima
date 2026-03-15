@@ -323,8 +323,8 @@ sap.ui.define([
 
 
             const amount = isPre
-                ? Number(r.AMOUNT || 0)
-                : Number(r.EST_AMOUNT || 0);
+                ? Number(r.EST_AMOUNT || 0)
+                : Number(r.AMOUNT || 0);
 
 
             return {
