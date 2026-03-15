@@ -928,7 +928,7 @@
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "LOC_TYPE_ID,START_DATE,LOC_TYPE_DESC,END_DATE,STATUS"
+                                            "creationFields": "LOC_TYPE_ID,LOC_TYPE_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -1521,7 +1521,7 @@
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "PERSONAL_GRADE,LOCATION,EFFECTIVE_START_DATE,EFFECTIVE_END_DATE,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,CURRENCY,AMOUNT"
+                                            "creationFields": "PERSONAL_GRADE,LOCATION,CURRENCY,AMOUNT,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
