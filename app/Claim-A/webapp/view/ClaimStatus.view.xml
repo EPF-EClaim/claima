@@ -68,7 +68,7 @@
                                     formatOptions: { pattern: 'dd MMM yyyy' }
                                 }" />
 
-                            <Text text="{claim_status2>STATUS_ID}" />
+                            <Text text="{claim_status2>STATUS_DESC}" />
 
                             <Text 
                                 text="RM {

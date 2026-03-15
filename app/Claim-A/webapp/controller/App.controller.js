@@ -2260,7 +2260,7 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel("employee_view");
 
 			const oListBinding = oModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", undefined,
-				[new Sorter("STATUS_ID", true)],
+				[new Sorter("LAST_MODIFIED_DATE", true)],
 				null,
 				{
 					$$ownRequest: true,
