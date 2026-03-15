@@ -6,23 +6,25 @@ function (Utility, budgetCheck){
     "use strict";
 
     return {
-        onFinalApprove: function(req) {
+        onFinalApprove: function(oModel, req) {
             // Create instance of file to call function
             // var oUpdateStatus = new Utility();
             // oUpdateStatus._updateStatus();
-
+            // const oModel = this.getOwnerComponent().getModel();
             // Call Update Status
-            Utility._updateStatus();
+            Utility._updateStatus(oModel);
 
             // Call Budget Processing
 
-            const oModel = this.getOwnerComponent().getModel();
+            
             const dataset = (req.data);
 
-            budgetCheck.budgetProcessing( oModel, dataset, 'CLM', 'approve' );
+            // split front 3 letters to determine if claim or request
+            const submission_type = req.claimid.substring(0,3);
 
+            budgetCheck.budgetProcessing( oModel, dataset, submission_type, 'approve' );
             // Call Farisha email Function
-            
+
 
             // Call Pass Approval Claims to SAP IS
 
