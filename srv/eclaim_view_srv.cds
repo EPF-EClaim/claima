@@ -667,5 +667,4 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             GL_ACCOUNT              : String,
             MATERIAL_CODE           : String
         ) returns Response;
-
 };

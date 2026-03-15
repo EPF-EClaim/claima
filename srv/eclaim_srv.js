@@ -338,5 +338,5 @@ module.exports = (srv) => {
     } catch (error) {
       req.error(400, `Fail updating record: ${error.message}`);
     }
-  });
+  })
 }

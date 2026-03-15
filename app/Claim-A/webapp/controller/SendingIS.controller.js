@@ -1,49 +1,88 @@
 sap.ui.define([
   "sap/ui/core/mvc/Controller",
   "sap/m/MessageToast",
-  "sap/m/MessageBox"
-], function (Controller, MessageToast, MessageBox) {
+  "sap/m/MessageBox",
+  "sap/ui/core/BusyIndicator"
+], function (Controller, MessageToast, MessageBox, BusyIndicator) {
   "use strict";
 
-function asStr(v) { return (v === null || v === undefined) ? "" : String(v); }
+  const asStr = v => (v == null ? "" : String(v));
 
   return Controller.extend("claima.controller.SendingIS", {
-   onSendToIS: async function () {
-  const table = this.byId("idClaimTable");
-  const item = table.getSelectedItem();
-  if (!item) {
-    sap.m.MessageToast.show("Please select a row first.");
-    return;
-  }
 
-  const row = item.getBindingContext("employee_view").getObject();
-  const oModel = this.getView().getModel("employee_view");
+    // Get input ID (REQ or CLM)
+    _getId: function () {
+      return (this.byId("claimIdField").getValue() || "").trim().toUpperCase();
+    },
 
-  // Bind action (unbound)
-  let oCtx = oModel.bindContext("/sendClaim(...)");
+    // SMART SENDER: Determines automatically REQ or CLM
+    onSendByIdSmart: async function () {
+      try {
+        const id = this._getId();
+        if (!id) {
+          MessageToast.show("Please enter an ID");
+          return;
+        }
 
-  // Set flat parameters
-  oCtx.setParameter("CLAIM_ID", row.CLAIM_ID);
-  oCtx.setParameter("CLAIM_SUB_ID", row.CLAIM_SUB_ID);
-  oCtx.setParameter("EMP_ID", row.EMP_ID);
-  oCtx.setParameter("SUBMITTED_DATE", row.SUBMITTED_DATE);
-  oCtx.setParameter("SUBMISSION_TYPE", row.SUBMISSION_TYPE);
-  oCtx.setParameter("CASH_ADVANCE_AMOUNT", row.CASH_ADVANCE_AMOUNT);
-  oCtx.setParameter("FINAL_AMOUNT_TO_RECEIVE", row.FINAL_AMOUNT_TO_RECEIVE);
-  oCtx.setParameter("LAST_MODIFIED_DATE", row.LAST_MODIFIED_DATE);
-  oCtx.setParameter("AMOUNT", row.AMOUNT);
-  oCtx.setParameter("RECEIPT_DATE", row.RECEIPT_DATE);
-  oCtx.setParameter("COST_CENTER", row.COST_CENTER);
-  oCtx.setParameter("GL_ACCOUNT", row.GL_ACCOUNT);
-  oCtx.setParameter("MATERIAL_CODE", row.MATERIAL_CODE);
-  oCtx.setParameter("TRIP_START_DATE", row.TRIP_START_DATE);
+        BusyIndicator.show(0);
 
-  try {
-    await oCtx.invoke();  
-    sap.m.MessageToast.show("Claim sent to IS.");
-  } catch (err) {
-    sap.m.MessageBox.error("Send failed: " + err.message);
-  }
-}
+        const oModel = this.getView().getModel("employee_view");
+
+        // ================================
+        // REQxxxxx → Pre-Approval Email
+        // ================================
+        if (id.startsWith("REQ")) {
+          let ctx = oModel.bindContext("/sendPreApprovalEmailByRequestId(...)");
+          // If UI5 ever throws “Unknown operation”, use namespaced:
+          // ctx = oModel.bindContext("/ECLAIM_VIEW_SRV.sendPreApprovalEmailByRequestId(...)");
+
+          ctx.setParameter("PREAPPROVAL_ID", asStr(id));
+
+          await ctx.invoke();
+          const out = ctx.getBoundContext().getObject();
+
+          MessageToast.show(
+            out?.success
+              ? `Pre‑approval email sent for ${id}.`
+              : out?.message || `Triggered for ${id}.`
+          );
+
+          return;
+        }
+
+        // ================================
+        // CLMxxxxx → Combined email + claims
+        // ================================
+        if (id.startsWith("CLM")) {
+          let ctx = oModel.bindContext("/sendEmailAndClaimById(...)");
+          // If needed:
+          // ctx = oModel.bindContext("/ECLAIM_VIEW_SRV.sendEmailAndClaimById(...)");
+
+          ctx.setParameter("CLAIM_ID", asStr(id));
+
+          await ctx.invoke();
+          const out = ctx.getBoundContext().getObject();
+
+          MessageToast.show(
+            out?.success
+              ? `Approval email & ${out.claimsCount} claim item(s) sent for ${id}.`
+              : out?.message || `Triggered for ${id}.`
+          );
+
+          return;
+        }
+
+        // ================================
+        // If neither REQ nor CLM
+        // ================================
+        MessageToast.show("Unknown ID type. Use REQ… for pre‑approval, CLM… for claim.");
+
+      } catch (e) {
+        MessageBox.error("Send failed: " + (e?.message || e));
+      } finally {
+        BusyIndicator.hide();
+      }
+    }
+
   });
 });
