@@ -221,6 +221,8 @@ sap.ui.define([
 			let empCCWorkflowCodeArr = [];
 			let receiptAgingWorkflowCodeArr = [];
 			for(var i = 0; i < nestedWorkflowRuleArr.length; i++){
+
+                //Check if rule equals null. If rule equals null, add into array as part of selection
 				//if(claimsOverallRisk == nestedWorkflowRuleArr[i][3]){
 				//	riskLevelWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
 				//}
@@ -243,7 +245,7 @@ sap.ui.define([
                 if(highestAmount > nestedWorkflowRuleArr[i][0]){
 					threshholdVal = "GT";
 				//}else if(highestTotalExpAmt < nestedWorkflowRuleArr[i][0]){
-                }else if(highestAmount < nestedWorkflowRuleArr[i][0]){    
+                }else if(highestAmount <= nestedWorkflowRuleArr[i][0]){    
 					threshholdVal = "LE";
 				}else{
 					threshholdVal = null;
@@ -555,13 +557,20 @@ sap.ui.define([
 			}
 
 			var empCCVal;
-			if(parAltCC != null || parAltCC != ""){
-				empCCVal = "NE";
-			}else if (parCC == empCC){
+            //Modify logic to use == instead of !=
+			//if(parAltCC != null || parAltCC != ""){
+			//	empCCVal = "NE";
+			//}else if (parCC == empCC){
+			//	empCCVal = "EQ";
+			//}else{
+			//	empCCVal = null;
+			//}
+            if(parAltCC == "" || parAltCC == null) {  
 				empCCVal = "EQ";
-			}else{
-				empCCVal = null;
-			}
+            }else{
+                empCCVal = "NE";
+            }
+            
 			var tripStartAge;//change for trip start date
 			let empCCWorkflowCodeArr = [];
 			let tripStartAgingWorkflowCodeArr = [];
@@ -569,11 +578,18 @@ sap.ui.define([
 			var currentDate = new Date();
 			parTripStartDate = new Date(parTripStartDate);
 			for(var i = 0; i < nestedWorkflowRuleArr.length; i++){
-				if(empCCVal == nestedWorkflowRuleArr[i][1]){
+
+                //Check if rule equals null. If rule equals null, add into array as part of selection
+				//if(empCCVal == nestedWorkflowRuleArr[i][1]){
+				//	empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
+				//}
+                if(nestedWorkflowRuleArr[i][1] == null){
+                    empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
+                }else if(empCCVal == nestedWorkflowRuleArr[i][1]){
 					empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
 				}
 
-				if(parTripStartDate > currentDate){
+				if(parTripStartDate >= currentDate){
 					tripStartAge = "GE";
 				}else if(parTripStartDate < currentDate){
 					tripStartAge = "LT";
@@ -581,7 +597,12 @@ sap.ui.define([
 					tripStartAge = null;
 				}
 
-				if(tripStartAge == nestedWorkflowRuleArr[i][2]){
+				//if(tripStartAge == nestedWorkflowRuleArr[i][2]){
+				//	tripStartAgingWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
+				//}
+                if(nestedWorkflowRuleArr[i][1] == null){
+                    empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
+                }else if(tripStartAge == nestedWorkflowRuleArr[i][2]){
 					tripStartAgingWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
 				}
 
