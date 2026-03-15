@@ -971,6 +971,7 @@ entity ZPERDIEM_ENT : managed {
     key EFFECTIVE_END_DATE   : Date          @mandatory  @Common.Label: 'Effective End Date';
         CURRENCY             : String(3)     @Common.Label: 'Currency';
         AMOUNT               : Decimal(7, 2) @Common.Label: 'Amount';
+        STATUS               : String(10)    @Common.Label: 'Status';
         ZCLAIM_TYPE_ITEM     : Association to one ZCLAIM_TYPE_ITEM
                                    on  ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_ID = CLAIM_TYPE_ITEM_ID
                                    and ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID      = CLAIM_TYPE_ID;
@@ -1199,13 +1200,16 @@ entity ZTRAVEL_DAYS : managed {
 
 entity ZELIGIBILITY_RULE : managed {
     key CLAIM_TYPE_ID             : String         @mandatory  @Common.Label: 'Claim Type ID';
-        CLAIM_TYPE_ITEM_ID        : String         @Common.Label: 'Claim Type Item ID';
+    key CLAIM_TYPE_ITEM_ID        : String         @mandatory  @Common.Label: 'Claim Type Item ID';
+    key ROLE_ID                   : String(3)      @mandatory  @Common.Label: 'Role';
+    key POSITION_NO_DESC          : String         @mandatory  @Common.Label: 'Position Number/Description';
+    key ROW_COUNT                 : Integer        @mandatory  @Common.Label: 'Row Count';
+    key START_DATE                : Date           @mandatory  @Common.Label: 'Start Date';
+    key END_DATE                  : Date           @mandatory  @Common.Label: 'End Date';
         EMPLOYEE_TYPE             : String         @Common.Label: 'Employee Type';
         ASSIGNED_APPROVER         : String         @Common.Label: 'Assigned Approver';
         CONFIRMATION_DATE         : Date           @Common.Label: 'Confirmation Date';
         PERSONAL_GRADE            : String         @Common.Label: 'Personal Grade';
-        ROLE_ID                   : String(3)      @Common.Label: 'Role';
-        POSITION_NO_DESC          : String         @Common.Label: 'Position Number/Description';
         MOBILE_PHONE_BILL         : String         @Common.Label: 'Mobile Phone Bill';
         ELIGIBLE_AMOUNT           : Decimal(16, 2) @Common.Label: 'Eligible Amount';
         FREQUENCY                 : Integer        @Common.Label: 'Frequency';
@@ -1233,14 +1237,13 @@ entity ZELIGIBILITY_RULE : managed {
         TRANSPORT_PASSING_ID      : String(2)      @Common.Label: 'Transportation of The Passing (Dead)';
         INSURANCE_PACKAGE_ID      : String(2)      @Common.Label: 'Insurance Package';
         TRAVEL_DAYS_ID            : String         @Common.Label: 'Number of Days Category (Travel Insurance)';
-        START_DATE                : Date           @Common.Label: 'Start Date';
-        END_DATE                  : Date           @Common.Label: 'End Date';
         CURRENCY                  : String(3)      @Common.Label: 'Currency';
         ROOM_TYPE_ID              : String(2)      @Common.Label: 'Room Type';
         IND_OR_GROUP              : String(4)      @Common.Label: 'Individual or Group';
         TRAVEL_HOURS              : Integer        @Common.Label: 'Travel Hours';
         AGING_NUMBER              : Integer        @Common.Label: 'Aging Number';
         AGING_PERIOD              : String(2)      @Common.Label: 'Period Number';
+        STATUS                    : String(10)     @Common.Label: 'Status';
         ZEMP_TYPE                 : Association to ZEMP_TYPE
                                         on ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;
         ZROLE                     : Association to ZROLE
