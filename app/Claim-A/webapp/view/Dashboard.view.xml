@@ -85,6 +85,12 @@
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
+                                <Title
+                                    level="H3"
+                                    text="{employee_view>/ZEMP_APPROVER_DETAILS/$count}"
+                                    textAlign="Center"
+                                    class="sapUiSmallMarginBegin"
+                                />
                             </HBox>
                         </Panel>
                     </HBox>
@@ -160,7 +166,7 @@
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Amount" />
+                                                    <Text text="Amount(MYR)" />
                                                 </header>
                                             </Column>
                                         </columns>
@@ -260,7 +266,7 @@
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Amount" />
+                                                    <Text text="Amount(MYR)" />
                                                 </header>
                                             </Column>
                                         </columns>
@@ -308,7 +314,7 @@
                                     />
                                     <Title
                                         level="H3"
-                                        text="{i18n>approval}"
+                                        text="{i18n>approval} ({employee_view>/ZEMP_APPROVER_DETAILS/$count})"
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"
                                     />
@@ -329,12 +335,19 @@
                                     horizontal="false"
                                 >
                                     <Table
-                                        items="{ path: '' }"
+                                        items="{ path: 'employee_view>/ZEMP_APPROVER_DETAILS'}"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
                                     >
                                         <columns>
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text
+                                                        text="Claim ID/Request ID"
+                                                    />
+                                                </header>
+                                            </Column>
                                             <Column demandPopin="true">
                                                 <header>
                                                     <Text text="Purpose" />
@@ -352,17 +365,28 @@
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Amount" />
+                                                    <Text text="Amount(MYR)" />
                                                 </header>
                                             </Column>
                                         </columns>
                                         <items>
                                             <ColumnListItem>
                                                 <cells>
-                                                    <Text text="" />
-                                                    <Text text="" />
-                                                    <Text text="" />
-                                                    <Text text="" />
+                                                    <Text
+                                                        text="{employee_view>ID}"
+                                                    />
+                                                    <Text
+                                                        text="{employee_view>PURPOSE}"
+                                                    />
+                                                    <Text
+                                                        text="{employee_view>STATUS_DESC}"
+                                                    />
+                                                    <Text
+                                                        text="{employee_view>REQUEST_DATE}"
+                                                    />
+                                                    <Text
+                                                        text="{employee_view>AMOUNT}"
+                                                    />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>
