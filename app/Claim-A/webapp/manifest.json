@@ -1211,8 +1211,8 @@
                                         }
                                     },
                                     "actions": {
-                                        "copybtn": {
-                                            "press": "claima.ext.controller.Config.onClickCopy",
+                                         "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
                                             "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,

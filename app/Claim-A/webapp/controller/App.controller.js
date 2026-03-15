@@ -2585,12 +2585,14 @@ sap.ui.define([
 							class: "sapUiSmallMargin",
 							items: [
 								new sap.m.Text({
+									icon: "sap-icon://information",
 									text: "{imageModel>/userName}",
 									width: "100%",
 									textAlign: sap.ui.core.TextAlign.Center
 								}),
 								// new sap.m.ToolbarSeparator(),
 								new sap.m.Text({
+									icon: "sap-icon://manager",
 									text: "{imageModel>/position}",
 									width: "100%",
 									textAlign: sap.ui.core.TextAlign.Center
@@ -2599,12 +2601,12 @@ sap.ui.define([
 								// new sap.m.ToolbarSeparator(),
 								// Sign out button
 								new sap.m.Button({
+									icon: "sap-icon://log",
 									text: "Sign Out",
 									type: "Transparent",
 									width: "100%",
 									press: function () {
-										const sUrl = sap.ui.require.toUrl("/router/logged-out.html");
-										window.location.replace(sUrl);
+										window.location.href = "https://a6s6cq33s.accounts.ondemand.com/oauth2/logout?state=state&client_id=4d132ddd-9269-4a53-82cd-57fd265ce4f2";
 
 									}
 								})
