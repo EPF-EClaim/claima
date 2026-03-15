@@ -26,6 +26,20 @@
                 </headerToolbar>
 
                 <columns>
+                 <Column>
+                        <header>
+                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                <Text text="Claim ID"/>
+                                <Button type="Transparent" icon="sap-icon://sort"
+                                        tooltip="Sort by Claim ID"
+                                        press="onSortToggle">
+                                    <customData>
+                                        <core:CustomData key="path" value="CLAIM_ID"/>
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>
                     <Column>
                         <header>
                             <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
@@ -41,20 +55,7 @@
                         </header>
                     </Column>
 
-                    <Column>
-                        <header>
-                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
-                                <Text text="Claim ID"/>
-                                <Button type="Transparent" icon="sap-icon://sort"
-                                        tooltip="Sort by Claim ID"
-                                        press="onSortToggle">
-                                    <customData>
-                                        <core:CustomData key="path" value="CLAIM_ID"/>
-                                    </customData>
-                                </Button>
-                            </HBox>
-                        </header>
-                    </Column>
+                   
 
                     <Column>
                         <header>
@@ -106,8 +107,9 @@
                 <items>
                     <ColumnListItem type="Active">
                         <cells>
+                         <Text text="{claim_status2>CLAIM_ID}" />
                             <Text text="{claim_status2>PURPOSE}" />
-                            <Text text="{claim_status2>CLAIM_ID}" />
+                           
                             <Text
                                 text="{
                                     path: 'claim_status2>TRIP_START_DATE',
@@ -116,7 +118,7 @@
                                 }" />
                             <Text text="{claim_status2>STATUS_DESC}" />
                             <Text
-                                text="RM {
+                                text="{
                                     path: 'claim_status2>TOTAL_CLAIM_AMOUNT',
                                     type: 'sap.ui.model.type.Float',
                                     formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
