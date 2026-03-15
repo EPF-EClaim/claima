@@ -37,7 +37,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 PREAPPROVAL_AMOUNT,
                 TOTAL_AMOUNT,
                 REQUEST_DATE,
-                createdBy
+                createdBy, 
+                modifiedAt
         };
 
 
@@ -631,7 +632,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.COST_CENTER,
                 ZCLAIM_ITEM.GL_ACCOUNT,
                 ZCLAIM_ITEM.MATERIAL_CODE
-        }
+        };
 
     entity ZEMP_PREAPPROVAL_DETAILS      as
         projection on ECLAIM.ZREQUEST_HEADER {
@@ -645,5 +646,31 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.COST_CENTER,
                 ZREQUEST_ITEM.GL_ACCOUNT,
                 TRIP_START_DATE
-        }
+        };
+
+    entity ZEMP_CLAIM_BUDGET_CHECK       as
+        projection on ECLAIM.ZCLAIM_HEADER {
+            key CLAIM_ID,
+            key ZCLAIM_ITEM.CLAIM_SUB_ID,
+                SUBMITTED_DATE,
+                COST_CENTER,
+                ALTERNATE_COST_CENTER,
+                ZCLAIM_ITEM.AMOUNT,
+                ZCLAIM_ITEM.GL_ACCOUNT,
+                ZCLAIM_ITEM.MATERIAL_CODE,
+                createdBy
+        };
+
+    entity ZEMP_REQUEST_BUDGET_CHECK     as
+        projection on ECLAIM.ZREQUEST_HEADER {
+            key REQUEST_ID,
+            key ZREQUEST_ITEM.REQUEST_SUB_ID,
+                REQUEST_DATE,
+                COST_CENTER,
+                ALTERNATE_COST_CENTER,
+                ZREQUEST_ITEM.EST_AMOUNT,
+                ZREQUEST_ITEM.GL_ACCOUNT,
+                ZREQUEST_ITEM.MATERIAL_CODE,
+                createdBy
+        };
 };
