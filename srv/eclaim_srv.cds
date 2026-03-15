@@ -180,6 +180,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         userType    : String;
         costcenters : String;
         userId      : String;
+        name        : String;
     }
 
     function getUserType()                                             returns UserInfo;

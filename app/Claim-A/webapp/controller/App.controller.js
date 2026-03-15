@@ -74,6 +74,12 @@ sap.ui.define([
 				var oRouter = this.getOwnerComponent().getRouter();
 				oRouter.navTo("Dashboard");
 			}
+			const oImageModel = new sap.ui.model.json.JSONModel({
+				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png"),
+				initials: "",
+				userName: ""
+			});
+			this.getView().setModel(oImageModel, "imageModel");
 
 			this._loadCurrentUser();
 
@@ -83,6 +89,10 @@ sap.ui.define([
 				this._userType = oData.userType || "UNKNOWN";
 				this.costcenters = oData.costcenters || "UNKNOWN"; //Added by Aiman Salim 06/03/2026
 				this.userId = oData.userId || "UNKNOWN";
+				const sname = oData.name || "";
+				const sInitials = sname.substring(0, 2).toUpperCase();
+				oImageModel.setProperty("/initials", sInitials);
+				oImageModel.setProperty("/userName", sName);
 			}).catch(err => {
 				console.error("getUserType failed:", err);
 				this._userType = "UNKNOWN";
@@ -106,11 +116,6 @@ sap.ui.define([
 			// //workflowApproval.onClaimsApproverDetermination(oModelAppr, claimID);
 			// workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
 			// //workflowApproval.onSendEmail();
-
-			const oImageModel = new sap.ui.model.json.JSONModel({
-				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png")
-			});
-			this.getView().setModel(oImageModel, "imageModel");
 		},
 		onPARTest: function () {
 			var PARID = this.byId("PARSubmissionTest").getValue();
@@ -2494,7 +2499,66 @@ sap.ui.define([
 				}
 			});
 
-		}
+		},
+
+		onAvatarPress: function (oEvent) {
+			const oAvatar = oEvent.getSource();
+
+			if (!this._oAvatarPopover) {
+				this._oAvatarPopover = new sap.m.Popover({
+					placement: "Bottom",
+					showHeader: false,
+					content: [
+						new sap.m.VBox({
+							class: "sapUiSmallMargin",
+							items: [
+								// Avatar inside popover
+								new sap.m.HBox({
+									class: "sapUiSmallMarginBottom",
+									items: [
+										new sap.m.Avatar({
+											initials: "{imageModel>/initials}",
+											displaySize: "M"
+										}),
+										new sap.m.VBox({
+											class: "sapUiSmallMarginBegin",
+											items: [
+												new sap.m.Title({
+													text: "{imageModel>/userName}"
+												}),
+												new sap.m.Text({
+													text: "{imageModel>/userType}"
+												})
+											]
+										})
+									]
+								}),
+								// Divider
+								new sap.m.ToolbarSeparator(),
+								// Sign out button
+								new sap.m.Button({
+									text: "Sign Out",
+									icon: "sap-icon://log",
+									type: "Transparent",
+									width: "100%",
+									press: function () {
+										window.location.href = "/logout";
+									}
+								})
+							]
+						})
+					]
+				});
+				this.getView().addDependent(this._oAvatarPopover);
+			}
+
+			// toggle open/close
+			if (this._oAvatarPopover.isOpen()) {
+				this._oAvatarPopover.close();
+			} else {
+				this._oAvatarPopover.openBy(oAvatar);
+			}
+		},
 
 	});
 });

@@ -21,8 +21,15 @@
             id="shellbar"
                 showMenuButton="true"
                 homeIcon="{imageModel>/homeIcon}"
-                menuButtonPressed="onMenuButtonPress"
-            />
+                menuButtonPressed="onMenuButtonPress">
+                <f:profile>
+        <Avatar
+            id="userAvatar"
+            initials="{imageModel>/initials}"
+            press="onAvatarPress"
+            displaySize="XS"
+        />
+    </f:profile></f:ShellBar>
         </tnt:header>
         <tnt:sideContent>
             <tnt:SideNavigation
