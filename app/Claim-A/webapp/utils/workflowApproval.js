@@ -1,4 +1,5 @@
 sap.ui.define([
+    //  "./FinalApproveStep"
 ], function () {
     "use strict";
 
@@ -426,6 +427,8 @@ sap.ui.define([
                         }                      
                         that.onSendEmail(oModel, payload);        
                     }
+                }else{
+                    FinalApproveStep.onFinalApprove(oModel, claimID, 'STAT05');
                 }
                 
             }).catch(function(oError){
@@ -741,6 +744,8 @@ sap.ui.define([
                         }
                         that.onSendEmail(oModel,payload);
                     }
+                }else{
+                    FinalApproveStep.onFinalApprove(oModel, claimID, 'STAT05');
                 }
             }).catch(function(oError){
                 console.log(oError);
