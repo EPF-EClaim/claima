@@ -225,7 +225,7 @@ sap.ui.define([
         const sType = submissionType === "REQ" ? "Pre-Approval" : "Claim";
         //Added for view;
         const sTable2 = submissionType === "REQ" ? "/ZEMP_APPROVER_REQUEST_DETAILS" : "/ZEMP_APPROVER_CLAIM_DETAILS";
-        const sTable3 = submissionType === "REQ" ? "/ZEMP_REQUEST_REPORT_DETAILS" : "/ZEMP_CLAIM_REPORT_DETAILS";
+        const sTable3 = submissionType === "REQ" ? "/ZEMP_REQUEST_BUDGET_CHECK" : "/ZEMP_CLAIM_BUDGET_CHECK";
 
         // 1) Load rows
         const binding = oModel.bindList(
@@ -323,8 +323,8 @@ sap.ui.define([
 
 
             const amount = isPre
-                ? Number(r.TOTAL_AMOUNT || 0)
-                : Number(r.TOTAL_CLAIM_AMOUNT || r.TOTAL_AMOUNT || 0);
+                ? Number(r.AMOUNT || 0)
+                : Number(r.EST_AMOUNT || 0);
 
 
             return {
