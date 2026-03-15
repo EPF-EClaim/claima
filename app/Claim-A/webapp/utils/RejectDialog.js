@@ -154,7 +154,7 @@ sap.ui.define([
       function () { sap.m.MessageToast.show("No Reject handler implemented."); };
 
     const oDialog = new Dialog({
-      title: "{i18n>reject_claim}",           // default; will be overwritten in open()
+      title: "{i18n>sendback_request}",           // default; will be overwritten in open()
       contentWidth: "50%",
       content: [oForm],
       beginButton: new Button(oView.createId("reject_placeholder_cancel"), {
@@ -189,8 +189,6 @@ sap.ui.define([
   return {
     open: function (oController) {
       const oDlg = getOrCreate(oController);
-
-      // 🔒 Always rewire endButton press to the CURRENT controller handler
       try {
         const btn = oDlg.getEndButton();
         const handler =
