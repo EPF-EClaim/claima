@@ -743,7 +743,7 @@ annotate service.ZAREA with @(
 annotate service.ZMARITAL_STAT with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey             : [MARRIAGE_CATEGORY_ID],
+    Common.SemanticKey             : [MARRIAGE_STATUS_ID],
     Capabilities                   : {
         Deletable : true,
         Updatable : true,
