@@ -216,7 +216,7 @@
                             <!-- pre_app_status -->
                             <table:Column width="12rem">
                                 <Label text="{i18n>pre_app_status}" />
-                                <table:template><Text text="{employee_view>STATUS}" /></table:template>
+                                <table:template><Text text="{employee_view>STATUS_DESC}" /></table:template>
                             </table:Column>
 
                             <!-- cc_code -->
@@ -418,7 +418,7 @@
                              <!-- KWSP_SPORTS_REPRESENTATION -->
                             <table:Column width="14rem">
                                 <Label text="{i18n>mewakili}" />
-                                <table:template><Text text="{employee_view>KWSP_SPORTS_REPRESENTATION}" /></table:template>
+                                <table:template><Text text="{employee_view>SPORTS_REPRESENTATION_DESC}" /></table:template>
                             </table:Column>
 
                              <!--SPORTS_CLAIM_DISCLAIMER  -->
@@ -436,7 +436,7 @@
                              <!-- MODE_OF_TRANSFER -->
                             <table:Column width="14rem">
                                 <Label text="{i18n>mod}" />
-                                <table:template><Text text="{employee_view>MODE_OF_TRANSFER}" /></table:template>
+                                <table:template><Text text="{employee_view>TRANSFER_MODE_DESC}" /></table:template>
                             </table:Column>
 
                              <!-- TRANSFER_DATE -->
