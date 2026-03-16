@@ -38,6 +38,8 @@ sap.ui.define([
 				sap.m.MessageToast.show("Claim Submission page not found.");
 				return;
 			}
+			// var oRouter = this.getOwnerComponent().getRouter();
+			// var sHash = sap.ui.core.routing.HashChanger.getInstance().replaceHash("");
 			oPageContainer.to(oClaimSubmission);
 		},
 
