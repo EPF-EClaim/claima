@@ -21,6 +21,7 @@ sap.ui.define([
 	'claima/utils/Utility',
 	"claima/utils/ApproverUtility",
 	"claima/utils/workflowApproval"
+	// "claima/utils/EligibilityScenarios/EligibleScenarioCheck"
 
 ], function (
 	Controller,
@@ -45,6 +46,7 @@ sap.ui.define([
 	Utility,
 	ApproverUtility,
 	workflowApproval
+	// EligibleScenarioCheck
 ) {
 	"use strict";
 
@@ -1107,6 +1109,8 @@ sap.ui.define([
 
 		onSaveItem() {
 			this.onSave();
+			EligibleScenarioCheck.onEligibilityCheck();
+			// this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 		},
 
 		async onSaveAddAnother() {

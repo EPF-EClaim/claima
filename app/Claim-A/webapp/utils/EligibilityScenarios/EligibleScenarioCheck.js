@@ -4,24 +4,37 @@ sap.ui.define([
     "./KursusDalam",
     "./KursusLuar",
     "./Pelbagai"
-], function (oModel, boxid, DalamNegara, LuarNegara, KursusDalam, KursusLuar, Pelbagai) {
+], function (DalamNegara, LuarNegara, KursusDalam, KursusLuar, Pelbagai) {
     "use strict";
     return {
-        onEligibilityCheck: async function (oModel, Boxid, ClaimItmType) {
+        onEligibilityCheck: async function () {
             
-            switch (ClaimItmType) {
-                case value:
-                    
+            this._oConstant = this.getOwnerComponent().getModel("constant").getData();
+
+            switch (ClaimType) {
+                case cDalamNegara:
+                    DalamNegara.onEligibleCheck(oModel, Boxid, ClaimItmType);
                     break;
-            
+                
+                case cLuarNegara:
+                    LuarNegara.onEligibleCheck();
+                    break;
+
+                case cKursusDalamNegara:
+                    KursusDalam.onEligibleCheck();
+                    break;
+
+                case cKursusLuarNegara:
+                    KursusLuar.onEligibleCheck();
+                    break;
+
+                case cPelbagai:
+                    Pelbagai.onEligibleCheck();;
+                    break;
+
                 default:
                     break;
             }
-            DalamNegara.onEligibleCheck();
-            LuarNegara.onEligibleCheck();
-            KursusDalam.onEligibleCheck();
-            KursusLuar.onEligibleCheck();
-            Pelbagai.onEligibleCheck();
         }
 
     };

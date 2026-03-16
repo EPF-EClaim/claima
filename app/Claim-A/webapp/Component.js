@@ -41,6 +41,8 @@ sap.ui.define([
                 jQueryScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/xlsx.js');
                 document.head.appendChild(jQueryScript);
 
+                this.setModel(models.createConstantModel(), "constant");
+
             }
         });
     });
