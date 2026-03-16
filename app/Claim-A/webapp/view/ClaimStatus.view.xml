@@ -72,6 +72,21 @@
                         </header>
                     </Column>
 
+                    <Column hAlign="End">
+                        <header>
+                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="70%">
+                                <Text text="Amount (MYR)"/>
+                                <Button type="Transparent" icon="sap-icon://sort"
+                                        tooltip="Sort by Amount"
+                                        press="onSortToggle">
+                                    <customData>
+                                        <core:CustomData key="path" value="TOTAL_CLAIM_AMOUNT"/>
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>
+
                     <Column>
                         <header>
                             <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
@@ -85,22 +100,22 @@
                                 </Button>
                             </HBox>
                         </header>
-                    </Column>
+                    </Column>  
 
-                    <Column hAlign="End">
+                    <Column>
                         <header>
                             <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
-                                <Text text="Amount (MYR)"/>
+                                <Text text="Last Modified"/>
                                 <Button type="Transparent" icon="sap-icon://sort"
-                                        tooltip="Sort by Amount"
+                                        tooltip="Sort by Status"
                                         press="onSortToggle">
                                     <customData>
-                                        <core:CustomData key="path" value="TOTAL_CLAIM_AMOUNT"/>
+                                        <core:CustomData key="path" value="modifiedAt"/>
                                     </customData>
                                 </Button>
                             </HBox>
                         </header>
-                    </Column>
+                    </Column>  
                 </columns>
 
                 <!-- Your items unchanged -->
@@ -116,13 +131,15 @@
                                     type: 'sap.ui.model.odata.type.Date',
                                     formatOptions: { pattern: 'dd MMM yyyy' }
                                 }" />
-                            <Text text="{claim_status2>STATUS_DESC}" />
-                            <Text
+                                 <Text
                                 text="{
                                     path: 'claim_status2>TOTAL_CLAIM_AMOUNT',
                                     type: 'sap.ui.model.type.Float',
                                     formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
                                 }" />
+                            <Text text="{claim_status2>STATUS_DESC}" />
+                            <Text text="{claim_status2>modifiedAt}" />
+                           
                         </cells>
                     </ColumnListItem>
                 </items>
