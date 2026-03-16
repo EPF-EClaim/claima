@@ -10,7 +10,7 @@
 
             <Table
                 id="tb_myexpenserepo"
-                headerText="My Claim Status"
+                headerText="{i18n>myclaimstatus_title}"
                 mode="SingleSelectMaster"
                 width="auto"
                 items="{path: 'claim_status2>/claim_header_list'}"
@@ -21,7 +21,7 @@
                     <Toolbar>
                         <Title text="{= ${i18n>nav_myreport} + ' (' + ${claim_status2>/claim_header_count} + ')' }" />
                         <ToolbarSpacer/>
-                        <Button text="Reset Sort" type="Transparent" icon="sap-icon://refresh" press="onResetSort"/>
+                        <Button text="{i18n>sort_reset}" type="Transparent" icon="sap-icon://refresh" press="onResetSort"/>
                     </Toolbar>
                 </headerToolbar>
 
@@ -29,9 +29,9 @@
                  <Column>
                         <header>
                             <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
-                                <Text text="Claim ID"/>
+                                <Text text="{i18n>myclaimstatus_claimid}"/>
                                 <Button type="Transparent" icon="sap-icon://sort"
-                                        tooltip="Sort by Claim ID"
+                                        tooltip="{i18n>myclaimstatus_sort_claimid}"
                                         press="onSortToggle">
                                     <customData>
                                         <core:CustomData key="path" value="CLAIM_ID"/>
@@ -43,9 +43,9 @@
                     <Column>
                         <header>
                             <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
-                                <Text text="Purpose"/>
+                                <Text text="{i18n>myclaimstatus_purpose}"/>
                                 <Button type="Transparent" icon="sap-icon://sort"
-                                        tooltip="Sort by Purpose"
+                                        tooltip="{i18n>myclaimstatus_sort_purpose}"
                                         press="onSortToggle">
                                     <customData>
                                         <core:CustomData key="path" value="PURPOSE"/>
@@ -60,9 +60,9 @@
                     <Column>
                         <header>
                             <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
-                                <Text text="Start Date"/>
+                                <Text text="{i18n>myclaimstatus_startd}"/>
                                 <Button type="Transparent" icon="sap-icon://sort"
-                                        tooltip="Sort by Start Date"
+                                        tooltip="{i18n>myclaimstatus_sort_startd}"
                                         press="onSortToggle">
                                     <customData>
                                         <core:CustomData key="path" value="TRIP_START_DATE"/>
@@ -75,9 +75,9 @@
                     <Column hAlign="End">
                         <header>
                             <HBox justifyContent="SpaceBetween" alignItems="Center" width="70%">
-                                <Text text="Amount (MYR)"/>
+                                <Text text="{i18n>myclaimstatus_amount}"/>
                                 <Button type="Transparent" icon="sap-icon://sort"
-                                        tooltip="Sort by Amount"
+                                        tooltip="{i18n>myclaimstatus_sort_amount}"
                                         press="onSortToggle">
                                     <customData>
                                         <core:CustomData key="path" value="TOTAL_CLAIM_AMOUNT"/>
@@ -90,9 +90,9 @@
                     <Column>
                         <header>
                             <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
-                                <Text text="Status"/>
+                                <Text text="{i18n>myclaimstatus_status}"/>
                                 <Button type="Transparent" icon="sap-icon://sort"
-                                        tooltip="Sort by Status"
+                                        tooltip="{i18n>myclaimstatus_sort_status}"
                                         press="onSortToggle">
                                     <customData>
                                         <core:CustomData key="path" value="STATUS_DESC"/>
@@ -105,9 +105,9 @@
                     <Column>
                         <header>
                             <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
-                                <Text text="Last Modified"/>
+                                <Text text="{i18n>myclaimstatus_lastmod}"/>
                                 <Button type="Transparent" icon="sap-icon://sort"
-                                        tooltip="Sort by Last Modified At"
+                                        tooltip="{i18n>myclaimstatus_sort_lastmod}"
                                         press="onSortToggle">
                                     <customData>
                                         <core:CustomData key="path" value="modifiedAt"/>

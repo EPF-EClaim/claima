@@ -757,11 +757,6 @@ sap.ui.define([
 		},
 		//Button config for Reject
 		onReject_ClaimSubmission: async function () {
-			// quick visual trace
-			//console.log("[onReject_ClaimSubmission] fired");
-
-			const op = `REJECT-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-			console.log(`[${op}] handler enter`);
 
 			const oReject = this.getView().getModel("Reject");
 			const reason = oReject?.getProperty("/rejectReasonKey");
@@ -2418,10 +2413,6 @@ sap.ui.define([
 			this.getOwnerComponent().getModel("employee_view")?.refresh();
 			oRouter.navTo("Dashboard");
 		},
-
-		/* 		onReject_ClaimSubmission: function () {
-					// reject code here
-				}, */
 
 		onBackToEmp_ClaimSubmission: function () {
 			// back to employee code here

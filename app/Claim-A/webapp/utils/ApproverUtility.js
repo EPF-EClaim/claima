@@ -63,13 +63,12 @@ sap.ui.define([
 
 
         if (comment) {
-            // Common field names you might have: "APPROVAL_COMMENT", "APPROVER_COMMENT", "REMARKS"
             ctxCurrent.setProperty("COMMENT", comment);
         }
 
 
         const now = new Date();
-        const tsLocal = formatTimestamp9(now, { utc: false }); // e.g., "2026-02-20 02:19:55.722000000"
+        const tsLocal = formatTimestamp9(now, { utc: false }); 
         ctxCurrent.setProperty("PROCESS_TIMESTAMP", tsLocal);
         ctxCurrent.setProperty("STATUS", "STAT05"); //APPROVED
 
@@ -80,13 +79,10 @@ sap.ui.define([
         if (ctxNext) {
             ctxNext.setProperty("STATUS", "STAT02"); //PENDING APPROVAL
         } else {
-            // No next level → final approval
             console.log("No further approvers found. Proceed to Final Approve Step");
         }
 
         // STEP 5: Fetch data for Email
-
-
         const bindingView = oModel2.bindList(
             sTable2,
             null,
@@ -130,8 +126,7 @@ sap.ui.define([
             isPre
                 ? (currentRow_level?.REQUEST_DATE ?? null)      // Pre‑Approval tables
                 : (currentRow_level?.SUBMITTED_DATE ?? null);   // Claim tables
-
-        //const submissionDate = currentRow_level?.REQUEST_DATE ?? null;
+                
         const claimantName = currentRow_level?.EMPLOYEE_NAME ?? null;
         const claimantEmail = currentRow_level?.EMPLOYEE_EMAIL ?? null;
 

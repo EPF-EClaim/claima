@@ -161,16 +161,9 @@ sap.ui.define([
         text: "{i18n>req_b_cancel}",
         press: cancelHandler.bind(oController)
       }),
-      /*       endButton: new Button(oView.createId("reject_placeholder_submit"), {
-              text: "{i18n>reject_btn}",
-              type: "Emphasized",
-              enabled: "{= !!${Reject>/rejectReasonKey} && !!${Reject>/approvalComment} }",
-              press: submitHandler.bind(oController)
-            }) */
-
       endButton: new Button(oView.createId("reject_placeholder_submit"), {
         text: "{i18n>reject_btn}",
-        type: "Emphasized",
+        type: sap.m.ButtonType.Emphasized,
         enabled: "{= !!${Reject>/rejectReasonKey} && !!${Reject>/approvalComment} }"
       })
 
@@ -210,13 +203,11 @@ sap.ui.define([
             return handler.apply(oController, arguments);
           } catch (e) {
             sap.m.MessageBox.error("Reject failed:\n" + (e?.message || e));
-            // eslint-disable-next-line no-console
             console.error("[RejectDialog] handler error", e);
           }
         };
         btn.attachPress(btn.__rejHandler);
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.warn("[RejectDialog] Failed to wire endButton handler:", e);
       }
 
