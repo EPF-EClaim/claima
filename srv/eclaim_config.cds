@@ -10,6 +10,7 @@ annotate service.ZRISK with {
 annotate service.ZRISK with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
+    Capabilities.SortRestrictions  : {Sortable: true},
     Common.SemanticKey             : [RISK_ID],
     Capabilities                   : {
         Deletable : true,
@@ -23,8 +24,8 @@ annotate service.ZRISK with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZRISK',
-            TypeNamePlural: 'ZRISK',
+            TypeName      : 'Risk Level - ZRISK',
+            TypeNamePlural: 'Risk Level - ZRISK',
         },
         LineItem    : [
             {
@@ -79,8 +80,8 @@ annotate service.ZREQUEST_TYPE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZREQUEST_TYPE',
-            TypeNamePlural: 'ZREQUEST_TYPE',
+            TypeName      : 'Pre-Approval Request Type - ZREQUEST_TYPE',
+            TypeNamePlural: 'Pre-Approval Request Type - ZREQUEST_TYPE',
         },
         LineItem    : [
             {
@@ -154,12 +155,12 @@ annotate service.ZCLAIM_TYPE with @(
                 $Type: 'UI.DataField',
                 Value: PROJECT_CLAIM,
                 Label: 'Project Claim'
-            },            
+            },
             {
                 $Type: 'UI.DataField',
                 Value: START_DATE,
                 Label: 'Start Date'
-            },            
+            },
             {
                 $Type: 'UI.DataField',
                 Value: END_DATE,
@@ -244,8 +245,8 @@ annotate service.ZNUM_RANGE with @(
         DeleteHidden: true,
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZNUM_RANGE',
-            TypeNamePlural: 'ZNUM_RANGE',
+            TypeName      : 'Claim ID Number Sequence',
+            TypeNamePlural: 'Claim ID Number Sequence',
         },
         LineItem    : [
             {
@@ -366,8 +367,8 @@ annotate service.ZCLAIM_CATEGORY with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZCLAIM_CATEGORY',
-            TypeNamePlural: 'ZCLAIM_CATEGORY',
+            TypeName      : 'Travel Claim Category',
+            TypeNamePlural: 'Travel Claim Category',
         },
         LineItem    : [
             {
@@ -420,8 +421,8 @@ annotate service.ZSTATUS with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZSTATUS',
-            TypeNamePlural: 'ZSTATUS',
+            TypeName      : 'Claim/Request Submission',
+            TypeNamePlural: 'Claim/Request Submission',
         },
         LineItem    : [
             {
@@ -474,8 +475,8 @@ annotate service.ZLODGING_CAT with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZLODGING_CAT',
-            TypeNamePlural: 'ZLODGING_CAT',
+            TypeName      : 'Lodging Category',
+            TypeNamePlural: 'Lodging Category',
         },
         LineItem    : [
             {
@@ -528,8 +529,8 @@ annotate service.ZROOM_TYPE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZROOM_TYPE',
-            TypeNamePlural: 'ZROOM_TYPE',
+            TypeName      : 'Hotel Room Type',
+            TypeNamePlural: 'Hotel Room Type',
         },
         LineItem    : [
             {
@@ -588,8 +589,8 @@ annotate service.ZFLIGHT_CLASS with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZFLIGHT_CLASS',
-            TypeNamePlural: 'ZFLIGHT_CLASS',
+            TypeName      : 'Flight Class',
+            TypeNamePlural: 'Flight Class',
         },
         LineItem    : [
             {
@@ -648,8 +649,8 @@ annotate service.ZCOUNTRY with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZCOUNTRY',
-            TypeNamePlural: 'ZCOUNTRY',
+            TypeName      : 'Country',
+            TypeNamePlural: 'Country',
         },
         LineItem    : [
             {
@@ -702,8 +703,8 @@ annotate service.ZAREA with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZAREA',
-            TypeNamePlural: 'ZAREA',
+            TypeName      : 'Country/Region - ZAREA',
+            TypeNamePlural: 'Country/Region - ZAREA',
         },
         LineItem    : [
             {
@@ -756,8 +757,8 @@ annotate service.ZMARITAL_STAT with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZMARITAL_STAT',
-            TypeNamePlural: 'ZMARITAL_STAT',
+            TypeName      : 'Marital Status - ZMARITAL_STAT',
+            TypeNamePlural: 'Marital Status - ZMARITAL_STAT',
         },
         LineItem    : [
             {
@@ -810,8 +811,8 @@ annotate service.ZVEHICLE_TYPE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZVEHICLE_TYPE',
-            TypeNamePlural: 'ZVEHICLE_TYPE',
+            TypeName      : 'Vehicle Type - ZVEHICLE_TYPE',
+            TypeNamePlural: 'Vehicle Type - ZVEHICLE_TYPE',
         },
         LineItem    : [
             {
@@ -867,8 +868,8 @@ annotate service.ZSTATE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZSTATE',
-            TypeNamePlural: 'ZSTATE',
+            TypeName      : 'State - ZSTATE',
+            TypeNamePlural: 'State - ZSTATE',
         },
         LineItem    : [
             {
@@ -928,8 +929,8 @@ annotate service.ZEMP_MASTER with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZEMP_MASTER',
-            TypeNamePlural: 'ZEMP_MASTER',
+            TypeName      : 'Employee Mini Master - ZEMP_MASTER',
+            TypeNamePlural: 'Employee Mini Master - ZEMP_MASTER',
         },
         LineItem    : [
             {
@@ -1150,8 +1151,8 @@ annotate service.ZJOB_GROUP with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZJOB_GROUP',
-            TypeNamePlural: 'ZJOB_GROUP',
+            TypeName      : 'Job Group - ZJOB_GROUP',
+            TypeNamePlural: 'Job Group - ZJOB_GROUP',
         },
         LineItem    : [
             {
@@ -1204,8 +1205,8 @@ annotate service.ZDEPARTMENT with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZDEPARTMENT',
-            TypeNamePlural: 'ZDEPARTMENT',
+            TypeName      : 'Department - ZDEPARTMENT',
+            TypeNamePlural: 'Department - ZDEPARTMENT',
         },
         LineItem    : [
             {
@@ -1282,8 +1283,8 @@ annotate service.ZROLE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZROLE',
-            TypeNamePlural: 'ZROLE',
+            TypeName      : 'eClaim Role - ZROLE',
+            TypeNamePlural: 'eClaim Role - ZROLE',
         },
         LineItem    : [
             {
@@ -1336,8 +1337,8 @@ annotate service.ZUSER_TYPE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZUSER_TYPE',
-            TypeNamePlural: 'ZUSER_TYPE',
+            TypeName      : 'eClaim User Type - ZUSER_TYPE',
+            TypeNamePlural: 'eClaim User Type - ZUSER_TYPE',
         },
         LineItem    : [
             {
@@ -1390,8 +1391,8 @@ annotate service.ZEMP_TYPE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZEMP_TYPE',
-            TypeNamePlural: 'ZEMP_TYPE',
+            TypeName      : 'Employee Status - ZEMP_TYPE',
+            TypeNamePlural: 'Employee Status - ZEMP_TYPE',
         },
         LineItem    : [
             {
@@ -1444,8 +1445,8 @@ annotate service.ZREGION with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZREGION',
-            TypeNamePlural: 'ZREGION',
+            TypeName      : 'Semenanjung & Sabah/Sarawak - ZREGION',
+            TypeNamePlural: 'Semenanjung & Sabah/Sarawak - ZREGION',
         },
         LineItem    : [
             {
@@ -1498,8 +1499,8 @@ annotate service.ZRATE_KM with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZRATE_KM',
-            TypeNamePlural: 'ZRATE_KM',
+            TypeName      : 'Rate Per KM - ZRATE_KM',
+            TypeNamePlural: 'Rate Per KM - ZRATE_KM',
         },
         LineItem    : [
             {
@@ -1564,8 +1565,8 @@ annotate service.ZSUBMISSION_TYPE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZSUBMISSION_TYPE',
-            TypeNamePlural: 'ZSUBMISSION_TYPE',
+            TypeName      : 'Claim Submission Type - ZSUBMISSION_TYPE',
+            TypeNamePlural: 'Claim Submission Type - ZSUBMISSION_TYPE',
         },
         LineItem    : [
             {
@@ -1622,8 +1623,8 @@ annotate service.ZOFFICE_LOCATION with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZOFFICE_LOCATION',
-            TypeNamePlural: 'ZOFFICE_LOCATION',
+            TypeName      : 'KWSP Office Location - ZOFFICE_LOCATION',
+            TypeNamePlural: 'KWSP Office Location - ZOFFICE_LOCATION',
         },
         LineItem    : [
             {
@@ -1699,8 +1700,8 @@ annotate service.ZOFFICE_DISTANCE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZOFFICE_DISTANCE',
-            TypeNamePlural: 'ZOFFICE_DISTANCE',
+            TypeName      : 'KWSP Office Location Distance - ZOFFICE_DISTANCE',
+            TypeNamePlural: 'KWSP Office Location Distance - ZOFFICE_DISTANCE',
         },
         LineItem    : [
             {
@@ -1771,8 +1772,8 @@ annotate service.ZLOC_TYPE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZLOC_TYPE',
-            TypeNamePlural: 'ZLOC_TYPE',
+            TypeName      : 'Travel Location Type - ZLOC_TYPE',
+            TypeNamePlural: 'Travel Location Type - ZLOC_TYPE',
         },
         LineItem    : [
             {
@@ -1825,8 +1826,8 @@ annotate service.ZMATERIAL_GROUP with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZMATERIAL_GROUP',
-            TypeNamePlural: 'ZMATERIAL_GROUP',
+            TypeName      : 'EPF Material Code - ZMATERIAL_GROUP',
+            TypeNamePlural: 'EPF Material Code - ZMATERIAL_GROUP',
         },
         LineItem    : [
             {
@@ -1879,8 +1880,8 @@ annotate service.ZINDIV_GROUP with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZINDIV_GROUP',
-            TypeNamePlural: 'ZINDIV_GROUP',
+            TypeName      : 'Pre-Approval Request - Individual/Group - ZINDIV_GROUP',
+            TypeNamePlural: 'Pre-Approval Request - Individual/Group - ZINDIV_GROUP',
         },
         LineItem    : [
             {
@@ -1933,8 +1934,8 @@ annotate service.ZVEHICLE_OWNERSHIP with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZVEHICLE_OWNERSHIP',
-            TypeNamePlural: 'ZVEHICLE_OWNERSHIP',
+            TypeName      : 'Self/Company Vehicle - ZVEHICLE_OWNERSHIP',
+            TypeNamePlural: 'Self/Company Vehicle - ZVEHICLE_OWNERSHIP',
         },
         LineItem    : [
             {
@@ -1987,8 +1988,8 @@ annotate service.ZEMP_RELATIONSHIP with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZEMP_RELATIONSHIP',
-            TypeNamePlural: 'ZEMP_RELATIONSHIP',
+            TypeName      : 'Dependent Relationship Status - ZEMP_RELATIONSHIP',
+            TypeNamePlural: 'Dependent Relationship Status - ZEMP_RELATIONSHIP',
         },
         LineItem    : [
             {
@@ -2041,8 +2042,8 @@ annotate service.ZMARITAL_CAT with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZMARITAL_CAT',
-            TypeNamePlural: 'ZMARITAL_CAT',
+            TypeName      : 'Marriage Category - ZMARITAL_CAT',
+            TypeNamePlural: 'Marriage Category - ZMARITAL_CAT',
         },
         LineItem    : [
             {
@@ -2095,8 +2096,8 @@ annotate service.ZPROJECT_HDR with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZPROJECT_HDR',
-            TypeNamePlural: 'ZPROJECT_HDR',
+            TypeName      : 'Project Code - ZPROJECT_HDR',
+            TypeNamePlural: 'Project Code - ZPROJECT_HDR',
         },
         LineItem    : [
             {
@@ -2173,8 +2174,8 @@ annotate service.ZBRANCH with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZBRANCH',
-            TypeNamePlural: 'ZBRANCH',
+            TypeName      : 'EPF Branch - ZBRANCH',
+            TypeNamePlural: 'EPF Branch - ZBRANCH',
         },
         LineItem    : [
             {
@@ -2237,8 +2238,8 @@ annotate service.ZEMP_CA_PAYMENT with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZEMP_CA_PAYMENT',
-            TypeNamePlural: 'ZEMP_CA_PAYMENT',
+            TypeName      : 'Cash Advance Payment Date Bypass - ZEMP_CA_PAYMENT',
+            TypeNamePlural: 'Cash Advance Payment Date Bypass - ZEMP_CA_PAYMENT',
         },
         LineItem    : [
             {
@@ -2273,7 +2274,7 @@ annotate service.ZPERDIEM_ENT with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey             : [
-        PERSONAL_GRADE,        
+        PERSONAL_GRADE,
         LOCATION,
         CLAIM_TYPE_ID,
         CLAIM_TYPE_ITEM_ID,
@@ -2292,8 +2293,8 @@ annotate service.ZPERDIEM_ENT with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZPERDIEM_ENT',
-            TypeNamePlural: 'ZPERDIEM_ENT',
+            TypeName      : 'Meal Allowance Entitlement - ZPERDIEM_ENT',
+            TypeNamePlural: 'Meal Allowance Entitlement - ZPERDIEM_ENT',
         },
         LineItem    : [
             {
@@ -2307,7 +2308,7 @@ annotate service.ZPERDIEM_ENT with @(
                 Value            : LOCATION,
                 ![@UI.Importance]: #High,
                 Label            : 'Location'
-            },                                               
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CURRENCY,
@@ -2349,7 +2350,7 @@ annotate service.ZPERDIEM_ENT with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
-            }            
+            }
         ]
     }
 );
@@ -2370,8 +2371,8 @@ annotate service.ZHOUSING_LOAN_SCHEME with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZHOUSING_LOAN_SCHEME',
-            TypeNamePlural: 'ZHOUSING_LOAN_SCHEME',
+            TypeName      : 'Housing Loan Scheme - ZHOUSING_LOAN_SCHEME',
+            TypeNamePlural: 'Housing Loan Scheme - ZHOUSING_LOAN_SCHEME',
         },
         LineItem    : [
             {
@@ -2424,8 +2425,8 @@ annotate service.ZLENDER_NAME with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZLENDER_NAME',
-            TypeNamePlural: 'ZLENDER_NAME',
+            TypeName      : 'Loan Provider - ZLENDER_NAME',
+            TypeNamePlural: 'Loan Provider - ZLENDER_NAME',
         },
         LineItem    : [
             {
@@ -2483,8 +2484,8 @@ annotate service.ZREJECT_REASON with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZREJECT_REASON',
-            TypeNamePlural: 'ZREJECT_REASON',
+            TypeName      : 'Claim/Request Reject Reasoning - ZREJECT_REASON',
+            TypeNamePlural: 'Claim/Request Reject Reasoning - ZREJECT_REASON',
         },
         LineItem    : [
             {
@@ -2543,8 +2544,8 @@ annotate service.ZCURRENCY with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZCURRENCY',
-            TypeNamePlural: 'ZCURRENCY',
+            TypeName      : 'Currency Code - ZCURRENCY',
+            TypeNamePlural: 'Currency Code - ZCURRENCY',
         },
         LineItem    : [
             {
@@ -2583,7 +2584,7 @@ annotate service.ZCURRENCY with @(
 
 annotate service.ZEMP_DEPENDENT with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: false},
+    Capabilities.SearchRestrictions: {Searchable: true},
     Common.SemanticKey             : [
         EMP_ID,
         RELATIONSHIP,
@@ -2599,8 +2600,8 @@ annotate service.ZEMP_DEPENDENT with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZEMP_DEPENDENT',
-            TypeNamePlural: 'ZEMP_DEPENDENT',
+            TypeName      : 'Employee Dependent - ZEMP_DEPENDENT',
+            TypeNamePlural: 'Employee Dependent - ZEMP_DEPENDENT',
         },
         LineItem    : [
             {
@@ -2713,8 +2714,8 @@ annotate service.ZMOBILE_CATEGORY_PURPOSE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZMOBILE_CATEGORY_PURPOSE',
-            TypeNamePlural: 'ZMOBILE_CATEGORY_PURPOSE',
+            TypeName      : 'Mobile Phone Bill Category/Purpose - ZMOBILE_CATEGORY_PURPOSE',
+            TypeNamePlural: 'Mobile Phone Bill Category/Purpose - ZMOBILE_CATEGORY_PURPOSE',
         },
         LineItem    : [
             {
@@ -2767,8 +2768,8 @@ annotate service.ZVEHICLE_CLASS with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZVEHICLE_CLASS',
-            TypeNamePlural: 'ZVEHICLE_CLASS',
+            TypeName      : 'Train/Ship Class - ZVEHICLE_CLASS',
+            TypeNamePlural: 'Train/Ship Class - ZVEHICLE_CLASS',
         },
         LineItem    : [
             {
@@ -2827,8 +2828,8 @@ annotate service.ZINSURANCE_PROVIDER with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZINSURANCE_PROVIDER',
-            TypeNamePlural: 'ZINSURANCE_PROVIDER',
+            TypeName      : 'Insurance Provider - ZINSURANCE_PROVIDER',
+            TypeNamePlural: 'Insurance Provider - ZINSURANCE_PROVIDER',
         },
         LineItem    : [
             {
@@ -2881,8 +2882,8 @@ annotate service.ZINSURANCE_PACKAGE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZINSURANCE_PACKAGE',
-            TypeNamePlural: 'ZINSURANCE_PACKAGE',
+            TypeName      : 'Insurance Package - ZINSURANCE_PACKAGE',
+            TypeNamePlural: 'Insurance Package - ZINSURANCE_PACKAGE',
         },
         LineItem    : [
             {
@@ -2935,8 +2936,8 @@ annotate service.ZPROFESIONAL_BODY with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZPROFESIONAL_BODY',
-            TypeNamePlural: 'ZPROFESIONAL_BODY',
+            TypeName      : 'Type of Profesional Body - ZPROFESIONAL_BODY',
+            TypeNamePlural: 'Type of Profesional Body - ZPROFESIONAL_BODY',
         },
         LineItem    : [
             {
@@ -2989,8 +2990,8 @@ annotate service.ZSTUDY_LEVELS with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZSTUDY_LEVELS',
-            TypeNamePlural: 'ZSTUDY_LEVELS',
+            TypeName      : 'Education Level - ZSTUDY_LEVELS',
+            TypeNamePlural: 'Education Level - ZSTUDY_LEVELS',
         },
         LineItem    : [
             {
@@ -3043,8 +3044,8 @@ annotate service.ZTRANSFER_MODE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZTRANSFER_MODE',
-            TypeNamePlural: 'ZTRANSFER_MODE',
+            TypeName      : 'Mode of Transfer Type - ZTRANSFER_MODE',
+            TypeNamePlural: 'Mode of Transfer Type - ZTRANSFER_MODE',
         },
         LineItem    : [
             {
@@ -3103,8 +3104,8 @@ annotate service.ZTRANSPORT_PASSING with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZTRANSPORT_PASSING',
-            TypeNamePlural: 'ZTRANSPORT_PASSING',
+            TypeName      : 'Type of Transportation for the Passing - ZTRANSPORT_PASSING',
+            TypeNamePlural: 'Type of Transportation for the Passing - ZTRANSPORT_PASSING',
         },
         LineItem    : [
             {
@@ -3157,8 +3158,8 @@ annotate service.ZTRAVEL_TYPE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZTRAVEL_TYPE',
-            TypeNamePlural: 'ZTRAVEL_TYPE',
+            TypeName      : 'Elaun Pertukaran - Moving with Family Type - ZTRAVEL_TYPE',
+            TypeNamePlural: 'Elaun Pertukaran - Moving with Family Type - ZTRAVEL_TYPE',
         },
         LineItem    : [
             {
@@ -3211,8 +3212,8 @@ annotate service.ZFAMILY_TIMING with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZFAMILY_TIMING',
-            TypeNamePlural: 'ZFAMILY_TIMING',
+            TypeName      : 'Elaun Pertukaran - Moving with Family Period - ZFAMILY_TIMING',
+            TypeNamePlural: 'Elaun Pertukaran - Moving with Family Period - ZFAMILY_TIMING',
         },
         LineItem    : [
             {
@@ -3265,8 +3266,8 @@ annotate service.ZSPORTS_REPRESENTATION with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZSPORTS_REPRESENTATION',
-            TypeNamePlural: 'ZSPORTS_REPRESENTATION',
+            TypeName      : 'Sports Activity Representative - ZSPORTS_REPRESENTATION',
+            TypeNamePlural: 'Sports Activity Representative - ZSPORTS_REPRESENTATION',
         },
         LineItem    : [
             {
@@ -3319,8 +3320,8 @@ annotate service.ZPOSITION_EVENT_REASON with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZPOSITION_EVENT_REASON',
-            TypeNamePlural: 'ZPOSITION_EVENT_REASON',
+            TypeName      : 'Employee Position Event Reason - ZPOSITION_EVENT_REASON',
+            TypeNamePlural: 'Employee Position Event Reason - ZPOSITION_EVENT_REASON',
         },
         LineItem    : [
             {
@@ -3373,8 +3374,8 @@ annotate service.ZEMP_DEPENDENT_TYPE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZEMP_DEPENDENT_TYPE',
-            TypeNamePlural: 'ZEMP_DEPENDENT_TYPE',
+            TypeName      : 'Employee Dependent Selection - ZEMP_DEPENDENT_TYPE',
+            TypeNamePlural: 'Employee Dependent Selection - ZEMP_DEPENDENT_TYPE',
         },
         LineItem    : [
             {
@@ -3427,8 +3428,8 @@ annotate service.ZCLAIM_BASIS with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZCLAIM_BASIS',
-            TypeNamePlural: 'ZCLAIM_BASIS',
+            TypeName      : 'Claim Item Claim Amount Basis - ZCLAIM_BASIS',
+            TypeNamePlural: 'Claim Item Claim Amount Basis - ZCLAIM_BASIS',
         },
         LineItem    : [
             {
@@ -3481,8 +3482,8 @@ annotate service.ZHOTEL_LODGING with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZHOTEL_LODGING',
-            TypeNamePlural: 'ZHOTEL_LODGING',
+            TypeName      : 'Hotel/Lodging Selection - ZHOTEL_LODGING',
+            TypeNamePlural: 'Hotel/Lodging Selection - ZHOTEL_LODGING',
         },
         LineItem    : [
             {
@@ -3535,8 +3536,8 @@ annotate service.ZFARE_TYPE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZFARE_TYPE',
-            TypeNamePlural: 'ZFARE_TYPE',
+            TypeName      : 'Type Of Fare - ZFARE_TYPE',
+            TypeNamePlural: 'Type Of Fare - ZFARE_TYPE',
         },
         LineItem    : [
             {
@@ -3589,8 +3590,8 @@ annotate service.ZMETER_CUBE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZMETER_CUBE',
-            TypeNamePlural: 'ZMETER_CUBE',
+            TypeName      : 'Elaun Makan Amount Entitlement Control - ZMETER_CUBE',
+            TypeNamePlural: 'Elaun Makan Amount Entitlement Control - ZMETER_CUBE',
         },
         LineItem    : [
             {
@@ -3661,8 +3662,8 @@ annotate service.ZTRAVEL_DAYS with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZTRAVEL_DAYS',
-            TypeNamePlural: 'ZTRAVEL_DAYS',
+            TypeName      : 'Travel Insurance (Number of Days Category) - ZTRAVEL_DAYS',
+            TypeNamePlural: 'Travel Insurance (Number of Days Category) - ZTRAVEL_DAYS',
         },
         LineItem    : [
             {
@@ -3715,8 +3716,8 @@ annotate service.ZDB_STRUCTURE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZDB_STRUCTURE',
-            TypeNamePlural: 'ZDB_STRUCTURE',
+            TypeName      : 'Claim Type Item - Field Control - ZDB_STRUCTURE',
+            TypeNamePlural: 'Claim Type Item - Field Control - ZDB_STRUCTURE',
         },
         LineItem    : [
             {
@@ -3787,8 +3788,8 @@ annotate service.ZBUDGET with @(
         DeleteHidden: false,
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZBUDGET',
-            TypeNamePlural: 'ZBUDGET',
+            TypeName      : 'Budget Data - ZBUDGET',
+            TypeNamePlural: 'Budget Data - ZBUDGET',
         },
         LineItem    : [
             {
@@ -3925,8 +3926,8 @@ annotate service.ZDISBURSEMENT_STATUS with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'ZDISBURSEMENT_STATUS',
-            TypeNamePlural: 'ZDISBURSEMENT_STATUS',
+            TypeName      : 'Cash Advance Payment Disbursement Bypass - ZDISBURSEMENT_STATUS',
+            TypeNamePlural: 'Cash Advance Payment Disbursement Bypass - ZDISBURSEMENT_STATUS',
         },
         LineItem    : [
             {

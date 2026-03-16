@@ -85,11 +85,20 @@ module.exports = (srv) => {
         req.user?.id ||
         "";
 
-      const authHeader = req.http?.req?.headers?.authorization ?? '';
-      const token = authHeader.split(' ')[1];
-      const oToken = JSON.parse(
-        Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
-      );
+      let origin = null;
+
+      try {
+        const authHeader = req.http?.req?.headers?.authorization ?? '';
+        const token = authHeader.split(' ')[1];
+        if (token) {
+          const oToken = JSON.parse(
+            Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
+          );
+          origin = oToken.origin;
+        }
+      } catch (e) {
+        console.log("Token parsing failed:", e.message);
+      }
 
       const email = String(emailFromToken).trim().toLowerCase();
       console.log("Derived email (local):", email);
@@ -103,8 +112,8 @@ module.exports = (srv) => {
         costcenters: result?.CC || "UNKNOWN",
         userId: result?.EEID || "UNKNOWN",
         name: result?.NAME || "UNKNOWN",
-        position: result?.POSITION_NAME || "UNKNOWN", 
-        origin: oToken.origin
+        position: result?.POSITION_NAME || "UNKNOWN",
+        origin: origin
       };
     });
 

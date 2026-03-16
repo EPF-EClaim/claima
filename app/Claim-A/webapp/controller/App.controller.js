@@ -90,6 +90,12 @@ sap.ui.define([
 			});
 			this.getView().setModel(oImageModel, "imageModel");
 
+			const oDashboardModel = new JSONModel({
+				claims: [],
+				requests: [],
+				approvals: []
+			});
+			this.getView().setModel(oDashboardModel, "dashboardModel");
 			this._loadCurrentUser();
 
 			const oModel = this.getOwnerComponent().getModel();
@@ -112,6 +118,7 @@ sap.ui.define([
 				//// set input
 				this.getView().setModel(oUserIdModel, "userId");
 				oSession.setProperty("/userType", this._userType);
+				this._loadDashboardData();
 			}).catch(err => {
 				console.error("getUserType failed:", err);
 				this._userType = "UNKNOWN";
@@ -136,22 +143,7 @@ sap.ui.define([
 			// workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
 			// //workflowApproval.onSendEmail();
 
-			const oDashboardModel = new JSONModel({
-				claims: [],
-				requests: [],
-				approvals: []
-			});
-			this.getView().setModel(oDashboardModel, "dashboardModel");
-
 			oRouter.getRoute("Dashboard").attachMatched(this._onDashboardMatched, this);
-			const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
-			if (oEmployeeViewModel) {
-				oEmployeeViewModel.getMetaModel().requestObject("/").then(() => {
-					this._loadDashboardData();
-				}).catch(err => {
-					console.error("Failed to load metadata for employee_view", err);
-				});
-			}
 			oRouter.navTo("Dashboard");
 		},
 		onPARTest: function () {
@@ -2695,6 +2687,7 @@ sap.ui.define([
 		},
 
 		_onDashboardMatched: function () {
+			if (!this.userId || this.userId === "UNKNOWN") return;
 			const oDashboardModel = this.getView().getModel("dashboardModel");
 			oDashboardModel.setData({
 				claims: [],
