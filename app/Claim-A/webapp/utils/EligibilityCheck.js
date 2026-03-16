@@ -18,23 +18,19 @@ sap.ui.define([
 			const sInternalOrder = String(proj_code);
 			const sFundCenter = String(cost_center);
 
-			const aErrors = []; 
-			const dataset = [];
-
 			for (const row of rows) {
 				const sGLAccount = await this._getGLAccount(oModel, claim_type);
 				const sMaterialCode = await this._getMaterialCode(oModel, row.claim_type_item);
 
-				const oListBinding = oModel.bindList("/ZBUDGET", null, null, [
-					new Filter("YEAR", "EQ", sYYYY),
-					new Filter("INTERNAL_ORDER", "EQ", sInternalOrder),	// Project Code
-					new Filter("FUND_CENTER", "EQ", sFundCenter),			// Cost Center
-					new Filter("COMMITMENT_ITEM", "EQ", sGLAccount),		// GL Accont
-					new Filter("MATERIAL_GROUP", "EQ", sMaterialCode)		// Material Code
+				const oListBinding = oModel.bindList("/ZELIGIBILITY_RULE", null, null, [
+					new Filter("CLAIM_TYPE_ID", "EQ", sYYYY),
+					new Filter("CLAIM_TYPE_ITEM_ID", "EQ", sInternalOrder),
+					new Filter("PERSONAL_GRADE", "EQ", sInternalOrder),
+					new Filter("ROLE_ID", "EQ", sInternalOrder)
 				]);
 
 				try {
-					const aContexts = await oListBinding.requestContexts(0, 1);
+					const aContexts = await oListBinding.requestContexts(0, Infinity);
 
 					if (aContexts.length === 0) {
 						aErrors.push(
@@ -70,16 +66,40 @@ sap.ui.define([
 				}
 			}
 
-			// budget lock if no error found
-			if (aErrors.length == 0 && dataset.length != 0) {
-				// this.budgetLocking(oModel, dataset, submission_type, 'lock');
-				MessageToast.show('no issue, proceed to lock budget')
-			}
-
 			return {
 				passed: aErrors.length === 0,
 				messages: aErrors.join(',')
 			};
+		},
+
+		_checkEligibleAmount() {
+
+		},
+
+		_loadEligibleFlightClass() {
+			const oMainModel = this.getOwnerComponent().getModel();
+			const oListBinding = oMainModel.bindList("/ZINDIV_GROUP", null, null, [
+				new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
+			]);
+
+			oListBinding.requestContexts().then((aContexts) => {
+				const aData = aContexts.map(oCtx => oCtx.getObject());
+				const oTypeModel = new JSONModel({ types: aData });
+				this.getView().setModel(oTypeModel, "indiv_list");
+			}).catch(err => console.error("GroupType Load Failed", err));
+		},
+
+		_loadEligibleFlightClass() {
+			const oMainModel = this.getOwnerComponent().getModel();
+			const oListBinding = oMainModel.bindList("/ZINDIV_GROUP", null, null, [
+				new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
+			]);
+
+			oListBinding.requestContexts().then((aContexts) => {
+				const aData = aContexts.map(oCtx => oCtx.getObject());
+				const oTypeModel = new JSONModel({ types: aData });
+				this.getView().setModel(oTypeModel, "indiv_list");
+			}).catch(err => console.error("GroupType Load Failed", err));
 		},
 
     };

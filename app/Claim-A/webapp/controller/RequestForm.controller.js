@@ -83,9 +83,9 @@ sap.ui.define([
 			this._loadRequest(sRequestId);
 		},
 
-		_loadRequest(sReqId) {
-			this._getHeader(sReqId);
-			this._getItemList(sReqId);
+		async _loadRequest(sReqId) {
+			await this._getHeader(sReqId);
+			await this._getItemList(sReqId, true);
 
 			var status = this._getReqModel().getProperty("/req_header/reqstatus");
 			if (status != 'DRAFT' && status != 'DELETED') {
@@ -1642,7 +1642,7 @@ sap.ui.define([
 			}
 		},
 
-		async _getItemList(req_id) {
+		async _getItemList(req_id, first_load = false) {
 			const oReq = this._getReqModel();
 
 			if (!req_id) {
@@ -1693,7 +1693,9 @@ sap.ui.define([
 				oReq.setProperty("/req_header/reqamt", req_amt);
 				oReq.setProperty("/req_item_rows", a);
 				oReq.setProperty("/list_count", a.length);
-				this.updateRequestAmount(sEmp, sReq, cashadv_amt, req_amt);
+				if (first_load != true) {
+					this.updateRequestAmount(sEmp, sReq, cashadv_amt, req_amt);
+				}
 
 				return a;
 			} catch (err) {
