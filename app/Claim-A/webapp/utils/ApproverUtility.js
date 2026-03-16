@@ -214,21 +214,17 @@ sap.ui.define([
 
     //For Reject and SendBack resend
     async function _rejectOrSendBackMultiLevel(oModel, id, userID, actionStatus, reason, comment, oModel2) {
-        // actionStatus e.g., "STAT04" (rejected) or "STAT03" (send back)
         const updateGroupId = "approvalGroup";
         const submissionType = id.substring(0, 3);
         const isPre = submissionType === "REQ";
+        const headerSet = isPre ? "/ZREQUEST_HEADER" : "/ZCLAIM_HEADER";
         const detailsSet = isPre ? "/ZAPPROVER_DETAILS_PREAPPROVAL" : "/ZAPPROVER_DETAILS_CLAIMS";
         const sTable2 = submissionType === "REQ" ? "/ZEMP_APPROVER_REQUEST_DETAILS" : "/ZEMP_APPROVER_CLAIM_DETAILS";
         const sTable3 = submissionType === "REQ" ? "/ZEMP_REQUEST_REPORT_DETAILS" : "/ZEMP_CLAIM_REPORT_DETAILS";
-        const headerSet = isPre ? "/ZREQUEST_HEADER" : "/ZCLAIM_HEADER";
-
         const idField = isPre ? "PREAPPROVAL_ID" : "CLAIM_ID";
         const sField_header = submissionType === "REQ" ? "REQUEST_ID" : "CLAIM_ID";
         const sAction = actionStatus === "STAT04" ? "Reject" : "SEND BACK";
         const sType = submissionType === "REQ" ? "Pre-Approval" : "Claim";
-
-
 
         // 1) Load rows
         const binding = oModel.bindList(
@@ -238,7 +234,6 @@ sap.ui.define([
             [new Filter(idField, FilterOperator.EQ, id)],
             { $$ownRequest: true, $$updateGroupId: updateGroupId }
         );
-        //const aCtx = await binding.requestContexts(0, Infinity);
         const aCtx = await binding.requestContexts(0);
         const rows = aCtx.map(ctx => ctx.getObject());
 
@@ -309,7 +304,6 @@ sap.ui.define([
             { $$ownRequest: true }
         );
 
-        //const aCtxBudget = await budgetBinding.requestContexts(0, Infinity);
         const aCtxBudget = await budgetBinding.requestContexts(0);
         const budgetRows = aCtxBudget.map(ctx => ctx.getObject());
 
@@ -343,7 +337,6 @@ sap.ui.define([
         });
 
         // 7) Get Claimant email details;
-
         const bindingView = oModel2.bindList(
             sTable2,
             null,
@@ -354,7 +347,6 @@ sap.ui.define([
             }
         );
 
-        //const aCtx_binding = await bindingView.requestContexts(0, Infinity);
         const aCtx_binding = await bindingView.requestContexts(0);
         const rows_binding = aCtx_binding.map(ctx => ctx.getObject());
         const currentRow_level = rows_binding.find(r =>
@@ -376,8 +368,6 @@ sap.ui.define([
         const claimantEmail = currentRow_level?.EMPLOYEE_EMAIL ?? null;
         const payloads = [];
 
-
-        // Map actionStatus → REASON_TYPE ("STAT04" → REJECT, "STAT03" → SENDBACK)
         const reasonType = actionStatus === "STAT04" ? "REJECT" : "SENDBACK";
 
         const list = oModel.bindList(
@@ -436,7 +426,6 @@ sap.ui.define([
             throw err;   // Optionally rethrow to stop further logic
         }
     }
-
 
     // Helper: pad with leading zeros
     function pad(n, width = 2) {

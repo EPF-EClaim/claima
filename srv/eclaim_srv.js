@@ -377,7 +377,10 @@ module.exports = (srv) => {
         "CCEmail": req.data.CCEmail,
         "EmailTitle": req.data.EmailTitle,
         "EmailBody": req.data.EmailBody,
-        "NextApproverName": req.data.NextApproverName
+        "NextApproverName": req.data.NextApproverName,
+        "RejectReason": req.data.RejectReason,
+        "ApproverComments": req.data.ApproverComments
+
       }
     });
   });
