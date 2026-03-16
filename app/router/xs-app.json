@@ -2,11 +2,10 @@
   "welcomeFile": "/claima/index.html",
   "authenticationMethod": "route",
   "logout": {
-    "logoutEndpoint": "/app-logout",
-    "logoutPage": "/"
+    "logoutEndpoint": "/do/logout",
+    "logoutPage": "/index.html"
   },
   "routes": [
-     
     {
       "source": "^/user-api/currentUser$",
       "target": "/currentUser",

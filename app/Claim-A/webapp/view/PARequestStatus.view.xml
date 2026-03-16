@@ -1,17 +1,20 @@
-<mvc:View xmlns:table="sap.ui.table" xmlns:form="sap.ui.layout.form" xmlns:f="sap.f"
-	height="100%"
-	xmlns:mvc="sap.ui.core.mvc"
-	xmlns="sap.m"
+<mvc:View
+    xmlns:table="sap.ui.table"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:f="sap.f"
+    height="100%"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
     xmlns:core="sap.ui.core"
-	controllerName="claima.controller.RequestFormStatus"
-    id="request_status_xmlview">
-
-    <Page  
+    controllerName="claima.controller.RequestFormStatus"
+    id="request_status_xmlview"
+>
+    <Page
         id="request_form_status"
         floatingFooter="true"
-        showHeader="false">
-        <VBox
-            class="roundedBox sapUiSmallMargin">
+        showHeader="false"
+    >
+        <VBox class="roundedBox sapUiSmallMargin">
             <Table
                 id="tb_myrequestform"
                 headerText="My Pre-Approval Status"
@@ -26,30 +29,180 @@
                         <Title
                             text="{= ${i18n>nav_myrequest} + ' (' + ${request_status>/req_header_count} + ')'}"
                         />
+                        <ToolbarSpacer />
+                        <Button
+                            text="Reset Sort"
+                            type="Transparent"
+                            icon="sap-icon://refresh"
+                            press="onResetSort"
+                        />
                     </Toolbar>
                 </headerToolbar>
 
                 <columns>
-                    <Column >
-                        <Text text="Request Date" />
-                    </Column>
-                    <Column >
-                        <Text text="Request ID" />
-                    </Column>
-                    <Column >
-                        <Text text="Purpose" />
-                    </Column>
-                    <Column >
-                        <Text text="Status" />
-                    </Column>
+                    <!-- REQUEST_ID -->
                     <Column>
-                        <Text text="Pre-Approval Amount (MYR)" />
+                        <header>
+                            <HBox
+                                justifyContent="SpaceBetween"
+                                alignItems="Center"
+                                width="100%"
+                            >
+                                <Text text="Request ID" />
+                                <Button
+                                    type="Transparent"
+                                    icon="sap-icon://sort"
+                                    tooltip="Sort by Request ID"
+                                    press="onSortToggle"
+                                >
+                                    <customData>
+                                        <core:CustomData
+                                            key="path"
+                                            value="REQUEST_ID"
+                                        />
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>
+
+                    <!-- REQUEST_DATE -->
+                    <Column>
+                        <header>
+                            <HBox
+                                justifyContent="SpaceBetween"
+                                alignItems="Center"
+                                width="100%"
+                            >
+                                <Text text="Request Date" />
+                                <Button
+                                    type="Transparent"
+                                    icon="sap-icon://sort"
+                                    tooltip="Sort by Request Date"
+                                    press="onSortToggle"
+                                >
+                                    <customData>
+                                        <core:CustomData
+                                            key="path"
+                                            value="REQUEST_DATE"
+                                        />
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>
+
+                    <!-- OBJECTIVE_PURPOSE -->
+                    <Column>
+                        <header>
+                            <HBox
+                                justifyContent="SpaceBetween"
+                                alignItems="Center"
+                                width="100%"
+                            >
+                                <Text text="Purpose" />
+                                <Button
+                                    type="Transparent"
+                                    icon="sap-icon://sort"
+                                    tooltip="Sort by Purpose"
+                                    press="onSortToggle"
+                                >
+                                    <customData>
+                                        <core:CustomData
+                                            key="path"
+                                            value="OBJECTIVE_PURPOSE"
+                                        />
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>
+
+                    <!-- PREAPPROVAL_AMOUNT -->
+                    <Column hAlign="End">
+                        <header>
+                            <HBox
+                                justifyContent="SpaceBetween"
+                                alignItems="Center"
+                                width="70%"
+                            >
+                                <Text text="Amount (MYR)" />
+                                <Button
+                                    type="Transparent"
+                                    icon="sap-icon://sort"
+                                    tooltip="Sort by Amount"
+                                    press="onSortToggle"
+                                >
+                                    <customData>
+                                        <core:CustomData
+                                            key="path"
+                                            value="PREAPPROVAL_AMOUNT"
+                                        />
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>
+
+                    <!-- STATUS_DESC -->
+                    <Column>
+                        <header>
+                            <HBox
+                                justifyContent="SpaceBetween"
+                                alignItems="Center"
+                                width="100%"
+                            >
+                                <Text text="Status" />
+                                <Button
+                                    type="Transparent"
+                                    icon="sap-icon://sort"
+                                    tooltip="Sort by Status"
+                                    press="onSortToggle"
+                                >
+                                    <customData>
+                                        <core:CustomData
+                                            key="path"
+                                            value="STATUS_DESC"
+                                        />
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>
+
+                     <!-- modifiedAt -->
+                    <Column>
+                        <header>
+                            <HBox
+                                justifyContent="SpaceBetween"
+                                alignItems="Center"
+                                width="100%"
+                            >
+                                <Text text="Last Modified" />
+                                <Button
+                                    type="Transparent"
+                                    icon="sap-icon://sort"
+                                    tooltip="Sort by Status"
+                                    press="onSortToggle"
+                                >
+                                    <customData>
+                                        <core:CustomData
+                                            key="path"
+                                            value="modifiedAt"
+                                        />
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
                     </Column>
                 </columns>
 
+                <!-- items unchanged -->
                 <items>
                     <ColumnListItem type="Active">
                         <cells>
+                            <Text text="{request_status>REQUEST_ID}" />
+                            <Text text="{request_status>OBJECTIVE_PURPOSE}" />
                             <Text
                                 text="{
                                     path: 'request_status>REQUEST_DATE',
@@ -57,18 +210,19 @@
                                     formatOptions: { pattern: 'dd MMM yyyy' } 
                                 }"
                             />
-                            <Text text="{request_status>REQUEST_ID}" />
-                            <Text text="{request_status>OBJECTIVE_PURPOSE}" />
-                            <Text text="{request_status>STATUS_DESC}" />
-                            <Text text="RM {
+                            <Text
+                                text="{
                                     path: 'request_status>PREAPPROVAL_AMOUNT',
                                     type: 'sap.ui.model.type.Float',
                                     formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
-                                }" />
+                                }"
+                            />
+                            <Text text="{request_status>STATUS_DESC}" />
+                            <Text text="{request_status>modifiedAt}" />
                         </cells>
                     </ColumnListItem>
                 </items>
             </Table>
         </VBox>
     </Page>
-</mvc:View> 
+</mvc:View>

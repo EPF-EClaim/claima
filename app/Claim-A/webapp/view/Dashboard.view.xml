@@ -39,7 +39,7 @@
                                 />
                                 <Title
                                     level="H3"
-                                    text="{employee>/ZCLAIM_HEADER/$count}"
+                                    text="{= ${dashboardModel>/claims}.length}"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
@@ -63,12 +63,13 @@
                                 />
                                 <Title
                                     level="H3"
-                                    text="{employee>/ZREQUEST_HEADER/$count}"
+                                    text="{= ${dashboardModel>/requests}.length}"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
                             </HBox>
                         </Panel>
+
                         <Panel
                             width="120%"
                             height="4rem"
@@ -82,6 +83,12 @@
                                 <Title
                                     level="H3"
                                     text="Required Approval"
+                                    textAlign="Center"
+                                    class="sapUiSmallMarginBegin"
+                                />
+                                <Title
+                                    level="H3"
+                                    text="{= ${dashboardModel>/approvals}.length }"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
@@ -107,7 +114,7 @@
                                     />
                                     <Title
                                         level="H3"
-                                        text="{i18n>myexpensesreport} ({employee>/ZCLAIM_HEADER/$count})"
+                                        text="{i18n>myexpensesreport} ({= ${dashboardModel>/claims}.length})"
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"
                                     />
@@ -128,13 +135,21 @@
                                     horizontal="false"
                                 >
                                     <Table
-                                        items="{ path: '/ZCLAIM_HEADER', sorter : { path : 'TRIP_START_DATE' } }"
+                                        id="claimtable"
+                                        items="{dashboardModel>/claims}"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
+                                        mode="SingleSelectMaster"
                                         inset="false"
                                         fixedLayout="true"
+                                        itemPress="onRowPress"
                                     >
                                         <columns>
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text text="Claim ID" />
+                                                </header>
+                                            </Column>
                                             <Column demandPopin="true">
                                                 <header>
                                                     <Text text="Purpose" />
@@ -142,30 +157,82 @@
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
+                                                    <Text text="Start Date" />
+                                                </header>
+                                            </Column>
+                                            <!-- <Column
+                                                demandPopin="true" hAlign="End"
+                                            >
+                                                <header>
+                                                    <Text
+                                                        text="Amount(MYR)"
+                                                        textAlign="Center"
+                                                        width="100%"
+                                                    />
+                                                </header>
+                                            </Column> -->
+                                            <Column hAlign="End">
+                                                <header>
+                                                    <HBox
+                                                        justifyContent="SpaceBetween"
+                                                        alignItems="End"
+                                                        width="100%"
+                                                    >
+                                                        <Text
+                                                            text="Amount (MYR)"
+                                                        />
+                                                    </HBox>
+                                                </header>
+                                            </Column>
+                                            <!-- <Column hAlign="End">
+                                                <header>
+                                                    <HBox
+                                                        justifyContent="SpaceBetween"
+                                                        alignItems="Center"
+                                                        width="50%"
+                                                    >
+                                                        <Text
+                                                            text="Amount (MYR)"
+                                                        />
+                                                    </HBox>
+                                                </header>
+                                            </Column> -->
+                                            <Column demandPopin="true">
+                                                <header>
                                                     <Text text="Status" />
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Start Date" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Amount" />
+                                                    <Text
+                                                        text="Last Modified"
+                                                    />
                                                 </header>
                                             </Column>
                                         </columns>
                                         <items>
-                                            <ColumnListItem>
+                                            <ColumnListItem type="Active">
                                                 <cells>
-                                                    <Text text="{PURPOSE}" />
-                                                    <Text text="{STATUS_ID}" />
                                                     <Text
-                                                        text="{TRIP_START_DATE}"
+                                                        text="{dashboardModel>CLAIM_ID}"
                                                     />
                                                     <Text
-                                                        text="{TOTAL_CLAIM_AMOUNT}"
+                                                        text="{dashboardModel>PURPOSE}"
+                                                    />
+                                                    <Text
+                                                        text="{ path: 'dashboardModel>TRIP_START_DATE',
+                                                        type: 'sap.ui.model.odata.type.Date',
+                                                        formatOptions: { pattern: 'dd MMM yyyy'} }"
+                                                    />
+                                                    <Text
+                                                        textAlign="End"
+                                                        text="{dashboardModel>TOTAL_CLAIM_AMOUNT}"
+                                                    />
+                                                    <Text
+                                                        text="{dashboardModel>STATUS_DESC}"
+                                                    />
+                                                    <Text
+                                                        text="{dashboardModel>modifiedAt}"
                                                     />
                                                 </cells>
                                             </ColumnListItem>
@@ -194,7 +261,7 @@
                                     />
                                     <Title
                                         level="H3"
-                                        text="{i18n>myrequest} ({employee>/ZREQUEST_HEADER/$count})"
+                                        text="{i18n>myrequest} ({= ${dashboardModel>/requests}.length})"
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"
                                     />
@@ -215,15 +282,49 @@
                                     horizontal="false"
                                 >
                                     <Table
-                                        items="{ path: 'employee_view>/ZEMP_REQUEST_VIEW', sorter : { path : 'REQUEST_DATE' } }"
+                                        items="{dashboardModel>/requests}"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
+                                        mode="SingleSelectMaster"
+                                        itemPress="openItemFromList"
                                     >
                                         <columns>
                                             <Column demandPopin="true">
                                                 <header>
+                                                    <Text text="Request ID" />
+                                                </header>
+                                            </Column>
+                                            <Column demandPopin="true">
+                                                <header>
                                                     <Text text="Purpose" />
+                                                </header>
+                                            </Column>
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text text="Start Date" />
+                                                </header>
+                                            </Column>
+                                            <!-- <Column demandPopin="true">
+                                                <header>
+                                                    <Text
+                                                        text="Amount(MYR)"
+                                                        textAlign="Center"
+                                                        width="100%"
+                                                    />
+                                                </header>
+                                            </Column> -->
+                                            <Column hAlign="End">
+                                                <header>
+                                                    <HBox
+                                                        justifyContent="SpaceBetween"
+                                                        alignItems="End"
+                                                        width="100%"
+                                                    >
+                                                        <Text
+                                                            text="Amount (MYR)"
+                                                        />
+                                                    </HBox>
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
@@ -233,27 +334,34 @@
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Start Date" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Amount" />
+                                                    <Text
+                                                        text="Last Modified"
+                                                    />
                                                 </header>
                                             </Column>
                                         </columns>
                                         <items>
-                                            <ColumnListItem>
+                                            <ColumnListItem type="Active">
                                                 <cells>
                                                     <Text
-                                                        text="{employee_view>OBJECTIVE_PURPOSE}"
-                                                    />
-                                                    <Text text="{employee_view>STATUS}" />
-                                                    <Text
-                                                        text="{employee_view>REQUEST_DATE}"
+                                                        text="{dashboardModel>REQUEST_ID}"
                                                     />
                                                     <Text
-                                                        text="{employee_view>PREAPPROVAL_AMOUNT}"
+                                                        text="{dashboardModel>OBJECTIVE_PURPOSE}"
+                                                    />
+                                                    <Text
+                                                        text="{path: 'dashboardModel>REQUEST_DATE', 
+                                                        type: 'sap.ui.model.odata.type.Date',
+                                                        formatOptions: { pattern: 'dd MMM yyyy'} }"
+                                                    />
+                                                    <Text
+                                                        text="{dashboardModel>PREAPPROVAL_AMOUNT}"
+                                                    />
+                                                    <Text
+                                                        text="{dashboardModel>STATUS_DESC}"
+                                                    />
+                                                    <Text
+                                                        text="{dashboardModel>modifiedAt}"
                                                     />
                                                 </cells>
                                             </ColumnListItem>
@@ -263,6 +371,7 @@
                             </VBox>
                         </Panel>
                     </VBox>
+
                     <VBox>
                         <Panel
                             width="80%"
@@ -281,7 +390,7 @@
                                     />
                                     <Title
                                         level="H3"
-                                        text="{i18n>approval}"
+                                        text="{i18n>approval} ({= ${dashboardModel>/approvals}.length })"
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"
                                     />
@@ -302,7 +411,7 @@
                                     horizontal="false"
                                 >
                                     <Table
-                                        items="{ path: '' }"
+                                        items="{dashboardModel>/approvals}"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
@@ -310,7 +419,41 @@
                                         <columns>
                                             <Column demandPopin="true">
                                                 <header>
+                                                    <Text
+                                                        text="Claim ID/Request ID"
+                                                    />
+                                                </header>
+                                            </Column>
+                                            <Column demandPopin="true">
+                                                <header>
                                                     <Text text="Purpose" />
+                                                </header>
+                                            </Column>
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text text="Start Date" />
+                                                </header>
+                                            </Column>
+                                            <!-- <Column demandPopin="true">
+                                                <header>
+                                                    <Text
+                                                        text="Amount(MYR)"
+                                                        textAlign="Center"
+                                                        width="100%"
+                                                    />
+                                                </header>
+                                            </Column> -->
+                                            <Column hAlign="End">
+                                                <header>
+                                                    <HBox
+                                                        justifyContent="SpaceBetween"
+                                                        alignItems="End"
+                                                        width="100%"
+                                                    >
+                                                        <Text
+                                                            text="Amount (MYR)"
+                                                        />
+                                                    </HBox>
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
@@ -320,12 +463,9 @@
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Start Date" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Amount" />
+                                                    <Text
+                                                        text="Last Modified"
+                                                    />
                                                 </header>
                                             </Column>
                                         </columns>
@@ -333,16 +473,25 @@
                                             <ColumnListItem>
                                                 <cells>
                                                     <Text
-                                                        text=""
+                                                        text="{dashboardModel>ID}"
                                                     />
                                                     <Text
-                                                        text=""
+                                                        text="{dashboardModel>PURPOSE}"
                                                     />
                                                     <Text
-                                                        text=""
+                                                        text="{path: 'dashboardModel>REQUEST_DATE',
+                                                        type: 'sap.ui.model.odata.type.Date',
+                                                        formatOptions: { pattern: 'dd MMM yyyy' }}"
                                                     />
                                                     <Text
-                                                        text=""
+                                                        textAlign="End"
+                                                        text="{dashboardModel>AMOUNT}"
+                                                    />
+                                                    <Text
+                                                        text="{dashboardModel>STATUS_DESC}"
+                                                    />
+                                                    <Text
+                                                        text="{dashboardModel>modifiedAt}"
                                                     />
                                                 </cells>
                                             </ColumnListItem>

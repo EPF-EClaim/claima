@@ -18,10 +18,19 @@
     <tnt:ToolPage id="toolPage">
         <tnt:header>
             <f:ShellBar
+            id="shellbar"
                 showMenuButton="true"
-                homeIcon="./images/EPF Logo Registered@2x.png"
-                menuButtonPressed="onMenuButtonPress"
-            />
+                homeIcon="{imageModel>/homeIcon}"
+                homeIconPressed="onHomeIconPressed"
+                menuButtonPressed="onMenuButtonPress">
+                <f:profile>
+        <Avatar
+            id="userAvatar"
+            initials="{imageModel>/initials}"
+            press="onAvatarPress"
+            displaySize="XS"
+        />
+    </f:profile></f:ShellBar>
         </tnt:header>
         <tnt:sideContent>
             <tnt:SideNavigation

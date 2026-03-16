@@ -53,7 +53,6 @@
 						id="button_claimsubmission_deletereport"
 						press="onAction_ClaimSubmission_Toolbar('Delete Report')"
 						text="{i18n>button_claimsubmission_deletereport}"
-						enabled="false"
 					/>
 
 					<!-- Submit Report -->

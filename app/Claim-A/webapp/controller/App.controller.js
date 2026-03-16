@@ -19,7 +19,9 @@ sap.ui.define([
 	"claima/utils/PARequestSharedFunction",
 	"claima/utils/Attachment",
 	"claima/utils/ApprovalLog",
-	"claima/utils/workflowApproval"
+	"claima/utils/workflowApproval",
+	"claima/utils/claimstatus",
+	"claima/utils/claim"
 ], function (
 	Device,
 	Controller,
@@ -39,14 +41,13 @@ sap.ui.define([
 	Sorter,
 	Spreadsheet,
 	PARequestSharedFunction,
+	Attachment,
 	ApprovalLog,
 	workflowApproval,
-	Attachment
+	claimstatus,
+	claim
 ) {
 	"use strict";
-
-
-
 
 	return Controller.extend("claima.controller.App", {
 
@@ -68,12 +69,25 @@ sap.ui.define([
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
 
+			const oSession = new sap.ui.model.json.JSONModel({
+				userType: "UNKNOWN",
+			});
+			this.getView().setModel(oSession, "session");
+
+
 			// sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
 			var sHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
+			var oRouter = this.getOwnerComponent().getRouter();
 			if (!sHash || sHash === "") {
-				var oRouter = this.getOwnerComponent().getRouter();
 				oRouter.navTo("Dashboard");
 			}
+			const oImageModel = new sap.ui.model.json.JSONModel({
+				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png"),
+				initials: "",
+				userName: "",
+				position: ""
+			});
+			this.getView().setModel(oImageModel, "imageModel");
 
 			this._loadCurrentUser();
 
@@ -83,6 +97,18 @@ sap.ui.define([
 				this._userType = oData.userType || "UNKNOWN";
 				this.costcenters = oData.costcenters || "UNKNOWN"; //Added by Aiman Salim 06/03/2026
 				this.userId = oData.userId || "UNKNOWN";
+				const sname = oData.name || "";
+				const sposition = oData.position;
+				const sInitials = sname.substring(0, 2).toUpperCase();
+				oImageModel.setProperty("/initials", sInitials);
+				oImageModel.setProperty("/userName", sname);
+				oImageModel.setProperty("/position", sposition);
+
+				// save userId to model
+				var oUserIdModel = new JSONModel({ "userId": oData.userId });
+				//// set input
+				this.getView().setModel(oUserIdModel, "userId");
+				oSession.setProperty("/userType", this._userType);
 			}).catch(err => {
 				console.error("getUserType failed:", err);
 				this._userType = "UNKNOWN";
@@ -99,20 +125,30 @@ sap.ui.define([
 			// const oReqModel = this._getReqModel().getData();
 			// oReqModel.user = emp_data.eeid;
 			// this._getReqModel().setData(oReqModel);
-			
+
 			// var claimID = "CLM26000000209";
-            // var PARID = "REQ26000000002";
+			// var PARID = "REQ26000000002";
 			// var oModelAppr = this.getView().getModel();
-            // //workflowApproval.onClaimsApproverDetermination(oModelAppr, claimID);
-            // workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
+			// //workflowApproval.onClaimsApproverDetermination(oModelAppr, claimID);
+			// workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
 			// //workflowApproval.onSendEmail();
+
+			const oDashboardModel = new JSONModel({
+				claims: [],
+				requests: [],
+				approvals: []
+			});
+			this.getView().setModel(oDashboardModel, "dashboardModel");
+
+			oRouter.getRoute("Dashboard").attachMatched(this._onDashboardMatched, this);
+			this._loadDashboardData();
 		},
-		onPARTest: function(){
+		onPARTest: function () {
 			var PARID = this.byId("PARSubmissionTest").getValue();
 			var oModel = this.getView().getModel();
 			workflowApproval.onPARApproverDetermination(oModel, PARID);
 		},
-		onClaimTest: function(){
+		onClaimTest: function () {
 			var claimID = this.byId("claimSubmissionTest").getValue();
 			var oModel = this.getView().getModel();
 			workflowApproval.onClaimsApproverDetermination(oModel, claimID);
@@ -217,6 +253,16 @@ sap.ui.define([
 				//End Aiman Salim 08/03/2026 - Added for MyApproval
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
 				case "dashboard":
+					this.getOwnerComponent().getModel("employee")?.refresh();
+					this.getOwnerComponent().getModel("employee_view")?.refresh();
+					const oDashboardModel = this.getView().getModel("dashboardModel");
+					oDashboardModel.setData({
+						claims: [],
+						requests: [],
+						approvals: []
+					});
+					this._loadDashboardData();
+					
 					oRouter.navTo("Dashboard");
 					break;
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
@@ -599,14 +645,14 @@ sap.ui.define([
 							filters: [
 								new sap.ui.model.Filter('EMP_ID', sap.ui.model.FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
 								new sap.ui.model.Filter('CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, oInputModel.getProperty("/claimtype/type")),
+								new sap.ui.model.Filter('STATUS', sap.ui.model.FilterOperator.EQ, "STAT05"),
 							],
 							parameters: {
 								$expand: {
-									"COSTCENTER": {
-										$select: "COST_CENTER_DESC"
-									}
+									"ZCOST_CENTER": { $select: "COST_CENTER_DESC" },
+									"COSTCENTER": { $select: "COST_CENTER_DESC" },
 								},
-								$select: "PREAPPROVAL_AMOUNT,EVENT_START_DATE,EVENT_END_DATE,ALTERNATE_COST_CENTER"
+								$select: "PREAPPROVAL_AMOUNT,EVENT_START_DATE,EVENT_END_DATE,COST_CENTER,ALTERNATE_COST_CENTER"
 							},
 							template: new sap.ui.core.Item({
 								key: "{employee>REQUEST_ID}",
@@ -832,7 +878,7 @@ sap.ui.define([
 				this.byId("text_claiminput_amtapproved").setVisible(true);
 				switch (oInputModel.getProperty("/claimtype/req_emailapprove")) {
 					case true:
-                        // set text for using email approval
+						// set text for using email approval
 						oInputModel.setProperty("/claim_header/request_id", "");
 						oInputModel.setProperty("/claim_header/descr/request_id", this._getTexti18n("text_claiminput_preapprovalreq_email"));
 
@@ -855,9 +901,10 @@ sap.ui.define([
 						}
 						//// disable editing alternate cost center if already set from request
 						if (oInputModel.getProperty("/claimtype/requestform/alternate_cost_center")) {
-							this.byId("select_claiminput_altcc").setEnabled(false);
-							this.byId("select_claiminput_altcc").setEditable(false);
-							this.byId("select_claiminput_altcc").setVisible(false);
+							// this.byId("select_claiminput_altcc").setEnabled(false);
+							// this.byId("select_claiminput_altcc").setEditable(false);
+							// this.byId("select_claiminput_altcc").setVisible(false);
+							this.byId("field_claiminput_altcc").setVisible(false);
 
 							this.byId("input_claiminput_altcc").setEnabled(true);
 							this.byId("input_claiminput_altcc").setVisible(true);
@@ -1057,13 +1104,13 @@ sap.ui.define([
 			// validate input data
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			//// get alternate cost center
-			if (this.byId("select_claiminput_altcc").getEnabled()) {
-				// select value from drop-down
-				var altCostCenter = this.byId("select_claiminput_altcc").getSelectedItem();
-				if (altCostCenter) {
-					oInputModel.setProperty("/claim_header/descr/alternate_cost_center", altCostCenter.getBindingContext("employee").getObject("COST_CENTER_DESC"));
-				}
-			}
+			// if (this.byId("select_claiminput_altcc").getEnabled()) {
+			// 	// select value from drop-down
+			// 	var altCostCenter = this.byId("select_claiminput_altcc").getSelectedItem();
+			// 	if (altCostCenter) {
+			// 		oInputModel.setProperty("/claim_header/descr/alternate_cost_center", altCostCenter.getBindingContext("employee").getObject("COST_CENTER_DESC"));
+			// 	}
+			// }
 			//// send new claim submission to database
 			await this._updateClaimSubmission();
 		},
@@ -1078,14 +1125,20 @@ sap.ui.define([
 			// assign report number to new claim
 			if (oInputModel.getProperty("/is_new")) {
 				var currentReportNumber = await this._getCurrentReportNumber('NR02');
-				if (currentReportNumber) {
+				var retries = 5;
+				while (retries-- > 0 && currentReportNumber.result === 'X') {
+					await this._updateCurrentReportNumber('NR02', currentReportNumber.current);
+					currentReportNumber = await this._getCurrentReportNumber('NR02');
+				}
+				if (!isNaN(currentReportNumber.result.slice(-1))) {
 					oInputModel.setProperty("/claim_header/claim_id", currentReportNumber.result);
 					oInputModel.setProperty("/reportnumber/reportno", currentReportNumber.result);
 					oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
 				}
 				else {
-					console.log("No claim ID available");
-					MessageToast.show("No claim ID available");
+					console.log("Unable to create new claim ID");
+					MessageToast.show("Unable to create new claim ID");
+					return;
 				}
 			}
 			//// set status for new claim as draft
@@ -1158,7 +1211,7 @@ sap.ui.define([
 				if (oInputModel.getProperty("/is_new")) {
 					oListBinding = oModel.bindList("/ZCLAIM_HEADER");
 					const oContext = oListBinding.create(oBody.getData());
-					oContext.created().then( async () => {
+					oContext.created().then(async () => {
 						claimSaved = true;
 						await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
 
@@ -1372,13 +1425,19 @@ sap.ui.define([
 				this.byId("input_claiminput_location").setValue(null);
 			}
 			//// alternate cost center
-			if (!this.byId("select_claiminput_altcc").getEnabled()) {
-				this.byId("select_claiminput_altcc").setEnabled(true);
-				this.byId("select_claiminput_altcc").setEditable(true);
-				this.byId("select_claiminput_altcc").setVisible(true);
+			// if (!this.byId("select_claiminput_altcc").getEnabled()) {
+			// 	this.byId("select_claiminput_altcc").setEnabled(true);
+			// 	this.byId("select_claiminput_altcc").setEditable(true);
+			// 	this.byId("select_claiminput_altcc").setVisible(true);
+			// }
+			// if (this.byId("select_claiminput_altcc").getSelectedItem()) {
+			// 	this.byId("select_claiminput_altcc").setSelectedItem(null);
+			// }
+			if (!this.byId("field_claiminput_altcc").getVisible()) {
+				this.byId("field_claiminput_altcc").setVisible(true);
 			}
-			if (this.byId("select_claiminput_altcc").getSelectedItem()) {
-				this.byId("select_claiminput_altcc").setSelectedItem(null);
+			if (this.byId("field_claiminput_altcc").getValue()) {
+				this.byId("field_claiminput_altcc").setValue(null);
 			}
 			if (this.byId("input_claiminput_altcc").getEnabled()) {
 				this.byId("input_claiminput_altcc").setEnabled(false);
@@ -1491,42 +1550,71 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel();
 
 			try {
-				const oListBinding = oModel.bindList(
-				"/ZNUM_RANGE",
-				null,
-				null,
-				[
-					new sap.ui.model.Filter({
-					path: "RANGE_ID",
-					operator: sap.ui.model.FilterOperator.EQ,
-					value1: range_id
-					})
-				],
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-					$select: "RANGE_ID,CURRENT,PREFIX"
-				}
+				var oListBinding = oModel.bindList(
+					"/ZNUM_RANGE",
+					null,
+					null,
+					[
+						new sap.ui.model.Filter({
+							path: "RANGE_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: range_id
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$select: "RANGE_ID,CURRENT,PREFIX"
+					}
 				);
 
-				const aCtx = await oListBinding.requestContexts(0, 1);
-				const oCtx = aCtx[0];
+				var aCtx = await oListBinding.requestContexts(0, 1);
+				var oCtx = aCtx[0];
 
 				if (!oCtx) {
 					throw new Error(`${range_id} not found`);
 				}
 
-				const row = oCtx.getObject();
+				var row = oCtx.getObject();
 				if (row.CURRENT == null) {
 					throw new Error(`${range_id} missing CURRENT`);
 				}
 
-				const current = Number(row.CURRENT);
-				const prefix = row.PREFIX;
-				const yy = String(new Date().getFullYear()).slice(-2);
-				const result = `${prefix}${yy}${String(current).padStart(9, "0")}`;
+				var current = Number(row.CURRENT);
+				var prefix = row.PREFIX;
+				var yy = String(new Date().getFullYear()).slice(-2);
+				var result = `${prefix}${yy}${String(current).padStart(9, "0")}`;
 
-				return { result, current };
+				// verify result is not in database
+				oListBinding = oModel.bindList(
+					"/ZCLAIM_HEADER",
+					null,
+					null,
+					[
+						new sap.ui.model.Filter({
+							path: "CLAIM_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: result
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+					}
+				);
+
+				aCtx = await oListBinding.requestContexts(0, 1);
+				oCtx = aCtx[0];
+
+				if (!oCtx) {
+					return { result, current };
+				}
+				else {
+					row = oCtx.getObject();
+					console.warn(`Claim ${oCtx.CLAIM_ID} already exists in DB, please update number range`);
+					result = 'X';
+					return { result, current };
+				}
 
 			} catch (err) {
 				console.error("Error fetching number range:", err);
@@ -1543,8 +1631,8 @@ sap.ui.define([
 				const sPath = `/ZNUM_RANGE(RANGE_ID='${rangeId.replace(/'/g, "''")}')`;
 
 				const oCtxBinding = oModel.bindContext(sPath, null, {
-				$$updateGroupId: sGroup,
-				$$ownRequest: true
+					$$updateGroupId: sGroup,
+					$$ownRequest: true
 				});
 
 				await oCtxBinding.requestObject();
@@ -1560,7 +1648,7 @@ sap.ui.define([
 				console.error("Error updating number range:", err);
 				return null;
 			}
-		}, 
+		},
 
 		onPressClaimDetails: function () {
 			this.getView().byId("expensetypescr").setVisible(false);
@@ -2258,10 +2346,24 @@ sap.ui.define([
 		getCLAIMHeaderList: async function () {
 			const oReq = this.getOwnerComponent().getModel("claim_status2");
 			const oModel = this.getOwnerComponent().getModel("employee_view");
+			var oFilter = [];
+
+			// get user ID
+			var userID;
+			if (this.getView().getModel("userId")) {
+				userID = this.getView().getModel("userId").getProperty("/userId");
+				if (userID) {
+					oFilter.push(new Filter("EMP_ID", "EQ", userID));
+				}
+			}
+			// null filter if no items
+			if (!oFilter.length) {
+				oFilter = null;
+			}
 
 			const oListBinding = oModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", undefined,
-				[new Sorter("STATUS_ID", true)],
-				null,
+				[new Sorter("LAST_MODIFIED_DATE", true)],
+				oFilter,
 				{
 					$$ownRequest: true,
 					$$groupId: "$auto",
@@ -2373,7 +2475,10 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel('employee_view');
 
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			PARequestSharedFunction.getPARHeaderList(oReq, oModel);
+			//Start of add Aiman Salim 15/03/2026 - Replace with Filter using Last Modified date
+			//PARequestSharedFunction.getPARHeaderList(oReq, oModel);
+			PARequestSharedFunction.getPARHeaderList_withfilterlastmod(oReq, oModel);
+			//End of add Aiman Salim 15/03/2026 - Replace with Filter using Last Modified date
 			var oRouter = this.getOwnerComponent().getRouter();
 			oRouter.navTo("RequestFormStatus");
 		},
@@ -2409,12 +2514,27 @@ sap.ui.define([
 		onClickNavigate: function (oEvent) {
 			let id = oEvent.getParameters().id;
 			var oRouter = this.getOwnerComponent().getRouter();
+
+			const userType = this.getView().getModel("session")?.getProperty("/userType")
+				|| this._userType
+				|| "UNKNOWN";
+
 			if (id.includes("dashboard-claim")) {
 				this.getCLAIMHeaderList();
 				var oRouter = this.getOwnerComponent().getRouter();
 				oRouter.navTo("ClaimStatus")
 			} else if (id.includes("request")) {
 				this._navToPARStatus();
+			} else if (id.includes("approval")) {
+				if (userType === "Approver") {
+					this.getMyApproverPAReq();
+					this.getMyApproverClaim();
+					oRouter.navTo("MyApproval");
+				}
+				else {
+					var message = this._getTexti18n("msg_unauthorized_role");
+					sap.m.MessageBox.error(message);
+				}
 			}
 		},
 
@@ -2423,7 +2543,7 @@ sap.ui.define([
 				title: title,
 				type: "Message",
 				state: "None",
-				content: [ new Label({ text: content }) ],
+				content: [new Label({ text: content })],
 				beginButton: new Button({
 					type: "Emphasized",
 					text: this._getTexti18n("button_claimsummary_confirm"),
@@ -2473,6 +2593,7 @@ sap.ui.define([
 						const emp_data = await that._getEmpIdDetail(email.toLowerCase());
 						const oReqModel = that._getReqModel().getData();
 						oReqModel.user = emp_data.eeid;
+						oReqModel.user_grade = emp_data.grade;
 						that._getReqModel().setData(oReqModel);
 
 						sap.m.MessageToast.show('Email: ' + email);
@@ -2487,7 +2608,123 @@ sap.ui.define([
 				}
 			});
 
-		}
+		},
 
+		onAvatarPress: function (oEvent) {
+			const oAvatar = oEvent.getSource();
+
+			if (!this._oAvatarPopover) {
+				this._oAvatarPopover = new sap.m.Popover({
+					placement: "Bottom",
+					showHeader: false,
+					content: [
+						new sap.m.VBox({
+							class: "sapUiSmallMargin",
+							items: [
+								new sap.m.Text({
+									text: "{imageModel>/userName}",
+									width: "100%",
+									textAlign: sap.ui.core.TextAlign.Center
+								}),
+								// new sap.m.ToolbarSeparator(),
+								new sap.m.Text({
+									text: "{imageModel>/position}",
+									width: "100%",
+									textAlign: sap.ui.core.TextAlign.Center
+								}),
+
+								// new sap.m.ToolbarSeparator(),
+								// Sign out button
+								new sap.m.Button({
+									text: "Sign Out",
+									type: "Transparent",
+									width: "100%",
+									press: function () {
+										// const sUrl = sap.ui.require.toUrl("/do/logout");
+										// window.location.replace(sUrl);
+										window.location.href = "/claima/do/logout";
+									}
+								})
+							]
+						})
+					]
+				});
+				this.getView().addDependent(this._oAvatarPopover);
+			}
+
+			// toggle open/close
+			if (this._oAvatarPopover.isOpen()) {
+				this._oAvatarPopover.close();
+			} else {
+				this._oAvatarPopover.openBy(oAvatar);
+			}
+		},
+
+		async openItemFromList(oEvent) {
+			claimstatus.onRowPress({
+				controller: this,
+				event: oEvent,
+				keyProp: "REQUEST_ID",
+				routeName: "RequestForm",
+				modelName: "dashboardModel",
+				paramName: "request_id"
+			});
+		},
+
+		async onRowPress(oEvent) {
+
+			claim.onRowPress({
+				controller: this,
+				event: oEvent,
+				modelName: "dashboardModel",
+				keyProp: "CLAIM_ID",
+				navContainerId: "pageContainer",
+				pageId: "navcontainer_claimsubmission"
+			});
+
+		},
+
+		_onDashboardMatched: function () {
+			this._loadDashboardData();
+		},
+
+		_loadDashboardData: function () {
+			const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+			const oDashboardModel = this.getView().getModel("dashboardModel");
+
+			oEmployeeViewModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", null, [
+				new sap.ui.model.Sorter("modifiedAt", true)
+			]).requestContexts(0, Infinity)
+				.then(aContexts => {
+					oDashboardModel.setProperty("/claims", aContexts.map(c => c.getObject()));
+				})
+				.catch(err => console.log("claims error:", err));
+
+			oEmployeeViewModel.bindList("/ZEMP_REQUEST_VIEW", null, [
+				new sap.ui.model.Sorter("modifiedAt", true)
+			]).requestContexts(0, Infinity)
+				.then(aContexts => {
+					oDashboardModel.setProperty("/requests", aContexts.map(c => c.getObject()));
+				})
+				.catch(err => console.log("requests error:", err));
+
+			oEmployeeViewModel.bindList("/ZEMP_APPROVER_DETAILS").requestContexts(0, Infinity)
+				.then(aContexts => {
+					oDashboardModel.setProperty("/approvals", aContexts.map(c => c.getObject()));
+				})
+				.catch(err => {
+					console.log("approvals not available for this role");
+					oDashboardModel.setProperty("/approvals", []);
+				});
+		},
+		onHomeIconPressed: function () {
+			var sHostname = window.location.hostname;
+			var sSFURL;
+
+			sSFURL = "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV"; //DEV
+			// "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT"	UAT
+			window.open(sSFURL, "_self");
+
+		}
 	});
 });

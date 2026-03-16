@@ -36,7 +36,7 @@ sap.ui.define([
 	workflowApproval
 ) {
 	"use strict";
-
+	
 	return Controller.extend("claima.controller.ClaimSubmission", {
 		onInit: function () {
 			this._navContainerDelegate = { onBeforeShow: this.onBeforeShow };
@@ -60,8 +60,11 @@ sap.ui.define([
 			if (oClaimSubmissionModel) {
 				this._setEnabledToolbarFooter();
 
+				// disable footer buttons if claim already cancelled
+				this._disableFooterButtons();
+
 				// show approval log fragment for user
-				if (oClaimSubmissionModel.getProperty("/claim_header/status_id" === 'STAT02') || oClaimSubmissionModel.getProperty("/is_approver")) {
+				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === 'STAT02' || oClaimSubmissionModel.getProperty("/is_approver")) {
 					var oPage = this.byId("page_claimsubmission");
 					this._getFormFragment("approval_log").then(function (oVBox) {
 						oPage.insertContent(oVBox, 2);
@@ -69,10 +72,7 @@ sap.ui.define([
 				}
 
 				// change screen details if approver
-				if (oClaimSubmissionModel.getProperty("/is_approver")) {
-					// update footer buttons
-					this._displayFooterButtons("claimsubmission_approver");
-
+				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === "STAT07" || oClaimSubmissionModel.getProperty("/is_approver")) {
 					// table changes
 					if (this.byId("button_claimsummary_edit")) {
 						//// hide buttons
@@ -84,6 +84,10 @@ sap.ui.define([
 
 					// table properties
 					this.byId("table_claimsummary_claimitem").setMode(sap.m.ListMode.SingleSelectMaster);
+				}
+				if (oClaimSubmissionModel.getProperty("/is_approver")) {
+					// update footer buttons
+					this._displayFooterButtons("claimsubmission_approver");
 				}
 			}
 		},
@@ -453,7 +457,7 @@ sap.ui.define([
 
 		onItemPress_ClaimSubmission: function (oEvent) {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			if (!oInputModel.getProperty("/is_approver")) {
+			if (oInputModel.getProperty("/claim_header/status_id") !== "STAT07" && !oInputModel.getProperty("/is_approver")) {
 				return;
 			}
 
@@ -473,6 +477,7 @@ sap.ui.define([
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			// get value from selected items
+			BusyIndicator.show(0);
 			jQuery.each(items,
 				function (id, value) {
 					itemSubId = value.getCells()[0].getText();
@@ -500,6 +505,7 @@ sap.ui.define([
 
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
+			BusyIndicator.hide();
 		},
 
 		onDelete_ClaimSummary: function (items) {
@@ -590,42 +596,7 @@ sap.ui.define([
 						}.bind(this)
 					);
 					break;
-				// // confirm dialog
-				// var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-				// if (oClaimSubmissionModel.getProperty("is_new")) {
-				// 	// new claim submission
-				// 	this._newDialog(
-				// 		this._getTexti18n("dialog_claimsubmission_back"),
-				// 		this._getTexti18n("label_claimsubmission_back_create"),
-				// 		function () {
-				// 			this.onBack_ClaimSubmission();
-				// 		}.bind(this)
-				// 	);
-				// }
-				// else if (oClaimSubmissionModel.getProperty("is_approver")) {
-				// 	// new claim submission
-				// 	this._newDialog(
-				// 		this._getTexti18n("dialog_claimsubmission_back"),
-				// 		this._getTexti18n("label_claimapprover_back"),
-				// 		function () {
-				// 			this.onBack_ClaimSubmission();
-				// 		}.bind(this)
-				// 	);
-				// }
-				// else {
-				// 	// new claim submission
-				// 	this._newDialog(
-				// 		this._getTexti18n("dialog_claimsubmission_back"),
-				// 		this._getTexti18n("label_claimsubmission_back_change"),
-				// 		function () {
-				// 			this.onBack_ClaimSubmission();
-				// 		}.bind(this)
-				// 	);
-				// }
-				// break;
 				//// Reject
-				//// Reject
-
 				case 'Reject': {
 					
 					// Ensure form model
@@ -723,7 +694,7 @@ sap.ui.define([
 				this.__approveDialog.close();
 			}
 		},
-
+		//Button config for Approve
 		onClickCreate_app: async function () {
 			// Approve flow for CLAIM submission
 			const oReject = this.getView().getModel("Reject");
@@ -767,6 +738,8 @@ sap.ui.define([
 					// 4) Navigate back after small delay (optional)
 					setTimeout(() => {
 						const oRouter = this.getOwnerComponent().getRouter();
+						this.getOwnerComponent().getModel("employee")?.refresh();
+						this.getOwnerComponent().getModel("employee_view")?.refresh();
 						oRouter.navTo("Dashboard", {}, true);
 					}, 400);
 
@@ -778,7 +751,7 @@ sap.ui.define([
 			}
 
 		},
-
+		//Button config for Reject
 		onReject_ClaimSubmission: async function () {
 			// quick visual trace
 			 console.log("[onReject_ClaimSubmission] fired");
@@ -830,6 +803,8 @@ sap.ui.define([
 				// Close & navigate
 				if (this.__rejectDialog) this.__rejectDialog.close();
 				setTimeout(() => {
+					this.getOwnerComponent().getModel("employee")?.refresh();
+					this.getOwnerComponent().getModel("employee_view")?.refresh();
 					this.getOwnerComponent().getRouter().navTo("Dashboard", {}, true);
 				}, 400);
 
@@ -839,17 +814,7 @@ sap.ui.define([
 				sap.ui.core.BusyIndicator.hide();
 			}
 		},
-
-
-
-		onClickCancel_app: function () {
-			if (this.__approveDialog) { this.__approveDialog.close(); }
-			if (this.__sendBackDialog) { this.__sendBackDialog.close(); }
-			if (this.__rejectDialog) { this.__rejectDialog.close(); }
-		},
-
-		//End Approval
-
+		//Button config for Send Back
 		onSendBack_ClaimSubmission: async function () {
 			const oReject = this.getView().getModel("Reject");
 			const reason = oReject?.getProperty("/sendBackReasonKey");
@@ -900,6 +865,8 @@ sap.ui.define([
 
 				// Navigate out
 				setTimeout(() => {
+					this.getOwnerComponent().getModel("employee")?.refresh();
+					this.getOwnerComponent().getModel("employee_view")?.refresh();
 					this.getOwnerComponent().getRouter().navTo("Dashboard", {}, true);
 				}, 400);
 
@@ -909,6 +876,16 @@ sap.ui.define([
 				sap.ui.core.BusyIndicator.hide();
 			}
 		},
+
+		onClickCancel_app: function () {
+			if (this.__approveDialog) { this.__approveDialog.close(); }
+			if (this.__sendBackDialog) { this.__sendBackDialog.close(); }
+			if (this.__rejectDialog) { this.__rejectDialog.close(); }
+		},
+
+		//End Approval
+
+		
 
 		// Example: wire this to your "Back to Employee" or "Send Back" action
 		onOpenSendBack_Claim: function () {
@@ -1030,16 +1007,23 @@ sap.ui.define([
 			}
 		},
 
+		_disableFooterButtons: function () {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === 'STAT07') {
+				this.byId("button_claimsubmission_savedraft").setEnabled(false);
+				this.byId("button_claimsubmission_deletereport").setEnabled(false);
+				this.byId("button_claimsubmission_submitreport").setEnabled(false);
+			}
+			else {
+				this.byId("button_claimsubmission_savedraft").setEnabled(true);
+				this.byId("button_claimsubmission_deletereport").setEnabled(true);
+				this.byId("button_claimsubmission_submitreport").setEnabled(true);
+			}
+		},
+
 		onSelect_ClaimDetails_ClaimItem: async function (oEvent) {
 			// validate claim item
 			var claimItem = oEvent.getParameters().selectedItem;
-			if (claimItem) {
-				// get category values from claim item
-				var claimCategoryDesc = claimItem.getBindingContext("employee").getObject("ZSUBMISSION_TYPE/SUBMISSION_TYPE_DESC");
-
-				// show claim item category in category input
-				this.byId("input_claimdetails_input_category").setValue(claimCategoryDesc);
-			}
 
 			// set app visibility controls
 			await this.getFieldVisibility_ClaimTypeItem();
@@ -1078,7 +1062,7 @@ sap.ui.define([
 			this._setClaimDetailSelection(oClaimSubmissionModel);
 
 			// approver view changes
-			if (oClaimSubmissionModel.getProperty("/is_approver")) {
+			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === "STAT07" || oClaimSubmissionModel.getProperty("/is_approver")) {
 				if (!this.byId("button_claimdetails_input_return").getVisible()) {
 					this.byId("button_claimdetails_input_return").setVisible(true);
 				}
@@ -1090,7 +1074,10 @@ sap.ui.define([
 			//// Claim Item
 			this.byId("select_claimdetails_input_claimitem").bindAggregation("items", {
 				path: "employee>/ZCLAIM_TYPE_ITEM",
-				filters: [new sap.ui.model.Filter('CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id"))],
+				filters: [
+					new sap.ui.model.Filter('CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id")),
+					new sap.ui.model.Filter('SUBMISSION_TYPE', sap.ui.model.FilterOperator.EQ, oModel.getProperty("/claim_header/submission_type"))
+				],
 				sorter: [
 					new sap.ui.model.Sorter('CLAIM_TYPE_ITEM_DESC'),
 					new sap.ui.model.Sorter('CLAIM_TYPE_ITEM_ID')
@@ -1141,6 +1128,8 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_area", "ZAREA");
 			//// Lodging Category
 			this._setClaimDetailSelectionField("select_claimdetails_input_lodging_category", "ZLODGING_CAT", "LODGING_CATEGORY");
+			//// Category/Purpose
+			this._setClaimDetailSelectionField("select_claimdetails_input_claim_category", "ZCLAIM_CATEGORY");
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
 		},
@@ -1214,12 +1203,9 @@ sap.ui.define([
 			}
 			//// get claim type from claim header
 			oInputModel.setProperty("/claim_item/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
-			//// get claim category key
-			oInputModel.setProperty("/claim_item/claim_category", this.byId("select_claimdetails_input_claimitem").getSelectedItem().getBindingContext("employee").getObject("SUBMISSION_TYPE"));
 			//// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/descr/claim_type_id"));
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
-			oInputModel.setProperty("/claim_item/descr/claim_category", this.byId("input_claimdetails_input_category").getValue());
 			// add claim item details to claim submission model
 			if (oInputModel.getProperty("/is_new")) {
 				oClaimSubmissionModel.setProperty("/claim_items", oClaimSubmissionModel.getProperty("/claim_items").concat(oInputModel.getProperty("/claim_item")));
@@ -1754,7 +1740,7 @@ sap.ui.define([
 				}
 
 				// approver view changes
-				if (oClaimSubmissionModel.getProperty("/is_approver")) {
+				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === "STAT07" || oClaimSubmissionModel.getProperty("/is_approver")) {
 					if (this.byId("button_claimdetails_input_return").getVisible()) {
 						this.byId("button_claimdetails_input_return").setVisible(false);
 					}
@@ -1764,15 +1750,18 @@ sap.ui.define([
 				oClaimItemFragment.then(function (oVBox) {
 					oPage.removeContent(oVBox);
 				});
+
+				const fpromise = await this._getFormFragment("claimsubmission_summary_claimitem").then(function (oVBox) {
+					oPage.insertContent(oVBox, 1);
+				});
+				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== "STAT07" && !oClaimSubmissionModel.getProperty("/is_approver")) {
+					this._setEnabledToolbarFooter();
+				}
+				if (!oClaimSubmissionModel.getProperty("/is_approver")) {
+					this._displayFooterButtons("claimsubmission_summary_claimitem");
+				}
+				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 			}
-			const fpromise = await this._getFormFragment("claimsubmission_summary_claimitem").then(function (oVBox) {
-				oPage.insertContent(oVBox, 1);
-			});
-			if (!oClaimSubmissionModel.getProperty("/is_approver")) {
-				this._displayFooterButtons("claimsubmission_summary_claimitem");
-				this._setEnabledToolbarFooter();
-			}
-			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 		},
 
 		_updateClaimSubmission: async function (oAction) {
@@ -1788,7 +1777,12 @@ sap.ui.define([
 				// assign report number to new claim
 				if (oInputModel.getProperty("/is_new")) {
 					var currentReportNumber = await this._getCurrentReportNumber('NR02');
-					if (currentReportNumber) {
+					var retries = 5;
+					while (retries-- > 0 && currentReportNumber.result === 'X') {
+						await this._updateCurrentReportNumber('NR02', currentReportNumber.current);
+						currentReportNumber = await this._getCurrentReportNumber('NR02');
+					}
+					if (!isNaN(currentReportNumber.result.slice(-1))) {
 						oInputModel.setProperty("/claim_header/claim_id", currentReportNumber.result);
 						oInputModel.setProperty("/reportnumber/reportno", currentReportNumber.result);
 						oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
@@ -1908,7 +1902,7 @@ sap.ui.define([
 						// determine claims approver
 						if (oAction === 'Submit Report') {
 							var oModelAppr = this.getView().getModel();
-							ApprovalLog.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
+							// ApprovalLog.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
 						}
 						MessageToast.show(oMsg);
 						// this._returnToDashboard();
@@ -1936,11 +1930,11 @@ sap.ui.define([
 						throw new Error("Claim not reachable.");
 					}
 
+					for (const [key, value] of Object.entries(oBody.getData())) {
+						oCtx.setProperty(key, value);
+					}
 					switch (oAction) {
 						case 'Save Draft':
-							for (const [key, value] of Object.entries(oBody.getData())) {
-								oCtx.setProperty(key, value);
-							}
 							var oMsg = this._getTexti18n("msg_claimsubmission_changed");
 							break;
 						case 'Delete Report':
@@ -1992,8 +1986,9 @@ sap.ui.define([
 						var oModelAppr = this.getView().getModel();
 						// ApprovalLog.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
 					}
+					
 					MessageToast.show(oMsg);
-					// this._returnToDashboard();
+					this.onBack_ClaimSubmission();
 				}
 
 			} catch (e) {
@@ -2012,26 +2007,42 @@ sap.ui.define([
 		_updateClaimItems: async function () {
 			// get input model
 			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var itemCountDb = 0;
+			var delItems = [];
 
-			// for each item
-			oInputModel.getProperty("/claim_items").forEach(async (claim_item) => {
+			// count existing items from database
+			try {
+				var oModel = this.getOwnerComponent().getModel();
+				var oListBinding;
+
+				oListBinding = oModel.bindList("/ZCLAIM_ITEM", null,
+					[new sap.ui.model.Sorter("CLAIM_SUB_ID", false)],
+					[new sap.ui.model.Filter({ path: "CLAIM_ID", operator: sap.ui.model.FilterOperator.EQ, value1: oInputModel.getProperty("/claim_header/claim_id") })],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$$updateGroupId: "$auto"
+					}
+				);
+
+				var aCtx = await oListBinding.requestContexts();
+				itemCountDb = aCtx.length;
+
+				if (itemCountDb > oInputModel.getProperty("/claim_items").length) {
+					for (let i = oInputModel.getProperty("/claim_items").length; i < itemCountDb; i++) {
+						var oCtx = aCtx[i];
+						delItems.push(oCtx);
+					}
+				}
+			} catch (e) {
+				console.log(e.message);
+			}
+
+			// for each item to be saved
+			oInputModel.getProperty("/claim_items").forEach(async (claim_item, i) => {
 				 try {
-					BusyIndicator.show(0);
-
-					const oModel = this.getOwnerComponent().getModel();
-					var oListBinding;
-
-					oListBinding = oModel.bindList("/ZCLAIM_ITEM", null, null,
-						[
-							new sap.ui.model.Filter({ path: "CLAIM_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_item.claim_id }),
-							new sap.ui.model.Filter({ path: "CLAIM_SUB_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_item.claim_sub_id })
-						],
-						{
-							$$ownRequest: true,
-							$$groupId: "$auto",
-							$$updateGroupId: "$auto"
-						}
-					);
+					oModel = this.getOwnerComponent().getModel();
+					oListBinding = null;
 
 					// set body for update
 					var oBody = new JSONModel({
@@ -2138,14 +2149,10 @@ sap.ui.define([
 						VEHICLE_CLASS_ID: claim_item.vehicle_class_id
 					});
 
-					const aCtx = await oListBinding.requestContexts(0, 1);
-					const oCtx = aCtx[0];
-
-					if (!oCtx) {
-						console.log("Claim item not found in database; creating new item");
+					if (i >= itemCountDb) {
 						// create new item
 						oListBinding = oModel.bindList("/ZCLAIM_ITEM");
-						const oContext = oListBinding.create(oBody.getData());
+						var oContext = oListBinding.create(oBody.getData());
 						oContext.created().then(() => {
 							console.log("New claim item created");
 						}).catch(err => {
@@ -2154,17 +2161,60 @@ sap.ui.define([
 						});
 					}
 					else {
-						for (const [key, value] of Object.entries(oBody.getData())) {
-							oCtx.setProperty(key, value);
-						}
+						oListBinding = oModel.bindList("/ZCLAIM_ITEM", null,null,
+							[
+								new sap.ui.model.Filter({ path: "CLAIM_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_item.claim_id }),
+								new sap.ui.model.Filter({ path: "CLAIM_SUB_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_item.claim_sub_id })
+							],
+							{
+								$$ownRequest: true,
+								$$groupId: "$auto",
+								$$updateGroupId: "$auto"
+							}
+						);
 
-						await oModel.submitBatch("$auto");
-						
-						console.log("Save claim item success");
+						aCtx = await oListBinding.requestContexts(0, 1);
+						oCtx = aCtx[0];
+
+						if (!oCtx) {
+							throw new Error("Claim item not found in database");
+						}
+						else {
+							for (const [key, value] of Object.entries(oBody.getData())) {
+								oCtx.setProperty(key, value);
+							}
+
+							await oModel.submitBatch("$auto");
+							
+							console.log("Save claim item success");
+						}
 					}
 				} catch (e) {
-					console.log(e.message || "Submission failed");
-					MessageToast.show(e.message || "Submission failed");
+					console.log(e.message || "Claim update failed");
+					MessageToast.show(e.message || "Claim update failed");
+				}
+			})
+
+			// for each item to be deleted
+			delItems.forEach(async (claim_item) => {
+				try {
+					oModel = this.getOwnerComponent().getModel();
+					oListBinding = null;
+
+					oListBinding = oModel.bindList("/ZCLAIM_ITEM", null, null,
+						[
+							new sap.ui.model.Filter({ path: "CLAIM_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_item.CLAIM_ID }),
+							new sap.ui.model.Filter({ path: "CLAIM_SUB_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_item.CLAIM_SUB_ID })
+						]
+					);
+
+					oCtx.delete().then( function() {
+						console.log("Claim item deleted");
+					}).catch( function(oError) {
+						console.error(oError);
+					});
+				} catch (e) {
+					console.error(e.message);
 				}
 			})
 		},
@@ -2211,7 +2261,7 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel();
 
 			try {
-				const oListBinding = oModel.bindList(
+				var oListBinding = oModel.bindList(
 					"/ZNUM_RANGE",
 					null,
 					null,
@@ -2229,24 +2279,53 @@ sap.ui.define([
 					}
 				);
 
-				const aCtx = await oListBinding.requestContexts(0, 1);
-				const oCtx = aCtx[0];
+				var aCtx = await oListBinding.requestContexts(0, 1);
+				var oCtx = aCtx[0];
 
 				if (!oCtx) {
 					throw new Error(`${range_id} not found`);
 				}
 
-				const row = oCtx.getObject();
+				var row = oCtx.getObject();
 				if (row.CURRENT == null) {
 					throw new Error(`${range_id} missing CURRENT`);
 				}
 
-				const current = Number(row.CURRENT);
-				const prefix = row.PREFIX;
-				const yy = String(new Date().getFullYear()).slice(-2);
-				const result = `${prefix}${yy}${String(current).padStart(9, "0")}`;
+				var current = Number(row.CURRENT);
+				var prefix = row.PREFIX;
+				var yy = String(new Date().getFullYear()).slice(-2);
+				var result = `${prefix}${yy}${String(current).padStart(9, "0")}`;
 
-				return { result, current };
+				// verify result is not in database
+				oListBinding = oModel.bindList(
+				"/ZCLAIM_HEADER",
+				null,
+				null,
+				[
+					new sap.ui.model.Filter({
+					path: "CLAIM_ID",
+					operator: sap.ui.model.FilterOperator.EQ,
+					value1: result
+					})
+				],
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+				}
+				);
+
+				aCtx = await oListBinding.requestContexts(0, 1);
+				oCtx = aCtx[0];
+
+				if (!oCtx) {
+					return { result, current };
+				}
+				else {
+					row = oCtx.getObject();
+					console.warn(`Claim ${oCtx.CLAIM_ID} already exists in DB, please update number range`);
+					result = 'X';
+					return { result, current };
+				}
 
 			} catch (err) {
 				console.error("Error fetching number range:", err);
@@ -2294,10 +2373,7 @@ sap.ui.define([
 			}
 
 			// reset UI from approver page
-			if (oClaimSubmissionModel.getProperty("/is_approver")) {
-				// update footer buttons
-				this._displayFooterButtons("claimsubmission_summary_claimitem");
-
+			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === "STAT07" || oClaimSubmissionModel.getProperty("/is_approver")) {
 				// table changes
 				if (this.byId("button_claimsummary_edit")) {
 					//// hide buttons
@@ -2309,11 +2385,17 @@ sap.ui.define([
 
 				// table properties
 				this.byId("table_claimsummary_claimitem").setMode(sap.m.ListMode.MultiSelect);
+			}
+			if (oClaimSubmissionModel.getProperty("/is_approver")) {
+				// update footer buttons
+				this._displayFooterButtons("claimsubmission_summary_claimitem");
 
 				// return to approver screen
 				this.getMyApproverPAReq();
 				this.getMyApproverClaim();
+				
 				var oRouter = this.getOwnerComponent().getRouter();
+				var sHash = sap.ui.core.routing.HashChanger.getInstance().replaceHash("");
 				oRouter.navTo("MyApproval");
 			}
 			else {
@@ -2323,6 +2405,9 @@ sap.ui.define([
 
 		_returnToDashboard: function () {
 			var oRouter = this.getOwnerComponent().getRouter();
+			var sHash = sap.ui.core.routing.HashChanger.getInstance().replaceHash("");
+			this.getOwnerComponent().getModel("employee")?.refresh();
+			this.getOwnerComponent().getModel("employee_view")?.refresh();
 			oRouter.navTo("Dashboard");
 		},
 
@@ -2485,6 +2570,7 @@ sap.ui.define([
 				"select_claimdetails_input_area",
 				"select_claimdetails_input_lodging_category",
 				"input_claimdetails_input_no_of_family_member",
+				"select_claimdetails_input_claim_category",
 				"select_claimdetails_input_mobile_category_purpose_id",
 				"input_claimdetails_input_bill_no",
 				"input_claimdetails_input_account_no",
@@ -2608,6 +2694,7 @@ sap.ui.define([
 				"select_claimdetails_input_area",
 				"select_claimdetails_input_lodging_category",
 				"input_claimdetails_input_no_of_family_member",
+				"select_claimdetails_input_claim_category",
 				"select_claimdetails_input_mobile_category_purpose_id",
 				"input_claimdetails_input_bill_no",
 				"input_claimdetails_input_account_no",
@@ -2855,8 +2942,11 @@ sap.ui.define([
 		getMyApproverPAReq: async function () {
 			const oReq = this.getOwnerComponent().getModel("request_status");
 			const oModel = this.getOwnerComponent().getModel("employee_view");
+			var userID;
 
-			const userID = this.userId;
+			if (this.getView().getModel("userId")) {
+				userID = this.getView().getModel("userId").getProperty("/userId");
+			}
 			const oApproverOrSub = new sap.ui.model.Filter({
 				filters: [
 					new sap.ui.model.Filter("APPROVER_ID", sap.ui.model.FilterOperator.EQ, userID),
@@ -2912,8 +3002,11 @@ sap.ui.define([
 		getMyApproverClaim: async function () {
 			const oReq = this.getOwnerComponent().getModel("claim_status");
 			const oModel = this.getOwnerComponent().getModel("employee_view");
+			var userID;
 
-			const userID = this.userId;
+			if (this.getView().getModel("userId")) {
+				userID = this.getView().getModel("userId").getProperty("/userId");
+			}
 			const oApproverOrSub = new sap.ui.model.Filter({
 				filters: [
 					new sap.ui.model.Filter("APPROVER_ID", sap.ui.model.FilterOperator.EQ, userID),
