@@ -2329,13 +2329,12 @@ sap.ui.define([
 		},
 
 		//For MyClaimStatus
-
 		getCLAIMHeaderList: async function () {
 			const oReq = this.getOwnerComponent().getModel("claim_status2");
 			const oModel = this.getOwnerComponent().getModel("employee_view");
 
 			const oListBinding = oModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", undefined,
-				[new Sorter("LAST_MODIFIED_DATE", true)],
+				[new Sorter("modifiedAt", true)],
 				null,
 				{
 					$$ownRequest: true,
