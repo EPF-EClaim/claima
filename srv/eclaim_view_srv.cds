@@ -689,7 +689,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_HEADER.CASH_ADVANCE as AMOUNT,
                 ZREQUEST_HEADER.PREAPPROVAL_AMOUNT as TOTAL_AMOUNT } 
                 where ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'  
-        UNION ALL
+        UNION 
         select from ECLAIM.ZAPPROVER_DETAILS_CLAIMS as claim
         {
             key CLAIM_ID as ID,
