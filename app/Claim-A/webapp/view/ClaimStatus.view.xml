@@ -74,7 +74,7 @@
 
                     <Column hAlign="End">
                         <header>
-                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="70%">
                                 <Text text="Amount (MYR)"/>
                                 <Button type="Transparent" icon="sap-icon://sort"
                                         tooltip="Sort by Amount"
@@ -100,16 +100,14 @@
                                 </Button>
                             </HBox>
                         </header>
-                    </Column>
-
-                    
+                    </Column>  
 
                     <Column>
                         <header>
                             <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
                                 <Text text="Last Modified"/>
                                 <Button type="Transparent" icon="sap-icon://sort"
-                                        tooltip="Sort by LastModified"
+                                        tooltip="Sort by Status"
                                         press="onSortToggle">
                                     <customData>
                                         <core:CustomData key="path" value="modifiedAt"/>
@@ -117,7 +115,7 @@
                                 </Button>
                             </HBox>
                         </header>
-                    </Column>
+                    </Column>  
                 </columns>
 
                 <!-- Your items unchanged -->
@@ -133,17 +131,15 @@
                                     type: 'sap.ui.model.odata.type.Date',
                                     formatOptions: { pattern: 'dd MMM yyyy' }
                                 }" />
-
-                            <Text
+                                 <Text
                                 text="{
                                     path: 'claim_status2>TOTAL_CLAIM_AMOUNT',
                                     type: 'sap.ui.model.type.Float',
                                     formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
                                 }" />
-                                
                             <Text text="{claim_status2>STATUS_DESC}" />
-                            
                             <Text text="{claim_status2>modifiedAt}" />
+                           
                         </cells>
                     </ColumnListItem>
                 </items>
