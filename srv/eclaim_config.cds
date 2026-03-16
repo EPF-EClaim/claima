@@ -914,7 +914,7 @@ annotate service.ZSTATE with @(
 annotate service.ZEMP_MASTER with @(
     cds.autoexpose,
 
-    Capabilities.SearchRestrictions: {Searchable: false},
+    Capabilities.SearchRestrictions: {Searchable: true},
     cds.server.body_parser.limit   : '10mb',
     Common.SemanticKey             : [EEID],
     Capabilities                   : {
@@ -1136,7 +1136,7 @@ annotate service.ZEMP_MASTER with @(
 
 annotate service.ZJOB_GROUP with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: false},
+    Capabilities.SearchRestrictions: {Searchable: true},
     Common.SemanticKey             : [JOB_GROUP_ID],
     Capabilities                   : {
         Deletable : true,

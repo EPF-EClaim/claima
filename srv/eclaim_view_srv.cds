@@ -162,7 +162,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             grant: 'READ',
             to   : ['Claimant'],
-            where: 'EMP_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
+            where: (createdBy = $user)
         },
         {
             grant: 'WRITE',
