@@ -3,7 +3,7 @@
   "authenticationMethod": "route",
   "logout": {
     "logoutEndpoint": "/do/logout",
-    "logoutPage": "/logged-out.html"
+    "logoutPage": "/index.html"
   },
   "routes": [
     {
