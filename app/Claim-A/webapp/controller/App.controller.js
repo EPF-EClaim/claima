@@ -41,17 +41,14 @@ sap.ui.define([
 	Sorter,
 	Spreadsheet,
 	PARequestSharedFunction,
+	Attachment,
 	ApprovalLog,
 	workflowApproval,
-	Attachment,
 	claimstatus,
 	claim
 ) {
 	"use strict";
-
-
-
-
+	
 	return Controller.extend("claima.controller.App", {
 
 		_ReqAttachmentFile1: null,
@@ -2565,6 +2562,7 @@ sap.ui.define([
 						const emp_data = await that._getEmpIdDetail(email.toLowerCase());
 						const oReqModel = that._getReqModel().getData();
 						oReqModel.user = emp_data.eeid;
+						oReqModel.user_grade = emp_data.grade;
 						that._getReqModel().setData(oReqModel);
 
 						sap.m.MessageToast.show('Email: ' + email);
@@ -2611,9 +2609,9 @@ sap.ui.define([
 									type: "Transparent",
 									width: "100%",
 									press: function () {
-										const sUrl = sap.ui.require.toUrl("/do/logout");
-										window.location.replace(sUrl);
-
+										// const sUrl = sap.ui.require.toUrl("/do/logout");
+										// window.location.replace(sUrl);
+										window.location.href = "/claima/do/logout";
 									}
 								})
 							]
