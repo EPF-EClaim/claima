@@ -111,7 +111,7 @@
                             <Text text="{request_status>REQUEST_ID}" />
                             <Text text="{request_status>OBJECTIVE_PURPOSE}" />
                             <Text text="{request_status>STATUS_DESC}" />
-                            <Text text="RM {
+                            <Text text="{
                                     path: 'request_status>PREAPPROVAL_AMOUNT',
                                     type: 'sap.ui.model.type.Float',
                                     formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
