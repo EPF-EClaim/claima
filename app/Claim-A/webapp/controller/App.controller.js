@@ -639,14 +639,14 @@ sap.ui.define([
 							filters: [
 								new sap.ui.model.Filter('EMP_ID', sap.ui.model.FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
 								new sap.ui.model.Filter('CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, oInputModel.getProperty("/claimtype/type")),
+								new sap.ui.model.Filter('STATUS', sap.ui.model.FilterOperator.EQ, "STAT05"),
 							],
 							parameters: {
 								$expand: {
-									"COSTCENTER": {
-										$select: "COST_CENTER_DESC"
-									}
+									"ZCOST_CENTER": { $select: "COST_CENTER_DESC" },
+									"COSTCENTER": { $select: "COST_CENTER_DESC" },
 								},
-								$select: "PREAPPROVAL_AMOUNT,EVENT_START_DATE,EVENT_END_DATE,ALTERNATE_COST_CENTER"
+								$select: "PREAPPROVAL_AMOUNT,EVENT_START_DATE,EVENT_END_DATE,COST_CENTER,ALTERNATE_COST_CENTER"
 							},
 							template: new sap.ui.core.Item({
 								key: "{employee>REQUEST_ID}",
