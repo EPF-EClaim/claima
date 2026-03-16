@@ -212,10 +212,7 @@ sap.ui.define([
 			//}
             if(claimsAltCC == "" || claimsAltCC == null) {  
 				empCCVal = "EQ";
-            }else if(claimsCC == empCC){
-                empCCVal = "EQ";
-            }
-            else{
+            }else{
                 empCCVal = "NE";
             }
 			
@@ -631,6 +628,14 @@ sap.ui.define([
 				}
 				
 			}
+
+            console.log("cash advance Val " + parCashAdvArr);
+            console.log("Trip start Age " + tripStartAge);
+            console.log("Employee CC " + empCCVal);
+            
+            console.log(cashAdvWorkflowCodeArr);
+            console.log(tripStartAgingWorkflowCodeArr);
+            console.log(empCCWorkflowCodeArr);
 
 			//filter for the only workflow code that is the same among all the rule checks
 			const commonWorkflowCode = [...new Set(empCCWorkflowCodeArr)].filter(item => 

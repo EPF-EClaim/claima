@@ -360,7 +360,7 @@ sap.ui.define([
 									oRouter.navTo("RequestFormStatus");
 
 									// Add in onPARApproverDetermination function
-									workflowApproval.onClaimsApproverDetermination(oModel, reqId);
+									workflowApproval.onPARApproverDetermination(oModel, reqId);
 
 								} else {
 									MessageToast.show(`Please inform Cost Center owner to increase the budget for Claim Item ${result.aErrors} before submit Pre-Approval Request`);
