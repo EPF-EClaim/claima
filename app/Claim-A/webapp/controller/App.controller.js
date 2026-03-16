@@ -48,7 +48,7 @@ sap.ui.define([
 	claim
 ) {
 	"use strict";
-	
+
 	return Controller.extend("claima.controller.App", {
 
 		_ReqAttachmentFile1: null,
@@ -255,6 +255,14 @@ sap.ui.define([
 				case "dashboard":
 					this.getOwnerComponent().getModel("employee")?.refresh();
 					this.getOwnerComponent().getModel("employee_view")?.refresh();
+					const oDashboardModel = this.getView().getModel("dashboardModel");
+					oDashboardModel.setData({
+						claims: [],
+						requests: [],
+						approvals: []
+					});
+					this._loadDashboardData();
+					
 					oRouter.navTo("Dashboard");
 					break;
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
@@ -2637,7 +2645,7 @@ sap.ui.define([
 				event: oEvent,
 				keyProp: "REQUEST_ID",
 				routeName: "RequestForm",
-				modelName: "employee_view",
+				modelName: "dashboardModel",
 				paramName: "request_id"
 			});
 		},
@@ -2647,7 +2655,7 @@ sap.ui.define([
 			claim.onRowPress({
 				controller: this,
 				event: oEvent,
-				modelName: "employee_view",
+				modelName: "dashboardModel",
 				keyProp: "CLAIM_ID",
 				navContainerId: "pageContainer",
 				pageId: "navcontainer_claimsubmission"
@@ -2664,7 +2672,7 @@ sap.ui.define([
 			const oDashboardModel = this.getView().getModel("dashboardModel");
 
 			oEmployeeViewModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", null, [
-				new sap.ui.model.Sorter("LAST_MODIFIED_DATE", true)
+				new sap.ui.model.Sorter("modifiedAt", true)
 			]).requestContexts(0, Infinity)
 				.then(aContexts => {
 					oDashboardModel.setProperty("/claims", aContexts.map(c => c.getObject()));
@@ -2688,11 +2696,12 @@ sap.ui.define([
 					oDashboardModel.setProperty("/approvals", []);
 				});
 		},
-		onHomeIconPressed: function() {
+		onHomeIconPressed: function () {
 			var sHostname = window.location.hostname;
-			var sSFURL ;
+			var sSFURL;
 
 			sSFURL = "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV"; //DEV
+			// "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT"	UAT
 			window.open(sSFURL, "_self");
 
 		}
