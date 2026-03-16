@@ -2735,10 +2735,12 @@ sap.ui.define([
 		onHomeIconPressed: function () {
 			const oSession = this.getView().getModel("session");
 			const origin = oSession.getProperty("/origin");
-			// var sHostname = window.location.hostname;
 			var sSFURL;
 
-			sSFURL = origin === "httpsa6s6cq33s.accounts.ondemand.com"? "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV": "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT"; 
+			sSFURL = origin === "httpsa6s6cq33s.accounts.ondemand.com" ? "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV" :
+					 origin === "sap.custom" ? "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT" :
+								"https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD";
+
 			window.open(sSFURL, "_self");
 
 		}
