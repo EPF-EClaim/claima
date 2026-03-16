@@ -212,7 +212,10 @@ sap.ui.define([
 			//}
             if(claimsAltCC == "" || claimsAltCC == null) {  
 				empCCVal = "EQ";
-            }else{
+            }else if(claimsCC == empCC){
+                empCCVal = "EQ";
+            }
+            else{
                 empCCVal = "NE";
             }
 			
@@ -224,20 +227,22 @@ sap.ui.define([
 			for(var i = 0; i < nestedWorkflowRuleArr.length; i++){
 
                 //Check if rule equals null. If rule equals null, add into array as part of selection
-				//if(claimsOverallRisk == nestedWorkflowRuleArr[i][3]){
-				//	riskLevelWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
-				//}
+				// if(claimsOverallRisk == nestedWorkflowRuleArr[i][3]){
+				// 	riskLevelWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+				// }
 
                 if(nestedWorkflowRuleArr[i][3] == null){
                     riskLevelWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
                 }else if(claimsOverallRisk == nestedWorkflowRuleArr[i][3]){
                     riskLevelWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
                 }
-				//if(empCCVal == nestedWorkflowRuleArr[i][2]){
-				//	empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
-				//}
+
+				// if(empCCVal == nestedWorkflowRuleArr[i][2]){
+				// 	empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+				// }
 
                 if(nestedWorkflowRuleArr[i][2] == null){
+                    empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
                 }else if(empCCVal == nestedWorkflowRuleArr[i][2]){
 					empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
 				}
@@ -252,9 +257,9 @@ sap.ui.define([
 					threshholdVal = null;
 				}
 
-				//if(threshholdVal == nestedWorkflowRuleArr[i][5]){
-				//	thresholdWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
-				//}
+				// if(threshholdVal == nestedWorkflowRuleArr[i][5]){
+				// 	thresholdWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+				// }
 
                 if(nestedWorkflowRuleArr[i][5] == null){
                     thresholdWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
@@ -270,9 +275,9 @@ sap.ui.define([
 					receiptAge = null;
 				}
 
-				//if(receiptAge == nestedWorkflowRuleArr[i][6]){
-				//	receiptAgingWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
-				//}
+				// if(receiptAge == nestedWorkflowRuleArr[i][6]){
+				// 	receiptAgingWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
+				// }
 
                 if(nestedWorkflowRuleArr[i][6] == null){
                     receiptAgingWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
@@ -280,6 +285,16 @@ sap.ui.define([
 					receiptAgingWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
 				}
 			}
+
+            console.log("Overall Risk" + claimsOverallRisk);
+            console.log("Threshold Val " + threshholdVal);
+            console.log("Receipt Age " + receiptAge);
+            console.log("Employee CC " + empCCVal);
+            
+            console.log(riskLevelWorkflowCodeArr);
+            console.log(thresholdWorkflowCodeArr);
+            console.log(receiptAgingWorkflowCodeArr);
+            console.log(empCCWorkflowCodeArr);
 
 			//filter for the only workflow code that is the same among all the rule checks
 			const commonWorkflowCode = [...new Set(riskLevelWorkflowCodeArr)].filter(item => 
