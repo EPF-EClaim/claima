@@ -499,7 +499,6 @@ sap.ui.define([
 			const aPARHeaderData = aPARHeaderContexts.map(oContext => oContext.getObject());
 
 			var empID = aPARHeaderData[0].EMP_ID;
-			//var claimTypeID = aData[0].CLAIM_TYPE_ID;
 			var parCC = aPARHeaderData[0].COST_CENTER;
 			var parAltCC = aPARHeaderData[0].ALTERNATE_COST_CENTER; // for budget owner 
 			var parSubmissionType = aPARHeaderData[0].REQUEST_TYPE_ID;
@@ -592,6 +591,10 @@ sap.ui.define([
 			let cashAdvWorkflowCodeArr = [];
 			var currentDate = new Date();
 			parTripStartDate = new Date(parTripStartDate);
+
+            
+            //testing values
+            console.log(nestedWorkflowRuleArr);
 			for(var i = 0; i < nestedWorkflowRuleArr.length; i++){
 
                 //Check if rule equals null. If rule equals null, add into array as part of selection
@@ -621,18 +624,36 @@ sap.ui.define([
 					tripStartAgingWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
 				}
 
-				for(var x = 0; x < parCashAdvArr.length; x++){
-					if(parCashAdvArr[x] == nestedWorkflowRuleArr[i][0]){
-						cashAdvWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
-					}
-				}
-				
+                //cash adv is either true or false. added a null check for human error when user create in config table
+                if(nestedWorkflowRuleArr[i][0] == null){
+                    cashAdvWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
+                }else{
+                    if(parCashAdvArr.includes("true") == true){
+                        console.log("treat as cash adv");
+                        if(nestedWorkflowRuleArr[i][0] == 1){
+                            console.log("pushing true");
+                            cashAdvWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
+                        }
+                    }else{
+                        console.log("treat as no cash adv");
+                        if(nestedWorkflowRuleArr[i][0] == 0){
+                            console.log("Pushing false")
+                            cashAdvWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
+                        }
+                    }
+                }
 			}
 
-            console.log("cash advance Val " + parCashAdvArr);
+            console.log("cash advance Val ");
+            console.log(parCashAdvArr);
             console.log("Trip start Age " + tripStartAge);
             console.log("Employee CC " + empCCVal);
             
+            if(parCashAdvArr.length == 0){
+                console.log("nothing");
+            }else{
+                console.log("something");
+            }
             console.log(cashAdvWorkflowCodeArr);
             console.log(tripStartAgingWorkflowCodeArr);
             console.log(empCCWorkflowCodeArr);
@@ -640,7 +661,9 @@ sap.ui.define([
 			//filter for the only workflow code that is the same among all the rule checks
 			const commonWorkflowCode = [...new Set(empCCWorkflowCodeArr)].filter(item => 
 				new Set(tripStartAgingWorkflowCodeArr).has(item) && new Set(cashAdvWorkflowCodeArr).has(item)
-			);
+			); 
+
+            console.log(commonWorkflowCode[0]);
 
 			//get approver levels and approvers
 			var oListBinding = oModel.bindList("/ZWORKFLOW_STEP", null,null, [
@@ -715,7 +738,7 @@ sap.ui.define([
 			for(var i = 0; i < workflowApprLvl; i++){
 				if(apprEmpID[i] == "Auto"){
                     var oContext = oBindList.create({
-                        "CLAIM_ID": PARID,
+                        "PREAPPROVAL_ID": PARID,
                         "LEVEL": "0",
                         "APPROVER_ID": "Auto",
                         "SUBSTITUTE_APPROVER_ID": null,
@@ -724,7 +747,7 @@ sap.ui.define([
                 }else{
                     if(i == 0){
                         var oContext = oBindList.create({
-                        "CLAIM_ID": PARID,
+                        "PREAPPROVAL_ID": PARID,
                         "LEVEL": i+1,
                         "APPROVER_ID": apprEmpID[i],
                         "SUBSTITUTE_APPROVER_ID": subEmpID[i],
@@ -732,7 +755,7 @@ sap.ui.define([
 					    });
                     }else{
                         var oContext = oBindList.create({
-                        "CLAIM_ID": PARID,
+                        "PREAPPROVAL_ID": PARID,
                         "LEVEL": i+1,
                         "APPROVER_ID": apprEmpID[i],
                         "SUBSTITUTE_APPROVER_ID": subEmpID[i],
