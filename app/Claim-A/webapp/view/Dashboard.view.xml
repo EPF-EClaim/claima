@@ -71,7 +71,7 @@
                             <headerToolbar>
                                 <OverflowToolbar design="Transparent" class="myCardHeaderSticky" width="100%">
                                     <core:Icon src="sap-icon://document-text" size="25px" />
-                                    <Title level="H3" text="{i18n>myexpensesreport} ({employee>/ZCLAIM_HEADER/$count})" textAlign="Center" class="sapUiSmallMarginBegin" />
+                                    <Title level="H3" text="{i18n>myexpensesreport} ({= ${dashboardModel>/claims}.length})" textAlign="Center" class="sapUiSmallMarginBegin" />
                                     <ToolbarSpacer />
                                     <Button id="dashboard-claim" text="See All" class="sapUiLargeMarginBegin" type="Transparent" press="onClickNavigate" />
                                 </OverflowToolbar>
@@ -80,7 +80,7 @@
                                 <ScrollContainer height="140px" vertical="true" horizontal="false">
                                     <Table
                                         id="claimtable"
-                                        items="{ path: 'employee_view>/ZEMP_CLAIM_HEADER_VIEW', sorter : { path : 'LAST_MODIFIED_DATE', descending : true } }"
+                                        items="{dashboardModel>/claims}"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
                                         mode="SingleSelectMaster"
@@ -98,11 +98,11 @@
                                         <items>
                                             <ColumnListItem type="Active">
                                                 <cells>
-                                                    <Text text="{employee_view>CLAIM_ID}" />
-                                                    <Text text="{employee_view>PURPOSE}" />
-                                                    <Text text="{employee_view>STATUS_DESC}" />
-                                                    <Text text="{employee_view>TRIP_START_DATE}" />
-                                                    <Text text="{employee_view>TOTAL_CLAIM_AMOUNT}" />
+                                                    <Text text="{dashboardModel>CLAIM_ID}" />
+                                                    <Text text="{dashboardModel>PURPOSE}" />
+                                                    <Text text="{dashboardModel>STATUS_DESC}" />
+                                                    <Text text="{dashboardModel>TRIP_START_DATE}" />
+                                                    <Text text="{dashboardModel>TOTAL_CLAIM_AMOUNT}" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>
@@ -121,7 +121,7 @@
                             <headerToolbar>
                                 <OverflowToolbar design="Transparent" class="myCardHeaderSticky" width="100%">
                                     <core:Icon src="sap-icon://activity-items" size="25px" />
-                                    <Title level="H3" text="{i18n>myrequest} ({employee_view>/ZEMP_REQUEST_VIEW/$count})" textAlign="Center" class="sapUiSmallMarginBegin" />
+                                    <Title level="H3" text="{i18n>myrequest} ({= ${dashboardModel>/requests}.length})" textAlign="Center" class="sapUiSmallMarginBegin" />
                                     <ToolbarSpacer />
                                     <Button id="dashboard-request" text="See All" class="sapUiLargeMarginBegin" type="Transparent" press="onClickNavigate" />
                                 </OverflowToolbar>
@@ -129,7 +129,7 @@
                             <VBox>
                                 <ScrollContainer height="140px" vertical="true" horizontal="false">
                                     <Table
-                                        items="{ path: 'employee_view>/ZEMP_REQUEST_VIEW', sorter : { path : 'modifiedAt', descending: true } }"
+                                        items="{dashboardModel>/requests}"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
@@ -146,11 +146,11 @@
                                         <items>
                                             <ColumnListItem type="Active">
                                                 <cells>
-                                                    <Text text="{employee_view>REQUEST_ID}" />
-                                                    <Text text="{employee_view>OBJECTIVE_PURPOSE}" />
-                                                    <Text text="{employee_view>STATUS_DESC}" />
-                                                    <Text text="{employee_view>REQUEST_DATE}" />
-                                                    <Text text="{employee_view>PREAPPROVAL_AMOUNT}" />
+                                                    <Text text="{dashboardModel>REQUEST_ID}" />
+                                                    <Text text="{dashboardModel>OBJECTIVE_PURPOSE}" />
+                                                    <Text text="{dashboardModel>STATUS_DESC}" />
+                                                    <Text text="{dashboardModel>REQUEST_DATE}" />
+                                                    <Text text="{dashboardModel>PREAPPROVAL_AMOUNT}" />
                                                 </cells>
                                             </ColumnListItem>
                                         </items>

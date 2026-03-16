@@ -77,8 +77,8 @@ sap.ui.define([
 
 			// sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
 			var sHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
+			var oRouter = this.getOwnerComponent().getRouter();
 			if (!sHash || sHash === "") {
-				var oRouter = this.getOwnerComponent().getRouter();
 				oRouter.navTo("Dashboard");
 			}
 			const oImageModel = new sap.ui.model.json.JSONModel({
@@ -141,6 +141,7 @@ sap.ui.define([
 			this.getView().setModel(oDashboardModel, "dashboardModel");
 
 			oRouter.getRoute("Dashboard").attachMatched(this._onDashboardMatched, this);
+			this._loadDashboardData();
 		},
 		onPARTest: function () {
 			var PARID = this.byId("PARSubmissionTest").getValue();
@@ -2664,7 +2665,7 @@ sap.ui.define([
 
 			oEmployeeViewModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", null, [
 				new sap.ui.model.Sorter("LAST_MODIFIED_DATE", true)
-			]).requestContexts(0, 100)
+			]).requestContexts(0, Infinity)
 				.then(aContexts => {
 					oDashboardModel.setProperty("/claims", aContexts.map(c => c.getObject()));
 				})
@@ -2672,13 +2673,13 @@ sap.ui.define([
 
 			oEmployeeViewModel.bindList("/ZEMP_REQUEST_VIEW", null, [
 				new sap.ui.model.Sorter("modifiedAt", true)
-			]).requestContexts(0, 100)
+			]).requestContexts(0, Infinity)
 				.then(aContexts => {
 					oDashboardModel.setProperty("/requests", aContexts.map(c => c.getObject()));
 				})
 				.catch(err => console.log("requests error:", err));
 
-			oEmployeeViewModel.bindList("/ZEMP_APPROVER_DETAILS").requestContexts(0, 100)
+			oEmployeeViewModel.bindList("/ZEMP_APPROVER_DETAILS").requestContexts(0, Infinity)
 				.then(aContexts => {
 					oDashboardModel.setProperty("/approvals", aContexts.map(c => c.getObject()));
 				})
@@ -2687,5 +2688,13 @@ sap.ui.define([
 					oDashboardModel.setProperty("/approvals", []);
 				});
 		},
+		onHomeIconPressed: function() {
+			var sHostname = window.location.hostname;
+			var sSFURL ;
+
+			sSFURL = "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV"; //DEV
+			window.open(sSFURL, "_self");
+
+		}
 	});
 });
