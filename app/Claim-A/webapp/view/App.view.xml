@@ -21,6 +21,7 @@
             id="shellbar"
                 showMenuButton="true"
                 homeIcon="{imageModel>/homeIcon}"
+                homeIconPressed="onHomeIconPressed"
                 menuButtonPressed="onMenuButtonPress">
                 <f:profile>
         <Avatar

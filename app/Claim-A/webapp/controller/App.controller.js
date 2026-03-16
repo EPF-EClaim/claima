@@ -41,16 +41,13 @@ sap.ui.define([
 	Sorter,
 	Spreadsheet,
 	PARequestSharedFunction,
+	Attachment,
 	ApprovalLog,
 	workflowApproval,
-	Attachment,
 	claimstatus,
 	claim
 ) {
 	"use strict";
-
-
-
 
 	return Controller.extend("claima.controller.App", {
 
@@ -72,10 +69,16 @@ sap.ui.define([
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
 
+			const oSession = new sap.ui.model.json.JSONModel({
+				userType: "UNKNOWN",
+			});
+			this.getView().setModel(oSession, "session");
+
+
 			// sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
 			var sHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
+			var oRouter = this.getOwnerComponent().getRouter();
 			if (!sHash || sHash === "") {
-				var oRouter = this.getOwnerComponent().getRouter();
 				oRouter.navTo("Dashboard");
 			}
 			const oImageModel = new sap.ui.model.json.JSONModel({
@@ -100,6 +103,12 @@ sap.ui.define([
 				oImageModel.setProperty("/initials", sInitials);
 				oImageModel.setProperty("/userName", sname);
 				oImageModel.setProperty("/position", sposition);
+
+				// save userId to model
+				var oUserIdModel = new JSONModel({ "userId": oData.userId });
+				//// set input
+				this.getView().setModel(oUserIdModel, "userId");
+				oSession.setProperty("/userType", this._userType);
 			}).catch(err => {
 				console.error("getUserType failed:", err);
 				this._userType = "UNKNOWN";
@@ -123,6 +132,16 @@ sap.ui.define([
 			// //workflowApproval.onClaimsApproverDetermination(oModelAppr, claimID);
 			// workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
 			// //workflowApproval.onSendEmail();
+
+			const oDashboardModel = new JSONModel({
+				claims: [],
+				requests: [],
+				approvals: []
+			});
+			this.getView().setModel(oDashboardModel, "dashboardModel");
+
+			oRouter.getRoute("Dashboard").attachMatched(this._onDashboardMatched, this);
+			this._loadDashboardData();
 		},
 		onPARTest: function () {
 			var PARID = this.byId("PARSubmissionTest").getValue();
@@ -240,6 +259,14 @@ sap.ui.define([
 				case "dashboard":
 					this.getOwnerComponent().getModel("employee")?.refresh();
 					this.getOwnerComponent().getModel("employee_view")?.refresh();
+					const oDashboardModel = this.getView().getModel("dashboardModel");
+					oDashboardModel.setData({
+						claims: [],
+						requests: [],
+						approvals: []
+					});
+					this._loadDashboardData();
+					
 					oRouter.navTo("Dashboard");
 					break;
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
@@ -622,14 +649,14 @@ sap.ui.define([
 							filters: [
 								new sap.ui.model.Filter('EMP_ID', sap.ui.model.FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
 								new sap.ui.model.Filter('CLAIM_TYPE_ID', sap.ui.model.FilterOperator.EQ, oInputModel.getProperty("/claimtype/type")),
+								new sap.ui.model.Filter('STATUS', sap.ui.model.FilterOperator.EQ, "STAT05"),
 							],
 							parameters: {
 								$expand: {
-									"COSTCENTER": {
-										$select: "COST_CENTER_DESC"
-									}
+									"ZCOST_CENTER": { $select: "COST_CENTER_DESC" },
+									"COSTCENTER": { $select: "COST_CENTER_DESC" },
 								},
-								$select: "PREAPPROVAL_AMOUNT,EVENT_START_DATE,EVENT_END_DATE,ALTERNATE_COST_CENTER"
+								$select: "PREAPPROVAL_AMOUNT,EVENT_START_DATE,EVENT_END_DATE,COST_CENTER,ALTERNATE_COST_CENTER"
 							},
 							template: new sap.ui.core.Item({
 								key: "{employee>REQUEST_ID}",
@@ -878,9 +905,10 @@ sap.ui.define([
 						}
 						//// disable editing alternate cost center if already set from request
 						if (oInputModel.getProperty("/claimtype/requestform/alternate_cost_center")) {
-							this.byId("select_claiminput_altcc").setEnabled(false);
-							this.byId("select_claiminput_altcc").setEditable(false);
-							this.byId("select_claiminput_altcc").setVisible(false);
+							// this.byId("select_claiminput_altcc").setEnabled(false);
+							// this.byId("select_claiminput_altcc").setEditable(false);
+							// this.byId("select_claiminput_altcc").setVisible(false);
+							this.byId("field_claiminput_altcc").setVisible(false);
 
 							this.byId("input_claiminput_altcc").setEnabled(true);
 							this.byId("input_claiminput_altcc").setVisible(true);
@@ -1080,13 +1108,13 @@ sap.ui.define([
 			// validate input data
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			//// get alternate cost center
-			if (this.byId("select_claiminput_altcc").getEnabled()) {
-				// select value from drop-down
-				var altCostCenter = this.byId("select_claiminput_altcc").getSelectedItem();
-				if (altCostCenter) {
-					oInputModel.setProperty("/claim_header/descr/alternate_cost_center", altCostCenter.getBindingContext("employee").getObject("COST_CENTER_DESC"));
-				}
-			}
+			// if (this.byId("select_claiminput_altcc").getEnabled()) {
+			// 	// select value from drop-down
+			// 	var altCostCenter = this.byId("select_claiminput_altcc").getSelectedItem();
+			// 	if (altCostCenter) {
+			// 		oInputModel.setProperty("/claim_header/descr/alternate_cost_center", altCostCenter.getBindingContext("employee").getObject("COST_CENTER_DESC"));
+			// 	}
+			// }
 			//// send new claim submission to database
 			await this._updateClaimSubmission();
 		},
@@ -1401,13 +1429,19 @@ sap.ui.define([
 				this.byId("input_claiminput_location").setValue(null);
 			}
 			//// alternate cost center
-			if (!this.byId("select_claiminput_altcc").getEnabled()) {
-				this.byId("select_claiminput_altcc").setEnabled(true);
-				this.byId("select_claiminput_altcc").setEditable(true);
-				this.byId("select_claiminput_altcc").setVisible(true);
+			// if (!this.byId("select_claiminput_altcc").getEnabled()) {
+			// 	this.byId("select_claiminput_altcc").setEnabled(true);
+			// 	this.byId("select_claiminput_altcc").setEditable(true);
+			// 	this.byId("select_claiminput_altcc").setVisible(true);
+			// }
+			// if (this.byId("select_claiminput_altcc").getSelectedItem()) {
+			// 	this.byId("select_claiminput_altcc").setSelectedItem(null);
+			// }
+			if (!this.byId("field_claiminput_altcc").getVisible()) {
+				this.byId("field_claiminput_altcc").setVisible(true);
 			}
-			if (this.byId("select_claiminput_altcc").getSelectedItem()) {
-				this.byId("select_claiminput_altcc").setSelectedItem(null);
+			if (this.byId("field_claiminput_altcc").getValue()) {
+				this.byId("field_claiminput_altcc").setValue(null);
 			}
 			if (this.byId("input_claiminput_altcc").getEnabled()) {
 				this.byId("input_claiminput_altcc").setEnabled(false);
@@ -1521,21 +1555,21 @@ sap.ui.define([
 
 			try {
 				var oListBinding = oModel.bindList(
-				"/ZNUM_RANGE",
-				null,
-				null,
-				[
-					new sap.ui.model.Filter({
-					path: "RANGE_ID",
-					operator: sap.ui.model.FilterOperator.EQ,
-					value1: range_id
-					})
-				],
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-					$select: "RANGE_ID,CURRENT,PREFIX"
-				}
+					"/ZNUM_RANGE",
+					null,
+					null,
+					[
+						new sap.ui.model.Filter({
+							path: "RANGE_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: range_id
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$select: "RANGE_ID,CURRENT,PREFIX"
+					}
 				);
 
 				var aCtx = await oListBinding.requestContexts(0, 1);
@@ -1557,20 +1591,20 @@ sap.ui.define([
 
 				// verify result is not in database
 				oListBinding = oModel.bindList(
-				"/ZCLAIM_HEADER",
-				null,
-				null,
-				[
-					new sap.ui.model.Filter({
-					path: "CLAIM_ID",
-					operator: sap.ui.model.FilterOperator.EQ,
-					value1: result
-					})
-				],
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-				}
+					"/ZCLAIM_HEADER",
+					null,
+					null,
+					[
+						new sap.ui.model.Filter({
+							path: "CLAIM_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: result
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+					}
 				);
 
 				aCtx = await oListBinding.requestContexts(0, 1);
@@ -2316,10 +2350,24 @@ sap.ui.define([
 		getCLAIMHeaderList: async function () {
 			const oReq = this.getOwnerComponent().getModel("claim_status2");
 			const oModel = this.getOwnerComponent().getModel("employee_view");
+			var oFilter = [];
+
+			// get user ID
+			var userID;
+			if (this.getView().getModel("userId")) {
+				userID = this.getView().getModel("userId").getProperty("/userId");
+				if (userID) {
+					oFilter.push(new Filter("EMP_ID", "EQ", userID));
+				}
+			}
+			// null filter if no items
+			if (!oFilter.length) {
+				oFilter = null;
+			}
 
 			const oListBinding = oModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", undefined,
-				[new Sorter("STATUS_ID", true)],
-				null,
+				[new Sorter("LAST_MODIFIED_DATE", true)],
+				oFilter,
 				{
 					$$ownRequest: true,
 					$$groupId: "$auto",
@@ -2431,7 +2479,10 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel('employee_view');
 
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			PARequestSharedFunction.getPARHeaderList(oReq, oModel);
+			//Start of add Aiman Salim 15/03/2026 - Replace with Filter using Last Modified date
+			//PARequestSharedFunction.getPARHeaderList(oReq, oModel);
+			PARequestSharedFunction.getPARHeaderList_withfilterlastmod(oReq, oModel);
+			//End of add Aiman Salim 15/03/2026 - Replace with Filter using Last Modified date
 			var oRouter = this.getOwnerComponent().getRouter();
 			oRouter.navTo("RequestFormStatus");
 		},
@@ -2467,12 +2518,27 @@ sap.ui.define([
 		onClickNavigate: function (oEvent) {
 			let id = oEvent.getParameters().id;
 			var oRouter = this.getOwnerComponent().getRouter();
+
+			const userType = this.getView().getModel("session")?.getProperty("/userType")
+				|| this._userType
+				|| "UNKNOWN";
+
 			if (id.includes("dashboard-claim")) {
 				this.getCLAIMHeaderList();
 				var oRouter = this.getOwnerComponent().getRouter();
 				oRouter.navTo("ClaimStatus")
 			} else if (id.includes("request")) {
 				this._navToPARStatus();
+			} else if (id.includes("approval")) {
+				if (userType === "Approver") {
+					this.getMyApproverPAReq();
+					this.getMyApproverClaim();
+					oRouter.navTo("MyApproval");
+				}
+				else {
+					var message = this._getTexti18n("msg_unauthorized_role");
+					sap.m.MessageBox.error(message);
+				}
 			}
 		},
 
@@ -2531,6 +2597,7 @@ sap.ui.define([
 						const emp_data = await that._getEmpIdDetail(email.toLowerCase());
 						const oReqModel = that._getReqModel().getData();
 						oReqModel.user = emp_data.eeid;
+						oReqModel.user_grade = emp_data.grade;
 						that._getReqModel().setData(oReqModel);
 
 						sap.m.MessageToast.show('Email: ' + email);
@@ -2577,7 +2644,9 @@ sap.ui.define([
 									type: "Transparent",
 									width: "100%",
 									press: function () {
-										window.location.href = "/logout";
+										// const sUrl = sap.ui.require.toUrl("/do/logout");
+										// window.location.replace(sUrl);
+										window.location.href = "/claima/do/logout";
 									}
 								})
 							]
@@ -2601,7 +2670,7 @@ sap.ui.define([
 				event: oEvent,
 				keyProp: "REQUEST_ID",
 				routeName: "RequestForm",
-				modelName: "employee_view",
+				modelName: "dashboardModel",
 				paramName: "request_id"
 			});
 		},
@@ -2611,13 +2680,55 @@ sap.ui.define([
 			claim.onRowPress({
 				controller: this,
 				event: oEvent,
-				modelName: "employee_view",
+				modelName: "dashboardModel",
 				keyProp: "CLAIM_ID",
 				navContainerId: "pageContainer",
 				pageId: "navcontainer_claimsubmission"
 			});
 
-		}
+		},
 
+		_onDashboardMatched: function () {
+			this._loadDashboardData();
+		},
+
+		_loadDashboardData: function () {
+			const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+			const oDashboardModel = this.getView().getModel("dashboardModel");
+
+			oEmployeeViewModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", null, [
+				new sap.ui.model.Sorter("modifiedAt", true)
+			]).requestContexts(0, Infinity)
+				.then(aContexts => {
+					oDashboardModel.setProperty("/claims", aContexts.map(c => c.getObject()));
+				})
+				.catch(err => console.log("claims error:", err));
+
+			oEmployeeViewModel.bindList("/ZEMP_REQUEST_VIEW", null, [
+				new sap.ui.model.Sorter("modifiedAt", true)
+			]).requestContexts(0, Infinity)
+				.then(aContexts => {
+					oDashboardModel.setProperty("/requests", aContexts.map(c => c.getObject()));
+				})
+				.catch(err => console.log("requests error:", err));
+
+			oEmployeeViewModel.bindList("/ZEMP_APPROVER_DETAILS").requestContexts(0, Infinity)
+				.then(aContexts => {
+					oDashboardModel.setProperty("/approvals", aContexts.map(c => c.getObject()));
+				})
+				.catch(err => {
+					console.log("approvals not available for this role");
+					oDashboardModel.setProperty("/approvals", []);
+				});
+		},
+		onHomeIconPressed: function () {
+			var sHostname = window.location.hostname;
+			var sSFURL;
+
+			sSFURL = "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV"; //DEV
+			// "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT"	UAT
+			window.open(sSFURL, "_self");
+
+		}
 	});
 });

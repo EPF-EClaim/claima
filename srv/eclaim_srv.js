@@ -96,7 +96,7 @@ module.exports = (srv) => {
         userType: result?.USER_TYPE || "UNKNOWN",
         costcenters: result?.CC || "UNKNOWN",
         userId: result?.EEID || "UNKNOWN",
-        name: result?.NAME || "UNKNOWN", 
+        name: result?.NAME || "UNKNOWN",
         position: result?.POSITION_NAME || "UNKNOWN"
       };
     });
@@ -256,9 +256,9 @@ module.exports = (srv) => {
       }
       //all records having sufficient balance
       //do not proceed if any of the record doesnt have sufficient amount
-      if (error === false) {  
+      if (error === false) {
 
-        for (var entry of budget) {       
+        for (var entry of budget) {
           condition = {};
 
           if (entry.YEAR) condition.YEAR = entry.YEAR;
@@ -275,7 +275,7 @@ module.exports = (srv) => {
             newBudgetBalance = round2(toNum(newBudget.CURRENT_BUDGET) - toNum(newBudget.CONSUMED));
             newActual = round2(toNum(newBudget.ACTUAL));
           } else if (entry.ACTION === "REJECT" || entry.ACTION === "APPROVE") {
-            newCommitment =  round2(toNum(newBudget.COMMITMENT) - toNum(entry.AMOUNT ));
+            newCommitment = round2(toNum(newBudget.COMMITMENT) - toNum(entry.AMOUNT));
             newConsumed = round2(toNum(newBudget.COMMITMENT) + toNum(newBudget.ACTUAL));
             newBudgetBalance = round2(toNum(newBudget.CURRENT_BUDGET) - toNum(newBudget.CONSUMED));
             newActual = entry.ACTION === "APPROVE" ? round2(toNum(newBudget.ACTUAL) + toNum(entry.AMOUNT)) : round2(toNum(newBudget.ACTUAL));
@@ -310,7 +310,7 @@ module.exports = (srv) => {
             STATUS: 'Record updated'
           });
 
-        }  
+        }
 
         await tx.commit();
 
@@ -323,7 +323,7 @@ module.exports = (srv) => {
       await tx.rollback();
       req.error(400, `Budget checking failed: ${error.message}`);
     }
-});
+  });
 
   srv.on('batchUpdatePreApproved', async (req) => {
     const { ZREQUEST_ITEM } = srv.entities;
@@ -340,7 +340,7 @@ module.exports = (srv) => {
         const results = await tx.run(
           UPDATE(ZREQUEST_ITEM).set({ SEND_TO_SF: 1 }).where({ REQUEST_ID: entry.REQUEST_ID, REQUEST_SUB_ID: entry.REQUEST_SUB_ID })
         );
-        
+
       }
       await tx.commit();
 
@@ -357,29 +357,46 @@ module.exports = (srv) => {
     }
   });
 
-  srv.on('sendEmail' , async(req) => {
+  srv.on('sendEmail', async (req) => {
     const ISserivce = await cds.connect.to('IS_NonProd_Conn');
     var path = "/http/EmailNotification_BTP_DEV";
-    var test; 
+    var test;
     ISserivce.send({
       method: 'POST',
       path: path,
       data: {
-        "ApproverName":req.data.ApproverName,
-        "SubmissionDate":req.data.SubmissionDate,
-        "ClaimantName":req.data.ClaimantName,
-        "InstanceID":req.data.InstanceID,
-        "ClaimType":req.data.ClaimType,
-        "ClaimID":req.data.ClaimID,
-        "RecipientName":req.data.RecipientName,
-        "Action":req.data.Action,
-        "ReceiverEmail":req.data.ReceiverEmail,
-        "CCEmail":req.data.CCEmail,
-        "EmailTitle":req.data.EmailTitle,
-        "EmailBody":req.data.EmailBody,
-        "NextApproverName" : req.data.NextApproverName
+        "ApproverName": req.data.ApproverName,
+        "SubmissionDate": req.data.SubmissionDate,
+        "ClaimantName": req.data.ClaimantName,
+        "InstanceID": req.data.InstanceID,
+        "ClaimType": req.data.ClaimType,
+        "ClaimID": req.data.ClaimID,
+        "RecipientName": req.data.RecipientName,
+        "Action": req.data.Action,
+        "ReceiverEmail": req.data.ReceiverEmail,
+        "CCEmail": req.data.CCEmail,
+        "EmailTitle": req.data.EmailTitle,
+        "EmailBody": req.data.EmailBody,
+        "NextApproverName": req.data.NextApproverName
       }
     });
+  });
+
+  srv.on('updateDisbursementStatus', async (req) => {
+    const { ZEMP_CA_PAYMENT } = srv.entities;
+    const tx = cds.tx(req);
+    const payment = await tx.run(SELECT.from(ZEMP_CA_PAYMENT)
+            .columns(z => z.REQUEST_ID)
+            .where({ DISBURSEMENT_STATUS: '02' }));
+
+    const results = [];
+    const ids = payment.map(r => r.REQUEST_ID);
+
+    await tx.run(UPDATE(ZEMP_CA_PAYMENT).set({ DISBURSEMENT_STATUS: "03" }).where({ REQUEST_ID: { in: ids } }));
+    results.push(payment);
+
+    return { results };
+
   });
 
 }
