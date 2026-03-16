@@ -135,6 +135,15 @@ sap.ui.define([
 			// //workflowApproval.onClaimsApproverDetermination(oModelAppr, claimID);
 			// workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
 			// //workflowApproval.onSendEmail();
+
+			const oDashboardModel = new JSONModel({
+				claims: [],
+				requests: [],
+				approvals: []
+			});
+			this.getView().setModel(oDashboardModel, "dashboardModel");
+
+			oRouter.getRoute("Dashboard").attachMatched(this._onDashboardMatched, this);
 		},
 		onPARTest: function () {
 			var PARID = this.byId("PARSubmissionTest").getValue();
@@ -2607,7 +2616,7 @@ sap.ui.define([
 									type: "Transparent",
 									width: "100%",
 									press: function () {
-										const sUrl = sap.ui.require.toUrl("/router/logged-out.html");
+										const sUrl = sap.ui.require.toUrl("/do/logout");
 										window.location.replace(sUrl);
 
 									}
@@ -2649,6 +2658,40 @@ sap.ui.define([
 				pageId: "navcontainer_claimsubmission"
 			});
 
+		},
+
+		_onDashboardMatched: function () {
+			this._loadDashboardData();
+		},
+
+		_loadDashboardData: function () {
+			const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+			const oDashboardModel = this.getView().getModel("dashboardModel");
+
+			oEmployeeViewModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", null, [
+				new sap.ui.model.Sorter("LAST_MODIFIED_DATE", true)
+			]).requestContexts(0, 100)
+				.then(aContexts => {
+					oDashboardModel.setProperty("/claims", aContexts.map(c => c.getObject()));
+				})
+				.catch(err => console.log("claims error:", err));
+
+			oEmployeeViewModel.bindList("/ZEMP_REQUEST_VIEW", null, [
+				new sap.ui.model.Sorter("modifiedAt", true)
+			]).requestContexts(0, 100)
+				.then(aContexts => {
+					oDashboardModel.setProperty("/requests", aContexts.map(c => c.getObject()));
+				})
+				.catch(err => console.log("requests error:", err));
+
+			oEmployeeViewModel.bindList("/ZEMP_APPROVER_DETAILS").requestContexts(0, 100)
+				.then(aContexts => {
+					oDashboardModel.setProperty("/approvals", aContexts.map(c => c.getObject()));
+				})
+				.catch(err => {
+					console.log("approvals not available for this role");
+					oDashboardModel.setProperty("/approvals", []);
+				});
 		},
 	});
 });

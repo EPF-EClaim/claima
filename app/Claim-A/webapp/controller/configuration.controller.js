@@ -39,9 +39,9 @@ sap.ui.define([
                     const oData = await oCtx.requestObject();
                     if (oNavigation === "ZEMP_MASTER") {
                         var sTable = oData.operationHidden === false && oNavigation === "ZEMP_MASTER" ? "ZEMP_MASTER_DTD" : oNavigation;
-                    } else if (oNavigation === "ZEMP_DEPENDENT"){
+                    } else if (oNavigation === "ZEMP_DEPENDENT") {
                         sTable = oData.operationHidden === false && oNavigation === "ZEMP_DEPENDENT" ? "ZEMP_DEPENDENT_DTD" : oNavigation;
-                    } else if(oNavigation === "ZNUM_RANGE"){
+                    } else if (oNavigation === "ZNUM_RANGE") {
                         sTable = oData.operationHidden === false && oNavigation === "ZNUM_RANGE" ? "ZNUM_RANGE_DTD" : oNavigation;
                     }
                     oNavigation = sTable;
@@ -112,6 +112,12 @@ sap.ui.define([
             const oNewEntry = {};
             const { oVBox, sPath, oSelected, oModel } = this._getDetails(oEvent);
             var sNewPath = sPath.includes('Items') ? this._oItemsFragment?.getBindingContext().getPath() + "/Items" : sPath;
+          
+            const sMetaPath = sPath.includes('Items') ? '/ZCLAIM_TYPE/Items' : sPath;
+            const oEntityType = oModel.getMetaModel().getContext(sMetaPath).getObject();
+            const sEntityType = oEntityType.$Type;
+            const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
+
 
             var oDialog = new sap.m.Dialog({
                 title: `New Object`,
@@ -121,6 +127,10 @@ sap.ui.define([
                     text: "Create",
                     press: function () {
                         var oInputs = oVBox.getItems();
+                        if (!this._validateInputs(oVBox, oDataType)) {
+                            sap.m.MessageToast.show("Please fill in all required fields");
+                            return;
+                        }
 
                         for (let i = 1; i < oInputs.length; i += 2) {
                             const oControl = oInputs[i];
@@ -131,12 +141,17 @@ sap.ui.define([
                         }
                         oNewEntry["IsActiveEntity"] = true;
 
-                        var oListBinding = oModel.bindList(sNewPath),
-                            oContext = oListBinding.create(oNewEntry);
+                        if (oNewEntry["END_DATE"] < oNewEntry["START_DATE"]) {
+                            sap.m.MessageToast.show("End date cannot be earlier than start date");
+                        } else {
 
-                        sap.m.MessageToast.show("Record created");
-                        oModel.refresh();
-                        oDialog.close();
+                            var oListBinding = oModel.bindList(sNewPath),
+                                oContext = oListBinding.create(oNewEntry);
+
+                            sap.m.MessageToast.show("Record created");
+                            oModel.refresh();
+                            oDialog.close();
+                        }
                     }.bind(this)
                 }),
                 endButton: new sap.m.Button({
@@ -181,6 +196,11 @@ sap.ui.define([
         onCopy: function (oEvent) {
             const oNewEntry = {};
             var { oVBox, sPath, oSelected, oModel } = this._getDetails(oEvent);
+
+            const oEntityType = oModel.getMetaModel().getContext(sPath).getObject();
+            const sEntityType = oEntityType.$Type;
+            const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
+
             const oDialog = new sap.m.Dialog({
                 title: `Copy Record`,
                 contentWidth: "15%",
@@ -189,6 +209,11 @@ sap.ui.define([
                     text: "Copy",
                     press: function () {
                         var oInputs = oVBox.getItems();
+
+                        if (!this._validateInputs(oVBox, oDataType)) {
+                            sap.m.MessageToast.show("Please fill in all required fields");
+                            return;
+                        }
 
                         for (let i = 1; i < oInputs.length; i += 2) {
                             const oControl = oInputs[i];
@@ -207,14 +232,17 @@ sap.ui.define([
                             const sItemsPath = oHeader.getPath() + "/Items";
                             sPath = sItemsPath;
                         }
+                        if (oNewEntry["END_DATE"] < oNewEntry["START_DATE"]) {
+                            sap.m.MessageToast.show("End date cannot be earlier than start date");
+                        } else {
+                            var oListBinding = oModel.bindList(sPath),
+                                oContext = oListBinding.create(oNewEntry);
 
-                        var oListBinding = oModel.bindList(sPath),
-                            oContext = oListBinding.create(oNewEntry);
-
-                        oModel.refresh();
-                        sap.m.MessageToast.show("Record created");
-                        oDialog.close();
-                        oListBinding.refresh(true);
+                            oModel.refresh();
+                            sap.m.MessageToast.show("Record created");
+                            oDialog.close();
+                            oListBinding.refresh(true);
+                        }
                     }.bind(this)
                 }),
                 endButton: new sap.m.Button({
@@ -230,6 +258,11 @@ sap.ui.define([
         onEdit: function (oEvent) {
             const { oVBox, sPath, oSelected, oModel } = this._getDetails(oEvent);
             const oContext = oSelected.getBindingContext();
+
+            const oEntityType = oModel.getMetaModel().getContext(sPath).getObject();
+            const sEntityType = oEntityType.$Type;
+            const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
+
             const oDialog = new sap.m.Dialog({
                 title: `Edit Record`,
                 contentWidth: "15%",
@@ -237,20 +270,39 @@ sap.ui.define([
                 beginButton: new sap.m.Button({
                     text: "Edit",
                     press: function () {
+                        let dStart = null;
+                        let dEnd = null;
                         var oInputs = oVBox.getItems();
+
+                        if (!this._validateInputs(oVBox, oDataType)) {
+                            sap.m.MessageToast.show("Please fill in all required fields");
+                            return;
+                        }
 
                         for (let i = 1; i < oInputs.length; i += 2) {
                             const oControl = oInputs[i];
+                            const sFieldName = oControl.getName();
+                            const sValue = oControl.getValue() === '' ? null : oControl.getValue();
 
-                            var sFieldName = oControl.getName();
-                            var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
-
-                            oContext.setProperty(sFieldName, sNewInput);
+                            if (sFieldName === 'START_DATE') dStart = new Date(sValue);
+                            if (sFieldName === 'END_DATE') dEnd = new Date(sValue);
                         }
 
-                        sap.m.MessageToast.show("Record updated");
-                        oModel.refresh();
-                        oDialog.close();
+                        if (dEnd < dStart) {
+                            sap.m.MessageToast.show("End date cannot be earlier than start date");
+                        } else {
+                            for (let i = 1; i < oInputs.length; i += 2) {
+                                const oControl = oInputs[i];
+
+                                var sFieldName = oControl.getName();
+                                var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+
+                                oContext.setProperty(sFieldName, sNewInput);
+                            }
+                            sap.m.MessageToast.show("Record updated");
+                            oModel.refresh();
+                            oDialog.close();
+                        }
                     }.bind(this)
                 }),
                 endButton: new sap.m.Button({
@@ -262,6 +314,27 @@ sap.ui.define([
 
             oDialog.addContent(oVBox);
             oDialog.open();
+        },
+
+        _validateInputs: function (oVBox, oDataType) {
+            let bValid = true;
+            const oInputs = oVBox.getItems();
+
+            for (let i = 1; i < oInputs.length; i += 2) {
+                const oControl = oInputs[i];
+                const sFieldName = oControl.getName();
+                const sValue = oControl.getValue();
+                const bRequired = oDataType?.[sFieldName]?.$Nullable === false;
+
+                if (bRequired && (!sValue || sValue.trim() === '')) {
+                    oControl.setValueState("Error");
+                    oControl.setValueStateText("This field is required");
+                    bValid = false;
+                } else {
+                    oControl.setValueState("None");
+                }
+            }
+            return bValid;
         },
 
         _getDetails: function (oEvent) {
