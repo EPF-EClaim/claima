@@ -2624,22 +2624,47 @@ sap.ui.define([
 						new sap.m.VBox({
 							class: "sapUiSmallMargin",
 							items: [
-								new sap.m.Text({
-									text: "{imageModel>/userName}",
+								new sap.m.HBox({
+									alignItems: "Center",
 									width: "100%",
-									textAlign: sap.ui.core.TextAlign.Center
+									class: "sapUiTinyMarginTop",
+									items: [
+										new sap.ui.core.Icon({
+											src: "sap-icon://employee",
+											width: "1rem",
+											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
+										}),
+										new sap.m.Text({ text: "{userId>/userId}" })
+									]
 								}),
-								new sap.m.Text({
-									text: "{imageModel>/userName}",
+								new sap.m.HBox({
+									alignItems: "Center",
 									width: "100%",
-									textAlign: sap.ui.core.TextAlign.Center
+									class: "sapUiTinyMarginTop",
+									items: [
+										new sap.ui.core.Icon({
+											src: "sap-icon://person-placeholder",
+											width: "1rem",
+											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
+										}),
+										new sap.m.Text({ text: "{imageModel>/userName}" })
+									]
 								}),
-								new sap.m.Text({
-									text: "{imageModel>/position}",
+								new sap.m.HBox({
+									alignItems: "Center",
 									width: "100%",
-									textAlign: sap.ui.core.TextAlign.Center
+									class: "sapUiTinyMarginTop sapUiSmallMarginBottom",
+									items: [
+										new sap.ui.core.Icon({
+											src: "sap-icon://business-card",
+											width: "1rem",
+											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
+										}),
+										new sap.m.Text({ text: "{imageModel>/position}" })
+									]
 								}),
 								new sap.m.Button({
+									icon: "sap-icon://log",
 									text: "Sign Out",
 									type: "Transparent",
 									width: "100%",
