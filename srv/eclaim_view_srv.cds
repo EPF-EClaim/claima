@@ -679,9 +679,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request
         { 
             key PREAPPROVAL_ID as ID,
-            STATUS,
-            ZSTATUS.STATUS_DESC as STATUS_DESC,
-            ZREQUEST_HEADER.OBJECTIVE_PURPOSE as PURPOSE,
+            key LEVEL,
+                STATUS,
+                ZSTATUS.STATUS_DESC as STATUS_DESC,
+                ZREQUEST_HEADER.OBJECTIVE_PURPOSE as PURPOSE,
                 APPROVER_ID,
                 ZEMP_MASTER_APPROVER.NAME as APPROVER_NAME,
                 ZEMP_MASTER_APPROVER.EMAIL as APPROVER_EMAIL,
@@ -693,6 +694,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         select from ECLAIM.ZAPPROVER_DETAILS_CLAIMS as claim
         {
             key CLAIM_ID as ID,
+            key LEVEL,
                 STATUS,
                 ZSTATUS.STATUS_DESC as STATUS_DESC,
                 ZCLAIM_HEADER.PURPOSE as PURPOSE,
