@@ -504,7 +504,5 @@
                 </VBox>
             </ScrollContainer>
         </content>
-        <Input id="PARSubmissionTest"></Input>
-        <Button press="onPARTest" text="test PAR"></Button>
     </Page>
 </mvc:View>

@@ -143,11 +143,6 @@ sap.ui.define([
 			oRouter.getRoute("Dashboard").attachMatched(this._onDashboardMatched, this);
 			this._loadDashboardData();
 		},
-		onPARTest: function () {
-			var PARID = this.byId("PARSubmissionTest").getValue();
-			var oModel = this.getView().getModel();
-			workflowApproval.onPARApproverDetermination(oModel, PARID);
-		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
 			var oNavigationList = this.byId("navigationList");
