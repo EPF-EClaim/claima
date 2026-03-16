@@ -563,7 +563,9 @@ sap.ui.define([
       await loadClaimById(controller, String(id));
 
       // 2) Navigate
-      await navToClaimPage(controller, { navContainerId, pageId });
+      // await navToClaimPage(controller, { navContainerId, pageId });
+      const oRouter =  controller.getOwnerComponent().getRouter();
+      oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(id)) });
 
     } catch (e) {
       sap.base?.Log?.error?.("onRowPress failed:", e);

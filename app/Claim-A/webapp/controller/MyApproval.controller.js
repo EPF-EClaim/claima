@@ -318,9 +318,12 @@ sap.ui.define([
                 // Load claim header + items and populate claimsubmission_input model
                 await this._loadClaimById(String(sClaimId));
 
-                // === Manual navigation to Claim Submission (like ClaimStatus.controller) ===
-                this._navToClaimSubmissionManual();
+                // // === Manual navigation to Claim Submission (like ClaimStatus.controller) ===
+                // this._navToClaimSubmissionManual();
 
+                // Navigate to claim submission ID
+                const oRouter = this.getOwnerComponent().getRouter();
+                oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
             } catch (e) {
                 console.log("openItemFromClaimList failed:", e);
                 sap.m.MessageToast.show("Failed to open the selected claim.");

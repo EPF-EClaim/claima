@@ -130,7 +130,7 @@
 				</Column>
 
 				<!-- Amount -->
-				<Column>
+				<Column hAlign="End" >
 					<Text text="{i18n>columntext_claimsummary_amt}" />
 				</Column>
 

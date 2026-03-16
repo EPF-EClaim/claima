@@ -171,7 +171,7 @@ sap.ui.define([
 			var oItem = oEvent.getParameter("item");
 			var oKey = oItem.getKey();
 			var oRouter = this.getOwnerComponent().getRouter();
-			sap.ui.core.routing.HashChanger.getInstance().replaceHash("");
+			// sap.ui.core.routing.HashChanger.getInstance().replaceHash("");
 
 			//Start EY_ATHIRAH
 			const key = oEvent.getSource().data("key");
@@ -681,10 +681,31 @@ sap.ui.define([
 						}
 					}
 				}
+				else {
+					// disable request form field
+					if (this.byId("select_claimprocess_requestform").getVisible()) {
+						this.byId("select_claimprocess_requestform").setEnabled(false);
+						this.byId("select_claimprocess_requestform").setVisible(false);
+						this.byId("select_claimprocess_requestform").setEditable(false);
+						this.byId("select_claimprocess_requestform").setSelectedItem(null);
+					}
 
-				// enable 'Start Claim' button if not Pre-Approval
-				if (categoryId != 'ST0003') {
-					this.byId("button_claimprocess_startclaim").setEnabled(true);
+					// disable 'Use email approval?' switch
+					if (this.byId("switch_claimprocess_req_emailapprove").getEnabled()) {
+						this.byId("switch_claimprocess_req_emailapprove").setEnabled(false);
+						this.byId("switch_claimprocess_req_emailapprove").setVisible(false);
+					}
+
+					// disable 'Create Pre-Approval Request' button
+					if (this.byId("button_claimprocess_preapproval").getEnabled()) {
+						this.byId("button_claimprocess_preapproval").setEnabled(false);
+						this.byId("button_claimprocess_preapproval").setVisible(false);
+					}
+
+					// enable 'Start Claim' button
+					if (this.byId("button_claimprocess_startclaim").getEnabled()) {
+						this.byId("button_claimprocess_startclaim").setEnabled(false);
+					}
 				}
 			}
 		},
@@ -1218,8 +1239,10 @@ sap.ui.define([
 						this.oDialog_ClaimInput.close();
 
 						// load Claim Submission page
-						var oClaimSubmissionPage = this.getView().byId('navcontainer_claimsubmission');
-						this.byId("pageContainer").to(oClaimSubmissionPage);
+						// var oClaimSubmissionPage = this.getView().byId('navcontainer_claimsubmission');
+						// this.byId("pageContainer").to(oClaimSubmissionPage);
+						const oRouter = this.getOwnerComponent().getRouter();
+						oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(oInputModel.getProperty("/claim_header/claim_id"))) });
 					}).catch(err => {
 						console.log("Creation failed: " + err.message);
 						MessageToast.show("Creation failed: " + err.message);
@@ -2077,9 +2100,13 @@ sap.ui.define([
 		// get backend data
 		async _getEmpIdDetail(sEMAIL) {
 			const oModel = this.getOwnerComponent().getModel();
-			var email = sEMAIL.toLowerCase();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new sap.ui.model.Filter("EMAIL", "EQ", email) //change email to lowercase
+				new sap.ui.model.Filter({
+					path: "EMAIL",
+					operator: "EQ",
+					value1: sEMAIL,
+					caseSensitive: false
+				}) // non case-sensitive search
 			]);
 
 			try {
@@ -2585,7 +2612,7 @@ sap.ui.define([
 						var oUserModel = new sap.ui.model.json.JSONModel({ email: email });
 						that.getView().setModel(oUserModel, 'user');
 
-						const emp_data = await that._getEmpIdDetail(email.toLowerCase());
+						const emp_data = await that._getEmpIdDetail(email);
 						const oReqModel = that._getReqModel().getData();
 						oReqModel.user = emp_data.eeid;
 						that._getReqModel().setData(oReqModel);
