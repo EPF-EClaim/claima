@@ -72,6 +72,12 @@ sap.ui.define([
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
 
+			const oSession = new sap.ui.model.json.JSONModel({
+				userType: "UNKNOWN",
+			});
+			this.getView().setModel(oSession, "session");
+
+
 			// sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
 			var sHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
 			if (!sHash || sHash === "") {
@@ -100,6 +106,12 @@ sap.ui.define([
 				oImageModel.setProperty("/initials", sInitials);
 				oImageModel.setProperty("/userName", sname);
 				oImageModel.setProperty("/position", sposition);
+
+				// save userId to model
+				var oUserIdModel = new JSONModel({ "userId": oData.userId });
+				//// set input
+				this.getView().setModel(oUserIdModel, "userId");
+				oSession.setProperty("/userType", this._userType);
 			}).catch(err => {
 				console.error("getUserType failed:", err);
 				this._userType = "UNKNOWN";
@@ -123,6 +135,15 @@ sap.ui.define([
 			// //workflowApproval.onClaimsApproverDetermination(oModelAppr, claimID);
 			// workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
 			// //workflowApproval.onSendEmail();
+
+			const oDashboardModel = new JSONModel({
+				claims: [],
+				requests: [],
+				approvals: []
+			});
+			this.getView().setModel(oDashboardModel, "dashboardModel");
+
+			oRouter.getRoute("Dashboard").attachMatched(this._onDashboardMatched, this);
 		},
 		onPARTest: function () {
 			var PARID = this.byId("PARSubmissionTest").getValue();
@@ -2466,12 +2487,27 @@ sap.ui.define([
 		onClickNavigate: function (oEvent) {
 			let id = oEvent.getParameters().id;
 			var oRouter = this.getOwnerComponent().getRouter();
+
+			const userType = this.getView().getModel("session")?.getProperty("/userType")
+				|| this._userType
+				|| "UNKNOWN";
+
 			if (id.includes("dashboard-claim")) {
 				this.getCLAIMHeaderList();
 				var oRouter = this.getOwnerComponent().getRouter();
 				oRouter.navTo("ClaimStatus")
 			} else if (id.includes("request")) {
 				this._navToPARStatus();
+			} else if (id.includes("approval")) {
+				if (userType === "Approver") {
+					this.getMyApproverPAReq();
+					this.getMyApproverClaim();
+					oRouter.navTo("MyApproval");
+				}
+				else {
+					var message = this._getTexti18n("msg_unauthorized_role");
+					sap.m.MessageBox.error(message);
+				}
 			}
 		},
 
@@ -2576,7 +2612,7 @@ sap.ui.define([
 									type: "Transparent",
 									width: "100%",
 									press: function () {
-										const sUrl = sap.ui.require.toUrl("/router/logged-out.html");
+										const sUrl = sap.ui.require.toUrl("/do/logout");
 										window.location.replace(sUrl);
 
 									}
@@ -2618,6 +2654,40 @@ sap.ui.define([
 				pageId: "navcontainer_claimsubmission"
 			});
 
+		},
+
+		_onDashboardMatched: function () {
+			this._loadDashboardData();
+		},
+
+		_loadDashboardData: function () {
+			const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+			const oDashboardModel = this.getView().getModel("dashboardModel");
+
+			oEmployeeViewModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", null, [
+				new sap.ui.model.Sorter("LAST_MODIFIED_DATE", true)
+			]).requestContexts(0, 100)
+				.then(aContexts => {
+					oDashboardModel.setProperty("/claims", aContexts.map(c => c.getObject()));
+				})
+				.catch(err => console.log("claims error:", err));
+
+			oEmployeeViewModel.bindList("/ZEMP_REQUEST_VIEW", null, [
+				new sap.ui.model.Sorter("modifiedAt", true)
+			]).requestContexts(0, 100)
+				.then(aContexts => {
+					oDashboardModel.setProperty("/requests", aContexts.map(c => c.getObject()));
+				})
+				.catch(err => console.log("requests error:", err));
+
+			oEmployeeViewModel.bindList("/ZEMP_APPROVER_DETAILS").requestContexts(0, 100)
+				.then(aContexts => {
+					oDashboardModel.setProperty("/approvals", aContexts.map(c => c.getObject()));
+				})
+				.catch(err => {
+					console.log("approvals not available for this role");
+					oDashboardModel.setProperty("/approvals", []);
+				});
 		},
 	});
 });

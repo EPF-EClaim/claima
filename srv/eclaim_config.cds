@@ -142,16 +142,6 @@ annotate service.ZCLAIM_TYPE with @(
             },
             {
                 $Type: 'UI.DataField',
-                Value: END_DATE,
-                Label: 'End Date'
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: START_DATE,
-                Label: 'Start Date'
-            },
-            {
-                $Type: 'UI.DataField',
                 Value: REQUEST_TYPE,
                 Label: 'Request Type'
             },
@@ -164,6 +154,16 @@ annotate service.ZCLAIM_TYPE with @(
                 $Type: 'UI.DataField',
                 Value: PROJECT_CLAIM,
                 Label: 'Project Claim'
+            },            
+            {
+                $Type: 'UI.DataField',
+                Value: START_DATE,
+                Label: 'Start Date'
+            },            
+            {
+                $Type: 'UI.DataField',
+                Value: END_DATE,
+                Label: 'End Date'
             },
             {
                 $Type: 'UI.DataField',
@@ -743,7 +743,7 @@ annotate service.ZAREA with @(
 annotate service.ZMARITAL_STAT with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey             : [MARRIAGE_CATEGORY_ID],
+    Common.SemanticKey             : [MARRIAGE_STATUS_ID],
     Capabilities                   : {
         Deletable : true,
         Updatable : true,
@@ -2273,11 +2273,12 @@ annotate service.ZPERDIEM_ENT with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey             : [
-        PERSONAL_GRADE_FROM,
-        PERSONAL_GRADE_TO,
+        PERSONAL_GRADE,        
         LOCATION,
-        EFFECTIVE_START_DATE,
-        EFFECTIVE_END_DATE
+        CLAIM_TYPE_ID,
+        CLAIM_TYPE_ITEM_ID,
+        START_DATE,
+        END_DATE
     ],
     Capabilities                   : {
         Deletable : true,
@@ -2297,34 +2298,16 @@ annotate service.ZPERDIEM_ENT with @(
         LineItem    : [
             {
                 $Type            : 'UI.DataField',
-                Value            : PERSONAL_GRADE_FROM,
+                Value            : PERSONAL_GRADE,
                 ![@UI.Importance]: #High,
-                Label            : 'Personal Grade From'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : PERSONAL_GRADE_TO,
-                ![@UI.Importance]: #High,
-                Label            : 'Personal Grade To'
+                Label            : 'Personal Grade'
             },
             {
                 $Type            : 'UI.DataField',
                 Value            : LOCATION,
                 ![@UI.Importance]: #High,
                 Label            : 'Location'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : EFFECTIVE_START_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Effective Start Date'
-            },
-            {
-                $Type            : 'UI.DataField',
-                Value            : EFFECTIVE_END_DATE,
-                ![@UI.Importance]: #High,
-                Label            : 'Effective End Date'
-            },
+            },                                               
             {
                 $Type            : 'UI.DataField',
                 Value            : CURRENCY,
@@ -2348,7 +2331,25 @@ annotate service.ZPERDIEM_ENT with @(
                 Value            : CLAIM_TYPE_ITEM_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Claim Type Item ID'
-            }
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }            
         ]
     }
 );
