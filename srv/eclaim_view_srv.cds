@@ -704,5 +704,5 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_HEADER.SUBMITTED_DATE as REQUEST_DATE,
                 ZCLAIM_HEADER.FINAL_AMOUNT_TO_RECEIVE as AMOUNT,
                 ZCLAIM_HEADER.TOTAL_CLAIM_AMOUNT as TOTAL_AMOUNT }
-                where ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'     
+                where ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'    
 };
