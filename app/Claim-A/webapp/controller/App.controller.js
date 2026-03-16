@@ -119,12 +119,12 @@ sap.ui.define([
 			});
 
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			var oUserModel = new sap.ui.model.json.JSONModel({ email: "jefry.yap@my.ey.com" });
-			this.getView().setModel(oUserModel, 'user');
-			const emp_data = await this._getEmpIdDetail("jefry.yap@my.ey.com");
-			const oReqModel = this._getReqModel().getData();
-			oReqModel.user = emp_data.eeid;
-			this._getReqModel().setData(oReqModel);
+			// var oUserModel = new sap.ui.model.json.JSONModel({ email: "jefry.yap@my.ey.com" });
+			// this.getView().setModel(oUserModel, 'user');
+			// const emp_data = await this._getEmpIdDetail("jefry.yap@my.ey.com");
+			// const oReqModel = this._getReqModel().getData();
+			// oReqModel.user = emp_data.eeid;
+			// this._getReqModel().setData(oReqModel);
 
 			// var claimID = "CLM26000000209";
 			// var PARID = "REQ26000000002";
@@ -2021,7 +2021,7 @@ sap.ui.define([
 					oReqModel.setProperty("/req_header/reqstatus", 'DRAFT');
 					oReqModel.setProperty("/req_header/costcenter", sCostCenter);
 					oReqModel.setProperty("/eeid", emp_data.eeid);
-					PARequestSharedFunction._getItemList(this, oResult.reqNo, true);
+					// PARequestSharedFunction._getItemList(this, oResult.reqNo, true);
 					//oResult.reqNo send this to approval determination
 
 					var oRouter = this.getOwnerComponent().getRouter();
