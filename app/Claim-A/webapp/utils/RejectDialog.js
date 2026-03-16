@@ -161,12 +161,19 @@ sap.ui.define([
         text: "{i18n>req_b_cancel}",
         press: cancelHandler.bind(oController)
       }),
+      /*       endButton: new Button(oView.createId("reject_placeholder_submit"), {
+              text: "{i18n>reject_btn}",
+              type: "Emphasized",
+              enabled: "{= !!${Reject>/rejectReasonKey} && !!${Reject>/approvalComment} }",
+              press: submitHandler.bind(oController)
+            }) */
+
       endButton: new Button(oView.createId("reject_placeholder_submit"), {
         text: "{i18n>reject_btn}",
         type: "Emphasized",
-        enabled: "{= !!${Reject>/rejectReasonKey} && !!${Reject>/approvalComment} }",
-        press: submitHandler.bind(oController)
+        enabled: "{= !!${Reject>/rejectReasonKey} && !!${Reject>/approvalComment} }"
       })
+
     });
 
     oDialog.attachAfterOpen(function () {

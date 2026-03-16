@@ -7,7 +7,6 @@ sap.ui.define([
 
     async function _approveMultiLevel(oModel, id, userID, comment, oModel2) {
 
-
         const submissionType = id.substring(0, 3);
         const sTable = submissionType === "REQ"
             ? "/ZAPPROVER_DETAILS_PREAPPROVAL"
@@ -143,37 +142,39 @@ sap.ui.define([
         const nextApproverDisplayName = nextApproverName || nextSubName;
 
         //Email to Next Approver
-        payloads.push({
-            ApproverName: currentName,
-            SubmissionDate: submissionDate,
-            ClaimantName: claimantName,
-            ClaimType: sType,
-            ClaimID: id,
-            RecipientName: nextApproverName,
-            Action: "Notify",
-            ReceiverEmail: nextApproverEmail,
-            NextApproverName: nextApproverName,
-            RejectReason: "N/A",
-            ApproverComments: comment
-        });
 
-
-        // Sub Approver — only if BOTH fields exist
-        if (isPresent(nextSubName) && isPresent(nextSubEmail)) {
+        if (ctxNext && isPresent(nextApproverName) && isPresent(nextApproverEmail)) {
             payloads.push({
                 ApproverName: currentName,
                 SubmissionDate: submissionDate,
                 ClaimantName: claimantName,
                 ClaimType: sType,
                 ClaimID: id,
-                RecipientName: nextSubName,
+                RecipientName: nextApproverName,
                 Action: "Notify",
-                ReceiverEmail: nextSubEmail,
-                NextApproverName: nextSubName,
+                ReceiverEmail: nextApproverEmail,
+                NextApproverName: nextApproverName,
                 RejectReason: "N/A",
                 ApproverComments: comment
             });
+
+            if (isPresent(nextSubName) && isPresent(nextSubEmail)) {
+                payloads.push({
+                    ApproverName: currentName,
+                    SubmissionDate: submissionDate,
+                    ClaimantName: claimantName,
+                    ClaimType: sType,
+                    ClaimID: id,
+                    RecipientName: nextSubName,
+                    Action: "Notify",
+                    ReceiverEmail: nextSubEmail,
+                    NextApproverName: nextSubName,
+                    RejectReason: "N/A",
+                    ApproverComments: comment
+                });
+            }
         }
+
         //Email to Claimant
         payloads.push({
             ApproverName: currentName,
@@ -218,24 +219,27 @@ sap.ui.define([
         const submissionType = id.substring(0, 3);
         const isPre = submissionType === "REQ";
         const detailsSet = isPre ? "/ZAPPROVER_DETAILS_PREAPPROVAL" : "/ZAPPROVER_DETAILS_CLAIMS";
-        const headerSet = isPre ? "/ZREQUEST_HEADER" : "/ZCLAIM_HEADER";
-        const idField = isPre ? "PREAPPROVAL_ID" : "CLAIM_ID";
-        const sField_header = submissionType === "REQ" ? "REQUEST_ID" : "CLAIM_ID";
-        const sAction = actionStatus === "STAT04" ? "REJECT" : "SEND BACK";
-        const sType = submissionType === "REQ" ? "Pre-Approval" : "Claim";
-        //Added for view;
         const sTable2 = submissionType === "REQ" ? "/ZEMP_APPROVER_REQUEST_DETAILS" : "/ZEMP_APPROVER_CLAIM_DETAILS";
         const sTable3 = submissionType === "REQ" ? "/ZEMP_REQUEST_REPORT_DETAILS" : "/ZEMP_CLAIM_REPORT_DETAILS";
+        const headerSet = isPre ? "/ZREQUEST_HEADER" : "/ZCLAIM_HEADER";
+
+        const idField = isPre ? "PREAPPROVAL_ID" : "CLAIM_ID";
+        const sField_header = submissionType === "REQ" ? "REQUEST_ID" : "CLAIM_ID";
+        const sAction = actionStatus === "STAT04" ? "Reject" : "SEND BACK";
+        const sType = submissionType === "REQ" ? "Pre-Approval" : "Claim";
+
+
 
         // 1) Load rows
         const binding = oModel.bindList(
             detailsSet,
             null,
             null,
-            [new sap.ui.model.Filter(idField, sap.ui.model.FilterOperator.EQ, id)],
+            [new Filter(idField, FilterOperator.EQ, id)],
             { $$ownRequest: true, $$updateGroupId: updateGroupId }
         );
-        const aCtx = await binding.requestContexts(0, Infinity);
+        //const aCtx = await binding.requestContexts(0, Infinity);
+        const aCtx = await binding.requestContexts(0);
         const rows = aCtx.map(ctx => ctx.getObject());
 
         // 2) Current approver row (pending)
@@ -279,6 +283,7 @@ sap.ui.define([
                 ctx.setProperty("STATUS", "STAT06");
             }
         });
+
         // 5) Update header (same group)
         const headerBinding = oModel.bindList(
             headerSet,
@@ -295,7 +300,6 @@ sap.ui.define([
 
         }
 
-
         // 6) Release Budget Lock
         const budgetBinding = oModel2.bindList(
             sTable3,
@@ -305,7 +309,8 @@ sap.ui.define([
             { $$ownRequest: true }
         );
 
-        const aCtxBudget = await budgetBinding.requestContexts(0, Infinity);
+        //const aCtxBudget = await budgetBinding.requestContexts(0, Infinity);
+        const aCtxBudget = await budgetBinding.requestContexts(0);
         const budgetRows = aCtxBudget.map(ctx => ctx.getObject());
 
         // Map rows
@@ -349,9 +354,9 @@ sap.ui.define([
             }
         );
 
-        const aCtx_binding = await bindingView.requestContexts(0, Infinity);
+        //const aCtx_binding = await bindingView.requestContexts(0, Infinity);
+        const aCtx_binding = await bindingView.requestContexts(0);
         const rows_binding = aCtx_binding.map(ctx => ctx.getObject());
-
         const currentRow_level = rows_binding.find(r =>
             Number(r.LEVEL) === Number(currentLevel)
         );
@@ -369,12 +374,30 @@ sap.ui.define([
 
         const claimantName = currentRow_level?.EMPLOYEE_NAME ?? null;
         const claimantEmail = currentRow_level?.EMPLOYEE_EMAIL ?? null;
-
         const payloads = [];
 
 
+        // Map actionStatus → REASON_TYPE ("STAT04" → REJECT, "STAT03" → SENDBACK)
+        const reasonType = actionStatus === "STAT04" ? "REJECT" : "SENDBACK";
 
-        //Email to Next Approver
+        const list = oModel.bindList(
+            "/ZREJECT_REASON",
+            null,
+            null,
+            [
+                new Filter("REASON_ID", FilterOperator.EQ, reason),
+                new Filter("REASON_TYPE", FilterOperator.EQ, reasonType),
+                new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
+            ],
+            { $$ownRequest: true, $select: "REASON_ID,REASON_DESC" }
+        );
+
+        const ctxs = await list.requestContexts(0, 1);
+        const row = ctxs[0]?.getObject();
+        const reasonDesc = row?.REASON_DESC || reason;
+
+
+        //Email to Claimant
         payloads.push({
             ApproverName: currentName,
             SubmissionDate: todayYMD(),
@@ -385,11 +408,10 @@ sap.ui.define([
             Action: sAction,
             ReceiverEmail: claimantEmail,
             NextApproverName: "N/A",
-            RejectReason: reason,
+            RejectReason: reasonDesc,
             ApproverComments: comment
         });
 
-        // 8) Submit this group
         // 8) Submit this group
         try {
             await oModel.submitBatch(updateGroupId);

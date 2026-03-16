@@ -141,7 +141,7 @@
                                             <Column demandPopin="true"><header><Text text="Purpose" /></header></Column>
                                             <Column demandPopin="true"><header><Text text="Status" /></header></Column>
                                             <Column demandPopin="true"><header><Text text="Start Date" /></header></Column>
-                                            <Column demandPopin="true"><header><Text text="Amount(MYR)" /></header></Column>
+                                            <Column demandPopin="true" hAlign="End"><header><Text text="Amount(MYR)" /></header></Column>
                                         </columns>
                                         <items>
                                             <ColumnListItem type="Active">
@@ -192,7 +192,7 @@
                                             <Column demandPopin="true"><header><Text text="Purpose" /></header></Column>
                                             <Column demandPopin="true"><header><Text text="Status" /></header></Column>
                                             <Column demandPopin="true"><header><Text text="Start Date" /></header></Column>
-                                            <Column demandPopin="true"><header><Text text="Amount(MYR)" /></header></Column>
+                                            <Column demandPopin="true" hAlign="End"><header><Text text="Amount(MYR)" /></header></Column>
                                         </columns>
                                         <items>
                                             <ColumnListItem>
