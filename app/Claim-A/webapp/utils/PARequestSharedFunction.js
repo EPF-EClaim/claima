@@ -63,7 +63,7 @@ sap.ui.define([
 		_determineCurrentState(that, oReq) {
 			if (oReq.getProperty('/view') != 'approver') {
 				switch (oReq.getProperty('/req_header/reqstatus')) {
-					case 'DRAFT' || 'RETURN':
+					case 'DRAFT' || 'SEND BACK':
 						that.byId('req_back_scr').setVisible(false);
 						that.byId("req_back").setVisible(true);
 						that.byId("req_delete").setVisible(true);
