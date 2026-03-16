@@ -78,9 +78,9 @@ sap.ui.define([
 			// sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
 			var sHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
 			var oRouter = this.getOwnerComponent().getRouter();
-			if (!sHash || sHash === "") {
-				oRouter.navTo("Dashboard");
-			}
+			// if (!sHash || sHash === "") {
+			// oRouter.navTo("Dashboard");
+			// }
 			const oImageModel = new sap.ui.model.json.JSONModel({
 				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png"),
 				initials: "",
@@ -141,7 +141,15 @@ sap.ui.define([
 			this.getView().setModel(oDashboardModel, "dashboardModel");
 
 			oRouter.getRoute("Dashboard").attachMatched(this._onDashboardMatched, this);
-			this._loadDashboardData();
+			const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+			if (oEmployeeViewModel) {
+				oEmployeeViewModel.getMetaModel().requestObject("/").then(() => {
+					this._loadDashboardData();
+				}).catch(err => {
+
+				});
+			}
+			oRouter.navTo("Dashboard");
 		},
 		onPARTest: function () {
 			var PARID = this.byId("PARSubmissionTest").getValue();
@@ -262,7 +270,7 @@ sap.ui.define([
 						approvals: []
 					});
 					this._loadDashboardData();
-					
+
 					oRouter.navTo("Dashboard");
 					break;
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
@@ -2640,8 +2648,6 @@ sap.ui.define([
 									type: "Transparent",
 									width: "100%",
 									press: function () {
-										// const sUrl = sap.ui.require.toUrl("/do/logout");
-										// window.location.replace(sUrl);
 										window.location.href = "/claima/do/logout";
 									}
 								})
@@ -2685,6 +2691,12 @@ sap.ui.define([
 		},
 
 		_onDashboardMatched: function () {
+			const oDashboardModel = this.getView().getModel("dashboardModel");
+			oDashboardModel.setData({
+				claims: [],
+				requests: [],
+				approvals: []
+			});
 			this._loadDashboardData();
 		},
 

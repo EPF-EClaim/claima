@@ -688,7 +688,7 @@ annotate service.ZCOUNTRY with @(
 
 annotate service.ZAREA with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: false},
+    Capabilities.SearchRestrictions: {Searchable: true},
     Common.SemanticKey             : [AREA_ID],
     Capabilities                   : {
         Deletable : true,
@@ -742,7 +742,7 @@ annotate service.ZAREA with @(
 
 annotate service.ZMARITAL_STAT with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: false},
+    Capabilities.SearchRestrictions: {Searchable: true},
     Common.SemanticKey             : [MARRIAGE_STATUS_ID],
     Capabilities                   : {
         Deletable : true,
@@ -796,7 +796,7 @@ annotate service.ZMARITAL_STAT with @(
 
 annotate service.ZVEHICLE_TYPE with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: false},
+    Capabilities.SearchRestrictions: {Searchable: true},
     Common.SemanticKey             : [VEHICLE_TYPE_ID],
     Capabilities                   : {
         Deletable : true,
@@ -850,7 +850,7 @@ annotate service.ZVEHICLE_TYPE with @(
 
 annotate service.ZSTATE with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: false},
+    Capabilities.SearchRestrictions: {Searchable: true},
     Common.SemanticKey             : [
         COUNTRY_ID,
         STATE_ID
@@ -914,7 +914,7 @@ annotate service.ZSTATE with @(
 annotate service.ZEMP_MASTER with @(
     cds.autoexpose,
 
-    Capabilities.SearchRestrictions: {Searchable: false},
+    Capabilities.SearchRestrictions: {Searchable: true},
     cds.server.body_parser.limit   : '10mb',
     Common.SemanticKey             : [EEID],
     Capabilities                   : {

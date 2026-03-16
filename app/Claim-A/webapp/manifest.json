@@ -1273,7 +1273,7 @@
                                     }
                                 }
                             },
-                            "hideFilterBar": true,
+                            "hideFilterBar": false,
                             "initialLoad": "Enabled",
                             "navigation": {}
                         }
