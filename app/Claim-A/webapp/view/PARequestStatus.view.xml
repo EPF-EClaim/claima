@@ -124,9 +124,9 @@
                             <HBox
                                 justifyContent="SpaceBetween"
                                 alignItems="Center"
-                                width="100%"
+                                width="70%"
                             >
-                                <Text text="Pre-Approval Amount (MYR)" />
+                                <Text text="Amount (MYR)" />
                                 <Button
                                     type="Transparent"
                                     icon="sap-icon://sort"
@@ -169,6 +169,32 @@
                             </HBox>
                         </header>
                     </Column>
+
+                     <!-- modifiedAt -->
+                    <Column>
+                        <header>
+                            <HBox
+                                justifyContent="SpaceBetween"
+                                alignItems="Center"
+                                width="100%"
+                            >
+                                <Text text="Last Modified" />
+                                <Button
+                                    type="Transparent"
+                                    icon="sap-icon://sort"
+                                    tooltip="Sort by Status"
+                                    press="onSortToggle"
+                                >
+                                    <customData>
+                                        <core:CustomData
+                                            key="path"
+                                            value="modifiedAt"
+                                        />
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>
                 </columns>
 
                 <!-- items unchanged -->
@@ -192,6 +218,7 @@
                                 }"
                             />
                             <Text text="{request_status>STATUS_DESC}" />
+                            <Text text="{request_status>modifiedAt}" />
                         </cells>
                     </ColumnListItem>
                 </items>
