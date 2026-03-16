@@ -2612,9 +2612,9 @@ sap.ui.define([
 									type: "Transparent",
 									width: "100%",
 									press: function () {
-										const sUrl = sap.ui.require.toUrl("/do/logout");
-										window.location.replace(sUrl);
-
+										// const sUrl = sap.ui.require.toUrl("/do/logout");
+										// window.location.replace(sUrl);
+										window.location.href = "/claima/do/logout";
 									}
 								})
 							]
