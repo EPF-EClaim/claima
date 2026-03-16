@@ -119,7 +119,7 @@
                     </Column>
 
                     <!-- PREAPPROVAL_AMOUNT -->
-                    <Column>
+                    <Column hAlign="End">
                         <header>
                             <HBox
                                 justifyContent="SpaceBetween"
@@ -182,7 +182,7 @@
                                 <Button
                                     type="Transparent"
                                     icon="sap-icon://sort"
-                                    tooltip="Sort by Status"
+                                    tooltip="Sort by Last Modified At"
                                     press="onSortToggle"
                                 >
                                     <customData>

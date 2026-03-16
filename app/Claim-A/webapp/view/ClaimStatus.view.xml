@@ -107,7 +107,7 @@
                             <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
                                 <Text text="Last Modified"/>
                                 <Button type="Transparent" icon="sap-icon://sort"
-                                        tooltip="Sort by Last Modified Date"
+                                        tooltip="Sort by Last Modified At"
                                         press="onSortToggle">
                                     <customData>
                                         <core:CustomData key="path" value="modifiedAt"/>
