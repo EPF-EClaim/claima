@@ -344,7 +344,8 @@ sap.ui.define([
                 claim_items: [],
                 claim_items_count: 0,
                 is_new: false,
-                is_approver: true
+                is_approver: true,
+				view_only: true
             });
             this.getOwnerComponent().setModel(oModel, "claimsubmission_input");
 

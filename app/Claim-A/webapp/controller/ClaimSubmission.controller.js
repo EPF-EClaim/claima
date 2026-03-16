@@ -64,15 +64,12 @@ sap.ui.define([
 				this._disableFooterButtons();
 
 				// show approval log fragment for user
-				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === 'STAT02' || oClaimSubmissionModel.getProperty("/is_approver")) {
-					var oPage = this.byId("page_claimsubmission");
-					this._getFormFragment("approval_log").then(function (oVBox) {
-						oPage.insertContent(oVBox, 2);
-					});
+				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== 'STAT01') {
+					this._setApprovalLog(true);
 				}
 
 				// change screen details if approver
-				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === "STAT07" || oClaimSubmissionModel.getProperty("/is_approver")) {
+				if (oClaimSubmissionModel.getProperty("/view_only")) {
 					// table changes
 					if (this.byId("button_claimsummary_edit")) {
 						//// hide buttons
@@ -123,6 +120,26 @@ sap.ui.define([
 			}
 
 			return pFormFragment;
+		},
+
+		_setApprovalLog: function (oBool) {
+			if (oBool) {
+				// display approval log
+				var oPage = this.byId("page_claimsubmission");
+				this._getFormFragment("approval_log").then(function (oVBox) {
+					oPage.insertContent(oVBox, 2);
+				});
+			}
+			else {
+				// remove approval log
+				var oPage = this.byId("page_claimsubmission");
+				var oApprovalLogFragment = this._getFormFragment("approval_log");
+				if (oApprovalLogFragment) {
+					oApprovalLogFragment.then(function (oVBox) {
+						oPage.removeContent(oVBox);
+					});
+				}
+			}
 		},
 
 		_getNewClaimItemModel: function (modelName) {
@@ -378,7 +395,24 @@ sap.ui.define([
 			}
 			else {
 				this._onInit_ClaimDetails_Input();
-				this.getView().getModel("claimitem_input").setProperty("/is_new", true);
+
+				// initialize new item values
+				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+				var oInputModel = this.getView().getModel("claimitem_input");
+
+				oInputModel.setProperty("/is_new", true);
+				//// get claim type from claim header
+				oInputModel.setProperty("/claim_item/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
+				oInputModel.setProperty("/claim_item/emp_id", oClaimSubmissionModel.getProperty("/claim_header/emp_id"));
+				//// get GL account
+				const oModel = this.getOwnerComponent().getModel();
+				var glAccount = await this._getGLAccount(oModel, oInputModel.getProperty("/claim_item/claim_type_id"));
+				oInputModel.setProperty("/claim_item/gl_account", glAccount);
+				//// get cost center
+				var itemCc = oClaimSubmissionModel.getProperty("/claim_header/cost_center") || oClaimSubmissionModel.getProperty("/claim_header/alternate_cost_center") || null;
+				oInputModel.setProperty("/claim_item/cost_center", itemCc);
+				//// get descriptions
+				oInputModel.setProperty("/claim_item/descr/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/descr/claim_type_id"));
 			}
 			BusyIndicator.hide(0);
 		},
@@ -457,7 +491,7 @@ sap.ui.define([
 
 		onItemPress_ClaimSubmission: function (oEvent) {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			if (oInputModel.getProperty("/claim_header/status_id") !== "STAT07" && !oInputModel.getProperty("/is_approver")) {
+			if (!oInputModel.getProperty("/view_only")) {
 				return;
 			}
 
@@ -1021,9 +1055,37 @@ sap.ui.define([
 			}
 		},
 
+		_getGLAccount: async function (oModel, claim_type) {
+
+			const oListBinding = oModel.bindList("/ZCLAIM_TYPE", null, null, [
+				new sap.ui.model.Filter("CLAIM_TYPE_ID", "EQ", claim_type)
+			]);
+
+			try {
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					return oData.GL_ACCOUNT;
+				} else {
+					console.warn("This Claim Type is not found");
+					return "";
+				}
+			} catch (oError) {
+				console.error("Error fetching Claim Type detail", oError);
+			}
+			
+		},
+
 		onSelect_ClaimDetails_ClaimItem: async function (oEvent) {
 			// validate claim item
 			var claimItem = oEvent.getParameters().selectedItem;
+			if (claimItem) {
+				// get material code from claim item
+				var materialCode = claimItem.getBindingContext("employee").getObject("MATERIAL_CODE");
+				var oInputModel = this.getView().getModel("claimitem_input");
+				oInputModel.setProperty("/claim_item/material_code", materialCode);
+			}
 
 			// set app visibility controls
 			await this.getFieldVisibility_ClaimTypeItem();
@@ -1062,7 +1124,7 @@ sap.ui.define([
 			this._setClaimDetailSelection(oClaimSubmissionModel);
 
 			// approver view changes
-			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === "STAT07" || oClaimSubmissionModel.getProperty("/is_approver")) {
+			if (oClaimSubmissionModel.getProperty("/view_only")) {
 				if (!this.byId("button_claimdetails_input_return").getVisible()) {
 					this.byId("button_claimdetails_input_return").setVisible(true);
 				}
@@ -1088,7 +1150,7 @@ sap.ui.define([
 							$select: "SUBMISSION_TYPE_DESC"
 						}
 					},
-					$select: "SUBMISSION_TYPE"
+					$select: "SUBMISSION_TYPE,MATERIAL_CODE"
 				},
 				template: new sap.ui.core.Item({
 					key: "{employee>CLAIM_TYPE_ITEM_ID}",
@@ -1201,10 +1263,7 @@ sap.ui.define([
 				var totalClaimSubId = (oInputModel.getProperty("/claim_item/claim_id") ?? "") + ('' + '00' + claimSubId).slice(-3);
 				oInputModel.setProperty("/claim_item/claim_sub_id", totalClaimSubId);
 			}
-			//// get claim type from claim header
-			oInputModel.setProperty("/claim_item/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
 			//// get descriptions
-			oInputModel.setProperty("/claim_item/descr/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/descr/claim_type_id"));
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
 			// add claim item details to claim submission model
 			if (oInputModel.getProperty("/is_new")) {
@@ -1740,7 +1799,7 @@ sap.ui.define([
 				}
 
 				// approver view changes
-				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === "STAT07" || oClaimSubmissionModel.getProperty("/is_approver")) {
+				if (oClaimSubmissionModel.getProperty("/view_only")) {
 					if (this.byId("button_claimdetails_input_return").getVisible()) {
 						this.byId("button_claimdetails_input_return").setVisible(false);
 					}
@@ -1754,7 +1813,7 @@ sap.ui.define([
 				const fpromise = await this._getFormFragment("claimsubmission_summary_claimitem").then(function (oVBox) {
 					oPage.insertContent(oVBox, 1);
 				});
-				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== "STAT07" && !oClaimSubmissionModel.getProperty("/is_approver")) {
+				if (!oClaimSubmissionModel.getProperty("/view_only")) {
 					this._setEnabledToolbarFooter();
 				}
 				if (!oClaimSubmissionModel.getProperty("/is_approver")) {
@@ -1987,6 +2046,11 @@ sap.ui.define([
 						// ApprovalLog.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
 					}
 					
+					// set to view-only if not draft
+					if (oAction === 'Delete Report') {
+						oClaimSubmissionModel.setProperty("/view_only", true);
+					}
+
 					MessageToast.show(oMsg);
 					this.onBack_ClaimSubmission();
 				}
@@ -2363,17 +2427,13 @@ sap.ui.define([
 
 		onBack_ClaimSubmission: function () {
 			// remove approval log fragment
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			var oPage = this.byId("page_claimsubmission");
-			var oApprovalLogFragment = this._getFormFragment("approval_log");
-			if (oApprovalLogFragment) {
-				oApprovalLogFragment.then(function (oVBox) {
-					oPage.removeContent(oVBox);
-				});
+			if (this._getFormFragment("approval_log")) {
+				this._setApprovalLog(false);
 			}
 
 			// reset UI from approver page
-			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === "STAT07" || oClaimSubmissionModel.getProperty("/is_approver")) {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			if (oClaimSubmissionModel.getProperty("/view_only")) {
 				// table changes
 				if (this.byId("button_claimsummary_edit")) {
 					//// hide buttons

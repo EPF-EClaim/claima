@@ -409,6 +409,7 @@ sap.ui.define([
 				},
 				"is_new": false,
 				"is_approver": false,
+				"view_only": false,
 				"claim_header": {
 					"claim_id": null,
 					"emp_id": null,
