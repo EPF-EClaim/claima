@@ -85,6 +85,12 @@ module.exports = (srv) => {
         req.user?.id ||
         "";
 
+      const authHeader = req.http?.req?.headers?.authorization ?? '';
+      const token = authHeader.split(' ')[1];
+      const oToken = JSON.parse(
+        Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
+      );
+
       const email = String(emailFromToken).trim().toLowerCase();
       console.log("Derived email (local):", email);
 
@@ -97,7 +103,8 @@ module.exports = (srv) => {
         costcenters: result?.CC || "UNKNOWN",
         userId: result?.EEID || "UNKNOWN",
         name: result?.NAME || "UNKNOWN",
-        position: result?.POSITION_NAME || "UNKNOWN"
+        position: result?.POSITION_NAME || "UNKNOWN", 
+        token: oToken.origin
       };
     });
 
@@ -386,8 +393,8 @@ module.exports = (srv) => {
     const { ZEMP_CA_PAYMENT } = srv.entities;
     const tx = cds.tx(req);
     const payment = await tx.run(SELECT.from(ZEMP_CA_PAYMENT)
-            .columns(z => z.REQUEST_ID)
-            .where({ DISBURSEMENT_STATUS: '02' }));
+      .columns(z => z.REQUEST_ID)
+      .where({ DISBURSEMENT_STATUS: '02' }));
 
     const results = [];
     const ids = payment.map(r => r.REQUEST_ID);

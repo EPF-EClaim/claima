@@ -85,7 +85,8 @@ sap.ui.define([
 				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png"),
 				initials: "",
 				userName: "",
-				position: ""
+				position: "",
+				token: ""
 			});
 			this.getView().setModel(oImageModel, "imageModel");
 
@@ -103,6 +104,7 @@ sap.ui.define([
 				oImageModel.setProperty("/initials", sInitials);
 				oImageModel.setProperty("/userName", sname);
 				oImageModel.setProperty("/position", sposition);
+				oImageModel.setProperty("/token", oData.token);
 
 				// save userId to model
 				var oUserIdModel = new JSONModel({ "userId": oData.userId });
@@ -2730,11 +2732,12 @@ sap.ui.define([
 				});
 		},
 		onHomeIconPressed: function () {
-			var sHostname = window.location.hostname;
+			const oImageModel = this.getView().getModel("imageModel");
+			const token = oImageModel.getProperty("/token");
+			// var sHostname = window.location.hostname;
 			var sSFURL;
 
-			sSFURL = "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV"; //DEV
-			// "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT"	UAT
+			sSFURL = token === "httpsa6s6cq33s.accounts.ondemand.com"? "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV": "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT"; 
 			window.open(sSFURL, "_self");
 
 		}

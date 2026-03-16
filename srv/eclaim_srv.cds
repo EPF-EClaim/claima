@@ -182,6 +182,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         userId      : String;
         name        : String;
         position    : String;
+        token       : String;
     }
 
     function getUserType()                                             returns UserInfo;
