@@ -104,7 +104,7 @@ module.exports = (srv) => {
         userId: result?.EEID || "UNKNOWN",
         name: result?.NAME || "UNKNOWN",
         position: result?.POSITION_NAME || "UNKNOWN", 
-        token: oToken.origin
+        origin: oToken.origin
       };
     });
 

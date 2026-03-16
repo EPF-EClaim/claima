@@ -71,6 +71,7 @@ sap.ui.define([
 
 			const oSession = new sap.ui.model.json.JSONModel({
 				userType: "UNKNOWN",
+				origin: ""
 			});
 			this.getView().setModel(oSession, "session");
 
@@ -85,8 +86,7 @@ sap.ui.define([
 				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png"),
 				initials: "",
 				userName: "",
-				position: "",
-				token: ""
+				position: ""
 			});
 			this.getView().setModel(oImageModel, "imageModel");
 
@@ -104,7 +104,8 @@ sap.ui.define([
 				oImageModel.setProperty("/initials", sInitials);
 				oImageModel.setProperty("/userName", sname);
 				oImageModel.setProperty("/position", sposition);
-				oImageModel.setProperty("/token", oData.token);
+
+				oSession.setProperty("/origin", oData.origin);
 
 				// save userId to model
 				var oUserIdModel = new JSONModel({ "userId": oData.userId });
@@ -2732,12 +2733,12 @@ sap.ui.define([
 				});
 		},
 		onHomeIconPressed: function () {
-			const oImageModel = this.getView().getModel("imageModel");
-			const token = oImageModel.getProperty("/token");
+			const oSession = this.getView().getModel("session");
+			const origin = oSession.getProperty("/origin");
 			// var sHostname = window.location.hostname;
 			var sSFURL;
 
-			sSFURL = token === "httpsa6s6cq33s.accounts.ondemand.com"? "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV": "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT"; 
+			sSFURL = origin === "httpsa6s6cq33s.accounts.ondemand.com"? "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV": "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT"; 
 			window.open(sSFURL, "_self");
 
 		}
