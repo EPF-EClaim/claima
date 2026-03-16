@@ -77,7 +77,7 @@ sap.ui.define([
 
 
 			// sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
-			var sHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
+			// var sHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
 			var oRouter = this.getOwnerComponent().getRouter();
 			// if (!sHash || sHash === "") {
 			// oRouter.navTo("Dashboard");
@@ -149,7 +149,7 @@ sap.ui.define([
 				oEmployeeViewModel.getMetaModel().requestObject("/").then(() => {
 					this._loadDashboardData();
 				}).catch(err => {
-
+					console.error("Failed to load metadata for employee_view", err);
 				});
 			}
 			oRouter.navTo("Dashboard");
@@ -2637,15 +2637,16 @@ sap.ui.define([
 									width: "100%",
 									textAlign: sap.ui.core.TextAlign.Center
 								}),
-								// new sap.m.ToolbarSeparator(),
+								new sap.m.Text({
+									text: "{imageModel>/userName}",
+									width: "100%",
+									textAlign: sap.ui.core.TextAlign.Center
+								}),
 								new sap.m.Text({
 									text: "{imageModel>/position}",
 									width: "100%",
 									textAlign: sap.ui.core.TextAlign.Center
 								}),
-
-								// new sap.m.ToolbarSeparator(),
-								// Sign out button
 								new sap.m.Button({
 									text: "Sign Out",
 									type: "Transparent",
@@ -2738,8 +2739,8 @@ sap.ui.define([
 			var sSFURL;
 
 			sSFURL = origin === "httpsa6s6cq33s.accounts.ondemand.com" ? "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV" :
-					 origin === "sap.custom" ? "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT" :
-								"https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD";
+				origin === "sap.custom" ? "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT" :
+					"https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD";
 
 			window.open(sSFURL, "_self");
 

@@ -63,31 +63,31 @@
                 >
                     <columns>
                         <Column>
-                            <Text text="Claim Type ID" />
+                            <Text text="{i18n>claimtypeid}" />
                         </Column>
                         <Column>
-                            <Text text="Claim Type Description" />
+                            <Text text="{i18n>claimtypedesc}" />
                         </Column>
                         <Column>
-                            <Text text="GL Account" />
+                            <Text text="{i18n>glacct}" />
                         </Column>
                         <Column>
-                            <Text text="End Date" />
+                            <Text text="{i18n>req_i_end_date}" />
                         </Column>
                         <Column>
-                            <Text text="Start Date" />
+                            <Text text="{i18n>start_date}" />
                         </Column>
                         <Column>
-                            <Text text="Request Type" />
+                            <Text text="{i18n>req_rtype}" />
                         </Column>
                         <Column>
-                            <Text text="Individual/Group" />
+                            <Text text="{i18n>req_grptype}" />
                         </Column>
                         <Column>
-                            <Text text="Project Claim" />
+                            <Text text="{i18n>projclaim}" />
                         </Column>     
                         <Column>
-                            <Text text="Status" />
+                            <Text text="{i18n>appr_status}" />
                         </Column>                                                                                           
                         <Column width="2rem">
                             <Text text="" />
