@@ -674,6 +674,8 @@ type ApprovedClaimBatch {
                 TRIP_START_DATE
         };
 
+    
+    @cds.redirection.target
     entity ZEMP_CLAIM_BUDGET_CHECK       as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
@@ -699,7 +701,7 @@ type ApprovedClaimBatch {
                 ZREQUEST_ITEM.MATERIAL_CODE,
                 createdBy
         };
-
+      
     entity ZEMP_APPROVER_DETAILS as
         select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request
         { 
@@ -731,7 +733,10 @@ type ApprovedClaimBatch {
                 ZCLAIM_HEADER.FINAL_AMOUNT_TO_RECEIVE as AMOUNT,
                 ZCLAIM_HEADER.TOTAL_CLAIM_AMOUNT as TOTAL_AMOUNT,
                 modifiedAt }
-                where ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'     
+                where ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
+
+    entity ZEMP_TRAIN_COURSE as projection on ECLAIM.ZTRAIN_COURSE_PART; 
+
 
 action sendApprovedClaimBatch(batch : ApprovedClaimBatch) returns { message : String; };
 
