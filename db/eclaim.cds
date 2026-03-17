@@ -165,7 +165,7 @@ entity ZREQUEST_ITEM : managed {
         KWSP_SPORTS_REPRESENTATION : String(2);
         SPORTS_CLAIM_DISCLAIMER    : Boolean;
         VEHICLE_OWNERSHIP_ID       : String(2);
-        MODE_OF_TRANSFER           : String;
+        MODE_OF_TRANSFER           : String(2);
         TRANSFER_DATE              : Date;
         NO_OF_DAYS                 : Integer;
         MARRIAGE_CATEGORY          : String(2);
@@ -262,6 +262,8 @@ entity ZREQUEST_ITEM : managed {
                                          on ZVEHICLE_CLASS.VEHICLE_CLASS_ID = VEHICLE_CLASS_ID;
         ZGL_ACCOUNT                : Association to ZGL_ACCOUNT
                                          on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
+        ZTRANSFER_MODE             : Association to ZTRANSFER_MODE
+                                         on ZTRANSFER_MODE.TRANSFER_MODE_ID = MODE_OF_TRANSFER;                                         
 }
 
 entity ZREQ_ITEM_PART : managed {
