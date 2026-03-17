@@ -49,9 +49,6 @@ sap.ui.define([
 ) {
 	"use strict";
 
-
-
-
 	return Controller.extend("claima.controller.App", {
 
 		_ReqAttachmentFile1: null,
@@ -80,8 +77,8 @@ sap.ui.define([
 
 			// sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
 			var sHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
+			var oRouter = this.getOwnerComponent().getRouter();
 			if (!sHash || sHash === "") {
-				var oRouter = this.getOwnerComponent().getRouter();
 				oRouter.navTo("Dashboard");
 			}
 			const oImageModel = new sap.ui.model.json.JSONModel({
@@ -122,9 +119,9 @@ sap.ui.define([
 			});
 
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			// var oUserModel = new sap.ui.model.json.JSONModel({ email: "Jefry.Yap@my.ey.com" });
+			// var oUserModel = new sap.ui.model.json.JSONModel({ email: "jefry.yap@my.ey.com" });
 			// this.getView().setModel(oUserModel, 'user');
-			// const emp_data = await this._getEmpIdDetail("Jefry.Yap@my.ey.com");
+			// const emp_data = await this._getEmpIdDetail("jefry.yap@my.ey.com");
 			// const oReqModel = this._getReqModel().getData();
 			// oReqModel.user = emp_data.eeid;
 			// this._getReqModel().setData(oReqModel);
@@ -144,6 +141,7 @@ sap.ui.define([
 			this.getView().setModel(oDashboardModel, "dashboardModel");
 
 			oRouter.getRoute("Dashboard").attachMatched(this._onDashboardMatched, this);
+			this._loadDashboardData();
 		},
 		onPARTest: function () {
 			var PARID = this.byId("PARSubmissionTest").getValue();
@@ -256,6 +254,14 @@ sap.ui.define([
 				case "dashboard":
 					this.getOwnerComponent().getModel("employee")?.refresh();
 					this.getOwnerComponent().getModel("employee_view")?.refresh();
+					const oDashboardModel = this.getView().getModel("dashboardModel");
+					oDashboardModel.setData({
+						claims: [],
+						requests: [],
+						approvals: []
+					});
+					this._loadDashboardData();
+					
 					oRouter.navTo("Dashboard");
 					break;
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
@@ -1679,7 +1685,7 @@ sap.ui.define([
 					oReqModel.setProperty("/req_header/reqstatus", 'DRAFT');
 					oReqModel.setProperty("/req_header/costcenter", sCostCenter);
 					oReqModel.setProperty("/eeid", emp_data.eeid);
-					this._getItemList(oResult.reqNo);
+					// PARequestSharedFunction._getItemList(this, oResult.reqNo, true);
 					//oResult.reqNo send this to approval determination
 
 					var oRouter = this.getOwnerComponent().getRouter();
@@ -1864,11 +1870,11 @@ sap.ui.define([
 				if (aContexts.length === 0) throw new Error("Range ID not found");
 
 				const oData = aContexts[0].getObject();
-				// const prefix = oData.PREFIX;
+				const prefix = oData.PREFIX;
 				const current = Number(oData.CURRENT);
 				const yy = String(new Date().getFullYear()).slice(-2);
-				// const reqNo = `${prefix}${yy}${String(current).padStart(9, "0")}`;
-				const reqNo = `REQ${yy}${String(current).padStart(9, "0")}`;
+				const reqNo = `${prefix}${yy}${String(current).padStart(9, "0")}`;
+				// const reqNo = `REQ${yy}${String(current).padStart(9, "0")}`;
 
 				return { reqNo, current };
 			} catch (err) {
@@ -2222,6 +2228,7 @@ sap.ui.define([
 						const emp_data = await that._getEmpIdDetail(email);
 						const oReqModel = that._getReqModel().getData();
 						oReqModel.user = emp_data.eeid;
+						oReqModel.user_grade = emp_data.grade;
 						that._getReqModel().setData(oReqModel);
 
 						sap.m.MessageToast.show('Email: ' + email);
@@ -2268,9 +2275,9 @@ sap.ui.define([
 									type: "Transparent",
 									width: "100%",
 									press: function () {
-										const sUrl = sap.ui.require.toUrl("/do/logout");
-										window.location.replace(sUrl);
-
+										// const sUrl = sap.ui.require.toUrl("/do/logout");
+										// window.location.replace(sUrl);
+										window.location.href = "/claima/do/logout";
 									}
 								})
 							]
@@ -2294,7 +2301,7 @@ sap.ui.define([
 				event: oEvent,
 				keyProp: "REQUEST_ID",
 				routeName: "RequestForm",
-				modelName: "employee_view",
+				modelName: "dashboardModel",
 				paramName: "request_id"
 			});
 		},
@@ -2304,7 +2311,7 @@ sap.ui.define([
 			claim.onRowPress({
 				controller: this,
 				event: oEvent,
-				modelName: "employee_view",
+				modelName: "dashboardModel",
 				keyProp: "CLAIM_ID",
 				navContainerId: "pageContainer",
 				pageId: "navcontainer_claimsubmission"
@@ -2321,8 +2328,8 @@ sap.ui.define([
 			const oDashboardModel = this.getView().getModel("dashboardModel");
 
 			oEmployeeViewModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", null, [
-				new sap.ui.model.Sorter("LAST_MODIFIED_DATE", true)
-			]).requestContexts(0, 100)
+				new sap.ui.model.Sorter("modifiedAt", true)
+			]).requestContexts(0, Infinity)
 				.then(aContexts => {
 					oDashboardModel.setProperty("/claims", aContexts.map(c => c.getObject()));
 				})
@@ -2330,13 +2337,13 @@ sap.ui.define([
 
 			oEmployeeViewModel.bindList("/ZEMP_REQUEST_VIEW", null, [
 				new sap.ui.model.Sorter("modifiedAt", true)
-			]).requestContexts(0, 100)
+			]).requestContexts(0, Infinity)
 				.then(aContexts => {
 					oDashboardModel.setProperty("/requests", aContexts.map(c => c.getObject()));
 				})
 				.catch(err => console.log("requests error:", err));
 
-			oEmployeeViewModel.bindList("/ZEMP_APPROVER_DETAILS").requestContexts(0, 100)
+			oEmployeeViewModel.bindList("/ZEMP_APPROVER_DETAILS").requestContexts(0, Infinity)
 				.then(aContexts => {
 					oDashboardModel.setProperty("/approvals", aContexts.map(c => c.getObject()));
 				})
@@ -2345,5 +2352,14 @@ sap.ui.define([
 					oDashboardModel.setProperty("/approvals", []);
 				});
 		},
+		onHomeIconPressed: function () {
+			var sHostname = window.location.hostname;
+			var sSFURL;
+
+			sSFURL = "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV"; //DEV
+			// "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT"	UAT
+			window.open(sSFURL, "_self");
+
+		}
 	});
 });

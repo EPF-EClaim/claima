@@ -72,12 +72,6 @@
                             <Text text="GL Account" />
                         </Column>
                         <Column>
-                            <Text text="End Date" />
-                        </Column>
-                        <Column>
-                            <Text text="Start Date" />
-                        </Column>
-                        <Column>
                             <Text text="Request Type" />
                         </Column>
                         <Column>
@@ -86,6 +80,12 @@
                         <Column>
                             <Text text="Project Claim" />
                         </Column>     
+                        <Column>
+                            <Text text="Start Date" />
+                        </Column>                        
+                        <Column>
+                            <Text text="End Date" />
+                        </Column>                        
                         <Column>
                             <Text text="Status" />
                         </Column>                                                                                           
@@ -103,15 +103,15 @@
 
                                 <Text text="{GL_ACCOUNT}" />
 
-                                <Text text="{END_DATE}"/>
-
-                                <Text text="{START_DATE}" />
-
                                 <Text text="{REQUEST_TYPE}" />
 
                                 <Text text="{IND_OR_GROUP}" />
 
                                 <Text text="{PROJECT_CLAIM}" />
+
+                                <Text text="{START_DATE}" />  
+
+                                <Text text="{END_DATE}"/>
 
                                 <Text text="{STATUS}" />
 
