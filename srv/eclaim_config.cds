@@ -190,13 +190,13 @@ annotate service.ZCLAIM_TYPE with @(
             },
             {
                 $Type: 'UI.DataField',
-                Value: END_DATE,
-                Label: 'End Date'
-            },
-            {
-                $Type: 'UI.DataField',
                 Value: START_DATE,
                 Label: 'Start Date'
+            },            
+            {
+                $Type: 'UI.DataField',
+                Value: END_DATE,
+                Label: 'End Date'
             },
             {
                 $Type: 'UI.DataField',
