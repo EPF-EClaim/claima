@@ -2010,28 +2010,13 @@ sap.ui.define([
 		},
 
 		//For MyClaimStatus
-
 		getCLAIMHeaderList: async function () {
 			const oReq = this.getOwnerComponent().getModel("claim_status2");
 			const oModel = this.getOwnerComponent().getModel("employee_view");
-			var oFilter = [];
-
-			// get user ID
-			var userID;
-			if (this.getView().getModel("userId")) {
-				userID = this.getView().getModel("userId").getProperty("/userId");
-				if (userID) {
-					oFilter.push(new Filter("EMP_ID", FilterOperator.EQ, userID));
-				}
-			}
-			// null filter if no items
-			if (!oFilter.length) {
-				oFilter = null;
-			}
 
 			const oListBinding = oModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", undefined,
-				[new Sorter("LAST_MODIFIED_DATE", true)],
-				oFilter,
+				[new Sorter("modifiedAt", true)],
+				null,
 				{
 					$$ownRequest: true,
 					$$groupId: "$auto",
