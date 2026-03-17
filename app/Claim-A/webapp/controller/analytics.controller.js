@@ -118,9 +118,7 @@ sap.ui.define([
       const accessModel = this.getOwnerComponent().getModel("access");
       const userType = accessModel?.getProperty("/userType");
       const userCC = accessModel?.getProperty("/costcenters"); // array or string
-
-      const isAdmin = ["DTD Admin", "JKEW Admin"].includes(userType);
-
+      const isAdmin = this.isAdminRole(userType);
       const ccMCB = this.byId("cc");         // MultiComboBox
       const ccText = this.byId("ccText");    // Text input for non-admins
 
@@ -162,6 +160,15 @@ sap.ui.define([
         setTimeout(applySelection, 0);
       }
     },
+
+
+    isAdminRole: function (userType) {
+      const adminRoles = ["DTD Admin", "JKEW Admin", "Super Admin"];
+      return adminRoles.includes(userType);
+    },
+
+
+
 
     onCloseDialog: function (oEvent) {
       let oCtrl = oEvent.getSource();
@@ -352,8 +359,9 @@ sap.ui.define([
       const accessModel = this.getOwnerComponent().getModel("access");
       const userType = accessModel?.getProperty("/userType");
       const userCC = accessModel?.getProperty("/costcenters");
+      const isAdmin = this.isAdminRole(userType);
 
-      if (["DTD Admin", "JKEW Admin"].includes(userType)) {
+      if (isAdmin) {
         // ADMIN → free selection
         const ccKeys = this._getKeys("cc");
         this._addOrFilter(a, "COST_CENTER", ccKeys);
@@ -656,7 +664,7 @@ sap.ui.define([
 
         const cols = this._getExportColumnsForTarget();
 
-        const sheet = new sap.ui.export.Spreadsheet({
+        const sheet = new Spreadsheet({
           workbook: {
             columns: cols,
             context: {
