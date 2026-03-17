@@ -20,7 +20,8 @@ sap.ui.define([
 	"claima/utils/SendBackDialog",
 	'claima/utils/Utility',
 	"claima/utils/ApproverUtility",
-	"claima/utils/workflowApproval"
+	"claima/utils/workflowApproval",
+	"claima/utils/Attachment"
 
 ], function (
 	Controller,
@@ -44,7 +45,8 @@ sap.ui.define([
 	SendBackDialog,
 	Utility,
 	ApproverUtility,
-	workflowApproval
+	workflowApproval,
+	Attachment
 ) {
 	"use strict";
 
@@ -409,115 +411,7 @@ sap.ui.define([
 		* ======================================================= */
 
 		async onDocLinkPress(oEvent) {
-			var attachmentID = oEvent.getSource().getText();
-
-			var sServiceUrl = `SuccessFactors_API/Attachment('${attachmentID}')`;
-
-			try {
-				const response = await fetch(sServiceUrl, {
-					method: "GET"
-				});
-
-				if (!response.ok) {
-					const errText = await response.text().catch(() => "");
-					throw new Error("HTTP " + response.status + " " + response.statusText + ": " + errText);
-				}
-
-				const xmlText = await response.text();
-
-				// turn XML into JSON
-				const parser = new DOMParser();
-				const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-
-				// Check XML parsing errors
-				const parseError = xmlDoc.querySelector("parsererror");
-				if (parseError) {
-					console.log("Failed to parse XML response.")
-					throw new Error("Failed to parse XML response.");
-				}
-
-				// get content from xmlDoc
-				const content = xmlDoc.querySelector("content");
-				if (!content) {
-					console.log("No attachment details found (missing <content>).")
-					throw new Error("No attachment details found (missing <content>).");
-				}
-
-				const props = content.querySelector("properties");
-				if (!props) {
-					console.log("No attachment details found (missing <properties>).")
-					throw new Error("No attachment details found (missing <properties>).");
-				}
-
-				const jsonData = {};
-
-				// Only iterate element nodes
-				const contentNodes = props.children;
-				for (let i = 0; i < contentNodes.length; i++) {
-					const node = contentNodes[i];
-					jsonData[node.localName] = (node.textContent || "").trim();
-				}
-
-				// Validate required fields
-				if (!jsonData.fileContent) {
-					throw new Error("Attachment fileContent is empty or missing.");
-				}
-				if (!jsonData.mimeType) {
-					jsonData.mimeType = "application/pdf"; // fallback
-				}
-				if (!jsonData.fileName) {
-					jsonData.fileName = "Attachment";
-				}
-
-				// Convert base64 -> Blob
-				const base64Encoded = jsonData.fileContent;
-				// Decode base64 into bytes (note: atob works for base64)
-				const decoded = atob(base64Encoded);
-				const byteArray = new Uint8Array(decoded.length);
-
-				for (let i = 0; i < decoded.length; i++) {
-					byteArray[i] = decoded.charCodeAt(i);
-				}
-
-				const blob = new Blob([byteArray], { type: jsonData.mimeType });
-				const pdfUrl = URL.createObjectURL(blob);
-
-				// Create/reuse PDFViewer
-				if (!this._PDFViewer) {
-					this._PDFViewer = new sap.m.PDFViewer({
-						isTrustedSource: true,
-						width: "auto"
-					});
-
-					this.getView().addDependent(this._PDFViewer);
-
-					// Optional: cleanup object URL when viewer closes
-					this._PDFViewer.attachEventOnce("afterClose", function () {
-						try {
-							URL.revokeObjectURL(pdfUrl);
-						} catch (e) {
-							// ignore cleanup errors
-						}
-					});
-				}
-
-				console.log(pdfUrl);
-
-				// Update viewer properties each time
-				// this._PDFViewer.setTitle(
-				// 	this._getTexti18n("pdfviewer_claimsummary_attachment", [jsonData.fileName])
-				// );
-				this._PDFViewer.setSource(pdfUrl);
-
-				// Register blob as trusted/whitelisted (older UI5)
-				jQuery.sap.addUrlWhitelist("blob");
-
-				// Open viewer
-				this._PDFViewer.open();
-			} catch (error) {
-				console.log("Error viewing attachment: ", error);
-				MessageToast.show("Error viewing attachment: " + (error.message || error));
-			}
+			Attachment.onViewDocument(this, oEvent);
 		},
 
 		async onAddItem(oEvent) {
@@ -677,7 +571,9 @@ sap.ui.define([
 					ALLOCATED_AMOUNT: p.ALLOCATED_AMOUNT ?? ""
 				}));
 
-				aMapped.push({ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" });
+				if (oReq.getProperty('/req_header/grptype') == 'Group') {
+					aMapped.push({ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" });
+				}
 
 				oReq.setProperty(
 					"/participant",
@@ -1180,34 +1076,24 @@ sap.ui.define([
 			sap.ui.core.BusyIndicator.show(0);
 
 			try {
-				const alloc_total = data.participant.reduce(
-					(sum, it) => sum + (parseFloat(it.ALLOCATED_AMOUNT) || 0),
-					0
-				);
+				const alloc_total = data.participant.reduce((sum, it) => sum + (parseFloat(it.ALLOCATED_AMOUNT) || 0), 0);
 				if (alloc_total > estAmt) {
-					sap.m.MessageToast.show("Please ensure that the total amount in the participant list does NOT exceeds the Estimated Amount entered in the Request Details section.");
-					return;
+					sap.m.MessageToast.show("Total participant amount exceeds Estimated Amount.");
+					sap.ui.core.BusyIndicator.hide();
+					return; 
 				}
 
 				if (isEdit) {
 					const subId = String(data.req_item.req_subid || "").trim();
-					if (!subId) throw new Error("Missing Request Sub ID for edit");
-
-					const oList = oModel.bindList(
-						"/ZREQUEST_ITEM",
-						null,
-						null,
-						[
-							new sap.ui.model.Filter({ path: "REQUEST_ID", operator: "EQ", value1: reqId }),
-							new sap.ui.model.Filter({ path: "REQUEST_SUB_ID", operator: "EQ", value1: subId })
-						],
-						{ $$ownRequest: true, $$updateGroupId: "itemSave" }
-					);
+					const oList = oModel.bindList("/ZREQUEST_ITEM", null, null, [
+						new sap.ui.model.Filter("REQUEST_ID", "EQ", reqId),
+						new sap.ui.model.Filter("REQUEST_SUB_ID", "EQ", subId)
+					], { $$updateGroupId: "itemSave" });
 
 					const aCtx = await oList.requestContexts(0, 1);
-					const oItemCtx = aCtx[0];
-					if (!oItemCtx) throw new Error("Item not found for edit");
+					if (!aCtx[0]) throw new Error("Item not found");
 
+					const oItemCtx = aCtx[0];
 					oItemCtx.setProperty("CLAIM_TYPE_ID", claimType);
 					oItemCtx.setProperty("CLAIM_TYPE_ITEM_ID", claimItem);
 					oItemCtx.setProperty("EST_AMOUNT", estAmt);
@@ -1218,38 +1104,25 @@ sap.ui.define([
 					oItemCtx.setProperty("REMARK", data.req_item.remark || "");
 
 					await this._replaceParticipantsForItem(reqId, subId, data.participant);
-
 					await oModel.submitBatch("itemSave");
+					
+				} else {
+					const newSubId = await this.getCurrentReqSubIdNumber(reqId);
+					const requestSubId = String(newSubId);
+					const oReqModel = this.getView().getModel("request");
+					const oData = oReqModel.getProperty("/req_item");
 
-					await this._getItemList(reqId);
-					await this._showItemList("list");
+					let attachment1_ID, attachment2_ID;
+					if (oData.doc1) {
+						const attachment_1 = await this.getFileAsBinary("i_attachment_1_file");
+						attachment1_ID = await Attachment.postAttachment(oData.doc1, attachment_1, data.user);
+					}
+					if (oData.doc2) {
+						const attachment_2 = await this.getFileAsBinary("i_attachment_2_file");
+						attachment2_ID = await Attachment.postAttachment(oData.doc2, attachment_2, data.user);
+					}
 
-					sap.m.MessageToast.show("Updated Successfully");
-					return;
-				}
-
-				const nr = await this.getCurrentReqNumber("NR03");
-				if (!nr) throw new Error("Number range not available");
-
-				const requestSubId = String(nr.result);
-
-				const oReqModel = this.getView().getModel("request");
-				const oData = oReqModel.getProperty("/req_item");
-
-				if (oData.doc1) {
-					var attachment_1 = await this.getFileAsBinary("i_attachment_1_file");
-					var attachment1_ID = await this.postFilesToSF(oData.doc1, attachment_1);
-				}
-				if (oData.doc2) {
-					var attachment_2 = await this.getFileAsBinary("i_attachment_2_file");
-					var attachment2_ID = await this.postFilesToSF(oData.doc2, attachment_2);
-				}
-
-				console.log(attachment1_ID)
-				console.log(attachment2_ID)
-
-				const oItemCtx = oModel.bindList("/ZREQUEST_ITEM").create(
-					{
+					oModel.bindList("/ZREQUEST_ITEM").create({
 						REQUEST_ID: reqId,
 						REQUEST_SUB_ID: requestSubId,
 						CLAIM_TYPE_ID: claimType,
@@ -1262,45 +1135,42 @@ sap.ui.define([
 						REMARK: data.req_item.remark || "",
 						ATTACHMENT1: attachment1_ID,
 						ATTACHMENT2: attachment2_ID
-					},
-					{ $$updateGroupId: "itemCreate" }
-				);
+					}, { $$updateGroupId: "itemCreate" });
 
-				const parts = data.participant || [];
-				for (const p of parts) {
-					const pid = String(p.PARTICIPANTS_ID || "").trim();
-					if (!pid) continue;
-
-					const alloc = parseFloat(p.ALLOCATED_AMOUNT || 0);
-
-					const oContent = oModel.bindList("/ZREQ_ITEM_PART").create(
-						{
+					const parts = data.participant || [];
+					for (const p of parts) {
+						const pid = String(p.PARTICIPANTS_ID || "").trim();
+						if (!pid) continue;
+						oModel.bindList("/ZREQ_ITEM_PART").create({
 							REQUEST_ID: reqId,
 							REQUEST_SUB_ID: requestSubId,
 							PARTICIPANTS_ID: pid,
-							ALLOCATED_AMOUNT: alloc
-						},
-						{ $$updateGroupId: "itemCreate" }
-					);
+							ALLOCATED_AMOUNT: parseFloat(p.ALLOCATED_AMOUNT || 0)
+						}, { $$updateGroupId: "itemCreate" });
+					}
 
-					oContent.created().then(() => {
-						this.postMDF(reqId, requestSubId, attachment1_ID, attachment2_ID);
-					})
+					await oModel.submitBatch("itemCreate");
+					
+					// Handle MDF logic after batch success to ensure IDs exist in DB
+					if (attachment1_ID) {
+						await Attachment.postMDFChild(reqId, requestSubId, attachment1_ID, attachment2_ID);
+					}
 				}
 
-				await oModel.submitBatch("itemCreate");
-
-				// await this.updateCurrentReqNumber("NR03", nr.current);
-
-				await this._getItemList(reqId);
-				await this._showItemList("list");
-
-				sap.m.MessageToast.show("Saved Successfully");
+				sap.m.MessageToast.show("Success");
 
 			} catch (e) {
 				sap.m.MessageToast.show(e.message || "Save failed");
 			} finally {
+				// 1. Give HANA a moment to refresh the View (500ms is usually plenty)
+				await new Promise(resolve => setTimeout(resolve, 500));
+				
+				// 2. Fetch fresh data (Ensure _getItemList uses $$groupId: '$direct')
+				await this._getItemList(reqId);
+				
+				// 3. Hide busy and navigate
 				sap.ui.core.BusyIndicator.hide();
+				this._showItemList("list");
 			}
 		},
 
@@ -1392,105 +1262,105 @@ sap.ui.define([
 			return { ok: false, reason: 'Only PDF and image files are allowed.' };
 		},
 
-		postMDF: async function (reqID, reqSubID, attachment1, attachment2) {
-			// Write to Success Factors API
-			var sServiceUrl = "SuccessFactors_API/cust_EPF_CLAIM_ATTACHMENTS";
+		// postMDF: async function (reqID, reqSubID, attachment1, attachment2) {
+		// 	// Write to Success Factors API
+		// 	var sServiceUrl = "SuccessFactors_API/cust_EPF_CLAIM_ATTACHMENTS";
 
-			try {
-				const response = await fetch(sServiceUrl, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						__metadata: {
-							uri: 'cust_EPF_CLAIM_ATTACHMENTS'
-						},
-						Claim_Sub_ID: reqSubID,
-						cust_EPF_CLAIM_ATTACHMENTS_Parent_Claim_ID: reqID,
+		// 	try {
+		// 		const response = await fetch(sServiceUrl, {
+		// 			method: "POST",
+		// 			headers: { "Content-Type": "application/json" },
+		// 			body: JSON.stringify({
+		// 				__metadata: {
+		// 					uri: 'cust_EPF_CLAIM_ATTACHMENTS'
+		// 				},
+		// 				Claim_Sub_ID: reqSubID,
+		// 				cust_EPF_CLAIM_ATTACHMENTS_Parent_Claim_ID: reqID,
 
-						cust_attachment1Nav: {
-							__metadata: {
-								uri: `Attachment('${attachment1}')`
-							}
-						},
-						...(String(attachment2).trim().length > 0 && attachment2 ? {
-							cust_Parent_attachment2Nav: {
-								__metadata: {
-									uri: `Attachment('${attachment2}')`
-								}
-							}
-						} : {}
-						)
-					})
-				});
+		// 				cust_attachment1Nav: {
+		// 					__metadata: {
+		// 						uri: `Attachment('${attachment1}')`
+		// 					}
+		// 				},
+		// 				...(String(attachment2).trim().length > 0 && attachment2 ? {
+		// 					cust_Parent_attachment2Nav: {
+		// 						__metadata: {
+		// 							uri: `Attachment('${attachment2}')`
+		// 						}
+		// 					}
+		// 				} : {}
+		// 				)
+		// 			})
+		// 		});
 
-				if (!response.ok) {
-					const errText = await response.text().catch(() => "");
-					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
-				}
-				else {
-					console.log("MDF Updated")
-				}
+		// 		if (!response.ok) {
+		// 			const errText = await response.text().catch(() => "");
+		// 			throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
+		// 		}
+		// 		else {
+		// 			console.log("MDF Updated")
+		// 		}
 
-			} catch (error) {
-				console.log("Error creating MDF: " + error);
-				MessageToast.show("Error creating MDF: " + error);
-				return false;
-			}
-		},
+		// 	} catch (error) {
+		// 		console.log("Error creating MDF: " + error);
+		// 		MessageToast.show("Error creating MDF: " + error);
+		// 		return false;
+		// 	}
+		// },
 
-		postFilesToSF: async function (fileName, fileString) {
+		// postFilesToSF: async function (fileName, fileString) {
 
-			// Write to Success Factors API
-			var sServiceUrl = "SuccessFactors_API/Attachment";
+		// 	// Write to Success Factors API
+		// 	var sServiceUrl = "SuccessFactors_API/Attachment";
 
-			try {
-				const response = await fetch(sServiceUrl, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						__metadata: {
-							uri: 'Attachment'
-						},
-						deletable: true,
-						fileName: fileName,
-						moduleCategory: 'UNSPECIFIED',
-						module: 'DEFAULT',
-						userId: 'SFAPI',
-						viewable: true,
-						searchable: true,
-						fileContent: fileString
-					})
-				});
+		// 	try {
+		// 		const response = await fetch(sServiceUrl, {
+		// 			method: "POST",
+		// 			headers: { "Content-Type": "application/json" },
+		// 			body: JSON.stringify({
+		// 				__metadata: {
+		// 					uri: 'Attachment'
+		// 				},
+		// 				deletable: true,
+		// 				fileName: fileName,
+		// 				moduleCategory: 'UNSPECIFIED',
+		// 				module: 'DEFAULT',
+		// 				userId: 'SFAPI',
+		// 				viewable: true,
+		// 				searchable: true,
+		// 				fileContent: fileString
+		// 			})
+		// 		});
 
-				if (!response.ok) {
-					const errText = await response.text().catch(() => "");
-					throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
-				}
+		// 		if (!response.ok) {
+		// 			const errText = await response.text().catch(() => "");
+		// 			throw new Error(`HTTP ${response.status} ${response.statusText}: ${errText}`);
+		// 		}
 
-				const data = await response.text();
+		// 		const data = await response.text();
 
-				// turn XML into JSON
-				const parser = new DOMParser();
-				const xmlDoc = parser.parseFromString(data, 'text/xml');
-				const jsonData = {};
+		// 		// turn XML into JSON
+		// 		const parser = new DOMParser();
+		// 		const xmlDoc = parser.parseFromString(data, 'text/xml');
+		// 		const jsonData = {};
 
-				const nodes = xmlDoc.documentElement.childNodes;
-				for (let i = 0; i < nodes.length; i++) {
-					const node = nodes[i];
-					if (node.nodeType === 1) {
-						jsonData[node.nodeName] = node.textContent.trim();
-					}
-				}
+		// 		const nodes = xmlDoc.documentElement.childNodes;
+		// 		for (let i = 0; i < nodes.length; i++) {
+		// 			const node = nodes[i];
+		// 			if (node.nodeType === 1) {
+		// 				jsonData[node.nodeName] = node.textContent.trim();
+		// 			}
+		// 		}
 
-				var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(') + 1, jsonData.id.indexOf(')') - 1);
+		// 		var attachmentNumber = jsonData.id.slice(jsonData.id.indexOf('(') + 1, jsonData.id.indexOf(')') - 1);
 
-				return attachmentNumber;
-			} catch (error) {
-				console.log("Error uploading attachment: " + error);
-				MessageToast.show("Error uploading attachment: " + error);
-				return false;
-			}
-		},
+		// 		return attachmentNumber;
+		// 	} catch (error) {
+		// 		console.log("Error uploading attachment: " + error);
+		// 		MessageToast.show("Error uploading attachment: " + error);
+		// 		return false;
+		// 	}
+		// },
 
 		async _replaceParticipantsForItem(requestId, requestSubId, aParticipants) {
 			const oModel = this.getOwnerComponent().getModel();
@@ -1648,7 +1518,6 @@ sap.ui.define([
 			}
 
 			const oModel = this.getOwnerComponent().getModel('employee_view');
-
 			const sReq = String(req_id);
 			const sEmp = String(oReq.getProperty('/user'));
 
@@ -1663,12 +1532,13 @@ sap.ui.define([
 				})],
 				{
 					$$ownRequest: true,
-					$$groupId: "$auto",
+					$$groupId: '$direct',
 					$count: true
 				}
 			);
 
 			try {
+
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 				const a = aCtx.map((ctx) => ctx.getObject());
 
@@ -1689,6 +1559,7 @@ sap.ui.define([
 				oReq.setProperty("/req_header/reqamt", req_amt);
 				oReq.setProperty("/req_item_rows", a);
 				oReq.setProperty("/list_count", a.length);
+
 				if (first_load != true) {
 					this.updateRequestAmount(sEmp, sReq, cashadv_amt, req_amt);
 				}
@@ -1737,43 +1608,12 @@ sap.ui.define([
 			}
 		},
 
-		async getCurrentReqNumber(range_id) {
-			const oModel = this.getOwnerComponent().getModel();
-
-			try {
-				const oListBinding = oModel.bindList("/ZNUM_RANGE", null, null,
-					[
-						new Filter({ path: "RANGE_ID", operator: sap.ui.model.FilterOperator.EQ, value1: range_id })
-					],
-					{
-						$$ownRequest: true,
-						$$groupId: "$auto",
-						$select: "RANGE_ID,CURRENT"
-					}
-				);
-
-				const aCtx = await oListBinding.requestContexts(0, 1);
-				const oCtx = aCtx[0];
-
-				if (!oCtx) {
-					throw new Error(`${range_id} not found`);
-				}
-
-				const row = oCtx.getObject();
-				if (row.CURRENT == null) {
-					throw new Error(`${range_id} missing CURRENT`);
-				}
-
-				const current = Number(row.CURRENT);
-				const yy = String(new Date().getFullYear()).slice(-2);
-				const result = `REQ${yy}${String(current).padStart(9, "0")}`;
-
-				return { result, current };
-
-			} catch (err) {
-				console.error("Error fetching number range:", err);
-				return null;
-			}
+		getCurrentReqSubIdNumber(req_id) {
+			
+			const oModel = this.getOwnerComponent().getModel('request');
+			const length = oModel.getProperty('/req_item_rows').length;
+			const next = String(length + 1).padStart(3, "0");
+			return req_id + next;
 		},
 
 		/* =========================================================

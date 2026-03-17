@@ -814,6 +814,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 TRIP_START_DATE
         };
 
+
+    @cds.redirection.target
     entity ZEMP_CLAIM_BUDGET_CHECK       as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
@@ -877,7 +879,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                     modifiedAt
             }
             where
-                ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'
-};
+                ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
 
-    entity ZEMP_TRAIN_COURSE as projection on ECLAIM.ZTRAIN_COURSE_PART;
+    entity ZEMP_TRAIN_COURSE             as projection on ECLAIM.ZTRAIN_COURSE_PART;
+};

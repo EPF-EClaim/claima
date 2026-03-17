@@ -98,6 +98,70 @@ sap.ui.define([
 			}
 		},
 
+		async _getItemList(that, req_id, first_load = false) {
+			const oReq = that._getReqModel();
+
+			if (!req_id) {
+				oReq.setProperty("/req_item_rows", []);
+				oReq.setProperty("/list_count", 0);
+				return [];
+			}
+
+			const oModel = that.getOwnerComponent().getModel('employee_view');
+
+			const sReq = String(req_id);
+			const sEmp = String(oReq.getProperty('/user'));
+
+			const oListBinding = oModel.bindList(
+				"/ZEMP_REQUEST_ITEM_VIEW",
+				null,
+				[new sap.ui.model.Sorter("REQUEST_SUB_ID", false)],
+				[new sap.ui.model.Filter({
+					path: "REQUEST_ID",
+					operator: sap.ui.model.FilterOperator.EQ,
+					value1: sReq
+				})],
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$count: true
+				}
+			);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+				a.forEach((it) => {
+					if (it.EST_AMOUNT != null) it.EST_AMOUNT = parseFloat(it.EST_AMOUNT);
+					if (it.EST_NO_PARTICIPANT != null) it.EST_NO_PARTICIPANT = parseInt(it.EST_NO_PARTICIPANT, 10);
+				});
+
+				const cashadv_amt = a.reduce((sum, it) => {
+					return it.CASH_ADVANCE === "YES" ? sum + (Number(it.EST_AMOUNT) || 0) : sum;
+				}, 0);
+
+				const req_amt = a.reduce((sum, it) => {
+					return it.CASH_ADVANCE === null ? sum + (Number(it.EST_AMOUNT) || 0) : sum;
+				}, 0);
+
+				oReq.setProperty("/req_header/cashadvamt", cashadv_amt);
+				oReq.setProperty("/req_header/reqamt", req_amt);
+				oReq.setProperty("/req_item_rows", a);
+				oReq.setProperty("/list_count", a.length);
+				if (first_load != true) {
+					that.updateRequestAmount(sEmp, sReq, cashadv_amt, req_amt);
+				}
+
+				return a;
+			} catch (err) {
+				console.error("OData V4 bindList failed:", err);
+				oReq.setProperty("/req_item_rows", []);
+				oReq.setProperty("/list_count", 0);
+				return [];
+			}
+		},
+
 		//Aiman Salim - Added to fetch with filter last modified date;
 
 		async getPARHeaderList_withfilterlastmod(oReq, oModel) {
