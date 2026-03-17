@@ -1,8 +1,9 @@
 // claima/utils/ApprovalFlow.js
 sap.ui.define([
     "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator"
-], function (Filter, FilterOperator) {
+    "sap/ui/model/FilterOperator",
+    "claima/utils/FinalApproveStep"
+], function (Filter, FilterOperator, FinalApproveStep) {
     "use strict";
 
     async function _approveMultiLevel(oModel, id, userID, comment, oModel2) {
@@ -83,8 +84,11 @@ sap.ui.define([
         } else {
             // No next level → final approval
             console.log("No further approvers found. Proceed to Final Approve Step");
+            
+            FinalApproveStep.onFinalApprove(oModel2, id, 'STAT05', oModel);
         }
 
+        //pending fix for payload creation causing server crash - Vincent
         // STEP 5: Fetch data for Email
 
 
@@ -221,11 +225,11 @@ sap.ui.define([
         const headerSet = isPre ? "/ZREQUEST_HEADER" : "/ZCLAIM_HEADER";
         const idField = isPre ? "PREAPPROVAL_ID" : "CLAIM_ID";
         const sField_header = submissionType === "REQ" ? "REQUEST_ID" : "CLAIM_ID";
-        const sAction = actionStatus === "STAT04" ? "REJECT" : "SEND BACK";
+        const sAction = actionStatus === "STAT04" ? "Reject" : "SEND BACK";
         const sType = submissionType === "REQ" ? "Pre-Approval" : "Claim";
         //Added for view;
         const sTable2 = submissionType === "REQ" ? "/ZEMP_APPROVER_REQUEST_DETAILS" : "/ZEMP_APPROVER_CLAIM_DETAILS";
-        const sTable3 = submissionType === "REQ" ? "/ZEMP_REQUEST_REPORT_DETAILS" : "/ZEMP_CLAIM_REPORT_DETAILS";
+        const sTable3 = submissionType === "REQ" ? "/ZEMP_REQUEST_BUDGET_CHECK" : "/ZEMP_CLAIM_BUDGET_CHECK";
 
         // 1) Load rows
         const binding = oModel.bindList(
@@ -295,7 +299,6 @@ sap.ui.define([
 
         }
 
-
         // 6) Release Budget Lock
         const budgetBinding = oModel2.bindList(
             sTable3,
@@ -323,8 +326,8 @@ sap.ui.define([
 
 
             const amount = isPre
-                ? Number(r.TOTAL_AMOUNT || 0)
-                : Number(r.TOTAL_CLAIM_AMOUNT || r.TOTAL_AMOUNT || 0);
+                ? Number(r.EST_AMOUNT || 0)
+                : Number(r.AMOUNT || 0);
 
 
             return {

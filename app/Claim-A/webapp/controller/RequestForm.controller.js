@@ -357,9 +357,13 @@ sap.ui.define([
 									await Utility._updateStatus(oModel, reqId, 'PENDING_APPROVAL');
 									oReq.setProperty("/view", 'view');
 
+									// Add in onPARApproverDetermination function
+									workflowApproval.onPARApproverDetermination(oModel, reqId);
+
 									await PARequestSharedFunction.getPARHeaderList(oReqList, oViewModel);
 									const oRouter = this.getOwnerComponent().getRouter();
 									oRouter.navTo("RequestFormStatus");
+
 								} else {
 									MessageToast.show(`Please inform Cost Center owner to increase the budget for Claim Item ${result.aErrors} before submit Pre-Approval Request`);
 								}

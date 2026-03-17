@@ -92,8 +92,7 @@ sap.ui.define([
       }),
       endButton: new Button(oView.createId("approver_placeholder_create"), {
         text: "{i18n>approve_btn}",
-        type: "Emphasized",
-        // Enable only if comment present (client-side UX)
+        type: sap.m.ButtonType.Emphasized,
         enabled: "{= !!${Reject>/approvalComment} }",
         press: createHandler.bind(oController)
       })

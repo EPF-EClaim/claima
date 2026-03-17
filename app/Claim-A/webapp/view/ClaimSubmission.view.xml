@@ -1,95 +1,99 @@
 <mvc:View
-	xmlns="sap.m"
-	xmlns:core="sap.ui.core"
-	xmlns:mvc="sap.ui.core.mvc"
-	xmlns:l="sap.ui.layout"
-	xmlns:f="sap.ui.layout.form"
-	controllerName="claima.controller.ClaimSubmission"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:l="sap.ui.layout"
+    xmlns:f="sap.ui.layout.form"
+    controllerName="claima.controller.ClaimSubmission"
 >
-	<Page
-		id="page_claimsubmission"
+    <Page
+        id="page_claimsubmission"
         showHeader="false"
-        enableScrolling="true"> 
-		<!-- content here -->
-		<footer>
-			<Toolbar>
-				<ToolbarSpacer/>
-					<!-- (Approver) -->
-					<!-- Reject -->
-					<Button
-						id="button_claimapprover_reject"
-						press="onAction_ClaimSubmission_Toolbar('Reject')"
-						text="{i18n>button_claimapprover_reject}"
-						visible="false"
-					/>
+        enableScrolling="true"
+    >
+        <!-- content here -->
+        <footer>
+            <Toolbar>
+                <ToolbarSpacer />
+                <!-- (Approver) -->
+                <!-- Reject -->
+                <Button
+                    id="button_claimapprover_reject"
+                    press="onAction_ClaimSubmission_Toolbar('Reject')"
+                    text="{i18n>button_claimapprover_reject}"
+                    visible="false"
+                />
 
-					<!-- Back to Employee -->
-					<Button
-						id="button_claimapprover_backtoemp"
-						press="onAction_ClaimSubmission_Toolbar('Back to Employee')"
-						text="{i18n>button_claimapprover_backtoemp}"
-						visible="false"
-					/>
+                <!-- Back to Employee -->
+                <Button
+                    id="button_claimapprover_backtoemp"
+                    press="onAction_ClaimSubmission_Toolbar('Back to Employee')"
+                    text="{i18n>button_claimapprover_backtoemp}"
+                    visible="false"
+                />
 
-					<!-- Approve -->
-					<Button
-						id="button_claimapprover_approve"
-						press="onAction_ClaimSubmission_Toolbar('Approve')"
-						text="{i18n>button_claimapprover_approve}"
-						type="Emphasized"
-						visible="false"
-					/>
+                <!-- Approve -->
+                <Button
+                    id="button_claimapprover_approve"
+                    press="onAction_ClaimSubmission_Toolbar('Approve')"
+                    text="{i18n>button_claimapprover_approve}"
+                    type="Emphasized"
+                    visible="false"
+                />
 
-					<!-- (Claim Summary) -->
-					<!-- Save Draft -->
-					<Button
-						id="button_claimsubmission_savedraft"
-						press="onAction_ClaimSubmission_Toolbar('Save Draft')"
-						text="{i18n>button_claimsubmission_savedraft}"
-					/>
+                <!-- (Claim Summary) -->
+                <!-- Save Draft -->
+                <Button
+                    id="button_claimsubmission_savedraft"
+                    press="onAction_ClaimSubmission_Toolbar('Save Draft')"
+                    text="{i18n>button_claimsubmission_savedraft}"
+                    visible="{= ${claimsubmission_input>/claim_header/status_id} === 'STAT01' }"
+                />
 
-					<!-- Delete Report -->
-					<Button
-						id="button_claimsubmission_deletereport"
-						press="onAction_ClaimSubmission_Toolbar('Delete Report')"
-						text="{i18n>button_claimsubmission_deletereport}"
-					/>
+                <!-- Delete Report -->
+                <Button
+                    id="button_claimsubmission_deletereport"
+                    press="onAction_ClaimSubmission_Toolbar('Delete Report')"
+                    text="{i18n>button_claimsubmission_deletereport}"
+                    enabled="{= ${claimsubmission_input>/claim_header/status_id} !== 'STAT02' }"
+                    visible="{= ${claimsubmission_input>/claim_header/status_id} === 'STAT01' }"
+                />
 
-					<!-- Submit Report -->
-					<Button
-						id="button_claimsubmission_submitreport"
-						press="onAction_ClaimSubmission_Toolbar('Submit Report')"
-						text="{i18n>button_claimsubmission_submitreport}"
-						type="Emphasized"
-						enabled="false"
-					/>
+                <!-- Submit Report -->
+                <Button
+                    id="button_claimsubmission_submitreport"
+                    press="onAction_ClaimSubmission_Toolbar('Submit Report')"
+                    text="{i18n>button_claimsubmission_submitreport}"
+                    type="Emphasized"
+                   
+                    visible="{= ${claimsubmission_input>/claim_header/status_id} === 'STAT01' }"
+                />
 
-					<!-- Back -->
-					<Button
-						id="button_claimsubmission_back"
-						press="onAction_ClaimSubmission_Toolbar('Back')"
-						text="{i18n>button_claimsubmission_back}"
-					/>
+                <!-- Back -->
+                <Button
+                    id="button_claimsubmission_back"
+                    press="onAction_ClaimSubmission_Toolbar('Back')"
+                    text="{i18n>button_claimsubmission_back}"
+                />
 
-					<!-- (Claim Details) -->
-					<!-- Save -->
-					<Button
-						id="button_claimdetails_input_save"
-						press="onSave_ClaimDetails_Input"
-						text="{i18n>button_claimdetails_input_save}"
-						type="Emphasized"
-						visible="false"
-					/>
+                <!-- (Claim Details) -->
+                <!-- Save -->
+                <Button
+                    id="button_claimdetails_input_save"
+                    press="onSave_ClaimDetails_Input"
+                    text="{i18n>button_claimdetails_input_save}"
+                    type="Emphasized"
+                    visible="false"
+                />
 
-					<!-- Cancel -->
-					<Button
-						id="button_claimdetails_input_cancel"
-						press="onCancel_ClaimDetails_Input"
-						text="{i18n>button_claimdetails_input_cancel}"
-						visible="false"
-					/>
-			</Toolbar>
-		</footer>
-	</Page>
-	
+                <!-- Cancel -->
+                <Button
+                    id="button_claimdetails_input_cancel"
+                    press="onCancel_ClaimDetails_Input"
+                    text="{i18n>button_claimdetails_input_cancel}"
+                    visible="false"
+                />
+            </Toolbar>
+        </footer>
+    </Page>
 </mvc:View>
