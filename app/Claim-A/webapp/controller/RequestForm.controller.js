@@ -65,6 +65,9 @@ sap.ui.define([
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
 			oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
+
+			// initialize Constants file
+			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 		},
 
 		/* =========================================================
@@ -1109,8 +1112,6 @@ sap.ui.define([
 
 		onSaveItem() {
 			this.onSave();
-			// this._oConstant = this.getOwnerComponent().getModel("constant").getData();
-			EligibleScenarioCheck.onEligibilityCheck();
 		},
 
 		async onSaveAddAnother() {
@@ -1298,8 +1299,8 @@ sap.ui.define([
 
 				await this._getItemList(reqId);
 				await this._showItemList("list");
-				// Eligibility check
-				EligibleScenarioCheck.onEligibilityCheck(oModel, claimType, claimItem);
+				//  Eligibility check
+				EligibleScenarioCheck.onEligibilityCheck(oModel, this._oConstant, this._getReqModel().getProperty('/user'), claimType, claimItem);
 
 				sap.m.MessageToast.show("Saved Successfully");
 
