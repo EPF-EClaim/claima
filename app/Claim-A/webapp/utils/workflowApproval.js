@@ -480,7 +480,7 @@ sap.ui.define([
                         that.onSendEmail(oModel, payload);        
                     }
                 }else{
-                    FinalApproveStep.onFinalApprove(oModel, claimID, 'STAT05');
+                    FinalApproveStep.onFinalApprove(oModel, claimID, 'STAT05', oModel);
                 }
                 
             }).catch(function(oError){
@@ -847,7 +847,7 @@ sap.ui.define([
                         that.onSendEmail(oModel,payload);
                     }
                 }else{
-                    FinalApproveStep.onFinalApprove(oModel, claimID, 'STAT05');
+                    FinalApproveStep.onFinalApprove(oModel, claimID, 'STAT05',oModel);
                 }
             }).catch(function(oError){
                 console.log(oError);
