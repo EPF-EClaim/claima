@@ -81,13 +81,8 @@ sap.ui.define([
 			});
 			this.getView().setModel(oSession, "session");
 
-
-			// sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
-			// var sHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
 			var oRouter = this.getOwnerComponent().getRouter();
-			// if (!sHash || sHash === "") {
-			// oRouter.navTo("Dashboard");
-			// }
+			
 			const oImageModel = new sap.ui.model.json.JSONModel({
 				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png"),
 				initials: "",
