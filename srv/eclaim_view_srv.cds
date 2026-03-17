@@ -5,14 +5,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             grant: 'READ',
             to   : ['Claimant'],
-            where: 'EMP_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
-        // where: (createdBy = $user)
+            where: 'EMP_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user) and (createdBy = $user)'
         },
         {
             grant: 'WRITE',
             to   : ['Claimant']
         }
-    ])                                   as
+    ])                               as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
                 EMP_ID,
@@ -53,17 +52,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         };
 
 
-    entity ZEMP_REQUEST_ITEM_VIEW @(restrict: [
-        {
-            grant: 'READ',
-            to   : ['Claimant'],
-            where: (createdBy = $user)
-        },
-        {
-            grant: 'WRITE',
-            to   : ['Claimant']
-        }
-    ])                                   as
+    entity ZEMP_REQUEST_ITEM_VIEW @(restrict: [{
+        grant: [
+            'READ',
+            'WRITE'
+        ],
+        to   : ['Claimant']
+    }])                              as
         projection on ECLAIM.ZREQUEST_ITEM {
             key REQUEST_ID,
             key REQUEST_SUB_ID,
@@ -137,17 +132,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_REQUEST_PART_VIEW @(restrict: [
-        {
-            grant: 'READ',
-            to   : ['Claimant'],
-            where: (createdBy = $user)
-        },
-        {
-            grant: 'WRITE',
-            to   : ['Claimant']
-        }
-    ])                                   as
+    entity ZEMP_REQUEST_PART_VIEW @(restrict: [{
+        grant: [
+            'WRITE',
+            'READ'
+        ],
+        to   : ['Claimant']
+    }])                              as
         projection on ECLAIM.ZREQ_ITEM_PART {
             key REQUEST_ID,
             key REQUEST_SUB_ID,
@@ -162,13 +153,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             grant: 'READ',
             to   : ['Claimant'],
-            where: (createdBy = $user)
+            where: 'EMP_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user) and (createdBy = $user)'
         },
         {
             grant: 'WRITE',
             to   : ['Claimant']
         }
-    ])                                   as
+    ])                               as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
                 EMP_ID,
@@ -218,23 +209,18 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW @(restrict: [
-        {
-            grant: 'READ',
-            to   : ['Claimant'],
-            where: (createdBy = $user)
-        },
-        {
-            grant: 'WRITE',
-            to   : ['Claimant']
-        }
-    // {
-    //     grant: [
-    //         'READ',
-    //         'UPDATE'
-    //     ],
-    //     to   : ['Approver']
-    // }
-    ])                                   as
+                                             // {
+                                             //     grant: 'READ',
+                                             //     to   : ['Claimant'],
+                                             //     where: (createdBy = $user)
+                                             // },
+                                            {
+        grant: [
+            'WRITE',
+            'READ'
+        ],
+        to   : ['Claimant']
+    }])                              as
         projection on ECLAIM.ZCLAIM_ITEM {
             key CLAIM_ID,
             key CLAIM_SUB_ID,
@@ -324,20 +310,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             grant: 'READ',
             to   : ['Claimant'],
-            where: (createdBy = $user)
+            where: 'EMP_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user) and (createdBy = $user)'
         },
         {
             grant: 'WRITE',
             to   : ['Claimant']
         }
-    // {
-    //     grant: [
-    //         'READ',
-    //         'UPDATE'
-    //     ],
-    //     to   : ['Approver']
-    // }
-    ])                                   as
+    ])                               as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
                 OBJECTIVE_PURPOSE,
@@ -357,20 +336,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         {
             grant: 'READ',
             to   : ['Claimant'],
-            where: (createdBy = $user)
+            where: 'EMP_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user) and (createdBy = $user)'
         },
         {
             grant: 'WRITE',
             to   : ['Claimant']
         }
-    // {
-    //     grant: [
-    //         'READ',
-    //         'UPDATE'
-    //     ],
-    //     to   : ['Approver']
-    // }
-    ])                                   as
+    ])                               as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
                 STATUS_ID,
@@ -380,23 +352,18 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         };
 
     entity ZEMP_CLAIM_STATUS_ITEM @(restrict: [
-        {
-            grant: 'READ',
-            to   : ['Claimant'],
-            where: (createdBy = $user)
-        },
-        {
-            grant: 'WRITE',
-            to   : ['Claimant']
-        }
-    // {
-    //     grant: [
-    //         'READ',
-    //         'UPDATE'
-    //     ],
-    //     to   : ['Approver']
-    // }
-    ])                                   as
+                                               // {
+                                               //     grant: 'READ',
+                                               //     to   : ['Claimant'],
+                                               //     where: (createdBy = $user)
+                                               // },
+                                              {
+        grant: [
+            'WRITE',
+            'READ'
+        ],
+        to   : ['Claimant']
+    }])                              as
         projection on ECLAIM.ZCLAIM_ITEM {
             key CLAIM_ID,
             key CLAIM_SUB_ID,
@@ -418,7 +385,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             to   : 'Admin_CC',
             where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
-    ])                                   as
+    ])                               as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
                 EMP_ID,
@@ -478,7 +445,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             to   : 'Admin_CC',
             where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
-    ])                                   as
+    ])                               as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
             key ZCLAIM_ITEM.CLAIM_SUB_ID,
@@ -607,7 +574,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             to   : 'Admin_CC',
             where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
-    ])                                   as
+    ])                               as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
                 EMP_ID,
@@ -666,7 +633,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             to   : 'Admin_CC',
             where: 'COST_CENTER = (select CC from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
         }
-    ])                                   as
+    ])                               as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
             key ZREQUEST_ITEM.REQUEST_SUB_ID,
@@ -735,7 +702,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_APPROVER_REQUEST_DETAILS as
+    entity ZEMP_APPROVER_REQUEST_DETAILS @(restrict: [{
+        grant: '*',
+        to   : [
+            'Claimant',
+            'Approver'
+        ]
+    }])                              as
         projection on ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL {
             key PREAPPROVAL_ID,
             key LEVEL,
@@ -760,7 +733,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 COMMENT
         };
 
-    entity ZEMP_APPROVER_CLAIM_DETAILS   as
+    entity ZEMP_APPROVER_CLAIM_DETAILS @(restrict: [{
+        grant: '*',
+        to   : [
+            'Claimant',
+            'Approver'
+        ]
+    }])                              as
         projection on ECLAIM.ZAPPROVER_DETAILS_CLAIMS {
             key CLAIM_ID,
             key LEVEL,
@@ -785,7 +764,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 COMMENT
         };
 
-    entity ZEMP_CLAIM_DETAILS            as
+    entity ZEMP_CLAIM_DETAILS @(restrict: [{
+        grant: '*',
+        to   : [
+            'Claimant',
+            'Approver'
+        ]
+    }])                              as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
             key ZCLAIM_ITEM.CLAIM_SUB_ID,
@@ -800,7 +785,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.MATERIAL_CODE
         };
 
-    entity ZEMP_PREAPPROVAL_DETAILS      as
+    entity ZEMP_PREAPPROVAL_DETAILS @(restrict: [{
+        grant: '*',
+        to   : [
+            'Claimant',
+            'Approver'
+        ]
+    }])                              as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
             key ZREQUEST_ITEM.REQUEST_SUB_ID,
@@ -816,7 +807,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
 
     @cds.redirection.target
-    entity ZEMP_CLAIM_BUDGET_CHECK       as
+    entity ZEMP_CLAIM_BUDGET_CHECK   as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
             key ZCLAIM_ITEM.CLAIM_SUB_ID,
@@ -829,7 +820,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_REQUEST_BUDGET_CHECK     as
+    entity ZEMP_REQUEST_BUDGET_CHECK as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
             key ZREQUEST_ITEM.REQUEST_SUB_ID,
@@ -846,7 +837,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         grant: 'READ',
         to   : ['Approver'],
         where: 'APPROVER_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
-    }])                                  as
+    }])                              as
             select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request {
                 key PREAPPROVAL_ID                     as ID,
                 key LEVEL,
@@ -881,5 +872,5 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             where
                 ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
 
-    entity ZEMP_TRAIN_COURSE             as projection on ECLAIM.ZTRAIN_COURSE_PART;
+    entity ZEMP_TRAIN_COURSE         as projection on ECLAIM.ZTRAIN_COURSE_PART;
 };

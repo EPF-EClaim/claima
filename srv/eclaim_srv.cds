@@ -93,7 +93,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         {
             grant: 'READ',
             to   : 'Claimant',
-            where: (createdBy = $user)
+            where: 'EMP_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user) and (createdBy = $user)'
         }
     ])                              as projection on ECLAIM.ZREQUEST_HEADER;
 
@@ -164,7 +164,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         {
             grant: 'READ',
             to   : ['Claimant'],
-            where: (createdBy = $user)
+            where: 'EMP_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user) and (createdBy = $user)'
         }
 
     ])                              as projection on ECLAIM.ZREQUEST_ITEM;
@@ -172,18 +172,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
     entity ZREQ_ITEM_PART @(restrict: [
         {
             grant: [
-                'READ',
-                'UPDATE'
+                '*'
             ],
             to   : ['Approver']
         },
         {
-            grant: 'READ',
-            to   : ['Claimant'],
-            where: (createdBy = $user)
-        },
-        {
-            grant: 'WRITE',
+            grant: ['*'],
             to   : ['Claimant']
         }
     ])                              as projection on ECLAIM.ZREQ_ITEM_PART;
@@ -192,7 +186,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         {
             grant: 'READ',
             to   : 'Claimant',
-            where: (createdBy = $user)
+            where: 'EMP_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user) and (createdBy = $user)'
         },
         {
             grant: ['WRITE'],
@@ -1009,10 +1003,23 @@ service eclaim_srv @(requires: 'authenticated-user') {
         position    : String;
     }
 
-    function getUserType()                                         returns UserInfo;
-        
-    action sendEmail(ApproverName: String,SubmissionDate: String,ClaimantName: String,InstanceID: String,ClaimType: String,ClaimID: String,RecipientName: String,Action: String,
-                       ReceiverEmail: String,CCEmail: String,EmailTitle: String,EmailBody: String, NextApproverName: String) returns Response; 
+    function getUserType()                                             returns UserInfo;
+
+    action   sendEmail(ApproverName: String,
+                       SubmissionDate: String,
+                       ClaimantName: String,
+                       InstanceID: String,
+                       ClaimType: String,
+                       ClaimID: String,
+                       RecipientName: String,
+                       Action: String,
+                       ReceiverEmail: String,
+                       CCEmail: String,
+                       EmailTitle: String,
+                       EmailBody: String,
+                       NextApproverName: String,
+                       RejectReason: String,
+                       ApproverComments: String)                       returns Response;
 
     entity ZINSURANCE_PACKAGE @(restrict: [
         {
@@ -1289,11 +1296,25 @@ service eclaim_srv @(requires: 'authenticated-user') {
         {
             grant: 'READ',
             to   : 'Approver',
-            where: (createdBy = $user)
+            where: 'USER_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user) and (createdBy = $user)'
         }
     ])                              as projection on ECLAIM.ZSUBSTITUTION_RULES;
 
-    entity ZDB_STRUCTURE            as projection on ECLAIM.ZDB_STRUCTURE;
+    entity ZDB_STRUCTURE @(restrict: [
+        {
+            grant: 'READ',
+            to   : [
+                'Approver',
+                'Admin_CC',
+                'Admin_System',
+                'Claimant'
+            ]
+        },
+        {
+            grant: '*',
+            to   : 'DTD_Admin'
+        }
+    ])                              as projection on ECLAIM.ZDB_STRUCTURE;
 
     function runjob()                                                  returns Response;
 
@@ -1305,7 +1326,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
     action   batchUpdatePreApproved(PreApprove: many PreApproveClaims) returns Response;
 
     function updateDisbursementStatus()                                returns array of Response;
-    
-    entity ZDISBURSEMENT_STATUS          as projection on ECLAIM.ZDISBURSEMENT_STATUS;
+
+    entity ZDISBURSEMENT_STATUS     as projection on ECLAIM.ZDISBURSEMENT_STATUS;
 
 };
