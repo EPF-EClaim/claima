@@ -6,7 +6,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             grant: 'READ',
             to   : ['Claimant'],
             where: 'EMP_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
-            // where: (createdBy = $user)
+        // where: (createdBy = $user)
         },
         {
             grant: 'WRITE',
@@ -48,7 +48,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 PREAPPROVAL_AMOUNT,
                 TOTAL_AMOUNT,
                 REQUEST_DATE,
-                createdBy, 
+                createdBy,
                 modifiedAt
         };
 
@@ -708,10 +708,12 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.POSITION_NAME,
                 ZREQUEST_ITEM.DECLARE_CLUB_MEMBERSHIP,
                 ZREQUEST_ITEM.KWSP_SPORTS_REPRESENTATION,
+                ZREQUEST_ITEM.ZSPORTS_REPRESENTATION.SPORTS_REPRESENTATION_DESC,
                 ZREQUEST_ITEM.SPORTS_CLAIM_DISCLAIMER,
                 ZREQUEST_ITEM.VEHICLE_OWNERSHIP_ID,
                 ZREQUEST_ITEM.ZVEHICLE_OWNERSHIP.VEHICLE_OWNERSHIP_DESC,
                 ZREQUEST_ITEM.MODE_OF_TRANSFER,
+                ZREQUEST_ITEM.ZTRANSFER_MODE.TRANSFER_MODE_DESC,
                 ZREQUEST_ITEM.TRANSFER_DATE,
                 ZREQUEST_ITEM.NO_OF_DAYS,
                 ZREQUEST_ITEM.MARRIAGE_CATEGORY,
@@ -738,6 +740,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             key PREAPPROVAL_ID,
             key LEVEL,
                 STATUS,
+                ZSTATUS.STATUS_DESC,
                 APPROVER_ID,
                 ZEMP_MASTER_APPROVER.NAME         as APPROVER_NAME,
                 ZEMP_MASTER_APPROVER.EMAIL        as APPROVER_EMAIL,
@@ -762,6 +765,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             key CLAIM_ID,
             key LEVEL,
                 STATUS,
+                ZSTATUS.STATUS_DESC,
                 APPROVER_ID,
                 ZEMP_MASTER_APPROVER.NAME       as APPROVER_NAME,
                 ZEMP_MASTER_APPROVER.EMAIL      as APPROVER_EMAIL,
@@ -836,40 +840,44 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_APPROVER_DETAILS  @(restrict: [
-        {
-            grant: 'READ',
-            to   : ['Approver'],
-            where: 'APPROVER_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
-        }
-    ])as
-        select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request
-        { 
-            key PREAPPROVAL_ID as ID,
-            key LEVEL,
-                STATUS,
-                ZSTATUS.STATUS_DESC as STATUS_DESC,
-                ZREQUEST_HEADER.OBJECTIVE_PURPOSE as PURPOSE,
-                APPROVER_ID,
-                ZEMP_MASTER_APPROVER.NAME as APPROVER_NAME,
-                ZEMP_MASTER_APPROVER.EMAIL as APPROVER_EMAIL,
-                ZREQUEST_HEADER.REQUEST_DATE as REQUEST_DATE,
-                ZREQUEST_HEADER.CASH_ADVANCE as AMOUNT,
-                ZREQUEST_HEADER.PREAPPROVAL_AMOUNT as TOTAL_AMOUNT } 
-                where ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'  
-        UNION ALL
-        select from ECLAIM.ZAPPROVER_DETAILS_CLAIMS as claim
-        {
-            key CLAIM_ID as ID,
-            key LEVEL,
-                STATUS,
-                ZSTATUS.STATUS_DESC as STATUS_DESC,
-                ZCLAIM_HEADER.PURPOSE as PURPOSE,
-                APPROVER_ID,
-                ZEMP_MASTER_APPROVER.NAME as APPROVER_NAME,
-                ZEMP_MASTER_APPROVER.EMAIL as APPROVER_EMAIL,
-                ZCLAIM_HEADER.SUBMITTED_DATE as REQUEST_DATE,
-                ZCLAIM_HEADER.FINAL_AMOUNT_TO_RECEIVE as AMOUNT,
-                ZCLAIM_HEADER.TOTAL_CLAIM_AMOUNT as TOTAL_AMOUNT }
-                where ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'    
+    entity ZEMP_APPROVER_DETAILS @(restrict: [{
+        grant: 'READ',
+        to   : ['Approver'],
+        where: 'APPROVER_ID = (select EEID from ECLAIM.ZEMP_MASTER where EMAIL = $user)'
+    }])                                  as
+            select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request {
+                key PREAPPROVAL_ID                     as ID,
+                key LEVEL,
+                    STATUS,
+                    ZSTATUS.STATUS_DESC                as STATUS_DESC,
+                    ZREQUEST_HEADER.OBJECTIVE_PURPOSE  as PURPOSE,
+                    APPROVER_ID,
+                    ZEMP_MASTER_APPROVER.NAME          as APPROVER_NAME,
+                    ZEMP_MASTER_APPROVER.EMAIL         as APPROVER_EMAIL,
+                    ZREQUEST_HEADER.REQUEST_DATE       as REQUEST_DATE,
+                    ZREQUEST_HEADER.CASH_ADVANCE       as AMOUNT,
+                    ZREQUEST_HEADER.PREAPPROVAL_AMOUNT as TOTAL_AMOUNT,
+                    modifiedAt
+            }
+            where
+                ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'
+        union all
+            select from ECLAIM.ZAPPROVER_DETAILS_CLAIMS as claim {
+                key CLAIM_ID                              as ID,
+                key LEVEL,
+                    STATUS,
+                    ZSTATUS.STATUS_DESC                   as STATUS_DESC,
+                    ZCLAIM_HEADER.PURPOSE                 as PURPOSE,
+                    APPROVER_ID,
+                    ZEMP_MASTER_APPROVER.NAME             as APPROVER_NAME,
+                    ZEMP_MASTER_APPROVER.EMAIL            as APPROVER_EMAIL,
+                    ZCLAIM_HEADER.SUBMITTED_DATE          as REQUEST_DATE,
+                    ZCLAIM_HEADER.FINAL_AMOUNT_TO_RECEIVE as AMOUNT,
+                    ZCLAIM_HEADER.TOTAL_CLAIM_AMOUNT      as TOTAL_AMOUNT,
+                    modifiedAt
+            }
+            where
+                ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'
 };
+
+    entity ZEMP_TRAIN_COURSE as projection on ECLAIM.ZTRAIN_COURSE_PART;
