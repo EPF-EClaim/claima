@@ -175,6 +175,7 @@
                             preserveDecimals: false
                         }
                     }"
+                    textAlign="End"
                 />
 
                 <!-- Pre-Approved Amount (MYR) -->
@@ -192,6 +193,7 @@
                             preserveDecimals: false
                         }
                     }"
+                    textAlign="End"
                 />
 
                 <!-- Cash Advance (MYR) -->
@@ -209,6 +211,7 @@
                             preserveDecimals: false
                         }
                     }"
+                    textAlign="End"
                 />
 
                 <!-- Final Amount to Receive (MYR) -->
@@ -226,6 +229,7 @@
                             preserveDecimals: false
                         }
                     }"
+                    textAlign="End"
                 />
             </f:content>
         </f:SimpleForm>

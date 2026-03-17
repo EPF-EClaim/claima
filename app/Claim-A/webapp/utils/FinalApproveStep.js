@@ -1,6 +1,8 @@
 sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
+    "sap/ui/model/Filter",
+    "sap/ui/model/FilterOperator",
     "./Utility",
     "claima/utils/budgetCheck",
     "claima/utils/NotifyandPost"

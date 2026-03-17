@@ -21,40 +21,13 @@
             <!-- space -->
             <ToolbarSpacer />
 
-            <!-- Add Claim Type -->
-            <!-- <MenuButton
-				id="menubutton_claimsummary_addclaimtype"
-				text="{i18n>menubutton_claimsummary_addclaimtype}"
-				buttonMode="Split"
-				useDefaultActionOnly="true"
-			>
-				<menu>
-					<Menu itemSelected="onMenuAction"> -->
-            <!-- Create Claim -->
-            <!-- <MenuItem
-							id="menuitem_claimsummary_createclaim"
-							text="{i18n>menuitem_claimsummary_createclaim}"
-							press="onCreateClaim_ClaimSummary"
-						/> -->
-
-            <!-- Scan Receipt -->
-            <!-- <MenuItem
-							id="menuitem_claimsummary_scanreceipt"
-							text="{i18n>menuitem_claimsummary_scanreceipt}"
-							press="onScanReceipt_ClaimSummary"
-						/>
-					</Menu>
-				</menu>
-			</MenuButton> -->
-
-            <!-- Create Claim -->
-            <Button
-                id="button_claimsummary_createclaim"
-                text="{i18n>menuitem_claimsummary_createclaim}"
-                press="onCreateClaim_ClaimSummary()"
-                type="Emphasized"
-                enabled="{= ${claimsubmission_input>/claim_header/status_id} !== 'STAT02' }"
-            />
+			<!-- Create Claim -->
+			<Button
+				id="button_claimsummary_createclaim"
+				text="{i18n>menuitem_claimsummary_createclaim}"
+				press="onCreateClaim_ClaimSummary()"
+				type="Emphasized"
+			/>
 
             <!-- Edit -->
             <Button
@@ -64,20 +37,13 @@
                 enabled="false"
             />
 
-            <!-- Scan Receipt -->
-            <!-- <Button
-				id="button_claimsummary_scanreceipt"
-				text="{i18n>button_claimsummary_scanreceipt}"
-				press="onScanReceipt_ClaimSummary"
-			/> -->
-
-            <!-- Duplicate -->
-            <Button
-                id="button_claimsummary_duplicate"
-                text="{i18n>button_claimsummary_duplicate}"
-                press="onAction_ClaimSummary('Duplicate')"
-                enabled="false"
-            />
+			<!-- Duplicate -->
+			<Button
+				id="button_claimsummary_duplicate"
+				text="{i18n>button_claimsummary_duplicate}"
+				press="onAction_ClaimSummary('Duplicate')"
+				enabled="false"
+			/>
 
             <!-- Delete -->
             <Button
@@ -110,30 +76,20 @@
                     <Text text="Item" />
                 </Column>
 
-                <!-- Date -->
-                <!-- <Column>
-					<Text text="{i18n>columntext_claimsummary_date}" />
-				</Column> -->
-
-                <!-- Receipt -->
-                <!-- <Column>
-					<Text text="{i18n>columntext_claimsummary_receipt}" />
-				</Column> -->
-
-                <!-- Claim Type -->
-                <Column>
-                    <Text text="{i18n>columntext_claimsummary_claimtype}" />
-                </Column>
+				<!-- Claim Type -->
+				<Column>
+					<Text text="{i18n>columntext_claimsummary_claimtype}" />
+				</Column>
 
                 <!-- Claim Item -->
                 <Column>
                     <Text text="{i18n>columntext_claimsummary_claimitem}" />
                 </Column>
 
-                <!-- Amount -->
-                <Column>
-                    <Text text="{i18n>columntext_claimsummary_amt}" />
-                </Column>
+				<!-- Amount -->
+				<Column hAlign="End" >
+					<Text text="{i18n>columntext_claimsummary_amt}" />
+				</Column>
 
                 <!-- Remarks -->
                 <Column>
@@ -162,22 +118,8 @@
                             text="{claimsubmission_input>claim_sub_id}"
                         />
 
-                        <!-- Date -->
-                        <!-- <Text
-							text="{
-								path: 'claimsubmission_input>start_date',
-								type: 'sap.ui.model.odata.type.Date',
-								formatOptions: { pattern: 'dd-MMM-yyyy' }
-							}"
-						/> -->
-
-                        <!-- Receipt -->
-                        <!-- <Text text="{claimsubmission_input>receipt_number}" /> -->
-
-                        <!-- Claim Type -->
-                        <Text
-                            text="{claimsubmission_input>descr/claim_type_id}"
-                        />
+						<!-- Claim Type -->
+						<Text text="{claimsubmission_input>descr/claim_type_id}" />
 
                         <!-- Claim Item -->
                         <Text
