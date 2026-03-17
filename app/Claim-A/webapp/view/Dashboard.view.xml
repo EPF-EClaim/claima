@@ -19,12 +19,12 @@
                 horizontal="false"
                 height="100%"
             >
-                <VBox>
-                    <HBox width="80%" wrap="Wrap">
+                <VBox class="sapUiSmallMarginBeginEnd">
+                    <HBox wrap="Wrap">
                         <Panel
                             width="16rem"
                             height="11rem"
-                            class="sapUiSmallMarginBeginEnd sapUiMediumMarginTopBottom"
+                            class=" sapUiMediumMarginTopBottom"
                         >
                             <HBox>
                                 <core:Icon
@@ -50,7 +50,7 @@
                         <Panel
                             width="16rem"
                             height="11rem"
-                            class="sapUiSmallMarginBeginEnd sapUiMediumMarginTopBottom"
+                            class=" sapUiMediumMarginTopBottom sapUiMediumMarginBeginEnd"
                         >
                             <HBox>
                                 <core:Icon
@@ -76,7 +76,7 @@
                         <Panel
                             width="16rem"
                             height="11rem"
-                            class="sapUiSmallMarginBeginEnd sapUiMediumMarginTopBottom"
+                            class=" sapUiMediumMarginTopBottom"
                         >
                             <HBox>
                                 <core:Icon
@@ -95,9 +95,8 @@
 
                     <VBox>
                         <Panel
-                            width="80%"
                             height="200px"
-                            class="sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom"
+                            class=" sapUiSmallMarginTopBottom"
                         >
                             <headerToolbar>
                                 <OverflowToolbar
@@ -182,9 +181,8 @@
 
                     <VBox>
                         <Panel
-                            width="80%"
                             height="200px"
-                            class="sapUiSmallMarginBeginEnd sapUiTinyMarginTopBottom"
+                            class=" sapUiTinyMarginTopBottom"
                         >
                             <headerToolbar>
                                 <OverflowToolbar
@@ -269,9 +267,8 @@
                     </VBox>
                     <VBox>
                         <Panel
-                            width="80%"
                             height="200px"
-                            class="sapUiSmallMarginBeginEnd sapUiTinyMarginTopBottom"
+                            class=" sapUiTinyMarginTopBottom"
                         >
                             <headerToolbar>
                                 <OverflowToolbar
