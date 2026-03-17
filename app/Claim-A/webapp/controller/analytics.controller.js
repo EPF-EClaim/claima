@@ -359,8 +359,9 @@ sap.ui.define([
       const accessModel = this.getOwnerComponent().getModel("access");
       const userType = accessModel?.getProperty("/userType");
       const userCC = accessModel?.getProperty("/costcenters");
+      const isAdmin = this.isAdminRole(userType);
 
-      if (["DTD Admin", "JKEW Admin", "Super Admin"].includes(userType)) {
+      if (isAdmin) {
         // ADMIN → free selection
         const ccKeys = this._getKeys("cc");
         this._addOrFilter(a, "COST_CENTER", ccKeys);
