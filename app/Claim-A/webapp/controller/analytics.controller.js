@@ -664,7 +664,7 @@ sap.ui.define([
 
         const cols = this._getExportColumnsForTarget();
 
-        const sheet = new sap.ui.export.Spreadsheet({
+        const sheet = new Spreadsheet({
           workbook: {
             columns: cols,
             context: {
