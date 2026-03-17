@@ -505,7 +505,7 @@ sap.ui.define([
 
 				// Update viewer properties each time
 				// this._PDFViewer.setTitle(
-				// 	GetTexti18n.getTexti18n(this, "pdfviewer_claimsummary_attachment", [jsonData.fileName])
+				// 	this.getView().getModel("i18n").getResourceBundle().getText("pdfviewer_claimsummary_attachment", [jsonData.fileName])
 				// );
 				this._PDFViewer.setSource(pdfUrl);
 

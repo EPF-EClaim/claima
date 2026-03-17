@@ -20,7 +20,6 @@ sap.ui.define([
 	"claima/utils/Attachment",
 	"claima/utils/ApprovalLog",
 	"claima/utils/workflowApproval",
-	"claima/utils/GetTexti18n",
 	"claima/utils/claimstatus",
 	"claima/utils/claim"
 ], function (
@@ -45,7 +44,6 @@ sap.ui.define([
 	Attachment,
 	ApprovalLog,
 	workflowApproval,
-	GetTexti18n,
 	claimstatus,
 	claim
 ) {
@@ -210,7 +208,7 @@ sap.ui.define([
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("ManageSub");
 					// } else {
-					// 	var message = GetTexti18n.getText(this, "msg_unauthorized_substitution");
+					// 	var message = this.getView().getModel("i18n").getResourceBundle().getText("msg_unauthorized_substitution");
 					// 	sap.m.MessageBox.error(message);
 					// }
 					break;
@@ -219,7 +217,7 @@ sap.ui.define([
 					if (type === "DTD Admin" || type === "JKEW Admin" || type === "Super Admin") {
 						oRouter.navTo("Configuration");
 					} else {
-						var message = GetTexti18n.getText(this, "msg_unauthorized_role");
+						var message = this.getView().getModel("i18n").getResourceBundle().getText("msg_unauthorized_role");
 						sap.m.MessageBox.error(message);
 					}
 					//End EY_ATHIRAH
@@ -229,7 +227,7 @@ sap.ui.define([
 					if (type === "JKEW Admin" || type === "DTD Admin" || type === "GA Admin" || type === "Super Admin") {
 						oRouter.navTo("Analytics")
 					} else {
-						var message = GetTexti18n.getText(this, "msg_unauthorized_role");
+						var message = this.getView().getModel("i18n").getResourceBundle().getText("msg_unauthorized_role");
 						sap.m.MessageBox.error(message);
 					}
 					break;
@@ -249,7 +247,7 @@ sap.ui.define([
 						var oRouter = this.getOwnerComponent().getRouter();
 						oRouter.navTo("MyApproval");
 					} else {
-						var message = GetTexti18n.getText(this, "msg_unauthorized_role");
+						var message = this.getView().getModel("i18n").getResourceBundle().getText("msg_unauthorized_role");
 						sap.m.MessageBox.error(message);
 					}
 					break;
@@ -316,7 +314,7 @@ sap.ui.define([
 				this.oDialog_ClaimProcess.open();
 			}
 			else {
-				MessageToast.show(GetTexti18n.getText(this, "msg_nav_error_fragment", [oName]));
+				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_nav_error_fragment", [oName]));
 			}
 			BusyIndicator.hide();
 		},
@@ -791,7 +789,7 @@ sap.ui.define([
 				this.oDialog_ClaimInput.open();
 			}
 			else {
-				MessageToast.show(GetTexti18n.getText(this, "msg_nav_error_fragment", [oName]));
+				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_nav_error_fragment", [oName]));
 			}
 		},
 
@@ -896,7 +894,7 @@ sap.ui.define([
 					case true:
 						// set text for using email approval
 						oInputModel.setProperty("/claim_header/request_id", "");
-						oInputModel.setProperty("/claim_header/descr/request_id", GetTexti18n.getText(this, "text_claiminput_preapprovalreq_email"));
+						oInputModel.setProperty("/claim_header/descr/request_id", this.getView().getModel("i18n").getResourceBundle().getText("text_claiminput_preapprovalreq_email"));
 
 						// require attachment email approval
 						this.byId("fileuploader_claiminput_attachment").setRequired(true);
@@ -968,8 +966,8 @@ sap.ui.define([
 		onAction_ClaimInput: function () {
 			// confirm claim submission dialog
 			this._newDialog(
-				GetTexti18n.getText(this, "dialog_claiminput_submit"),
-				GetTexti18n.getText(this, "label_claiminput_submit"),
+				this.getView().getModel("i18n").getResourceBundle().getText("dialog_claiminput_submit"),
+				this.getView().getModel("i18n").getResourceBundle().getText("label_claiminput_submit"),
 				function () {
 					this.onClaimSubmission_ClaimInput();
 				}.bind(this)
@@ -991,7 +989,7 @@ sap.ui.define([
 			for (let i = 0; i < reqFields.length; i++) {
 				if (!this.byId(reqFields[i]).getValue()) {
 					// stop claim submission if values empty
-					MessageToast.show(GetTexti18n.getText(this, "msg_claiminput_required"));
+					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_required"));
 					return;
 				}
 			}
@@ -1044,8 +1042,8 @@ sap.ui.define([
 					oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
 				}
 				else {
-					console.log(GetTexti18n.getText(this, "msg_claiminput_claimid"));
-					MessageToast.show(GetTexti18n.getText(this, "msg_claiminput_claimid"));
+					console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_claimid"));
+					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_claimid"));
 					return;
 				}
 			}
@@ -1124,7 +1122,7 @@ sap.ui.define([
 						await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
 
 						if (claimSaved) {
-							MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_created", [oInputModel.getProperty("/claim_header/claim_id")]));
+							MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_created", [oInputModel.getProperty("/claim_header/claim_id")]));
 						}
 						oInputModel.setProperty("/is_new", false);
 						// close Claim Input dialog
@@ -1134,8 +1132,8 @@ sap.ui.define([
 						const oRouter = this.getOwnerComponent().getRouter();
 						oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(oInputModel.getProperty("/claim_header/claim_id"))) });
 					}).catch(err => {
-						console.log(GetTexti18n.getText(this, "msg_claimsubmission_failed", [err.message]));
-						MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_failed", [err.message]));
+						console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_failed", [err.message]));
+						MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_failed", [err.message]));
 					});
 				}
 
@@ -1199,8 +1197,8 @@ sap.ui.define([
 					success = true;
 				},
 				error: function (xhr) {
-					console.log(GetTexti18n.getText(this, "msg_claiminput_attachment_upload_error2", [xhr.status, xhr.responseText]));
-					MessageToast.show(GetTexti18n.getText(this, "msg_claiminput_attachment_upload_error2", [xhr.status, xhr.responseText]));
+					console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_attachment_upload_error2", [xhr.status, xhr.responseText]));
+					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_attachment_upload_error2", [xhr.status, xhr.responseText]));
 
 					BusyIndicator.hide();
 					success = false;
@@ -1264,11 +1262,11 @@ sap.ui.define([
 		},
 
 		onFileSizeExceed_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(GetTexti18n.getText(this, "msg_claiminput_attachment_upload_filesize"));
+			MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_attachment_upload_filesize"));
 		},
 
 		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(GetTexti18n.getText(this, "msg_claiminput_attachment_upload_mismatch"));
+			MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
 		_validDateRange: function (startdate, enddate) {
@@ -1276,14 +1274,14 @@ sap.ui.define([
 			var endDateValue = this.byId(enddate).getValue();
 			// check for missing value
 			if (!startDateValue || !endDateValue) {
-				MessageToast.show(GetTexti18n.getText(this, "msg_daterange_missing"));
+				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_daterange_missing"));
 				return false;
 			}
 			// check if end date earlier than start date
 			var startDateUnix = new Date(startDateValue).valueOf();
 			var endDateUnix = new Date(endDateValue).valueOf();
 			if (startDateUnix > endDateUnix) {
-				MessageToast.show(GetTexti18n.getText(this, "msg_daterange_order"));
+				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_daterange_order"));
 				return false;
 			}
 			else {
@@ -2172,7 +2170,7 @@ sap.ui.define([
 					oRouter.navTo("MyApproval");
 				}
 				else {
-					var message = GetTexti18n.getText(this, "msg_unauthorized_role");
+					var message = this.getView().getModel("i18n").getResourceBundle().getText("msg_unauthorized_role");
 					sap.m.MessageBox.error(message);
 				}
 			}
@@ -2186,14 +2184,14 @@ sap.ui.define([
 				content: [new Label({ text: content })],
 				beginButton: new Button({
 					type: "Emphasized",
-					text: GetTexti18n.getText(this, "button_claimsummary_confirm"),
+					text: this.getView().getModel("i18n").getResourceBundle().getText("button_claimsummary_confirm"),
 					press: async function () {
 						this.oDialog.close();
 						await onPress();
 					}.bind(this)
 				}),
 				endButton: new Button({
-					text: GetTexti18n.getText(this, "button_claimsummary_cancel"),
+					text: this.getView().getModel("i18n").getResourceBundle().getText("button_claimsummary_cancel"),
 					press: function () {
 						this.oDialog.close();
 					}.bind(this)
@@ -2201,15 +2199,6 @@ sap.ui.define([
 			});
 			this.oDialog.open();
 		},
-
-		// _GetTexti18n: function (i18nKey, array_i18nParameters) {
-		// 	if (array_i18nParameters) {
-		// 		return this.getView().getModel("i18n").getResourceBundle().getText(i18nKey, array_i18nParameters);
-		// 	}
-		// 	else {
-		// 		return this.getView().getModel("i18n").getResourceBundle().getText(i18nKey);
-		// 	}
-		// },
 
 		_loadCurrentUser: function () {
 			var that = this;

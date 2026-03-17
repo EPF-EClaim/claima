@@ -19,7 +19,6 @@ sap.ui.define([
 	"claima/utils/ApproveDialog",
 	"claima/utils/RejectDialog",
 	"claima/utils/SendBackDialog",
-	"claima/utils/GetTexti18n",
 	"claima/utils/ApproverUtility",
 	"claima/utils/workflowApproval"
 ], function (
@@ -43,7 +42,6 @@ sap.ui.define([
 	ApproveDialog,
 	RejectDialog,
 	SendBackDialog,
-	GetTexti18n,
 	ApproverUtility,
 	workflowApproval
 ) {
@@ -105,7 +103,7 @@ sap.ui.define([
 			}
 			catch (e) {
 				// unable to decode URL
-				MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_decode", [sClaimId]))
+				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_decode", [sClaimId]))
 				this._onNavBack();
 			}
 
@@ -115,7 +113,7 @@ sap.ui.define([
 				await this._loadClaimById(String(sClaimId));
 				if (!oClaimSubmissionModel.getProperty("/claim_header")) {
 					// unable to load claim details
-					MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_missing", [sClaimId]))
+					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_missing", [sClaimId]))
 					this._onNavBack();
 				}
 			}
@@ -123,7 +121,7 @@ sap.ui.define([
 				await this._loadClaimById(String(sClaimId));
 				if (!oClaimSubmissionModel.getProperty("/claim_header")) {
 					// unable to load claim details
-					MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_missing", [sClaimId]))
+					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_missing", [sClaimId]))
 					this._onNavBack();
 				}
 			}
@@ -1099,14 +1097,14 @@ sap.ui.define([
 				var oInputModel = this.getView().getModel("claimsubmission_input");
 				var sServiceUrl = "/SuccessFactors_API/odata/v2/Attachment('" + oInputModel.getProperty("/claim_header/attachment_email_approver") + "')";
 				var attachmentDescr = oInputModel.getProperty("/claim_header/descr/attachment_email_approver") || "";
-				var pdfViewer_title = GetTexti18n.getText(this, "pdfviewer_claimsummary_attachment", [attachmentDescr]);
+				var pdfViewer_title = this.getView().getModel("i18n").getResourceBundle().getText("pdfviewer_claimsummary_attachment", [attachmentDescr]);
 			}
 			else if (oLevel == 'child_det') {
 				// get child attachment
 				oInputModel = this.getView().getModel("claimitem_input");
 				sServiceUrl = "/SuccessFactors_API/odata/v2/Attachment('" + oInputModel.getProperty("/claim_item/attachment_file_" + fieldNumber) + "')";
 				attachmentDescr = oInputModel.getProperty("/claim_item/descr/attachment_email_" + fieldNumber) || "";
-				pdfViewer_title = GetTexti18n.getText(this, "pdfviewer_claimdetails_input_attachment" + fieldNumber, [attachmentDescr]);
+				pdfViewer_title = this.getView().getModel("i18n").getResourceBundle().getText("pdfviewer_claimdetails_input_attachment" + fieldNumber, [attachmentDescr]);
 			}
 			else {
 				// get child attachment
@@ -1116,10 +1114,10 @@ sap.ui.define([
 				if (itemIndex !== -1) {
 					sServiceUrl = "/SuccessFactors_API/odata/v2/Attachment('" + oInputModel.getProperty("/claim_items/" + itemIndex + "/attachment_file_" + fieldNumber) + "')";
 					attachmentDescr = oInputModel.getProperty("/claim_items/" + itemIndex + "/descr/attachment_email_" + fieldNumber) || "";
-					pdfViewer_title = GetTexti18n.getText(this, "pdfviewer_claimdetails_input_attachment" + fieldNumber, [attachmentDescr]);
+					pdfViewer_title = this.getView().getModel("i18n").getResourceBundle().getText("pdfviewer_claimdetails_input_attachment" + fieldNumber, [attachmentDescr]);
 				}
 				else {
-					MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_viewattachment_error"));
+					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_viewattachment_error"));
 					return;
 				}
 			}
@@ -1155,8 +1153,8 @@ sap.ui.define([
 					that._PDFViewer.open();
 				},
 				error: function (xhr) {
-					console.log(GetTexti18n.getText(this, "msg_claimsubmission_viewattachment_error2", [xhr.status, xhr.responseText]));
-					MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_viewattachment_error2", [xhr.status, xhr.responseText]));
+					console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_viewattachment_error2", [xhr.status, xhr.responseText]));
+					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_viewattachment_error2", [xhr.status, xhr.responseText]));
 
 					BusyIndicator.hide();
 					return false;
@@ -1211,7 +1209,7 @@ sap.ui.define([
 			if (table) {
 				// dont proceed if no items selected
 				if (table.getSelectedItems().length == 0) {
-					MessageToast.show(GetTexti18n.getText(this, "msg_claimsummary_noitem"));
+					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsummary_noitem"));
 					return;
 				}
 
@@ -1221,7 +1219,7 @@ sap.ui.define([
 					case 'Edit':
 						// only allow one item selection
 						if (table.getSelectedItems().length > 1) {
-							MessageToast.show(GetTexti18n.getText(this, "msg_claimsummary_singleitem"));
+							MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsummary_singleitem"));
 							return;
 						}
 						else {
@@ -1232,8 +1230,8 @@ sap.ui.define([
 					case 'Duplicate':
 						// confirm dialog
 						this._newDialog(
-							GetTexti18n.getText(this, "dialog_claimsummary_duplicate"),
-							GetTexti18n.getText(this, "label_claimsummary_duplicate"),
+							this.getView().getModel("i18n").getResourceBundle().getText("dialog_claimsummary_duplicate"),
+							this.getView().getModel("i18n").getResourceBundle().getText("label_claimsummary_duplicate"),
 							function () {
 								this.onDuplicate_ClaimSummary(table.getSelectedItems())
 								table.removeSelections(true);
@@ -1244,8 +1242,8 @@ sap.ui.define([
 					case 'Delete':
 						// confirm dialog
 						this._newDialog(
-							GetTexti18n.getText(this, "dialog_claimsummary_delete"),
-							GetTexti18n.getText(this, "label_claimsummary_delete"),
+							this.getView().getModel("i18n").getResourceBundle().getText("dialog_claimsummary_delete"),
+							this.getView().getModel("i18n").getResourceBundle().getText("label_claimsummary_delete"),
 							function () {
 								this.onDelete_ClaimSummary(table.getSelectedItems())
 								table.removeSelections(true);
@@ -1253,12 +1251,12 @@ sap.ui.define([
 						);
 						break;
 					default:
-						MessageToast.show(GetTexti18n.getText(this, "msg_claimsummary_noaction"));
+						MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsummary_noaction"));
 						break;
 				}
 			}
 			else {
-				MessageToast.show(GetTexti18n.getText(this, "msg_claimsummary_notable"));
+				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsummary_notable"));
 			}
 		},
 
@@ -1374,8 +1372,8 @@ sap.ui.define([
 				case 'Save Draft':
 					// confirm dialog
 					this._newDialog(
-						GetTexti18n.getText(this, "dialog_claimsubmission_savedraft"),
-						GetTexti18n.getText(this, "label_claimsubmission_savedraft"),
+						this.getView().getModel("i18n").getResourceBundle().getText("dialog_claimsubmission_savedraft"),
+						this.getView().getModel("i18n").getResourceBundle().getText("label_claimsubmission_savedraft"),
 						function () {
 							this._updateClaimSubmission(oAction);
 						}.bind(this)
@@ -1385,8 +1383,8 @@ sap.ui.define([
 				case 'Delete Report':
 					// confirm dialog
 					this._newDialog(
-						GetTexti18n.getText(this, "dialog_claimsubmission_deletereport"),
-						GetTexti18n.getText(this, "label_claimsubmission_deletereport"),
+						this.getView().getModel("i18n").getResourceBundle().getText("dialog_claimsubmission_deletereport"),
+						this.getView().getModel("i18n").getResourceBundle().getText("label_claimsubmission_deletereport"),
 						function () {
 							this._updateClaimSubmission(oAction);
 						}.bind(this)
@@ -1396,8 +1394,8 @@ sap.ui.define([
 				case 'Submit Report':
 					// confirm dialog
 					this._newDialog(
-						GetTexti18n.getText(this, "dialog_claimsubmission_submitreport"),
-						GetTexti18n.getText(this, "label_claimsubmission_submitreport"),
+						this.getView().getModel("i18n").getResourceBundle().getText("dialog_claimsubmission_submitreport"),
+						this.getView().getModel("i18n").getResourceBundle().getText("label_claimsubmission_submitreport"),
 						function () {
 							this._updateClaimSubmission(oAction);
 						}.bind(this)
@@ -1519,7 +1517,7 @@ sap.ui.define([
 
 			if (mode === "APPROVE") {
 				if (!comment) {
-					MessageToast.show(GetTexti18n.getText(this, "msg_claimapprover_comment"));
+					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimapprover_comment"));
 					return;
 				}
 
@@ -1571,8 +1569,8 @@ sap.ui.define([
 			const reason = oReject?.getProperty("/rejectReasonKey");
 			const comment = oReject?.getProperty("/approvalComment")?.trim();
 
-			if (!reason) { MessageToast.show(GetTexti18n.getText(this, "msg_claimapprover_reject")); return; }
-			if (!comment) { MessageToast.show(GetTexti18n.getText(this, "msg_claimapprover_comment")); return; }
+			if (!reason) { MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimapprover_reject")); return; }
+			if (!comment) { MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimapprover_comment")); return; }
 
 			try {
 				BusyIndicator.show(0);
@@ -1630,8 +1628,8 @@ sap.ui.define([
 			const reason = oReject?.getProperty("/sendBackReasonKey");
 			const comment = oReject?.getProperty("/approvalComment")?.trim();
 
-			if (!reason) { MessageToast.show(GetTexti18n.getText(this, "msg_claimapprover_sendback")); return; }
-			if (!comment) { MessageToast.show(GetTexti18n.getText(this, "msg_claimapprover_comment")); return; }
+			if (!reason) { MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimapprover_sendback")); return; }
+			if (!comment) { MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimapprover_comment")); return; }
 
 			try {
 				BusyIndicator.show(0);
@@ -1842,8 +1840,8 @@ sap.ui.define([
 					const oData = aContexts[0].getObject();
 					return oData.GL_ACCOUNT;
 				} else {
-					console.warn(GetTexti18n.getText(this, "msg_claimdetails_input_glaccount"));
-					MessageToast.show(GetTexti18n.getText(this, "msg_claimdetails_input_glaccount"));
+					console.warn(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimdetails_input_glaccount"));
+					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimdetails_input_glaccount"));
 					return "";
 				}
 			} catch (oError) {
@@ -1997,7 +1995,7 @@ sap.ui.define([
 				(!this.byId("input_claimdetails_input_amount").getValue() && this.byId("input_claimdetails_input_amount").getVisible())
 			) {
 				// stop claim submission if values empty
-				MessageToast.show(GetTexti18n.getText(this, "msg_claiminput_required"));
+				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_required"));
 				return;
 			}
 			// validate attachment
@@ -2121,8 +2119,8 @@ sap.ui.define([
 					success = true;
 				},
 				error: function (xhr) {
-					console.log(GetTexti18n.getText(this, "msg_claimsubmission_viewattachment_error3", [fieldNumber, xhr.status, xhr.responseText]));
-					MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_viewattachment_error3", [fieldNumber, xhr.status, xhr.responseText]));
+					console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_viewattachment_error3", [fieldNumber, xhr.status, xhr.responseText]));
+					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_viewattachment_error3", [fieldNumber, xhr.status, xhr.responseText]));
 
 					BusyIndicator.hide();
 					success = false;
@@ -2186,11 +2184,11 @@ sap.ui.define([
 		},
 
 		onFileSizeExceed_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(GetTexti18n.getText(this, "msg_claiminput_attachment_upload_filesize"));
+			MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_attachment_upload_filesize"));
 		},
 
 		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(GetTexti18n.getText(this, "msg_claiminput_attachment_upload_mismatch"));
+			MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
 		onChange_ClaimDetails_DateRange: async function (startdate, enddate) {
@@ -2375,13 +2373,13 @@ sap.ui.define([
 					}
 					this.onChange_ClaimDetails_ProvidedMeals();
 				} else {
-					console.warn(GetTexti18n.getText(this, "msg_claimdetails_input_entmeals"));
-					MessageToast.show(GetTexti18n.getText(this, "msg_claimdetails_input_entmeals"));
+					console.warn(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimdetails_input_entmeals"));
+					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimdetails_input_entmeals"));
 				}
 				BusyIndicator.hide();
 			} catch (oError) {
-				console.warn(GetTexti18n.getText(this, "msg_claimdetails_input_entmeals_err", [oError]));
-				MessageToast.show(GetTexti18n.getText(this, "msg_claimdetails_input_entmeals_err", [oError]));
+				console.warn(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimdetails_input_entmeals_err", [oError]));
+				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimdetails_input_entmeals_err", [oError]));
 				BusyIndicator.hide();
 			}
 		},
@@ -2522,14 +2520,14 @@ sap.ui.define([
 			var endDateValue = this.byId(enddate).getValue();
 			// check for missing value
 			if (!startDateValue || !endDateValue) {
-				MessageToast.show(GetTexti18n.getText(this, "msg_daterange_missing"));
+				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_daterange_missing"));
 				return false;
 			}
 			// check if end date earlier than start date
 			var startDateUnix = new Date(startDateValue).valueOf();
 			var endDateUnix = new Date(endDateValue).valueOf();
 			if (startDateUnix > endDateUnix) {
-				MessageToast.show(GetTexti18n.getText(this, "msg_daterange_order"));
+				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_daterange_order"));
 				return false;
 			}
 			else {
@@ -2600,8 +2598,8 @@ sap.ui.define([
 						oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
 					}
 					else {
-						console.log(GetTexti18n.getText(this, "msg_claimsubmission_noclaim"));
-						MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_noclaim"));
+						console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_noclaim"));
+						MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_noclaim"));
 					}
 				}
 				//// set status for new claim as draft
@@ -2674,10 +2672,10 @@ sap.ui.define([
 					oContext.created().then(async () => {
 						switch (oAction) {
 							case 'Save Draft':
-								MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_created"));
+								MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_created"));
 								break;
 							case 'Submit Report':
-								MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_pending"));
+								MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_pending"));
 								break;
 							default:
 								throw new Error("Invalid action selected: " + oAction);
@@ -2696,8 +2694,8 @@ sap.ui.define([
 						MessageToast.show(oMsg);
 						this._onNavBack();
 					}).catch(err => {
-						console.log(GetTexti18n.getText(this, "msg_claimsubmission_creation_err", [err.message]));
-						MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_creation_err", [err.message]));
+						console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_creation_err", [err.message]));
+						MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_creation_err", [err.message]));
 					});
 				}
 				else {
@@ -2724,11 +2722,11 @@ sap.ui.define([
 					}
 					switch (oAction) {
 						case 'Save Draft':
-							var oMsg = GetTexti18n.getText(this, "msg_claimsubmission_changed");
+							var oMsg = this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_changed");
 							break;
 						case 'Delete Report':
 							oCtx.setProperty("STATUS_ID", "STAT07");
-							oMsg = GetTexti18n.getText(this, "msg_claimsubmission_deleted");
+							oMsg = this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_deleted");
 							break;
 						case 'Submit Report':
 							// budget checking
@@ -2738,7 +2736,7 @@ sap.ui.define([
 							}));
 							var budgetCc = oInputModel.getProperty("/claim_header/cost_center") || oInputModel.getProperty("/claim_header/alternate_cost_center");
 							if (!budgetCc) {
-								MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_nocc"));
+								MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_nocc"));
 								return;
 							}
 							const result = await budgetCheck.budgetChecking(
@@ -2761,7 +2759,7 @@ sap.ui.define([
 									var submittedDate = this._getJsonDate(new Date());
 									oCtx.setProperty("SUBMITTED_DATE", this._getHanaDate(submittedDate));
 								}
-								oMsg = GetTexti18n.getText(this, "msg_claimsubmission_pending");
+								oMsg = this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_pending");
 							}
 							break;
 						default:
@@ -2966,8 +2964,8 @@ sap.ui.define([
 						oContext.created().then(() => {
 							console.log("New claim item created");
 						}).catch(err => {
-							console.log(GetTexti18n.getText(this, "msg_claimsubmission_creation_item_err", [err.message]));
-							MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_creation_item_err", [err.message]));
+							console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_creation_item_err", [err.message]));
+							MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_creation_item_err", [err.message]));
 						});
 					}
 					else {
@@ -3138,8 +3136,8 @@ sap.ui.define([
 				}
 
 			} catch (err) {
-				console.log(GetTexti18n.getText(this, "msg_claimsubmission_numrange_err", [err]));
-				MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_numrange_err", [err]));
+				console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_numrange_err", [err]));
+				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_numrange_err", [err]));
 				return null;
 			}
 		},
@@ -3218,14 +3216,14 @@ sap.ui.define([
 				content: [new Label({ text: content })],
 				beginButton: new Button({
 					type: "Emphasized",
-					text: GetTexti18n.getText(this, "button_claimsummary_confirm"),
+					text: this.getView().getModel("i18n").getResourceBundle().getText("button_claimsummary_confirm"),
 					press: async function () {
 						this.oDialog.close();
 						await onPress();
 					}.bind(this)
 				}),
 				endButton: new Button({
-					text: GetTexti18n.getText(this, "button_claimsummary_cancel"),
+					text: this.getView().getModel("i18n").getResourceBundle().getText("button_claimsummary_cancel"),
 					press: async function () {
 						this.oDialog.close();
 						if (onPressE) {
@@ -3236,15 +3234,6 @@ sap.ui.define([
 			});
 			this.oDialog.open();
 		},
-
-		// _getTexti18n: function (i18nKey, array_i18nParameters) {
-		// 	if (array_i18nParameters) {
-		// 		return this.getView().getModel("i18n").getResourceBundle().getText(i18nKey, array_i18nParameters);
-		// 	}
-		// 	else {
-		// 		return this.getView().getModel("i18n").getResourceBundle().getText(i18nKey);
-		// 	}
-		// },
 
 		// App Control Visibility
 		getFieldVisibility_ClaimTypeItem: async function () {
@@ -3636,7 +3625,7 @@ sap.ui.define([
 
 				const input = oView.getModel("claimsubmission_input")?.getData();
 				if (!input) {
-					MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_noload"));
+					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_noload"));
 					return;
 				}
 
@@ -3719,8 +3708,8 @@ sap.ui.define([
 				});
 
 			} catch (e) {
-				console.log(GetTexti18n.getText(this, "msg_claimsubmission_excel", [e]));
-				MessageToast.show(GetTexti18n.getText(this, "msg_claimsubmission_excel", [e]));
+				console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_excel", [e]));
+				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_excel", [e]));
 			} finally {
 				oView.setBusy(false);
 			}
