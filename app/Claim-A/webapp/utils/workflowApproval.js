@@ -1,5 +1,5 @@
 sap.ui.define([
-    //  "./FinalApproveStep"
+    "claima/utils/FinalApproveStep"
 ], function () {
     "use strict";
 
@@ -196,20 +196,8 @@ sap.ui.define([
 			dateDiff = dateDiff/86400000;
 			dateDiff = Math.abs(dateDiff);
 
-			//dateDiff receipt age from submission date
-			//claimsOverallRisk; risk either L H or empty
-			//highestTotalExpAmt; highest amt
-			//empCCVal; whether match, not match or empty
-			//check if i need to check any of these values for rules
 			var empCCVal;
-            //Modify logic to use == instead of !=
-			//if(claimsAltCC != "" || claimsAltCC != null){
-			//	empCCVal = "NE";
-            //}else if (claimsCC == empCC){
-			//	empCCVal = "EQ";
-			//}else{
-			//	empCCVal = null;
-			//}
+
             if(claimsAltCC == "" || claimsAltCC == null) {  
 				empCCVal = "EQ";
             }else{
@@ -223,20 +211,12 @@ sap.ui.define([
 			let receiptAgingWorkflowCodeArr = [];
 			for(var i = 0; i < nestedWorkflowRuleArr.length; i++){
 
-                //Check if rule equals null. If rule equals null, add into array as part of selection
-				// if(claimsOverallRisk == nestedWorkflowRuleArr[i][3]){
-				// 	riskLevelWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
-				// }
-
                 if(nestedWorkflowRuleArr[i][3] == null){
                     riskLevelWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
                 }else if(claimsOverallRisk == nestedWorkflowRuleArr[i][3]){
                     riskLevelWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
                 }
 
-				// if(empCCVal == nestedWorkflowRuleArr[i][2]){
-				// 	empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
-				// }
 
                 if(nestedWorkflowRuleArr[i][2] == null){
                     empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
@@ -244,19 +224,13 @@ sap.ui.define([
 					empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
 				}
 
-                //Need to change the checking from total_exp_amount to amount
                 if(highestAmount > nestedWorkflowRuleArr[i][0]){
 					threshholdVal = "GT";
-				//}else if(highestTotalExpAmt < nestedWorkflowRuleArr[i][0]){
                 }else if(highestAmount <= nestedWorkflowRuleArr[i][0]){    
 					threshholdVal = "LE";
 				}else{
 					threshholdVal = null;
 				}
-
-				// if(threshholdVal == nestedWorkflowRuleArr[i][5]){
-				// 	thresholdWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
-				// }
 
                 if(nestedWorkflowRuleArr[i][5] == null){
                     thresholdWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
@@ -272,26 +246,12 @@ sap.ui.define([
 					receiptAge = null;
 				}
 
-				// if(receiptAge == nestedWorkflowRuleArr[i][6]){
-				// 	receiptAgingWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
-				// }
-
                 if(nestedWorkflowRuleArr[i][6] == null){
                     receiptAgingWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
                 }else if(receiptAge == nestedWorkflowRuleArr[i][6]){
 					receiptAgingWorkflowCodeArr.push(nestedWorkflowRuleArr[i][4]);
 				}
 			}
-
-            console.log("Overall Risk" + claimsOverallRisk);
-            console.log("Threshold Val " + threshholdVal);
-            console.log("Receipt Age " + receiptAge);
-            console.log("Employee CC " + empCCVal);
-            
-            console.log(riskLevelWorkflowCodeArr);
-            console.log(thresholdWorkflowCodeArr);
-            console.log(receiptAgingWorkflowCodeArr);
-            console.log(empCCWorkflowCodeArr);
 
 			//filter for the only workflow code that is the same among all the rule checks
 			const commonWorkflowCode = [...new Set(riskLevelWorkflowCodeArr)].filter(item => 
@@ -325,14 +285,12 @@ sap.ui.define([
                         if(workflowApprStep[i] == aAllEmpWithSameDepData[x].ROLE){
                             apprEmpID.push(aAllEmpWithSameDepData[x].EEID)						
                         }else if(workflowApprStep[i] == "Budget" && x == 0){
-                            //var oModel = this.getView().getModel();
                             var oListBinding = oModel.bindList("/ZBUDGET", null,null, [
                                 new sap.ui.model.Filter({ path: "YEAR", operator: "EQ", value1: claimSubmissionYear }),
                                 new sap.ui.model.Filter({ path: "FUND_CENTER", operator: "EQ", value1: claimsAltCC })
                             ], null);
                             const aContexts = await oListBinding.requestContexts();
                             const aData = aContexts.map(oContext => oContext.getObject());
-                            //apprEmpID.push(aData[0].BUDGET_OWNER_ID);
                             var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
                                 new sap.ui.model.Filter({ path: "EMAIL", operator: "EQ", value1: aData[0].BUDGET_OWNER_ID })
                             ], null);
@@ -367,7 +325,7 @@ sap.ui.define([
             }
 			
 
-			//create ZAPPROVER DETAILS (remove the comments when pushing to main)
+			//create ZAPPROVER DETAILS
 			var oBindList = oModel.bindList("/ZAPPROVER_DETAILS_CLAIMS");
 			for(var i = 0; i < apprEmpID.length; i++){
                 if(apprEmpID[i] == "Auto"){
@@ -490,7 +448,6 @@ sap.ui.define([
         },
         onPARApproverDetermination: async function (oModel, PARID){
 			// request header
-			//var oModel = this.getView().getModel();
             var that = this;
 			var oListBinding = oModel.bindList("/ZREQUEST_HEADER", null,null, [
 				new sap.ui.model.Filter({ path: "REQUEST_ID", operator: "EQ", value1: PARID })
@@ -528,6 +485,7 @@ sap.ui.define([
 			var empDept = aEmpData[0].DEP;
 			var empRole = aEmpData[0].ROLE;
 			var empCC = aEmpData[0].CC;
+
 			//JKEW dept = 0500000000
 			var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
 				new sap.ui.model.Filter({ path: "DEP", operator: "EQ", value1: empDept }),
@@ -571,14 +529,6 @@ sap.ui.define([
 			}
 
 			var empCCVal;
-            //Modify logic to use == instead of !=
-			//if(parAltCC != null || parAltCC != ""){
-			//	empCCVal = "NE";
-			//}else if (parCC == empCC){
-			//	empCCVal = "EQ";
-			//}else{
-			//	empCCVal = null;
-			//}
             if(parAltCC == "" || parAltCC == null) {  
 				empCCVal = "EQ";
             }else{
@@ -593,14 +543,7 @@ sap.ui.define([
 			parTripStartDate = new Date(parTripStartDate);
 
             
-            //testing values
-            console.log(nestedWorkflowRuleArr);
 			for(var i = 0; i < nestedWorkflowRuleArr.length; i++){
-
-                //Check if rule equals null. If rule equals null, add into array as part of selection
-				//if(empCCVal == nestedWorkflowRuleArr[i][1]){
-				//	empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
-				//}
                 if(nestedWorkflowRuleArr[i][1] == null){
                     empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
                 }else if(empCCVal == nestedWorkflowRuleArr[i][1]){
@@ -615,9 +558,6 @@ sap.ui.define([
 					tripStartAge = null;
 				}
 
-				//if(tripStartAge == nestedWorkflowRuleArr[i][2]){
-				//	tripStartAgingWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
-				//}
                 if(nestedWorkflowRuleArr[i][1] == null){
                     empCCWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
                 }else if(tripStartAge == nestedWorkflowRuleArr[i][2]){
@@ -732,7 +672,7 @@ sap.ui.define([
                 }
             }
 			
-			//create ZAPPROVER DETAILS (remove the comments when pushing to main)
+			//create ZAPPROVER DETAILS
 			var oBindList = oModel.bindList("/ZAPPROVER_DETAILS_PREAPPROVAL");
 
 			for(var i = 0; i < workflowApprLvl; i++){
