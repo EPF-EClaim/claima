@@ -1143,15 +1143,11 @@ sap.ui.define([
 						// load Claim Submission page
 						const oRouter = this.getOwnerComponent().getRouter();
 						oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(oInputModel.getProperty("/claim_header/claim_id"))) });
-					}).catch(err => {
-						console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_failed", [err.message]));
-						MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_failed", [err.message]));
 					});
 				}
 
 			} catch (e) {
-				console.log(e.message);
-				MessageToast.show(e.message);
+				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_failed", [e.message]));
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -1209,7 +1205,6 @@ sap.ui.define([
 					success = true;
 				},
 				error: function (xhr) {
-					console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_attachment_upload_error2", [xhr.status, xhr.responseText]));
 					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_attachment_upload_error2", [xhr.status, xhr.responseText]));
 
 					BusyIndicator.hide();

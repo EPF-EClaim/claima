@@ -1157,7 +1157,6 @@ sap.ui.define([
 					that._PDFViewer.open();
 				},
 				error: function (xhr) {
-					console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_viewattachment_error2", [xhr.status, xhr.responseText]));
 					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_viewattachment_error2", [xhr.status, xhr.responseText]));
 
 					BusyIndicator.hide();
@@ -1843,7 +1842,6 @@ sap.ui.define([
 					const oData = aContexts[0].getObject();
 					return oData.GL_ACCOUNT;
 				} else {
-					console.warn(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimdetails_input_glaccount"));
 					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimdetails_input_glaccount"));
 					return "";
 				}
@@ -2122,7 +2120,6 @@ sap.ui.define([
 					success = true;
 				},
 				error: function (xhr) {
-					console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_viewattachment_error3", [fieldNumber, xhr.status, xhr.responseText]));
 					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_viewattachment_error3", [fieldNumber, xhr.status, xhr.responseText]));
 
 					BusyIndicator.hide();
@@ -2376,12 +2373,10 @@ sap.ui.define([
 					}
 					this.onChange_ClaimDetails_ProvidedMeals();
 				} else {
-					console.warn(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimdetails_input_entmeals"));
 					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimdetails_input_entmeals"));
 				}
 				BusyIndicator.hide();
 			} catch (oError) {
-				console.warn(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimdetails_input_entmeals_err", [oError]));
 				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimdetails_input_entmeals_err", [oError]));
 				BusyIndicator.hide();
 			}
@@ -2601,7 +2596,6 @@ sap.ui.define([
 						oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
 					}
 					else {
-						console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_noclaim"));
 						MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_noclaim"));
 					}
 				}
@@ -2697,7 +2691,6 @@ sap.ui.define([
 						MessageToast.show(oMsg);
 						this._onNavBack();
 					}).catch(err => {
-						console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_creation_err", [err.message]));
 						MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_creation_err", [err.message]));
 					});
 				}
@@ -2803,8 +2796,7 @@ sap.ui.define([
 				}
 
 			} catch (e) {
-				console.log(e.message || "Submission failed");
-				MessageToast.show(e.message || "Submission failed");
+				MessageToast.show(e.message);
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -2962,7 +2954,6 @@ sap.ui.define([
 						oContext.created().then(() => {
 							console.log("New claim item created");
 						}).catch(err => {
-							console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_creation_item_err", [err.message]));
 							MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_creation_item_err", [err.message]));
 						});
 					}
@@ -2996,8 +2987,7 @@ sap.ui.define([
 						}
 					}
 				} catch (e) {
-					console.log(e.message || "Claim update failed");
-					MessageToast.show(e.message || "Claim update failed");
+					MessageToast.show(e.message);
 				}
 			})
 
@@ -3134,7 +3124,6 @@ sap.ui.define([
 				}
 
 			} catch (err) {
-				console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_numrange_err", [err]));
 				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_numrange_err", [err]));
 				return null;
 			}
@@ -3706,7 +3695,6 @@ sap.ui.define([
 				});
 
 			} catch (e) {
-				console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_excel", [e]));
 				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_excel", [e]));
 			} finally {
 				oView.setBusy(false);
