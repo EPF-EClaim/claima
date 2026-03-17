@@ -88,6 +88,7 @@ sap.ui.define([
             FinalApproveStep.onFinalApprove(oModel2, id, 'STAT05', oModel);
         }
 
+        //pending fix for payload creation causing server crash - Vincent
         // STEP 5: Fetch data for Email
 
 
