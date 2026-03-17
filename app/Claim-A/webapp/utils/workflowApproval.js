@@ -22,17 +22,13 @@ sap.ui.define([
             oAction.setParameter("ReceiverEmail" , parsePayload.ReceiverEmail);
             oAction.setParameter("NextApproverName" , parsePayload.NextApproverName);
 
-            oAction.execute().then(function (){
-                new MessageToast.show(this.geti18nText("ApprWorkflow_email_succses"));
-            }).catch(function (){
-                new MessageToast.show(this.geti18nText("ApprWorkflow_email_fail"));
-            })
+            oAction.execute();
 
 		},
 
         //Aiman Added for MyApproval
         onSendEmailApprover: async function (oModel, payload){
-         
+            
             const stringifyPayload = JSON.stringify(payload);
             const parsePayload = JSON.parse(stringifyPayload);
 
@@ -49,11 +45,7 @@ sap.ui.define([
             oAction.setParameter("RejectReason" , parsePayload.RejectReason);
             oAction.setParameter("ApproverComments" , parsePayload.ApproverComments);
 
-            oAction.execute().then(function (){
-                new MessageToast.show(this.geti18nText("ApprWorkflow_email_succses"));
-            }).catch(function (){
-                new MessageToast.show(this.geti18nText("ApprWorkflow_email_fail"));
-            })
+            oAction.execute();
 
 		},
         onClaimsApproverDetermination: async function (oModel, claimID){
@@ -74,7 +66,6 @@ sap.ui.define([
 			const sClaimSubmissionYear = new Date(aClaimHeaderData[0].SUBMITTED_DATE).getFullYear();
 
 			//claim Item
-			//var oModel = this.getView().getModel();
 			const oListClaimItemBinding = oModel.bindList("/ZCLAIM_ITEM", null,null, [
 				new Filter({ path: "CLAIM_ID", operator: "EQ", value1: claimID })
 			], null);
@@ -106,7 +97,6 @@ sap.ui.define([
 			let aClaimsTypeItemRiskArr = [];
 
 			for(var i = 0; i < aClaimTypeItemIDArr.length; i++){
-				//var oModel = this.getView().getModel();
 				const oListClaimTypeItemBinding = oModel.bindList("/ZCLAIM_TYPE_ITEM", null,null, [
 					new Filter({ path: "CLAIM_TYPE_ITEM_ID", operator: "EQ", value1: aClaimTypeItemIDArr[i] })
 				], null);
@@ -133,7 +123,6 @@ sap.ui.define([
 			}
 
 			//get employee info
-			//var oModel = this.getView().getModel();
 			const oListEmpMasterBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
 				new Filter({ path: "EEID", operator: "EQ", value1: sEmpID })
 			], null);
@@ -358,7 +347,6 @@ sap.ui.define([
 			}
 
             oContext.created().then(async function (){
-                new MessageToast.show(that.geti18nText("ApprWorkflow_Approver_Assign_Success"));
                 
                 if(aApprEmpID[0] != "Auto"){
                     const oListApprDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
@@ -614,7 +602,6 @@ sap.ui.define([
                         if(aWorkflowApprStep[i] == aAllEmpWithSameDepData[x].ROLE){
                             aApprEmpID.push(aAllEmpWithSameDepData[x].EEID)						
                         }else if(aWorkflowApprStep[i] == "Budget" && x == 0){
-                            //var oModel = this.getView().getModel();
                             const oListBudgetBinding = oModel.bindList("/ZBUDGET", null,null, [
                                 new Filter({ path: "YEAR", operator: "EQ", value1: sParSubmissionYear }),
                                 new Filter({ path: "FUND_CENTER", operator: "EQ", value1: sParAltCC })
@@ -690,7 +677,6 @@ sap.ui.define([
 			}
 
             oContext.created().then(async function (){
-                new MessageToast.show(that.geti18nText("ApprWorkflow_Approver_Assign_Success"));
                 if(aApprEmpID[0] != "Auto"){
                     const oListApprDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
                         new Filter({ path: "EEID", operator: "EQ", value1: aApprEmpID[0] })
@@ -774,9 +760,6 @@ sap.ui.define([
             }).catch(function(oError){
                 new MessageToast.show(oError);
             })
-        },
-        geti18nText: function(val){
-            return this.getView().getModel("i18n").getResourceBundle().getText(val);
         }
     };
 });
