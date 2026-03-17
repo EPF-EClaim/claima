@@ -202,7 +202,6 @@
                     <ColumnListItem type="Active">
                         <cells>
                             <Text text="{request_status>REQUEST_ID}" />
-                            <Text text="{request_status>OBJECTIVE_PURPOSE}" />
                             <Text
                                 text="{
                                     path: 'request_status>REQUEST_DATE',
@@ -210,6 +209,7 @@
                                     formatOptions: { pattern: 'dd MMM yyyy' } 
                                 }"
                             />
+                            <Text text="{request_status>OBJECTIVE_PURPOSE}" />
                             <Text
                                 text="{
                                     path: 'request_status>PREAPPROVAL_AMOUNT',
