@@ -3,10 +3,10 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "./Utility",
     "claima/utils/budgetCheck",
-    "claima/utils/NotifyAndPost"
+    "claima/utils/NotifyandPost"
 
 ],
-    function (Filter, FilterOperator, Utility, budgetCheck, NotifyAndPost) {
+    function (Filter, FilterOperator, Utility, budgetCheck, NotifyandPost) {
         "use strict";
 
         return {
@@ -65,7 +65,7 @@ sap.ui.define([
 
                 // Call Farisha email Function
                 if (emailPayload) {
-                    await NotifyAndPost.sendEmailClaimant(oModel, emailPayload);
+                    await NotifyandPost.sendEmailClaimant(oModel, emailPayload);
                 }
 
                 // SEND CONSOLIDATED IS PAYLOAD (CLM only)
