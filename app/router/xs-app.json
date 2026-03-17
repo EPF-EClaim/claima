@@ -5,6 +5,7 @@
     "logoutEndpoint": "/do/logout",
     "logoutPage": "/index.html"
   },
+  "sessionTimeout": 20,
   "routes": [
     {
       "source": "^/user-api/currentUser$",
