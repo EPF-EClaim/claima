@@ -482,11 +482,6 @@
                     "target": "ManageSub"
                 },
                 {
-                    "pattern": "SendingIS",
-                    "name": "SendingIS",
-                    "target": "SendingIS"
-                },
-                {
                     "pattern": "ZEMP_DEPENDENT",
                     "name": "ZEMP_DEPENDENT",
                     "target": "ZEMP_DEPENDENT"
@@ -3843,14 +3838,6 @@
                     "id": "ManageSub",
                     "path": "claima.view",
                     "name": "ManageSub",
-                    "type": "View",
-                    "viewType": "XML",
-                    "transition": "slide"
-                },
-                "SendingIS": {
-                    "id": "SendingIS",
-                    "path": "claima.view",
-                    "name": "SendingIS",
                     "type": "View",
                     "viewType": "XML",
                     "transition": "slide"

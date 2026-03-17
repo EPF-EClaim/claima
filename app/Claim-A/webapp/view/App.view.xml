@@ -91,13 +91,6 @@
                         expanded="false"
                     />
                     <tnt:NavigationListItem
-                        key="mysendingIS"
-                        text="{i18n>nav_sendingIS}"
-                        icon="sap-icon://company-view"
-                        enabled="true"
-                        expanded="false"
-                    />
-                    <tnt:NavigationListItem
                         key="analytics"
                         text="{i18n>nav_analytics}"
                         icon="sap-icon://business-objects-experience"
@@ -292,18 +285,6 @@
                         <mvc:XMLView
                             id="add_sub"
                             viewName="claima.view.ManageSub"
-                        />
-                    </content> 
-                </Page> 
-                <Page
-                    id="mysendingIS"
-                    showHeader="false"
-                    class="sapUiContentPadding"
-                >
-                    <content>
-                        <mvc:XMLView
-                            id="add_is"
-                            viewName="claima.view.SendingIS"
                         />
                     </content> 
                 </Page> 

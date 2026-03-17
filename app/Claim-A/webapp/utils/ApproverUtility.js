@@ -2,8 +2,8 @@
 sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    // "./FinalApproveStep"
-], function (Filter, FilterOperator) {
+    "./FinalApproveStep"
+], function (Filter, FilterOperator, FinalApproveStep) {
     "use strict";
 
     async function _approveMultiLevel(oModel, id, userID, comment, oModel2) {
@@ -79,12 +79,25 @@ sap.ui.define([
         const nextLevel = currentLevel + 1;
         const ctxNext = aCtx.find(ctx => ctx.getObject().LEVEL === nextLevel);
 
+        const emailPayload = {
+                ApproverName: currentName,
+                SubmissionDate: submissionDate || todayYMD(),
+                ClaimantName: claimantName,
+                ClaimType: sType,
+                ClaimID: id,
+                RecipientName: claimantName,
+                Action: "Approved",
+                ReceiverEmail: claimantEmail
+            };
+
         if (ctxNext) {
             ctxNext.setProperty("STATUS", "STAT02"); //PENDING APPROVAL
         } else {
             // No next level → final approval
             console.log("No further approvers found. Proceed to Final Approve Step");
-            FinalApproveStep.onFinalApprove(oModel, payload.claimID, 'STAT05');
+            FinalApproveStep.onFinalApprove(oModel2, id, 'STAT05', oModel,emailPayload);
+
+            
         }
 
         // STEP 5: Fetch data for Email

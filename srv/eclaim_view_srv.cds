@@ -1,6 +1,27 @@
 using {ECLAIM} from '../db/eclaim';
 
 service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
+        
+    type ApprovedClaimItem {
+    ClaimSubID           : String;
+    EmpID                : String;
+    SubmissionDate       : String;
+    FinalAmounttoReceive : Decimal(15,2);
+    LastModifiedDate     : String;
+    Amount               : Decimal(15,2);
+    ReceiptDate          : String;
+    CostCenter           : String;
+    GLAccount            : String;
+    MaterialCode         : String;
+    }
+
+    
+type ApprovedClaimBatch {
+  ClaimID : String;
+  Items   : many ApprovedClaimItem;
+}
+
+
     entity ZEMP_REQUEST_VIEW             as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
@@ -705,4 +726,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_HEADER.FINAL_AMOUNT_TO_RECEIVE as AMOUNT,
                 ZCLAIM_HEADER.TOTAL_CLAIM_AMOUNT as TOTAL_AMOUNT }
                 where ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'    
+
+action sendApprovedClaimBatch(batch : ApprovedClaimBatch) returns { message : String; };
+
+
 };
