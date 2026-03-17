@@ -1,6 +1,7 @@
 sap.ui.define([
-    "claima/utils/FinalApproveStep"
-], function () {
+    "claima/utils/FinalApproveStep",
+    "sap/ui/model/Filter"
+], function (FinalApproveStep, Filter) {
     "use strict";
 
     return {
@@ -59,10 +60,10 @@ sap.ui.define([
 			//var oModel = this.getView().getModel();
             var that = this;
 
-			var oListBinding = oModel.bindList("/ZCLAIM_HEADER", null,null, [
-				new sap.ui.model.Filter({ path: "CLAIM_ID", operator: "EQ", value1: claimID })
+			const oListClaimHeaderBinding = oModel.bindList("/ZCLAIM_HEADER", null,null, [
+				new Filter({ path: "CLAIM_ID", operator: "EQ", value1: claimID })
 			], null);
-			const aClaimHeaderContexts = await oListBinding.requestContexts();
+			const aClaimHeaderContexts = await oListClaimHeaderBinding.requestContexts();
 			const aClaimHeaderData = aClaimHeaderContexts.map(oContext => oContext.getObject());
 
 			var empID = aClaimHeaderData[0].EMP_ID;
@@ -75,10 +76,10 @@ sap.ui.define([
 
 			//claim Item
 			//var oModel = this.getView().getModel();
-			var oListBinding = oModel.bindList("/ZCLAIM_ITEM", null,null, [
-				new sap.ui.model.Filter({ path: "CLAIM_ID", operator: "EQ", value1: claimID })
+			const oListClaimItemBinding = oModel.bindList("/ZCLAIM_ITEM", null,null, [
+				new Filter({ path: "CLAIM_ID", operator: "EQ", value1: claimID })
 			], null);
-			const aClaimItemsContexts = await oListBinding.requestContexts();
+			const aClaimItemsContexts = await oListClaimItemBinding.requestContexts();
 			const aClaimsItemData = aClaimItemsContexts.map(oContext => oContext.getObject());
 
             //Need to change the checking from total_exp_amount to amount
@@ -107,10 +108,10 @@ sap.ui.define([
 
 			for(var i = 0; i < claimTypeItemIDArr.length; i++){
 				//var oModel = this.getView().getModel();
-				var oListBinding = oModel.bindList("/ZCLAIM_TYPE_ITEM", null,null, [
-					new sap.ui.model.Filter({ path: "CLAIM_TYPE_ITEM_ID", operator: "EQ", value1: claimTypeItemIDArr[i] })
+				const oListClaimTypeItemBinding = oModel.bindList("/ZCLAIM_TYPE_ITEM", null,null, [
+					new Filter({ path: "CLAIM_TYPE_ITEM_ID", operator: "EQ", value1: claimTypeItemIDArr[i] })
 				], null);
-				const aClaimTypeItemsContexts = await oListBinding.requestContexts();
+				const aClaimTypeItemsContexts = await oListClaimTypeItemBinding.requestContexts();
 				const aClaimsTypeItemData = aClaimTypeItemsContexts.map(oContext => oContext.getObject());
 
 				for(var x = 0; x < aClaimsTypeItemData.length; x++){
@@ -134,10 +135,10 @@ sap.ui.define([
 
 			//get employee info
 			//var oModel = this.getView().getModel();
-			var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-				new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: empID })
+			const oListEmpMasterBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+				new Filter({ path: "EEID", operator: "EQ", value1: empID })
 			], null);
-			const aEmpContexts = await oListBinding.requestContexts();
+			const aEmpContexts = await oListEmpMasterBinding.requestContexts();
 			const aEmpData = aEmpContexts.map(oContext => oContext.getObject());
 
 			var empDept = aEmpData[0].DEP; 
@@ -146,11 +147,11 @@ sap.ui.define([
 
 			//JKEW dept = 0500000000
 			//array this. test dep id getting all emp with roles with the same dept id as claimant need to add loop to this as well
-			var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-				new sap.ui.model.Filter({ path: "DEP", operator: "EQ", value1: empDept }),
-				new sap.ui.model.Filter({ path: "ROLE", operator: "NE", value1: null })
+			const oListAllEmpMasterBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+				new Filter({ path: "DEP", operator: "EQ", value1: empDept }),
+				new Filter({ path: "ROLE", operator: "NE", value1: null })
 			], null);
-			const aAllEmpWithSameDepContexts = await oListBinding.requestContexts();
+			const aAllEmpWithSameDepContexts = await oListAllEmpMasterBinding.requestContexts();
 			const aAllEmpWithSameDepData = aAllEmpWithSameDepContexts.map(oContext => oContext.getObject());
 
 			//get all the workflow rules based on workflow type request type (submission type) and role. populate to array and check if there is anything that needs to be checked then pop out the ones that is not needed
@@ -168,13 +169,13 @@ sap.ui.define([
 			}
 
 			//get workflow rule
-			var oListBinding = oModel.bindList("/ZWORKFLOW_RULE", null,null, [
-				new sap.ui.model.Filter({ path: "WORKFLOW_TYPE", operator: "EQ", value1: "CLM" }),
-				new sap.ui.model.Filter({ path: "REQUEST_TYPE_ID", operator: "EQ", value1: claimsSubmissionType }),
-				new sap.ui.model.Filter({ path: "ROLE", operator: "EQ", value1: empRole })
+			const oListWorkflowRuleBinding = oModel.bindList("/ZWORKFLOW_RULE", null,null, [
+				new Filter({ path: "WORKFLOW_TYPE", operator: "EQ", value1: "CLM" }),
+				new Filter({ path: "REQUEST_TYPE_ID", operator: "EQ", value1: claimsSubmissionType }),
+				new Filter({ path: "ROLE", operator: "EQ", value1: empRole })
 				
 			], null);
-			const aWorkflowRuleContexts = await oListBinding.requestContexts();
+			const aWorkflowRuleContexts = await oListWorkflowRuleBinding.requestContexts();
 			const aWorkflowRuleData = aWorkflowRuleContexts.map(oContext => oContext.getObject());
 
 			let workflowRuleElimArr = [];
@@ -259,12 +260,12 @@ sap.ui.define([
 			);
 
 			//get approver levels and approvers
-			var oListBinding = oModel.bindList("/ZWORKFLOW_STEP", null,null, [
-				new sap.ui.model.Filter({ path: "WORKFLOW_TYPE", operator: "EQ", value1: "CLM" }),
-				new sap.ui.model.Filter({ path: "WORKFLOW_CODE", operator: "EQ", value1: commonWorkflowCode[0] }),
+			const oListWorkflowStepBinding = oModel.bindList("/ZWORKFLOW_STEP", null,null, [
+				new Filter({ path: "WORKFLOW_TYPE", operator: "EQ", value1: "CLM" }),
+				new Filter({ path: "WORKFLOW_CODE", operator: "EQ", value1: commonWorkflowCode[0] }),
 				
 			], null);
-			const aWorkflowStepContexts = await oListBinding.requestContexts();
+			const aWorkflowStepContexts = await oListWorkflowStepBinding.requestContexts();
 			const aWorkflowStepData = aWorkflowStepContexts.map(oContext => oContext.getObject());
 			
 			var workflowName =  aWorkflowStepData[0].WORKFLOW_NAME;
@@ -285,16 +286,16 @@ sap.ui.define([
                         if(workflowApprStep[i] == aAllEmpWithSameDepData[x].ROLE){
                             apprEmpID.push(aAllEmpWithSameDepData[x].EEID)						
                         }else if(workflowApprStep[i] == "Budget" && x == 0){
-                            var oListBinding = oModel.bindList("/ZBUDGET", null,null, [
-                                new sap.ui.model.Filter({ path: "YEAR", operator: "EQ", value1: claimSubmissionYear }),
-                                new sap.ui.model.Filter({ path: "FUND_CENTER", operator: "EQ", value1: claimsAltCC })
+                            const oListBudgetBinding = oModel.bindList("/ZBUDGET", null,null, [
+                                new Filter({ path: "YEAR", operator: "EQ", value1: claimSubmissionYear }),
+                                new Filter({ path: "FUND_CENTER", operator: "EQ", value1: claimsAltCC })
                             ], null);
-                            const aContexts = await oListBinding.requestContexts();
+                            const aContexts = await oListBudgetBinding.requestContexts();
                             const aData = aContexts.map(oContext => oContext.getObject());
-                            var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                                new sap.ui.model.Filter({ path: "EMAIL", operator: "EQ", value1: aData[0].BUDGET_OWNER_ID })
+                            const oListEmpBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+                                new Filter({ path: "EMAIL", operator: "EQ", value1: aData[0].BUDGET_OWNER_ID })
                             ], null);
-                            const aEEIDContexts = await oListBinding.requestContexts();
+                            const aEEIDContexts = await oListEmpBinding.requestContexts();
                             const aEEIDData = aEEIDContexts.map(oContext => oContext.getObject());
                             apprEmpID.push(aEEIDData[0].EEID);
                         }
@@ -307,13 +308,13 @@ sap.ui.define([
             if(apprEmpID[0] != "Auto"){
                 for(var i = 0; i < apprEmpID.length; i++){
                     
-                    var oListBinding = oModel.bindList("/ZSUBSTITUTION_RULES", null,null, [
-                        new sap.ui.model.Filter({ path: "USER_ID", operator: "EQ", value1: apprEmpID[i] }),
-                        new sap.ui.model.Filter({ path: "VALID_FROM", operator: "LE", value1: claimsSubmissionDate }),
-                        new sap.ui.model.Filter({ path: "VALID_TO", operator: "GE", value1: claimsSubmissionDate })
+                    const oListSubRulesBinding = oModel.bindList("/ZSUBSTITUTION_RULES", null,null, [
+                        new Filter({ path: "USER_ID", operator: "EQ", value1: apprEmpID[i] }),
+                        new Filter({ path: "VALID_FROM", operator: "LE", value1: claimsSubmissionDate }),
+                        new Filter({ path: "VALID_TO", operator: "GE", value1: claimsSubmissionDate })
                         
                     ], null);
-                    const aSubEmpContexts = await oListBinding.requestContexts();
+                    const aSubEmpContexts = await oListSubRulesBinding.requestContexts();
                     const aSubEmpData = aSubEmpContexts.map(oContext => oContext.getObject());
 
                     if(aSubEmpData[0] != null && aSubEmpData[0] != "" && aSubEmpData[0] != undefined){
@@ -362,20 +363,20 @@ sap.ui.define([
                 
                 if(apprEmpID[0] != "Auto"){
                     var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                        new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: apprEmpID[0] })
+                        new Filter({ path: "EEID", operator: "EQ", value1: apprEmpID[0] })
                     ], null);
                     const aApprNameContexts = await oListBinding.requestContexts();
                     const aApprNameData = aApprNameContexts.map(oContext => oContext.getObject());
                     
                     var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                        new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: empID })
+                        new Filter({ path: "EEID", operator: "EQ", value1: empID })
                     ], null);
                     const aClaimantNameContexts = await oListBinding.requestContexts();
                     const aClaimantNameData = aClaimantNameContexts.map(oContext => oContext.getObject());
 
                     if(apprEmpID.length != 1){
                         var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                        new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: apprEmpID[1] })
+                        new Filter({ path: "EEID", operator: "EQ", value1: apprEmpID[1] })
                         ], null);
                         const aNextApprNameContexts = await oListBinding.requestContexts();
                         var aNextApprNameData = aNextApprNameContexts.map(oContext => oContext.getObject());
@@ -385,7 +386,7 @@ sap.ui.define([
                     }
                 
                     var oListBinding = oModel.bindList("/ZSUBMISSION_TYPE", null,null, [
-                        new sap.ui.model.Filter({ path: "SUBMISSION_TYPE_ID", operator: "EQ", value1: claimsSubmissionType })
+                        new Filter({ path: "SUBMISSION_TYPE_ID", operator: "EQ", value1: claimsSubmissionType })
                     ], null);
                     const aSubmissionTypeNameContexts = await oListBinding.requestContexts();
                     const aSubmissionTypeNameData = aSubmissionTypeNameContexts.map(oContext => oContext.getObject());
@@ -393,7 +394,7 @@ sap.ui.define([
                     if(subEmpID[0] != null){
 
                         var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                        new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: subEmpID[0] })
+                        new Filter({ path: "EEID", operator: "EQ", value1: subEmpID[0] })
                         ], null);
                         const aApprSubNameContexts = await oListBinding.requestContexts();
                         const aApprSubNameData = aApprSubNameContexts.map(oContext => oContext.getObject());
@@ -449,10 +450,10 @@ sap.ui.define([
         onPARApproverDetermination: async function (oModel, PARID){
 			// request header
             var that = this;
-			var oListBinding = oModel.bindList("/ZREQUEST_HEADER", null,null, [
-				new sap.ui.model.Filter({ path: "REQUEST_ID", operator: "EQ", value1: PARID })
+			const oListRequestHeaderBinding = oModel.bindList("/ZREQUEST_HEADER", null,null, [
+				new Filter({ path: "REQUEST_ID", operator: "EQ", value1: PARID })
 			], null);
-			const aPARHeaderContexts = await oListBinding.requestContexts();
+			const aPARHeaderContexts = await oListRequestHeaderBinding.requestContexts();
 			const aPARHeaderData = aPARHeaderContexts.map(oContext => oContext.getObject());
 
 			var empID = aPARHeaderData[0].EMP_ID;
@@ -464,10 +465,10 @@ sap.ui.define([
 			var parTripStartDate = aPARHeaderData[0].TRIP_START_DATE;
 			
 			//request Item
-			var oListBinding = oModel.bindList("/ZREQUEST_ITEM", null,null, [
-				new sap.ui.model.Filter({ path: "REQUEST_ID", operator: "EQ", value1: PARID })
+			const oListRequestItemBinding = oModel.bindList("/ZREQUEST_ITEM", null,null, [
+				new Filter({ path: "REQUEST_ID", operator: "EQ", value1: PARID })
 			], null);
-			const aClaimItemsContexts = await oListBinding.requestContexts();
+			const aClaimItemsContexts = await oListRequestItemBinding.requestContexts();
 			const aClaimsItemData = aClaimItemsContexts.map(oContext => oContext.getObject());
 
 			let parCashAdvArr = [];
@@ -476,10 +477,10 @@ sap.ui.define([
 			}
 
 			//get employee info
-			var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-				new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: empID })
+			const oListPAREmpMasterBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+				new Filter({ path: "EEID", operator: "EQ", value1: empID })
 			], null);
-			const aEmpContexts = await oListBinding.requestContexts();
+			const aEmpContexts = await oListPAREmpMasterBinding.requestContexts();
 			const aEmpData = aEmpContexts.map(oContext => oContext.getObject());
 
 			var empDept = aEmpData[0].DEP;
@@ -487,11 +488,11 @@ sap.ui.define([
 			var empCC = aEmpData[0].CC;
 
 			//JKEW dept = 0500000000
-			var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-				new sap.ui.model.Filter({ path: "DEP", operator: "EQ", value1: empDept }),
-				new sap.ui.model.Filter({ path: "ROLE", operator: "NE", value1: null })
+			const oListPARAllEmpBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+				new Filter({ path: "DEP", operator: "EQ", value1: empDept }),
+				new Filter({ path: "ROLE", operator: "NE", value1: null })
 			], null);
-			const aAllEmpWithSameDepContexts = await oListBinding.requestContexts();
+			const aAllEmpWithSameDepContexts = await oListPARAllEmpBinding.requestContexts();
 			const aAllEmpWithSameDepData = aAllEmpWithSameDepContexts.map(oContext => oContext.getObject());
 
 			if(empRole == null || empRole == ""){
@@ -507,13 +508,13 @@ sap.ui.define([
 			}
 
 			//get workflow rule
-			var oListBinding = oModel.bindList("/ZWORKFLOW_RULE", null,null, [
-				new sap.ui.model.Filter({ path: "WORKFLOW_TYPE", operator: "EQ", value1: "PRE" }),
-				new sap.ui.model.Filter({ path: "REQUEST_TYPE_ID", operator: "EQ", value1: parSubmissionType }),
-				new sap.ui.model.Filter({ path: "ROLE", operator: "EQ", value1: empRole })
+			const oListWorkflowRuleBinding = oModel.bindList("/ZWORKFLOW_RULE", null,null, [
+				new Filter({ path: "WORKFLOW_TYPE", operator: "EQ", value1: "PRE" }),
+				new Filter({ path: "REQUEST_TYPE_ID", operator: "EQ", value1: parSubmissionType }),
+				new Filter({ path: "ROLE", operator: "EQ", value1: empRole })
 				
 			], null);
-			const aWorkflowRuleContexts = await oListBinding.requestContexts();
+			const aWorkflowRuleContexts = await oListWorkflowRuleBinding.requestContexts();
 			const aWorkflowRuleData = aWorkflowRuleContexts.map(oContext => oContext.getObject());
 
 			let workflowRuleElimArr = [];
@@ -588,12 +589,12 @@ sap.ui.define([
 
 
 			//get approver levels and approvers
-			var oListBinding = oModel.bindList("/ZWORKFLOW_STEP", null,null, [
-				new sap.ui.model.Filter({ path: "WORKFLOW_TYPE", operator: "EQ", value1: "PRE" }),
-				new sap.ui.model.Filter({ path: "WORKFLOW_CODE", operator: "EQ", value1: commonWorkflowCode[0] }),
+			const oListWorkflowStepBinding = oModel.bindList("/ZWORKFLOW_STEP", null,null, [
+				new Filter({ path: "WORKFLOW_TYPE", operator: "EQ", value1: "PRE" }),
+				new Filter({ path: "WORKFLOW_CODE", operator: "EQ", value1: commonWorkflowCode[0] }),
 				
 			], null);
-			const aWorkflowStepContexts = await oListBinding.requestContexts();
+			const aWorkflowStepContexts = await oListWorkflowStepBinding.requestContexts();
 			const aWorkflowStepData = aWorkflowStepContexts.map(oContext => oContext.getObject());
 			
 			var workflowName =  aWorkflowStepData[0].WORKFLOW_NAME;
@@ -615,17 +616,17 @@ sap.ui.define([
                             apprEmpID.push(aAllEmpWithSameDepData[x].EEID)						
                         }else if(workflowApprStep[i] == "Budget" && x == 0){
                             //var oModel = this.getView().getModel();
-                            var oListBinding = oModel.bindList("/ZBUDGET", null,null, [
-                                new sap.ui.model.Filter({ path: "YEAR", operator: "EQ", value1: parSubmissionYear }),
-                                new sap.ui.model.Filter({ path: "FUND_CENTER", operator: "EQ", value1: parAltCC })
+                            const oListBudgetBinding = oModel.bindList("/ZBUDGET", null,null, [
+                                new Filter({ path: "YEAR", operator: "EQ", value1: parSubmissionYear }),
+                                new Filter({ path: "FUND_CENTER", operator: "EQ", value1: parAltCC })
                             ], null);
-                            const aContexts = await oListBinding.requestContexts();
+                            const aContexts = await oListBudgetBinding.requestContexts();
                             const aData = aContexts.map(oContext => oContext.getObject());
                             //apprEmpID.push(aData[0].BUDGET_OWNER_ID);
-                            var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                                new sap.ui.model.Filter({ path: "EMAIL", operator: "EQ", value1: aData[0].BUDGET_OWNER_ID })
+                            const oListBudgetOwnerBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+                                new Filter({ path: "EMAIL", operator: "EQ", value1: aData[0].BUDGET_OWNER_ID })
                             ], null);
-                            const aEEIDContexts = await oListBinding.requestContexts();
+                            const aEEIDContexts = await oListBudgetOwnerBinding.requestContexts();
                             const aEEIDData = aEEIDContexts.map(oContext => oContext.getObject());
                             apprEmpID.push(aEEIDData[0].EEID);
                         }
@@ -637,13 +638,13 @@ sap.ui.define([
             if(apprEmpID[0] != "Auto"){
                 for(var i = 0; i < apprEmpID.length; i++){
 
-                    var oListBinding = oModel.bindList("/ZSUBSTITUTION_RULES", null,null, [
-                        new sap.ui.model.Filter({ path: "USER_ID", operator: "EQ", value1: apprEmpID[i] }),
-                        new sap.ui.model.Filter({ path: "VALID_FROM", operator: "LE", value1: parSubmissionDate }),
-                        new sap.ui.model.Filter({ path: "VALID_TO", operator: "GE", value1: parSubmissionDate })
+                    const oListSubRulesBinding = oModel.bindList("/ZSUBSTITUTION_RULES", null,null, [
+                        new Filter({ path: "USER_ID", operator: "EQ", value1: apprEmpID[i] }),
+                        new Filter({ path: "VALID_FROM", operator: "LE", value1: parSubmissionDate }),
+                        new Filter({ path: "VALID_TO", operator: "GE", value1: parSubmissionDate })
                         
                     ], null);
-                    const aSubEmpContexts = await oListBinding.requestContexts();
+                    const aSubEmpContexts = await oListSubRulesBinding.requestContexts();
                     const aSubEmpData = aSubEmpContexts.map(oContext => oContext.getObject());
 
                     if(aSubEmpData[0] != null && aSubEmpData[0] != "" && aSubEmpData[0] != undefined){
@@ -692,41 +693,41 @@ sap.ui.define([
             oContext.created().then(async function (){
                 console.log("success")
                 if(apprEmpID[0] != "Auto"){
-                    var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                        new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: apprEmpID[0] })
+                    const oListApprDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+                        new Filter({ path: "EEID", operator: "EQ", value1: apprEmpID[0] })
                     ], null);
-                    const aApprNameContexts = await oListBinding.requestContexts();
+                    const aApprNameContexts = await oListApprDetailsBinding.requestContexts();
                     const aApprNameData = aApprNameContexts.map(oContext => oContext.getObject());
 
-                    var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                        new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: empID })
+                    const oListClaimantDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+                        new Filter({ path: "EEID", operator: "EQ", value1: empID })
                     ], null);
-                    const aClaimantNameContexts = await oListBinding.requestContexts();
+                    const aClaimantNameContexts = await oListClaimantDetailsBinding.requestContexts();
                     const aClaimantNameData = aClaimantNameContexts.map(oContext => oContext.getObject());
 
                     if(apprEmpID.length != 1){
-                        var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                        new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: apprEmpID[1] })
+                        const oListNextApprBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+                        new Filter({ path: "EEID", operator: "EQ", value1: apprEmpID[1] })
                         ], null);
-                        const aNextApprNameContexts = await oListBinding.requestContexts();
+                        const aNextApprNameContexts = await oListNextApprBinding.requestContexts();
                         var aNextApprNameData = aNextApprNameContexts.map(oContext => oContext.getObject());
                         var nextApprName = aNextApprNameData[0].NAME;
                     }else{
                         nextApprName = null;
                     }
 
-                    var oListBinding = oModel.bindList("/ZREQUEST_TYPE", null,null, [
-                        new sap.ui.model.Filter({ path: "REQUEST_TYPE_ID", operator: "EQ", value1: parSubmissionType })
+                    const oListRequestTypeBinding = oModel.bindList("/ZREQUEST_TYPE", null,null, [
+                        new Filter({ path: "REQUEST_TYPE_ID", operator: "EQ", value1: parSubmissionType })
                     ], null);
-                    const aSubmissionTypeNameContexts = await oListBinding.requestContexts();
+                    const aSubmissionTypeNameContexts = await oListRequestTypeBinding.requestContexts();
                     const aSubmissionTypeNameData = aSubmissionTypeNameContexts.map(oContext => oContext.getObject());
 
                     if(subEmpID[0] != null){
 
-                        var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                        new sap.ui.model.Filter({ path: "EEID", operator: "EQ", value1: subEmpID[0] })
+                        const oListSubDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+                        new Filter({ path: "EEID", operator: "EQ", value1: subEmpID[0] })
                         ], null);
-                        const aApprSubNameContexts = await oListBinding.requestContexts();
+                        const aApprSubNameContexts = await oListSubDetailsBinding.requestContexts();
                         const aApprSubNameData = aApprSubNameContexts.map(oContext => oContext.getObject());
 
                         var payloadSub ={
