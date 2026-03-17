@@ -21,32 +21,6 @@
 			<!-- space -->
 			<ToolbarSpacer />
 
-			<!-- Add Claim Type -->
-			<!-- <MenuButton
-				id="menubutton_claimsummary_addclaimtype"
-				text="{i18n>menubutton_claimsummary_addclaimtype}"
-				buttonMode="Split"
-				useDefaultActionOnly="true"
-			>
-				<menu>
-					<Menu itemSelected="onMenuAction"> -->
-						<!-- Create Claim -->
-						<!-- <MenuItem
-							id="menuitem_claimsummary_createclaim"
-							text="{i18n>menuitem_claimsummary_createclaim}"
-							press="onCreateClaim_ClaimSummary"
-						/> -->
-
-						<!-- Scan Receipt -->
-						<!-- <MenuItem
-							id="menuitem_claimsummary_scanreceipt"
-							text="{i18n>menuitem_claimsummary_scanreceipt}"
-							press="onScanReceipt_ClaimSummary"
-						/>
-					</Menu>
-				</menu>
-			</MenuButton> -->
-
 			<!-- Create Claim -->
 			<Button
 				id="button_claimsummary_createclaim"
@@ -62,13 +36,6 @@
 				press="onAction_ClaimSummary('Edit')"
 				enabled="false"
 			/>
-
-			<!-- Scan Receipt -->
-			<!-- <Button
-				id="button_claimsummary_scanreceipt"
-				text="{i18n>button_claimsummary_scanreceipt}"
-				press="onScanReceipt_ClaimSummary"
-			/> -->
 
 			<!-- Duplicate -->
 			<Button
@@ -109,16 +76,6 @@
 					<Text text="Item" />
 				</Column>
 
-				<!-- Date -->
-				<!-- <Column>
-					<Text text="{i18n>columntext_claimsummary_date}" />
-				</Column> -->
-
-				<!-- Receipt -->
-				<!-- <Column>
-					<Text text="{i18n>columntext_claimsummary_receipt}" />
-				</Column> -->
-
 				<!-- Claim Type -->
 				<Column>
 					<Text text="{i18n>columntext_claimsummary_claimtype}" />
@@ -155,18 +112,6 @@
 					<cells>
 						<!-- Item ID -->
 						<ObjectIdentifier text="{claimsubmission_input>claim_sub_id}" />
-
-						<!-- Date -->
-						<!-- <Text
-							text="{
-								path: 'claimsubmission_input>start_date',
-								type: 'sap.ui.model.odata.type.Date',
-								formatOptions: { pattern: 'dd-MMM-yyyy' }
-							}"
-						/> -->
-
-						<!-- Receipt -->
-						<!-- <Text text="{claimsubmission_input>receipt_number}" /> -->
 
 						<!-- Claim Type -->
 						<Text text="{claimsubmission_input>descr/claim_type_id}" />

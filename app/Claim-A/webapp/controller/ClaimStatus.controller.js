@@ -2,8 +2,10 @@ sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/model/json/JSONModel",
 	"sap/m/MessageToast",
+	"sap/ui/model/Filter",
+	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter"
-], function (Controller, JSONModel, MessageToast, Sorter) {
+], function (Controller, JSONModel, MessageToast, Filter, FilterOperator, Sorter) {
 	"use strict";
 
 	return Controller.extend("claima.controller.ClaimStatus", {
@@ -30,19 +32,6 @@ sap.ui.define([
 			return { oRootView, oPageContainer };
 		},
 
-		/** Navigate manually to Claim Submission (same style as ClaimStatus.controller) */
-		_navToClaimSubmissionManual: function () {
-			const { oRootView, oPageContainer } = this._getRootAndContainer();
-			const oClaimSubmission = oRootView.byId("navcontainer_claimsubmission"); // <-- matches App.view.xml
-			if (!oClaimSubmission) {
-				sap.m.MessageToast.show("Claim Submission page not found.");
-				return;
-			}
-			// var oRouter = this.getOwnerComponent().getRouter();
-			// var sHash = sap.ui.core.routing.HashChanger.getInstance().replaceHash("");
-			oPageContainer.to(oClaimSubmission);
-		},
-
 		async onRowPress(oEvent) {
 			try {
 				this.getView().setBusy(true);
@@ -66,7 +55,7 @@ sap.ui.define([
 				}
 
 				if (!oCtx) {
-					sap.m.MessageToast.show("Select a claim to open");
+					MessageToast.show("Select a claim to open");
 					return;
 				}
 
@@ -79,22 +68,19 @@ sap.ui.define([
 					null;
 
 				if (!sClaimId) {
-					sap.m.MessageToast.show("Claim ID is missing on the selected row.");
+					MessageToast.show("Claim ID is missing on the selected row.");
 					return;
 				}
 
 				// Load claim header + items and populate claimsubmission_input model
 				await this._loadClaimById(String(sClaimId));
 
-				// // === Manual navigation to Claim Submission (like ClaimStatus.controller) ===
-				// this._navToClaimSubmissionManual();
-
                 // Navigate to claim submission ID
                 const oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
 			} catch (e) {
 				sap.base.Log.error("openItemFromClaimList failed:", e);
-				sap.m.MessageToast.show("Failed to open the selected claim.");
+				MessageToast.show("Failed to open the selected claim.");
 			} finally {
 				this.getView().setBusy(false);
 			}
@@ -110,7 +96,7 @@ sap.ui.define([
 			if (oModel) return oModel;
 
 			// Last resort: create at component so other views can reuse it
-			oModel = new sap.ui.model.json.JSONModel({
+			oModel = new JSONModel({
 				claim_header: {},
 				claim_items: [],
 				claim_items_count: 0,
@@ -196,7 +182,7 @@ sap.ui.define([
 			const oModel2 = this.getOwnerComponent().getModel();
 			const sId = String(sClaimId);
 
-			const aFilters = [new sap.ui.model.Filter("CLAIM_ID", sap.ui.model.FilterOperator.EQ, sId)];
+			const aFilters = [new Filter("CLAIM_ID", FilterOperator.EQ, sId)];
 
 			// Header binding
 			const oHeaderBinding = oModel.bindList(
@@ -215,7 +201,7 @@ sap.ui.define([
 			const oItemBinding = oModel.bindList(
 				"/ZEMP_CLAIM_ITEM_VIEW", // <-- adjust if different
 				null,
-				[new sap.ui.model.Sorter("CLAIM_SUB_ID", false)],
+				[new Sorter("CLAIM_SUB_ID", false)],
 				aFilters,
 				{
 					$$ownRequest: true,
@@ -228,7 +214,7 @@ sap.ui.define([
 			const oItemDescrBinding = oModel.bindList(
 				"/ZEMP_CLAIM_ITEM_VIEW", // <-- adjust if different
 				null,
-				[new sap.ui.model.Sorter("CLAIM_SUB_ID", false)],
+				[new Sorter("CLAIM_SUB_ID", false)],
 				aFilters,
 				{
 					$$ownRequest: true,
@@ -247,7 +233,7 @@ sap.ui.define([
 				// Header
 				const oHeaderRaw = aHeaderCtx[0]?.getObject();
 				if (!oHeaderRaw) {
-					sap.m.MessageToast.show("No claim header found for the selected item.");
+					MessageToast.show("No claim header found for the selected item.");
 					oClaimInput.setProperty("/claim_header", {});
 					oClaimInput.setProperty("/claim_items", []);
 					oClaimInput.setProperty("/claim_items_count", 0);
@@ -477,7 +463,7 @@ sap.ui.define([
 		async _getEmpIdDetail(sEEID) {
 			const oModel = this.getOwnerComponent().getModel();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new sap.ui.model.Filter("EEID", "EQ", sEEID)
+				new Filter("EEID", FilterOperator.EQ, sEEID)
 			]);
 
 			try {
@@ -556,10 +542,10 @@ sap.ui.define([
 			if (oModel.getProperty("/emp_master/unit_section")) {
 				oModel.setProperty("/emp_master/descr/unit_section", await this._bindEclaimDescr("/ZBRANCH", oModel.getProperty("/emp_master/unit_section"), 'BRANCH_ID', 'BRANCH_DESC'));
 			}
-			// // marital status
-			// if (oModel.getProperty("/emp_master/marital")) {
-			//     oModel.setProperty("/emp_master/descr/marital", await this._bindEclaimDescr("/ZMARITAL_STAT", oModel.getProperty("/emp_master/marital"), 'MARRIAGE_CATEGORY_ID', 'MARRIAGE_CATEGORY_DESC'));
-			// }
+			// marital status
+			if (oModel.getProperty("/emp_master/marital")) {
+			    oModel.setProperty("/emp_master/descr/marital", await this._bindEclaimDescr("/ZMARITAL_STAT", oModel.getProperty("/emp_master/marital"), 'MARRIAGE_STATUS_ID', 'MARRIAGE_STATUS_DESC'));
+			}
 			// job group
 			if (oModel.getProperty("/emp_master/job_group")) {
 				oModel.setProperty("/emp_master/descr/job_group", await this._bindEclaimDescr("/ZJOB_GROUP", oModel.getProperty("/emp_master/job_group"), 'JOB_GROUP_ID', 'JOB_GROUP_DESC'));
@@ -603,9 +589,9 @@ sap.ui.define([
 
 		_bindEclaimDescr: async function (oTable, oInputValue, oFieldId, oFieldDescr, oInputValue2, oFieldId2) {
 			const oModel = this.getOwnerComponent().getModel();
-			var filterArray = [new sap.ui.model.Filter(oFieldId, "EQ", oInputValue)];
+			var filterArray = [new Filter(oFieldId, FilterOperator.EQ, oInputValue)];
 			if (oFieldId2) {
-				filterArray = filterArray.concat(new sap.ui.model.Filter(oFieldId2, "EQ", oInputValue2));
+				filterArray = filterArray.concat(new Filter(oFieldId2, FilterOperator.EQ, oInputValue2));
 			}
 			const oListBinding = oModel.bindList(oTable, null, null, filterArray);
 
@@ -676,9 +662,9 @@ sap.ui.define([
 			oTable.getColumns().forEach(function (oCol) {
 				var oHeader = oCol.getHeader();
 				if (oHeader && oHeader.findAggregatedObjects) {
-					// Find all sap.m.Button controls that have data("path") - our sort buttons
+					// Find all Button controls that have data("path") - our sort buttons
 					var aSortBtns = oHeader.findAggregatedObjects(true, function (oCtrl) {
-						return oCtrl.isA("sap.m.Button") && !!oCtrl.data("path");
+						return oCtrl.isA("Button") && !!oCtrl.data("path");
 					});
 					aSortBtns.forEach(function (oBtn) {
 						oBtn.setIcon("sap-icon://sort"); // back to neutral

@@ -501,24 +501,6 @@ sap.ui.define([
   }
 
   /* ---------------------------
-   * Navigation (NavContainer → Page)
-   * --------------------------- */
-  async function navToClaimPage(controller, { navContainerId = "pageContainer", pageId = "navcontainer_claimsubmission" } = {}) {
-    const root = controller.getOwnerComponent().getRootControl();
-    if (!root) throw new Error("Root view not available");
-
-    const nav = root.byId(navContainerId);
-    if (!nav) throw new Error(`NavContainer '${navContainerId}' not found`);
-
-    const page = root.byId(pageId);
-    if (!page) {
-      MessageToast.show("Claim Submission page not found.");
-      return;
-    }
-    nav.to(page);
-  }
-
-  /* ---------------------------
    * Main: onRowPress
    * --------------------------- */
   async function onRowPress({
@@ -563,7 +545,6 @@ sap.ui.define([
       await loadClaimById(controller, String(id));
 
       // 2) Navigate
-      // await navToClaimPage(controller, { navContainerId, pageId });
       const oRouter =  controller.getOwnerComponent().getRouter();
       oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(id)) });
 
@@ -581,7 +562,6 @@ sap.ui.define([
   return {
     onRowPress,
     loadClaimById,
-    navToClaimPage,
     ensureModelReady
   };
 });

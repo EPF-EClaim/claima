@@ -116,10 +116,6 @@
                     <NavContainer
                         id="navcontainer_claimsubmission"
                     >
-                        <!-- <mvc:XMLView
-                            id="view_claimsubmission"
-                            viewName="claima.view.ClaimSubmission"
-                        /> -->
                     </NavContainer>
 
                     <ScrollContainer
