@@ -362,41 +362,41 @@ sap.ui.define([
                 console.log("success");
                 
                 if(apprEmpID[0] != "Auto"){
-                    var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+                    const oListApprDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
                         new Filter({ path: "EEID", operator: "EQ", value1: apprEmpID[0] })
                     ], null);
-                    const aApprNameContexts = await oListBinding.requestContexts();
+                    const aApprNameContexts = await oListApprDetailsBinding.requestContexts();
                     const aApprNameData = aApprNameContexts.map(oContext => oContext.getObject());
                     
-                    var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+                    const oListClaimantDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
                         new Filter({ path: "EEID", operator: "EQ", value1: empID })
                     ], null);
-                    const aClaimantNameContexts = await oListBinding.requestContexts();
+                    const aClaimantNameContexts = await oListClaimantDetailsBinding.requestContexts();
                     const aClaimantNameData = aClaimantNameContexts.map(oContext => oContext.getObject());
 
                     if(apprEmpID.length != 1){
-                        var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+                        const oListNextApprBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
                         new Filter({ path: "EEID", operator: "EQ", value1: apprEmpID[1] })
                         ], null);
-                        const aNextApprNameContexts = await oListBinding.requestContexts();
+                        const aNextApprNameContexts = await oListNextApprBinding.requestContexts();
                         var aNextApprNameData = aNextApprNameContexts.map(oContext => oContext.getObject());
                         var nextApprName = aNextApprNameData[0].NAME;
                     }else{
                         nextApprName = null;
                     }
                 
-                    var oListBinding = oModel.bindList("/ZSUBMISSION_TYPE", null,null, [
+                    const oListSubTypeBinding = oModel.bindList("/ZSUBMISSION_TYPE", null,null, [
                         new Filter({ path: "SUBMISSION_TYPE_ID", operator: "EQ", value1: claimsSubmissionType })
                     ], null);
-                    const aSubmissionTypeNameContexts = await oListBinding.requestContexts();
+                    const aSubmissionTypeNameContexts = await oListSubTypeBinding.requestContexts();
                     const aSubmissionTypeNameData = aSubmissionTypeNameContexts.map(oContext => oContext.getObject());
 
                     if(subEmpID[0] != null){
 
-                        var oListBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
+                        const oListSubDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
                         new Filter({ path: "EEID", operator: "EQ", value1: subEmpID[0] })
                         ], null);
-                        const aApprSubNameContexts = await oListBinding.requestContexts();
+                        const aApprSubNameContexts = await oListSubDetailsBinding.requestContexts();
                         const aApprSubNameData = aApprSubNameContexts.map(oContext => oContext.getObject());
 
                         var payloadSub ={
