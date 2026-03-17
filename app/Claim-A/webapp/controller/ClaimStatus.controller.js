@@ -4,8 +4,9 @@ sap.ui.define([
 	"sap/m/MessageToast",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
-	"sap/ui/model/Sorter"
-], function (Controller, JSONModel, MessageToast, Filter, FilterOperator, Sorter) {
+	"sap/ui/model/Sorter",
+	"claima/utils/GetTexti18n"
+], function (Controller, JSONModel, MessageToast, Filter, FilterOperator, Sorter, GetTexti18n) {
 	"use strict";
 
 	return Controller.extend("claima.controller.ClaimStatus", {
@@ -55,7 +56,7 @@ sap.ui.define([
 				}
 
 				if (!oCtx) {
-					MessageToast.show("Select a claim to open");
+					MessageToast.show(GetTexti18n.getText(this, "msg_claimstatus_select"));
 					return;
 				}
 
@@ -68,7 +69,7 @@ sap.ui.define([
 					null;
 
 				if (!sClaimId) {
-					MessageToast.show("Claim ID is missing on the selected row.");
+					MessageToast.show(GetTexti18n.getText(this, "msg_claimstatus_missing"));
 					return;
 				}
 
@@ -80,7 +81,7 @@ sap.ui.define([
                 oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
 			} catch (e) {
 				sap.base.Log.error("openItemFromClaimList failed:", e);
-				MessageToast.show("Failed to open the selected claim.");
+				MessageToast.show(GetTexti18n.getText(this, "msg_claimstatus_failed"));
 			} finally {
 				this.getView().setBusy(false);
 			}
@@ -233,7 +234,7 @@ sap.ui.define([
 				// Header
 				const oHeaderRaw = aHeaderCtx[0]?.getObject();
 				if (!oHeaderRaw) {
-					MessageToast.show("No claim header found for the selected item.");
+					MessageToast.show(GetTexti18n.getText(this, "msg_claimstatus_header"));
 					oClaimInput.setProperty("/claim_header", {});
 					oClaimInput.setProperty("/claim_items", []);
 					oClaimInput.setProperty("/claim_items_count", 0);

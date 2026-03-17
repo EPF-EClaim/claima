@@ -10,8 +10,9 @@ sap.ui.define([
     "sap/m/Label",
     "sap/ui/core/Fragment",
     "sap/ui/export/Spreadsheet",
-    "sap/ui/core/BusyIndicator"
-], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, Sorter, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator) {
+    "sap/ui/core/BusyIndicator",
+	"claima/utils/GetTexti18n"
+], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, Sorter, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator, GetTexti18n) {
     "use strict";
 
     return Controller.extend("claima.controller.MyApproval", {
@@ -87,7 +88,7 @@ sap.ui.define([
                 }
 
                 if (!oCtx) {
-                    MessageToast.show("Select an item to open");
+                    MessageToast.show(GetTexti18n.getText(this, "msg_approval_select_req"));
                     return;
                 }
 
@@ -102,7 +103,7 @@ sap.ui.define([
                     row.PREAPPROVAL_ID;           // fallback only if header view can be filtered by it
 
                 if (!sRequestId) {
-                    MessageToast.show("Request ID is missing on the selected row.");
+                    MessageToast.show(GetTexti18n.getText(this, "msg_approval_missing_req"));
                     return;
                 }
 
@@ -119,7 +120,7 @@ sap.ui.define([
                 oRouter.navTo("RequestForm", { request_id: encodeURIComponent(String(sRequestId)) });
             } catch (e) {
                 jQuery.sap.log.error("openItemFromList failed: " + e);
-                MessageToast.show("Failed to open the selected item.");
+                MessageToast.show(GetTexti18n.getText(this, "msg_approval_failed_req"));
             } finally {
                 this.getView().setBusy(false);
             }
@@ -186,7 +187,7 @@ sap.ui.define([
                 // --- Header ---
                 const oHeader = aHeaderCtx[0]?.getObject();
                 if (!oHeader) {
-                    MessageToast.show("No header found for the selected request.");
+                    MessageToast.show(GetTexti18n.getText(this, "msg_approval_header_req"));
                     // Clear and bail gracefully
                     oReq.setProperty("/req_header", {});
                     oReq.setProperty("/req_item_rows", []);
@@ -288,7 +289,7 @@ sap.ui.define([
                 }
 
                 if (!oCtx) {
-                    MessageToast.show("Select a claim to open");
+                    MessageToast.show(GetTexti18n.getText(this, "msg_approval_select_clm"));
                     return;
                 }
 
@@ -301,7 +302,7 @@ sap.ui.define([
                     null;
 
                 if (!sClaimId) {
-                    MessageToast.show("Claim ID is missing on the selected row.");
+                    MessageToast.show(GetTexti18n.getText(this, "msg_approval_missing_clm"));
                     return;
                 }
 
@@ -313,7 +314,7 @@ sap.ui.define([
                 oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
             } catch (e) {
                 console.log("openItemFromClaimList failed:", e);
-                MessageToast.show("Failed to open the selected claim.");
+                MessageToast.show(GetTexti18n.getText(this, "msg_approval_failed_clm"));
             } finally {
                 this.getView().setBusy(false);
             }
@@ -469,7 +470,7 @@ sap.ui.define([
                 // Header
                 const oHeaderRaw = aHeaderCtx[0]?.getObject();
                 if (!oHeaderRaw) {
-                    MessageToast.show("No claim header found for the selected item.");
+                    MessageToast.show(GetTexti18n.getText(this, "msg_approval_header_clm"));
                     oClaimInput.setProperty("/claim_header", {});
                     oClaimInput.setProperty("/claim_items", []);
                     oClaimInput.setProperty("/claim_items_count", 0);
