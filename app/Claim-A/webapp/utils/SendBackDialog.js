@@ -173,8 +173,7 @@ sap.ui.define([
       }),
       endButton: new Button(oView.createId("sendback_placeholder_submit"), {
         text: "{i18n>sendback_btn}",
-        type: "Emphasized",
-        // UX: enable only when both reason and comment present
+        type: sap.m.ButtonType.Emphasized,
         enabled: "{= !!${Reject>/sendBackReasonKey} && !!${Reject>/approvalComment} }",
         press: submitHandler.bind(oController)
       })

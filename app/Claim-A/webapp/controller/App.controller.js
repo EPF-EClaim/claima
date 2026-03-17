@@ -130,9 +130,9 @@ sap.ui.define([
 			});
 
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			// var oUserModel = new sap.ui.model.json.JSONModel({ email: "Jefry.Yap@my.ey.com" });
+			// var oUserModel = new sap.ui.model.json.JSONModel({ email: "jefry.yap@my.ey.com" });
 			// this.getView().setModel(oUserModel, 'user');
-			// const emp_data = await this._getEmpIdDetail("Jefry.Yap@my.ey.com");
+			// const emp_data = await this._getEmpIdDetail("jefry.yap@my.ey.com");
 			// const oReqModel = this._getReqModel().getData();
 			// oReqModel.user = emp_data.eeid;
 			// this._getReqModel().setData(oReqModel);
@@ -2019,7 +2019,7 @@ sap.ui.define([
 					oReqModel.setProperty("/req_header/reqstatus", 'DRAFT');
 					oReqModel.setProperty("/req_header/costcenter", sCostCenter);
 					oReqModel.setProperty("/eeid", emp_data.eeid);
-					this._getItemList(oResult.reqNo);
+					// PARequestSharedFunction._getItemList(this, oResult.reqNo, true);
 					//oResult.reqNo send this to approval determination
 
 					var oRouter = this.getOwnerComponent().getRouter();
@@ -2200,11 +2200,11 @@ sap.ui.define([
 				if (aContexts.length === 0) throw new Error("Range ID not found");
 
 				const oData = aContexts[0].getObject();
-				// const prefix = oData.PREFIX;
+				const prefix = oData.PREFIX;
 				const current = Number(oData.CURRENT);
 				const yy = String(new Date().getFullYear()).slice(-2);
-				// const reqNo = `${prefix}${yy}${String(current).padStart(9, "0")}`;
-				const reqNo = `REQ${yy}${String(current).padStart(9, "0")}`;
+				const reqNo = `${prefix}${yy}${String(current).padStart(9, "0")}`;
+				// const reqNo = `REQ${yy}${String(current).padStart(9, "0")}`;
 
 				return { reqNo, current };
 			} catch (err) {
@@ -2340,28 +2340,13 @@ sap.ui.define([
 		},
 
 		//For MyClaimStatus
-
 		getCLAIMHeaderList: async function () {
 			const oReq = this.getOwnerComponent().getModel("claim_status2");
 			const oModel = this.getOwnerComponent().getModel("employee_view");
-			var oFilter = [];
-
-			// get user ID
-			var userID;
-			if (this.getView().getModel("userId")) {
-				userID = this.getView().getModel("userId").getProperty("/userId");
-				if (userID) {
-					oFilter.push(new Filter("EMP_ID", "EQ", userID));
-				}
-			}
-			// null filter if no items
-			if (!oFilter.length) {
-				oFilter = null;
-			}
 
 			const oListBinding = oModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", undefined,
-				[new Sorter("LAST_MODIFIED_DATE", true)],
-				oFilter,
+				[new Sorter("modifiedAt", true)],
+				null,
 				{
 					$$ownRequest: true,
 					$$groupId: "$auto",

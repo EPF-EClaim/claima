@@ -1,12 +1,5 @@
 using {eclaim_srv as service} from './eclaim_srv';
 
-annotate service.ZRISK with {
-    END_DATE @assert: (case
-                           when END_DATE < START_DATE
-                                then 'End date should not be earlier than start date'
-                       end);
-};
-
 annotate service.ZRISK with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
@@ -191,13 +184,13 @@ annotate service.ZCLAIM_TYPE with @(
             },
             {
                 $Type: 'UI.DataField',
-                Value: END_DATE,
-                Label: 'End Date'
-            },
-            {
-                $Type: 'UI.DataField',
                 Value: START_DATE,
                 Label: 'Start Date'
+            },            
+            {
+                $Type: 'UI.DataField',
+                Value: END_DATE,
+                Label: 'End Date'
             },
             {
                 $Type: 'UI.DataField',

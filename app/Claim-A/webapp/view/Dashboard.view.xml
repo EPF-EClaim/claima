@@ -20,7 +20,7 @@
                 height="100%"
             >
                 <VBox width="100%">
-                    <HBox>
+                    <HBox wrap="Wrap" fitContainer="true" justifyContent="Start">
                         <Panel
                             width="100%"
                             height="4rem"
@@ -71,7 +71,7 @@
                         </Panel>
 
                         <Panel
-                            width="120%"
+                            width="100%"
                             height="4rem"
                             class="sapUiMediumMarginBeginEnd sapUiMediumMarginTopBottom"
                         >

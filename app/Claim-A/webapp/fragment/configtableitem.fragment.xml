@@ -22,15 +22,15 @@
                 <Text text="{CLAIM_TYPE_DESC}" />
             </HBox>
             <HBox>
-                <Text text="{i18n>label_claimdetails_input_enddate}: " />
-                <Text
-                    text="{path: 'END_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
-                />
-            </HBox>
-            <HBox>
                 <Text text="{i18n>label_claimdetails_input_startdate}: " />
                 <Text
                     text="{path: 'START_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
+                />
+            </HBox>
+            <HBox>
+                <Text text="{i18n>label_claimdetails_input_enddate}: " />
+                <Text
+                    text="{path: 'END_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
                 />
             </HBox>
             <HBox>
@@ -91,15 +91,6 @@
                         <Text text="{i18n>claimdesc}" />
                     </Column>
                     <Column>
-                        <Text text="{i18n>req_i_end_date}" />
-                    </Column>
-                    <Column>
-                        <Text text="{i18n>req_i_start_date}" />
-                    </Column>
-                    <Column>
-                        <Text text="{i18n>appr_status}" />
-                    </Column>
-                    <Column>
                         <Text text="{i18n>categoryid}" />
                     </Column>
                     <Column>
@@ -114,6 +105,15 @@
                     <Column>
                         <Text text="{i18n>submitted_type}" />
                     </Column>
+                    <Column>
+                        <Text text="{i18n>req_i_start_date}" />
+                    </Column>
+                    <Column>
+                        <Text text="{i18n>req_i_end_date}" />
+                    </Column>
+                    <Column>
+                        <Text text="{i18n>appr_status}" />
+                    </Column>
                 </columns>
 
                 <items>
@@ -121,14 +121,14 @@
                         <cells>
                             <Text text="{CLAIM_TYPE_ITEM_ID}" />
                             <Text text="{CLAIM_TYPE_ITEM_DESC}" />
-                            <Text text="{END_DATE}" />
-                            <Text text="{START_DATE}" />
-                            <Text text="{STATUS}" />
                             <Text text="{CATEGORY_ID}" />
                             <Text text="{COST_CENTER}" />
                             <Text text="{MATERIAL_CODE}" />
                             <Text text="{RISK}" />
                             <Text text="{SUBMISSION_TYPE}" />
+                            <Text text="{START_DATE}" />                            
+                            <Text text="{END_DATE}" />
+                            <Text text="{STATUS}" />                            
                         </cells>
                     </ColumnListItem>
                 </items>

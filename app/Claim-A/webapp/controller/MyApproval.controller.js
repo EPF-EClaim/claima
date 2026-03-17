@@ -2,13 +2,7 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/m/MessageToast",
     "sap/ui/model/json/JSONModel",
-    "sap/m/Dialog",
-    "sap/m/Button",
-    "sap/m/Label",
-    "sap/ui/core/Fragment",
-    "sap/ui/export/Spreadsheet",
-    "sap/ui/core/BusyIndicator"
-], function (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator) {
+], function (Controller, MessageToast, JSONModel) {
     "use strict";
 
     return Controller.extend("claima.controller.MyApproval", {
@@ -56,7 +50,7 @@ sap.ui.define([
             const { oRootView, oPageContainer } = this._getRootAndContainer();
             const oClaimSubmission = oRootView.byId("navcontainer_claimsubmission"); // <-- matches App.view.xml
             if (!oClaimSubmission) {
-                sap.m.MessageToast.show("Claim Submission page not found.");
+                MessageToast.show("Claim Submission page not found.");
                 return;
             }
 			// var oRouter = this.getOwnerComponent().getRouter();
@@ -97,7 +91,7 @@ sap.ui.define([
                 }
 
                 if (!oCtx) {
-                    sap.m.MessageToast.show("Select an item to open");
+                    MessageToast.show("Select an item to open");
                     return;
                 }
 
@@ -112,7 +106,7 @@ sap.ui.define([
                     row.PREAPPROVAL_ID;           // fallback only if header view can be filtered by it
 
                 if (!sRequestId) {
-                    sap.m.MessageToast.show("Request ID is missing on the selected row.");
+                    MessageToast.show("Request ID is missing on the selected row.");
                     return;
                 }
 
@@ -129,7 +123,7 @@ sap.ui.define([
                 oRouter.navTo("RequestForm", { request_id: encodeURIComponent(String(sRequestId)) });
             } catch (e) {
                 jQuery.sap.log.error("openItemFromList failed: " + e);
-                sap.m.MessageToast.show("Failed to open the selected item.");
+                MessageToast.show("Failed to open the selected item.");
             } finally {
                 this.getView().setBusy(false);
             }
@@ -196,7 +190,7 @@ sap.ui.define([
                 // --- Header ---
                 const oHeader = aHeaderCtx[0]?.getObject();
                 if (!oHeader) {
-                    sap.m.MessageToast.show("No header found for the selected request.");
+                    MessageToast.show("No header found for the selected request.");
                     // Clear and bail gracefully
                     oReq.setProperty("/req_header", {});
                     oReq.setProperty("/req_item_rows", []);
@@ -298,7 +292,7 @@ sap.ui.define([
                 }
 
                 if (!oCtx) {
-                    sap.m.MessageToast.show("Select a claim to open");
+                    MessageToast.show("Select a claim to open");
                     return;
                 }
 
@@ -311,7 +305,7 @@ sap.ui.define([
                     null;
 
                 if (!sClaimId) {
-                    sap.m.MessageToast.show("Claim ID is missing on the selected row.");
+                    MessageToast.show("Claim ID is missing on the selected row.");
                     return;
                 }
 
@@ -323,7 +317,7 @@ sap.ui.define([
 
             } catch (e) {
                 console.log("openItemFromClaimList failed:", e);
-                sap.m.MessageToast.show("Failed to open the selected claim.");
+                MessageToast.show("Failed to open the selected claim.");
             } finally {
                 this.getView().setBusy(false);
             }
@@ -338,7 +332,7 @@ sap.ui.define([
             if (oModel) return oModel;
 
             // Last resort: create at component so other views can reuse it
-            oModel = new sap.ui.model.json.JSONModel({
+            oModel = new JSONModel({
                 emp_master: {},
                 claim_header: {},
                 claim_items: [],
@@ -479,7 +473,7 @@ sap.ui.define([
                 // Header
                 const oHeaderRaw = aHeaderCtx[0]?.getObject();
                 if (!oHeaderRaw) {
-                    sap.m.MessageToast.show("No claim header found for the selected item.");
+                    MessageToast.show("No claim header found for the selected item.");
                     oClaimInput.setProperty("/claim_header", {});
                     oClaimInput.setProperty("/claim_items", []);
                     oClaimInput.setProperty("/claim_items_count", 0);

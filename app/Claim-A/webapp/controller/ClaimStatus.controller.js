@@ -35,7 +35,7 @@ sap.ui.define([
 			const { oRootView, oPageContainer } = this._getRootAndContainer();
 			const oClaimSubmission = oRootView.byId("navcontainer_claimsubmission"); // <-- matches App.view.xml
 			if (!oClaimSubmission) {
-				sap.m.MessageToast.show("Claim Submission page not found.");
+				MessageToast.show("Claim Submission page not found.");
 				return;
 			}
 			// var oRouter = this.getOwnerComponent().getRouter();
@@ -66,7 +66,7 @@ sap.ui.define([
 				}
 
 				if (!oCtx) {
-					sap.m.MessageToast.show("Select a claim to open");
+					MessageToast.show("Select a claim to open");
 					return;
 				}
 
@@ -79,7 +79,7 @@ sap.ui.define([
 					null;
 
 				if (!sClaimId) {
-					sap.m.MessageToast.show("Claim ID is missing on the selected row.");
+					MessageToast.show("Claim ID is missing on the selected row.");
 					return;
 				}
 
@@ -91,7 +91,7 @@ sap.ui.define([
 
 			} catch (e) {
 				sap.base.Log.error("openItemFromClaimList failed:", e);
-				sap.m.MessageToast.show("Failed to open the selected claim.");
+				MessageToast.show("Failed to open the selected claim.");
 			} finally {
 				this.getView().setBusy(false);
 			}
@@ -107,7 +107,7 @@ sap.ui.define([
 			if (oModel) return oModel;
 
 			// Last resort: create at component so other views can reuse it
-			oModel = new sap.ui.model.json.JSONModel({
+			oModel = new JSONModel({
 				claim_header: {},
 				claim_items: [],
 				claim_items_count: 0,
@@ -243,7 +243,7 @@ sap.ui.define([
 				// Header
 				const oHeaderRaw = aHeaderCtx[0]?.getObject();
 				if (!oHeaderRaw) {
-					sap.m.MessageToast.show("No claim header found for the selected item.");
+					MessageToast.show("No claim header found for the selected item.");
 					oClaimInput.setProperty("/claim_header", {});
 					oClaimInput.setProperty("/claim_items", []);
 					oClaimInput.setProperty("/claim_items_count", 0);

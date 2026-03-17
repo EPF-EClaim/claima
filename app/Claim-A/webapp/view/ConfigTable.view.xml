@@ -72,12 +72,6 @@
                             <Text text="{i18n>glacct}" />
                         </Column>
                         <Column>
-                            <Text text="{i18n>req_i_end_date}" />
-                        </Column>
-                        <Column>
-                            <Text text="{i18n>start_date}" />
-                        </Column>
-                        <Column>
                             <Text text="{i18n>req_rtype}" />
                         </Column>
                         <Column>
@@ -85,7 +79,13 @@
                         </Column>
                         <Column>
                             <Text text="{i18n>projclaim}" />
-                        </Column>     
+                        </Column> 
+                        <Column>
+                            <Text text="{i18n>start_date}" />
+                        </Column> 
+                        <Column>
+                            <Text text="{i18n>req_i_end_date}" />
+                        </Column>  
                         <Column>
                             <Text text="{i18n>appr_status}" />
                         </Column>                                                                                           
@@ -103,15 +103,15 @@
 
                                 <Text text="{GL_ACCOUNT}" />
 
-                                <Text text="{END_DATE}"/>
-
-                                <Text text="{START_DATE}" />
-
                                 <Text text="{REQUEST_TYPE}" />
 
                                 <Text text="{IND_OR_GROUP}" />
 
                                 <Text text="{PROJECT_CLAIM}" />
+
+                                <Text text="{START_DATE}" />  
+
+                                <Text text="{END_DATE}"/>
 
                                 <Text text="{STATUS}" />
 
