@@ -1,9 +1,8 @@
 sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
-	"sap/ui/model/Sorter",
 	"sap/m/MessageToast",
-], function (Filter, FilterOperator, Sorter, MessageToast) {
+], function (Filter, FilterOperator, MessageToast) {
     "use strict";
 
     return {
@@ -38,13 +37,13 @@ sap.ui.define([
 
 				// set filters
 				var oFilter = [
-					new Filter("YEAR", "EQ", sYYYY),
-					new Filter("FUND_CENTER", "EQ", sFundCenter),			// Cost Center
-					new Filter("COMMITMENT_ITEM", "EQ", sGLAccount),		// GL Accont
-					new Filter("MATERIAL_GROUP", "EQ", sMaterialCode)		// Material Code
+					new Filter("YEAR", FilterOperator.EQ, sYYYY),
+					new Filter("FUND_CENTER", FilterOperator.EQ, sFundCenter),			// Cost Center
+					new Filter("COMMITMENT_ITEM", FilterOperator.EQ, sGLAccount),		// GL Accont
+					new Filter("MATERIAL_GROUP", FilterOperator.EQ, sMaterialCode)		// Material Code
 				];
 				if (proj_code) { // proj_code is not null
-					oFilter.push(new Filter("INTERNAL_ORDER", "EQ", sInternalOrder));	// Project Code
+					oFilter.push(new Filter("INTERNAL_ORDER", FilterOperator.EQ, sInternalOrder));	// Project Code
 				}
 
 				const oListBinding = oModel.bindList("/ZBUDGET", null, null, oFilter);

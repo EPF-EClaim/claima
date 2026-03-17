@@ -2,7 +2,16 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/m/MessageToast",
     "sap/ui/model/json/JSONModel",
-], function (Controller, MessageToast, JSONModel) {
+    "sap/ui/model/Filter",
+    "sap/ui/model/FilterOperator",
+    "sap/ui/model/Sorter",
+    "sap/m/Dialog",
+    "sap/m/Button",
+    "sap/m/Label",
+    "sap/ui/core/Fragment",
+    "sap/ui/export/Spreadsheet",
+    "sap/ui/core/BusyIndicator"
+], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, Sorter, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator) {
     "use strict";
 
     return Controller.extend("claima.controller.MyApproval", {
@@ -45,19 +54,6 @@ sap.ui.define([
             return { oRootView, oPageContainer };
         },
 
-        /** Navigate manually to Claim Submission (same style as ClaimStatus.controller) */
-        _navToClaimSubmissionManual: function () {
-            const { oRootView, oPageContainer } = this._getRootAndContainer();
-            const oClaimSubmission = oRootView.byId("navcontainer_claimsubmission"); // <-- matches App.view.xml
-            if (!oClaimSubmission) {
-                MessageToast.show("Claim Submission page not found.");
-                return;
-            }
-			// var oRouter = this.getOwnerComponent().getRouter();
-			// var sHash = sap.ui.core.routing.HashChanger.getInstance().replaceHash("");
-            oPageContainer.to(oClaimSubmission);
-        },
-
 
 
         /* =========================================================
@@ -91,7 +87,7 @@ sap.ui.define([
                 }
 
                 if (!oCtx) {
-                    MessageToast.show("Select an item to open");
+                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_select_req"));
                     return;
                 }
 
@@ -106,7 +102,7 @@ sap.ui.define([
                     row.PREAPPROVAL_ID;           // fallback only if header view can be filtered by it
 
                 if (!sRequestId) {
-                    MessageToast.show("Request ID is missing on the selected row.");
+                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_missing_req"));
                     return;
                 }
 
@@ -123,7 +119,7 @@ sap.ui.define([
                 oRouter.navTo("RequestForm", { request_id: encodeURIComponent(String(sRequestId)) });
             } catch (e) {
                 jQuery.sap.log.error("openItemFromList failed: " + e);
-                MessageToast.show("Failed to open the selected item.");
+                MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_failed_req"));
             } finally {
                 this.getView().setBusy(false);
             }
@@ -141,7 +137,7 @@ sap.ui.define([
 
             // Build a shared filter for both calls
             const aFilters = [
-                new sap.ui.model.Filter("REQUEST_ID", sap.ui.model.FilterOperator.EQ, sReq)
+                new Filter("REQUEST_ID", FilterOperator.EQ, sReq)
             ];
 
             // Header binding (should return one row)
@@ -169,7 +165,7 @@ sap.ui.define([
             const oItemBinding = oModel.bindList(
                 "/ZEMP_REQUEST_ITEM_VIEW",
                 null,
-                [new sap.ui.model.Sorter("REQUEST_SUB_ID", false)],
+                [new Sorter("REQUEST_SUB_ID", false)],
                 aFilters,
                 {
                     $$ownRequest: true,
@@ -190,7 +186,7 @@ sap.ui.define([
                 // --- Header ---
                 const oHeader = aHeaderCtx[0]?.getObject();
                 if (!oHeader) {
-                    MessageToast.show("No header found for the selected request.");
+                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_header_req"));
                     // Clear and bail gracefully
                     oReq.setProperty("/req_header", {});
                     oReq.setProperty("/req_item_rows", []);
@@ -292,7 +288,7 @@ sap.ui.define([
                 }
 
                 if (!oCtx) {
-                    MessageToast.show("Select a claim to open");
+                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_select_clm"));
                     return;
                 }
 
@@ -305,19 +301,19 @@ sap.ui.define([
                     null;
 
                 if (!sClaimId) {
-                    MessageToast.show("Claim ID is missing on the selected row.");
+                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_missing_clm"));
                     return;
                 }
 
                 // Load claim header + items and populate claimsubmission_input model
                 await this._loadClaimById(String(sClaimId));
 
-                // === Manual navigation to Claim Submission (like ClaimStatus.controller) ===
-                this._navToClaimSubmissionManual();
-
+                // Navigate to claim submission ID
+                const oRouter = this.getOwnerComponent().getRouter();
+                oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
             } catch (e) {
                 console.log("openItemFromClaimList failed:", e);
-                MessageToast.show("Failed to open the selected claim.");
+                MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_failed_clm"));
             } finally {
                 this.getView().setBusy(false);
             }
@@ -338,7 +334,8 @@ sap.ui.define([
                 claim_items: [],
                 claim_items_count: 0,
                 is_new: false,
-                is_approver: true
+                is_approver: true,
+				view_only: true
             });
             this.getOwnerComponent().setModel(oModel, "claimsubmission_input");
 
@@ -421,7 +418,7 @@ sap.ui.define([
 			const oModel2 = this.getOwnerComponent().getModel();
             const sId = String(sClaimId);
 
-            const aFilters = [new sap.ui.model.Filter("CLAIM_ID", sap.ui.model.FilterOperator.EQ, sId)];
+            const aFilters = [new Filter("CLAIM_ID", FilterOperator.EQ, sId)];
 
             // Header binding
             const oHeaderBinding = oModel.bindList(
@@ -432,7 +429,6 @@ sap.ui.define([
                 {
                     $$ownRequest: true,
                     $count: true,
-                    // $select: ["CLAIM_ID","EMP_ID","COST_CENTER","ALTERNATE_COST_CENTER","CLAIM_TYPE_ID","STATUS_ID","PREAPPROVED_AMOUNT","ATTACHMENT_EMAIL_APPROVER","CASH_ADVANCE_AMOUNT","COMMENT","DIST_OLD_HOUSE_TO_NEW_HOUSE_KM","DIST_OLD_HOUSE_TO_OFFICE_KM","EVENT_END_DATE","EVENT_START_DATE","FINAL_AMOUNT_TO_RECEIVE","HOUSE_COMPLETION_DATE","HOUSING_LOAN_SCHEME","LAST_APPROVED_DATE","LAST_APPROVED_TIME","LAST_MODIFIED_DATE","LENDER_NAME","LOCATION","MOVE_IN_DATE","NEW_HOUSE_ADDRESS","PAYMENT_DATE","PURPOSE","REQUEST_ID","SPECIFY_DETAILS","SPOUSE_OFFICE_ADDRESS","SUBMISSION_TYPE","SUBMITTED_DATE","TOTAL_CLAIM_AMOUNT","TRIP_END_DATE","TRIP_START_DATE"]
                     $select: ["*"]
                 }
             );
@@ -441,7 +437,7 @@ sap.ui.define([
             const oItemBinding = oModel2.bindList(
                 "/ZCLAIM_ITEM", // <-- adjust if different
                 null,
-                [new sap.ui.model.Sorter("CLAIM_SUB_ID", false)],
+                [new Sorter("CLAIM_SUB_ID", false)],
                 aFilters,
                 {
                     $$ownRequest: true,
@@ -454,7 +450,7 @@ sap.ui.define([
             const oItemDescrBinding = oModel.bindList(
                 "/ZEMP_CLAIM_ITEM_VIEW", // <-- adjust if different
                 null,
-                [new sap.ui.model.Sorter("CLAIM_SUB_ID", false)],
+                [new Sorter("CLAIM_SUB_ID", false)],
                 aFilters,
                 {
                     $$ownRequest: true,
@@ -473,7 +469,7 @@ sap.ui.define([
                 // Header
                 const oHeaderRaw = aHeaderCtx[0]?.getObject();
                 if (!oHeaderRaw) {
-                    MessageToast.show("No claim header found for the selected item.");
+                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_header_clm"));
                     oClaimInput.setProperty("/claim_header", {});
                     oClaimInput.setProperty("/claim_items", []);
                     oClaimInput.setProperty("/claim_items_count", 0);
@@ -703,7 +699,7 @@ sap.ui.define([
 		async _getEmpIdDetail(sEEID) {
 			const oModel = this.getOwnerComponent().getModel();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new sap.ui.model.Filter("EEID", "EQ", sEEID)
+				new Filter("EEID", FilterOperator.EQ, sEEID)
 			]);
 
 			try {
@@ -782,10 +778,10 @@ sap.ui.define([
 			if (oModel.getProperty("/emp_master/unit_section")) {
 				oModel.setProperty("/emp_master/descr/unit_section", await this._bindEclaimDescr("/ZBRANCH", oModel.getProperty("/emp_master/unit_section"), 'BRANCH_ID', 'BRANCH_DESC'));
 			}
-			// // marital status
-			// if (oModel.getProperty("/emp_master/marital")) {
-			// 	oModel.setProperty("/emp_master/descr/marital", await this._bindEclaimDescr("/ZMARITAL_STAT", oModel.getProperty("/emp_master/marital"), 'MARRIAGE_CATEGORY_ID', 'MARRIAGE_CATEGORY_DESC'));
-			// }
+			// marital status
+			if (oModel.getProperty("/emp_master/marital")) {
+				oModel.setProperty("/emp_master/descr/marital", await this._bindEclaimDescr("/ZMARITAL_STAT", oModel.getProperty("/emp_master/marital"), 'MARRIAGE_STATUS_ID', 'MARRIAGE_STATUS_DESC'));
+			}
 			// job group
 			if (oModel.getProperty("/emp_master/job_group")) {
 				oModel.setProperty("/emp_master/descr/job_group", await this._bindEclaimDescr("/ZJOB_GROUP", oModel.getProperty("/emp_master/job_group"), 'JOB_GROUP_ID', 'JOB_GROUP_DESC'));
@@ -829,11 +825,11 @@ sap.ui.define([
 
 		_bindEclaimDescr: async function (oTable, oInputValue, oFieldId, oFieldDescr, oInputValue2, oFieldId2) {
 			const oModel = this.getOwnerComponent().getModel();
-			var filterArray = [new sap.ui.model.Filter(oFieldId, "EQ", oInputValue)];
+			var aFilterArray = [new Filter(oFieldId, FilterOperator.EQ, oInputValue)];
 			if (oFieldId2) {
-				filterArray = filterArray.concat(new sap.ui.model.Filter(oFieldId2, "EQ", oInputValue2));
+				aFilterArray = aFilterArray.concat(new Filter(oFieldId2, FilterOperator.EQ, oInputValue2));
 			}
-			const oListBinding = oModel.bindList(oTable, null, null, filterArray);
+			const oListBinding = oModel.bindList(oTable, null, null, aFilterArray);
 
 			try {
 				const aContexts = await oListBinding.requestContexts(0, 1);

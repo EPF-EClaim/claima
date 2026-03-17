@@ -442,11 +442,6 @@
                     "target": "Analytics"
                 },
                 {
-                    "pattern": "ClaimStatus",
-                    "name": "ClaimStatus",
-                    "target": "ClaimStatus"
-                },
-                {
                     "pattern": "MyApproval",
                     "name": "MyApproval",
                     "target": "MyApproval"
@@ -475,6 +470,11 @@
                     "pattern": "ClaimSubmission/{claim_id}",
                     "name": "ClaimSubmission",
                     "target": "ClaimSubmission"
+                },
+                {
+                    "pattern": "ClaimStatus",
+                    "name": "ClaimStatus",
+                    "target": "ClaimStatus"
                 },
                 {
                     "pattern": "ManageSub",
@@ -3883,14 +3883,6 @@
                     "viewType": "XML",
                     "transition": "slide"
                 },
-                "ClaimStatus": {
-                    "id": "ClaimStatus",
-                    "path": "claima.view",
-                    "name": "ClaimStatus",
-                    "type": "View",
-                    "viewType": "XML",
-                    "transition": "slide"
-                },
                 "MyApproval": {
                     "id": "MyApproval",
                     "path": "claima.view",
@@ -3927,6 +3919,14 @@
                     "id": "ClaimSubmission",
                     "path": "claima.view",
                     "name": "ClaimSubmission",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
+                "ClaimStatus": {
+                    "id": "ClaimStatus",
+                    "path": "claima.view",
+                    "name": "ClaimStatus",
                     "type": "View",
                     "viewType": "XML",
                     "transition": "slide"
