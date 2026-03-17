@@ -202,13 +202,8 @@ sap.ui.define([
 					this._navToPARStatus();
 					break;
 				case "mysubstitution":
-					// if (type === "Approver" || type === "Super Admin") {
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("ManageSub");
-					// } else {
-					// 	var message = this.getView().getModel("i18n").getResourceBundle().getText("msg_unauthorized_substitution");
-					// 	sap.m.MessageBox.error(message);
-					// }
 					break;
 				case "config":
 					//Start EY_ATHIRAH
@@ -1048,8 +1043,19 @@ sap.ui.define([
 					oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
 				}
 				else {
-					console.log(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_claimid"));
-					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_claimid"));
+					this.oDialog = new Dialog({
+						title: this.getView().getModel("i18n").getResourceBundle().getText("dialog_claiminput_claimid"),
+						type: "Message",
+						state: "None",
+						content: [new Label({ text: this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_claimid") })],
+						endButton: new Button({
+							text: this.getView().getModel("i18n").getResourceBundle().getText("endbutton_claiminput_claimid"),
+							press: function () {
+								this.oDialog.close();
+							}
+						})
+					});
+					this.oDialog.open();
 					return;
 				}
 			}
