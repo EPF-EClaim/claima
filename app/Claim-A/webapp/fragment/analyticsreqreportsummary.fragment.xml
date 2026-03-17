@@ -249,7 +249,7 @@
                             <table:Column width="12rem">
                                 <Label text="{i18n>pre_app_status}" />
                                 <table:template>
-                                    <Text text="{employee_view>STATUS}" />
+                                    <Text text="{employee_view>STATUS_DESC}" />
                                 </table:template>
                             </table:Column>
 
@@ -423,7 +423,7 @@
                 />
                 <Button
                     id="btnCloseAnalytics_reqsum"
-                    text="Back"
+                    text="{i18n>back}"
                     press=".onBackFromAnalyticsClaimReport"
                 />
             </Toolbar>
