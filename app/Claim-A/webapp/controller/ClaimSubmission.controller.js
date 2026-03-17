@@ -20,9 +20,7 @@ sap.ui.define([
 	"claima/utils/RejectDialog",
 	"claima/utils/SendBackDialog",
 	"claima/utils/ApproverUtility",
-	"claima/utils/workflowApproval",
-	"sap/ui/model/Filter",
-	"sap/ui/model/FilterOperator"
+	"claima/utils/workflowApproval"
 ], function (
 	Fragment,
 	Item,
@@ -45,9 +43,7 @@ sap.ui.define([
 	RejectDialog,
 	SendBackDialog,
 	ApproverUtility,
-	workflowApproval,
-	Filter,
-	FilterOperator
+	workflowApproval
 ) {
 	"use strict";
 
