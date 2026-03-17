@@ -21,7 +21,10 @@ sap.ui.define([
 	"claima/utils/ApprovalLog",
 	"claima/utils/workflowApproval",
 	"claima/utils/claimstatus",
-	"claima/utils/claim"
+	"claima/utils/claim",
+	"sap/m/HBox", 
+	"sap/m/VBox", 
+	"sap/ui/core/Icon"
 ], function (
 	Device,
 	Controller,
@@ -45,7 +48,10 @@ sap.ui.define([
 	ApprovalLog,
 	workflowApproval,
 	claimstatus,
-	claim
+	claim, 
+	HBox, 
+	VBox, 
+	Icon
 ) {
 	"use strict";
 
@@ -2617,53 +2623,53 @@ sap.ui.define([
 			const oAvatar = oEvent.getSource();
 
 			if (!this._oAvatarPopover) {
-				this._oAvatarPopover = new sap.m.Popover({
+				this._oAvatarPopover = new Popover({
 					placement: "Bottom",
 					showHeader: false,
 					content: [
-						new sap.m.VBox({
+						new VBox({
 							class: "sapUiSmallMargin",
 							items: [
-								new sap.m.HBox({
+								new HBox({
 									alignItems: "Center",
 									width: "100%",
 									class: "sapUiTinyMarginTop",
 									items: [
-										new sap.ui.core.Icon({
+										new Icon({
 											src: "sap-icon://employee",
 											width: "1rem",
 											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
 										}),
-										new sap.m.Text({ text: "{userId>/userId}" })
+										new Text({ text: "{userId>/userId}" })
 									]
 								}),
-								new sap.m.HBox({
+								new HBox({
 									alignItems: "Center",
 									width: "100%",
 									class: "sapUiTinyMarginTop",
 									items: [
-										new sap.ui.core.Icon({
+										new Icon({
 											src: "sap-icon://person-placeholder",
 											width: "1rem",
 											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
 										}),
-										new sap.m.Text({ text: "{imageModel>/userName}" })
+										new Text({ text: "{imageModel>/userName}" })
 									]
 								}),
-								new sap.m.HBox({
+								new HBox({
 									alignItems: "Center",
 									width: "100%",
 									class: "sapUiTinyMarginTop sapUiSmallMarginBottom",
 									items: [
-										new sap.ui.core.Icon({
+										new Icon({
 											src: "sap-icon://business-card",
 											width: "1rem",
 											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
 										}),
-										new sap.m.Text({ text: "{imageModel>/position}" })
+										new Text({ text: "{imageModel>/position}" })
 									]
 								}),
-								new sap.m.Button({
+								new Button({
 									icon: "sap-icon://log",
 									text: "Sign Out",
 									type: "Transparent",
