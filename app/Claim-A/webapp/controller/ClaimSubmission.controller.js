@@ -15,7 +15,9 @@ sap.ui.define([
 	"claima/utils/SendBackDialog",
 	'claima/utils/Utility',
 	"claima/utils/ApproverUtility",
-	"claima/utils/workflowApproval"
+	"claima/utils/workflowApproval",
+	"sap/ui/model/Filter",
+	"sap/ui/model/FilterOperator"
 ], function (
 	Fragment,
 	Controller,
@@ -33,10 +35,12 @@ sap.ui.define([
 	SendBackDialog,
 	Utility,
 	ApproverUtility,
-	workflowApproval
+	workflowApproval,
+	Filter,
+	FilterOperator
 ) {
 	"use strict";
-	
+
 	return Controller.extend("claima.controller.ClaimSubmission", {
 		onInit: function () {
 			this._navContainerDelegate = { onBeforeShow: this.onBeforeShow };
@@ -598,7 +602,7 @@ sap.ui.define([
 					break;
 				//// Reject
 				case 'Reject': {
-					
+
 					// Ensure form model
 					let oReject = this.getView().getModel("Reject");
 					if (!oReject) {
@@ -680,7 +684,7 @@ sap.ui.define([
 
 					ApproveDialog.open(this);
 				}
-				break;
+					break;
 
 
 			}
@@ -753,8 +757,7 @@ sap.ui.define([
 		},
 		//Button config for Reject
 		onReject_ClaimSubmission: async function () {
-			// quick visual trace
-			 console.log("[onReject_ClaimSubmission] fired");
+
 			const oReject = this.getView().getModel("Reject");
 			const reason = oReject?.getProperty("/rejectReasonKey");
 			const comment = oReject?.getProperty("/approvalComment")?.trim();
@@ -885,7 +888,7 @@ sap.ui.define([
 
 		//End Approval
 
-		
+
 
 		// Example: wire this to your "Back to Employee" or "Send Back" action
 		onOpenSendBack_Claim: function () {
@@ -1986,7 +1989,7 @@ sap.ui.define([
 						var oModelAppr = this.getView().getModel();
 						// ApprovalLog.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
 					}
-					
+
 					MessageToast.show(oMsg);
 					this.onBack_ClaimSubmission();
 				}
@@ -2040,7 +2043,7 @@ sap.ui.define([
 
 			// for each item to be saved
 			oInputModel.getProperty("/claim_items").forEach(async (claim_item, i) => {
-				 try {
+				try {
 					oModel = this.getOwnerComponent().getModel();
 					oListBinding = null;
 
@@ -2161,7 +2164,7 @@ sap.ui.define([
 						});
 					}
 					else {
-						oListBinding = oModel.bindList("/ZCLAIM_ITEM", null,null,
+						oListBinding = oModel.bindList("/ZCLAIM_ITEM", null, null,
 							[
 								new sap.ui.model.Filter({ path: "CLAIM_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_item.claim_id }),
 								new sap.ui.model.Filter({ path: "CLAIM_SUB_ID", operator: sap.ui.model.FilterOperator.EQ, value1: claim_item.claim_sub_id })
@@ -2185,7 +2188,7 @@ sap.ui.define([
 							}
 
 							await oModel.submitBatch("$auto");
-							
+
 							console.log("Save claim item success");
 						}
 					}
@@ -2208,9 +2211,9 @@ sap.ui.define([
 						]
 					);
 
-					oCtx.delete().then( function() {
+					oCtx.delete().then(function () {
 						console.log("Claim item deleted");
-					}).catch( function(oError) {
+					}).catch(function (oError) {
 						console.error(oError);
 					});
 				} catch (e) {
@@ -2298,20 +2301,20 @@ sap.ui.define([
 
 				// verify result is not in database
 				oListBinding = oModel.bindList(
-				"/ZCLAIM_HEADER",
-				null,
-				null,
-				[
-					new sap.ui.model.Filter({
-					path: "CLAIM_ID",
-					operator: sap.ui.model.FilterOperator.EQ,
-					value1: result
-					})
-				],
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-				}
+					"/ZCLAIM_HEADER",
+					null,
+					null,
+					[
+						new sap.ui.model.Filter({
+							path: "CLAIM_ID",
+							operator: sap.ui.model.FilterOperator.EQ,
+							value1: result
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+					}
 				);
 
 				aCtx = await oListBinding.requestContexts(0, 1);
@@ -2393,7 +2396,7 @@ sap.ui.define([
 				// return to approver screen
 				this.getMyApproverPAReq();
 				this.getMyApproverClaim();
-				
+
 				var oRouter = this.getOwnerComponent().getRouter();
 				var sHash = sap.ui.core.routing.HashChanger.getInstance().replaceHash("");
 				oRouter.navTo("MyApproval");
@@ -2410,10 +2413,6 @@ sap.ui.define([
 			this.getOwnerComponent().getModel("employee_view")?.refresh();
 			oRouter.navTo("Dashboard");
 		},
-
-/* 		onReject_ClaimSubmission: function () {
-			// reject code here
-		}, */
 
 		onBackToEmp_ClaimSubmission: function () {
 			// back to employee code here

@@ -17,7 +17,7 @@
         <VBox class="roundedBox sapUiSmallMargin">
             <Table
                 id="tb_myrequestform"
-                headerText="My Pre-Approval Status"
+                headerText="{i18n>myrequeststatus_title}"
                 mode="SingleSelectMaster"
                 width="auto"
                 items="{path: 'request_status>/req_header_list'}"
@@ -31,7 +31,7 @@
                         />
                         <ToolbarSpacer />
                         <Button
-                            text="Reset Sort"
+                            text="{i18n>myrequeststatus_sort_reset}"
                             type="Transparent"
                             icon="sap-icon://refresh"
                             press="onResetSort"
@@ -48,11 +48,11 @@
                                 alignItems="Center"
                                 width="100%"
                             >
-                                <Text text="Request ID" />
+                                <Text text="{i18n>myrequeststatus_requestid}" />
                                 <Button
                                     type="Transparent"
                                     icon="sap-icon://sort"
-                                    tooltip="Sort by Request ID"
+                                    tooltip="{i18n>myrequeststatus_sort_requestid}"
                                     press="onSortToggle"
                                 >
                                     <customData>
@@ -74,11 +74,11 @@
                                 alignItems="Center"
                                 width="100%"
                             >
-                                <Text text="Request Date" />
+                                <Text text="{i18n>myrequeststatus_purpose}" />
                                 <Button
                                     type="Transparent"
                                     icon="sap-icon://sort"
-                                    tooltip="Sort by Request Date"
+                                    tooltip="{i18n>myrequeststatus_sort_purpose}"
                                     press="onSortToggle"
                                 >
                                     <customData>
@@ -100,11 +100,11 @@
                                 alignItems="Center"
                                 width="100%"
                             >
-                                <Text text="Purpose" />
+                                <Text text="{i18n>myrequeststatus_startd}" />
                                 <Button
                                     type="Transparent"
                                     icon="sap-icon://sort"
-                                    tooltip="Sort by Purpose"
+                                    tooltip="{i18n>myrequeststatus_sort_startd}"
                                     press="onSortToggle"
                                 >
                                     <customData>
@@ -126,11 +126,11 @@
                                 alignItems="Center"
                                 width="70%"
                             >
-                                <Text text="Amount (MYR)" />
+                                <Text text="{i18n>myrequeststatus_amount}" />
                                 <Button
                                     type="Transparent"
                                     icon="sap-icon://sort"
-                                    tooltip="Sort by Amount"
+                                    tooltip="{i18n>myrequeststatus_sort_amount}"
                                     press="onSortToggle"
                                 >
                                     <customData>
@@ -152,11 +152,11 @@
                                 alignItems="Center"
                                 width="100%"
                             >
-                                <Text text="Status" />
+                                <Text text="{i18n>myrequeststatus_status}" />
                                 <Button
                                     type="Transparent"
                                     icon="sap-icon://sort"
-                                    tooltip="Sort by Status"
+                                    tooltip="{i18n>myrequeststatus_sort_status}"
                                     press="onSortToggle"
                                 >
                                     <customData>
@@ -178,11 +178,11 @@
                                 alignItems="Center"
                                 width="100%"
                             >
-                                <Text text="Last Modified" />
+                                <Text text="{i18n>myrequeststatus_lastmod}" />
                                 <Button
                                     type="Transparent"
                                     icon="sap-icon://sort"
-                                    tooltip="Sort by Status"
+                                    tooltip="{i18n>myrequeststatus_sort_lastmod}"
                                     press="onSortToggle"
                                 >
                                     <customData>
