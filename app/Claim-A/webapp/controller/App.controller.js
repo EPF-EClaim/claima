@@ -126,13 +126,6 @@ sap.ui.define([
 			// oReqModel.user = emp_data.eeid;
 			// this._getReqModel().setData(oReqModel);
 
-			// var claimID = "CLM26000000209";
-			// var PARID = "REQ26000000002";
-			// var oModelAppr = this.getView().getModel();
-			// //workflowApproval.onClaimsApproverDetermination(oModelAppr, claimID);
-			// workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
-			// //workflowApproval.onSendEmail();
-
 			const oDashboardModel = new JSONModel({
 				claims: [],
 				requests: [],
