@@ -569,41 +569,23 @@ sap.ui.define([
                     cashAdvWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
                 }else{
                     if(parCashAdvArr.includes("true") == true){
-                        console.log("treat as cash adv");
                         if(nestedWorkflowRuleArr[i][0] == 1){
-                            console.log("pushing true");
                             cashAdvWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
                         }
                     }else{
-                        console.log("treat as no cash adv");
                         if(nestedWorkflowRuleArr[i][0] == 0){
-                            console.log("Pushing false")
                             cashAdvWorkflowCodeArr.push(nestedWorkflowRuleArr[i][3]);
                         }
                     }
                 }
 			}
 
-            console.log("cash advance Val ");
-            console.log(parCashAdvArr);
-            console.log("Trip start Age " + tripStartAge);
-            console.log("Employee CC " + empCCVal);
-            
-            if(parCashAdvArr.length == 0){
-                console.log("nothing");
-            }else{
-                console.log("something");
-            }
-            console.log(cashAdvWorkflowCodeArr);
-            console.log(tripStartAgingWorkflowCodeArr);
-            console.log(empCCWorkflowCodeArr);
 
 			//filter for the only workflow code that is the same among all the rule checks
 			const commonWorkflowCode = [...new Set(empCCWorkflowCodeArr)].filter(item => 
 				new Set(tripStartAgingWorkflowCodeArr).has(item) && new Set(cashAdvWorkflowCodeArr).has(item)
 			); 
 
-            console.log(commonWorkflowCode[0]);
 
 			//get approver levels and approvers
 			var oListBinding = oModel.bindList("/ZWORKFLOW_STEP", null,null, [
