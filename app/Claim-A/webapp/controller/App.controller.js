@@ -207,13 +207,8 @@ sap.ui.define([
 					this._navToPARStatus();
 					break;
 				case "mysubstitution":
-					// if (type === "Approver" || type === "Super Admin") {
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("ManageSub");
-					// } else {
-					// 	var message = this._getTexti18n("msg_unauthorized_substitution");
-					// 	sap.m.MessageBox.error(message);
-					// }
 					break;
 				case "config":
 					//Start EY_ATHIRAH
@@ -237,7 +232,6 @@ sap.ui.define([
 				// End 	 Aiman Salim 10/02/2026 - Added for analytics
 				// Start Aiman Salim 03/03/2026 - Added for MyClaim
 				case "myreport":
-					//var oRouter = this.getComponent().getRouter().navTo("ClaimStatus");
 					this.getCLAIMHeaderList();
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("ClaimStatus")
