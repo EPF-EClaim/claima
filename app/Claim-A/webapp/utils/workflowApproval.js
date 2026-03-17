@@ -204,8 +204,7 @@ sap.ui.define([
                 }else if(sClaimsOverallRisk == aNestedWorkflowRuleArr[i][3]){
                     aRiskLevelWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
                 }
-
-
+                
                 if(aNestedWorkflowRuleArr[i][2] == null){
                     aEmpCCWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
                 }else if(sEmpCCVal == aNestedWorkflowRuleArr[i][2]){
