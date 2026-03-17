@@ -91,9 +91,7 @@ sap.ui.define([
         if (ctxNext) {
             ctxNext.setProperty("STATUS", "STAT02"); //PENDING APPROVAL
         } else {
-            console.log("No further approvers found. Proceed to Final Approve Step");
             FinalApproveStep.onFinalApprove(oModel2, id, 'STAT05', oModel,emailPayload
-                
             );
 
             

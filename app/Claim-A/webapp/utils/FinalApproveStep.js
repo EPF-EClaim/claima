@@ -20,7 +20,7 @@ sap.ui.define([
 
                 // Set Const Variables for Budget Processing
                 const bIsPre = submissionType === "REQ";
-                const BudgetApprove = 'approve';
+                const sBudgetApprove = 'approve';
                 const sField_header = submissionType === "REQ" ? "REQUEST_ID" : "CLAIM_ID";
                 const sTable = submissionType === "REQ" ? "/ZEMP_REQUEST_BUDGET_CHECK" : "/ZEMP_CLAIM_BUDGET_CHECK";
                 const aFilters = [new Filter(sField_header, FilterOperator.EQ, ClaimID)];
@@ -61,7 +61,7 @@ sap.ui.define([
                     };
                 });
                 // Call Budget Processing
-                budgetCheck.budgetProcessingTest(oModel2, dataset, submissionType, BudgetApprove);
+                budgetCheck.budgetProcessingTest(oModel2, dataset, submissionType, sBudgetApprove);
 
                 // Call Farisha email Function
                 if (emailPayload) {
