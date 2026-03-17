@@ -791,7 +791,7 @@ sap.ui.define([
 					);
 
 				// Budget release if required by your process
-				await budgetCheck.budgetProcessing(
+				await budgetCheck.budgetProcessingTest(
 					oModelMain,
 					dataset,
 					submissionType,
@@ -851,7 +851,7 @@ sap.ui.define([
 					);
 
 				// Budget release if applicable for your process
-				await budgetCheck.budgetProcessing(
+				await budgetCheck.budgetProcessingTest(
 					oModelMain,
 					dataset,
 					submissionType,
@@ -1905,7 +1905,7 @@ sap.ui.define([
 						// determine claims approver
 						if (oAction === 'Submit Report') {
 							var oModelAppr = this.getView().getModel();
-							// ApprovalLog.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
+							workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
 						}
 						MessageToast.show(oMsg);
 						// this._returnToDashboard();
@@ -1987,7 +1987,7 @@ sap.ui.define([
 					// determine claims approver
 					if (oAction === 'Submit Report') {
 						var oModelAppr = this.getView().getModel();
-						// ApprovalLog.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
+						workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
 					}
 
 					MessageToast.show(oMsg);

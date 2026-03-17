@@ -126,13 +126,6 @@ sap.ui.define([
 			// oReqModel.user = emp_data.eeid;
 			// this._getReqModel().setData(oReqModel);
 
-			// var claimID = "CLM26000000209";
-			// var PARID = "REQ26000000002";
-			// var oModelAppr = this.getView().getModel();
-			// //workflowApproval.onClaimsApproverDetermination(oModelAppr, claimID);
-			// workflowApproval.onPARApproverDetermination(oModelAppr, PARID);
-			// //workflowApproval.onSendEmail();
-
 			const oDashboardModel = new JSONModel({
 				claims: [],
 				requests: [],
@@ -142,16 +135,6 @@ sap.ui.define([
 
 			oRouter.getRoute("Dashboard").attachMatched(this._onDashboardMatched, this);
 			this._loadDashboardData();
-		},
-		onPARTest: function () {
-			var PARID = this.byId("PARSubmissionTest").getValue();
-			var oModel = this.getView().getModel();
-			workflowApproval.onPARApproverDetermination(oModel, PARID);
-		},
-		onClaimTest: function () {
-			var claimID = this.byId("claimSubmissionTest").getValue();
-			var oModel = this.getView().getModel();
-			workflowApproval.onClaimsApproverDetermination(oModel, claimID);
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
