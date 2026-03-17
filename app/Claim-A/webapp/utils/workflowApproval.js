@@ -23,9 +23,9 @@ sap.ui.define([
             oAction.setParameter("NextApproverName" , parsePayload.NextApproverName);
 
             oAction.execute().then(function (){
-                new MessageToast.show("Email has been sent");
+                new MessageToast.show(this.geti18nText("ApprWorkflow_email_succses"));
             }).catch(function (){
-                new MessageToast.show("Error email unable to be sent");
+                new MessageToast.show(this.geti18nText("ApprWorkflow_email_fail"));
             })
 
 		},
@@ -50,15 +50,14 @@ sap.ui.define([
             oAction.setParameter("ApproverComments" , parsePayload.ApproverComments);
 
             oAction.execute().then(function (){
-                new MessageToast.show("Email has been sent");
+                new MessageToast.show(this.geti18nText("ApprWorkflow_email_succses"));
             }).catch(function (){
-                new MessageToast.show("Error email unable to be sent");
+                new MessageToast.show(this.geti18nText("ApprWorkflow_email_fail"));
             })
 
 		},
         onClaimsApproverDetermination: async function (oModel, claimID){
 			// claim header
-			//var oModel = this.getView().getModel();
             const that = this;
 
 			const oListClaimHeaderBinding = oModel.bindList("/ZCLAIM_HEADER", null,null, [
@@ -327,10 +326,10 @@ sap.ui.define([
 			
 
 			//create ZAPPROVER DETAILS
-			var oBindList = oModel.bindList("/ZAPPROVER_DETAILS_CLAIMS");
+			const oBindApprDetailsList = oModel.bindList("/ZAPPROVER_DETAILS_CLAIMS");
 			for(var i = 0; i < aApprEmpID.length; i++){
                 if(aApprEmpID[i] == "Auto"){
-                    var oContext = oBindList.create({
+                    var oContext = oBindApprDetailsList.create({
                         "CLAIM_ID": claimID,
                         "LEVEL": "0",
                         "APPROVER_ID": "Auto",
@@ -339,7 +338,7 @@ sap.ui.define([
                     });
                 }else{
                     if(i == 0){                    
-                    var oContext = oBindList.create({
+                    var oContext = oBindApprDetailsList.create({
                         "CLAIM_ID": claimID,
                         "LEVEL": i+1,
                         "APPROVER_ID": aApprEmpID[i],
@@ -347,7 +346,7 @@ sap.ui.define([
                         "STATUS": "STAT02"
                         });
                     }else{
-                        var oContext = oBindList.create({
+                        var oContext = oBindApprDetailsList.create({
                             "CLAIM_ID": claimID,
                             "LEVEL": i+1,
                             "APPROVER_ID": aApprEmpID[i],
@@ -359,7 +358,7 @@ sap.ui.define([
 			}
 
             oContext.created().then(async function (){
-                new MessageToast.show("Approver has been successfully assigned");
+                new MessageToast.show(that.geti18nText("ApprWorkflow_Approver_Assign_Success"));
                 
                 if(aApprEmpID[0] != "Auto"){
                     const oListApprDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
@@ -656,11 +655,11 @@ sap.ui.define([
             }
 			
 			//create ZAPPROVER DETAILS
-			var oBindList = oModel.bindList("/ZAPPROVER_DETAILS_PREAPPROVAL");
+			const oBindApprDetailsList = oModel.bindList("/ZAPPROVER_DETAILS_PREAPPROVAL");
 
 			for(var i = 0; i < workflowApprLvl; i++){
 				if(aApprEmpID[i] == "Auto"){
-                    var oContext = oBindList.create({
+                    var oContext = oBindApprDetailsList.create({
                         "PREAPPROVAL_ID": PARID,
                         "LEVEL": "0",
                         "APPROVER_ID": "Auto",
@@ -669,7 +668,7 @@ sap.ui.define([
                     });
                 }else{
                     if(i == 0){
-                        var oContext = oBindList.create({
+                        var oContext = oBindApprDetailsList.create({
                         "PREAPPROVAL_ID": PARID,
                         "LEVEL": i+1,
                         "APPROVER_ID": aApprEmpID[i],
@@ -677,7 +676,7 @@ sap.ui.define([
                         "STATUS": "STAT02"
 					    });
                     }else{
-                        var oContext = oBindList.create({
+                        var oContext = oBindApprDetailsList.create({
                         "PREAPPROVAL_ID": PARID,
                         "LEVEL": i+1,
                         "APPROVER_ID": aApprEmpID[i],
@@ -691,7 +690,7 @@ sap.ui.define([
 			}
 
             oContext.created().then(async function (){
-                new MessageToast.show("Approver has been successfully assigned");
+                new MessageToast.show(that.geti18nText("ApprWorkflow_Approver_Assign_Success"));
                 if(aApprEmpID[0] != "Auto"){
                     const oListApprDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
                         new Filter({ path: "EEID", operator: "EQ", value1: aApprEmpID[0] })
@@ -775,6 +774,9 @@ sap.ui.define([
             }).catch(function(oError){
                 new MessageToast.show(oError);
             })
+        },
+        geti18nText: function(val){
+            return this.getView().getModel("i18n").getResourceBundle().getText(val);
         }
     };
 });
