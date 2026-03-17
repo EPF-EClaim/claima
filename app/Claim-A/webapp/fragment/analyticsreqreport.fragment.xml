@@ -494,7 +494,7 @@
                     press=".onExportAnalyticsReport" />
                 <Button
                     id="btnCloseAnalytics_req"
-                    text="Back"
+                    text="{i18n>back}"
                     press=".onBackFromAnalyticsClaimReport" />
             </Toolbar>
         </footer>
