@@ -689,8 +689,8 @@ sap.ui.define([
 					}
 
 					// enable 'Start Claim' button
-					if (this.byId("button_claimprocess_startclaim").getEnabled()) {
-						this.byId("button_claimprocess_startclaim").setEnabled(false);
+					if (!this.byId("button_claimprocess_startclaim").getEnabled()) {
+						this.byId("button_claimprocess_startclaim").setEnabled(true);
 					}
 				}
 			}
