@@ -3,33 +3,42 @@ sap.ui.define([
 ], function () {
     "use strict";
     return {
-        async onEligibleCheck(oModoModel, Boxid, ClaimItmTypeel) {
-            switch (Claim) {
-                case DOBI:
+        async onEligibleCheck(oModel, Boxid, ClaimItmType) {
 
-                    break;
-                case FLIGHT_L:
+            for (var row of oModel) {
+                switch (ClaimItmType) {
+                    case DOBI:
+                        if ((day1 - day3) > 3) {
+                              return fail;                          
+                        }
+                            break;
+                    case FLIGHT_L:
+                        if (PersonalGrade < 21 && FlightClass != 3 ){
+                            return fail;
+                        }
+                        break;
+                    case HOTEL_L:
 
-                    break;
-                case HOTEL_L:
+                        break;
+                    case DOBI:
 
-                    break;
-                case DOBI:
+                        break;
+                    case DOBI:
 
-                    break;
-                case DOBI:
+                        break;
+                    case DOBI:
 
-                    break;
-                case DOBI:
+                        break;
+                    case DOBI:
 
-                    break;
-                case DOBI:
+                        break;
 
-                    break;
+                    default:
+                        break;
+                }
 
-                default:
-                    break;
             }
+
         }
     };
 

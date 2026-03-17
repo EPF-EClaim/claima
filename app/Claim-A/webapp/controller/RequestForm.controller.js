@@ -20,8 +20,8 @@ sap.ui.define([
 	"claima/utils/SendBackDialog",
 	'claima/utils/Utility',
 	"claima/utils/ApproverUtility",
-	"claima/utils/workflowApproval"
-	// "claima/utils/EligibilityScenarios/EligibleScenarioCheck"
+	"claima/utils/workflowApproval",
+	"claima/utils/EligibilityScenarios/EligibleScenarioCheck"
 
 ], function (
 	Controller,
@@ -45,8 +45,8 @@ sap.ui.define([
 	SendBackDialog,
 	Utility,
 	ApproverUtility,
-	workflowApproval
-	// EligibleScenarioCheck
+	workflowApproval,
+	EligibleScenarioCheck
 ) {
 	"use strict";
 
@@ -1109,8 +1109,8 @@ sap.ui.define([
 
 		onSaveItem() {
 			this.onSave();
-			EligibleScenarioCheck.onEligibilityCheck();
 			// this._oConstant = this.getOwnerComponent().getModel("constant").getData();
+			EligibleScenarioCheck.onEligibilityCheck();
 		},
 
 		async onSaveAddAnother() {
@@ -1298,6 +1298,8 @@ sap.ui.define([
 
 				await this._getItemList(reqId);
 				await this._showItemList("list");
+				// Eligibility check
+				EligibleScenarioCheck.onEligibilityCheck(oModel, claimType, claimItem);
 
 				sap.m.MessageToast.show("Saved Successfully");
 

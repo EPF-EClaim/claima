@@ -15,14 +15,14 @@ sap.ui.define([
             "DOBI": "DOBI",
             "FLIGHT_L": "FLIGHT_L",
             "HOTEL_L": "HOTEL_L",
-            KILOMETER: "KILOMETER",
-            LODGING_L: "LODGING_L",
-            MAKAN_L: "MAKAN_L",
-            MISC: "MISC",
-            PARKING: "PARKING",
-            TGANTIAN: "T.GANTIAN",
-            TAMBANG: "TAMBANG",
-            YURAN: "YURAN"
+            "KILOMETER": "KILOMETER",
+            "LODGING_L": "LODGING_L",
+            "MAKAN_L": "MAKAN_L",
+            "MISC": "MISC",
+            "PARKING": "PARKING",
+            "TGANTIAN": "T.GANTIAN",
+            "TAMBANG": "TAMBANG",
+            "YURAN": "YURAN"
         }
     }
 });
