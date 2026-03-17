@@ -65,7 +65,7 @@
                     press="onAction_ClaimSubmission_Toolbar('Submit Report')"
                     text="{i18n>button_claimsubmission_submitreport}"
                     type="Emphasized"
-                    enabled="false"
+                   
                     visible="{= ${claimsubmission_input>/claim_header/status_id} === 'STAT01' }"
                 />
 
