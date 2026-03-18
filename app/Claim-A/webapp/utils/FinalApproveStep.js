@@ -1,9 +1,7 @@
 sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator",
-    "./Utility",
+    "claima/utils/Utility",
     "claima/utils/budgetCheck",
     "claima/utils/NotifyandPost"
 
@@ -16,41 +14,79 @@ sap.ui.define([
         try{
                 // Call Update Status
                 Utility._updateStatus(oModel, sClaimID, sStatus);
-
                 // Read table for Budget Data
                 const sSubmissionType = sClaimID.substring(0, 3);  // split front 3 letters to determine if claim or request
 
                 // Set Const Variables for Budget Processing
-                const bIsPre = sSubmissionType === "REQ";
+                var bIsPre = sSubmissionType === "REQ";
                 const sBudgetApprove = 'approve';
-                const sField_header = bIsPreRequest ? "REQUEST_ID" : "CLAIM_ID";
-                const sTable = bIsPreRequest ? "/ZEMP_REQUEST_BUDGET_CHECK" : "/ZEMP_CLAIM_BUDGET_CHECK";
+                var sField_header = bIsPre ? "REQUEST_ID" : "CLAIM_ID";
+                var sTable = bIsPre ? "/ZEMP_REQUEST_BUDGET_CHECK" : "/ZEMP_CLAIM_BUDGET_CHECK";
+                var sTable2 = bIsPre === "REQ" ? "/ZEMP_APPROVER_REQUEST_DETAILS" : "/ZEMP_APPROVER_CLAIM_DETAILS";
+                var dCurrentDate = new Date().toLocaleDateString('en-CA');
+
+                if(oEmailPayload == null || oEmailPayload == "" || oEmailPayload.length == 0 || oEmailPayload == undefined){
+
+                    const oClaimantList = oModel2.bindList(
+                        sTable2,
+                        null,
+                        null,
+                        [
+                            new Filter("CLAIM_ID", FilterOperator.EQ, sClaimID),
+                            new Filter("LEVEL", FilterOperator.EQ, "0")
+                        ],
+                        { $$ownRequest: true }
+                    );
+
+                    var sClaimType = bIsPre ? "Pre-Approval" : "Claim";
+
+                    const aClaimantContexts = await oClaimantList.requestContexts();
+                    const aClaimantData = aClaimantContexts.map(oCtx => oCtx.getObject());
+
+                    const sClaimsSubmissionDate = dCurrentDate;     
+                    const sClaimantName = aClaimantData[0].EMPLOYEE_NAME;
+                    var sClaimType = sClaimType;
+                    const sRecipientName = sClaimantName;
+                    const sClaimantEmail = aClaimantData[0].EMPLOYEE_EMAIL;
+
+                    var oEmailPayload = {
+                        ApproverName: "AUTO",
+                        SubmissionDate: sClaimsSubmissionDate,
+                        ClaimantName: sClaimantName,
+                        ClaimType: sClaimType,
+                        ClaimID: sClaimID,
+                        RecipientName: sRecipientName,
+                        Action: "APPROVE",
+                        ReceiverEmail: sClaimantEmail
+                    };
+                }
+                    
                 const aFilters = [new Filter(sField_header, FilterOperator.EQ, sClaimID)];
                 
-                const oBudgetBinding2 = oModel.bindList(
+                const oBudgetBinding2 = oModel2.bindList(
                     sTable,
                     null,
                     null,
                     aFilters,
                     { $$ownRequest: true }
                 );
-                const aCtxBudget = await oBudgetBinding2.requestContexts(0, Infinity);
-                const aBudgetRows = aCtxBudget.map(ctx => ctx.getObject());
+                var aCtxBudget = await oBudgetBinding2.requestContexts(0, Infinity);
+                var aBudgetRows = aCtxBudget.map(ctx => ctx.getObject());
                 // Map rows
-                const aDataset = aBudgetRows.map(oRow => {
+                var aDataset = aBudgetRows.map(oRow => {
 
-                    const sYear = bIsPre
+                    var sYear = bIsPre
                         ? (oRow.REQUEST_DATE ? String(oRow.REQUEST_DATE).substring(0, 4) : null)
                         : (oRow.SUBMITTED_DATE ? String(oRow.SUBMITTED_DATE).substring(0, 4) : null);
 
 
-                    const bUseAlt = oRow.USE_ALT_COST_CENTER === "X" || oRow.ALT_SELECTED === "X";
-                    const sFund_center = bUseAlt
+                    var bUseAlt = oRow.USE_ALT_COST_CENTER === "X" || oRow.ALT_SELECTED === "X";
+                    var sFund_center = bUseAlt
                         ? (oRow.ALTERNATE_COST_CENTER)
                         : (oRow.COST_CENTER);
 
 
-                    const iAmount = bIsPre
+                    var iAmount = bIsPre
                         ? Number(oRow.EST_AMOUNT || 0)
                         : Number(oRow.AMOUNT || 0);
                     return {
@@ -62,8 +98,9 @@ sap.ui.define([
                         amount:iAmount
                     };
                 });
+                
                 // Call Budget Processing
-                budgetCheck.budgetProcessingTest(oModel2, aDataset, sSubmissionType, sBudgetApprove);
+                budgetCheck.budgetProcessingTest(oModel, aDataset, sSubmissionType, sBudgetApprove);
 
                 // Call Farisha email Function
                 if (oEmailPayload) {
@@ -71,21 +108,20 @@ sap.ui.define([
                 }
 
                 // SEND CONSOLIDATED IS PAYLOAD (CLM only)
-                        if (sSubmissionType === "CLM") {
+                    if (sSubmissionType === "CLM") {
                         await this.onSendClaimBatch(oModel2, sClaimID);
-                        }
-
+                    }
                         return true;
 
                     } catch (err) {
                         throw err;
                     }
-                    },
+            },
 
                     /**
                      * Single-call consolidated IS posting for final approval
                      */
-                    onSendClaimBatch: async function (oModelView, sClaimID) {
+                onSendClaimBatch: async function (oModelView, sClaimID) {
 
                     // Read all claim items
                     const oList = oModelView.bindList(
@@ -96,15 +132,15 @@ sap.ui.define([
                         { $$ownRequest: true }
                     );
 
-                    const aCtxs = await oList.requestContexts(0, Infinity);
-                    const aClaimRows = aCtxs.map(c => c.getObject());
+                    var aCtxs = await oList.requestContexts(0, Infinity);
+                    var aClaimRows = aCtxs.map(c => c.getObject());
 
                     if (!aClaimRows.length) {
                         return true;
                     }
 
                     // Map to CDS ApprovedClaimItem
-                    const aClaimItems = aClaimRows.map(oRow => ({
+                    var aClaimItems = aClaimRows.map(oRow => ({
                         ClaimSubID:           oRow.CLAIM_SUB_ID,
                         EmpID:                oRow.EMP_ID,
                         SubmissionDate:       oRow.SUBMITTED_DATE,
@@ -126,7 +162,6 @@ sap.ui.define([
 
                    try {
                         await oAction.execute();
-                        return true;
                     } catch (err) {
                         throw err;
                     }

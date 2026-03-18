@@ -358,7 +358,7 @@ sap.ui.define([
 									oReq.setProperty("/view", 'view');
 
 									// Add in onPARApproverDetermination function
-									workflowApproval.onPARApproverDetermination(oModel, reqId);
+									workflowApproval.onPARApproverDetermination(oModel, reqId, oViewModel);
 
 									await PARequestSharedFunction.getPARHeaderList(oReqList, oViewModel);
 									const oRouter = this.getOwnerComponent().getRouter();

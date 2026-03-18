@@ -49,7 +49,7 @@ sap.ui.define([
             oAction.execute();
 
 		},
-        onClaimsApproverDetermination: async function (oModel, sClaimID){
+        onClaimsApproverDetermination: async function (oModel, sClaimID, oModelView){
 			// claim header
             const that = this;
 
@@ -424,7 +424,7 @@ sap.ui.define([
                         that.onSendEmail(oModel, aPayload);        
                     }
                 }else{
-                    FinalApproveStep.onFinalApprove(oModel, sClaimID, 'STAT05', oModel);
+                    FinalApproveStep.onFinalApprove(oModel, sClaimID, 'STAT05', oModelView);
                 }
                 
             }).catch(function(oError){
@@ -432,7 +432,7 @@ sap.ui.define([
             })	
 			
         },
-        onPARApproverDetermination: async function (oModel, sPARID){
+        onPARApproverDetermination: async function (oModel, sPARID, oModelView){
 			// request header
             const that = this;
 			const oListRequestHeaderBinding = oModel.bindList("/ZREQUEST_HEADER", null,null, [
@@ -753,7 +753,7 @@ sap.ui.define([
                         that.onSendEmail(oModel,aPayload);
                     }
                 }else{
-                    FinalApproveStep.onFinalApprove(oModel, sPARID, 'STAT05',oModel);
+                    FinalApproveStep.onFinalApprove(oModel, sPARID, 'STAT05', oModelView);
                 }
             }).catch(function(oError){
                 new MessageToast.show(oError);
