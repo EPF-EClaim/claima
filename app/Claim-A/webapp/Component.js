@@ -2,24 +2,16 @@ sap.ui.define([
     "sap/fe/core/AppComponent",
     "claima/model/models"
 ],
-    // (UIComponent, 
     (AppComponent,
         models) => {
         "use strict";
 
-        // return UIComponent.extend("claima.Component", {
         return AppComponent.extend("claima.Component", {
             metadata: {
                 manifest: "json"
-                // ,
-                // interfaces: [
-                //     "sap.ui.core.IAsyncContentCreation"
-                // ]
             },
 
             init() {
-                // call the base component's init function
-                // UIComponent.prototype.init.apply(this, arguments);
                 AppComponent.prototype.init.apply(this, arguments);
 
                 // set the device model
@@ -36,11 +28,9 @@ sap.ui.define([
                 jQueryScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/jszip.js');
                 document.head.appendChild(jQueryScript);
 
-
-                var jQueryScript = document.createElement('script');
+                jQueryScript = document.createElement('script');
                 jQueryScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/xlsx.js');
                 document.head.appendChild(jQueryScript);
-
             }
         });
     });

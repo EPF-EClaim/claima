@@ -111,20 +111,6 @@
 
                     <!-- Alternate Cost Center -->
                     <Label text="{i18n>label_claiminput_altcc}" />
-                    <!-- <Select
-                        id="select_claiminput_altcc"
-                        forceSelection="false"
-                        selectedKey="{claimsubmission_input>/claim_header/alternate_cost_center}"
-                        items="{
-                            path: 'employee>/ZCOST_CENTER',
-                            sorter: { path: 'COST_CENTER_ID' }
-                        }"
-                        enabled="true"
-                        editable="true"
-                        visible="true"
-                    >
-                        <core:Item key="{employee>COST_CENTER_ID}" text="{employee>COST_CENTER_ID} ({employee>COST_CENTER_DESC})" />
-                    </Select> -->
                     <mdc:Field
                         id="field_claiminput_altcc"
                         value="{claimsubmission_input>/claim_header/alternate_cost_center}"
