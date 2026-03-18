@@ -183,6 +183,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
         name        : String;
         position    : String;
         origin      : String;
+        grade       : String;
+        department  : String;
     }
 
     function getUserType()                                             returns UserInfo;

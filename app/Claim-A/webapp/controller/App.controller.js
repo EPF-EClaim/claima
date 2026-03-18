@@ -79,17 +79,19 @@ sap.ui.define([
 
 			const oSession = new sap.ui.model.json.JSONModel({
 				userType: "UNKNOWN",
-				origin: ""
+				origin: "", 
+				grade: "",
+				department: "",
+				position: "",
+				userName: "",
+				initials: ""
 			});
 			this.getView().setModel(oSession, "session");
 
 			var oRouter = this.getOwnerComponent().getRouter();
 
 			const oImageModel = new sap.ui.model.json.JSONModel({
-				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png"),
-				initials: "",
-				userName: "",
-				position: ""
+				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png")
 			});
 			this.getView().setModel(oImageModel, "imageModel");
 
@@ -110,10 +112,11 @@ sap.ui.define([
 				const sname = oData.name || "";
 				const sposition = oData.position;
 				const sInitials = sname.substring(0, 2).toUpperCase();
-				oImageModel.setProperty("/initials", sInitials);
-				oImageModel.setProperty("/userName", sname);
-				oImageModel.setProperty("/position", sposition);
-
+				oSession.setProperty("/initials", sInitials);
+				oSession.setProperty("/userName", sname);
+				oSession.setProperty("/position", sposition);
+				oSession.setProperty("/grade", oData.grade || "UNKNOWN");
+				oSession.setProperty("/department", oData.department || "UNKNOWN");
 				oSession.setProperty("/origin", oData.origin);
 
 				// save userId to model
@@ -2248,7 +2251,7 @@ sap.ui.define([
 										new Icon({
 											src: "sap-icon://employee",
 											width: "1rem",
-											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
+											class: "sapUiLargeMarginBeginEnd"
 										}),
 										new Text({ text: "{userId>/userId}" })
 									]
@@ -2261,22 +2264,48 @@ sap.ui.define([
 										new Icon({
 											src: "sap-icon://person-placeholder",
 											width: "1rem",
-											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
+											class: "sapUiLargeMarginBeginEnd"
 										}),
-										new Text({ text: "{imageModel>/userName}" })
+										new Text({ text: "{session>/userName}" })
 									]
 								}),
 								new HBox({
 									alignItems: "Center",
 									width: "100%",
-									class: "sapUiTinyMarginTop sapUiSmallMarginBottom",
+									class: "sapUiMediumMarginTopBottom",
+									items: [
+										new Icon({
+											src: "sap-icon://employee-pane",
+											width: "1rem",
+											class: "sapUiLargeMarginBeginEnd"
+										}),
+										new Text({ text: "{session>/grade}" })
+									]
+								}),
+								new HBox({
+									alignItems: "Center",
+									width: "100%",
+									class: "sapUiMediumMarginTopBottom",
+									items: [
+										new Icon({
+											src: "sap-icon://suitcase",
+											width: "1rem",
+											class: "sapUiLargeMarginBeginEnd"
+										}),
+										new Text({ text: "{session>/position}" })
+									]
+								}),
+								new HBox({
+									alignItems: "Center",
+									width: "100%",
+									class: "sapUiMediumMarginTopBottom",
 									items: [
 										new Icon({
 											src: "sap-icon://business-card",
 											width: "1rem",
-											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
+											class: "sapUiLargeMarginBeginEnd"
 										}),
-										new Text({ text: "{imageModel>/position}" })
+										new Text({ text: "{session>/department}" })
 									]
 								}),
 								new Button({
@@ -2294,8 +2323,6 @@ sap.ui.define([
 				});
 				this.getView().addDependent(this._oAvatarPopover);
 			}
-
-			// toggle open/close
 			if (this._oAvatarPopover.isOpen()) {
 				this._oAvatarPopover.close();
 			} else {
@@ -2367,18 +2394,20 @@ sap.ui.define([
 					oDashboardModel.setProperty("/approvals", []);
 				});
 		},
-		onHomeIconPressed: function () {
-			const oSession = this.getView().getModel("session");
-			const origin = oSession.getProperty("/origin");
-			var sSFURL;
 
-			sSFURL = origin === "httpsa6s6cq33s.accounts.ondemand.com" ? "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV" :
-				origin === "sap.custom" ? "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT" :
-					"https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD";
+		// commented for future use
+		// onHomeIconPressed: function () {
+		// 	const oSession = this.getView().getModel("session");
+		// 	const origin = oSession.getProperty("/origin");
+		// 	var sSFURL;
 
-			window.open(sSFURL, "_self");
+		// 	sSFURL = origin === "httpsa6s6cq33s.accounts.ondemand.com" ? "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV" :
+		// 		origin === "sap.custom" ? "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT" :
+		// 			"https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD";
 
-		},
+		// 	window.open(sSFURL, "_self");
+
+		// },
 
 
 	});

@@ -160,17 +160,6 @@
                                                     <Text text="{i18n>label_claimdetails_input_startdate}" />
                                                 </header>
                                             </Column>
-                                            <!-- <Column
-                                                demandPopin="true" hAlign="End"
-                                            >
-                                                <header>
-                                                    <Text
-                                                        text="Amount(MYR)"
-                                                        textAlign="Center"
-                                                        width="100%"
-                                                    />
-                                                </header>
-                                            </Column> -->
                                             <Column hAlign="End">
                                                 <header>
                                                     <HBox
@@ -184,19 +173,6 @@
                                                     </HBox>
                                                 </header>
                                             </Column>
-                                            <!-- <Column hAlign="End">
-                                                <header>
-                                                    <HBox
-                                                        justifyContent="SpaceBetween"
-                                                        alignItems="Center"
-                                                        width="50%"
-                                                    >
-                                                        <Text
-                                                            text="Amount (MYR)"
-                                                        />
-                                                    </HBox>
-                                                </header>
-                                            </Column> -->
                                             <Column demandPopin="true">
                                                 <header>
                                                     <Text text="Status" />
@@ -305,15 +281,6 @@
                                                     <Text text="{i18n>label_claimdetails_input_startdate}" />
                                                 </header>
                                             </Column>
-                                            <!-- <Column demandPopin="true">
-                                                <header>
-                                                    <Text
-                                                        text="Amount(MYR)"
-                                                        textAlign="Center"
-                                                        width="100%"
-                                                    />
-                                                </header>
-                                            </Column> -->
                                             <Column hAlign="End">
                                                 <header>
                                                     <HBox
@@ -434,15 +401,6 @@
                                                     <Text text="{i18n>label_claimdetails_input_startdate}" />
                                                 </header>
                                             </Column>
-                                            <!-- <Column demandPopin="true">
-                                                <header>
-                                                    <Text
-                                                        text="Amount(MYR)"
-                                                        textAlign="Center"
-                                                        width="100%"
-                                                    />
-                                                </header>
-                                            </Column> -->
                                             <Column hAlign="End">
                                                 <header>
                                                     <HBox

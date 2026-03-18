@@ -113,7 +113,9 @@ module.exports = (srv) => {
         userId: result?.EEID || "UNKNOWN",
         name: result?.NAME || "UNKNOWN",
         position: result?.POSITION_NAME || "UNKNOWN",
-        origin: origin
+        origin: origin, 
+        grade: result?.GRADE || "UNKNOWN",
+        department: result?.DEP || "UNKNOWN"
       };
     });
 
