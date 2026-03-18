@@ -25,7 +25,8 @@ sap.ui.define([
 	"sap/m/HBox",
 	"sap/m/VBox",
 	"sap/ui/core/Icon",
-	"sap/ui/core/routing/HashChanger"
+	"sap/ui/core/routing/HashChanger",
+	"claima/utils/MyApproval",
 ], function (
 	Device,
 	Controller,
@@ -53,7 +54,8 @@ sap.ui.define([
 	HBox,
 	VBox,
 	Icon,
-	HashChanger
+	HashChanger,
+	MyApproval
 ) {
 	"use strict";
 
@@ -79,7 +81,7 @@ sap.ui.define([
 
 			const oSession = new sap.ui.model.json.JSONModel({
 				userType: "UNKNOWN",
-				origin: "", 
+				origin: "",
 				grade: "",
 				department: "",
 				position: "",
@@ -149,7 +151,7 @@ sap.ui.define([
 			const bIsDeepLink = sHash.includes("RequestForm") || sHash.includes("Claim");
 
 			if (!bIsDeepLink || sHash === "") {
-				oRouter.navTo("Dashboard", {}, true); 
+				oRouter.navTo("Dashboard", {}, true);
 			} else {
 				oRouter.initialize();
 			}
@@ -1690,7 +1692,7 @@ sap.ui.define([
 					//oResult.reqNo send this to approval determination
 
 					var oRouter = this.getOwnerComponent().getRouter();
-					oRouter.navTo("RequestForm", {request_id: oResult.reqNo});
+					oRouter.navTo("RequestForm", { request_id: oResult.reqNo });
 				}).catch(err => {
 					sap.m.MessageToast.show("Creation failed: " + err.message);
 				});
@@ -2352,6 +2354,14 @@ sap.ui.define([
 				pageId: "navcontainer_claimsubmission"
 			});
 
+		},
+
+		async openApprovalList(oEvent) {
+			const oItem = oEvent.getParameter("listItem");
+			const oCtx = oItem?.getBindingContext("dashboardModel");
+			const oRow = oCtx?.getObject();
+			const sId = oRow?.ID;
+			await MyApproval.navigateFromId(this, sId);
 		},
 
 		_onDashboardMatched: function () {

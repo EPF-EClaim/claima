@@ -382,6 +382,8 @@
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
+                                        mode="SingleSelectMaster"
+                                        itemPress="openApprovalList"
                                     >
                                         <columns>
                                             <Column demandPopin="true">
@@ -428,7 +430,7 @@
                                             </Column>
                                         </columns>
                                         <items>
-                                            <ColumnListItem>
+                                            <ColumnListItem type="Active">
                                                 <cells>
                                                     <Text
                                                         text="{dashboardModel>ID}"
