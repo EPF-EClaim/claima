@@ -72,6 +72,15 @@ sap.ui.define([
             "FAIL": "FAIL",
             "ALL": "*"
         },
+        "CLAIM_STATUS":{
+            "STAT01": "STAT01",
+            "STAT02": "STAT02",
+            "STAT03": "STAT03",
+            "STAT03": "STAT04",
+            "STAT03": "STAT05",
+            "STAT03": "STAT06",
+            "STAT03": "STAT07",
+        },
         "FLIGHT_CLASS_ID":{
             "01": "01",
             "02": "02",
