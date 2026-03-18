@@ -162,10 +162,10 @@ sap.ui.define([
 			}
 		},
 
-		async _getEmpIdDetail(that, sEEID) {
+		async _getEmpIdDetail(that, sEmpId) {
 			const oModel = that.getView().getModel();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new Filter("EEID", FilterOperator.EQ, sEEID)
+				new Filter("EEID", FilterOperator.EQ, sEmpId)
 			]);
 
 			try {
@@ -179,7 +179,7 @@ sap.ui.define([
 						cc: oData.CC
 					};
 				} else {
-					console.warn("No employee found with ID: " + sEEID);
+					console.warn("No employee found with ID: " + sEmpId);
 					return null;
 				}
 			} catch (oError) {

@@ -24,7 +24,8 @@ sap.ui.define([
 	"claima/utils/claim",
 	"sap/m/HBox",
 	"sap/m/VBox",
-	"sap/ui/core/Icon"
+	"sap/ui/core/Icon",
+	"sap/ui/core/routing/HashChanger"
 ], function (
 	Device,
 	Controller,
@@ -51,7 +52,8 @@ sap.ui.define([
 	claim,
 	HBox,
 	VBox,
-	Icon
+	Icon,
+	HashChanger
 ) {
 	"use strict";
 
@@ -138,7 +140,7 @@ sap.ui.define([
 			// this._getReqModel().setData(oReqModel);
 
 			// Route to Dashboard on first initialize only. Refresh will only reload the page you at.
-			const oHashChanger = sap.ui.core.routing.HashChanger.getInstance();
+			const oHashChanger = HashChanger.getInstance();
 			const sHash = oHashChanger.getHash();
 			oRouter.getRoute("Dashboard").attachMatched(this._onDashboardMatched, this);
 			const bIsDeepLink = sHash.includes("RequestForm") || sHash.includes("Claim");
