@@ -3,8 +3,7 @@ sap.ui.define([
     "claima/model/models"
 ],
     (AppComponent,
-        models,
-        MessageBox) => {
+        models) => {
         "use strict";
 
         return AppComponent.extend("claima.Component", {
