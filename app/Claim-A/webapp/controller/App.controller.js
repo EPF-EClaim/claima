@@ -138,7 +138,9 @@ sap.ui.define([
 			// this._getReqModel().setData(oReqModel);
 
 			oRouter.getRoute("Dashboard").attachMatched(this._onDashboardMatched, this);
-			oRouter.navTo("Dashboard");
+			if (oRouter.getHashChanger().getHash() === '') {
+				oRouter.navTo("Dashboard");
+			}
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
