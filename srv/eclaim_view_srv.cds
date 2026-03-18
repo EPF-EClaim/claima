@@ -824,9 +824,6 @@ type ApprovedClaimBatch {
                 modifiedAt }
                 where ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
 
-    entity ZEMP_TRAIN_COURSE as projection on ECLAIM.ZTRAIN_COURSE_PART; 
-
-
     action sendApprovedClaimBatch(batch : ApprovedClaimBatch) returns { message : String; };
 
 
