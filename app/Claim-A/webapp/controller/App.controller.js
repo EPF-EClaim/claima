@@ -808,17 +808,6 @@ sap.ui.define([
 				this._reset_ClaimProcess_RequestForm();
 			}
 
-			// reset email approval switch
-			var switchEmailApproval = this.byId("switch_claimprocess_req_emailapprove");
-			if (switchEmailApproval) {
-				if (switchEmailApproval.getVisible()) {
-					switchEmailApproval.setVisible(false);
-				}
-				if (switchEmailApproval.getState()) {
-					switchEmailApproval.setState(false);
-				}
-			}
-
 			// disable 'Start Claim' button
 			if (this.byId("button_claimprocess_startclaim").getEnabled()) {
 				this.byId("button_claimprocess_startclaim").setEnabled(false);
@@ -837,6 +826,7 @@ sap.ui.define([
 			if (this.byId("switch_claimprocess_req_emailapprove").getEnabled()) {
 				this.byId("switch_claimprocess_req_emailapprove").setEnabled(false);
 				this.byId("switch_claimprocess_req_emailapprove").setVisible(false);
+				this.byId("switch_claimprocess_req_emailapprove").setState(false);
 			}
 
 			// disable 'Create Pre-Approval Request' button
