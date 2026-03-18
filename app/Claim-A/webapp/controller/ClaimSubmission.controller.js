@@ -215,6 +215,10 @@ sap.ui.define([
 					// update footer buttons
 					this._displayFooterButtons("claimsubmission_approver");
 				}
+				else {
+					// ensure footer buttons display default 
+					this._displayFooterButtons("claimsubmission_summary_claimitem");
+				}
 			}
 		},
 

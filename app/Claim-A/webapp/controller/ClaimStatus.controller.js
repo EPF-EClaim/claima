@@ -255,6 +255,11 @@ sap.ui.define([
 					oClaimInput.setProperty("/view_only", false)
 				}
 
+				// disable is_approver from claim status
+				if (oClaimInput.getProperty("/is_approver") === true) {
+					oClaimInput.setProperty("/is_approver", false)
+				}
+
 				// Items
 				const aItems = aItemCtx.map(ctx => ctx.getObject()).map(it => ({
 					// Map to the fragment's structure
