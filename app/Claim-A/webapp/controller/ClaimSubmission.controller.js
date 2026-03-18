@@ -2562,6 +2562,7 @@ sap.ui.define([
 
 				oPage.removeContent(oClaimItemFragment);
 
+				let toCreate = true;
 				await this._getFormFragment("claimsubmission_summary_claimitem", toCreate).then(function (oVBox) {
 					oPage.insertContent(oVBox, 1);
 				});
