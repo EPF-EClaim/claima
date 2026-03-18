@@ -195,7 +195,7 @@ sap.ui.define([
 						title: "Warning",
 						type: DialogType.Message,
 						state: ValueState.Warning,
-						content: [new Label({ text: Utility.getText("req_tm_w_back") })],
+						content: [new Label({ text: Utility.getText(this, "req_tm_w_back") })],
 						beginButton: new Button({
 							type: "Emphasized",
 							text: "Confirm",
@@ -362,7 +362,7 @@ sap.ui.define([
 					state: "Warning",
 					content: [
 						new Label({
-							text: Utility.getText("req_tm_w_submit"),
+							text: Utility.getText(this, "req_tm_w_submit"),
 						})
 					],
 					beginButton: new Button({
@@ -443,7 +443,7 @@ sap.ui.define([
 			}
 
 			if (!oCtx) {
-				MessageToast.show(Utility.getText("req_tm_w_select"));
+				MessageToast.show(Utility.getText(this, "req_tm_w_select"));
 				return;
 			}
 
@@ -653,7 +653,7 @@ sap.ui.define([
 					const subId = String(row.REQUEST_SUB_ID || "").trim();
 
 					if (!reqId || !subId) {
-						sErrorMsg = Utility.getText("req_tm_w_missing_reqid_reqsubid");
+						sErrorMsg = Utility.getText(this, "req_tm_w_missing_reqid_reqsubid");
 						continue;
 					}
 
@@ -661,7 +661,7 @@ sap.ui.define([
 						await this._deleteItemCascade(reqId, subId);
 						aSuccessIdx.push(i);
 					} catch (e) {
-						sErrorMsg = e.message || Utility.getText('req_tm_w_delete_req_item');
+						sErrorMsg = e.message || Utility.getText(this, 'req_tm_w_delete_req_item');
 					}
 				}
 			} finally {
@@ -877,7 +877,7 @@ sap.ui.define([
 			}
 
 			if (aToDelete.length === 0) {
-				MessageToast.show(Utility.getText("req_tm_w_select_participant"));
+				MessageToast.show(Utility.getText(this, "req_tm_w_select_participant"));
 				return;
 			}
 
@@ -944,7 +944,7 @@ sap.ui.define([
 							});
 						})
 						.catch((e) => {
-							errorMsg = errorMsg || (e && e.message) || Utility.getText("req_tm_w_delete_participant");
+							errorMsg = errorMsg || (e && e.message) || Utility.getText(this, "req_tm_w_delete_participant");
 						});
 
 					deletePromises.push(pDel);
@@ -972,7 +972,7 @@ sap.ui.define([
 
 				oReq.setProperty("/participant", aRows);
 				oTable.clearSelection();
-				MessageToast.show(Utility.getText("req_tm_s_delete_participant", [aSuccessIdx.length]));
+				MessageToast.show(Utility.getText(this, "req_tm_s_delete_participant", [aSuccessIdx.length]));
 			}
 
 			if (errorMsg) {

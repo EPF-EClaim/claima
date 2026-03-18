@@ -44,12 +44,12 @@ sap.ui.define([
             sap.m.MessageToast.show("Request submitted successfully");
         },
 
-        getResourceBundle: function () {
-            return this.getOwnerComponent().getModel("i18n").getResourceBundle();
+        getResourceBundle: function (oController) {
+            return oController.getOwnerComponent().getModel("i18n").getResourceBundle();
         },
 
-        getText: function (sKey, aArgs) {
-            return this.getResourceBundle().getText(sKey, aArgs);
+        getText: function (oController, sKey, aArgs) {
+            return this.getResourceBundle(oController).getText(sKey, aArgs);
         }
 
     };

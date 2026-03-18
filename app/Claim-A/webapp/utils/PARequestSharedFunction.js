@@ -60,8 +60,8 @@ sap.ui.define([
 			}
 		},
 
-		async _getItemList(that, req_id, first_load = false) {
-			const oReq = that._getReqModel();
+		async _getItemList(oController, req_id, first_load = false) {
+			const oReq = oController._getReqModel();
 
 			if (!req_id) {
 				oReq.setProperty("/req_item_rows", []);
@@ -69,7 +69,7 @@ sap.ui.define([
 				return [];
 			}
 
-			const oModel = that.getOwnerComponent().getModel('employee_view');
+			const oModel = oController.getOwnerComponent().getModel('employee_view');
 
 			const sReq = String(req_id);
 			const sEmp = String(oReq.getProperty('/user'));
@@ -112,7 +112,7 @@ sap.ui.define([
 				oReq.setProperty("/req_item_rows", a);
 				oReq.setProperty("/list_count", a.length);
 				if (first_load != true) {
-					that.updateRequestAmount(sEmp, sReq, cashadv_amt, req_amt);
+					oController.updateRequestAmount(sEmp, sReq, cashadv_amt, req_amt);
 				}
 
 				return a;
@@ -124,35 +124,35 @@ sap.ui.define([
 			}
 		},
 
-		_determineCurrentState(that, oReq) {
+		_determineCurrentState(oController, oReq) {
 			if (oReq.getProperty('/view') != 'approver') {
 				switch (oReq.getProperty('/req_header/reqstatus')) {
 					case 'DRAFT' || 'SEND BACK':
-						that.byId('req_back_scr').setVisible(false);
-						that.byId("req_back").setVisible(true);
-						that.byId("req_delete").setVisible(true);
-						that.byId("req_submit").setVisible(true);
+						oController.byId('req_back_scr').setVisible(false);
+						oController.byId("req_back").setVisible(true);
+						oController.byId("req_delete").setVisible(true);
+						oController.byId("req_submit").setVisible(true);
 						oReq.setProperty('/view', 'list');
 						break;
 					case 'DELETE':
-						that.byId('req_back_scr').setVisible(true);
-						that.byId("req_back").setVisible(false);
-						that.byId("req_delete").setVisible(false);
-						that.byId("req_submit").setVisible(false);
+						oController.byId('req_back_scr').setVisible(true);
+						oController.byId("req_back").setVisible(false);
+						oController.byId("req_delete").setVisible(false);
+						oController.byId("req_submit").setVisible(false);
 						oReq.setProperty('/view', 'view');
 						break;
 					case 'APPROVED':
-						that.byId('req_back_scr').setVisible(true);
-						that.byId("req_back").setVisible(false);
-						that.byId("req_delete").setVisible(false);
-						that.byId("req_submit").setVisible(true);
+						oController.byId('req_back_scr').setVisible(true);
+						oController.byId("req_back").setVisible(false);
+						oController.byId("req_delete").setVisible(false);
+						oController.byId("req_submit").setVisible(true);
 						oReq.setProperty('/view', 'list');
 						break;
 					case 'PENDING APPROVAL':
-						that.byId('req_back_scr').setVisible(true);
-						that.byId("req_back").setVisible(false);
-						that.byId("req_delete").setVisible(true);
-						that.byId("req_submit").setVisible(false);
+						oController.byId('req_back_scr').setVisible(true);
+						oController.byId("req_back").setVisible(false);
+						oController.byId("req_delete").setVisible(true);
+						oController.byId("req_submit").setVisible(false);
 						oReq.setProperty('/view', 'view');
 						break;
 					default:
@@ -162,8 +162,8 @@ sap.ui.define([
 			}
 		},
 
-		async _getEmpIdDetail(that, sEmpId) {
-			const oModel = that.getView().getModel();
+		async _getEmpIdDetail(oController, sEmpId) {
+			const oModel = oController.getView().getModel();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
 				new Filter("EEID", FilterOperator.EQ, sEmpId)
 			]);
