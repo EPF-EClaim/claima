@@ -2010,7 +2010,7 @@ sap.ui.define([
 			const oReq = this.getOwnerComponent().getModel("claim_status2");
 			const oModel = this.getOwnerComponent().getModel("employee_view");
 
-			const oListBinding = oModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", undefined,
+			const oListBinding = oModel.bindList("/ZEMP_CLAIM_EE_VIEW", undefined,
 				[new Sorter("modifiedAt", true)],
 				null,
 				{
@@ -2340,16 +2340,16 @@ sap.ui.define([
 			const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 			const oDashboardModel = this.getView().getModel("dashboardModel");
 
-			oEmployeeViewModel.bindList("/ZEMP_CLAIM_HEADER_VIEW", null, [
-				new sap.ui.model.Sorter("modifiedAt", true)
+			oEmployeeViewModel.bindList("/ZEMP_CLAIM_EE_VIEW", null, [
+				new Sorter("modifiedAt", true)
 			]).requestContexts(0, Infinity)
 				.then(aContexts => {
 					oDashboardModel.setProperty("/claims", aContexts.map(c => c.getObject()));
 				})
 				.catch(err => console.log("claims error:", err));
 
-			oEmployeeViewModel.bindList("/ZEMP_REQUEST_VIEW", null, [
-				new sap.ui.model.Sorter("modifiedAt", true)
+			oEmployeeViewModel.bindList("/ZEMP_REQUEST_EE_VIEW", null, [
+				new Sorter("modifiedAt", true)
 			]).requestContexts(0, Infinity)
 				.then(aContexts => {
 					oDashboardModel.setProperty("/requests", aContexts.map(c => c.getObject()));

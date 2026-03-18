@@ -1,8 +1,9 @@
 sap.ui.define([
     "sap/ui/model/json/JSONModel",
-    "sap/ui/Device"
+    "sap/ui/Device",
+    "claima/utils/Constants"
 ], 
-function (JSONModel, Device) {
+function (JSONModel, Device, Constants) {
     "use strict";
 
     return {
@@ -12,6 +13,12 @@ function (JSONModel, Device) {
          */
         createDeviceModel: function () {
             var oModel = new JSONModel(Device);
+            oModel.setDefaultBindingMode("OneWay");
+            return oModel;
+        },
+
+        createConstantModel: function(){
+            var oModel = new JSONModel(Constants);
             oModel.setDefaultBindingMode("OneWay");
             return oModel;
         }
