@@ -2,7 +2,8 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
-], function (Filter, FilterOperator, Sorter) {
+	"claima/utils/Constants"
+], function (Filter, FilterOperator, Sorter, Constants) {
 	"use strict";
 
 	return {
@@ -11,7 +12,7 @@ sap.ui.define([
 		* JSONModel Reset
 		* ======================================================= */
 
-		_ensureRequestModelDefaults(oReq) {
+		_ensureRequestModelDefaults (oReq) {
 			const data = oReq.getData() || {};
 			data.req_header = { reqid: "", grptype: "IND" };
 			data.req_item_rows = [];
@@ -28,7 +29,7 @@ sap.ui.define([
 		* Get List from Backend
 		* ======================================================= */
 
-		async getPARHeaderList(oReq, oModel) {
+		async getPARHeaderList (oReq, oModel) {
 
 			const oListBinding = oModel.bindList("/ZEMP_REQUEST_VIEW", undefined,
 				[new Sorter("modifiedAt", true)], null,
@@ -60,7 +61,7 @@ sap.ui.define([
 			}
 		},
 
-		async _getItemList(oController, req_id, first_load = false) {
+		async _getItemList (oController, req_id, first_load = false) {
 			const oReq = oController._getReqModel();
 
 			if (!req_id) {
@@ -124,7 +125,7 @@ sap.ui.define([
 			}
 		},
 
-		_determineCurrentState(oController, oReq) {
+		_determineCurrentState (oController, oReq) {
 			if (oReq.getProperty('/view') != 'approver') {
 				switch (oReq.getProperty('/req_header/reqstatus')) {
 					case 'DRAFT' || 'SEND BACK':
@@ -162,7 +163,7 @@ sap.ui.define([
 			}
 		},
 
-		async _getEmpIdDetail(oController, sEmpId) {
+		async _getEmpIdDetail (oController, sEmpId) {
 			const oModel = oController.getView().getModel();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
 				new Filter("EEID", FilterOperator.EQ, sEmpId)
@@ -186,6 +187,56 @@ sap.ui.define([
 				console.error("Error fetching employee detail", oError);
 				return null;
 			}
+		},
+
+		generateEligibilityCheckPayload (oController, oConstant) {
+			const oReqModel = oController._getReqModel();
+			const oData     = oReqModel.getProperty('/req_item');
+			const oMapping  = oConstant.PAR_ELIGIBILITY_CHECK;
+
+			const sEmpId         = oReqModel.getProperty('/user');
+			const sClaimType     = oReqModel.getProperty('/req_header/claimtype');
+			const sClaimTypeItem = oData.claim_type_item_id;
+
+			const aFieldsToCheck = [
+				"vehicle_ownership",
+				"est_amount",
+				"cat_purpose",
+				"sss",
+				"no_of_days",
+				"rate_per_kilometer",
+				"room_type",
+				"flight_class",
+				"marriage_cat",
+				"vehicle_class",
+				"travel_hours"
+			];
+
+			const aActiveFields = aFieldsToCheck.reduce((acc, sKey) => {
+				const val = oData[sKey];
+				
+				// Check for valid, non-empty values
+				if (val !== null && val !== undefined && String(val).trim() !== "") {
+					// Determine the field name: Use mapped constant OR fallback to original key
+					const sTargetName = oMapping[sKey] || sKey;
+
+					acc.push({
+						fieldName: sTargetName,
+						value: val,
+						result: null
+					});
+				}
+				return acc;
+			}, []);
+
+			const oPayload = {
+				EmpId: sEmpId,
+				ClaimType: sClaimType,
+				ClaimTypeItem: sClaimTypeItem,
+				CheckFields: aActiveFields
+			};
+
+			return [oPayload];
 		},
 
 	};

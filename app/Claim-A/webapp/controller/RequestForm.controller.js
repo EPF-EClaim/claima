@@ -6,6 +6,7 @@ sap.ui.define([
 	"sap/m/DialogType",
 	"sap/ui/core/ValueState",
 	"sap/m/Button",
+	"sap/m/ButtonType",
 	"sap/m/Label",
 	"sap/ui/core/Fragment",
 	"sap/ui/export/Spreadsheet",
@@ -33,6 +34,7 @@ sap.ui.define([
 	DialogType,
 	ValueState,
 	Button,
+	ButtonType,
 	Label,
 	Fragment,
 	Spreadsheet,
@@ -64,6 +66,7 @@ sap.ui.define([
 		_ReqAttachmentFile2: null,
 
 		onInit() {
+			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._fragments = Object.create(null);
 
 			// URL Access
@@ -91,7 +94,7 @@ sap.ui.define([
 		async _loadRequest(sReqId) {
 			await this._getHeader(sReqId);
 			await this._getItemList(sReqId, true);
-			const aStatus = ['DRAFT', 'CANCELLED']; // to move to constant.js later
+			const aStatus = this._oConstant.NO_APPROVAL_LOG_STATUS;
 
 			var sReqStatus = this._getReqModel().getProperty("/req_header/reqstatus");
 			if (!aStatus.includes(sReqStatus)) {
@@ -169,7 +172,7 @@ sap.ui.define([
 			const oList = await this._getFormFragment("req_item_list");
 			await this._replaceContentAt(oPage, 1, oList);
 
-			const aStatus = ['DRAFT', 'CANCELLED']; // to move to constant.js later
+			const aStatus = this._oConstant.NO_APPROVAL_LOG_STATUS;
 			var sReqStatus = this._getReqModel().getProperty("/req_header/reqstatus");
 			if (!aStatus.includes(sReqStatus)) {
 				const oReq = this.getOwnerComponent().getModel('approval_log');
@@ -197,7 +200,7 @@ sap.ui.define([
 						state: ValueState.Warning,
 						content: [new Label({ text: Utility.getText(this, "req_tm_w_back") })],
 						beginButton: new Button({
-							type: "Emphasized",
+							type: ButtonType.Emphasized,
 							text: "Confirm",
 							press: async function () {
 								this.oBackDialog.close();
@@ -226,7 +229,7 @@ sap.ui.define([
 			const sReqId = String(oReqModel.getProperty("/req_header/reqid") || "").trim();
 
 			if (!sEmpId || !sReqId) {
-				MessageToast.show("Employee ID or Request ID missing");
+				MessageToast.show(Utility.getText(this, "req_tm_w_emp_id_req_id_not_found"));
 				return;
 			}
 
@@ -236,10 +239,10 @@ sap.ui.define([
 					type: DialogType.Message,
 					state: ValueState.Warning,
 					content: [
-						new Label({ text: "Do you want to delete this request?" })
+						new Label({ text: Utility.getText(this, "req_d_w_delete") })
 					],
 					beginButton: new Button({
-						type: "Emphasized",
+						type: ButtonType.Emphasized,
 						text: "Delete",
 						press: async () => {
 							try {
@@ -294,7 +297,7 @@ sap.ui.define([
 			const sReqClaimType = oData.req_header.claimtype;
 
 			if (!sReqId || !sEmpId) {
-				MessageToast.show("EMP ID or Request ID missing");
+				MessageToast.show(Utility.getText(this, "req_tm_w_emp_id_req_id_not_found"));
 				return;
 			}
 
@@ -302,9 +305,9 @@ sap.ui.define([
 				this.oSubmitDialog = new Dialog({
 					title: "Submit Request",
 					type: DialogType.Message,
-					content: [new Label({ text: "Confirm to submit Request?" })],
+					content: [new Label({ text: Utility.getText(this, "req_d_w_submit") })],
 					beginButton: new Button({
-						type: "Emphasized",
+						type: ButtonType.Emphasized,
 						text: "Submit",
 						press: async () => {
 							try {
@@ -332,7 +335,7 @@ sap.ui.define([
 									oRouter.navTo("RequestFormStatus");
 
 								} else {
-									MessageToast.show(`Please inform Cost Center owner to increase the budget for Claim Item ${aResult.aErrors} before submit Pre-Approval Request`);
+									MessageToast.show(Utility.getText(this, "req_tm_w_inform_cc_owner", [aResult.aErrors]));
 								}
 							} catch (e) {
 								MessageToast.show(e.message || "Submission failed");
@@ -357,9 +360,9 @@ sap.ui.define([
 		_showMustAddClaimDialog() {
 			if (!this._oAddClaimDialog) {
 				this._oAddClaimDialog = new Dialog({
-					title: "Missing Claim Item",
-					type: "Message",
-					state: "Warning",
+					title: Utility.getText(this, "req_d_w_missing_item"),
+					type: DialogType.Message,
+					state: ValueState.Warning,
 					content: [
 						new Label({
 							text: Utility.getText(this, "req_tm_w_submit"),

@@ -2,7 +2,8 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/m/MessageToast",
-], function (Filter, FilterOperator, MessageToast) {
+	"claima/utils/Utility"
+], function (Filter, FilterOperator, MessageToast, Utility) {
     "use strict";
 
     return {
@@ -52,9 +53,7 @@ sap.ui.define([
 					const aContexts = await oListBinding.requestContexts(0, 1);
 
 					if (aContexts.length === 0) {
-						aErrors.push(
-							`Budget record not found for Claim Item ${row.claim_type_item}`
-						);
+						aErrors.push(Utility.getText(this, "budget_w_not_found", [row.claim_type_item]));
 						continue;
 					}
 
@@ -79,16 +78,8 @@ sap.ui.define([
 
 				} catch (err) {
 					console.error("Budget check error:", err);
-					aErrors.push(
-						`System error while checking Claim Item ${row.CLAIM_TYPE_ITEM_ID}`
-					);
+					aErrors.push(Utility.getText(this, "budget_w_system_error", [row.CLAIM_TYPE_ITEM_ID]));
 				}
-			}
-
-			// budget lock if no error found
-			if (aErrors.length == 0 && dataset.length != 0) {
-				// this.budgetLocking(oModel, dataset, submission_type, 'lock');
-				MessageToast.show('no issue, proceed to lock budget')
 			}
 
 			return {
@@ -170,7 +161,7 @@ sap.ui.define([
 
 			try {
 				await oModel.submitBatch("budgetUpdateGroup");
-				MessageToast.show("Budget update Successfully");
+				MessageToast.show(Utility.getText(this, "budget_s_update"));
 			} catch (err) {
 				console.error('Final Budget Batch failed', e);
 				throw e;
@@ -241,7 +232,7 @@ sap.ui.define([
 					await oModel.submitBatch("budgetUpdateGroup");
 					
 					if (oModel.hasPendingChanges("budgetUpdateGroup")) {
-						throw new Error("Batch update failed on server.");
+						throw new Error(Utility.getText(this, "budget_e_batch_update"));
 					}
 					
 				} catch (err) {
@@ -268,7 +259,7 @@ sap.ui.define([
 					const oData = aContexts[0].getObject();
 					return oData.GL_ACCOUNT;
 				} else {
-					console.warn("This Claim Type is not found");
+					console.warn(Utility.getText(this, "budget_w_claim_type_not_found"));
 					return "";
 				}
 			} catch (oError) {
@@ -290,7 +281,7 @@ sap.ui.define([
 					const oData = aContexts[0].getObject();
 					return oData.MATERIAL_CODE;
 				} else {
-					console.warn("This Claim Type Item is not found");
+					console.warn(Utility.getText(this, "budget_w_claim_type_item_not_found"));
 					return "";
 				}
 			} catch (oError) {
@@ -298,47 +289,6 @@ sap.ui.define([
 			}
 			
 		},
-
-		temp() {
-			// POST    http://localhost:4004/odata/v4/EmployeeSrv/budgetchecking
-			// Content-Type: application/json
-			//  
-			//    {
-			//     "budget": [
-			//       {
-			//       "YEAR": "2026",
-			//       "INTERNAL_ORDER": "1",
-			//       "FUND_CENTER": "100010102",
-			//       "MATERIAL_GROUP": "732002001",
-			//       "COMMITMENT_ITEM": "732002",
-			//       "AMOUNT": 100.00,
-			//       "INDICATOR": "CLM",
-			//       "ACTION": "SUBMIT"
-			//      },
-			//     {
-			//       "YEAR": "2026",
-			//       "INTERNAL_ORDER": "1",
-			//       "FUND_CENTER": "100010102",
-			//       "MATERIAL_GROUP": "732002001",
-			//       "COMMITMENT_ITEM": "732002",
-			//       "AMOUNT": 90,
-			//       "INDICATOR": "CLM",
-			//       "ACTION": "SUBMIT"
-			//     }
-			//     ,
-			//     {
-			//       "YEAR": "2026",
-			//       "INTERNAL_ORDER": "1",
-			//       "FUND_CENTER": "100010105",
-			//       "MATERIAL_GROUP": "732002001",
-			//       "COMMITMENT_ITEM": "732002",
-			//       "AMOUNT": 50,
-			//       "INDICATOR": "CLM",
-			//       "ACTION": "SUBMIT"
-			//     }
-			//     ]
-			//    }
-		}
 
     };
 });

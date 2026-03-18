@@ -76,7 +76,22 @@ sap.ui.define([
             "01": "01",
             "02": "02",
             "03": "03"
-        }
+        },
+        "PAR_ELIGIBILITY_CHECK": {
+            // field                : db technical name
+            "vehicle_ownership"     : "VEHICLE_OWNERSHIP_ID",
+            "est_amount"            : "ELIGIBLE_AMOUNT",
+            "cat_purpose"           : "MOBILE_PHONE_BILL",
+            "sss"                   : "REGION_ID",
+            "no_of_days"            : "TRAVEL_DAYS_ID",
+            "rate_per_kilometer"    : "RATE",
+            "room_type"             : "ROOM_TYPE_ID",
+            "flight_class"          : "FLIGHT_CLASS_ID",
+            "marriage_cat"          : "MARRIAGE_CATEGORY",
+            "vehicle_class"         : "TRANSPORT_CLASS",
+            "travel_hours"          : "TRAVEL_HOURS"
+        },
+        "NO_APPROVAL_LOG_STATUS" : ['DRAFT', 'CANCELLED']
 
     }
 });
