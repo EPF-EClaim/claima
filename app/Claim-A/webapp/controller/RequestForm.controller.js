@@ -94,10 +94,10 @@ sap.ui.define([
 		async _loadRequest(sReqId) {
 			await this._getHeader(sReqId);
 			await this._getItemList(sReqId, true);
-			const aStatus = this._oConstant.NO_APPROVAL_LOG_STATUS;
+			const oStatus = this._oConstant.RequestStatusWithoutApproverLog;
 
 			var sReqStatus = this._getReqModel().getProperty("/req_header/reqstatus");
-			if (!aStatus.includes(sReqStatus)) {
+			if (!Object.values(oStatus).includes(sReqStatus)) {
 				const oReq = this.getOwnerComponent().getModel('approval_log');
 				const oViewModel = this.getOwnerComponent().getModel('employee_view');
 				ApprovalLog.getApproverList(oReq, oViewModel, sReqId);
@@ -172,9 +172,9 @@ sap.ui.define([
 			const oList = await this._getFormFragment("req_item_list");
 			await this._replaceContentAt(oPage, 1, oList);
 
-			const aStatus = this._oConstant.NO_APPROVAL_LOG_STATUS;
+			const oStatus = this._oConstant.RequestStatusWithoutApproverLog;
 			var sReqStatus = this._getReqModel().getProperty("/req_header/reqstatus");
-			if (!aStatus.includes(sReqStatus)) {
+			if (!Object.values(oStatus).includes(sReqStatus)) {
 				const oReq = this.getOwnerComponent().getModel('approval_log');
 				const oViewModel = this.getOwnerComponent().getModel('employee_view');
 				ApprovalLog.getApproverList(oReq, oViewModel, oReq.getProperty('req_header/reqid'));
@@ -198,7 +198,7 @@ sap.ui.define([
 						title: "Warning",
 						type: DialogType.Message,
 						state: ValueState.Warning,
-						content: [new Label({ text: Utility.getText(this, "req_tm_w_back") })],
+						content: [new Label({ text: Utility.getText(this, "req_d_w_back") })],
 						beginButton: new Button({
 							type: ButtonType.Emphasized,
 							text: "Confirm",

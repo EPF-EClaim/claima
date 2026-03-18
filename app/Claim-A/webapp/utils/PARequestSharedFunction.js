@@ -189,37 +189,35 @@ sap.ui.define([
 			}
 		},
 
-		generateEligibilityCheckPayload (oController, oConstant) {
-			const oReqModel = oController._getReqModel();
-			const oData     = oReqModel.getProperty('/req_item');
-			const oMapping  = oConstant.PAR_ELIGIBILITY_CHECK;
+		generateEligibilityCheckPayload (oController) {
+			var oReqModel = oController._getReqModel();
+			var oData     = oReqModel.getProperty('/req_item');
 
-			const sEmpId         = oReqModel.getProperty('/user');
-			const sClaimType     = oReqModel.getProperty('/req_header/claimtype');
-			const sClaimTypeItem = oData.claim_type_item_id;
+			var sEmpId         = oReqModel.getProperty('/user');
+			var sClaimType     = oReqModel.getProperty('/req_header/claimtype');
+			var sClaimTypeItem = oData.claim_type_item_id;
 
-			const aFieldsToCheck = [
-				"vehicle_ownership",
-				"est_amount",
-				"cat_purpose",
-				"sss",
-				"no_of_days",
-				"rate_per_kilometer",
-				"room_type",
-				"flight_class",
-				"marriage_cat",
-				"vehicle_class",
-				"travel_hours"
-			];
+			const oMapping = {
+				// field                : db technical name
+				"vehicle_ownership"     : "VEHICLE_OWNERSHIP_ID",
+				"est_amount"            : "ELIGIBLE_AMOUNT",
+				"cat_purpose"           : "MOBILE_PHONE_BILL",
+				"sss"                   : "REGION_ID",
+				"no_of_days"            : "TRAVEL_DAYS_ID",
+				"rate_per_kilometer"    : "RATE",
+				"room_type"             : "ROOM_TYPE_ID",
+				"flight_class"          : "FLIGHT_CLASS_ID",
+				"marriage_cat"          : "MARRIAGE_CATEGORY",
+				"vehicle_class"         : "TRANSPORT_CLASS",
+				"travel_hours"          : "TRAVEL_HOURS"
+			};
 
-			const aActiveFields = aFieldsToCheck.reduce((acc, sKey) => {
+			const aActiveFields = Object.entries(oMapping).reduce((acc, [sKey, sTargetName]) => {
 				const val = oData[sKey];
 				
-				// Check for valid, non-empty values
-				if (val !== null && val !== undefined && String(val).trim() !== "") {
-					// Determine the field name: Use mapped constant OR fallback to original key
-					const sTargetName = oMapping[sKey] || sKey;
+				const bIsValid = val !== null && val !== undefined;
 
+				if (bIsValid) {
 					acc.push({
 						fieldName: sTargetName,
 						value: val,
