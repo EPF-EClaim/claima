@@ -1,25 +1,25 @@
 using {ECLAIM} from '../db/eclaim';
 
 service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
-        
+
     type ApprovedClaimItem {
-    ClaimSubID           : String;
-    EmpID                : String;
-    SubmissionDate       : String;
-    FinalAmounttoReceive : Decimal(15,2);
-    LastModifiedDate     : String;
-    Amount               : Decimal(15,2);
-    ReceiptDate          : String;
-    CostCenter           : String;
-    GLAccount            : String;
-    MaterialCode         : String;
+        ClaimSubID           : String;
+        EmpID                : String;
+        SubmissionDate       : String;
+        FinalAmounttoReceive : Decimal(15, 2);
+        LastModifiedDate     : String;
+        Amount               : Decimal(15, 2);
+        ReceiptDate          : String;
+        CostCenter           : String;
+        GLAccount            : String;
+        MaterialCode         : String;
     }
 
-    
-type ApprovedClaimBatch {
-  ClaimID : String;
-  Items   : many ApprovedClaimItem;
-}
+
+    type ApprovedClaimBatch {
+        ClaimID : String;
+        Items   : many ApprovedClaimItem;
+    }
 
 
     entity ZEMP_REQUEST_VIEW             as
@@ -58,10 +58,49 @@ type ApprovedClaimBatch {
                 PREAPPROVAL_AMOUNT,
                 TOTAL_AMOUNT,
                 REQUEST_DATE,
-                createdBy, 
+                createdBy,
                 modifiedAt
         };
 
+    entity ZEMP_REQUEST_EE_VIEW          as
+        projection on ECLAIM.ZREQUEST_HEADER {
+            key REQUEST_ID,
+                EMP_ID,
+                CLAIM_TYPE_ID,
+                ZCLAIM_TYPE.CLAIM_TYPE_DESC,
+                ZEMP_MASTER.CC              as EMPLOYEE_COST_CENTER,
+                OBJECTIVE_PURPOSE,
+                REQUEST_TYPE_ID,
+                ZREQUEST_TYPE.REQUEST_TYPE_DESC,
+                TRIP_START_DATE,
+                TRIP_END_DATE,
+                EVENT_START_DATE,
+                EVENT_END_DATE,
+                IND_OR_GROUP,
+                ZINDIV_GROUP.IND_OR_GROUP_DESC,
+                LOCATION,
+                TYPE_OF_TRANSPORTATION,
+                ALTERNATE_COST_CENTER,
+                COSTCENTER.COST_CENTER_DESC as ALT_COST_CENTER_DESC,
+                ATTACHMENT1,
+                ATTACHMENT2,
+                REMARK,
+                EVENT_FIELD1,
+                EVENT_FIELD2,
+                EVENT_FIELD3,
+                EVENT_FIELD4,
+                EVENT_FIELD5,
+                STATUS,
+                ZSTATUS.STATUS_DESC,
+                COST_CENTER,
+                ZCOST_CENTER.COST_CENTER_DESC,
+                CASH_ADVANCE,
+                PREAPPROVAL_AMOUNT,
+                TOTAL_AMOUNT,
+                REQUEST_DATE,
+                createdBy,
+                modifiedAt
+        };
 
     entity ZEMP_REQUEST_ITEM_VIEW        as
         projection on ECLAIM.ZREQUEST_ITEM {
@@ -146,6 +185,55 @@ type ApprovedClaimBatch {
                 ZEMP_MASTER.NAME,
                 ZEMP_MASTER.CC,
                 createdBy
+        };
+
+    entity ZEMP_CLAIM_EE_VIEW            as
+        projection on ECLAIM.ZCLAIM_HEADER {
+            key CLAIM_ID,
+                EMP_ID,
+                COST_CENTER,
+                COSTCENTER.COST_CENTER_DESC,
+                ALTERNATE_COST_CENTER,
+                ZCOST_CENTER.COST_CENTER_DESC as ALT_COST_CENTER_DESC,
+                CLAIM_TYPE_ID,
+                ZCLAIM_TYPE.CLAIM_TYPE_DESC,
+                STATUS_ID,
+                ZSTATUS.STATUS_DESC,
+                PREAPPROVED_AMOUNT,
+                ATTACHMENT_EMAIL_APPROVER,
+                CASH_ADVANCE_AMOUNT,
+                COMMENT,
+                DIST_OLD_HOUSE_TO_NEW_HOUSE_KM,
+                DIST_OLD_HOUSE_TO_OFFICE_KM,
+                EVENT_END_DATE,
+                EVENT_START_DATE,
+                FINAL_AMOUNT_TO_RECEIVE,
+                HOUSE_COMPLETION_DATE,
+                HOUSING_LOAN_SCHEME,
+                LAST_APPROVED_DATE,
+                LAST_APPROVED_TIME,
+                LAST_MODIFIED_DATE,
+                LENDER_NAME,
+                LOCATION,
+                MOVE_IN_DATE,
+                NEW_HOUSE_ADDRESS,
+                PAYMENT_DATE,
+                PURPOSE,
+                REQUEST_ID,
+                SPECIFY_DETAILS,
+                SPOUSE_OFFICE_ADDRESS,
+                SUBMISSION_TYPE,
+                SUBMITTED_DATE,
+                TOTAL_CLAIM_AMOUNT,
+                TRIP_END_DATE,
+                TRIP_START_DATE,
+                ZEMP_MASTER.DEP,
+                ZEMP_MASTER.NAME,
+                ZEMP_MASTER.POS,
+                ZEMP_MASTER.GRADE,
+                ZEMP_MASTER.JOB_GROUP,
+                createdBy,
+                modifiedAt
         };
 
     entity ZEMP_CLAIM_HEADER_VIEW        as
@@ -674,7 +762,7 @@ type ApprovedClaimBatch {
                 TRIP_START_DATE
         };
 
-    
+
     @cds.redirection.target
     entity ZEMP_CLAIM_BUDGET_CHECK       as
         projection on ECLAIM.ZCLAIM_HEADER {
@@ -701,44 +789,48 @@ type ApprovedClaimBatch {
                 ZREQUEST_ITEM.MATERIAL_CODE,
                 createdBy
         };
-      
-    entity ZEMP_APPROVER_DETAILS as
-        select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request
-        { 
-            key PREAPPROVAL_ID as ID,
-            key LEVEL,
-                STATUS,
-                ZSTATUS.STATUS_DESC as STATUS_DESC,
-                ZREQUEST_HEADER.OBJECTIVE_PURPOSE as PURPOSE,
-                APPROVER_ID,
-                ZEMP_MASTER_APPROVER.NAME as APPROVER_NAME,
-                ZEMP_MASTER_APPROVER.EMAIL as APPROVER_EMAIL,
-                ZREQUEST_HEADER.REQUEST_DATE as REQUEST_DATE,
-                ZREQUEST_HEADER.CASH_ADVANCE as AMOUNT,
-                ZREQUEST_HEADER.PREAPPROVAL_AMOUNT as TOTAL_AMOUNT,
-                modifiedAt } 
-                where ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'  
-        UNION ALL
-        select from ECLAIM.ZAPPROVER_DETAILS_CLAIMS as claim
-        {
-            key CLAIM_ID as ID,
-            key LEVEL,
-                STATUS,
-                ZSTATUS.STATUS_DESC as STATUS_DESC,
-                ZCLAIM_HEADER.PURPOSE as PURPOSE,
-                APPROVER_ID,
-                ZEMP_MASTER_APPROVER.NAME as APPROVER_NAME,
-                ZEMP_MASTER_APPROVER.EMAIL as APPROVER_EMAIL,
-                ZCLAIM_HEADER.SUBMITTED_DATE as REQUEST_DATE,
-                ZCLAIM_HEADER.FINAL_AMOUNT_TO_RECEIVE as AMOUNT,
-                ZCLAIM_HEADER.TOTAL_CLAIM_AMOUNT as TOTAL_AMOUNT,
-                modifiedAt }
-                where ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
 
-    entity ZEMP_TRAIN_COURSE as projection on ECLAIM.ZTRAIN_COURSE_PART; 
+    entity ZEMP_APPROVER_DETAILS         as
+            select from ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL as request {
+                key PREAPPROVAL_ID                     as ID,
+                key LEVEL,
+                    STATUS,
+                    ZSTATUS.STATUS_DESC                as STATUS_DESC,
+                    ZREQUEST_HEADER.OBJECTIVE_PURPOSE  as PURPOSE,
+                    APPROVER_ID,
+                    ZEMP_MASTER_APPROVER.NAME          as APPROVER_NAME,
+                    ZEMP_MASTER_APPROVER.EMAIL         as APPROVER_EMAIL,
+                    ZREQUEST_HEADER.REQUEST_DATE       as REQUEST_DATE,
+                    ZREQUEST_HEADER.CASH_ADVANCE       as AMOUNT,
+                    ZREQUEST_HEADER.PREAPPROVAL_AMOUNT as TOTAL_AMOUNT,
+                    modifiedAt
+            }
+            where
+                ZSTATUS.STATUS_DESC = 'PENDING APPROVAL'
+        union all
+            select from ECLAIM.ZAPPROVER_DETAILS_CLAIMS as claim {
+                key CLAIM_ID                              as ID,
+                key LEVEL,
+                    STATUS,
+                    ZSTATUS.STATUS_DESC                   as STATUS_DESC,
+                    ZCLAIM_HEADER.PURPOSE                 as PURPOSE,
+                    APPROVER_ID,
+                    ZEMP_MASTER_APPROVER.NAME             as APPROVER_NAME,
+                    ZEMP_MASTER_APPROVER.EMAIL            as APPROVER_EMAIL,
+                    ZCLAIM_HEADER.SUBMITTED_DATE          as REQUEST_DATE,
+                    ZCLAIM_HEADER.FINAL_AMOUNT_TO_RECEIVE as AMOUNT,
+                    ZCLAIM_HEADER.TOTAL_CLAIM_AMOUNT      as TOTAL_AMOUNT,
+                    modifiedAt
+            }
+            where
+                ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
+
+    entity ZEMP_TRAIN_COURSE             as projection on ECLAIM.ZTRAIN_COURSE_PART;
 
 
-    action sendApprovedClaimBatch(batch : ApprovedClaimBatch) returns { message : String; };
+    action sendApprovedClaimBatch(batch: ApprovedClaimBatch) returns {
+        message : String;
+    };
 
 
 };
