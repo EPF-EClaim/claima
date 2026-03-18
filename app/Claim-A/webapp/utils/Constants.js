@@ -72,7 +72,7 @@ sap.ui.define([
             "FAIL": "FAIL",
             "ALL": "*"
         },
-        "CLAIM_STATUS":{
+        "ClaimStatus":{
             "DRAFT": "STAT01",
             "PENDING_APPROVAL": "STAT02",
             "SEND_BACK": "STAT03",

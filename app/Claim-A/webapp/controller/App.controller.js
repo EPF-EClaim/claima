@@ -16,7 +16,6 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
 	"sap/ui/export/Spreadsheet",
-	"claima/utils/Constants",
 	"claima/utils/PARequestSharedFunction",
 	"claima/utils/Attachment",
 	"claima/utils/ApprovalLog",
@@ -45,7 +44,6 @@ sap.ui.define([
 	FilterOperator,
 	Sorter,
 	Spreadsheet,
-	Constants,
 	PARequestSharedFunction,
 	Attachment,
 	ApprovalLog,
@@ -65,6 +63,8 @@ sap.ui.define([
 		_ReqAttachmentFile2: null,
 
 		onInit: async function () {
+			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
+
 			// oReportModel
 			var oReportModel = new JSONModel({
 				"purpose": "",
@@ -639,7 +639,7 @@ sap.ui.define([
 							filters: [
 								new Filter('EMP_ID', FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
 								new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oInputModel.getProperty("/claimtype/type")),
-								new Filter('STATUS', FilterOperator.EQ, Constants.CLAIM_STATUS.APPROVED),
+								new Filter('STATUS', FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED),
 							],
 							parameters: {
 								$expand: {
@@ -858,7 +858,7 @@ sap.ui.define([
 			var lastModifiedDate = this._getJsonDate(new Date());
 			oInputModel.setProperty("/is_new", true);
 			oInputModel.setProperty("/claim_header/emp_id", oInputModel.getProperty("/emp_master/eeid"));
-			// oInputModel.setProperty("/claim_header/status_id", Constants.CLAIM_STATUS.DRAFT);
+			// oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.DRAFT);
 			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 			oInputModel.setProperty("/claim_header/claim_type_id", oInputModel.getProperty("/claimtype/type"));
 			oInputModel.setProperty("/claim_header/submission_type", oInputModel.getProperty("/claimtype/category"));
@@ -1061,7 +1061,7 @@ sap.ui.define([
 			}
 			//// set status for new claim as draft
 			if (oInputModel.getProperty("/is_new")) {
-				oInputModel.setProperty("/claim_header/status_id", Constants.CLAIM_STATUS.DRAFT);
+				oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.DRAFT);
 				oInputModel.setProperty("/claim_header/descr/status_id", "DRAFT");
 			}
 
@@ -1668,7 +1668,7 @@ sap.ui.define([
 					EVENT_END_DATE: oInputData.eventenddate,
 					TRIP_START_DATE: oInputData.tripstartdate,
 					TRIP_END_DATE: oInputData.tripenddate,
-					STATUS: Constants.CLAIM_STATUS.DRAFT,
+					STATUS: this._oConstant.ClaimStatus.DRAFT,
 					CLAIM_TYPE_ID: oInputData.claimtype,
 					REQUEST_DATE: new Date().toISOString().slice(0, 10)
 				};
@@ -1914,7 +1914,7 @@ sap.ui.define([
 			const oStatusPending = new sap.ui.model.Filter(
 				"STATUS",
 				sap.ui.model.FilterOperator.EQ,
-				Constants.CLAIM_STATUS.PENDING_APPROVAL // use the exact code/value your backend expects
+				this._oConstant.ClaimStatus.PENDING_APPROVAL // use the exact code/value your backend expects
 			);
 			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
 			const oCombined = new sap.ui.model.Filter({
@@ -1971,7 +1971,7 @@ sap.ui.define([
 			const oStatusPending = new Filter(
 				"STATUS",
 				FilterOperator.EQ,
-				Constants.CLAIM_STATUS.PENDING_APPROVAL // use the exact code/value your backend expects
+				this._oConstant.ClaimStatus.PENDING_APPROVAL // use the exact code/value your backend expects
 			);
 			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
 			const oCombined = new Filter({

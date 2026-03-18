@@ -4,9 +4,8 @@ sap.ui.define([
 	"sap/m/MessageToast",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
-	"sap/ui/model/Sorter",
-	"claima/utils/Constants"
-], function (Controller, JSONModel, MessageToast, Filter, FilterOperator, Sorter, Constants) {
+	"sap/ui/model/Sorter"
+], function (Controller, JSONModel, MessageToast, Filter, FilterOperator, Sorter) {
 	"use strict";
 
 	return Controller.extend("claima.controller.ClaimStatus", {
@@ -14,6 +13,7 @@ sap.ui.define([
 		onInit: function () {
 			// Track current sort direction per path: true = DESC, false = ASC
 			this._mSortState = {};
+			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 		},
 
 		_getClaimModel() {
@@ -243,8 +243,8 @@ sap.ui.define([
 
 				// set view-only
 				if (
-					oClaimInputModel.getProperty("/claim_header/status_id") !== Constants.CLAIM_STATUS.DRAFT &&
-					oClaimInputModel.getProperty("/claim_header/status_id") !== Constants.CLAIM_STATUS.SEND_BACK
+					oClaimInputModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
+					oClaimInputModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
 				) {
 					oClaimInputModel.setProperty("/view_only", true)
 				}
