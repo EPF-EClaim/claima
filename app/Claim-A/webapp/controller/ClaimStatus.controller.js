@@ -243,8 +243,8 @@ sap.ui.define([
 
 				// set view-only
 				if (
-					oClaimInputModel.getProperty("/claim_header/status_id") !== Constants.CLAIM_STATUS.STAT01 &&
-					oClaimInputModel.getProperty("/claim_header/status_id") !== Constants.CLAIM_STATUS.STAT03
+					oClaimInputModel.getProperty("/claim_header/status_id") !== Constants.CLAIM_STATUS.DRAFT &&
+					oClaimInputModel.getProperty("/claim_header/status_id") !== Constants.CLAIM_STATUS.SEND_BACK
 				) {
 					oClaimInputModel.setProperty("/view_only", true)
 				}

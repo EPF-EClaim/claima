@@ -73,13 +73,13 @@ sap.ui.define([
             "ALL": "*"
         },
         "CLAIM_STATUS":{
-            "STAT01": "STAT01",
-            "STAT02": "STAT02",
-            "STAT03": "STAT03",
-            "STAT03": "STAT04",
-            "STAT03": "STAT05",
-            "STAT03": "STAT06",
-            "STAT03": "STAT07",
+            "DRAFT": "STAT01",
+            "PENDING_APPROVAL": "STAT02",
+            "SEND_BACK": "STAT03",
+            "REJECTED": "STAT04",
+            "APPROVED": "STAT05",
+            "COMPLETED_DISBURSEMENT": "STAT06",
+            "CANCELLED": "STAT07",
         },
         "FLIGHT_CLASS_ID":{
             "01": "01",

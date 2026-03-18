@@ -197,15 +197,15 @@ sap.ui.define([
 				this._disableFooterButtons();
 
 				// show approval log fragment for non-draft
-				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== Constants.CLAIM_STATUS.STAT01) {
+				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== Constants.CLAIM_STATUS.DRAFT) {
 					this._setApprovalLog(true);
 				}
 
 				// set view-only features
 				if (!oClaimSubmissionModel.getProperty("/view_only")) {
 					if (
-						oClaimSubmissionModel.getProperty("/claim_header/status_id") !== Constants.CLAIM_STATUS.STAT01 &&
-						oClaimSubmissionModel.getProperty("/claim_header/status_id") !== Constants.CLAIM_STATUS.STAT03
+						oClaimSubmissionModel.getProperty("/claim_header/status_id") !== Constants.CLAIM_STATUS.DRAFT &&
+						oClaimSubmissionModel.getProperty("/claim_header/status_id") !== Constants.CLAIM_STATUS.SEND_BACK
 					) {
 						oClaimSubmissionModel.setProperty("/view_only", true)
 					}
@@ -1625,7 +1625,7 @@ sap.ui.define([
 				const claimModel = this.getView().getModel("claimsubmission_input");
 				const claimId = claimModel?.getProperty("/claim_header/claim_id")?.trim();
 
-				const reject_status = Constants.CLAIM_STATUS.STAT04; // REJECT
+				const reject_status = Constants.CLAIM_STATUS.REJECTED; // REJECT
 
 				// Utility handles details + header status (use STATUS_ID for claim header)
 				const { payloads, dataset, submissionType } =
@@ -1684,7 +1684,7 @@ sap.ui.define([
 				const claimModel = this.getView().getModel("claimsubmission_input");
 				const claimId = claimModel?.getProperty("/claim_header/claim_id")?.trim();
 
-				const reject_status = Constants.CLAIM_STATUS.STAT03; // SEND BACK
+				const reject_status = Constants.CLAIM_STATUS.SEND_BACK; // SEND BACK
 
 				const { payloads, dataset, submissionType } =
 					await ApproverUtility.rejectOrSendBackMultiLevel(
@@ -1857,7 +1857,7 @@ sap.ui.define([
 
 		_disableFooterButtons: function () {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === Constants.CLAIM_STATUS.STAT07) {
+			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === Constants.CLAIM_STATUS.CANCELLED) {
 				this.byId("button_claimsubmission_savedraft").setEnabled(false);
 				this.byId("button_claimsubmission_deletereport").setEnabled(false);
 				this.byId("button_claimsubmission_submitreport").setEnabled(false);
@@ -2819,7 +2819,7 @@ sap.ui.define([
 				}
 				//// set status for new claim as draft
 				if (oInputModel.getProperty("/is_new")) {
-					oInputModel.setProperty("/claim_header/status_id", Constants.CLAIM_STATUS.STAT01);
+					oInputModel.setProperty("/claim_header/status_id", Constants.CLAIM_STATUS.DRAFT);
 					oInputModel.setProperty("/claim_header/descr/status_id", "DRAFT");
 				}
 
@@ -2935,7 +2935,7 @@ sap.ui.define([
 							var oMsg = this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_changed");
 							break;
 						case 'Delete Report':
-							oCtx.setProperty("STATUS_ID", Constants.CLAIM_STATUS.STAT07);
+							oCtx.setProperty("STATUS_ID", Constants.CLAIM_STATUS.CANCELLED);
 							oMsg = this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_deleted");
 							break;
 						case 'Submit Report':
@@ -2964,7 +2964,7 @@ sap.ui.define([
 								return;
 							}
 							else {
-								oCtx.setProperty("STATUS_ID", Constants.CLAIM_STATUS.STAT02);
+								oCtx.setProperty("STATUS_ID", Constants.CLAIM_STATUS.PENDING_APPROVAL);
 								if (oCtx.getProperty("SUBMITTED_DATE", null)) {
 									var submittedDate = this._getJsonDate(new Date());
 									oCtx.setProperty("SUBMITTED_DATE", this._getHanaDate(submittedDate));
@@ -2988,12 +2988,12 @@ sap.ui.define([
 					//// change status based on oAction
 					switch (oAction) {
 						case 'Delete Report':
-							oInputModel.setProperty("/claim_header/status_id", Constants.CLAIM_STATUS.STAT07);
+							oInputModel.setProperty("/claim_header/status_id", Constants.CLAIM_STATUS.CANCELLED);
 							oInputModel.setProperty("/claim_header/descr/status_id", "CANCELLED");
 							this.onBack_ClaimSubmission();
 							break;
 						case 'Submit Report':
-							oInputModel.setProperty("/claim_header/status_id", Constants.CLAIM_STATUS.STAT02);
+							oInputModel.setProperty("/claim_header/status_id", Constants.CLAIM_STATUS.PENDING_APPROVAL);
 							oInputModel.setProperty("/claim_header/descr/status_id", "PENDING APPROVAL");
 							if (!oInputModel.getProperty("/claim_header/submitted_date")) {
 								oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
@@ -3945,7 +3945,7 @@ sap.ui.define([
 			const oStatusPending = new Filter(
 				"STATUS",
 				FilterOperator.EQ,
-				Constants.CLAIM_STATUS.STAT02 // use the exact code/value your backend expects
+				Constants.CLAIM_STATUS.PENDING_APPROVAL // use the exact code/value your backend expects
 			);
 			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
 			const oCombined = new Filter({
@@ -4005,7 +4005,7 @@ sap.ui.define([
 			const oStatusPending = new Filter(
 				"STATUS",
 				FilterOperator.EQ,
-				Constants.CLAIM_STATUS.STAT02 // use the exact code/value your backend expects
+				Constants.CLAIM_STATUS.PENDING_APPROVAL // use the exact code/value your backend expects
 			);
 			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
 			const oCombined = new Filter({
