@@ -10,8 +10,9 @@ sap.ui.define([
     "sap/m/Label",
     "sap/ui/core/Fragment",
     "sap/ui/export/Spreadsheet",
-    "sap/ui/core/BusyIndicator"
-], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, Sorter, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator) {
+    "sap/ui/core/BusyIndicator",
+	"claima/utils/Constants"
+], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, Sorter, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator, Constants) {
     "use strict";
 
     return Controller.extend("claima.controller.MyApproval", {
@@ -482,8 +483,8 @@ sap.ui.define([
 
 				// set view-only for non-draft claims
 				if (
-					oClaimInputModel.getProperty("/claim_header/status_id") !== 'STAT01' &&
-					oClaimInputModel.getProperty("/claim_header/status_id") !== 'STAT03'
+					oClaimInputModel.getProperty("/claim_header/status_id") !== Constants.CLAIM_STATUS.STAT01 &&
+					oClaimInputModel.getProperty("/claim_header/status_id") !== Constants.CLAIM_STATUS.STAT03
 				) {
 					oClaimInputModel.setProperty("/view_only", true)
 				}
