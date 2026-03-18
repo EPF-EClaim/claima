@@ -73,7 +73,7 @@ sap.ui.define([
 
 				const oModel = this.getOwnerComponent().getModel('employee_view');
 				const oListBinding = oModel.bindList(
-					"/ZEMP_REQUEST_VIEW",
+					"/ZEMP_REQUEST_EE_VIEW",
 					null,
 					null,
 					[
