@@ -137,8 +137,17 @@ sap.ui.define([
 			// oReqModel.user = emp_data.eeid;
 			// this._getReqModel().setData(oReqModel);
 
+			// Route to Dashboard on first initialize only. Refresh will only reload the page you at.
+			const oHashChanger = sap.ui.core.routing.HashChanger.getInstance();
+			const sHash = oHashChanger.getHash();
 			oRouter.getRoute("Dashboard").attachMatched(this._onDashboardMatched, this);
-			oRouter.navTo("Dashboard");
+			const bIsDeepLink = sHash.includes("RequestForm") || sHash.includes("Claim");
+
+			if (!bIsDeepLink || sHash === "") {
+				oRouter.navTo("Dashboard", {}, true); 
+			} else {
+				oRouter.initialize();
+			}
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
@@ -1533,7 +1542,7 @@ sap.ui.define([
 					var attachment2_ID = await Attachment.postAttachment(oData.doc2, attachment_2, emp_id);
 					oData.doc2 = attachment2_ID;
 				}
-				this.createRequestHeader(oData, oReqModel);
+				await this.createRequestHeader(oData, oReqModel);
 			}
 			sap.ui.core.BusyIndicator.hide();
 		},
@@ -1676,7 +1685,7 @@ sap.ui.define([
 					//oResult.reqNo send this to approval determination
 
 					var oRouter = this.getOwnerComponent().getRouter();
-					oRouter.navTo("RequestFormNew");
+					oRouter.navTo("RequestForm", {request_id: oResult.reqNo});
 				}).catch(err => {
 					sap.m.MessageToast.show("Creation failed: " + err.message);
 				});
@@ -2115,10 +2124,7 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel('employee_view');
 
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			//Start of add Aiman Salim 15/03/2026 - Replace with Filter using Last Modified date
-			//PARequestSharedFunction.getPARHeaderList(oReq, oModel);
-			PARequestSharedFunction.getPARHeaderList_withfilterlastmod(oReq, oModel);
-			//End of add Aiman Salim 15/03/2026 - Replace with Filter using Last Modified date
+			PARequestSharedFunction.getPARHeaderList(oReq, oModel);
 			var oRouter = this.getOwnerComponent().getRouter();
 			oRouter.navTo("RequestFormStatus");
 		},

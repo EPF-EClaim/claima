@@ -31,7 +31,7 @@ sap.ui.define([
 		async getPARHeaderList(oReq, oModel) {
 
 			const oListBinding = oModel.bindList("/ZEMP_REQUEST_VIEW", undefined,
-				[new Sorter("REQUEST_ID", true)], null,
+				[new Sorter("modifiedAt", true)], null,
 				{
 					$$ownRequest: true,
 					$$groupId: "$auto",
@@ -57,44 +57,6 @@ sap.ui.define([
 				oReq.setProperty("/req_header_list", []);
 				oReq.setProperty("/req_header_count", 0);
 				return [];
-			}
-		},
-
-		_determineCurrentState(that, oReq) {
-			if (oReq.getProperty('/view') != 'approver') {
-				switch (oReq.getProperty('/req_header/reqstatus')) {
-					case 'DRAFT' || 'SEND BACK':
-						that.byId('req_back_scr').setVisible(false);
-						that.byId("req_back").setVisible(true);
-						that.byId("req_delete").setVisible(true);
-						that.byId("req_submit").setVisible(true);
-						oReq.setProperty('/view', 'list');
-						break;
-					case 'DELETE':
-						that.byId('req_back_scr').setVisible(true);
-						that.byId("req_back").setVisible(false);
-						that.byId("req_delete").setVisible(false);
-						that.byId("req_submit").setVisible(false);
-						oReq.setProperty('/view', 'view');
-						break;
-					case 'APPROVED':
-						that.byId('req_back_scr').setVisible(true);
-						that.byId("req_back").setVisible(false);
-						that.byId("req_delete").setVisible(false);
-						that.byId("req_submit").setVisible(true);
-						oReq.setProperty('/view', 'list');
-						break;
-					case 'PENDING APPROVAL':
-						that.byId('req_back_scr').setVisible(true);
-						that.byId("req_back").setVisible(false);
-						that.byId("req_delete").setVisible(true);
-						that.byId("req_submit").setVisible(false);
-						oReq.setProperty('/view', 'view');
-						break;
-					default:
-						oReq.setProperty('/view', 'view');
-						break;
-				}
 			}
 		},
 
@@ -162,37 +124,67 @@ sap.ui.define([
 			}
 		},
 
-		//Aiman Salim - Added to fetch with filter last modified date;
-
-		async getPARHeaderList_withfilterlastmod(oReq, oModel) {
-
-			const oListBinding = oModel.bindList("/ZEMP_REQUEST_VIEW", undefined,
-				[new Sorter("modifiedAt", true)], null,
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-					$$updateGroupId: "$auto",
-					$count: true
+		_determineCurrentState(that, oReq) {
+			if (oReq.getProperty('/view') != 'approver') {
+				switch (oReq.getProperty('/req_header/reqstatus')) {
+					case 'DRAFT' || 'SEND BACK':
+						that.byId('req_back_scr').setVisible(false);
+						that.byId("req_back").setVisible(true);
+						that.byId("req_delete").setVisible(true);
+						that.byId("req_submit").setVisible(true);
+						oReq.setProperty('/view', 'list');
+						break;
+					case 'DELETE':
+						that.byId('req_back_scr').setVisible(true);
+						that.byId("req_back").setVisible(false);
+						that.byId("req_delete").setVisible(false);
+						that.byId("req_submit").setVisible(false);
+						oReq.setProperty('/view', 'view');
+						break;
+					case 'APPROVED':
+						that.byId('req_back_scr').setVisible(true);
+						that.byId("req_back").setVisible(false);
+						that.byId("req_delete").setVisible(false);
+						that.byId("req_submit").setVisible(true);
+						oReq.setProperty('/view', 'list');
+						break;
+					case 'PENDING APPROVAL':
+						that.byId('req_back_scr').setVisible(true);
+						that.byId("req_back").setVisible(false);
+						that.byId("req_delete").setVisible(true);
+						that.byId("req_submit").setVisible(false);
+						oReq.setProperty('/view', 'view');
+						break;
+					default:
+						oReq.setProperty('/view', 'view');
+						break;
 				}
-			);
+			}
+		},
+
+		async _getEmpIdDetail(that, sEEID) {
+			const oModel = that.getView().getModel();
+			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
+				new Filter("EEID", FilterOperator.EQ, sEEID)
+			]);
 
 			try {
-				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				const a = aCtx.map((ctx) => ctx.getObject());
+				const aContexts = await oListBinding.requestContexts(0, 1);
 
-				a.forEach((it) => {
-					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
-				});
-
-				oReq.setProperty("/req_header_list", a);
-				oReq.setProperty("/req_header_count", a.length);
-
-				return a;
-			} catch (err) {
-				console.error("OData bindList failed:", err);
-				oReq.setProperty("/req_header_list", []);
-				oReq.setProperty("/req_header_count", 0);
-				return [];
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					return {
+						eeid: oData.EEID,
+						name: oData.NAME,
+						cc: oData.CC
+					};
+				} else {
+					console.warn("No employee found with ID: " + sEEID);
+					return null;
+				}
+			} catch (oError) {
+				console.error("Error fetching employee detail", oError);
+				return null;
 			}
 		},
 

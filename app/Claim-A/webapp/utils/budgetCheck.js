@@ -111,27 +111,20 @@ sap.ui.define([
 		// process 			= 'lock' / 'release' / 'approve'
 
 		async budgetProcessing(oModel, dataset, submission_type, process) {
-			for (const row in dataset) {
+			const sGroupId = 'budgetUpdateGroup';
+			for (const row of dataset) {
 				let oListBinding;
 
-				if (submission_type == 'CLM') {
-					oListBinding = oModel.bindList("/ZBUDGET", null, null, [
-						new Filter("YEAR", "EQ", row.yyyy),
-						new Filter("INTERNAL_ORDER", "EQ", row.project_code),		// Project Code
-						new Filter("FUND_CENTER", "EQ", row.fund_center),			// Cost Center
-						new Filter("COMMITMENT_ITEM", "EQ", row.commitment_item),	// GL Accont
-						new Filter("MATERIAL_GROUP", "EQ", row.material_code)		// Material Code
-					]);
-				} else if (submission_type == 'REQ') {
-					// get cash advance cost center and gl account
-					oListBinding = oModel.bindList("/ZBUDGET", null, null, [
-						new Filter("YEAR", "EQ", row.yyyy),
-						new Filter("INTERNAL_ORDER", "EQ", '-'),		// Project Code
-						new Filter("FUND_CENTER", "EQ", '100000000'),	// Cost Center
-						new Filter("COMMITMENT_ITEM", "EQ", '214005'),	// GL Accont
-						new Filter("MATERIAL_GROUP", "EQ", '-')			// Material Code
-					]);
-				}
+				oListBinding = oModel.bindList("/ZBUDGET", null, null, [
+					new Filter("YEAR", "EQ", row.yyyy),
+					new Filter("INTERNAL_ORDER", "EQ", row.project_code),		// Project Code
+					new Filter("FUND_CENTER", "EQ", row.fund_center),			// Cost Center
+					new Filter("COMMITMENT_ITEM", "EQ", row.commitment_item),	// GL Accont
+					new Filter("MATERIAL_GROUP", "EQ", row.material_code)		// Material Code
+				], {
+					$$updateGroupId: sGroupId
+				});
+
 				try {
 					const aCtx = await oListBinding.requestContexts(0, 1);
 					if (!aCtx || aCtx.length === 0) {
@@ -152,16 +145,16 @@ sap.ui.define([
 							fNewBalance 	= 	(parseFloat(oCurrentData.BUDGET_BALANCE) || 0) 	- fAmount;
 							break;
 						case 'release':
-							fNewCommitment 	= 	(parseFloat(oCurrentData.COMMITMENT) || 0) 		- fAmount;
+							fNewCommitment 	= 	(parseFloat(oCurrentData.COMMITMENT) || 0) 		+ fAmount;
 							fNewActual 		= 	(parseFloat(oCurrentData.ACTUAL) || 0);
-							fNewConsumed 	= 	(parseFloat(oCurrentData.CONSUMED) || 0) 		- fAmount;
+							fNewConsumed 	= 	(parseFloat(oCurrentData.CONSUMED) || 0) 		+ fAmount;
 							fNewBalance 	= 	(parseFloat(oCurrentData.BUDGET_BALANCE) || 0) 	+ fAmount;
 							break;
 						case 'approve':
-							fNewCommitment 	= 	(parseFloat(oCurrentData.COMMITMENT) || 0) 		- fAmount;
+							fNewCommitment 	= 	(parseFloat(oCurrentData.COMMITMENT) || 0) 		+ fAmount;
 							fNewActual 		= 	(parseFloat(oCurrentData.ACTUAL) || 0) 			- fAmount;
-							fNewConsumed 	= 	(parseFloat(oCurrentData.CONSUMED) || 0) 		- fAmount;
-							fNewBalance 	= 	(parseFloat(oCurrentData.BUDGET_BALANCE) || 0) 	- fAmount;
+							fNewConsumed 	= 	(parseFloat(oCurrentData.CONSUMED) || 0)
+							fNewBalance 	= 	(parseFloat(oCurrentData.BUDGET_BALANCE) || 0)
 							break;
 					}
 
@@ -170,15 +163,17 @@ sap.ui.define([
 					oCtx.setProperty("CONSUMED", fNewConsumed);
 					oCtx.setProperty("BUDGET_BALANCE", fNewBalance);
 					
-					await oModel.submitBatch("budgetUpdateGroup");
-					
-					if (oModel.hasPendingChanges("budgetUpdateGroup")) {
-						throw new Error("Batch update failed on server.");
-					}
-					
 				} catch (err) {
 					console.error("Error updating budget for row:", row, err);
 				}
+			}
+
+			try {
+				await oModel.submitBatch("budgetUpdateGroup");
+				MessageToast.show("Budget update Successfully");
+			} catch (err) {
+				console.error('Final Budget Batch failed', e);
+				throw e;
 			}
 			
 		},
@@ -303,6 +298,47 @@ sap.ui.define([
 			}
 			
 		},
+
+		temp() {
+			// POST    http://localhost:4004/odata/v4/EmployeeSrv/budgetchecking
+			// Content-Type: application/json
+			//  
+			//    {
+			//     "budget": [
+			//       {
+			//       "YEAR": "2026",
+			//       "INTERNAL_ORDER": "1",
+			//       "FUND_CENTER": "100010102",
+			//       "MATERIAL_GROUP": "732002001",
+			//       "COMMITMENT_ITEM": "732002",
+			//       "AMOUNT": 100.00,
+			//       "INDICATOR": "CLM",
+			//       "ACTION": "SUBMIT"
+			//      },
+			//     {
+			//       "YEAR": "2026",
+			//       "INTERNAL_ORDER": "1",
+			//       "FUND_CENTER": "100010102",
+			//       "MATERIAL_GROUP": "732002001",
+			//       "COMMITMENT_ITEM": "732002",
+			//       "AMOUNT": 90,
+			//       "INDICATOR": "CLM",
+			//       "ACTION": "SUBMIT"
+			//     }
+			//     ,
+			//     {
+			//       "YEAR": "2026",
+			//       "INTERNAL_ORDER": "1",
+			//       "FUND_CENTER": "100010105",
+			//       "MATERIAL_GROUP": "732002001",
+			//       "COMMITMENT_ITEM": "732002",
+			//       "AMOUNT": 50,
+			//       "INDICATOR": "CLM",
+			//       "ACTION": "SUBMIT"
+			//     }
+			//     ]
+			//    }
+		}
 
     };
 });
