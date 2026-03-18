@@ -1240,15 +1240,22 @@ sap.ui.define([
 						break;
 					//// Duplicate
 					case 'Duplicate':
-						// confirm dialog
-						this._newDialog(
-							this.getView().getModel("i18n").getResourceBundle().getText("dialog_claimsummary_duplicate"),
-							this.getView().getModel("i18n").getResourceBundle().getText("label_claimsummary_duplicate"),
-							function () {
-								this.onDuplicate_ClaimSummary(table.getSelectedItems())
-								table.removeSelections(true);
-							}.bind(this)
-						);
+						// only allow one item selection
+						if (table.getSelectedItems().length > 1) {
+							MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsummary_singleitem"));
+							return;
+						}
+						else {
+							// confirm dialog
+							this._newDialog(
+								this.getView().getModel("i18n").getResourceBundle().getText("dialog_claimsummary_duplicate"),
+								this.getView().getModel("i18n").getResourceBundle().getText("label_claimsummary_duplicate"),
+								function () {
+									this.onDuplicate_ClaimSummary(table.getSelectedItem());
+									table.removeSelections(true);
+								}.bind(this)
+							);
+						}
 						break;
 					//// Delete
 					case 'Delete':
@@ -1257,7 +1264,7 @@ sap.ui.define([
 							this.getView().getModel("i18n").getResourceBundle().getText("dialog_claimsummary_delete"),
 							this.getView().getModel("i18n").getResourceBundle().getText("label_claimsummary_delete"),
 							function () {
-								this.onDelete_ClaimSummary(table.getSelectedItems())
+								this.onDelete_ClaimSummary(table.getSelectedItems());
 								table.removeSelections(true);
 							}.bind(this)
 						);
@@ -1275,7 +1282,7 @@ sap.ui.define([
 		onEdit_ClaimSummary: function (item) {
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			// get value from selected items
+			// get value from selected item
 			itemSubId = item.getCells()[0].getText();
 			let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
 			if (itemIndex !== -1) {
@@ -1301,35 +1308,38 @@ sap.ui.define([
 			}
 		},
 
-		onDuplicate_ClaimSummary: function (items) {
+		onDuplicate_ClaimSummary: function (item) {
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			// get value from selected items
+			// get value from selected item
 			BusyIndicator.show(0);
-			jQuery.each(items,
-				function (id, value) {
-					itemSubId = value.getCells()[0].getText();
-					let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
-					if (itemIndex !== -1) {
-						var oObject = oInputModel.getProperty("/claim_items/" + itemIndex);
-						oInputModel.setProperty("/claim_items", oInputModel.getProperty("/claim_items").concat(structuredClone(oObject)));
-						oInputModel.setProperty(
-							"/claim_items/" + (oInputModel.getProperty("/claim_items").length - 1) + "/claim_sub_id",
-							(oInputModel.getProperty("/claim_items/" + (oInputModel.getProperty("/claim_items").length - 1) + "/claim_id") ?? "") + ('' + '00' + (oInputModel.getProperty("/claim_items").length)).slice(-3)
-						);
-						oInputModel.setProperty("/claim_items_count", oInputModel.getProperty("/claim_items").length);
+			itemSubId = item.getCells()[0].getText();
+			let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
+			if (itemIndex !== -1) {
+				var oObject = oInputModel.getProperty("/claim_items/" + itemIndex);
+				oInputModel.setProperty("/claim_items", oInputModel.getProperty("/claim_items").concat(structuredClone(oObject)));
+				var addrIndex = "/claim_items/" + (oInputModel.getProperty("/claim_items").length - 1);
+				oInputModel.setProperty(
+					addrIndex + "/claim_sub_id",
+					(oInputModel.getProperty("/claim_items/" + (oInputModel.getProperty("/claim_items").length - 1) + "/claim_id") ?? "") + ('' + '00' + (oInputModel.getProperty("/claim_items").length)).slice(-3)
+				);
+				oInputModel.setProperty("/claim_items_count", oInputModel.getProperty("/claim_items").length);
 
-						// add to total claim amount
-						oInputModel.setProperty(
-							"/claim_header/total_claim_amount",
-							(
-								parseFloat(oInputModel.getProperty("/claim_header/total_claim_amount")) +
-								parseFloat(oInputModel.getProperty("/claim_items/" + itemIndex + "/amount"))
-							).toFixed(2)
-						);
-					}
-				}
-			);
+				// reset values
+				//// amount
+				oInputModel.setProperty(addrIndex + "/amount", 0);
+				//// start/end dates
+				oInputModel.setProperty(addrIndex + "/start_date", null);
+				oInputModel.setProperty(addrIndex + "/end_date", null);
+				oInputModel.setProperty(addrIndex + "/trip_start_date", null);
+				oInputModel.setProperty(addrIndex + "/trip_end_date", null);
+				oInputModel.setProperty(addrIndex + "/event_start_date", null);
+				oInputModel.setProperty(addrIndex + "/event_end_date", null);
+
+				// calculate new total
+				const nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
+				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
+			}
 
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
@@ -1345,15 +1355,6 @@ sap.ui.define([
 					itemSubId = value.getCells()[0].getText();
 					let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
 					if (itemIndex !== -1) {
-						// reduce total claim amount from claim header
-						oInputModel.setProperty(
-							"/claim_header/total_claim_amount",
-							(
-								parseFloat(oInputModel.getProperty("/claim_header/total_claim_amount")) -
-								parseFloat(oInputModel.getProperty("/claim_items/" + itemIndex + "/amount"))
-							).toFixed(2)
-						);
-
 						if (oInputModel.getProperty("/claim_items").length > 1) {
 							oInputModel.getProperty("/claim_items").splice(itemIndex, 1);
 							oInputModel.setProperty("/claim_items_count", oInputModel.getProperty("/claim_items").length);
@@ -1372,6 +1373,10 @@ sap.ui.define([
 					(oInputModel.getProperty("/claim_items/" + i + "/claim_id") ?? "") + ('' + '00' + (i + 1)).slice(-3)
 				);
 			});
+
+			// calculate new total
+			const nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
+			oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
@@ -2046,6 +2051,7 @@ sap.ui.define([
 			}
 			//// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
+
 			// add claim item details to claim submission model
 			if (oInputModel.getProperty("/is_new")) {
 				oClaimSubmissionModel.setProperty("/claim_items", oClaimSubmissionModel.getProperty("/claim_items").concat(oInputModel.getProperty("/claim_item")));
@@ -2061,17 +2067,10 @@ sap.ui.define([
 					}
 				});
 			}
-			// update claim submission header details
-			oClaimSubmissionModel.setProperty("/claim_header/total_claim_amount", "0.00");
-			oClaimSubmissionModel.getProperty("/claim_items").forEach((claim_item, i) => {
-				oClaimSubmissionModel.setProperty(
-					"/claim_header/total_claim_amount",
-					(
-						parseFloat(oClaimSubmissionModel.getProperty("/claim_header/total_claim_amount")) +
-						oClaimSubmissionModel.getProperty("/claim_items/" + i + "/amount")
-					).toFixed(2)
-				)
-			});
+
+			// calculate new total amount of claim submission header
+			const nTotal = oClaimSubmissionModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
+			oClaimSubmissionModel.setProperty("/claim_header/total_claim_amount", nTotal);
 
 			// return to claim item screen
 			this.onCancel_ClaimDetails_Input();
