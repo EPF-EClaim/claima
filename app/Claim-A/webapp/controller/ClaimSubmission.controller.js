@@ -1922,7 +1922,7 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
 			// change footer buttons
-			if (!oClaimSubmissionModel.getProperty("/is_approver")) {
+			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
 				this._displayFooterButtons("claimsubmission_claimdetails_input");
 			}
 
