@@ -76,11 +76,15 @@ sap.ui.define([
       oController.onClickCancel_app ||
       function () { this.__approveDialog && this.__approveDialog.close(); };
 
-    const createHandler =
+/*     const createHandler =
       oController.onClickCreate_app ||
-      oController.onApprove_ClaimSubmission ||
       oController.onApproveRequest ||
-      function () { sap.m.MessageToast.show("No approve handler implemented."); };
+      function () { sap.m.MessageToast.show("No approve handler implemented."); }; */
+
+
+    const createHandler =
+      (oController.onClickCreate_app || oController.onApproveRequest).bind(oController);
+
 
     const oDialog = new Dialog({
       title: "{i18n>approve_claim}",

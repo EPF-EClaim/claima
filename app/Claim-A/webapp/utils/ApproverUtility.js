@@ -19,6 +19,11 @@ sap.ui.define([
             ? "/ZEMP_APPROVER_REQUEST_DETAILS"
             : "/ZEMP_APPROVER_CLAIM_DETAILS";
 
+        let payloads = [];
+
+        let currentEmail = null;
+        let currentName = null;
+
         // STEP 1: Get all approver rows for this ID
         const bindingAll = oModel.bindList(
             sTable,
@@ -68,7 +73,7 @@ sap.ui.define([
 
 
         const now = new Date();
-        const tsLocal = formatTimestamp9(now, { utc: false }); 
+        const tsLocal = formatTimestamp9(now, { utc: false });
         ctxCurrent.setProperty("PROCESS_TIMESTAMP", tsLocal);
         ctxCurrent.setProperty("STATUS", "STAT05"); //APPROVED
 
@@ -78,112 +83,109 @@ sap.ui.define([
 
         if (ctxNext) {
             ctxNext.setProperty("STATUS", "STAT02"); //PENDING APPROVAL
-        } else {
-            console.log("No further approvers found. Proceed to Final Approve Step");
-        }
+            // STEP 5: Fetch data for Email
 
-        // STEP 5: Fetch data for Email
-        const bindingView = oModel2.bindList(
-            sTable2,
-            null,
-            null,
-            [new Filter(sField, FilterOperator.EQ, id)],
-            {
-                $$ownRequest: true
+            const bindingView = oModel2.bindList(
+                sTable2,
+                null,
+                null,
+                [new Filter(sField, FilterOperator.EQ, id)],
+                {
+                    $$ownRequest: true
+                }
+            );
+
+            const aCtx_binding = await bindingView.requestContexts(0, Infinity);
+            const rows_binding = aCtx_binding.map(ctx => ctx.getObject());
+
+            const currentRow_level = rows_binding.find(r =>
+                Number(r.LEVEL) === Number(currentLevel)
+            );
+
+            if (matchedType === "APPROVER_ID") {
+                currentEmail = currentRow_level.APPROVER_EMAIL;
+                currentName = currentRow_level.APPROVER_NAME;
+            } else {
+                currentEmail = currentRow_level.SUBSTITUTE_EMAIL;
+                currentName = currentRow_level.SUBSTITUTE_NAME;
             }
-        );
 
-        const aCtx_binding = await bindingView.requestContexts(0, Infinity);
-        const rows_binding = aCtx_binding.map(ctx => ctx.getObject());
+            const nextRow_level = rows_binding.find(r =>
+                Number(r.LEVEL) === Number(nextLevel)
+            );
 
-        const currentRow_level = rows_binding.find(r =>
-            Number(r.LEVEL) === Number(currentLevel)
-        );
+            let nextApproverName = nextRow_level?.APPROVER_NAME || null;
+            let nextApproverEmail = nextRow_level?.APPROVER_EMAIL || null;
+            let nextSubName = nextRow_level?.SUBSTITUTE_NAME || null;
+            let nextSubEmail = nextRow_level?.SUBSTITUTE_EMAIL || null;
 
-        let currentEmail = null;
-        let currentName = null;
+            const isPre = submissionType === "REQ";
 
-        if (matchedType === "APPROVER_ID") {
-            currentEmail = currentRow_level.APPROVER_EMAIL;
-            currentName = currentRow_level.APPROVER_NAME;
-        } else {
-            currentEmail = currentRow_level.SUBSTITUTE_EMAIL;
-            currentName = currentRow_level.SUBSTITUTE_NAME;
-        }
+            const submissionDate =
+                isPre
+                    ? (currentRow_level?.REQUEST_DATE ?? null)      // Pre‑Approval tables
+                    : (currentRow_level?.SUBMITTED_DATE ?? null);   // Claim tables
 
-        const nextRow_level = rows_binding.find(r =>
-            Number(r.LEVEL) === Number(nextLevel)
-        );
-
-        let nextApproverName = nextRow_level?.APPROVER_NAME || null;
-        let nextApproverEmail = nextRow_level?.APPROVER_EMAIL || null;
-        let nextSubName = nextRow_level?.SUBSTITUTE_NAME || null;
-        let nextSubEmail = nextRow_level?.SUBSTITUTE_EMAIL || null;
-
-        const isPre = submissionType === "REQ";
-
-        const submissionDate =
-            isPre
-                ? (currentRow_level?.REQUEST_DATE ?? null)      // Pre‑Approval tables
-                : (currentRow_level?.SUBMITTED_DATE ?? null);   // Claim tables
-                
-        const claimantName = currentRow_level?.EMPLOYEE_NAME ?? null;
-        const claimantEmail = currentRow_level?.EMPLOYEE_EMAIL ?? null;
+            const claimantName = currentRow_level?.EMPLOYEE_NAME ?? null;
+            const claimantEmail = currentRow_level?.EMPLOYEE_EMAIL ?? null;
 
 
-        const isPresent = v => typeof v === "string" ? v.trim().length > 0 : !!v;
-        const hasSub = isPresent(nextSubName) && isPresent(nextSubEmail);
-        const payloads = [];
-        const nextApproverDisplayName = nextApproverName || nextSubName;
+            const isPresent = v => typeof v === "string" ? v.trim().length > 0 : !!v;
+            const nextApproverDisplayName = nextApproverName || nextSubName;
 
-        //Email to Next Approver
+            //Email to Next Approver
 
-        if (ctxNext && isPresent(nextApproverName) && isPresent(nextApproverEmail)) {
-            payloads.push({
-                ApproverName: currentName,
-                SubmissionDate: submissionDate,
-                ClaimantName: claimantName,
-                ClaimType: sType,
-                ClaimID: id,
-                RecipientName: nextApproverName,
-                Action: "Notify",
-                ReceiverEmail: nextApproverEmail,
-                NextApproverName: nextApproverName,
-                RejectReason: "N/A",
-                ApproverComments: comment
-            });
-
-            if (isPresent(nextSubName) && isPresent(nextSubEmail)) {
+            if (ctxNext && isPresent(nextApproverName) && isPresent(nextApproverEmail)) {
                 payloads.push({
                     ApproverName: currentName,
                     SubmissionDate: submissionDate,
                     ClaimantName: claimantName,
                     ClaimType: sType,
                     ClaimID: id,
-                    RecipientName: nextSubName,
+                    RecipientName: nextApproverName,
                     Action: "Notify",
-                    ReceiverEmail: nextSubEmail,
-                    NextApproverName: nextSubName,
+                    ReceiverEmail: nextApproverEmail,
+                    NextApproverName: nextApproverName,
                     RejectReason: "N/A",
                     ApproverComments: comment
                 });
-            }
-        }
 
-        //Email to Claimant
-        payloads.push({
-            ApproverName: currentName,
-            SubmissionDate: todayYMD(),
-            ClaimantName: claimantName,
-            ClaimType: sType,
-            ClaimID: id,
-            RecipientName: claimantName,
-            Action: "Approve",
-            ReceiverEmail: claimantEmail,
-            NextApproverName: nextApproverDisplayName,
-            RejectReason: "N/A",
-            ApproverComments: comment
-        });
+                if (isPresent(nextSubName) && isPresent(nextSubEmail)) {
+                    payloads.push({
+                        ApproverName: currentName,
+                        SubmissionDate: submissionDate,
+                        ClaimantName: claimantName,
+                        ClaimType: sType,
+                        ClaimID: id,
+                        RecipientName: nextSubName,
+                        Action: "Notify",
+                        ReceiverEmail: nextSubEmail,
+                        NextApproverName: nextSubName,
+                        RejectReason: "N/A",
+                        ApproverComments: comment
+                    });
+                }
+            }
+
+            //Email to Claimant
+            payloads.push({
+                ApproverName: currentName,
+                SubmissionDate: todayYMD(),
+                ClaimantName: claimantName,
+                ClaimType: sType,
+                ClaimID: id,
+                RecipientName: claimantName,
+                Action: "Approve",
+                ReceiverEmail: claimantEmail,
+                NextApproverName: nextApproverDisplayName,
+                RejectReason: "N/A",
+                ApproverComments: comment
+            });
+
+
+        } else {
+            console.log("No further approvers found. Proceed to Final Approve Step");
+        }
 
         // STEP 6: Submit batch update
         await oModel.submitBatch("$auto");

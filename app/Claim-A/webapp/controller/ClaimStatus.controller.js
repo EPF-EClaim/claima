@@ -189,7 +189,6 @@ sap.ui.define([
 
 			//const oModel = this.getOwnerComponent().getModel("employee_view");
 			const oModel = await this._ensureModelReady("employee_view");
-			const oModel2 = this.getOwnerComponent().getModel();
 			const sId = String(sClaimId);
 
 			const aFilters = [new sap.ui.model.Filter("CLAIM_ID", sap.ui.model.FilterOperator.EQ, sId)];

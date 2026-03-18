@@ -700,60 +700,69 @@ sap.ui.define([
 		},
 		//Button config for Approve
 		onClickCreate_app: async function () {
-			// Approve flow for CLAIM submission
-			const oReject = this.getView().getModel("Reject");
-			const mode = oReject?.getProperty("/mode");      // expects "APPROVE_CLAIM" for claim flow
-			const comment = oReject?.getProperty("/approvalComment")?.trim();
-			const accessModel = this.getOwnerComponent().getModel("access");
-			const userId = accessModel?.getProperty("/userId");
-			const claimModel = this.getView().getModel("claimsubmission_input");
-			const claimId = claimModel?.getProperty("/claim_header/claim_id")?.trim();
 
-			if (mode === "APPROVE") {
+			if (this._busyApproving) return;
+			this._busyApproving = true;
+
+			try {
+				// MODE now correctly matches the dialog logic
+				const oReject = this.getView().getModel("Reject");
+				const mode = this.getView().getModel("Type")?.getProperty("/mode");
+				const comment = oReject?.getProperty("/approvalComment")?.trim();
+				const accessModel = this.getOwnerComponent().getModel("access");
+				const userId = accessModel?.getProperty("/userId");
+				const claimModel = this.getView().getModel("claimsubmission_input");
+				const claimId = claimModel?.getProperty("/claim_header/claim_id")?.trim();
+
+				if (mode !== "APPROVE_CLAIM") {
+					console.warn("Skipping approve action because mode is:", mode);
+					return;
+				}
+
 				if (!comment) {
 					sap.m.MessageToast.show("Please enter approval comment.");
 					return;
 				}
 
-				try {
-					sap.ui.core.BusyIndicator.show(0);
+				sap.ui.core.BusyIndicator.show(0);
 
-					const oModel = this.getOwnerComponent().getModel();                 // main OData
-					const oModelView = this.getOwnerComponent().getModel("employee_view");
-					const oModelMail = this.getOwnerComponent().getModel();             // or a mail model if different
+				// Main + View + Mail model
+				const oModel = this.getOwnerComponent().getModel();
+				const oModelView = this.getOwnerComponent().getModel("employee_view");
 
-					// 1) Approve + get email payloads
-					const { payloads } = await ApproverUtility.approveMultiLevel(
-						oModel,
-						claimId,
-						userId,
-						comment,
-						oModelView
-					);
-
-					// 2) Send emails
+				const { payloads } = await ApproverUtility.approveMultiLevel(
+					oModel,
+					claimId,
+					userId,
+					comment,
+					oModelView
+				);
+				if (Array.isArray(payloads) && payloads.length > 0) {
 					for (const p of payloads) {
-						await workflowApproval.onSendEmailApprover(oModelMail, p);
+						await workflowApproval.onSendEmailApprover(oModel, p);
 					}
-
-					// 3) Close dialog
-					this.__approveDialog && this.__approveDialog.close();
-
-					// 4) Navigate back after small delay (optional)
-					setTimeout(() => {
-						const oRouter = this.getOwnerComponent().getRouter();
-						this.getOwnerComponent().getModel("employee")?.refresh();
-						this.getOwnerComponent().getModel("employee_view")?.refresh();
-						oRouter.navTo("Dashboard", {}, true);
-					}, 400);
-
-				} catch (e) {
-					sap.m.MessageToast.show(e.message || "Approve failed");
-				} finally {
-					sap.ui.core.BusyIndicator.hide();
+				} else {
+					console.warn("No email payloads returned — skipping notifications");
 				}
-			}
 
+				if (this.__approveDialog) {
+					this.__approveDialog.close();
+				}
+
+				setTimeout(() => {
+					const oRouter = this.getOwnerComponent().getRouter();
+					this.getOwnerComponent().getModel("employee")?.refresh();
+					this.getOwnerComponent().getModel("employee_view")?.refresh();
+					oRouter.navTo("Dashboard", {}, true);
+				}, 400);
+
+			} catch (e) {
+				console.error(e);
+				sap.m.MessageToast.show(e.message || "Approve failed");
+			} finally {
+				sap.ui.core.BusyIndicator.hide();
+				this._busyApproving = false;   
+			}
 		},
 		//Button config for Reject
 		onReject_ClaimSubmission: async function () {
@@ -2414,14 +2423,6 @@ sap.ui.define([
 			oRouter.navTo("Dashboard");
 		},
 
-		onBackToEmp_ClaimSubmission: function () {
-			// back to employee code here
-		},
-
-		onApprove_ClaimSubmission: function () {
-			// approval code here
-		},
-
 		_newDialog: function (title, content, onPress) {
 			this.oDialog = new Dialog({
 				title: title,
@@ -2946,7 +2947,7 @@ sap.ui.define([
 			if (this.getView().getModel("userId")) {
 				userID = this.getView().getModel("userId").getProperty("/userId");
 			}
-			const oApproverOrSub = new sap.ui.model.Filter({
+			const oApproverOrSub = new Filter({
 				filters: [
 					new sap.ui.model.Filter("APPROVER_ID", sap.ui.model.FilterOperator.EQ, userID),
 					new sap.ui.model.Filter("SUBSTITUTE_APPROVER_ID", sap.ui.model.FilterOperator.EQ, userID)
