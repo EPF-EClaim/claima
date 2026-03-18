@@ -244,6 +244,17 @@ sap.ui.define([
 				oClaimInput.setProperty("/claim_header", oHeader);
 				await this._getClaimHeaderDataDescr(oClaimInput);
 
+				// set view-only
+				if (
+					oClaimInput.getProperty("/claim_header/status_id") !== 'STAT01' &&
+					oClaimInput.getProperty("/claim_header/status_id") !== 'STAT03'
+				) {
+					oClaimInput.setProperty("/view_only", true)
+				}
+				else {
+					oClaimInput.setProperty("/view_only", false)
+				}
+
 				// Items
 				const aItems = aItemCtx.map(ctx => ctx.getObject()).map(it => ({
 					// Map to the fragment's structure

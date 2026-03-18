@@ -14,7 +14,6 @@ sap.ui.define([
 	"sap/m/Button",
 	"sap/m/Label",
 	"sap/m/PDFViewer",
-	"sap/m/ListMode",
 	"claima/utils/budgetCheck",
 	"claima/utils/ApproveDialog",
 	"claima/utils/RejectDialog",
@@ -37,7 +36,6 @@ sap.ui.define([
 	Button,
 	Label,
 	PDFViewer,
-	ListMode,
 	budgetCheck,
 	ApproveDialog,
 	RejectDialog,
@@ -52,6 +50,7 @@ sap.ui.define([
 		onInit: function () {
 			this._fragments = Object.create(null);
 			this._clearExit = false;
+			this._currentHash = null;
 
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
@@ -59,23 +58,25 @@ sap.ui.define([
 			oRouter.attachBeforeRouteMatched((event) => { this._beforeRouteMatched(event); }, this);
 		},
 
-		_beforeRouteMatched: function (oEvent) {
-			const oRouter = this.getOwnerComponent().getRouter();
-			const oHistory = History.getInstance();
-			if (!oHistory.getPreviousHash() || oHistory.getPreviousHash().indexOf("ClaimSubmission") === -1) {
+		_beforeRouteMatched: async function (oEvent) {
+			if (!this._currentHash || this._currentHash.indexOf("ClaimSubmission") === -1) {
+				// skip check if not on claim submission page
 				return;
 			}
+
+			// refresh data
+			this._currentHash = null;
+			this.getOwnerComponent().getModel("employee")?.refresh();
+			this.getOwnerComponent().getModel("employee_view")?.refresh();
+
 			if (!this._clearExit) {
+				// return from claim detail input screen
+				this.onCancel_ClaimDetails_Input();
+
 				let oSideNav = true;
 				this.onBack_ClaimSubmission(oSideNav);
-				this.getOwnerComponent().getModel("employee")?.refresh();
-				this.getOwnerComponent().getModel("employee_view")?.refresh();
 			}
 			else {
-				// refresh data
-				this.getOwnerComponent().getModel("employee")?.refresh();
-				this.getOwnerComponent().getModel("employee_view")?.refresh();
-
 				this._clearExit = false;
 			}
 		},
@@ -96,6 +97,9 @@ sap.ui.define([
 		},
 
 		_onMatched: async function (oEvent) {
+			const oRouter = this.getOwnerComponent().getRouter();
+			this._currentHash = oRouter.getHashChanger().getHash();
+
 			let sClaimId = oEvent.getParameter("arguments").claim_id;
 
 			try {
@@ -144,17 +148,21 @@ sap.ui.define([
 			var oPage = this.byId("page_claimsubmission");
 
 			// display initial fragments
-			await this._getFormFragment("claimsubmission_summary_claimheader").then(function (oVBox) {
+			let toCreate = true;
+			await this._getFormFragment("claimsubmission_summary_claimheader", toCreate).then(function (oVBox) {
 				oPage.insertContent(oVBox, 0);
 			});
-			await this._getFormFragment("claimsubmission_summary_claimitem").then(function (oVBox) {
+			await this._getFormFragment("claimsubmission_summary_claimitem", toCreate).then(function (oVBox) {
 				oPage.insertContent(oVBox, 1);
 			});
 		},
 
-		_getFormFragment: async function (sName) {
+		_getFormFragment: async function (sName, toCreate) {
 			const oView = this.getView();
-			if (!this._fragments[sName]) {
+			if (this._fragments[sName]) {
+				return this._fragments[sName];
+			}
+			else if (!this._fragments[sName] && toCreate) {
 				this._fragments[sName] = Fragment.load({
 					id: oView.getId(),
 					name: "claima.fragment." + sName,
@@ -164,8 +172,11 @@ sap.ui.define([
 					oView.addDependent(oFrag);
 					return oFrag;
 				});
+				return this._fragments[sName];
 			}
-			return this._fragments[sName];
+			else {
+				return null;
+			}
 		},
 
 		_afterLoadFragments: function () {
@@ -707,21 +718,20 @@ sap.ui.define([
 			}
 		},
 
-		_setApprovalLog: function (oBool) {
+		_setApprovalLog: async function (oBool) {
 			var oPage = this.byId("page_claimsubmission");
 			if (oBool) {
 				// display approval log
-				this._getFormFragment("approval_log").then(function (oVBox) {
+				let toCreate = true;
+				await this._getFormFragment("approval_log", toCreate).then(function (oVBox) {
 					oPage.insertContent(oVBox, 2);
 				});
 			}
 			else {
 				// remove approval log
-				var oApprovalLogFragment = this._getFormFragment("approval_log");
+				var oApprovalLogFragment = await this._getFormFragment("approval_log");
 				if (oApprovalLogFragment) {
-					oApprovalLogFragment.then(function (oVBox) {
-						oPage.removeContent(oVBox);
-					});
+					oPage.removeContent(oApprovalLogFragment);
 				}
 			}
 		},
@@ -740,7 +750,7 @@ sap.ui.define([
 
 				// table properties
 				if (this.byId("table_claimsummary_claimitem")) {
-					this.byId("table_claimsummary_claimitem").setMode(ListMode.MultiSelect);
+					this.byId("table_claimsummary_claimitem").setMode(sap.m.ListMode.MultiSelect);
 				}
 			}
 			else {
@@ -755,7 +765,7 @@ sap.ui.define([
 
 				// table properties
 				if (this.byId("table_claimsummary_claimitem")) {
-					this.byId("table_claimsummary_claimitem").setMode(ListMode.SingleSelectMaster);
+					this.byId("table_claimsummary_claimitem").setMode(sap.m.ListMode.SingleSelectMaster);
 				}
 			}
 		},
@@ -1165,13 +1175,12 @@ sap.ui.define([
 			BusyIndicator.show(0);
 			// show claim details screen
 			var oPage = this.byId("page_claimsubmission");
-			var oClaimItemFragment = this._getFormFragment("claimsubmission_summary_claimitem");
+			var oClaimItemFragment = await this._getFormFragment("claimsubmission_summary_claimitem");
 			if (oClaimItemFragment) {
-				oClaimItemFragment.then(function (oVBox) {
-					oPage.removeContent(oVBox);
-				});
+				oPage.removeContent(oClaimItemFragment);
 			}
-			const fpromise = await this._getFormFragment("claimsubmission_claimdetails_input").then(function (oVBox) {
+			let toCreate = true;
+			await this._getFormFragment("claimsubmission_claimdetails_input", toCreate).then(function (oVBox) {
 				oPage.insertContent(oVBox, 1);
 			});
 			// set new claim submission model;
@@ -2533,7 +2542,7 @@ sap.ui.define([
 			// show claim details screen
 			var oPage = this.byId("page_claimsubmission");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			var oClaimItemFragment = this._getFormFragment("claimsubmission_claimdetails_input");
+			var oClaimItemFragment = await this._getFormFragment("claimsubmission_claimdetails_input");
 			if (oClaimItemFragment) {
 				// disable item visibility
 				this._setAllControlsVisible(false);
@@ -2551,11 +2560,9 @@ sap.ui.define([
 					this._setAllControlsEditable(true);
 				}
 
-				oClaimItemFragment.then(function (oVBox) {
-					oPage.removeContent(oVBox);
-				});
+				oPage.removeContent(oClaimItemFragment);
 
-				const fpromise = await this._getFormFragment("claimsubmission_summary_claimitem").then(function (oVBox) {
+				await this._getFormFragment("claimsubmission_summary_claimitem", toCreate).then(function (oVBox) {
 					oPage.insertContent(oVBox, 1);
 				});
 				if (!oClaimSubmissionModel.getProperty("/view_only")) {
@@ -3153,9 +3160,9 @@ sap.ui.define([
 			}
 		},
 
-		onBack_ClaimSubmission: function (oSideNav) {
+		onBack_ClaimSubmission: async function (oSideNav) {
 			// remove approval log fragment
-			if (this._getFormFragment("approval_log")) {
+			if (await this._getFormFragment("approval_log")) {
 				this._setApprovalLog(false);
 			}
 
