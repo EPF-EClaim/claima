@@ -80,21 +80,55 @@ sap.ui.define([
         const nextLevel = currentLevel + 1;
         const ctxNext = aCtx.find(ctx => ctx.getObject().LEVEL === nextLevel);
 
-        const emailPayload = {
-                ApproverName: currentName,
-                SubmissionDate: submissionDate || todayYMD(),
-                ClaimantName: claimantName,
-                ClaimType: sType,
-                ClaimID: id,
-                RecipientName: claimantName,
-                Action: "Approved",
-                ReceiverEmail: claimantEmail
-            };
+        //Farisha's part start 
+        // Get Approver Details
+        const oApprList = oModel.bindList(
+            "/ZEMP_MASTER",
+            null,
+            null,
+            [new Filter("EEID", FilterOperator.EQ, aApprEmpID[0])],
+            { $$ownRequest: true }
+        );
+
+        const aApprContexts = await oApprList.requestContexts();
+        const aApprData = aApprContexts.map(oCtx => oCtx.getObject());
+
+        // Get Claimant Details
+        const oClaimantList = oModel.bindList(
+            "/ZEMP_MASTER",
+            null,
+            null,
+            [new Filter("EEID", FilterOperator.EQ, sEmpID)],
+            { $$ownRequest: true }
+        );
+
+        const aClaimantContexts = await oClaimantList.requestContexts();
+        const aClaimantData = aClaimantContexts.map(oCtx => oCtx.getObject());
+
+        const sApproverName = aApprData[0].NAME;
+        const sClaimsSubmissionDate = todayYMD();     
+        const sClaimantName = aClaimantData[0].NAME;
+        const sClaimType = aSubmissionTypeNameData[0].SUBMISSION_TYPE_DESC;
+        const sClaimID = sClaimID;                             
+        const sRecipientName = sClaimantName;
+        const sClaimantEmail = aClaimantData[0].EMAIL;
+
+        const oEmailPayload = {
+            ApproverName: sApproverName,
+            SubmissionDate: sClaimsSubmissionDate,
+            ClaimantName: sClaimantName,
+            ClaimType: sClaimType,
+            ClaimID: sClaimID,
+            RecipientName: sRecipientName,
+            Action: "Approved",
+            ReceiverEmail: sClaimantEmail
+        };
+        //Farisha's part end
 
         if (ctxNext) {
             ctxNext.setProperty("STATUS", "STAT02"); //PENDING APPROVAL
         } else {
-            FinalApproveStep.onFinalApprove(oModel2, id, 'STAT05', oModel,emailPayload);
+            FinalApproveStep.onFinalApprove(oModel2, id, 'STAT05', oModel, oEmailPayload);
         }
 
         //pending fix for payload creation causing server crash - Vincent

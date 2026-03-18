@@ -738,7 +738,7 @@ type ApprovedClaimBatch {
     entity ZEMP_TRAIN_COURSE as projection on ECLAIM.ZTRAIN_COURSE_PART; 
 
 
-action sendApprovedClaimBatch(batch : ApprovedClaimBatch) returns { message : String; };
+    action sendApprovedClaimBatch(batch : ApprovedClaimBatch) returns { message : String; };
 
 
 };

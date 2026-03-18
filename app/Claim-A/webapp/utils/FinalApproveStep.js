@@ -25,7 +25,7 @@ sap.ui.define([
                 const sBudgetApprove = 'approve';
                 const sField_header = bIsPreRequest ? "REQUEST_ID" : "CLAIM_ID";
                 const sTable = bIsPreRequest ? "/ZEMP_REQUEST_BUDGET_CHECK" : "/ZEMP_CLAIM_BUDGET_CHECK";
-                const aFilters = [new Filter(sField_header, FilterOperator.EQ, iClaimID)];
+                const aFilters = [new Filter(sField_header, FilterOperator.EQ, sClaimID)];
                 
                 const oBudgetBinding2 = oModel.bindList(
                     sTable,
