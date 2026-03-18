@@ -80,7 +80,7 @@ sap.ui.define([
 			}
 		},
 
-		_onNavBack: function() {
+		_onNavBack: function () {
 			var oHistory = History.getInstance();
 			var sPreviousHash = oHistory.getPreviousHash();
 
@@ -1532,28 +1532,29 @@ sap.ui.define([
 				try {
 					BusyIndicator.show(0);
 
-				// Main + View + Mail model
-				const oModel = this.getOwnerComponent().getModel();
-				const oModelView = this.getOwnerComponent().getModel("employee_view");
+					// Main + View + Mail model
+					const oModel = this.getOwnerComponent().getModel();
+					const oModelView = this.getOwnerComponent().getModel("employee_view");
 
-				const { payloads } = await ApproverUtility.approveMultiLevel(
-					oModel,
-					claimId,
-					userId,
-					comment,
-					oModelView
-				);
-				if (Array.isArray(payloads) && payloads.length > 0) {
-					for (const p of payloads) {
-						await workflowApproval.onSendEmailApprover(oModel, p);
+					const { payloads } = await ApproverUtility.approveMultiLevel(
+						oModel,
+						claimId,
+						userId,
+						comment,
+						oModelView
+					);
+					if (Array.isArray(payloads) && payloads.length > 0) {
+						for (const p of payloads) {
+							await workflowApproval.onSendEmailApprover(oModel, p);
+						}
+					} else {
+						console.warn("No email payloads returned — skipping notifications");
 					}
-				} else {
-					console.warn("No email payloads returned — skipping notifications");
-				}
 
-				if (this.__approveDialog) {
-					this.__approveDialog.close();
-				}
+
+					if (this.__approveDialog) {
+						this.__approveDialog.close();
+					}
 
 					// 4) Navigate back after small delay (optional)
 					setTimeout(() => {
@@ -1568,9 +1569,15 @@ sap.ui.define([
 				} finally {
 					BusyIndicator.hide();
 				}
+
+			} catch (outerErr) {
+				console.error(outerErr);
+			} finally {
+				this._busyApproving = false;
 			}
 
 		},
+
 		//Button config for Reject
 		onReject_ClaimSubmission: async function () {
 
@@ -1855,7 +1862,7 @@ sap.ui.define([
 			} catch (oError) {
 				console.error("Error fetching Claim Type detail", oError);
 			}
-			
+
 		},
 
 		onSelect_ClaimDetails_ClaimItem: async function (oEvent) {
@@ -3101,20 +3108,20 @@ sap.ui.define([
 
 				// verify result is not in database
 				oListBinding = oModel.bindList(
-				"/ZCLAIM_HEADER",
-				null,
-				null,
-				[
-					new Filter({
-					path: "CLAIM_ID",
-					operator: FilterOperator.EQ,
-					value1: result
-					})
-				],
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-				}
+					"/ZCLAIM_HEADER",
+					null,
+					null,
+					[
+						new Filter({
+							path: "CLAIM_ID",
+							operator: FilterOperator.EQ,
+							value1: result
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+					}
 				);
 
 				aCtx = await oListBinding.requestContexts(0, 1);

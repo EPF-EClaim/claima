@@ -239,10 +239,6 @@ sap.ui.define([
             });
 
 
-        } else {
-            console.log("No further approvers found. Proceed to Final Approve Step");
-        }
-
         // STEP 6: Submit batch update
         await oModel.submitBatch("$auto");
         sap.m.MessageToast.show("Approval successful.");
