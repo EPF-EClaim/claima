@@ -62,7 +62,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 modifiedAt
         };
 
-    entity ZEMP_REQUEST_EE_VIEW          as
+    entity ZEMP_REQUEST_EE_VIEW             as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
                 EMP_ID,
@@ -98,9 +98,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 PREAPPROVAL_AMOUNT,
                 TOTAL_AMOUNT,
                 REQUEST_DATE,
-                createdBy,
+                createdBy, 
                 modifiedAt
-        };
+        };        
+
 
     entity ZEMP_REQUEST_ITEM_VIEW        as
         projection on ECLAIM.ZREQUEST_ITEM {
@@ -187,7 +188,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_CLAIM_EE_VIEW            as
+    entity ZEMP_CLAIM_EE_VIEW        as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
                 EMP_ID,
@@ -236,7 +237,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 modifiedAt
         };
 
-    entity ZEMP_CLAIM_HEADER_VIEW        as
+        entity ZEMP_CLAIM_HEADER_VIEW        as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
                 EMP_ID,
@@ -825,12 +826,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             where
                 ZSTATUS.STATUS_DESC = 'PENDING APPROVAL';
 
-    entity ZEMP_TRAIN_COURSE             as projection on ECLAIM.ZTRAIN_COURSE_PART;
-
-
-    action sendApprovedClaimBatch(batch: ApprovedClaimBatch) returns {
-        message : String;
-    };
+    action sendApprovedClaimBatch(batch : ApprovedClaimBatch) returns { message : String; };
 
 
 };
