@@ -22,8 +22,8 @@ sap.ui.define([
 	"claima/utils/workflowApproval",
 	"claima/utils/claimstatus",
 	"claima/utils/claim",
-	"sap/m/HBox", 
-	"sap/m/VBox", 
+	"sap/m/HBox",
+	"sap/m/VBox",
 	"sap/ui/core/Icon"
 ], function (
 	Device,
@@ -48,9 +48,9 @@ sap.ui.define([
 	ApprovalLog,
 	workflowApproval,
 	claimstatus,
-	claim, 
-	HBox, 
-	VBox, 
+	claim,
+	HBox,
+	VBox,
 	Icon
 ) {
 	"use strict";
@@ -82,7 +82,7 @@ sap.ui.define([
 			this.getView().setModel(oSession, "session");
 
 			var oRouter = this.getOwnerComponent().getRouter();
-			
+
 			const oImageModel = new sap.ui.model.json.JSONModel({
 				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png"),
 				initials: "",
@@ -2123,6 +2123,10 @@ sap.ui.define([
 			oRouter.navTo("RequestFormStatus");
 		},
 
+		onClickCancel: function () {
+			this.oDialogFragment.close();
+		},
+
 		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		// End of Request Form Controller
 		// ==================================================
@@ -2366,6 +2370,8 @@ sap.ui.define([
 
 			window.open(sSFURL, "_self");
 
-		}
+		},
+
+
 	});
 });
