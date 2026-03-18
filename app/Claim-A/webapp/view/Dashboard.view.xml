@@ -147,12 +147,12 @@
                                         <columns>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="{i18n>claim_id }" />
+                                                    <Text text="{i18n>label_claimsummary_claimheader_claimid}" />
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="{i18n>label_claimdetails_input_}" />
+                                                    <Text text="{i18n>label_claimdetails_input_purpose}" />
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
