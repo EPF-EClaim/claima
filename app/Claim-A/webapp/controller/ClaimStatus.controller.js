@@ -186,7 +186,7 @@ sap.ui.define([
 
 			// Header binding
 			const oHeaderBinding = oModel.bindList(
-				"/ZEMP_CLAIM_HEADER_VIEW", // <-- adjust if different
+				"/ZEMP_CLAIM_EE_VIEW", // <-- adjust if different
 				null,
 				null,
 				aFilters,
