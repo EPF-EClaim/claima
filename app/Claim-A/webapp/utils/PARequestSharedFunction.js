@@ -30,7 +30,7 @@ sap.ui.define([
 
 		async getPARHeaderList(oReq, oModel) {
 
-			const oListBinding = oModel.bindList("/ZEMP_REQUEST_VIEW", undefined,
+			const oListBinding = oModel.bindList("/ZEMP_REQUEST_EE_VIEW", undefined,
 				[new Sorter("REQUEST_ID", true)], null,
 				{
 					$$ownRequest: true,
@@ -166,7 +166,7 @@ sap.ui.define([
 
 		async getPARHeaderList_withfilterlastmod(oReq, oModel) {
 
-			const oListBinding = oModel.bindList("/ZEMP_REQUEST_VIEW", undefined,
+			const oListBinding = oModel.bindList("/ZEMP_REQUEST_EE_VIEW", undefined,
 				[new Sorter("modifiedAt", true)], null,
 				{
 					$$ownRequest: true,

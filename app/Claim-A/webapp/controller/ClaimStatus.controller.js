@@ -177,15 +177,13 @@ sap.ui.define([
 
 			const oClaimInput = this._getClaimInputModel()
 
-			//const oModel = this.getOwnerComponent().getModel("employee_view");
 			const oModel = await this._ensureModelReady("employee_view");
 			const sId = String(sClaimId);
 
 			const aFilters = [new Filter("CLAIM_ID", FilterOperator.EQ, sId)];
 
-			// Header binding
 			const oHeaderBinding = oModel.bindList(
-				"/ZEMP_CLAIM_HEADER_VIEW", // <-- adjust if different
+				"/ZEMP_CLAIM_EE_VIEW", 
 				null,
 				null,
 				aFilters,
@@ -196,9 +194,8 @@ sap.ui.define([
 				}
 			);
 
-			// Items binding
 			const oItemBinding = oModel.bindList(
-				"/ZEMP_CLAIM_ITEM_VIEW", // <-- adjust if different
+				"/ZEMP_CLAIM_ITEM_VIEW", 
 				null,
 				[new Sorter("CLAIM_SUB_ID", false)],
 				aFilters,
@@ -209,9 +206,8 @@ sap.ui.define([
 				}
 			);
 
-			// Items Descr binding
 			const oItemDescrBinding = oModel.bindList(
-				"/ZEMP_CLAIM_ITEM_VIEW", // <-- adjust if different
+				"/ZEMP_CLAIM_ITEM_VIEW",
 				null,
 				[new Sorter("CLAIM_SUB_ID", false)],
 				aFilters,
