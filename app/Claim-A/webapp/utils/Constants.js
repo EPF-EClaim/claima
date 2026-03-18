@@ -77,7 +77,7 @@ sap.ui.define([
             "02": "02",
             "03": "03"
         },
-        "RequestStatusWithoutApproverLog": {
+        "RequestStatus": {
             "DRAFT": "DRAFT",
             "CANCELLED": "CANCELLED"
         }

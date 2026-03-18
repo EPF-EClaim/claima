@@ -94,10 +94,10 @@ sap.ui.define([
 		async _loadRequest(sReqId) {
 			await this._getHeader(sReqId);
 			await this._getItemList(sReqId, true);
-			const oStatus = this._oConstant.RequestStatusWithoutApproverLog;
 
 			var sReqStatus = this._getReqModel().getProperty("/req_header/reqstatus");
-			if (!Object.values(oStatus).includes(sReqStatus)) {
+			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT && sReqStatus !== this._oConstant.RequestStatus.CANCELLED;
+			if (bApproval) {
 				const oReq = this.getOwnerComponent().getModel('approval_log');
 				const oViewModel = this.getOwnerComponent().getModel('employee_view');
 				ApprovalLog.getApproverList(oReq, oViewModel, sReqId);
@@ -172,9 +172,9 @@ sap.ui.define([
 			const oList = await this._getFormFragment("req_item_list");
 			await this._replaceContentAt(oPage, 1, oList);
 
-			const oStatus = this._oConstant.RequestStatusWithoutApproverLog;
 			var sReqStatus = this._getReqModel().getProperty("/req_header/reqstatus");
-			if (!Object.values(oStatus).includes(sReqStatus)) {
+			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT && sReqStatus !== this._oConstant.RequestStatus.CANCELLED;
+			if (bApproval) {
 				const oReq = this.getOwnerComponent().getModel('approval_log');
 				const oViewModel = this.getOwnerComponent().getModel('employee_view');
 				ApprovalLog.getApproverList(oReq, oViewModel, oReq.getProperty('req_header/reqid'));
