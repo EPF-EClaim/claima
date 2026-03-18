@@ -23,7 +23,6 @@ sap.ui.define([
             : "/ZEMP_APPROVER_CLAIM_DETAILS";
 
         let payloads = [];
-
         let currentEmail = null;
         let currentName = null;
 
@@ -85,70 +84,18 @@ sap.ui.define([
         const nextLevel = currentLevel + 1;
         const ctxNext = aCtx.find(ctx => ctx.getObject().LEVEL === nextLevel);
 
-        //Farisha's part start 
-        // Get Approver Details
-        const oApprList = oModel.bindList(
-            "/ZEMP_MASTER",
-            null,
-            null,
-            [new Filter("EEID", FilterOperator.EQ, aApprEmpID[0])],
-            { $$ownRequest: true }
-        );
-
-        const aApprContexts = await oApprList.requestContexts();
-        const aApprData = aApprContexts.map(oCtx => oCtx.getObject());
-
-        // Get Claimant Details
-        const oClaimantList = oModel.bindList(
-            "/ZEMP_MASTER",
-            null,
-            null,
-            [new Filter("EEID", FilterOperator.EQ, sEmpID)],
-            { $$ownRequest: true }
-        );
-
-        const aClaimantContexts = await oClaimantList.requestContexts();
-        const aClaimantData = aClaimantContexts.map(oCtx => oCtx.getObject());
-
-        const sApproverName = aApprData[0].NAME;
-        const sClaimsSubmissionDate = todayYMD();     
-        const sClaimantName = aClaimantData[0].NAME;
-        const sClaimType = aSubmissionTypeNameData[0].SUBMISSION_TYPE_DESC;
-        const sClaimID = sClaimID;                             
-        const sRecipientName = sClaimantName;
-        const sClaimantEmail = aClaimantData[0].EMAIL;
-
-        const oEmailPayload = {
-            ApproverName: sApproverName,
-            SubmissionDate: sClaimsSubmissionDate,
-            ClaimantName: sClaimantName,
-            ClaimType: sClaimType,
-            ClaimID: sClaimID,
-            RecipientName: sRecipientName,
-            Action: "Approved",
-            ReceiverEmail: sClaimantEmail
-        };
-        //Farisha's part end
-
         if (ctxNext) {
             ctxNext.setProperty("STATUS", "STAT02"); //PENDING APPROVAL
-        } else {
-            FinalApproveStep.onFinalApprove(oModel2, id, 'STAT05', oModel, oEmailPayload);
-        }
-
-        //pending fix for payload creation causing server crash - Vincent
-        // STEP 5: Fetch data for Email
-
-
-        const bindingView = oModel2.bindList(
-            sTable2,
-            null,
-            null,
-            [new Filter(sField, FilterOperator.EQ, id)],
-            {
-                $$ownRequest: true
-            }
-        );
+            // STEP 5: Fetch data for Email
+            const bindingView = oModel2.bindList(
+                sTable2,
+                null,
+                null,
+                [new Filter(sField, FilterOperator.EQ, id)],
+                {
+                    $$ownRequest: true
+                }
+            );
 
             const aCtx_binding = await bindingView.requestContexts(0, Infinity);
             const rows_binding = aCtx_binding.map(ctx => ctx.getObject());
@@ -176,14 +123,14 @@ sap.ui.define([
 
             const isPre = submissionType === "REQ";
 
-        const submissionDate =
-            isPre
-                ? (currentRow_level?.REQUEST_DATE ?? null)      // Pre‑Approval tables
-                : (currentRow_level?.SUBMITTED_DATE ?? null);   // Claim tables
+            const submissionDate =
+                isPre
+                    ? (currentRow_level?.REQUEST_DATE ?? null)      // Pre‑Approval tables
+                    : (currentRow_level?.SUBMITTED_DATE ?? null);   // Claim tables
 
-        //const submissionDate = currentRow_level?.REQUEST_DATE ?? null;
-        const claimantName = currentRow_level?.EMPLOYEE_NAME ?? null;
-        const claimantEmail = currentRow_level?.EMPLOYEE_EMAIL ?? null;
+            //const submissionDate = currentRow_level?.REQUEST_DATE ?? null;
+            const claimantName = currentRow_level?.EMPLOYEE_NAME ?? null;
+            const claimantEmail = currentRow_level?.EMPLOYEE_EMAIL ?? null;
 
 
             const isPresent = v => typeof v === "string" ? v.trim().length > 0 : !!v;
@@ -231,12 +178,113 @@ sap.ui.define([
                 ClaimType: sType,
                 ClaimID: id,
                 RecipientName: claimantName,
-                Action: "Approve",
+                Action: "APPROVE",
                 ReceiverEmail: claimantEmail,
                 NextApproverName: nextApproverDisplayName,
                 RejectReason: "N/A",
                 ApproverComments: comment
             });
+
+        } else {
+            //Farisha's part start 
+            // Get Approver Details
+            /*            const oApprList = oModel.bindList(
+                           "/ZEMP_MASTER",
+                           null,
+                           null,
+                           [new Filter("EEID", FilterOperator.EQ, aApprEmpID[0])],
+                           { $$ownRequest: true }
+                       );
+           
+                       const aApprContexts = await oApprList.requestContexts();
+                       const aApprData = aApprContexts.map(oCtx => oCtx.getObject());
+           
+                       // Get Claimant Details
+                       const oClaimantList = oModel.bindList(
+                           "/ZEMP_MASTER",
+                           null,
+                           null,
+                           [new Filter("EEID", FilterOperator.EQ, sEmpID)],
+                           { $$ownRequest: true }
+                       );
+           
+                       const aClaimantContexts = await oClaimantList.requestContexts();
+                       const aClaimantData = aClaimantContexts.map(oCtx => oCtx.getObject());
+           
+                       const sApproverName = aApprData[0].NAME;
+                       const sClaimsSubmissionDate = todayYMD();
+                       const sClaimantName = aClaimantData[0].NAME;
+                       const sClaimType = aSubmissionTypeNameData[0].SUBMISSION_TYPE_DESC;
+                       const sClaimID = sClaimID;
+                       const sRecipientName = sClaimantName;
+                       const sClaimantEmail = aClaimantData[0].EMAIL; */
+
+            const bindingView = oModel2.bindList(
+                sTable2,
+                null,
+                null,
+                [new Filter(sField, FilterOperator.EQ, id)],
+                {
+                    $$ownRequest: true
+                }
+            );
+
+            const aCtx_binding = await bindingView.requestContexts(0, Infinity);
+            const rows_binding = aCtx_binding.map(ctx => ctx.getObject());
+
+            const currentRow_level = rows_binding.find(r =>
+                Number(r.LEVEL) === Number(currentLevel)
+            );
+
+            if (matchedType === "APPROVER_ID") {
+                currentEmail = currentRow_level.APPROVER_EMAIL;
+                currentName = currentRow_level.APPROVER_NAME;
+            } else {
+                currentEmail = currentRow_level.SUBSTITUTE_EMAIL;
+                currentName = currentRow_level.SUBSTITUTE_NAME;
+            }
+
+            const nextRow_level = rows_binding.find(r =>
+                Number(r.LEVEL) === Number(nextLevel)
+            );
+
+            let nextApproverName = nextRow_level?.APPROVER_NAME || null;
+            let nextApproverEmail = nextRow_level?.APPROVER_EMAIL || null;
+            let nextSubName = nextRow_level?.SUBSTITUTE_NAME || null;
+            let nextSubEmail = nextRow_level?.SUBSTITUTE_EMAIL || null;
+
+            const isPre = submissionType === "REQ";
+
+            const submissionDate =
+                isPre
+                    ? (currentRow_level?.REQUEST_DATE ?? null)      // Pre‑Approval tables
+                    : (currentRow_level?.SUBMITTED_DATE ?? null);   // Claim tables
+
+            //const submissionDate = currentRow_level?.REQUEST_DATE ?? null;
+            const claimantName = currentRow_level?.EMPLOYEE_NAME ?? null;
+            const claimantEmail = currentRow_level?.EMPLOYEE_EMAIL ?? null;
+
+
+            const isPresent = v => typeof v === "string" ? v.trim().length > 0 : !!v;
+            const nextApproverDisplayName = nextApproverName || nextSubName;
+
+        
+            const oEmailPayload = {
+                ApproverName: currentName,
+                SubmissionDate: todayYMD(),
+                ClaimantName: claimantName,
+                ClaimType: sType,
+                ClaimID: id,
+                RecipientName: claimantName,
+                Action: "APPROVE",
+                ReceiverEmail: claimantEmail
+            };
+            //Farisha's part end
+
+            FinalApproveStep.onFinalApprove(oModel2, id, 'STAT05', oModel, oEmailPayload);
+        }
+
+        //pending fix for payload creation causing server crash - Vincent
 
 
         // STEP 6: Submit batch update
@@ -271,7 +319,7 @@ sap.ui.define([
         const headerSet = isPre ? "/ZREQUEST_HEADER" : "/ZCLAIM_HEADER";
         const idField = isPre ? "PREAPPROVAL_ID" : "CLAIM_ID";
         const sField_header = submissionType === "REQ" ? "REQUEST_ID" : "CLAIM_ID";
-        const sAction = actionStatus === "STAT04" ? "Reject" : "SEND BACK";
+        const sAction = actionStatus === "STAT04" ? "REJECT" : "SEND BACK";
         const sType = submissionType === "REQ" ? "Pre-Approval" : "Claim";
         //Added for view;
         const sTable2 = submissionType === "REQ" ? "/ZEMP_APPROVER_REQUEST_DETAILS" : "/ZEMP_APPROVER_CLAIM_DETAILS";
