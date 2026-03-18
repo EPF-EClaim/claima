@@ -14,6 +14,7 @@ sap.ui.define([
 	"sap/m/Button",
 	"sap/m/Label",
 	"sap/m/PDFViewer",
+	"sap/m/ListMode",
 	"claima/utils/budgetCheck",
 	"claima/utils/ApproveDialog",
 	"claima/utils/RejectDialog",
@@ -36,6 +37,7 @@ sap.ui.define([
 	Button,
 	Label,
 	PDFViewer,
+	ListMode,
 	budgetCheck,
 	ApproveDialog,
 	RejectDialog,
@@ -50,7 +52,7 @@ sap.ui.define([
 		onInit: function () {
 			this._fragments = Object.create(null);
 			this._clearExit = false;
-			this._currentHash = null;
+			this.currentHash = null;
 
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
@@ -59,13 +61,13 @@ sap.ui.define([
 		},
 
 		_beforeRouteMatched: async function (oEvent) {
-			if (!this._currentHash || this._currentHash.indexOf("ClaimSubmission") === -1) {
+			if (!this.currentHash || this.currentHash.indexOf("ClaimSubmission") === -1) {
 				// skip check if not on claim submission page
 				return;
 			}
 
 			// refresh data
-			this._currentHash = null;
+			this.currentHash = null;
 			this.getOwnerComponent().getModel("employee")?.refresh();
 			this.getOwnerComponent().getModel("employee_view")?.refresh();
 
@@ -97,8 +99,8 @@ sap.ui.define([
 		},
 
 		_onMatched: async function (oEvent) {
-			const oRouter = this.getOwnerComponent().getRouter();
-			this._currentHash = oRouter.getHashChanger().getHash();
+			const _oRouter = this.getOwnerComponent().getRouter();
+			this.currentHash = _oRouter.getHashChanger().getHash();
 
 			let sClaimId = oEvent.getParameter("arguments").claim_id;
 
@@ -148,11 +150,10 @@ sap.ui.define([
 			var oPage = this.byId("page_claimsubmission");
 
 			// display initial fragments
-			let toCreate = true;
-			await this._getFormFragment("claimsubmission_summary_claimheader", toCreate).then(function (oVBox) {
+			await this._getFormFragment("claimsubmission_summary_claimheader", true).then(function (oVBox) {
 				oPage.insertContent(oVBox, 0);
 			});
-			await this._getFormFragment("claimsubmission_summary_claimitem", toCreate).then(function (oVBox) {
+			await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
 				oPage.insertContent(oVBox, 1);
 			});
 		},
@@ -473,8 +474,8 @@ sap.ui.define([
 			}
 		},
 
-		_ensureModelReady: async function (name) {
-			const oModel = await this._waitForModel(name);
+		_ensureModelReady: async function (sName) {
+			const oModel = await this._waitForModel(sName);
 			// V4 meta ready
 			if (oModel?.getMetaModel?.()?.requestObject) {
 				try {
@@ -492,10 +493,10 @@ sap.ui.define([
 			return oModel;
 		},
 
-		_waitForModel: function (name) {
+		_waitForModel: function (sName) {
 			return new Promise((resolve) => {
 				const check = () => {
-					const m = this.getOwnerComponent().getModel(name);
+					const m = this.getOwnerComponent().getModel(sName);
 					if (m) {
 						resolve(m);
 					} else {
@@ -726,8 +727,7 @@ sap.ui.define([
 			var oPage = this.byId("page_claimsubmission");
 			if (oBool) {
 				// display approval log
-				let toCreate = true;
-				await this._getFormFragment("approval_log", toCreate).then(function (oVBox) {
+				await this._getFormFragment("approval_log", true).then(function (oVBox) {
 					oPage.insertContent(oVBox, 2);
 				});
 			}
@@ -754,7 +754,7 @@ sap.ui.define([
 
 				// table properties
 				if (this.byId("table_claimsummary_claimitem")) {
-					this.byId("table_claimsummary_claimitem").setMode(sap.m.ListMode.MultiSelect);
+					this.byId("table_claimsummary_claimitem").setMode(ListMode.MultiSelect);
 				}
 			}
 			else {
@@ -769,7 +769,7 @@ sap.ui.define([
 
 				// table properties
 				if (this.byId("table_claimsummary_claimitem")) {
-					this.byId("table_claimsummary_claimitem").setMode(sap.m.ListMode.SingleSelectMaster);
+					this.byId("table_claimsummary_claimitem").setMode(ListMode.SingleSelectMaster);
 				}
 			}
 		},
@@ -1183,8 +1183,7 @@ sap.ui.define([
 			if (oClaimItemFragment) {
 				oPage.removeContent(oClaimItemFragment);
 			}
-			let toCreate = true;
-			await this._getFormFragment("claimsubmission_claimdetails_input", toCreate).then(function (oVBox) {
+			await this._getFormFragment("claimsubmission_claimdetails_input", true).then(function (oVBox) {
 				oPage.insertContent(oVBox, 1);
 			});
 			// set new claim submission model;
@@ -1279,11 +1278,11 @@ sap.ui.define([
 			}
 		},
 
-		onEdit_ClaimSummary: function (item) {
+		onEdit_ClaimSummary: function (oItem) {
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			// get value from selected item
-			itemSubId = item.getCells()[0].getText();
+			itemSubId = oItem.getCells()[0].getText();
 			let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
 			if (itemIndex !== -1) {
 				this.onCreateClaim_ClaimSummary(itemIndex);
@@ -1308,7 +1307,7 @@ sap.ui.define([
 			}
 		},
 
-		onDuplicate_ClaimSummary: async function (item) {
+		onDuplicate_ClaimSummary: async function (oItem) {
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var tempItems = {
@@ -1316,7 +1315,7 @@ sap.ui.define([
 				total_claim_amount: oInputModel.getProperty("/claim_header/total_claim_amount")
 			};
 			// get value from selected item
-			itemSubId = item.getCells()[0].getText();
+			itemSubId = oItem.getCells()[0].getText();
 			let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
 			if (itemIndex !== -1) {
 				var oObject = oInputModel.getProperty("/claim_items/" + itemIndex);
@@ -1358,7 +1357,7 @@ sap.ui.define([
 			BusyIndicator.hide();
 		},
 
-		onDelete_ClaimSummary: async function (items) {
+		onDelete_ClaimSummary: async function (aItems) {
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var tempItems = {
@@ -1366,7 +1365,7 @@ sap.ui.define([
 				total_claim_amount: oInputModel.getProperty("/claim_header/total_claim_amount")
 			};
 			// get value from selected items
-			jQuery.each(items,
+			jQuery.each(aItems,
 				function (id, value) {
 					itemSubId = value.getCells()[0].getText();
 					let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
@@ -2776,8 +2775,7 @@ sap.ui.define([
 
 				oPage.removeContent(oClaimItemFragment);
 
-				let toCreate = true;
-				await this._getFormFragment("claimsubmission_summary_claimitem", toCreate).then(function (oVBox) {
+				await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
 					oPage.insertContent(oVBox, 1);
 				});
 				if (!oClaimSubmissionModel.getProperty("/view_only")) {
@@ -3238,9 +3236,9 @@ sap.ui.define([
 			return true;
 		},
 
-		_getJsonDate: function (date) {
-			if (date) {
-				var oDate = new Date(date);
+		_getJsonDate: function (iDate) {
+			if (iDate) {
+				var oDate = new Date(iDate);
 				var oDateString = oDate.toLocaleString('default', { day: '2-digit' }) + " " + oDate.toLocaleString('default', { month: 'short' }) + " " + oDate.toLocaleString('default', { year: 'numeric' });
 				return oDateString;
 			} else {
@@ -3248,9 +3246,9 @@ sap.ui.define([
 			}
 		},
 
-		_getHanaDate: function (date) {
-			if (date) {
-				var oDate = new Date(date);
+		_getHanaDate: function (iDate) {
+			if (iDate) {
+				var oDate = new Date(iDate);
 				var oDateString = oDate.getFullYear() + '-' + ('0' + (oDate.getMonth() + 1)).slice(-2) + '-' + ('0' + oDate.getDate()).slice(-2);
 				return oDateString;
 			} else {
@@ -3258,9 +3256,9 @@ sap.ui.define([
 			}
 		},
 
-		_getHanaTime: function (time) {
-			if (time) {
-				var oDate = new Date(time);
+		_getHanaTime: function (iTime) {
+			if (iTime) {
+				var oDate = new Date(iTime);
 				var oTimeString = ('0' + oDate.getHours()).slice(-2) + ':' + ('0' + oDate.getMinutes()).slice(-2) + ':' + ('0' + oDate.getSeconds()).slice(-2);
 				return oTimeString;
 			} else {
@@ -3276,7 +3274,7 @@ sap.ui.define([
 			}
 		},
 
-		_getCurrentReportNumber: async function (range_id) {
+		_getCurrentReportNumber: async function (rangeId) {
 			const oModel = this.getOwnerComponent().getModel();
 
 			try {
@@ -3288,7 +3286,7 @@ sap.ui.define([
 						new Filter({
 							path: "RANGE_ID",
 							operator: FilterOperator.EQ,
-							value1: range_id
+							value1: rangeId
 						})
 					],
 					{
@@ -3302,12 +3300,12 @@ sap.ui.define([
 				var oCtx = aCtx[0];
 
 				if (!oCtx) {
-					throw new Error(`${range_id} not found`);
+					throw new Error(`${rangeId} not found`);
 				}
 
 				var row = oCtx.getObject();
 				if (row.CURRENT == null) {
-					throw new Error(`${range_id} missing CURRENT`);
+					throw new Error(`${rangeId} missing CURRENT`);
 				}
 
 				var current = Number(row.CURRENT);
@@ -3418,12 +3416,12 @@ sap.ui.define([
 			// approval code here
 		},
 
-		_newDialog: function (title, content, onPress, onPressE) {
+		_newDialog: function (oTitle, oContent, onPress, onPressE) {
 			this.oDialog = new Dialog({
-				title: title,
+				title: oTitle,
 				type: "Message",
 				state: "None",
-				content: [new Label({ text: content })],
+				content: [new Label({ text: oContent })],
 				beginButton: new Button({
 					type: "Emphasized",
 					text: this.getView().getModel("i18n").getResourceBundle().getText("button_claimsummary_confirm"),
