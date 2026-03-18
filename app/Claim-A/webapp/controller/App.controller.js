@@ -2335,7 +2335,7 @@ sap.ui.define([
 			const oDashboardModel = this.getView().getModel("dashboardModel");
 
 			oEmployeeViewModel.bindList("/ZEMP_CLAIM_EE_VIEW", null, [
-				new sap.ui.model.Sorter("modifiedAt", true)
+				new Sorter("modifiedAt", true)
 			]).requestContexts(0, Infinity)
 				.then(aContexts => {
 					oDashboardModel.setProperty("/claims", aContexts.map(c => c.getObject()));
@@ -2343,7 +2343,7 @@ sap.ui.define([
 				.catch(err => console.log("claims error:", err));
 
 			oEmployeeViewModel.bindList("/ZEMP_REQUEST_EE_VIEW", null, [
-				new sap.ui.model.Sorter("modifiedAt", true)
+				new Sorter("modifiedAt", true)
 			]).requestContexts(0, Infinity)
 				.then(aContexts => {
 					oDashboardModel.setProperty("/requests", aContexts.map(c => c.getObject()));
