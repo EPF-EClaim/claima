@@ -163,7 +163,7 @@ sap.ui.define([
 			if (this._fragments[sName]) {
 				return this._fragments[sName];
 			}
-			else if (!this._fragments[sName] && toCreate) {
+			else if (toCreate) {
 				this._fragments[sName] = Fragment.load({
 					id: oView.getId(),
 					name: "claima.fragment." + sName,
