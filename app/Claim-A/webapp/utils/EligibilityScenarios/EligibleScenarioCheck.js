@@ -12,50 +12,51 @@ sap.ui.define([
         onEligibilityCheck: async function (oModel, oConstant, sEmpId, sClaimType, sClaimItmType) {
             // Get Employee ID
 
-            const oBindList = oModel.bindList("/ZEMP_MASTER");
+            const oEmpBindList = oModel.bindList("/ZEMP_MASTER");
 
-            var aFilters = [];
-            var aAndFilters = [];
-            aAndFilters.push(new Filter("EEID", FilterOperator.EQ, sEmpId));
-            aAndFilters = new Filter(aAndFilters, true);
+            var aEmpFilters = [];
+            var aEmpAndFilters = [];
+            aEmpAndFilters.push(new Filter("EEID", FilterOperator.EQ, sEmpId));
+            aEmpAndFilters = new Filter(aEmpAndFilters, true);
 
-            aFilters.push(new Filter(aAndFilters));
-            aFilters = new Filter(aFilters, true);
+            aEmpFilters.push(new Filter(aEmpAndFilters));
+            aEmpFilters = new Filter(aEmpFilters, true);
 
-            const oEmp = await oBindList.filter(aFilters).requestContexts().then(function (aContexts) {
+            const oEmp = await oEmpBindList.filter(aEmpFilters).requestContexts().then(function (aContexts) {
                 // Process the filtered data contexts
-                // console.log("Filtered books:", aContexts.map(context => context.getObject())[0]);
                 // var sGrade = aContexts.map(context => context.getObject())[0].GRADE;
                 var oEmp = aContexts.map(context => context.getObject())[0];
                 // var aEmp = aContexts.map(context => context.getObject());
                 return oEmp;
             });
 
-            const o2ndBindList = oModel.bindList("/ZELIGIBILITY_RULE");
+            const oRulesBindList = oModel.bindList("/ZELIGIBILITY_RULE");
 
              // Get eligibility rules based on Employee Personal Grade
-            var a2ndFilters = [];
-            var a2ndAndFilters = [];
-            var a2ndOrFilters = [];
+            var aRulesFilters = [];
+            var aRulesAndFilters = [];
+            var aRulesOrFilters = [];
 
-            // var sEmpGrade = oEmp.Grade;
+            aRulesAndFilters.push(new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaimItmType));
+            aRulesAndFilters.push(new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimType));
+            aRulesAndFilters = new Filter(aRulesAndFilters, true);
 
-            a2ndAndFilters.push(new Filter("PERSONAL_GRADE", FilterOperator.EQ, oEmp.GRADE));
-            a2ndAndFilters.push(new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaimItmType));
-            a2ndAndFilters.push(new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimType));
-            a2ndAndFilters = new Filter(a2ndAndFilters, true);
-            a2ndFilters.push(new Filter(a2ndAndFilters));
-            a2ndFilters = new Filter(a2ndFilters, true);
+            aRulesOrFilters.push(new Filter("PERSONAL_GRADE", FilterOperator.EQ, oEmp.GRADE));
+            aRulesOrFilters.push(new Filter("PERSONAL_GRADE", FilterOperator.EQ, "*"));
+            aRulesOrFilters = new Filter(aRulesOrFilters, false);
+            
+            aRulesFilters.push(new Filter(aRulesAndFilters));
+            aRulesFilters.push(new Filter(aRulesOrFilters));
+            aRulesFilters = new Filter(aRulesFilters, true);
 
-            const aRules = await o2ndBindList.filter(a2ndFilters).requestContexts().then(function (aContexts) {
+            const aRules = await oRulesBindList.filter(aRulesFilters).requestContexts().then(function (aContexts) {
                 // Process the filtered data contexts
-                // console.log("Filtered books:", aContexts.map(context => context.getObject())[0]);
                 // var sGrade = aContexts.map(context => context.getObject())[0];
                 var aRules = aContexts.map(context => context.getObject());
                 return aRules;
             });
 
-            DalamNegara.onEligibleCheck(oModel, sClaimType, sClaimItmType, aRules);
+            LuarNegara.onEligibleCheck(oModel, oConstant, sClaimType, sClaimItmType, aRules);
             // switch (sClaimType) {
             //     case oConstant.ClaimType.DLM_NEGARA:
             //         DalamNegara.onEligibleCheck(oModel, sClaimItmType);
