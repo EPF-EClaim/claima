@@ -21,7 +21,10 @@ sap.ui.define([
 	"claima/utils/ApprovalLog",
 	"claima/utils/workflowApproval",
 	"claima/utils/claimstatus",
-	"claima/utils/claim"
+	"claima/utils/claim",
+	"sap/m/HBox",
+	"sap/m/VBox",
+	"sap/ui/core/Icon"
 ], function (
 	Device,
 	Controller,
@@ -45,7 +48,10 @@ sap.ui.define([
 	ApprovalLog,
 	workflowApproval,
 	claimstatus,
-	claim
+	claim,
+	HBox,
+	VBox,
+	Icon
 ) {
 	"use strict";
 
@@ -71,16 +77,12 @@ sap.ui.define([
 
 			const oSession = new sap.ui.model.json.JSONModel({
 				userType: "UNKNOWN",
+				origin: ""
 			});
 			this.getView().setModel(oSession, "session");
 
-
-			// sap.ui.core.routing.HashChanger.getInstance().replaceHash(""); //clear routing after navigate from configuration page
-			var sHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
 			var oRouter = this.getOwnerComponent().getRouter();
-			if (!sHash || sHash === "") {
-				oRouter.navTo("Dashboard");
-			}
+
 			const oImageModel = new sap.ui.model.json.JSONModel({
 				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png"),
 				initials: "",
@@ -89,6 +91,12 @@ sap.ui.define([
 			});
 			this.getView().setModel(oImageModel, "imageModel");
 
+			const oDashboardModel = new JSONModel({
+				claims: [],
+				requests: [],
+				approvals: []
+			});
+			this.getView().setModel(oDashboardModel, "dashboardModel");
 			this._loadCurrentUser();
 
 			const oModel = this.getOwnerComponent().getModel();
@@ -104,11 +112,14 @@ sap.ui.define([
 				oImageModel.setProperty("/userName", sname);
 				oImageModel.setProperty("/position", sposition);
 
+				oSession.setProperty("/origin", oData.origin);
+
 				// save userId to model
 				var oUserIdModel = new JSONModel({ "userId": oData.userId });
 				//// set input
 				this.getView().setModel(oUserIdModel, "userId");
 				oSession.setProperty("/userType", this._userType);
+				this._loadDashboardData();
 			}).catch(err => {
 				console.error("getUserType failed:", err);
 				this._userType = "UNKNOWN";
@@ -126,15 +137,8 @@ sap.ui.define([
 			// oReqModel.user = emp_data.eeid;
 			// this._getReqModel().setData(oReqModel);
 
-			const oDashboardModel = new JSONModel({
-				claims: [],
-				requests: [],
-				approvals: []
-			});
-			this.getView().setModel(oDashboardModel, "dashboardModel");
-
 			oRouter.getRoute("Dashboard").attachMatched(this._onDashboardMatched, this);
-			this._loadDashboardData();
+			oRouter.navTo("Dashboard");
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
@@ -210,7 +214,6 @@ sap.ui.define([
 				// End 	 Aiman Salim 10/02/2026 - Added for analytics
 				// Start Aiman Salim 03/03/2026 - Added for MyClaim
 				case "myreport":
-					//var oRouter = this.getComponent().getRouter().navTo("ClaimStatus");
 					this.getCLAIMHeaderList();
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("ClaimStatus")
@@ -239,7 +242,7 @@ sap.ui.define([
 						approvals: []
 					});
 					this._loadDashboardData();
-					
+
 					oRouter.navTo("Dashboard");
 					break;
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
@@ -686,8 +689,8 @@ sap.ui.define([
 					}
 
 					// enable 'Start Claim' button
-					if (this.byId("button_claimprocess_startclaim").getEnabled()) {
-						this.byId("button_claimprocess_startclaim").setEnabled(false);
+					if (!this.byId("button_claimprocess_startclaim").getEnabled()) {
+						this.byId("button_claimprocess_startclaim").setEnabled(true);
 					}
 				}
 			}
@@ -2120,6 +2123,10 @@ sap.ui.define([
 			oRouter.navTo("RequestFormStatus");
 		},
 
+		onClickCancel: function () {
+			this.oDialogFragment.close();
+		},
+
 		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		// End of Request Form Controller
 		// ==================================================
@@ -2218,37 +2225,58 @@ sap.ui.define([
 			const oAvatar = oEvent.getSource();
 
 			if (!this._oAvatarPopover) {
-				this._oAvatarPopover = new sap.m.Popover({
+				this._oAvatarPopover = new Popover({
 					placement: "Bottom",
 					showHeader: false,
 					content: [
-						new sap.m.VBox({
+						new VBox({
 							class: "sapUiSmallMargin",
 							items: [
-								new sap.m.Text({
-									icon: "sap-icon://information",
-									text: "{imageModel>/userName}",
+								new HBox({
+									alignItems: "Center",
 									width: "100%",
-									textAlign: sap.ui.core.TextAlign.Center
+									class: "sapUiTinyMarginTop",
+									items: [
+										new Icon({
+											src: "sap-icon://employee",
+											width: "1rem",
+											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
+										}),
+										new Text({ text: "{userId>/userId}" })
+									]
 								}),
-								// new sap.m.ToolbarSeparator(),
-								new sap.m.Text({
-									icon: "sap-icon://manager",
-									text: "{imageModel>/position}",
+								new HBox({
+									alignItems: "Center",
 									width: "100%",
-									textAlign: sap.ui.core.TextAlign.Center
+									class: "sapUiTinyMarginTop",
+									items: [
+										new Icon({
+											src: "sap-icon://person-placeholder",
+											width: "1rem",
+											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
+										}),
+										new Text({ text: "{imageModel>/userName}" })
+									]
 								}),
-
-								// new sap.m.ToolbarSeparator(),
-								// Sign out button
-								new sap.m.Button({
+								new HBox({
+									alignItems: "Center",
+									width: "100%",
+									class: "sapUiTinyMarginTop sapUiSmallMarginBottom",
+									items: [
+										new Icon({
+											src: "sap-icon://business-card",
+											width: "1rem",
+											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
+										}),
+										new Text({ text: "{imageModel>/position}" })
+									]
+								}),
+								new Button({
 									icon: "sap-icon://log",
 									text: "Sign Out",
 									type: "Transparent",
 									width: "100%",
 									press: function () {
-										// const sUrl = sap.ui.require.toUrl("/do/logout");
-										// window.location.replace(sUrl);
 										window.location.href = "/claima/do/logout";
 									}
 								})
@@ -2292,6 +2320,13 @@ sap.ui.define([
 		},
 
 		_onDashboardMatched: function () {
+			if (!this.userId || this.userId === "UNKNOWN") return;
+			const oDashboardModel = this.getView().getModel("dashboardModel");
+			oDashboardModel.setData({
+				claims: [],
+				requests: [],
+				approvals: []
+			});
 			this._loadDashboardData();
 		},
 
@@ -2325,13 +2360,18 @@ sap.ui.define([
 				});
 		},
 		onHomeIconPressed: function () {
-			var sHostname = window.location.hostname;
+			const oSession = this.getView().getModel("session");
+			const origin = oSession.getProperty("/origin");
 			var sSFURL;
 
-			sSFURL = "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV"; //DEV
-			// "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT"	UAT
+			sSFURL = origin === "httpsa6s6cq33s.accounts.ondemand.com" ? "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV" :
+				origin === "sap.custom" ? "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT" :
+					"https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD";
+
 			window.open(sSFURL, "_self");
 
-		}
+		},
+
+
 	});
 });

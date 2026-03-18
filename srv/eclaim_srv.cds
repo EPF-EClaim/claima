@@ -1001,6 +1001,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         userId      : String;
         name        : String;
         position    : String;
+        origin      : String;
     }
 
     function getUserType()                                             returns UserInfo;
@@ -1327,6 +1328,6 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     function updateDisbursementStatus()                                returns array of Response;
 
-    entity ZDISBURSEMENT_STATUS     as projection on ECLAIM.ZDISBURSEMENT_STATUS;
+    entity ZDISBURSEMENT_STATUS          as projection on ECLAIM.ZDISBURSEMENT_STATUS;
 
 };

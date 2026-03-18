@@ -33,7 +33,7 @@
                                 />
                                 <Title
                                     level="H3"
-                                    text="My Claim Status"
+                                    text="{i18n>nav_myreport}"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
@@ -57,7 +57,7 @@
                                 />
                                 <Title
                                     level="H3"
-                                    text="My Pre-Approval Status"
+                                    text="{i18n>nav_preappstatus}"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
@@ -82,7 +82,7 @@
                                 />
                                 <Title
                                     level="H3"
-                                    text="Required Approval"
+                                    text="{i18n>approval}"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
@@ -147,17 +147,17 @@
                                         <columns>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Claim ID" />
+                                                    <Text text="{i18n>claim_id }" />
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Purpose" />
+                                                    <Text text="{i18n>label_claimdetails_input_}" />
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Start Date" />
+                                                    <Text text="{i18n>label_claimdetails_input_startdate}" />
                                                 </header>
                                             </Column>
                                             <!-- <Column
@@ -179,7 +179,7 @@
                                                         width="100%"
                                                     >
                                                         <Text
-                                                            text="Amount (MYR)"
+                                                            text="{i18n>columntext_claimsummary_amt}"
                                                         />
                                                     </HBox>
                                                 </header>
@@ -205,7 +205,7 @@
                                             <Column demandPopin="true">
                                                 <header>
                                                     <Text
-                                                        text="Last Modified"
+                                                        text="{i18n>lastmodified}"
                                                     />
                                                 </header>
                                             </Column>
@@ -292,17 +292,17 @@
                                         <columns>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Request ID" />
+                                                    <Text text="{i18n>requestid}" />
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Purpose" />
+                                                    <Text text="{i18n>label_claimdetails_input_purpose}" />
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Start Date" />
+                                                    <Text text="{i18n>label_claimdetails_input_startdate}" />
                                                 </header>
                                             </Column>
                                             <!-- <Column demandPopin="true">
@@ -322,20 +322,20 @@
                                                         width="100%"
                                                     >
                                                         <Text
-                                                            text="Amount (MYR)"
+                                                            text="{i18n>columntext_claimsummary_amt}"
                                                         />
                                                     </HBox>
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Status" />
+                                                    <Text text="{i18n>appr_status}" />
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
                                                     <Text
-                                                        text="Last Modified"
+                                                        text="{i18n>lastmodified}"
                                                     />
                                                 </header>
                                             </Column>
@@ -420,18 +420,18 @@
                                             <Column demandPopin="true">
                                                 <header>
                                                     <Text
-                                                        text="Claim ID/Request ID"
+                                                        text="{i18n>claimrequestid}"
                                                     />
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Purpose" />
+                                                    <Text text="{i18n>label_claimdetails_input_purpose}" />
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Start Date" />
+                                                    <Text text="{i18n>label_claimdetails_input_startdate}" />
                                                 </header>
                                             </Column>
                                             <!-- <Column demandPopin="true">
@@ -451,20 +451,20 @@
                                                         width="100%"
                                                     >
                                                         <Text
-                                                            text="Amount (MYR)"
+                                                            text="{i18n>columntext_claimsummary_amt}"
                                                         />
                                                     </HBox>
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Status" />
+                                                    <Text text="{i18n>appr_status}" />
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
                                                     <Text
-                                                        text="Last Modified"
+                                                        text="{i18n>lastmodified}"
                                                     />
                                                 </header>
                                             </Column>
