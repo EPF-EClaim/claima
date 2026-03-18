@@ -1596,7 +1596,7 @@ sap.ui.define([
 					);
 
 				// Budget release if required by your process
-				await budgetCheck.budgetProcessing(
+				await budgetCheck.budgetProcessingTest(
 					oModelMain,
 					dataset,
 					submissionType,
@@ -1654,7 +1654,7 @@ sap.ui.define([
 					);
 
 				// Budget release if applicable for your process
-				await budgetCheck.budgetProcessing(
+				await budgetCheck.budgetProcessingTest(
 					oModelMain,
 					dataset,
 					submissionType,
