@@ -1508,61 +1508,78 @@ sap.ui.define([
 		},
 		//Button config for Approve
 		onClickCreate_app: async function () {
-			// Approve flow for CLAIM submission
-			const oReject = this.getView().getModel("Reject");
-			const mode = oReject?.getProperty("/mode");      // expects "APPROVE_CLAIM" for claim flow
-			const comment = oReject?.getProperty("/approvalComment")?.trim();
-			const accessModel = this.getOwnerComponent().getModel("access");
-			const userId = accessModel?.getProperty("/userId");
-			const claimModel = this.getView().getModel("claimsubmission_input");
-			const claimId = claimModel?.getProperty("/claim_header/claim_id")?.trim();
-
-			if (mode === "APPROVE") {
-				if (!comment) {
-					MessageToast.show(Utility.getText(this, "msg_claimapprover_comment"));
-					return;
-				}
-
-				try {
-					BusyIndicator.show(0);
-
-					const oModel = this.getOwnerComponent().getModel();                 // main OData
-					const oModelView = this.getOwnerComponent().getModel("employee_view");
-					const oModelMail = this.getOwnerComponent().getModel();             // or a mail model if different
-
-					// 1) Approve + get email payloads
-					const { payloads } = await ApproverUtility.approveMultiLevel(
-						oModel,
-						claimId,
-						userId,
-						comment,
-						oModelView
-					);
-
-					// 2) Send emails
-					for (const p of payloads) {
-						await workflowApproval.onSendEmailApprover(oModelMail, p);
-					}
-
-					// 3) Close dialog
-					this.__approveDialog && this.__approveDialog.close();
-
-					// 4) Navigate back after small delay (optional)
-					setTimeout(() => {
-						const oRouter = this.getOwnerComponent().getRouter();
-						// this.getOwnerComponent().getModel("employee")?.refresh();
-						// this.getOwnerComponent().getModel("employee_view")?.refresh();
-						this._onNavBack();
-					}, 400);
-
-				} catch (e) {
-					MessageToast.show(e.message || "Approve failed");
-				} finally {
-					BusyIndicator.hide();
-				}
-			}
-
-		},
+ 
+            if (this._busyApproving) return;
+            this._busyApproving = true;
+ 
+            try {
+                // MODE now correctly matches the dialog logic
+                const oReject = this.getView().getModel("Reject");
+                const mode = this.getView().getModel("Type")?.getProperty("/mode");
+                const comment = oReject?.getProperty("/approvalComment")?.trim();
+                const accessModel = this.getOwnerComponent().getModel("access");
+                const userId = accessModel?.getProperty("/userId");
+                const claimModel = this.getView().getModel("claimsubmission_input");
+                const claimId = claimModel?.getProperty("/claim_header/claim_id")?.trim();
+ 
+                if (mode !== "APPROVE_CLAIM") {
+                    console.warn("Skipping approve action because mode is:", mode);
+                    return;
+                }
+ 
+                if (!comment) {
+                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimapprover_comment"));
+                    return;
+                }
+ 
+                try {
+                    BusyIndicator.show(0);
+ 
+                    // Main + View + Mail model
+                    const oModel = this.getOwnerComponent().getModel();
+                    const oModelView = this.getOwnerComponent().getModel("employee_view");
+ 
+                    const { payloads } = await ApproverUtility.approveMultiLevel(
+                        oModel,
+                        claimId,
+                        userId,
+                        comment,
+                        oModelView
+                    );
+                    if (Array.isArray(payloads) && payloads.length > 0) {
+                        for (const p of payloads) {
+                            await workflowApproval.onSendEmailApprover(oModel, p);
+                        }
+                    } else{
+                        console.warn("No email payloads returned — skipping notifications");
+                    }
+ 
+ 
+                    if (this.__approveDialog) {
+                        this.__approveDialog.close();
+                    }
+ 
+                    // 4) Navigate back after small delay (optional)
+                    setTimeout(() => {
+                        const oRouter = this.getOwnerComponent().getRouter();
+                        // this.getOwnerComponent().getModel("employee")?.refresh();
+                        // this.getOwnerComponent().getModel("employee_view")?.refresh();
+                        this._onNavBack();
+                    }, 400);
+ 
+                } catch (e) {
+                    MessageToast.show(e.message || "Approve failed");
+                } finally {
+                    BusyIndicator.hide();
+                }
+ 
+            } catch (outerErr) {
+                console.error(outerErr);
+            } finally {
+                this._busyApproving = false;
+            }
+ 
+        },
 		//Button config for Reject
 		onReject_ClaimSubmission: async function () {
 
@@ -2817,7 +2834,8 @@ sap.ui.define([
 						// determine claims approver
 						if (oAction === 'Submit Report') {
 							var oModelAppr = this.getView().getModel();
-							workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
+							var oEmployeeViewModel  = this.getView().getModel("employee_view");
+							workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
 						}
 						MessageToast.show(oMsg);
 						this._onNavBack();
@@ -2898,7 +2916,8 @@ sap.ui.define([
 					// determine claims approver
 					if (oAction === 'Submit Report') {
 						var oModelAppr = this.getView().getModel();
-						workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"));
+						var oEmployeeViewModel  = this.getView().getModel("employee_view");
+						workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel );
 					}
 
 					MessageToast.show(oMsg);
