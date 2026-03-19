@@ -1,6 +1,6 @@
 sap.ui.define(['sap/ui/core/mvc/ControllerExtension',
-	'sap/m/MessageBox'
-], function (ControllerExtension, MessageBox) {
+	'sap/m/MessageBox',
+], function (ControllerExtension, MessageBox, OverflowToolbar) {
 	'use strict';
 
 	return ControllerExtension.extend('claima.ext.controller.Common', {

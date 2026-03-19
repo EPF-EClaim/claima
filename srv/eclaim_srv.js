@@ -161,10 +161,9 @@ module.exports = (srv) => {
     }
   });
 
-  srv.on('READ', 'FeatureControl', async (req) => {
+ srv.on('READ', 'BudgetControl', async (req) => {
     const { ZEMP_MASTER } = srv.entities;
-
-    const emailFromToken =
+const emailFromToken =
       req.user?.attr?.email ||
       req.user?.attr?.mail ||
       req.user?.attr?.user_name ||
@@ -177,13 +176,11 @@ module.exports = (srv) => {
 
     let operationHidden = true;
 
-    if (user_type === "JKEW Admin") {
+    if (user_type === "GA Admin") {
       operationHidden = true;
-    } else if (user_type === "DTD Admin" || user_type === "Super Admin") {
+    } else {
       operationHidden = false;
-    } else if (user_type === "Super Admin") {
-      operationHidden = false;
-    }
+    } 
 
     return {
       operationHidden: operationHidden,

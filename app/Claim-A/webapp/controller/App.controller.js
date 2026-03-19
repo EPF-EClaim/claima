@@ -212,7 +212,10 @@ sap.ui.define([
 					//Start EY_ATHIRAH
 					if (type === "DTD Admin" || type === "JKEW Admin" || type === "Super Admin") {
 						oRouter.navTo("Configuration");
-					} else {
+					} else if(type.includes("GA Admin")){
+						oRouter.navTo("Configuration_GA");
+					} 
+					else {
 						var message = this.getView().getModel("i18n").getResourceBundle().getText("msg_unauthorized_role");
 						sap.m.MessageBox.error(message);
 					}

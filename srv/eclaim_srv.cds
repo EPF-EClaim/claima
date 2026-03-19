@@ -10,6 +10,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
     entity FeatureControl {
         operationHidden  : Boolean;
         operationEnabled : Boolean;
+    };
+
+    @odata.singleton
+    entity BudgetControl {
+        operationHidden  : Boolean;
+        operationEnabled : Boolean;
     }
 
     type budgetdata {

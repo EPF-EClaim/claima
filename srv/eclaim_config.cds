@@ -3777,8 +3777,8 @@ annotate service.ZBUDGET with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: false,
-        DeleteHidden: false,
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/BudgetControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/BudgetControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'Budget Data - ZBUDGET',

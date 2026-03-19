@@ -49,7 +49,7 @@ sap.ui.define([
                     sap.m.MessageToast.show("Error");
                 }
             }
-
+            oNavigation = oNavigation.includes("ZBUDGET")? "ZBUDGET": oNavigation;
             var oRouter = this.getOwnerComponent().getRouter();
             oRouter.navTo(oNavigation);
         },
