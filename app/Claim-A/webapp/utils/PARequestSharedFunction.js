@@ -234,7 +234,7 @@ sap.ui.define([
 				CheckFields: aActiveFields
 			};
 
-			return [oPayload];
+			return oPayload;
 		},
 
 	};
