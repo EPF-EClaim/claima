@@ -13,30 +13,30 @@
             class="sapUiMediumMargin"
             width="100%"
         >
-            <HBox>
-                <Text text="{i18n>claimtypeid}: " />
-                <Text text="{CLAIM_TYPE_ID}" />
-            </HBox>
-            <HBox width="100%">
-                <Text text="{i18n>claimtypedesc}: " />
-                <Text text="{CLAIM_TYPE_DESC}" />
-            </HBox>
-            <HBox>
-                <Text text="{i18n>label_claimdetails_input_startdate}: " />
-                <Text
-                    text="{path: 'START_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
-                />
-            </HBox>
-            <HBox>
-                <Text text="{i18n>label_claimdetails_input_enddate}: " />
-                <Text
-                    text="{path: 'END_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
-                />
-            </HBox>
-            <HBox>
-                <Text text="{i18n>appr_status}: " />
-                <Text text="{STATUS}" />
-            </HBox>
+            <HBox class="sapUiSmallMarginBottom" alignItems="Start">
+        <Label text="{i18n>claimtypeid}  :  " />
+        <Text text="{CLAIM_TYPE_ID}" />
+    </HBox>
+
+    <HBox class="sapUiSmallMarginBottom" alignItems="Start">
+        <Label text="{i18n>claimtypedesc} :  " />
+        <Text text="{CLAIM_TYPE_DESC}" wrapping="true"  />
+    </HBox>
+
+    <HBox class="sapUiSmallMarginBottom" alignItems="Start">
+        <Label text="{i18n>label_claimdetails_input_startdate} :  " />
+        <Text text="{path: 'START_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}" />
+    </HBox>
+
+    <HBox class="sapUiSmallMarginBottom" alignItems="Start">
+        <Label text="{i18n>label_claimdetails_input_enddate}  :  " />
+        <Text text="{path: 'END_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}" />
+    </HBox>
+
+    <HBox class="sapUiSmallMarginBottom" alignItems="Start">
+        <Label text="{i18n>appr_status}  :" />
+        <Text text="{STATUS}" />
+    </HBox>
         </VBox>
         <VBox
             class="sapUiMediumMargin"
@@ -72,6 +72,12 @@
                     press="onDelete"
                     enabled="{view>/hasSelection}"
                     visible="{= ${/FeatureControl/operationEnabled} === true }"
+                />
+                <Button
+                    icon="sap-icon://action-settings"
+                    press="onOpenViewSettings"
+                    type="Transparent"
+                    tooltip="View Settings"
                 />
             </Toolbar>
 
@@ -133,6 +139,37 @@
                     </ColumnListItem>
                 </items>
             </Table>
+            <dependents>
+                <ViewSettingsDialog
+                    id="itemViewSettingsDialog"
+                    confirm="onConfirmViewSettings"
+                    reset="onResetViewSettings"
+                >
+                    <sortItems>
+                        <ViewSettingsItem
+                            text="{i18n>claimtypeitemid}"
+                            key="CLAIM_TYPE_ITEM_ID"
+                            selected="true"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>claimdesc}"
+                            key="CLAIM_TYPE_ITEM_DESC"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>categoryid}"
+                            key="CATEGORY_ID"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>req_i_start_date}"
+                            key="START_DATE"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>req_i_end_date}"
+                            key="END_DATE"
+                        />
+                    </sortItems>
+                </ViewSettingsDialog>
+            </dependents>
         </VBox>
     </VBox>
 </core:FragmentDefinition>

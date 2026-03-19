@@ -6,21 +6,37 @@ sap.ui.define([
     "sap/m/Button",
     "sap/m/Input",
     "sap/m/Label",
-    "sap/m/MessageToast"
-], (Controller, Dialog, VBox, DatePicker, Button, Input, Label, MessageToast) => {
+    "sap/m/MessageToast",
+    "sap/ui/model/Sorter",
+    "sap/ui/model/Filter",
+    "sap/ui/model/FilterOperator",
+    "sap/ui/model/json/JSONModel",
+    "sap/m/MessageBox"
+], (Controller,
+    Dialog,
+    VBox,
+    DatePicker,
+    Button,
+    Input,
+    Label,
+    MessageToast,
+    Sorter,
+    Filter,
+    FilterOperator,
+    JSONModel,
+    MessageBox) => {
     "use strict";
 
     return Controller.extend("claima.controller.configuration", {
         onInit() {
 
-            this._oAppModel = new sap.ui.model.json.JSONModel({
+            this._oAppModel = new JSONModel({
                 mode: "list",
                 selectedHeader: null
             });
             this.getView().setModel(this._oAppModel, "config");
 
-
-            var oViewModel = new sap.ui.model.json.JSONModel({
+            var oViewModel = new JSONModel({
                 hasSelection: false,
                 selectedContextPath: null
             });
@@ -50,13 +66,11 @@ sap.ui.define([
                     new MessageToast.show("Error");
                 }
             }
-            sNavigation = sNavigation.includes("ZBUDGET")? "ZBUDGET": sNavigation;
+            sNavigation = sNavigation.includes("ZBUDGET") ? "ZBUDGET" : sNavigation;
             var oRouter = this.getOwnerComponent().getRouter();
             oRouter.navTo(sNavigation);
         },
 
-        //navigation to object page is not working when cofigure from manifest, alternative manual table config
-        //only for ZCLAIM_TYPE
         onNavigate: async function (oEvent) {
             const oContext = oEvent.getSource().getBindingContext();
             const oData = oContext.getObject();
@@ -113,12 +127,11 @@ sap.ui.define([
             const oNewEntry = {};
             const { oVBox, sPath, oSelected, oModel } = this._getDetails(oEvent);
             var sNewPath = sPath.includes('Items') ? this._oItemsFragment?.getBindingContext().getPath() + "/Items" : sPath;
-          
+
             const sMetaPath = sPath.includes('Items') ? '/ZCLAIM_TYPE/Items' : sPath;
             const oEntityType = oModel.getMetaModel().getContext(sMetaPath).getObject();
             const sEntityType = oEntityType.$Type;
             const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
-
 
             var oDialog = new Dialog({
                 title: `New Object`,
@@ -129,7 +142,7 @@ sap.ui.define([
                     press: function () {
                         var oInputs = oVBox.getItems();
                         if (!this._validateInputs(oVBox, oDataType)) {
-                            new MessageToast.show("Please fill in all required fields");
+                            MessageToast.show(this._getText("msg_required_details"));
                             return;
                         }
 
@@ -143,19 +156,19 @@ sap.ui.define([
                         oNewEntry["IsActiveEntity"] = true;
 
                         if (oNewEntry["END_DATE"] < oNewEntry["START_DATE"]) {
-                            new MessageToast.show("End date cannot be earlier than start date");
+                            MessageToast.show(this._getText("endBeforeStart"));
                         } else {
 
                             var oListBinding = oModel.bindList(sNewPath),
                                 oContext = oListBinding.create(oNewEntry);
 
-                            new MessageToast.show("Record created");
+                            MessageToast.show(this._getText("msg_record_created"));
                             oModel.refresh();
                             oDialog.close();
                         }
                     }.bind(this)
                 }),
-                endButton: new sap.m.Button({
+                endButton: new Button({
                     text: "Cancel",
                     press: function () { oDialog.close(); }
                 }),
@@ -174,21 +187,21 @@ sap.ui.define([
 
             var sObjectId = sSource?.includes("Header") ? oObject.CLAIM_TYPE_ID : oObject.CLAIM_TYPE_ITEM_ID;
 
-            sap.m.MessageBox.confirm(`Delete object ${sObjectId}?`, {
-                icon: sap.m.MessageBox.Icon.WARNING,
+            MessageBox.confirm(`Delete object ${sObjectId}?`, {
+                icon: MessageBox.Icon.WARNING,
                 title: "Delete",
-                actions: [sap.m.MessageBox.Action.DELETE, sap.m.MessageBox.Action.CANCEL],
-                emphasizedAction: sap.m.MessageBox.Action.DELETE,
+                actions: [MessageBox.Action.DELETE, MessageBox.Action.CANCEL],
+                emphasizedAction: MessageBox.Action.DELETE,
                 onClose: async (sAction) => {
-                    if (sAction !== sap.m.MessageBox.Action.DELETE) return;
+                    if (sAction !== MessageBox.Action.DELETE) return;
                     try {
                         oContext.delete();
-                        sap.m.MessageToast.show("Object deleted");
+                        MessageToast.show(this._getText("msg_object_deleted"));
                         this.getView().getModel("view").setData({
                             hasSelection: false
                         });
                     } catch (e) {
-                        sap.m.MessageBox.error(e?.message || "Delete failed");
+                        MessageBox.error(e?.message || this._getText("msg_delete_fail"));
                     }
                 }
             })
@@ -202,17 +215,17 @@ sap.ui.define([
             const sEntityType = oEntityType.$Type;
             const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
 
-            const oDialog = new sap.m.Dialog({
+            const oDialog = new Dialog({
                 title: `Copy Record`,
                 contentWidth: "15%",
                 horizontalScrolling: false,
-                beginButton: new sap.m.Button({
+                beginButton: new Button({
                     text: "Copy",
                     press: function () {
                         var oInputs = oVBox.getItems();
 
                         if (!this._validateInputs(oVBox, oDataType)) {
-                            sap.m.MessageToast.show("Please fill in all required fields");
+                            MessageToast.show(this._getText("msg_required_details"));
                             return;
                         }
 
@@ -234,13 +247,13 @@ sap.ui.define([
                             sPath = sItemsPath;
                         }
                         if (oNewEntry["END_DATE"] < oNewEntry["START_DATE"]) {
-                            sap.m.MessageToast.show("End date cannot be earlier than start date");
+                            MessageToast.show(this._getText("endBeforeStart"));
                         } else {
                             var oListBinding = oModel.bindList(sPath),
                                 oContext = oListBinding.create(oNewEntry);
 
                             oModel.refresh();
-                            sap.m.MessageToast.show("Record created");
+                            MessageToast.show(this._getText("msg_record_created"));
                             oDialog.close();
                             oListBinding.refresh(true);
                         }
@@ -264,7 +277,7 @@ sap.ui.define([
             const sEntityType = oEntityType.$Type;
             const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
 
-            const oDialog = new sap.m.Dialog({
+            const oDialog = new Dialog({
                 title: `Edit Record`,
                 contentWidth: "15%",
                 horizontalScrolling: false,
@@ -276,7 +289,7 @@ sap.ui.define([
                         var oInputs = oVBox.getItems();
 
                         if (!this._validateInputs(oVBox, oDataType)) {
-                            sap.m.MessageToast.show("Please fill in all required fields");
+                            MessageToast.show(this._getText("msg_required_details"));
                             return;
                         }
 
@@ -290,7 +303,7 @@ sap.ui.define([
                         }
 
                         if (dEnd < dStart) {
-                            sap.m.MessageToast.show("End date cannot be earlier than start date");
+                            MessageToast.show(this._getText("endBeforeStart"));
                         } else {
                             for (let i = 1; i < oInputs.length; i += 2) {
                                 const oControl = oInputs[i];
@@ -300,7 +313,7 @@ sap.ui.define([
 
                                 oContext.setProperty(sFieldName, sNewInput);
                             }
-                            sap.m.MessageToast.show("Record updated");
+                            MessageToast.show(this._getText("msg_record_created"));
                             oModel.refresh();
                             oDialog.close();
                         }
@@ -329,7 +342,7 @@ sap.ui.define([
 
                 if (bRequired && (!sValue || sValue.trim() === '')) {
                     oControl.setValueState("Error");
-                    oControl.setValueStateText("This field is required");
+                    oControl.setValueStateText(this._getText("msg_requiredfield"));
                     bValid = false;
                 } else {
                     oControl.setValueState("None");
@@ -370,7 +383,7 @@ sap.ui.define([
                 const oFieldMeta = oDataType[fieldName];
                 const fieldType = oFieldMeta?.$Type;
 
-                oVBox.addItem(new sap.m.Label({
+                oVBox.addItem(new Label({
                     text: item.Label,
                     width: "100%",
                     labelFor: fieldName,
@@ -386,7 +399,7 @@ sap.ui.define([
                         valueFormat: "yyyy-MM-dd",
                         enabled: true
                     }) :
-                    new sap.m.Input({
+                    new Input({
                         value: oData[fieldName]?.toString() || "",
                         name: fieldName,
                         width: "130%",
@@ -398,9 +411,76 @@ sap.ui.define([
             return { oVBox, sPath, oSelected, oModel };
         },
 
-        onClickBack: function() {
+        onClickBack: function () {
             var oRouter = this.getOwnerComponent().getRouter();
             oRouter.navTo("Configuration");
+        },
+
+        _getText: function (sKey) {
+            if (!this._oResourceBundle) {
+                this._oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
+            }
+            return this._oResourceBundle.getText(sKey);
+        },
+
+        onOpenViewSettings: function () {
+            this.byId("viewSettingsDialog").open();
+        },
+
+        onOpenItemViewSettings: function () {
+            this.byId("itemViewSettingsDialog").open();
+        },
+
+        onConfirmViewSettings: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var sDialogId = oSource.getId();
+
+            var oTable;
+            if (sDialogId.includes("itemViewSettingsDialog")) {
+                oTable = this.byId("claimitemTable");
+            } else {
+                oTable = this.byId("claimTable");
+            }
+
+            var oBinding = oTable.getBinding("items");
+            var mParams = oEvent.getParameters();
+
+            var oSorter;
+            if (mParams.sortItem) {
+                oSorter = new Sorter(
+                    mParams.sortItem.getKey(),
+                    mParams.sortDescending
+                );
+            }
+
+            var aFilters = [];
+            if (mParams.filterItems && mParams.filterItems.length > 0) {
+                mParams.filterItems.forEach(function (oItem) {
+                    var sParts = oItem.getKey().split("___");
+                    aFilters.push(
+                        new Filter(sParts[0], FilterOperator.EQ, sParts[1])
+                    );
+                });
+            }
+
+            oBinding.sort(oSorter);
+            oBinding.filter(aFilters, "Application");
+        },
+
+        onResetViewSettings: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var sDialogId = oSource.getId();
+
+            var oTable;
+            if (sDialogId.includes("itemViewSettingsDialog")) {
+                oTable = this.byId("claimitemTable");
+            } else {
+                oTable = this.byId("claimTable");
+            }
+
+            var oBinding = oTable.getBinding("items");
+            oBinding.sort(null);
+            oBinding.filter([], "Application");
         }
     });
 });
