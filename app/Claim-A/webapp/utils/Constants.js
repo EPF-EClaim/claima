@@ -89,7 +89,24 @@ sap.ui.define([
         "RequestStatus": {
             "DRAFT": "DRAFT",
             "CANCELLED": "CANCELLED"
-        }
+        },
+         "Date": {
+            "DATEFORMAT": "yyyy.MM.dd",
+        },
+         "Mode": {
+            "CLAIM_APPROVE": "APPROVE_CLAIM",
+        },
+        "Approval": {
+            "REQUEST": "REQ",
+            "DETAILS_PREAPPROVAL": "/ZAPPROVER_DETAILS_PREAPPROVAL",
+            "DETAILS_CLAIMS": "/ZAPPROVER_DETAILS_CLAIMS",
+            "PREAPPROVALID": "PREAPPROVAL_ID",
+            "CLAIMID": "CLAIM_ID",
+            "PREAPPROVALID_TITLE": "Pre-Approval",
+            "CLAIMID_TITLE": "Claim",
+        },
+
+
 
     }
 });
