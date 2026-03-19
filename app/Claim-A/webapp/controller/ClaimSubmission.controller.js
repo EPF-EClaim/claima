@@ -1536,19 +1536,19 @@ sap.ui.define([
             try {
                 // MODE now correctly matches the dialog logic
                 const oReject = this.getView().getModel("Reject");
-                const mode = this.getView().getModel("Type")?.getProperty("/mode");
-                const comment = oReject?.getProperty("/approvalComment")?.trim();
-                const accessModel = this.getOwnerComponent().getModel("access");
-                const userId = accessModel?.getProperty("/userId");
-                const claimModel = this.getView().getModel("claimsubmission_input");
-                const claimId = claimModel?.getProperty("/claim_header/claim_id")?.trim();
+                const sMode = this.getView().getModel("Type")?.getProperty("/mode");
+                const sComment = oReject?.getProperty("/approvalComment")?.trim();
+                const oAccessModel = this.getOwnerComponent().getModel("access");
+                const sUserId = oAccessModel?.getProperty("/userId");
+                const oClaimModel = this.getView().getModel("claimsubmission_input");
+                const sClaimId = oClaimModel?.getProperty("/claim_header/claim_id")?.trim();
  
-                if (mode !== "APPROVE_CLAIM") {
-                    console.warn("Skipping approve action because mode is:", mode);
+                if (sMode !== "APPROVE_CLAIM") {
+                    console.warn("Skipping approve action because mode is:", sMode);
                     return;
                 }
  
-                if (!comment) {
+                if (!sComment) {
                     MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimapprover_comment"));
                     return;
                 }
@@ -1562,9 +1562,9 @@ sap.ui.define([
  
                     const { payloads } = await ApproverUtility.approveMultiLevel(
                         oModel,
-                        claimId,
-                        userId,
-                        comment,
+                        sClaimId,
+                        sUserId,
+                        sComment,
                         oModelView
                     );
                     if (Array.isArray(payloads) && payloads.length > 0) {
