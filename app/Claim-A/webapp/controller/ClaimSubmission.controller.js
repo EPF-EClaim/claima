@@ -1581,78 +1581,77 @@ sap.ui.define([
 		},
 		//Button config for Approve
 		onClickCreate_app: async function () {
- 
-            if (this._busyApproving) return;
-            this._busyApproving = true;
- 
-            try {
-                // MODE now correctly matches the dialog logic
-                const oReject = this.getView().getModel("Reject");
-                const sMode = this.getView().getModel("Type")?.getProperty("/mode");
-                const sComment = oReject?.getProperty("/approvalComment")?.trim();
-                const oAccessModel = this.getOwnerComponent().getModel("access");
-                const sUserId = oAccessModel?.getProperty("/userId");
-                const oClaimModel = this.getView().getModel("claimsubmission_input");
-                const sClaimId = oClaimModel?.getProperty("/claim_header/claim_id")?.trim();
- 
-                if (sMode !== "APPROVE_CLAIM") {
-                    console.warn("Skipping approve action because mode is:", sMode);
-                    return;
-                }
- 
-                if (!sComment) {
-                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimapprover_comment"));
-                    return;
-                }
- 
-                try {
-                    BusyIndicator.show(0);
- 
-                    // Main + View + Mail model
-                    const oModel = this.getOwnerComponent().getModel();
-                    const oModelView = this.getOwnerComponent().getModel("employee_view");
- 
-                    const { payloads } = await ApproverUtility.approveMultiLevel(
-                        oModel,
-                        sClaimId,
-                        sUserId,
-                        sComment,
-                        oModelView
-                    );
-                    if (Array.isArray(payloads) && payloads.length > 0) {
-                        for (const p of payloads) {
-                            await workflowApproval.onSendEmailApprover(oModel, p);
-                        }
-                    } else{
-                        console.warn("No email payloads returned — skipping notifications");
-                    }
- 
- 
-                    if (this.__approveDialog) {
-                        this.__approveDialog.close();
-                    }
- 
-                    // 4) Navigate back after small delay (optional)
-                    setTimeout(() => {
-                        const oRouter = this.getOwnerComponent().getRouter();
-                        // this.getOwnerComponent().getModel("employee")?.refresh();
-                        // this.getOwnerComponent().getModel("employee_view")?.refresh();
-                        this._onNavBack();
-                    }, 400);
- 
-                } catch (e) {
-                    MessageToast.show(e.message || "Approve failed");
-                } finally {
-                    BusyIndicator.hide();
-                }
- 
-            } catch (outerErr) {
-                console.error(outerErr);
-            } finally {
-                this._busyApproving = false;
-            }
- 
-        },
+
+
+			if (this.bIsApproving) {
+				return;
+			}
+
+			this.bIsApproving = true;
+
+
+			try {
+				const oReject = this.getView().getModel("Reject");
+				const sMode = this.getView().getModel("Type")?.getProperty("/mode");
+				const sComment = oReject?.getProperty("/approvalComment")?.trim();
+				const oAccessModel = this.getOwnerComponent().getModel("access");
+				const sUserId = oAccessModel?.getProperty("/userId");
+				const oClaimModel = this.getView().getModel("claimsubmission_input");
+				const sClaimId = oClaimModel?.getProperty("/claim_header/claim_id")?.trim();
+
+				if (sMode !== this._oConstant.ApprovalProcess.CLAIM_APPROVE) {
+					return;
+				}
+
+				if (!sComment) {
+					MessageToast.show(Utility.getText(this, "msg_claimapprover_comment"));
+					return;
+				}
+
+				try {
+
+					BusyIndicator.show(0);
+
+					const oModel = this.getOwnerComponent().getModel();
+					const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+
+					const { payloads: aPayloadEmail, sMessageKey } = await ApproverUtility.approveMultiLevel(
+						oModel,
+						sClaimId,
+						sUserId,
+						sComment,
+						oEmployeeViewModel
+					);
+
+					if (Array.isArray(aPayloadEmail) && aPayloadEmail.length > 0) {
+						for (const oPayloadEmail of aPayloadEmail) {
+							await workflowApproval.onSendEmailApprover(oModel, oPayloadEmail);
+						}
+					}
+					MessageToast.show(Utility.getText(this, sMessageKey));
+					if (this._oApproveDialog) {
+						this._oApproveDialog.close();
+					}
+
+					this._fnGoToDashboard();
+
+				} catch (oErrorMessage) {
+					MessageToast.show(Utility.getText(this, oErrorMessage.sCode));
+					this._fnGoToDashboard();
+				} finally {
+					BusyIndicator.hide();
+				}
+
+			} catch (oErrorApprove) {
+				MessageToast.show(Utility.getText(this, "msg_claimapprover_fail"));
+				return;
+
+			} finally {
+				this._bBusyApproving = false;
+			}
+
+		},
+
 		//Button config for Reject
 		onReject_ClaimSubmission: async function () {
 
@@ -1675,25 +1674,28 @@ sap.ui.define([
 
 				const oModelMain = this.getOwnerComponent().getModel();
 				const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
-				const accessModel = this.getOwnerComponent().getModel("access");
-				const userId = accessModel?.getProperty("/userId");
+				const oAccessModel = this.getOwnerComponent().getModel("access");
+				const sUserId = oAccessModel?.getProperty("/userId");
 
 				const oClaimModel = this.getView().getModel("claimsubmission_input");
 				const sClaimId = oClaimModel?.getProperty("/claim_header/claim_id")?.trim();
 
 				const reject_status = this._oConstant.ClaimStatus.REJECTED; // REJECT
 
-				// Utility handles details + header status (use STATUS_ID for claim header)
-				const { payloads, dataset, submissionType } =
-					await ApproverUtility.rejectOrSendBackMultiLevel(
-						oModelMain,
-						claimId,
-						userId,
-						reject_status,
-						reason,
-						comment,
-						oEmployeeViewModel
-					);
+				const {
+					payloads: aPayloads,
+					dataset: aDataset,
+					submissionType: sSubmissionType,
+					sMessageKey
+				} = await ApproverUtility.rejectOrSendBackMultiLevel(
+					oModelMain,
+					sClaimId,
+					sUserId,
+					sRejectStatus,
+					sReason,
+					sComment,
+					oEmployeeViewModel
+				);
 
 				await budgetCheck.budgetProcessingTest(
 					oModelMain,
@@ -1740,24 +1742,28 @@ sap.ui.define([
 
 				const oModelMain = this.getOwnerComponent().getModel();
 				const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
-				const accessModel = this.getOwnerComponent().getModel("access");
-				const userId = accessModel?.getProperty("/userId");
+				const oAccessModel = this.getOwnerComponent().getModel("access");
+				const sUserId = oAccessModel?.getProperty("/userId");
 
 				const oClaimModel = this.getView().getModel("claimsubmission_input");
 				const sClaimId = oClaimModel?.getProperty("/claim_header/claim_id")?.trim();
 
 				const sSendBackStatus = this._oConstant.ClaimStatus.SEND_BACK;
 
-				const { payloads, dataset, submissionType } =
-					await ApproverUtility.rejectOrSendBackMultiLevel(
-						oModelMain,
-						claimId,
-						userId,
-						reject_status,
-						reason,
-						comment,
-						oEmployeeViewModel
-					);
+				const {
+					payloads: aPayloads,
+					dataset: aDataset,
+					submissionType: sSubmissionType,
+					sMessageKey
+				} = await ApproverUtility.rejectOrSendBackMultiLevel(
+					oModelMain,
+					sClaimId,
+					sUserId,
+					sSendBackStatus,
+					sReason,
+					sComment,
+					oEmployeeViewModel
+				);
 
 				await budgetCheck.budgetProcessingTest(
 					oModelMain,
