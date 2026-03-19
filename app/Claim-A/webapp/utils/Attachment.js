@@ -13,9 +13,11 @@ sap.ui.define([
         * ======================================================= */
 
 		_getSrvLink() {
-			// put a '/' before SuccessFactors_API for deployed app use
-			// deployment version need a slash to avoid root folder in prefix call
-			return "/SuccessFactors_API";
+			const bIsLocal = window.location.hostname.includes("port4004") || 
+							window.location.hostname.includes("127.0.0.1");
+
+			const sDestination = "SuccessFactors_API";
+			return bIsLocal ? sDestination : "/" + sDestination;
 		},
 
         async postAttachment(fileName, fileBase64, emp_id) {
@@ -179,9 +181,7 @@ sap.ui.define([
 			return true;
 		},
 
-		async onViewDocument(that, oEvent) {
-			var attachmentID = oEvent.getSource().getText();
-
+		async onViewDocument(that, attachmentID) {
 			var sDestination = this._getSrvLink();
 			var sServiceUrl = sDestination + "/Attachment('" + attachmentID + "')";
 

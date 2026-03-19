@@ -79,7 +79,7 @@
                                             id="i_no_of_days_1" >
                                     <form:fields>
                                         <Text 
-                                            text="{request>/req_header/no_of_days}" />
+                                            text="{request>/req_item/no_of_days}" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -192,6 +192,7 @@
                                     <form:fields>
                                         <unified:FileUploader
                                             change=".onImportChange1"
+                                            placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc1}"
                                             id="i_attachment_1_file" />
                                     </form:fields>
@@ -226,6 +227,7 @@
                                     <form:fields>
                                         <unified:FileUploader
                                             change=".onImportChange2"
+                                            placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc2}"
                                             id="i_attachment_2_file" />
                                     </form:fields>
@@ -237,7 +239,7 @@
                                             id="i_no_of_days_2"  >
                                     <form:fields>
                                         <Text 
-                                            text="{request>/req_header/no_of_days}" />
+                                            text="{request>/req_item/no_of_days}" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -272,24 +274,26 @@
                                 </form:FormElement>
 
                                 <!-- Start Time -->
-                                <form:FormElement label="{i18n>req_i_start_date}"
+                                <form:FormElement label="{i18n>req_i_start_time}"
                                             visible="false"
                                             id="i_start_time" >
                                     <form:fields>
                                         <m:TimePicker
                                             value="{request>/req_item/start_time}"
+                                            maskMode='On'
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- End Time -->
-                                <form:FormElement label="{i18n>req_i_end_date}"
+                                <form:FormElement label="{i18n>req_i_end_time}"
                                             visible="false"
                                             id="i_end_time" >
                                     <form:fields>
                                         <m:TimePicker
                                             value="{request>/req_item/end_time}"
+                                            maskMode='On'
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
@@ -349,11 +353,11 @@
                                             required="true" 
                                             forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
-                                            items="{path: 'request>/claim_type_items',
-                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            items="{path: 'employee>/ZCOUNTRY',
+                                                    sorter: { path: 'COUNTRY_ID', descending: false }}">
                                             <items>
-                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
-                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                                <core:Item key="{employee>COUNTRY_ID}" 
+                                                        text="{employee>COUNTRY_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
@@ -616,7 +620,7 @@
                                             id="i_no_of_days_3" >
                                     <form:fields>
                                         <Text 
-                                            text="{request>/req_header/no_of_days}" />
+                                            text="{request>/req_item/no_of_days}" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -682,9 +686,7 @@
                                             id="i_departure_time">
                                     <form:fields>
                                         <m:TimePicker
-                                            displayFormat="dd MMM yyyy"
-                                            valueFormat="yyyy-MM-dd"
-                                            placeholder="eg: 01 Jan 1990"
+                                            maskMode='On'
                                             value="{request>/req_item/departure_time}"
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
@@ -697,9 +699,7 @@
                                             id="i_arrival_time">
                                     <form:fields>
                                         <m:TimePicker
-                                            displayFormat="dd MMM yyyy"
-                                            valueFormat="yyyy-MM-dd"
-                                            placeholder="eg: 01 Jan 1990"
+                                            maskMode='On'
                                             value="{request>/req_item/arrival_time}"
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>

@@ -42,6 +42,14 @@ sap.ui.define([
             await oModel.submitBatch("$auto");
             
             sap.m.MessageToast.show("Request submitted successfully");
+        },
+
+        getResourceBundle: function (oController) {
+            return oController.getOwnerComponent().getModel("i18n").getResourceBundle();
+        },
+
+        getText: function (oController, sKey, aArgs) {
+            return this.getResourceBundle(oController).getText(sKey, aArgs);
         }
 
     };
