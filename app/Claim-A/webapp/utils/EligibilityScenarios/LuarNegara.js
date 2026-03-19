@@ -3,15 +3,15 @@ sap.ui.define([
 ], function () {
     "use strict";
     return {
-        async onEligibleCheck(oModel, oConstant, ClaimItmType, oEmp, aRules) {
+        async onEligibleCheck(oModel, oConstant, oPayload, oEmp, aRules) {
             // TEST PAYLOAD, Remove after Full Test
-            var aPayload = [
-                { field: "FLIGHT_CLASS_ID", Value: "01", Result: "" }
-                // { field: "", Value: "", Result: "" },
-                // { field: "", Value: "", Result: "" },
-                // { field: "", Value: "", Result: "" },
-                // { field: "", Value: "", Result: "" }
-            ];
+            // var aPayload = [
+            //     { field: "FLIGHT_CLASS_ID", Value: "01", Result: "" }
+            //     // { field: "", Value: "", Result: "" },
+            //     // { field: "", Value: "", Result: "" },
+            //     // { field: "", Value: "", Result: "" },
+            //     // { field: "", Value: "", Result: "" }
+            // ];
 
             // Load to check each Payload Claim Item Field
             var iRows = 0;
@@ -23,7 +23,7 @@ sap.ui.define([
                     var iDays = aPayload[i].Value
                 }
 
-                switch (ClaimItmType) {
+                switch (oPayload.ClaimTypeItem) {
                     case oConstant.ClaimItmType.DOBI:
                         for (var oRule of aRules) {
                             if (aPayload[i].Value >= oRule.TRAVEL_DAYS_ID) {

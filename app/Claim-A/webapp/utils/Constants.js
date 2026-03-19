@@ -11,7 +11,7 @@ sap.ui.define([
             "ELAUN_TUKAR": "ELAUN_TUKAR",
             "ELAUN_PINDAH": "ELAUN_PINDAH"
         },
-        "KURSUS_DLM_NEGARA_TypeItem":{
+        "ClaimTypeItem":{
             "BAGAI": "BAGAI",
             "BYR_YURAN": "BYR_YURAN",
             "CERAMAH": "CERAMAH",

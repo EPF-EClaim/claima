@@ -9,14 +9,13 @@ sap.ui.define([
 ], function (Filter, FilterOperator, DalamNegara, LuarNegara, KursusDalam, KursusLuar, Pelbagai) {
     "use strict";
     return {
-        onEligibilityCheck: async function (oModel, oConstant, sEmpId, sClaimType, sClaimItmType) {
+        onEligibilityCheck: async function (oModel, oConstant, oPayload) {
             // Get Employee ID
-
             const oEmpBindList = oModel.bindList("/ZEMP_MASTER");
 
             var aEmpFilters = [];
             var aEmpAndFilters = [];
-            aEmpAndFilters.push(new Filter("EEID", FilterOperator.EQ, sEmpId));
+            aEmpAndFilters.push(new Filter("EEID", FilterOperator.EQ, oPayload.EmpId));
             aEmpAndFilters = new Filter(aEmpAndFilters, true);
 
             aEmpFilters.push(new Filter(aEmpAndFilters));
@@ -37,8 +36,8 @@ sap.ui.define([
             var aRulesAndFilters = [];
             var aRulesOrFilters = [];
 
-            aRulesAndFilters.push(new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaimItmType));
-            aRulesAndFilters.push(new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimType));
+            aRulesAndFilters.push(new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oPayload.ClaimTypeItem));
+            aRulesAndFilters.push(new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oPayload.ClaimType));
             aRulesAndFilters = new Filter(aRulesAndFilters, true);
 
             aRulesOrFilters.push(new Filter("PERSONAL_GRADE", FilterOperator.EQ, oEmp.GRADE));
@@ -56,7 +55,7 @@ sap.ui.define([
                 return aRules;
             });
 
-            LuarNegara.onEligibleCheck(oModel, oConstant, sClaimItmType, oEmp, aRules);
+            LuarNegara.onEligibleCheck(oModel, oConstant, oPayload, oEmp, aRules);
             // switch (sClaimType) {
             //     case oConstant.ClaimType.DLM_NEGARA:
             //         DalamNegara.onEligibleCheck(oModel, sClaimItmType);
