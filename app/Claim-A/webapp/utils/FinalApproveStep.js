@@ -21,8 +21,9 @@ sap.ui.define([
                 var bIsPre = sSubmissionType === "REQ";
                 const sBudgetApprove = 'approve';
                 var sField_header = bIsPre ? "REQUEST_ID" : "CLAIM_ID";
+                var sPARField = bIsPre ? "PREAPPROVAL_ID" : "CLAIM_ID"; 
                 var sTable = bIsPre ? "/ZEMP_REQUEST_BUDGET_CHECK" : "/ZEMP_CLAIM_BUDGET_CHECK";
-                var sTable2 = bIsPre === "REQ" ? "/ZEMP_APPROVER_REQUEST_DETAILS" : "/ZEMP_APPROVER_CLAIM_DETAILS";
+                var sTable2 = bIsPre ? "/ZEMP_APPROVER_REQUEST_DETAILS" : "/ZEMP_APPROVER_CLAIM_DETAILS";
                 var dCurrentDate = new Date().toLocaleDateString('en-CA');
 
                 if(oEmailPayload == null || oEmailPayload == "" || oEmailPayload.length == 0 || oEmailPayload == undefined){
@@ -32,7 +33,7 @@ sap.ui.define([
                         null,
                         null,
                         [
-                            new Filter("CLAIM_ID", FilterOperator.EQ, sClaimID),
+                            new Filter(sPARField, FilterOperator.EQ, sClaimID),
                             new Filter("LEVEL", FilterOperator.EQ, "0")
                         ],
                         { $$ownRequest: true }

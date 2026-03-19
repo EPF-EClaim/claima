@@ -201,6 +201,9 @@ sap.ui.define([
 
 			const aApprContexts = await oApprList.requestContexts();
 			const aApprData = aApprContexts.map(oCtx => oCtx.getObject());
+            var bIsPre = submissionType === "REQ";
+			var sField_header = bIsPre ? "Pre-Approval" : "Claim";
+            var sPARField = bIsPre ? "PREAPPROVAL_ID" : "CLAIM_ID"; 
 
 			// Get Claimant Details
 			const oClaimantList = oModel2.bindList(
@@ -208,14 +211,11 @@ sap.ui.define([
 				null,
 				null,
 				[
-					new Filter("CLAIM_ID", FilterOperator.EQ, id),
+					new Filter(sPARField, FilterOperator.EQ, id),
 					new Filter("LEVEL", FilterOperator.EQ, currentLevel)
 				],
 				{ $$ownRequest: true }
 			);
-
-			var bIsPre = submissionType === "REQ";
-			var sField_header = bIsPre ? "Pre-Approval" : "Claim";
 
 			const aClaimantContexts = await oClaimantList.requestContexts();
 			const aClaimantData = aClaimantContexts.map(oCtx => oCtx.getObject());

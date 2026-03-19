@@ -643,7 +643,7 @@ sap.ui.define([
 			//create ZAPPROVER DETAILS
 			const oBindApprDetailsList = oModel.bindList("/ZAPPROVER_DETAILS_PREAPPROVAL");
 
-			for(var i = 0; i < iWorkflowApprLvl; i++){
+			for(var i = 0; i < aApprEmpID.length; i++){
 				if(aApprEmpID[i] == "Auto"){
                     var oContext = oBindApprDetailsList.create({
                         "PREAPPROVAL_ID": sPARID,
@@ -670,9 +670,7 @@ sap.ui.define([
                         "STATUS": null
                         });
                     }
-                }
-                
-                
+                }            
 			}
 
             oContext.created().then(async function (){
