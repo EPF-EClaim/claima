@@ -2717,6 +2717,11 @@ sap.ui.define([
 					this._setAllControlsEditable(true);
 				}
 
+				// clear fileuploader fields
+				for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
+					this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
+				}
+
 				oPage.removeContent(oClaimItemFragment);
 
 				await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
