@@ -672,7 +672,7 @@ sap.ui.define([
 						}
 					};
 				} else {
-					console.warn("No employee found with email: " + sEMAIL);
+					console.warn("No employee found with email: " + sEEID);
 					return null;
 				}
 			} catch (oError) {
