@@ -121,7 +121,10 @@ sap.ui.define([
 				oSession.setProperty("/origin", oData.origin);
 
 				// save userId to model
-				var oUserIdModel = new JSONModel({ "userId": oData.userId });
+				var oUserIdModel = new JSONModel({
+					"userId": oData.userId,
+					"email": oData.id
+				});
 				//// set input
 				this.getView().setModel(oUserIdModel, "userId");
 				oSession.setProperty("/userType", this._userType);
@@ -497,7 +500,14 @@ sap.ui.define([
 			// set new claim submission model;
 			var oInputModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 			//// set employee data
-			var userModelData = this.getView().getModel('user').getData();
+			var userModelData = this.getView().getModel('user')?.getData() || this.getView().getModel("userId")?.getData() || null;
+			if (!userModelData) {
+				MessageToast.show(Utility.getText(this, "msg_claimprocess_nouser"));
+				if (this.oDialog_ClaimProcess) {
+					this.oDialog_ClaimProcess.close();
+					return;
+				}
+			}
 			const emp_data = await this._getEmpIdDetail(userModelData.email);
 			if (emp_data) {
 				oInputModel.setProperty("/emp_master", emp_data);
