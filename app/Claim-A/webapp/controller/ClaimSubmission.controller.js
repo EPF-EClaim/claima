@@ -14,11 +14,11 @@ sap.ui.define([
 	"sap/m/Dialog",
 	"sap/m/Button",
 	"sap/m/Label",
-	"sap/m/PDFViewer",
 	"sap/m/ListMode",
 	"claima/utils/Utility",
 	"claima/utils/Attachment",
 	"claima/utils/budgetCheck",
+	"claima/utils/ApprovalLog",
 	"claima/utils/ApproveDialog",
 	"claima/utils/RejectDialog",
 	"claima/utils/SendBackDialog",
@@ -42,11 +42,11 @@ sap.ui.define([
 	Dialog,
 	Button,
 	Label,
-	PDFViewer,
 	ListMode,
 	Utility,
 	Attachment,
 	budgetCheck,
+	ApprovalLog,
 	ApproveDialog,
 	RejectDialog,
 	SendBackDialog,
@@ -156,7 +156,7 @@ sap.ui.define([
 				});
 			}
 			await this._showInitFormFragment();
-			this._afterLoadFragments();
+			await this._afterLoadFragments();
 		},
 
 		_showInitFormFragment: async function () {
@@ -193,7 +193,7 @@ sap.ui.define([
 			}
 		},
 
-		_afterLoadFragments: function () {
+		_afterLoadFragments: async function () {
 			// enable view attachment at claim summary
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			if (oClaimSubmissionModel && oClaimSubmissionModel.getProperty("/claim_header/attachment_email_approver")) {
@@ -206,11 +206,6 @@ sap.ui.define([
 
 				// disable footer buttons if claim already cancelled
 				this._disableFooterButtons();
-
-				// show approval log fragment for non-draft
-				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT) {
-					this._setApprovalLog(true);
-				}
 
 				// set view-only features
 				if (!oClaimSubmissionModel.getProperty("/view_only")) {
@@ -225,28 +220,53 @@ sap.ui.define([
 					this._setClaimItemTableToolbar(false);
 					//this._setClaimItemTableToolbar();
 				}
-				// change screen details if approver
-				if (oClaimSubmissionModel.getProperty("/is_approver")) {
-					// update footer buttons
-					this._displayFooterButtons("claimsubmission_approver");
+
+				// show approval log fragment for non-draft
+				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT) {
+					this._setApprovalLog(true);
+
+					// display approval log data
+					const oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
+					const oEmployeeViewModel = this.getOwnerComponent().getModel('employee_view');
+					await ApprovalLog.getApproverList(oApprovalLogModel, oEmployeeViewModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+					this.byId("approval_log_table")?.getBinding("rows").refresh();
+
+					// approver view
+					//// set approver view if current user is approver
+					let oApprovalLogFragment = await this._getFormFragment("approval_log");
+					let iApproverCount = oApprovalLogModel.getProperty("/approval")?.length || 0;
+					if (oApprovalLogFragment && iApproverCount > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
+						var sUserId = this.getView().getModel("userId")?.getProperty("/userId");
+						if (sUserId) {
+							let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) => oApproval.APPROVER_ID === sUserId);
+							if (iItemIndex !== -1) {
+								oClaimSubmissionModel.setProperty("/is_approver", true);
+							}
+						}
+					}
+					//// change screen details if approver
+					if (oClaimSubmissionModel.getProperty("/is_approver")) {
+						// update footer buttons
+						this._displayFooterButtons("claimsubmission_approver");
+					}
 				}
 				else {
 					// ensure footer buttons display default 
 					this._displayFooterButtons("claimsubmission_summary_claimitem");
 				}
+
 			}
 		},
 
 		_loadClaimById: async function (sClaimId) {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			const oModel = await this._ensureModelReady("employee_view");
-			const oModel2 = this.getOwnerComponent().getModel();
+			const oEmployeeViewModel = await this._ensureModelReady("employee_view");
 			const sId = String(sClaimId);
 
 			const aFilters = [new Filter("CLAIM_ID", FilterOperator.EQ, sId)];
 
 			// Header binding
-			const oHeaderBinding = oModel.bindList(
+			const oHeaderBinding = oEmployeeViewModel.bindList(
 				"/ZEMP_CLAIM_HEADER_VIEW", // <-- adjust if different
 				null,
 				null,
@@ -259,7 +279,7 @@ sap.ui.define([
 			);
 
 			// Items binding
-			const oItemBinding = oModel.bindList(
+			const oItemBinding = oEmployeeViewModel.bindList(
 				"/ZEMP_CLAIM_ITEM_VIEW", // <-- adjust if different
 				null,
 				[new Sorter("CLAIM_SUB_ID", false)],
@@ -272,7 +292,7 @@ sap.ui.define([
 			);
 
 			// Items Descr binding
-			const oItemDescrBinding = oModel.bindList(
+			const oItemDescrBinding = oEmployeeViewModel.bindList(
 				"/ZEMP_CLAIM_ITEM_VIEW", // <-- adjust if different
 				null,
 				[new Sorter("CLAIM_SUB_ID", false)],
@@ -681,7 +701,7 @@ sap.ui.define([
 						}
 					};
 				} else {
-					console.warn("No employee found with email: " + sEMAIL);
+					console.warn("No employee found with employee ID: " + sEEID);
 					return null;
 				}
 			} catch (oError) {
@@ -1147,6 +1167,7 @@ sap.ui.define([
 			var that = this;
 			// Write to Success Factors API
 			var fileName = "";
+			BusyIndicator.show(0);
 			if (oLevel == 'parent') {
 				// get parent attachment
 				var oInputModel = this.getView().getModel("claimsubmission_input");
@@ -1161,15 +1182,17 @@ sap.ui.define([
 				// get child attachment
 				oInputModel = this.getView().getModel("claimsubmission_input");
 				//// get claim item index from claim submission
-				let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
-				if (itemIndex !== -1) {
-					Attachment.onViewDocument(this, oInputModel.getProperty("/claim_items/" + itemIndex + "/attachment_file_" + fieldNumber));
+				let iItemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
+				if (iItemIndex !== -1) {
+					Attachment.onViewDocument(this, oInputModel.getProperty("/claim_items/" + iItemIndex + "/attachment_file_" + fieldNumber));
 				}
 				else {
 					MessageToast.show(Utility.getText(this, "msg_claimsubmission_viewattachment_error"));
+					BusyIndicator.hide();
 					return;
 				}
 			}
+			BusyIndicator.hide();
 		},
 
 		onCreateClaim_ClaimSummary: async function (indexNumber) {
@@ -1294,9 +1317,9 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			// get value from selected item
 			itemSubId = oItem.getCells()[0].getText();
-			let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
-			if (itemIndex !== -1) {
-				this.onCreateClaim_ClaimSummary(itemIndex);
+			let iItemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
+			if (iItemIndex !== -1) {
+				this.onCreateClaim_ClaimSummary(iItemIndex);
 			}
 		},
 
@@ -1312,9 +1335,9 @@ sap.ui.define([
 			// get value from selected items
 			var itemSubId;
 			itemSubId = item.getCells()[0].getText();
-			let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
-			if (itemIndex !== -1) {
-				this.onCreateClaim_ClaimSummary(itemIndex);
+			let iItemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
+			if (iItemIndex !== -1) {
+				this.onCreateClaim_ClaimSummary(iItemIndex);
 			}
 		},
 
@@ -1327,9 +1350,9 @@ sap.ui.define([
 			};
 			// get value from selected item
 			itemSubId = oItem.getCells()[0].getText();
-			let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
-			if (itemIndex !== -1) {
-				var oObject = oInputModel.getProperty("/claim_items/" + itemIndex);
+			let iItemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
+			if (iItemIndex !== -1) {
+				var oObject = oInputModel.getProperty("/claim_items/" + iItemIndex);
 				oInputModel.setProperty("/claim_items", oInputModel.getProperty("/claim_items").concat(structuredClone(oObject)));
 				var addrIndex = "/claim_items/" + (oInputModel.getProperty("/claim_items").length - 1);
 				oInputModel.setProperty(
@@ -1379,10 +1402,10 @@ sap.ui.define([
 			jQuery.each(aItems,
 				function (id, value) {
 					itemSubId = value.getCells()[0].getText();
-					let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
-					if (itemIndex !== -1) {
+					let iItemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
+					if (iItemIndex !== -1) {
 						if (oInputModel.getProperty("/claim_items").length > 1) {
-							oInputModel.getProperty("/claim_items").splice(itemIndex, 1);
+							oInputModel.getProperty("/claim_items").splice(iItemIndex, 1);
 							oInputModel.setProperty("/claim_items_count", oInputModel.getProperty("/claim_items").length);
 						}
 						else {
@@ -2117,6 +2140,7 @@ sap.ui.define([
 			// validate attachment
 			//// attachment 1
 			if (this.byId("fileuploader_claimdetails_input_attachment1").getValue()) {
+				BusyIndicator.show(0);
 				var attachmentNumber = await Attachment.postAttachment(
 					oInputModel.getProperty("/attachments/attachment1/fileName"),
 					oInputModel.getProperty("/attachments/attachment1/fileContent"),
@@ -2125,15 +2149,18 @@ sap.ui.define([
 				if (attachmentNumber) {
 					oInputModel.setProperty("/claim_item/attachment_file_1", attachmentNumber);
 					oInputModel.setProperty("/claim_item/descr/attachment_file_1", oInputModel.getProperty("/attachments/attachment1/fileName"));
+					BusyIndicator.hide();
 				}
 				else {
 					MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_error"));
 					// don't proceed claim item if attachment upload fails
+					BusyIndicator.hide();
 					return;
 				}
 			}
 			//// attachment 2
 			if (this.byId("fileuploader_claimdetails_input_attachment2").getValue()) {
+				BusyIndicator.show(0);
 				var attachmentNumber = await Attachment.postAttachment(
 					oInputModel.getProperty("/attachments/attachment2/fileName"),
 					oInputModel.getProperty("/attachments/attachment2/fileContent"),
@@ -2142,10 +2169,12 @@ sap.ui.define([
 				if (attachmentNumber) {
 					oInputModel.setProperty("/claim_item/attachment_file_2", attachmentNumber);
 					oInputModel.setProperty("/claim_item/descr/attachment_file_2", oInputModel.getProperty("/attachments/attachment2/fileName"));
+					BusyIndicator.hide();
 				}
 				else {
 					MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_error"));
 					// don't proceed claim item if attachment upload fails
+					BusyIndicator.hide();
 					return;
 				}
 			}
@@ -2803,6 +2832,11 @@ sap.ui.define([
 						this.byId("button_claimdetails_input_return").setVisible(false);
 					}
 					this._setAllControlsEditable(true);
+				}
+
+				// clear fileuploader fields
+				for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
+					this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
 				}
 
 				oPage.removeContent(oClaimItemFragment);
@@ -4020,16 +4054,16 @@ sap.ui.define([
 		//Aiman Salim - 08/03/2026 - MyApproval - My Pre-Approval Request Status;
 		getMyApproverPAReq: async function () {
 			const oReq = this.getOwnerComponent().getModel("request_status");
-			const oModel = this.getOwnerComponent().getModel("employee_view");
-			var userID;
+			const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+			var sUserId;
 
 			if (this.getView().getModel("userId")) {
-				userID = this.getView().getModel("userId").getProperty("/userId");
+				sUserId = this.getView().getModel("userId").getProperty("/userId");
 			}
 			const oApproverOrSub = new Filter({
 				filters: [
-					new Filter("APPROVER_ID", FilterOperator.EQ, userID),
-					new Filter("SUBSTITUTE_APPROVER_ID", FilterOperator.EQ, userID)
+					new Filter("APPROVER_ID", FilterOperator.EQ, sUserId),
+					new Filter("SUBSTITUTE_APPROVER_ID", FilterOperator.EQ, sUserId)
 				],
 				and: false // OR condition between the two
 			});
@@ -4046,7 +4080,7 @@ sap.ui.define([
 			});
 
 
-			const oListBinding = oModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
+			const oListBinding = oEmployeeViewModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
 				[new Sorter("STATUS", true)], // desc by STATUS
 				[oCombined],
 				{
@@ -4080,16 +4114,16 @@ sap.ui.define([
 
 		getMyApproverClaim: async function () {
 			const oReq = this.getOwnerComponent().getModel("claim_status");
-			const oModel = this.getOwnerComponent().getModel("employee_view");
-			var userID;
+			const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+			var sUserId;
 
 			if (this.getView().getModel("userId")) {
-				userID = this.getView().getModel("userId").getProperty("/userId");
+				sUserId = this.getView().getModel("userId").getProperty("/userId");
 			}
 			const oApproverOrSub = new Filter({
 				filters: [
-					new Filter("APPROVER_ID", FilterOperator.EQ, userID),
-					new Filter("SUBSTITUTE_APPROVER_ID", FilterOperator.EQ, userID)
+					new Filter("APPROVER_ID", FilterOperator.EQ, sUserId),
+					new Filter("SUBSTITUTE_APPROVER_ID", FilterOperator.EQ, sUserId)
 				],
 				and: false // OR condition between the two
 			});
@@ -4104,7 +4138,7 @@ sap.ui.define([
 				filters: [oApproverOrSub, oStatusPending],
 				and: true // AND between groups
 			});
-			const oListBinding = oModel.bindList("/ZEMP_APPROVER_CLAIM_DETAILS", undefined,
+			const oListBinding = oEmployeeViewModel.bindList("/ZEMP_APPROVER_CLAIM_DETAILS", undefined,
 				[new Sorter("STATUS", true)], // desc by STATUS
 				[oCombined],
 

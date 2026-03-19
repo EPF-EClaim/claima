@@ -94,6 +94,26 @@ sap.ui.define([
             "CLAIM": "CLM",
             "PRE_APPROVAL": "PRE"
         },
+        "SubmissionType": {
+            "REQUEST": "REQ"
+        },
+        "Role": {
+            "GA_ADMIN": "GA Admin",
+            "JKEW_ADMIN": "JKEW Admin",
+            "DTD_ADMIN": "DTD Admin",
+            "APPROVER": "Approver", 
+            "SUPER_ADMIN": "Super Admin"
+        }, 
+        "Configuration": {
+            "ZEMP_MASTER": "ZEMP_MASTER",
+            "ZEMP_MASTER_DTD": "ZEMP_MASTER_DTD",
+            "ZEMP_DEPENDENT": "ZEMP_DEPENDENT",
+            "ZEMP_DEPENDENT_DTD": "ZEMP_DEPENDENT_DTD",
+            "ZNUM_RANGE": "ZNUM_RANGE",
+            "ZNUM_RANGE_DTD": "ZNUM_RANGE_DTD",
+            "ZBUDGET": "ZBUDGET"
+
+        },
         "Date": {
             "DATEFORMAT": "yyyy.MM.dd",
         },
@@ -131,9 +151,6 @@ sap.ui.define([
             "APPROVE_SUCCESS": "approval_successful",
             "REJECT_FINAL": "request_rejected",
             "RESEND_FINAL": "request_sent_back",
-
-
-            
         },
 
 
