@@ -18,6 +18,7 @@ sap.ui.define([
 	"claima/utils/Utility",
 	"claima/utils/Attachment",
 	"claima/utils/budgetCheck",
+	"claima/utils/ApprovalLog",
 	"claima/utils/ApproveDialog",
 	"claima/utils/RejectDialog",
 	"claima/utils/SendBackDialog",
@@ -43,6 +44,7 @@ sap.ui.define([
 	Utility,
 	Attachment,
 	budgetCheck,
+	ApprovalLog,
 	ApproveDialog,
 	RejectDialog,
 	SendBackDialog,
@@ -148,7 +150,7 @@ sap.ui.define([
 				});
 			}
 			await this._showInitFormFragment();
-			this._afterLoadFragments();
+			await this._afterLoadFragments();
 		},
 
 		_showInitFormFragment: async function () {
@@ -185,7 +187,7 @@ sap.ui.define([
 			}
 		},
 
-		_afterLoadFragments: function () {
+		_afterLoadFragments: async function () {
 			// enable view attachment at claim summary
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			if (oClaimSubmissionModel && oClaimSubmissionModel.getProperty("/claim_header/attachment_email_approver")) {
@@ -200,8 +202,14 @@ sap.ui.define([
 				this._disableFooterButtons();
 
 				// show approval log fragment for non-draft
+				const oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
 				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT) {
 					this._setApprovalLog(true);
+
+					// display approval log data
+					const oViewModel = this.getOwnerComponent().getModel('employee_view');
+					await ApprovalLog.getApproverList(oApprovalLogModel, oViewModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+					this.byId("approval_log_table")?.getBinding("rows").refresh();
 				}
 
 				// set view-only features
@@ -216,7 +224,20 @@ sap.ui.define([
 				if (oClaimSubmissionModel.getProperty("/view_only")) {
 					this._setClaimItemTableToolbar(false);
 				}
-				// change screen details if approver
+				// approver view
+				//// set approver view if current user is approver
+				let oApprovalLogFragment = await this._getFormFragment("approval_log");
+				let aApprovers = oApprovalLogModel.getProperty("/approval")?.length || 0;
+				if (oApprovalLogFragment && aApprovers > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
+					var userID = this.getView().getModel("userId")?.getProperty("/userId");
+					if (userID) {
+						let itemIndex = oApprovalLogModel.getProperty("/approval").findIndex((approval) => approval.APPROVER_ID === userID);
+						if (itemIndex !== -1) {
+							oClaimSubmissionModel.setProperty("/is_approver", true);
+						}
+					}
+				}
+				//// change screen details if approver
 				if (oClaimSubmissionModel.getProperty("/is_approver")) {
 					// update footer buttons
 					this._displayFooterButtons("claimsubmission_approver");
@@ -672,7 +693,7 @@ sap.ui.define([
 						}
 					};
 				} else {
-					console.warn("No employee found with email: " + sEEID);
+					console.warn("No employee found with employee ID: " + sEEID);
 					return null;
 				}
 			} catch (oError) {
