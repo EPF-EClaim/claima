@@ -17,7 +17,7 @@ sap.ui.define([
 			data.req_header = { reqid: "", grptype: "IND" };
 			data.req_item_rows = [];
 			data.req_item = data.req_item || {
-				cash_advance: "no_cashadv"
+				cash_advance: false
 			};
 			data.participant = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
 			data.view = "view";
