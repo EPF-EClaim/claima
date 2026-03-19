@@ -199,17 +199,6 @@ sap.ui.define([
 				// disable footer buttons if claim already cancelled
 				this._disableFooterButtons();
 
-				// show approval log fragment for non-draft
-				const oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
-				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT) {
-					this._setApprovalLog(true);
-
-					// display approval log data
-					const oEmployeeViewModel = this.getOwnerComponent().getModel('employee_view');
-					await ApprovalLog.getApproverList(oApprovalLogModel, oEmployeeViewModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
-					this.byId("approval_log_table")?.getBinding("rows").refresh();
-				}
-
 				// set view-only features
 				if (!oClaimSubmissionModel.getProperty("/view_only")) {
 					if (
@@ -222,28 +211,41 @@ sap.ui.define([
 				if (oClaimSubmissionModel.getProperty("/view_only")) {
 					this._setClaimItemTableToolbar(false);
 				}
-				// approver view
-				//// set approver view if current user is approver
-				let oApprovalLogFragment = await this._getFormFragment("approval_log");
-				let aApprovers = oApprovalLogModel.getProperty("/approval")?.length || 0;
-				if (oApprovalLogFragment && aApprovers > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
-					var sUserId = this.getView().getModel("userId")?.getProperty("/userId");
-					if (sUserId) {
-						let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) => oApproval.APPROVER_ID === sUserId);
-						if (iItemIndex !== -1) {
-							oClaimSubmissionModel.setProperty("/is_approver", true);
+
+				// show approval log fragment for non-draft
+				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT) {
+					this._setApprovalLog(true);
+
+					// display approval log data
+					const oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
+					const oEmployeeViewModel = this.getOwnerComponent().getModel('employee_view');
+					await ApprovalLog.getApproverList(oApprovalLogModel, oEmployeeViewModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+					this.byId("approval_log_table")?.getBinding("rows").refresh();
+
+					// approver view
+					//// set approver view if current user is approver
+					let oApprovalLogFragment = await this._getFormFragment("approval_log");
+					let aApprovers = oApprovalLogModel.getProperty("/approval")?.length || 0;
+					if (oApprovalLogFragment && aApprovers > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
+						var sUserId = this.getView().getModel("userId")?.getProperty("/userId");
+						if (sUserId) {
+							let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) => oApproval.APPROVER_ID === sUserId);
+							if (iItemIndex !== -1) {
+								oClaimSubmissionModel.setProperty("/is_approver", true);
+							}
 						}
 					}
-				}
-				//// change screen details if approver
-				if (oClaimSubmissionModel.getProperty("/is_approver")) {
-					// update footer buttons
-					this._displayFooterButtons("claimsubmission_approver");
+					//// change screen details if approver
+					if (oClaimSubmissionModel.getProperty("/is_approver")) {
+						// update footer buttons
+						this._displayFooterButtons("claimsubmission_approver");
+					}
 				}
 				else {
 					// ensure footer buttons display default 
 					this._displayFooterButtons("claimsubmission_summary_claimitem");
 				}
+
 			}
 		},
 
