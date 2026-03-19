@@ -1009,6 +1009,7 @@ sap.ui.define([
 			}
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
+				BusyIndicator.show(0);
 				var attachmentNumber = await Attachment.postAttachment(
 					oInputModel.getProperty("/attachment/fileName"),
 					oInputModel.getProperty("/attachment/fileContent"),
@@ -1017,10 +1018,12 @@ sap.ui.define([
 				if (attachmentNumber) {
 					oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
 					oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
+					BusyIndicator.hide();
 				}
 				else {
 					MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_error"));
 					// don't proceed claim item if attachment upload fails
+					BusyIndicator.hide();
 					return;
 				}
 			}

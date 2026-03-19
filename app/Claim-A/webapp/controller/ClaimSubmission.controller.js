@@ -1132,6 +1132,7 @@ sap.ui.define([
 			var that = this;
 			// Write to Success Factors API
 			var fileName = "";
+			BusyIndicator.show(0);
 			if (oLevel == 'parent') {
 				// get parent attachment
 				var oInputModel = this.getView().getModel("claimsubmission_input");
@@ -1152,9 +1153,11 @@ sap.ui.define([
 				}
 				else {
 					MessageToast.show(Utility.getText(this, "msg_claimsubmission_viewattachment_error"));
+					BusyIndicator.hide();
 					return;
 				}
 			}
+			BusyIndicator.hide();
 		},
 
 		onCreateClaim_ClaimSummary: async function (indexNumber) {
@@ -2047,6 +2050,7 @@ sap.ui.define([
 			// validate attachment
 			//// attachment 1
 			if (this.byId("fileuploader_claimdetails_input_attachment1").getValue()) {
+				BusyIndicator.show(0);
 				var attachmentNumber = await Attachment.postAttachment(
 					oInputModel.getProperty("/attachments/attachment1/fileName"),
 					oInputModel.getProperty("/attachments/attachment1/fileContent"),
@@ -2055,15 +2059,18 @@ sap.ui.define([
 				if (attachmentNumber) {
 					oInputModel.setProperty("/claim_item/attachment_file_1", attachmentNumber);
 					oInputModel.setProperty("/claim_item/descr/attachment_file_1", oInputModel.getProperty("/attachments/attachment1/fileName"));
+					BusyIndicator.hide();
 				}
 				else {
 					MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_error"));
 					// don't proceed claim item if attachment upload fails
+					BusyIndicator.hide();
 					return;
 				}
 			}
 			//// attachment 2
 			if (this.byId("fileuploader_claimdetails_input_attachment2").getValue()) {
+				BusyIndicator.show(0);
 				var attachmentNumber = await Attachment.postAttachment(
 					oInputModel.getProperty("/attachments/attachment2/fileName"),
 					oInputModel.getProperty("/attachments/attachment2/fileContent"),
@@ -2072,10 +2079,12 @@ sap.ui.define([
 				if (attachmentNumber) {
 					oInputModel.setProperty("/claim_item/attachment_file_2", attachmentNumber);
 					oInputModel.setProperty("/claim_item/descr/attachment_file_2", oInputModel.getProperty("/attachments/attachment2/fileName"));
+					BusyIndicator.hide();
 				}
 				else {
 					MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_error"));
 					// don't proceed claim item if attachment upload fails
+					BusyIndicator.hide();
 					return;
 				}
 			}
