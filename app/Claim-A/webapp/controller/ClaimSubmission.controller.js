@@ -726,7 +726,7 @@ sap.ui.define([
 			}
 		},
 
-		_setClaimItemTableToolbar: function (oBool) {
+		/* _setClaimItemTableToolbar: function (oBool) {
 			var oPage = this.byId("page_claimsubmission");
 			if (oBool) {
 				// table changes
@@ -757,6 +757,40 @@ sap.ui.define([
 				if (this.byId("table_claimsummary_claimitem")) {
 					this.byId("table_claimsummary_claimitem").setMode(ListMode.SingleSelectMaster);
 				}
+			}
+		}, */
+
+		_setClaimItemTableToolbar: function (oBool) {
+
+			const sStatus = this.getView()
+				.getModel("claimsubmission_input")
+				.getProperty("/claim_header/status_id");
+
+			const sEdit = (sStatus === "STAT01" || sStatus === "STAT03");
+
+			oBool = sEdit;
+
+			// ---------------------------------------------------------
+			// Existing logic (now using canEdit)
+			// ---------------------------------------------------------
+			if (oBool) {
+				// SHOW buttons
+				this.byId("button_claimsummary_createclaim")?.setVisible(true);
+				this.byId("button_claimsummary_edit")?.setVisible(true);
+				this.byId("button_claimsummary_duplicate")?.setVisible(true);
+				this.byId("button_claimsummary_delete")?.setVisible(true);
+
+				// Multi select mode
+				this.byId("table_claimsummary_claimitem")?.setMode(ListMode.MultiSelect);
+			} else {
+				// HIDE buttons
+				this.byId("button_claimsummary_createclaim")?.setVisible(false);
+				this.byId("button_claimsummary_edit")?.setVisible(false);
+				this.byId("button_claimsummary_duplicate")?.setVisible(false);
+				this.byId("button_claimsummary_delete")?.setVisible(false);
+
+				// Single select when not editable
+				this.byId("table_claimsummary_claimitem")?.setMode(ListMode.SingleSelectMaster);
 			}
 		},
 
@@ -1258,6 +1292,20 @@ sap.ui.define([
 				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsummary_notable"));
 			}
 		},
+
+		//Check duplication
+		onSelectionChange_ClaimSummary: function () {
+			var oTable = this.byId("table_claimsummary_claimitem");
+			var aSelected = oTable.getSelectedItems();
+
+			// Enable Duplicate only when exactly 1 item selected
+			this.byId("button_claimsummary_duplicate").setEnabled(aSelected.length === 1);
+
+			// Enable Edit only when exactly 1 item selected
+			this.byId("button_claimsummary_edit").setEnabled(aSelected.length === 1);
+
+		},
+
 
 		onEdit_ClaimSummary: function (item) {
 			var itemSubId;
@@ -2051,6 +2099,28 @@ sap.ui.define([
 			}
 			//// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
+
+			//// Added for duplication check;
+
+
+			var aExistingItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
+			var oNewItem = oInputModel.getProperty("/claim_item");
+
+
+			var aTemp = [];
+			if (!oInputModel.getProperty("/is_new")) {
+				aTemp = aExistingItems.filter(it => it.claim_sub_id !== oNewItem.claim_sub_id);
+			} else {
+				aTemp = [...aExistingItems];
+			}
+			aTemp.push(oNewItem);
+
+			// Check duplicates
+			if (this._checkDuplicateClaimItems(aTemp)) {
+				MessageToast.show("Duplicate claim item detected. Please modify your entry.");
+				return;
+			}
+
 			// add claim item details to claim submission model
 			if (oInputModel.getProperty("/is_new")) {
 				oClaimSubmissionModel.setProperty("/claim_items", oClaimSubmissionModel.getProperty("/claim_items").concat(oInputModel.getProperty("/claim_item")));
@@ -2592,6 +2662,16 @@ sap.ui.define([
 
 				// get input model
 				var oInputModel = this.getView().getModel("claimsubmission_input");
+
+
+				var aItems = oInputModel.getProperty("/claim_items") || [];
+
+				if (this._checkDuplicateClaimItems(aItems)) {
+					MessageToast.show("Duplicate claim items detected. Please modify your entries.");
+					BusyIndicator.hide();
+					return; 
+				}
+
 				//// update last modified date
 				var lastModifiedDate = this._getJsonDate(new Date());
 				oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
@@ -2822,6 +2902,16 @@ sap.ui.define([
 			var itemCountDb = 0;
 			var delItems = [];
 
+
+			var aItems = oInputModel.getProperty("/claim_items") || [];
+
+			if (this._checkDuplicateClaimItems(aItems)) {
+				MessageToast.show("Duplicate claim items detected. Please modify your entries.");
+				BusyIndicator.hide();
+				return; 
+			}
+
+
 			// count existing items from database
 			try {
 				var oModel = this.getOwnerComponent().getModel();
@@ -3028,6 +3118,49 @@ sap.ui.define([
 				}
 			})
 		},
+
+		//Added for duplication check items via Save Draft and Submit Report btn
+
+		_checkDuplicateClaimItems: function (aItems) {
+
+
+			const oDateFormat = sap.ui.core.format.DateFormat.getDateInstance({
+				pattern: "yyyy.MM.dd"
+			});
+
+			function format(date) {
+				if (!date) return "";
+				const d = new Date(date);
+				if (isNaN(d)) return "";
+				return oDateFormat.format(d);
+			}
+
+
+			const seen = new Set();
+
+			for (let item of aItems) {
+
+				// Normalize values (avoid undefined/null issues)
+				const typeId = item.claim_type_id || "";
+				const itemId = item.claim_type_item_id || "";
+				const start = format(item.start_date);
+				const end = format(item.end_date);
+				const amount = parseFloat(item.amount || 0).toFixed(2);
+
+				// Build unique key
+				const key = `${typeId}|${itemId}|${start}|${end}|${amount}`;
+
+				if (seen.has(key)) {
+					return true;
+				}
+
+				seen.add(key);
+			}
+
+			return false;
+		},
+
+
 
 		_getJsonDate: function (date) {
 			if (date) {
