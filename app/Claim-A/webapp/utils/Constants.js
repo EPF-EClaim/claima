@@ -88,7 +88,14 @@ sap.ui.define([
         },
         "RequestStatus": {
             "DRAFT": "DRAFT",
-            "CANCELLED": "CANCELLED"
+            "CANCELLED": "CANCELLED",
+        },
+        "WorkflowType": {
+            "CLAIM": "CLM",
+            "PRE_APPROVAL": "PRE"
+        },
+        "SubmissionType": {
+            "REQUEST": "REQ"
         }
 
     }

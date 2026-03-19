@@ -2,9 +2,9 @@
 sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "./FinalApproveStep",
-    "claima/utils/FinalApproveStep"
-], function (Filter, FilterOperator, FinalApproveStep) {
+    "claima/utils/FinalApproveStep",
+	"claima/utils/Constants"
+], function (Filter, FilterOperator, FinalApproveStep, Constants) {
     "use strict";
 
     async function _approveMultiLevel(oModel, id, userID, comment, oModel2) {
@@ -21,6 +21,10 @@ sap.ui.define([
         const sTable2 = submissionType === "REQ"
             ? "/ZEMP_APPROVER_REQUEST_DETAILS"
             : "/ZEMP_APPROVER_CLAIM_DETAILS";
+			
+		let payloads = [];
+        let currentEmail = null;
+        let currentName = null;
 
         // STEP 1: Get all approver rows for this ID
         const bindingAll = oModel.bindList(
@@ -80,62 +84,10 @@ sap.ui.define([
         const nextLevel = currentLevel + 1;
         const ctxNext = aCtx.find(ctx => ctx.getObject().LEVEL === nextLevel);
 
-        //Farisha's part start 
-        // Get Approver Details
-        const oApprList = oModel.bindList(
-            "/ZEMP_MASTER",
-            null,
-            null,
-            [new Filter("EEID", FilterOperator.EQ, aApprEmpID[0])],
-            { $$ownRequest: true }
-        );
-
-        const aApprContexts = await oApprList.requestContexts();
-        const aApprData = aApprContexts.map(oCtx => oCtx.getObject());
-
-        // Get Claimant Details
-        const oClaimantList = oModel.bindList(
-            "/ZEMP_MASTER",
-            null,
-            null,
-            [new Filter("EEID", FilterOperator.EQ, sEmpID)],
-            { $$ownRequest: true }
-        );
-
-        const aClaimantContexts = await oClaimantList.requestContexts();
-        const aClaimantData = aClaimantContexts.map(oCtx => oCtx.getObject());
-
-        const sApproverName = aApprData[0].NAME;
-        const sClaimsSubmissionDate = todayYMD();     
-        const sClaimantName = aClaimantData[0].NAME;
-        const sClaimType = aSubmissionTypeNameData[0].SUBMISSION_TYPE_DESC;
-        const sClaimID = sClaimID;                             
-        const sRecipientName = sClaimantName;
-        const sClaimantEmail = aClaimantData[0].EMAIL;
-
-        const oEmailPayload = {
-            ApproverName: sApproverName,
-            SubmissionDate: sClaimsSubmissionDate,
-            ClaimantName: sClaimantName,
-            ClaimType: sClaimType,
-            ClaimID: sClaimID,
-            RecipientName: sRecipientName,
-            Action: "Approved",
-            ReceiverEmail: sClaimantEmail
-        };
-        //Farisha's part end
-
         if (ctxNext) {
             ctxNext.setProperty("STATUS", "STAT02"); //PENDING APPROVAL
-        } else {
-            FinalApproveStep.onFinalApprove(oModel2, id, 'STAT05', oModel, oEmailPayload);
-        }
 
-        //pending fix for payload creation causing server crash - Vincent
-        // STEP 5: Fetch data for Email
-
-
-        const bindingView = oModel2.bindList(
+            const bindingView = oModel2.bindList(
             sTable2,
             null,
             null,
@@ -235,6 +187,63 @@ sap.ui.define([
             RejectReason: "N/A",
             ApproverComments: comment
         });
+        } else {
+			
+			//Farisha's part start 
+			// Get Approver Details
+			const oApprList = oModel.bindList(
+				"/ZEMP_MASTER",
+				null,
+				null,
+				[new Filter("EEID", FilterOperator.EQ, matchedID)],
+				{ $$ownRequest: true }
+			);
+
+			const aApprContexts = await oApprList.requestContexts();
+			const aApprData = aApprContexts.map(oCtx => oCtx.getObject());
+			var bIsPre = submissionType === Constants.SubmissionType.REQUEST ;
+            var sField_header = bIsPre ? "Pre-Approval" : "Claim";
+            var sPARField = bIsPre ? "PREAPPROVAL_ID" : "CLAIM_ID"; 
+
+			// Get Claimant Details
+			const oClaimantList = oModel2.bindList(
+				sTable2,
+				null,
+				null,
+				[
+					new Filter(sPARField, FilterOperator.EQ, id),
+					new Filter("LEVEL", FilterOperator.EQ, currentLevel)
+				],
+				{ $$ownRequest: true }
+			);
+
+			const aClaimantContexts = await oClaimantList.requestContexts();
+			const aClaimantData = aClaimantContexts.map(oCtx => oCtx.getObject());
+
+			const sApproverName = aApprData[0].NAME;
+			const sClaimsSubmissionDate = todayYMD();     
+			const sClaimantName = aClaimantData[0].EMPLOYEE_NAME;
+			const sClaimType = sField_header;
+			const sClaimID = id;                             
+			const sRecipientName = sClaimantName;
+			const sClaimantEmail = aClaimantData[0].EMPLOYEE_EMAIL;
+
+			const oEmailPayload = {
+				ApproverName: sApproverName,
+				SubmissionDate: sClaimsSubmissionDate,
+				ClaimantName: sClaimantName,
+				ClaimType: sClaimType,
+				ClaimID: sClaimID,
+				RecipientName: sRecipientName,
+				Action: "APPROVE",
+				ReceiverEmail: sClaimantEmail
+			};
+			//Farisha's part end
+            FinalApproveStep.onFinalApprove(oModel, id, 'STAT05', oModel2, oEmailPayload);
+        }
+
+        //pending fix for payload creation causing server crash - Vincent
+        // STEP 5: Fetch data for Email
 
         // STEP 6: Submit batch update
         await oModel.submitBatch("$auto");
