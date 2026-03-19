@@ -2,8 +2,9 @@ sap.ui.define([
     "claima/utils/FinalApproveStep",
     "sap/ui/model/Filter",
     "sap/m/MessageToast",
-    "sap/ui/model/FilterOperator"
-], function (FinalApproveStep, Filter, MessageToast,FilterOperator) {
+    "sap/ui/model/FilterOperator",
+	"claima/utils/Constants"
+], function (FinalApproveStep, Filter, MessageToast,FilterOperator,Constants) {
     "use strict";
 
     return {
@@ -424,8 +425,7 @@ sap.ui.define([
                         that.onSendEmail(oModel, aPayload);        
                     }
                 }else{
-                    const sStatus = "STAT05";
-                    FinalApproveStep.onFinalApprove(oModel, sClaimID, sStatus, oEmployeeModel);
+                    FinalApproveStep.onFinalApprove(oModel, sClaimID, Constants.WorkflowApproval.ApproveStatus, oEmployeeModel);
                 }
                 
             }).catch(function(oError){
@@ -752,8 +752,7 @@ sap.ui.define([
                         that.onSendEmail(oModel,aPayload);
                     }
                 }else{
-                    const sStatus = "STAT05";
-                    FinalApproveStep.onFinalApprove(oModel, sPARID, sStatus, oEmployeeModel);
+                    FinalApproveStep.onFinalApprove(oModel, sPARID, Constants.WorkflowApproval.ApproveStatus, oEmployeeModel);
                 }
             }).catch(function(oError){
                 new MessageToast.show(oError);

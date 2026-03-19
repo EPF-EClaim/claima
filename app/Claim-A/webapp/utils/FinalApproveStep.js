@@ -3,10 +3,11 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "claima/utils/Utility",
     "claima/utils/budgetCheck",
-    "claima/utils/NotifyandPost"
+    "claima/utils/NotifyandPost",
+	"claima/utils/Constants"
 
 ],
-    function (Filter, FilterOperator, Utility, budgetCheck, NotifyandPost) {
+    function (Filter, FilterOperator, Utility, budgetCheck, NotifyandPost, Constants) {
         "use strict";
 
         return {
@@ -109,7 +110,8 @@ sap.ui.define([
                 }
 
                 // SEND CONSOLIDATED IS PAYLOAD (CLM only)
-                    if (sSubmissionType == "CLM") {
+                    if (sSubmissionType == Constants.WorkflowApproval.Claims) { 
+                        
                         await this.onSendClaimBatch(oEmployeeModel, sClaimID);
                     }
                         return true;

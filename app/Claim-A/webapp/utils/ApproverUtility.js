@@ -201,7 +201,6 @@ sap.ui.define([
 
 			const aApprContexts = await oApprList.requestContexts();
 			const aApprData = aApprContexts.map(oCtx => oCtx.getObject());
-            var bIsPre = submissionType === "REQ";
 			var sField_header = bIsPre ? "Pre-Approval" : "Claim";
             var sPARField = bIsPre ? "PREAPPROVAL_ID" : "CLAIM_ID"; 
 

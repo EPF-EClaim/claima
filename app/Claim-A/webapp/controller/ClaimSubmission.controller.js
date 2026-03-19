@@ -2834,8 +2834,8 @@ sap.ui.define([
 						// determine claims approver
 						if (oAction === 'Submit Report') {
 							var oModelAppr = this.getView().getModel();
-							var oModelView = this.getView().getModel("employee_view");
-							workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oModelView);
+							var oEmployeeViewModel  = this.getView().getModel("employee_view");
+							workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
 						}
 						MessageToast.show(oMsg);
 						this._onNavBack();
@@ -2916,8 +2916,8 @@ sap.ui.define([
 					// determine claims approver
 					if (oAction === 'Submit Report') {
 						var oModelAppr = this.getView().getModel();
-						var oModelView = this.getView().getModel("employee_view");
-						workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oModelView);
+						var oEmployeeViewModel  = this.getView().getModel("employee_view");
+						workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel );
 					}
 
 					MessageToast.show(oMsg);
