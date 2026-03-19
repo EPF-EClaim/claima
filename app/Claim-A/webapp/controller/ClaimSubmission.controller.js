@@ -2034,6 +2034,7 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/descr/attachment_file_1", oInputModel.getProperty("/attachments/attachment1/fileName"));
 				}
 				else {
+					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_attachment_upload_error"));
 					// don't proceed claim item if attachment upload fails
 					return;
 				}
@@ -2050,6 +2051,7 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/descr/attachment_file_2", oInputModel.getProperty("/attachments/attachment2/fileName"));
 				}
 				else {
+					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_attachment_upload_error"));
 					// don't proceed claim item if attachment upload fails
 					return;
 				}

@@ -1008,6 +1008,7 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
 				}
 				else {
+					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_attachment_upload_error"));
 					// don't proceed claim item if attachment upload fails
 					return;
 				}
