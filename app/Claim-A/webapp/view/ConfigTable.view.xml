@@ -170,6 +170,10 @@
                             text="{i18n>req_i_end_date}"
                             key="END_DATE"
                         />
+                         <ViewSettingsItem
+                            text="{i18n>appr_status}"
+                            key="STATUS"
+                        />
                     </sortItems>
                 </ViewSettingsDialog>
             </dependents>
