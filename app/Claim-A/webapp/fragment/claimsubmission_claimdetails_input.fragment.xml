@@ -403,8 +403,6 @@
 				<Input
 					id="input_claimdetails_input_from_location"
 					value="{claimitem_input>/claim_item/from_location}"
-					showValueHelp="true"
-					valueHelpRequest=".onValueHelpRequest"
 					visible="false"
 				/>
 
@@ -421,8 +419,6 @@
 				<Input
 					id="input_claimdetails_input_to_location"
 					value="{claimitem_input>/claim_item/to_location}"
-					showValueHelp="true"
-					valueHelpRequest=".onValueHelpRequest"
 					visible="false"
 				/>
 
