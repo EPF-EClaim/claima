@@ -5,8 +5,9 @@ sap.ui.define([
     "sap/m/DatePicker",
     "sap/m/Button",
     "sap/m/Input",
-    "sap/m/Label"
-], (Controller, Dialog, VBox, DatePicker, Button, Input, Label) => {
+    "sap/m/Label",
+    "sap/m/MessageToast"
+], (Controller, Dialog, VBox, DatePicker, Button, Input, Label, MessageToast) => {
     "use strict";
 
     return Controller.extend("claima.controller.configuration", {
@@ -30,28 +31,28 @@ sap.ui.define([
         },
 
         onOpenConfigTable: async function (oEvent) {
-            var oNavigation = oEvent.getSource().getId().split("--").pop();
+            var sNavigation = oEvent.getSource().getId().split("--").pop();
             const oModel = this.getView().getModel();
             const oCtx = oModel.bindContext("/FeatureControl");
 
-            if (oNavigation === "ZEMP_MASTER" || oNavigation === "ZEMP_DEPENDENT" || oNavigation === "ZNUM_RANGE") {
+            if (sNavigationNavigation === "ZEMP_MASTER" || sNavigation === "ZEMP_DEPENDENT" || sNavigation === "ZNUM_RANGE") {
                 try {
                     const oData = await oCtx.requestObject();
-                    if (oNavigation === "ZEMP_MASTER") {
-                        var sTable = oData.operationHidden === false && oNavigation === "ZEMP_MASTER" ? "ZEMP_MASTER_DTD" : oNavigation;
-                    } else if (oNavigation === "ZEMP_DEPENDENT") {
-                        sTable = oData.operationHidden === false && oNavigation === "ZEMP_DEPENDENT" ? "ZEMP_DEPENDENT_DTD" : oNavigation;
-                    } else if (oNavigation === "ZNUM_RANGE") {
-                        sTable = oData.operationHidden === false && oNavigation === "ZNUM_RANGE" ? "ZNUM_RANGE_DTD" : oNavigation;
+                    if (sNavigation === "ZEMP_MASTER") {
+                        var sTable = oData.operationHidden === false && sNavigation === "ZEMP_MASTER" ? "ZEMP_MASTER_DTD" : sNavigation;
+                    } else if (sNavigation === "ZEMP_DEPENDENT") {
+                        sTable = oData.operationHidden === false && sNavigation === "ZEMP_DEPENDENT" ? "ZEMP_DEPENDENT_DTD" : sNavigation;
+                    } else if (sNavigation === "ZNUM_RANGE") {
+                        sTable = oData.operationHidden === false && sNavigation === "ZNUM_RANGE" ? "ZNUM_RANGE_DTD" : sNavigation;
                     }
-                    oNavigation = sTable;
+                    sNavigation = sTable;
                 } catch (e) {
-                    sap.m.MessageToast.show("Error");
+                    new MessageToast.show("Error");
                 }
             }
-            oNavigation = oNavigation.includes("ZBUDGET")? "ZBUDGET": oNavigation;
+            sNavigation = sNavigation.includes("ZBUDGET")? "ZBUDGET": sNavigation;
             var oRouter = this.getOwnerComponent().getRouter();
-            oRouter.navTo(oNavigation);
+            oRouter.navTo(sNavigation);
         },
 
         //navigation to object page is not working when cofigure from manifest, alternative manual table config
@@ -119,16 +120,16 @@ sap.ui.define([
             const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
 
 
-            var oDialog = new sap.m.Dialog({
+            var oDialog = new Dialog({
                 title: `New Object`,
                 contentWidth: "15%",
                 horizontalScrolling: false,
-                beginButton: new sap.m.Button({
+                beginButton: new Button({
                     text: "Create",
                     press: function () {
                         var oInputs = oVBox.getItems();
                         if (!this._validateInputs(oVBox, oDataType)) {
-                            sap.m.MessageToast.show("Please fill in all required fields");
+                            new MessageToast.show("Please fill in all required fields");
                             return;
                         }
 
@@ -142,13 +143,13 @@ sap.ui.define([
                         oNewEntry["IsActiveEntity"] = true;
 
                         if (oNewEntry["END_DATE"] < oNewEntry["START_DATE"]) {
-                            sap.m.MessageToast.show("End date cannot be earlier than start date");
+                            new MessageToast.show("End date cannot be earlier than start date");
                         } else {
 
                             var oListBinding = oModel.bindList(sNewPath),
                                 oContext = oListBinding.create(oNewEntry);
 
-                            sap.m.MessageToast.show("Record created");
+                            new MessageToast.show("Record created");
                             oModel.refresh();
                             oDialog.close();
                         }

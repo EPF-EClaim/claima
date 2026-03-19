@@ -28,6 +28,7 @@ sap.ui.define([
 	"sap/ui/core/Icon",
 	"sap/ui/core/routing/HashChanger",
 	"claima/utils/MyApproval",
+	"sap/m/MessageBox"
 ], function (
 	Device,
 	Controller,
@@ -57,7 +58,8 @@ sap.ui.define([
 	VBox,
 	Icon,
 	HashChanger,
-	MyApproval
+	MyApproval,
+	MessageBox
 ) {
 	"use strict";
 
@@ -115,12 +117,12 @@ sap.ui.define([
 				this._userType = oData.userType || "UNKNOWN";
 				this.costcenters = oData.costcenters || "UNKNOWN"; //Added by Aiman Salim 06/03/2026
 				this.userId = oData.userId || "UNKNOWN";
-				const sname = oData.name || "";
-				const sposition = oData.position;
-				const sInitials = sname.substring(0, 2).toUpperCase();
+				const sName = oData.name || "";
+				const sPosition = oData.position;
+				const sInitials = sName.substring(0, 2).toUpperCase();
 				oSession.setProperty("/initials", sInitials);
-				oSession.setProperty("/userName", sname);
-				oSession.setProperty("/position", sposition);
+				oSession.setProperty("/userName", sName);
+				oSession.setProperty("/position", sPosition);
 				oSession.setProperty("/grade", oData.grade || "UNKNOWN");
 				oSession.setProperty("/department", oData.department || "UNKNOWN");
 				oSession.setProperty("/origin", oData.origin);
@@ -177,6 +179,12 @@ sap.ui.define([
 			var oKey = oItem.getKey();
 			var oRouter = this.getOwnerComponent().getRouter();
 
+			const sAdminDTD = this._oConstant.Role.DTD_ADMIN,
+				sAdminGA = this._oConstant.Role.GA_ADMIN,
+				sAdminJKEW = this._oConstant.Role.JKEW_ADMIN,
+				sApprover = this._oConstant.Role.APPROVER,
+				sSuperUser = this._oConstant.Role.SUPER_ADMIN;
+
 			//Start EY_ATHIRAH
 			const key = oEvent.getSource().data("key");
 
@@ -214,20 +222,20 @@ sap.ui.define([
 					break;
 				case "config":
 					//Start EY_ATHIRAH
-					if (type === "DTD Admin" || type === "JKEW Admin" || type === "Super Admin") {
+					if (type === sAdminDTD || type === sAdminJKEW || type === sSuperUser) {
 						oRouter.navTo("Configuration");
-					} else if(type.includes("GA Admin")){
+					} else if (type === sAdminGA ) {
 						oRouter.navTo("Configuration_GA");
-					} 
+					}
 					else {
-						var message = this.getView().getModel("i18n").getResourceBundle().getText("msg_unauthorized_role");
-						sap.m.MessageBox.error(message);
+						var message = Utility.getText(this, "msg_unauthorized_role");
+						new MessageBox.error(message);
 					}
 					//End EY_ATHIRAH
 					break;
 				// Start Aiman Salim 10/02/2026 - Added for analytics
 				case "analytics":
-					if (type === "JKEW Admin" || type === "DTD Admin" || type === "GA Admin" || type === "Super Admin") {
+					if (type === sAdminDTD || type === sAdminJKEW || type === sSuperUser) {
 						oRouter.navTo("Analytics")
 					} else {
 						var message = Utility.getText(this, "msg_unauthorized_role");
@@ -243,14 +251,14 @@ sap.ui.define([
 					break;
 				//Start Aiman Salim 08/03/2026 - Added for MyApproval
 				case "approval":
-					if (type === "Approver" || type === "Super Admin") {
+					if (type === sApprover || type === sSuperUser) {
 						this.getMyApproverPAReq();
 						this.getMyApproverClaim();
 						var oRouter = this.getOwnerComponent().getRouter();
 						oRouter.navTo("MyApproval");
 					} else {
 						var message = Utility.getText(this, "msg_unauthorized_role");
-						sap.m.MessageBox.error(message);
+						new MessageBox.error(message);
 					}
 					break;
 				//End Aiman Salim 08/03/2026 - Added for MyApproval
@@ -2339,20 +2347,6 @@ sap.ui.define([
 					oDashboardModel.setProperty("/approvals", []);
 				});
 		},
-
-		// commented for future use
-		// onHomeIconPressed: function () {
-		// 	const oSession = this.getView().getModel("session");
-		// 	const origin = oSession.getProperty("/origin");
-		// 	var sSFURL;
-
-		// 	sSFURL = origin === "httpsa6s6cq33s.accounts.ondemand.com" ? "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV" :
-		// 		origin === "sap.custom" ? "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT" :
-		// 			"https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD";
-
-		// 	window.open(sSFURL, "_self");
-
-		// },
 
 
 	});
