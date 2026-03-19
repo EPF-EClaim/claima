@@ -510,9 +510,9 @@ sap.ui.define([
 					return;
 				}
 			}
-			const emp_data = await this._getEmpIdDetail(oUserModelData.email);
-			if (emp_data) {
-				oInputModel.setProperty("/emp_master", emp_data);
+			const oEmpData = await this._getEmpIdDetail(oUserModelData.email);
+			if (oEmpData) {
+				oInputModel.setProperty("/emp_master", oEmpData);
 				await this._getEmpDataDescr(oInputModel);
 			}
 		},

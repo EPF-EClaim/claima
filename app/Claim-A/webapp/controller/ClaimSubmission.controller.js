@@ -229,7 +229,7 @@ sap.ui.define([
 				if (oApprovalLogFragment && aApprovers > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
 					var sUserId = this.getView().getModel("userId")?.getProperty("/userId");
 					if (sUserId) {
-						let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((approval) => approval.APPROVER_ID === sUserId);
+						let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) => oApproval.APPROVER_ID === sUserId);
 						if (iItemIndex !== -1) {
 							oClaimSubmissionModel.setProperty("/is_approver", true);
 						}
