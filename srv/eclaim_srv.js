@@ -422,8 +422,6 @@ srv.on('batchCreateCourse', async (req) => {
     const { ZTRAIN_COURSE_PART } = srv.entities;
     try {
       const { course } = req.data;
-
-
       if (!course || course.length === 0) {
         throw new Error('No Data Sent')
       }
