@@ -5,6 +5,7 @@ sap.ui.define([
 	"sap/m/Popover",
 	"sap/ui/core/Fragment",
 	"sap/ui/core/BusyIndicator",
+	"sap/ui/core/Item",
 	"sap/m/Button",
 	"sap/m/Dialog",
 	"sap/m/Label",
@@ -34,6 +35,7 @@ sap.ui.define([
 	Popover,
 	Fragment,
 	BusyIndicator,
+	Item,
 	Button,
 	Dialog,
 	Label,
@@ -121,7 +123,10 @@ sap.ui.define([
 				oSession.setProperty("/origin", oData.origin);
 
 				// save userId to model
-				var oUserIdModel = new JSONModel({ "userId": oData.userId });
+				var oUserIdModel = new JSONModel({
+					"userId": oData.userId,
+					"email": oData.id
+				});
 				//// set input
 				this.getView().setModel(oUserIdModel, "userId");
 				oSession.setProperty("/userType", this._userType);
@@ -497,10 +502,17 @@ sap.ui.define([
 			// set new claim submission model;
 			var oInputModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 			//// set employee data
-			var userModelData = this.getView().getModel('user').getData();
-			const emp_data = await this._getEmpIdDetail(userModelData.email);
-			if (emp_data) {
-				oInputModel.setProperty("/emp_master", emp_data);
+			var oUserModelData = this.getView().getModel('user')?.getData() || this.getView().getModel("userId")?.getData() || null;
+			if (!oUserModelData) {
+				MessageToast.show(Utility.getText(this, "msg_claimprocess_nouser"));
+				if (this.oDialog_ClaimProcess) {
+					this.oDialog_ClaimProcess.close();
+					return;
+				}
+			}
+			const oEmpData = await this._getEmpIdDetail(oUserModelData.email);
+			if (oEmpData) {
+				oInputModel.setProperty("/emp_master", oEmpData);
 				await this._getEmpDataDescr(oInputModel);
 			}
 		},
@@ -596,7 +608,7 @@ sap.ui.define([
 						},
 						$select: "SUBMISSION_TYPE"
 					},
-					template: new sap.ui.core.Item({
+					template: new Item({
 						key: "{employee>CLAIM_TYPE_ITEM_ID}",
 						text: "{employee>CLAIM_TYPE_ITEM_DESC}"
 					})
@@ -650,7 +662,7 @@ sap.ui.define([
 								},
 								$select: "PREAPPROVAL_AMOUNT,EVENT_START_DATE,EVENT_END_DATE,COST_CENTER,ALTERNATE_COST_CENTER"
 							},
-							template: new sap.ui.core.Item({
+							template: new Item({
 								key: "{employee>REQUEST_ID}",
 								text: "{employee>REQUEST_ID} {employee>OBJECTIVE_PURPOSE} ({employee>TRIP_START_DATE} – {employee>TRIP_END_DATE})"
 							})
@@ -999,6 +1011,7 @@ sap.ui.define([
 			}
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
+				BusyIndicator.show(0);
 				var attachmentNumber = await Attachment.postAttachment(
 					oInputModel.getProperty("/attachment/fileName"),
 					oInputModel.getProperty("/attachment/fileContent"),
@@ -1007,10 +1020,12 @@ sap.ui.define([
 				if (attachmentNumber) {
 					oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
 					oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
+					BusyIndicator.hide();
 				}
 				else {
 					MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_error"));
 					// don't proceed claim item if attachment upload fails
+					BusyIndicator.hide();
 					return;
 				}
 			}
@@ -2043,10 +2058,10 @@ sap.ui.define([
 			if (c) return c;
 
 			if (sFragmentId) {
-				c = sap.ui.core.Fragment.byId(this.getView().createId(sFragmentId), sId);
+				c = Fragment.byId(this.getView().createId(sFragmentId), sId);
 				if (c) return c;
 
-				c = sap.ui.core.Fragment.byId(sFragmentId, sId);
+				c = Fragment.byId(sFragmentId, sId);
 				if (c) return c;
 			}
 
