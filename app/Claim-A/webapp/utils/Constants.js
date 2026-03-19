@@ -26,7 +26,7 @@ sap.ui.define([
             "FLIGHT_WIL": "FLIGHT_WIL",
             "HOTEL_L": "HOTEL_L",
             "HOTEL_O": "HOTEL_O",
-            "Jamuan_Ringan_Program_Outreach": "Jamuan_Ringan_Program_Outreach",
+            "Jamuan Ringan Program Outreach": "Jamuan Ringan Program Outreach",
             "KATERER": "KATERER",
             "KECERIAAN": "KECERIAAN",
             "KESIHATAN": "KESIHATAN", 
@@ -49,7 +49,7 @@ sap.ui.define([
             "PELANGGAN": "PELANGGAN",
             "PELBAGAI": "PELBAGAI",
             "PEM_PINDAH": "PEM_PINDAH",
-            "Pembelian_Beg_Bimbit": "Pembelian_Beg_Bimbit",
+            "Pembelian Beg Bimbit": "Pembelian Beg Bimbit",
             "P'HARGAAN": "P'HARGAAN",
             "PINDAH": "PINDAH",
             "PKN_PANAS": "PKN_PANAS",
@@ -76,6 +76,10 @@ sap.ui.define([
             "01": "01",
             "02": "02",
             "03": "03"
+        },
+        "RequestStatus": {
+            "DRAFT": "DRAFT",
+            "CANCELLED": "CANCELLED"
         }
 
     }

@@ -182,6 +182,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         userId      : String;
         name        : String;
         position    : String;
+        origin      : String;
     }
 
     function getUserType()                                             returns UserInfo;
@@ -198,7 +199,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
                        CCEmail: String,
                        EmailTitle: String,
                        EmailBody: String,
-                       NextApproverName: String)                       returns Response;
+                       NextApproverName: String,
+                       RejectReason: String,
+                       ApproverComments: String)                       returns Response;
 
     entity ZINSURANCE_PACKAGE            as projection on ECLAIM.ZINSURANCE_PACKAGE;
 
@@ -254,7 +257,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
     action   batchUpdatePreApproved(PreApprove: many PreApproveClaims) returns Response;
 
     function updateDisbursementStatus()                                returns array of Response;
-    
+
     entity ZDISBURSEMENT_STATUS          as projection on ECLAIM.ZDISBURSEMENT_STATUS;
 
 };

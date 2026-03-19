@@ -154,7 +154,7 @@ sap.ui.define([
       function () { sap.m.MessageToast.show("No Reject handler implemented."); };
 
     const oDialog = new Dialog({
-      title: "{i18n>reject_claim}",           // default; will be overwritten in open()
+      title: "{i18n>sendback_request}",           // default; will be overwritten in open()
       contentWidth: "50%",
       content: [oForm],
       beginButton: new Button(oView.createId("reject_placeholder_cancel"), {
@@ -163,10 +163,10 @@ sap.ui.define([
       }),
       endButton: new Button(oView.createId("reject_placeholder_submit"), {
         text: "{i18n>reject_btn}",
-        type: "Emphasized",
-        enabled: "{= !!${Reject>/rejectReasonKey} && !!${Reject>/approvalComment} }",
-        press: submitHandler.bind(oController)
+        type: sap.m.ButtonType.Emphasized,
+        enabled: "{= !!${Reject>/rejectReasonKey} && !!${Reject>/approvalComment} }"
       })
+
     });
 
     oDialog.attachAfterOpen(function () {
@@ -189,8 +189,6 @@ sap.ui.define([
   return {
     open: function (oController) {
       const oDlg = getOrCreate(oController);
-
-      // 🔒 Always rewire endButton press to the CURRENT controller handler
       try {
         const btn = oDlg.getEndButton();
         const handler =
@@ -205,13 +203,11 @@ sap.ui.define([
             return handler.apply(oController, arguments);
           } catch (e) {
             sap.m.MessageBox.error("Reject failed:\n" + (e?.message || e));
-            // eslint-disable-next-line no-console
             console.error("[RejectDialog] handler error", e);
           }
         };
         btn.attachPress(btn.__rejHandler);
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.warn("[RejectDialog] Failed to wire endButton handler:", e);
       }
 

@@ -5,7 +5,7 @@ sap.ui.define([
     "./LuarNegara",
     "./KursusDalam",
     "./KursusLuar",
-    "./Pelbagai"
+    "./Pelbagai",
 ], function (Filter, FilterOperator, DalamNegara, LuarNegara, KursusDalam, KursusLuar, Pelbagai) {
     "use strict";
     return {
@@ -56,7 +56,7 @@ sap.ui.define([
                 return aRules;
             });
 
-            LuarNegara.onEligibleCheck(oModel, oConstant, sClaimType, sClaimItmType, aRules);
+            LuarNegara.onEligibleCheck(oModel, oConstant, sClaimItmType, oEmp, aRules);
             // switch (sClaimType) {
             //     case oConstant.ClaimType.DLM_NEGARA:
             //         DalamNegara.onEligibleCheck(oModel, sClaimItmType);

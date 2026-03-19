@@ -1,8 +1,10 @@
 // claima/utils/ApprovalFlow.js
 sap.ui.define([
     "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator"
-], function (Filter, FilterOperator) {
+    "sap/ui/model/FilterOperator",
+    "./FinalApproveStep",
+    "claima/utils/FinalApproveStep"
+], function (Filter, FilterOperator, FinalApproveStep) {
     "use strict";
 
     async function _approveMultiLevel(oModel, id, userID, comment, oModel2) {
@@ -78,13 +80,58 @@ sap.ui.define([
         const nextLevel = currentLevel + 1;
         const ctxNext = aCtx.find(ctx => ctx.getObject().LEVEL === nextLevel);
 
+        //Farisha's part start 
+        // Get Approver Details
+        const oApprList = oModel.bindList(
+            "/ZEMP_MASTER",
+            null,
+            null,
+            [new Filter("EEID", FilterOperator.EQ, aApprEmpID[0])],
+            { $$ownRequest: true }
+        );
+
+        const aApprContexts = await oApprList.requestContexts();
+        const aApprData = aApprContexts.map(oCtx => oCtx.getObject());
+
+        // Get Claimant Details
+        const oClaimantList = oModel.bindList(
+            "/ZEMP_MASTER",
+            null,
+            null,
+            [new Filter("EEID", FilterOperator.EQ, sEmpID)],
+            { $$ownRequest: true }
+        );
+
+        const aClaimantContexts = await oClaimantList.requestContexts();
+        const aClaimantData = aClaimantContexts.map(oCtx => oCtx.getObject());
+
+        const sApproverName = aApprData[0].NAME;
+        const sClaimsSubmissionDate = todayYMD();     
+        const sClaimantName = aClaimantData[0].NAME;
+        const sClaimType = aSubmissionTypeNameData[0].SUBMISSION_TYPE_DESC;
+        const sClaimID = sClaimID;                             
+        const sRecipientName = sClaimantName;
+        const sClaimantEmail = aClaimantData[0].EMAIL;
+
+        const oEmailPayload = {
+            ApproverName: sApproverName,
+            SubmissionDate: sClaimsSubmissionDate,
+            ClaimantName: sClaimantName,
+            ClaimType: sClaimType,
+            ClaimID: sClaimID,
+            RecipientName: sRecipientName,
+            Action: "Approved",
+            ReceiverEmail: sClaimantEmail
+        };
+        //Farisha's part end
+
         if (ctxNext) {
             ctxNext.setProperty("STATUS", "STAT02"); //PENDING APPROVAL
         } else {
-            // No next level → final approval
-            console.log("No further approvers found. Proceed to Final Approve Step");
+            FinalApproveStep.onFinalApprove(oModel2, id, 'STAT05', oModel, oEmailPayload);
         }
 
+        //pending fix for payload creation causing server crash - Vincent
         // STEP 5: Fetch data for Email
 
 
@@ -221,11 +268,11 @@ sap.ui.define([
         const headerSet = isPre ? "/ZREQUEST_HEADER" : "/ZCLAIM_HEADER";
         const idField = isPre ? "PREAPPROVAL_ID" : "CLAIM_ID";
         const sField_header = submissionType === "REQ" ? "REQUEST_ID" : "CLAIM_ID";
-        const sAction = actionStatus === "STAT04" ? "REJECT" : "SEND BACK";
+        const sAction = actionStatus === "STAT04" ? "Reject" : "SEND BACK";
         const sType = submissionType === "REQ" ? "Pre-Approval" : "Claim";
         //Added for view;
         const sTable2 = submissionType === "REQ" ? "/ZEMP_APPROVER_REQUEST_DETAILS" : "/ZEMP_APPROVER_CLAIM_DETAILS";
-        const sTable3 = submissionType === "REQ" ? "/ZEMP_REQUEST_REPORT_DETAILS" : "/ZEMP_CLAIM_REPORT_DETAILS";
+        const sTable3 = submissionType === "REQ" ? "/ZEMP_REQUEST_BUDGET_CHECK" : "/ZEMP_CLAIM_BUDGET_CHECK";
 
         // 1) Load rows
         const binding = oModel.bindList(
@@ -295,7 +342,6 @@ sap.ui.define([
 
         }
 
-
         // 6) Release Budget Lock
         const budgetBinding = oModel2.bindList(
             sTable3,
@@ -323,8 +369,8 @@ sap.ui.define([
 
 
             const amount = isPre
-                ? Number(r.TOTAL_AMOUNT || 0)
-                : Number(r.TOTAL_CLAIM_AMOUNT || r.TOTAL_AMOUNT || 0);
+                ? Number(r.EST_AMOUNT || 0)
+                : Number(r.AMOUNT || 0);
 
 
             return {
