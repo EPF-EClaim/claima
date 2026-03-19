@@ -1048,7 +1048,7 @@ sap.ui.define([
 				}
 
 				const oPayload = PARequestSharedFunction.generateEligibilityCheckPayload(this);
-				EligibleScenarioCheck.onEligibilityCheck(oModel, this._oConstant, oPayload);
+				const oCheckResult = EligibleScenarioCheck.onEligibilityCheck(oModel, this._oConstant, oPayload);
 
 				if (isEdit) {
 					const sReqSubId = String(oData.req_item.req_subid || "").trim();
