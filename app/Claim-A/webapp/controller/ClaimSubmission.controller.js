@@ -13,7 +13,6 @@ sap.ui.define([
 	"sap/m/Dialog",
 	"sap/m/Button",
 	"sap/m/Label",
-	"sap/m/PDFViewer",
 	"sap/m/ListMode",
 	"claima/utils/Utility",
 	"claima/utils/Attachment",
@@ -39,7 +38,6 @@ sap.ui.define([
 	Dialog,
 	Button,
 	Label,
-	PDFViewer,
 	ListMode,
 	Utility,
 	Attachment,
@@ -207,8 +205,8 @@ sap.ui.define([
 					this._setApprovalLog(true);
 
 					// display approval log data
-					const oViewModel = this.getOwnerComponent().getModel('employee_view');
-					await ApprovalLog.getApproverList(oApprovalLogModel, oViewModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+					const oEmployeeViewModel = this.getOwnerComponent().getModel('employee_view');
+					await ApprovalLog.getApproverList(oApprovalLogModel, oEmployeeViewModel, oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
 					this.byId("approval_log_table")?.getBinding("rows").refresh();
 				}
 
@@ -229,10 +227,10 @@ sap.ui.define([
 				let oApprovalLogFragment = await this._getFormFragment("approval_log");
 				let aApprovers = oApprovalLogModel.getProperty("/approval")?.length || 0;
 				if (oApprovalLogFragment && aApprovers > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
-					var userID = this.getView().getModel("userId")?.getProperty("/userId");
-					if (userID) {
-						let itemIndex = oApprovalLogModel.getProperty("/approval").findIndex((approval) => approval.APPROVER_ID === userID);
-						if (itemIndex !== -1) {
+					var sUserId = this.getView().getModel("userId")?.getProperty("/userId");
+					if (sUserId) {
+						let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((approval) => approval.APPROVER_ID === sUserId);
+						if (iItemIndex !== -1) {
 							oClaimSubmissionModel.setProperty("/is_approver", true);
 						}
 					}
@@ -251,14 +249,13 @@ sap.ui.define([
 
 		_loadClaimById: async function (sClaimId) {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			const oModel = await this._ensureModelReady("employee_view");
-			const oModel2 = this.getOwnerComponent().getModel();
+			const oEmployeeViewModel = await this._ensureModelReady("employee_view");
 			const sId = String(sClaimId);
 
 			const aFilters = [new Filter("CLAIM_ID", FilterOperator.EQ, sId)];
 
 			// Header binding
-			const oHeaderBinding = oModel.bindList(
+			const oHeaderBinding = oEmployeeViewModel.bindList(
 				"/ZEMP_CLAIM_HEADER_VIEW", // <-- adjust if different
 				null,
 				null,
@@ -271,7 +268,7 @@ sap.ui.define([
 			);
 
 			// Items binding
-			const oItemBinding = oModel.bindList(
+			const oItemBinding = oEmployeeViewModel.bindList(
 				"/ZEMP_CLAIM_ITEM_VIEW", // <-- adjust if different
 				null,
 				[new Sorter("CLAIM_SUB_ID", false)],
@@ -284,7 +281,7 @@ sap.ui.define([
 			);
 
 			// Items Descr binding
-			const oItemDescrBinding = oModel.bindList(
+			const oItemDescrBinding = oEmployeeViewModel.bindList(
 				"/ZEMP_CLAIM_ITEM_VIEW", // <-- adjust if different
 				null,
 				[new Sorter("CLAIM_SUB_ID", false)],
@@ -1147,9 +1144,9 @@ sap.ui.define([
 				// get child attachment
 				oInputModel = this.getView().getModel("claimsubmission_input");
 				//// get claim item index from claim submission
-				let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
-				if (itemIndex !== -1) {
-					Attachment.onViewDocument(this, oInputModel.getProperty("/claim_items/" + itemIndex + "/attachment_file_" + fieldNumber));
+				let iItemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
+				if (iItemIndex !== -1) {
+					Attachment.onViewDocument(this, oInputModel.getProperty("/claim_items/" + iItemIndex + "/attachment_file_" + fieldNumber));
 				}
 				else {
 					MessageToast.show(Utility.getText(this, "msg_claimsubmission_viewattachment_error"));
@@ -1268,9 +1265,9 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			// get value from selected item
 			itemSubId = oItem.getCells()[0].getText();
-			let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
-			if (itemIndex !== -1) {
-				this.onCreateClaim_ClaimSummary(itemIndex);
+			let iItemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
+			if (iItemIndex !== -1) {
+				this.onCreateClaim_ClaimSummary(iItemIndex);
 			}
 		},
 
@@ -1286,9 +1283,9 @@ sap.ui.define([
 			// get value from selected items
 			var itemSubId;
 			itemSubId = item.getCells()[0].getText();
-			let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
-			if (itemIndex !== -1) {
-				this.onCreateClaim_ClaimSummary(itemIndex);
+			let iItemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
+			if (iItemIndex !== -1) {
+				this.onCreateClaim_ClaimSummary(iItemIndex);
 			}
 		},
 
@@ -1301,9 +1298,9 @@ sap.ui.define([
 			};
 			// get value from selected item
 			itemSubId = oItem.getCells()[0].getText();
-			let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
-			if (itemIndex !== -1) {
-				var oObject = oInputModel.getProperty("/claim_items/" + itemIndex);
+			let iItemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
+			if (iItemIndex !== -1) {
+				var oObject = oInputModel.getProperty("/claim_items/" + iItemIndex);
 				oInputModel.setProperty("/claim_items", oInputModel.getProperty("/claim_items").concat(structuredClone(oObject)));
 				var addrIndex = "/claim_items/" + (oInputModel.getProperty("/claim_items").length - 1);
 				oInputModel.setProperty(
@@ -1353,10 +1350,10 @@ sap.ui.define([
 			jQuery.each(aItems,
 				function (id, value) {
 					itemSubId = value.getCells()[0].getText();
-					let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
-					if (itemIndex !== -1) {
+					let iItemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
+					if (iItemIndex !== -1) {
 						if (oInputModel.getProperty("/claim_items").length > 1) {
-							oInputModel.getProperty("/claim_items").splice(itemIndex, 1);
+							oInputModel.getProperty("/claim_items").splice(iItemIndex, 1);
 							oInputModel.setProperty("/claim_items_count", oInputModel.getProperty("/claim_items").length);
 						}
 						else {
@@ -1551,7 +1548,7 @@ sap.ui.define([
 					BusyIndicator.show(0);
 
 					const oModel = this.getOwnerComponent().getModel();                 // main OData
-					const oModelView = this.getOwnerComponent().getModel("employee_view");
+					const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 					const oModelMail = this.getOwnerComponent().getModel();             // or a mail model if different
 
 					// 1) Approve + get email payloads
@@ -1560,7 +1557,7 @@ sap.ui.define([
 						claimId,
 						userId,
 						comment,
-						oModelView
+						oEmployeeViewModel
 					);
 
 					// 2) Send emails
@@ -1574,8 +1571,6 @@ sap.ui.define([
 					// 4) Navigate back after small delay (optional)
 					setTimeout(() => {
 						const oRouter = this.getOwnerComponent().getRouter();
-						// this.getOwnerComponent().getModel("employee")?.refresh();
-						// this.getOwnerComponent().getModel("employee_view")?.refresh();
 						this._onNavBack();
 					}, 400);
 
@@ -1601,7 +1596,7 @@ sap.ui.define([
 				BusyIndicator.show(0);
 
 				const oModelMain = this.getOwnerComponent().getModel();
-				const oModelView = this.getOwnerComponent().getModel("employee_view");
+				const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 				const accessModel = this.getOwnerComponent().getModel("access");
 				const userId = accessModel?.getProperty("/userId");
 
@@ -1619,7 +1614,7 @@ sap.ui.define([
 						reject_status,
 						reason,
 						comment,
-						oModelView
+						oEmployeeViewModel
 					);
 
 				// Budget release if required by your process
@@ -1660,7 +1655,7 @@ sap.ui.define([
 				BusyIndicator.show(0);
 
 				const oModelMain = this.getOwnerComponent().getModel();
-				const oModelView = this.getOwnerComponent().getModel("employee_view");
+				const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 				const accessModel = this.getOwnerComponent().getModel("access");
 				const userId = accessModel?.getProperty("/userId");
 
@@ -1677,7 +1672,7 @@ sap.ui.define([
 						reject_status,
 						reason,
 						comment,
-						oModelView
+						oEmployeeViewModel
 					);
 
 				// Budget release if applicable for your process
@@ -3875,16 +3870,16 @@ sap.ui.define([
 		//Aiman Salim - 08/03/2026 - MyApproval - My Pre-Approval Request Status;
 		getMyApproverPAReq: async function () {
 			const oReq = this.getOwnerComponent().getModel("request_status");
-			const oModel = this.getOwnerComponent().getModel("employee_view");
-			var userID;
+			const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+			var sUserId;
 
 			if (this.getView().getModel("userId")) {
-				userID = this.getView().getModel("userId").getProperty("/userId");
+				sUserId = this.getView().getModel("userId").getProperty("/userId");
 			}
 			const oApproverOrSub = new Filter({
 				filters: [
-					new Filter("APPROVER_ID", FilterOperator.EQ, userID),
-					new Filter("SUBSTITUTE_APPROVER_ID", FilterOperator.EQ, userID)
+					new Filter("APPROVER_ID", FilterOperator.EQ, sUserId),
+					new Filter("SUBSTITUTE_APPROVER_ID", FilterOperator.EQ, sUserId)
 				],
 				and: false // OR condition between the two
 			});
@@ -3901,7 +3896,7 @@ sap.ui.define([
 			});
 
 
-			const oListBinding = oModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
+			const oListBinding = oEmployeeViewModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
 				[new Sorter("STATUS", true)], // desc by STATUS
 				[oCombined],
 				{
@@ -3935,16 +3930,16 @@ sap.ui.define([
 
 		getMyApproverClaim: async function () {
 			const oReq = this.getOwnerComponent().getModel("claim_status");
-			const oModel = this.getOwnerComponent().getModel("employee_view");
-			var userID;
+			const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+			var sUserId;
 
 			if (this.getView().getModel("userId")) {
-				userID = this.getView().getModel("userId").getProperty("/userId");
+				sUserId = this.getView().getModel("userId").getProperty("/userId");
 			}
 			const oApproverOrSub = new Filter({
 				filters: [
-					new Filter("APPROVER_ID", FilterOperator.EQ, userID),
-					new Filter("SUBSTITUTE_APPROVER_ID", FilterOperator.EQ, userID)
+					new Filter("APPROVER_ID", FilterOperator.EQ, sUserId),
+					new Filter("SUBSTITUTE_APPROVER_ID", FilterOperator.EQ, sUserId)
 				],
 				and: false // OR condition between the two
 			});
@@ -3959,7 +3954,7 @@ sap.ui.define([
 				filters: [oApproverOrSub, oStatusPending],
 				and: true // AND between groups
 			});
-			const oListBinding = oModel.bindList("/ZEMP_APPROVER_CLAIM_DETAILS", undefined,
+			const oListBinding = oEmployeeViewModel.bindList("/ZEMP_APPROVER_CLAIM_DETAILS", undefined,
 				[new Sorter("STATUS", true)], // desc by STATUS
 				[oCombined],
 
