@@ -5,13 +5,8 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/ui/model/Sorter",
-    "sap/m/Dialog",
-    "sap/m/Button",
-    "sap/m/Label",
-    "sap/ui/core/Fragment",
-    "sap/ui/export/Spreadsheet",
-    "sap/ui/core/BusyIndicator"
-], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, Sorter, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator) {
+	"claima/utils/Utility"
+], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, Sorter, Utility) {
     "use strict";
 
     return Controller.extend("claima.controller.MyApproval", {
@@ -20,6 +15,7 @@ sap.ui.define([
         * Lifecycle
         * ======================================================= */
         async onInit() {
+			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 
         },
 
@@ -87,7 +83,7 @@ sap.ui.define([
                 }
 
                 if (!oCtx) {
-                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_select_req"));
+                    MessageToast.show(Utility.getText(this, "msg_approval_select_req"));
                     return;
                 }
 
@@ -102,7 +98,7 @@ sap.ui.define([
                     row.PREAPPROVAL_ID;           // fallback only if header view can be filtered by it
 
                 if (!sRequestId) {
-                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_missing_req"));
+                    MessageToast.show(Utility.getText(this, "msg_approval_missing_req"));
                     return;
                 }
 
@@ -119,7 +115,7 @@ sap.ui.define([
                 oRouter.navTo("RequestForm", { request_id: encodeURIComponent(String(sRequestId)) });
             } catch (e) {
                 jQuery.sap.log.error("openItemFromList failed: " + e);
-                MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_failed_req"));
+                MessageToast.show(Utility.getText(this, "msg_approval_failed_req"));
             } finally {
                 this.getView().setBusy(false);
             }
@@ -186,7 +182,7 @@ sap.ui.define([
                 // --- Header ---
                 const oHeader = aHeaderCtx[0]?.getObject();
                 if (!oHeader) {
-                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_header_req"));
+                    MessageToast.show(Utility.getText(this, "msg_approval_header_req"));
                     // Clear and bail gracefully
                     oReq.setProperty("/req_header", {});
                     oReq.setProperty("/req_item_rows", []);
@@ -288,7 +284,7 @@ sap.ui.define([
                 }
 
                 if (!oCtx) {
-                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_select_clm"));
+                    MessageToast.show(Utility.getText(this, "msg_approval_select_clm"));
                     return;
                 }
 
@@ -301,7 +297,7 @@ sap.ui.define([
                     null;
 
                 if (!sClaimId) {
-                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_missing_clm"));
+                    MessageToast.show(Utility.getText(this, "msg_approval_missing_clm"));
                     return;
                 }
 
@@ -313,7 +309,7 @@ sap.ui.define([
                 oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
             } catch (e) {
                 console.log("openItemFromClaimList failed:", e);
-                MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_failed_clm"));
+                MessageToast.show(Utility.getText(this, "msg_approval_failed_clm"));
             } finally {
                 this.getView().setBusy(false);
             }
@@ -411,7 +407,7 @@ sap.ui.define([
 
         async _loadClaimById(sClaimId) {
 
-            const oClaimInput = this._getClaimInputModel()
+            const oClaimInputModel = this._getClaimInputModel()
 
             //const oModel = this.getOwnerComponent().getModel("employee_view");
             const oModel = await this._ensureModelReady("employee_view");
@@ -469,16 +465,32 @@ sap.ui.define([
                 // Header
                 const oHeaderRaw = aHeaderCtx[0]?.getObject();
                 if (!oHeaderRaw) {
-                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_header_clm"));
-                    oClaimInput.setProperty("/claim_header", {});
-                    oClaimInput.setProperty("/claim_items", []);
-                    oClaimInput.setProperty("/claim_items_count", 0);
+                    MessageToast.show(Utility.getText(this, "msg_approval_header_clm"));
+                    oClaimInputModel.setProperty("/claim_header", {});
+                    oClaimInputModel.setProperty("/claim_items", []);
+                    oClaimInputModel.setProperty("/claim_items_count", 0);
                     return { header: null, items: [] };
                 }
 
                 const oHeader = this._mapClaimHeaderToForm(oHeaderRaw);
-                oClaimInput.setProperty("/claim_header", oHeader);
-				await this._getClaimHeaderDataDescr(oClaimInput);
+                oClaimInputModel.setProperty("/claim_header", oHeader);
+				await this._getClaimHeaderDataDescr(oClaimInputModel);
+
+				// set view-only for non-draft claims
+				if (
+					oClaimInputModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
+					oClaimInputModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
+				) {
+					oClaimInputModel.setProperty("/view_only", true)
+				}
+				else {
+					oClaimInputModel.setProperty("/view_only", false)
+				}
+
+				// enable is_approver from my approval
+				if (!oClaimInputModel.getProperty("/is_approver")) {
+					oClaimInputModel.setProperty("/is_approver", true)
+				}
 
                 // Items
                 const aItems = aItemCtx.map(ctx => ctx.getObject()).map(it => ({
@@ -592,11 +604,11 @@ sap.ui.define([
 
                 // Only overwrite header totals if header had null/0 (tweak to your preference)
                 if (!oHeader.total_claim_amount) {
-                    oClaimInput.setProperty("/claim_header/total_claim_amount", nTotal);
+                    oClaimInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
                 }
 
-                oClaimInput.setProperty("/claim_items", aItems);
-                oClaimInput.setProperty("/claim_items_count", aItems.length);
+                oClaimInputModel.setProperty("/claim_items", aItems);
+                oClaimInputModel.setProperty("/claim_items_count", aItems.length);
 
                 // Items
                 const aItemsD = aItemDCtx.map(ctx => ctx.getObject()).map(it => ({
@@ -638,23 +650,23 @@ sap.ui.define([
                 }));
 
                 // assign description based on claim item index
-                oClaimInput.getProperty("/claim_items").forEach( function (claim_item, i) {
-                    oClaimInput.setProperty("/claim_items/" + i + "/descr", aItemsD[i]);
+                oClaimInputModel.getProperty("/claim_items").forEach( function (claim_item, i) {
+                    oClaimInputModel.setProperty("/claim_items/" + i + "/descr", aItemsD[i]);
                 });
 
                 // set employee data
-                const emp_data = await this._getEmpIdDetail(oClaimInput.getProperty("/claim_header/emp_id"));
+                const emp_data = await this._getEmpIdDetail(oClaimInputModel.getProperty("/claim_header/emp_id"));
                 if (emp_data) {
-                    oClaimInput.setProperty("/emp_master", emp_data);
-                    await this._getEmpDataDescr(oClaimInput);
+                    oClaimInputModel.setProperty("/emp_master", emp_data);
+                    await this._getEmpDataDescr(oClaimInputModel);
                 }
 
                 return { header: oHeaderRaw, items: aItems };
             } catch (err) {
                 console.error("Failed to load claim header/items:", err);
-                oClaimInput.setProperty("/claim_header", {});
-                oClaimInput.setProperty("/claim_items", []);
-                oClaimInput.setProperty("/claim_items_count", 0);
+                oClaimInputModel.setProperty("/claim_header", {});
+                oClaimInputModel.setProperty("/claim_items", []);
+                oClaimInputModel.setProperty("/claim_items_count", 0);
                 return { header: null, items: [] };
             }
         },

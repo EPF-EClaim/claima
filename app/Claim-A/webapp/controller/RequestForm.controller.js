@@ -333,7 +333,7 @@ sap.ui.define([
 									oReqModel.setProperty("/view", 'view');
 
 									// Add in onPARApproverDetermination function
-									workflowApproval.onPARApproverDetermination(oModel, sReqId);
+									workflowApproval.onPARApproverDetermination(oModel, sReqId, oViewModel);
 
 									await PARequestSharedFunction.getPARHeaderList(oReqList, oViewModel);
 									const oRouter = this.getOwnerComponent().getRouter();
@@ -391,7 +391,7 @@ sap.ui.define([
 
 		async onDocLinkPress(oEvent) {
 			// calling function from Attachment.js
-			Attachment.onViewDocument(this, oEvent);
+			Attachment.onViewDocument(this, oEvent.getSource().getText());
 		},
 
 		async onAddItem(oEvent) {
@@ -1047,8 +1047,8 @@ sap.ui.define([
 					return; 
 				}
 
-				const oPayload = PARequestSharedFunction.generateEligibilityCheckPayload(this);
-				const oCheckResult = EligibleScenarioCheck.onEligibilityCheck(oModel, this._oConstant, oPayload);
+				var oPayload = PARequestSharedFunction.generateEligibilityCheckPayload(this);
+				var oCheckResult = await EligibleScenarioCheck.onEligibilityCheck(oModel, this._oConstant, oPayload);
 
 				if (isEdit) {
 					const sReqSubId = String(oData.req_item.req_subid || "").trim();

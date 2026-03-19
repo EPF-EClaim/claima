@@ -5,6 +5,7 @@ sap.ui.define([
 	"sap/m/Popover",
 	"sap/ui/core/Fragment",
 	"sap/ui/core/BusyIndicator",
+	"sap/ui/core/Item",
 	"sap/m/Button",
 	"sap/m/Dialog",
 	"sap/m/Label",
@@ -16,6 +17,7 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
 	"sap/ui/export/Spreadsheet",
+	"claima/utils/Utility",
 	"claima/utils/PARequestSharedFunction",
 	"claima/utils/Attachment",
 	"claima/utils/ApprovalLog",
@@ -25,7 +27,9 @@ sap.ui.define([
 	"sap/m/HBox",
 	"sap/m/VBox",
 	"sap/ui/core/Icon",
-	"sap/ui/core/routing/HashChanger"
+	"sap/ui/core/routing/HashChanger",
+	"claima/utils/MyApproval",
+	"sap/m/MessageBox"
 ], function (
 	Device,
 	Controller,
@@ -33,6 +37,7 @@ sap.ui.define([
 	Popover,
 	Fragment,
 	BusyIndicator,
+	Item,
 	Button,
 	Dialog,
 	Label,
@@ -44,6 +49,7 @@ sap.ui.define([
 	FilterOperator,
 	Sorter,
 	Spreadsheet,
+	Utility,
 	PARequestSharedFunction,
 	Attachment,
 	ApprovalLog,
@@ -53,7 +59,9 @@ sap.ui.define([
 	HBox,
 	VBox,
 	Icon,
-	HashChanger
+	HashChanger,
+	MyApproval,
+	MessageBox
 ) {
 	"use strict";
 
@@ -63,6 +71,8 @@ sap.ui.define([
 		_ReqAttachmentFile2: null,
 
 		onInit: async function () {
+			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
+
 			// oReportModel
 			var oReportModel = new JSONModel({
 				"purpose": "",
@@ -79,17 +89,19 @@ sap.ui.define([
 
 			const oSession = new sap.ui.model.json.JSONModel({
 				userType: "UNKNOWN",
-				origin: ""
+				origin: "",
+				grade: "",
+				department: "",
+				position: "",
+				userName: "",
+				initials: ""
 			});
 			this.getView().setModel(oSession, "session");
 
 			var oRouter = this.getOwnerComponent().getRouter();
 
 			const oImageModel = new sap.ui.model.json.JSONModel({
-				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png"),
-				initials: "",
-				userName: "",
-				position: ""
+				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png")
 			});
 			this.getView().setModel(oImageModel, "imageModel");
 
@@ -107,17 +119,21 @@ sap.ui.define([
 				this._userType = oData.userType || "UNKNOWN";
 				this.costcenters = oData.costcenters || "UNKNOWN"; //Added by Aiman Salim 06/03/2026
 				this.userId = oData.userId || "UNKNOWN";
-				const sname = oData.name || "";
-				const sposition = oData.position;
-				const sInitials = sname.substring(0, 2).toUpperCase();
-				oImageModel.setProperty("/initials", sInitials);
-				oImageModel.setProperty("/userName", sname);
-				oImageModel.setProperty("/position", sposition);
-
+				const sName = oData.name || "";
+				const sPosition = oData.position;
+				const sInitials = sName.substring(0, 2).toUpperCase();
+				oSession.setProperty("/initials", sInitials);
+				oSession.setProperty("/userName", sName);
+				oSession.setProperty("/position", sPosition);
+				oSession.setProperty("/grade", oData.grade || "UNKNOWN");
+				oSession.setProperty("/department", oData.department || "UNKNOWN");
 				oSession.setProperty("/origin", oData.origin);
 
 				// save userId to model
-				var oUserIdModel = new JSONModel({ "userId": oData.userId });
+				var oUserIdModel = new JSONModel({
+					"userId": oData.userId,
+					"email": oData.id
+				});
 				//// set input
 				this.getView().setModel(oUserIdModel, "userId");
 				oSession.setProperty("/userType", this._userType);
@@ -147,7 +163,7 @@ sap.ui.define([
 			const bIsDeepLink = sHash.includes("RequestForm") || sHash.includes("Claim");
 
 			if (!bIsDeepLink || sHash === "") {
-				oRouter.navTo("Dashboard", {}, true); 
+				oRouter.navTo("Dashboard", {}, true);
 			} else {
 				oRouter.initialize();
 			}
@@ -169,13 +185,19 @@ sap.ui.define([
 			var oKey = oItem.getKey();
 			var oRouter = this.getOwnerComponent().getRouter();
 
+			const sAdminDTD = this._oConstant.Role.DTD_ADMIN,
+				sAdminGA = this._oConstant.Role.GA_ADMIN,
+				sAdminJKEW = this._oConstant.Role.JKEW_ADMIN,
+				sApprover = this._oConstant.Role.APPROVER,
+				sSuperUser = this._oConstant.Role.SUPER_ADMIN;
+
 			//Start EY_ATHIRAH
 			const key = oEvent.getSource().data("key");
 
 			// Make sure userType is available
 			const type = this._userType; // << read what we stored earlier
 			if (!type) {
-				sap.m.MessageToast.show("Please wait… loading your access.");
+				MessageToast.show("Please wait… loading your access.");
 				return;
 			}
 
@@ -206,21 +228,24 @@ sap.ui.define([
 					break;
 				case "config":
 					//Start EY_ATHIRAH
-					if (type === "DTD Admin" || type === "JKEW Admin" || type === "Super Admin") {
+					if (type === sAdminDTD || type === sAdminJKEW || type === sSuperUser) {
 						oRouter.navTo("Configuration");
-					} else {
-						var message = this.getView().getModel("i18n").getResourceBundle().getText("msg_unauthorized_role");
-						sap.m.MessageBox.error(message);
+					} else if (type === sAdminGA ) {
+						oRouter.navTo("Configuration_GA");
+					}
+					else {
+						var message = Utility.getText(this, "msg_unauthorized_role");
+						MessageBox.error(message);
 					}
 					//End EY_ATHIRAH
 					break;
 				// Start Aiman Salim 10/02/2026 - Added for analytics
 				case "analytics":
-					if (type === "JKEW Admin" || type === "DTD Admin" || type === "GA Admin" || type === "Super Admin") {
+					if (type === sAdminDTD || type === sAdminJKEW || type === sSuperUser) {
 						oRouter.navTo("Analytics")
 					} else {
-						var message = this.getView().getModel("i18n").getResourceBundle().getText("msg_unauthorized_role");
-						sap.m.MessageBox.error(message);
+						var message = Utility.getText(this, "msg_unauthorized_role");
+						MessageBox.error(message);
 					}
 					break;
 				// End 	 Aiman Salim 10/02/2026 - Added for analytics
@@ -232,14 +257,14 @@ sap.ui.define([
 					break;
 				//Start Aiman Salim 08/03/2026 - Added for MyApproval
 				case "approval":
-					if (type === "Approver" || type === "Super Admin") {
+					if (type === sApprover || type === sSuperUser) {
 						this.getMyApproverPAReq();
 						this.getMyApproverClaim();
 						var oRouter = this.getOwnerComponent().getRouter();
 						oRouter.navTo("MyApproval");
 					} else {
-						var message = this.getView().getModel("i18n").getResourceBundle().getText("msg_unauthorized_role");
-						sap.m.MessageBox.error(message);
+						var message = Utility.getText(this, "msg_unauthorized_role");
+						MessageBox.error(message);
 					}
 					break;
 				//End Aiman Salim 08/03/2026 - Added for MyApproval
@@ -313,7 +338,7 @@ sap.ui.define([
 				this.oDialog_ClaimProcess.open();
 			}
 			else {
-				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_nav_error_fragment", [oName]));
+				MessageToast.show(Utility.getText(this, "msg_nav_error_fragment", [oName]));
 			}
 			BusyIndicator.hide();
 		},
@@ -494,10 +519,17 @@ sap.ui.define([
 			// set new claim submission model;
 			var oInputModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 			//// set employee data
-			var userModelData = this.getView().getModel('user').getData();
-			const emp_data = await this._getEmpIdDetail(userModelData.email);
-			if (emp_data) {
-				oInputModel.setProperty("/emp_master", emp_data);
+			var oUserModelData = this.getView().getModel('user')?.getData() || this.getView().getModel("userId")?.getData() || null;
+			if (!oUserModelData) {
+				MessageToast.show(Utility.getText(this, "msg_claimprocess_nouser"));
+				if (this.oDialog_ClaimProcess) {
+					this.oDialog_ClaimProcess.close();
+					return;
+				}
+			}
+			const oEmpData = await this._getEmpIdDetail(oUserModelData.email);
+			if (oEmpData) {
+				oInputModel.setProperty("/emp_master", oEmpData);
 				await this._getEmpDataDescr(oInputModel);
 			}
 		},
@@ -593,7 +625,7 @@ sap.ui.define([
 						},
 						$select: "SUBMISSION_TYPE"
 					},
-					template: new sap.ui.core.Item({
+					template: new Item({
 						key: "{employee>CLAIM_TYPE_ITEM_ID}",
 						text: "{employee>CLAIM_TYPE_ITEM_DESC}"
 					})
@@ -638,7 +670,7 @@ sap.ui.define([
 							filters: [
 								new Filter('EMP_ID', FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
 								new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oInputModel.getProperty("/claimtype/type")),
-								new Filter('STATUS', FilterOperator.EQ, "STAT05"),
+								new Filter('STATUS', FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED),
 							],
 							parameters: {
 								$expand: {
@@ -647,7 +679,7 @@ sap.ui.define([
 								},
 								$select: "PREAPPROVAL_AMOUNT,EVENT_START_DATE,EVENT_END_DATE,COST_CENTER,ALTERNATE_COST_CENTER"
 							},
-							template: new sap.ui.core.Item({
+							template: new Item({
 								key: "{employee>REQUEST_ID}",
 								text: "{employee>REQUEST_ID} {employee>OBJECTIVE_PURPOSE} ({employee>TRIP_START_DATE} – {employee>TRIP_END_DATE})"
 							})
@@ -788,7 +820,7 @@ sap.ui.define([
 				this.oDialog_ClaimInput.open();
 			}
 			else {
-				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_nav_error_fragment", [oName]));
+				MessageToast.show(Utility.getText(this, "msg_nav_error_fragment", [oName]));
 			}
 		},
 
@@ -838,6 +870,7 @@ sap.ui.define([
 			if (this.byId("switch_claimprocess_req_emailapprove").getEnabled()) {
 				this.byId("switch_claimprocess_req_emailapprove").setEnabled(false);
 				this.byId("switch_claimprocess_req_emailapprove").setVisible(false);
+				this.byId("switch_claimprocess_req_emailapprove").setState(false);
 			}
 
 			// disable 'Create Pre-Approval Request' button
@@ -856,7 +889,6 @@ sap.ui.define([
 			var lastModifiedDate = this._getJsonDate(new Date());
 			oInputModel.setProperty("/is_new", true);
 			oInputModel.setProperty("/claim_header/emp_id", oInputModel.getProperty("/emp_master/eeid"));
-			// oInputModel.setProperty("/claim_header/status_id", "STAT01");
 			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 			oInputModel.setProperty("/claim_header/claim_type_id", oInputModel.getProperty("/claimtype/type"));
 			oInputModel.setProperty("/claim_header/submission_type", oInputModel.getProperty("/claimtype/category"));
@@ -893,7 +925,7 @@ sap.ui.define([
 					case true:
 						// set text for using email approval
 						oInputModel.setProperty("/claim_header/request_id", "");
-						oInputModel.setProperty("/claim_header/descr/request_id", this.getView().getModel("i18n").getResourceBundle().getText("text_claiminput_preapprovalreq_email"));
+						oInputModel.setProperty("/claim_header/descr/request_id", Utility.getText(this, "text_claiminput_preapprovalreq_email"));
 
 						// require attachment email approval
 						this.byId("fileuploader_claiminput_attachment").setRequired(true);
@@ -965,8 +997,8 @@ sap.ui.define([
 		onAction_ClaimInput: function () {
 			// confirm claim submission dialog
 			this._newDialog(
-				this.getView().getModel("i18n").getResourceBundle().getText("dialog_claiminput_submit"),
-				this.getView().getModel("i18n").getResourceBundle().getText("label_claiminput_submit"),
+				Utility.getText(this, "dialog_claiminput_submit"),
+				Utility.getText(this, "label_claiminput_submit"),
 				function () {
 					this.onClaimSubmission_ClaimInput();
 				}.bind(this)
@@ -974,6 +1006,8 @@ sap.ui.define([
 		},
 
 		onClaimSubmission_ClaimInput: async function () {
+			// validate input data
+			var oInputModel = this.getView().getModel("claimsubmission_input");
 			// validate required fields
 			var reqFields = [
 				"input_claiminput_purpose",
@@ -988,15 +1022,27 @@ sap.ui.define([
 			for (let i = 0; i < reqFields.length; i++) {
 				if (!this.byId(reqFields[i]).getValue()) {
 					// stop claim submission if values empty
-					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_required"));
+					MessageToast.show(Utility.getText(this, "msg_claiminput_required"));
 					return;
 				}
 			}
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
-				var isUploadSuccess = this._onUpload_ClaimInput_Attachment();
-				if (!isUploadSuccess) {
-					// don't proceed claim submission if attachment upload fails
+				BusyIndicator.show(0);
+				var attachmentNumber = await Attachment.postAttachment(
+					oInputModel.getProperty("/attachment/fileName"),
+					oInputModel.getProperty("/attachment/fileContent"),
+					oInputModel.getProperty("/claim_header/emp_id")
+				);
+				if (attachmentNumber) {
+					oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
+					oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
+					BusyIndicator.hide();
+				}
+				else {
+					MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_error"));
+					// don't proceed claim item if attachment upload fails
+					BusyIndicator.hide();
 					return;
 				}
 			}
@@ -1014,9 +1060,7 @@ sap.ui.define([
 				}
 			}
 
-			// validate input data
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-			//// send new claim submission to database
+			// send new claim submission to database
 			await this._updateClaimSubmission();
 		},
 
@@ -1042,12 +1086,12 @@ sap.ui.define([
 				}
 				else {
 					this.oDialog = new Dialog({
-						title: this.getView().getModel("i18n").getResourceBundle().getText("dialog_claiminput_claimid"),
+						title: Utility.getText(this, "dialog_claiminput_claimid"),
 						type: "Message",
 						state: "None",
-						content: [new Label({ text: this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_claimid") })],
+						content: [new Label({ text: Utility.getText(this, "msg_claiminput_claimid") })],
 						endButton: new Button({
-							text: this.getView().getModel("i18n").getResourceBundle().getText("endbutton_claiminput_claimid"),
+							text: Utility.getText(this, "endbutton_claiminput_claimid"),
 							press: function () {
 								this.oDialog.close();
 							}
@@ -1059,7 +1103,7 @@ sap.ui.define([
 			}
 			//// set status for new claim as draft
 			if (oInputModel.getProperty("/is_new")) {
-				oInputModel.setProperty("/claim_header/status_id", "STAT01");
+				oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.DRAFT);
 				oInputModel.setProperty("/claim_header/descr/status_id", "DRAFT");
 			}
 
@@ -1130,9 +1174,16 @@ sap.ui.define([
 					oContext.created().then(async () => {
 						claimSaved = true;
 						await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
+						// post MDF for header attachment
+						if (oInputModel.getProperty("/claim_header/attachment_email_approver")) {
+							await Attachment.postMDF(
+								oInputModel.getProperty("/claim_header/claim_id"),
+								oInputModel.getProperty("/claim_header/attachment_email_approver")
+							)
+						}
 
 						if (claimSaved) {
-							MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_created", [oInputModel.getProperty("/claim_header/claim_id")]));
+							MessageToast.show(Utility.getText(this, "msg_claimsubmission_created", [oInputModel.getProperty("/claim_header/claim_id")]));
 						}
 						oInputModel.setProperty("/is_new", false);
 						// close Claim Input dialog
@@ -1145,98 +1196,10 @@ sap.ui.define([
 				}
 
 			} catch (e) {
-				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_failed", [e.message]));
+				MessageToast.show(Utility.getText(this, "msg_claimsubmission_failed", [e.message]));
 			} finally {
 				BusyIndicator.hide();
 			}
-		},
-
-		_onUpload_ClaimInput_Attachment: function () {
-			var success;
-			// get claim submission model
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-
-			// get csrf token
-			var tokenModel = sap.ui.getCore().getModel("oToken");
-			if (!tokenModel) {
-				this._fetchToken();
-				tokenModel = sap.ui.getCore().getModel("oToken");
-			}
-			var tokenData = tokenModel.getData();
-			var token = tokenData["csrfToken"];
-			if (!token) {
-				// cannot proceed without token
-				sap.ui.getCore().setModel(null, "oToken");
-				return false;
-			}
-
-			BusyIndicator.show(0);
-			$.ajax({
-				type: "POST",
-				contentType: "application/json",
-				url: "/SuccessFactors_API/odata/v2/Attachment",
-				dataType: "json",
-				async: false,
-				headers: {
-					'X-CSRF-Token': token,
-				},
-				crossDomain: true,
-				data: JSON.stringify({
-					__metadata: {
-						uri: 'Attachment'
-					},
-					deletable: true,
-					fileName: oInputModel.getProperty("/attachment/fileName"),
-					moduleCategory: 'UNSPECIFIED',
-					module: 'DEFAULT',
-					userId: 'SFAPI',
-					viewable: true,
-					searchable: true,
-					fileContent: oInputModel.getProperty("/attachment/fileContent")
-				}),
-				success: function (data, textStatus, jqXHR) {
-					// get generated attachment number
-					oInputModel.setProperty("/claim_header/attachment_email_approver", data.d.attachmentId);
-					oInputModel.setProperty("/claim_header/descr/attachment_email_approver", data.d.fileName);
-
-					BusyIndicator.hide();
-					success = true;
-				},
-				error: function (xhr) {
-					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_attachment_upload_error2", [xhr.status, xhr.responseText]));
-
-					BusyIndicator.hide();
-					success = false;
-				}
-			});
-			return success;
-		},
-
-		_fetchToken: function () {
-			var token = {
-				"csrfToken": ""
-			};
-
-			var oToken = new JSONModel(token);
-			sap.ui.getCore().setModel(oToken, "oToken");
-			var tokenModel = sap.ui.getCore().getModel("oToken").getData();
-
-			$.ajax({
-				type: "GET",
-				contentType: "application/json",
-				url: "/SuccessFactors_API/odata/v2/",
-				async: false,
-				headers: {
-					'X-CSRF-Token': "Fetch",
-				},
-				success: function (data, textStatus, jqXHR) {
-					// get token
-					tokenModel["csrfToken"] = jqXHR.getResponseHeader('X-Csrf-Token');
-				},
-				error: function (xhr) {
-					console.log("Error getting token: " + xhr.status + xhr.responseText);
-				}
-			});
 		},
 
 		onChange_ClaimInput_Attachment: function (oEvent) {
@@ -1267,11 +1230,11 @@ sap.ui.define([
 		},
 
 		onFileSizeExceed_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_attachment_upload_filesize"));
+			MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_filesize"));
 		},
 
 		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_attachment_upload_mismatch"));
+			MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_mismatch"));
 		},
 
 		_validDateRange: function (startdate, enddate) {
@@ -1279,14 +1242,14 @@ sap.ui.define([
 			var endDateValue = this.byId(enddate).getValue();
 			// check for missing value
 			if (!startDateValue || !endDateValue) {
-				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_daterange_missing"));
+				MessageToast.show(Utility.getText(this, "msg_daterange_missing"));
 				return false;
 			}
 			// check if end date earlier than start date
 			var startDateUnix = new Date(startDateValue).valueOf();
 			var endDateUnix = new Date(endDateValue).valueOf();
 			if (startDateUnix > endDateUnix) {
-				MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_daterange_order"));
+				MessageToast.show(Utility.getText(this, "msg_daterange_order"));
 				return false;
 			}
 			else {
@@ -1666,7 +1629,7 @@ sap.ui.define([
 					EVENT_END_DATE: oInputData.eventenddate,
 					TRIP_START_DATE: oInputData.tripstartdate,
 					TRIP_END_DATE: oInputData.tripenddate,
-					STATUS: "STAT01",
+					STATUS: this._oConstant.ClaimStatus.DRAFT,
 					CLAIM_TYPE_ID: oInputData.claimtype,
 					REQUEST_DATE: new Date().toISOString().slice(0, 10)
 				};
@@ -1688,7 +1651,7 @@ sap.ui.define([
 					//oResult.reqNo send this to approval determination
 
 					var oRouter = this.getOwnerComponent().getRouter();
-					oRouter.navTo("RequestForm", {request_id: oResult.reqNo});
+					oRouter.navTo("RequestForm", { request_id: oResult.reqNo });
 				}).catch(err => {
 					sap.m.MessageToast.show("Creation failed: " + err.message);
 				});
@@ -1912,7 +1875,7 @@ sap.ui.define([
 			const oStatusPending = new sap.ui.model.Filter(
 				"STATUS",
 				sap.ui.model.FilterOperator.EQ,
-				"STAT02" // use the exact code/value your backend expects
+				this._oConstant.ClaimStatus.PENDING_APPROVAL // use the exact code/value your backend expects
 			);
 			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
 			const oCombined = new sap.ui.model.Filter({
@@ -1969,7 +1932,7 @@ sap.ui.define([
 			const oStatusPending = new Filter(
 				"STATUS",
 				FilterOperator.EQ,
-				"STAT02" // use the exact code/value your backend expects
+				this._oConstant.ClaimStatus.PENDING_APPROVAL // use the exact code/value your backend expects
 			);
 			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
 			const oCombined = new Filter({
@@ -2112,10 +2075,10 @@ sap.ui.define([
 			if (c) return c;
 
 			if (sFragmentId) {
-				c = sap.ui.core.Fragment.byId(this.getView().createId(sFragmentId), sId);
+				c = Fragment.byId(this.getView().createId(sFragmentId), sId);
 				if (c) return c;
 
-				c = sap.ui.core.Fragment.byId(sFragmentId, sId);
+				c = Fragment.byId(sFragmentId, sId);
 				if (c) return c;
 			}
 
@@ -2161,7 +2124,7 @@ sap.ui.define([
 					oRouter.navTo("MyApproval");
 				}
 				else {
-					var message = this.getView().getModel("i18n").getResourceBundle().getText("msg_unauthorized_role");
+					var message = Utility.getText(this, "msg_unauthorized_role");
 					sap.m.MessageBox.error(message);
 				}
 			}
@@ -2175,14 +2138,14 @@ sap.ui.define([
 				content: [new Label({ text: content })],
 				beginButton: new Button({
 					type: "Emphasized",
-					text: this.getView().getModel("i18n").getResourceBundle().getText("button_claimsummary_confirm"),
+					text: Utility.getText(this, "button_claimsummary_confirm"),
 					press: async function () {
 						this.oDialog.close();
 						await onPress();
 					}.bind(this)
 				}),
 				endButton: new Button({
-					text: this.getView().getModel("i18n").getResourceBundle().getText("button_claimsummary_cancel"),
+					text: Utility.getText(this, "button_claimsummary_cancel"),
 					press: function () {
 						this.oDialog.close();
 					}.bind(this)
@@ -2249,7 +2212,7 @@ sap.ui.define([
 										new Icon({
 											src: "sap-icon://employee",
 											width: "1rem",
-											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
+											class: "sapUiLargeMarginBeginEnd"
 										}),
 										new Text({ text: "{userId>/userId}" })
 									]
@@ -2262,22 +2225,48 @@ sap.ui.define([
 										new Icon({
 											src: "sap-icon://person-placeholder",
 											width: "1rem",
-											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
+											class: "sapUiLargeMarginBeginEnd"
 										}),
-										new Text({ text: "{imageModel>/userName}" })
+										new Text({ text: "{session>/userName}" })
 									]
 								}),
 								new HBox({
 									alignItems: "Center",
 									width: "100%",
-									class: "sapUiTinyMarginTop sapUiSmallMarginBottom",
+									class: "sapUiMediumMarginTopBottom",
+									items: [
+										new Icon({
+											src: "sap-icon://employee-pane",
+											width: "1rem",
+											class: "sapUiLargeMarginBeginEnd"
+										}),
+										new Text({ text: "{session>/grade}" })
+									]
+								}),
+								new HBox({
+									alignItems: "Center",
+									width: "100%",
+									class: "sapUiMediumMarginTopBottom",
+									items: [
+										new Icon({
+											src: "sap-icon://suitcase",
+											width: "1rem",
+											class: "sapUiLargeMarginBeginEnd"
+										}),
+										new Text({ text: "{session>/position}" })
+									]
+								}),
+								new HBox({
+									alignItems: "Center",
+									width: "100%",
+									class: "sapUiMediumMarginTopBottom",
 									items: [
 										new Icon({
 											src: "sap-icon://business-card",
 											width: "1rem",
-											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
+											class: "sapUiLargeMarginBeginEnd"
 										}),
-										new Text({ text: "{imageModel>/position}" })
+										new Text({ text: "{session>/department}" })
 									]
 								}),
 								new Button({
@@ -2295,8 +2284,6 @@ sap.ui.define([
 				});
 				this.getView().addDependent(this._oAvatarPopover);
 			}
-
-			// toggle open/close
 			if (this._oAvatarPopover.isOpen()) {
 				this._oAvatarPopover.close();
 			} else {
@@ -2326,6 +2313,14 @@ sap.ui.define([
 				pageId: "navcontainer_claimsubmission"
 			});
 
+		},
+
+		async openApprovalList(oEvent) {
+			const oItem = oEvent.getParameter("listItem");
+			const oCtx = oItem?.getBindingContext("dashboardModel");
+			const oRow = oCtx?.getObject();
+			const sId = oRow?.ID;
+			await MyApproval.navigateFromId(this, sId);
 		},
 
 		_onDashboardMatched: function () {
@@ -2367,18 +2362,6 @@ sap.ui.define([
 					console.log("approvals not available for this role");
 					oDashboardModel.setProperty("/approvals", []);
 				});
-		},
-		onHomeIconPressed: function () {
-			const oSession = this.getView().getModel("session");
-			const origin = oSession.getProperty("/origin");
-			var sSFURL;
-
-			sSFURL = origin === "httpsa6s6cq33s.accounts.ondemand.com" ? "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV" :
-				origin === "sap.custom" ? "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT" :
-					"https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD";
-
-			window.open(sSFURL, "_self");
-
 		},
 
 

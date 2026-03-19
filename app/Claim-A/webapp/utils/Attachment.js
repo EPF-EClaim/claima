@@ -181,9 +181,7 @@ sap.ui.define([
 			return true;
 		},
 
-		async onViewDocument(that, oEvent) {
-			var attachmentID = oEvent.getSource().getText();
-
+		async onViewDocument(that, attachmentID) {
 			var sDestination = this._getSrvLink();
 			var sServiceUrl = sDestination + "/Attachment('" + attachmentID + "')";
 
