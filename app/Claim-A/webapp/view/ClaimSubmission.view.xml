@@ -80,7 +80,7 @@
                 <!-- Save -->
                 <Button
                     id="button_claimdetails_input_save"
-                    press="onSave_ClaimDetails_Input"
+                    press="onAction_ClaimDetails_Toolbar('Save')"
                     text="{i18n>button_claimdetails_input_save}"
                     type="Emphasized"
                     visible="false"
