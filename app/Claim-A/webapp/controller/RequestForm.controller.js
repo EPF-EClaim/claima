@@ -386,7 +386,7 @@ sap.ui.define([
 
 		async onDocLinkPress(oEvent) {
 			// calling function from Attachment.js
-			Attachment.onViewDocument(this, oEvent);
+			Attachment.onViewDocument(this, oEvent.getSource().getText());
 		},
 
 		async onAddItem(oEvent) {
@@ -1041,6 +1041,8 @@ sap.ui.define([
 					BusyIndicator.hide();
 					return; 
 				}
+
+				const oPayload = PARequestSharedFunction.generateEligibilityCheckPayload(this);
 
 				if (isEdit) {
 					const sReqSubId = String(oData.req_item.req_subid || "").trim();
