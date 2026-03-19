@@ -108,7 +108,7 @@ sap.ui.define([
 
             _showSessionWarning: function () {
                 sap.m.MessageBox.warning(
-                    "Your session will expire in 5 minutes due to inactivity. Click OK to stay logged in.",
+                    "Session will expire. Click OK to stay logged in.",
                     {
                         title: "Session Expiring Soon",
                         actions: [
