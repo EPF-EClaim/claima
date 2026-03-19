@@ -263,7 +263,7 @@ entity ZREQUEST_ITEM : managed {
         ZGL_ACCOUNT                : Association to ZGL_ACCOUNT
                                          on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
         ZTRANSFER_MODE             : Association to ZTRANSFER_MODE
-                                         on ZTRANSFER_MODE.TRANSFER_MODE_ID = MODE_OF_TRANSFER;                                         
+                                         on ZTRANSFER_MODE.TRANSFER_MODE_ID = MODE_OF_TRANSFER;
 }
 
 entity ZREQ_ITEM_PART : managed {
@@ -863,20 +863,22 @@ entity ZINDIV_GROUP : managed {
 }
 
 entity ZTRAIN_COURSE_PART : managed {
-    key COURSE_ID           : String     @mandatory  @Common.Label: 'Course ID';
-        COURSE_DESC         : String     @Common.Label: 'Course Description';
-        SESSION_NUMBER      : String(15) @Common.Label: 'Session Number';
-        COURSE_SESSION_STAT : Boolean    @Common.Label: 'Course Session Status';
-        ATT_STATE           : Boolean    @Common.Label: 'Attendence Status';
-        PARTICIPANT_ID      : String     @Common.Label: 'Participants';
-        START_DATE          : Date       @Common.Label: 'Start Date';
-        END_DATE            : Date       @Common.Label: 'End Date';
-        CLAIM_STATUS        : String     @Common.Label: 'Claim Status';
-        CLAIM_ID            : String     @Common.Label: 'Claim ID';
+    key COURSE_ID           : String      @mandatory  @Common.Label: 'Course ID';
+    key COURSE_DESC         : String      @mandatory  @Common.Label: 'Course Description';
+    key SESSION_NUMBER      : String(15)  @mandatory  @Common.Label: 'Session Number';
+    key COURSE_SESSION_STAT : String(10)  @mandatory  @Common.Label: 'Course Session Status';
+    key ATTENDENCE_STATUS   : Boolean     @mandatory  @Common.Label: 'Attendence Status';
+    key PARTICIPANT_ID      : String      @mandatory  @Common.Label: 'Participants';
+    key START_DATE          : Date        @mandatory  @Common.Label: 'Start Date';
+    key END_DATE            : Date        @mandatory  @Common.Label: 'End Date';
+        CLAIM_STATUS        : String      @Common.Label: 'Claim Status';
+        CLAIM_ID            : String      @Common.Label: 'Claim ID';
         ZSTATUS             : Association to ZSTATUS
                                   on ZSTATUS.STATUS_ID = CLAIM_STATUS;
         ZCLAIM_HEADER       : Association to ZCLAIM_HEADER
                                   on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
+        ZEMP_MASTER         : Association to ZEMP_MASTER
+                                  on ZEMP_MASTER.EEID = PARTICIPANT_ID
 }
 
 entity ZMARITAL_CAT : managed {
