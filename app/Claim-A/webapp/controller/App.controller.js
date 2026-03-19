@@ -191,7 +191,7 @@ sap.ui.define([
 			// Make sure userType is available
 			const type = this._userType; // << read what we stored earlier
 			if (!type) {
-				sap.m.MessageToast.show("Please wait… loading your access.");
+				MessageToast.show("Please wait… loading your access.");
 				return;
 			}
 
@@ -229,7 +229,7 @@ sap.ui.define([
 					}
 					else {
 						var message = Utility.getText(this, "msg_unauthorized_role");
-						new MessageBox.error(message);
+						MessageBox.error(message);
 					}
 					//End EY_ATHIRAH
 					break;
@@ -239,7 +239,7 @@ sap.ui.define([
 						oRouter.navTo("Analytics")
 					} else {
 						var message = Utility.getText(this, "msg_unauthorized_role");
-						new MessageBox.error(message);
+						MessageBox.error(message);
 					}
 					break;
 				// End 	 Aiman Salim 10/02/2026 - Added for analytics
@@ -258,7 +258,7 @@ sap.ui.define([
 						oRouter.navTo("MyApproval");
 					} else {
 						var message = Utility.getText(this, "msg_unauthorized_role");
-						new MessageBox.error(message);
+						MessageBox.error(message);
 					}
 					break;
 				//End Aiman Salim 08/03/2026 - Added for MyApproval

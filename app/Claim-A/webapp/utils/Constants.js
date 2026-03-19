@@ -103,6 +103,16 @@ sap.ui.define([
             "DTD_ADMIN": "DTD Admin",
             "APPROVER": "Approver", 
             "SUPER_ADMIN": "Super Admin"
+        }, 
+        "Configuration": {
+            "ZEMP_MASTER": "ZEMP_MASTER",
+            "ZEMP_MASTER_DTD": "ZEMP_MASTER_DTD",
+            "ZEMP_DEPENDENT": "ZEMP_DEPENDENT",
+            "ZEMP_DEPENDENT_DTD": "ZEMP_DEPENDENT_DTD",
+            "ZNUM_RANGE": "ZNUM_RANGE",
+            "ZNUM_RANGE_DTD": "ZNUM_RANGE_DTD",
+            "ZBUDGET": "ZBUDGET"
+
         }
 
     }

@@ -2,6 +2,7 @@ const cds = require('@sap/cds');
 const { INSERT, UPDATE, UPSERT, SELECT, where } = require('@sap/cds/lib/ql/cds-ql');
 const express = require('express');
 const app = express();
+const { UserType } = require("./utils/constant");
 
 module.exports = (srv) => {
 
@@ -138,13 +139,11 @@ module.exports = (srv) => {
 
     let operationHidden = true;
 
-    if (user_type === "JKEW Admin") {
+    if (user_type === UserType.JKEW_ADMIN) {
       operationHidden = true;
-    } else if (user_type === "DTD Admin" || user_type === "Super Admin") {
+    } else if (user_type === UserType.DTD_ADMIN || user_type === UserType.SUPER_ADMIN) {
       operationHidden = false;
-    } else if (user_type === "Super Admin") {
-      operationHidden = false;
-    }
+    } 
 
     return {
       operationHidden: operationHidden,
@@ -167,7 +166,7 @@ const emailFromToken =
 
     let operationHidden = true;
 
-    if (user_type === "GA Admin") {
+    if (user_type ===  UserType.GA_ADMIN ) {
       operationHidden = true;
     } else {
       operationHidden = false;
