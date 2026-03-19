@@ -225,8 +225,8 @@ sap.ui.define([
 					// approver view
 					//// set approver view if current user is approver
 					let oApprovalLogFragment = await this._getFormFragment("approval_log");
-					let aApprovers = oApprovalLogModel.getProperty("/approval")?.length || 0;
-					if (oApprovalLogFragment && aApprovers > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
+					let iApproverCount = oApprovalLogModel.getProperty("/approval")?.length || 0;
+					if (oApprovalLogFragment && iApproverCount > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
 						var sUserId = this.getView().getModel("userId")?.getProperty("/userId");
 						if (sUserId) {
 							let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) => oApproval.APPROVER_ID === sUserId);
