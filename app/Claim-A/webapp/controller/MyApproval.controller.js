@@ -10,8 +10,9 @@ sap.ui.define([
     "sap/m/Label",
     "sap/ui/core/Fragment",
     "sap/ui/export/Spreadsheet",
-    "sap/ui/core/BusyIndicator"
-], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, Sorter, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator) {
+    "sap/ui/core/BusyIndicator",
+	"claima/utils/Utility"
+], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, Sorter, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator, Utility) {
     "use strict";
 
     return Controller.extend("claima.controller.MyApproval", {
@@ -88,7 +89,7 @@ sap.ui.define([
                 }
 
                 if (!oCtx) {
-                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_select_req"));
+                    MessageToast.show(Utility.getText(this, "msg_approval_select_req"));
                     return;
                 }
 
@@ -103,7 +104,7 @@ sap.ui.define([
                     row.PREAPPROVAL_ID;           // fallback only if header view can be filtered by it
 
                 if (!sRequestId) {
-                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_missing_req"));
+                    MessageToast.show(Utility.getText(this, "msg_approval_missing_req"));
                     return;
                 }
 
@@ -120,7 +121,7 @@ sap.ui.define([
                 oRouter.navTo("RequestForm", { request_id: encodeURIComponent(String(sRequestId)) });
             } catch (e) {
                 jQuery.sap.log.error("openItemFromList failed: " + e);
-                MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_failed_req"));
+                MessageToast.show(Utility.getText(this, "msg_approval_failed_req"));
             } finally {
                 this.getView().setBusy(false);
             }
@@ -187,7 +188,7 @@ sap.ui.define([
                 // --- Header ---
                 const oHeader = aHeaderCtx[0]?.getObject();
                 if (!oHeader) {
-                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_header_req"));
+                    MessageToast.show(Utility.getText(this, "msg_approval_header_req"));
                     // Clear and bail gracefully
                     oReq.setProperty("/req_header", {});
                     oReq.setProperty("/req_item_rows", []);
@@ -289,7 +290,7 @@ sap.ui.define([
                 }
 
                 if (!oCtx) {
-                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_select_clm"));
+                    MessageToast.show(Utility.getText(this, "msg_approval_select_clm"));
                     return;
                 }
 
@@ -302,7 +303,7 @@ sap.ui.define([
                     null;
 
                 if (!sClaimId) {
-                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_missing_clm"));
+                    MessageToast.show(Utility.getText(this, "msg_approval_missing_clm"));
                     return;
                 }
 
@@ -314,7 +315,7 @@ sap.ui.define([
                 oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
             } catch (e) {
                 console.log("openItemFromClaimList failed:", e);
-                MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_failed_clm"));
+                MessageToast.show(Utility.getText(this, "msg_approval_failed_clm"));
             } finally {
                 this.getView().setBusy(false);
             }
@@ -470,7 +471,7 @@ sap.ui.define([
                 // Header
                 const oHeaderRaw = aHeaderCtx[0]?.getObject();
                 if (!oHeaderRaw) {
-                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_approval_header_clm"));
+                    MessageToast.show(Utility.getText(this, "msg_approval_header_clm"));
                     oClaimInputModel.setProperty("/claim_header", {});
                     oClaimInputModel.setProperty("/claim_items", []);
                     oClaimInputModel.setProperty("/claim_items_count", 0);
