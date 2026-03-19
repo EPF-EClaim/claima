@@ -10,6 +10,12 @@ service eclaim_srv @(requires: 'authenticated-user') {
     entity FeatureControl {
         operationHidden  : Boolean;
         operationEnabled : Boolean;
+    };
+
+    @odata.singleton
+    entity BudgetControl {
+        operationHidden  : Boolean;
+        operationEnabled : Boolean;
     }
 
     type budgetdata {
@@ -183,6 +189,8 @@ service eclaim_srv @(requires: 'authenticated-user') {
         name        : String;
         position    : String;
         origin      : String;
+        grade       : String;
+        department  : String;
     }
 
     function getUserType()                                             returns UserInfo;

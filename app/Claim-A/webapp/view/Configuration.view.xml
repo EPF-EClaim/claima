@@ -39,7 +39,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Risk Level" />
+                            <cards:Header title="{i18n>risklevel}" />
                         </f:header>
                     </f:Card>
 
@@ -50,7 +50,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Pre-Approval Request Type" />
+                            <cards:Header title="{i18n>partype}" />
                         </f:header>
                     </f:Card>
 
@@ -61,7 +61,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Claim Type" />
+                            <cards:Header title="{i18n>claimtyp}" />
                         </f:header>
                     </f:Card>
 
@@ -72,7 +72,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Claim ID Number Sequence" />
+                            <cards:Header title="{i18n>claimsq}" />
                         </f:header>
                     </f:Card>
 
@@ -83,7 +83,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Travel Claim Category" />
+                            <cards:Header title="{i18n>claimcat}" />
                         </f:header>
                     </f:Card>
 
@@ -94,7 +94,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Claim/Request Submission" />
+                            <cards:Header title="{i18n>claimstat}" />
                         </f:header>
                     </f:Card>
 
@@ -105,7 +105,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Lodging Category" />
+                            <cards:Header title="{i18n>lodgingcat}" />
                         </f:header>
                     </f:Card>
 
@@ -116,7 +116,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Hotel Room Type" />
+                            <cards:Header title="{i18n>hoteltyp}" />
                         </f:header>
                     </f:Card>
 
@@ -127,7 +127,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Country" />
+                            <cards:Header title="{i18n>country}" />
                         </f:header>
                     </f:Card>
 
@@ -138,7 +138,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Country/Region" />
+                            <cards:Header title="{i18n>region}" />
                         </f:header>
                     </f:Card>
                     <f:Card
@@ -148,7 +148,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Marital Status" />
+                            <cards:Header title="{i18n>marital}" />
                         </f:header>
                     </f:Card>
 
@@ -159,7 +159,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Vehicle Type" />
+                            <cards:Header title="{i18n>vehicletyp}" />
                         </f:header>
                     </f:Card>
 
@@ -170,7 +170,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Job Group" />
+                            <cards:Header title="{i18n>jobgrp}" />
                         </f:header>
                     </f:Card>
 
@@ -181,7 +181,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="State" />
+                            <cards:Header title="{i18n>state}" />
                         </f:header>
                     </f:Card>
 
@@ -192,7 +192,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Department" />
+                            <cards:Header title="{i18n>dept}" />
                         </f:header>
                     </f:Card>
 
@@ -203,7 +203,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="eClaim Role" />
+                            <cards:Header title="{i18n>role}" />
                         </f:header>
                     </f:Card>
 
@@ -214,7 +214,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="eClaim User Type" />
+                            <cards:Header title="{i18n>usertyp}" />
                         </f:header>
                     </f:Card>
 
@@ -225,7 +225,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Employee Status" />
+                            <cards:Header title="{i18n>empstat}" />
                         </f:header>
                     </f:Card>
 
@@ -236,7 +236,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Flight Class" />
+                            <cards:Header title="{i18n>flightclass}" />
                         </f:header>
                     </f:Card>
 
@@ -247,7 +247,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Employee Mini Master" />
+                            <cards:Header title="{i18n>empmaster}" />
                         </f:header>
                     </f:Card>
 
@@ -258,7 +258,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Semenanjung/SabahSarawak" />
+                            <cards:Header title="{i18n>region_ss}" />
                         </f:header>
                     </f:Card>
 
@@ -269,7 +269,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Claim Submission Type" />
+                            <cards:Header title="{i18n>subtyp}" />
                         </f:header>
                     </f:Card>
 
@@ -280,7 +280,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Loan Provider" />
+                            <cards:Header title="{i18n>loan}" />
                         </f:header>
                     </f:Card>
 
@@ -291,7 +291,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Housing Loan Scheme" />
+                            <cards:Header title="{i18n>housing}" />
                         </f:header>
                     </f:Card>
 
@@ -302,7 +302,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Meal Allowance Entitlement" />
+                            <cards:Header title="{i18n>perdiem}" />
                         </f:header>
                     </f:Card>
 
@@ -313,7 +313,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Cash Advance Payment Date Bypass" />
+                            <cards:Header title="{i18n>cashadv}" />
                         </f:header>
                     </f:Card>
 
@@ -324,7 +324,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="EPF Branch" />
+                            <cards:Header title="{i18n>branch}" />
                         </f:header>
                     </f:Card>
 
@@ -335,7 +335,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Project Code" />
+                            <cards:Header title="{i18n>prjcode}" />
                         </f:header>
                     </f:Card>
 
@@ -346,7 +346,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Marriage Category" />
+                            <cards:Header title="{i18n>mrgcat}" />
                         </f:header>
                     </f:Card>
                     <f:Card
@@ -356,7 +356,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Dependent Relationship Status" />
+                            <cards:Header title="{i18n>relationship}" />
                         </f:header>
                     </f:Card>
 
@@ -367,7 +367,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Pre-Approval Request - Individual/Group" />
+                            <cards:Header title="{i18n>indgrp}" />
                         </f:header>
                     </f:Card>
 
@@ -378,7 +378,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="EPF Material Code" />
+                            <cards:Header title="{i18n>matgrp}" />
                         </f:header>
                     </f:Card>
 
@@ -389,7 +389,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Travel Location Type" />
+                            <cards:Header title="{i18n>loctyp}" />
                         </f:header>
                     </f:Card>
 
@@ -400,7 +400,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="KWSP Office Location Distance" />
+                            <cards:Header title="{i18n>officedist}" />
                         </f:header>
                     </f:Card>
 
@@ -411,7 +411,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="KWSP Office Location" />
+                            <cards:Header title="{i18n>officeloc}" />
                         </f:header>
                     </f:Card>
 
@@ -422,7 +422,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Rate Per KM" />
+                            <cards:Header title="{i18n>rartekm}" />
                         </f:header>
                     </f:Card>
 
@@ -433,7 +433,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Employee Dependent" />
+                            <cards:Header title="{i18n>empldep}" />
                         </f:header>
                     </f:Card>
 
@@ -444,7 +444,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Claim/Request Reject Reasoning" />
+                            <cards:Header title="{i18n>rejreason}" />
                         </f:header>
                     </f:Card>
 
@@ -455,7 +455,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Currency Code" />
+                            <cards:Header title="{i18n>curr}" />
                         </f:header>
                     </f:Card>
 
@@ -466,7 +466,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Self/Company Vehicle" />
+                            <cards:Header title="{i18n>vehicle_ownership}" />
                         </f:header>
                     </f:Card>
                     <f:Card
@@ -476,7 +476,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Travel Insurance (Number of Days Category)" />
+                            <cards:Header title="{i18n>traveldays}" />
                         </f:header>
                     </f:Card>
                     <f:Card
@@ -486,7 +486,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Elaun Makan Amount Entitlement Control" />
+                            <cards:Header title="{i18n>metercube}" />
                         </f:header>
                     </f:Card>
                     <f:Card
@@ -496,7 +496,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Type Of Fare" />
+                            <cards:Header title="{i18n>faretyp}" />
                         </f:header>
                     </f:Card>    
                     <f:Card
@@ -506,7 +506,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Hotel/Lodging Selection" />
+                            <cards:Header title="{i18n>hotellodging}" />
                         </f:header>
                     </f:Card>  
                     <f:Card
@@ -516,7 +516,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Claim Item Claim Amount Basis" />
+                            <cards:Header title="{i18n>claimbasis}" />
                         </f:header>
                     </f:Card>  
                     <f:Card
@@ -526,7 +526,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Employee Dependent Selection" />
+                            <cards:Header title="{i18n>deptype}" />
                         </f:header>
                     </f:Card>                       
                     <f:Card
@@ -536,7 +536,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Employee Position Event Reason" />
+                            <cards:Header title="{i18n>positionreason}" />
                         </f:header>
                     </f:Card>   
                     <f:Card
@@ -546,7 +546,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Sports Activity Representative" />
+                            <cards:Header title="{i18n>sportrep}" />
                         </f:header>
                     </f:Card> 
                     <f:Card
@@ -556,7 +556,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Elaun Pertukaran - Moving with Family Period" />
+                            <cards:Header title="{i18n>family_timing}" />
                         </f:header>
                     </f:Card>        
                     <f:Card
@@ -566,7 +566,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Elaun Pertukaran - Moving with Family Type" />
+                            <cards:Header title="{i18n>travel_type}" />
                         </f:header>
                     </f:Card>  
                     <f:Card
@@ -576,7 +576,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Type of Transportation for the Passing" />
+                            <cards:Header title="{i18n>transport_passing}" />
                         </f:header>
                     </f:Card>   
                     <f:Card
@@ -586,7 +586,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Mode of Transfer Type" />
+                            <cards:Header title="{i18n>transfer_mode}" />
                         </f:header>
                     </f:Card> 
                     <f:Card
@@ -596,7 +596,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Education Level" />
+                            <cards:Header title="{i18n>study_lvl}" />
                         </f:header>
                     </f:Card>     
                     <f:Card
@@ -606,7 +606,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Type of Profesional Body" />
+                            <cards:Header title="{i18n>prof_body}" />
                         </f:header>
                     </f:Card>  
                     <f:Card
@@ -616,7 +616,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Insurance Package" />
+                            <cards:Header title="{i18n>ins_pkg}" />
                         </f:header>
                     </f:Card>   
                     <f:Card
@@ -626,7 +626,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Insurance Provider" />
+                            <cards:Header title="{i18n>ins_pvd}" />
                         </f:header>
                     </f:Card> 
                     <f:Card
@@ -636,7 +636,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Train/Ship Class" />
+                            <cards:Header title="{i18n>vehicle_class}" />
                         </f:header>
                     </f:Card>  
                     <f:Card
@@ -646,7 +646,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Mobile Phone Bill Category/Purpose" />
+                            <cards:Header title="{i18n>mobilecat}" />
                         </f:header>
                     </f:Card>  
                     <f:Card
@@ -656,7 +656,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Budget Data" />
+                            <cards:Header title="{i18n>budget_data}" />
                         </f:header>
                     </f:Card>  
                     <f:Card
@@ -666,7 +666,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Claim Type Item - Field Control" />
+                            <cards:Header title="{i18n>structure}" />
                         </f:header>
                     </f:Card>  
                     <f:Card
@@ -676,7 +676,7 @@
                         press="onOpenConfigTable"
                     >
                         <f:header>
-                            <cards:Header title="Cash Advance Payment Disbursement Bypass" />
+                            <cards:Header title="{i18n>disbursement}" />
                         </f:header>
                     </f:Card>                                                                                                                                                                                                                                                                                                                                         
                 </f:GridContainer>
