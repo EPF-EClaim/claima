@@ -73,9 +73,16 @@ sap.ui.define([
             "ALL": "*"
         },
         "FLIGHT_CLASS_ID":{
-            "01": "01",
-            "02": "02",
-            "03": "03"
+            "PREMIUM": "01",
+            "BUSINESS": "02",
+            "ECONOMY": "03"
+        },
+        "FIELDNAME":{
+            "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
+            "TRAVEL_HOURS": "TRAVEL_HOURS",
+            "TRAVEL_DAYS_ID": "TRAVEL_DAYS_ID",
+            "ELIGIBLE_AMOUNT": "ELIGIBLE_AMOUNT",
+            "ROOM_TYPE_ID": "ROOM_TYPE_ID"
         },
         "RequestStatus": {
             "DRAFT": "DRAFT",

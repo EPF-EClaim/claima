@@ -3,145 +3,160 @@ sap.ui.define([
 ], function () {
     "use strict";
     return {
-        async onEligibleCheck(oModel, oConstant, oPayload, oEmp, aRules) {
-            // TEST PAYLOAD, Remove after Full Test
-            // var aPayload = [
-            //     { field: "FLIGHT_CLASS_ID", Value: "01", Result: "" }
-            //     // { field: "", Value: "", Result: "" },
-            //     // { field: "", Value: "", Result: "" },
-            //     // { field: "", Value: "", Result: "" },
-            //     // { field: "", Value: "", Result: "" }
-            // ];
-
+        async onEligibleCheck(oConstant, oPayload, aRules) {
             // Load to check each Payload Claim Item Field
             var iRows = 0;
-            for (var i = iRows; i < aPayload.length; i++) {
+            for (var i = iRows; i < oPayload.CheckFields.length; i++) {
                 // Initialize values
                 var sFlag = "";
                 var sRulesVal = "";
-                if (aPayload[i].field = oConstant.FIELDNAME.DAYS) {
-                    var iDays = aPayload[i].Value
-                }
+                // Get Days value
+                const aDays = oPayload.CheckFields.find((field) => field.fieldName == oConstant.FIELDNAME.TRAVEL_DAYS_ID);
+                const sDays = aDays.value;
+                // if (oPayload.CheckFields[i].field = oConstant.FIELDNAME.TRAVEL_DAYS_ID) {
+                //     var iDays = oPayload.CheckFields[i].value
+                // }
 
-                switch (oPayload.ClaimTypeItem) {
-                    case oConstant.ClaimItmType.DOBI:
-                        for (var oRule of aRules) {
-                            if (aPayload[i].Value >= oRule.TRAVEL_DAYS_ID) {
+                // Switch Based on Claim Item Type
+                for (var oRule of aRules) {
+                    switch (oPayload.ClaimTypeItem) {
+                        case oConstant.ClaimItmType.DOBI:
+                            if (oPayload.CheckFields[i].value >= oRule.TRAVEL_DAYS_ID) {
                                 sFlag = oConstant.STATUS.SUCCESS;
-                            }else{
-                                sRulesVal = aPayload[i].Value;
+                                break;
+                            } else {
+                                sRulesVal = oRule.TRAVEL_DAYS_ID;
                             }
-                        }
-                        break;
+                            break;
 
-                    // case oConstant.ClaimItmType.EXCESS:
-                    //     break;
-
-                    case oConstant.ClaimItmType.FLIGHT_L:
-                        // Loop Through the Rules table
-                        for (var oRule of aRules) {
-                            if (aPayload[i].Value == oRule.FLIGHT_CLASS_ID) {
+                        case oConstant.ClaimItmType.FLIGHT_L:
+                            // Loop Through the Rules table
+                            // for (var oRule of aRules) {
+                            if (oPayload.CheckFields[i].value == oRule.FLIGHT_CLASS_ID) {
                                 sFlag = oConstant.STATUS.SUCCESS;
-                            }else{
+                                break;
+                            } else {
                                 sRulesVal = oConstant.STATUS.FAIL;
                             }
-                        }
-                        break;
+                            // }
+                            break;
 
-                    case oConstant.ClaimItmType.FLIGHT_O:
-                        // for (var oRule of aRules) {
-                        //     if (aPayload[i].Value == oRule.FLIGHT_CLASS_ID) {
-                        //         if (oRule.TRAVEL_HOURS  ) {
-                                    
-                        //         }
-                        //         sFlag = oConstant.STATUS.SUCCESS;
-                        //     }else if(oRule.FLIGHT_CLASS_ID == aPayload[i].Value){
-
-                        //     }
-                        //     else{
-                        //         sRulesVal = oConstant.STATUS.FAIL;
-                        //     }
-                        // }
-
-                        break;
-                    case oConstant.ClaimItmType.HOTEL_L:
-                        if (aPayload[i].Value <= oRule.ELIGIBLE_AMOUNT) {
+                        case oConstant.ClaimItmType.FLIGHT_O:
+                            if (oPayload.CheckFields[i].fieldName = oConstant.FIELDNAME.FLIGHT_CLASS_ID) {
+                                // for (var oRule of aRules) {
+                                if (oPayload.CheckFields[i].value == oRule.FLIGHT_CLASS_ID) {
+                                    sFlag = oConstant.STATUS.SUCCESS;
+                                    break;
+                                }
+                                else {
+                                    sRulesVal = oConstant.STATUS.FAIL;
+                                }
+                                // }
+                            } else if (oPayload.CheckFields[i].fieldName = oConstant.FIELDNAME.TRAVEL_HOURS) {
+                                // for (var oRule of aRules) {
+                                if (oPayload.CheckFields[i].value >= oRule.TRAVEL_HOURS) {
+                                    sFlag = oConstant.STATUS.SUCCESS;
+                                    break;
+                                }
+                                else {
+                                    sRulesVal = oConstant.STATUS.FAIL;
+                                }
+                                // }
+                            }
+                            break;
+                        case oConstant.ClaimItmType.HOTEL_L:
+                            // for (var oRule of aRules) {
+                            var MaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
+                            if (oPayload.CheckFields[i].value <= MaxAmountEligible) {
                                 sFlag = oConstant.STATUS.SUCCESS;
-                            }else{
+                                break;
+                            } else {
                                 sRulesVal = oRule.ELIGIBLE_AMOUNT;
                             }
-                        break;
-                    case oConstant.ClaimItmType.HOTEL_O:
-                        // if (aPayload[i].Value <= oRule.ELIGIBLE_AMOUNT) {
-                        //         sFlag = oConstant.STATUS.SUCCESS;
-                        //     }else{
-                        //         sRulesVal = oRule.ELIGIBLE_AMOUNT;
-                        //     }
-                        break;
-                    // case oConstant.ClaimItmType.KILOMETER:
+                            // }
 
-                    //     break;
-                    case oConstant.ClaimItmType.LODG_O:
+                            break;
+                        case oConstant.ClaimItmType.HOTEL_O:
+                            if (oPayload.CheckFields[i].fieldName = oConstant.FIELDNAME.ELIGIBLE_AMOUNT) {
+                                // for (var oRule of aRules) {
+                                var MaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
+                                if (oPayload.CheckFields[i].value <= MaxAmountEligible) {
+                                    sFlag = oConstant.STATUS.SUCCESS;
+                                    break;
+                                } else {
+                                    sRulesVal = oRule.ELIGIBLE_AMOUNT;
+                                }
+                                // }
+                            } else if (oPayload.CheckFields[i].fieldName = oConstant.FIELDNAME.ROOM_TYPE_ID) {
+                                // for (var oRule of aRules) {
+                                if (oPayload.CheckFields[i].value == oRule.ROOM_TYPE_ID) {
+                                    sFlag = oConstant.STATUS.SUCCESS;
+                                    break;
+                                }
+                                else {
+                                    sRulesVal = oConstant.STATUS.FAIL;
+                                }
+                                // }
+                            }
+                            break;
 
-                        break;
-                    case oConstant.ClaimItmType.LODGING_L:
-
-                        break;
-                    // case oConstant.ClaimItmType.MAKAN_L:
-
-                    //     break;
-                    // case oConstant.ClaimItmType.MAKAN_O:
-
-                    //     break;
-                    // case oConstant.ClaimItmType.MATAWANG:
-
-                    //     break;
-                    case oConstant.ClaimItmType.PARKING:
-                        if (aPayload[i].Value <= oRule.ELIGIBLE_AMOUNT) {
+                        case oConstant.ClaimItmType.LODG_O:
+                            // for (var oRule of aRules) {
+                            var MaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
+                            if (oPayload.CheckFields[i].value <= MaxAmountEligible) {
                                 sFlag = oConstant.STATUS.SUCCESS;
-                            }else{
+                                break;
+                            } else {
                                 sRulesVal = oRule.ELIGIBLE_AMOUNT;
                             }
-                        break;
+                            // }
+                            break;
 
-                    case oConstant.ClaimItmType.PKN_PANAS:
-                        if (aPayload[i].Value <= oRule.ELIGIBLE_AMOUNT) {
+                        case oConstant.ClaimItmType.LODGING_L:
+                            // for (var oRule of aRules) {
+                            var MaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
+                            if (oPayload.CheckFields[i].value <= MaxAmountEligible) {
                                 sFlag = oConstant.STATUS.SUCCESS;
-                            }else{
+                                break;
+                            } else {
                                 sRulesVal = oRule.ELIGIBLE_AMOUNT;
                             }
-                        break;
+                            // }
+                            break;
 
-                    // case oConstant.ClaimItmType.SERVICES:
+                        case oConstant.ClaimItmType.PARKING:
+                            if (oPayload.CheckFields[i].value <= oRule.ELIGIBLE_AMOUNT) {
+                                sFlag = oConstant.STATUS.SUCCESS;
+                            } else {
+                                sRulesVal = oRule.ELIGIBLE_AMOUNT;
+                            }
+                            break;
 
-                    //     break;
-                    // case oConstant.ClaimItmType.TAMBANG:
+                        case oConstant.ClaimItmType.PKN_PANAS:
+                            if (oPayload.CheckFields[i].value <= oRule.ELIGIBLE_AMOUNT) {
+                                sFlag = oConstant.STATUS.SUCCESS;
+                            } else {
+                                sRulesVal = oRule.ELIGIBLE_AMOUNT;
+                            }
+                            break;
 
-                    //     break;
-                    // case oConstant.ClaimItmType.TELEFON:
-
-                    // //     break;
-                    // case oConstant.ClaimItmType.TIPS:
-
-                    //     break;
-                    // case oConstant.ClaimItmType.VISA:
-
-                    //     break;
-                    // case oConstant.ClaimItmType.YURAN:
-
-                    //     break;
-                    default:
-                        break;
+                        default:
+                            // if item type not found, mark as fail
+                            oPayload.CheckFields[i].Result = oConstant.STATUS.FAIL;
+                            break;
+                    }
                 }
 
+                // If Flag is not success, assign correct value from Rules
                 if (sFlag == oConstant.STATUS.SUCCESS) {
-                    aPayload[i].Result = sFlag;
+                    oPayload.CheckFields[i].Result = sFlag;
                 } else {
-                    aPayload[i].Result = sRulesVal;
+                    oPayload.CheckFields[i].Result = sRulesVal;
                 }
 
             }
-
+            // Return Payload with Result Values
+            return oPayload;
         }
     };
 

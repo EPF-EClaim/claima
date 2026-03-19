@@ -55,31 +55,33 @@ sap.ui.define([
                 return aRules;
             });
 
-            LuarNegara.onEligibleCheck(oModel, oConstant, oPayload, oEmp, aRules);
-            // switch (sClaimType) {
-            //     case oConstant.ClaimType.DLM_NEGARA:
-            //         DalamNegara.onEligibleCheck(oModel, sClaimItmType);
-            //         break;
+            // LuarNegara.onEligibleCheck(oModel, oConstant, oPayload, oEmp, aRules);
+            switch (oPayload.ClaimType) {
+                case oConstant.ClaimType.DLM_NEGARA:
+                    var oReturnPayload = DalamNegara.onEligibleCheck(oConstant, oPayload, aRules);
+                    break;
 
-            //     case oConstant.ClaimType.LUAR_NEGARA:
-            //         LuarNegara.onEligibleCheck(oModel, sClaimItmType);
-            //         break;
+                case oConstant.ClaimType.LUAR_NEGARA:
+                    oReturnPayload = LuarNegara.onEligibleCheck(oConstant, oPayload, aRules);
+                    break;
 
-            //     case KURSUS_DLM_NEGARA:
-            //         KursusDalam.onEligibleCheck(oModel, sClaimItmType);
-            //         break;
+                case oConstant.ClaimType.KURSUS_DLM_NEGARA:
+                    oReturnPayload = KursusDalam.onEligibleCheck(oConstant, oPayload, aRules);
+                    break;
 
-            //     case KURSUS_LUAR_NEGARA:
-            //         KursusLuar.onEligibleCheck(oModel, sClaimItmType);
-            //         break;
+                case oConstant.ClaimType.KURSUS_LUAR_NEGARA:
+                    oReturnPayload = KursusLuar.onEligibleCheck(oConstant, oPayload, aRules);
+                    break;
 
-            //     case PELBAGAI: // Pelbagai no requirement checking needed
-            //         Pelbagai.onEligibleCheck(oModel, sClaimItmType);
-            //         break;
+                // case PELBAGAI: // Pelbagai no requirement checking needed
+                //     Pelbagai.onEligibleCheck(oConstant, oPayload, aRules);
+                //     break;
 
-            //     default:
-            //         break;
-            // }
+                default:
+                    break;
+            }
+
+            return oReturnPayload;
         }
 
     };
