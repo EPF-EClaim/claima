@@ -1042,6 +1042,8 @@ sap.ui.define([
 					return; 
 				}
 
+				const oPayload = PARequestSharedFunction.generateEligibilityCheckPayload(this);
+
 				if (isEdit) {
 					const sReqSubId = String(oData.req_item.req_subid || "").trim();
 					const oList = oModel.bindList("/ZREQUEST_ITEM", null, null, [
