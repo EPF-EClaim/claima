@@ -10,7 +10,7 @@ sap.ui.define([
         "use strict";
 
         return {
-            onFinalApprove: async function (oModel, sClaimID, sStatus, oModel2, oEmailPayload) {
+            onFinalApprove: async function (oModel, sClaimID, sStatus, oEmployeeModel, oEmailPayload) {
         try{
                 // Call Update Status
                 Utility._updateStatus(oModel, sClaimID, sStatus);
@@ -27,7 +27,7 @@ sap.ui.define([
 
                 if(oEmailPayload == null || oEmailPayload == "" || oEmailPayload.length == 0 || oEmailPayload == undefined){
 
-                    const oClaimantList = oModel2.bindList(
+                    const oClaimantList = oEmployeeModel.bindList(
                         sTable2,
                         null,
                         null,
@@ -63,7 +63,7 @@ sap.ui.define([
                     
                 const aFilters = [new Filter(sField_header, FilterOperator.EQ, sClaimID)];
                 
-                const oBudgetBinding2 = oModel2.bindList(
+                const oBudgetBinding2 = oEmployeeModel.bindList(
                     sTable,
                     null,
                     null,
@@ -80,7 +80,7 @@ sap.ui.define([
                         : (oRow.SUBMITTED_DATE ? String(oRow.SUBMITTED_DATE).substring(0, 4) : null);
 
 
-                    var bUseAlt = oRow.USE_ALT_COST_CENTER === "X" || oRow.ALT_SELECTED === "X";
+                    const bUseAlt = "X";
                     var sFund_center = bUseAlt
                         ? (oRow.ALTERNATE_COST_CENTER)
                         : (oRow.COST_CENTER);
@@ -109,7 +109,7 @@ sap.ui.define([
 
                 // SEND CONSOLIDATED IS PAYLOAD (CLM only)
                     if (sSubmissionType === "CLM") {
-                        await this.onSendClaimBatch(oModel2, sClaimID);
+                        await this.onSendClaimBatch(oEmployeeModel, sClaimID);
                     }
                         return true;
 
