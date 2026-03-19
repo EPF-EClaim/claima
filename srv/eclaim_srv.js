@@ -77,7 +77,7 @@ module.exports = (srv) => {
         req.user?.id ||
         "";
 
-      let sorigin = null;
+      let sOrigin = null;
 
       try {
         const authHeader = req.http?.req?.headers?.authorization ?? '';
@@ -86,7 +86,7 @@ module.exports = (srv) => {
           const oToken = JSON.parse(
             Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
           );
-          sorigin = oToken.origin;
+          sOrigin = oToken.origin;
         }
       } catch (e) {
         console.log("Token parsing failed:", e.message);
@@ -105,7 +105,7 @@ module.exports = (srv) => {
         userId: result?.EEID || "UNKNOWN",
         name: result?.NAME || "UNKNOWN",
         position: result?.POSITION_NAME || "UNKNOWN",
-        origin: sorigin, 
+        origin: sOrigin, 
         grade: result?.GRADE || "UNKNOWN",
         department: result?.DEP || "UNKNOWN"
       };
