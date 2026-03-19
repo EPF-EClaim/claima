@@ -90,10 +90,12 @@ sap.ui.define([
             "DRAFT": "DRAFT",
             "CANCELLED": "CANCELLED",
         },
-        "WorkflowApproval":{
-            "WORKFLOWTYPE_CLAIM": "CLM",
-            "WORKFLOWTYPE_REQUEST": "PRE",
-            "WORKFLOW_REQUEST_TYPE": "REQ"
+        "WorkflowType": {
+            "CLAIM": "CLM",
+            "PRE_APPROVAL": "PRE"
+        },
+        "SubmissionType": {
+            "REQUEST": "REQ"
         }
 
     }

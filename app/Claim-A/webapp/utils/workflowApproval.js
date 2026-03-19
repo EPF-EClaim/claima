@@ -158,7 +158,7 @@ sap.ui.define([
 
 			//get workflow rule
 			const oListWorkflowRuleBinding = oModel.bindList("/ZWORKFLOW_RULE", null,null, [
-				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: Constants.WorkflowApproval.WORKFLOWTYPE_CLAIM }),
+				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: Constants.WorkflowType.CLAIM }),
 				new Filter({ path: "REQUEST_TYPE_ID", operator: FilterOperator.EQ, value1: sClaimsSubmissionType }),
 				new Filter({ path: "ROLE", operator: FilterOperator.EQ, value1: sEmpRole })
 				
@@ -248,7 +248,7 @@ sap.ui.define([
 
 			//get approver levels and approvers
 			const oListWorkflowStepBinding = oModel.bindList("/ZWORKFLOW_STEP", null,null, [
-				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: Constants.WorkflowApproval.WORKFLOWTYPE_CLAIM }),
+				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: Constants.WorkflowType.CLAIM }),
 				new Filter({ path: "WORKFLOW_CODE", operator: FilterOperator.EQ, value1: aCommonWorkflowCode[0] }),
 				
 			], null);
@@ -495,7 +495,7 @@ sap.ui.define([
 
 			//get workflow rule
 			const oListWorkflowRuleBinding = oModel.bindList("/ZWORKFLOW_RULE", null,null, [
-				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: Constants.WorkflowApproval.WORKFLOWTYPE_REQUEST }),
+				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: Constants.WorkflowType.PRE_APPROVAL }),
 				new Filter({ path: "REQUEST_TYPE_ID", operator: FilterOperator.EQ, value1: sParSubmissionType }),
 				new Filter({ path: "ROLE", operator: FilterOperator.EQ, value1: sEmpRole })
 				
@@ -576,7 +576,7 @@ sap.ui.define([
 
 			//get approver levels and approvers
 			const oListWorkflowStepBinding = oModel.bindList("/ZWORKFLOW_STEP", null,null, [
-				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: Constants.WorkflowApproval.WORKFLOWTYPE_REQUEST }),
+				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: Constants.WorkflowType.PRE_APPROVAL }),
 				new Filter({ path: "WORKFLOW_CODE", operator: FilterOperator.EQ, value1: aCommonWorkflowCode[0] }),
 				
 			], null);
