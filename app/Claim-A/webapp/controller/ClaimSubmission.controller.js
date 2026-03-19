@@ -15,6 +15,7 @@ sap.ui.define([
 	"sap/m/Label",
 	"sap/m/PDFViewer",
 	"sap/m/ListMode",
+	"claima/utils/Attachment",
 	"claima/utils/budgetCheck",
 	"claima/utils/ApproveDialog",
 	"claima/utils/RejectDialog",
@@ -38,6 +39,7 @@ sap.ui.define([
 	Label,
 	PDFViewer,
 	ListMode,
+	Attachment,
 	budgetCheck,
 	ApproveDialog,
 	RejectDialog,
@@ -1110,16 +1112,12 @@ sap.ui.define([
 			if (oLevel == 'parent') {
 				// get parent attachment
 				var oInputModel = this.getView().getModel("claimsubmission_input");
-				var sServiceUrl = "/SuccessFactors_API/odata/v2/Attachment('" + oInputModel.getProperty("/claim_header/attachment_email_approver") + "')";
-				var attachmentDescr = oInputModel.getProperty("/claim_header/descr/attachment_email_approver") || "";
-				var pdfViewer_title = this.getView().getModel("i18n").getResourceBundle().getText("pdfviewer_claimsummary_attachment", [attachmentDescr]);
+				Attachment.onViewDocument(this, oInputModel.getProperty("/claim_header/attachment_email_approver"));
 			}
 			else if (oLevel == 'child_det') {
 				// get child attachment
 				oInputModel = this.getView().getModel("claimitem_input");
-				sServiceUrl = "/SuccessFactors_API/odata/v2/Attachment('" + oInputModel.getProperty("/claim_item/attachment_file_" + fieldNumber) + "')";
-				attachmentDescr = oInputModel.getProperty("/claim_item/descr/attachment_email_" + fieldNumber) || "";
-				pdfViewer_title = this.getView().getModel("i18n").getResourceBundle().getText("pdfviewer_claimdetails_input_attachment" + fieldNumber, [attachmentDescr]);
+				Attachment.onViewDocument(this, oInputModel.getProperty("/claim_item/attachment_file_" + fieldNumber));
 			}
 			else {
 				// get child attachment
@@ -1127,53 +1125,13 @@ sap.ui.define([
 				//// get claim item index from claim submission
 				let itemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
 				if (itemIndex !== -1) {
-					sServiceUrl = "/SuccessFactors_API/odata/v2/Attachment('" + oInputModel.getProperty("/claim_items/" + itemIndex + "/attachment_file_" + fieldNumber) + "')";
-					attachmentDescr = oInputModel.getProperty("/claim_items/" + itemIndex + "/descr/attachment_email_" + fieldNumber) || "";
-					pdfViewer_title = this.getView().getModel("i18n").getResourceBundle().getText("pdfviewer_claimdetails_input_attachment" + fieldNumber, [attachmentDescr]);
+					Attachment.onViewDocument(this, oInputModel.getProperty("/claim_items/" + itemIndex + "/attachment_file_" + fieldNumber));
 				}
 				else {
 					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_viewattachment_error"));
 					return;
 				}
 			}
-
-			BusyIndicator.show(0);
-			$.ajax({
-				type: "GET",
-				contentType: "application/json",
-				url: sServiceUrl,
-				dataType: "json",
-				async: false,
-				success: function (data, textStatus, jqXHR) {
-					// show attachment in PDF viewer
-					var base64EncodedPDF = data.d.fileContent;
-					var decodedPdfContent = atob(base64EncodedPDF);
-					var byteArray = new Uint8Array(decodedPdfContent.length)
-					for (var i = 0; i < decodedPdfContent.length; i++) {
-						byteArray[i] = decodedPdfContent.charCodeAt(i);
-					}
-					var blob = new Blob([byteArray.buffer], { type: data.d.mimeType });
-					var _pdfurl = URL.createObjectURL(blob);
-
-					that._PDFViewer = new PDFViewer({
-						isTrustedSource: true,
-						title: pdfViewer_title,
-						width: "auto",
-						source: _pdfurl
-					});
-					that.getView().addDependent(that._pdfViewer);
-					jQuery.sap.addUrlWhitelist("blob"); // register blob url as whitelist
-
-					BusyIndicator.hide();
-					that._PDFViewer.open();
-				},
-				error: function (xhr) {
-					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_viewattachment_error2", [xhr.status, xhr.responseText]));
-
-					BusyIndicator.hide();
-					return false;
-				}
-			});
 		},
 
 		onCreateClaim_ClaimSummary: async function (indexNumber) {
@@ -2050,6 +2008,10 @@ sap.ui.define([
 		},
 
 		onSave_ClaimDetails_Input: async function () {
+			// validate input data
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+
 			// validate required fields
 			if (
 				!this.byId("select_claimdetails_input_claimitem").getSelectedItem() ||
@@ -2062,17 +2024,33 @@ sap.ui.define([
 			// validate attachment
 			//// attachment 1
 			if (this.byId("fileuploader_claimdetails_input_attachment1").getValue()) {
-				var isUploadSuccess = this._onUpload_ClaimDetails_Input_Attachment(1);
-				if (!isUploadSuccess) {
-					// don't proceed claim submission if attachment upload fails
+				var attachmentNumber = await Attachment.postAttachment(
+					oInputModel.getProperty("/attachments/attachment1/fileName"),
+					oInputModel.getProperty("/attachments/attachment1/fileContent"),
+					oInputModel.getProperty("/claim_item/emp_id")
+				);
+				if (attachmentNumber) {
+					oInputModel.setProperty("/claim_item/attachment_file_1", attachmentNumber);
+					oInputModel.setProperty("/claim_item/descr/attachment_file_1", oInputModel.getProperty("/attachments/attachment1/fileName"));
+				}
+				else {
+					// don't proceed claim item if attachment upload fails
 					return;
 				}
 			}
 			//// attachment 2
 			if (this.byId("fileuploader_claimdetails_input_attachment2").getValue()) {
-				var isUploadSuccess = this._onUpload_ClaimDetails_Input_Attachment(2);
-				if (!isUploadSuccess) {
-					// don't proceed claim submission if attachment upload fails
+				var attachmentNumber = await Attachment.postAttachment(
+					oInputModel.getProperty("/attachments/attachment2/fileName"),
+					oInputModel.getProperty("/attachments/attachment2/fileContent"),
+					oInputModel.getProperty("/claim_item/emp_id")
+				);
+				if (attachmentNumber) {
+					oInputModel.setProperty("/claim_item/attachment_file_2", attachmentNumber);
+					oInputModel.setProperty("/claim_item/descr/attachment_file_2", oInputModel.getProperty("/attachments/attachment2/fileName"));
+				}
+				else {
+					// don't proceed claim item if attachment upload fails
 					return;
 				}
 			}
@@ -2085,17 +2063,14 @@ sap.ui.define([
 				}
 			}
 
-			// validate input data
-			var oInputModel = this.getView().getModel("claimitem_input");
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			//// get claim item sub ID
+			// get claim item sub ID
 			if (oInputModel.getProperty("/is_new")) {
 				oInputModel.setProperty("/claim_item/claim_id", oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
 				var claimSubId = oClaimSubmissionModel.getProperty("/claim_items").length + 1;
 				var totalClaimSubId = (oInputModel.getProperty("/claim_item/claim_id") ?? "") + ('' + '00' + claimSubId).slice(-3);
 				oInputModel.setProperty("/claim_item/claim_sub_id", totalClaimSubId);
 			}
-			//// get descriptions
+			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
 
 			// update claim item to database
@@ -2125,94 +2100,6 @@ sap.ui.define([
 				// return to claim item screen
 				this.onCancel_ClaimDetails_Input();
 			}
-		},
-
-		_onUpload_ClaimDetails_Input_Attachment: function (fieldNumber) {
-			var success;
-			// get claim submission model
-			var oInputModel = this.getView().getModel("claimitem_input");
-
-			// get csrf token
-			var tokenModel = sap.ui.getCore().getModel("oToken");
-			if (!tokenModel) {
-				this._fetchToken();
-				tokenModel = sap.ui.getCore().getModel("oToken");
-			}
-			var tokenData = tokenModel.getData();
-			var token = tokenData["csrfToken"];
-			if (!token) {
-				// cannot proceed without token
-				sap.ui.getCore().setModel(null, "oToken");
-				return false;
-			}
-
-			BusyIndicator.show(0);
-			$.ajax({
-				type: "POST",
-				contentType: "application/json",
-				url: "/SuccessFactors_API/odata/v2/Attachment",
-				dataType: "json",
-				async: false,
-				headers: {
-					'X-CSRF-Token': token,
-				},
-				crossDomain: true,
-				data: JSON.stringify({
-					__metadata: {
-						uri: 'Attachment'
-					},
-					deletable: true,
-					fileName: oInputModel.getProperty("/attachment/fileName"),
-					moduleCategory: 'UNSPECIFIED',
-					module: 'DEFAULT',
-					userId: 'SFAPI',
-					viewable: true,
-					searchable: true,
-					fileContent: oInputModel.getProperty("/attachment/fileContent")
-				}),
-				success: function (data, textStatus, jqXHR) {
-					// get generated attachment number
-					oInputModel.setProperty("/claim_item/attachment_file_" + fieldNumber, data.d.attachmentId);
-					oInputModel.setProperty("/claim_item/descr/attachment_file_" + fieldNumber, data.d.fileName);
-
-					BusyIndicator.hide();
-					success = true;
-				},
-				error: function (xhr) {
-					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_viewattachment_error3", [fieldNumber, xhr.status, xhr.responseText]));
-
-					BusyIndicator.hide();
-					success = false;
-				}
-			});
-			return success;
-		},
-
-		_fetchToken: function () {
-			var token = {
-				"csrfToken": ""
-			};
-
-			var oToken = new JSONModel(token);
-			sap.ui.getCore().setModel(oToken, "oToken");
-			var tokenModel = sap.ui.getCore().getModel("oToken").getData();
-
-			$.ajax({
-				type: "GET",
-				contentType: "application/json",
-				url: "/SuccessFactors_API/odata/v2/",
-				async: false,
-				headers: {
-					'X-CSRF-Token': "Fetch",
-				},
-				success: function (data, textStatus, jqXHR) {
-					// get token
-					tokenModel["csrfToken"] = jqXHR.getResponseHeader('X-Csrf-Token');
-				},
-				error: function (xhr) {
-					console.log("Error getting token: " + xhr.status + xhr.responseText);
-				}
-			});
 		},
 
 		_saveClaimItem: async function () {
@@ -2333,7 +2220,17 @@ sap.ui.define([
 					// create new item
 					oListBinding = oModel.bindList("/ZCLAIM_ITEM");
 					var oContext = oListBinding.create(oBody.getData());
-					await oContext.created().then(() => {
+					await oContext.created().then(async () => {
+						// post MDF for item attachments
+						if (oInputModel.getProperty("/claim_item/attachment_file_1") || oInputModel.getProperty("/claim_item/attachment_file_2")) {
+							await Attachment.postMDFChild(
+								oInputModel.getProperty("/claim_item/claim_id"),
+								oInputModel.getProperty("/claim_item/claim_sub_id"),
+								oInputModel.getProperty("/claim_item/attachment_file_1"),
+								oInputModel.getProperty("/claim_item/attachment_file_2")
+							)
+						}
+
 						MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_creation_item", [oInputModel.getProperty("/claim_item/claim_sub_id")]));
 					});
 				}
@@ -2357,15 +2254,32 @@ sap.ui.define([
 						throw new Error("Claim item not found in database");
 					}
 					else {
+						// get existing attachment file values
+						var attachmentFile1 = oCtx.getProperty("ATTACHMENT_FILE_1");
+						var attachmentFile2 = oCtx.getProperty("ATTACHMENT_FILE_2");
+
 						for (const [key, value] of Object.entries(oBody.getData())) {
 							oCtx.setProperty(key, value);
 						}
 
 						await oModel.submitBatch("$auto");
 
+						// post MDF for item attachments
+						if (
+							(oInputModel.getProperty("/claim_item/attachment_file_1") && oInputModel.getProperty("/claim_item/attachment_file_1") !== attachmentFile1) ||
+							(oInputModel.getProperty("/claim_item/attachment_file_2") && oInputModel.getProperty("/claim_item/attachment_file_2") !== attachmentFile2)
+						) {
+							await Attachment.postMDFChild(
+								oInputModel.getProperty("/claim_item/claim_id"),
+								oInputModel.getProperty("/claim_item/claim_sub_id"),
+								oInputModel.getProperty("/claim_item/attachment_file_1"),
+								oInputModel.getProperty("/claim_item/attachment_file_2")
+							)
+						}
 						MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_save_item", [oInputModel.getProperty("/claim_item/claim_sub_id")]));
 					}
 				}
+
 				return true;
 			} catch (e) {
 				MessageToast.show(e.message);

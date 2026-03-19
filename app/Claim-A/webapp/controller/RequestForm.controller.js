@@ -386,7 +386,7 @@ sap.ui.define([
 
 		async onDocLinkPress(oEvent) {
 			// calling function from Attachment.js
-			Attachment.onViewDocument(this, oEvent);
+			Attachment.onViewDocument(this, oEvent.getSource().getText());
 		},
 
 		async onAddItem(oEvent) {

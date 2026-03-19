@@ -976,6 +976,8 @@ sap.ui.define([
 		},
 
 		onClaimSubmission_ClaimInput: async function () {
+			// validate input data
+			var oInputModel = this.getView().getModel("claimsubmission_input");
 			// validate required fields
 			var reqFields = [
 				"input_claiminput_purpose",
@@ -996,9 +998,17 @@ sap.ui.define([
 			}
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
-				var isUploadSuccess = this._onUpload_ClaimInput_Attachment();
-				if (!isUploadSuccess) {
-					// don't proceed claim submission if attachment upload fails
+				var attachmentNumber = await Attachment.postAttachment(
+					oInputModel.getProperty("/attachment/fileName"),
+					oInputModel.getProperty("/attachment/fileContent"),
+					oInputModel.getProperty("/claim_header/emp_id")
+				);
+				if (attachmentNumber) {
+					oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
+					oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
+				}
+				else {
+					// don't proceed claim item if attachment upload fails
 					return;
 				}
 			}
@@ -1016,9 +1026,7 @@ sap.ui.define([
 				}
 			}
 
-			// validate input data
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-			//// send new claim submission to database
+			// send new claim submission to database
 			await this._updateClaimSubmission();
 		},
 
@@ -1132,6 +1140,13 @@ sap.ui.define([
 					oContext.created().then(async () => {
 						claimSaved = true;
 						await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
+						// post MDF for header attachment
+						if (oInputModel.getProperty("/claim_header/attachment_email_approver")) {
+							await Attachment.postMDF(
+								oInputModel.getProperty("/claim_header/claim_id"),
+								oInputModel.getProperty("/claim_header/attachment_email_approver")
+							)
+						}
 
 						if (claimSaved) {
 							MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_created", [oInputModel.getProperty("/claim_header/claim_id")]));
@@ -1151,94 +1166,6 @@ sap.ui.define([
 			} finally {
 				BusyIndicator.hide();
 			}
-		},
-
-		_onUpload_ClaimInput_Attachment: function () {
-			var success;
-			// get claim submission model
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-
-			// get csrf token
-			var tokenModel = sap.ui.getCore().getModel("oToken");
-			if (!tokenModel) {
-				this._fetchToken();
-				tokenModel = sap.ui.getCore().getModel("oToken");
-			}
-			var tokenData = tokenModel.getData();
-			var token = tokenData["csrfToken"];
-			if (!token) {
-				// cannot proceed without token
-				sap.ui.getCore().setModel(null, "oToken");
-				return false;
-			}
-
-			BusyIndicator.show(0);
-			$.ajax({
-				type: "POST",
-				contentType: "application/json",
-				url: "/SuccessFactors_API/odata/v2/Attachment",
-				dataType: "json",
-				async: false,
-				headers: {
-					'X-CSRF-Token': token,
-				},
-				crossDomain: true,
-				data: JSON.stringify({
-					__metadata: {
-						uri: 'Attachment'
-					},
-					deletable: true,
-					fileName: oInputModel.getProperty("/attachment/fileName"),
-					moduleCategory: 'UNSPECIFIED',
-					module: 'DEFAULT',
-					userId: 'SFAPI',
-					viewable: true,
-					searchable: true,
-					fileContent: oInputModel.getProperty("/attachment/fileContent")
-				}),
-				success: function (data, textStatus, jqXHR) {
-					// get generated attachment number
-					oInputModel.setProperty("/claim_header/attachment_email_approver", data.d.attachmentId);
-					oInputModel.setProperty("/claim_header/descr/attachment_email_approver", data.d.fileName);
-
-					BusyIndicator.hide();
-					success = true;
-				},
-				error: function (xhr) {
-					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claiminput_attachment_upload_error2", [xhr.status, xhr.responseText]));
-
-					BusyIndicator.hide();
-					success = false;
-				}
-			});
-			return success;
-		},
-
-		_fetchToken: function () {
-			var token = {
-				"csrfToken": ""
-			};
-
-			var oToken = new JSONModel(token);
-			sap.ui.getCore().setModel(oToken, "oToken");
-			var tokenModel = sap.ui.getCore().getModel("oToken").getData();
-
-			$.ajax({
-				type: "GET",
-				contentType: "application/json",
-				url: "/SuccessFactors_API/odata/v2/",
-				async: false,
-				headers: {
-					'X-CSRF-Token': "Fetch",
-				},
-				success: function (data, textStatus, jqXHR) {
-					// get token
-					tokenModel["csrfToken"] = jqXHR.getResponseHeader('X-Csrf-Token');
-				},
-				error: function (xhr) {
-					console.log("Error getting token: " + xhr.status + xhr.responseText);
-				}
-			});
 		},
 
 		onChange_ClaimInput_Attachment: function (oEvent) {
