@@ -260,4 +260,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZDISBURSEMENT_STATUS          as projection on ECLAIM.ZDISBURSEMENT_STATUS;
 
+    action   batchCreateCourse(course: many ZTRAIN_COURSE_PART)        returns Response;
+
+    action   batchCreateBudget(budget: many ZBUDGET)                   returns Response;
 };
