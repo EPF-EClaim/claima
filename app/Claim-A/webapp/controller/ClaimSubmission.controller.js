@@ -120,7 +120,7 @@ sap.ui.define([
 			if (!oClaimSubmissionModel) {
 				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 				await this._loadClaimById(String(sClaimId));
-				if (!oClaimSubmissionModel.getProperty("/claim_header")) {
+				if (Object.keys(oClaimSubmissionModel.getProperty("/claim_header")).length === 0) {
 					// unable to load claim details
 					MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimsubmission_missing", [sClaimId]))
 					this._onNavBack();
@@ -285,7 +285,7 @@ sap.ui.define([
 				// Header
 				const oHeaderRaw = aHeaderCtx[0]?.getObject();
 				if (!oHeaderRaw) {
-					console.error("Failed to load claim header/items:", err);
+					console.error("Failed to load claim submission ", sClaimId);
 					oClaimSubmissionModel.setProperty("/claim_header", {});
 					oClaimSubmissionModel.setProperty("/claim_items", []);
 					oClaimSubmissionModel.setProperty("/claim_items_count", 0);
