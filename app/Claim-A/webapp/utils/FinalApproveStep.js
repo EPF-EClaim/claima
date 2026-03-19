@@ -108,7 +108,7 @@ sap.ui.define([
                 }
 
                 // SEND CONSOLIDATED IS PAYLOAD (CLM only)
-                    if (sSubmissionType === "CLM") {
+                    if (sSubmissionType == "CLM") {
                         await this.onSendClaimBatch(oEmployeeModel, sClaimID);
                     }
                         return true;

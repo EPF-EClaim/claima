@@ -424,7 +424,8 @@ sap.ui.define([
                         that.onSendEmail(oModel, aPayload);        
                     }
                 }else{
-                    FinalApproveStep.onFinalApprove(oModel, sClaimID, 'STAT05', oEmployeeModel);
+                    const sStatus = "STAT05";
+                    FinalApproveStep.onFinalApprove(oModel, sClaimID, sStatus, oEmployeeModel);
                 }
                 
             }).catch(function(oError){
@@ -753,7 +754,8 @@ sap.ui.define([
                         that.onSendEmail(oModel,aPayload);
                     }
                 }else{
-                    FinalApproveStep.onFinalApprove(oModel, sPARID, 'STAT05', oEmployeeModel);
+                    const sStatus = "STAT05";
+                    FinalApproveStep.onFinalApprove(oModel, sPARID, sStatus, oEmployeeModel);
                 }
             }).catch(function(oError){
                 new MessageToast.show(oError);
