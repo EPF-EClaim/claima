@@ -8,6 +8,7 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
+	"sap/ui/core/format/DateFormat",
 	"sap/m/MessageBox",
 	"sap/m/MessageToast",
 	"sap/m/Dialog",
@@ -23,8 +24,8 @@ sap.ui.define([
 	"claima/utils/SendBackDialog",
 	"claima/utils/ApproverUtility",
 	"claima/utils/workflowApproval",
-	"sap/ui/core/format/DateFormat",
-	"claima/utils/DateCheckUtil",
+	"claima/utils/DateUtility",
+	"claima/utils/Constants"
 ], function (
 	Fragment,
 	Item,
@@ -35,6 +36,7 @@ sap.ui.define([
 	Filter,
 	FilterOperator,
 	Sorter,
+	DateFormat,
 	MessageBox,
 	MessageToast,
 	Dialog,
@@ -50,8 +52,7 @@ sap.ui.define([
 	SendBackDialog,
 	ApproverUtility,
 	workflowApproval,
-	DateFormat,
-	DateCheckUtil,
+	DateUtility,
 ) {
 	"use strict";
 
@@ -62,13 +63,13 @@ sap.ui.define([
 			this._fragments = Object.create(null);
 			this._clearExit = false;
 			this.currentHash = null;
+			this._oModel = this.getOwnerComponent().getModel();
 
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
 			oRouter.getRoute("ClaimSubmission").attachPatternMatched((event) => { this._onMatched(event); }, this);
 			oRouter.attachBeforeRouteMatched((event) => { this._beforeRouteMatched(event); }, this);
 
-			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 
 		},
 
@@ -222,6 +223,7 @@ sap.ui.define([
 				}
 				if (oClaimSubmissionModel.getProperty("/view_only")) {
 					this._setClaimItemTableToolbar(false);
+					//this._setClaimItemTableToolbar();
 				}
 				// change screen details if approver
 				if (oClaimSubmissionModel.getProperty("/is_approver")) {
@@ -596,7 +598,7 @@ sap.ui.define([
 		},
 
 		_bindEclaimDescr: async function (oTable, oInputValue, oFieldId, oFieldDescr, oInputValue2, oFieldId2) {
-			const oModel = this.getOwnerComponent().getModel();
+			//const oModel = this.getOwnerComponent().getModel();
 			var aFilterArray = [new Filter(oFieldId, FilterOperator.EQ, oInputValue)];
 			if (oFieldId2) {
 				aFilterArray = aFilterArray.concat(new Filter(oFieldId2, FilterOperator.EQ, oInputValue2));
@@ -620,7 +622,7 @@ sap.ui.define([
 		},
 
 		async _getEmpIdDetail(sEEID) {
-			const oModel = this.getOwnerComponent().getModel();
+			//const oModel = this.getOwnerComponent().getModel();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
 				new Filter("EEID", FilterOperator.EQ, sEEID)
 			]);
@@ -735,9 +737,9 @@ sap.ui.define([
 			}
 		},
 
-		_setApprovalLog: async function (sEditStatus) {
+		_setApprovalLog: async function (bCheckPage) {
 			var oPage = this.byId("page_claimsubmission");
-			if (sEditStatus) {
+			if (bCheckPage) {
 				// display approval log
 				await this._getFormFragment("approval_log", true).then(function (oVBox) {
 					oPage.insertContent(oVBox, 2);
@@ -786,18 +788,13 @@ sap.ui.define([
 			}
 		}, */
 
-		_setClaimItemTableToolbar: function (sEditStatus) {
+		_setClaimItemTableToolbar: function (bViewCheck) {
 
-			const sStatus = this.getView()
-				.getModel("claimsubmission_input")
-				.getProperty("/claim_header/status_id");
-
-			sEditStatus = (sStatus === this._oConstant.ClaimStatus.DRAFT || sStatus === this._oConstant.ClaimStatus.SEND_BACK);
 
 			// ---------------------------------------------------------
 			// Existing logic (now using canEdit)
 			// ---------------------------------------------------------
-			if (sEditStatus) {
+			if (bViewCheck) {
 				// SHOW buttons
 				this.byId("button_claimsummary_createclaim")?.setVisible(true);
 				this.byId("button_claimsummary_edit")?.setVisible(true);
@@ -1202,7 +1199,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
 				oInputModel.setProperty("/claim_item/emp_id", oClaimSubmissionModel.getProperty("/claim_header/emp_id"));
 				//// get GL account
-				const oModel = this.getOwnerComponent().getModel();
+				//const oModel = this.getOwnerComponent().getModel();
 				var glAccount = await this._getGLAccount(oModel, oInputModel.getProperty("/claim_item/claim_type_id"));
 				oInputModel.setProperty("/claim_item/gl_account", glAccount);
 				//// get cost center
@@ -1579,7 +1576,7 @@ sap.ui.define([
 				const oClaimModel = this.getView().getModel("claimsubmission_input");
 				const sClaimId = oClaimModel?.getProperty("/claim_header/claim_id")?.trim();
 
-				if (sMode !== this._oConstant.Mode.CLAIM_APPROVE) {
+				if (sMode !== this._oConstant.ApprovalProcess.CLAIM_APPROVE) {
 					return;
 				}
 
@@ -1593,14 +1590,14 @@ sap.ui.define([
 					BusyIndicator.show(0);
 
 					const oModel = this.getOwnerComponent().getModel();
-					const oModelView = this.getOwnerComponent().getModel("employee_view");
+					const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 
-					const { payloads: aPayloadEmail } = await ApproverUtility.approveMultiLevel(
+					const { payloads: aPayloadEmail, sMessageKey } = await ApproverUtility.approveMultiLevel(
 						oModel,
 						sClaimId,
 						sUserId,
 						sComment,
-						oModelView
+						oEmployeeViewModel
 					);
 
 					if (Array.isArray(aPayloadEmail) && aPayloadEmail.length > 0) {
@@ -1608,18 +1605,16 @@ sap.ui.define([
 							await workflowApproval.onSendEmailApprover(oModel, oPayloadEmail);
 						}
 					}
-
+					MessageToast.show(Utility.getText(this, sMessageKey));
 					if (this._oApproveDialog) {
 						this._oApproveDialog.close();
 					}
 
-					setTimeout(() => {
-						this._onNavBack();
-					}, 400);
+					this._fnGoToDashboard();
 
 				} catch (oErrorMessage) {
-					MessageToast.show(Utility.getText(this, "msg_claimapprover_fail"));
-					return;
+					MessageToast.show(Utility.getText(this, oErrorMessage.sCode));
+					this._fnGoToDashboard();
 				} finally {
 					BusyIndicator.hide();
 				}
@@ -1655,7 +1650,7 @@ sap.ui.define([
 				BusyIndicator.show(0);
 
 				const oModelMain = this.getOwnerComponent().getModel();
-				const oModelView = this.getOwnerComponent().getModel("employee_view");
+				const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 				const oAccessModel = this.getOwnerComponent().getModel("access");
 				const sUserId = oAccessModel?.getProperty("/userId");
 
@@ -1667,7 +1662,8 @@ sap.ui.define([
 				const {
 					payloads: aPayloads,
 					dataset: aDataset,
-					submissionType: sSubmissionType
+					submissionType: sSubmissionType,
+					sMessageKey
 				} = await ApproverUtility.rejectOrSendBackMultiLevel(
 					oModelMain,
 					sClaimId,
@@ -1675,7 +1671,7 @@ sap.ui.define([
 					sRejectStatus,
 					sReason,
 					sComment,
-					oModelView
+					oEmployeeViewModel
 				);
 
 				await budgetCheck.budgetProcessingTest(
@@ -1689,16 +1685,14 @@ sap.ui.define([
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
 				}
 
+				MessageToast.show(Utility.getText(this, sMessageKey));
 				if (this._oRejectDialog) {
 					this._oRejectDialog.close();
 				}
-
-				setTimeout(() => {
-					this._onNavBack();
-				}, 400);
-
+				this._fnGoToDashboard();
 			} catch (oErrorReject) {
-				MessageToast.show(oErrorReject.message || "Reject failed");
+				MessageToast.show(Utility.getText(this, oErrorReject.sCode));
+				this._fnGoToDashboard();
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -1724,7 +1718,7 @@ sap.ui.define([
 				BusyIndicator.show(0);
 
 				const oModelMain = this.getOwnerComponent().getModel();
-				const oModelView = this.getOwnerComponent().getModel("employee_view");
+				const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 				const oAccessModel = this.getOwnerComponent().getModel("access");
 				const sUserId = oAccessModel?.getProperty("/userId");
 
@@ -1736,7 +1730,8 @@ sap.ui.define([
 				const {
 					payloads: aPayloads,
 					dataset: aDataset,
-					submissionType: sSubmissionType
+					submissionType: sSubmissionType,
+					sMessageKey
 				} = await ApproverUtility.rejectOrSendBackMultiLevel(
 					oModelMain,
 					sClaimId,
@@ -1744,7 +1739,7 @@ sap.ui.define([
 					sSendBackStatus,
 					sReason,
 					sComment,
-					oModelView
+					oEmployeeViewModel
 				);
 
 				await budgetCheck.budgetProcessingTest(
@@ -1757,17 +1752,16 @@ sap.ui.define([
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
 				}
-
+				MessageToast.show(Utility.getText(this, sMessageKey));
 				if (this._oSendBackDialog) {
 					this._oSendBackDialog.close();
 				}
 
-				setTimeout(() => {
-					this._onNavBack();
-				}, 400);
+				this._fnGoToDashboard();
 
 			} catch (oErrorSendBack) {
-				MessageToast.show(oErrorSendBack.message || "Send Back failed");
+				MessageToast.show(Utility.getText(this, oErrorSendBack.sCode));
+				this._fnGoToDashboard();
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -1778,6 +1772,14 @@ sap.ui.define([
 			if (this._sendBackDialog) { this._sendBackDialog.close(); }
 			if (this._rejectDialog) { this._rejectDialog.close(); }
 		},
+
+
+		_fnGoToDashboard: function () {
+			const oRouter = this.getOwnerComponent().getRouter();
+			this._clearExit = true;    // If you use this flag in your pattern
+			oRouter.navTo("Dashboard", {}, true);
+		},
+
 
 		//End Approval
 
@@ -1905,7 +1907,7 @@ sap.ui.define([
 
 		_disableFooterButtons: function () {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === this._oConstant.ClaimStatus.CANCELLED) {
+			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === this._oConstant.ClaimStatus.CANCELLED || oClaimSubmissionModel.getProperty("/claim_header/status_id") === this._oConstant.ClaimStatus.PENDING_APPROVAL) {
 				this.byId("button_claimsubmission_savedraft").setEnabled(false);
 				this.byId("button_claimsubmission_deletereport").setEnabled(false);
 				this.byId("button_claimsubmission_submitreport").setEnabled(false);
@@ -2568,7 +2570,7 @@ sap.ui.define([
 
 			// get details from per diem table
 			BusyIndicator.show(0);
-			const oModel = this.getOwnerComponent().getModel();
+			//const oModel = this.getOwnerComponent().getModel();
 			const oListBinding = oModel.bindList("/ZPERDIEM_ENT", null, null, [
 				new Filter("PERSONAL_GRADE", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/grade")),
 				new Filter("LOCATION", FilterOperator.EQ, oInputModel.getProperty("/claim_item/region")),
@@ -2915,7 +2917,7 @@ sap.ui.define([
 					oBody.setProperty("/CLAIM_ID", oInputModel.getProperty("/claim_header/claim_id"));
 				}
 
-				const oModel = this.getOwnerComponent().getModel();
+				//const oModel = this.getOwnerComponent().getModel();
 				var oListBinding;
 				var claimSaved;
 
@@ -2938,7 +2940,7 @@ sap.ui.define([
 						// determine claims approver
 						if (oAction === 'Submit Report') {
 							var oModelAppr = this.getView().getModel();
-							var oEmployeeViewModel  = this.getView().getModel("employee_view");
+							var oEmployeeViewModel = this.getView().getModel("employee_view");
 							workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
 						}
 						MessageToast.show(oMsg);
@@ -3020,8 +3022,8 @@ sap.ui.define([
 					// determine claims approver
 					if (oAction === 'Submit Report') {
 						var oModelAppr = this.getView().getModel();
-						var oEmployeeViewModel  = this.getView().getModel("employee_view");
-						workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel );
+						var oEmployeeViewModel = this.getView().getModel("employee_view");
+						workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
 					}
 
 					MessageToast.show(oMsg);
@@ -3311,12 +3313,12 @@ sap.ui.define([
 				const sTypeId = oItem.claim_type_id || "";
 				const sItemId = oItem.claim_type_item_id || "";
 
-				const sStartDate = DateCheckUtil.fnFormatDate(
+				const sStartDate = DateUtility.formatDate(
 					oItem.start_date,
 					this._oConstant.Date.DATEFORMAT
 				);
 
-				const sEndDate = DateCheckUtil.fnFormatDate(
+				const sEndDate = DateUtility.formatDate(
 					oItem.end_date,
 					this._oConstant.Date.DATEFORMAT
 				);
@@ -3375,7 +3377,7 @@ sap.ui.define([
 		},
 
 		_getCurrentReportNumber: async function (rangeId) {
-			const oModel = this.getOwnerComponent().getModel();
+			//const oModel = this.getOwnerComponent().getModel();
 
 			try {
 				var oListBinding = oModel.bindList(
@@ -3451,7 +3453,7 @@ sap.ui.define([
 		},
 
 		_updateCurrentReportNumber: async function (rangeId, currentNumber) {
-			const oModel = this.getOwnerComponent().getModel();
+			//const oModel = this.getOwnerComponent().getModel();
 			const sGroup = "updateRange";
 			const nextNumber = currentNumber + 1;
 
@@ -3537,7 +3539,7 @@ sap.ui.define([
 
 		// App Control Visibility
 		getFieldVisibility_ClaimTypeItem: async function () {
-			const oModel = this.getOwnerComponent().getModel();
+			//const oModel = this.getOwnerComponent().getModel();
 			var oInputModel = this.getView().getModel("claimitem_input");
 
 			const claimTypeItemFromModel = oInputModel.getProperty("/claim_item/claim_type_item_id");
@@ -3685,7 +3687,7 @@ sap.ui.define([
 		},
 
 		_getFieldEditable_ClaimTypeItem: async function () {
-			const oModel = this.getOwnerComponent().getModel();
+			////const oModel = this.getOwnerComponent().getModel();
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var screenArray = oInputModel.getProperty("/screen_array");
 

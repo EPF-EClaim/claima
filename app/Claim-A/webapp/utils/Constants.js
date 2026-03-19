@@ -1,8 +1,8 @@
 sap.ui.define([
 ], function () {
     "use strict";
-    return{
-        "ClaimType":{
+    return {
+        "ClaimType": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
             "KURSUS_LUAR_NEGARA": "KURSUS_LUAR_NEGARA",
             "DLM_NEGARA": "DLM_NEGARA",
@@ -11,7 +11,7 @@ sap.ui.define([
             "ELAUN_TUKAR": "ELAUN_TUKAR",
             "ELAUN_PINDAH": "ELAUN_PINDAH"
         },
-        "KURSUS_DLM_NEGARA_TypeItem":{
+        "KURSUS_DLM_NEGARA_TypeItem": {
             "BAGAI": "BAGAI",
             "BYR_YURAN": "BYR_YURAN",
             "CERAMAH": "CERAMAH",
@@ -29,7 +29,7 @@ sap.ui.define([
             "Jamuan Ringan Program Outreach": "Jamuan Ringan Program Outreach",
             "KATERER": "KATERER",
             "KECERIAAN": "KECERIAAN",
-            "KESIHATAN": "KESIHATAN", 
+            "KESIHATAN": "KESIHATAN",
             "KILOMETER": "KILOMETER",
             "KM": "KM",
             "LAUT": "LAUT",
@@ -67,12 +67,12 @@ sap.ui.define([
             "YURAN": "YURAN",
             "YURAN_KLJ": "YURAN_KLJ"
         },
-        "STATUS":{
+        "STATUS": {
             "SUCCESS": "TRUE",
             "FAIL": "FAIL",
             "ALL": "*"
         },
-        "ClaimStatus":{
+        "ClaimStatus": {
             "DRAFT": "STAT01",
             "PENDING_APPROVAL": "STAT02",
             "SEND_BACK": "STAT03",
@@ -81,7 +81,7 @@ sap.ui.define([
             "COMPLETED_DISBURSEMENT": "STAT06",
             "CANCELLED": "STAT07",
         },
-        "FLIGHT_CLASS_ID":{
+        "FLIGHT_CLASS_ID": {
             "01": "01",
             "02": "02",
             "03": "03"
@@ -94,23 +94,46 @@ sap.ui.define([
             "CLAIM": "CLM",
             "PRE_APPROVAL": "PRE"
         },
-        "SubmissionType": {
-            "REQUEST": "REQ"
-        },
-         "Date": {
+        "Date": {
             "DATEFORMAT": "yyyy.MM.dd",
         },
-         "Mode": {
-            "CLAIM_APPROVE": "APPROVE_CLAIM",
-        },
-        "Approval": {
+        "ApprovalProcess": {
             "REQUEST": "REQ",
             "DETAILS_PREAPPROVAL": "/ZAPPROVER_DETAILS_PREAPPROVAL",
             "DETAILS_CLAIMS": "/ZAPPROVER_DETAILS_CLAIMS",
+            "VIEW_PREAPPROVAL": "/ZEMP_APPROVER_REQUEST_DETAILS",
+            "VIEW_CLAIMS": "/ZEMP_APPROVER_CLAIM_DETAILS",
             "PREAPPROVALID": "PREAPPROVAL_ID",
+            "REQUESTID": "REQUEST_ID",
             "CLAIMID": "CLAIM_ID",
-            "PREAPPROVALID_TITLE": "Pre-Approval",
-            "CLAIMID_TITLE": "Claim",
+            "REQUESTTYPE": "Pre-Approval",
+            "CLAIMTYPE": "Claim",
+            "CLAIM_APPROVE": "APPROVE_CLAIM",
+            "APPROVER_ID": "APPROVER_ID",
+            "SUBAPPROVER_ID": "SUBSTITUTE_APPROVER_ID",
+            "STATUS": "STATUS",
+            "TIMESTAMP": "PROCESS_TIMESTAMP",
+            "COMMENTAPPOVAL": "COMMENT",
+            "NOTAVAILABLE": "N/A",
+            "ACTION_NOTIFY": "Notify",
+            "ACTION_APPROVE": "APPROVE",
+            "REQUEST_HEADER": "/ZREQUEST_HEADER",
+            "CLAIM_HEADER": "/ZCLAIM_HEADER",
+            "STATUS_REJECT": "REJECT",
+            "STATUS_SENDBACK": "SEND BACK",
+            "SET_GROUP": "approvalGroup",
+            "VIEW_BUDGET_REQUEST": "/ZEMP_REQUEST_BUDGET_CHECK",
+            "VIEW_BUDGET_CLAIM": "/ZEMP_CLAIM_BUDGET_CHECK",
+            "REJECT_REASON_ID": "REJECT_REASON_ID",
+            "CLAIM_STATUS": "STATUS_ID",
+            "PROJ_CODE1": "1",
+            "ECODE1": "error_not_current_processor",
+            "APPROVE_SUCCESS": "approval_successful",
+            "REJECT_FINAL": "request_rejected",
+            "RESEND_FINAL": "request_sent_back",
+
+
+            
         },
 
 

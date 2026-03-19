@@ -3,28 +3,31 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "claima/utils/FinalApproveStep",
-	"claima/utils/Constants"
-], function (Filter, FilterOperator, FinalApproveStep, Constants) {
+    "claima/utils/Constants",
+    "claima/utils/Utility",
+    "claima/utils/DateUtility",
+], function (Filter, FilterOperator, FinalApproveStep, Constants, Utility, DateUtility) {
     "use strict";
 
     async function _approveMultiLevel(oModel, sId, sUserId, sComment, oModelView) {
 
         const sSubmissionType = sId.substring(0, 3);
 
-        const sTable = sSubmissionType === "REQ"
-            ? "/ZAPPROVER_DETAILS_PREAPPROVAL"
-            : "/ZAPPROVER_DETAILS_CLAIMS";
+        const sTable = sSubmissionType === Constants.ApprovalProcess.REQUEST
+            ? Constants.ApprovalProcess.DETAILS_PREAPPROVAL
+            : Constants.ApprovalProcess.DETAILS_CLAIMS
 
-        const sField = sSubmissionType === "REQ" ? "PREAPPROVAL_ID" : "CLAIM_ID";
-        const sType = sSubmissionType === "REQ" ? "Pre-Approval" : "Claim";
+        const sField = sSubmissionType === Constants.ApprovalProcess.REQUEST ? Constants.ApprovalProcess.PREAPPROVALID : Constants.ApprovalProcess.CLAIMID;
+        const sType = sSubmissionType === Constants.ApprovalProcess.REQUEST ? Constants.ApprovalProcess.REQUESTTYPE : Constants.ApprovalProcess.CLAIMTYPE;
 
-        const sTable2 = sSubmissionType === "REQ"
-            ? "/ZEMP_APPROVER_REQUEST_DETAILS"
-            : "/ZEMP_APPROVER_CLAIM_DETAILS";
-            
+        const sTable2 = sSubmissionType === Constants.ApprovalProcess.REQUEST
+            ? Constants.ApprovalProcess.VIEW_PREAPPROVAL
+            : Constants.ApprovalProcess.VIEW_CLAIMS;
+
         let aPayloads = [];
         let sCurrentEmail = null;
         let sCurrentName = null;
+        let sMessageKey = null;
 
         // STEP 1: Get all approver rows
         const oBindingAll = oModel.bindList(
@@ -41,21 +44,22 @@ sap.ui.define([
         // STEP 2: Find CURRENT approver row
         const oCurrentRow = aRows.find(oRow =>
             (oRow.APPROVER_ID === sUserId || oRow.SUBSTITUTE_APPROVER_ID === sUserId) &&
-            oRow.STATUS === "STAT02"
+            oRow.STATUS === Constants.ClaimStatus.PENDING_APPROVAL
         );
 
+
         if (!oCurrentRow) {
-            throw new Error("You are not the current processor for this Claim/Pre-approval or it was processed by another Approver.");
+            throw { sCode: Constants.ApprovalProcess.ECODE1 };
         }
 
         let sMatchedType = null;
         let sMatchedId = null;
 
         if (oCurrentRow.APPROVER_ID === sUserId) {
-            sMatchedType = "APPROVER_ID";
+            sMatchedType = Constants.ApprovalProcess.APPROVER_ID;
             sMatchedId = oCurrentRow.APPROVER_ID;
         } else {
-            sMatchedType = "SUBSTITUTE_APPROVER_ID";
+            sMatchedType = Constants.ApprovalProcess.SUBAPPROVER_ID;
             sMatchedId = oCurrentRow.SUBSTITUTE_APPROVER_ID;
         }
 
@@ -65,14 +69,13 @@ sap.ui.define([
         const oCtxCurrent = aContextList.find(oCtx => oCtx.getObject().LEVEL === iCurrentLevel);
 
         if (sComment) {
-            oCtxCurrent.setProperty("COMMENT", sComment);
+            oCtxCurrent.setProperty(Constants.ApprovalProcess.COMMENTAPPOVAL, sComment);
         }
 
-        const oNow = new Date();
-        const sTimestamp = formatTimestamp9(oNow, { utc: false });
+        const sTimestamp = DateUtility.formatTimestamp9(new Date(), { utc: false });
 
-        oCtxCurrent.setProperty("PROCESS_TIMESTAMP", sTimestamp);
-        oCtxCurrent.setProperty("STATUS", "STAT05"); // APPROVED
+        oCtxCurrent.setProperty(Constants.ApprovalProcess.TIMESTAMP, sTimestamp);
+        oCtxCurrent.setProperty(Constants.ApprovalProcess.STATUS, Constants.ClaimStatus.APPROVED); // APPROVED
 
         // STEP 4: Activate next level
         const iNextLevel = iCurrentLevel + 1;
@@ -80,7 +83,7 @@ sap.ui.define([
 
         if (oCtxNext) {
 
-            oCtxNext.setProperty("STATUS", "STAT02");
+            oCtxNext.setProperty(Constants.ApprovalProcess.STATUS, Constants.ClaimStatus.PENDING_APPROVAL);
 
             // STEP 5: Email Data Model
             const oBindingView = oModelView.bindList(
@@ -95,7 +98,7 @@ sap.ui.define([
             const aRowView = aContextView.map(oCtx => oCtx.getObject());
 
             const oCurrentRowView = aRowView.find(oRow => Number(oRow.LEVEL) === Number(iCurrentLevel));
-            const bMatchedAsApprover = (sMatchedType === "APPROVER_ID");
+            const bMatchedAsApprover = (sMatchedType === Constants.ApprovalProcess.APPROVER_ID);
 
             sCurrentEmail = bMatchedAsApprover ? oCurrentRowView.APPROVER_EMAIL : oCurrentRowView.SUBSTITUTE_EMAIL;
             sCurrentName = bMatchedAsApprover ? oCurrentRowView.APPROVER_NAME : oCurrentRowView.SUBSTITUTE_NAME;
@@ -107,7 +110,7 @@ sap.ui.define([
             const sNextSubName = oNextRowView?.SUBSTITUTE_NAME ?? null;
             const sNextSubEmail = oNextRowView?.SUBSTITUTE_EMAIL ?? null;
 
-            const sCheckFormDate = (sSubmissionType === "REQ");
+            const sCheckFormDate = (sSubmissionType === Constants.ApprovalProcess.REQUEST);
 
             const sSubmissionDate =
                 sCheckFormDate
@@ -130,10 +133,10 @@ sap.ui.define([
                     ClaimType: sType,
                     ClaimID: sId,
                     RecipientName: sNextApproverName,
-                    Action: "Notify",
+                    Action: Constants.ApprovalProcess.ACTION_NOTIFY,
                     ReceiverEmail: sNextApproverEmail,
                     NextApproverName: sNextApproverName,
-                    RejectReason: "N/A",
+                    RejectReason: Constants.ApprovalProcess.NOTAVAILABLE,
                     ApproverComments: sComment
                 });
 
@@ -146,10 +149,10 @@ sap.ui.define([
                         ClaimType: sType,
                         ClaimID: sId,
                         RecipientName: sNextSubName,
-                        Action: "Notify",
+                        Action: Constants.ApprovalProcess.ACTION_NOTIFY,
                         ReceiverEmail: sNextSubEmail,
                         NextApproverName: sNextSubName,
-                        RejectReason: "N/A",
+                        RejectReason: Constants.ApprovalProcess.NOTAVAILABLE,
                         ApproverComments: sComment
                     });
                 }
@@ -158,15 +161,15 @@ sap.ui.define([
             // Email: Claimant
             aPayloads.push({
                 ApproverName: sCurrentName,
-                SubmissionDate: fnTodayYMD(),
+                SubmissionDate: DateUtility.toYMD(new Date()),
                 ClaimantName: sClaimantName,
                 ClaimType: sType,
                 ClaimID: sId,
                 RecipientName: sClaimantName,
-                Action: "APPROVE",
+                Action: Constants.ApprovalProcess.ACTION_APPROVE,
                 ReceiverEmail: sClaimantEmail,
                 NextApproverName: sNextApproverDisplayName,
-                RejectReason: "N/A",
+                RejectReason: Constants.ApprovalProcess.NOTAVAILABLE,
                 ApproverComments: sComment
             });
 
@@ -185,11 +188,11 @@ sap.ui.define([
 
             const oCurrentRowView = aRowsBinding.find(oRow => Number(oRow.LEVEL) === Number(iCurrentLevel));
 
-            sCurrentEmail = (sMatchedType === "APPROVER_ID")
+            sCurrentEmail = (sMatchedType === Constants.ApprovalProcess.APPROVER_ID)
                 ? oCurrentRowView.APPROVER_EMAIL
                 : oCurrentRowView.SUBSTITUTE_EMAIL;
 
-            sCurrentName = (sMatchedType === "APPROVER_ID")
+            sCurrentName = (sMatchedType === Constants.ApprovalProcess.APPROVER_ID)
                 ? oCurrentRowView.APPROVER_NAME
                 : oCurrentRowView.SUBSTITUTE_NAME;
 
@@ -198,20 +201,19 @@ sap.ui.define([
 
             const oFinalPayload = {
                 ApproverName: sCurrentName,
-                SubmissionDate: fnTodayYMD(),
+                SubmissionDate: DateUtility.toYMD(new Date()),
                 ClaimantName: sClaimantName,
                 ClaimType: sType,
                 ClaimID: sId,
                 RecipientName: sClaimantName,
-                Action: "APPROVE",
+                Action: Constants.ApprovalProcess.ACTION_APPROVE,
                 ReceiverEmail: sClaimantEmail
             };
 
-            FinalApproveStep.onFinalApprove(oModelView, sId, 'STAT05', oModel, oFinalPayload);
+            FinalApproveStep.onFinalApprove(oModelView, sId, Constants.ClaimStatus.APPROVED, oModel, oFinalPayload);
         }
 
         await oModel.submitBatch("$auto");
-        sap.m.MessageToast.show("Approval successful.");
 
         return {
             payloads: aPayloads,
@@ -225,13 +227,10 @@ sap.ui.define([
                     email: sCurrentEmail,
                     matchedType: sMatchedType
                 }
-            }
+
+            },
+            sMessageKey: Constants.ApprovalProcess.APPROVE_SUCCESS
         };
-    }
-    function fnTodayYMD() {
-        const d = new Date();
-        const pad = n => String(n).padStart(2, "0");
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
     }
 
     //For Reject and SendBack resend
@@ -245,25 +244,25 @@ sap.ui.define([
         oModelView
     ) {
         const sSubmissionType = sId.substring(0, 3);
-        const bIsPre = sSubmissionType === "REQ";
+        const bIsPre = sSubmissionType === Constants.ApprovalProcess.REQUEST;
 
-        const sDetailsSet = bIsPre ? "/ZAPPROVER_DETAILS_PREAPPROVAL" : "/ZAPPROVER_DETAILS_CLAIMS";
-        const sHeaderSet = bIsPre ? "/ZREQUEST_HEADER" : "/ZCLAIM_HEADER";
-        const sDetailsIdField = bIsPre ? "PREAPPROVAL_ID" : "CLAIM_ID";
-        const sHeaderIdField = bIsPre ? "REQUEST_ID" : "CLAIM_ID";
+        const sDetailsSet = bIsPre ? Constants.ApprovalProcess.DETAILS_PREAPPROVAL : Constants.ApprovalProcess.DETAILS_CLAIMS;
+        const sHeaderSet = bIsPre ? Constants.ApprovalProcess.REQUEST_HEADER : Constants.ApprovalProcess.CLAIM_HEADER;
+        const sDetailsIdField = bIsPre ? Constants.ApprovalProcess.PREAPPROVALID : Constants.ApprovalProcess.CLAIMID;
+        const sHeaderIdField = bIsPre ? Constants.ApprovalProcess.REQUESTID : Constants.ApprovalProcess.CLAIMID;
 
-        const sActionText = sActionStatus === "STAT04" ? "REJECT" : "SEND BACK";
-        const sType = bIsPre ? "Pre-Approval" : "Claim";
+        const sActionText = sActionStatus === Constants.ClaimStatus.REJECTED ? Constants.ApprovalProcess.STATUS_REJECT : Constants.ApprovalProcess.STATUS_SENDBACK;
+        const sType = bIsPre ? Constants.ApprovalProcess.REQUESTTYPE : Constants.ApprovalProcess.CLAIMTYPE;
 
         const sApproverViewTbl = bIsPre
-            ? "/ZEMP_APPROVER_REQUEST_DETAILS"
-            : "/ZEMP_APPROVER_CLAIM_DETAILS";
+            ? Constants.ApprovalProcess.VIEW_PREAPPROVAL
+            : Constants.ApprovalProcess.VIEW_CLAIMS;
 
         const sBudgetViewTbl = bIsPre
-            ? "/ZEMP_REQUEST_BUDGET_CHECK"
-            : "/ZEMP_CLAIM_BUDGET_CHECK";
+            ? Constants.ApprovalProcess.VIEW_BUDGET_REQUEST
+            : Constants.ApprovalProcess.VIEW_BUDGET_CLAIM;
 
-        const sUpdateGroupId = "approvalGroup";
+        const sUpdateGroupId = Constants.ApprovalProcess.SET_GROUP;
 
         const oBindingApprovers = oModel.bindList(
             sDetailsSet,
@@ -278,21 +277,21 @@ sap.ui.define([
 
         const oCurrentRow = aApproverRows.find(oRow =>
             (oRow.APPROVER_ID === sUserId || oRow.SUBSTITUTE_APPROVER_ID === sUserId) &&
-            oRow.STATUS === "STAT02"
+            oRow.STATUS === Constants.ClaimStatus.PENDING_APPROVAL
         );
 
         if (!oCurrentRow) {
-            throw new Error("No pending approval found for this user.");
+            throw { sCode: Constants.ApprovalProcess.ECODE1 };
         }
 
         let sMatchedType = null;
         let sMatchedApproverId = null;
 
         if (oCurrentRow.APPROVER_ID === sUserId) {
-            sMatchedType = "APPROVER_ID";
+            sMatchedType = Constants.ApprovalProcess.APPROVER_ID;
             sMatchedApproverId = oCurrentRow.APPROVER_ID;
         } else {
-            sMatchedType = "SUBSTITUTE_APPROVER_ID";
+            sMatchedType = Constants.ApprovalProcess.SUBAPPROVER_ID;
             sMatchedApproverId = oCurrentRow.SUBSTITUTE_APPROVER_ID;
         }
 
@@ -302,19 +301,18 @@ sap.ui.define([
             oCtx => oCtx.getObject().LEVEL === iCurrentLevel
         );
 
-        if (sComment) oCtxCurrent.setProperty("COMMENT", sComment);
+        if (sComment) oCtxCurrent.setProperty(Constants.ApprovalProcess.COMMENTAPPOVAL, sComment);
 
-        const oNow = new Date();
-        const sTimestamp = formatTimestamp9(oNow, { utc: false, fractionalDigits: 7 });
+        const sTimestamp = DateUtility.formatTimestamp9(new Date(), { utc: false });
 
-        oCtxCurrent.setProperty("PROCESS_TIMESTAMP", sTimestamp);
-        if (sReason) oCtxCurrent.setProperty("REJECT_REASON_ID", sReason);
-        oCtxCurrent.setProperty("STATUS", sActionStatus);
+        oCtxCurrent.setProperty(Constants.ApprovalProcess.TIMESTAMP, sTimestamp);
+        if (sReason) oCtxCurrent.setProperty(Constants.ApprovalProcess.REJECT_REASON_ID, sReason);
+        oCtxCurrent.setProperty(Constants.ApprovalProcess.STATUS, sActionStatus);
 
         aCtxApprovers.forEach(oCtx => {
             const oRow = oCtx.getObject();
             if (oRow.LEVEL > iCurrentLevel) {
-                oCtx.setProperty("STATUS", "STAT06");
+                oCtx.setProperty(Constants.ApprovalProcess.STATUS, Constants.ClaimStatus.COMPLETED_DISBURSEMENT);
             }
         });
 
@@ -329,7 +327,7 @@ sap.ui.define([
         const [oCtxHeader] = await oBindingHeader.requestContexts(0, 1);
 
         if (oCtxHeader) {
-            const sHeaderStatusField = bIsPre ? "STATUS" : "STATUS_ID";
+            const sHeaderStatusField = bIsPre ? Constants.ApprovalProcess.STATUS : Constants.ApprovalProcess.CLAIM_STATUS;
             oCtxHeader.setProperty(sHeaderStatusField, sActionStatus); // STAT04 / STAT03
         }
 
@@ -365,7 +363,7 @@ sap.ui.define([
                 fund_center: sFundCenter,
                 commitment_item: oRow.GL_ACCOUNT,
                 material_code: oRow.MATERIAL_CODE,
-                project_code: "1",
+                project_code: Constants.ApprovalProcess.PROJ_CODE1,
                 amount: iAmount
             };
         });
@@ -388,7 +386,7 @@ sap.ui.define([
         let sCurrentEmail = null;
         let sCurrentName = null;
 
-        if (sMatchedType === "APPROVER_ID") {
+        if (sMatchedType === Constants.ApprovalProcess.APPROVER_ID) {
             sCurrentEmail = oCurrentRowView.APPROVER_EMAIL;
             sCurrentName = oCurrentRowView.APPROVER_NAME;
         } else {
@@ -398,30 +396,25 @@ sap.ui.define([
 
         const sClaimantName = oCurrentRowView?.EMPLOYEE_NAME ?? null;
         const sClaimantEmail = oCurrentRowView?.EMPLOYEE_EMAIL ?? null;
-        
+
         const aPayloads = [];
+        const sMessageKey = null;
 
         aPayloads.push({
             ApproverName: sCurrentName,
-            SubmissionDate: fnTodayYMD(),
+            SubmissionDate: DateUtility.toYMD(new Date()),
             ClaimantName: sClaimantName,
             ClaimType: sType,
             ClaimID: sId,
             RecipientName: sClaimantName,
             Action: sActionText,
             ReceiverEmail: sClaimantEmail,
-            NextApproverName: "N/A",
+            NextApproverName: Constants.ApprovalProcess.NOTAVAILABLE,
             RejectReason: sReason,
             ApproverComments: sComment
         });
         try {
             await oModel.submitBatch(sUpdateGroupId);
-
-            sap.m.MessageToast.show(
-                sActionStatus === "STAT04"
-                    ? "Request rejected successfully"
-                    : "Request sent back successfully"
-            );
 
             return {
                 payloads: aPayloads,
@@ -436,7 +429,12 @@ sap.ui.define([
                         email: sCurrentEmail,
                         matchedType: sMatchedType
                     }
-                }
+                },
+                sMessageKey:
+                    sActionStatus === Constants.ClaimStatus.REJECTED
+                        ? Constants.ApprovalProcess.REJECT_FINAL
+                        : Constants.ApprovalProcess.RESEND_FINAL
+
             };
 
         } catch (oError) {
@@ -444,33 +442,6 @@ sap.ui.define([
         }
     }
 
-    // Helper: pad with leading zeros
-    function pad(n, width = 2) {
-        return String(n).padStart(width, "0");
-    }
-
-    // Helper: format Date into "YYYY-MM-DD HH:mm:ss.fffffffff"
-    // - utc=true  -> use UTC components
-    // - utc=false -> use local time components (e.g., Asia/Kuala_Lumpur)
-    function formatTimestamp9(date = new Date(), { utc = true } = {}) {
-        const Y = utc ? date.getUTCFullYear() : date.getFullYear();
-        const M = utc ? date.getUTCMonth() + 1 : date.getMonth() + 1;
-        const D = utc ? date.getUTCDate() : date.getDate();
-        const h = utc ? date.getUTCHours() : date.getHours();
-        const m = utc ? date.getUTCMinutes() : date.getMinutes();
-        const s = utc ? date.getUTCSeconds() : date.getSeconds();
-        const ms = utc ? date.getUTCMilliseconds() : date.getMilliseconds();
-
-        // JavaScript only has milliseconds (3 digits).
-        // To reach 9 digits, we zero-pad the remaining 6 (micro/nano) places.
-        const fractional9 = pad(ms, 3) + "000000";
-
-        return (
-            `${Y}-${pad(M)}-${pad(D)} ` +
-            `${pad(h)}:${pad(m)}:${pad(s)}.` +
-            `${fractional9}`
-        );
-    }
     return {
         approveMultiLevel: _approveMultiLevel,
         rejectOrSendBackMultiLevel: _rejectOrSendBackMultiLevel
