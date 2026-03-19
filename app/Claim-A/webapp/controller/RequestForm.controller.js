@@ -328,7 +328,7 @@ sap.ui.define([
 									oReqModel.setProperty("/view", 'view');
 
 									// Add in onPARApproverDetermination function
-									workflowApproval.onPARApproverDetermination(oModel, sReqId);
+									workflowApproval.onPARApproverDetermination(oModel, sReqId, oViewModel);
 
 									await PARequestSharedFunction.getPARHeaderList(oReqList, oViewModel);
 									const oRouter = this.getOwnerComponent().getRouter();
@@ -1041,6 +1041,8 @@ sap.ui.define([
 					BusyIndicator.hide();
 					return; 
 				}
+
+				const oPayload = PARequestSharedFunction.generateEligibilityCheckPayload(this);
 
 				if (isEdit) {
 					const sReqSubId = String(oData.req_item.req_subid || "").trim();
