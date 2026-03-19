@@ -211,83 +211,83 @@ sap.ui.define([
     }
   }
 
-  async function _getEmpDataDescr(controller, oClaimInput) {
+  async function _getEmpDataDescr(controller, oClaimInputModel) {
     // cost center
-    if (oClaimInput.getProperty("/emp_master/cc")) {
-      oClaimInput.setProperty("/emp_master/descr/cc",
+    if (oClaimInputModel.getProperty("/emp_master/cc")) {
+      oClaimInputModel.setProperty("/emp_master/descr/cc",
         await _bindEclaimDescr(controller, "/ZCOST_CENTER",
-          oClaimInput.getProperty("/emp_master/cc"), "COST_CENTER_ID", "COST_CENTER_DESC"));
+          oClaimInputModel.getProperty("/emp_master/cc"), "COST_CENTER_ID", "COST_CENTER_DESC"));
     }
     // department
-    if (oClaimInput.getProperty("/emp_master/dep")) {
-      oClaimInput.setProperty("/emp_master/descr/dep",
+    if (oClaimInputModel.getProperty("/emp_master/dep")) {
+      oClaimInputModel.setProperty("/emp_master/descr/dep",
         await _bindEclaimDescr(controller, "/ZDEPARTMENT",
-          oClaimInput.getProperty("/emp_master/dep"), "DEPARTMENT_ID", "DEPARTMENT_DESC"));
+          oClaimInputModel.getProperty("/emp_master/dep"), "DEPARTMENT_ID", "DEPARTMENT_DESC"));
     }
     // branch / unit section
-    if (oClaimInput.getProperty("/emp_master/unit_section")) {
-      oClaimInput.setProperty("/emp_master/descr/unit_section",
+    if (oClaimInputModel.getProperty("/emp_master/unit_section")) {
+      oClaimInputModel.setProperty("/emp_master/descr/unit_section",
         await _bindEclaimDescr(controller, "/ZBRANCH",
-          oClaimInput.getProperty("/emp_master/unit_section"), "BRANCH_ID", "BRANCH_DESC"));
+          oClaimInputModel.getProperty("/emp_master/unit_section"), "BRANCH_ID", "BRANCH_DESC"));
     }
     // job group
-    if (oClaimInput.getProperty("/emp_master/job_group")) {
-      oClaimInput.setProperty("/emp_master/descr/job_group",
+    if (oClaimInputModel.getProperty("/emp_master/job_group")) {
+      oClaimInputModel.setProperty("/emp_master/descr/job_group",
         await _bindEclaimDescr(controller, "/ZJOB_GROUP",
-          oClaimInput.getProperty("/emp_master/job_group"), "JOB_GROUP_ID", "JOB_GROUP_DESC"));
+          oClaimInputModel.getProperty("/emp_master/job_group"), "JOB_GROUP_ID", "JOB_GROUP_DESC"));
     }
     // office location (depends on state)
-    if (oClaimInput.getProperty("/emp_master/office_location")) {
-      oClaimInput.setProperty("/emp_master/descr/office_location",
+    if (oClaimInputModel.getProperty("/emp_master/office_location")) {
+      oClaimInputModel.setProperty("/emp_master/descr/office_location",
         await _bindEclaimDescr(controller, "/ZOFFICE_LOCATION",
-          oClaimInput.getProperty("/emp_master/office_location"), "LOCATION_ID", "LOCATION_DESC",
-          oClaimInput.getProperty("/emp_master/state"), "STATE_ID"));
+          oClaimInputModel.getProperty("/emp_master/office_location"), "LOCATION_ID", "LOCATION_DESC",
+          oClaimInputModel.getProperty("/emp_master/state"), "STATE_ID"));
     }
     // state (depends on country)
-    if (oClaimInput.getProperty("/emp_master/state")) {
-      oClaimInput.setProperty("/emp_master/descr/state",
+    if (oClaimInputModel.getProperty("/emp_master/state")) {
+      oClaimInputModel.setProperty("/emp_master/descr/state",
         await _bindEclaimDescr(controller, "/ZSTATE",
-          oClaimInput.getProperty("/emp_master/state"), "STATE_ID", "STATE_DESC",
-          oClaimInput.getProperty("/emp_master/country"), "COUNTRY_ID"));
+          oClaimInputModel.getProperty("/emp_master/state"), "STATE_ID", "STATE_DESC",
+          oClaimInputModel.getProperty("/emp_master/country"), "COUNTRY_ID"));
     }
     // country
-    if (oClaimInput.getProperty("/emp_master/country")) {
-      oClaimInput.setProperty("/emp_master/descr/country",
+    if (oClaimInputModel.getProperty("/emp_master/country")) {
+      oClaimInputModel.setProperty("/emp_master/descr/country",
         await _bindEclaimDescr(controller, "/ZCOUNTRY",
-          oClaimInput.getProperty("/emp_master/country"), "COUNTRY_ID", "COUNTRY_DESC"));
+          oClaimInputModel.getProperty("/emp_master/country"), "COUNTRY_ID", "COUNTRY_DESC"));
     }
     // role
-    if (oClaimInput.getProperty("/emp_master/role")) {
-      oClaimInput.setProperty("/emp_master/descr/role",
+    if (oClaimInputModel.getProperty("/emp_master/role")) {
+      oClaimInputModel.setProperty("/emp_master/descr/role",
         await _bindEclaimDescr(controller, "/ZROLE",
-          oClaimInput.getProperty("/emp_master/role"), "ROLE_ID", "ROLE_DESC"));
+          oClaimInputModel.getProperty("/emp_master/role"), "ROLE_ID", "ROLE_DESC"));
     }
     // user type
-    if (oClaimInput.getProperty("/emp_master/user_type")) {
-      oClaimInput.setProperty("/emp_master/descr/user_type",
+    if (oClaimInputModel.getProperty("/emp_master/user_type")) {
+      oClaimInputModel.setProperty("/emp_master/descr/user_type",
         await _bindEclaimDescr(controller, "/ZUSER_TYPE",
-          oClaimInput.getProperty("/emp_master/user_type"), "USER_TYPE_ID", "USER_TYPE_DESC"));
+          oClaimInputModel.getProperty("/emp_master/user_type"), "USER_TYPE_ID", "USER_TYPE_DESC"));
     }
     // employee type
-    if (oClaimInput.getProperty("/emp_master/employee_type")) {
-      oClaimInput.setProperty("/emp_master/descr/employee_type",
+    if (oClaimInputModel.getProperty("/emp_master/employee_type")) {
+      oClaimInputModel.setProperty("/emp_master/descr/employee_type",
         await _bindEclaimDescr(controller, "/ZEMP_TYPE",
-          oClaimInput.getProperty("/emp_master/employee_type"), "EMP_TYPE_ID", "EMP_TYPE_DESC"));
+          oClaimInputModel.getProperty("/emp_master/employee_type"), "EMP_TYPE_ID", "EMP_TYPE_DESC"));
     }
   }
 
-  async function _getClaimHeaderDataDescr(controller, oClaimInput) {
+  async function _getClaimHeaderDataDescr(controller, oClaimInputModel) {
     // submission type
-    if (oClaimInput.getProperty("/claim_header/submission_type")) {
-      oClaimInput.setProperty("/claim_header/descr/submission_type",
+    if (oClaimInputModel.getProperty("/claim_header/submission_type")) {
+      oClaimInputModel.setProperty("/claim_header/descr/submission_type",
         await _bindEclaimDescr(controller, "/ZSUBMISSION_TYPE",
-          oClaimInput.getProperty("/claim_header/submission_type"), "SUBMISSION_TYPE_ID", "SUBMISSION_TYPE_DESC"));
+          oClaimInputModel.getProperty("/claim_header/submission_type"), "SUBMISSION_TYPE_ID", "SUBMISSION_TYPE_DESC"));
     }
     // request ID
-    if (oClaimInput.getProperty("/claim_header/request_id")) {
-      oClaimInput.setProperty("/claim_header/descr/request_id",
+    if (oClaimInputModel.getProperty("/claim_header/request_id")) {
+      oClaimInputModel.setProperty("/claim_header/descr/request_id",
         await _bindEclaimDescr(controller, "/ZREQUEST_HEADER",
-          oClaimInput.getProperty("/claim_header/request_id"), "REQUEST_ID", "OBJECTIVE_PURPOSE"));
+          oClaimInputModel.getProperty("/claim_header/request_id"), "REQUEST_ID", "OBJECTIVE_PURPOSE"));
     }
   }
 
@@ -295,7 +295,7 @@ sap.ui.define([
    * Load Claim (header + items)
    * --------------------------- */
   async function loadClaimById(controller, sClaimId) {
-    const oClaimInput = _getClaimInputModel(controller);
+    const oClaimInputModel = _getClaimInputModel(controller);
     const oModel = await ensureModelReady(controller, "employee_view");
     const sId = String(sClaimId);
 
@@ -320,16 +320,16 @@ sap.ui.define([
       const rawHdr = aHdr[0]?.getObject();
       if (!rawHdr) {
         MessageToast.show("No claim header found for the selected item.");
-        oClaimInput.setProperty("/claim_header", {});
-        oClaimInput.setProperty("/claim_items", []);
-        oClaimInput.setProperty("/claim_items_count", 0);
+        oClaimInputModel.setProperty("/claim_header", {});
+        oClaimInputModel.setProperty("/claim_items", []);
+        oClaimInputModel.setProperty("/claim_items_count", 0);
         return { header: null, items: [] };
       }
 
       // Map header
       const header = _mapClaimHeaderToForm(rawHdr);
-      oClaimInput.setProperty("/claim_header", header);
-      await _getClaimHeaderDataDescr(controller, oClaimInput);
+      oClaimInputModel.setProperty("/claim_header", header);
+      await _getClaimHeaderDataDescr(controller, oClaimInputModel);
 
       // Map items (values + descr)
       const items = aItm.map(ctx => ctx.getObject()).map(it => ({
@@ -477,25 +477,25 @@ sap.ui.define([
       // Derive totals if header empty
       const nTotal = items.reduce((s, it) => s + (Number(it.amount) || 0), 0);
       if (!header.total_claim_amount) {
-        oClaimInput.setProperty("/claim_header/total_claim_amount", nTotal);
+        oClaimInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
       }
 
-      oClaimInput.setProperty("/claim_items", items);
-      oClaimInput.setProperty("/claim_items_count", items.length);
+      oClaimInputModel.setProperty("/claim_items", items);
+      oClaimInputModel.setProperty("/claim_items_count", items.length);
 
       // Enrich employee master
-      const empData = await _getEmpIdDetail(controller, oClaimInput.getProperty("/claim_header/emp_id"));
+      const empData = await _getEmpIdDetail(controller, oClaimInputModel.getProperty("/claim_header/emp_id"));
       if (empData) {
-        oClaimInput.setProperty("/emp_master", empData);
-        await _getEmpDataDescr(controller, oClaimInput);
+        oClaimInputModel.setProperty("/emp_master", empData);
+        await _getEmpDataDescr(controller, oClaimInputModel);
       }
 
       return { header: rawHdr, items };
     } catch (err) {
       // console.error("Failed to load claim header/items:", err);
-      oClaimInput.setProperty("/claim_header", {});
-      oClaimInput.setProperty("/claim_items", []);
-      oClaimInput.setProperty("/claim_items_count", 0);
+      oClaimInputModel.setProperty("/claim_header", {});
+      oClaimInputModel.setProperty("/claim_items", []);
+      oClaimInputModel.setProperty("/claim_items_count", 0);
       return { header: null, items: [] };
     }
   }

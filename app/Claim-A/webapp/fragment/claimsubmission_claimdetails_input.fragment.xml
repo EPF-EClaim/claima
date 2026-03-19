@@ -46,7 +46,7 @@
 				<Label text="{i18n>label_claimdetails_input_claimtype}" />
 				<Text
 					id="text_claimdetails_input_claimtype"
-					text="{claimsubmission_input>/claim_header/descr/claim_type_id}"
+					text="{claimitem_input>/claim_item/descr/claim_type_id}"
 				/>
 
 				<!-- Claim Item -->
