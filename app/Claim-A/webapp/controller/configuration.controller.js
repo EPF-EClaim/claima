@@ -35,7 +35,7 @@ sap.ui.define([
             const oModel = this.getView().getModel();
             const oCtx = oModel.bindContext("/FeatureControl");
 
-            if (sNavigationNavigation === "ZEMP_MASTER" || sNavigation === "ZEMP_DEPENDENT" || sNavigation === "ZNUM_RANGE") {
+            if (sNavigation === "ZEMP_MASTER" || sNavigation === "ZEMP_DEPENDENT" || sNavigation === "ZNUM_RANGE") {
                 try {
                     const oData = await oCtx.requestObject();
                     if (sNavigation === "ZEMP_MASTER") {
@@ -396,6 +396,11 @@ sap.ui.define([
                 oVBox.addItem(oInput);
             });
             return { oVBox, sPath, oSelected, oModel };
+        },
+
+        onClickBack: function() {
+            var oRouter = this.getOwnerComponent().getRouter();
+            oRouter.navTo("Configuration");
         }
     });
 });

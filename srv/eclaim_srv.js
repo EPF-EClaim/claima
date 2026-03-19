@@ -5,15 +5,6 @@ const app = express();
 
 module.exports = (srv) => {
 
-  const { ZRISK } = srv.entities;
-
-  srv.before('CREATE', ZRISK, (req) => {
-    const { START_DATE, END_DATE } = req.data || {}
-    if (START_DATE != null && END_DATE != null && new Date(END_DATE) < new Date(START_DATE)) {
-      req.error(400, 'End Date must be greater than or equal to Start Date.', { target: 'END_DATE' })
-    }
-  })
-
   srv.on('batchCreateEmployee', async (req) => {
     const { ZEMP_MASTER } = srv.entities;
     // _insert(ZEMP_MASTER, req);
@@ -85,7 +76,7 @@ module.exports = (srv) => {
         req.user?.id ||
         "";
 
-      let origin = null;
+      let sorigin = null;
 
       try {
         const authHeader = req.http?.req?.headers?.authorization ?? '';
@@ -94,7 +85,7 @@ module.exports = (srv) => {
           const oToken = JSON.parse(
             Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
           );
-          origin = oToken.origin;
+          sorigin = oToken.origin;
         }
       } catch (e) {
         console.log("Token parsing failed:", e.message);
@@ -113,7 +104,7 @@ module.exports = (srv) => {
         userId: result?.EEID || "UNKNOWN",
         name: result?.NAME || "UNKNOWN",
         position: result?.POSITION_NAME || "UNKNOWN",
-        origin: origin, 
+        origin: sorigin, 
         grade: result?.GRADE || "UNKNOWN",
         department: result?.DEP || "UNKNOWN"
       };

@@ -13,6 +13,21 @@
     xmlns:layout="sap.ui.layout"
 >
     <Page showHeader="true">
+     <customHeader>
+        <Bar>
+            <contentRight>
+                <Button
+                    text="{i18n>back}"
+                    press="onClickBack"
+                    type="Transparent"
+                />
+                <Button
+                    icon="sap-icon://action"
+                    type="Transparent"
+                />
+            </contentRight>
+        </Bar>
+    </customHeader>
         <content>
             <VBox
                 id="listContainer"

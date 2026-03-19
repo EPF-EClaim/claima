@@ -239,7 +239,7 @@ sap.ui.define([
 						oRouter.navTo("Analytics")
 					} else {
 						var message = Utility.getText(this, "msg_unauthorized_role");
-						sap.m.MessageBox.error(message);
+						new MessageBox.error(message);
 					}
 					break;
 				// End 	 Aiman Salim 10/02/2026 - Added for analytics
