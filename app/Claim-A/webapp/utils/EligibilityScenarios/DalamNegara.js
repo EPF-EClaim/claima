@@ -130,6 +130,8 @@ sap.ui.define([
                 case Constants.ClaimTypeItem.TAMBANG:
                     iIndex = oPayload.CheckFields.findIndex((field) =>
                         field.fieldName === Constants.FIELDNAME.FARE_TYPE_ID);
+
+                    // if no rule matches the selected transport class, return false
                     if (!oRule) {
                         oPayload.CheckFields[iIndex].result = false;
                     } else {
