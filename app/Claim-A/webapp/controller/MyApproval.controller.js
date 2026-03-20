@@ -5,14 +5,8 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/ui/model/Sorter",
-    "sap/m/Dialog",
-    "sap/m/Button",
-    "sap/m/Label",
-    "sap/ui/core/Fragment",
-    "sap/ui/export/Spreadsheet",
-    "sap/ui/core/BusyIndicator",
 	"claima/utils/Utility"
-], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, Sorter, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator, Utility) {
+], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, Sorter, Utility) {
     "use strict";
 
     return Controller.extend("claima.controller.MyApproval", {

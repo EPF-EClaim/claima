@@ -13,7 +13,7 @@ sap.ui.define([
             // Get Employee ID
             // oPayload.EmpId = 1234567;
             const oEmpBindList = oModel.bindList("/ZEMP_MASTER");
-
+            // Prep Filters for ZEMP_MASTER Selection
             var aEmpFilters = [];
             var aEmpAndFilters = [];
             aEmpAndFilters.push(new Filter("EEID", FilterOperator.EQ, oPayload.EmpId));
@@ -24,16 +24,13 @@ sap.ui.define([
            
             const oEmp = await oEmpBindList.filter(aEmpFilters).requestContexts().then(function (aContexts) {
                 // Process the filtered data contexts
-                // var sGrade = aContexts.map(context => context.getObject())[0].GRADE;
-                 console.log("aContext",aContexts);
                 var oEmp = aContexts.map(context => context.getObject())[0];
-                // var aEmp = aContexts.map(context => context.getObject());
                 return oEmp;
             });
- 
-            const oRulesBindList = oModel.bindList("/ZELIGIBILITY_RULE");
 
-             // Get eligibility rules based on Employee Personal Grade
+            // Get eligibility rules based on Employee Data
+            const oRulesBindList = oModel.bindList("/ZELIGIBILITY_RULE");
+            // Prep Filters for ZELIGIBILITY_RULE Selection
             var aRulesFilters = [];
             var aRulesAndFilters = [];
             var aRulesOrFilters = [];
@@ -45,26 +42,18 @@ sap.ui.define([
             aRulesOrFilters.push(new Filter("PERSONAL_GRADE", FilterOperator.EQ, oEmp.GRADE));
             aRulesOrFilters.push(new Filter("PERSONAL_GRADE", FilterOperator.EQ, "*"));
             aRulesOrFilters = new Filter(aRulesOrFilters, false);
-            
+
             aRulesFilters.push(new Filter(aRulesAndFilters));
             aRulesFilters.push(new Filter(aRulesOrFilters));
             aRulesFilters = new Filter(aRulesFilters, true);
 
             const aRules = await oRulesBindList.filter(aRulesFilters).requestContexts().then(function (aContexts) {
                 // Process the filtered data contexts
-                // var sGrade = aContexts.map(context => context.getObject())[0];
                 var aRules = aContexts.map(context => context.getObject());
                 return aRules;
             });
-            
-            // const oHeaderBindList = oModel.bindList("/ZREQUEST_HEADER");
-            // oHeaderBindList.filter([
-            // new Filter("REQUEST_ID", FilterOperator.EQ, oPayload.RequestId)
-            // ]);
-            // const aHeaderContexts = await oHeaderBindList.requestContexts();
-            // const oHeader = aHeaderContexts[0].getObject();
 
-            // LuarNegara.onEligibleCheck(oModel, oConstant, oPayload, oEmp, aRules);
+            // Proceed to each Claim Type
             switch (oPayload.ClaimType) {
                 case oConstant.ClaimType.DLM_NEGARA:
                     var oReturnPayload = DalamNegara.onEligibleCheck(oConstant, oPayload, aRules);//, oHeader
@@ -83,13 +72,13 @@ sap.ui.define([
                     break;
 
                 // case PELBAGAI: // Pelbagai no requirement checking needed
-                //     Pelbagai.onEligibleCheck(oConstant, oPayload, aRules);
                 //     break;
 
                 default:
                     break;
             }
 
+            // Return Payload with Result Populated for front end validation
             return oReturnPayload;
         }
 

@@ -1,158 +1,104 @@
 sap.ui.define([
-
-], function () {
+    "./ComparisonOperators/EqualsTo",
+    "./ComparisonOperators/GreaterEquals",
+    "./ComparisonOperators/LesserEquals"
+], function (EqualsTo, GreaterEquals, LesserEquals) {
     "use strict";
     return {
-        async onEligibleCheck(oModel, oConstant, oPayload, oEmp, aRules) {
-            // Load to check each Payload Claim Item Field
-            var iRows = 0;
-            for (var i = iRows; i < oPayload.CheckFields.length; i++) {
-                // Initialize values
-                var sFlag = "";
-                var sRulesVal = "";
-                // Get Days value
-                const aDays = oPayload.CheckFields.find((field) => field.fieldName == oConstant.FIELDNAME.TRAVEL_DAYS_ID);
-                const sDays = aDays.value;
-                // if (oPayload.CheckFields[i].field = oConstant.FIELDNAME.TRAVEL_DAYS_ID) {
-                //     var iDays = oPayload.CheckFields[i].value
-                // }
+        onEligibleCheck(oConstant, oPayload, aRules) {
+            // Get Days value
+            const aDays = oPayload.CheckFields.find((field) => field.fieldName == oConstant.FIELDNAME.TRAVEL_DAYS_ID);
+            const sDays = aDays.value;
 
+            // Switch Based on Claim Item Type
+            for (var oRule of aRules) {
+                var sSkipFlag = "";
                 switch (oPayload.ClaimTypeItem) {
-                    case oConstant.ClaimItmType.DOBI:
-                        for (var oRule of aRules) {
-                            if (oPayload.CheckFields[i].value >= oRule.TRAVEL_DAYS_ID) {
-                                sFlag = oConstant.STATUS.SUCCESS;
-                                break;
-                            } else {
-                                sRulesVal = oRule.TRAVEL_DAYS_ID;
-                            }
+                    case oConstant.ClaimTypeItem.DOBI:
+                        var iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == oConstant.FIELDNAME.TRAVEL_DAYS_ID);
+                        oPayload.CheckFields[iIndex].result = GreaterEquals.CheckComparison(oConstant, oPayload.CheckFields[iIndex].value, oRule.TRAVEL_DAYS_ID);
+                        break;
+
+                    case oConstant.ClaimTypeItem.FLIGHT_L:
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == oConstant.FIELDNAME.FLIGHT_CLASS_ID);
+                        oPayload.CheckFields[iIndex].result = EqualsTo.CheckComparison(oConstant, oPayload.CheckFields[iIndex].value, oRule.FLIGHT_CLASS_ID);
+                        // sSkipFlag assigned to exit when result is true
+                        sSkipFlag = oPayload.CheckFields[iIndex].result;
+                        break;
+
+                    case oConstant.ClaimTypeItem.FLIGHT_O:
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == oConstant.FIELDNAME.FLIGHT_CLASS_ID);
+                        oPayload.CheckFields[iIndex].result = EqualsTo.CheckComparison(oConstant, oPayload.CheckFields[iIndex].value, oRule.FLIGHT_CLASS_ID);
+                        // sSkipFlag assigned to exit when result is true
+                        sSkipFlag = oPayload.CheckFields[iIndex].result;
+                        // Check if min travel hours required
+                        if (oRule.TRAVEL_HOURS != undefined || oRule.TRAVEL_HOURS != null) {
+                            iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == oConstant.FIELDNAME.TRAVEL_HOURS);
+                            oPayload.CheckFields[iIndex].result = GreaterEquals.CheckComparison(oConstant, oPayload.CheckFields[iIndex].value, oRule.TRAVEL_HOURS);
                         }
                         break;
 
-                    case oConstant.ClaimItmType.FLIGHT_L:
-                        // Loop Through the Rules table
-                        for (var oRule of aRules) {
-                            if (oPayload.CheckFields[i].value == oRule.FLIGHT_CLASS_ID) {
-                                sFlag = oConstant.STATUS.SUCCESS;
-                                break;
-                            } else {
-                                sRulesVal = oConstant.STATUS.FAIL;
-                            }
-                        }
+                    case oConstant.ClaimTypeItem.HOTEL_L:
+                        // Calculate max amount eligible
+                        var iMaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
+
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == oConstant.FIELDNAME.ELIGIBLE_AMOUNT);
+                        oPayload.CheckFields[iIndex].result = LesserEquals.CheckComparison(oConstant, oPayload.CheckFields[iIndex].value, iMaxAmountEligible);
                         break;
 
-                    case oConstant.ClaimItmType.FLIGHT_O:
-                        if (oPayload.CheckFields[i].fieldName = oConstant.FIELDNAME.FLIGHT_CLASS_ID) {
-                            for (var oRule of aRules) {
-                                if (oPayload.CheckFields[i].value == oRule.FLIGHT_CLASS_ID) {
-                                    sFlag = oConstant.STATUS.SUCCESS;
-                                    break;
-                                }
-                                else {
-                                    sRulesVal = oConstant.STATUS.FAIL;
-                                }
-                            }
-                        } else if (oPayload.CheckFields[i].fieldName = oConstant.FIELDNAME.TRAVEL_HOURS) {
-                            for (var oRule of aRules) {
-                                if (oPayload.CheckFields[i].value >= oRule.TRAVEL_HOURS) {
-                                    sFlag = oConstant.STATUS.SUCCESS;
-                                    break;
-                                }
-                                else {
-                                    sRulesVal = oConstant.STATUS.FAIL;
-                                }
-                            }
-                        }
-                        break;
-                    case oConstant.ClaimItmType.HOTEL_L:
-                        for (var oRule of aRules) {
-                            var MaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
-                            if (oPayload.CheckFields[i].value <= MaxAmountEligible) {
-                                sFlag = oConstant.STATUS.SUCCESS;
-                                break;
-                            } else {
-                                sRulesVal = oRule.ELIGIBLE_AMOUNT;
-                            }
-                        }
+                    case oConstant.ClaimTypeItem.HOTEL_O:
+                        var iMaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
 
-                        break;
-                    case oConstant.ClaimItmType.HOTEL_O:
-                        if (oPayload.CheckFields[i].fieldName = oConstant.FIELDNAME.ELIGIBLE_AMOUNT) {
-                            for (var oRule of aRules) {
-                                var MaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
-                                if (oPayload.CheckFields[i].value <= MaxAmountEligible) {
-                                    sFlag = oConstant.STATUS.SUCCESS;
-                                    break;
-                                } else {
-                                    sRulesVal = oRule.ELIGIBLE_AMOUNT;
-                                }
-                            }
-                        }else if(oPayload.CheckFields[i].fieldName = oConstant.FIELDNAME.ROOM_TYPE_ID){
-                            for (var oRule of aRules) {
-                                if (oPayload.CheckFields[i].value == oRule.ROOM_TYPE_ID) {
-                                    sFlag = oConstant.STATUS.SUCCESS;
-                                    break;
-                                }
-                                else {
-                                    sRulesVal = oConstant.STATUS.FAIL;
-                                }
-                            }
-                        }
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == oConstant.FIELDNAME.ELIGIBLE_AMOUNT);
+                        oPayload.CheckFields[iIndex].result = LesserEquals.CheckComparison(oConstant, oPayload.CheckFields[iIndex].value, iMaxAmountEligible);
+
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == oConstant.FIELDNAME.ROOM_TYPE_ID);
+                        oPayload.CheckFields[iIndex].result = EqualsTo.CheckComparison(oConstant, oPayload.CheckFields[iIndex].value, oRule.ROOM_TYPE_ID);
+                        // sSkipFlag assigned to exit when result is true
+                        sSkipFlag = oPayload.CheckFields[iIndex].result;
                         break;
 
-                    case oConstant.ClaimItmType.LODG_O:
-                        for (var oRule of aRules) {
-                            var MaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
-                            if (oPayload.CheckFields[i].value <= MaxAmountEligible) {
-                                sFlag = oConstant.STATUS.SUCCESS;
-                                break;
-                            } else {
-                                sRulesVal = oRule.ELIGIBLE_AMOUNT;
-                            }
-                        }
+                    case oConstant.ClaimTypeItem.LODG_O:
+                        var iMaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
+
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == oConstant.FIELDNAME.ELIGIBLE_AMOUNT);
+                        oPayload.CheckFields[iIndex].result = LesserEquals.CheckComparison(oConstant, oPayload.CheckFields[iIndex].value, iMaxAmountEligible);
                         break;
 
-                    case oConstant.ClaimItmType.LODGING_L:
-                        for (var oRule of aRules) {
-                            var MaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
-                            if (oPayload.CheckFields[i].value <= MaxAmountEligible) {
-                                sFlag = oConstant.STATUS.SUCCESS;
-                                break;
-                            } else {
-                                sRulesVal = oRule.ELIGIBLE_AMOUNT;
-                            }
-                        }
+                    case oConstant.ClaimTypeItem.LODGING_L:
+                        var iMaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
+
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == oConstant.FIELDNAME.ELIGIBLE_AMOUNT);
+                        oPayload.CheckFields[iIndex].result = LesserEquals.CheckComparison(oConstant, oPayload.CheckFields[iIndex].value, iMaxAmountEligible);
                         break;
 
-                    case oConstant.ClaimItmType.PARKING:
-                        if (oPayload.CheckFields[i].value <= oRule.ELIGIBLE_AMOUNT) {
-                            sFlag = oConstant.STATUS.SUCCESS;
-                        } else {
-                            sRulesVal = oRule.ELIGIBLE_AMOUNT;
-                        }
+                    case oConstant.ClaimTypeItem.PARKING:
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == oConstant.FIELDNAME.ELIGIBLE_AMOUNT);
+                        oPayload.CheckFields[iIndex].result = LesserEquals.CheckComparison(oConstant, oPayload.CheckFields[iIndex].value, oRule.ELIGIBLE_AMOUNT);
                         break;
 
-                    case oConstant.ClaimItmType.PKN_PANAS:
-                        if (oPayload.CheckFields[i].value <= oRule.ELIGIBLE_AMOUNT) {
-                            sFlag = oConstant.STATUS.SUCCESS;
-                        } else {
-                            sRulesVal = oRule.ELIGIBLE_AMOUNT;
-                        }
+                    case oConstant.ClaimTypeItem.PKN_PANAS:
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == oConstant.FIELDNAME.ELIGIBLE_AMOUNT);
+                        oPayload.CheckFields[iIndex].result = LesserEquals.CheckComparison(oConstant, oPayload.CheckFields[iIndex].value, oRule.ELIGIBLE_AMOUNT);
                         break;
 
                     default:
-                        oPayload.CheckFields[i].Result = oConstant.STATUS.FAIL;
+                        // if item type not found, mark as fail
+                        for (var iRow of oPayload.CheckFields) {
+                            oPayload.CheckFields[iRow].result = oConstant.STATUS.FAIL;
+                        }
                         break;
                 }
-
-                if (sFlag == oConstant.STATUS.SUCCESS) {
-                    oPayload.CheckFields[i].Result = sFlag;
-                } else {
-                    oPayload.CheckFields[i].Result = sRulesVal;
+                // if skip flag set to true, no need to process more rows
+                if (sSkipFlag == oConstant.STATUS.SUCCESS) {
+                    break;
+                } else if (sSkipFlag != oConstant.STATUS.SUCCESS && sSkipFlag != "") {
+                    oPayload.CheckFields[iIndex].result = oConstant.STATUS.FAIL;
                 }
-
             }
 
+            // Return Payload with Result Values
+            return oPayload;
         }
     };
 

@@ -13,6 +13,17 @@
     xmlns:layout="sap.ui.layout"
 >
     <Page showHeader="true">
+     <customHeader>
+        <Bar>
+            <contentRight>
+                <Button
+                    text="{i18n>back}"
+                    press="onClickBack"
+                    type="Transparent"
+                />
+            </contentRight>
+        </Bar>
+    </customHeader>
         <content>
             <VBox
                 id="listContainer"
@@ -51,6 +62,12 @@
                         enabled="{view>/hasSelection}"
                         visible="{= ${/FeatureControl/operationEnabled} === true }"
                     />
+                    <Button
+                    icon="sap-icon://action-settings"
+                    press="onOpenViewSettings"
+                    type="Transparent"
+                    tooltip="View Settings"
+                />
                 </Toolbar>
 
                 <Table
@@ -125,6 +142,41 @@
                         </ColumnListItem>
                     </items>
                 </Table>
+                 <dependents>
+                <ViewSettingsDialog
+                    id="viewSettingsDialog"
+                    confirm="onConfirmViewSettings"
+                    reset="onResetViewSettings"
+                >
+                    <sortItems>
+                        <ViewSettingsItem
+                            text="{i18n>claimtypeid}"
+                            key="CLAIM_TYPE_ID"
+                            selected="true"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>claimtypedesc}"
+                            key="CLAIM_TYPE_DESC"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>glacct}"
+                            key="GL_ACCOUNT"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>start_date}"
+                            key="START_DATE"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>req_i_end_date}"
+                            key="END_DATE"
+                        />
+                         <ViewSettingsItem
+                            text="{i18n>appr_status}"
+                            key="STATUS"
+                        />
+                    </sortItems>
+                </ViewSettingsDialog>
+            </dependents>
             </VBox>
             <VBox
                 id="objectContainer"

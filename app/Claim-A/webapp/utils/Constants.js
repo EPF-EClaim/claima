@@ -1,8 +1,8 @@
 sap.ui.define([
 ], function () {
     "use strict";
-    return{
-        "ClaimType":{
+    return {
+        "ClaimType": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
             "KURSUS_LUAR_NEGARA": "KURSUS_LUAR_NEGARA",
             "DLM_NEGARA": "DLM_NEGARA",
@@ -29,7 +29,7 @@ sap.ui.define([
             "Jamuan Ringan Program Outreach": "Jamuan Ringan Program Outreach",
             "KATERER": "KATERER",
             "KECERIAAN": "KECERIAAN",
-            "KESIHATAN": "KESIHATAN", 
+            "KESIHATAN": "KESIHATAN",
             "KILOMETER": "KILOMETER",
             "KM": "KM",
             "LAUT": "LAUT",
@@ -67,19 +67,10 @@ sap.ui.define([
             "YURAN": "YURAN",
             "YURAN_KLJ": "YURAN_KLJ"
         },
-        "STATUS":{
+        "STATUS": {
             "SUCCESS": "TRUE",
             "FAIL": "FAIL",
             "ALL": "*"
-        },
-        "ClaimStatus":{
-            "DRAFT": "STAT01",
-            "PENDING_APPROVAL": "STAT02",
-            "SEND_BACK": "STAT03",
-            "REJECTED": "STAT04",
-            "APPROVED": "STAT05",
-            "COMPLETED_DISBURSEMENT": "STAT06",
-            "CANCELLED": "STAT07",
         },
         "FLIGHT_CLASS_ID":{
             "PREMIUM": "01",
@@ -96,19 +87,7 @@ sap.ui.define([
         },
         "RequestStatus": {
             "DRAFT": "DRAFT",
-            "CANCELLED": "CANCELLED",
-        },
-        "WorkflowType": {
-            "CLAIM": "CLM",
-            "PRE_APPROVAL": "PRE"
-        },
-        "SubmissionType": {
-            "REQUEST": "REQ"
-        },
-        "VALIDATION_TYPE":{
-            "MIN": "MIN",
-            "MAX": "MAX",
-            "EQUAL": "EQUAL"
+            "CANCELLED": "CANCELLED"
         }
 
     }
