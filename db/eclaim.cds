@@ -1363,9 +1363,10 @@ entity ZDISBURSEMENT_STATUS : managed {
 entity ZROLEHIERARCHY : managed {
     key ROLE : String  @mandatory  @Common.Label: 'Role';
         RANK : String  @mandatory  @Common.Label: 'Rank';
+
 }
 
 entity ZCONSTANTS : managed {
-    key ID    : String  @mandatory  @Common.Label: 'Constant ID';
-        VALUE : String  @mandatory  @Common.Label: 'Constant Value';
+    key ID    : String  @mandatory  @Common.Label: 'Id';
+        VALUE : String  @mandatory  @Common.Label: 'Value';
 }
