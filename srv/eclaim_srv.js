@@ -407,4 +407,40 @@ const emailFromToken =
 
   });
 
+srv.on('batchCreateCourse', async (req) => {
+    const { ZTRAIN_COURSE_PART } = srv.entities;
+    try {
+      const { course } = req.data;
+      if (!course || course.length === 0) {
+        throw new Error('No Data Sent')
+      }
+      const tx = cds.tx(req);
+
+      const results = await tx.run(
+        UPSERT(course).into(ZTRAIN_COURSE_PART)
+      );
+      return 'Records updated';
+    } catch (error) {
+      req.error(400, `Fail creating record: ${error.message}`);
+    }
+  }),
+
+    srv.on('batchCreateBudget', async (req) => {
+      const { ZBUDGET } = srv.entities;
+      try {
+        const { budget } = req.data;
+        if (!budget || budget.length === 0) {
+          throw new Error('No Data Sent')
+        }
+        const tx = cds.tx(req);
+
+        const results = await tx.run(
+          UPSERT(budget).into(ZBUDGET)
+        );
+        return 'Records updated';
+      } catch (error) {
+        req.error(400, `Fail creating record: ${error.message}`);
+      }
+    })	  
+
 }
