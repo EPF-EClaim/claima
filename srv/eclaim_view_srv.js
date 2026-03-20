@@ -21,6 +21,7 @@ module.exports = (srv) => {
         data: {
           CLAIM_ID: ClaimID,
           ITEMS: Items.map(oItem => ({
+            CLAIM_ID:                oItem.CLAIM_ID,
             CLAIM_SUB_ID:            oItem.ClaimSubID,
             EMP_ID:                  oItem.EmpID,
             SUBMITTED_DATE:          oItem.SubmissionDate,

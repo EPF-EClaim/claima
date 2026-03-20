@@ -144,6 +144,7 @@ sap.ui.define([
 
                     // Map to CDS ApprovedClaimItem
                     var aClaimItems = aClaimRows.map(oRow => ({
+                        ClaimID:              oRow.CLAIM_ID,
                         ClaimSubID:           oRow.CLAIM_SUB_ID,
                         EmpID:                oRow.EMP_ID,
                         SubmissionDate:       oRow.SUBMITTED_DATE,

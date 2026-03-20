@@ -950,7 +950,6 @@ sap.ui.define([
                 new Filter("VALID_TO", FilterOperator.GE, sToday)
             ];
 
-
             // Bind list
             const binding = oModel.bindList(
                 sTable,
