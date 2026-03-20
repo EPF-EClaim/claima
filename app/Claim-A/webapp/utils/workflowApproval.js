@@ -61,11 +61,14 @@ sap.ui.define([
 			const aClaimHeaderData = aClaimHeaderContexts.map(oContext => oContext.getObject());
 
 			const sEmpID = aClaimHeaderData[0].EMP_ID;
-			const sClaimCC = aClaimHeaderData[0].COST_CENTER;
+			const sClaimsCC = aClaimHeaderData[0].COST_CENTER;
 			const sClaimsAltCC = aClaimHeaderData[0].ALTERNATE_COST_CENTER;
 			const sClaimsSubmissionType = aClaimHeaderData[0].SUBMISSION_TYPE;
 			const sClaimsSubmissionDate = aClaimHeaderData[0].SUBMITTED_DATE;
 			const sClaimSubmissionYear = new Date(aClaimHeaderData[0].SUBMITTED_DATE).getFullYear();
+            const sClaimsFinalCC = sClaimsCC ?? sClaimsAltCC ?? null;
+
+
 
 			//claim Item
 			const oListClaimItemBinding = oModel.bindList("/ZCLAIM_ITEM", null,null, [
@@ -263,12 +266,103 @@ sap.ui.define([
 				aWorkflowApprStep = [sWorkflowName];
 			}
 
-			let aApprEmpID = [];
 
+			let aApprEmpID = [];
+            
             if(sWorkflowName == "Auto" && iWorkflowApprLvl == 0){
                 aApprEmpID.push("Auto");
             }else{
+
+                // Variable declarations for Approver Determination logic
+                let sCurrOutcome = null;        // Variable to store current outcome
+                let oCurrOutcome = null;        // Variable to store current outcome ROLE and RANK
+                let oPrevOutcome = null;        // Variable to store previous outcome ROLE and RANK
+                let iApproverRank = 0;          // Variable to store approver rank to retrieve
+                let oApproverDetails = null;    // Variable to store approver details 
+                let oBudgetDetails = null;      // Variable to store budget approver details (If applicable)
+                let oSubstitute = null;         // Variable to store substitute user
+                let aSubstitutes = [];          // Variable to store multiple substitutes for multiple approvers
+                let aApproversDetails = [];     // Variable to store multiple approvers
+                const aRoleRanks = await that.getRoleRank(oModel);
+                const oClaimantDetails = await that.getEmployeeDetails(oModel, sEmpID);
                 for(var i = 0; i < aWorkflowApprStep.length; i++){
+
+                    // Start of Approver Determination logic
+                    // Standard Workflow logic is when following approver level, the next level should be higher than the previous level
+                    // Special case would include first level higher than second level. This case would require the first approver to
+                    // Be handled separately from the next level approvers 
+                    // After that, the logic will follow the Standard Workflow logic
+
+                    // Populate current role rank
+                    oCurrOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
+                    
+                    // Check if claimant is CEO
+                    // If yes, approver for CEO is CEO_FI
+                    if(oClaimantDetails.ROLE = "CEO"){
+                        aWorkflowApprStep[i] = "CEO_FI";
+                    }
+                    if(oCurrOutcome == null){
+                        // Block to check for Special Approver within ZCONSTANTS table and budget approver
+                        switch(aWorkflowApprStep[i]){
+                            case "Budget":
+                                if(sClaimsFinalCC != null){
+                                    oBudgetDetails = await that.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
+                                    if(oBudgetDetails == null || oBudgetDetails.EEID == null){
+                                        throw new Error("Budget owner cannot be found")
+                                    }else{
+                                        oApproverDetails = await that.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
+                                        if(oApproverDetails != null){
+                                            aApproversDetails.push(oApproverDetails);
+                                        }
+                                    }
+                                }else{
+                                    throw new Error("No Cost Center found for claim")
+                                }
+                                break;
+                            case "CEO_FI":
+                            case "FI_SETTLEMENT_A":
+                            case "FI_SETTLEMENT_B":
+                            case "HOD_JKEW":
+
+                                break;
+                            default:
+                        }
+                    }
+                    else{
+                        // Block to check for Approver within the ZROLEHIERARCHY table
+                        if(oPrevOutcome == null){
+                            // Block to perform logic checking for first level approver
+
+                            //oPrevOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
+                            //console.log(oCurrentOutcome.RANK);
+                            if(oClaimantDetails.RANK < oCurrOutcome[0].RANK){
+                                iApproverRank = oCurrOutcome[0].RANK;
+                            }
+                            else if(oClaimantDetails.RANK = oCurrOutcome[0].RANK){
+                                iApproverRank = iApproverRank + 1;
+                            }
+                            else{
+                                iApproverRank = oClaimantDetails.RANK;
+                            }
+                        }else if(oPrevOutcome.RANK < oCurrOutcome.RANK){
+                            // Block to perform logic checking when previous approver is lower rank than current approver
+                            iApproverRank = iApproverRank + 1;
+                        }else if(oPrevOutcome.RANK == oCurrOutcome.RANK){
+                            // If the Outcome repeats a role, move on to the next role
+                            continue;
+                        }
+                        // Retrieve Approver based on iApproverRank
+                        oApproverDetails = await that.getApprover(oModel, sEmpID, iApproverRank);
+                        if(oApproverDetails != null){
+                            aApproversDetails.push(oApproverDetails);
+                        }
+                    } 
+                    // After finding approver, find substitute for approver
+                    // oSubstitute = await that.getSubstitute(oModel, oApproverDetails.EEID);
+
+
+
+
                     for(var x = 0; x < aAllEmpWithSameDepData.length; x++){
                         if(aWorkflowApprStep[i] == aAllEmpWithSameDepData[x].ROLE){
                             aApprEmpID.push(aAllEmpWithSameDepData[x].EEID)						
@@ -757,6 +851,389 @@ sap.ui.define([
             }).catch(function(oError){
                 new MessageToast.show(oError);
             })
+        },
+        /**
+         * Fetch employee master record from ZEMP_MASTER by EEID
+         *
+         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
+         * @param {string} sEEID - Employee ID (EEID)
+         * @returns {Promise<object|null>} - Employee data or null if not found
+         */
+        getEmployeeDetails: async function (oModel, sEEID) {
+
+            const that = this;
+            // --- Sanity check ---
+            if (!oModel) {
+                throw new Error("oModel is undefined in getEmployeeDetails()");
+            }
+            if (!sEEID) {
+                throw new Error("EEID is required to fetch employee details.");
+            }
+
+            // Ensure metadata is loaded
+            await oModel.getMetaModel().requestObject("/");
+
+            // Main table path
+            const sTable = "/ZEMP_MASTER";
+
+            // Build filter
+            const aFilters = [
+                new Filter("EEID", FilterOperator.EQ, sEEID)
+            ];
+
+            // Bind list
+            const binding = oModel.bindList(
+                sTable,
+                null,
+                null,
+                aFilters,
+                { $$ownRequest: true }
+            );
+
+            // Fetch data
+            const aCtx = await binding.requestContexts(0, Infinity);
+            if (!aCtx || aCtx.length === 0) {
+                return null; // no employee found
+            }
+            else{
+                const oData = aCtx[0].getObject();
+                const aEmpRoleRank = await that.getRoleRank(oModel, oData.ROLE)
+            }
+
+            // Return only the required fields
+            return {
+                EEID:               oData.EEID,
+                NAME:               oData.NAME,
+                EMAIL:              oData.EMAIL,
+                DEPARTMENT:         oData.DEPARTMENT,
+                ROLE:               oData.ROLE,
+                RANK:               aEmpRoleRank[0].RANK,
+                USER_ID:            oData.USER_ID,
+                DIRECT_SUPERIOR:    oData.DIRECT_SUPERIOR
+            };
+        },
+        /**
+         * Fetch substitution rule record from ZSUBSTITUTION_RULES by EEID
+         *
+         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
+         * @param {string} sApproverEEID - Approver ID (EEID)
+         * @param {Date} [dDate] - Optional date (defaults to today)
+         * @returns {Promise<object|null>} - Employee data or null if not found
+         */
+        getSubstitute: async function (oModel, sApproverEEID, dDate = new Date()) {
+
+            const that = this;
+            // --- Sanity check ---
+            if (!oModel) {
+                throw new Error("oModel is undefined in getSubstitute()");
+            }
+            if (!sEEID) {
+                throw new Error("EEID is required to fetch employee details.");
+            }
+
+            // Ensure metadata is loaded
+            await oModel.getMetaModel().requestObject("/");
+
+            // Main table path
+            const sTable = "/ZSUBSTITUTION_RULES";
+
+            // Convert to ISO date string (YYYY-MM-DD)
+            const sToday = dDate.toISOString().split("T")[0];
+            
+            // Filters:
+            // USER_ID EQ EEID
+            // VALID_FROM LE today
+            // VALID_TO GE today
+            const aFilters = [
+                new Filter("USER_ID", FilterOperator.EQ, sApproverEEID),
+                new Filter("VALID_FROM", FilterOperator.LE, sToday),
+                new Filter("VALID_TO", FilterOperator.GE, sToday)
+            ];
+
+
+            // Bind list
+            const binding = oModel.bindList(
+                sTable,
+                null,
+                null,
+                aFilters,
+                { $$ownRequest: true }
+            );
+
+            // Fetch data
+            const aCtx = await binding.requestContexts(0, Infinity);
+            if (!aCtx || aCtx.length === 0) {
+                return null; // no substitute found
+            }
+            else{
+                const oData = aCtx[0].getObject();
+                const aEmpRoleRank = await that.getRoleRank(oModel, oData.ROLE)
+            }
+
+            // Return only the required fields
+            return {
+                EEID:               oData.USER_ID,
+                SUB_EEID:           oData.SUBSTITUTE_ID
+            };
+        },
+        /**
+         * Fetch budget record from ZBUDGET by Cost Center and Year
+         *
+         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
+         * @param {string} sCostCenter - Cost Center
+         * @param {string} sYear - Year
+         * @returns {Promise<object|null>} - Budget data or null if not found
+         */
+        getBudgetDetails: async function (oModel, sCostCenter, sYear) {
+
+            const that = this;
+            // --- Sanity check ---
+            if (!oModel) {
+                throw new Error("oModel is undefined in getBudgetDetails()");
+            }
+            if (!sCostCenter) {
+                throw new Error("sCostCenter is required to fetch budget details.");
+            }
+            if (!sYear) {
+                throw new Error("sYear is required to fetch budget details")
+            }
+
+            // Ensure metadata is loaded
+            await oModel.getMetaModel().requestObject("/");
+
+            // Main table path
+            const sTable = "/ZBUDGET";
+
+            // Build filter
+            const aFilters = [
+                new Filter("FUND_CENTER", FilterOperator.EQ, sCostCenter),
+                new Filter("YEAR", FilterOperator.EQ, sYear)
+            ];
+
+            // Bind list
+            const binding = oModel.bindList(
+                sTable,
+                null,
+                null,
+                aFilters,
+                { $$ownRequest: true }
+            );
+
+            // Fetch data
+            const aCtx = await binding.requestContexts(0, Infinity);
+            if (!aCtx || aCtx.length === 0) {
+                return null; // no budget data found
+            }
+            else{
+                const oData = aCtx[0].getObject();
+                const oBudgetOwner = await that.getEmployeeDetailsByEmail(oModel, oData.BUDGET_OWNER_ID)
+            }
+
+            // Return only the required fields
+            return {
+                YEAR:               oData.YEAR,
+                INTERNAL_ORDER:     oData.INTERNAL_ORDER,
+                COMMITMENT_ITEM:    oData.COMMITMENT_ITEM,
+                FUND_CENTER:        oData.FUND_CENTER,
+                MATERIAL_GROUP:     oData.MATERIAL_GROUP,
+                BUDGET_OWNER_EMAIL: oData.BUDGET_OWNER_ID,
+                BUDGET_OWNER_ID:    oBudgetOwner.EEID
+            };
+        },
+        /**
+         * Fetch employee master record from ZEMP_MASTER by Email
+         *
+         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
+         * @param {string} sEmail - Email (EEID)
+         * @returns {Promise<object|null>} - Employee data or null if not found
+         */
+        getEmployeeDetailsByEmail: async function (oModel, sEmail) {
+
+            const that = this;
+            // --- Sanity check ---
+            if (!oModel) {
+                throw new Error("oModel is undefined in getEmployeeDetailsByEmail()");
+            }
+            if (!sEmail) {
+                throw new Error("Email is required to fetch employee details.");
+            }
+
+            // Ensure metadata is loaded
+            await oModel.getMetaModel().requestObject("/");
+
+            // Main table path
+            const sTable = "/ZEMP_MASTER";
+
+            // Build filter
+            const aFilters = [
+                new Filter("EMAIL", FilterOperator.EQ, sEmail)
+            ];
+
+            // Bind list
+            const binding = oModel.bindList(
+                sTable,
+                null,
+                null,
+                aFilters,
+                { $$ownRequest: true }
+            );
+
+            // Fetch data
+            const aCtx = await binding.requestContexts(0, Infinity);
+            if (!aCtx || aCtx.length === 0) {
+                return null; // no employee found
+            }
+            else{
+                const oData = aCtx[0].getObject();
+                const aEmpRoleRank = await that.getRoleRank(oModel, oData.ROLE)
+            }
+
+            // Return only the required fields
+            return {
+                EEID:               oData.EEID,
+                NAME:               oData.NAME,
+                EMAIL:              oData.EMAIL,
+                DEPARTMENT:         oData.DEPARTMENT,
+                ROLE:               oData.ROLE,
+                RANK:               aEmpRoleRank[0].RANK,
+                USER_ID:            oData.USER_ID,
+                DIRECT_SUPERIOR:    oData.DIRECT_SUPERIOR
+            };
+        },
+        /**
+         * Fetch role rank record from ZROLEHIERARCHY by ROLE
+         *
+         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
+         * @param {string} [sRole] - Optional ROLE parameter
+         * @returns {Promise<Array>} - Array of { ROLE, RANK } objects
+         */
+        getRoleRank: async function (oModel, sRole) {
+            // --- Sanity check ---
+            if (!oModel) {
+                throw new Error("oModel is undefined in getRoleHierarchy()");
+            }
+
+            // Ensure metadata is loaded
+            await oModel.getMetaModel().requestObject("/");
+
+            const sTable = "/ZROLEHIERARCHY";
+            // Build filter list
+            const aFilters = [];
+            // Apply filter only if ROLE parameter is passed
+            if (sRole) {
+                aFilters.push(new Filter("ROLE", FilterOperator.EQ, sRole));
+            }
+
+            // Bind list
+            const oBinding = oModel.bindList(
+                sTable,
+                null,
+                null,
+                aFilters,
+                { $$ownRequest: true }
+            );
+
+            // Fetch records
+            const aCtx = await oBinding.requestContexts(0, Infinity);
+            const rows = aCtx.map(ctx => ctx.getObject());
+
+            // Return only needed fields
+            return rows.map(r => ({
+                ROLE: r.ROLE,
+                RANK: r.RANK
+            }));
+        },
+        /**
+         * Recursively find the first superior whose rank is higher than the employee.
+         *
+         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model
+         * @param {string} sEEID - Employee being evaluated
+         * @param {number} iEmployeeRank - Employee rank for comparison
+         * @param {number} idepth - recursion depth to prevent infinite loops
+         * @returns {Promise<object|null>} The manager details or null if none found
+         */
+        getApprover: async function (oModel, sEEID, iApproverRank, idepth = 0) {
+            const that = this;
+            // Safety: stop infinite recursion
+            if (idepth > 20) {
+                return null;
+            }
+
+            // Fetch employee
+            const oEmp = await that.getEmployeeDetails(oModel, sEEID);
+            if (!oEmp) return null;
+
+            // If employee has no superior → stop
+            if (!oEmp.DIRECT_SUPERIOR) {
+                return null;
+            }
+
+            // Fetch direct superior
+            const oDirectSuperior = await that.getEmployeeDetails(oModel, oEmp.DIRECT_SUPERIOR);
+            if (!oDirectSuperior) return null;
+
+            // CEO check
+            if (oDirectSuperior.ROLE === "CEO") {
+                return oDirectSuperior;
+            }
+
+            if (oDirectSuperior.RANK >= iApproverRank) {
+                return oDirectSuperior; // ✅ Found the correct manager
+            }
+
+            // Otherwise recurse deeper up the chain
+            return await getApprover(oModel, oDirectSuperior.EEID, iEmployeeRank, idepth + 1);
+        },
+        /**
+         * Fetch Value record from ZCONSTANTS table by ID
+         *
+         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
+         * @param {string} sID - ID
+         * @returns {Promise<object|null>} - Constant data or null if not found
+         */
+        getConstants: async function (oModel, sID) {
+
+            const that = this;
+            // --- Sanity check ---
+            if (!oModel) {
+                throw new Error("oModel is undefined in getConstants()");
+            }
+            if (!sID) {
+                throw new Error("ID is required to fetch Constant details.");
+            }
+
+            // Ensure metadata is loaded
+            await oModel.getMetaModel().requestObject("/");
+
+            // Main table path
+            const sTable = "/ZCONSTANTS";
+
+            // Build filter
+            const aFilters = [
+                new Filter("ID", FilterOperator.EQ, sID)
+            ];
+
+            // Bind list
+            const binding = oModel.bindList(
+                sTable,
+                null,
+                null,
+                aFilters,
+                { $$ownRequest: true }
+            );
+
+            // Fetch data
+            const aCtx = await binding.requestContexts(0, Infinity);
+            const rows = aCtx.map(ctx => ctx.getObject());
+
+            // Return only needed fields
+            return rows.map(r => ({
+                ROLE: r.ID,
+                RANK: r.VALUE
+            }));
         }
     };
+    
 });
+
+    
