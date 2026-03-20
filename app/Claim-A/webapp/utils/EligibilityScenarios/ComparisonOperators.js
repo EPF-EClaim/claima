@@ -2,6 +2,14 @@ sap.ui.define([
 ], function () {
     "use strict";
     return{
+        /**
+		 * Compares sVal1 against sVal2. If true, return true. If false, return sVal2 value
+		 * @public
+		 * @param {sap.ui.base.Event} sVal1 - Value Input to be checked;
+         * @param {sap.ui.base.Event} sVal2 - Value Input to be checked against;
+         * 
+         * @returns {Boolean/Integer/String} Comparison Output
+		 */
         EqualsTo(sVal1, sVal2){
             if( sVal1 == sVal2 ){
                 return true;
@@ -10,6 +18,14 @@ sap.ui.define([
             }
         },
 
+        /**
+		 * Compares sVal1 against sVal2. If true, return true. If false, return sVal2 value
+		 * @public
+		 * @param {sap.ui.base.Event} sVal1 - Value Input to be checked;
+         * @param {sap.ui.base.Event} sVal2 - Value Input to be checked against;
+         * 
+         * @returns {Boolean/Integer/String} Comparison Output
+		 */
         GreaterEquals(sVal1, sVal2){
             if( sVal1 >= sVal2 ){
                 return true;
@@ -18,6 +34,14 @@ sap.ui.define([
             }
         },
 
+        /**
+		 * Compares sVal1 against sVal2. If true, return true. If false, return sVal2 value
+		 * @public
+		 * @param {sap.ui.base.Event} sVal1 - Value Input to be checked;
+         * @param {sap.ui.base.Event} sVal2 - Value Input to be checked against;
+         * 
+         * @returns {Boolean/Integer/String} Comparison Output
+		 */
         LesserEquals(sVal1, sVal2){
             if( sVal1 <= sVal2 ){
                 return true;

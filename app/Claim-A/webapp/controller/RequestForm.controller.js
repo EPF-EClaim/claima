@@ -68,15 +68,13 @@ sap.ui.define([
 		_ReqAttachmentFile2: null,
 
 		onInit() {
+			// initialize Constants file
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._fragments = Object.create(null);
 
 			// URL Access
-			const oRouter = this.getOwnerComponent().getRouter();
-			oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
-
-			// initialize Constants file
-			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
+			this._oRouter = this.getOwnerComponent().getRouter();
+			this._oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
 		},
 
 		/* =========================================================
@@ -1048,7 +1046,7 @@ sap.ui.define([
 				}
 
 				var oPayload = PARequestSharedFunction.generateEligibilityCheckPayload(this);
-				var oCheckResult = await EligibleScenarioCheck.onEligibilityCheck(oModel, this._oConstant, oPayload);
+				var oCheckResult = await EligibleScenarioCheck.onEligibilityCheck(oModel, oPayload);
 
 				if (isEdit) {
 					const sReqSubId = String(oData.req_item.req_subid || "").trim();

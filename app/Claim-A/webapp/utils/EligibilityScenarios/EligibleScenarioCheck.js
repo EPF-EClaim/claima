@@ -1,17 +1,24 @@
 sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
+    "claima/utils/Constants",
     "./DalamNegara",
     "./LuarNegara",
     "./KursusDalam",
     "./KursusLuar",
     "./Pelbagai"
-], function (Filter, FilterOperator, DalamNegara, LuarNegara, KursusDalam, KursusLuar, Pelbagai) {
+], function (Filter, FilterOperator, Constants, DalamNegara, LuarNegara, KursusDalam, KursusLuar, Pelbagai) {
     "use strict";
     return {
-        onEligibilityCheck: async function (oModel, oConstant, oPayload) {
+        /**
+		 * Compares sVal1 against sVal2. If true, return true. If false, return sVal2 value
+		 * @public
+		 * @param {sap.ui.base.Event} sVal1 - Value Input to be checked;
+         * @param {sap.ui.base.Event} sVal2 - Value Input to be checked against;
+         * @returns {Boolean/Integer/String} Comparison Output
+		 */
+        onEligibilityCheck: async function (oModel, oPayload) {
             // Get Employee ID
-            // oPayload.EmpId = 1234567;
             const oEmpBindList = oModel.bindList("/ZEMP_MASTER");
             // Prep Filters for ZEMP_MASTER Selection
             var aEmpFilters = [];
@@ -55,20 +62,20 @@ sap.ui.define([
 
             // Proceed to each Claim Type
             switch (oPayload.ClaimType) {
-                case oConstant.ClaimType.DLM_NEGARA:
-                    var oReturnPayload = DalamNegara.onEligibleCheck(oConstant, oPayload, aRules);//, oHeader
+                case Constants.ClaimType.DLM_NEGARA:
+                    var oReturnPayload = DalamNegara.onEligibleCheck(oPayload, aRules);//, oHeader
                     break;
 
-                case oConstant.ClaimType.LUAR_NEGARA:
-                    oReturnPayload = LuarNegara.onEligibleCheck(oConstant, oPayload, aRules);
+                case Constants.ClaimType.LUAR_NEGARA:
+                    oReturnPayload = LuarNegara.onEligibleCheck(oPayload, aRules);
                     break;
 
-                case oConstant.ClaimType.KURSUS_DLM_NEGARA:
-                    oReturnPayload = KursusDalam.onEligibleCheck(oConstant, oPayload, aRules);
+                case Constants.ClaimType.KURSUS_DLM_NEGARA:
+                    oReturnPayload = KursusDalam.onEligibleCheck(oPayload, aRules);
                     break;
 
-                case oConstant.ClaimType.KURSUS_LUAR_NEGARA:
-                    oReturnPayload = KursusLuar.onEligibleCheck(oConstant, oPayload, aRules);
+                case Constants.ClaimType.KURSUS_LUAR_NEGARA:
+                    oReturnPayload = KursusLuar.onEligibleCheck(oPayload, aRules);
                     break;
 
                 // case PELBAGAI: // Pelbagai no requirement checking needed
