@@ -241,9 +241,9 @@ sap.ui.define([
 								BusyIndicator.show(0);
 
 								// update status to CANCELLED
-								await Utility._updateStatus(this._oDataModel, sReqId, 'STAT07');
+								await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.CANCELLED);
 
-								MessageToast.show("Request deleted");
+								MessageToast.show(Utility.getText(this, "req_tm_s_delete_request"));
 								this.oDeleteDialog.close();
 
 								var oRouter = this.getOwnerComponent().getRouter();
@@ -304,7 +304,7 @@ sap.ui.define([
 								if (aResult != false) {
 
 									// update status to PENDING APPROVAL
-									await Utility._updateStatus(this._oDataModel, sReqId, 'STAT02');
+									await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
 									this._oReqModel.setProperty("/view", 'view');
 
 									// Add in onPARApproverDetermination function
@@ -1020,6 +1020,21 @@ sap.ui.define([
 					const aCtx = await oList.requestContexts(0, 1);
 					if (!aCtx[0]) throw new Error("Item not found");
 
+					
+					let sAttachment1_SFID,sAttachment2_SFID;
+					if (oData.doc1) {
+						const attachment_1 = await this.getFileAsBinary("i_attachment_1_file");
+						sAttachment1_SFID = await Attachment.postAttachment(oData.doc1, attachment_1, oData.user);
+					}
+					if (oData.doc2) {
+						const attachment_2 = await this.getFileAsBinary("i_attachment_2_file");
+						sAttachment2_SFID = await Attachment.postAttachment(oData.doc2, attachment_2, oData.user);
+					}
+					if (sAttachment1_SFID || sAttachment2_SFID) {
+						oItemCtx.setProperty("ATTACHMENT1" 					, sAttachment1_SFID);
+						oItemCtx.setProperty("ATTACHMENT2" 					, sAttachment2_SFID);
+					}
+
 					const oItemCtx = aCtx[0];
 					oItemCtx.setProperty("CLAIM_TYPE_ID"				, sClaimType);
 					oItemCtx.setProperty("CLAIM_TYPE_ITEM_ID"			, sClaimTypeItem);
@@ -1031,9 +1046,7 @@ sap.ui.define([
 					oItemCtx.setProperty("COURSE_TITLE" 				, oReqItem.course);
 					oItemCtx.setProperty("KWSP_SPORTS_REPRESENTATION" 	, oReqItem.sport_rep);
 					oItemCtx.setProperty("DECLARE_CLUB_MEMBERSHIP" 		, oReqItem.club_membership);
-					oItemCtx.setProperty("ATTACHMENT1" 					, sAttachment1_SFID);
 					oItemCtx.setProperty("MOBILE_CATEGORY_PURPOSE_ID" 	, oReqItem.cat_purpose);
-					oItemCtx.setProperty("ATTACHMENT2" 					, sAttachment2_SFID);
 					oItemCtx.setProperty("START_DATE" 					, oReqItem.start_date);
 					oItemCtx.setProperty("END_DATE" 					, oReqItem.end_date);
 					oItemCtx.setProperty("START_TIME" 					, oReqItem.start_time);

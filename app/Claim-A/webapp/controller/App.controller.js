@@ -148,12 +148,17 @@ sap.ui.define([
 			});
 
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			// var oUserModel = new sap.ui.model.json.JSONModel({ email: "jefry.yap@my.ey.com" });
-			// this.getView().setModel(oUserModel, 'user');
-			// const emp_data = await this._getEmpIdDetail("jefry.yap@my.ey.com");
-			// const oReqModel = this._getReqModel().getData();
-			// oReqModel.user = emp_data.eeid;
-			// this._getReqModel().setData(oReqModel);
+			const bIsLocal = window.location.hostname.includes("port4004") || 
+							window.location.hostname.includes("127.0.0.1");
+
+			if (bIsLocal) {
+				var oUserModel = new sap.ui.model.json.JSONModel({ email: "jefry.yap@my.ey.com" });
+				this.getView().setModel(oUserModel, 'user');
+				const emp_data = await this._getEmpIdDetail("jefry.yap@my.ey.com");
+				const oReqModel = this._getReqModel().getData();
+				oReqModel.user = emp_data.eeid;
+				this._getReqModel().setData(oReqModel);
+			}
 
 			// Route to Dashboard on first initialize only. Refresh will only reload the page you at.
 			const oHashChanger = HashChanger.getInstance();
@@ -1651,6 +1656,8 @@ sap.ui.define([
 
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("RequestForm", { request_id: oResult.reqNo });
+				}).catch(err => {
+					sap.m.MessageToast.show("Creation failed: " + err.message);
 				}).catch(err => {
 					sap.m.MessageToast.show("Creation failed: " + err.message);
 				});
