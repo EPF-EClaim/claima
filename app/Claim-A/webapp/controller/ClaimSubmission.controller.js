@@ -8,6 +8,7 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
+	"sap/ui/core/format/DateFormat",
 	"sap/m/MessageBox",
 	"sap/m/MessageToast",
 	"sap/m/Dialog",
@@ -22,7 +23,9 @@ sap.ui.define([
 	"claima/utils/RejectDialog",
 	"claima/utils/SendBackDialog",
 	"claima/utils/ApproverUtility",
-	"claima/utils/workflowApproval"
+	"claima/utils/workflowApproval",
+	"claima/utils/DateUtility",
+	"claima/utils/Constants"
 ], function (
 	Fragment,
 	Item,
@@ -33,6 +36,7 @@ sap.ui.define([
 	Filter,
 	FilterOperator,
 	Sorter,
+	DateFormat,
 	MessageBox,
 	MessageToast,
 	Dialog,
@@ -47,7 +51,9 @@ sap.ui.define([
 	RejectDialog,
 	SendBackDialog,
 	ApproverUtility,
-	workflowApproval
+	workflowApproval,
+	DateUtility,
+	Constants
 ) {
 	"use strict";
 
@@ -58,11 +64,14 @@ sap.ui.define([
 			this._fragments = Object.create(null);
 			this._clearExit = false;
 			this.currentHash = null;
+			this._oModel = this.getOwnerComponent().getModel();
 
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
 			oRouter.getRoute("ClaimSubmission").attachPatternMatched((event) => { this._onMatched(event); }, this);
 			oRouter.attachBeforeRouteMatched((event) => { this._beforeRouteMatched(event); }, this);
+
+
 		},
 
 		_beforeRouteMatched: async function (oEvent) {
@@ -88,7 +97,7 @@ sap.ui.define([
 			}
 		},
 
-		_onNavBack: function() {
+		_onNavBack: function () {
 			var oHistory = History.getInstance();
 			var sPreviousHash = oHistory.getPreviousHash();
 
@@ -748,9 +757,9 @@ sap.ui.define([
 			}
 		},
 
-		_setApprovalLog: async function (oBool) {
+		_setApprovalLog: async function (bCheckPage) {
 			var oPage = this.byId("page_claimsubmission");
-			if (oBool) {
+			if (bCheckPage) {
 				// display approval log
 				await this._getFormFragment("approval_log", true).then(function (oVBox) {
 					oPage.insertContent(oVBox, 2);
@@ -765,7 +774,7 @@ sap.ui.define([
 			}
 		},
 
-		_setClaimItemTableToolbar: function (oBool) {
+		/* _setClaimItemTableToolbar: function (oBool) {
 			var oPage = this.byId("page_claimsubmission");
 			if (oBool) {
 				// table changes
@@ -796,6 +805,33 @@ sap.ui.define([
 				if (this.byId("table_claimsummary_claimitem")) {
 					this.byId("table_claimsummary_claimitem").setMode(ListMode.SingleSelectMaster);
 				}
+			}
+		}, */
+
+		_setClaimItemTableToolbar: function (bViewCheck) {
+
+
+			// ---------------------------------------------------------
+			// Existing logic (now using canEdit)
+			// ---------------------------------------------------------
+			if (bViewCheck) {
+				// SHOW buttons
+				this.byId("button_claimsummary_createclaim")?.setVisible(true);
+				this.byId("button_claimsummary_edit")?.setVisible(true);
+				this.byId("button_claimsummary_duplicate")?.setVisible(true);
+				this.byId("button_claimsummary_delete")?.setVisible(true);
+
+				// Multi select mode
+				this.byId("table_claimsummary_claimitem")?.setMode(ListMode.MultiSelect);
+			} else {
+				// HIDE buttons
+				this.byId("button_claimsummary_createclaim")?.setVisible(false);
+				this.byId("button_claimsummary_edit")?.setVisible(false);
+				this.byId("button_claimsummary_duplicate")?.setVisible(false);
+				this.byId("button_claimsummary_delete")?.setVisible(false);
+
+				// Single select when not editable
+				this.byId("table_claimsummary_claimitem")?.setMode(ListMode.SingleSelectMaster);
 			}
 		},
 
@@ -1262,6 +1298,20 @@ sap.ui.define([
 			}
 		},
 
+		//Check duplication
+		onSelectionChange_ClaimSummary: function () {
+			var oTable = this.byId("table_claimsummary_claimitem");
+			var aSelected = oTable.getSelectedItems();
+
+			// Enable Duplicate only when exactly 1 item selected
+			this.byId("button_claimsummary_duplicate").setEnabled(aSelected.length === 1);
+
+			// Enable Edit only when exactly 1 item selected
+			this.byId("button_claimsummary_edit").setEnabled(aSelected.length === 1);
+
+		},
+
+
 		onEdit_ClaimSummary: function (oItem) {
 			var itemSubId;
 			var oInputModel = this.getView().getModel("claimsubmission_input");
@@ -1335,7 +1385,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_items_count", tempItems.claim_items.length);
 				oInputModel.setProperty("/claim_header/total_claim_amount", tempItems.total_claim_amount);
 			}
-			
+
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 			BusyIndicator.hide();
@@ -1525,210 +1575,249 @@ sap.ui.define([
 
 		onClickCancel_app: function () {
 			// Close via the stored instance (ApproveDialog keeps it on controller as __approveDialog)
-			if (this.__approveDialog) {
-				this.__approveDialog.close();
+			if (this._approveDialog) {
+				this._approveDialog.close();
 			}
 		},
 		//Button config for Approve
 		onClickCreate_app: async function () {
- 
-            if (this._busyApproving) return;
-            this._busyApproving = true;
- 
-            try {
-                // MODE now correctly matches the dialog logic
-                const oReject = this.getView().getModel("Reject");
-                const sMode = this.getView().getModel("Type")?.getProperty("/mode");
-                const sComment = oReject?.getProperty("/approvalComment")?.trim();
-                const oAccessModel = this.getOwnerComponent().getModel("access");
-                const sUserId = oAccessModel?.getProperty("/userId");
-                const oClaimModel = this.getView().getModel("claimsubmission_input");
-                const sClaimId = oClaimModel?.getProperty("/claim_header/claim_id")?.trim();
- 
-                if (sMode !== "APPROVE_CLAIM") {
-                    console.warn("Skipping approve action because mode is:", sMode);
-                    return;
-                }
- 
-                if (!sComment) {
-                    MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText("msg_claimapprover_comment"));
-                    return;
-                }
- 
-                try {
-                    BusyIndicator.show(0);
- 
-                    // Main + View + Mail model
-                    const oModel = this.getOwnerComponent().getModel();
-                    const oModelView = this.getOwnerComponent().getModel("employee_view");
- 
-                    const { payloads } = await ApproverUtility.approveMultiLevel(
-                        oModel,
-                        sClaimId,
-                        sUserId,
-                        sComment,
-                        oModelView
-                    );
-                    if (Array.isArray(payloads) && payloads.length > 0) {
-                        for (const p of payloads) {
-                            await workflowApproval.onSendEmailApprover(oModel, p);
-                        }
-                    } else{
-                        console.warn("No email payloads returned — skipping notifications");
-                    }
- 
- 
-                    if (this.__approveDialog) {
-                        this.__approveDialog.close();
-                    }
- 
-                    // 4) Navigate back after small delay (optional)
-                    setTimeout(() => {
-                        const oRouter = this.getOwnerComponent().getRouter();
-                        // this.getOwnerComponent().getModel("employee")?.refresh();
-                        // this.getOwnerComponent().getModel("employee_view")?.refresh();
-                        this._onNavBack();
-                    }, 400);
- 
-                } catch (e) {
-                    MessageToast.show(e.message || "Approve failed");
-                } finally {
-                    BusyIndicator.hide();
-                }
- 
-            } catch (outerErr) {
-                console.error(outerErr);
-            } finally {
-                this._busyApproving = false;
-            }
- 
-        },
+
+
+			if (this.bIsApproving) {
+				return;
+			}
+
+			this.bIsApproving = true;
+
+			try {
+				const oReject = this.getView().getModel("Reject");
+				const sMode = this.getView().getModel("Type")?.getProperty("/mode");
+				const sComment = oReject?.getProperty("/approvalComment")?.trim();
+				const oAccessModel = this.getOwnerComponent().getModel("access");
+				const sUserId = oAccessModel?.getProperty("/userId");
+				const oClaimModel = this.getView().getModel("claimsubmission_input");
+				const sClaimId = oClaimModel?.getProperty("/claim_header/claim_id")?.trim();
+
+				if (sMode !== this._oConstant.ApprovalProcess.CLAIM_APPROVE) {
+					return;
+				}
+
+				if (!sComment) {
+					MessageToast.show(Utility.getText(this, "msg_claimapprover_comment"));
+					return;
+				}
+
+				try {
+
+					BusyIndicator.show(0);
+
+					const oModel = this.getOwnerComponent().getModel();
+					const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+
+					const { payloads: aPayloadEmail, sMessageKey } = await ApproverUtility.approveMultiLevel(
+						oModel,
+						sClaimId,
+						sUserId,
+						sComment,
+						oEmployeeViewModel,
+						this
+					);
+
+					if (Array.isArray(aPayloadEmail) && aPayloadEmail.length > 0) {
+						for (const oPayloadEmail of aPayloadEmail) {
+							await workflowApproval.onSendEmailApprover(oModel, oPayloadEmail);
+						}
+					}
+					MessageToast.show(sMessageKey);
+					if (this._oApproveDialog) {
+						this._oApproveDialog.close();
+					}
+
+					setTimeout(() => {
+						this._fnGoToDashboard();
+					}, 400);
+
+				} catch (oErrorMessage) {
+					MessageToast.show(Utility.getText(this, oErrorMessage.sCode));
+					setTimeout(() => {
+						this._fnGoToDashboard();
+					}, 400);
+				} finally {
+					BusyIndicator.hide();
+				}
+
+			} catch (oErrorApprove) {
+				MessageToast.show(Utility.getText(this, "msg_claimapprover_fail"));
+				return;
+
+			} finally {
+				this.bIsApproving = false;
+			}
+
+		},
+
 		//Button config for Reject
 		onReject_ClaimSubmission: async function () {
 
 			const oReject = this.getView().getModel("Reject");
-			const reason = oReject?.getProperty("/rejectReasonKey");
-			const comment = oReject?.getProperty("/approvalComment")?.trim();
+			const sReason = oReject?.getProperty("/rejectReasonKey");
+			const sComment = oReject?.getProperty("/approvalComment")?.trim();
 
-			if (!reason) { MessageToast.show(Utility.getText(this, "msg_claimapprover_reject")); return; }
-			if (!comment) { MessageToast.show(Utility.getText(this, "msg_claimapprover_comment")); return; }
+			if (!sReason) {
+				MessageToast.show(Utility.getText(this, "msg_claimapprover_reject"));
+				return;
+			}
+
+			if (!sComment) {
+				MessageToast.show(Utility.getText(this, "msg_claimapprover_comment"));
+				return;
+			}
 
 			try {
 				BusyIndicator.show(0);
 
 				const oModelMain = this.getOwnerComponent().getModel();
 				const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
-				const accessModel = this.getOwnerComponent().getModel("access");
-				const userId = accessModel?.getProperty("/userId");
+				const oAccessModel = this.getOwnerComponent().getModel("access");
+				const sUserId = oAccessModel?.getProperty("/userId");
 
-				const claimModel = this.getView().getModel("claimsubmission_input");
-				const claimId = claimModel?.getProperty("/claim_header/claim_id")?.trim();
+				const oClaimModel = this.getView().getModel("claimsubmission_input");
+				const sClaimId = oClaimModel?.getProperty("/claim_header/claim_id")?.trim();
 
-				const reject_status = this._oConstant.ClaimStatus.REJECTED; // REJECT
+				const sRejectStatus = this._oConstant.ClaimStatus.REJECTED; // REJECT
 
-				// Utility handles details + header status (use STATUS_ID for claim header)
-				const { payloads, dataset, submissionType } =
-					await ApproverUtility.rejectOrSendBackMultiLevel(
-						oModelMain,
-						claimId,
-						userId,
-						reject_status,
-						reason,
-						comment,
-						oEmployeeViewModel
-					);
-
-				// Budget release if required by your process
-				await budgetCheck.budgetProcessingTest(
+				const {
+					payloads: aPayloads,
+					dataset: aDataset,
+					submissionType: sSubmissionType,
+					sMessageKey
+				} = await ApproverUtility.rejectOrSendBackMultiLevel(
 					oModelMain,
-					dataset,
-					submissionType,
-					"release"
+					sClaimId,
+					sUserId,
+					sRejectStatus,
+					sReason,
+					sComment,
+					oEmployeeViewModel,
+					this
 				);
 
-				// Emails
-				for (const p of payloads) {
-					await workflowApproval.onSendEmailApprover(oModelMain, p);
+				await budgetCheck.budgetProcessingTest(
+					oModelMain,
+					aDataset,
+					sSubmissionType,
+					this._oConstant.ApprovalProcessAction.RELEASE_IND
+				);
+
+				for (const oPayload of aPayloads) {
+					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
 				}
 
-				// Close & navigate
-				if (this.__rejectDialog) this.__rejectDialog.close();
+				MessageToast.show(sMessageKey);
+				if (this._oRejectDialog) {
+					this._oRejectDialog.close();
+				}
 				setTimeout(() => {
-					this._onNavBack();
+					this._fnGoToDashboard();
 				}, 400);
-
-			} catch (e) {
-				MessageToast.show(e.message || "Reject failed");
+			} catch (oErrorReject) {
+				MessageToast.show(Utility.getText(this, oErrorReject.sCode));
+				setTimeout(() => {
+					this._fnGoToDashboard();
+				}, 400);
 			} finally {
 				BusyIndicator.hide();
 			}
 		},
 		//Button config for Send Back
 		onSendBack_ClaimSubmission: async function () {
-			const oReject = this.getView().getModel("Reject");
-			const reason = oReject?.getProperty("/sendBackReasonKey");
-			const comment = oReject?.getProperty("/approvalComment")?.trim();
 
-			if (!reason) { MessageToast.show(Utility.getText(this, "msg_claimapprover_sendback")); return; }
-			if (!comment) { MessageToast.show(Utility.getText(this, "msg_claimapprover_comment")); return; }
+			const oReject = this.getView().getModel("Reject");
+			const sReason = oReject?.getProperty("/sendBackReasonKey");
+			const sComment = oReject?.getProperty("/approvalComment")?.trim();
+
+			if (!sReason) {
+				MessageToast.show(Utility.getText(this, "msg_claimapprover_sendback"));
+				return;
+			}
+
+			if (!sComment) {
+				MessageToast.show(Utility.getText(this, "msg_claimapprover_comment"));
+				return;
+			}
 
 			try {
 				BusyIndicator.show(0);
 
 				const oModelMain = this.getOwnerComponent().getModel();
 				const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
-				const accessModel = this.getOwnerComponent().getModel("access");
-				const userId = accessModel?.getProperty("/userId");
+				const oAccessModel = this.getOwnerComponent().getModel("access");
+				const sUserId = oAccessModel?.getProperty("/userId");
 
-				const claimModel = this.getView().getModel("claimsubmission_input");
-				const claimId = claimModel?.getProperty("/claim_header/claim_id")?.trim();
+				const oClaimModel = this.getView().getModel("claimsubmission_input");
+				const sClaimId = oClaimModel?.getProperty("/claim_header/claim_id")?.trim();
 
-				const reject_status = this._oConstant.ClaimStatus.SEND_BACK; // SEND BACK
+				const sSendBackStatus = this._oConstant.ClaimStatus.SEND_BACK;
 
-				const { payloads, dataset, submissionType } =
-					await ApproverUtility.rejectOrSendBackMultiLevel(
-						oModelMain,
-						claimId,
-						userId,
-						reject_status,
-						reason,
-						comment,
-						oEmployeeViewModel
-					);
-
-				// Budget release if applicable for your process
-				await budgetCheck.budgetProcessingTest(
+				const {
+					payloads: aPayloads,
+					dataset: aDataset,
+					submissionType: sSubmissionType,
+					sMessageKey
+				} = await ApproverUtility.rejectOrSendBackMultiLevel(
 					oModelMain,
-					dataset,
-					submissionType,
-					"release"
+					sClaimId,
+					sUserId,
+					sSendBackStatus,
+					sReason,
+					sComment,
+					oEmployeeViewModel,
+					this
 				);
 
-				// Send emails
-				for (const p of payloads) {
-					await workflowApproval.onSendEmailApprover(oModelMain, p);
+				await budgetCheck.budgetProcessingTest(
+					oModelMain,
+					aDataset,
+					sSubmissionType,
+					this._oConstant.ApprovalProcessAction.RELEASE_IND
+				);
+
+				for (const oPayload of aPayloads) {
+					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
 				}
-
-				// Close dialog
-				this.__sendBackDialog && this.__sendBackDialog.close();
-
-				// Navigate out
+				MessageToast.show(sMessageKey);
+				if (this._oSendBackDialog) {
+					this._oSendBackDialog.close();
+				}
 				setTimeout(() => {
-					this._onNavBack();
+					this._fnGoToDashboard();
 				}, 400);
 
-			} catch (e) {
-				MessageToast.show(e.message || "Send Back failed");
+
+
+			} catch (oErrorSendBack) {
+				MessageToast.show(Utility.getText(this, oErrorSendBack.sCode));
+				setTimeout(() => {
+					this._fnGoToDashboard();
+				}, 400);
 			} finally {
 				BusyIndicator.hide();
 			}
 		},
 
 		onClickCancel_app: function () {
-			if (this.__approveDialog) { this.__approveDialog.close(); }
-			if (this.__sendBackDialog) { this.__sendBackDialog.close(); }
-			if (this.__rejectDialog) { this.__rejectDialog.close(); }
+			if (this._approveDialog) { this._approveDialog.close(); }
+			if (this._sendBackDialog) { this._sendBackDialog.close(); }
+			if (this._rejectDialog) { this._rejectDialog.close(); }
 		},
+
+
+		_fnGoToDashboard: function () {
+			const oRouter = this.getOwnerComponent().getRouter();
+			this._clearExit = true;    // If you use this flag in your pattern
+			oRouter.navTo("Dashboard", {}, true);
+		},
+
 
 		//End Approval
 
@@ -1856,7 +1945,7 @@ sap.ui.define([
 
 		_disableFooterButtons: function () {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === this._oConstant.ClaimStatus.CANCELLED) {
+			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === this._oConstant.ClaimStatus.CANCELLED || oClaimSubmissionModel.getProperty("/claim_header/status_id") === this._oConstant.ClaimStatus.PENDING_APPROVAL) {
 				this.byId("button_claimsubmission_savedraft").setEnabled(false);
 				this.byId("button_claimsubmission_deletereport").setEnabled(false);
 				this.byId("button_claimsubmission_submitreport").setEnabled(false);
@@ -1887,7 +1976,7 @@ sap.ui.define([
 			} catch (oError) {
 				console.error("Error fetching Claim Type detail", oError);
 			}
-			
+
 		},
 
 		onSelect_ClaimDetails_ClaimItem: async function (oEvent) {
@@ -2122,6 +2211,28 @@ sap.ui.define([
 			}
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
+
+			//// Added for duplication check;
+
+
+			var aExistingItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
+			var oNewItem = oInputModel.getProperty("/claim_item");
+
+
+			var aTemp = [];
+			if (!oInputModel.getProperty("/is_new")) {
+				aTemp = aExistingItems.filter(it => it.claim_sub_id !== oNewItem.claim_sub_id);
+			} else {
+				aTemp = [...aExistingItems];
+			}
+			aTemp.push(oNewItem);
+
+			// Check duplicates
+			if (this._CheckDuplicateClaimItems(aTemp)) {
+				MessageToast.show(Utility.getText(this, "msg_duplication_prompt"));
+				return;
+			}
+
 
 			// update claim item to database
 			var saveSuccess = await this._saveClaimItem();
@@ -2764,6 +2875,16 @@ sap.ui.define([
 
 				// get input model
 				var oInputModel = this.getView().getModel("claimsubmission_input");
+
+
+				var aItems = oInputModel.getProperty("/claim_items") || [];
+
+				if (this._CheckDuplicateClaimItems(aItems)) {
+					MessageToast.show(Utility.getText(this, "msg_duplication_prompt"));
+					BusyIndicator.hide();
+					return;
+				}
+
 				//// update last modified date
 				var lastModifiedDate = this._getJsonDate(new Date());
 				oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
@@ -2868,7 +2989,7 @@ sap.ui.define([
 						// determine claims approver
 						if (oAction === 'Submit Report') {
 							var oModelAppr = this.getView().getModel();
-							var oEmployeeViewModel  = this.getView().getModel("employee_view");
+							var oEmployeeViewModel = this.getView().getModel("employee_view");
 							workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
 						}
 						MessageToast.show(oMsg);
@@ -2950,8 +3071,8 @@ sap.ui.define([
 					// determine claims approver
 					if (oAction === 'Submit Report') {
 						var oModelAppr = this.getView().getModel();
-						var oEmployeeViewModel  = this.getView().getModel("employee_view");
-						workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel );
+						var oEmployeeViewModel = this.getView().getModel("employee_view");
+						workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
 					}
 
 					MessageToast.show(oMsg);
@@ -2988,6 +3109,16 @@ sap.ui.define([
 			var itemCountDb = 0;
 			var delItems = [];
 			BusyIndicator.show(0);
+
+
+			var aItems = oInputModel.getProperty("/claim_items") || [];
+
+			if (this._CheckDuplicateClaimItems(aItems)) {
+				MessageToast.show(Utility.getText(this, "msg_duplication_prompt"));
+				BusyIndicator.hide();
+				return;
+			}
+
 
 			// count existing items from database
 			try {
@@ -3191,7 +3322,7 @@ sap.ui.define([
 							$$updateGroupId: "$auto"
 						}
 					);
-					
+
 					var aCtx = await oListBinding.requestContexts(0, 1);
 					var oCtx = aCtx[0];
 
@@ -3206,6 +3337,42 @@ sap.ui.define([
 			})
 			BusyIndicator.hide();
 			return true;
+		},
+
+		//Added for duplication check items via Save Draft and Submit Report btn
+
+		_CheckDuplicateClaimItems: function (aDupCheckItems) {
+
+			const aDuplicateSet = new Set();
+
+			for (let oItem of aDupCheckItems) {
+
+				const sTypeId = oItem.claim_type_id || "";
+				const sItemId = oItem.claim_type_item_id || "";
+
+				const sStartDate = DateUtility.formatDate(
+					oItem.start_date,
+					this._oConstant.Date.DATEFORMAT
+				);
+
+				const sEndDate = DateUtility.formatDate(
+					oItem.end_date,
+					this._oConstant.Date.DATEFORMAT
+				);
+
+				const sAmount = parseFloat(oItem.amount || 0).toFixed(2);
+
+				// Build unique key
+				const sKey = `${sTypeId}|${sItemId}|${sStartDate}|${sEndDate}|${sAmount}`;
+
+				if (aDuplicateSet.has(sKey)) {
+					return true;
+				}
+
+				aDuplicateSet.add(sKey);
+			}
+
+			return false;
 		},
 
 		_getJsonDate: function (iDate) {
@@ -3287,20 +3454,20 @@ sap.ui.define([
 
 				// verify result is not in database
 				oListBinding = oModel.bindList(
-				"/ZCLAIM_HEADER",
-				null,
-				null,
-				[
-					new Filter({
-					path: "CLAIM_ID",
-					operator: FilterOperator.EQ,
-					value1: result
-					})
-				],
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-				}
+					"/ZCLAIM_HEADER",
+					null,
+					null,
+					[
+						new Filter({
+							path: "CLAIM_ID",
+							operator: FilterOperator.EQ,
+							value1: result
+						})
+					],
+					{
+						$$ownRequest: true,
+						$$groupId: "$auto",
+					}
 				);
 
 				aCtx = await oListBinding.requestContexts(0, 1);
@@ -3378,14 +3545,6 @@ sap.ui.define([
 			else {
 				this._onNavBack();
 			}
-		},
-
-		onBackToEmp_ClaimSubmission: function () {
-			// back to employee code here
-		},
-
-		onApprove_ClaimSubmission: function () {
-			// approval code here
 		},
 
 		_newDialog: function (oTitle, oContent, onPress, onPressE) {
