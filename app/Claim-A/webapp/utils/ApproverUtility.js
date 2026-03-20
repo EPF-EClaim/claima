@@ -3,501 +3,448 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "claima/utils/FinalApproveStep",
-	"claima/utils/Constants"
-], function (Filter, FilterOperator, FinalApproveStep, Constants) {
+    "claima/utils/Constants",
+    "claima/utils/Utility",
+    "claima/utils/DateUtility",
+], function (Filter, FilterOperator, FinalApproveStep, Constants, Utility, DateUtility) {
     "use strict";
 
-    async function _approveMultiLevel(oModel, id, userID, comment, oModel2) {
+    async function _approveMultiLevel(oModel, sId, sUserId, sComment, oModelView, oController) {
 
+        const sSubmissionType = sId.substring(0, 3);
 
-        const submissionType = id.substring(0, 3);
-        const sTable = submissionType === "REQ"
-            ? "/ZAPPROVER_DETAILS_PREAPPROVAL"
-            : "/ZAPPROVER_DETAILS_CLAIMS";
-        const sField = submissionType === "REQ" ? "PREAPPROVAL_ID" : "CLAIM_ID";
-        const sType = submissionType === "REQ" ? "Pre-Approval" : "Claim";
+        const sTable = sSubmissionType === Constants.ApprovalProcess.REQUEST
+            ? Constants.Entities.ZAPPROVER_DETAILS_PREAPPROVAL
+            : Constants.Entities.ZAPPROVER_DETAILS_CLAIMS
 
-        //Added for view;
-        const sTable2 = submissionType === "REQ"
-            ? "/ZEMP_APPROVER_REQUEST_DETAILS"
-            : "/ZEMP_APPROVER_CLAIM_DETAILS";
-			
-		let payloads = [];
-        let currentEmail = null;
-        let currentName = null;
+        const sField = sSubmissionType === Constants.ApprovalProcess.REQUEST ? Constants.EntitiesFields.PREAPPROVALID : Constants.EntitiesFields.CLAIMID;
+        const sType = sSubmissionType === Constants.ApprovalProcess.REQUEST ? Constants.ApprovalProcess.REQUESTTYPE : Constants.ApprovalProcess.CLAIMTYPE;
 
-        // STEP 1: Get all approver rows for this ID
-        const bindingAll = oModel.bindList(
+        const sTable2 = sSubmissionType === Constants.ApprovalProcess.REQUEST
+            ? Constants.Entities.ZEMP_APPROVER_REQUEST_DETAILS
+            : Constants.Entities.ZEMP_APPROVER_CLAIM_DETAILS;
+
+        let aPayloads = [];
+        let sCurrentEmail = null;
+        let sCurrentName = null;
+        let sMessageKey = null;
+
+        // STEP 1: Get all approver rows
+        const oBindingAll = oModel.bindList(
             sTable,
             null,
             null,
-            [
-                new Filter(sField, FilterOperator.EQ, id)
-            ],
+            [new Filter(sField, FilterOperator.EQ, sId)],
             { $$ownRequest: true }
         );
 
-        const aCtx = await bindingAll.requestContexts(0, Infinity);
-        const rows = aCtx.map(ctx => ctx.getObject());
+        const aContextList = await oBindingAll.requestContexts(0, Infinity);
+        const aRows = aContextList.map(oCtx => oCtx.getObject());
 
-        // STEP 2: Find CURRENT level belonging to this approver
-        const currentRow = rows.find(r =>
-            (r.APPROVER_ID === userID || r.SUBSTITUTE_APPROVER_ID === userID) &&
-            r.STATUS === "STAT02"
+        // STEP 2: Find CURRENT approver row
+        const oCurrentRow = aRows.find(oRow =>
+            (oRow.APPROVER_ID === sUserId || oRow.SUBSTITUTE_APPROVER_ID === sUserId) &&
+            oRow.STATUS === Constants.ClaimStatus.PENDING_APPROVAL
         );
 
-        if (!currentRow) {
-            throw new Error("You are not the current processor for this Claim/Pre-approval or Claim/Pre-approval has been processed by another Approver");
+
+        if (!oCurrentRow) {
+            throw { sCode: Utility.getText(oController, "error_not_current_processor") };
         }
 
+        let sMatchedType = null;
+        let sMatchedId = null;
 
-        let matchedType = null;
-        let matchedID = null;
-
-        if (currentRow.APPROVER_ID === userID) {
-            matchedType = "APPROVER_ID";
-            matchedID = currentRow.APPROVER_ID;
-        } else if (currentRow.SUBSTITUTE_APPROVER_ID === userID) {
-            matchedType = "SUBSTITUTE_APPROVER_ID";
-            matchedID = currentRow.SUBSTITUTE_APPROVER_ID;
+        if (oCurrentRow.APPROVER_ID === sUserId) {
+            sMatchedType = Constants.EntitiesFields.APPROVER_ID;
+            sMatchedId = oCurrentRow.APPROVER_ID;
+        } else {
+            sMatchedType = Constants.EntitiesFields.SUBAPPROVER_ID;
+            sMatchedId = oCurrentRow.SUBSTITUTE_APPROVER_ID;
         }
 
-
-        const currentLevel = currentRow.LEVEL;
+        const iCurrentLevel = oCurrentRow.LEVEL;
 
         // STEP 3: Approve current level
-        const ctxCurrent = aCtx.find(ctx => ctx.getObject().LEVEL === currentLevel);
+        const oCtxCurrent = aContextList.find(oCtx => oCtx.getObject().LEVEL === iCurrentLevel);
 
-
-        if (comment) {
-            // Common field names you might have: "APPROVAL_COMMENT", "APPROVER_COMMENT", "REMARKS"
-            ctxCurrent.setProperty("COMMENT", comment);
+        if (sComment) {
+            oCtxCurrent.setProperty(Constants.EntitiesFields.COMMENTAPPOVAL, sComment);
         }
 
+        const sTimestamp = DateUtility.formatTimestamp9(new Date(), { utc: false });
 
-        const now = new Date();
-        const tsLocal = formatTimestamp9(now, { utc: false }); // e.g., "2026-02-20 02:19:55.722000000"
-        ctxCurrent.setProperty("PROCESS_TIMESTAMP", tsLocal);
-        ctxCurrent.setProperty("STATUS", "STAT05"); //APPROVED
+        oCtxCurrent.setProperty(Constants.EntitiesFields.TIMESTAMP, sTimestamp);
+        oCtxCurrent.setProperty(Constants.EntitiesFields.STATUS, Constants.ClaimStatus.APPROVED); // APPROVED
 
         // STEP 4: Activate next level
-        const nextLevel = currentLevel + 1;
-        const ctxNext = aCtx.find(ctx => ctx.getObject().LEVEL === nextLevel);
+        const iNextLevel = iCurrentLevel + 1;
+        const oCtxNext = aContextList.find(oCtx => oCtx.getObject().LEVEL === iNextLevel);
 
-        if (ctxNext) {
-            ctxNext.setProperty("STATUS", "STAT02"); //PENDING APPROVAL
+        if (oCtxNext) {
 
-            const bindingView = oModel2.bindList(
-            sTable2,
-            null,
-            null,
-            [new Filter(sField, FilterOperator.EQ, id)],
-            {
-                $$ownRequest: true
+            oCtxNext.setProperty(Constants.EntitiesFields.STATUS, Constants.ClaimStatus.PENDING_APPROVAL);
+
+            // STEP 5: Email Data Model
+            const oBindingView = oModelView.bindList(
+                sTable2,
+                null,
+                null,
+                [new Filter(sField, FilterOperator.EQ, sId)],
+                { $$ownRequest: true }
+            );
+
+            const aContextView = await oBindingView.requestContexts(0, Infinity);
+            const aRowView = aContextView.map(oCtx => oCtx.getObject());
+
+            const oCurrentRowView = aRowView.find(oRow => Number(oRow.LEVEL) === Number(iCurrentLevel));
+            const bMatchedAsApprover = (sMatchedType === Constants.EntitiesFields.APPROVER_ID);
+
+            sCurrentEmail = bMatchedAsApprover ? oCurrentRowView.APPROVER_EMAIL : oCurrentRowView.SUBSTITUTE_EMAIL;
+            sCurrentName = bMatchedAsApprover ? oCurrentRowView.APPROVER_NAME : oCurrentRowView.SUBSTITUTE_NAME;
+
+            const oNextRowView = aRowView.find(oRow => Number(oRow.LEVEL) === Number(iNextLevel));
+
+            const sNextApproverName = oNextRowView?.APPROVER_NAME ?? null;
+            const sNextApproverEmail = oNextRowView?.APPROVER_EMAIL ?? null;
+            const sNextSubName = oNextRowView?.SUBSTITUTE_NAME ?? null;
+            const sNextSubEmail = oNextRowView?.SUBSTITUTE_EMAIL ?? null;
+
+            const sCheckFormDate = (sSubmissionType === Constants.ApprovalProcess.REQUEST);
+
+            const sSubmissionDate =
+                sCheckFormDate
+                    ? (oCurrentRowView?.REQUEST_DATE ?? null)
+                    : (oCurrentRowView?.SUBMITTED_DATE ?? null);
+
+            const sClaimantName = oCurrentRowView?.EMPLOYEE_NAME ?? null;
+            const sClaimantEmail = oCurrentRowView?.EMPLOYEE_EMAIL ?? null;
+
+            const fnIsPresent = v => typeof v === "string" ? v.trim().length > 0 : !!v;
+            const sNextApproverDisplayName = sNextApproverName || sNextSubName;
+
+            // Email: Next Approver
+            if (oCtxNext && fnIsPresent(sNextApproverName) && fnIsPresent(sNextApproverEmail)) {
+
+                aPayloads.push({
+                    ApproverName: sCurrentName,
+                    SubmissionDate: sSubmissionDate,
+                    ClaimantName: sClaimantName,
+                    ClaimType: sType,
+                    ClaimID: sId,
+                    RecipientName: sNextApproverName,
+                    Action: Constants.ApprovalProcessAction.ACTION_NOTIFY,
+                    ReceiverEmail: sNextApproverEmail,
+                    NextApproverName: sNextApproverName,
+                    RejectReason: Constants.ApprovalProcessAction.NOTAVAILABLE,
+                    ApproverComments: sComment
+                });
+
+                if (fnIsPresent(sNextSubName) && fnIsPresent(sNextSubEmail)) {
+
+                    aPayloads.push({
+                        ApproverName: sCurrentName,
+                        SubmissionDate: sSubmissionDate,
+                        ClaimantName: sClaimantName,
+                        ClaimType: sType,
+                        ClaimID: sId,
+                        RecipientName: sNextSubName,
+                        Action: Constants.ApprovalProcessAction.ACTION_NOTIFY,
+                        ReceiverEmail: sNextSubEmail,
+                        NextApproverName: sNextSubName,
+                        RejectReason: Constants.ApprovalProcessAction.NOTAVAILABLE,
+                        ApproverComments: sComment
+                    });
+                }
             }
-        );
 
-        const aCtx_binding = await bindingView.requestContexts(0, Infinity);
-        const rows_binding = aCtx_binding.map(ctx => ctx.getObject());
-
-        const currentRow_level = rows_binding.find(r =>
-            Number(r.LEVEL) === Number(currentLevel)
-        );
-
-        let currentEmail = null;
-        let currentName = null;
-
-        if (matchedType === "APPROVER_ID") {
-            currentEmail = currentRow_level.APPROVER_EMAIL;
-            currentName = currentRow_level.APPROVER_NAME;
-        } else {
-            currentEmail = currentRow_level.SUBSTITUTE_EMAIL;
-            currentName = currentRow_level.SUBSTITUTE_NAME;
-        }
-
-        const nextRow_level = rows_binding.find(r =>
-            Number(r.LEVEL) === Number(nextLevel)
-        );
-
-        let nextApproverName = nextRow_level?.APPROVER_NAME || null;
-        let nextApproverEmail = nextRow_level?.APPROVER_EMAIL || null;
-        let nextSubName = nextRow_level?.SUBSTITUTE_NAME || null;
-        let nextSubEmail = nextRow_level?.SUBSTITUTE_EMAIL || null;
-
-        const isPre = submissionType === "REQ";
-
-        const submissionDate =
-            isPre
-                ? (currentRow_level?.REQUEST_DATE ?? null)      // Pre‑Approval tables
-                : (currentRow_level?.SUBMITTED_DATE ?? null);   // Claim tables
-
-        //const submissionDate = currentRow_level?.REQUEST_DATE ?? null;
-        const claimantName = currentRow_level?.EMPLOYEE_NAME ?? null;
-        const claimantEmail = currentRow_level?.EMPLOYEE_EMAIL ?? null;
-
-
-        const isPresent = v => typeof v === "string" ? v.trim().length > 0 : !!v;
-        const hasSub = isPresent(nextSubName) && isPresent(nextSubEmail);
-        const payloads = [];
-        const nextApproverDisplayName = nextApproverName || nextSubName;
-
-        //Email to Next Approver
-        payloads.push({
-            ApproverName: currentName,
-            SubmissionDate: submissionDate,
-            ClaimantName: claimantName,
-            ClaimType: sType,
-            ClaimID: id,
-            RecipientName: nextApproverName,
-            Action: "Notify",
-            ReceiverEmail: nextApproverEmail,
-            NextApproverName: nextApproverName,
-            RejectReason: "N/A",
-            ApproverComments: comment
-        });
-
-
-        // Sub Approver — only if BOTH fields exist
-        if (isPresent(nextSubName) && isPresent(nextSubEmail)) {
-            payloads.push({
-                ApproverName: currentName,
-                SubmissionDate: submissionDate,
-                ClaimantName: claimantName,
+            // Email: Claimant
+            aPayloads.push({
+                ApproverName: sCurrentName,
+                SubmissionDate: DateUtility.toYMD(new Date()),
+                ClaimantName: sClaimantName,
                 ClaimType: sType,
-                ClaimID: id,
-                RecipientName: nextSubName,
-                Action: "Notify",
-                ReceiverEmail: nextSubEmail,
-                NextApproverName: nextSubName,
-                RejectReason: "N/A",
-                ApproverComments: comment
+                ClaimID: sId,
+                RecipientName: sClaimantName,
+                Action: Constants.ApprovalProcessAction.ACTION_APPROVE,
+                ReceiverEmail: sClaimantEmail,
+                NextApproverName: sNextApproverDisplayName,
+                RejectReason: Constants.ApprovalProcessAction.NOTAVAILABLE,
+                ApproverComments: sComment
             });
-        }
-        //Email to Claimant
-        payloads.push({
-            ApproverName: currentName,
-            SubmissionDate: todayYMD(),
-            ClaimantName: claimantName,
-            ClaimType: sType,
-            ClaimID: id,
-            RecipientName: claimantName,
-            Action: "Approve",
-            ReceiverEmail: claimantEmail,
-            NextApproverName: nextApproverDisplayName,
-            RejectReason: "N/A",
-            ApproverComments: comment
-        });
+
         } else {
-			
-			//Farisha's part start 
-			// Get Approver Details
-			const oApprList = oModel.bindList(
-				"/ZEMP_MASTER",
-				null,
-				null,
-				[new Filter("EEID", FilterOperator.EQ, matchedID)],
-				{ $$ownRequest: true }
-			);
 
-			const aApprContexts = await oApprList.requestContexts();
-			const aApprData = aApprContexts.map(oCtx => oCtx.getObject());
-			var bIsPre = submissionType === Constants.SubmissionType.REQUEST ;
-            var sField_header = bIsPre ? "Pre-Approval" : "Claim";
-            var sPARField = bIsPre ? "PREAPPROVAL_ID" : "CLAIM_ID"; 
+            const oBindingView = oModelView.bindList(
+                sTable2,
+                null,
+                null,
+                [new Filter(sField, FilterOperator.EQ, sId)],
+                { $$ownRequest: true }
+            );
 
-			// Get Claimant Details
-			const oClaimantList = oModel2.bindList(
-				sTable2,
-				null,
-				null,
-				[
-					new Filter(sPARField, FilterOperator.EQ, id),
-					new Filter("LEVEL", FilterOperator.EQ, currentLevel)
-				],
-				{ $$ownRequest: true }
-			);
+            const aCtxBinding = await oBindingView.requestContexts(0, Infinity);
+            const aRowsBinding = aCtxBinding.map(oCtx => oCtx.getObject());
 
-			const aClaimantContexts = await oClaimantList.requestContexts();
-			const aClaimantData = aClaimantContexts.map(oCtx => oCtx.getObject());
+            const oCurrentRowView = aRowsBinding.find(oRow => Number(oRow.LEVEL) === Number(iCurrentLevel));
 
-			const sApproverName = aApprData[0].NAME;
-			const sClaimsSubmissionDate = todayYMD();     
-			const sClaimantName = aClaimantData[0].EMPLOYEE_NAME;
-			const sClaimType = sField_header;
-			const sClaimID = id;                             
-			const sRecipientName = sClaimantName;
-			const sClaimantEmail = aClaimantData[0].EMPLOYEE_EMAIL;
+            sCurrentEmail = (sMatchedType === Constants.EntitiesFields.APPROVER_ID)
+                ? oCurrentRowView.APPROVER_EMAIL
+                : oCurrentRowView.SUBSTITUTE_EMAIL;
 
-			const oEmailPayload = {
-				ApproverName: sApproverName,
-				SubmissionDate: sClaimsSubmissionDate,
-				ClaimantName: sClaimantName,
-				ClaimType: sClaimType,
-				ClaimID: sClaimID,
-				RecipientName: sRecipientName,
-				Action: "APPROVE",
-				ReceiverEmail: sClaimantEmail
-			};
-			//Farisha's part end
-            FinalApproveStep.onFinalApprove(oModel, id, 'STAT05', oModel2, oEmailPayload);
+            sCurrentName = (sMatchedType === Constants.EntitiesFields.APPROVER_ID)
+                ? oCurrentRowView.APPROVER_NAME
+                : oCurrentRowView.SUBSTITUTE_NAME;
+
+            const sClaimantName = oCurrentRowView?.EMPLOYEE_NAME ?? null;
+            const sClaimantEmail = oCurrentRowView?.EMPLOYEE_EMAIL ?? null;
+
+            const oFinalPayload = {
+                ApproverName: sCurrentName,
+                SubmissionDate: DateUtility.toYMD(new Date()),
+                ClaimantName: sClaimantName,
+                ClaimType: sType,
+                ClaimID: sId,
+                RecipientName: sClaimantName,
+                Action: Constants.ApprovalProcessAction.ACTION_APPROVE,
+                ReceiverEmail: sClaimantEmail
+            };
+
+            FinalApproveStep.onFinalApprove(oModelView, sId, Constants.ClaimStatus.APPROVED, oModel, oFinalPayload);
         }
 
-        //pending fix for payload creation causing server crash - Vincent
-        // STEP 5: Fetch data for Email
-
-        // STEP 6: Submit batch update
         await oModel.submitBatch("$auto");
-        sap.m.MessageToast.show("Approval successful.");
+        var sMessage = Utility.getText(oController, "approval_successful")
 
         return {
-            payloads,
+            payloads: aPayloads,
             info: {
-                currentLevel: Number(currentLevel),
-                nextLevel: Number(nextLevel),
+                currentLevel: Number(iCurrentLevel),
+                nextLevel: Number(iNextLevel),
                 type: sType,
-                id,
-                currentProcessor: { name: currentName, email: currentEmail, matchedType }
-            }
+                id: sId,
+                currentProcessor: {
+                    name: sCurrentName,
+                    email: sCurrentEmail,
+                    matchedType: sMatchedType
+                }
+
+            },
+            sMessageKey: sMessage
         };
     }
 
-    function todayYMD() {
-        const d = new Date();
-        const pad = n => String(n).padStart(2, "0");
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-    }
-
     //For Reject and SendBack resend
-    async function _rejectOrSendBackMultiLevel(oModel, id, userID, actionStatus, reason, comment, oModel2) {
-        // actionStatus e.g., "STAT04" (rejected) or "STAT03" (send back)
-        const updateGroupId = "approvalGroup";
-        const submissionType = id.substring(0, 3);
-        const isPre = submissionType === "REQ";
-        const detailsSet = isPre ? "/ZAPPROVER_DETAILS_PREAPPROVAL" : "/ZAPPROVER_DETAILS_CLAIMS";
-        const headerSet = isPre ? "/ZREQUEST_HEADER" : "/ZCLAIM_HEADER";
-        const idField = isPre ? "PREAPPROVAL_ID" : "CLAIM_ID";
-        const sField_header = submissionType === "REQ" ? "REQUEST_ID" : "CLAIM_ID";
-        const sAction = actionStatus === "STAT04" ? "Reject" : "SEND BACK";
-        const sType = submissionType === "REQ" ? "Pre-Approval" : "Claim";
-        //Added for view;
-        const sTable2 = submissionType === "REQ" ? "/ZEMP_APPROVER_REQUEST_DETAILS" : "/ZEMP_APPROVER_CLAIM_DETAILS";
-        const sTable3 = submissionType === "REQ" ? "/ZEMP_REQUEST_BUDGET_CHECK" : "/ZEMP_CLAIM_BUDGET_CHECK";
+    async function _rejectOrSendBackMultiLevel(
+        oModel,
+        sId,
+        sUserId,
+        sActionStatus,
+        sReason,
+        sComment,
+        oModelView,
+        oController
+    ) {
+        const sSubmissionType = sId.substring(0, 3);
+        const bIsPre = sSubmissionType === Constants.ApprovalProcess.REQUEST;
 
-        // 1) Load rows
-        const binding = oModel.bindList(
-            detailsSet,
+        const sDetailsSet = bIsPre ? Constants.Entities.ZAPPROVER_DETAILS_PREAPPROVAL : Constants.Entities.ZAPPROVER_DETAILS_CLAIMS;
+        const sHeaderSet = bIsPre ? Constants.Entities.ZREQUEST_HEADER : Constants.Entities.ZCLAIM_HEADER;
+        const sDetailsIdField = bIsPre ? Constants.EntitiesFields.PREAPPROVALID : Constants.EntitiesFields.CLAIMID;
+        const sHeaderIdField = bIsPre ? Constants.EntitiesFields.REQUESTID : Constants.EntitiesFields.CLAIMID;
+
+        const sActionText = sActionStatus === Constants.ClaimStatus.REJECTED ? Constants.ApprovalProcessStatus.STATUS_REJECT : Constants.ApprovalProcessStatus.STATUS_SENDBACK;
+        const sType = bIsPre ? Constants.ApprovalProcess.REQUESTTYPE : Constants.ApprovalProcess.CLAIMTYPE;
+
+        const sApproverViewTbl = bIsPre
+            ? Constants.Entities.ZEMP_APPROVER_REQUEST_DETAILS
+            : Constants.Entities.ZEMP_APPROVER_CLAIM_DETAILS;
+
+        const sBudgetViewTbl = bIsPre
+            ? Constants.Entities.ZEMP_REQUEST_BUDGET_CHECK
+            : Constants.Entities.ZEMP_CLAIM_BUDGET_CHECK;
+
+        const sUpdateGroupId = Constants.ApprovalProcess.SET_GROUP;
+
+        const oBindingApprovers = oModel.bindList(
+            sDetailsSet,
             null,
             null,
-            [new sap.ui.model.Filter(idField, sap.ui.model.FilterOperator.EQ, id)],
-            { $$ownRequest: true, $$updateGroupId: updateGroupId }
+            [new sap.ui.model.Filter(sDetailsIdField, sap.ui.model.FilterOperator.EQ, sId)],
+            { $$ownRequest: true, $$updateGroupId: sUpdateGroupId }
         );
-        const aCtx = await binding.requestContexts(0, Infinity);
-        const rows = aCtx.map(ctx => ctx.getObject());
 
-        // 2) Current approver row (pending)
-        const currentRow = rows.find(r =>
-            (r.APPROVER_ID === userID || r.SUBSTITUTE_APPROVER_ID === userID) &&
-            r.STATUS === "STAT02"
+        const aCtxApprovers = await oBindingApprovers.requestContexts(0, Infinity);
+        const aApproverRows = aCtxApprovers.map(oCtx => oCtx.getObject());
+
+        const oCurrentRow = aApproverRows.find(oRow =>
+            (oRow.APPROVER_ID === sUserId || oRow.SUBSTITUTE_APPROVER_ID === sUserId) &&
+            oRow.STATUS === Constants.ClaimStatus.PENDING_APPROVAL
         );
-        if (!currentRow) {
-            throw new Error("No pending approval found for this user.");
+
+        if (!oCurrentRow) {
+            throw { sCode: Utility.getText(oController, "error_not_current_processor") };
         }
 
-        //Identify approver from 
-        let matchedType = null;
-        let matchedID = null;
+        let sMatchedType = null;
+        let sMatchedApproverId = null;
 
-        if (currentRow.APPROVER_ID === userID) {
-            matchedType = "APPROVER_ID";
-            matchedID = currentRow.APPROVER_ID;
-        } else if (currentRow.SUBSTITUTE_APPROVER_ID === userID) {
-            matchedType = "SUBSTITUTE_APPROVER_ID";
-            matchedID = currentRow.SUBSTITUTE_APPROVER_ID;
+        if (oCurrentRow.APPROVER_ID === sUserId) {
+            sMatchedType = Constants.EntitiesFields.APPROVER_ID;
+            sMatchedApproverId = oCurrentRow.APPROVER_ID;
+        } else {
+            sMatchedType = Constants.EntitiesFields.SUBAPPROVER_ID;
+            sMatchedApproverId = oCurrentRow.SUBSTITUTE_APPROVER_ID;
         }
 
-        const currentLevel = currentRow.LEVEL;
-        const ctxCurrent = aCtx.find(ctx => ctx.getObject().LEVEL === currentLevel);
+        const iCurrentLevel = oCurrentRow.LEVEL;
 
-        // 3) Set action on current row
-        if (comment) ctxCurrent.setProperty("COMMENT", comment);
+        const oCtxCurrent = aCtxApprovers.find(
+            oCtx => oCtx.getObject().LEVEL === iCurrentLevel
+        );
 
-        const now = new Date();
-        const tsLocal = formatTimestamp9(now, { utc: false, fractionalDigits: 7 });
+        if (sComment) oCtxCurrent.setProperty(Constants.EntitiesFields.COMMENTAPPOVAL, sComment);
 
-        ctxCurrent.setProperty("PROCESS_TIMESTAMP", tsLocal);
-        if (reason) ctxCurrent.setProperty("REJECT_REASON_ID", reason);
-        ctxCurrent.setProperty("STATUS", actionStatus);
+        const sTimestamp = DateUtility.formatTimestamp9(new Date(), { utc: false });
 
-        // 4) Mark higher levels as completed (STAT06)
-        aCtx.forEach(ctx => {
-            const obj = ctx.getObject();
-            if (obj.LEVEL > currentLevel) {
-                ctx.setProperty("STATUS", "STAT06");
+        oCtxCurrent.setProperty(Constants.EntitiesFields.TIMESTAMP, sTimestamp);
+        if (sReason) oCtxCurrent.setProperty(Constants.EntitiesFields.REJECT_REASON_ID, sReason);
+        oCtxCurrent.setProperty(Constants.EntitiesFields.STATUS, sActionStatus);
+
+        aCtxApprovers.forEach(oCtx => {
+            const oRow = oCtx.getObject();
+            if (oRow.LEVEL > iCurrentLevel) {
+                oCtx.setProperty(Constants.EntitiesFields.STATUS, Constants.ClaimStatus.COMPLETED_DISBURSEMENT);
             }
         });
-        // 5) Update header (same group)
-        const headerBinding = oModel.bindList(
-            headerSet,
+
+        const oBindingHeader = oModel.bindList(
+            sHeaderSet,
             null,
             null,
-            [new sap.ui.model.Filter(sField_header, sap.ui.model.FilterOperator.EQ, id)],
-            { $$ownRequest: true, $$updateGroupId: updateGroupId }
+            [new sap.ui.model.Filter(sHeaderIdField, sap.ui.model.FilterOperator.EQ, sId)],
+            { $$ownRequest: true, $$updateGroupId: sUpdateGroupId }
         );
-        const [hctx] = await headerBinding.requestContexts(0, 1);
-        if (hctx) {
 
-            const headerStatusField = isPre ? "STATUS" : "STATUS_ID";
-            hctx.setProperty(headerStatusField, actionStatus); // STAT04/STAT03
+        const [oCtxHeader] = await oBindingHeader.requestContexts(0, 1);
 
+        if (oCtxHeader) {
+            const sHeaderStatusField = bIsPre ? Constants.EntitiesFields.STATUS : Constants.EntitiesFields.CLAIM_STATUS;
+            oCtxHeader.setProperty(sHeaderStatusField, sActionStatus); // STAT04 / STAT03
         }
 
-        // 6) Release Budget Lock
-        const budgetBinding = oModel2.bindList(
-            sTable3,
+        const oBindingBudget = oModelView.bindList(
+            sBudgetViewTbl,
             null,
             null,
-            [new sap.ui.model.Filter(sField_header, sap.ui.model.FilterOperator.EQ, id)],
+            [new sap.ui.model.Filter(sHeaderIdField, sap.ui.model.FilterOperator.EQ, sId)],
             { $$ownRequest: true }
         );
 
-        const aCtxBudget = await budgetBinding.requestContexts(0, Infinity);
-        const budgetRows = aCtxBudget.map(ctx => ctx.getObject());
+        const aCtxBudget = await oBindingBudget.requestContexts(0, Infinity);
+        const aBudgetRows = aCtxBudget.map(oCtx => oCtx.getObject());
 
-        // Map rows
-        const dataset = budgetRows.map(r => {
+        const aDataset = aBudgetRows.map(oRow => {
 
-            const yyyy = isPre
-                ? (r.REQUEST_DATE ? String(r.REQUEST_DATE).substring(0, 4) : null)
-                : (r.SUBMITTED_DATE ? String(r.SUBMITTED_DATE).substring(0, 4) : null);
+            const sYear = bIsPre
+                ? (oRow.REQUEST_DATE ? String(oRow.REQUEST_DATE).substring(0, 4) : null)
+                : (oRow.SUBMITTED_DATE ? String(oRow.SUBMITTED_DATE).substring(0, 4) : null);
 
+            const bUseAltCC = (oRow.USE_ALT_COST_CENTER === "X" || oRow.ALT_SELECTED === "X");
 
-            const useAlt = r.USE_ALT_COST_CENTER === "X" || r.ALT_SELECTED === "X";
-            const fund_center = useAlt
-                ? (r.ALTERNATE_COST_CENTER)
-                : (r.COST_CENTER);
+            const sFundCenter = bUseAltCC
+                ? oRow.ALTERNATE_COST_CENTER
+                : oRow.COST_CENTER;
 
-
-            const amount = isPre
-                ? Number(r.EST_AMOUNT || 0)
-                : Number(r.AMOUNT || 0);
-
+            const iAmount = bIsPre
+                ? Number(oRow.EST_AMOUNT || 0)
+                : Number(oRow.AMOUNT || 0);
 
             return {
-                yyyy,
-                fund_center,
-                commitment_item: r.GL_ACCOUNT,
-                material_code: r.MATERIAL_CODE,
-                project_code: "1",
-                amount
+                yyyy: sYear,
+                fund_center: sFundCenter,
+                commitment_item: oRow.GL_ACCOUNT,
+                material_code: oRow.MATERIAL_CODE,
+                project_code: Constants.ApprovalProcessProjectCode.PROJ_CODE1,
+                amount: iAmount
             };
         });
 
-        // 7) Get Claimant email details;
-
-        const bindingView = oModel2.bindList(
-            sTable2,
+        const oBindingView = oModelView.bindList(
+            sApproverViewTbl,
             null,
             null,
-            [new Filter(idField, FilterOperator.EQ, id)],
-            {
-                $$ownRequest: true
-            }
+            [new sap.ui.model.Filter(sDetailsIdField, sap.ui.model.FilterOperator.EQ, sId)],
+            { $$ownRequest: true }
         );
 
-        const aCtx_binding = await bindingView.requestContexts(0, Infinity);
-        const rows_binding = aCtx_binding.map(ctx => ctx.getObject());
+        const aCtxView = await oBindingView.requestContexts(0, Infinity);
+        const aRowView = aCtxView.map(oCtx => oCtx.getObject());
 
-        const currentRow_level = rows_binding.find(r =>
-            Number(r.LEVEL) === Number(currentLevel)
+        const oCurrentRowView = aRowView.find(oRow =>
+            Number(oRow.LEVEL) === Number(iCurrentLevel)
         );
 
-        let currentEmail = null;
-        let currentName = null;
+        let sCurrentEmail = null;
+        let sCurrentName = null;
 
-        if (matchedType === "APPROVER_ID") {
-            currentEmail = currentRow_level.APPROVER_EMAIL;
-            currentName = currentRow_level.APPROVER_NAME;
+        if (sMatchedType === Constants.EntitiesFields.APPROVER_ID) {
+            sCurrentEmail = oCurrentRowView.APPROVER_EMAIL;
+            sCurrentName = oCurrentRowView.APPROVER_NAME;
         } else {
-            currentEmail = currentRow_level.SUBSTITUTE_EMAIL;
-            currentName = currentRow_level.SUBSTITUTE_NAME;
+            sCurrentEmail = oCurrentRowView.SUBSTITUTE_EMAIL;
+            sCurrentName = oCurrentRowView.SUBSTITUTE_NAME;
         }
 
-        const claimantName = currentRow_level?.EMPLOYEE_NAME ?? null;
-        const claimantEmail = currentRow_level?.EMPLOYEE_EMAIL ?? null;
+        const sClaimantName = oCurrentRowView?.EMPLOYEE_NAME ?? null;
+        const sClaimantEmail = oCurrentRowView?.EMPLOYEE_EMAIL ?? null;
 
-        const payloads = [];
+        const aPayloads = [];
+        const sMessageKey = null;
 
-
-
-        //Email to Next Approver
-        payloads.push({
-            ApproverName: currentName,
-            SubmissionDate: todayYMD(),
-            ClaimantName: claimantName,
+        aPayloads.push({
+            ApproverName: sCurrentName,
+            SubmissionDate: DateUtility.toYMD(new Date()),
+            ClaimantName: sClaimantName,
             ClaimType: sType,
-            ClaimID: id,
-            RecipientName: claimantName,
-            Action: sAction,
-            ReceiverEmail: claimantEmail,
-            NextApproverName: "N/A",
-            RejectReason: reason,
-            ApproverComments: comment
+            ClaimID: sId,
+            RecipientName: sClaimantName,
+            Action: sActionText,
+            ReceiverEmail: sClaimantEmail,
+            NextApproverName: Constants.ApprovalProcessAction.NOTAVAILABLE,
+            RejectReason: sReason,
+            ApproverComments: sComment
         });
-
-        // 8) Submit this group
-        // 8) Submit this group
         try {
-            await oModel.submitBatch(updateGroupId);
+            await oModel.submitBatch(sUpdateGroupId);
 
-            sap.m.MessageToast.show(
-                actionStatus === "STAT04" ? "Request rejected successfully" : "Request sent back successfully"
-            );
+                    
             return {
-                payloads,
-                dataset,
-                submissionType,
+                payloads: aPayloads,
+                dataset: aDataset,
+                submissionType: sSubmissionType,
                 info: {
-                    currentLevel: Number(currentLevel),
+                    currentLevel: Number(iCurrentLevel),
                     type: sType,
-                    id,
-                    currentProcessor: { name: currentName, email: currentEmail, matchedType }
-                }
+                    id: sId,
+                    currentProcessor: {
+                        name: sCurrentName,
+                        email: sCurrentEmail,
+                        matchedType: sMatchedType
+                    }
+                },
+                sMessageKey:
+                    sActionStatus === Constants.ClaimStatus.REJECTED
+                        ? Utility.getText(oController, "request_rejected")
+                        : Utility.getText(oController, "request_sent_back")
+
             };
 
-        } catch (err) {
-            console.error("Approval batch failed, skipping budget processing", err);
-            throw err;   // Optionally rethrow to stop further logic
+        } catch (oError) {
+            throw oError;
         }
     }
 
-
-    // Helper: pad with leading zeros
-    function pad(n, width = 2) {
-        return String(n).padStart(width, "0");
-    }
-
-    // Helper: format Date into "YYYY-MM-DD HH:mm:ss.fffffffff"
-    // - utc=true  -> use UTC components
-    // - utc=false -> use local time components (e.g., Asia/Kuala_Lumpur)
-    function formatTimestamp9(date = new Date(), { utc = true } = {}) {
-        const Y = utc ? date.getUTCFullYear() : date.getFullYear();
-        const M = utc ? date.getUTCMonth() + 1 : date.getMonth() + 1;
-        const D = utc ? date.getUTCDate() : date.getDate();
-        const h = utc ? date.getUTCHours() : date.getHours();
-        const m = utc ? date.getUTCMinutes() : date.getMinutes();
-        const s = utc ? date.getUTCSeconds() : date.getSeconds();
-        const ms = utc ? date.getUTCMilliseconds() : date.getMilliseconds();
-
-        // JavaScript only has milliseconds (3 digits).
-        // To reach 9 digits, we zero-pad the remaining 6 (micro/nano) places.
-        const fractional9 = pad(ms, 3) + "000000";
-
-        return (
-            `${Y}-${pad(M)}-${pad(D)} ` +
-            `${pad(h)}:${pad(m)}:${pad(s)}.` +
-            `${fractional9}`
-        );
-    }
     return {
         approveMultiLevel: _approveMultiLevel,
         rejectOrSendBackMultiLevel: _rejectOrSendBackMultiLevel
