@@ -5,7 +5,7 @@ sap.ui.define([
     "./LuarNegara",
     "./KursusDalam",
     "./KursusLuar",
-    "./Pelbagai",
+    "./Pelbagai"
 ], function (Filter, FilterOperator, DalamNegara, LuarNegara, KursusDalam, KursusLuar, Pelbagai) {
     "use strict";
     return {
