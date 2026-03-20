@@ -73,11 +73,6 @@ sap.ui.define([
 		onInit: async function () {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 
-			var sClaimID = "CLM26000000534";
-			var oModelTable = this.getOwnerComponent().getModel();
-			var oModelView = this.getOwnerComponent().getModel("employee_view");
-			workflowApproval.onClaimsApproverDetermination(oModelTable, sClaimID, oModelView)
-
 
 			// oReportModel
 			var oReportModel = new JSONModel({
