@@ -17,7 +17,7 @@ sap.ui.define([
 			data.req_header = { reqid: "", grptype: "IND" };
 			data.req_item_rows = [];
 			data.req_item = data.req_item || {
-				cash_advance: "no_cashadv"
+				cash_advance: false
 			};
 			data.participant = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
 			data.view = "view";
@@ -31,7 +31,7 @@ sap.ui.define([
 
 		async getPARHeaderList (oReq, oModel) {
 
-			const oListBinding = oModel.bindList("/ZEMP_REQUEST_VIEW", undefined,
+			const oListBinding = oModel.bindList("/ZEMP_REQUEST_EE_VIEW", undefined,
 				[new Sorter("modifiedAt", true)], null,
 				{
 					$$ownRequest: true,

@@ -11,6 +11,7 @@ sap.ui.define([
     return {
         onEligibilityCheck: async function (oModel, oConstant, oPayload) {
             // Get Employee ID
+            // oPayload.EmpId = 1234567;
             const oEmpBindList = oModel.bindList("/ZEMP_MASTER");
 
             var aEmpFilters = [];
@@ -20,15 +21,16 @@ sap.ui.define([
 
             aEmpFilters.push(new Filter(aEmpAndFilters));
             aEmpFilters = new Filter(aEmpFilters, true);
-
+           
             const oEmp = await oEmpBindList.filter(aEmpFilters).requestContexts().then(function (aContexts) {
                 // Process the filtered data contexts
                 // var sGrade = aContexts.map(context => context.getObject())[0].GRADE;
+                 console.log("aContext",aContexts);
                 var oEmp = aContexts.map(context => context.getObject())[0];
                 // var aEmp = aContexts.map(context => context.getObject());
                 return oEmp;
             });
-
+ 
             const oRulesBindList = oModel.bindList("/ZELIGIBILITY_RULE");
 
              // Get eligibility rules based on Employee Personal Grade
@@ -54,7 +56,7 @@ sap.ui.define([
                 var aRules = aContexts.map(context => context.getObject());
                 return aRules;
             });
-
+            
             // LuarNegara.onEligibleCheck(oModel, oConstant, oPayload, oEmp, aRules);
             switch (oPayload.ClaimType) {
                 case oConstant.ClaimType.DLM_NEGARA:
