@@ -1,104 +1,135 @@
 sap.ui.define([
-    "./ComparisonOperators"
-], function (ComparisonOperators) {
+    "./ComparisonOperators",
+    "claima/utils/Constants"
+], function (ComparisonOperators, Constants) {
     "use strict";
 
     return {
-        onEligibleCheck(oConstant, oPayload, aRules) {
+        /**
+		 * main function for eligibility check - to find the matching eligibility rule and call validateClaimItem function to validate against the rule
+		 * @public
+		 * @param {Object} oPayload - payload contains user input passed from frontend
+         * @param {Array} aRules - list of eligibility rule from backend
+         * @returns {Object} - return original payload but with result field filled
+		 */
+        onEligibleCheck(oPayload, aRules) {
 
             var oRule, aFilteredRules;
 
-            var aPayload = this._parsePayload(oPayload, oConstant);
+            // to extract the key values from oPayload
+            var aPayload = this._parsePayload(oPayload);
 
-            if (aPayload.CLAIM_TYPE_ITEM_ID === oConstant.ClaimTypeItem.FLIGHT_L) {
+            //to find the matching eligibility rule for FLIGHT & TAMBANG as these 2 may return more than 1 eligible rule value
+            if (oPayload.ClaimTypeItem === Constants.ClaimTypeItem.FLIGHT_L) {
                 aFilteredRules = aRules.filter(function (rule) {
-                    return rule.FLIGHT_CLASS_ID === aPayload[oConstant.FIELDNAME.FLIGHT_CLASS_ID];
+                    return rule.FLIGHT_CLASS_ID === aPayload[Constants.FIELDNAME.FLIGHT_CLASS_ID];
                 })
 
                 oRule = aFilteredRules[0];
             }
-            else if (aPayload.CLAIM_TYPE_ITEM_ID === oConstant.ClaimTypeItem.TAMBANG) {
+            else if (oPayload.ClaimTypeItem === Constants.ClaimTypeItem.TAMBANG) {
                 aFilteredRules = aRules.filter(function (rule) {
-                    return rule.TRANSPORT_CLASS === aPayload[oConstant.FIELDNAME.FARE_TYPE_ID];
+                    return rule.TRANSPORT_CLASS === aPayload[Constants.FIELDNAME.FARE_TYPE_ID];
                 })
 
                 oRule = aFilteredRules[0];
             }
             else {
+                // DOBI, HOTEL_L, LODGING_L will only return single eligible rule value based on user's personal grade
                 oRule = aRules[0];
             }
 
-            this._validateClaimItem(aPayload, oConstant, oRule, oPayload);
+            this._validateClaimItem(aPayload, oRule, oPayload);
             return oPayload;
 
         },
 
-        _parsePayload(oPayload, oConstant) {
-            var CLAIM_TYPE_ITEM_ID, TRAVEL_DAYS_ID, ELIGIBLE_AMOUNT, FLIGHT_CLASS_ID, FARE_TYPE_ID;
-
-            CLAIM_TYPE_ITEM_ID = oPayload.ClaimTypeItem;
+         /**
+		 * To parse oPayload.CheckFields array into a key value object. To avoid repeated array searching when accessing field values
+		 * @private
+		 * @param {Object} oPayload - payload contains user input passed from frontend
+         * @returns {Object} - return flat key value object of selected claim type item
+		 */
+        _parsePayload(oPayload) {
+            var TRAVEL_DAYS_ID, FLIGHT_CLASS_ID, FARE_TYPE_ID;
 
             for (let index = 0; index < oPayload.CheckFields.length; index++) {
-                if (oPayload.CheckFields[index].fieldName === oConstant.FIELDNAME.TRAVEL_DAYS_ID) {
+                if (oPayload.CheckFields[index].fieldName === Constants.FIELDNAME.TRAVEL_DAYS_ID) {
                     TRAVEL_DAYS_ID = oPayload.CheckFields[index].value;
-                } else if (oPayload.CheckFields[index].fieldName === oConstant.FIELDNAME.ELIGIBLE_AMOUNT) {
-                    ELIGIBLE_AMOUNT = oPayload.CheckFields[index].value;
-                } else if (oPayload.CheckFields[index].fieldName === oConstant.FIELDNAME.FLIGHT_CLASS_ID) {
+                } else if (oPayload.CheckFields[index].fieldName === Constants.FIELDNAME.FLIGHT_CLASS_ID) {
                     FLIGHT_CLASS_ID = oPayload.CheckFields[index].value;
-                } else if (oPayload.CheckFields[index].fieldName === oConstant.FIELDNAME.FARE_TYPE_ID) {
+                } else if (oPayload.CheckFields[index].fieldName === Constants.FIELDNAME.FARE_TYPE_ID) {
                     FARE_TYPE_ID = oPayload.CheckFields[index].value;
                 }
             }
 
-            return { CLAIM_TYPE_ITEM_ID, TRAVEL_DAYS_ID, ELIGIBLE_AMOUNT, FLIGHT_CLASS_ID, FARE_TYPE_ID };
+            return { TRAVEL_DAYS_ID, FLIGHT_CLASS_ID, FARE_TYPE_ID };
         },
-        _validateClaimItem(aPayload, oConstant, oRule, oPayload) {
+
+         /**
+		 * Validates claim item against eligibility rule
+         * @private
+		 * @param {Object} aPayload - flat parsed payload from _parsePayload
+         * @param {Object} oRule - matched eligibility rule from aRules
+         * @returns {Object} oPayload - return original payload but with result field filled
+		 */
+        _validateClaimItem(aPayload, oRule, oPayload) {
             var iIndex;
 
-            switch (aPayload.CLAIM_TYPE_ITEM_ID) {
-                case oConstant.ClaimTypeItem.DOBI:
-                    iIndex = oPayload.CheckFields.findIndex((field) =>
-                        field.fieldName === oConstant.FIELDNAME.TRAVEL_DAYS_ID);
+            switch (oPayload.ClaimTypeItem) {
+                // DOBI - return true if user's traveling days >= eligible min days
+                case Constants.ClaimTypeItem.DOBI:
+                    iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constants.FIELDNAME.TRAVEL_DAYS_ID);
+                    
                     if (!oRule) {
                         oPayload.CheckFields[iIndex].result = false;
-                    } else {
+                    } 
+                    // calculate min days of traveling days required
+                    else {
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.GreaterEquals(
                             oPayload.CheckFields[iIndex].value,
                             oRule.TRAVEL_DAYS_ID
                         );
                     }
                     break;
+                
+                // FLIGHT - return true if selected flight class matches user's personal grade
+                case Constants.ClaimTypeItem.FLIGHT_L:
+                    iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constants.FIELDNAME.FLIGHT_CLASS_ID);
 
-                case oConstant.ClaimTypeItem.FLIGHT_L:
-                    iIndex = oPayload.CheckFields.findIndex((field) =>
-                        field.fieldName === oConstant.FIELDNAME.FLIGHT_CLASS_ID);
+                    // if no rule matches the selected flight class, return false
                     if (!oRule) {
                         oPayload.CheckFields[iIndex].result = false;
-                    } else {
+                    } 
+                    else {
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(
                             oPayload.CheckFields[iIndex].value,
                             oRule.FLIGHT_CLASS_ID
                         );
                     }
                     break;
+                
+                // HOTEL & LODGING - return true if claim amount is less than eligible amount * travel days
+                case Constants.ClaimTypeItem.HOTEL_L:
+                case Constants.ClaimTypeItem.LODGING_L:
+                    iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constants.FIELDNAME.ELIGIBLE_AMOUNT);
 
-                case oConstant.ClaimTypeItem.HOTEL_L:
-                case oConstant.ClaimTypeItem.LODGING_L:
-                    iIndex = oPayload.CheckFields.findIndex((field) =>
-                        field.fieldName === oConstant.FIELDNAME.ELIGIBLE_AMOUNT);
                     if (!oRule) {
                         oPayload.CheckFields[iIndex].result = false;
-                    } else {
+                    } 
+                    // calculate max claim amount allowed
+                    else {
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
                             parseFloat(oPayload.CheckFields[iIndex].value),
                             parseFloat(oRule.ELIGIBLE_AMOUNT) * parseFloat(aPayload.TRAVEL_DAYS_ID)
                         );
                     }
                     break;
-
-                case oConstant.ClaimTypeItem.TAMBANG:
+                
+                // TAMBANG - return true if selected transport class matches user's personal grade
+                case Constants.ClaimTypeItem.TAMBANG:
                     iIndex = oPayload.CheckFields.findIndex((field) =>
-                        field.fieldName === oConstant.FIELDNAME.FARE_TYPE_ID);
+                        field.fieldName === Constants.FIELDNAME.FARE_TYPE_ID);
                     if (!oRule) {
                         oPayload.CheckFields[iIndex].result = false;
                     } else {
