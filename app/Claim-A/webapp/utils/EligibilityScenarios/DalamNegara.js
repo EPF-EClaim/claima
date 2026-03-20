@@ -10,7 +10,7 @@ sap.ui.define([
 		 * @public
 		 * @param {Object} oPayload - payload contains user input passed from frontend
          * @param {Array} aRules - list of eligibility rule from backend
-         * @returns {Object} - return original payload but with result field filled
+         * @returns {Object} oPayload - return original payload but with result field filled
 		 */
         onEligibleCheck(oPayload, aRules) {
 
@@ -48,7 +48,7 @@ sap.ui.define([
 		 * To parse oPayload.CheckFields array into a key value object. To avoid repeated array searching when accessing field values
 		 * @private
 		 * @param {Object} oPayload - payload contains user input passed from frontend
-         * @returns {Object} - return flat key value object of selected claim type item
+         * @returns {Object} aPayload - return key user input value in the form of object based on selected claim type item
 		 */
         _parsePayload(oPayload) {
             var TRAVEL_DAYS_ID, FLIGHT_CLASS_ID, FARE_TYPE_ID;
@@ -71,7 +71,6 @@ sap.ui.define([
          * @private
 		 * @param {Object} aPayload - flat parsed payload from _parsePayload
          * @param {Object} oRule - matched eligibility rule from aRules
-         * @returns {Object} oPayload - return original payload but with result field filled
 		 */
         _validateClaimItem(aPayload, oRule, oPayload) {
             var iIndex;
