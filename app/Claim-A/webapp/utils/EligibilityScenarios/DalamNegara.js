@@ -69,8 +69,9 @@ sap.ui.define([
          /**
 		 * Validates claim item against eligibility rule
          * @private
-		 * @param {Object} aPayload - flat parsed payload from _parsePayload
+		 * @param {Array} aPayload - flat parsed payload from _parsePayload
          * @param {Object} oRule - matched eligibility rule from aRules
+         * @param {Object} oPayload - original payload from user input
 		 */
         _validateClaimItem(aPayload, oRule, oPayload) {
             var iIndex;
