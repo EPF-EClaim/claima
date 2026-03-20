@@ -906,5 +906,16 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         message : String;
     };
 
+    entity ZROLEHIERARCHY                as
+        projection on ECLAIM.ZROLEHIERARCHY {
+            key ROLE,
+                RANK
+        };
+
+    entity ZCONSTANTS                    as
+        projection on ECLAIM.ZCONSTANTS {
+            key ID,
+                VALUE
+        };
 
 };

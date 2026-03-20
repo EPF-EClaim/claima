@@ -1255,4 +1255,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
     action   batchCreateCourse(course: many ZTRAIN_COURSE_PART)        returns Response;
 
     action   batchCreateBudget(budget: many ZBUDGET)                   returns Response;
+
+    entity ZROLEHIERARCHY          as projection on ECLAIM.ZROLEHIERARCHY;
+
+    entity ZCONSTANTS          as projection on ECLAIM.ZCONSTANTS;
+
 };
