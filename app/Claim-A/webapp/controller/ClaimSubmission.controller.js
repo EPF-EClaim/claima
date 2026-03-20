@@ -53,6 +53,7 @@ sap.ui.define([
 	ApproverUtility,
 	workflowApproval,
 	DateUtility,
+	Constants
 ) {
 	"use strict";
 
@@ -218,7 +219,6 @@ sap.ui.define([
 				}
 				if (oClaimSubmissionModel.getProperty("/view_only")) {
 					this._setClaimItemTableToolbar(false);
-					//this._setClaimItemTableToolbar();
 				}
 
 				// show approval log fragment for non-draft
@@ -1589,7 +1589,6 @@ sap.ui.define([
 
 			this.bIsApproving = true;
 
-
 			try {
 				const oReject = this.getView().getModel("Reject");
 				const sMode = this.getView().getModel("Type")?.getProperty("/mode");
@@ -1620,7 +1619,8 @@ sap.ui.define([
 						sClaimId,
 						sUserId,
 						sComment,
-						oEmployeeViewModel
+						oEmployeeViewModel,
+						this
 					);
 
 					if (Array.isArray(aPayloadEmail) && aPayloadEmail.length > 0) {
@@ -1628,16 +1628,20 @@ sap.ui.define([
 							await workflowApproval.onSendEmailApprover(oModel, oPayloadEmail);
 						}
 					}
-					MessageToast.show(Utility.getText(this, sMessageKey));
+					MessageToast.show(sMessageKey);
 					if (this._oApproveDialog) {
 						this._oApproveDialog.close();
 					}
 
-					this._fnGoToDashboard();
+					setTimeout(() => {
+						this._fnGoToDashboard();
+					}, 400);
 
 				} catch (oErrorMessage) {
 					MessageToast.show(Utility.getText(this, oErrorMessage.sCode));
-					this._fnGoToDashboard();
+					setTimeout(() => {
+						this._fnGoToDashboard();
+					}, 400);
 				} finally {
 					BusyIndicator.hide();
 				}
@@ -1647,7 +1651,7 @@ sap.ui.define([
 				return;
 
 			} finally {
-				this._bBusyApproving = false;
+				this.bIsApproving = false;
 			}
 
 		},
@@ -1680,7 +1684,7 @@ sap.ui.define([
 				const oClaimModel = this.getView().getModel("claimsubmission_input");
 				const sClaimId = oClaimModel?.getProperty("/claim_header/claim_id")?.trim();
 
-				const reject_status = this._oConstant.ClaimStatus.REJECTED; // REJECT
+				const sRejectStatus = this._oConstant.ClaimStatus.REJECTED; // REJECT
 
 				const {
 					payloads: aPayloads,
@@ -1694,28 +1698,33 @@ sap.ui.define([
 					sRejectStatus,
 					sReason,
 					sComment,
-					oEmployeeViewModel
+					oEmployeeViewModel,
+					this
 				);
 
 				await budgetCheck.budgetProcessingTest(
 					oModelMain,
 					aDataset,
 					sSubmissionType,
-					"release"
+					this._oConstant.ApprovalProcessAction.RELEASE_IND
 				);
 
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
 				}
 
-				MessageToast.show(Utility.getText(this, sMessageKey));
+				MessageToast.show(sMessageKey);
 				if (this._oRejectDialog) {
 					this._oRejectDialog.close();
 				}
-				this._fnGoToDashboard();
+				setTimeout(() => {
+					this._fnGoToDashboard();
+				}, 400);
 			} catch (oErrorReject) {
 				MessageToast.show(Utility.getText(this, oErrorReject.sCode));
-				this._fnGoToDashboard();
+				setTimeout(() => {
+					this._fnGoToDashboard();
+				}, 400);
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -1762,29 +1771,35 @@ sap.ui.define([
 					sSendBackStatus,
 					sReason,
 					sComment,
-					oEmployeeViewModel
+					oEmployeeViewModel,
+					this
 				);
 
 				await budgetCheck.budgetProcessingTest(
 					oModelMain,
 					aDataset,
 					sSubmissionType,
-					"release"
+					this._oConstant.ApprovalProcessAction.RELEASE_IND
 				);
 
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
 				}
-				MessageToast.show(Utility.getText(this, sMessageKey));
+				MessageToast.show(sMessageKey);
 				if (this._oSendBackDialog) {
 					this._oSendBackDialog.close();
 				}
+				setTimeout(() => {
+					this._fnGoToDashboard();
+				}, 400);
 
-				this._fnGoToDashboard();
+
 
 			} catch (oErrorSendBack) {
 				MessageToast.show(Utility.getText(this, oErrorSendBack.sCode));
-				this._fnGoToDashboard();
+				setTimeout(() => {
+					this._fnGoToDashboard();
+				}, 400);
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -2213,7 +2228,7 @@ sap.ui.define([
 			aTemp.push(oNewItem);
 
 			// Check duplicates
-			if (this._fnCheckDuplicateClaimItems(aTemp)) {
+			if (this._CheckDuplicateClaimItems(aTemp)) {
 				MessageToast.show(Utility.getText(this, "msg_duplication_prompt"));
 				return;
 			}
@@ -2864,7 +2879,7 @@ sap.ui.define([
 
 				var aItems = oInputModel.getProperty("/claim_items") || [];
 
-				if (this._fnCheckDuplicateClaimItems(aItems)) {
+				if (this._CheckDuplicateClaimItems(aItems)) {
 					MessageToast.show(Utility.getText(this, "msg_duplication_prompt"));
 					BusyIndicator.hide();
 					return;
@@ -3098,7 +3113,7 @@ sap.ui.define([
 
 			var aItems = oInputModel.getProperty("/claim_items") || [];
 
-			if (this._fnCheckDuplicateClaimItems(aItems)) {
+			if (this._CheckDuplicateClaimItems(aItems)) {
 				MessageToast.show(Utility.getText(this, "msg_duplication_prompt"));
 				BusyIndicator.hide();
 				return;
@@ -3326,19 +3341,7 @@ sap.ui.define([
 
 		//Added for duplication check items via Save Draft and Submit Report btn
 
-		_fnCheckDuplicateClaimItems: function (aDupCheckItems) {
-
-
-			/* 			const oDateFormat = DateFormat.getDateInstance({
-							pattern: this._oConstant.Date.DATEFORMAT
-						});
-			
-						function format(iDate) {
-							if (!iDate) return "";
-							const sDateFormat = new Date(iDate);
-							if (isNaN(sDateFormat)) return "";
-							return oDateFormat.format(sDateFormat);
-						} */
+		_CheckDuplicateClaimItems: function (aDupCheckItems) {
 
 			const aDuplicateSet = new Set();
 

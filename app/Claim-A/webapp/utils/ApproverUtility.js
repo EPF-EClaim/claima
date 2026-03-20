@@ -9,20 +9,20 @@ sap.ui.define([
 ], function (Filter, FilterOperator, FinalApproveStep, Constants, Utility, DateUtility) {
     "use strict";
 
-    async function _approveMultiLevel(oModel, sId, sUserId, sComment, oModelView) {
+    async function _approveMultiLevel(oModel, sId, sUserId, sComment, oModelView, oController) {
 
         const sSubmissionType = sId.substring(0, 3);
 
         const sTable = sSubmissionType === Constants.ApprovalProcess.REQUEST
-            ? Constants.ApprovalProcess.DETAILS_PREAPPROVAL
-            : Constants.ApprovalProcess.DETAILS_CLAIMS
+            ? Constants.Entities.ZAPPROVER_DETAILS_PREAPPROVAL
+            : Constants.Entities.ZAPPROVER_DETAILS_CLAIMS
 
-        const sField = sSubmissionType === Constants.ApprovalProcess.REQUEST ? Constants.ApprovalProcess.PREAPPROVALID : Constants.ApprovalProcess.CLAIMID;
+        const sField = sSubmissionType === Constants.ApprovalProcess.REQUEST ? Constants.EntitiesFields.PREAPPROVALID : Constants.EntitiesFields.CLAIMID;
         const sType = sSubmissionType === Constants.ApprovalProcess.REQUEST ? Constants.ApprovalProcess.REQUESTTYPE : Constants.ApprovalProcess.CLAIMTYPE;
 
         const sTable2 = sSubmissionType === Constants.ApprovalProcess.REQUEST
-            ? Constants.ApprovalProcess.VIEW_PREAPPROVAL
-            : Constants.ApprovalProcess.VIEW_CLAIMS;
+            ? Constants.Entities.ZEMP_APPROVER_REQUEST_DETAILS
+            : Constants.Entities.ZEMP_APPROVER_CLAIM_DETAILS;
 
         let aPayloads = [];
         let sCurrentEmail = null;
@@ -49,17 +49,17 @@ sap.ui.define([
 
 
         if (!oCurrentRow) {
-            throw { sCode: Constants.ApprovalProcess.ECODE1 };
+            throw { sCode: Utility.getText(oController, "error_not_current_processor") };
         }
 
         let sMatchedType = null;
         let sMatchedId = null;
 
         if (oCurrentRow.APPROVER_ID === sUserId) {
-            sMatchedType = Constants.ApprovalProcess.APPROVER_ID;
+            sMatchedType = Constants.EntitiesFields.APPROVER_ID;
             sMatchedId = oCurrentRow.APPROVER_ID;
         } else {
-            sMatchedType = Constants.ApprovalProcess.SUBAPPROVER_ID;
+            sMatchedType = Constants.EntitiesFields.SUBAPPROVER_ID;
             sMatchedId = oCurrentRow.SUBSTITUTE_APPROVER_ID;
         }
 
@@ -69,13 +69,13 @@ sap.ui.define([
         const oCtxCurrent = aContextList.find(oCtx => oCtx.getObject().LEVEL === iCurrentLevel);
 
         if (sComment) {
-            oCtxCurrent.setProperty(Constants.ApprovalProcess.COMMENTAPPOVAL, sComment);
+            oCtxCurrent.setProperty(Constants.EntitiesFields.COMMENTAPPOVAL, sComment);
         }
 
         const sTimestamp = DateUtility.formatTimestamp9(new Date(), { utc: false });
 
-        oCtxCurrent.setProperty(Constants.ApprovalProcess.TIMESTAMP, sTimestamp);
-        oCtxCurrent.setProperty(Constants.ApprovalProcess.STATUS, Constants.ClaimStatus.APPROVED); // APPROVED
+        oCtxCurrent.setProperty(Constants.EntitiesFields.TIMESTAMP, sTimestamp);
+        oCtxCurrent.setProperty(Constants.EntitiesFields.STATUS, Constants.ClaimStatus.APPROVED); // APPROVED
 
         // STEP 4: Activate next level
         const iNextLevel = iCurrentLevel + 1;
@@ -83,7 +83,7 @@ sap.ui.define([
 
         if (oCtxNext) {
 
-            oCtxNext.setProperty(Constants.ApprovalProcess.STATUS, Constants.ClaimStatus.PENDING_APPROVAL);
+            oCtxNext.setProperty(Constants.EntitiesFields.STATUS, Constants.ClaimStatus.PENDING_APPROVAL);
 
             // STEP 5: Email Data Model
             const oBindingView = oModelView.bindList(
@@ -98,7 +98,7 @@ sap.ui.define([
             const aRowView = aContextView.map(oCtx => oCtx.getObject());
 
             const oCurrentRowView = aRowView.find(oRow => Number(oRow.LEVEL) === Number(iCurrentLevel));
-            const bMatchedAsApprover = (sMatchedType === Constants.ApprovalProcess.APPROVER_ID);
+            const bMatchedAsApprover = (sMatchedType === Constants.EntitiesFields.APPROVER_ID);
 
             sCurrentEmail = bMatchedAsApprover ? oCurrentRowView.APPROVER_EMAIL : oCurrentRowView.SUBSTITUTE_EMAIL;
             sCurrentName = bMatchedAsApprover ? oCurrentRowView.APPROVER_NAME : oCurrentRowView.SUBSTITUTE_NAME;
@@ -133,10 +133,10 @@ sap.ui.define([
                     ClaimType: sType,
                     ClaimID: sId,
                     RecipientName: sNextApproverName,
-                    Action: Constants.ApprovalProcess.ACTION_NOTIFY,
+                    Action: Constants.ApprovalProcessAction.ACTION_NOTIFY,
                     ReceiverEmail: sNextApproverEmail,
                     NextApproverName: sNextApproverName,
-                    RejectReason: Constants.ApprovalProcess.NOTAVAILABLE,
+                    RejectReason: Constants.ApprovalProcessAction.NOTAVAILABLE,
                     ApproverComments: sComment
                 });
 
@@ -149,10 +149,10 @@ sap.ui.define([
                         ClaimType: sType,
                         ClaimID: sId,
                         RecipientName: sNextSubName,
-                        Action: Constants.ApprovalProcess.ACTION_NOTIFY,
+                        Action: Constants.ApprovalProcessAction.ACTION_NOTIFY,
                         ReceiverEmail: sNextSubEmail,
                         NextApproverName: sNextSubName,
-                        RejectReason: Constants.ApprovalProcess.NOTAVAILABLE,
+                        RejectReason: Constants.ApprovalProcessAction.NOTAVAILABLE,
                         ApproverComments: sComment
                     });
                 }
@@ -166,10 +166,10 @@ sap.ui.define([
                 ClaimType: sType,
                 ClaimID: sId,
                 RecipientName: sClaimantName,
-                Action: Constants.ApprovalProcess.ACTION_APPROVE,
+                Action: Constants.ApprovalProcessAction.ACTION_APPROVE,
                 ReceiverEmail: sClaimantEmail,
                 NextApproverName: sNextApproverDisplayName,
-                RejectReason: Constants.ApprovalProcess.NOTAVAILABLE,
+                RejectReason: Constants.ApprovalProcessAction.NOTAVAILABLE,
                 ApproverComments: sComment
             });
 
@@ -188,11 +188,11 @@ sap.ui.define([
 
             const oCurrentRowView = aRowsBinding.find(oRow => Number(oRow.LEVEL) === Number(iCurrentLevel));
 
-            sCurrentEmail = (sMatchedType === Constants.ApprovalProcess.APPROVER_ID)
+            sCurrentEmail = (sMatchedType === Constants.EntitiesFields.APPROVER_ID)
                 ? oCurrentRowView.APPROVER_EMAIL
                 : oCurrentRowView.SUBSTITUTE_EMAIL;
 
-            sCurrentName = (sMatchedType === Constants.ApprovalProcess.APPROVER_ID)
+            sCurrentName = (sMatchedType === Constants.EntitiesFields.APPROVER_ID)
                 ? oCurrentRowView.APPROVER_NAME
                 : oCurrentRowView.SUBSTITUTE_NAME;
 
@@ -206,7 +206,7 @@ sap.ui.define([
                 ClaimType: sType,
                 ClaimID: sId,
                 RecipientName: sClaimantName,
-                Action: Constants.ApprovalProcess.ACTION_APPROVE,
+                Action: Constants.ApprovalProcessAction.ACTION_APPROVE,
                 ReceiverEmail: sClaimantEmail
             };
 
@@ -214,6 +214,7 @@ sap.ui.define([
         }
 
         await oModel.submitBatch("$auto");
+        var sMessage = Utility.getText(oController, "approval_successful")
 
         return {
             payloads: aPayloads,
@@ -229,7 +230,7 @@ sap.ui.define([
                 }
 
             },
-            sMessageKey: Constants.ApprovalProcess.APPROVE_SUCCESS
+            sMessageKey: sMessage
         };
     }
 
@@ -241,26 +242,27 @@ sap.ui.define([
         sActionStatus,
         sReason,
         sComment,
-        oModelView
+        oModelView,
+        oController
     ) {
         const sSubmissionType = sId.substring(0, 3);
         const bIsPre = sSubmissionType === Constants.ApprovalProcess.REQUEST;
 
-        const sDetailsSet = bIsPre ? Constants.ApprovalProcess.DETAILS_PREAPPROVAL : Constants.ApprovalProcess.DETAILS_CLAIMS;
-        const sHeaderSet = bIsPre ? Constants.ApprovalProcess.REQUEST_HEADER : Constants.ApprovalProcess.CLAIM_HEADER;
-        const sDetailsIdField = bIsPre ? Constants.ApprovalProcess.PREAPPROVALID : Constants.ApprovalProcess.CLAIMID;
-        const sHeaderIdField = bIsPre ? Constants.ApprovalProcess.REQUESTID : Constants.ApprovalProcess.CLAIMID;
+        const sDetailsSet = bIsPre ? Constants.Entities.ZAPPROVER_DETAILS_PREAPPROVAL : Constants.Entities.ZAPPROVER_DETAILS_CLAIMS;
+        const sHeaderSet = bIsPre ? Constants.Entities.ZREQUEST_HEADER : Constants.Entities.ZCLAIM_HEADER;
+        const sDetailsIdField = bIsPre ? Constants.EntitiesFields.PREAPPROVALID : Constants.EntitiesFields.CLAIMID;
+        const sHeaderIdField = bIsPre ? Constants.EntitiesFields.REQUESTID : Constants.EntitiesFields.CLAIMID;
 
-        const sActionText = sActionStatus === Constants.ClaimStatus.REJECTED ? Constants.ApprovalProcess.STATUS_REJECT : Constants.ApprovalProcess.STATUS_SENDBACK;
+        const sActionText = sActionStatus === Constants.ClaimStatus.REJECTED ? Constants.ApprovalProcessStatus.STATUS_REJECT : Constants.ApprovalProcessStatus.STATUS_SENDBACK;
         const sType = bIsPre ? Constants.ApprovalProcess.REQUESTTYPE : Constants.ApprovalProcess.CLAIMTYPE;
 
         const sApproverViewTbl = bIsPre
-            ? Constants.ApprovalProcess.VIEW_PREAPPROVAL
-            : Constants.ApprovalProcess.VIEW_CLAIMS;
+            ? Constants.Entities.ZEMP_APPROVER_REQUEST_DETAILS
+            : Constants.Entities.ZEMP_APPROVER_CLAIM_DETAILS;
 
         const sBudgetViewTbl = bIsPre
-            ? Constants.ApprovalProcess.VIEW_BUDGET_REQUEST
-            : Constants.ApprovalProcess.VIEW_BUDGET_CLAIM;
+            ? Constants.Entities.ZEMP_REQUEST_BUDGET_CHECK
+            : Constants.Entities.ZEMP_CLAIM_BUDGET_CHECK;
 
         const sUpdateGroupId = Constants.ApprovalProcess.SET_GROUP;
 
@@ -281,17 +283,17 @@ sap.ui.define([
         );
 
         if (!oCurrentRow) {
-            throw { sCode: Constants.ApprovalProcess.ECODE1 };
+            throw { sCode: Utility.getText(oController, "error_not_current_processor") };
         }
 
         let sMatchedType = null;
         let sMatchedApproverId = null;
 
         if (oCurrentRow.APPROVER_ID === sUserId) {
-            sMatchedType = Constants.ApprovalProcess.APPROVER_ID;
+            sMatchedType = Constants.EntitiesFields.APPROVER_ID;
             sMatchedApproverId = oCurrentRow.APPROVER_ID;
         } else {
-            sMatchedType = Constants.ApprovalProcess.SUBAPPROVER_ID;
+            sMatchedType = Constants.EntitiesFields.SUBAPPROVER_ID;
             sMatchedApproverId = oCurrentRow.SUBSTITUTE_APPROVER_ID;
         }
 
@@ -301,18 +303,18 @@ sap.ui.define([
             oCtx => oCtx.getObject().LEVEL === iCurrentLevel
         );
 
-        if (sComment) oCtxCurrent.setProperty(Constants.ApprovalProcess.COMMENTAPPOVAL, sComment);
+        if (sComment) oCtxCurrent.setProperty(Constants.EntitiesFields.COMMENTAPPOVAL, sComment);
 
         const sTimestamp = DateUtility.formatTimestamp9(new Date(), { utc: false });
 
-        oCtxCurrent.setProperty(Constants.ApprovalProcess.TIMESTAMP, sTimestamp);
-        if (sReason) oCtxCurrent.setProperty(Constants.ApprovalProcess.REJECT_REASON_ID, sReason);
-        oCtxCurrent.setProperty(Constants.ApprovalProcess.STATUS, sActionStatus);
+        oCtxCurrent.setProperty(Constants.EntitiesFields.TIMESTAMP, sTimestamp);
+        if (sReason) oCtxCurrent.setProperty(Constants.EntitiesFields.REJECT_REASON_ID, sReason);
+        oCtxCurrent.setProperty(Constants.EntitiesFields.STATUS, sActionStatus);
 
         aCtxApprovers.forEach(oCtx => {
             const oRow = oCtx.getObject();
             if (oRow.LEVEL > iCurrentLevel) {
-                oCtx.setProperty(Constants.ApprovalProcess.STATUS, Constants.ClaimStatus.COMPLETED_DISBURSEMENT);
+                oCtx.setProperty(Constants.EntitiesFields.STATUS, Constants.ClaimStatus.COMPLETED_DISBURSEMENT);
             }
         });
 
@@ -327,7 +329,7 @@ sap.ui.define([
         const [oCtxHeader] = await oBindingHeader.requestContexts(0, 1);
 
         if (oCtxHeader) {
-            const sHeaderStatusField = bIsPre ? Constants.ApprovalProcess.STATUS : Constants.ApprovalProcess.CLAIM_STATUS;
+            const sHeaderStatusField = bIsPre ? Constants.EntitiesFields.STATUS : Constants.EntitiesFields.CLAIM_STATUS;
             oCtxHeader.setProperty(sHeaderStatusField, sActionStatus); // STAT04 / STAT03
         }
 
@@ -363,7 +365,7 @@ sap.ui.define([
                 fund_center: sFundCenter,
                 commitment_item: oRow.GL_ACCOUNT,
                 material_code: oRow.MATERIAL_CODE,
-                project_code: Constants.ApprovalProcess.PROJ_CODE1,
+                project_code: Constants.ApprovalProcessProjectCode.PROJ_CODE1,
                 amount: iAmount
             };
         });
@@ -386,7 +388,7 @@ sap.ui.define([
         let sCurrentEmail = null;
         let sCurrentName = null;
 
-        if (sMatchedType === Constants.ApprovalProcess.APPROVER_ID) {
+        if (sMatchedType === Constants.EntitiesFields.APPROVER_ID) {
             sCurrentEmail = oCurrentRowView.APPROVER_EMAIL;
             sCurrentName = oCurrentRowView.APPROVER_NAME;
         } else {
@@ -409,13 +411,14 @@ sap.ui.define([
             RecipientName: sClaimantName,
             Action: sActionText,
             ReceiverEmail: sClaimantEmail,
-            NextApproverName: Constants.ApprovalProcess.NOTAVAILABLE,
+            NextApproverName: Constants.ApprovalProcessAction.NOTAVAILABLE,
             RejectReason: sReason,
             ApproverComments: sComment
         });
         try {
             await oModel.submitBatch(sUpdateGroupId);
 
+                    
             return {
                 payloads: aPayloads,
                 dataset: aDataset,
@@ -432,8 +435,8 @@ sap.ui.define([
                 },
                 sMessageKey:
                     sActionStatus === Constants.ClaimStatus.REJECTED
-                        ? Constants.ApprovalProcess.REJECT_FINAL
-                        : Constants.ApprovalProcess.RESEND_FINAL
+                        ? Utility.getText(oController, "request_rejected")
+                        : Utility.getText(oController, "request_sent_back")
 
             };
 
