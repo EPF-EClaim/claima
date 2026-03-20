@@ -1,8 +1,8 @@
 sap.ui.define([
 ], function () {
     "use strict";
-    return{
-        "ClaimType":{
+    return {
+        "ClaimType": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
             "KURSUS_LUAR_NEGARA": "KURSUS_LUAR_NEGARA",
             "DLM_NEGARA": "DLM_NEGARA",
@@ -11,7 +11,7 @@ sap.ui.define([
             "ELAUN_TUKAR": "ELAUN_TUKAR",
             "ELAUN_PINDAH": "ELAUN_PINDAH"
         },
-        "KURSUS_DLM_NEGARA_TypeItem":{
+        "KURSUS_DLM_NEGARA_TypeItem": {
             "BAGAI": "BAGAI",
             "BYR_YURAN": "BYR_YURAN",
             "CERAMAH": "CERAMAH",
@@ -29,7 +29,7 @@ sap.ui.define([
             "Jamuan Ringan Program Outreach": "Jamuan Ringan Program Outreach",
             "KATERER": "KATERER",
             "KECERIAAN": "KECERIAAN",
-            "KESIHATAN": "KESIHATAN", 
+            "KESIHATAN": "KESIHATAN",
             "KILOMETER": "KILOMETER",
             "KM": "KM",
             "LAUT": "LAUT",
@@ -67,12 +67,12 @@ sap.ui.define([
             "YURAN": "YURAN",
             "YURAN_KLJ": "YURAN_KLJ"
         },
-        "STATUS":{
+        "STATUS": {
             "SUCCESS": "TRUE",
             "FAIL": "FAIL",
             "ALL": "*"
         },
-        "ClaimStatus":{
+        "ClaimStatus": {
             "DRAFT": "STAT01",
             "PENDING_APPROVAL": "STAT02",
             "SEND_BACK": "STAT03",
@@ -81,14 +81,80 @@ sap.ui.define([
             "COMPLETED_DISBURSEMENT": "STAT06",
             "CANCELLED": "STAT07",
         },
-        "FLIGHT_CLASS_ID":{
+        "FLIGHT_CLASS_ID": {
             "01": "01",
             "02": "02",
             "03": "03"
         },
         "RequestStatus": {
             "DRAFT": "DRAFT",
-            "CANCELLED": "CANCELLED"
+            "CANCELLED": "CANCELLED",
+        },
+        "WorkflowType": {
+            "CLAIM": "CLM",
+            "PRE_APPROVAL": "PRE"
+        },
+        "Date": {
+            "DATEFORMAT": "yyyy.MM.dd",
+        },
+        "ApprovalProcess": {
+            "REQUEST": "REQ",
+            "REQUESTTYPE": "Pre-Approval",
+            "CLAIMTYPE": "Claim",
+            "CLAIM_APPROVE": "APPROVE_CLAIM",
+            "SET_GROUP": "approvalGroup",
+        },
+        "ApprovalProcessStatus": {
+            "STATUS_REJECT": "REJECT",
+            "STATUS_SENDBACK": "SEND BACK",
+        },
+        "ApprovalProcessAction": {
+            "ACTION_NOTIFY": "Notify",
+            "ACTION_APPROVE": "APPROVE",
+            "RELEASE_IND": "release",
+            "NOTAVAILABLE": "N/A",
+        },
+        "ApprovalProcessProjectCode": {
+            "PROJ_CODE1": "1",
+            "PROJ_CODE2": "2",
+        },
+        "Entities": {
+            "ZAPPROVER_DETAILS_PREAPPROVAL": "/ZAPPROVER_DETAILS_PREAPPROVAL",
+            "ZAPPROVER_DETAILS_CLAIMS": "/ZAPPROVER_DETAILS_CLAIMS",
+            "ZEMP_APPROVER_REQUEST_DETAILS": "/ZEMP_APPROVER_REQUEST_DETAILS",
+            "ZEMP_APPROVER_CLAIM_DETAILS": "/ZEMP_APPROVER_CLAIM_DETAILS",
+            "ZEMP_REQUEST_BUDGET_CHECK": "/ZEMP_REQUEST_BUDGET_CHECK",
+            "ZEMP_CLAIM_BUDGET_CHECK": "/ZEMP_CLAIM_BUDGET_CHECK",
+            "ZREQUEST_HEADER": "/ZREQUEST_HEADER",
+            "ZCLAIM_HEADER": "/ZCLAIM_HEADER",
+        },
+        "EntitiesFields": {
+            "APPROVER_ID": "APPROVER_ID",
+            "SUBAPPROVER_ID": "SUBSTITUTE_APPROVER_ID",
+            "STATUS": "STATUS",
+            "TIMESTAMP": "PROCESS_TIMESTAMP",
+            "REJECT_REASON_ID": "REJECT_REASON_ID",
+            "CLAIM_STATUS": "STATUS_ID",
+            "COMMENTAPPOVAL": "COMMENT",
+            "PREAPPROVALID": "PREAPPROVAL_ID",
+            "REQUESTID": "REQUEST_ID",
+            "CLAIMID": "CLAIM_ID",
+        },
+        "Role": {
+            "GA_ADMIN": "GA Admin",
+            "JKEW_ADMIN": "JKEW Admin",
+            "DTD_ADMIN": "DTD Admin",
+            "APPROVER": "Approver",
+            "SUPER_ADMIN": "Super Admin"
+        },
+        "Configuration": {
+            "ZEMP_MASTER": "ZEMP_MASTER",
+            "ZEMP_MASTER_DTD": "ZEMP_MASTER_DTD",
+            "ZEMP_DEPENDENT": "ZEMP_DEPENDENT",
+            "ZEMP_DEPENDENT_DTD": "ZEMP_DEPENDENT_DTD",
+            "ZNUM_RANGE": "ZNUM_RANGE",
+            "ZNUM_RANGE_DTD": "ZNUM_RANGE_DTD",
+            "ZBUDGET": "ZBUDGET"
         }
 
     }

@@ -26,7 +26,7 @@
                 <f:profile>
         <Avatar
             id="userAvatar"
-            initials="{imageModel>/initials}"
+            initials="{session>/initials}"
             press="onAvatarPress"
             displaySize="XS"
         />
@@ -126,33 +126,6 @@
                         height="100%"
                         class="sapUiContentPadding"
                     />
-                    <!-- ================= Configuration Page ================= -->
-<!--                     <Page
-                        id="configurationPage"
-                        showHeader="false"
-                    >
-                        <content>
-                            <mvc:XMLView
-                                id="configuration_view"
-                                viewName="claima.view.Configuration"
-                            />
-                        </content>
-                    </Page> -->
-                    <!-- ================= Analytics Page ================= -->
-<!-- 
-                    <Page
-                        id="analyticsPage"
-                        showHeader="false"
-                    >
-                        <content>
-                            <mvc:XMLView
-                                id="analytics_view"
-                                viewName="claima.view.Analytics"
-                            />
-                        </content>
-                    </Page> -->
-
-                     
                     <NavContainer
                         id="new_request"
                         class="sapUiContentPadding"

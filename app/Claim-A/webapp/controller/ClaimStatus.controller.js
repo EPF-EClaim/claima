@@ -180,7 +180,6 @@ sap.ui.define([
 			const oClaimInputModel = this._getClaimInputModel()
 
 			const oModel = await this._ensureModelReady("employee_view");
-			const oModel2 = this.getOwnerComponent().getModel();
 			const sId = String(sClaimId);
 
 			const aFilters = [new Filter("CLAIM_ID", FilterOperator.EQ, sId)];

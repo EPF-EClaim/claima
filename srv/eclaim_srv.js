@@ -2,17 +2,9 @@ const cds = require('@sap/cds');
 const { INSERT, UPDATE, UPSERT, SELECT, where } = require('@sap/cds/lib/ql/cds-ql');
 const express = require('express');
 const app = express();
+const { Constant } = require("./utils/constant");
 
 module.exports = (srv) => {
-
-  const { ZRISK } = srv.entities;
-
-  srv.before('CREATE', ZRISK, (req) => {
-    const { START_DATE, END_DATE } = req.data || {}
-    if (START_DATE != null && END_DATE != null && new Date(END_DATE) < new Date(START_DATE)) {
-      req.error(400, 'End Date must be greater than or equal to Start Date.', { target: 'END_DATE' })
-    }
-  })
 
   srv.on('batchCreateEmployee', async (req) => {
     const { ZEMP_MASTER } = srv.entities;
@@ -85,7 +77,7 @@ module.exports = (srv) => {
         req.user?.id ||
         "";
 
-      let origin = null;
+      let sOrigin = null;
 
       try {
         const authHeader = req.http?.req?.headers?.authorization ?? '';
@@ -94,7 +86,7 @@ module.exports = (srv) => {
           const oToken = JSON.parse(
             Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
           );
-          origin = oToken.origin;
+          sOrigin = oToken.origin;
         }
       } catch (e) {
         console.log("Token parsing failed:", e.message);
@@ -113,7 +105,9 @@ module.exports = (srv) => {
         userId: result?.EEID || "UNKNOWN",
         name: result?.NAME || "UNKNOWN",
         position: result?.POSITION_NAME || "UNKNOWN",
-        origin: origin
+        origin: sOrigin, 
+        grade: result?.GRADE || "UNKNOWN",
+        department: result?.DEP || "UNKNOWN"
       };
     });
 
@@ -145,13 +139,11 @@ module.exports = (srv) => {
 
     let operationHidden = true;
 
-    if (user_type === "JKEW Admin") {
+    if (user_type === Constant.UserType.JKEW_ADMIN) {
       operationHidden = true;
-    } else if (user_type === "DTD Admin" || user_type === "Super Admin") {
+    } else if (user_type === Constant.UserType.DTD_ADMIN || user_type === Constant.UserType.SUPER_ADMIN) {
       operationHidden = false;
-    } else if (user_type === "Super Admin") {
-      operationHidden = false;
-    }
+    } 
 
     return {
       operationHidden: operationHidden,
@@ -159,10 +151,9 @@ module.exports = (srv) => {
     }
   });
 
-  srv.on('READ', 'FeatureControl', async (req) => {
+ srv.on('READ', 'BudgetControl', async (req) => {
     const { ZEMP_MASTER } = srv.entities;
-
-    const emailFromToken =
+const emailFromToken =
       req.user?.attr?.email ||
       req.user?.attr?.mail ||
       req.user?.attr?.user_name ||
@@ -175,13 +166,11 @@ module.exports = (srv) => {
 
     let operationHidden = true;
 
-    if (user_type === "JKEW Admin") {
+    if (user_type ===  Constant.UserType.GA_ADMIN ) {
       operationHidden = true;
-    } else if (user_type === "DTD Admin" || user_type === "Super Admin") {
+    } else {
       operationHidden = false;
-    } else if (user_type === "Super Admin") {
-      operationHidden = false;
-    }
+    } 
 
     return {
       operationHidden: operationHidden,
@@ -417,5 +406,41 @@ module.exports = (srv) => {
     return { results };
 
   });
+
+srv.on('batchCreateCourse', async (req) => {
+    const { ZTRAIN_COURSE_PART } = srv.entities;
+    try {
+      const { course } = req.data;
+      if (!course || course.length === 0) {
+        throw new Error('No Data Sent')
+      }
+      const tx = cds.tx(req);
+
+      const results = await tx.run(
+        UPSERT(course).into(ZTRAIN_COURSE_PART)
+      );
+      return 'Records updated';
+    } catch (error) {
+      req.error(400, `Fail creating record: ${error.message}`);
+    }
+  }),
+
+    srv.on('batchCreateBudget', async (req) => {
+      const { ZBUDGET } = srv.entities;
+      try {
+        const { budget } = req.data;
+        if (!budget || budget.length === 0) {
+          throw new Error('No Data Sent')
+        }
+        const tx = cds.tx(req);
+
+        const results = await tx.run(
+          UPSERT(budget).into(ZBUDGET)
+        );
+        return 'Records updated';
+      } catch (error) {
+        req.error(400, `Fail creating record: ${error.message}`);
+      }
+    })	  
 
 }

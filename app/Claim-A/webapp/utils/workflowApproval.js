@@ -2,8 +2,9 @@ sap.ui.define([
     "claima/utils/FinalApproveStep",
     "sap/ui/model/Filter",
     "sap/m/MessageToast",
-    "sap/ui/model/FilterOperator"
-], function (FinalApproveStep, Filter, MessageToast,FilterOperator) {
+    "sap/ui/model/FilterOperator",
+	"claima/utils/Constants"
+], function (FinalApproveStep, Filter, MessageToast,FilterOperator,Constants) {
     "use strict";
 
     return {
@@ -49,7 +50,7 @@ sap.ui.define([
             oAction.execute();
 
 		},
-        onClaimsApproverDetermination: async function (oModel, sClaimID){
+        onClaimsApproverDetermination: async function (oModel, sClaimID, oEmployeeModel){
 			// claim header
             const that = this;
 
@@ -157,7 +158,7 @@ sap.ui.define([
 
 			//get workflow rule
 			const oListWorkflowRuleBinding = oModel.bindList("/ZWORKFLOW_RULE", null,null, [
-				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: "CLM" }),
+				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: Constants.WorkflowType.CLAIM }),
 				new Filter({ path: "REQUEST_TYPE_ID", operator: FilterOperator.EQ, value1: sClaimsSubmissionType }),
 				new Filter({ path: "ROLE", operator: FilterOperator.EQ, value1: sEmpRole })
 				
@@ -247,7 +248,7 @@ sap.ui.define([
 
 			//get approver levels and approvers
 			const oListWorkflowStepBinding = oModel.bindList("/ZWORKFLOW_STEP", null,null, [
-				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: "CLM" }),
+				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: Constants.WorkflowType.CLAIM }),
 				new Filter({ path: "WORKFLOW_CODE", operator: FilterOperator.EQ, value1: aCommonWorkflowCode[0] }),
 				
 			], null);
@@ -424,7 +425,7 @@ sap.ui.define([
                         that.onSendEmail(oModel, aPayload);        
                     }
                 }else{
-                    FinalApproveStep.onFinalApprove(oModel, sClaimID, 'STAT05', oModel);
+                    FinalApproveStep.onFinalApprove(oModel, sClaimID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
                 }
                 
             }).catch(function(oError){
@@ -432,7 +433,7 @@ sap.ui.define([
             })	
 			
         },
-        onPARApproverDetermination: async function (oModel, sPARID){
+        onPARApproverDetermination: async function (oModel, sPARID, oEmployeeModel){
 			// request header
             const that = this;
 			const oListRequestHeaderBinding = oModel.bindList("/ZREQUEST_HEADER", null,null, [
@@ -494,7 +495,7 @@ sap.ui.define([
 
 			//get workflow rule
 			const oListWorkflowRuleBinding = oModel.bindList("/ZWORKFLOW_RULE", null,null, [
-				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: "PRE" }),
+				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: Constants.WorkflowType.PRE_APPROVAL }),
 				new Filter({ path: "REQUEST_TYPE_ID", operator: FilterOperator.EQ, value1: sParSubmissionType }),
 				new Filter({ path: "ROLE", operator: FilterOperator.EQ, value1: sEmpRole })
 				
@@ -575,7 +576,7 @@ sap.ui.define([
 
 			//get approver levels and approvers
 			const oListWorkflowStepBinding = oModel.bindList("/ZWORKFLOW_STEP", null,null, [
-				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: "PRE" }),
+				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: Constants.WorkflowType.PRE_APPROVAL }),
 				new Filter({ path: "WORKFLOW_CODE", operator: FilterOperator.EQ, value1: aCommonWorkflowCode[0] }),
 				
 			], null);
@@ -642,7 +643,7 @@ sap.ui.define([
 			//create ZAPPROVER DETAILS
 			const oBindApprDetailsList = oModel.bindList("/ZAPPROVER_DETAILS_PREAPPROVAL");
 
-			for(var i = 0; i < iWorkflowApprLvl; i++){
+			for(var i = 0; i < aApprEmpID.length; i++){
 				if(aApprEmpID[i] == "Auto"){
                     var oContext = oBindApprDetailsList.create({
                         "PREAPPROVAL_ID": sPARID,
@@ -669,9 +670,7 @@ sap.ui.define([
                         "STATUS": null
                         });
                     }
-                }
-                
-                
+                }            
 			}
 
             oContext.created().then(async function (){
@@ -753,7 +752,7 @@ sap.ui.define([
                         that.onSendEmail(oModel,aPayload);
                     }
                 }else{
-                    FinalApproveStep.onFinalApprove(oModel, sPARID, 'STAT05',oModel);
+                    FinalApproveStep.onFinalApprove(oModel, sPARID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
                 }
             }).catch(function(oError){
                 new MessageToast.show(oError);

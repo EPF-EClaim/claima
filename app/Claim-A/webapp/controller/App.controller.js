@@ -5,6 +5,7 @@ sap.ui.define([
 	"sap/m/Popover",
 	"sap/ui/core/Fragment",
 	"sap/ui/core/BusyIndicator",
+	"sap/ui/core/Item",
 	"sap/m/Button",
 	"sap/m/Dialog",
 	"sap/m/Label",
@@ -26,7 +27,9 @@ sap.ui.define([
 	"sap/m/HBox",
 	"sap/m/VBox",
 	"sap/ui/core/Icon",
-	"sap/ui/core/routing/HashChanger"
+	"sap/ui/core/routing/HashChanger",
+	"claima/utils/MyApproval",
+	"sap/m/MessageBox"
 ], function (
 	Device,
 	Controller,
@@ -34,6 +37,7 @@ sap.ui.define([
 	Popover,
 	Fragment,
 	BusyIndicator,
+	Item,
 	Button,
 	Dialog,
 	Label,
@@ -55,7 +59,9 @@ sap.ui.define([
 	HBox,
 	VBox,
 	Icon,
-	HashChanger
+	HashChanger,
+	MyApproval,
+	MessageBox
 ) {
 	"use strict";
 
@@ -83,17 +89,19 @@ sap.ui.define([
 
 			const oSession = new sap.ui.model.json.JSONModel({
 				userType: "UNKNOWN",
-				origin: ""
+				origin: "",
+				grade: "",
+				department: "",
+				position: "",
+				userName: "",
+				initials: ""
 			});
 			this.getView().setModel(oSession, "session");
 
 			var oRouter = this.getOwnerComponent().getRouter();
 
 			const oImageModel = new sap.ui.model.json.JSONModel({
-				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png"),
-				initials: "",
-				userName: "",
-				position: ""
+				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png")
 			});
 			this.getView().setModel(oImageModel, "imageModel");
 
@@ -111,17 +119,21 @@ sap.ui.define([
 				this._userType = oData.userType || "UNKNOWN";
 				this.costcenters = oData.costcenters || "UNKNOWN"; //Added by Aiman Salim 06/03/2026
 				this.userId = oData.userId || "UNKNOWN";
-				const sname = oData.name || "";
-				const sposition = oData.position;
-				const sInitials = sname.substring(0, 2).toUpperCase();
-				oImageModel.setProperty("/initials", sInitials);
-				oImageModel.setProperty("/userName", sname);
-				oImageModel.setProperty("/position", sposition);
-
+				const sName = oData.name || "";
+				const sPosition = oData.position;
+				const sInitials = sName.substring(0, 2).toUpperCase();
+				oSession.setProperty("/initials", sInitials);
+				oSession.setProperty("/userName", sName);
+				oSession.setProperty("/position", sPosition);
+				oSession.setProperty("/grade", oData.grade || "UNKNOWN");
+				oSession.setProperty("/department", oData.department || "UNKNOWN");
 				oSession.setProperty("/origin", oData.origin);
 
 				// save userId to model
-				var oUserIdModel = new JSONModel({ "userId": oData.userId });
+				var oUserIdModel = new JSONModel({
+					"userId": oData.userId,
+					"email": oData.id
+				});
 				//// set input
 				this.getView().setModel(oUserIdModel, "userId");
 				oSession.setProperty("/userType", this._userType);
@@ -150,7 +162,7 @@ sap.ui.define([
 			const bIsDeepLink = sHash.includes("RequestForm") || sHash.includes("Claim");
 
 			if (!bIsDeepLink || sHash === "") {
-				oRouter.navTo("Dashboard", {}, true); 
+				oRouter.navTo("Dashboard", {}, true);
 			} else {
 				oRouter.initialize();
 			}
@@ -172,13 +184,19 @@ sap.ui.define([
 			var oKey = oItem.getKey();
 			var oRouter = this.getOwnerComponent().getRouter();
 
+			const sAdminDTD = this._oConstant.Role.DTD_ADMIN,
+				sAdminGA = this._oConstant.Role.GA_ADMIN,
+				sAdminJKEW = this._oConstant.Role.JKEW_ADMIN,
+				sApprover = this._oConstant.Role.APPROVER,
+				sSuperUser = this._oConstant.Role.SUPER_ADMIN;
+
 			//Start EY_ATHIRAH
 			const key = oEvent.getSource().data("key");
 
 			// Make sure userType is available
 			const type = this._userType; // << read what we stored earlier
 			if (!type) {
-				sap.m.MessageToast.show("Please wait… loading your access.");
+				MessageToast.show("Please wait… loading your access.");
 				return;
 			}
 
@@ -209,21 +227,24 @@ sap.ui.define([
 					break;
 				case "config":
 					//Start EY_ATHIRAH
-					if (type === "DTD Admin" || type === "JKEW Admin" || type === "Super Admin") {
+					if (type === sAdminDTD || type === sAdminJKEW || type === sSuperUser) {
 						oRouter.navTo("Configuration");
-					} else {
+					} else if (type === sAdminGA ) {
+						oRouter.navTo("Configuration_GA");
+					}
+					else {
 						var message = Utility.getText(this, "msg_unauthorized_role");
-						sap.m.MessageBox.error(message);
+						MessageBox.error(message);
 					}
 					//End EY_ATHIRAH
 					break;
 				// Start Aiman Salim 10/02/2026 - Added for analytics
 				case "analytics":
-					if (type === "JKEW Admin" || type === "DTD Admin" || type === "GA Admin" || type === "Super Admin") {
+					if (type === sAdminDTD || type === sAdminJKEW || type === sSuperUser) {
 						oRouter.navTo("Analytics")
 					} else {
 						var message = Utility.getText(this, "msg_unauthorized_role");
-						sap.m.MessageBox.error(message);
+						MessageBox.error(message);
 					}
 					break;
 				// End 	 Aiman Salim 10/02/2026 - Added for analytics
@@ -235,14 +256,14 @@ sap.ui.define([
 					break;
 				//Start Aiman Salim 08/03/2026 - Added for MyApproval
 				case "approval":
-					if (type === "Approver" || type === "Super Admin") {
+					if (type === sApprover || type === sSuperUser) {
 						this.getMyApproverPAReq();
 						this.getMyApproverClaim();
 						var oRouter = this.getOwnerComponent().getRouter();
 						oRouter.navTo("MyApproval");
 					} else {
 						var message = Utility.getText(this, "msg_unauthorized_role");
-						sap.m.MessageBox.error(message);
+						MessageBox.error(message);
 					}
 					break;
 				//End Aiman Salim 08/03/2026 - Added for MyApproval
@@ -497,10 +518,17 @@ sap.ui.define([
 			// set new claim submission model;
 			var oInputModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 			//// set employee data
-			var userModelData = this.getView().getModel('user').getData();
-			const emp_data = await this._getEmpIdDetail(userModelData.email);
-			if (emp_data) {
-				oInputModel.setProperty("/emp_master", emp_data);
+			var oUserModelData = this.getView().getModel('user')?.getData() || this.getView().getModel("userId")?.getData() || null;
+			if (!oUserModelData) {
+				MessageToast.show(Utility.getText(this, "msg_claimprocess_nouser"));
+				if (this.oDialog_ClaimProcess) {
+					this.oDialog_ClaimProcess.close();
+					return;
+				}
+			}
+			const oEmpData = await this._getEmpIdDetail(oUserModelData.email);
+			if (oEmpData) {
+				oInputModel.setProperty("/emp_master", oEmpData);
 				await this._getEmpDataDescr(oInputModel);
 			}
 		},
@@ -596,7 +624,7 @@ sap.ui.define([
 						},
 						$select: "SUBMISSION_TYPE"
 					},
-					template: new sap.ui.core.Item({
+					template: new Item({
 						key: "{employee>CLAIM_TYPE_ITEM_ID}",
 						text: "{employee>CLAIM_TYPE_ITEM_DESC}"
 					})
@@ -650,7 +678,7 @@ sap.ui.define([
 								},
 								$select: "PREAPPROVAL_AMOUNT,EVENT_START_DATE,EVENT_END_DATE,COST_CENTER,ALTERNATE_COST_CENTER"
 							},
-							template: new sap.ui.core.Item({
+							template: new Item({
 								key: "{employee>REQUEST_ID}",
 								text: "{employee>REQUEST_ID} {employee>OBJECTIVE_PURPOSE} ({employee>TRIP_START_DATE} – {employee>TRIP_END_DATE})"
 							})
@@ -999,6 +1027,7 @@ sap.ui.define([
 			}
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
+				BusyIndicator.show(0);
 				var attachmentNumber = await Attachment.postAttachment(
 					oInputModel.getProperty("/attachment/fileName"),
 					oInputModel.getProperty("/attachment/fileContent"),
@@ -1007,10 +1036,12 @@ sap.ui.define([
 				if (attachmentNumber) {
 					oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
 					oInputModel.setProperty("/claim_header/descr/attachment_email_approver", oInputModel.getProperty("/attachment/fileName"));
+					BusyIndicator.hide();
 				}
 				else {
 					MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_error"));
 					// don't proceed claim item if attachment upload fails
+					BusyIndicator.hide();
 					return;
 				}
 			}
@@ -1619,7 +1650,7 @@ sap.ui.define([
 					//oResult.reqNo send this to approval determination
 
 					var oRouter = this.getOwnerComponent().getRouter();
-					oRouter.navTo("RequestForm", {request_id: oResult.reqNo});
+					oRouter.navTo("RequestForm", { request_id: oResult.reqNo });
 				}).catch(err => {
 					sap.m.MessageToast.show("Creation failed: " + err.message);
 				});
@@ -2043,10 +2074,10 @@ sap.ui.define([
 			if (c) return c;
 
 			if (sFragmentId) {
-				c = sap.ui.core.Fragment.byId(this.getView().createId(sFragmentId), sId);
+				c = Fragment.byId(this.getView().createId(sFragmentId), sId);
 				if (c) return c;
 
-				c = sap.ui.core.Fragment.byId(sFragmentId, sId);
+				c = Fragment.byId(sFragmentId, sId);
 				if (c) return c;
 			}
 
@@ -2180,7 +2211,7 @@ sap.ui.define([
 										new Icon({
 											src: "sap-icon://employee",
 											width: "1rem",
-											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
+											class: "sapUiLargeMarginBeginEnd"
 										}),
 										new Text({ text: "{userId>/userId}" })
 									]
@@ -2193,22 +2224,48 @@ sap.ui.define([
 										new Icon({
 											src: "sap-icon://person-placeholder",
 											width: "1rem",
-											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
+											class: "sapUiLargeMarginBeginEnd"
 										}),
-										new Text({ text: "{imageModel>/userName}" })
+										new Text({ text: "{session>/userName}" })
 									]
 								}),
 								new HBox({
 									alignItems: "Center",
 									width: "100%",
-									class: "sapUiTinyMarginTop sapUiSmallMarginBottom",
+									class: "sapUiMediumMarginTopBottom",
+									items: [
+										new Icon({
+											src: "sap-icon://employee-pane",
+											width: "1rem",
+											class: "sapUiLargeMarginBeginEnd"
+										}),
+										new Text({ text: "{session>/grade}" })
+									]
+								}),
+								new HBox({
+									alignItems: "Center",
+									width: "100%",
+									class: "sapUiMediumMarginTopBottom",
+									items: [
+										new Icon({
+											src: "sap-icon://suitcase",
+											width: "1rem",
+											class: "sapUiLargeMarginBeginEnd"
+										}),
+										new Text({ text: "{session>/position}" })
+									]
+								}),
+								new HBox({
+									alignItems: "Center",
+									width: "100%",
+									class: "sapUiMediumMarginTopBottom",
 									items: [
 										new Icon({
 											src: "sap-icon://business-card",
 											width: "1rem",
-											class: "sapUiMediumMarginBegin sapUiMediumMarginEnd"
+											class: "sapUiLargeMarginBeginEnd"
 										}),
-										new Text({ text: "{imageModel>/position}" })
+										new Text({ text: "{session>/department}" })
 									]
 								}),
 								new Button({
@@ -2226,8 +2283,6 @@ sap.ui.define([
 				});
 				this.getView().addDependent(this._oAvatarPopover);
 			}
-
-			// toggle open/close
 			if (this._oAvatarPopover.isOpen()) {
 				this._oAvatarPopover.close();
 			} else {
@@ -2257,6 +2312,14 @@ sap.ui.define([
 				pageId: "navcontainer_claimsubmission"
 			});
 
+		},
+
+		async openApprovalList(oEvent) {
+			const oItem = oEvent.getParameter("listItem");
+			const oCtx = oItem?.getBindingContext("dashboardModel");
+			const oRow = oCtx?.getObject();
+			const sId = oRow?.ID;
+			await MyApproval.navigateFromId(this, sId);
 		},
 
 		_onDashboardMatched: function () {
@@ -2298,18 +2361,6 @@ sap.ui.define([
 					console.log("approvals not available for this role");
 					oDashboardModel.setProperty("/approvals", []);
 				});
-		},
-		onHomeIconPressed: function () {
-			const oSession = this.getView().getModel("session");
-			const origin = oSession.getProperty("/origin");
-			var sSFURL;
-
-			sSFURL = origin === "httpsa6s6cq33s.accounts.ondemand.com" ? "https://hcm-ap20-preview.hr.cloud.sap/login?company=EPFSFDEV" :
-				origin === "sap.custom" ? "https://hcm-ap20.hr.cloud.sap/login?company=EPFSFUAT" :
-					"https://hcm-ap20.hr.cloud.sap/login?company=EPFSFPRD";
-
-			window.open(sSFURL, "_self");
-
 		},
 
 
