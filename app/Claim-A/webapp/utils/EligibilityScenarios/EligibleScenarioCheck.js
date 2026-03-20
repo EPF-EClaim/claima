@@ -57,10 +57,17 @@ sap.ui.define([
                 return aRules;
             });
             
+            // const oHeaderBindList = oModel.bindList("/ZREQUEST_HEADER");
+            // oHeaderBindList.filter([
+            // new Filter("REQUEST_ID", FilterOperator.EQ, oPayload.RequestId)
+            // ]);
+            // const aHeaderContexts = await oHeaderBindList.requestContexts();
+            // const oHeader = aHeaderContexts[0].getObject();
+
             // LuarNegara.onEligibleCheck(oModel, oConstant, oPayload, oEmp, aRules);
             switch (oPayload.ClaimType) {
                 case oConstant.ClaimType.DLM_NEGARA:
-                    var oReturnPayload = DalamNegara.onEligibleCheck(oConstant, oPayload, aRules);
+                    var oReturnPayload = DalamNegara.onEligibleCheck(oConstant, oPayload, aRules);//, oHeader
                     break;
 
                 case oConstant.ClaimType.LUAR_NEGARA:
