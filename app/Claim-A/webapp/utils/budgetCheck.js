@@ -7,7 +7,6 @@ sap.ui.define([
     "use strict";
 
     return {
-
 		/* =========================================================
 		* Budget Checking Functions
 		* ======================================================= */
@@ -288,6 +287,52 @@ sap.ui.define([
 				console.error("Error fetching Claim Type Item detail", oError);
 			}
 			
+		},
+
+		/* =========================================================
+		* Budget Checking payload generation
+		* ======================================================= */
+
+		generateBudgetCheckPayload (oController) {
+			var oReqModel	= oController._getReqModel();
+			var oHeader		= oReqModel.getProperty('/req_header');
+			var aRows		= oReqModel.getProperty('/req_item_rows');
+			
+			var sDate			= new Date(oHeader.reqdate);
+			var sYear			= String(sDate.getFullYear());
+			var sFundCenter		= oHeader.costcenter;
+			var sInternalCode	= oHeader.projectcode || "-";
+
+			return aRows.map(row => {
+				return {
+					"YEAR": sYear,
+					"INTERNAL_ORDER": sInternalCode,
+					"FUND_CENTER": sFundCenter,
+					"MATERIAL_GROUP": row.MATERIAL_CODE,
+					"COMMITMENT_ITEM": row.GL_ACCOUNT,
+					"AMOUNT": parseFloat(row.EST_AMOUNT),
+					"INDICATOR": "REQ",
+					"ACTION": "SUBMIT"
+				};
+			});
+		},
+
+		async backendBudgetChecking (oController) {
+			const aPayload = await this.generateBudgetCheckPayload(oController);
+			const oDataModel = oController.getOwnerComponent().getModel();
+
+			const oAction	= oDataModel.bindContext("/budgetchecking(...)");
+			oAction.setParameter("budget", aPayload);
+
+			try {
+				await oAction.execute();
+				const oResponse = oAction.getBoundContext().getObject();
+				const aResults = oResponse.results || oResponse.value || oResponse;
+				return aResults;
+			} catch (err) {
+				console.error("Budget check failed", err);
+				return false;
+			}
 		},
 
     };

@@ -190,11 +190,10 @@ sap.ui.define([
 		},
 
 		generateEligibilityCheckPayload (oController) {
-			var oReqModel = oController._getReqModel();
-			var oData     = oReqModel.getProperty('/req_item');
+			var oData     = oController._oReqModel.getProperty('/req_item');
 
-			var sEmpId         = oReqModel.getProperty('/user');
-			var sClaimType     = oReqModel.getProperty('/req_header/claimtype');
+			var sEmpId         = oController._oReqModel.getProperty('/user');
+			var sClaimType     = oController._oReqModel.getProperty('/req_header/claimtype');
 			var sClaimTypeItem = oData.claim_type_item_id;
 
 			const oMapping = {
@@ -236,6 +235,8 @@ sap.ui.define([
 
 			return oPayload;
 		},
+
+		
 
 	};
 });

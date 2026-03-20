@@ -18,24 +18,7 @@ sap.ui.define([
 			const oCreate = await that._getFormFragment("approval_log");
 			await that._replaceContentAt(oPage, 2, oCreate);
 		},
-        
-		/* =========================================================
-		* JSONModel Reset
-		* ======================================================= */
-
-        _ensureRequestModelDefaults(oReq) {
-			const data = oReq.getData() || {};
-			data.req_header        = { reqid: "", grptype: "IND" };
-			data.req_item_rows     = [];
-			data.req_item          = data.req_item || {
-				cash_advance: "no_cashadv"
-			};
-			data.participant       = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
-			data.view              = "view";
-			data.list_count        = 0;
-			oReq.setData(data);
-		},
-
+		
 		/* =========================================================
 		* Get List from Backend
 		* ======================================================= */

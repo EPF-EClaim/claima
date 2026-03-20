@@ -148,12 +148,12 @@ sap.ui.define([
 			});
 
 			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			// var oUserModel = new sap.ui.model.json.JSONModel({ email: "jefry.yap@my.ey.com" });
-			// this.getView().setModel(oUserModel, 'user');
-			// const emp_data = await this._getEmpIdDetail("jefry.yap@my.ey.com");
-			// const oReqModel = this._getReqModel().getData();
-			// oReqModel.user = emp_data.eeid;
-			// this._getReqModel().setData(oReqModel);
+			var oUserModel = new sap.ui.model.json.JSONModel({ email: "jefry.yap@my.ey.com" });
+			this.getView().setModel(oUserModel, 'user');
+			const emp_data = await this._getEmpIdDetail("jefry.yap@my.ey.com");
+			const oReqModel = this._getReqModel().getData();
+			oReqModel.user = emp_data.eeid;
+			this._getReqModel().setData(oReqModel);
 
 			// Route to Dashboard on first initialize only. Refresh will only reload the page you at.
 			const oHashChanger = HashChanger.getInstance();
@@ -1439,6 +1439,7 @@ sap.ui.define([
 		// ==================================================
 		// Request Form Controller
 		// ==================================================
+		// Notify Jefry when changing this files
 
 		_getReqModel: function () {
 			return this.getOwnerComponent().getModel("request");
@@ -1646,8 +1647,7 @@ sap.ui.define([
 					oReqModel.setProperty("/req_header/reqstatus", 'DRAFT');
 					oReqModel.setProperty("/req_header/costcenter", sCostCenter);
 					oReqModel.setProperty("/eeid", emp_data.eeid);
-					// PARequestSharedFunction._getItemList(this, oResult.reqNo, true);
-					//oResult.reqNo send this to approval determination
+					PARequestSharedFunction._getItemList(this, oResult.reqNo, true);
 
 					var oRouter = this.getOwnerComponent().getRouter();
 					oRouter.navTo("RequestForm", { request_id: oResult.reqNo });
@@ -1807,6 +1807,7 @@ sap.ui.define([
 
 		_loadClaimTypeSelectionData: function (req_type) {
 			if (req_type) {
+				this.getOwnerComponent().getModel('request').setProperty('/req_header/claim_type', "");
 				const oMainModel = this.getOwnerComponent().getModel();
 				const oListBinding = oMainModel.bindList("/ZCLAIM_TYPE", null, null, [
 					new Filter("REQUEST_TYPE", FilterOperator.EQ, req_type)
@@ -2098,6 +2099,7 @@ sap.ui.define([
 			this.oDialogFragment.close();
 		},
 
+		// Notify Jefry when changing above files
 		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		// End of Request Form Controller
 		// ==================================================

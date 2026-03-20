@@ -3,10 +3,12 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/ui/model/Sorter",
     "sap/m/MessageToast",
-], function (Filter, FilterOperator, Sorter, MessageToast) {
+	"sap/ui/core/BusyIndicator"
+], function (Filter, FilterOperator, Sorter, MessageToast, BusyIndicator) {
     "use strict";
 
     return {
+		// Notify Jefry when changing this files
 
         /* =========================================================
         * Attachments Upload
@@ -38,7 +40,7 @@ sap.ui.define([
                     module: "GENERIC_OBJECT",
                     externalId: emp_id,
                     viewable: true,
-                    fileContent: fileBase64   // base64 only, no "data:*;base64," prefix
+                    fileContent: fileBase64
                 })
             });
 
@@ -185,6 +187,7 @@ sap.ui.define([
 			var sDestination = this._getSrvLink();
 			var sServiceUrl = sDestination + "/Attachment('" + attachmentID + "')";
 
+			BusyIndicator.show(0);
 			try {
 				const response = await fetch(sServiceUrl, {
 					method: "GET"
@@ -289,6 +292,8 @@ sap.ui.define([
 			} catch (error) {
 				console.log("Error viewing attachment: ", error);
 				MessageToast.show("Error viewing attachment: " + (error.message || error));
+			} finally {
+				BusyIndicator.hide();
 			}
 		},
 

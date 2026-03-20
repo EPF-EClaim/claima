@@ -57,6 +57,7 @@ sap.ui.define([
 	"use strict";
 
 	return Controller.extend("claima.controller.RequestForm", {
+		// Notify Jefry when changing this files
 
 		/* =========================================================
 		* Lifecycle
@@ -67,6 +68,9 @@ sap.ui.define([
 
 		onInit() {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
+			this._oReqModel = this.getOwnerComponent().getModel("request");
+			this._oDataModel = this.getOwnerComponent().getModel();
+			this._oViewModel = this.getOwnerComponent().getModel("employee_view");
 			this._fragments = Object.create(null);
 
 			// URL Access
@@ -85,8 +89,7 @@ sap.ui.define([
 
 			console.log("Deep-link request ID:", sRequestId);
 
-			const oReqModel = this._getReqModel();
-			oReqModel.setProperty("/req_header/reqid", sRequestId);
+			this._oReqModel.setProperty("/req_header/reqid", sRequestId);
 
 			this._loadRequest(sRequestId);
 		},
@@ -95,23 +98,14 @@ sap.ui.define([
 			await this._getHeader(sReqId);
 			await this._getItemList(sReqId, true);
 
-			var sReqStatus = this._getReqModel().getProperty("/req_header/reqstatus");
+			var sReqStatus = this._oReqModel.getProperty("/req_header/reqstatus");
 			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT && sReqStatus !== this._oConstant.RequestStatus.CANCELLED;
 			if (bApproval) {
 				const oReq = this.getOwnerComponent().getModel('approval_log');
-				const oViewModel = this.getOwnerComponent().getModel('employee_view');
-				ApprovalLog.getApproverList(oReq, oViewModel, sReqId);
+				ApprovalLog.getApproverList(oReq, this._oViewModel, sReqId);
 				ApprovalLog._showApprovalLog(this);
 			}
-			PARequestSharedFunction._determineCurrentState(this, this._getReqModel());
-		},
-
-		/* =========================================================
-		* Helpers: Model
-		* ======================================================= */
-
-		_getReqModel() {
-			return this.getOwnerComponent().getModel("request");
+			PARequestSharedFunction._determineCurrentState(this, this._oReqModel);
 		},
 
 		/* =========================================================
@@ -160,7 +154,7 @@ sap.ui.define([
 			const oCreate = await this._getFormFragment("req_create_item");
 			await this._replaceContentAt(oPage, 1, oCreate);
 
-			this._getReqModel().setProperty("/view", state);
+			this._oReqModel.setProperty("/view", state);
 		},
 
 		async _showItemList(state) {
@@ -172,17 +166,16 @@ sap.ui.define([
 			const oList = await this._getFormFragment("req_item_list");
 			await this._replaceContentAt(oPage, 1, oList);
 
-			var sReqStatus = this._getReqModel().getProperty("/req_header/reqstatus");
+			var sReqStatus = this._oReqModel.getProperty("/req_header/reqstatus");
 			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT && sReqStatus !== this._oConstant.RequestStatus.CANCELLED;
 			if (bApproval) {
 				const oReq = this.getOwnerComponent().getModel('approval_log');
-				const oViewModel = this.getOwnerComponent().getModel('employee_view');
-				ApprovalLog.getApproverList(oReq, oViewModel, oReq.getProperty('req_header/reqid'));
+				ApprovalLog.getApproverList(oReq, this._oViewModel, oReq.getProperty('req_header/reqid'));
 				const oApproval = await this._getFormFragment("approval_log");
 				await this._replaceContentAt(oPage, 2, oApproval);
 			}
 
-			PARequestSharedFunction._determineCurrentState(this, this._getReqModel());
+			PARequestSharedFunction._determineCurrentState(this, this._oReqModel);
 		},
 
 		/* =========================================================
@@ -190,8 +183,7 @@ sap.ui.define([
 		* ======================================================= */
 
 		onBack() {
-			const oReqModel = this._getReqModel();
-			const oData = oReqModel.getData();
+			const oData = this._oReqModel.getData();
 			if (oData.req_header.reqstatus == "DRAFT") {
 				if (!this.oBackDialog) {
 					this.oBackDialog = new Dialog({
@@ -204,7 +196,7 @@ sap.ui.define([
 							text: "Confirm",
 							press: async function () {
 								this.oBackDialog.close();
-								await PARequestSharedFunction._ensureRequestModelDefaults(oReqModel);
+								await PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
 								await this._removeByLocalId("req_approval_log");
 								var oHistory = History.getInstance();
 								var sPreviousHash = oHistory.getPreviousHash();
@@ -224,9 +216,8 @@ sap.ui.define([
 		},
 
 		onDeleteRequest() {
-			const oReqModel = this._getReqModel();
-			const sEmpId = oReqModel.getProperty("/user");
-			const sReqId = String(oReqModel.getProperty("/req_header/reqid") || "").trim();
+			const sEmpId = this._oReqModel.getProperty("/user");
+			const sReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
 
 			if (!sEmpId || !sReqId) {
 				MessageToast.show(Utility.getText(this, "req_tm_w_emp_id_req_id_not_found"));
@@ -250,7 +241,7 @@ sap.ui.define([
 								BusyIndicator.show(0);
 
 								// update status to CANCELLED
-								await Utility._updateStatus(oModel, sReqId, 'STAT07');
+								await Utility._updateStatus(this._oDataModel, sReqId, 'STAT07');
 
 								MessageToast.show("Request deleted");
 								this.oDeleteDialog.close();
@@ -278,23 +269,17 @@ sap.ui.define([
 		},
 
 		async onSubmitRequest() {
-			const oReqModel = this._getReqModel();
 			const oReqList = this.getOwnerComponent().getModel("request_status");
-			const oData = oReqModel.getData();
-			const aRows = oReqModel.getProperty("/req_item_rows") || [];
+			const oData = this._oReqModel.getData();
+			const aRows = this._oReqModel.getProperty("/req_item_rows") || [];
 
 			if (!aRows.length) {
 				this._showMustAddClaimDialog();
 				return;
 			}
 
-			const sSubmissionType = "REQ";
 			const sReqId = String(oData.req_header.reqid || "").trim();
-			const sEmpId = oReqModel.getProperty("/user");
-			const sReqDate = oData.req_header.reqdate;
-			const sProjCode = "1";
-			const sReqCC = oData.req_header.costcenter;
-			const sReqClaimType = oData.req_header.claimtype;
+			const sEmpId = this._oReqModel.getProperty("/user");
 
 			if (!sReqId || !sEmpId) {
 				MessageToast.show(Utility.getText(this, "req_tm_w_emp_id_req_id_not_found"));
@@ -312,25 +297,20 @@ sap.ui.define([
 						press: async () => {
 							try {
 								BusyIndicator.show(0);
-								const oModel = this.getOwnerComponent().getModel();
-								const oViewModel = this.getOwnerComponent().getModel('employee_view');
 
 								// budget checking
-								const aDataRows = aRows.map(({ CLAIM_TYPE_ITEM_ID, EST_AMOUNT, CASH_ADVANCE }) => ({
-									claim_type_item: CLAIM_TYPE_ITEM_ID,
-									amount: EST_AMOUNT
-								}));
-								const aResult = await budgetCheck.budgetChecking(oModel, sSubmissionType, sReqDate, sProjCode, sReqCC, sReqClaimType, aDataRows);
+								const aResult = budgetCheck.backendBudgetChecking(this);
 
-								if (aResult.passed) {
+								if (aResult != false) {
 
-									await Utility._updateStatus(oModel, sReqId, 'PENDING_APPROVAL');
-									oReqModel.setProperty("/view", 'view');
+									// update status to PENDING APPROVAL
+									await Utility._updateStatus(this._oDataModel, sReqId, 'STAT02');
+									this._oReqModel.setProperty("/view", 'view');
 
 									// Add in onPARApproverDetermination function
-									workflowApproval.onPARApproverDetermination(oModel, sReqId, oViewModel);
+									workflowApproval.onPARApproverDetermination(this._oDataModel, sReqId, this._oViewModel);
 
-									await PARequestSharedFunction.getPARHeaderList(oReqList, oViewModel);
+									await PARequestSharedFunction.getPARHeaderList(oReqList, this._oViewModel);
 									const oRouter = this.getOwnerComponent().getRouter();
 									oRouter.navTo("RequestFormStatus");
 
@@ -393,8 +373,7 @@ sap.ui.define([
 			await this._showItemCreate("create");
 			this._loadSelections();
 
-			const oReqModel = this._getReqModel();
-			const oData = oReqModel.getData();
+			const oData = this._oReqModel.getData();
 			const aIndividual = ['IND', 'Individual'];	// will move to constants.js 
 			const sHeaderGrpType = oData.req_header.grptype;
 
@@ -415,7 +394,7 @@ sap.ui.define([
 			} else {
 				oData.participant = [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }];
 			}
-			oReqModel.setData(oData);
+			this._oReqModel.setData(oData);
 		},
 
 		onOpenItemView(oEvent) {
@@ -427,7 +406,6 @@ sap.ui.define([
 		},
 
 		_openItemFromList(oEvent, bEdit) {
-			const oReqModel = this._getReqModel();
 			const oTable = this.byId("req_item_table");
 
 			let oCtx = null;
@@ -454,7 +432,7 @@ sap.ui.define([
 			const sReqId = String(oReqItem.REQUEST_ID || oReq.getProperty("/req_header/reqid") || "").trim();
 			const sReqSubId = String(oReqItem.REQUEST_SUB_ID || "").trim();
 
-			oReqModel.setProperty("/req_item", {
+			this._oReqModel.setProperty("/req_item", {
 				req_subid				: sReqSubId,
 				claim_type				: oReqItem.CLAIM_TYPE_ID || "",
 				claim_type_item_id		: oReqItem.CLAIM_TYPE_ITEM_ID || "",
@@ -510,19 +488,18 @@ sap.ui.define([
 				vehicle_class			: oReqItem.VEHICLE_CLASS || ""
 			});
 
-			oReqModel.setProperty("/view", bEdit ? "i_edit" : "view");
+			this._oReqModel.setProperty("/view", bEdit ? "i_edit" : "view");
 
-			this._showItemCreate(oReqModel.getProperty("/view"));
+			this._showItemCreate(this._oReqModel.getProperty("/view"));
 			this._loadParticipantsForItem(sReqId, sReqSubId);
 			this._getClaimTypeItemSelection();
 			this.getFieldVisibility_ClaimTypeItem(oEvent);
 		},
 
 		async _loadParticipantsForItem(sReqId, sReqSubId) {
-			const oReqModel = this._getReqModel();
-
+			
 			const setEmpty = () => {
-				oReqModel.setProperty("/participant", [
+				this._oReqModel.setProperty("/participant", [
 					{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }
 				]);
 			};
@@ -533,9 +510,8 @@ sap.ui.define([
 			}
 
 			try {
-				const oModel = this.getOwnerComponent().getModel("employee_view");
 
-				const oListBinding = oModel.bindList(
+				const oListBinding = this._oViewModel.bindList(
 					"/ZEMP_REQUEST_PART_VIEW",
 					null,
 					[new Sorter("PARTICIPANTS_ID", false)],
@@ -561,11 +537,11 @@ sap.ui.define([
 					ALLOCATED_AMOUNT		: p.ALLOCATED_AMOUNT 	?? ""
 				}));
 
-				if (oReqModel.getProperty('/req_header/grptype') == 'Group') {
+				if (this._oReqModel.getProperty('/req_header/grptype') == 'Group') {
 					aMapped.push({ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" });
 				}
 
-				oReqModel.setProperty(
+				this._oReqModel.setProperty(
 					"/participant",
 					aMapped.length
 						? aMapped
@@ -578,13 +554,12 @@ sap.ui.define([
 		},
 
 		async onBackView() {
-			var oReqModel = this._getReqModel();
 			var oCreate = this.byId('request_create_item_fragment');
 			if (oCreate) {
 				this._showItemList('view');
-				oReqModel.setProperty('/req_item', {});
+				this._oReqModel.setProperty('/req_item', {});
 			} else {
-				PARequestSharedFunction._ensureRequestModelDefaults(oReqModel);
+				PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
 				await this._removeByLocalId("req_approval_log");
 				var oHistory = History.getInstance();
 				var sPreviousHash = oHistory.getPreviousHash();
@@ -603,8 +578,7 @@ sap.ui.define([
 
 		async onRowDeleteReqItem(oEvent) {
 			const oTable = this._resolveControl("req_item_table_d", "request") || this._resolveControl("req_item_table", "request");
-			const oReq = this._getReqModel();
-			const aRows = oReq.getProperty("/req_item_rows") || [];
+			const aRows = this._oReqModel.getProperty("/req_item_rows") || [];
 
 			let iFromAction = null;
 			const oRow = oEvent.getParameter && oEvent.getParameter("row");
@@ -675,8 +649,8 @@ sap.ui.define([
 				aSuccessIdx.sort((a, b) => b - a).forEach((i) => {
 					if (i >= 0 && i < aRows.length) aRows.splice(i, 1);
 				});
-				oReq.setProperty("/req_item_rows", aRows);
-				oReq.setProperty("/list_count", aRows.length);
+				this._oReqModel.setProperty("/req_item_rows", aRows);
+				this._oReqModel.setProperty("/list_count", aRows.length);
 				MessageToast.show(Utility.getText(this, 'req_tm_s_delete_req_item', [aSuccessIdx.length]));
 			}
 
@@ -690,7 +664,7 @@ sap.ui.define([
 				return Number.isFinite(n) ? n : 0;
 			};
 
-			const total = (oReq.getProperty("/req_item_rows") || []).reduce((acc, row) => {
+			const total = (this._oReqModel.getProperty("/req_item_rows") || []).reduce((acc, row) => {
 				const amt = row?.EST_AMOUNT ?? row?.est_amount ?? row?.EST_AMT ?? 0;
 				return acc + toNumber(amt);
 			}, 0);
@@ -698,18 +672,17 @@ sap.ui.define([
 			const round2 = (n) => Math.round(n * 100) / 100;
 
 
-			const oHeader = oReq.getProperty("/req_header") || {};
-			if (!oReq.getProperty("/req_header")) {
-				oReq.setProperty("/req_header", oHeader);
+			const oHeader = this._oReqModel.getProperty("/req_header") || {};
+			if (!this._oReqModel.getProperty("/req_header")) {
+				this._oReqModel.setProperty("/req_header", oHeader);
 			}
-			oReq.setProperty("/req_header/reqamt", round2(total));
+			this._oReqModel.setProperty("/req_header/reqamt", round2(total));
 
 
 			oTable.clearSelection();
 		},
 
 		async _deleteItemCascade(sReqId, sReqSubId) {
-			const oModel = this.getOwnerComponent().getModel();
 			const sGroup = "deleteItemCascade";
 
 			const cast = (v) => /^\d+$/.test(String(v)) ? Number(v) : String(v);
@@ -724,7 +697,7 @@ sap.ui.define([
 
 			let aPartCtx = [];
 			try {
-				const oPartList = oModel.bindList(
+				const oPartList = this._oDataModel.bindList(
 					"/ZREQ_ITEM_PART", null, null,
 					[
 						new Filter({ path: "REQUEST_ID", operator: FilterOperator.EQ, value1: vReq }),
@@ -746,7 +719,7 @@ sap.ui.define([
 
 			let oItemCtx = null;
 			try {
-				const oItemList = oModel.bindList(
+				const oItemList = this._oDataModel.bindList(
 					"/ZREQUEST_ITEM", null, null,
 					[
 						new Filter({ path: "REQUEST_ID", operator: FilterOperator.EQ, value1: vReq }),
@@ -784,7 +757,7 @@ sap.ui.define([
 					});
 				}
 
-				await oModel.submitBatch(sGroup);
+				await this._oDataModel.submitBatch(sGroup);
 				return true;
 			} catch (e) {
 				console.error("Delete item cascade failed:", e);
@@ -797,8 +770,7 @@ sap.ui.define([
 		* ======================================================= */
 
 		appendNewRow(oEvent) {
-			const oReqModel = this._getReqModel();
-			if (oReqModel.getProperty("/req_header/grptype") !== "Group") return;
+			if (this._oReqModel.getProperty("/req_header/grptype") !== "Group") return;
 
 			const src = oEvent.getSource();
 			const sVal = (oEvent.getParameter && oEvent.getParameter("value")) ?? (src?.getValue?.() ?? "");
@@ -812,24 +784,23 @@ sap.ui.define([
 			const idx = parseInt(segs[segs.length - 1], 10);
 			if (!Number.isInteger(idx)) return;
 
-			let aRows = oReqModel.getProperty("/participant");
+			let aRows = this._oReqModel.getProperty("/participant");
 			if (!Array.isArray(aRows)) {
 				aRows = [];
-				oReqModel.setProperty("/participant", aRows);
+				this._oReqModel.setProperty("/participant", aRows);
 			}
 
-			oReqModel.setProperty(`/participant/${idx}/PARTICIPANTS_ID`, sTrim);
+			this._oReqModel.setProperty(`/participant/${idx}/PARTICIPANTS_ID`, sTrim);
 
 			this._normalizeTrailingEmptyRow(aRows);
 
 			const isLast = idx === aRows.length - 1;
 			if (isLast && sTrim) {
-				oReqModel.setProperty(`/participant/${aRows.length}`, { PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" });
+				this._oReqModel.setProperty(`/participant/${aRows.length}`, { PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" });
 			}
 		},
 
 		_normalizeTrailingEmptyRow(aRows) {
-			const oReq = this._getReqModel();
 			let iLastNonEmpty = -1;
 			for (let i = 0; i < aRows.length; i++) {
 				const r = aRows[i] || {};
@@ -839,17 +810,16 @@ sap.ui.define([
 			const desiredLength = Math.max(iLastNonEmpty + 2, 1);
 			if (aRows.length > desiredLength) {
 				aRows.splice(desiredLength);
-				oReq.setProperty("/participant", aRows.slice());
+				this._oReqModel.setProperty("/participant", aRows.slice());
 			} else if (aRows.length === 0) {
 				aRows.push({ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" });
-				oReq.setProperty("/participant", aRows);
+				this._oReqModel.setProperty("/participant", aRows);
 			}
 		},
 
 		async onRowDeleteParticipant(oEvent) {
 			const oTable = this.byId("req_participant_table");
-			const oReq = this._getReqModel();
-			let aRows = oReq.getProperty("/participant") || [];
+			let aRows = this._oReqModel.getProperty("/participant") || [];
 
 			let idxFromAction = null;
 			const oRow = oEvent.getParameter && oEvent.getParameter("row");
@@ -886,7 +856,6 @@ sap.ui.define([
 
 			aToDelete = Array.from(new Set(aToDelete)).sort((a, b) => b - a);
 
-			const oModel = this.getOwnerComponent().getModel();
 			const sGroupId = "delParticipants";
 
 			const toNumberIfNumeric = (v) => /^\d+$/.test(String(v)) ? Number(v) : String(v);
@@ -903,8 +872,8 @@ sap.ui.define([
 
 					const oRow = aRows[i] || {};
 					const sPID = String(oRow.PARTICIPANTS_ID ?? oRow.PARTICIPANT_ID ?? "").trim();
-					const sReqId = String(oRow.REQUEST_ID ?? oReq.getProperty("/req_header/reqid") ?? "").trim();
-					const sReqSubId = String(oRow.REQUEST_SUB_ID ?? oReq.getProperty("/req_item/req_subid") ?? "").trim();
+					const sReqId = String(oRow.REQUEST_ID ?? this._oReqModel.getProperty("/req_header/reqid") ?? "").trim();
+					const sReqSubId = String(oRow.REQUEST_SUB_ID ?? this._oReqModel.getProperty("/req_item/req_subid") ?? "").trim();
 
 					const hasKeys = !!(sReqId && sReqSubId && sPID);
 
@@ -917,7 +886,7 @@ sap.ui.define([
 					const vSub = toNumberIfNumeric(sReqSubId);
 					const vPid = toNumberIfNumeric(sPID);
 
-					const oListBinding = oModel.bindList(
+					const oListBinding = this._oDataModel.bindList(
 						"/ZREQ_ITEM_PART",
 						null,
 						null,
@@ -956,7 +925,7 @@ sap.ui.define([
 				await Promise.allSettled(deletePromises);
 
 				if (deletePromises.length > 0) {
-					await oModel.submitBatch(sGroupId);
+					await this._oDataModel.submitBatch(sGroupId);
 				}
 			} finally {
 				BusyIndicator.hide();
@@ -973,7 +942,7 @@ sap.ui.define([
 					this._normalizeTrailingEmptyRow(aRows);
 				}
 
-				oReq.setProperty("/participant", aRows);
+				this._oReqModel.setProperty("/participant", aRows);
 				oTable.clearSelection();
 				MessageToast.show(Utility.getText(this, "req_tm_s_delete_participant", [aSuccessIdx.length]));
 			}
@@ -992,13 +961,12 @@ sap.ui.define([
 		},
 
 		async onSaveAddAnother() {
-			const oReqModel = this._getReqModel();
 			await this.onSave(); // saves current
 			// Re-open create form fresh
 			await this._showItemCreate("create");
 
 			// Reset create buffers
-			const oData = oReqModel.getData();
+			const oData = this._oReqModel.getData();
 			oData.req_item = {};
 			if (oData.req_header.grptype === 'Individual') {
 				const emp_data = await PARequestSharedFunction._getEmpIdDetail(this, oData.user);
@@ -1012,18 +980,16 @@ sap.ui.define([
 				oData.participant = [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }];
 			}
 			oData.view = "create";
-			oReqModel.setData(oData);
+			this._oReqModel.setData(oData);
 		},
 
 		async onSave() {
-			const oReqModel = this._getReqModel();
-			const oData 	= oReqModel.getData();
+			const oData 	= this._oReqModel.getData();
 			const oReqItem	= oData.req_item;
-			const oModel 	= this.getOwnerComponent().getModel();
 
 			const sEmpId	= String(oData.user);
 			const sReqId 	= String(oData.req_header.reqid || "").trim();
-			const isEdit 	= oReqModel.getProperty("/view") === "i_edit";
+			const isEdit 	= this._oReqModel.getProperty("/view") === "i_edit";
 
 			const sClaimType = oData.req_header.claimtype;
 			const sClaimTypeItem = oReqItem.claim_type_item_id;
@@ -1046,7 +1012,7 @@ sap.ui.define([
 
 				if (isEdit) {
 					const sReqSubId = String(oData.req_item.req_subid || "").trim();
-					const oList = oModel.bindList("/ZREQUEST_ITEM", null, null, [
+					const oList = this._oDataModel.bindList("/ZREQUEST_ITEM", null, null, [
 						new Filter("REQUEST_ID", FilterOperator.EQ, sReqId),
 						new Filter("REQUEST_SUB_ID", FilterOperator.EQ, sReqSubId)
 					], { $$updateGroupId: "itemSave" });
@@ -1109,12 +1075,12 @@ sap.ui.define([
 					
 
 					await this._replaceParticipantsForItem(sReqId, subId, oData.participant);
-					await oModel.submitBatch("itemSave");
+					await this._oDataModel.submitBatch("itemSave");
 					
 				} else {
 					const sNewReqSubId = await this.getCurrentReqSubIdNumber(sReqId);
 					const sReqSubId = String(sNewReqSubId);
-					const oData = oReqModel.getProperty("/req_item");
+					const oData = this._oReqModel.getProperty("/req_item");
 					
 
 					let sAttachment1_SFID,sAttachment2_SFID;
@@ -1127,7 +1093,7 @@ sap.ui.define([
 						sAttachment2_SFID = await Attachment.postAttachment(oData.doc2, attachment_2, oData.user);
 					}
 
-					oModel.bindList("/ZREQUEST_ITEM").create({
+					this._oDataModel.bindList("/ZREQUEST_ITEM").create({
 						EMP_ID						: sEmpId,
 						REQUEST_ID					: sReqId,
 						REQUEST_SUB_ID				: sReqSubId,
@@ -1188,7 +1154,7 @@ sap.ui.define([
 					for (const p of aParts) {
 						const sPID = String(p.PARTICIPANTS_ID || "").trim();
 						if (!sPID) continue;
-						oModel.bindList("/ZREQ_ITEM_PART").create({
+						this._oDataModel.bindList("/ZREQ_ITEM_PART").create({
 							REQUEST_ID: sReqId,
 							REQUEST_SUB_ID: sReqSubId,
 							PARTICIPANTS_ID: sPID,
@@ -1196,7 +1162,7 @@ sap.ui.define([
 						}, { $$updateGroupId: "itemCreate" });
 					}
 
-					await oModel.submitBatch("itemCreate");
+					await this._oDataModel.submitBatch("itemCreate");
 					
 					if (sAttachment1_SFID) {
 						await Attachment.postMDFChild(sReqId, requestSubId, sAttachment1_SFID, sAttachment2_SFID);
@@ -1306,7 +1272,6 @@ sap.ui.define([
 		},
 
 		async _replaceParticipantsForItem(sReqId, sReqSubId, aParticipants) {
-			const oModel = this.getOwnerComponent().getModel();
 			const sGroup = "replaceParts";
 
 			const isNotFound = (err) => {
@@ -1316,7 +1281,7 @@ sap.ui.define([
 
 			let aExistingCtx = [];
 			try {
-				const oList = oModel.bindList(
+				const oList = this._oDataModel.bindList(
 					"/ZREQ_ITEM_PART", null, null,
 					[
 						new Filter({ path: "REQUEST_ID", operator: FilterOperator.EQ, value1: sReqId }),
@@ -1351,7 +1316,7 @@ sap.ui.define([
 
 			const aList = Array.isArray(aParticipants) ? aParticipants : [];
 			try {
-				const oPartList = oModel.bindList("/ZREQ_ITEM_PART", null, null, null, {
+				const oPartList = this._oDataModel.bindList("/ZREQ_ITEM_PART", null, null, null, {
 					$$updateGroupId: sGroup
 				});
 
@@ -1377,14 +1342,13 @@ sap.ui.define([
 				throw err;
 			}
 
-			await oModel.submitBatch(sGroup);
+			await this._oDataModel.submitBatch(sGroup);
 		},
 
 		onCancelItem() {
-			const oReqModel = this._getReqModel();
-			const oData = oReqModel.getData();
+			const oData = this._oReqModel.getData();
 			const sReqId = String(oData.req_header.reqid || "").trim();
-			oReqModel.setProperty('/req_item', {})
+			this._oReqModel.setProperty('/req_item', {})
 
 			this._getItemList(sReqId);
 			this._showItemList('list');
@@ -1395,16 +1359,14 @@ sap.ui.define([
 		* ======================================================= */
 
 		async _getHeader(sReqId) {
-			const oReqModel = this._getReqModel();
 
 			if (!sReqId) {
-				oReqModel.setProperty("/req_item_rows", []);
-				oReqModel.setProperty("/list_count", 0);
+				this._oReqModel.setProperty("/req_item_rows", []);
+				this._oReqModel.setProperty("/list_count", 0);
 				return [];
 			}
 
-			const oModel = this.getOwnerComponent().getModel("employee_view");
-			const oListBinding = oModel.bindList("/ZEMP_REQUEST_VIEW", null, null, [
+			const oListBinding = this._oViewModel.bindList("/ZEMP_REQUEST_VIEW", null, null, [
 				new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)
 			]);
 
@@ -1413,7 +1375,7 @@ sap.ui.define([
 
 				if (aCtx.length > 0) {
 					const oData = aCtx[0].getObject();
-					oReqModel.setProperty("/req_header", {
+					this._oReqModel.setProperty("/req_header", {
 						purpose: oData.OBJECTIVE_PURPOSE || "",
 						reqid: oData.REQUEST_ID || "",
 						tripstartdate: oData.TRIP_START_DATE || "",
@@ -1444,25 +1406,23 @@ sap.ui.define([
 
 			} catch (err) {
 				console.error("OData V4 bindList failed:", err);
-				oReqModel.setProperty("/req_header", a);
+				this._oReqModel.setProperty("/req_header", a);
 				return [];
 			}
 		},
 
 		async _getItemList(sReqId, bFirst = false) {
-			const oReqModel = this._getReqModel();
 
 			if (!sReqId) {
-				oReqModel.setProperty("/req_item_rows", []);
-				oReqModel.setProperty("/list_count", 0);
+				this._oReqModel.setProperty("/req_item_rows", []);
+				this._oReqModel.setProperty("/list_count", 0);
 				return [];
 			}
 
-			const oModel = this.getOwnerComponent().getModel('employee_view');
 			const sReq = String(sReqId);
-			const sEmp = String(oReqModel.getProperty('/user'));
+			const sEmp = String(this._oReqModel.getProperty('/user'));
 
-			const oListBinding = oModel.bindList(
+			const oListBinding = this._oViewModel.bindList(
 				"/ZEMP_REQUEST_ITEM_VIEW", null,
 				[new Sorter("REQUEST_SUB_ID", false)],
 				[new Filter({
@@ -1495,10 +1455,10 @@ sap.ui.define([
 					return it.CASH_ADVANCE === false ? sum + (Number(it.EST_AMOUNT) || 0) : sum;
 				}, 0);
 
-				oReqModel.setProperty("/req_header/cashadvamt", fCashAdvAmount);
-				oReqModel.setProperty("/req_header/reqamt", fReqAmount);
-				oReqModel.setProperty("/req_item_rows", a);
-				oReqModel.setProperty("/list_count", a.length);
+				this._oReqModel.setProperty("/req_header/cashadvamt", fCashAdvAmount);
+				this._oReqModel.setProperty("/req_header/reqamt", fReqAmount);
+				this._oReqModel.setProperty("/req_item_rows", a);
+				this._oReqModel.setProperty("/list_count", a.length);
 
 				if (bFirst != true) {
 					this.updateRequestAmount(sEmp, sReq, fCashAdvAmount, fReqAmount);
@@ -1507,17 +1467,15 @@ sap.ui.define([
 				return a;
 			} catch (err) {
 				console.error("OData V4 bindList failed:", err);
-				oReqModel.setProperty("/req_item_rows", []);
-				oReqModel.setProperty("/list_count", 0);
+				this._oReqModel.setProperty("/req_item_rows", []);
+				this._oReqModel.setProperty("/list_count", 0);
 				return [];
 			}
 		},
 
 		async updateRequestAmount(sEmpId, sReqId, fCashAdvAmount, fReqAmount) {
-			
-			const oModel = this.getOwnerComponent().getModel();
 
-			const oListBinding = oModel.bindList("/ZREQUEST_HEADER", null, null,
+			const oListBinding = this._oDataModel.bindList("/ZREQUEST_HEADER", null, null,
 				[
 					new Filter({ path: "EMP_ID", operator: FilterOperator.EQ, value1: sEmpId }),
 					new Filter({ path: "REQUEST_ID", operator: FilterOperator.EQ, value1: sReqId })
@@ -1542,7 +1500,7 @@ sap.ui.define([
 				oCtx.setProperty("CASH_ADVANCE", parseFloat(fCashAdvAmount));
 				oCtx.setProperty("PREAPPROVAL_AMOUNT", parseFloat(fReqAmount));
 
-				await oModel.submitBatch("$auto");
+				await this._oDataModel.submitBatch("$auto");
 			} catch (e) {
 				MessageToast.show(e.message || "Submission failed");
 			} finally {
@@ -1551,9 +1509,7 @@ sap.ui.define([
 		},
 
 		getCurrentReqSubIdNumber(sReqId) {
-			
-			const oModel = this.getOwnerComponent().getModel('request');
-			const length = oModel.getProperty('/req_item_rows').length;
+			const length = this._oReqModel.getProperty('/req_item_rows').length;
 			const next = String(length + 1).padStart(3, "0");
 			return sReqId + next;
 		},
@@ -1623,16 +1579,15 @@ sap.ui.define([
 		},
 
 		_updateParticipantData(sRowPath, oEmpData) {
-			const oReqModel = this._getReqModel();
 
 			if (oEmpData) {
-				oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", oEmpData.EEID || oEmpData.ID);
-				oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", oEmpData.NAME);
-				oReqModel.setProperty(sRowPath + "/PARTICIPANT_COST_CENTER", oEmpData.CC);
+				this._oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", oEmpData.EEID || oEmpData.ID);
+				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", oEmpData.NAME);
+				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_COST_CENTER", oEmpData.CC);
 			} else {
-				oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", "");
-				oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", "");
-				oReqModel.setProperty(sRowPath + "/PARTICIPANT_COST_CENTER", "");
+				this._oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", "");
+				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", "");
+				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_COST_CENTER", "");
 			}
 		},
 
@@ -1704,8 +1659,7 @@ sap.ui.define([
 				var oWorkSheet = oWorkbook.Sheets[oWorkbook.SheetNames[0]];
 				var oJsonData = XLSX.utils.sheet_to_json(oWorkSheet);
 				oJsonData.push({ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" });
-				const oReqModel = this._getReqModel();
-				oReqModel.setProperty("/participant", oJsonData);
+				this._oReqModel.setProperty("/participant", oJsonData);
 
 
 				var fu = this.byId("participant_list_upload");
@@ -1832,7 +1786,7 @@ sap.ui.define([
 			try {
 				oView.setBusy(true);
 
-				const input = this.getOwnerComponent().getModel("request")?.getData();
+				const input = this._oReqModel?.getData();
 				if (!input) {
 					MessageToast.show("No request data loaded.");
 					return;
@@ -2021,8 +1975,7 @@ sap.ui.define([
 		},
 
 		async _getParticipantsList(reqid) {
-			const oModel = this.getOwnerComponent().getModel('employee_view');
-			const oListBinding = oModel.bindList(
+			const oListBinding = this._oViewModel.bindList(
 				"/ZEMP_REQUEST_PART_VIEW",
 				null,
 				[new Sorter("REQUEST_SUB_ID", false)],
@@ -2057,19 +2010,16 @@ sap.ui.define([
 		},
 
 		async _getClaimTypeItemSelection() {
-			const oReq = this._getReqModel();
-			const data = oReq.getData();
+			const data = this._oReqModel.getData();
 			const claim_type_id = data.req_header.claimtype;
 
 			if (!claim_type_id) {
-				oReq.setProperty("/claim_type_items", []);
+				this._oReqModel.setProperty("/claim_type_items", []);
 				return [];
 			}
 
-			const oModel = this.getOwnerComponent().getModel();
-
 			try {
-				const oListBinding = oModel.bindList(
+				const oListBinding = this._oDataModel.bindList(
 					"/ZCLAIM_TYPE_ITEM",
 					null,
 					[
@@ -2089,33 +2039,30 @@ sap.ui.define([
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 				const a = aCtx.map((ctx) => ctx.getObject());
 
-				oReq.setProperty("/claim_type_items", a);
+				this._oReqModel.setProperty("/claim_type_items", a);
 				return a;
 
 			} catch (err) {
 				console.error("ODataV4 load claim type items failed:", err);
-				oReq.setProperty("/claim_type_items", []);
+				this._oReqModel.setProperty("/claim_type_items", []);
 				return [];
 			}
 		},
 
 		_getDependent() {
-			const oReq = this._getReqModel();
-			const empId = oReq.getProperty("/user");
-			const oMainModel = this.getOwnerComponent().getModel();
-			const oListBinding = oMainModel.bindList("/ZEMP_DEPENDENT", null, null, [
+			const empId = this._oReqModel.getProperty("/user");
+			const oListBinding = this._oDataModel.bindList("/ZEMP_DEPENDENT", null, null, [
 				new Filter("EMP_ID", FilterOperator.EQ, empId)
 			]);
 
 			oListBinding.requestContexts().then((aContexts) => {
 				const aData = aContexts.map(oCtx => oCtx.getObject());
-				this._getReqModel().setProperty('/ZEMP_DEPENDENT', aData);
+				this._oReqModel.setProperty('/ZEMP_DEPENDENT', aData);
 			}).catch(err => console.error("RequestType Load Failed", err));
 		},
 
 		_calculateNumberOfDays() {
-			const oReqModel = this._getReqModel();
-			const oData = oReqModel.getData();
+			const oData = this._oReqModel.getData();
 
 			let headerStart = oData.req_header.tripstartdate ? new Date(oData.req_header.tripstartdate) : null;
 			let headerEnd = oData.req_header.tripenddate ? new Date(oData.req_header.tripenddate) : null;
@@ -2134,7 +2081,58 @@ sap.ui.define([
 			const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
 
 			oData.req_item.no_of_days = diffDays;
-			oReqModel.setData(oData);
+			this._oReqModel.setData(oData);
+		},
+
+		_calculateNumberOfHours() {
+			const oData = this._oReqModel.getData();
+
+			let headerStart = oData.req_header.tripstartdate ? new Date(oData.req_header.tripstartdate) : null;
+			let headerEnd = oData.req_header.tripenddate ? new Date(oData.req_header.tripenddate) : null;
+
+			let itemStart = oData.req_item.start_date ? new Date(oData.req_item.start_date) : null;
+			let itemEnd = oData.req_item.end_date ? new Date(oData.req_item.end_date) : null;
+
+			let finalStart = itemStart || headerStart;
+			let finalEnd = itemEnd || headerEnd;
+
+			if (!finalStart || !finalEnd || isNaN(finalStart) || isNaN(finalEnd)) {
+				return 0;
+			}
+
+			const applyTime = (oDate, sTime) => {
+				const dMergedDate = new Date(oDate.getTime()); 
+				
+				if (sTime && typeof sTime === "string") {
+					const aParts = sTime.split(":");
+					if (aParts.length >= 2) {
+						dMergedDate.setHours(parseInt(aParts[0], 10), parseInt(aParts[1], 10), 0, 0);
+					}
+				} else {
+					dMergedDate.setHours(0, 0, 0, 0);
+				}
+				return dMergedDate;
+			};
+
+			let startTime = oData.req_item.start_time; 
+			let endTime = oData.req_item.end_time;     
+
+			let finalStartWithTime = applyTime(finalStart, startTime);
+			let finalEndWithTime = applyTime(finalEnd, endTime);
+
+			const diffMs = finalEndWithTime.getTime() - finalStartWithTime.getTime();
+			let diffHours = diffMs / (1000 * 60 * 60);
+
+			if (diffHours < 0) diffHours = 0; 
+
+			const dStartMidnight = new Date(finalStart).setHours(0,0,0,0);
+			const dEndMidnight = new Date(finalEnd).setHours(0,0,0,0);
+			const diffDays = Math.floor((dEndMidnight - dStartMidnight) / (1000 * 60 * 60 * 24)) + 1;
+
+			oData.req_item.no_of_days = diffDays;
+			oData.req_item.no_of_hours = parseFloat(diffHours.toFixed(2)); 
+
+			this._oReqModel.setData(oData);
 		},
 
 		/* =========================================================
@@ -2142,10 +2140,9 @@ sap.ui.define([
 		* ======================================================= */
 
 		getFieldVisibility_ClaimTypeItem: async function (oEvent) {
-			const oModel = this.getOwnerComponent().getModel();
 
 			const sClaimTypeItemFromSelect = oEvent?.getSource?.().getSelectedKey?.();
-			const sClaimTypeItemFromModel = this._getReqModel().getProperty("/req_item/claim_type_item_id");
+			const sClaimTypeItemFromModel = this._oReqModel.getProperty("/req_item/claim_type_item_id");
 			const sClaimTypeItem = sClaimTypeItemFromSelect || sClaimTypeItemFromModel;
 
 			if (!sClaimTypeItem) {
@@ -2153,7 +2150,7 @@ sap.ui.define([
 				return;
 			}
 
-			const oListBinding = oModel.bindList("/ZDB_STRUCTURE", null, null, [
+			const oListBinding = this._oDataModel.bindList("/ZDB_STRUCTURE", null, null, [
 				new Filter("SUBMISSION_TYPE", FilterOperator.EQ, "PREAPPROVAL_R"),
 				new Filter("COMPONENT_LEVEL", FilterOperator.EQ, "ITEM"),
 				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaimTypeItem)
@@ -2348,9 +2345,9 @@ sap.ui.define([
 
 			const id = reqId;
 			const userID = userId;
-			const oModel = this.getOwnerComponent().getModel();
-			const oModel2 = this.getOwnerComponent().getModel("employee_view");
-			const oModel3 = this.getOwnerComponent().getModel();
+			const oModel = this._oDataModel;
+			const oModel2 = this._oViewModel;
+			const oModel3 = this._oDataModel;
 
 
 			if (mode === "APPROVE") {
@@ -2408,8 +2405,8 @@ sap.ui.define([
 				BusyIndicator.show(0);
 
 				// Models
-				const oModelMain = this.getOwnerComponent().getModel();               // OData main
-				const oModelView = this.getOwnerComponent().getModel("employee_view");// OData views
+				const oModelMain = this._oDataModel;               // OData main
+				const oModelView = this._oViewModel;// OData views
 				const accessModel = this.getOwnerComponent().getModel("access");
 
 				// Who & what
@@ -2445,7 +2442,7 @@ sap.ui.define([
 				);
 
 				// 3) Send notifications
-				const oMailModel = this.getOwnerComponent().getModel();
+				const oMailModel = this._oDataModel;
 				for (const p of payloads) {
 					await workflowApproval.onSendEmailApprover(oMailModel, p);
 				}
@@ -2479,8 +2476,8 @@ sap.ui.define([
 			try {
 				BusyIndicator.show(0);
 
-				const oModelMain = this.getOwnerComponent().getModel();
-				const oModelView = this.getOwnerComponent().getModel("employee_view");
+				const oModelMain = this._oDataModel;
+				const oModelView = this._oViewModel;
 				const accessModel = this.getOwnerComponent().getModel("access");
 				const userId = accessModel?.getProperty("/userId");
 
@@ -2517,9 +2514,7 @@ sap.ui.define([
 				BusyIndicator.hide();
 			}
 		},
-
-
-
+		
 		onExit: function () {
 			try {
 				RejectDialog.destroy(this);
@@ -2528,12 +2523,5 @@ sap.ui.define([
 				SendBackDialog.destroy(this);
 			} catch (e) { }
 		},
-
-
-
-
-
-
-
 	});
 });
