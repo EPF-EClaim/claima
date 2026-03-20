@@ -11,11 +11,11 @@ sap.ui.define([
     "use strict";
     return {
         /**
-		 * Compares sVal1 against sVal2. If true, return true. If false, return sVal2 value
+		 * Drill down of eligibility scenarios for each claim type after retrieving employee and eligibility rules data
 		 * @public
-		 * @param {sap.ui.base.Event} sVal1 - Value Input to be checked;
-         * @param {sap.ui.base.Event} sVal2 - Value Input to be checked against;
-         * @returns {Boolean/Integer/String} Comparison Output
+		 * @param {sap.ui.base.Event} oModel - Object Model from Controller;
+         * @param {sap.ui.base.Event} oPayload - Payload data of ClaimType, ClaimItmType, List Array of fields to be checked;
+         * @returns {Object} Object Payload with results field in CheckFields List Array populated
 		 */
         onEligibilityCheck: async function (oModel, oPayload) {
             // Get Employee ID
@@ -82,6 +82,7 @@ sap.ui.define([
                 //     break;
 
                 default:
+                    oReturnPayload = oPayload;
                     break;
             }
 
