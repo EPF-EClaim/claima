@@ -1130,7 +1130,7 @@ annotate service.ZEMP_MASTER with @(
 
 annotate service.ZJOB_GROUP with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: true},
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey             : [JOB_GROUP_ID],
     Capabilities                   : {
         Deletable : true,

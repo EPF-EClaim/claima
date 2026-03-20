@@ -1359,13 +1359,3 @@ entity ZDISBURSEMENT_STATUS : managed {
         END_DATE                 : Date       @Common.Label: 'End Date';
         STATUS                   : String(10) @Common.Label: 'Status';
 }
-
-entity ZROLEHIERARCHY : managed {
-    key ROLE : String  @mandatory  @Common.Label: 'Role';
-        RANK : String  @mandatory  @Common.Label: 'Rank';
-}
-
-entity ZCONSTANTS : managed {
-    key ID    : String  @mandatory  @Common.Label: 'Constant ID';
-        VALUE : String  @mandatory  @Common.Label: 'Constant Value';
-}
