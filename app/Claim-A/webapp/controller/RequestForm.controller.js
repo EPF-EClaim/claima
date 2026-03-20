@@ -1020,8 +1020,9 @@ sap.ui.define([
 					const aCtx = await oList.requestContexts(0, 1);
 					if (!aCtx[0]) throw new Error("Item not found");
 
-					
-					let sAttachment1_SFID,sAttachment2_SFID;
+					const oItemCtx = aCtx[0];
+
+					let sAttachment1_SFID, sAttachment2_SFID;
 					if (oData.doc1) {
 						const attachment_1 = await this.getFileAsBinary("i_attachment_1_file");
 						sAttachment1_SFID = await Attachment.postAttachment(oData.doc1, attachment_1, oData.user);
@@ -1030,76 +1031,96 @@ sap.ui.define([
 						const attachment_2 = await this.getFileAsBinary("i_attachment_2_file");
 						sAttachment2_SFID = await Attachment.postAttachment(oData.doc2, attachment_2, oData.user);
 					}
-					if (sAttachment1_SFID || sAttachment2_SFID) {
-						oItemCtx.setProperty("ATTACHMENT1" 					, sAttachment1_SFID);
-						oItemCtx.setProperty("ATTACHMENT2" 					, sAttachment2_SFID);
-					}
+					if (sAttachment1_SFID) oItemCtx.setProperty("ATTACHMENT1", sAttachment1_SFID);
+					if (sAttachment2_SFID) oItemCtx.setProperty("ATTACHMENT2", sAttachment2_SFID);
 
-					const updateIfValid = (sPropertyName, vValue, fnTransform) => {
-						if (vValue !== undefined && vValue !== null && vValue !== "") {
-							let vFinalValue = fnTransform ? fnTransform(vValue) : vValue;
-							oItemCtx.setProperty(sPropertyName, vFinalValue);
+					const fn = {
+						id2:   function(v) { return String(v || "").padStart(2, '0'); },
+						str:   function(v) { return String(v || ""); },
+						int:   function(v) { return parseInt(v) || 0; },
+						float: function(v) { return parseFloat(v) || 0; },
+						bool:  function(v) { return !!v; },
+						parti: function(v) { return parseInt(v) || 1; }, // Default to 1 participant
+						date:  function(v) { 
+							if (!v) return null;
+							const d = new Date(v); 
+							return isNaN(d.getTime()) ? null : d; 
+						},
+						time:  function(v) {
+							if (!v) return null;
+							if (v instanceof Date) return v.toTimeString().split(' ')[0];
+							return (typeof v === "string" && v.length === 5) ? v + ":00" : v;
 						}
 					};
 
-					// 1. Strings & General Fields
-					updateIfValid("CLAIM_TYPE_ID",                sClaimType);
-					updateIfValid("CLAIM_TYPE_ITEM_ID",           sClaimTypeItem);
-					updateIfValid("PURPOSE",                      oReqItem.purpose);
-					updateIfValid("DEPENDENT",                    oReqItem.dependent);
-					updateIfValid("REMARK",                       oReqItem.remark);
-					updateIfValid("COURSE_TITLE",                 oReqItem.course);
-					updateIfValid("KWSP_SPORTS_REPRESENTATION",   oReqItem.sport_rep);
-					updateIfValid("DECLARE_CLUB_MEMBERSHIP",      oReqItem.club_membership);
-					updateIfValid("MOBILE_CATEGORY_PURPOSE_ID",   oReqItem.cat_purpose);
-					updateIfValid("START_DATE",                   oReqItem.start_date);
-					updateIfValid("END_DATE",                     oReqItem.end_date);
-					updateIfValid("START_TIME",                   oReqItem.start_time);
-					updateIfValid("END_TIME",                     oReqItem.end_time);
-					updateIfValid("VEHICLE_OWNERSHIP_ID",         oReqItem.vehicle_ownership);
-					updateIfValid("ROOM_TYPE",                    oReqItem.room_type);
-					updateIfValid("COUNTRY",                      oReqItem.country);
-					updateIfValid("LOCATION",                     oReqItem.location);
-					updateIfValid("AREA",                         oReqItem.area);
-					updateIfValid("VEHICLE_TYPE",                 oReqItem.type_of_vehicle);
-					updateIfValid("FLIGHT_CLASS",                 oReqItem.flight_class);
-					updateIfValid("LOCATION_TYPE",                oReqItem.location_type);
-					updateIfValid("FROM_STATE_ID",                oReqItem.from_state);
-					updateIfValid("FROM_LOCATION",                oReqItem.from_location);
-					updateIfValid("FROM_LOCATION_OFFICE",         oReqItem.from_location_office);
-					updateIfValid("TO_STATE_ID",                  oReqItem.to_state);
-					updateIfValid("TO_LOCATION",                  oReqItem.to_location);
-					updateIfValid("TO_LOCATION_OFFICE",           oReqItem.to_location_office);
-					updateIfValid("MODE_OF_TRANSFER",             oReqItem.mode_of_transfer);
-					updateIfValid("TRANSFER_DATE",                oReqItem.tarikh_pindah);
-					updateIfValid("REGION",                       oReqItem.sss);
-					updateIfValid("MARRIAGE_CATEGORY",            oReqItem.marriage_cat);
-					updateIfValid("DEPARTURE_TIME",               oReqItem.departure_time);
-					updateIfValid("ARRIVAL_TIME",                 oReqItem.arrival_time);
-					updateIfValid("COST_CENTER",                  oReqItem.COST_CENTER);
-					updateIfValid("GL_ACCOUNT",                   oReqItem.gl_account);
-					updateIfValid("MATERIAL_CODE",                oReqItem.material_code);
-					updateIfValid("DEPENDENT_RELATIONSHIP",       oReqItem.dependent_relationship);
-					updateIfValid("FARE_TYPE_ID",                 oReqItem.fare_type);
-					updateIfValid("VEHICLE_CLASS_ID",             oReqItem.vehicle_class);
+					const fieldMap = {
+						"CLAIM_TYPE_ID":                [sClaimType, fn.str], 
+						"CLAIM_TYPE_ITEM_ID":           [sClaimTypeItem, fn.str],
+						"PURPOSE":                      [oReqItem.purpose, fn.str],
+						"DEPENDENT":                    [oReqItem.dependent, fn.str],
+						"REMARK":                       [oReqItem.remark, fn.str],
+						"COURSE_TITLE":                 [oReqItem.course, fn.str],
+						"KWSP_SPORTS_REPRESENTATION":   [oReqItem.sport_rep, fn.str],
+						"DECLARE_CLUB_MEMBERSHIP":      [oReqItem.club_membership, fn.boolean],
+						"MOBILE_CATEGORY_PURPOSE_ID":   [oReqItem.cat_purpose, fn.str],
+						"VEHICLE_OWNERSHIP_ID":         [oReqItem.vehicle_ownership, fn.str],
+						"ROOM_TYPE":                    [oReqItem.room_type, fn.str],
+						"COUNTRY":                      [oReqItem.country, fn.str],
+						"LOCATION":                     [oReqItem.location, fn.str],
+						"AREA":                         [oReqItem.area, fn.str],
+						"VEHICLE_TYPE":                 [oReqItem.type_of_vehicle, fn.str],
+						"FLIGHT_CLASS":                 [oReqItem.flight_class, fn.str],
+						"LOCATION_TYPE":                [oReqItem.location_type, fn.str],
+						"FROM_STATE_ID":                [oReqItem.from_state, fn.str],
+						"FROM_LOCATION":                [oReqItem.from_location, fn.str],
+						"FROM_LOCATION_OFFICE":         [oReqItem.from_location_office, fn.str],
+						"TO_STATE_ID":                  [oReqItem.to_state, fn.str],
+						"TO_LOCATION":                  [oReqItem.to_location, fn.str],
+						"TO_LOCATION_OFFICE":           [oReqItem.to_location_office, fn.str],
+						"MODE_OF_TRANSFER":             [oReqItem.mode_of_transfer, fn.str],
+						"REGION":                       [oReqItem.sss, fn.str],
+						"MARRIAGE_CATEGORY":            [oReqItem.marriage_cat, fn.str],
+						"COST_CENTER":                  [oReqItem.COST_CENTER, fn.str],
+						"GL_ACCOUNT":                   [oReqItem.gl_account, fn.str],
+						"MATERIAL_CODE":                [oReqItem.material_code, fn.str],
+						"DEPENDENT_RELATIONSHIP":       [oReqItem.dependent_relationship, fn.str],
+						"FARE_TYPE_ID":                 [oReqItem.fare_type, fn.str],
+						"VEHICLE_CLASS_ID":             [oReqItem.vehicle_class, fn.str],
+						"START_DATE":                   [oReqItem.start_date, fn.date],
+						"END_DATE":                     [oReqItem.end_date, fn.date],
+						"TRANSFER_DATE":                [oReqItem.tarikh_pindah, fn.date],
+						"START_TIME":                   [oReqItem.start_time, fn.time],
+						"END_TIME":                     [oReqItem.end_time, fn.time],
+						"DEPARTURE_TIME":               [oReqItem.departure_time, fn.time],
+						"ARRIVAL_TIME":                 [oReqItem.arrival_time, fn.time],
+						"NO_OF_DAYS":                   [oReqItem.no_of_days, fn.int],
+						"FAMILY_COUNT":                 [oReqItem.no_of_family_member, fn.int],
+						"EST_NO_PARTICIPANT":           [oReqItem.est_no_participant, fn.parti],
+						"EST_AMOUNT":                   [oReqItem.est_amount, fn.float],
+						"KILOMETER":                    [oReqItem.kilometer, fn.float],
+						"RATE_PER_KM":                  [oReqItem.rate_per_kilometer, fn.str],
+						"TOLL":                         [oReqItem.toll_amt, fn.float],
+						"METER_CUBE_ENTITLED":          [oReqItem.cube_eligible, fn.float],
+						"METER_CUBE_ACTUAL":            [oReqItem.meter_cube_actual, fn.float],
+						"CASH_ADVANCE":                 [oReqItem.cash_advance, fn.bool]
+					};
 
-					// 2. Numeric Fields (Integers)
-					updateIfValid("NO_OF_DAYS",                   oReqItem.no_of_days, parseInt);
-					updateIfValid("FAMILY_COUNT",                 oReqItem.no_of_family_member, parseInt);
-					updateIfValid("EST_NO_PARTICIPANT",           oReqItem.est_no_participant, (v) => parseInt(v) || 1);
+					Object.keys(fieldMap).forEach(function(sKey) {
+						const aPair = fieldMap[sKey];
+						const vRaw = aPair[0];
+						const fnTransform = aPair[1];
+						
+						if (typeof fnTransform === "function") {
+							if (vRaw !== undefined && vRaw !== null && vRaw !== "") {
+								const vFinal = fnTransform(vRaw);
+								if (vFinal !== null && !(typeof vFinal === "number" && isNaN(vFinal))) {
+									oItemCtx.setProperty(sKey, vFinal);
+								}
+							}
+						}
+					});
 
-					// 3. Numeric Fields (Floats)
-					updateIfValid("EST_AMOUNT",                   oReqItem.est_amount, parseFloat);
-					updateIfValid("KILOMETER",                    oReqItem.kilometer, parseFloat);
-					updateIfValid("RATE_PER_KM",                  oReqItem.rate_per_kilometer, parseFloat);
-					updateIfValid("TOLL",                         oReqItem.toll_amt, parseFloat);
-					updateIfValid("METER_CUBE_ENTITLED",          oReqItem.cube_eligible, parseFloat);
-					updateIfValid("METER_CUBE_ACTUAL",            oReqItem.meter_cube_actual, parseFloat);
-
-					// 4. Booleans / Defaults
-					updateIfValid("CASH_ADVANCE",                 oReqItem.cash_advance);
-
-					await this._replaceParticipantsForItem(sReqId, subId, oData.participant);
+					await this._replaceParticipantsForItem(sReqId, sReqSubId, oData.participant);
 					await this._oDataModel.submitBatch("itemSave");
 					
 				} else {
@@ -1107,7 +1128,6 @@ sap.ui.define([
 					const sReqSubId = String(sNewReqSubId);
 					const oData = this._oReqModel.getProperty("/req_item");
 					
-
 					let sAttachment1_SFID,sAttachment2_SFID;
 					if (oData.doc1) {
 						const attachment_1 = await this.getFileAsBinary("i_attachment_1_file");
@@ -1119,68 +1139,116 @@ sap.ui.define([
 					}
 
 					let oPayload = {
-						EMP_ID         : sEmpId,
-						REQUEST_ID     : sReqId,
-						REQUEST_SUB_ID : sReqSubId
+						EMP_ID: sEmpId,
+						REQUEST_ID: sReqId,
+						REQUEST_SUB_ID: sReqSubId
 					};
 
-					const addToPayload = (sKey, vValue, fnTransform) => {
-						if (vValue !== undefined && vValue !== null && vValue !== "") {
-							oPayload[sKey] = fnTransform ? fnTransform(vValue) : vValue;
+					if (sAttachment1_SFID) oPayload.ATTACHMENT1 = sAttachment1_SFID;
+					if (sAttachment2_SFID) oPayload.ATTACHMENT2 = sAttachment2_SFID;
+
+					const fn = {
+						id2:   function(v) { return String(v || "").padStart(2, '0'); },
+						str:   function(v) { return String(v || ""); },
+						int:   function(v) { return parseInt(v) || 0; },
+						float: function(v) { return parseFloat(v) || 0; },
+						bool:  function(v) { return !!v; },
+						parti: function(v) { return parseInt(v) || 1; }, // Default to 1 participant
+						date:  function(v) { 
+							if (!v) return null;
+							const d = new Date(v); 
+							return isNaN(d.getTime()) ? null : d; 
+						},
+						time:  function(v) {
+							if (!v) return null;
+							if (v instanceof Date) return v.toTimeString().split(' ')[0];
+							return (typeof v === "string" && v.length === 5) ? v + ":00" : v;
 						}
 					};
 
-					addToPayload("CLAIM_TYPE_ID",                sClaimType);
-					addToPayload("CLAIM_TYPE_ITEM_ID",           sClaimTypeItem);
-					addToPayload("NO_OF_DAYS",                   oReqItem.no_of_days, parseInt);
-					addToPayload("PURPOSE",                      oReqItem.purpose);
-					addToPayload("EST_AMOUNT",                   oReqItem.est_amount, parseFloat);
-					addToPayload("DEPENDENT",                    oReqItem.dependent);
-					addToPayload("REMARK",                       oReqItem.remark);
-					addToPayload("COURSE_TITLE",                 oReqItem.course);
-					addToPayload("KWSP_SPORTS_REPRESENTATION",   oReqItem.sport_rep);
-					addToPayload("DECLARE_CLUB_MEMBERSHIP",      oReqItem.club_membership);
-					addToPayload("ATTACHMENT1",                  sAttachment1_SFID);
-					addToPayload("MOBILE_CATEGORY_PURPOSE_ID",   oReqItem.cat_purpose);
-					addToPayload("ATTACHMENT2",                  sAttachment2_SFID);
-					addToPayload("START_DATE",                   oReqItem.start_date);
-					addToPayload("END_DATE",                     oReqItem.end_date);
-					addToPayload("START_TIME",                   oReqItem.start_time);
-					addToPayload("END_TIME",                     oReqItem.end_time);
-					addToPayload("VEHICLE_OWNERSHIP_ID",         oReqItem.vehicle_ownership);
-					addToPayload("ROOM_TYPE",                    oReqItem.room_type);
-					addToPayload("COUNTRY",                      oReqItem.country);
-					addToPayload("LOCATION",                     oReqItem.location);
-					addToPayload("AREA",                         oReqItem.area);
-					addToPayload("FAMILY_COUNT",                 oReqItem.no_of_family_member, parseInt);
-					addToPayload("VEHICLE_TYPE",                 oReqItem.type_of_vehicle);
-					addToPayload("KILOMETER",                    oReqItem.kilometer, parseFloat);
-					addToPayload("RATE_PER_KM",                  oReqItem.rate_per_kilometer, parseFloat);
-					addToPayload("TOLL",                         oReqItem.toll_amt, parseFloat);
-					addToPayload("FLIGHT_CLASS",                 oReqItem.flight_class);
-					addToPayload("LOCATION_TYPE",                oReqItem.location_type);
-					addToPayload("FROM_STATE_ID",                oReqItem.from_state);
-					addToPayload("FROM_LOCATION",                oReqItem.from_location);
-					addToPayload("FROM_LOCATION_OFFICE",         oReqItem.from_location_office);
-					addToPayload("TO_STATE_ID",                  oReqItem.to_state);
-					addToPayload("TO_LOCATION",                  oReqItem.to_location);
-					addToPayload("TO_LOCATION_OFFICE",           oReqItem.to_location_office);
-					addToPayload("MODE_OF_TRANSFER",             oReqItem.mode_of_transfer);
-					addToPayload("TRANSFER_DATE",                oReqItem.tarikh_pindah);
-					addToPayload("REGION",                       oReqItem.sss);
-					addToPayload("MARRIAGE_CATEGORY",            oReqItem.marriage_cat);
-					addToPayload("METER_CUBE_ENTITLED",          oReqItem.cube_eligible, parseFloat);
-					addToPayload("DEPARTURE_TIME",               oReqItem.departure_time);
-					addToPayload("ARRIVAL_TIME",                 oReqItem.arrival_time);
-					addToPayload("EST_NO_PARTICIPANT",           oReqItem.est_no_participant, (v) => parseInt(v) || 1);
-					addToPayload("CASH_ADVANCE",                 oReqItem.cash_advance !== undefined ? oReqItem.cash_advance : false);
-					addToPayload("COST_CENTER",                  oReqItem.COST_CENTER);
-					addToPayload("GL_ACCOUNT",                   oReqItem.gl_account);
-					addToPayload("MATERIAL_CODE",                oReqItem.material_code);
-					addToPayload("DEPENDENT_RELATIONSHIP",       oReqItem.dependent_relationship);
-					addToPayload("METER_CUBE_ACTUAL",            oReqItem.meter_cube_actual, parseFloat);
-					addToPayload("FARE_TYPE_ID",                 oReqItem.fare_type);
-					addToPayload("VEHICLE_CLASS_ID",             oReqItem.vehicle_class);
+					const fieldMap = {
+						// ---- IDs & Core Config ----
+						"CLAIM_TYPE_ID":                [sClaimType, fn.str], 
+						"CLAIM_TYPE_ITEM_ID":           [sClaimTypeItem, fn.str],
+						"PURPOSE":                      [oReqItem.purpose, fn.str],
+						"REMARK":                       [oReqItem.remark, fn.str],
+						"CASH_ADVANCE":                 [oReqItem.cash_advance, fn.boolean],
+
+						// ---- Dates & Times ----
+						"START_DATE":                   [oReqItem.start_date, fn.date],
+						"END_DATE":                     [oReqItem.end_date, fn.date],
+						"TRANSFER_DATE":                [oReqItem.tarikh_pindah, fn.date],
+						"START_TIME":                   [oReqItem.start_time, fn.time],
+						"END_TIME":                     [oReqItem.end_time, fn.time],
+						"DEPARTURE_TIME":               [oReqItem.departure_time, fn.time],
+						"ARRIVAL_TIME":                 [oReqItem.arrival_time, fn.time],
+
+						// ---- Amounts & Measurements (Floats) ----
+						"EST_AMOUNT":                   [oReqItem.est_amount, fn.float],
+						"KILOMETER":                    [oReqItem.kilometer, fn.float],
+						"RATE_PER_KM":                  [oReqItem.rate_per_kilometer, fn.str],
+						"TOLL":                         [oReqItem.toll_amt, fn.float],
+						"METER_CUBE_ENTITLED":          [oReqItem.cube_eligible, fn.float],
+						"METER_CUBE_ACTUAL":            [oReqItem.meter_cube_actual, fn.float],
+
+						// ---- Counts (Integers) ----
+						"NO_OF_DAYS":                   [oReqItem.no_of_days, fn.int],
+						"FAMILY_COUNT":                 [oReqItem.no_of_family_member, fn.int],
+						"EST_NO_PARTICIPANT":           [oReqItem.est_no_participant, (v) => fn.int(v) || 1], 
+
+						// ---- General Strings / Dropdown Keys ----
+						"DEPENDENT":                    [oReqItem.dependent, fn.str],
+						"DEPENDENT_RELATIONSHIP":       [oReqItem.dependent_relationship, fn.str],
+						"COURSE_TITLE":                 [oReqItem.course, fn.str],
+						"KWSP_SPORTS_REPRESENTATION":   [oReqItem.sport_rep, fn.str],
+						"DECLARE_CLUB_MEMBERSHIP":      [oReqItem.club_membership, fn.boolean],
+						"MOBILE_CATEGORY_PURPOSE_ID":   [oReqItem.cat_purpose, fn.str],
+						"VEHICLE_OWNERSHIP_ID":         [oReqItem.vehicle_ownership, fn.str],
+						"VEHICLE_TYPE":                 [oReqItem.type_of_vehicle, fn.str],
+						"VEHICLE_CLASS_ID":             [oReqItem.vehicle_class, fn.str],
+						"ROOM_TYPE":                    [oReqItem.room_type, fn.str],
+						"FLIGHT_CLASS":                 [oReqItem.flight_class, fn.str],
+						"FARE_TYPE_ID":                 [oReqItem.fare_type, fn.str],
+						
+						// ---- Geography / Locations (Strings) ----
+						"COUNTRY":                      [oReqItem.country, fn.str],
+						"REGION":                       [oReqItem.sss, fn.str],
+						"AREA":                         [oReqItem.area, fn.str],
+						"LOCATION":                     [oReqItem.location, fn.str],
+						"LOCATION_TYPE":                [oReqItem.location_type, fn.str],
+						"FROM_STATE_ID":                [oReqItem.from_state, fn.str],
+						"FROM_LOCATION":                [oReqItem.from_location, fn.str],
+						"FROM_LOCATION_OFFICE":         [oReqItem.from_location_office, fn.str],
+						"TO_STATE_ID":                  [oReqItem.to_state, fn.str],
+						"TO_LOCATION":                  [oReqItem.to_location, fn.str],
+						"TO_LOCATION_OFFICE":           [oReqItem.to_location_office, fn.str],
+						"MODE_OF_TRANSFER":             [oReqItem.mode_of_transfer, fn.str],
+
+						// ---- HR / Accounting (Strings) ----
+						"MARRIAGE_CATEGORY":            [oReqItem.marriage_cat, fn.str],
+						"COST_CENTER":                  [oReqItem.COST_CENTER, fn.str],
+						"GL_ACCOUNT":                   [oReqItem.gl_account, fn.str],
+						"MATERIAL_CODE":                [oReqItem.material_code, fn.str]
+					};
+
+					Object.keys(fieldMap).forEach(function(sKey) {
+						var aPair = fieldMap[sKey];
+						var vRaw = aPair[0];
+						var fnTransform = aPair[1];
+
+						if (vRaw !== undefined && vRaw !== null && vRaw !== "") {
+							
+							if (typeof fnTransform === "function") {
+								var vFinal = fnTransform(vRaw);
+								
+								if (vFinal !== null && !(typeof vFinal === "number" && isNaN(vFinal))) {
+									oPayload[sKey] = vFinal;
+								}
+							} else {
+								oPayload[sKey] = vRaw;
+							}
+						}
+					});
 
 					this._oDataModel.bindList("/ZREQUEST_ITEM").create(oPayload, { $$updateGroupId: "itemCreate" });
 
@@ -1204,17 +1272,14 @@ sap.ui.define([
 				}
 
 				MessageToast.show("Success");
+				await new Promise(resolve => setTimeout(resolve, 500));
+				await this._getItemList(sReqId);
+				BusyIndicator.hide();
+				this._showItemList("list");
 
 			} catch (e) {
 				MessageToast.show(e.message || "Save failed");
-			} finally {
-				await new Promise(resolve => setTimeout(resolve, 500));
-				
-				await this._getItemList(sReqId);
-				
-				BusyIndicator.hide();
-				this._showItemList("list");
-			}
+			} 
 		},
 
 		onImportChange1(oEvent) {
