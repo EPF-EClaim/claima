@@ -1,3 +1,5 @@
+//const { odata } = require("@sap/cds");
+
 sap.ui.define([
     "claima/utils/FinalApproveStep",
     "sap/ui/model/Filter",
@@ -298,7 +300,7 @@ sap.ui.define([
                     
                     // Check if claimant is CEO
                     // If yes, approver for CEO is CEO_FI
-                    if(oClaimantDetails.ROLE = "CEO"){
+                    if(oClaimantDetails.ROLE === "CEO"){
                         aWorkflowApprStep[i] = "CEO_FI";
                     }
                     if(oCurrOutcome == null){
@@ -312,7 +314,12 @@ sap.ui.define([
                                     }else{
                                         oApproverDetails = await that.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
                                         if(oApproverDetails != null){
-                                            aApproversDetails.push(oApproverDetails);
+                                            aApproversDetails.push({
+                                                EEID: oApproverDetails.EEID,
+                                                NAME: oApproverDetails.NAME,
+                                                EMAIL: oApproverDetails.EMAIL,
+                                                LEVEL: Number(i) + 1
+                                            });
                                         }
                                     }
                                 }else{
@@ -335,10 +342,10 @@ sap.ui.define([
 
                             //oPrevOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
                             //console.log(oCurrentOutcome.RANK);
-                            if(oClaimantDetails.RANK < oCurrOutcome[0].RANK){
-                                iApproverRank = oCurrOutcome[0].RANK;
+                            if(oClaimantDetails.RANK < oCurrOutcome.RANK){
+                                iApproverRank = oCurrOutcome.RANK;
                             }
-                            else if(oClaimantDetails.RANK = oCurrOutcome[0].RANK){
+                            else if(oClaimantDetails.RANK = oCurrOutcome.RANK){
                                 iApproverRank = iApproverRank + 1;
                             }
                             else{
@@ -346,7 +353,7 @@ sap.ui.define([
                             }
                         }else if(oPrevOutcome.RANK < oCurrOutcome.RANK){
                             // Block to perform logic checking when previous approver is lower rank than current approver
-                            iApproverRank = iApproverRank + 1;
+                            iApproverRank = Number(iApproverRank) + 1;
                         }else if(oPrevOutcome.RANK == oCurrOutcome.RANK){
                             // If the Outcome repeats a role, move on to the next role
                             continue;
@@ -354,12 +361,18 @@ sap.ui.define([
                         // Retrieve Approver based on iApproverRank
                         oApproverDetails = await that.getApprover(oModel, sEmpID, iApproverRank);
                         if(oApproverDetails != null){
-                            aApproversDetails.push(oApproverDetails);
+                            aApproversDetails.push({
+                                EEID: oApproverDetails.EEID,
+                                NAME: oApproverDetails.NAME,
+                                EMAIL: oApproverDetails.EMAIL,
+                                LEVEL: Number(i) + 1
+                            });
+                            //aApproversDetails.push(oApproverDetails, Number(i) + 1);
                         }
                     } 
-                    // After finding approver, find substitute for approver
-                    // oSubstitute = await that.getSubstitute(oModel, oApproverDetails.EEID);
-
+                    iApproverRank = Number(oApproverDetails.RANK);                    
+                    oPrevOutcome = oCurrOutcome;
+                    continue;
 
 
 
@@ -381,6 +394,14 @@ sap.ui.define([
                             aApprEmpID.push(aEEIDData[0].EEID);
                         }
                     }
+                }
+            }
+
+            // Retrieve substitute for approvers
+            for (const approver of aApproversDetails){
+                oSubstitute = await that.getSubstitute(oModel, approver.EEID);
+                if(oSubstitute != null){
+                    aSubstitutes.push(oSubstitute);
                 }
             }
 
@@ -862,6 +883,7 @@ sap.ui.define([
         getEmployeeDetails: async function (oModel, sEEID) {
 
             const that = this;
+            let sRank = "";
             // --- Sanity check ---
             if (!oModel) {
                 throw new Error("oModel is undefined in getEmployeeDetails()");
@@ -892,12 +914,18 @@ sap.ui.define([
 
             // Fetch data
             const aCtx = await binding.requestContexts(0, Infinity);
+            let oData = null;
             if (!aCtx || aCtx.length === 0) {
                 return null; // no employee found
             }
             else{
-                const oData = aCtx[0].getObject();
-                const aEmpRoleRank = await that.getRoleRank(oModel, oData.ROLE)
+                oData = aCtx[0].getObject();
+                if(oData.ROLE === "" || oData.ROLE === null){
+                    sRank = 0;
+                }else{
+                    const aEmpRoleRank = await that.getRoleRank(oModel, oData.ROLE)
+                    sRank = aEmpRoleRank[0].RANK;
+                }
             }
 
             // Return only the required fields
@@ -907,9 +935,8 @@ sap.ui.define([
                 EMAIL:              oData.EMAIL,
                 DEPARTMENT:         oData.DEPARTMENT,
                 ROLE:               oData.ROLE,
-                RANK:               aEmpRoleRank[0].RANK,
-                USER_ID:            oData.USER_ID,
-                DIRECT_SUPERIOR:    oData.DIRECT_SUPERIOR
+                RANK:               sRank,
+                DIRECT_SUPERIOR:    oData.DIRECT_SUPPERIOR
             };
         },
         /**
@@ -964,15 +991,18 @@ sap.ui.define([
             if (!aCtx || aCtx.length === 0) {
                 return null; // no substitute found
             }
-            else{
-                const oData = aCtx[0].getObject();
-                const aEmpRoleRank = await that.getRoleRank(oModel, oData.ROLE)
-            }
+            const oData = aCtx[0].getObject();
+            const oEmployeeDetail = await that.getEmployeeDetails(oModel, oData.SUBSTITUTE_ID);
 
             // Return only the required fields
             return {
-                EEID:               oData.USER_ID,
-                SUB_EEID:           oData.SUBSTITUTE_ID
+                EEID:               oEmployeeDetail.EEID,
+                NAME:               oEmployeeDetail.NAME,
+                EMAIL:              oEmployeeDetail.EMAIL,
+                DEPARTMENT:         oEmployeeDetail.DEPARTMENT,
+                ROLE:               oEmployeeDetail.ROLE,
+                RANK:               oEmployeeDetail.RANK,
+                DIRECT_SUPERIOR:    oEmployeeDetail.DIRECT_SUPPERIOR
             };
         },
         /**
@@ -1079,12 +1109,18 @@ sap.ui.define([
 
             // Fetch data
             const aCtx = await binding.requestContexts(0, Infinity);
+            let oData = null;
             if (!aCtx || aCtx.length === 0) {
                 return null; // no employee found
             }
             else{
-                const oData = aCtx[0].getObject();
-                const aEmpRoleRank = await that.getRoleRank(oModel, oData.ROLE)
+                oData = aCtx[0].getObject();
+                if(oData.ROLE === "" || oData.ROLE === null){
+                    sRank = 0;
+                }else{
+                    const aEmpRoleRank = await that.getRoleRank(oModel, oData.ROLE)
+                    sRank = aEmpRoleRank[0].RANK;
+                }
             }
 
             // Return only the required fields
@@ -1094,9 +1130,8 @@ sap.ui.define([
                 EMAIL:              oData.EMAIL,
                 DEPARTMENT:         oData.DEPARTMENT,
                 ROLE:               oData.ROLE,
-                RANK:               aEmpRoleRank[0].RANK,
-                USER_ID:            oData.USER_ID,
-                DIRECT_SUPERIOR:    oData.DIRECT_SUPERIOR
+                RANK:               sRank,
+                DIRECT_SUPERIOR:    oData.DIRECT_SUPPERIOR
             };
         },
         /**
@@ -1181,7 +1216,7 @@ sap.ui.define([
             }
 
             // Otherwise recurse deeper up the chain
-            return await getApprover(oModel, oDirectSuperior.EEID, iEmployeeRank, idepth + 1);
+            return await that.getApprover(oModel, oDirectSuperior.EEID, iApproverRank, idepth + 1);
         },
         /**
          * Fetch Value record from ZCONSTANTS table by ID
