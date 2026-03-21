@@ -284,7 +284,6 @@ sap.ui.define([
             }else{
 
                 // Variable declarations for Approver Determination logic
-                let sCurrOutcome = null;        // Variable to store current outcome
                 let oCurrOutcome = null;        // Variable to store current outcome ROLE and RANK
                 let oPrevOutcome = null;        // Variable to store previous outcome ROLE and RANK
                 let iApproverRank = 0;          // Variable to store approver rank to retrieve
@@ -395,8 +394,7 @@ sap.ui.define([
                     } 
                     iApproverRank = Number(oApproverDetails.RANK);                    
                     oPrevOutcome = oCurrOutcome;
-                    continue;
-
+                    /**
 
 
                     for(var x = 0; x < aAllEmpWithSameDepData.length; x++){
@@ -417,6 +415,7 @@ sap.ui.define([
                             aApprEmpID.push(aEEIDData[0].EEID);
                         }
                     }
+                     */
                 }
             }
             
