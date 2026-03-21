@@ -1,16 +1,15 @@
 sap.ui.define([
     "./ComparisonOperators",
-    "claima/utils/Constants",
+    "claima/utils/Constants"
 ], function (ComparisonOperators, Constants) {
     "use strict";
     return {
         /**
-		 * Compares sVal1 against sVal2. If true, return true. If false, return sVal2 value
+		 * Eligibility Scenario checking for Luar Negara
 		 * @public
-		 * @param {sap.ui.base.Event} sVal1 - Value Input to be checked;
-         * @param {sap.ui.base.Event} sVal2 - Value Input to be checked against;
-         * @param {sap.ui.base.Event} sVal2 - Value Input to be checked against;
-         * @returns {Boolean/Integer/String} Comparison Output
+		 * @param {sap.ui.base.Event} oPayload - Payload with ClaimType, ClaimItmType and Item Fields;
+         * @param {sap.ui.base.Event} aRules - Retrieved Eligibility Rules data;
+         * @returns {Object} Payload with results of checkfield arrays populated
 		 */
         onEligibleCheck(oPayload, aRules) {
             // Get Days value
@@ -30,6 +29,8 @@ sap.ui.define([
 
                     case Constants.ClaimTypeItem.FLIGHT_L:
                         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.FLIGHT_CLASS_ID);
+                        // if user input and rules table flight class are same values, return true
+                        // if user input and rules table flight class are NOT same values, return false
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(oPayload.CheckFields[iIndex].value, oRule.FLIGHT_CLASS_ID);
                         // sSkipFlag assigned to exit when result is true
                         sSkipFlag = oPayload.CheckFields[iIndex].result;
@@ -37,12 +38,16 @@ sap.ui.define([
 
                     case Constants.ClaimTypeItem.FLIGHT_O:
                         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.FLIGHT_CLASS_ID);
+                        // if user input and rules table flight class are same values, return true
+                        // if user input and rules table flight class are NOT same values, return false
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(oPayload.CheckFields[iIndex].value, oRule.FLIGHT_CLASS_ID);
                         // sSkipFlag assigned to exit when result is true
                         sSkipFlag = oPayload.CheckFields[iIndex].result;
                         // Check if min travel hours required
                         if (oRule.TRAVEL_HOURS != undefined || oRule.TRAVEL_HOURS != null) {
                             iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.TRAVEL_HOURS);
+                            // if user has 4 hr flight while Rules table is min 3 hrs, return true
+                            // if user has 1 hr flight while Rules table is min 3 hrs, return Rules table value (3)
                             oPayload.CheckFields[iIndex].result = ComparisonOperators.GreaterEquals(oPayload.CheckFields[iIndex].value, oRule.TRAVEL_HOURS);
                         }
                         break;
@@ -52,47 +57,64 @@ sap.ui.define([
                         var iMaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
 
                         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.ELIGIBLE_AMOUNT);
+                        // if user input has amount 100 while Rules table has calculated max amount 300 (iMaxAmountEligible), return true
+                        // if user input has amount 1000 while Rules table has calculated max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, iMaxAmountEligible);
                         break;
 
                     case Constants.ClaimTypeItem.HOTEL_O:
+                        // Calculate max amount eligible
                         var iMaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
 
                         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.ELIGIBLE_AMOUNT);
+                        // if user input has amount 100 while Rules table has calculated max amount 300 (iMaxAmountEligible), return true
+                        // if user input has amount 1000 while Rules table has calculated max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, iMaxAmountEligible);
 
                         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.ROOM_TYPE_ID);
+                        // if user input and rules table room type are same values, return true
+                        // if user input and rules table room type are NOT same values, return false
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(oPayload.CheckFields[iIndex].value, oRule.ROOM_TYPE_ID);
                         // sSkipFlag assigned to exit when result is true
                         sSkipFlag = oPayload.CheckFields[iIndex].result;
                         break;
 
                     case Constants.ClaimTypeItem.LODG_O:
+                        // Calculate max amount eligible
                         var iMaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
-
+                        
                         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.ELIGIBLE_AMOUNT);
+                        // if user input has amount 100 while Rules table has calculated max amount 300 (iMaxAmountEligible), return true
+                        // if user input has amount 1000 while Rules table has calculated max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, iMaxAmountEligible);
                         break;
 
                     case Constants.ClaimTypeItem.LODGING_L:
+                        // Calculate max amount eligible
                         var iMaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
 
                         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.ELIGIBLE_AMOUNT);
+                        // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
+                        // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, iMaxAmountEligible);
                         break;
 
                     case Constants.ClaimTypeItem.PARKING:
                         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.ELIGIBLE_AMOUNT);
+                        // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
+                        // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, oRule.ELIGIBLE_AMOUNT);
                         break;
 
                     case Constants.ClaimTypeItem.PKN_PANAS:
                         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.ELIGIBLE_AMOUNT);
+                        // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
+                        // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, oRule.ELIGIBLE_AMOUNT);
                         break;
 
                     default:
-                        // if item type not found, mark as fail
+                        // if item type not found, mark all fields as fail and quit loop
                         for (var iRow of oPayload.CheckFields) {
                             oPayload.CheckFields[iRow].result = false;
                         }

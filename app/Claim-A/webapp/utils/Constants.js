@@ -93,16 +93,59 @@ sap.ui.define([
             "CLAIM": "CLM",
             "PRE_APPROVAL": "PRE"
         },
-        "SubmissionType": {
-            "REQUEST": "REQ"
+        "Date": {
+            "DATEFORMAT": "yyyy.MM.dd",
+        },
+        "ApprovalProcess": {
+            "REQUEST": "REQ",
+            "REQUESTTYPE": "Pre-Approval",
+            "CLAIMTYPE": "Claim",
+            "CLAIM_APPROVE": "APPROVE_CLAIM",
+            "SET_GROUP": "approvalGroup",
+        },
+        "ApprovalProcessStatus": {
+            "STATUS_REJECT": "REJECT",
+            "STATUS_SENDBACK": "SEND BACK",
+        },
+        "ApprovalProcessAction": {
+            "ACTION_NOTIFY": "Notify",
+            "ACTION_APPROVE": "APPROVE",
+            "RELEASE_IND": "release",
+            "NOTAVAILABLE": "N/A",
+        },
+        "ApprovalProcessProjectCode": {
+            "PROJ_CODE1": "1",
+            "PROJ_CODE2": "2",
+        },
+        "Entities": {
+            "ZAPPROVER_DETAILS_PREAPPROVAL": "/ZAPPROVER_DETAILS_PREAPPROVAL",
+            "ZAPPROVER_DETAILS_CLAIMS": "/ZAPPROVER_DETAILS_CLAIMS",
+            "ZEMP_APPROVER_REQUEST_DETAILS": "/ZEMP_APPROVER_REQUEST_DETAILS",
+            "ZEMP_APPROVER_CLAIM_DETAILS": "/ZEMP_APPROVER_CLAIM_DETAILS",
+            "ZEMP_REQUEST_BUDGET_CHECK": "/ZEMP_REQUEST_BUDGET_CHECK",
+            "ZEMP_CLAIM_BUDGET_CHECK": "/ZEMP_CLAIM_BUDGET_CHECK",
+            "ZREQUEST_HEADER": "/ZREQUEST_HEADER",
+            "ZCLAIM_HEADER": "/ZCLAIM_HEADER",
+        },
+        "EntitiesFields": {
+            "APPROVER_ID": "APPROVER_ID",
+            "SUBAPPROVER_ID": "SUBSTITUTE_APPROVER_ID",
+            "STATUS": "STATUS",
+            "TIMESTAMP": "PROCESS_TIMESTAMP",
+            "REJECT_REASON_ID": "REJECT_REASON_ID",
+            "CLAIM_STATUS": "STATUS_ID",
+            "COMMENTAPPOVAL": "COMMENT",
+            "PREAPPROVALID": "PREAPPROVAL_ID",
+            "REQUESTID": "REQUEST_ID",
+            "CLAIMID": "CLAIM_ID",
         },
         "Role": {
             "GA_ADMIN": "GA Admin",
             "JKEW_ADMIN": "JKEW Admin",
             "DTD_ADMIN": "DTD Admin",
-            "APPROVER": "Approver", 
+            "APPROVER": "Approver",
             "SUPER_ADMIN": "Super Admin"
-        }, 
+        },
         "Configuration": {
             "ZEMP_MASTER": "ZEMP_MASTER",
             "ZEMP_MASTER_DTD": "ZEMP_MASTER_DTD",
@@ -111,7 +154,6 @@ sap.ui.define([
             "ZNUM_RANGE": "ZNUM_RANGE",
             "ZNUM_RANGE_DTD": "ZNUM_RANGE_DTD",
             "ZBUDGET": "ZBUDGET"
-
         }
 
     }
