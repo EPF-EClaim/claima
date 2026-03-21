@@ -56,6 +56,11 @@ sap.ui.define([
 			// claim header
             const that = this;
 
+            // Variable declaration for use of the entire function block
+            let aApproversDetails = [];         // Variable to store multiple approvers
+            let aFullApproversDetails = [];     // Variable to store approvers with substitutes
+            const oSubmissionTypeDesc = [];     // Variable to store claim submission type desc
+
 			const oListClaimHeaderBinding = oModel.bindList("/ZCLAIM_HEADER", null,null, [
 				new Filter({ path: "CLAIM_ID", operator: FilterOperator.EQ, value1: sClaimID })
 			], null);
@@ -70,9 +75,8 @@ sap.ui.define([
 			const sClaimSubmissionYear = new Date(aClaimHeaderData[0].SUBMITTED_DATE).getFullYear();
             const sClaimsFinalCC = sClaimsCC ?? sClaimsAltCC ?? null;
 
-            // Variable declaration for use of the entire function block
-            let aApproversDetails = [];         // Variable to store multiple approvers
-            let aFullApproversDetails = [];     // Variable to store approvers with substitutes
+            // Retrieve Submission Type Description
+            oSubmissionTypeDesc = await that.getSubmissionTypeDesc(oModel, aClaimHeaderData[0].SUBMISSION_TYPE);
 
 			//claim Item
 			const oListClaimItemBinding = oModel.bindList("/ZCLAIM_ITEM", null,null, [
@@ -348,7 +352,11 @@ sap.ui.define([
                                                 EMAIL:  oApproverDetails.EMAIL,
                                                 LEVEL:  Number(i) + 1
                                             });
+                                            }else{
+                                                throw new Error("No Approver details found for approver " + id.VALUE);
                                             }
+                                        }else{
+                                            throw new Error("No Approver found in ZCONSTANTS table");
                                         }
                                     }
                                 }
@@ -519,7 +527,47 @@ sap.ui.define([
 			}
 
             oContext.created().then(async function (){
+            // Send email notification to first level approver or
+            // Start Final Approve Step for Auto approve
+            // Declaration for this block
+                const aPayloadMain = []     // Variable to store payload for sending email
                 
+                for(const approver of aFullApproversDetails){
+                    if(Number(aFullApproversDetails.LEVEL) = 1){
+                        // Populate array for sending email to approver
+                        aPayloadMain.push({
+                            "ApproverName":approver.APPROVER_NAME, 
+                            "SubmissionDate":sClaimsSubmissionDate, 
+                            "ClaimantName":aClaimantNameData[0].NAME, 
+                            "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
+                            "ClaimID":sClaimID, 
+                            "RecipientName":approver.APPROVER_NAME, 
+                            "Action": "Notify", 
+                            "ReceiverEmail":approver.APPROVER_EMAIL
+                        });
+                        // Send email to approver
+                        that.onSendEmail(oModel, aPayload); 
+                        if(approver.SUB_NAME != ""){
+                            // If substitute available, populate payload and send email to substitute also
+                            aPayloadMain.push({
+                                "ApproverName":approver.SUB_NAME, 
+                                "SubmissionDate":sClaimsSubmissionDate, 
+                                "ClaimantName":aClaimantNameData[0].NAME, 
+                                "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
+                                "ClaimID":sClaimID, 
+                                "RecipientName":approver.SUB_NAME, 
+                                "Action": "Notify", 
+                                "ReceiverEmail":approver.SUB_EMAIL
+                            });
+                            that.onSendEmail(oModel, aPayload); 
+                        }
+                    }else if(Number(approver.LEVEL) = 0){
+                        FinalApproveStep.onFinalApprove(oModel, sClaimID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
+                        break;
+                    }
+                }
+
+                /** 
                 if(aApprEmpID[0] != "Auto"){
                     const oListApprDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
                         new Filter({ path: "EEID", operator: FilterOperator.EQ, value1: aApprEmpID[0] })
@@ -600,7 +648,7 @@ sap.ui.define([
                 }else{
                     FinalApproveStep.onFinalApprove(oModel, sClaimID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
                 }
-                
+                */
             }).catch(function(oError){
                 new MessageToast.show(oError);
             })	
@@ -932,6 +980,58 @@ sap.ui.define([
             })
         },
         /**
+         * Fetch Submission Type Description from ZSUBMISSION_TYPE by Submission Type ID
+         *
+         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
+         * @param {string} sSubmissionTypeID - Submission Type ID
+         * @returns {Promise<object|null>} - Submission type description or null if not found
+         */
+        getSubmissionTypeDesc: async function (oModel, sSubmissionTypeID) {
+
+            const that = this;
+            // --- Sanity check ---
+            if (!oModel) {
+                throw new Error("oModel is undefined in getSubmissionTypeDesc()");
+            }
+            if (!sSubmissionTypeID) {
+                throw new Error("Submission Type ID is required to fetch employee details.");
+            }
+
+            // Ensure metadata is loaded
+            await oModel.getMetaModel().requestObject("/");
+
+            // Main table path
+            const sTable = "/ZSUBMISSION_TYPE";
+
+            // Build filter
+            const aFilters = [
+                new Filter("SUBMISSION_TYPE_ID", FilterOperator.EQ, sSubmissionTypeID)
+            ];
+
+            // Bind list
+            const binding = oModel.bindList(
+                sTable,
+                null,
+                null,
+                aFilters,
+                { $$ownRequest: true }
+            );
+
+            // Fetch data
+            const aCtx = await binding.requestContexts(0, Infinity);
+            let oData = null;
+            if (!aCtx || aCtx.length === 0) {
+                return null; // no employee found
+            }
+            oData = aCtx[0].getObject();
+
+            // Return only the required fields
+            return {
+                SUBMISSION_TYPE_ID:     oData.SUBMISSION_TYPE_ID,
+                SUBMISSION_TYPE_DESC:   oData.SUBMISSION_TYPE_DESC
+            };
+        },
+        /**
          * Fetch employee master record from ZEMP_MASTER by EEID
          *
          * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
@@ -1012,7 +1112,7 @@ sap.ui.define([
             if (!oModel) {
                 throw new Error("oModel is undefined in getSubstitute()");
             }
-            if (!sEEID) {
+            if (!sApproverEEID) {
                 throw new Error("EEID is required to fetch employee details.");
             }
 
