@@ -70,7 +70,9 @@ sap.ui.define([
 			const sClaimSubmissionYear = new Date(aClaimHeaderData[0].SUBMITTED_DATE).getFullYear();
             const sClaimsFinalCC = sClaimsCC ?? sClaimsAltCC ?? null;
 
-
+            // Variable declaration for use of the entire function block
+            let aApproversDetails = [];         // Variable to store multiple approvers
+            let aFullApproversDetails = [];     // Variable to store approvers with substitutes
 
 			//claim Item
 			const oListClaimItemBinding = oModel.bindList("/ZCLAIM_ITEM", null,null, [
@@ -273,6 +275,12 @@ sap.ui.define([
             
             if(sWorkflowName == "Auto" && iWorkflowApprLvl == 0){
                 aApprEmpID.push("Auto");
+                aApproversDetails.push({
+                    EEID: null,
+                    NAME: "Auto",
+                    EMAIL: null,
+                    LEVEL: Number(0)
+                });
             }else{
 
                 // Variable declarations for Approver Determination logic
@@ -282,9 +290,7 @@ sap.ui.define([
                 let iApproverRank = 0;          // Variable to store approver rank to retrieve
                 let oApproverDetails = null;    // Variable to store approver details 
                 let oBudgetDetails = null;      // Variable to store budget approver details (If applicable)
-                let oSubstitute = null;         // Variable to store substitute user
-                let aSubstitutes = [];          // Variable to store multiple substitutes for multiple approvers
-                let aApproversDetails = [];     // Variable to store multiple approvers
+                let aConstantValues = [];       // Variable to store EEID retrieved from ZCONSTANTS table
                 const aRoleRanks = await that.getRoleRank(oModel);
                 const oClaimantDetails = await that.getEmployeeDetails(oModel, sEmpID);
                 for(var i = 0; i < aWorkflowApprStep.length; i++){
@@ -315,10 +321,10 @@ sap.ui.define([
                                         oApproverDetails = await that.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
                                         if(oApproverDetails != null){
                                             aApproversDetails.push({
-                                                EEID: oApproverDetails.EEID,
-                                                NAME: oApproverDetails.NAME,
-                                                EMAIL: oApproverDetails.EMAIL,
-                                                LEVEL: Number(i) + 1
+                                                EEID:   oApproverDetails.EEID,
+                                                NAME:   oApproverDetails.NAME,
+                                                EMAIL:  oApproverDetails.EMAIL,
+                                                LEVEL:  Number(i) + 1
                                             });
                                         }
                                     }
@@ -330,7 +336,23 @@ sap.ui.define([
                             case "FI_SETTLEMENT_A":
                             case "FI_SETTLEMENT_B":
                             case "HOD_JKEW":
-
+                                // Possible multiple approvers retrieved from ZCONSTANTS table
+                                aConstantValues = await that.getConstants(oModel, aWorkflowApprStep[i]);
+                                if(aConstantValues.length() > 0){
+                                    for(const id of aConstantValues){
+                                        if(id.VALUE != null || id.VALUE != ""){
+                                            oApproverDetails = await that.getEmployeeDetails(oModel, id.VALUE);
+                                            if(oApproverDetails){
+                                                aApproversDetails.push({
+                                                EEID:   oApproverDetails.EEID,
+                                                NAME:   oApproverDetails.NAME,
+                                                EMAIL:  oApproverDetails.EMAIL,
+                                                LEVEL:  Number(i) + 1
+                                            });
+                                            }
+                                        }
+                                    }
+                                }
                                 break;
                             default:
                         }
@@ -362,11 +384,12 @@ sap.ui.define([
                         oApproverDetails = await that.getApprover(oModel, sEmpID, iApproverRank);
                         if(oApproverDetails != null){
                             aApproversDetails.push({
-                                EEID: oApproverDetails.EEID,
-                                NAME: oApproverDetails.NAME,
-                                EMAIL: oApproverDetails.EMAIL,
-                                LEVEL: Number(i) + 1
+                                EEID:   oApproverDetails.EEID,
+                                NAME:   oApproverDetails.NAME,
+                                EMAIL:  oApproverDetails.EMAIL,
+                                LEVEL:  Number(i) + 1
                             });
+
                             //aApproversDetails.push(oApproverDetails, Number(i) + 1);
                         }
                     } 
@@ -396,15 +419,40 @@ sap.ui.define([
                     }
                 }
             }
-
+            
+            // Variable declaration for substitutes
+            let oSubstitute = null;         // Variable to store substitute user
+            let oSubstituteDetails = null;  // Variable to store substitute user details
+            let sSubstitute_eeid = "";       // Variable to store substitute EEID
+            let sSubstitute_name = "";       // Variable to store substitute name
+            let sSubstitute_email = "";      // Variable to store substitute email
             // Retrieve substitute for approvers
             for (const approver of aApproversDetails){
-                oSubstitute = await that.getSubstitute(oModel, approver.EEID);
-                if(oSubstitute != null){
-                    aSubstitutes.push(oSubstitute);
+                // If LEVEL = 0, Approver is Auto
+                if(approver.LEVEL > 0){
+                    oSubstitute = await that.getSubstitute(oModel, approver.EEID);
+                    if(oSubstitute){
+                        oSubstituteDetails = await that.getEmployeeDetails(oModel, oSubstitute.EEID);
+                        if(oSubstituteDetails){
+                            sSubstitute_eeid = oSubstituteDetails.EEID;
+                            sSubstitute_name = oSubstituteDetails.NAME;
+                            sSubstitute_email = oSubstituteDetails.EMAIL;
+                        }
+                    }
+                }else{
+                    sSubstitute_name = "Auto";
                 }
+                aFullApproversDetails.push({
+                    APPROVER_EEID:   approver.EEID,
+                    APPROVER_NAME:   approver.NAME,
+                    APPROVER_EMAIL:  approver.EMAIL,
+                    LEVEL:  Number(approver.LEVEL),
+                    SUB_EEID:        sSubstitute_eeid,
+                    SUB_NAME:        sSubstitute_name,
+                    SUB_EMAIL:       sSubstitute_email
+                });
             }
-
+            /**
 			let aSubEmpID = [];
 			//search for substitute
             if(aApprEmpID[0] != "Auto"){
@@ -426,34 +474,45 @@ sap.ui.define([
                     }
 			    }
             }
-			
+			*/
 
 			//create ZAPPROVER DETAILS
 			const oBindApprDetailsList = oModel.bindList("/ZAPPROVER_DETAILS_CLAIMS");
-			for(var i = 0; i < aApprEmpID.length; i++){
-                if(aApprEmpID[i] == "Auto"){
+			//for(var i = 0; i < aApprEmpID.length; i++){
+            for(var i = 0; i < aFullApproversDetails.length; i++){
+                //if(aApprEmpID[i] == "Auto"){
+                if(aFullApproversDetails[i].LEVEL == 0){
                     var oContext = oBindApprDetailsList.create({
                         "CLAIM_ID": sClaimID,
-                        "LEVEL": "0",
-                        "APPROVER_ID": "Auto",
-                        "SUBSTITUTE_APPROVER_ID": null,
+                        //"LEVEL": "0",
+                        "LEVEL": aFullApproversDetails[i].LEVEL,
+                        //"APPROVER_ID": "Auto",
+                        "APPROVER_ID": aFullApproversDetails[i].APPROVER_EEID,
+                        "SUBSTITUTE_APPROVER_ID": aFullApproversDetails[i].SUB_EEID,
                         "STATUS": "STAT05"
                     });
                 }else{
-                    if(i == 0){                    
+                    //if(i == 0){    
+                    if(aFullApproversDetails[i].LEVEL == 1){                
                     var oContext = oBindApprDetailsList.create({
                         "CLAIM_ID": sClaimID,
-                        "LEVEL": i+1,
-                        "APPROVER_ID": aApprEmpID[i],
-                        "SUBSTITUTE_APPROVER_ID": aSubEmpID[i],
+                        //"LEVEL": i+1,
+                        "LEVEL": aFullApproversDetails[i].LEVEL,
+                        //"APPROVER_ID": aApprEmpID[i],
+                        "APPROVER_ID": aFullApproversDetails[i].APPROVER_EEID,
+                        //"SUBSTITUTE_APPROVER_ID": aSubEmpID[i],
+                        "SUBSTITUTE_APPROVER_ID": aFullApproversDetails[i].SUB_EEID,
                         "STATUS": "STAT02"
                         });
                     }else{
                         var oContext = oBindApprDetailsList.create({
                             "CLAIM_ID": sClaimID,
-                            "LEVEL": i+1,
-                            "APPROVER_ID": aApprEmpID[i],
-                            "SUBSTITUTE_APPROVER_ID": aSubEmpID[i],
+                            //"LEVEL": i+1,
+                            "LEVEL": aFullApproversDetails[i].LEVEL,
+                            //"APPROVER_ID": aApprEmpID[i],
+                            "APPROVER_ID": aFullApproversDetails[i].APPROVER_EEID,
+                            //"SUBSTITUTE_APPROVER_ID": aSubEmpID[i],
+                            "SUBSTITUTE_APPROVER_ID": aFullApproversDetails[i].SUB_EEID,
                             "STATUS": null
                         });
                     }
