@@ -314,7 +314,8 @@ sap.ui.define([
         aCtxApprovers.forEach(oCtx => {
             const oRow = oCtx.getObject();
             if (oRow.LEVEL > iCurrentLevel) {
-                oCtx.setProperty(Constants.EntitiesFields.STATUS, Constants.ClaimStatus.COMPLETED_DISBURSEMENT);
+                // Do nothing: Sean confirmed that after REJECTED and SEND BACK status, Higher level approvers will have blank status
+                //oCtx.setProperty(Constants.EntitiesFields.STATUS, Constants.ClaimStatus.COMPLETED_DISBURSEMENT);
             }
         });
 

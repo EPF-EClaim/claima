@@ -82,10 +82,8 @@ sap.ui.define([
                         : (oRow.SUBMITTED_DATE ? String(oRow.SUBMITTED_DATE).substring(0, 4) : null);
 
 
-                    const bUseAlt = "X";
-                    var sFund_center = bUseAlt
-                        ? (oRow.ALTERNATE_COST_CENTER)
-                        : (oRow.COST_CENTER);
+                    //const bUseAlt = "X";
+                    var sFund_center = (oRow.ALTERNATE_COST_CENTER) ?? (oRow.COST_CENTER) ?? "";
 
 
                     var iAmount = bIsPre
@@ -110,7 +108,7 @@ sap.ui.define([
                 }
 
                 // SEND CONSOLIDATED IS PAYLOAD (CLM only)
-                    if (sSubmissionType == Constants.WorkflowApproval.Claims) { 
+                    if (sSubmissionType == Constants.WorkflowType.CLAIM) { 
                         
                         await this.onSendClaimBatch(oEmployeeModel, sClaimID);
                     }
