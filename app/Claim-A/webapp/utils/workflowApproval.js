@@ -25,8 +25,9 @@ sap.ui.define([
                     oAction.setParameter("ClaimID" , opayload.ClaimID);
                     oAction.setParameter("RecipientName" , opayload.RecipientName);
                     oAction.setParameter("Action" , opayload.Action);
-                    //oAction.setParameter("ReceiverEmail" , opayload.ReceiverEmail);
-                    oAction.setParameter("ReceiverEmail" , "reuben.lai@my.ey.com");
+                    oAction.setParameter("ReceiverEmail" , opayload.ReceiverEmail);
+                    // hardcode email address for testing purposes. If need to test, set ReceiverEmail to your email, comment out once done
+                    //oAction.setParameter("ReceiverEmail" , "reuben.lai@my.ey.com");
                     oAction.setParameter("NextApproverName" , opayload.NextApproverName);
 
                     await oAction.execute();
