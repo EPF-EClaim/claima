@@ -22,14 +22,14 @@ sap.ui.define([
             //to find the matching eligibility rule for FLIGHT & TAMBANG as these 2 may return more than 1 eligible rule value
             if (oPayload.ClaimTypeItem === Constants.ClaimTypeItem.FLIGHT_L) {
                 aFilteredRules = aRules.filter(function (rule) {
-                    return rule.FLIGHT_CLASS_ID === aPayload.flightClassId;//[Constants.FIELDNAME.FLIGHT_CLASS_ID];
+                    return rule.FLIGHT_CLASS_ID === aPayload.sFlightClassId;//[Constants.FIELDNAME.FLIGHT_CLASS_ID];
                 })
 
                 oRule = aFilteredRules[0];
             }
             else if (oPayload.ClaimTypeItem === Constants.ClaimTypeItem.TAMBANG) {
                 aFilteredRules = aRules.filter(function (rule) {
-                    return rule.TRANSPORT_CLASS === aPayload.fareTypeId;//[Constants.FIELDNAME.FARE_TYPE_ID];
+                    return rule.TRANSPORT_CLASS === aPayload.sFareTypeId;//[Constants.FIELDNAME.FARE_TYPE_ID];
                 })
 
                 oRule = aFilteredRules[0];
@@ -51,19 +51,19 @@ sap.ui.define([
          * @returns {Object} aPayload - return key user input value in the form of object based on selected claim type item
 		 */
         _parsePayload(oPayload) {
-            var travelDaysId, flightClassId, fareTypeId;
+            var sTravelDaysId, sFlightClassId, sFareTypeId;
 
             for (let i = 0; i < oPayload.CheckFields.length; i++) {
                 if (oPayload.CheckFields[i].fieldName === Constants.FIELDNAME.TRAVEL_DAYS_ID) {
-                    travelDaysId = oPayload.CheckFields[i].value;
+                    sTravelDaysId = oPayload.CheckFields[i].value;
                 } else if (oPayload.CheckFields[i].fieldName === Constants.FIELDNAME.FLIGHT_CLASS_ID) {
-                    flightClassId = oPayload.CheckFields[i].value;
+                    sFlightClassId = oPayload.CheckFields[i].value;
                 } else if (oPayload.CheckFields[i].fieldName === Constants.FIELDNAME.FARE_TYPE_ID) {
-                    fareTypeId = oPayload.CheckFields[i].value;
+                    sFareTypeId = oPayload.CheckFields[i].value;
                 }
             }
 
-            return { travelDaysId, flightClassId, fareTypeId };
+            return { sTravelDaysId, sFlightClassId, sFareTypeId };
         },
 
          /**
@@ -121,7 +121,7 @@ sap.ui.define([
                     else {
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
                             parseFloat(oPayload.CheckFields[iIndex].value),
-                            parseFloat(oRule.ELIGIBLE_AMOUNT) * parseFloat(aPayload.travelDaysId)
+                            parseFloat(oRule.ELIGIBLE_AMOUNT) * parseFloat(aPayload.sTravelDaysId)
                         );
                     }
                     break;
