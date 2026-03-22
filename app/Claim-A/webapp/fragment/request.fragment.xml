@@ -33,12 +33,18 @@
 				<Select selectedKey="{request>/req_header/reqtype}" 
 						required="true" 
 						forceSelection="false"
-						items="{path: 'req_type_list>/types',
-								sorter: { path: 'REQUEST_TYPE_ID', descending: false }}"
+						items="{
+							path: 'employee>/ZREQUEST_TYPE',
+							filters: [
+								{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }
+							],
+							sorter: { path: 'REQUEST_TYPE_ID', descending: false }
+						}"
 						change=".getFieldVisibility_ReqType">
 					<items>
-						<core:Item key="{req_type_list>REQUEST_TYPE_ID}" 
-								text="{req_type_list>REQUEST_TYPE_DESC}" />
+						<core:Item 
+							key="{employee>REQUEST_TYPE_ID}" 
+							text="{employee>REQUEST_TYPE_DESC}" />
 					</items>
 				</Select>
 
@@ -121,15 +127,22 @@
 				<Select 
 					id="req_grptype"
 					selectedKey="{request>/req_header/grptype}" 
-						required="true" 
-						forceSelection="false"
-						enabled="{= ${request>/req_header/reqtype} !== 'RT0004'}"
-						visible="false"
-						items="{path: 'indiv_list>/types',
-								sorter: { path: 'IND_OR_GROUP_ID', descending: false }}">
+					required="true" 
+					forceSelection="false"
+					enabled="{= ${request>/req_header/reqtype} !== 'RT0004'}"
+					visible="false"
+					items="{
+						path: 'employee>/ZINDIV_GROUP',
+						filters: [
+							{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' },
+							{ path: 'IND_OR_GROUP_ID', operator: 'NE', value1: 'I_G' }
+						],
+						sorter: { path: 'IND_OR_GROUP_ID', descending: false }
+					}">
 					<items>
-						<core:Item key="{indiv_list>IND_OR_GROUP_ID}" 
-								text="{indiv_list>IND_OR_GROUP_DESC}" />
+						<core:Item 
+							key="{employee>IND_OR_GROUP_ID}" 
+							text="{employee>IND_OR_GROUP_DESC}" />
 					</items>
 				</Select>
 

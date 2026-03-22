@@ -2,8 +2,9 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/m/MessageToast",
-	"claima/utils/Utility"
-], function (Filter, FilterOperator, MessageToast, Utility) {
+	"claima/utils/Utility",
+	"sap/ui/core/BusyIndicator"
+], function (Filter, FilterOperator, MessageToast, Utility, BusyIndicator) {
     "use strict";
 
     return {
@@ -293,17 +294,14 @@ sap.ui.define([
 		* Budget Checking payload generation
 		* ======================================================= */
 
-		generateBudgetCheckPayload (oController) {
-			var oReqModel	= oController._getReqModel();
-			var oHeader		= oReqModel.getProperty('/req_header');
-			var aRows		= oReqModel.getProperty('/req_item_rows');
+		_generateBudgetCheckPayload (oController, oHeader, aItemRows, sSubmissionType, sAction) {
 			
 			var sDate			= new Date(oHeader.reqdate);
 			var sYear			= String(sDate.getFullYear());
 			var sFundCenter		= oHeader.costcenter;
 			var sInternalCode	= oHeader.projectcode || "-";
 
-			return aRows.map(row => {
+			return aItemRows.map(row => {
 				return {
 					"YEAR": sYear,
 					"INTERNAL_ORDER": sInternalCode,
@@ -311,20 +309,26 @@ sap.ui.define([
 					"MATERIAL_GROUP": row.MATERIAL_CODE,
 					"COMMITMENT_ITEM": row.GL_ACCOUNT,
 					"AMOUNT": parseFloat(row.EST_AMOUNT),
-					"INDICATOR": "REQ",
-					"ACTION": "SUBMIT"
+					"CLAIM_TYPE_ITEM": row.CLAIM_TYPE_ITEM_ID,
+					"INDICATOR": sSubmissionType,
+					"ACTION": sAction
 				};
 			});
 		},
 
-		async backendBudgetChecking (oController) {
-			const aPayload = await this.generateBudgetCheckPayload(oController);
-			const oDataModel = oController.getOwnerComponent().getModel();
+		async backendBudgetChecking (oController, sSubmissionType, sAction = "SUBMIT") {
 
-			const oAction	= oDataModel.bindContext("/budgetchecking(...)");
+			var oReqModel	= oController._oReqModel;
+			var oHeader		= oReqModel.getProperty('/req_header');
+			var aItemRows	= oReqModel.getProperty('/req_item_rows');
+
+			const aPayload = await this._generateBudgetCheckPayload(oController, oHeader, aItemRows, sSubmissionType, sAction);
+
+			const oAction	= oController._oDataModel.bindContext("/budgetchecking(...)");
 			oAction.setParameter("budget", aPayload);
 
 			try {
+				BusyIndicator.show(0); 
 				await oAction.execute();
 				const oResponse = oAction.getBoundContext().getObject();
 				const aResults = oResponse.results || oResponse.value || oResponse;

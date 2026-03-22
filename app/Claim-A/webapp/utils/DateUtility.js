@@ -73,6 +73,20 @@ sap.ui.define([
          */
         today: function () {
             return new Date();
+        },
+        
+        mergeDateTime (oDate, sTime) {
+            const dMergedDate = new Date(oDate.getTime()); 
+            
+            if (sTime && typeof sTime === "string") {
+                const aParts = sTime.split(":");
+                if (aParts.length >= 2) {
+                    dMergedDate.setHours(parseInt(aParts[0], 10), parseInt(aParts[1], 10), 0, 0);
+                }
+            } else {
+                dMergedDate.setHours(0, 0, 0, 0);
+            }
+            return dMergedDate;
         }
     };
 });

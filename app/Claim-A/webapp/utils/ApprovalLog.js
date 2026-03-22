@@ -11,26 +11,26 @@ sap.ui.define([
 		* Approval Log Fragment
 		* ======================================================= */
 
-		async _showApprovalLog(that) {
-			const oPage = that.byId("request_form");
+		async _showApprovalLog(oController) {
+			const oPage = oController.byId("request_form");
 			if (!oPage) return;
 
-			const oCreate = await that._getFormFragment("approval_log");
-			await that._replaceContentAt(oPage, 2, oCreate);
+			const oCreate = await oController._getFormFragment("approval_log");
+			await oController._replaceContentAt(oPage, 2, oCreate);
 		},
 		
 		/* =========================================================
 		* Get List from Backend
 		* ======================================================= */
 
-		async getApproverList(oReq, oModel, id) {
+		async getApproverList(oApprovalLogModel, oViewModel, sId) {
 
-            let submission_type = id.substring(0,3);
+            let submission_type = sId.substring(0,3);
             let oListBinding;
 
             if (submission_type == "REQ") {
-                oListBinding = oModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
-                    null,[new Filter("PREAPPROVAL_ID", "EQ", id)],
+                oListBinding = oViewModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
+                    null,[new Filter("PREAPPROVAL_ID", "EQ", sId)],
                     {
                         $$ownRequest: true,
                         $$groupId: "$auto",
@@ -38,8 +38,8 @@ sap.ui.define([
                     }
                 );
             } else if (submission_type == "CLM") {
-                oListBinding = oModel.bindList("/ZEMP_APPROVER_CLAIM_DETAILS", undefined,
-                    null,[new Filter("CLAIM_ID", "EQ", id)],
+                oListBinding = oViewModel.bindList("/ZEMP_APPROVER_CLAIM_DETAILS", undefined,
+                    null,[new Filter("CLAIM_ID", "EQ", sId)],
                     {
                         $$ownRequest: true,
                         $$groupId: "$auto",
@@ -52,12 +52,12 @@ sap.ui.define([
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 				const a = aCtx.map((ctx) => ctx.getObject());
                 
-				oReq.setProperty("/approval", a);
+				oApprovalLogModel.setProperty("/approval", a);
 
 				return a;
 			} catch (err) {
 				console.error("OData bindList failed:", err);
-				oReq.setProperty("/approval", []);
+				oApprovalLogModel.setProperty("/approval", []);
 				return [];
 			}
 		}

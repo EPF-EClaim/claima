@@ -95,7 +95,7 @@
                         </form:formContainers>
                     </form:Form>
                 </VBox>
-                <VBox
+                <!-- <VBox
                     id="request_item_list_fragment_d" 
                     backgroundDesign="Solid"
                     class="roundedBox sapUiSmallMargin sapUiTinyMarginTop sapUiTinyMarginBottom"
@@ -150,7 +150,7 @@
                             </table:Table>
                         </VBox>
                     </VBox>
-                </VBox>
+                </VBox> -->
             </VBox>
         </content>
         <footer>

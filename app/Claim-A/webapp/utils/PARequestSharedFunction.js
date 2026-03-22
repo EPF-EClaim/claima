@@ -1,9 +1,8 @@
 sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
-	"sap/ui/model/Sorter",
-	"claima/utils/Constants"
-], function (Filter, FilterOperator, Sorter, Constants) {
+	"sap/ui/model/Sorter"
+], function (Filter, FilterOperator, Sorter) {
 	"use strict";
 
 	return {
@@ -26,12 +25,12 @@ sap.ui.define([
 		},
 
 		/* =========================================================
-		* Get List from Backend
+		* Get My Pre-Approval Status Records
 		* ======================================================= */
 
-		async getPARHeaderList (oReq, oModel) {
+		async getPARHeaderList (oReqStatusModel, oViewModel) {
 
-			const oListBinding = oModel.bindList("/ZEMP_REQUEST_EE_VIEW", undefined,
+			const oListBinding = oViewModel.bindList("/ZEMP_REQUEST_EE_VIEW", undefined,
 				[new Sorter("modifiedAt", true)], null,
 				{
 					$$ownRequest: true,
@@ -49,81 +48,128 @@ sap.ui.define([
 					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
 				});
 
-				oReq.setProperty("/req_header_list", a);
-				oReq.setProperty("/req_header_count", a.length);
+				oReqStatusModel.setProperty("/req_header_list", a);
+				oReqStatusModel.setProperty("/req_header_count", a.length);
 
 				return a;
 			} catch (err) {
 				console.error("OData bindList failed:", err);
-				oReq.setProperty("/req_header_list", []);
-				oReq.setProperty("/req_header_count", 0);
+				oReqStatusModel.setProperty("/req_header_list", []);
+				oReqStatusModel.setProperty("/req_header_count", 0);
 				return [];
 			}
 		},
 
-		async _getItemList (oController, req_id, first_load = false) {
-			const oReq = oController._getReqModel();
+		/* =========================================================
+		* Get My Pre-Approval Request Details
+		* ======================================================= */
+
+		async _getHeader(oController, sReqId) {
+			const oReqModel = oController._oReqModel;
+
+			if (!sReqId) {
+				oReqModel.setProperty("/req_item_rows", []);
+				oReqModel.setProperty("/list_count", 0);
+				return [];
+			}
+
+			const oListBinding = oController._oViewModel.bindList("/ZEMP_REQUEST_VIEW", null, null, [
+				new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)
+			]);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, 1);
+				if (aCtx.length === 0) {
+					console.warn(`Request ID ${sReqId} not found`);
+					return [];
+				}
+
+				const oData = aCtx[0].getObject();
+				
+				const oHeaderMap = {
+					purpose:        oData.OBJECTIVE_PURPOSE || "",
+					reqid:          oData.REQUEST_ID || "",
+					tripstartdate:  oData.TRIP_START_DATE || "-",
+					tripenddate:    oData.TRIP_END_DATE || "-",
+					eventstartdate: oData.EVENT_START_DATE || "-",
+					eventenddate:   oData.EVENT_END_DATE || "-",
+					location:       oData.LOCATION || "-",
+					grptype:        oData.IND_OR_GROUP_DESC || "-",
+					transport:      oData.TYPE_OF_TRANSPORTATION || "-",
+					reqstatus:      oData.STATUS_DESC || "-",
+					costcenter:     oData.COST_CENTER || "-",
+					altcostcenter:  oData.ALTERNATE_COST_CENTER || "-",
+					cashadvamt:     parseFloat(oData.CASH_ADVANCE) || 0,
+					reqamt:         parseFloat(oData.PREAPPROVAL_AMOUNT) || 0,
+					reqtype:        oData.REQUEST_TYPE_DESC || "-",
+					comment:        oData.REMARK || "-",
+					doc1:           oData.ATTACHMENT1 || "-",
+					doc2:           oData.ATTACHMENT2 || "-",
+					claimtype:      oData.CLAIM_TYPE_ID || "-",
+					claimtypedesc:  oData.CLAIM_TYPE_DESC || "-",
+					reqdate:        oData.REQUEST_DATE
+				};
+
+				oReqModel.setProperty("/req_header", oHeaderMap);
+
+			} catch (err) {
+				console.error("Header fetch failed:", err);
+				oReqModel.setProperty("/req_header", {});
+			}
+		},
+
+		async _getItemList(oController, req_id) {
+			const oReq = oController._oReqModel;
 
 			if (!req_id) {
 				oReq.setProperty("/req_item_rows", []);
 				oReq.setProperty("/list_count", 0);
-				return [];
 			}
 
 			const oModel = oController.getOwnerComponent().getModel('employee_view');
-
-			const sReq = String(req_id);
-			const sEmp = String(oReq.getProperty('/user'));
+			const sReqId = String(req_id);
 
 			const oListBinding = oModel.bindList(
 				"/ZEMP_REQUEST_ITEM_VIEW",
 				null,
 				[new sap.ui.model.Sorter("REQUEST_SUB_ID", false)],
-				[new sap.ui.model.Filter({
-					path: "REQUEST_ID",
-					operator: sap.ui.model.FilterOperator.EQ,
-					value1: sReq
-				})],
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-					$count: true
-				}
+				[new sap.ui.model.Filter("REQUEST_ID", sap.ui.model.FilterOperator.EQ, sReqId)],
+				{ $$ownRequest: true, $count: true }
 			);
 
 			try {
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				const a = aCtx.map((ctx) => ctx.getObject());
-
-				a.forEach((it) => {
-					if (it.EST_AMOUNT != null) it.EST_AMOUNT = parseFloat(it.EST_AMOUNT);
-					if (it.EST_NO_PARTICIPANT != null) it.EST_NO_PARTICIPANT = parseInt(it.EST_NO_PARTICIPANT, 10);
+				
+				const aItems = aCtx.map((ctx) => {
+					const oItem = ctx.getObject();
+					return {
+						...oItem,
+						EST_AMOUNT: parseFloat(oItem.EST_AMOUNT) || 0,
+						EST_NO_PARTICIPANT: parseInt(oItem.EST_NO_PARTICIPANT, 10) || 1
+					};
 				});
 
-				const cashadv_amt = a.reduce((sum, it) => {
-					return it.CASH_ADVANCE === "YES" ? sum + (Number(it.EST_AMOUNT) || 0) : sum;
-				}, 0);
+				const fCashAdvTotal = aItems.reduce((sum, it) => 
+					it.CASH_ADVANCE === "YES" ? sum + it.EST_AMOUNT : sum, 0);
 
-				const req_amt = a.reduce((sum, it) => {
-					return it.CASH_ADVANCE === null ? sum + (Number(it.EST_AMOUNT) || 0) : sum;
-				}, 0);
+				const fReqAmtTotal = aItems.reduce((sum, it) => 
+					it.CASH_ADVANCE !== "YES" ? sum + it.EST_AMOUNT : sum, 0);
 
-				oReq.setProperty("/req_header/cashadvamt", cashadv_amt);
-				oReq.setProperty("/req_header/reqamt", req_amt);
-				oReq.setProperty("/req_item_rows", a);
-				oReq.setProperty("/list_count", a.length);
-				if (first_load != true) {
-					oController.updateRequestAmount(sEmp, sReq, cashadv_amt, req_amt);
-				}
+				oReq.setProperty("/req_header/cashadvamt", fCashAdvTotal);
+				oReq.setProperty("/req_header/reqamt", fReqAmtTotal);
+				oReq.setProperty("/req_item_rows", aItems);
+				oReq.setProperty("/list_count", aItems.length);
 
-				return a;
 			} catch (err) {
-				console.error("OData V4 bindList failed:", err);
+				console.error("Item list fetch failed:", err);
 				oReq.setProperty("/req_item_rows", []);
 				oReq.setProperty("/list_count", 0);
-				return [];
 			}
 		},
+
+		/* =========================================================
+		* Determine Footer Buttons
+		* ======================================================= */
 
 		_determineCurrentState (oController, oReq) {
 			if (oReq.getProperty('/view') != 'approver') {
@@ -135,7 +181,7 @@ sap.ui.define([
 						oController.byId("req_submit").setVisible(true);
 						oReq.setProperty('/view', 'list');
 						break;
-					case 'DELETE':
+					case 'CANCELLED':
 						oController.byId('req_back_scr').setVisible(true);
 						oController.byId("req_back").setVisible(false);
 						oController.byId("req_delete").setVisible(false);
@@ -162,81 +208,6 @@ sap.ui.define([
 				}
 			}
 		},
-
-		async _getEmpIdDetail (oController, sEmpId) {
-			const oModel = oController.getView().getModel();
-			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new Filter("EEID", FilterOperator.EQ, sEmpId)
-			]);
-
-			try {
-				const aContexts = await oListBinding.requestContexts(0, 1);
-
-				if (aContexts.length > 0) {
-					const oData = aContexts[0].getObject();
-					return {
-						eeid: oData.EEID,
-						name: oData.NAME,
-						cc: oData.CC
-					};
-				} else {
-					console.warn("No employee found with ID: " + sEmpId);
-					return null;
-				}
-			} catch (oError) {
-				console.error("Error fetching employee detail", oError);
-				return null;
-			}
-		},
-
-		generateEligibilityCheckPayload (oController) {
-			var oData     = oController._oReqModel.getProperty('/req_item');
-
-			var sEmpId         = oController._oReqModel.getProperty('/user');
-			var sClaimType     = oController._oReqModel.getProperty('/req_header/claimtype');
-			var sClaimTypeItem = oData.claim_type_item_id;
-
-			const oMapping = {
-				// field                : db technical name
-				"vehicle_ownership"     : "VEHICLE_OWNERSHIP_ID",
-				"est_amount"            : "ELIGIBLE_AMOUNT",
-				"cat_purpose"           : "MOBILE_PHONE_BILL",
-				"sss"                   : "REGION_ID",
-				"no_of_days"            : "TRAVEL_DAYS_ID",
-				"rate_per_kilometer"    : "RATE",
-				"room_type"             : "ROOM_TYPE_ID",
-				"flight_class"          : "FLIGHT_CLASS_ID",
-				"marriage_cat"          : "MARRIAGE_CATEGORY",
-				"vehicle_class"         : "TRANSPORT_CLASS",
-				"travel_hours"          : "TRAVEL_HOURS"
-			};
-
-			const aActiveFields = Object.entries(oMapping).reduce((acc, [sKey, sTargetName]) => {
-				const val = oData[sKey];
-				
-				const bIsValid = val !== null && val !== undefined;
-
-				if (bIsValid) {
-					acc.push({
-						fieldName: sTargetName,
-						value: val,
-						result: null
-					});
-				}
-				return acc;
-			}, []);
-
-			const oPayload = {
-				EmpId: sEmpId,
-				ClaimType: sClaimType,
-				ClaimTypeItem: sClaimTypeItem,
-				CheckFields: aActiveFields
-			};
-
-			return oPayload;
-		},
-
-		
 
 	};
 });

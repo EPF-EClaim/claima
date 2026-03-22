@@ -88,7 +88,11 @@ sap.ui.define([
         },
         "RequestStatus": {
             "DRAFT": "DRAFT",
-            "CANCELLED": "CANCELLED",
+            "PENDING_APPROVAL": "PENDING_APPROVAL",
+            "SEND_BACK": "SEND_BACK",
+            "REJECTED": "REJECTED",
+            "APPROVED": "APPROVED",
+            "CANCELLED": "CANCELLED"
         },
         "WorkflowType": {
             "CLAIM": "CLM",
@@ -155,6 +159,14 @@ sap.ui.define([
             "ZNUM_RANGE": "ZNUM_RANGE",
             "ZNUM_RANGE_DTD": "ZNUM_RANGE_DTD",
             "ZBUDGET": "ZBUDGET"
+        },
+        "BudgetCheckStatus": {
+            "SUFFICIENT_BALANCE": "Record updated",
+            "INSUFFICIENT_BALANCE": "Insufficient balance"
+        },
+        "GroupType": {
+            "GROUP": "Group",
+            "INDIVIDUAL": "Individual"
         }
 
     }
