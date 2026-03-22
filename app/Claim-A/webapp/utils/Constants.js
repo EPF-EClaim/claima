@@ -2,6 +2,10 @@ sap.ui.define([
 ], function () {
     "use strict";
     return {
+        "Approvers":{
+            "AUTO": "Auto",
+            "BUDGET": "Budget"
+        },
         "ClaimType": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
             "KURSUS_LUAR_NEGARA": "KURSUS_LUAR_NEGARA",
@@ -121,31 +125,93 @@ sap.ui.define([
         "Entities": {
             "ZAPPROVER_DETAILS_PREAPPROVAL": "/ZAPPROVER_DETAILS_PREAPPROVAL",
             "ZAPPROVER_DETAILS_CLAIMS": "/ZAPPROVER_DETAILS_CLAIMS",
+            "ZBUDGET": "/ZBUDGET",
+            "ZCONSTANTS": "/ZCONSTANTS",
+            "ZCLAIM_HEADER": "/ZCLAIM_HEADER",
+            "ZCLAIM_ITEM": "/ZCLAIM_ITEM",
+            "ZCLAIM_TYPE_ITEM": "/ZCLAIM_TYPE_ITEM",
             "ZEMP_APPROVER_REQUEST_DETAILS": "/ZEMP_APPROVER_REQUEST_DETAILS",
             "ZEMP_APPROVER_CLAIM_DETAILS": "/ZEMP_APPROVER_CLAIM_DETAILS",
-            "ZEMP_REQUEST_BUDGET_CHECK": "/ZEMP_REQUEST_BUDGET_CHECK",
             "ZEMP_CLAIM_BUDGET_CHECK": "/ZEMP_CLAIM_BUDGET_CHECK",
+            "ZEMP_MASTER": "/ZEMP_MASTER",
+            "ZEMP_REQUEST_BUDGET_CHECK": "/ZEMP_REQUEST_BUDGET_CHECK",
             "ZREQUEST_HEADER": "/ZREQUEST_HEADER",
+            "ZREQUEST_TYPE": "/ZREQUEST_TYPE",
+            "ZROLEHIERARCHY": "/ZROLEHIERARCHY",
             "ZCLAIM_HEADER": "/ZCLAIM_HEADER",
+            "ZSUBMISSION_TYPE": "/ZSUBMISSION_TYPE",
+            "ZSUBSTITUTION_RULES": "/ZSUBSTITUTION_RULES",
+            "ZWORKFLOW_RULE": "/ZWORKFLOW_RULE",
+            "ZWORKFLOW_STEP": "/ZWORKFLOW_STEP"
         },
         "EntitiesFields": {
             "APPROVER_ID": "APPROVER_ID",
+            "CLAIMID": "CLAIM_ID",
+            "CLAIM_STATUS": "STATUS_ID",
+            "CLAIM_TYPE_ITEM_ID": "CLAIM_TYPE_ITEM_ID",
+            "COMMENTAPPOVAL": "COMMENT",
+            "EEID": "EEID",
+            "DEP": "DEP",
+            "EMAIL": "EMAIL",
+            "FUND_CENTER": "FUND_CENTER",
+            "ID": "ID",
+            "PREAPPROVALID": "PREAPPROVAL_ID",
+            "REJECT_REASON_ID": "REJECT_REASON_ID",
+            "REQUESTID": "REQUEST_ID",
+            "REQUEST_TYPE_ID": "REQUEST_TYPE_ID",
+            "ROLE": "ROLE",
             "SUBAPPROVER_ID": "SUBSTITUTE_APPROVER_ID",
+            "SUBMISSION_TYPE_ID" :"SUBMISSION_TYPE_ID",
             "STATUS": "STATUS",
             "TIMESTAMP": "PROCESS_TIMESTAMP",
-            "REJECT_REASON_ID": "REJECT_REASON_ID",
-            "CLAIM_STATUS": "STATUS_ID",
-            "COMMENTAPPOVAL": "COMMENT",
-            "PREAPPROVALID": "PREAPPROVAL_ID",
-            "REQUESTID": "REQUEST_ID",
-            "CLAIMID": "CLAIM_ID",
+            "USER_ID": "USER_ID",
+            "VALID_FROM": "VALID_FROM",
+            "VALID_TO": "VALID_TO",
+            "WORKFLOW_CODE": "WORKFLOW_CODE",
+            "WORKFLOW_TYPE": "WORKFLOW_TYPE",
+            "YEAR": "YEAR"
+        },
+        "Errors": {
+            "COST_CENTER_ERROR": "msg_failed_cost_center_undefined",
+            "EEID_ERROR": "msg_failed_eeid_undefined",
+            "GENERIC_ERROR": "msg_failed_generic_error",
+            "ID_ERROR": "msg_failed_id_undefined",
+            "NO_APPROVER_ERROR": "msg_failed_no_approver",
+            "NO_APPROVER_DETAILS_ERROR": "msg_failed_no_approver_details",
+            "NO_BUDGET_ERROR": "msg_failed_no_budget",
+            "NO_CLAIMANT_ERROR": "msg_failed_no_claimant",
+            "NO_COST_CENTER_ERROR": "msg_failed_no_cost_center",
+            "OMODEL_ERROR": "msg_failed_omodel_undefined",
+            "REQUEST_TYPE_ID_ERROR": "msg_failed_request_type_id_undefined",
+            "SUBMISSION_TYPE_ID_ERROR": "msg_failed_submission_type_id_undefined",
+            "YEAR_ERROR": "msg_failed_year_undefined"
+        },
+        "Operators": {
+            "EQ": "EQ",
+            "GE": "GE",
+            "GT": "GT",
+            "LE": "LE",
+            "LT": "LT",
+            "NE": "NE"
+        },
+        "Risk_Category":{
+            "L": "L",
+            "H": "H"
         },
         "Role": {
+            "APPROVER": "Approver",
+            "CEO": "CEO",
+            "DTD_ADMIN": "DTD Admin",
             "GA_ADMIN": "GA Admin",
             "JKEW_ADMIN": "JKEW Admin",
-            "DTD_ADMIN": "DTD Admin",
-            "APPROVER": "Approver",
             "SUPER_ADMIN": "Super Admin"
+        },
+        "User_Type":{
+            "CASH_FI": "CASH_FI",
+            "CEO_FI": "CEO_FI",
+            "FI_SETTLEMENT_A": "FI_SETTLEMENT_A",
+            "FI_SETTLEMENT_B": "FI_SETTLEMENT_B",
+            "HOD_JKEW": "HOD_JKEW"
         },
         "Configuration": {
             "ZEMP_MASTER": "ZEMP_MASTER",

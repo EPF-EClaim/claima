@@ -82,7 +82,6 @@ sap.ui.define([
                         : (oRow.SUBMITTED_DATE ? String(oRow.SUBMITTED_DATE).substring(0, 4) : null);
 
 
-                    //const bUseAlt = "X";
                     var sFund_center = (oRow.ALTERNATE_COST_CENTER) ?? (oRow.COST_CENTER) ?? "";
 
 

@@ -1,12 +1,11 @@
-//const { odata } = require("@sap/cds");
-
 sap.ui.define([
     "claima/utils/FinalApproveStep",
     "sap/ui/model/Filter",
     "sap/m/MessageToast",
     "sap/ui/model/FilterOperator",
-	"claima/utils/Constants"
-], function (FinalApproveStep, Filter, MessageToast,FilterOperator,Constants) {
+	"claima/utils/Constants",
+    "claima/utils/Helper"
+], function (FinalApproveStep, Filter, MessageToast,FilterOperator,Constants, Helper) {
     "use strict";
 
     return {
@@ -36,7 +35,8 @@ sap.ui.define([
                 
             }
             catch(oError){
-                console.error("Error in onSendEmail: " + oError);
+                MessageToast.show(Utility.getText(this, Constants.Errors.GENERIC_ERROR, [oError]));
+                throw new Error(Utility.getText(this, Constants.errors.GENERIC_ERROR, [oError]));
             }
             
 
@@ -66,26 +66,14 @@ sap.ui.define([
 		},
         onClaimsApproverDetermination: async function (oModel, sClaimID, oEmployeeModel){
 			// claim header
-            const that = this;
 
             // Variable declaration for use of the entire function block
             let aApproversDetails = [];             // Variable to store multiple approvers
             let aFullApproversDetails = [];         // Variable to store approvers with substitutes
             let aUniqueApproversDetails = [];       // Variable to store unique approvers
 
-            // Retrieve claimant details for use of entire function
-            const oClaimantDetails = await this.getEmployeeDetails(oModel, sEmpID);
-            if(oClaimantDetails === null){
-                throw new Error("No claimant details found for the claim");
-            }
-
-            // Retrieve Submission Type Description for use of email notification function
-            const oSubmissionTypeDesc = await that.getSubmissionTypeDesc(oModel, aClaimHeaderData[0].SUBMISSION_TYPE);
-
-            
-
-			const oListClaimHeaderBinding = oModel.bindList("/ZCLAIM_HEADER", null,null, [
-				new Filter({ path: "CLAIM_ID", operator: FilterOperator.EQ, value1: sClaimID })
+			const oListClaimHeaderBinding = oModel.bindList(Constants.Entities.ZCLAIM_HEADER, null,null, [
+				new Filter({ path: Constants.EntitiesFields.CLAIMID, operator: FilterOperator.EQ, value1: sClaimID })
 			], null);
 			const aClaimHeaderContexts = await oListClaimHeaderBinding.requestContexts();
 			const aClaimHeaderData = aClaimHeaderContexts.map(oContext => oContext.getObject());
@@ -100,11 +88,21 @@ sap.ui.define([
 
             // Add TOTAL_CLAIM_AMOUNT and PREAPPROVED_AMOUNT
             const sTotalClaimAmount = aClaimHeaderData[0].TOTAL_CLAIM_AMOUNT;
-            const sPreapprovedAmount = aClaimHeaderData[0].PREAPPROVED_AMOUNT;            
+            const sPreapprovedAmount = aClaimHeaderData[0].PREAPPROVED_AMOUNT;  
+            
+            // Retrieve claimant details for use of entire function
+            const oClaimantDetails = await Helper.getEmployeeDetails(oModel, sEmpID);
+            if(oClaimantDetails === null){
+                MessageToast.show(Utility.getText(this, Constants.errors.NO_CLAIMANT_ERROR))
+                throw new Error(Utility.getText(this, Constants.errors.NO_CLAIMANT_ERROR));
+            }
+
+            // Retrieve Submission Type Description for use of email notification function
+            const oSubmissionTypeDesc = await Helper.getSubmissionTypeDesc(oModel, sClaimsSubmissionType);
 
 			//claim Item
-			const oListClaimItemBinding = oModel.bindList("/ZCLAIM_ITEM", null,null, [
-				new Filter({ path: "CLAIM_ID", operator: FilterOperator.EQ, value1: sClaimID })
+			const oListClaimItemBinding = oModel.bindList(Constants.Entities.ZCLAIM_ITEM, null,null, [
+				new Filter({ path: Constants.EntitiesFields.CLAIMID, operator: FilterOperator.EQ, value1: sClaimID })
 			], null);
 			const aClaimItemsContexts = await oListClaimItemBinding.requestContexts();
 			const aClaimsItemData = aClaimItemsContexts.map(oContext => oContext.getObject());
@@ -132,8 +130,8 @@ sap.ui.define([
 			let aClaimsTypeItemRiskArr = [];
 
 			for(var i = 0; i < aClaimTypeItemIDArr.length; i++){
-				const oListClaimTypeItemBinding = oModel.bindList("/ZCLAIM_TYPE_ITEM", null,null, [
-					new Filter({ path: "CLAIM_TYPE_ITEM_ID", operator: FilterOperator.EQ, value1: aClaimTypeItemIDArr[i] })
+				const oListClaimTypeItemBinding = oModel.bindList(Constants.Entities.ZCLAIM_TYPE_ITEM, null,null, [
+					new Filter({ path: Constants.EntitiesFields.CLAIM_TYPE_ITEM_ID, operator: FilterOperator.EQ, value1: aClaimTypeItemIDArr[i] })
 				], null);
 				const aClaimTypeItemsContexts = await oListClaimTypeItemBinding.requestContexts();
 				const aClaimsTypeItemData = aClaimTypeItemsContexts.map(oContext => oContext.getObject());
@@ -147,7 +145,7 @@ sap.ui.define([
 			//get overall risk 
 			for(var i = 0; i< aClaimsTypeItemRiskArr.length; i++){
 				if(aClaimsTypeItemRiskArr[i] != aClaimsTypeItemRiskArr[0]){
-					sClaimsOverallRisk = 'H';
+					sClaimsOverallRisk = Constants.Risk_Category.H;
 				}else{
 					sClaimsOverallRisk = aClaimsTypeItemRiskArr[0];
 				}
@@ -158,8 +156,8 @@ sap.ui.define([
 			}
 
 			//get employee info
-			const oListEmpMasterBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-				new Filter({ path: "EEID", operator: FilterOperator.EQ, value1: sEmpID })
+			const oListEmpMasterBinding = oModel.bindList(Constants.Entities.ZEMP_MASTER, null,null, [
+				new Filter({ path: Constants.EntitiesFields.EEID, operator: FilterOperator.EQ, value1: sEmpID })
 			], null);
 			const aEmpContexts = await oListEmpMasterBinding.requestContexts();
 			const aEmpData = aEmpContexts.map(oContext => oContext.getObject());
@@ -170,9 +168,9 @@ sap.ui.define([
 
 			//JKEW dept = 0500000000
 			//array this. test dep id getting all emp with roles with the same dept id as claimant need to add loop to this as well
-			const oListAllEmpMasterBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-				new Filter({ path: "DEP", operator: FilterOperator.EQ, value1: sEmpDept }),
-				new Filter({ path: "ROLE", operator: FilterOperator.NE, value1: null })
+			const oListAllEmpMasterBinding = oModel.bindList(Constants.Entities.ZEMP_MASTER, null,null, [
+				new Filter({ path: Constants.EntitiesFields.DEP, operator: FilterOperator.EQ, value1: sEmpDept }),
+				new Filter({ path: Constants.EntitiesFields.ROLE, operator: FilterOperator.NE, value1: null })
 			], null);
 			const aAllEmpWithSameDepContexts = await oListAllEmpMasterBinding.requestContexts();
 			const aAllEmpWithSameDepData = aAllEmpWithSameDepContexts.map(oContext => oContext.getObject());
@@ -192,13 +190,12 @@ sap.ui.define([
 			}
 
 			//get workflow rule
-			const oListWorkflowRuleBinding = oModel.bindList("/ZWORKFLOW_RULE", null,null, [
-				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: Constants.WorkflowType.CLAIM }),
-				new Filter({ path: "REQUEST_TYPE_ID", operator: FilterOperator.EQ, value1: sClaimsSubmissionType })//,
-                // Workflow rule table does not utilize role anymore as approver determination is now dynamic
-				//new Filter({ path: "ROLE", operator: FilterOperator.EQ, value1: sEmpRole })
-				
+            // Workflow rule table does not utilize role anymore as approver determination is now dynamic
+			const oListWorkflowRuleBinding = oModel.bindList(Constants.Entities.ZWORKFLOW_RULE, null,null, [
+				new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.WorkflowType.CLAIM }),
+				new Filter({ path: Constants.EntitiesFields.REQUEST_TYPE_ID, operator: FilterOperator.EQ, value1: sClaimsSubmissionType })				
 			], null);
+
 			const aWorkflowRuleContexts = await oListWorkflowRuleBinding.requestContexts();
 			const aWorkflowRuleData = aWorkflowRuleContexts.map(oContext => oContext.getObject());
 
@@ -224,9 +221,9 @@ sap.ui.define([
 			var sEmpCCVal;
 
             if(sClaimsAltCC == "" || sClaimsAltCC == null) {  
-				sEmpCCVal = "EQ";
+				sEmpCCVal = Constants.Operators.EQ;
             }else{
-                sEmpCCVal = "NE";
+                sEmpCCVal = Constants.Operators.NE;
             }
 			
 			var sThreshholdVal, sReceiptAge;
@@ -252,12 +249,12 @@ sap.ui.define([
                 // If Total Claim Amount > Preapproved Amount, straight set our indicator to GT 
                 // Else, use Amount vs Threshold Amount in workflow rule table to determine indicator
                 if(sTotalClaimAmount > sPreapprovedAmount){
-                    sThreshholdVal = "GT"
+                    sThreshholdVal = Constants.Operators.GT
                 }else{
                     if(iHighestAmount > aNestedWorkflowRuleArr[i][0]){
-                        sThreshholdVal = "GT";
+                        sThreshholdVal = Constants.Operators.GT;
                     }else if(iHighestAmount <= aNestedWorkflowRuleArr[i][0]){    
-                        sThreshholdVal = "LE";
+                        sThreshholdVal = Constants.Operators.LE;
                     }else{
                         sThreshholdVal = null;
                     }
@@ -271,9 +268,9 @@ sap.ui.define([
 				}
 
 				if(iDateDiff > aNestedWorkflowRuleArr[i][1]){
-					sReceiptAge = "GT";
+					sReceiptAge = Constants.Operators.GT;
 				}else if(iDateDiff <= aNestedWorkflowRuleArr[i][1]){
-					sReceiptAge = "LE";
+					sReceiptAge = Constants.Operators.LE;
 				}else{
 					sReceiptAge = null;
 				}
@@ -291,9 +288,9 @@ sap.ui.define([
 			);
 
 			//get approver levels and approvers
-			const oListWorkflowStepBinding = oModel.bindList("/ZWORKFLOW_STEP", null,null, [
-				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: Constants.WorkflowType.CLAIM }),
-				new Filter({ path: "WORKFLOW_CODE", operator: FilterOperator.EQ, value1: aCommonWorkflowCode[0] }),
+			const oListWorkflowStepBinding = oModel.bindList(Constants.Entities.ZWORKFLOW_STEP, null,null, [
+				new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.WorkflowType.CLAIM }),
+				new Filter({ path: Constants.EntitiesFields.WORKFLOW_CODE, operator: FilterOperator.EQ, value1: aCommonWorkflowCode[0] }),
 				
 			], null);
 			const aWorkflowStepContexts = await oListWorkflowStepBinding.requestContexts();
@@ -310,11 +307,11 @@ sap.ui.define([
 
 			let aApprEmpID = [];
             
-            if(sWorkflowName == "Auto" && iWorkflowApprLvl == 0){
-                aApprEmpID.push("Auto");
+            if(sWorkflowName == Constants.Approvers.AUTO && iWorkflowApprLvl == 0){
+                aApprEmpID.push(Constants.Approvers.AUTO);
                 aApproversDetails.push({
                     EEID: null,
-                    NAME: "Auto",
+                    NAME: Constants.Approvers.AUTO,
                     EMAIL: null,
                     LEVEL: Number(0)
                 });
@@ -327,8 +324,8 @@ sap.ui.define([
                 let oApproverDetails = null;    // Variable to store approver details 
                 let oBudgetDetails = null;      // Variable to store budget approver details (If applicable)
                 let aConstantValues = [];       // Variable to store EEID retrieved from ZCONSTANTS table
-                const aRoleRanks = await that.getRoleRank(oModel);
-                const oClaimantDetails = await that.getEmployeeDetails(oModel, sEmpID);
+                const aRoleRanks = await Helper.getRoleRank(oModel);
+                const oClaimantDetails = await Helper.getEmployeeDetails(oModel, sEmpID);
                 for(var i = 0; i < aWorkflowApprStep.length; i++){
 
                     // Start of Approver Determination logic
@@ -339,8 +336,8 @@ sap.ui.define([
 
                     // Check if claimant is CEO
                     // If yes, approver for CEO is CEO_FI
-                    if(oClaimantDetails.ROLE === "CEO"){
-                        aWorkflowApprStep[i] = "CEO_FI";
+                    if(oClaimantDetails.ROLE === Constants.Role.CEO){
+                        aWorkflowApprStep[i] = Constants.User_Type.CEO_FI;
                     }
                     // Populate current role rank
                     oCurrOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
@@ -349,13 +346,14 @@ sap.ui.define([
                     if(oCurrOutcome == null){
                         // Block to check for Special Approver within ZCONSTANTS table and budget approver
                         switch(aWorkflowApprStep[i]){
-                            case "Budget":
+                            case Constants.Approvers.BUDGET:
                                 if(sClaimsFinalCC != null){
-                                    oBudgetDetails = await that.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
+                                    oBudgetDetails = await Helper.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
                                     if(!oBudgetDetails){
-                                        throw new Error("Budget owner cannot be found")
+                                        MessageToast.show(Utility.getText(this, Constants.Errors.No_BUDGET_ERROR));
+                                        throw new Error(Utility.getText(this, Constants.Errors.No_BUDGET_ERROR));
                                     }else{
-                                        oApproverDetails = await that.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
+                                        oApproverDetails = await Helper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
                                         if(oApproverDetails != null){
                                             aApproversDetails.push({
                                                 EEID:   oApproverDetails.EEID,
@@ -366,20 +364,21 @@ sap.ui.define([
                                         }
                                     }
                                 }else{
-                                    throw new Error("No Cost Center found for claim")
+                                    MessageToast.show(Utility.getText(this, Constants.Errors.No_COST_CENTER_ERROR));
+                                    throw new Error(Utility.getText(this, Constants.Errors.No_COST_CENTER_ERROR));
                                 }
                                 break;
-                            case "CEO_FI":
-                            case "CASH_FI":
-                            case "FI_SETTLEMENT_A":
-                            case "FI_SETTLEMENT_B":
-                            case "HOD_JKEW":
+                            case Constants.User_Type.CEO_FI:
+                            case Constants.User_Type.CASH_FI:
+                            case Constants.User_Type.FI_SETTLEMENT_A:
+                            case Constants.User_Type.FI_SETTLEMENT_B:
+                            case Constants.User_Type.HOD_JKEW:
                                 // Possible multiple approvers retrieved from ZCONSTANTS table
-                                aConstantValues = await that.getConstants(oModel, aWorkflowApprStep[i]);
+                                aConstantValues = await Helper.getConstants(oModel, aWorkflowApprStep[i]);
                                 if(aConstantValues){
                                     for(const id of aConstantValues){
                                         if(id.VALUE){
-                                            oApproverDetails = await that.getEmployeeDetails(oModel, id.VALUE);
+                                            oApproverDetails = await Helper.getEmployeeDetails(oModel, id.VALUE);
                                             if(oApproverDetails){
                                                 aApproversDetails.push({
                                                 EEID:   oApproverDetails.EEID,
@@ -388,10 +387,13 @@ sap.ui.define([
                                                 LEVEL:  Number(i) + 1
                                             });
                                             }else{
-                                                throw new Error("No Approver details found for approver " + id.VALUE);
+
+                                                MessageToast.show(Utility.getText(this, Constants.Errors.No_APPROVER_DETAILS_ERROR, [id.VALUE]));
+                                                throw new Error(Utility.getText(this, Constants.Errors.No_APPROVER_DETAILS_ERROR, [id.VALUE]));
                                             }
                                         }else{
-                                            throw new Error("No Approver found in ZCONSTANTS table");
+                                            MessageToast.show(Utility.getText(this, Constants.Errors.No_APPROVER_ERROR));
+                                            throw new Error(Utility.getText(this, Constants.Errors.No_APPROVER_ERROR));
                                         }
                                     }
                                 }
@@ -435,7 +437,7 @@ sap.ui.define([
                             }
                         }   
                         // Retrieve Approver based on iApproverRank
-                        oApproverDetails = await that.getApprover(oModel, sEmpID, iApproverRank);
+                        oApproverDetails = await this.getApprover(oModel, sEmpID, iApproverRank);
                         if(oApproverDetails != null){
                             aApproversDetails.push({
                                 EEID:   oApproverDetails.EEID,
@@ -443,8 +445,6 @@ sap.ui.define([
                                 EMAIL:  oApproverDetails.EMAIL,
                                 LEVEL:  Number(i) + 1
                             });
-
-                            //aApproversDetails.push(oApproverDetails, Number(i) + 1);
                         }
                     } 
 
@@ -501,12 +501,12 @@ sap.ui.define([
             let sSubstitute_name = "";       // Variable to store substitute name
             let sSubstitute_email = "";      // Variable to store substitute email
             // Retrieve substitute for approvers
-            for (const approver of aUniqueApproversDetails){
+            for (const oApprover of aUniqueApproversDetails){
                 // If LEVEL = 0, Approver is Auto
-                if(approver.LEVEL > 0){
-                    oSubstitute = await that.getSubstitute(oModel, approver.EEID);
+                if(oApprover.LEVEL > 0){
+                    oSubstitute = await Helper.getSubstitute(oModel, oApprover.EEID);
                     if(oSubstitute){
-                        oSubstituteDetails = await that.getEmployeeDetails(oModel, oSubstitute.EEID);
+                        oSubstituteDetails = await Helper.getEmployeeDetails(oModel, oSubstitute.EEID);
                         if(oSubstituteDetails){
                             sSubstitute_eeid = oSubstituteDetails.EEID;
                             sSubstitute_name = oSubstituteDetails.NAME;
@@ -514,13 +514,13 @@ sap.ui.define([
                         }
                     }
                 }else{
-                    sSubstitute_name = "Auto";
+                    sSubstitute_name = Constants.Approvers.AUTO;
                 }
                 aFullApproversDetails.push({
-                    APPROVER_EEID:   approver.EEID,
-                    APPROVER_NAME:   approver.NAME,
-                    APPROVER_EMAIL:  approver.EMAIL,
-                    LEVEL:  Number(approver.LEVEL),
+                    APPROVER_EEID:   oApprover.EEID,
+                    APPROVER_NAME:   oApprover.NAME,
+                    APPROVER_EMAIL:  oApprover.EMAIL,
+                    LEVEL:  Number(oApprover.LEVEL),
                     SUB_EEID:        sSubstitute_eeid,
                     SUB_NAME:        sSubstitute_name,
                     SUB_EMAIL:       sSubstitute_email
@@ -551,22 +551,22 @@ sap.ui.define([
 			*/
 
 			//create ZAPPROVER DETAILS
-			const oBindApprDetailsList = oModel.bindList("/ZAPPROVER_DETAILS_CLAIMS");
+			const oBindApprDetailsList = oModel.bindList(Constants.Entities.ZAPPROVER_DETAILS_CLAIMS);
 
             // create all contexts
             let aCreatePromises = [];
 
 			//for(var i = 0; i < aApprEmpID.length; i++){
-            for(const approver of aFullApproversDetails){
+            for(const oApprover of aFullApproversDetails){
 
                 var oContext = oBindApprDetailsList.create({
                     "CLAIM_ID": sClaimID,
                     //"LEVEL": "0",
-                    "LEVEL": approver.LEVEL,
+                    "LEVEL": oApprover.LEVEL,
                     //"APPROVER_ID": "Auto",
-                    "APPROVER_ID": approver.APPROVER_EEID,
-                    "SUBSTITUTE_APPROVER_ID": approver.SUB_EEID,
-                    "STATUS": approver.LEVEL === 1 ? "STAT02" : (approver.LEVEL === 0 ? "STAT05" : "")
+                    "APPROVER_ID": oApprover.APPROVER_EEID,
+                    "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
+                    "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
                 });
                 aCreatePromises.push(oContext.created());
                 /** 
@@ -613,42 +613,42 @@ sap.ui.define([
             // Declaration for this block
                 const aPayloadMain = []     // Variable to store payload for sending email
                 
-                for(const approver of aFullApproversDetails){
-                    if(approver.LEVEL == 1){
+                for(const oApprover of aFullApproversDetails){
+                    if(oApprover.LEVEL == 1){
                         // Populate array for sending email to approver
                         aPayloadMain.push({
-                            "ApproverName":approver.APPROVER_NAME, 
+                            "ApproverName":oApprover.APPROVER_NAME, 
                             "SubmissionDate":sClaimsSubmissionDate, 
                             "ClaimantName":oClaimantDetails.NAME, 
                             "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
                             "ClaimID":sClaimID, 
-                            "RecipientName":approver.APPROVER_NAME, 
+                            "RecipientName": oApprover.APPROVER_NAME, 
                             "Action": "Notify", 
-                            "ReceiverEmail":approver.APPROVER_EMAIL,
+                            "ReceiverEmail":oApprover.APPROVER_EMAIL,
                             "NextApproverName":""
                         });
-                        if(approver.SUB_NAME != ""){
+                        if(oApprover.SUB_NAME != ""){
                             // If substitute available, populate payload and send email to substitute also
                             aPayloadMain.push({
-                                "ApproverName":approver.SUB_NAME, 
+                                "ApproverName":oApprover.SUB_NAME, 
                                 "SubmissionDate":sClaimsSubmissionDate, 
                                 "ClaimantName":oClaimantDetails.NAME, 
                                 "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
                                 "ClaimID":sClaimID, 
-                                "RecipientName":approver.SUB_NAME, 
+                                "RecipientName":oApprover.SUB_NAME, 
                                 "Action": "Notify", 
-                                "ReceiverEmail":approver.SUB_EMAIL,
+                                "ReceiverEmail":oApprover.SUB_EMAIL,
                                 "NextApproverName":""
                             }); 
                         }
-                    }else if(approver.LEVEL == 0){
+                    }else if(oApprover.LEVEL == 0){
                         FinalApproveStep.onFinalApprove(oModel, sClaimID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
                         break;
                     }
                 }
                 if(aPayloadMain.length > 0){
                     // Send email to approver
-                    that.onSendEmail(oModel, aPayloadMain);
+                    this.onSendEmail(oModel, aPayloadMain);
                 }
 
                 // submit the batch
@@ -720,8 +720,8 @@ sap.ui.define([
                             "ReceiverEmail":aApprNameData[0].EMAIL, 
                             "NextApproverName" : sNextApprName 
                         }
-                        that.onSendEmail(oModel, aPayloadSub);
-                        that.onSendEmail(oModel, aPayloadMain);
+                        this.onSendEmail(oModel, aPayloadSub);
+                        this.onSendEmail(oModel, aPayloadMain);
                     }else{
                         const aPayload ={
                             "ApproverName":aApprNameData[0].NAME, 
@@ -734,15 +734,15 @@ sap.ui.define([
                             "ReceiverEmail":aApprNameData[0].EMAIL, 
                             "NextApproverName" : sNextApprName 
                         }                      
-                        that.onSendEmail(oModel, aPayload);        
+                        this.onSendEmail(oModel, aPayload);        
                     }
                 }else{
                     FinalApproveStep.onFinalApprove(oModel, sClaimID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
                 }
                 */
             }catch(oError){
-                console.error("Error in email block on onClaimsApproverDetermination function: " + oError);
-                new MessageToast.show(oError);
+                MessageToast.show(Utility.getText(this, Constants.Errors.GENERIC_ERROR, [oError]));
+                throw new Error(Utility.getText(this, Constants.errors.GENERIC_ERROR, [oError]));
             }	
 			
         },
@@ -755,8 +755,8 @@ sap.ui.define([
             let aFullApproversDetails = [];         // Variable to store approvers with substitutes
             let aUniqueApproversDetails = [];       // Variable to store unique approvers
 
-			const oListRequestHeaderBinding = oModel.bindList("/ZREQUEST_HEADER", null,null, [
-				new Filter({ path: "REQUEST_ID", operator: FilterOperator.EQ, value1: sPARID })
+			const oListRequestHeaderBinding = oModel.bindList(Constants.Entities.ZREQUEST_HEADER, null,null, [
+				new Filter({ path: Constants.EntitiesFields.REQUEST_ID, operator: FilterOperator.EQ, value1: sPARID })
 			], null);
 			const aPARHeaderContexts = await oListRequestHeaderBinding.requestContexts();
 			const aPARHeaderData = aPARHeaderContexts.map(oContext => oContext.getObject());
@@ -770,17 +770,18 @@ sap.ui.define([
 			var sParTripStartDate = aPARHeaderData[0].TRIP_START_DATE;
 
             // Retrieve claimant details for use of entire function
-            const oClaimantDetails = await this.getEmployeeDetails(oModel, sEmpID);
+            const oClaimantDetails = await Helper.getEmployeeDetails(oModel, sEmpID);
             if(oClaimantDetails === null){
-                throw new Error("No claimant details found for the claim");
+                MessageToast.show(Utility.getText(this, Constants.Errors.NO_CLAIMANT_ERROR))
+                throw new Error(Utility.getText(this, Constants.Errors.NO_CLAIMANT_ERROR));
             }
 
             // Retrieve Submission Type Description for use of email notification function
-            const oRequestTypeDesc = await that.getRequestTypeDesc(oModel, sParSubmissionType);
+            const oRequestTypeDesc = await Helper.getRequestTypeDesc(oModel, sParSubmissionType);
 			
 			//request Item
-			const oListRequestItemBinding = oModel.bindList("/ZREQUEST_ITEM", null,null, [
-				new Filter({ path: "REQUEST_ID", operator: FilterOperator.EQ, value1: sPARID })
+			const oListRequestItemBinding = oModel.bindList(Constants.Entities.ZREQUEST_ITEM, null,null, [
+				new Filter({ path: Constants.EntitiesFields.REQUEST_ID, operator: FilterOperator.EQ, value1: sPARID })
 			], null);
 			const aClaimItemsContexts = await oListRequestItemBinding.requestContexts();
 			const aClaimsItemData = aClaimItemsContexts.map(oContext => oContext.getObject());
@@ -791,8 +792,8 @@ sap.ui.define([
 			}
 
 			//get employee info
-			const oListPAREmpMasterBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-				new Filter({ path: "EEID", operator: FilterOperator.EQ, value1: sEmpID })
+			const oListPAREmpMasterBinding = oModel.bindList(Constants.Entities.ZEMP_MASTER, null,null, [
+				new Filter({ path: Constants.EntitiesFields.EEID, operator: FilterOperator.EQ, value1: sEmpID })
 			], null);
 			const aEmpContexts = await oListPAREmpMasterBinding.requestContexts();
 			const aEmpData = aEmpContexts.map(oContext => oContext.getObject());
@@ -802,9 +803,9 @@ sap.ui.define([
 			const sEmpCC = aEmpData[0].CC;
 
 			//JKEW dept = 0500000000
-			const oListPARAllEmpBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-				new Filter({ path: "DEP", operator: FilterOperator.EQ, value1: sEmpDept }),
-				new Filter({ path: "ROLE", operator: FilterOperator.NE, value1: null })
+			const oListPARAllEmpBinding = oModel.bindList(Constants.Entities.ZEMP_MASTER, null,null, [
+				new Filter({ path: Constants.EntitiesFields.DEP, operator: FilterOperator.EQ, value1: sEmpDept }),
+				new Filter({ path: Constants.EntitiesFields.ROLE, operator: FilterOperator.NE, value1: null })
 			], null);
 			const aAllEmpWithSameDepContexts = await oListPARAllEmpBinding.requestContexts();
 			const aAllEmpWithSameDepData = aAllEmpWithSameDepContexts.map(oContext => oContext.getObject());
@@ -822,9 +823,9 @@ sap.ui.define([
 			}
 
 			//get workflow rule
-			const oListWorkflowRuleBinding = oModel.bindList("/ZWORKFLOW_RULE", null,null, [
-				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: Constants.WorkflowType.PRE_APPROVAL }),
-				new Filter({ path: "REQUEST_TYPE_ID", operator: FilterOperator.EQ, value1: sParSubmissionType })//,
+			const oListWorkflowRuleBinding = oModel.bindList(Constants.Entities.ZWORKFLOW_RULE, null,null, [
+				new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.WorkflowType.PRE_APPROVAL }),
+				new Filter({ path: Constants.EntitiesFields.REQUEST_TYPE_ID, operator: FilterOperator.EQ, value1: sParSubmissionType })//,
 				//new Filter({ path: "ROLE", operator: FilterOperator.EQ, value1: sEmpRole })
 				
 			], null);
@@ -845,9 +846,9 @@ sap.ui.define([
 
 			var sEmpCCVal;
             if(sParAltCC == "" || sParAltCC == null) {  
-				sEmpCCVal = "EQ";
+				sEmpCCVal = Constants.Operators.EQ;
             }else{
-                sEmpCCVal = "NE";
+                sEmpCCVal = Constants.Operators.NE;
             }
             
 			var sTripStartAge;//change for trip start date
@@ -866,9 +867,9 @@ sap.ui.define([
 				}
 
 				if(sParTripStartDate >= dCurrentDate){
-					sTripStartAge = "GE";
+					sTripStartAge = Constants.Operators.GE;
 				}else if(sParTripStartDate < dCurrentDate){
-					sTripStartAge = "LT";
+					sTripStartAge = Constants.Operators.LT;
 				}else{
 					sTripStartAge = null;
 				}
@@ -903,9 +904,9 @@ sap.ui.define([
 
 
 			//get approver levels and approvers
-			const oListWorkflowStepBinding = oModel.bindList("/ZWORKFLOW_STEP", null,null, [
-				new Filter({ path: "WORKFLOW_TYPE", operator: FilterOperator.EQ, value1: Constants.WorkflowType.PRE_APPROVAL }),
-				new Filter({ path: "WORKFLOW_CODE", operator: FilterOperator.EQ, value1: aCommonWorkflowCode[0] }),
+			const oListWorkflowStepBinding = oModel.bindList(Constants.Entities.ZWORKFLOW_STEP, null,null, [
+				new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.WorkflowType.PRE_APPROVAL }),
+				new Filter({ path: Constants.EntitiesFields.WORKFLOW_CODE, operator: FilterOperator.EQ, value1: aCommonWorkflowCode[0] }),
 				
 			], null);
 			const aWorkflowStepContexts = await oListWorkflowStepBinding.requestContexts();
@@ -921,11 +922,11 @@ sap.ui.define([
 			}
 
 			let aApprEmpID = [];
-            if(sWorkflowName == "Auto" && iWorkflowApprLvl == 0){
-                aApprEmpID.push("Auto");
+            if(sWorkflowName == Constants.Approvers.AUTO && iWorkflowApprLvl == 0){
+                aApprEmpID.push(Constants.Approvers.AUTO);
                 aApproversDetails.push({
                     EEID: null,
-                    NAME: "Auto",
+                    NAME: Constants.Approvers.AUTO,
                     EMAIL: null,
                     LEVEL: Number(0)
                 });
@@ -937,8 +938,8 @@ sap.ui.define([
                 let oApproverDetails = null;    // Variable to store approver details 
                 let oBudgetDetails = null;      // Variable to store budget approver details (If applicable)
                 let aConstantValues = [];       // Variable to store EEID retrieved from ZCONSTANTS table
-                const aRoleRanks = await that.getRoleRank(oModel);
-                const oClaimantDetails = await that.getEmployeeDetails(oModel, sEmpID);
+                const aRoleRanks = await Helper.getRoleRank(oModel);
+                const oClaimantDetails = await Helper.getEmployeeDetails(oModel, sEmpID);
                 for(var i = 0; i < aWorkflowApprStep.length; i++){
 
                     // Start of Approver Determination logic
@@ -949,8 +950,8 @@ sap.ui.define([
 
                     // Check if claimant is CEO
                     // If yes, approver for CEO is CEO_FI
-                    if(oClaimantDetails.ROLE === "CEO"){
-                        aWorkflowApprStep[i] = "CEO_FI";
+                    if(oClaimantDetails.ROLE === Constants.Role.CEO){
+                        aWorkflowApprStep[i] = Constants.User_Type.CEO_FI;
                     }
                     // Populate current role rank
                     oCurrOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
@@ -959,13 +960,14 @@ sap.ui.define([
                     if(oCurrOutcome == null){
                         // Block to check for Special Approver within ZCONSTANTS table and budget approver
                         switch(aWorkflowApprStep[i]){
-                            case "Budget":
+                            case Constants.Approvers.BUDGET:
                                 if(sClaimsFinalCC != null){
-                                    oBudgetDetails = await that.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
+                                    oBudgetDetails = await Helper.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
                                     if(!oBudgetDetails){
-                                        throw new Error("Budget owner cannot be found")
+                                        MessageToast.show(Utility.getText(this, Constants.Errors.No_BUDGET_ERROR));
+                                        throw new Error(Utility.getText(this, Constants.Errors.No_BUDGET_ERROR));
                                     }else{
-                                        oApproverDetails = await that.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
+                                        oApproverDetails = await Helper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
                                         if(oApproverDetails != null){
                                             aApproversDetails.push({
                                                 EEID:   oApproverDetails.EEID,
@@ -976,20 +978,21 @@ sap.ui.define([
                                         }
                                     }
                                 }else{
-                                    throw new Error("No Cost Center found for claim")
+                                    MessageToast.show(Utility.getText(this, Constants.Errors.No_COST_CENTER_ERROR));
+                                    throw new Error(Utility.getText(this, Constants.Errors.No_COST_CENTER_ERROR));
                                 }
                                 break;
-                            case "CEO_FI":
-                            case "CASH_FI":
-                            case "FI_SETTLEMENT_A":
-                            case "FI_SETTLEMENT_B":
-                            case "HOD_JKEW":
+                            case Constants.User_Type.CEO_FI:
+                            case Constants.User_Type.CASH_FI:
+                            case Constants.User_Type.FI_SETTLEMENT_A:
+                            case Constants.User_Type.FI_SETTLEMENT_B:
+                            case Constants.User_Type.HOD_JKEW:
                                 // Possible multiple approvers retrieved from ZCONSTANTS table
-                                aConstantValues = await that.getConstants(oModel, aWorkflowApprStep[i]);
+                                aConstantValues = await Helper.getConstants(oModel, aWorkflowApprStep[i]);
                                 if(aConstantValues){
                                     for(const id of aConstantValues){
                                         if(id.VALUE){
-                                            oApproverDetails = await that.getEmployeeDetails(oModel, id.VALUE);
+                                            oApproverDetails = await Helper.getEmployeeDetails(oModel, id.VALUE);
                                             if(oApproverDetails){
                                                 aApproversDetails.push({
                                                 EEID:   oApproverDetails.EEID,
@@ -998,10 +1001,12 @@ sap.ui.define([
                                                 LEVEL:  Number(i) + 1
                                             });
                                             }else{
-                                                throw new Error("No Approver details found for approver " + id.VALUE);
+                                                MessageToast.show(Utility.getText(this, Constants.Errors.No_APPROVER_DETAILS_ERROR, [id.VALUE]));
+                                                throw new Error(Utility.getText(this, Constants.Errors.No_APPROVER_DETAILS_ERROR, [id.VALUE]));
                                             }
                                         }else{
-                                            throw new Error("No Approver found in ZCONSTANTS table");
+                                            MessageToast.show(Utility.getText(this, Constants.Errors.No_APPROVER_ERROR));
+                                            throw new Error(Utility.getText(this, Constants.Errors.No_APPROVER_ERROR));
                                         }
                                     }
                                 }
@@ -1045,7 +1050,7 @@ sap.ui.define([
                             }
                         }   
                         // Retrieve Approver based on iApproverRank
-                        oApproverDetails = await that.getApprover(oModel, sEmpID, iApproverRank);
+                        oApproverDetails = await this.getApprover(oModel, sEmpID, iApproverRank);
                         if(oApproverDetails != null){
                             aApproversDetails.push({
                                 EEID:   oApproverDetails.EEID,
@@ -1112,12 +1117,12 @@ sap.ui.define([
             let sSubstitute_name = "";       // Variable to store substitute name
             let sSubstitute_email = "";      // Variable to store substitute email
             // Retrieve substitute for approvers
-            for (const approver of aUniqueApproversDetails){
+            for (const oApprover of aUniqueApproversDetails){
                 // If LEVEL = 0, Approver is Auto
-                if(approver.LEVEL > 0){
-                    oSubstitute = await that.getSubstitute(oModel, approver.EEID);
+                if(oApprover.LEVEL > 0){
+                    oSubstitute = await Helper.getSubstitute(oModel, oApprover.EEID);
                     if(oSubstitute){
-                        oSubstituteDetails = await that.getEmployeeDetails(oModel, oSubstitute.EEID);
+                        oSubstituteDetails = await Helper.getEmployeeDetails(oModel, oSubstitute.EEID);
                         if(oSubstituteDetails){
                             sSubstitute_eeid = oSubstituteDetails.EEID;
                             sSubstitute_name = oSubstituteDetails.NAME;
@@ -1125,13 +1130,13 @@ sap.ui.define([
                         }
                     }
                 }else{
-                    sSubstitute_name = "Auto";
+                    sSubstitute_name = Constants.Approvers.AUTO;
                 }
                 aFullApproversDetails.push({
-                    APPROVER_EEID:   approver.EEID,
-                    APPROVER_NAME:   approver.NAME,
-                    APPROVER_EMAIL:  approver.EMAIL,
-                    LEVEL:  Number(approver.LEVEL),
+                    APPROVER_EEID:   oApprover.EEID,
+                    APPROVER_NAME:   oApprover.NAME,
+                    APPROVER_EMAIL:  oApprover.EMAIL,
+                    LEVEL:  Number(oApprover.LEVEL),
                     SUB_EEID:        sSubstitute_eeid,
                     SUB_NAME:        sSubstitute_name,
                     SUB_EMAIL:       sSubstitute_email
@@ -1161,22 +1166,22 @@ sap.ui.define([
             }
 			*/
 			//create ZAPPROVER DETAILS
-			const oBindApprDetailsList = oModel.bindList("/ZAPPROVER_DETAILS_PREAPPROVAL");
+			const oBindApprDetailsList = oModel.bindList(Constants.Entities.ZAPPROVER_DETAILS_PREAPPROVAL);
 
             // create all contexts
             let aCreatePromises = [];
 
 			//for(var i = 0; i < aApprEmpID.length; i++){
-            for(const approver of aFullApproversDetails){
+            for(const oApprover of aFullApproversDetails){
 
                 var oContext = oBindApprDetailsList.create({
                     "CLAIM_ID": sClaimID,
                     //"LEVEL": "0",
-                    "LEVEL": approver.LEVEL,
+                    "LEVEL": oApprover.LEVEL,
                     //"APPROVER_ID": "Auto",
-                    "APPROVER_ID": approver.APPROVER_EEID,
-                    "SUBSTITUTE_APPROVER_ID": approver.SUB_EEID,
-                    "STATUS": approver.LEVEL === 1 ? "STAT02" : (approver.LEVEL === 0 ? "STAT05" : "")
+                    "APPROVER_ID": oApprover.APPROVER_EEID,
+                    "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
+                    "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
                 });
                 aCreatePromises.push(oContext.created());
                 /**
@@ -1223,42 +1228,42 @@ sap.ui.define([
             // Declaration for this block
                 const aPayloadMain = []     // Variable to store payload for sending email
                 
-                for(const approver of aFullApproversDetails){
-                    if(approver.LEVEL == 1){
+                for(const oApprover of aFullApproversDetails){
+                    if(oApprover.LEVEL == 1){
                         // Populate array for sending email to approver
                         aPayloadMain.push({
-                            "ApproverName":approver.APPROVER_NAME, 
+                            "ApproverName":oApprover.APPROVER_NAME, 
                             "SubmissionDate":sClaimsSubmissionDate, 
                             "ClaimantName":oClaimantDetails.NAME, 
                             "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
                             "ClaimID":sClaimID, 
-                            "RecipientName":approver.APPROVER_NAME, 
+                            "RecipientName":oApprover.APPROVER_NAME, 
                             "Action": "Notify", 
-                            "ReceiverEmail":approver.APPROVER_EMAIL,
+                            "ReceiverEmail":oApprover.APPROVER_EMAIL,
                             "NextApproverName":""
                         });
-                        if(approver.SUB_NAME != ""){
+                        if(oApprover.SUB_NAME != ""){
                             // If substitute available, populate payload and send email to substitute also
                             aPayloadMain.push({
-                                "ApproverName":approver.SUB_NAME, 
+                                "ApproverName":oApprover.SUB_NAME, 
                                 "SubmissionDate":sClaimsSubmissionDate, 
                                 "ClaimantName":oClaimantDetails.NAME, 
                                 "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
                                 "ClaimID":sClaimID, 
-                                "RecipientName":approver.SUB_NAME, 
+                                "RecipientName":oApprover.SUB_NAME, 
                                 "Action": "Notify", 
-                                "ReceiverEmail":approver.SUB_EMAIL,
+                                "ReceiverEmail":oApprover.SUB_EMAIL,
                                 "NextApproverName":""
                             }); 
                         }
-                    }else if(approver.LEVEL == 0){
+                    }else if(oApprover.LEVEL == 0){
                         FinalApproveStep.onFinalApprove(oModel, sClaimID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
                         break;
                     }
                 }
                 if(aPayloadMain.length > 0){
                     // Send email to approver
-                    that.onSendEmail(oModel, aPayloadMain);
+                    this.onSendEmail(oModel, aPayloadMain);
                 }
 
                 // submit the batch
@@ -1329,8 +1334,8 @@ sap.ui.define([
                             "ReceiverEmail":aApprNameData[0].EMAIL, 
                             "NextApproverName" : sNextApprName 
                         }
-                        that.onSendEmail(oModel, aPayloadSub);
-                        that.onSendEmail(oModel, aPayloadMain);
+                        this.onSendEmail(oModel, aPayloadSub);
+                        this.onSendEmail(oModel, aPayloadMain);
                     }else{
                         const aPayload ={
                             "ApproverName":aApprNameData[0].NAME, 
@@ -1343,428 +1348,16 @@ sap.ui.define([
                             "ReceiverEmail":aApprNameData[0].EMAIL, 
                             "NextApproverName" : sNextApprName 
                         }
-                        that.onSendEmail(oModel,aPayload);
+                        this.onSendEmail(oModel,aPayload);
                     }
                 }else{
                     FinalApproveStep.onFinalApprove(oModel, sPARID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
                 }
                 */
             }catch(oError){
-                console.error("Error in email block on onClaimsApproverDetermination function: " + oError);
-                new MessageToast.show(oError);
+                MessageToast.show(Utility.getText(this, Constants.Errors.GENERIC_ERROR, [oError]));
+                throw new Error(Utility.getText(this, Constants.errors.GENERIC_ERROR, [oError]));
             }
-        },
-        /**
-         * Fetch Submission Type Description from ZSUBMISSION_TYPE by Submission Type ID
-         *
-         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
-         * @param {string} sSubmissionTypeID - Submission Type ID
-         * @returns {Promise<object|null>} - Submission type description or null if not found
-         */
-        getSubmissionTypeDesc: async function (oModel, sSubmissionTypeID) {
-
-            const that = this;
-            // --- Sanity check ---
-            if (!oModel) {
-                throw new Error("oModel is undefined in getSubmissionTypeDesc()");
-            }
-            if (!sSubmissionTypeID) {
-                throw new Error("Submission Type ID is required to fetch employee details.");
-            }
-
-            // Ensure metadata is loaded
-            await oModel.getMetaModel().requestObject("/");
-
-            // Main table path
-            const sTable = "/ZSUBMISSION_TYPE";
-
-            // Build filter
-            const aFilters = [
-                new Filter("SUBMISSION_TYPE_ID", FilterOperator.EQ, sSubmissionTypeID)
-            ];
-
-            // Bind list
-            const binding = oModel.bindList(
-                sTable,
-                null,
-                null,
-                aFilters,
-                { $$ownRequest: true }
-            );
-
-            // Fetch data
-            const aCtx = await binding.requestContexts(0, Infinity);
-            let oData = null;
-            if (!aCtx || aCtx.length === 0) {
-                return null; // no employee found
-            }
-            oData = aCtx[0].getObject();
-
-            // Return only the required fields
-            return {
-                SUBMISSION_TYPE_ID:     oData.SUBMISSION_TYPE_ID,
-                SUBMISSION_TYPE_DESC:   oData.SUBMISSION_TYPE_DESC
-            };
-        },
-        /**
-         * Fetch Request Type Description from ZREQUEST_TYPE by Submission Type ID
-         *
-         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
-         * @param {string} sRequestTypeID - Request Type ID
-         * @returns {Promise<object|null>} - Request type description or null if not found
-         */
-        getRequestTypeDesc: async function (oModel, sRequestTypeID) {
-
-            const that = this;
-            // --- Sanity check ---
-            if (!oModel) {
-                throw new Error("oModel is undefined in getRequestTypeDesc()");
-            }
-            if (!sSubmissionTypeID) {
-                throw new Error("Request Type ID is required to fetch employee details.");
-            }
-
-            // Ensure metadata is loaded
-            await oModel.getMetaModel().requestObject("/");
-
-            // Main table path
-            const sTable = "/ZREQUEST_TYPE";
-
-            // Build filter
-            const aFilters = [
-                new Filter("REQUEST_TYPE_ID", FilterOperator.EQ, sRequestTypeID)
-            ];
-
-            // Bind list
-            const binding = oModel.bindList(
-                sTable,
-                null,
-                null,
-                aFilters,
-                { $$ownRequest: true }
-            );
-
-            // Fetch data
-            const aCtx = await binding.requestContexts(0, Infinity);
-            let oData = null;
-            if (!aCtx || aCtx.length === 0) {
-                return null; // no employee found
-            }
-            oData = aCtx[0].getObject();
-
-            // Return only the required fields
-            return {
-                REQUEST_TYPE_ID:     oData.REQUEST_TYPE_ID,
-                REQUEST_TYPE_DESC:   oData.REQUEST_TYPE_DESC
-            };
-        },
-        /**
-         * Fetch employee master record from ZEMP_MASTER by EEID
-         *
-         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
-         * @param {string} sEEID - Employee ID (EEID)
-         * @returns {Promise<object|null>} - Employee data or null if not found
-         */
-        getEmployeeDetails: async function (oModel, sEEID) {
-
-            const that = this;
-            let sRank = "";
-            // --- Sanity check ---
-            if (!oModel) {
-                throw new Error("oModel is undefined in getEmployeeDetails()");
-            }
-            if (!sEEID) {
-                throw new Error("EEID is required to fetch employee details.");
-            }
-
-            // Ensure metadata is loaded
-            await oModel.getMetaModel().requestObject("/");
-
-            // Main table path
-            const sTable = "/ZEMP_MASTER";
-
-            // Build filter
-            const aFilters = [
-                new Filter("EEID", FilterOperator.EQ, sEEID)
-            ];
-
-            // Bind list
-            const binding = oModel.bindList(
-                sTable,
-                null,
-                null,
-                aFilters,
-                { $$ownRequest: true }
-            );
-
-            // Fetch data
-            const aCtx = await binding.requestContexts(0, Infinity);
-            let oData = null;
-            if (!aCtx || aCtx.length === 0) {
-                return null; // no employee found
-            }
-            else{
-                oData = aCtx[0].getObject();
-                if(oData.ROLE === "" || oData.ROLE === null){
-                    sRank = 0;
-                }else{
-                    const aEmpRoleRank = await that.getRoleRank(oModel, oData.ROLE)
-                    sRank = aEmpRoleRank[0].RANK;
-                }
-            }
-
-            // Return only the required fields
-            return {
-                EEID:               oData.EEID,
-                NAME:               oData.NAME,
-                EMAIL:              oData.EMAIL,
-                DEPARTMENT:         oData.DEPARTMENT,
-                ROLE:               oData.ROLE,
-                RANK:               sRank,
-                DIRECT_SUPERIOR:    oData.DIRECT_SUPPERIOR
-            };
-        },
-        /**
-         * Fetch substitution rule record from ZSUBSTITUTION_RULES by EEID
-         *
-         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
-         * @param {string} sApproverEEID - Approver ID (EEID)
-         * @param {Date} [dDate] - Optional date (defaults to today)
-         * @returns {Promise<object|null>} - Employee data or null if not found
-         */
-        getSubstitute: async function (oModel, sApproverEEID, dDate = new Date()) {
-
-            const that = this;
-            // --- Sanity check ---
-            if (!oModel) {
-                throw new Error("oModel is undefined in getSubstitute()");
-            }
-            if (!sApproverEEID) {
-                throw new Error("EEID is required to fetch employee details.");
-            }
-
-            // Ensure metadata is loaded
-            await oModel.getMetaModel().requestObject("/");
-
-            // Main table path
-            const sTable = "/ZSUBSTITUTION_RULES";
-
-            // Convert to ISO date string (YYYY-MM-DD)
-            const sToday = dDate.toISOString().split("T")[0];
-            
-            // Filters:
-            // USER_ID EQ EEID
-            // VALID_FROM LE today
-            // VALID_TO GE today
-            const aFilters = [
-                new Filter("USER_ID", FilterOperator.EQ, sApproverEEID),
-                new Filter("VALID_FROM", FilterOperator.LE, sToday),
-                new Filter("VALID_TO", FilterOperator.GE, sToday)
-            ];
-
-            // Bind list
-            const binding = oModel.bindList(
-                sTable,
-                null,
-                null,
-                aFilters,
-                { $$ownRequest: true }
-            );
-
-            // Fetch data
-            const aCtx = await binding.requestContexts(0, Infinity);
-            if (!aCtx || aCtx.length === 0) {
-                return null; // no substitute found
-            }
-            const oData = aCtx[0].getObject();
-            const oEmployeeDetail = await that.getEmployeeDetails(oModel, oData.SUBSTITUTE_ID);
-
-            // Return only the required fields
-            return {
-                EEID:               oEmployeeDetail.EEID,
-                NAME:               oEmployeeDetail.NAME,
-                EMAIL:              oEmployeeDetail.EMAIL,
-                DEPARTMENT:         oEmployeeDetail.DEPARTMENT,
-                ROLE:               oEmployeeDetail.ROLE,
-                RANK:               oEmployeeDetail.RANK,
-                DIRECT_SUPERIOR:    oEmployeeDetail.DIRECT_SUPPERIOR
-            };
-        },
-        /**
-         * Fetch budget record from ZBUDGET by Cost Center and Year
-         *
-         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
-         * @param {string} sCostCenter - Cost Center
-         * @param {string} sYear - Year
-         * @returns {Promise<object|null>} - Budget data or null if not found
-         */
-        getBudgetDetails: async function (oModel, sCostCenter, sYear) {
-
-            const that = this;
-
-            let oData = null;
-            let oBudgetOwner = null;
-            // --- Sanity check ---
-            if (!oModel) {
-                throw new Error("oModel is undefined in getBudgetDetails()");
-            }
-            if (!sCostCenter) {
-                throw new Error("sCostCenter is required to fetch budget details.");
-            }
-            if (!sYear) {
-                throw new Error("sYear is required to fetch budget details")
-            }
-
-            // Ensure metadata is loaded
-            await oModel.getMetaModel().requestObject("/");
-
-            // Main table path
-            const sTable = "/ZBUDGET";
-
-            // Build filter
-            const aFilters = [
-                new Filter("FUND_CENTER", FilterOperator.EQ, sCostCenter),
-                new Filter("YEAR", FilterOperator.EQ, sYear)
-            ];
-
-            // Bind list
-            const binding = oModel.bindList(
-                sTable,
-                null,
-                null,
-                aFilters,
-                { $$ownRequest: true }
-            );
-
-            // Fetch data
-            const aCtx = await binding.requestContexts(0, Infinity);
-            if (!aCtx || aCtx.length === 0) {
-                return null; // no budget data found
-            }
-            else{
-                oData = aCtx[0].getObject();
-                oBudgetOwner = await that.getEmployeeDetailsByEmail(oModel, oData.BUDGET_OWNER_ID)
-            }
-
-            // Return only the required fields
-            return {
-                YEAR:               oData.YEAR,
-                INTERNAL_ORDER:     oData.INTERNAL_ORDER,
-                COMMITMENT_ITEM:    oData.COMMITMENT_ITEM,
-                FUND_CENTER:        oData.FUND_CENTER,
-                MATERIAL_GROUP:     oData.MATERIAL_GROUP,
-                BUDGET_OWNER_EMAIL: oData.BUDGET_OWNER_ID,
-                BUDGET_OWNER_ID:    oBudgetOwner.EEID
-            };
-        },
-        /**
-         * Fetch employee master record from ZEMP_MASTER by Email
-         *
-         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
-         * @param {string} sEmail - Email (EEID)
-         * @returns {Promise<object|null>} - Employee data or null if not found
-         */
-        getEmployeeDetailsByEmail: async function (oModel, sEmail) {
-
-            const that = this;
-            let sRank = 0;
-            // --- Sanity check ---
-            if (!oModel) {
-                throw new Error("oModel is undefined in getEmployeeDetailsByEmail()");
-            }
-            if (!sEmail) {
-                throw new Error("Email is required to fetch employee details.");
-            }
-
-            // Ensure metadata is loaded
-            await oModel.getMetaModel().requestObject("/");
-
-            // Main table path
-            const sTable = "/ZEMP_MASTER";
-
-            // Build filter
-            const aFilters = [
-                new Filter("EMAIL", FilterOperator.EQ, sEmail)
-            ];
-
-            // Bind list
-            const binding = oModel.bindList(
-                sTable,
-                null,
-                null,
-                aFilters,
-                { $$ownRequest: true }
-            );
-
-            // Fetch data
-            const aCtx = await binding.requestContexts(0, Infinity);
-            let oData = null;
-            if (!aCtx || aCtx.length === 0) {
-                return null; // no employee found
-            }
-            else{
-                oData = aCtx[0].getObject();
-                if(oData.ROLE === "" || oData.ROLE === null){
-                    sRank = 0;
-                }else{
-                    const aEmpRoleRank = await that.getRoleRank(oModel, oData.ROLE)
-                    sRank = aEmpRoleRank[0].RANK;
-                }
-            }
-
-            // Return only the required fields
-            return {
-                EEID:               oData.EEID,
-                NAME:               oData.NAME,
-                EMAIL:              oData.EMAIL,
-                DEPARTMENT:         oData.DEPARTMENT,
-                ROLE:               oData.ROLE,
-                RANK:               sRank,
-                DIRECT_SUPERIOR:    oData.DIRECT_SUPPERIOR
-            };
-        },
-        /**
-         * Fetch role rank record from ZROLEHIERARCHY by ROLE
-         *
-         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
-         * @param {string} [sRole] - Optional ROLE parameter
-         * @returns {Promise<Array>} - Array of { ROLE, RANK } objects
-         */
-        getRoleRank: async function (oModel, sRole) {
-            // --- Sanity check ---
-            if (!oModel) {
-                throw new Error("oModel is undefined in getRoleHierarchy()");
-            }
-
-            // Ensure metadata is loaded
-            await oModel.getMetaModel().requestObject("/");
-
-            const sTable = "/ZROLEHIERARCHY";
-            // Build filter list
-            const aFilters = [];
-            // Apply filter only if ROLE parameter is passed
-            if (sRole) {
-                aFilters.push(new Filter("ROLE", FilterOperator.EQ, sRole));
-            }
-
-            // Bind list
-            const oBinding = oModel.bindList(
-                sTable,
-                null,
-                null,
-                aFilters,
-                { $$ownRequest: true }
-            );
-
-            // Fetch records
-            const aCtx = await oBinding.requestContexts(0, Infinity);
-            const rows = aCtx.map(ctx => ctx.getObject());
-
-            // Return only needed fields
-            return rows.map(r => ({
-                ROLE: r.ROLE,
-                RANK: r.RANK
-            }));
         },
         /**
          * Recursively find the first superior whose rank is higher than the employee.
@@ -1776,14 +1369,13 @@ sap.ui.define([
          * @returns {Promise<object|null>} The manager details or null if none found
          */
         getApprover: async function (oModel, sEEID, iApproverRank, idepth = 0) {
-            const that = this;
             // Safety: stop infinite recursion
             if (idepth > 20) {
                 return null;
             }
 
             // Fetch employee
-            const oEmp = await that.getEmployeeDetails(oModel, sEEID);
+            const oEmp = await Helper.getEmployeeDetails(oModel, sEEID);
             if (!oEmp) return null;
 
             // If employee has no superior → stop
@@ -1792,11 +1384,11 @@ sap.ui.define([
             }
 
             // Fetch direct superior
-            const oDirectSuperior = await that.getEmployeeDetails(oModel, oEmp.DIRECT_SUPERIOR);
+            const oDirectSuperior = await Helper.getEmployeeDetails(oModel, oEmp.DIRECT_SUPERIOR);
             if (!oDirectSuperior) return null;
 
             // CEO check
-            if (oDirectSuperior.ROLE === "CEO") {
+            if (oDirectSuperior.ROLE === Constants.Role.CEO) {
                 return oDirectSuperior;
             }
 
@@ -1805,55 +1397,7 @@ sap.ui.define([
             }
 
             // Otherwise recurse deeper up the chain
-            return await that.getApprover(oModel, oDirectSuperior.EEID, iApproverRank, idepth + 1);
-        },
-        /**
-         * Fetch Value record from ZCONSTANTS table by ID
-         *
-         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
-         * @param {string} sID - ID
-         * @returns {Promise<object|null>} - Constant data or null if not found
-         */
-        getConstants: async function (oModel, sID) {
-
-            const that = this;
-            // --- Sanity check ---
-            if (!oModel) {
-                throw new Error("oModel is undefined in getConstants()");
-            }
-            if (!sID) {
-                throw new Error("ID is required to fetch Constant details.");
-            }
-
-            // Ensure metadata is loaded
-            await oModel.getMetaModel().requestObject("/");
-
-            // Main table path
-            const sTable = "/ZCONSTANTS";
-
-            // Build filter
-            const aFilters = [
-                new Filter("ID", FilterOperator.EQ, sID)
-            ];
-
-            // Bind list
-            const binding = oModel.bindList(
-                sTable,
-                null,
-                null,
-                aFilters,
-                { $$ownRequest: true }
-            );
-
-            // Fetch data
-            const aCtx = await binding.requestContexts(0, Infinity);
-            const rows = aCtx.map(ctx => ctx.getObject());
-
-            // Return only needed fields
-            return rows.map(r => ({
-                ID: r.ID,
-                VALUE: r.VALUE
-            }));
+            return await this.getApprover(oModel, oDirectSuperior.EEID, iApproverRank, idepth + 1);
         }
     };
     
