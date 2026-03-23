@@ -482,12 +482,12 @@ sap.ui.define([
                 // 2. Remove approvers who is the claimant
                 // 3. Renumber levels after operation
                 const oSeen = new Set();
-                let sLevel = 0;
+                let iLevel = 0;
                 oSeen.add(oClaimantDetails.EEID);
                 for (const oApprover of aApproversDetails){
                     if(!oSeen.has(oApprover.EEID)){
                         oSeen.add(oApprover.EEID);
-                        sLevel = sLevel + 1;
+                        sLevel = iLevel + 1;
                         oApprover.LEVEL = sLevel;
                         aUniqueApproversDetails.push(oApprover);
                     }
@@ -1098,13 +1098,13 @@ sap.ui.define([
                 // 2. Remove approvers who is the claimant
                 // 3. Renumber levels after operation
                 const oSeen = new Set();
-                let sLevel = 0;
+                let iLevel = 0;
                 oSeen.add(oClaimantDetails.EEID);
                 for (const oApprover of aApproversDetails){
                     if(!oSeen.has(oApprover.EEID)){
                         oSeen.add(oApprover.EEID);
-                        sLevel = sLevel + 1;
-                        oApprover.LEVEL = sLevel;
+                        sLevel = iLevel + 1;
+                        oApprover.LEVEL = iLevel;
                         aUniqueApproversDetails.push(oApprover);
                     }
                 }
