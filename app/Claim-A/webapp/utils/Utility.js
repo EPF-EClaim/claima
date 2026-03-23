@@ -1,8 +1,10 @@
+
 sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
-], function (Filter, FilterOperator, Sorter) {
+	"claima/utils/Constants"
+], function (Filter, FilterOperator, Sorter, Constants) {
     "use strict";
 
     return {
@@ -11,17 +13,20 @@ sap.ui.define([
 		* Update Status
 		* ======================================================= */
 
-		async _updateStatus(oModel, id, status) {
-            let submission_type = id.substring(0,3);
+		async _updateStatus(oModel, sID, sStatus) {
+            let sSubmission_type = sID.substring(0,3);
             
-            let sTable = submission_type === 'REQ' ? '/ZREQUEST_HEADER' : "/ZCLAIM_HEADER";
-            let sField = submission_type === 'REQ' ? 'REQUEST_ID' : 'CLAIM_ID';
+            let sTable = sSubmission_type === 'REQ' ? '/ZREQUEST_HEADER' : "/ZCLAIM_HEADER";
+            let sField = sSubmission_type === 'REQ' ? 'REQUEST_ID' : 'CLAIM_ID';
 
-
+            // Declare field for status
+            // REQ uses STATUS field while CLM uses STATUS_ID field
+            let sStatusField = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.EntitiesFields.STATUS : Constants.EntitiesFields.CLAIM_STATUS;
+        
             const oListBinding = oModel.bindList(sTable, null,null,
                 [
                     // new sap.ui.model.Filter({ path: "EMP_ID", operator: sap.ui.model.FilterOperator.EQ, value1: empId }),
-                    new sap.ui.model.Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: id })
+                    new sap.ui.model.Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: sID })
                 ],
                 {
                     $$ownRequest: true,
@@ -36,8 +41,7 @@ sap.ui.define([
             if (!oCtx) {
                 throw new Error("Record not found.");
             }
-
-            oCtx.setProperty("STATUS", status);
+            oCtx.setProperty(sStatusField, sStatus);
 
             await oModel.submitBatch("$auto");
             

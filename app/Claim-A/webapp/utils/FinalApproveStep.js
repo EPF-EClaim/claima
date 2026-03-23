@@ -11,7 +11,7 @@ sap.ui.define([
         "use strict";
 
         return {
-            onFinalApprove: async function (oController, oModel, sClaimID, sStatus, oEmployeeModel, oEmailPayload) {
+            onFinalApprove: async function (oController, oViewModel, sClaimID, sStatus, oModel, oEmailPayload) {
         try{
                 // Call Update Status
                 Utility._updateStatus(oModel, sClaimID, sStatus);
@@ -30,7 +30,7 @@ sap.ui.define([
 
                 if(oEmailPayload == null || oEmailPayload == "" || oEmailPayload.length == 0 || oEmailPayload == undefined){
 
-                    const oClaimantList = oEmployeeModel.bindList(
+                    const oClaimantList = oViewModel.bindList(
                         sApproverDetailsViewPath,
                         null,
                         null,
@@ -66,7 +66,7 @@ sap.ui.define([
                     
                 const aFilters = [new Filter(sField_header, FilterOperator.EQ, sClaimID)];
                 
-                const oBudgetBinding2 = oEmployeeModel.bindList(
+                const oBudgetBinding2 = oViewModel.bindList(
                     sBudgetCheckViewPath,
                     null,
                     null,
@@ -114,7 +114,7 @@ sap.ui.define([
                 // SEND CONSOLIDATED IS PAYLOAD (CLM only)
                     if (sSubmissionType == Constants.WorkflowType.CLAIM) { 
                         
-                        await this.onSendClaimBatch(oEmployeeModel, sClaimID);
+                        await this.onSendClaimBatch(oViewModel, sClaimID);
                     }
                         return true;
 
@@ -126,16 +126,25 @@ sap.ui.define([
                     /**
                      * Single-call consolidated IS posting for final approval
                      */
-                onSendClaimBatch: async function (oModelView, sClaimID) {
+                onSendClaimBatch: async function (oViewModel, sClaimID) {
+
+                    console.log("Model Type:", oViewModel.getMetadata().getName());
+                    console.log("Table:", Constants.Entities.ZEMP_CLAIM_DETAILS);
+                    console.log("Field:", Constants.EntitiesFields.CLAIMID);
+
+                    const meta = await oViewModel.getMetaModel().requestObject(Constants.Entities.ZEMP_CLAIM_DETAILS + "/");
+                    console.log("EntitySet Metadata:", meta);
 
                     // Read all claim items
-                    const oList = oModelView.bindList(
+                    const oList = oViewModel.bindList(
                         Constants.Entities.ZEMP_CLAIM_DETAILS,
                         null,
                         null,
                         [new Filter(Constants.EntitiesFields.CLAIMID, FilterOperator.EQ, sClaimID)],
                         { $$ownRequest: true }
                     );
+
+                    
 
                     var aCtxs = await oList.requestContexts(0, Infinity);
                     var aClaimRows = aCtxs.map(c => c.getObject());
@@ -160,7 +169,7 @@ sap.ui.define([
                     }));
 
                     //Call CDS batch action ONCE
-                    const oAction = oModelView.bindContext("/sendApprovedClaimBatch(...)");
+                    const oAction = oViewModel.bindContext("/sendApprovedClaimBatch(...)");
                     oAction.setParameter("batch", {
                         ClaimID: sClaimID,
                         Items: aClaimItems

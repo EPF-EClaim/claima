@@ -1785,7 +1785,7 @@ sap.ui.define([
 				);
 				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
 				*/
-				
+
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
 				}
@@ -3043,7 +3043,7 @@ sap.ui.define([
 								MessageToast.show(Utility.getText(this, "msg_claimsubmission_nocc"));
 								return;
 							}
-
+							/** 
 							const result = await budgetCheck.budgetChecking(
 								oModel,
 								"CLM",
@@ -3057,7 +3057,7 @@ sap.ui.define([
 							if (!result.passed) {
 								MessageToast.show(result.messages);
 								return;
-							}
+							}*/
 							else {
 								oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
 								if (oCtx.getProperty("SUBMITTED_DATE", null)) {
