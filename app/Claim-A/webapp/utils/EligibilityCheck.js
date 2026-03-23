@@ -1,8 +1,8 @@
 sap.ui.define([
-	"sap/ui/model/Filter",
-	"sap/ui/model/FilterOperator",
-	"sap/ui/model/Sorter",
-], function (Filter, FilterOperator, Sorter) {
+	"sap/m/MessageBox",
+	"sap/ui/core/Fragment",
+	"sap/ui/core/ValueState"
+], function (MessageBox, Fragment, ValueState) {
     "use strict";
 
     return {
@@ -57,6 +57,65 @@ sap.ui.define([
 
 			return oPayload;
 		},
+		
+		eligibilityHandling: function(oController, oPayload) {
+
+			const oDBToUIControlMap = {
+				"VEHICLE_OWNERSHIP_ID": "i_vehicle_ownership",
+				"ELIGIBLE_AMOUNT":      "i_amount",
+				"MOBILE_PHONE_BILL":    "i_category_purpose",
+				"REGION_ID":            "i_sss",
+				"RATE":                 "i_rate_per_kilometer",
+				"ROOM_TYPE_ID":         "i_room_type",
+				"FLIGHT_CLASS_ID":      "i_flight_class",
+				"MARRIAGE_CATEGORY":    "i_marriage_cat",
+				"TRANSPORT_CLASS":      "i_vehicle_class"
+			};
+
+			const aCheckFields = oPayload.CheckFields || [];
+			const aErrorMessages = []; 
+
+			const getControl = (sId) => {
+				if (!sId) return null;
+				const oFormElement = Fragment.byId("request", sId) || oController.byId(sId);
+				return oFormElement?.getFields?.()[0]; 
+			};
+
+			Object.values(oDBToUIControlMap).forEach(sId => {
+				const oInputControl = getControl(sId);
+				if (oInputControl?.setValueState) {
+					oInputControl.setValueState(ValueState.None);
+					oInputControl.setValueStateText("");
+				}
+			});
+
+			aCheckFields.forEach((oField) => {
+				if (oField.result === true || oField.result === null) {
+					return; 
+				}
+				
+				const sErrorMsg = (typeof oField.result === "string" ? oField.result : `Validation failed for ${oField.fieldName}.`);
+				aErrorMessages.push(sErrorMsg);
+
+				const oInputControl = getControl(oDBToUIControlMap[oField.fieldName]);
+				if (oInputControl?.setValueState) {
+					oInputControl.setValueState(ValueState.Error);
+					// oInputControl.setValueStateText(sErrorMsg);
+				}
+			});
+
+			const bIsEligible = aErrorMessages.length === 0;
+
+			// if (!bIsEligible) {
+			// 	const sFormattedErrors = "• " + aErrorMessages.join("\n• ");
+			// 	MessageBox.error("You are not eligible for this request. Please review the highlighted items:\n\n" + sFormattedErrors, {
+			// 		title: "Eligibility Check Failed",
+			// 		actions: [MessageBox.Action.CLOSE]
+			// 	});
+			// }
+
+			return bIsEligible;
+		}
 
     };
 });

@@ -156,9 +156,11 @@ sap.ui.define([
             "ZNUM_RANGE_DTD": "ZNUM_RANGE_DTD",
             "ZBUDGET": "ZBUDGET"
         },
-        "BudgetCheckStatus": {
-            "SUFFICIENT_BALANCE": "Record updated",
-            "INSUFFICIENT_BALANCE": "Insufficient balance"
+        "BudgetCheckStatus" : {
+            "NOT_FOUND"       : "RECORD NOT FOUND",
+            "INSUFFICIENT"    : "INSUFFICIENT BALANCE",
+            "SUFFICIENT"      : "OK",
+            "UPDATED"         : "RECORD UPDATED"
         },
         "GroupType": {
             "GROUP": "Group",

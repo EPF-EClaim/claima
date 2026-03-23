@@ -49,7 +49,8 @@
 				</Select>
 
 				<Label text="{i18n>req_claimtype}" />
-				<Select selectedKey="{reqDialog>/claimtype}" 
+				<Select selectedKey="{reqDialog>/claimtype}"
+						id="req_claimtype" 
 						required="true" 
 						forceSelection="false"
 						items="{path: 'claim_type_list>/types',
