@@ -103,7 +103,7 @@ sap.ui.define([
 		async _loadRequest(sReqId) {
 			await PARequestSharedFunction._getHeader(this, sReqId);
 			await PARequestSharedFunction._getItemList(this, sReqId);
-			await this._showItemList(sReqId);
+			this._showItemList(sReqId);
 		},
 
 		/* =========================================================
@@ -308,7 +308,6 @@ sap.ui.define([
 									// Add in onPARApproverDetermination function
 									workflowApproval.onPARApproverDetermination(this._oDataModel, sReqId, this._oViewModel);
 
-									await PARequestSharedFunction.getPARHeaderList(this._oReqStatusModel, this._oViewModel);
 									this._oRouter.navTo("RequestFormStatus");
 
 								} else {
@@ -957,12 +956,13 @@ sap.ui.define([
 			this.onSave();
 		},
 
-		async onSaveAddAnother() {
-			await this.onSave(); // saves current
+		async onSaveAddAnother(oEvent) {
+			await this.onSave(oEvent, true); // saves current
 			// Re-open create form fresh
-			await this._showItemCreate("create");
+			// await this._showItemCreate("create");
 
 			// Reset create buffers
+			this._setAllControlsVisible(false);
 			const oData = this._oReqModel.getData();
 			oData.req_item = {};
 			if (oData.req_header.grptype === 'Individual') {
@@ -979,7 +979,7 @@ sap.ui.define([
 			this._oReqModel.setData(oData);
 		},
 		
-		async onSave() {
+		async onSave(oEvent, bAddAnother = false) {
 			const oData = this._oReqModel.getData();
 			const oReqItem = oData.req_item;
 			const sReqId = String(oData.req_header.reqid || "").trim();
@@ -990,8 +990,8 @@ sap.ui.define([
 			if (!oData.req_header.claimtype || !oReqItem.claim_type_item_id) return MessageToast.show("Select claim type/item");
 
 			// Eligibility Checking
-			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this);
-			var oResult = EligibleScenarioCheck.onEligibilityCheck(this, oPayload);
+			// var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this);
+			// var oResult = EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, oPayload);
 
 			BusyIndicator.show(0);
 
@@ -1115,8 +1115,10 @@ sap.ui.define([
                 }
 
                 MessageToast.show("Success");
-                await PARequestSharedFunction._getItemList(this, sReqId);
-                this._showItemList();
+				if (!bAddAnother) {
+					await PARequestSharedFunction._getItemList(this, sReqId);
+					this._showItemList();
+				}
 
 			} catch (e) {
 				MessageBox.error(e.message || "Save failed");
