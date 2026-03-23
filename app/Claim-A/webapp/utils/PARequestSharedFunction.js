@@ -13,13 +13,13 @@ sap.ui.define([
 
 		_ensureRequestModelDefaults (oReq) {
 			const data = oReq.getData() || {};
-			data.req_header = { reqid: "", grptype: "IND" };
-			data.req_item_rows = [];
+			data.req_header = data.req_header;
+			data.req_item_rows = data.req_item_rows || [];
 			data.req_item = data.req_item || {
 				cash_advance: false
 			};
 			data.participant = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
-			data.view = "view";
+			data.view = data.view || "view";
 			data.list_count = 0;
 			oReq.setData(data);
 		},

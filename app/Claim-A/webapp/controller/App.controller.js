@@ -1451,19 +1451,24 @@ sap.ui.define([
 
 			if (!this.oDialogFragment) {
 				this.oDialogFragment = await Fragment.load({
-					id: "request",
+					id: "request", 
 					name: "claima.fragment.request",
 					controller: this
 				});
+				
 				this.getView().addDependent(this.oDialogFragment);
+
+				var oRequestDialogModel = new sap.ui.model.json.JSONModel({ reqid: "", grptype: "IND" });
+				this.oDialogFragment.setModel(oRequestDialogModel, "reqDialog");
 
 				this.oDialogFragment.attachAfterClose(() => {
 					this.oDialogFragment.destroy();
 					this.oDialogFragment = null;
 				});
 			}
-			this.oDialogFragment.open();
+
 			this.oDialogFragment.addStyleClass('requestDialog');
+			this.oDialogFragment.open();
 		},
 
 		onClickCreateRequest: async function () {
