@@ -77,14 +77,6 @@ sap.ui.define([
             "BUSINESS": "02",
             "ECONOMY": "03"
         },
-        "FIELDNAME":{
-            "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
-            "TRAVEL_HOURS": "TRAVEL_HOURS",
-            "TRAVEL_DAYS_ID": "TRAVEL_DAYS_ID",
-            "ELIGIBLE_AMOUNT": "ELIGIBLE_AMOUNT",
-            "ROOM_TYPE_ID": "ROOM_TYPE_ID",
-            "FARE_TYPE_ID": "FARE_TYPE_ID"
-        },
         "RequestStatus": {
             "DRAFT": "DRAFT",
             "CANCELLED": "CANCELLED"
@@ -138,6 +130,12 @@ sap.ui.define([
             "PREAPPROVALID": "PREAPPROVAL_ID",
             "REQUESTID": "REQUEST_ID",
             "CLAIMID": "CLAIM_ID",
+            "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
+            "TRAVEL_HOURS": "TRAVEL_HOURS",
+            "TRAVEL_DAYS_ID": "TRAVEL_DAYS_ID",
+            "ELIGIBLE_AMOUNT": "ELIGIBLE_AMOUNT",
+            "ROOM_TYPE_ID": "ROOM_TYPE_ID",
+            "FARE_TYPE_ID": "FARE_TYPE_ID"
         },
         "Role": {
             "GA_ADMIN": "GA Admin",

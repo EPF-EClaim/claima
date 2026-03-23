@@ -13,7 +13,7 @@ sap.ui.define([
 		 */
         onEligibleCheck(oPayload, aRules) {
             // Get Days value
-            const aDays = oPayload.CheckFields.find((field) => field.fieldName == Constants.FIELDNAME.TRAVEL_DAYS_ID);
+            const aDays = oPayload.CheckFields.find((field) => field.fieldName == Constants.EntitiesFields.TRAVEL_DAYS_ID);
             const sDays = aDays.value;
 
             // Switch Based on Claim Item Type
@@ -21,14 +21,14 @@ sap.ui.define([
                 var bSkipChecking = false;
                 switch (oPayload.ClaimTypeItem) {
                     case Constants.ClaimTypeItem.DOBI:
-                        var iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.TRAVEL_DAYS_ID);
+                        var iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.EntitiesFields.TRAVEL_DAYS_ID);
                         // if user has 4 day trip while Rules table is min 3 days, return true
                         // if user has 1 day trip while Rules table is min 3 days, return Rules table value (3)
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.GreaterEquals(oPayload.CheckFields[iIndex].value, oRule.TRAVEL_DAYS_ID);
                         break;
 
                     case Constants.ClaimTypeItem.FLIGHT_L:
-                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.FLIGHT_CLASS_ID);
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.EntitiesFields.FLIGHT_CLASS_ID);
                         // if user input and rules table flight class are same values, return true
                         // if user input and rules table flight class are NOT same values, return false
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(oPayload.CheckFields[iIndex].value, oRule.FLIGHT_CLASS_ID);
@@ -37,7 +37,7 @@ sap.ui.define([
                         break;
 
                     case Constants.ClaimTypeItem.FLIGHT_O:
-                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.FLIGHT_CLASS_ID);
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.EntitiesFields.FLIGHT_CLASS_ID);
                         // if user input and rules table flight class are same values, return true
                         // if user input and rules table flight class are NOT same values, return false
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(oPayload.CheckFields[iIndex].value, oRule.FLIGHT_CLASS_ID);
@@ -45,7 +45,7 @@ sap.ui.define([
                         bSkipChecking = oPayload.CheckFields[iIndex].result;
                         // Check if min travel hours required
                         if (oRule.TRAVEL_HOURS != undefined || oRule.TRAVEL_HOURS != null) {
-                            iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.TRAVEL_HOURS);
+                            iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.EntitiesFields.TRAVEL_HOURS);
                             // if user has 4 hr flight while Rules table is min 3 hrs, return true
                             // if user has 1 hr flight while Rules table is min 3 hrs, return Rules table value (3)
                             oPayload.CheckFields[iIndex].result = ComparisonOperators.GreaterEquals(oPayload.CheckFields[iIndex].value, oRule.TRAVEL_HOURS);
@@ -56,7 +56,7 @@ sap.ui.define([
                         // Calculate max amount eligible
                         var iMaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
 
-                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.ELIGIBLE_AMOUNT);
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.EntitiesFields.ELIGIBLE_AMOUNT);
                         // if user input has amount 100 while Rules table has calculated max amount 300 (iMaxAmountEligible), return true
                         // if user input has amount 1000 while Rules table has calculated max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, iMaxAmountEligible);
@@ -66,12 +66,12 @@ sap.ui.define([
                         // Calculate max amount eligible
                         var iMaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
 
-                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.ELIGIBLE_AMOUNT);
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.EntitiesFields.ELIGIBLE_AMOUNT);
                         // if user input has amount 100 while Rules table has calculated max amount 300 (iMaxAmountEligible), return true
                         // if user input has amount 1000 while Rules table has calculated max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, iMaxAmountEligible);
 
-                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.ROOM_TYPE_ID);
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.EntitiesFields.ROOM_TYPE_ID);
                         // if user input and rules table room type are same values, return true
                         // if user input and rules table room type are NOT same values, return false
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(oPayload.CheckFields[iIndex].value, oRule.ROOM_TYPE_ID);
@@ -83,7 +83,7 @@ sap.ui.define([
                         // Calculate max amount eligible
                         var iMaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
                         
-                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.ELIGIBLE_AMOUNT);
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.EntitiesFields.ELIGIBLE_AMOUNT);
                         // if user input has amount 100 while Rules table has calculated max amount 300 (iMaxAmountEligible), return true
                         // if user input has amount 1000 while Rules table has calculated max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, iMaxAmountEligible);
@@ -93,21 +93,21 @@ sap.ui.define([
                         // Calculate max amount eligible
                         var iMaxAmountEligible = sDays * oRule.ELIGIBLE_AMOUNT;
 
-                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.ELIGIBLE_AMOUNT);
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.EntitiesFields.ELIGIBLE_AMOUNT);
                         // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
                         // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, iMaxAmountEligible);
                         break;
 
                     case Constants.ClaimTypeItem.PARKING:
-                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.ELIGIBLE_AMOUNT);
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.EntitiesFields.ELIGIBLE_AMOUNT);
                         // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
                         // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, oRule.ELIGIBLE_AMOUNT);
                         break;
 
                     case Constants.ClaimTypeItem.PKN_PANAS:
-                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.ELIGIBLE_AMOUNT);
+                        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.EntitiesFields.ELIGIBLE_AMOUNT);
                         // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
                         // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, oRule.ELIGIBLE_AMOUNT);
