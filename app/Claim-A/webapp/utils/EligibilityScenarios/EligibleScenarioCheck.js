@@ -13,8 +13,8 @@ sap.ui.define([
         /**
 		 * Drill down of eligibility scenarios for each claim type after retrieving employee and eligibility rules data
 		 * @public
-		 * @param {sap.ui.base.Event} oModel - Object Model from Controller;
-         * @param {sap.ui.base.Event} oPayload - Payload data of ClaimType, ClaimItmType, List Array of fields to be checked;
+		 * @param {Object} oModel - Object Model from Controller;
+         * @param {Object} oPayload - Payload data of ClaimType, ClaimItmType, List Array of fields to be checked;
          * @returns {Object} Object Payload with results field in CheckFields List Array populated
 		 */
         onEligibilityCheck: async function (oModel, oPayload) {

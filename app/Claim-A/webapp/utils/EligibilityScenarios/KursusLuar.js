@@ -7,8 +7,8 @@ sap.ui.define([
         /**
 		 * Eligibility Scenario checking for Kursus Luar Negara
 		 * @public
-		 * @param {sap.ui.base.Event} oPayload - Payload with ClaimType, ClaimItmType and Item Fields;
-         * @param {sap.ui.base.Event} aRules - Retrieved Eligibility Rules data;
+		 * @param {Object} oPayload - Payload with ClaimType, ClaimItmType and Item Fields;
+         * @param {Array} aRules - Retrieved Eligibility Rules data;
          * @returns {Object} Payload with results of checkfield arrays populated
 		 */
         onEligibleCheck(oPayload, aRules) {
@@ -18,7 +18,7 @@ sap.ui.define([
 
             // Switch Based on Claim Item Type
             for (var oRule of aRules) {
-                var sSkipFlag = "";
+                var bSkipChecking = "";
                 switch (oPayload.ClaimTypeItem) {
                     case Constants.ClaimTypeItem.DOBI:
                         var iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.TRAVEL_DAYS_ID);
@@ -32,8 +32,8 @@ sap.ui.define([
                         // if user input and rules table flight class are same values, return true
                         // if user input and rules table flight class are NOT same values, return false
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(oPayload.CheckFields[iIndex].value, oRule.FLIGHT_CLASS_ID);
-                        // sSkipFlag assigned to exit when result is true
-                        sSkipFlag = oPayload.CheckFields[iIndex].result;
+                        // bSkipChecking assigned to exit when result is true
+                        bSkipChecking = oPayload.CheckFields[iIndex].result;
                         break;
 
                     case Constants.ClaimTypeItem.FLIGHT_O:
@@ -41,8 +41,8 @@ sap.ui.define([
                         // if user input and rules table flight class are same values, return true
                         // if user input and rules table flight class are NOT same values, return false
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(oPayload.CheckFields[iIndex].value, oRule.FLIGHT_CLASS_ID);
-                        // sSkipFlag assigned to exit when result is true
-                        sSkipFlag = oPayload.CheckFields[iIndex].result;
+                        // bSkipChecking assigned to exit when result is true
+                        bSkipChecking = oPayload.CheckFields[iIndex].result;
                         // Check if min travel hours required
                         if (oRule.TRAVEL_HOURS != undefined || oRule.TRAVEL_HOURS != null) {
                             iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.TRAVEL_HOURS);
@@ -75,8 +75,8 @@ sap.ui.define([
                         // if user input and rules table room type are same values, return true
                         // if user input and rules table room type are NOT same values, return false
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.EqualsTo(oPayload.CheckFields[iIndex].value, oRule.ROOM_TYPE_ID);
-                        // sSkipFlag assigned to exit when result is true
-                        sSkipFlag = oPayload.CheckFields[iIndex].result;
+                        // bSkipChecking assigned to exit when result is true
+                        bSkipChecking = oPayload.CheckFields[iIndex].result;
                         break;
 
                     case Constants.ClaimTypeItem.LODG_O:
@@ -118,11 +118,11 @@ sap.ui.define([
                         for (var iRow of oPayload.CheckFields) {
                             oPayload.CheckFields[iRow].result = false;
                         }
-                        sSkipFlag = true;
+                        bSkipChecking = true;
                         break;
                 }
                 // if skip flag set to true, no need to process more rows
-                if (sSkipFlag == true) {
+                if (bSkipChecking) {
                     break;
                 }
             }
