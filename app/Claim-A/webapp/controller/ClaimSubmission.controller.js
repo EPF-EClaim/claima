@@ -1702,7 +1702,7 @@ sap.ui.define([
 					this
 				);
 
-				await budgetCheck.budgetProcessingTest(
+				await budgetCheck.budgetProcessing(
 					oModelMain,
 					aDataset,
 					sSubmissionType,
@@ -1775,7 +1775,7 @@ sap.ui.define([
 					this
 				);
 
-				await budgetCheck.budgetProcessingTest(
+				await budgetCheck.budgetProcessing(
 					oModelMain,
 					aDataset,
 					sSubmissionType,
