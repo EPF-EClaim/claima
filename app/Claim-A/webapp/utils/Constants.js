@@ -76,25 +76,6 @@ sap.ui.define([
             "COMPLETED_DISBURSEMENT": "STAT06",
             "CANCELLED": "STAT07",
         },
-        "STATUS": {
-            "SUCCESS": "TRUE",
-            "FAIL": "FAIL",
-            "ALL": "*"
-        },
-        "ClaimStatus": {
-            "DRAFT": "STAT01",
-            "PENDING_APPROVAL": "STAT02",
-            "SEND_BACK": "STAT03",
-            "REJECTED": "STAT04",
-            "APPROVED": "STAT05",
-            "COMPLETED_DISBURSEMENT": "STAT06",
-            "CANCELLED": "STAT07",
-        },
-        "FLIGHT_CLASS_ID":{
-            "PREMIUM": "01",
-            "BUSINESS": "02",
-            "ECONOMY": "03"
-        },
         "RequestStatus": {
             "DRAFT": "DRAFT",
             "PENDING_APPROVAL": "PENDING_APPROVAL",
