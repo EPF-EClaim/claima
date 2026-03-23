@@ -1473,10 +1473,11 @@ sap.ui.define([
 
 		onClickCreateRequest: async function () {
 			BusyIndicator.show(0);
-			const oData = this._oReqModel.getProperty("/req_header");
-			const sEmpId = this._oReqModel.getProperty('/user/emp_id');
-			let bOkCode = true;
-			let sErrorMessage = '';
+			const oDialogModel 	= this.oDialogFragment.getModel("reqDialog");
+			const oDialogData	= oDialogModel.getData();
+			const sEmpId 		= this._oReqModel.getProperty('/user/emp_id');
+			let bOkCode 		= true;
+			let sErrorMessage 	= '';
 
 			const oMandatoryFields = {
 				'RT0001': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'eventstartdate', 'eventenddate', 'grptype', 'location', 'transport', 'comment'],
@@ -1488,16 +1489,16 @@ sap.ui.define([
 			};
 
 			try {
-				const oFieldsToCheck = oMandatoryFields[oData.reqtype] || [''];
-				const bIsMissing = oFieldsToCheck.some(field => !oData[field] || oData[field] === "");
+				const oFieldsToCheck = oMandatoryFields[oDialogData.reqtype] || [''];
+				const bIsMissing = oFieldsToCheck.some(field => !oDialogData[field] || oDialogData[field] === "");
 
 				if (bIsMissing) {
 					bOkCode = false;
 					sErrorMessage = "req_d_w_mandatory_field";
-				} else if (!oData.doc1) {
+				} else if (!oDialogData.doc1) {
 					bOkCode = false;
 					sErrorMessage = 'req_d_w_mandatory_attach1';
-				} else if (oData.tripenddate < oData.tripstartdate) {
+				} else if (oDialogData.tripenddate < oDialogData.tripstartdate) {
 					bOkCode = false;
 					sErrorMessage = "req_d_w_check_date";
 				}
@@ -1506,15 +1507,15 @@ sap.ui.define([
 					BusyIndicator.hide();
 					MessageBox.error(Utility.getText(this, sErrorMessage));
 				} else {
-						var sAttachment1Binary = await Attachment.getFileAsBinary(oData.doc1);
-						var sAttachment1SFId = await Attachment.postAttachment(oData.doc1.name, sAttachment1Binary, sEmpId);
-							oData.doc1 = `${sAttachment1SFId} - ${oData.doc1.name}`;
-						if (oData.doc2) {
-							var sAttachment2Binary = await Attachment.getFileAsBinary(oData.doc2);
-							var sAttachment2SFId = await Attachment.postAttachment(oData.doc2.name, sAttachment2Binary, sEmpId);
-							oData.doc2 = `${sAttachment2SFId} - ${oData.doc2.name}`;
+						var sAttachment1Binary = await Attachment.getFileAsBinary(oDialogData.doc1);
+						var sAttachment1SFId = await Attachment.postAttachment(oDialogData.doc1.name, sAttachment1Binary, sEmpId);
+							oDialogData.doc1 = `${sAttachment1SFId} - ${oDialogData.doc1.name}`;
+						if (oDialogData.doc2) {
+							var sAttachment2Binary = await Attachment.getFileAsBinary(oDialogData.doc2);
+							var sAttachment2SFId = await Attachment.postAttachment(oDialogData.doc2.name, sAttachment2Binary, sEmpId);
+							oDialogData.doc2 = `${sAttachment2SFId} - ${oDialogData.doc2.name}`;
 						}
-						await this.createRequestHeader(this._oReqModel);
+						await this.createRequestHeader(oDialogData);
 				}
 			} catch (err) {
 				MessageBox.error(err.message);
@@ -1523,37 +1524,43 @@ sap.ui.define([
 			}
 		},
 
-		createRequestHeader: async function () {
-			const oInputData	= this._oReqModel.getProperty("/req_header");
-			const oListBinding 	= this._oDataModel.bindList("/ZREQUEST_HEADER");
+		createRequestHeader: async function (oInputData) {
+			const oListBinding  = this._oDataModel.bindList("/ZREQUEST_HEADER");
 
-			let sEmpId			= this._oReqModel.getProperty("/user/emp_id");
-			let sCostCenter		= this._oReqModel.getProperty("/user/cost_center")
+			let sEmpId          = this._oReqModel.getProperty("/user/emp_id");
+			let sCostCenter     = this._oReqModel.getProperty("/user/cost_center");
 
 			try {
 				BusyIndicator.show(0);
 
+				let sGrpType = oInputData.grptype ? String(oInputData.grptype).trim() : null;
+				if (sGrpType && sGrpType.length > 4) {
+					sGrpType = sGrpType.substring(0, 4); 
+				}
+
 				const oContext = oListBinding.create({
-					EMP_ID					: sEmpId,
-					REQUEST_TYPE_ID			: oInputData.reqtype,
-					OBJECTIVE_PURPOSE		: oInputData.purpose,
-					REMARK					: oInputData.comment,
-					IND_OR_GROUP			: oInputData.grptype,
-					ALTERNATE_COST_CENTER	: oInputData.altcostcenter,
-					LOCATION				: oInputData.location,
-					TYPE_OF_TRANSPORTATION	: oInputData.transport,
-					ATTACHMENT1				: oInputData.doc1,
-					ATTACHMENT2				: oInputData.doc2,
-					COST_CENTER				: sCostCenter,
-					EVENT_START_DATE		: oInputData.eventstartdate,
-					EVENT_END_DATE			: oInputData.eventenddate,
-					TRIP_START_DATE			: oInputData.tripstartdate,
-					TRIP_END_DATE			: oInputData.tripenddate,
-					STATUS					: this._oConstant.ClaimStatus.DRAFT,
-					CLAIM_TYPE_ID			: oInputData.claimtype,
-					REQUEST_DATE			: new Date().toISOString().slice(0, 10),
-					PREAPPROVAL_AMOUNT		: parseFloat(0),
-					CASH_ADVANCE			: parseFloat(0)
+					EMP_ID                  : sEmpId || null,
+					REQUEST_TYPE_ID         : oInputData.reqtype || null,
+					OBJECTIVE_PURPOSE       : oInputData.purpose || null,
+					REMARK                  : oInputData.comment || null,
+					IND_OR_GROUP            : sGrpType,
+					ALTERNATE_COST_CENTER   : oInputData.altcostcenter || null,
+					LOCATION                : oInputData.location || null,
+					TYPE_OF_TRANSPORTATION  : oInputData.transport || null,
+					ATTACHMENT1             : oInputData.doc1 || null,
+					ATTACHMENT2             : oInputData.doc2 || null,
+					COST_CENTER             : sCostCenter || null,
+					
+					EVENT_START_DATE        : oInputData.eventstartdate || null,
+					EVENT_END_DATE          : oInputData.eventenddate || null,
+					TRIP_START_DATE         : oInputData.tripstartdate || null,
+					TRIP_END_DATE           : oInputData.tripenddate || null,
+					
+					STATUS                  : this._oConstant.ClaimStatus.DRAFT,
+					CLAIM_TYPE_ID           : oInputData.claimtype || null,
+					REQUEST_DATE            : new Date().toISOString().slice(0, 10),
+					PREAPPROVAL_AMOUNT      : parseFloat(0),
+					CASH_ADVANCE            : parseFloat(0)
 				});
 
 				await oContext.created();
@@ -1561,7 +1568,8 @@ sap.ui.define([
 				const sNewReqId = oContext.getProperty("REQUEST_ID");
 
 				if (sNewReqId) {
-					await Attachment.postMDF(sNewReqId, oInputData.doc1, oInputData.doc2);
+
+					await Attachment.postMDF(sNewReqId, oInputData.doc1?.split(" - ")[0], oInputData.doc2?.split(" - ")[0]);
 					
 					this._oReqModel.setProperty("/view", 'list');
 					this._oReqModel.setProperty("/req_header/reqid", sNewReqId);
@@ -1569,8 +1577,6 @@ sap.ui.define([
 					this._oRouter.navTo("RequestForm", { 
 						request_id: sNewReqId 
 					});
-
-					// MessageToast.show("Draft " + sNewReqId + " created successfully.");
 				}
 
 			} catch (err) {
@@ -1581,13 +1587,15 @@ sap.ui.define([
 		},
 
 		onImportChange1( oEvent ) {
-			const oData = this._oReqModel.getProperty("/req_header");
-			oData.doc1 = oEvent.getParameters("files").files[0];
+			const oDialogModel 	= this.oDialogFragment.getModel("reqDialog");
+			const oDialogData	= oDialogModel.getData();
+			oDialogData.doc1 = oEvent.getParameters("files").files[0];
 		},
 		
 		onImportChange2( oEvent ) {
-			const oData = this._oReqModel.getProperty("/req_header");
-			oData.doc2 = oEvent.getParameters("files").files[0];
+			const oDialogModel 	= this.oDialogFragment.getModel("reqDialog");
+			const oDialogData	= oDialogModel.getData();
+			oDialogData.doc2 = oEvent.getParameters("files").files[0];
 		},
 
 		// get backend data
@@ -1681,9 +1689,7 @@ sap.ui.define([
 
 		getFieldVisibility_ReqType: async function (oEvent) {
 
-			const sReqTypeFromSelect = oEvent?.getSource?.().getSelectedKey?.();
-			const sReqTypeFromModel = this._oReqModel.getProperty("/req_header/reqtype");
-			const sReqType = sReqTypeFromSelect || sReqTypeFromModel;
+			const sReqType = oEvent?.getSource?.().getSelectedKey?.();
 
 			if (!sReqType) {
 				console.warn("No request type found.");

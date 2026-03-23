@@ -165,9 +165,9 @@ module.exports = (srv) => {
     srv.on('updateDisbursementStatus', async (req) => {
         const { ZEMP_CA_PAYMENT } = srv.entities;
         const tx = cds.tx(req);
-        const payment = await tx.run(SELECT.from(ZEMP_CA_PAYMENT).columns('REQUEST_ID').where({ DISBURSEMENT_STATUS: '02' }));
+        const payment = await tx.run(SELECT.from(ZEMP_CA_PAYMENT).columns('REQUEST_ID').where({ DISBURSEMENT_STATUS: Constant.DisbursementStatus.BYPASS }));
         const ids = payment.map(r => r.REQUEST_ID);
-        await tx.run(UPDATE(ZEMP_CA_PAYMENT).set({ DISBURSEMENT_STATUS: "03" }).where({ REQUEST_ID: { in: ids } }));
+        await tx.run(UPDATE(ZEMP_CA_PAYMENT).set({ DISBURSEMENT_STATUS: Constant.DisbursementStatus.DISBURSED }).where({ REQUEST_ID: { in: ids } }));
         return { results: payment };
     });
 
@@ -211,6 +211,10 @@ module.exports = (srv) => {
         let error = false;
 
         try {
+            let error = false;
+            let errorResults = [];
+            let successResults = [];
+
             for (var entry of budget) {
                 const condition = {
                     YEAR: entry.YEAR,
@@ -220,66 +224,54 @@ module.exports = (srv) => {
                     COMMITMENT_ITEM: entry.COMMITMENT_ITEM
                 };
 
-                let budgetRecord = entry.INDICATOR === "CLM" 
+                let budgetRecord = entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM 
                     ? await tx.run(SELECT.one.from(ZBUDGET).where(condition).forShareLock()) 
                     : await tx.run(SELECT.one.from(ZBUDGET).where(condition));
 
                 if (!budgetRecord) {
                     error = true;
-                    results.push({ ...condition, STATUS: 'RECORD NOT FOUND' });
+                    errorResults.push({ ...condition, STATUS: Constant.BudgetCheckStatus.NOT_FOUND });
                     continue;
                 }
 
-                if (entry.INDICATOR === "REQ" || (entry.INDICATOR === "CLM" && entry.ACTION === "SUBMIT")) {
+                if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST || 
+                    (entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM && entry.ACTION === Constant.BudgetProcessingAction.SUBMIT)) {
                     const bSufficient = toNum(entry.AMOUNT) <= toNum(budgetRecord.BUDGET_BALANCE);
                     if (!bSufficient) {
                         error = true;
-                        results.push({ 
+                        errorResults.push({ 
                             ...condition, 
-                            STATUS: 'Insufficient balance',
+                            STATUS: Constant.BudgetCheckStatus.INSUFFICIENT,
                             CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
                             AMOUNT: entry.AMOUNT,
                             AVAILABLE: budgetRecord.BUDGET_BALANCE 
                         });
+                        continue; 
                     }
                 }
-            }
 
-            if (error) {
-                await tx.rollback();
-                return { results }; 
-            }
+                if (error) continue;
 
-            for (var entry of budget) {
-                const condition = {
-                    YEAR: entry.YEAR,
-                    INTERNAL_ORDER: entry.INTERNAL_ORDER,
-                    FUND_CENTER: entry.FUND_CENTER,
-                    MATERIAL_GROUP: entry.MATERIAL_GROUP,
-                    COMMITMENT_ITEM: entry.COMMITMENT_ITEM
-                };
-
-                if (entry.INDICATOR === "REQ") {
-                    results.push({ ...condition, STATUS: 'OK' });
+                if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
+                    successResults.push({ ...condition, STATUS: Constant.BudgetCheckStatus.SUFFICIENT });
                     continue;
                 }
 
-                const newBudget = await tx.run(SELECT.one.from(ZBUDGET).where(condition));
-                let newCommitment = toNum(newBudget.COMMITMENT);
-                let newActual = toNum(newBudget.ACTUAL);
+                let newCommitment = toNum(budgetRecord.COMMITMENT);
+                let newActual = toNum(budgetRecord.ACTUAL);
                 const amount = toNum(entry.AMOUNT);
 
-                if (entry.ACTION === "SUBMIT") {
+                if (entry.ACTION === Constant.BudgetProcessingAction.SUBMIT) {
                     newCommitment = round2(newCommitment - amount);
-                } else if (entry.ACTION === "APPROVE") {
+                } else if (entry.ACTION === Constant.BudgetProcessingAction.APPROVE) {
                     newCommitment = round2(newCommitment + amount);
                     newActual = round2(newActual - amount);
-                } else if (entry.ACTION === "REJECT") {
+                } else if (entry.ACTION === Constant.BudgetProcessingAction.REJECT) {
                     newCommitment = round2(newCommitment + amount);
                 }
 
                 const newConsumed = round2(newCommitment + newActual);
-                const newBudgetBalance = round2(toNum(newBudget.CURRENT_BUDGET) + newConsumed);
+                const newBudgetBalance = round2(toNum(budgetRecord.CURRENT_BUDGET) + newConsumed);
 
                 await tx.run(
                     UPDATE(ZBUDGET)
@@ -292,17 +284,22 @@ module.exports = (srv) => {
                     .where(condition)
                 );
 
-                results.push({ 
+                successResults.push({ 
                     ...condition, 
-                    STATUS: 'Record updated',
+                    STATUS: Constant.BudgetCheckStatus.UPDATED,
                     CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
                     NEW_CONSUMED: newConsumed,
                     NEW_BUDGETBALANCE: newBudgetBalance 
                 });
             }
 
+            if (error) {
+                await tx.rollback();
+                return { results: errorResults }; 
+            }
+
             await tx.commit();
-            return { results };
+            return { results: successResults };
 
         } catch (err) {
             await tx.rollback();
@@ -312,7 +309,7 @@ module.exports = (srv) => {
     
     srv.before('CREATE', 'ZREQUEST_HEADER', async (req) => {
         const tx = cds.tx(req);
-        const range_id = 'NR01';
+        const range_id = Constant.NumberRange.REQUEST;
 
         const row = await tx.run(
             SELECT.one.from('ZNUM_RANGE')
