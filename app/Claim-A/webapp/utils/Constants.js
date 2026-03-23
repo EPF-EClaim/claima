@@ -11,7 +11,7 @@ sap.ui.define([
             "ELAUN_TUKAR": "ELAUN_TUKAR",
             "ELAUN_PINDAH": "ELAUN_PINDAH"
         },
-        "KURSUS_DLM_NEGARA_TypeItem": {
+        "ClaimTypeItem":{
             "BAGAI": "BAGAI",
             "BYR_YURAN": "BYR_YURAN",
             "CERAMAH": "CERAMAH",
@@ -72,23 +72,14 @@ sap.ui.define([
             "FAIL": "FAIL",
             "ALL": "*"
         },
-        "ClaimStatus": {
-            "DRAFT": "STAT01",
-            "PENDING_APPROVAL": "STAT02",
-            "SEND_BACK": "STAT03",
-            "REJECTED": "STAT04",
-            "APPROVED": "STAT05",
-            "COMPLETED_DISBURSEMENT": "STAT06",
-            "CANCELLED": "STAT07",
-        },
-        "FLIGHT_CLASS_ID": {
-            "01": "01",
-            "02": "02",
-            "03": "03"
+        "FLIGHT_CLASS_ID":{
+            "PREMIUM": "01",
+            "BUSINESS": "02",
+            "ECONOMY": "03"
         },
         "RequestStatus": {
             "DRAFT": "DRAFT",
-            "CANCELLED": "CANCELLED",
+            "CANCELLED": "CANCELLED"
         },
         "WorkflowType": {
             "CLAIM": "CLM",
@@ -139,6 +130,12 @@ sap.ui.define([
             "PREAPPROVALID": "PREAPPROVAL_ID",
             "REQUESTID": "REQUEST_ID",
             "CLAIMID": "CLAIM_ID",
+            "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
+            "TRAVEL_HOURS": "TRAVEL_HOURS",
+            "TRAVEL_DAYS_ID": "TRAVEL_DAYS_ID",
+            "ELIGIBLE_AMOUNT": "ELIGIBLE_AMOUNT",
+            "ROOM_TYPE_ID": "ROOM_TYPE_ID",
+            "FARE_TYPE_ID": "FARE_TYPE_ID"
         },
         "Role": {
             "GA_ADMIN": "GA Admin",
