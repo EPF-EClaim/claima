@@ -44,8 +44,6 @@ sap.ui.define([
             oCtx.setProperty(sStatusField, sStatus);
 
             await oModel.submitBatch("$auto");
-            
-            sap.m.MessageToast.show("Request submitted successfully");
         },
 
         getResourceBundle: function (oController) {

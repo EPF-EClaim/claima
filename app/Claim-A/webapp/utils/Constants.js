@@ -76,6 +76,15 @@ sap.ui.define([
             "YURAN": "YURAN",
             "YURAN_KLJ": "YURAN_KLJ"
         },
+        "ClaimStatus": {
+            "DRAFT": "STAT01",
+            "PENDING_APPROVAL": "STAT02",
+            "SEND_BACK": "STAT03",
+            "REJECTED": "STAT04",
+            "APPROVED": "STAT05",
+            "COMPLETED_DISBURSEMENT": "STAT06",
+            "CANCELLED": "STAT07",
+        },
         "STATUS": {
             "SUCCESS": "TRUE",
             "FAIL": "FAIL",
@@ -97,6 +106,10 @@ sap.ui.define([
         },
         "RequestStatus": {
             "DRAFT": "DRAFT",
+            "PENDING_APPROVAL": "PENDING_APPROVAL",
+            "SEND_BACK": "SEND_BACK",
+            "REJECTED": "REJECTED",
+            "APPROVED": "APPROVED",
             "CANCELLED": "CANCELLED"
         },
         "WorkflowType": {
@@ -222,6 +235,14 @@ sap.ui.define([
             "ZNUM_RANGE": "ZNUM_RANGE",
             "ZNUM_RANGE_DTD": "ZNUM_RANGE_DTD",
             "ZBUDGET": "ZBUDGET"
+        },
+        "BudgetCheckStatus": {
+            "SUFFICIENT_BALANCE": "Record updated",
+            "INSUFFICIENT_BALANCE": "Insufficient balance"
+        },
+        "GroupType": {
+            "GROUP": "Group",
+            "INDIVIDUAL": "Individual"
         }
 
     }

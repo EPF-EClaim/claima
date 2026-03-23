@@ -136,7 +136,8 @@
                                         <m:TextArea 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/remark}"/>
+                                            value="{request>/req_item/remark}"
+                                            width="100%"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -195,6 +196,12 @@
                                             placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc1}"
                                             id="i_attachment_1_file" />
+                                        <Link
+                                            id="i_attachment1_link" 
+                                            press="onDocLinkPress" 
+                                            text="{request>/req_item/doc1}"
+                                            class="sapUiTinyMarginTop"
+                                            visible="{= ${request>/req_item/doc1} !== null }" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -230,6 +237,12 @@
                                             placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc2}"
                                             id="i_attachment_2_file" />
+                                        <Link
+                                            id="i_attachment2_link" 
+                                            press="onDocLinkPress" 
+                                            text="{request>/req_item/doc2}"
+                                            class="sapUiTinyMarginTop"
+                                            visible="{= ${request>/req_item/doc2} !== null }" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -427,6 +440,50 @@
                                             <items>
                                                 <core:Item key="{employee>VEHICLE_TYPE_ID}" 
                                                         text="{employee>VEHICLE_TYPE_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Fare Type -->
+                                <form:FormElement label="{i18n>req_i_vehicle_type}"
+                                            visible="false"
+                                            id="i_fare_type" >
+                                    <form:fields>
+                                        <Select 
+                                            selectedKey="{request>/req_item/fare_type}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZFARE_TYPE',
+                                                    sorter: { path: 'FARE_TYPE_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                            <items>
+                                                <core:Item key="{employee>FARE_TYPE_ID}" 
+                                                        text="{employee>FARE_TYPE_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Vehicle Class -->
+                                <form:FormElement label="{i18n>req_i_vehicle_type}"
+                                            visible="false"
+                                            id="i_vehicle_class" >
+                                    <form:fields>
+                                        <Select 
+                                            selectedKey="{request>/req_item/vehicle_class}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZVEHICLE_CLASS',
+                                                    sorter: { path: 'VEHICLE_CLASS_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                            <items>
+                                                <core:Item key="{employee>VEHICLE_CLASS_ID}" 
+                                                        text="{employee>VEHICLE_CLASS_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
