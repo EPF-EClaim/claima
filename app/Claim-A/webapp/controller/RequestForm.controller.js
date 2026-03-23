@@ -23,9 +23,11 @@ sap.ui.define([
 	'claima/utils/Utility',
 	"claima/utils/ApproverUtility",
 	"claima/utils/workflowApproval",
+	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
 	"claima/utils/Attachment",
 	"claima/utils/EligibilityCheck",
 	"claima/utils/DateUtility"
+
 ], function (
 	Controller,
 	coreLibrary,
@@ -51,6 +53,7 @@ sap.ui.define([
 	Utility,
 	ApproverUtility,
 	workflowApproval,
+	EligibleScenarioCheck,
 	Attachment,
 	EligibilityCheck,
 	DateUtility
