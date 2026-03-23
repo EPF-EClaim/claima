@@ -16,8 +16,8 @@ sap.ui.define([
 		async _updateStatus(oModel, sID, sStatus) {
             let sSubmission_type = sID.substring(0,3);
             
-            let sTable = sSubmission_type === 'REQ' ? '/ZREQUEST_HEADER' : "/ZCLAIM_HEADER";
-            let sField = sSubmission_type === 'REQ' ? 'REQUEST_ID' : 'CLAIM_ID';
+            let sTable = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.Entities.ZREQUEST_HEADER : Constants.EntitiesZCLAIM_HEADER;
+            let sField = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.EntitiesFields.REQUESTID : Constants.EntitiesFields.CLAIMID;
 
             // Declare field for status
             // REQ uses STATUS field while CLM uses STATUS_ID field
