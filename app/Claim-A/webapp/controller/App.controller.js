@@ -167,18 +167,6 @@ sap.ui.define([
 			oRouter.getRoute("Dashboard").attachMatched(this._onDashboardMatched, this);
 			const bIsDeepLink = sHash.includes("RequestForm") || sHash.includes("Claim");
 
-			// To set current key of Side Navigation 
-			oRouter.attachRouteMatched(this._onRouteMatched, this);
-			this._routeKeyMapping = {
-				"Dashboard": "dashboard",
-				"RequestFormStatus": "myrequest",
-				"ClaimStatus": "myreport",
-				"MyApproval": "approval",
-				"ManageSub": "mysubstitution",
-				"Analytics": "analytics",
-				"Configuration": "config"
-			};
-
 			if (!bIsDeepLink || sHash === "") {
 				oRouter.navTo("Dashboard", {}, true);
 			} else {
@@ -1944,7 +1932,7 @@ sap.ui.define([
 				var oRouter = this.getOwnerComponent().getRouter();
 				oRouter.navTo("ClaimStatus")
 			} else if (id.includes("request")) {
-				this._navToPARStatus();
+				this._oRouter.navTo("RequestFormStatus");
 			} else if (id.includes("approval")) {
 				if (userType === "Approver") {
 					this.getMyApproverPAReq();
@@ -2191,18 +2179,7 @@ sap.ui.define([
 					console.log("approvals not available for this role");
 					oDashboardModel.setProperty("/approvals", []);
 				});
-		},
-
-		_onRouteMatched: function (oEvent) {
-			var sRoute = oEvent.getParameter("name");
-			var oSideNavigation = this.getView().byId("sideNavigation");
-
-			var sKey = this._routeKeyMapping[sRoute];
-
-			if (oSideNavigation && sKey) {
-				oSideNavigation.setSelectedKey(sKey);
-			}
-		},
+		}
 
 	});
 });
