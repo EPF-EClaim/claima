@@ -10,9 +10,7 @@ sap.ui.define([
          * @returns {Boolean} Comparison Output
 		 */
         EqualsTo(sVal1, sVal2){
-            if( sVal1 == sVal2 ){
-                return true;
-            }
+            return sVal1 === sVal2;
         },
 
         /**
