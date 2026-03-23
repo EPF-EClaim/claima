@@ -14,11 +14,6 @@
 >
     <Page showHeader="false">
         <content>
-            <ScrollContainer
-                id="dashboard"
-                horizontal="false"
-                height="100%"
-            >
                 <VBox width="100%">
                     <HBox wrap="Wrap" fitContainer="true" justifyContent="Start">
                         <Panel
@@ -462,7 +457,6 @@
                         </Panel>
                     </VBox>
                 </VBox>
-            </ScrollContainer>
         </content>
     </Page>
 </mvc:View>
