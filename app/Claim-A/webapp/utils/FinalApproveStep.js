@@ -128,13 +128,6 @@ sap.ui.define([
                      */
                 onSendClaimBatch: async function (oViewModel, sClaimID) {
 
-                    console.log("Model Type:", oViewModel.getMetadata().getName());
-                    console.log("Table:", Constants.Entities.ZEMP_CLAIM_DETAILS);
-                    console.log("Field:", Constants.EntitiesFields.CLAIMID);
-
-                    const meta = await oViewModel.getMetaModel().requestObject(Constants.Entities.ZEMP_CLAIM_DETAILS + "/");
-                    console.log("EntitySet Metadata:", meta);
-
                     // Read all claim items
                     const oList = oViewModel.bindList(
                         Constants.Entities.ZEMP_CLAIM_DETAILS,
