@@ -60,14 +60,15 @@
 
 # POST    http://localhost:4004/odata/v4/EmployeeSrv/onFinalApproveInsert
 # Content-Type: application/json
+# Authorization: Basic alice
  
-# {
-#    "ApproveRequest": [
-#     {
-#     "EMP_ID": "REQ26000000002",
-#     "REQUEST_ID": "REQ26000000004",
-#     "AMOUNT": 1000.00,
-#     "CLAIMED": "1"
-#     }
+#    {
+#     "ApproveRequest": [
+#       {
+#         "EMP_ID": "E1205",
+#         "REQUEST_ID": "REQ26",
+#         "AMOUNT": 1000.00,
+#         "CLAIMED": 1
+#      }
 #     ]
-# }
+#    }

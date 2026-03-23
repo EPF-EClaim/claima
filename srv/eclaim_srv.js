@@ -432,19 +432,20 @@ module.exports = (srv) => {
     srv.on('onFinalApproveInsert', async (req) => {
         const { ZCLM_APPR_REQ_STAT } = srv.entities;
         try {
-            const { FinalApproveRequest } = req.data;
-            if (!FinalApproveRequest || FinalApproveRequest.length === 0) {
+            const { ApproveRequest } = req.data;
+            console.log(ApproveRequest);
+            if (!ApproveRequest || ApproveRequest.length === 0) {
                 throw new Error('No Data Sent')
             }
             const tx = cds.tx(req);
             const results = await tx.run(
-                INSERT(FinalApproveRequest).into(ZCLM_APPR_REQ_STAT)
+                INSERT(ApproveRequest).into(ZCLM_APPR_REQ_STAT)
             );
             await tx.commit();
-            console.log(results);
-            return { success: true, 'Results': results };
+            
+            return { success: true };
         } catch (error) {
-            req.error(400, `Fail creating record: ${error.message}`);
+            req.error(400, `Fail creating record: ${error.message}`, req);
         }
     });
 
