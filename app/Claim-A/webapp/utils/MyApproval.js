@@ -32,7 +32,7 @@ sap.ui.define([
                 });
             } catch (e) {
                 console.error("failed:", e);
-                MessageToast.show(Utility.getText(this, "msg_failed_load_req"));
+                MessageToast.show(Utility.getText("msg_failed_load_req"));
             } finally {
                 oController.getView().setBusy(false);
             }
@@ -49,7 +49,7 @@ sap.ui.define([
                 });
             } catch (e) {
                 console.error("failed:", e);
-                MessageToast.show(Utility.getText(this, "msg_failed_load_claim"));
+                MessageToast.show(Utility.getText("msg_failed_load_claim"));
             } finally {
                 oController.getView().setBusy(false);
             }

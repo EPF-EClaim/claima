@@ -189,7 +189,7 @@ sap.ui.define([
 						title: "Warning",
 						type: DialogType.Message,
 						state: ValueState.Warning,
-						content: [new Label({ text: Utility.getText(this, "req_d_w_back") })],
+						content: [new Label({ text: Utility.getText("req_d_w_back") })],
 						beginButton: new Button({
 							type: ButtonType.Emphasized,
 							text: "Confirm",
@@ -218,7 +218,7 @@ sap.ui.define([
 			const sReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
 
 			if (!sEmpId || !sReqId) {
-				MessageToast.show(Utility.getText(this, "req_tm_w_emp_id_req_id_not_found"));
+				MessageToast.show(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 				return;
 			}
 
@@ -228,7 +228,7 @@ sap.ui.define([
 					type: DialogType.Message,
 					state: ValueState.Warning,
 					content: [
-						new Label({ text: Utility.getText(this, "req_d_w_delete") })
+						new Label({ text: Utility.getText("req_d_w_delete") })
 					],
 					beginButton: new Button({
 						type: ButtonType.Emphasized,
@@ -241,7 +241,7 @@ sap.ui.define([
 								// update status to CANCELLED
 								await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.CANCELLED);
 
-								MessageToast.show(Utility.getText(this, "req_tm_s_delete_request"));
+								MessageToast.show(Utility.getText("req_tm_s_delete_request"));
 								this.oDeleteDialog.close();
 
 								this._oRouter.navTo("RequestFormStatus");
@@ -278,7 +278,7 @@ sap.ui.define([
 			const sEmpId = this._oReqModel.getProperty("/user");
 
 			if (!sReqId || !sEmpId) {
-				MessageToast.show(Utility.getText(this, "req_tm_w_emp_id_req_id_not_found"));
+				MessageToast.show(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 				return;
 			}
 
@@ -286,7 +286,7 @@ sap.ui.define([
 				this.oSubmitDialog = new Dialog({
 					title: "Submit Request",
 					type: DialogType.Message,
-					content: [new Label({ text: Utility.getText(this, "req_d_w_submit") })],
+					content: [new Label({ text: Utility.getText("req_d_w_submit") })],
 					beginButton: new Button({
 						type: ButtonType.Emphasized,
 						text: "Submit",
@@ -312,7 +312,7 @@ sap.ui.define([
 									this._oRouter.navTo("RequestFormStatus");
 
 								} else {
-									MessageToast.show(Utility.getText(this, "req_tm_w_inform_cc_owner", [aResult.aErrors]));
+									MessageToast.show(Utility.getText("req_tm_w_inform_cc_owner", [aResult.aErrors]));
 								}
 							} catch (e) {
 								MessageToast.show(e.message || "Submission failed");
@@ -337,12 +337,12 @@ sap.ui.define([
 		_showMustAddClaimDialog() {
 			if (!this._oAddClaimDialog) {
 				this._oAddClaimDialog = new Dialog({
-					title: Utility.getText(this, "req_d_w_missing_item"),
+					title: Utility.getText("req_d_w_missing_item"),
 					type: DialogType.Message,
 					state: ValueState.Warning,
 					content: [
 						new Label({
-							text: Utility.getText(this, "req_tm_w_submit"),
+							text: Utility.getText("req_tm_w_submit"),
 						})
 					],
 					beginButton: new Button({
@@ -440,7 +440,7 @@ sap.ui.define([
 			}
 
 			if (!oCtx) {
-				MessageToast.show(Utility.getText(this, "req_tm_w_select"));
+				MessageToast.show(Utility.getText("req_tm_w_select"));
 				return;
 			}
 
@@ -627,7 +627,7 @@ sap.ui.define([
 					const subId = String(row.REQUEST_SUB_ID || "").trim();
 
 					if (!reqId || !subId) {
-						sErrorMsg = Utility.getText(this, "req_tm_w_missing_reqid_reqsubid");
+						sErrorMsg = Utility.getText("req_tm_w_missing_reqid_reqsubid");
 						continue;
 					}
 
@@ -847,7 +847,7 @@ sap.ui.define([
 			}
 
 			if (aToDelete.length === 0) {
-				MessageToast.show(Utility.getText(this, "req_tm_w_select_participant"));
+				MessageToast.show(Utility.getText("req_tm_w_select_participant"));
 				return;
 			}
 
@@ -913,7 +913,7 @@ sap.ui.define([
 							});
 						})
 						.catch((e) => {
-							errorMsg = errorMsg || (e && e.message) || Utility.getText(this, "req_tm_w_delete_participant");
+							errorMsg = errorMsg || (e && e.message) || Utility.getText("req_tm_w_delete_participant");
 						});
 
 					deletePromises.push(pDel);
@@ -941,7 +941,7 @@ sap.ui.define([
 
 				this._oReqModel.setProperty("/participant", aRows);
 				oTable.clearSelection();
-				MessageToast.show(Utility.getText(this, "req_tm_s_delete_participant", [aSuccessIdx.length]));
+				MessageToast.show(Utility.getText("req_tm_s_delete_participant", [aSuccessIdx.length]));
 			}
 
 			if (errorMsg) {
