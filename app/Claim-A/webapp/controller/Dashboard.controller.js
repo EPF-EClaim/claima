@@ -2,8 +2,9 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
 	"sap/ui/model/json/JSONModel",
 	"sap/ui/model/Sorter",
-	"claima/utils/Utility"
-], (Controller, JSONModel, Sorter, Utility) => {
+	"claima/utils/Utility",
+	"sap/m/MessageBox"
+], (Controller, JSONModel, Sorter, Utility, MessageBox) => {
     "use strict";
 
     return Controller.extend("claima.controller.dashboard", {
@@ -55,22 +56,21 @@ sap.ui.define([
 		},
 
 		onClickNavigate: function (oEvent) {
-			let id = oEvent.getParameters().id;
+			let sId = oEvent.getParameters().id;
 
-			const userType = this.getView().getModel("session")?.getProperty("/userType")
-				|| this._userType
+			const sUserType = this.getView().getModel("session")?.getProperty("/userType")
 				|| "UNKNOWN";
 
-			if (id.includes("dashboard-claim")) {
+			if (sId.includes("dashboard-claim")) {
 				this._oRouter.navTo("ClaimStatus")
-			} else if (id.includes("request")) {
+			} else if (sId.includes("request")) {
 				this._oRouter.navTo("RequestFormStatus");
-			} else if (id.includes("approval")) {
-				if (userType === "Approver") {
+			} else if (sId.includes("approval")) {
+				if (sUserType === "Approver") {
 					this._oRouter.navTo("MyApproval");
 				} else {
 					var message = Utility.getText("msg_unauthorized_role");
-					sap.m.MessageBox.error(message);
+					MessageBox.error(message);
 				}
 			}
 		}

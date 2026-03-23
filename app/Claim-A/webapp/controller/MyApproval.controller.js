@@ -31,14 +31,14 @@ sap.ui.define([
         _getMyApproverPAReq: async function () {
 			const oApproverOrSub = new Filter({
 				filters: [
-					new Filter("APPROVER_ID", FilterOperator.EQ, this.getOwnerComponent().getModel("userId").getProperty("/userId")),
-					new Filter("SUBSTITUTE_APPROVER_ID", FilterOperator.EQ, this.getOwnerComponent().getModel("userId").getProperty("/userId"))
+					new Filter(this._oConstant.EntitiesFields.APPROVER_ID, FilterOperator.EQ, this.getOwnerComponent().getModel("userId").getProperty("/userId")),
+					new Filter(this._oConstant.EntitiesFields.SUBAPPROVER_ID, FilterOperator.EQ, this.getOwnerComponent().getModel("userId").getProperty("/userId"))
 				],
 				and: false // OR condition between the two
 			});
 
 			const oStatusPending = new Filter(
-				"STATUS",
+				this._oConstant.EntitiesFields.STATUS,
 				FilterOperator.EQ,
 				this._oConstant.ClaimStatus.PENDING_APPROVAL // use the exact code/value your backend expects
 			);
@@ -50,7 +50,7 @@ sap.ui.define([
 
 
 			const oListBinding = this._oEmployeeViewModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
-				[new Sorter("STATUS", true)], // desc by STATUS
+				[new Sorter(this._oConstant.EntitiesFields.STATUS, true)], // desc by STATUS
 				[oCombined],
 				{
 					$$ownRequest: true,
@@ -83,8 +83,8 @@ sap.ui.define([
         _getMyApproverClaim: async function () {
 			const oApproverOrSub = new Filter({
 				filters: [
-					new Filter("APPROVER_ID", FilterOperator.EQ, this.getOwnerComponent().getModel("userId").getProperty("/userId")),
-					new Filter("SUBSTITUTE_APPROVER_ID", FilterOperator.EQ, this.getOwnerComponent().getModel("userId").getProperty("/userId"))
+					new Filter(this._oConstant.EntitiesFields.APPROVER_ID, FilterOperator.EQ, this.getOwnerComponent().getModel("userId").getProperty("/userId")),
+					new Filter(this._oConstant.EntitiesFields.SUBAPPROVER_ID, FilterOperator.EQ, this.getOwnerComponent().getModel("userId").getProperty("/userId"))
 				],
 				and: false // OR condition between the two
 			});
