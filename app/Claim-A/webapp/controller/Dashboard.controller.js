@@ -7,7 +7,7 @@ sap.ui.define([
     "use strict";
 
     return Controller.extend("claima.controller.dashboard", {
-        onInit() {
+        onInit: function() {
 			this._oRouter = this.getOwnerComponent().getRouter();
 			this._oDashboardModel = new JSONModel({
 				claims: [],
@@ -22,11 +22,6 @@ sap.ui.define([
         _onMatched: function() {
             this.getOwnerComponent().getModel("employee")?.refresh();
 			this.getOwnerComponent().getModel("employee_view")?.refresh();
-			this._oDashboardModel.setData({
-				claims: [],
-				requests: [],
-				approvals: []
-			});
 			this._loadDashboardData();
         },
 

@@ -87,58 +87,8 @@ sap.ui.define([
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
 
-			const oSession = new sap.ui.model.json.JSONModel({
-				userType: "UNKNOWN",
-				origin: "",
-				grade: "",
-				department: "",
-				position: "",
-				userName: "",
-				initials: ""
-			});
-			this.getView().setModel(oSession, "session");
-
-			const oImageModel = new sap.ui.model.json.JSONModel({
-				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png")
-			});
-			this.getView().setModel(oImageModel, "imageModel");
-
-			this._loadCurrentUser();
-
-			const oModel = this.getOwnerComponent().getModel();
-			const ctx = oModel.bindContext("/getUserType()");
-			ctx.requestObject().then(oData => {
-				this._userType = oData.userType || "UNKNOWN";
-				this.costcenters = oData.costcenters || "UNKNOWN"; //Added by Aiman Salim 06/03/2026
-				this.userId = oData.userId || "UNKNOWN";
-				const sName = oData.name || "";
-				const sPosition = oData.position;
-				const sInitials = sName.substring(0, 2).toUpperCase();
-				oSession.setProperty("/initials", sInitials);
-				oSession.setProperty("/userName", sName);
-				oSession.setProperty("/position", sPosition);
-				oSession.setProperty("/grade", oData.grade || "UNKNOWN");
-				oSession.setProperty("/department", oData.department || "UNKNOWN");
-				oSession.setProperty("/origin", oData.origin);
-
-				// save userId to model
-				var oUserIdModel = new JSONModel({
-					"userId": oData.userId,
-					"email": oData.id
-				});
-				//// set input
-				this.getView().setModel(oUserIdModel, "userId");
-				oSession.setProperty("/userType", this._userType);
-			}).catch(err => {
-				console.error("getUserType failed:", err);
-				this._userType = "UNKNOWN";
-				console.error("getUserType failed:", err); //Added by Aiman Salim 06/03/2026
-				this.costcenters = "UNKNOWN";
-				console.error("getUserType failed:", err); //Added by Aiman Salim 08/03/2026
-				this.userId = "UNKNOWN";
-			});
-
 			PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
+
 			const bIsLocal = window.location.hostname.includes("port4004") || 
 							window.location.hostname.includes("applicationstudio.cloud.sap");
 			if (bIsLocal) {
@@ -172,26 +122,12 @@ sap.ui.define([
 				sApprover = this._oConstant.Role.APPROVER,
 				sSuperUser = this._oConstant.Role.SUPER_ADMIN;
 
-			//Start EY_ATHIRAH
-			const key = oEvent.getSource().data("key");
-
 			// Make sure userType is available
-			const type = this._userType; // << read what we stored earlier
-			if (!type) {
+			const sType = this.getOwnerComponent().getModel("session").getProperty("/userType");
+			if (!sType) {
 				MessageToast.show("Please wait… loading your access.");
 				return;
 			}
-
-			//Aiman Salim - 05/03/2026 - Added to make it global usage;
-			const oUserAccessModel = new sap.ui.model.json.JSONModel({
-				userType: this._userType,
-				costcenters: this.costcenters,
-				userId: this.userId, // 08/03/2026 - Added to fetch emp id
-			});
-			this.getOwnerComponent().setModel(oUserAccessModel, "access");
-			//Aiman Salim - 05/03/2026 - Added to make it global;
-
-			//End EY_ATHIRAH
 
 			switch (oKey) {
 				case "nav_claimsubmission":
@@ -208,9 +144,9 @@ sap.ui.define([
 					break;
 				case "config":
 					//Start EY_ATHIRAH
-					if (type === sAdminDTD || type === sAdminJKEW || type === sSuperUser) {
+					if (sType === sAdminDTD || sType === sAdminJKEW || sType === sSuperUser) {
 						this._oRouter.navTo("Configuration");
-					} else if (type === sAdminGA ) {
+					} else if (sType === sAdminGA ) {
 						this._oRouter.navTo("Configuration_GA");
 					}
 					else {
@@ -221,7 +157,7 @@ sap.ui.define([
 					break;
 				// Start Aiman Salim 10/02/2026 - Added for analytics
 				case "analytics":
-					if (type === sAdminDTD || type === sAdminJKEW || type === sSuperUser) {
+					if (sType === sAdminDTD || sType === sAdminJKEW || sType === sSuperUser) {
 						this._oRouter.navTo("Analytics")
 					} else {
 						var message = Utility.getText("msg_unauthorized_role");
@@ -235,7 +171,7 @@ sap.ui.define([
 					break;
 				//Start Aiman Salim 08/03/2026 - Added for MyApproval
 				case "approval":
-					if (type === sApprover || type === sSuperUser) {
+					if (sType === sApprover || sType === sSuperUser) {
 						this._oRouter.navTo("MyApproval");
 					} else {
 						var message = Utility.getText("msg_unauthorized_role");
@@ -1751,46 +1687,6 @@ sap.ui.define([
 				})
 			});
 			this.oDialog.open();
-		},
-
-		_loadCurrentUser: function () {
-			var that = this;
-
-			$.ajax({
-				type: "GET",
-				url: "/user-api/currentUser",
-				success: async function (resultData) {
-					// Extract email safely with fallbacks (covers common IdP shapes)
-					var email =
-						resultData.email ||
-						(Array.isArray(resultData.emails) && resultData.emails[0] && resultData.emails[0].value) ||
-						resultData.userPrincipalName ||
-						null;
-
-					if (email && typeof email === 'string' && email.trim() !== '') {
-						// (Optional) set a model if your view needs it
-						var oUserModel = new JSONModel({ email: email });
-						that.getView().setModel(oUserModel, 'user');
-
-						const emp_data = await that._getEmpIdDetail(email);
-						that._oReqModel.setProperty("/user", { 
-							emp_id		: emp_data.eeid, 
-							name		: emp_data.name,
-							cost_center	: emp_data.cc 
-						});
-
-						sap.m.MessageToast.show('Email: ' + email);
-					} else {
-						sap.m.MessageToast.show('Email is empty or not provided for this user.');
-					}
-				},
-				error: function (xhr) {
-					// If you’re still getting 404 here, your approuter may not expose /user-api
-					console.error('currentUser failed:', xhr.status, xhr.responseText);
-					sap.m.MessageToast.show('Failed to load user info (currentUser).');
-				}
-			});
-
 		},
 
 		onAvatarPress: function (oEvent) {

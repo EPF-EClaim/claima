@@ -14,13 +14,8 @@ sap.ui.define([
         /* =========================================================
         * Lifecycle
         * ======================================================= */
-        async onInit() {
-            this._sUserId = null;
+        onInit: async function() {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
-            const ctx = this.getOwnerComponent().getModel().bindContext("/getUserType()");
-			await ctx.requestObject().then(oData => {
-                this.sUserId = oData.userId || "UNKNOWN";
-            });
             this.getOwnerComponent().getRouter().getRoute("MyApproval").attachPatternMatched(this._onMatched, this);
         },
 
@@ -35,8 +30,8 @@ sap.ui.define([
 
 			const oApproverOrSub = new sap.ui.model.Filter({
 				filters: [
-					new sap.ui.model.Filter("APPROVER_ID", sap.ui.model.FilterOperator.EQ, this._sUserId),
-					new sap.ui.model.Filter("SUBSTITUTE_APPROVER_ID", sap.ui.model.FilterOperator.EQ, this._sUserId)
+					new sap.ui.model.Filter("APPROVER_ID", sap.ui.model.FilterOperator.EQ, this.getOwnerComponent().getModel("userId").getProperty("/userId")),
+					new sap.ui.model.Filter("SUBSTITUTE_APPROVER_ID", sap.ui.model.FilterOperator.EQ, this.getOwnerComponent().getModel("userId").getProperty("/userId"))
 				],
 				and: false // OR condition between the two
 			});
@@ -90,8 +85,8 @@ sap.ui.define([
 
 			const oApproverOrSub = new Filter({
 				filters: [
-					new Filter("APPROVER_ID", FilterOperator.EQ, this._sUserId),
-					new Filter("SUBSTITUTE_APPROVER_ID", FilterOperator.EQ, this._sUserId)
+					new Filter("APPROVER_ID", FilterOperator.EQ, this.getOwnerComponent().getModel("userId").getProperty("/userId")),
+					new Filter("SUBSTITUTE_APPROVER_ID", FilterOperator.EQ, this.getOwnerComponent().getModel("userId").getProperty("/userId"))
 				],
 				and: false // OR condition between the two
 			});
