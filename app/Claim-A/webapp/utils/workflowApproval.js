@@ -63,7 +63,7 @@ sap.ui.define([
             oAction.execute();
 
 		},
-        onClaimsApproverDetermination: async function (oModel, sClaimID, oEmployeeModel){
+        onClaimsApproverDetermination: async function (oController, oModel, sClaimID, oEmployeeModel){
 			// claim header
 
             // Variable declaration for use of the entire function block
@@ -636,7 +636,7 @@ sap.ui.define([
                             }); 
                         }
                     }else if(oApprover.LEVEL == 0){
-                        FinalApproveStep.onFinalApprove(oModel, sClaimID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
+                        FinalApproveStep.onFinalApprove(oController, oModel, sClaimID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
                         break;
                     }
                 }
@@ -739,7 +739,7 @@ sap.ui.define([
             }	
 			
         },
-        onPARApproverDetermination: async function (oModel, sPARID, oEmployeeModel){
+        onPARApproverDetermination: async function (oController, oModel, sPARID, oEmployeeModel){
 			// request header
             const that = this;
 
@@ -1245,7 +1245,7 @@ sap.ui.define([
                             }); 
                         }
                     }else if(oApprover.LEVEL == 0){
-                        FinalApproveStep.onFinalApprove(oModel, sClaimID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
+                        FinalApproveStep.onFinalApprove(oController, oModel, sClaimID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
                         break;
                     }
                 }

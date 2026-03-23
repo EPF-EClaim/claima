@@ -11,7 +11,7 @@ sap.ui.define([
         "use strict";
 
         return {
-            onFinalApprove: async function (oModel, sClaimID, sStatus, oEmployeeModel, oEmailPayload) {
+            onFinalApprove: async function (oController, oModel, sClaimID, sStatus, oEmployeeModel, oEmailPayload) {
         try{
                 // Call Update Status
                 Utility._updateStatus(oModel, sClaimID, sStatus);

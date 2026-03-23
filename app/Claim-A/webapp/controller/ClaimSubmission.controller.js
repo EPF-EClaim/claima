@@ -1615,6 +1615,7 @@ sap.ui.define([
 					const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 
 					const { payloads: aPayloadEmail, sMessageKey } = await ApproverUtility.approveMultiLevel(
+						this,
 						oModel,
 						sClaimId,
 						sUserId,
@@ -1692,6 +1693,7 @@ sap.ui.define([
 					submissionType: sSubmissionType,
 					sMessageKey
 				} = await ApproverUtility.rejectOrSendBackMultiLevel(
+					this,
 					oModelMain,
 					sClaimId,
 					sUserId,
@@ -1765,6 +1767,7 @@ sap.ui.define([
 					submissionType: sSubmissionType,
 					sMessageKey
 				} = await ApproverUtility.rejectOrSendBackMultiLevel(
+					this,
 					oModelMain,
 					sClaimId,
 					sUserId,
@@ -2990,7 +2993,7 @@ sap.ui.define([
 						if (oAction === 'Submit Report') {
 							var oModelAppr = this.getView().getModel();
 							var oEmployeeViewModel = this.getView().getModel("employee_view");
-							workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
+							workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
 						}
 						MessageToast.show(oMsg);
 						this._onNavBack();
@@ -3039,6 +3042,7 @@ sap.ui.define([
 								MessageToast.show(Utility.getText(this, "msg_claimsubmission_nocc"));
 								return;
 							}
+							/** 
 							const result = await budgetCheck.budgetChecking(
 								oModel,
 								"CLM",
@@ -3048,7 +3052,7 @@ sap.ui.define([
 								oInputModel.getProperty("/claim_header/claim_type_id"),
 								dataRow
 							);
-
+							*/
 							if (!result.passed) {
 								MessageToast.show(result.messages);
 								return;
@@ -3072,7 +3076,7 @@ sap.ui.define([
 					if (oAction === 'Submit Report') {
 						var oModelAppr = this.getView().getModel();
 						var oEmployeeViewModel = this.getView().getModel("employee_view");
-						workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
+						workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
 					}
 
 					MessageToast.show(oMsg);
