@@ -24,6 +24,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         FUND_CENTER     : String;
         MATERIAL_GROUP  : String;
         COMMITMENT_ITEM : String;
+        CLAIM_TYPE_ITEM : String;
         AMOUNT          : Decimal;
         INDICATOR       : String; //CLM and REQ
         ACTION          : String; //SUBMIT, REJECT, APPROVE
@@ -36,6 +37,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         MATERIAL_GROUP     : String;
         COMMITMENT_ITEM    : String;
         AMOUNT             : Decimal(15, 2);
+        CLAIM_TYPE_ITEM    : String;
         PREV_CONSUMED      : Decimal(15, 2);
         NEW_CONSUMED       : Decimal(15, 2);
         PREV_ACTUAL        : Decimal(15, 2);
@@ -60,7 +62,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZCLAIM_ITEM                   as projection on ECLAIM.ZCLAIM_ITEM;
 
-    entity ZREQUEST_HEADER               as projection on ECLAIM.ZREQUEST_HEADER;
+    entity ZREQUEST_HEADER               as projection on ECLAIM.ZREQUEST_HEADER {
+        @Core.Computed REQUEST_ID,
+        *
+    };
 
     entity ZEMP_MASTER                   as projection on ECLAIM.ZEMP_MASTER;
 
@@ -83,7 +88,10 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM as Items
         };
 
-    entity ZREQUEST_ITEM                 as projection on ECLAIM.ZREQUEST_ITEM;
+    entity ZREQUEST_ITEM                 as projection on ECLAIM.ZREQUEST_ITEM {
+        @Core.Computed REQUEST_SUB_ID,
+        *
+    };
 
     entity ZREQ_ITEM_PART                as projection on ECLAIM.ZREQ_ITEM_PART;
 

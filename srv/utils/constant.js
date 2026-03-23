@@ -7,6 +7,28 @@ UserType : {
     JKEW_ADMIN : "JKEW Admin",
     APPROVER   : "Approver",
     SUPER_ADMIN: "Super Admin"
+},
+BudgetSubmissionType : {
+    CLAIM   : "CLM",
+    REQUEST : "REQ"
+},
+BudgetProcessingAction : {
+    SUBMIT  : "SUBMIT",
+    REJECT  : "REJECT",
+    APPROVE : "APPROVE"
+},
+BudgetCheckStatus : {
+    NOT_FOUND       : "RECORD NOT FOUND",
+    INSUFFICIENT    : "INSUFFICIENT BALANCE",
+    SUFFICIENT      : "OK",
+    UPDATED         : "RECORD UPDATED"
+},
+NumberRange : {
+    REQUEST : "NR01"
+},
+DisbursementStatus : {
+    BYPASS      : "02",
+    DISBURSED   : "03"
 }
 };
 
