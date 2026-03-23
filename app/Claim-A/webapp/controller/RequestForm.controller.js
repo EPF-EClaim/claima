@@ -105,7 +105,7 @@ sap.ui.define([
 			await PARequestSharedFunction._getItemList(this, sReqId);
 			this._showItemList(sReqId);
 
-			MessageToast.show(Utility.getText(this, "prereq"));
+			MessageToast.show(Utility.getText("prereq"));
 		},
 
 		/* =========================================================
@@ -638,7 +638,7 @@ sap.ui.define([
 						await this._deleteItemCascade(reqId, subId);
 						aSuccessIdx.push(i);
 					} catch (e) {
-						sErrorMsg = e.message || Utility.getText(this, 'req_tm_w_delete_req_item');
+						sErrorMsg = e.message || Utility.getText('req_tm_w_delete_req_item');
 					}
 				}
 			} finally {
@@ -651,7 +651,7 @@ sap.ui.define([
 				});
 				this._oReqModel.setProperty("/req_item_rows", aRows);
 				this._oReqModel.setProperty("/list_count", aRows.length);
-				MessageToast.show(Utility.getText(this, 'req_tm_s_delete_req_item', [aSuccessIdx.length]));
+				MessageToast.show(Utility.getText('req_tm_s_delete_req_item', [aSuccessIdx.length]));
 			}
 
 			if (sErrorMsg) {
