@@ -12,6 +12,8 @@ sap.ui.define([
         EqualsTo(sVal1, sVal2){
             if( sVal1 == sVal2 ){
                 return true;
+            }else{
+                return false;
             }
         },
 
