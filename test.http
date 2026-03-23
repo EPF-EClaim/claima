@@ -57,3 +57,17 @@
 #      }
 #     ]
 #    }
+
+# POST    http://localhost:4004/odata/v4/EmployeeSrv/onFinalApproveInsert
+# Content-Type: application/json
+ 
+# {
+#    "ApproveRequest": [
+#     {
+#     "EMP_ID": "REQ26000000002",
+#     "REQUEST_ID": "REQ26000000004",
+#     "AMOUNT": 1000.00,
+#     "CLAIMED": "1"
+#     }
+#     ]
+# }

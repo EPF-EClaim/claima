@@ -23,78 +23,78 @@ module.exports = (srv) => {
         }
     }),
 
-    srv.on('batchCreateCostCenter', async (req) => {
-        const { ZCOST_CENTER } = srv.entities;
-        try {
-            const { costcenters } = req.data;
-            if (!costcenters || costcenters.length === 0) {
-                throw new Error('No Data Sent')
-            }
-            const tx = cds.tx(req);
-            const results = await tx.run(
-                UPSERT(costcenters).into(ZCOST_CENTER)
-            );
-            return 'Records updated';
-        } catch (error) {
-            req.error(400, `Fail creating record: ${error.message}`);
-        }
-    }),
-
-    srv.on('batchCreateDependent', async (req) => {
-        const { ZEMP_DEPENDENT } = srv.entities;
-        try {
-            const { dependents } = req.data;
-            if (!dependents || dependents.length === 0) {
-                throw new Error('No Data Sent')
-            }
-            const tx = cds.tx(req);
-            const results = await tx.run(
-                UPSERT(dependents).into(ZEMP_DEPENDENT)
-            );
-            return 'Records updated';
-        } catch (error) {
-            req.error(400, `Fail creating record: ${error.message}`);
-        }
-    }),
-
-    srv.on('getUserType', async (req) => {
-        const { ZEMP_MASTER } = srv.entities;
-        const emailFromToken =
-            req.user?.attr?.email ||
-            req.user?.attr?.mail ||
-            req.user?.attr?.user_name ||
-            req.user?.attr?.login_name ||
-            req.user?.id ||
-            "";
-
-        let sOrigin = null;
-        try {
-            const authHeader = req.http?.req?.headers?.authorization ?? '';
-            const token = authHeader.split(' ')[1];
-            if (token) {
-                const oToken = JSON.parse(
-                    Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
+        srv.on('batchCreateCostCenter', async (req) => {
+            const { ZCOST_CENTER } = srv.entities;
+            try {
+                const { costcenters } = req.data;
+                if (!costcenters || costcenters.length === 0) {
+                    throw new Error('No Data Sent')
+                }
+                const tx = cds.tx(req);
+                const results = await tx.run(
+                    UPSERT(costcenters).into(ZCOST_CENTER)
                 );
-                sOrigin = oToken.origin;
+                return 'Records updated';
+            } catch (error) {
+                req.error(400, `Fail creating record: ${error.message}`);
             }
-        } catch (e) {
-            console.log("Token parsing failed:", e.message);
-        }
+        }),
 
-        const email = String(emailFromToken).trim().toLowerCase();
-        const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
-        return {
-            id: email,
-            userType: result?.USER_TYPE || "UNKNOWN",
-            costcenters: result?.CC || "UNKNOWN",
-            userId: result?.EEID || "UNKNOWN",
-            name: result?.NAME || "UNKNOWN",
-            position: result?.POSITION_NAME || "UNKNOWN",
-            origin: sOrigin, 
-            grade: result?.GRADE || "UNKNOWN",
-            department: result?.DEP || "UNKNOWN"
-        };
-    });
+        srv.on('batchCreateDependent', async (req) => {
+            const { ZEMP_DEPENDENT } = srv.entities;
+            try {
+                const { dependents } = req.data;
+                if (!dependents || dependents.length === 0) {
+                    throw new Error('No Data Sent')
+                }
+                const tx = cds.tx(req);
+                const results = await tx.run(
+                    UPSERT(dependents).into(ZEMP_DEPENDENT)
+                );
+                return 'Records updated';
+            } catch (error) {
+                req.error(400, `Fail creating record: ${error.message}`);
+            }
+        }),
+
+        srv.on('getUserType', async (req) => {
+            const { ZEMP_MASTER } = srv.entities;
+            const emailFromToken =
+                req.user?.attr?.email ||
+                req.user?.attr?.mail ||
+                req.user?.attr?.user_name ||
+                req.user?.attr?.login_name ||
+                req.user?.id ||
+                "";
+
+            let sOrigin = null;
+            try {
+                const authHeader = req.http?.req?.headers?.authorization ?? '';
+                const token = authHeader.split(' ')[1];
+                if (token) {
+                    const oToken = JSON.parse(
+                        Buffer.from(token.split('.')[1], 'base64url').toString('utf8')
+                    );
+                    sOrigin = oToken.origin;
+                }
+            } catch (e) {
+                console.log("Token parsing failed:", e.message);
+            }
+
+            const email = String(emailFromToken).trim().toLowerCase();
+            const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
+            return {
+                id: email,
+                userType: result?.USER_TYPE || "UNKNOWN",
+                costcenters: result?.CC || "UNKNOWN",
+                userId: result?.EEID || "UNKNOWN",
+                name: result?.NAME || "UNKNOWN",
+                position: result?.POSITION_NAME || "UNKNOWN",
+                origin: sOrigin,
+                grade: result?.GRADE || "UNKNOWN",
+                department: result?.DEP || "UNKNOWN"
+            };
+        });
 
     srv.on('runjob', req => {
         console.log('==> [APP JOB LOG] Job is running . . .');
@@ -115,7 +115,7 @@ module.exports = (srv) => {
             operationHidden = true;
         } else if (user_type === Constant.UserType.DTD_ADMIN || user_type === Constant.UserType.SUPER_ADMIN) {
             operationHidden = false;
-        } 
+        }
 
         return {
             operationHidden: operationHidden,
@@ -224,8 +224,8 @@ module.exports = (srv) => {
                     COMMITMENT_ITEM: entry.COMMITMENT_ITEM
                 };
 
-                let budgetRecord = entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM 
-                    ? await tx.run(SELECT.one.from(ZBUDGET).where(condition).forShareLock()) 
+                let budgetRecord = entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM
+                    ? await tx.run(SELECT.one.from(ZBUDGET).where(condition).forShareLock())
                     : await tx.run(SELECT.one.from(ZBUDGET).where(condition));
 
                 if (!budgetRecord) {
@@ -234,19 +234,19 @@ module.exports = (srv) => {
                     continue;
                 }
 
-                if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST || 
+                if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST ||
                     (entry.INDICATOR === Constant.BudgetSubmissionType.CLAIM && entry.ACTION === Constant.BudgetProcessingAction.SUBMIT)) {
                     const bSufficient = toNum(entry.AMOUNT) <= toNum(budgetRecord.BUDGET_BALANCE);
                     if (!bSufficient) {
                         error = true;
-                        errorResults.push({ 
-                            ...condition, 
+                        errorResults.push({
+                            ...condition,
                             STATUS: Constant.BudgetCheckStatus.INSUFFICIENT,
                             CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
                             AMOUNT: entry.AMOUNT,
-                            AVAILABLE: budgetRecord.BUDGET_BALANCE 
+                            AVAILABLE: budgetRecord.BUDGET_BALANCE
                         });
-                        continue; 
+                        continue;
                     }
                 }
 
@@ -275,27 +275,27 @@ module.exports = (srv) => {
 
                 await tx.run(
                     UPDATE(ZBUDGET)
-                    .set({
-                        CONSUMED: newConsumed.toFixed(2),
-                        COMMITMENT: newCommitment.toFixed(2),
-                        BUDGET_BALANCE: newBudgetBalance.toFixed(2),
-                        ACTUAL: newActual.toFixed(2)
-                    })
-                    .where(condition)
+                        .set({
+                            CONSUMED: newConsumed.toFixed(2),
+                            COMMITMENT: newCommitment.toFixed(2),
+                            BUDGET_BALANCE: newBudgetBalance.toFixed(2),
+                            ACTUAL: newActual.toFixed(2)
+                        })
+                        .where(condition)
                 );
 
-                successResults.push({ 
-                    ...condition, 
+                successResults.push({
+                    ...condition,
                     STATUS: Constant.BudgetCheckStatus.UPDATED,
                     CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM,
                     NEW_CONSUMED: newConsumed,
-                    NEW_BUDGETBALANCE: newBudgetBalance 
+                    NEW_BUDGETBALANCE: newBudgetBalance
                 });
             }
 
             if (error) {
                 await tx.rollback();
-                return { results: errorResults }; 
+                return { results: errorResults };
             }
 
             await tx.commit();
@@ -306,7 +306,7 @@ module.exports = (srv) => {
             req.error(400, `Budget checking failed: ${err.message}`);
         }
     });
-    
+
     srv.before('CREATE', 'ZREQUEST_HEADER', async (req) => {
         const tx = cds.tx(req);
         const range_id = Constant.NumberRange.REQUEST;
@@ -314,7 +314,7 @@ module.exports = (srv) => {
         const row = await tx.run(
             SELECT.one.from('ZNUM_RANGE')
                 .where({ RANGE_ID: String(range_id) })
-                .forUpdate() 
+                .forUpdate()
         );
 
         if (!row) return req.error(404, `Range ID ${range_id} not found`);
@@ -322,13 +322,13 @@ module.exports = (srv) => {
         const prefix = row.PREFIX || "";
         const current = Number(row.CURRENT || 0);
         const yy = String(new Date().getFullYear()).slice(-2);
-        
+
         const nextNumber = `${prefix}${yy}${String(current).padStart(9, "0")}`;
         req.data.REQUEST_ID = String(nextNumber);
 
         await tx.run(
             UPDATE('ZNUM_RANGE')
-                .set({ CURRENT: String(current + 1) }) 
+                .set({ CURRENT: String(current + 1) })
                 .where({ RANGE_ID: String(range_id) })
         );
 
@@ -350,11 +350,11 @@ module.exports = (srv) => {
             data.EST_NO_PARTICIPANT = 1;
         }
 
-        const participants = data.PARTICIPANTS || []; 
+        const participants = data.PARTICIPANTS || [];
         if (participants.length > 0) {
             const allocatedTotal = participants.reduce((sum, p) => sum + (Number(p.ALLOCATED_AMOUNT) || 0), 0);
             const estAmount = Number(data.EST_AMOUNT) || 0;
-            
+
             if (allocatedTotal > estAmount) {
                 return req.error(400, "Total participant allocated amount exceeds the Item's Estimated Amount.");
             }
@@ -379,8 +379,8 @@ module.exports = (srv) => {
                 SUM(EST_AMOUNT) as TotalEstAmount,
                 SUM(CASE WHEN CASH_ADVANCE = true THEN EST_AMOUNT ELSE 0 END) as TotalCashAdvance
             `
-            .from('ZREQUEST_ITEM')
-            .where({ REQUEST_ID: sRequestId })
+                .from('ZREQUEST_ITEM')
+                .where({ REQUEST_ID: sRequestId })
         );
 
         const totalEstAmount = result.TotalEstAmount || 0;
@@ -388,13 +388,13 @@ module.exports = (srv) => {
 
         await tx.run(
             UPDATE('ZREQUEST_HEADER')
-            .set({ 
-                PREAPPROVAL_AMOUNT: totalEstAmount,
-                CASH_ADVANCE: totalCashAdvance
-            })
-            .where({ REQUEST_ID: sRequestId })
+                .set({
+                    PREAPPROVAL_AMOUNT: totalEstAmount,
+                    CASH_ADVANCE: totalCashAdvance
+                })
+                .where({ REQUEST_ID: sRequestId })
         );
-        
+
         console.log(`Updated Header ${sRequestId}: PreApproval=${totalEstAmount}, CashAdvance=${totalCashAdvance}`);
     }
 
@@ -405,15 +405,15 @@ module.exports = (srv) => {
 
     srv.after('UPDATE', 'ZREQUEST_ITEM', async (data, req) => {
         const tx = cds.tx(req);
-        const requestId = data.REQUEST_ID || req.data.REQUEST_ID; 
-        
+        const requestId = data.REQUEST_ID || req.data.REQUEST_ID;
+
         if (requestId) {
             await updateHeaderTotals(req, requestId, tx);
         } else {
-             const itemKeys = req.query.UPDATE.entity.keys || [req.data];
-             if(itemKeys && itemKeys.length > 0 && itemKeys[0].REQUEST_ID) {
-                 await updateHeaderTotals(req, itemKeys[0].REQUEST_ID, tx);
-             }
+            const itemKeys = req.query.UPDATE.entity.keys || [req.data];
+            if (itemKeys && itemKeys.length > 0 && itemKeys[0].REQUEST_ID) {
+                await updateHeaderTotals(req, itemKeys[0].REQUEST_ID, tx);
+            }
         }
     });
 
@@ -429,5 +429,23 @@ module.exports = (srv) => {
     /* Above are Jefry's functions with the help of Ain. Don't slot your function in between tq. You are making my life harder. Appreciate it. */
     /* ======================================================================================================================================= */
 
+    srv.on('onFinalApproveInsert', async (req) => {
+        const { ZCLM_APPR_REQ_STAT } = srv.entities;
+        try {
+            const { FinalApproveRequest } = req.data;
+            if (!FinalApproveRequest || FinalApproveRequest.length === 0) {
+                throw new Error('No Data Sent')
+            }
+            const tx = cds.tx(req);
+            const results = await tx.run(
+                INSERT(FinalApproveRequest).into(ZCLM_APPR_REQ_STAT)
+            );
+            await tx.commit();
+            console.log(results);
+            return { success: true, 'Results': results };
+        } catch (error) {
+            req.error(400, `Fail creating record: ${error.message}`);
+        }
+    });
 
 }
