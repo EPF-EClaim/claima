@@ -18,7 +18,7 @@ sap.ui.define([
 
             // Switch Based on Claim Item Type
             for (var oRule of aRules) {
-                var bSkipChecking = "";
+                var bSkipChecking = false;
                 switch (oPayload.ClaimTypeItem) {
                     case Constants.ClaimTypeItem.DOBI:
                         var iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.FIELDNAME.TRAVEL_DAYS_ID);
