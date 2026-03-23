@@ -728,8 +728,8 @@
                                             selectedKey="{request>/req_item/cash_advance}" 
                                             enabled="{= ${request>/view} !== 'view' }">
                                             <items>
-                                                <core:Item key="no_cashadv" text="No"/>
-                                                <core:Item key="yes_cashadv" text="Yes"/>
+                                                <core:Item key="false" text="No"/>
+                                                <core:Item key="true" text="Yes"/>
                                             </items>
                                         </m:Select>
                                     </form:fields>

@@ -24,6 +24,7 @@ sap.ui.define([
 	'claima/utils/Utility',
 	"claima/utils/ApproverUtility",
 	"claima/utils/workflowApproval",
+	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
 	"claima/utils/Attachment"
 
 ], function (
@@ -52,6 +53,7 @@ sap.ui.define([
 	Utility,
 	ApproverUtility,
 	workflowApproval,
+	EligibleScenarioCheck,
 	Attachment
 ) {
 	"use strict";
@@ -66,12 +68,13 @@ sap.ui.define([
 		_ReqAttachmentFile2: null,
 
 		onInit() {
+			// initialize Constants file
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._fragments = Object.create(null);
 
 			// URL Access
-			const oRouter = this.getOwnerComponent().getRouter();
-			oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
+			this._oRouter = this.getOwnerComponent().getRouter();
+			this._oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
 		},
 
 		/* =========================================================
@@ -1042,7 +1045,8 @@ sap.ui.define([
 					return; 
 				}
 
-				const oPayload = PARequestSharedFunction.generateEligibilityCheckPayload(this);
+				var oPayload = PARequestSharedFunction.generateEligibilityCheckPayload(this);
+				var oCheckResult = await EligibleScenarioCheck.onEligibilityCheck(oModel, oPayload);
 
 				if (isEdit) {
 					const sReqSubId = String(oData.req_item.req_subid || "").trim();
