@@ -299,7 +299,7 @@ sap.ui.define([
 			var sDate			= new Date(oHeader.reqdate);
 			var sYear			= String(sDate.getFullYear());
 			var sFundCenter		= oHeader.costcenter;
-			var sInternalCode	= oHeader.projectcode || "-";
+			var sInternalCode	= oHeader.projectcode || "1";
 
 			return aItemRows.map(row => {
 				return {
