@@ -122,6 +122,9 @@ sap.ui.define([
             "PROJ_CODE1": "1",
             "PROJ_CODE2": "2",
         },
+        "Email_Action": {
+            "NOTIFY": "Notify"
+        },
         "Entities": {
             "ZAPPROVER_DETAILS_PREAPPROVAL": "/ZAPPROVER_DETAILS_PREAPPROVAL",
             "ZAPPROVER_DETAILS_CLAIMS": "/ZAPPROVER_DETAILS_CLAIMS",

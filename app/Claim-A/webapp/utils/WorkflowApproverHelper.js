@@ -8,6 +8,20 @@ sap.ui.define([
 
     return {
         /**
+         * Sanity check function
+         * 
+         * @param {*} oValue - the variable to check
+         * @param {string} SI18nKey - key in i18n for the error message
+         * @returns {boolean}
+         */
+        sanityCheck: function (oValue, sI18nKey) {
+            if (oValue === null || oValue === undefined) {
+                MessageToast.show(Utility.getText(this, sI18nKey))
+                return false;    // ✅ Caller can "return" if needed
+            }
+            return true;
+        },
+        /**
          * Fetch Submission Type Description from ZSUBMISSION_TYPE by Submission Type ID
          *
          * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
@@ -17,14 +31,8 @@ sap.ui.define([
         getSubmissionTypeDesc: async function (oModel, sSubmissionTypeID) {
 
             // --- Sanity check ---
-            if (!oModel) {
-                MessageToast.show(Utility.getText(this, "msg_failed_omodel_undefined"))
-                return null;
-            }
-            if (!sSubmissionTypeID) {
-                MessageToast.show(Utility.getText(this, "msg_failed_submission_type_id_undefined"))
-                return null;
-            }
+            if (!this.sanityCheck(oModel, "msg_failed_omodel_undefined")) return null;
+            if (!this.sanityCheck(sSubmissionTypeID, "msg_failed_submission_type_id_undefined")) return null;
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
@@ -70,14 +78,8 @@ sap.ui.define([
         getRequestTypeDesc: async function (oModel, sRequestTypeID) {
 
             // --- Sanity check ---
-            if (!oModel) {
-                MessageToast.show(Utility.getText(this, "msg_failed_omodel_undefined"))
-                return null;
-            }
-            if (!sSubmissionTypeID) {
-                MessageToast.show(Utility.getText(this, "msg_failed_request_type_id_undefined"))
-                return null;
-            }
+            if (!this.sanityCheck(oModel, "msg_failed_omodel_undefined")) return null;
+            if (!this.sanityCheck(sRequestTypeID, "msg_failed_request_type_id_undefined")) return null;
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
@@ -124,14 +126,8 @@ sap.ui.define([
 
             let iRank = 0;
             // --- Sanity check ---
-            if (!oModel) {
-                MessageToast.show(Utility.getText(this, "msg_failed_omodel_undefined"))
-                return null;
-            }
-            if (!sEEID) {
-                MessageToast.show(Utility.getText(this, "msg_failed_eeid_undefined"))
-                return null;
-            }
+            if (!this.sanityCheck(oModel, "msg_failed_omodel_undefined")) return null;
+            if (!this.sanityCheck(sEEID, "msg_failed_eeid_undefined")) return null;
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
@@ -191,14 +187,8 @@ sap.ui.define([
         getSubstitute: async function (oModel, sApproverEEID, dDate = new Date()) {
 
             // --- Sanity check ---
-            if (!oModel) {
-                MessageToast.show(Utility.getText(this, "msg_failed_omodel_undefined"))
-                return null;
-            }
-            if (!sApproverEEID) {
-                MessageToast.show(Utility.getText(this, "msg_failed_eeid_undefined"))
-                return null;
-            }
+            if (!this.sanityCheck(oModel, "msg_failed_omodel_undefined")) return null;
+            if (!this.sanityCheck(sEEID, "msg_failed_eeid_undefined")) return null;
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
@@ -259,18 +249,9 @@ sap.ui.define([
             let oData = null;
             let oBudgetOwner = null;
             // --- Sanity check ---
-            if (!oModel) {
-                MessageToast.show(Utility.getText(this, "msg_failed_omodel_undefined"))
-                return null;
-            }
-            if (!sCostCenter) {
-                MessageToast.show(Utility.getText(this, "msg_failed_cost_center_undefined"))
-                return null;
-            }
-            if (!sYear) {
-                MessageToast.show(Utility.getText(this, "msg_failed_year_undefined"))
-                return null;
-            }
+            if (!this.sanityCheck(oModel, "msg_failed_omodel_undefined")) return null;
+            if (!this.sanityCheck(sCostCenter, "msg_failed_cost_center_undefined")) return null;
+            if (!this.sanityCheck(sYear, "msg_failed_year_undefined")) return null;
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
@@ -325,14 +306,8 @@ sap.ui.define([
 
             let iRank = 0;
             // --- Sanity check ---
-            if (!oModel) {
-                MessageToast.show(Utility.getText(this, "msg_failed_omodel_undefined"))
-                return null;
-            }
-            if (!sEmail) {
-                MessageToast.show(Utility.getText(this, "msg_failed_eeid_undefined"))
-                return null;
-            }
+            if (!this.sanityCheck(oModel, "msg_failed_omodel_undefined")) return null;
+            if (!this.sanityCheck(sEmail, "msg_failed_eeid_undefined")) return null;
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
@@ -390,10 +365,7 @@ sap.ui.define([
          */
         getRoleRank: async function (oModel, sRole) {
             // --- Sanity check ---
-            if (!oModel) {
-                MessageToast.show(Utility.getText(this, "msg_failed_omodel_undefined"))
-                return null;
-            }
+            if (!this.sanityCheck(oModel, "msg_failed_omodel_undefined")) return null;
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
@@ -435,14 +407,8 @@ sap.ui.define([
         getConstants: async function (oModel, sID) {
 
             // --- Sanity check ---
-            if (!oModel) {
-                MessageToast.show(Utility.getText(this, "msg_failed_omodel_undefined"))
-                return null;
-            }
-            if (!sID) {
-                MessageToast.show(Utility.getText(this, "msg_failed_id_undefined"))
-                return null;
-            }
+            if (!this.sanityCheck(oModel, "msg_failed_omodel_undefined")) return null;
+            if (!this.sanityCheck(sID, "msg_failed_id_undefined")) return null;
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");

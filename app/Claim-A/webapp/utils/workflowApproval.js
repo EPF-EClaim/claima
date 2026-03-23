@@ -36,7 +36,6 @@ sap.ui.define([
             }
             catch(oError){
                 MessageToast.show(Utility.getText(this, "msg_failed_generic_error", [oError]));
-                throw new Error(Utility.getText(this, "msg_failed_generic_error", [oError]));
             }
             
 
@@ -94,7 +93,6 @@ sap.ui.define([
             const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
             if(oClaimantDetails === null){
                 MessageToast.show(Utility.getText(this, "msg_failed_no_claimant"))
-                throw new Error(Utility.getText(this, "msg_failed_no_claimant"));
             }
 
             // Retrieve Submission Type Description for use of email notification function
@@ -351,7 +349,6 @@ sap.ui.define([
                                     oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
                                     if(!oBudgetDetails){
                                         MessageToast.show(Utility.getText(this, "msg_failed_no_budget"));
-                                        throw new Error(Utility.getText(this, "msg_failed_no_budget"));
                                     }else{
                                         oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
                                         if(oApproverDetails != null){
@@ -365,7 +362,6 @@ sap.ui.define([
                                     }
                                 }else{
                                     MessageToast.show(Utility.getText(this, "msg_failed_no_cost_center"));
-                                    throw new Error(Utility.getText(this, "msg_failed_no_cost_center"));
                                 }
                                 break;
                             case Constants.User_Type.CEO_FI:
@@ -389,11 +385,9 @@ sap.ui.define([
                                             }else{
 
                                                 MessageToast.show(Utility.getText(this, "msg_failed_no_approver_details", [id.VALUE]));
-                                                throw new Error(Utility.getText(this, "msg_failed_no_approver_details", [id.VALUE]));
                                             }
                                         }else{
                                             MessageToast.show(Utility.getText(this, "msg_failed_no_approver"));
-                                            throw new Error(Utility.getText(this, "msg_failed_no_approver"));
                                         }
                                     }
                                 }
@@ -487,8 +481,8 @@ sap.ui.define([
                 for (const oApprover of aApproversDetails){
                     if(!oSeen.has(oApprover.EEID)){
                         oSeen.add(oApprover.EEID);
-                        sLevel = iLevel + 1;
-                        oApprover.LEVEL = sLevel;
+                        iLevel = iLevel + 1;
+                        oApprover.LEVEL = iLevel;
                         aUniqueApproversDetails.push(oApprover);
                     }
                 }
@@ -623,7 +617,7 @@ sap.ui.define([
                             "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
                             "ClaimID":sClaimID, 
                             "RecipientName": oApprover.APPROVER_NAME, 
-                            "Action": "Notify", 
+                            "Action": Constants.Email_Action.NOTIFY, 
                             "ReceiverEmail":oApprover.APPROVER_EMAIL,
                             "NextApproverName":""
                         });
@@ -636,7 +630,7 @@ sap.ui.define([
                                 "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
                                 "ClaimID":sClaimID, 
                                 "RecipientName":oApprover.SUB_NAME, 
-                                "Action": "Notify", 
+                                "Action": Constants.Email_Action.NOTIFY, 
                                 "ReceiverEmail":oApprover.SUB_EMAIL,
                                 "NextApproverName":""
                             }); 
@@ -742,7 +736,6 @@ sap.ui.define([
                 */
             }catch(oError){
                 MessageToast.show(Utility.getText(this, "msg_failed_generic_error", [oError]));
-                throw new Error(Utility.getText(this, "msg_failed_generic_error", [oError]));
             }	
 			
         },
@@ -773,7 +766,6 @@ sap.ui.define([
             const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
             if(oClaimantDetails === null){
                 MessageToast.show(Utility.getText(this, "msg_failed_no_claimant"))
-                throw new Error(Utility.getText(this, "msg_failed_no_claimant"));
             }
 
             // Retrieve Submission Type Description for use of email notification function
@@ -965,7 +957,6 @@ sap.ui.define([
                                     oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
                                     if(!oBudgetDetails){
                                         MessageToast.show(Utility.getText(this, "msg_failed_no_budget"));
-                                        throw new Error(Utility.getText(this, "msg_failed_no_budget"));
                                     }else{
                                         oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
                                         if(oApproverDetails != null){
@@ -979,7 +970,6 @@ sap.ui.define([
                                     }
                                 }else{
                                     MessageToast.show(Utility.getText(this, "msg_failed_no_cost_center"));
-                                    throw new Error(Utility.getText(this, "msg_failed_no_cost_center"));
                                 }
                                 break;
                             case Constants.User_Type.CEO_FI:
@@ -1002,11 +992,9 @@ sap.ui.define([
                                             });
                                             }else{
                                                 MessageToast.show(Utility.getText(this, "msg_failed_no_approver_details", [id.VALUE]));
-                                                throw new Error(Utility.getText(this, "msg_failed_no_approver_details", [id.VALUE]));
                                             }
                                         }else{
                                             MessageToast.show(Utility.getText(this, "msg_failed_no_approver"));
-                                            throw new Error(Utility.getText(this, "msg_failed_no_approver"));
                                         }
                                     }
                                 }
@@ -1103,7 +1091,7 @@ sap.ui.define([
                 for (const oApprover of aApproversDetails){
                     if(!oSeen.has(oApprover.EEID)){
                         oSeen.add(oApprover.EEID);
-                        sLevel = iLevel + 1;
+                        iLevel = iLevel + 1;
                         oApprover.LEVEL = iLevel;
                         aUniqueApproversDetails.push(oApprover);
                     }
@@ -1238,7 +1226,7 @@ sap.ui.define([
                             "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
                             "ClaimID":sClaimID, 
                             "RecipientName":oApprover.APPROVER_NAME, 
-                            "Action": "Notify", 
+                            "Action": Constants.Email_Action.NOTIFY, 
                             "ReceiverEmail":oApprover.APPROVER_EMAIL,
                             "NextApproverName":""
                         });
@@ -1251,7 +1239,7 @@ sap.ui.define([
                                 "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
                                 "ClaimID":sClaimID, 
                                 "RecipientName":oApprover.SUB_NAME, 
-                                "Action": "Notify", 
+                                "Action": Constants.Email_Action.NOTIFY, 
                                 "ReceiverEmail":oApprover.SUB_EMAIL,
                                 "NextApproverName":""
                             }); 
@@ -1356,7 +1344,6 @@ sap.ui.define([
                 */
             }catch(oError){
                 MessageToast.show(Utility.getText(this, "msg_failed_generic_error", [oError]));
-                throw new Error(Utility.getText(this, "msg_failed_generic_error", [oError]));
             }
         },
         /**
