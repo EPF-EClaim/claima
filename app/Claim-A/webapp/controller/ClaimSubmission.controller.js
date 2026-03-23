@@ -1638,7 +1638,7 @@ sap.ui.define([
 					}, 400);
 
 				} catch (oErrorMessage) {
-					MessageToast.show(Utility.getText(this, oErrorMessage.sCode));
+					MessageToast.show(Utility.getText(oErrorMessage.sCode));
 					setTimeout(() => {
 						this._fnGoToDashboard();
 					}, 400);
@@ -1721,7 +1721,7 @@ sap.ui.define([
 					this._fnGoToDashboard();
 				}, 400);
 			} catch (oErrorReject) {
-				MessageToast.show(Utility.getText(this, oErrorReject.sCode));
+				MessageToast.show(Utility.getText(oErrorReject.sCode));
 				setTimeout(() => {
 					this._fnGoToDashboard();
 				}, 400);
@@ -1796,7 +1796,7 @@ sap.ui.define([
 
 
 			} catch (oErrorSendBack) {
-				MessageToast.show(Utility.getText(this, oErrorSendBack.sCode));
+				MessageToast.show(Utility.getText(oErrorSendBack.sCode));
 				setTimeout(() => {
 					this._fnGoToDashboard();
 				}, 400);

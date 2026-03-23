@@ -68,9 +68,6 @@ sap.ui.define([
 	return Controller.extend("claima.controller.App", {
 
 		onInit: async function () {
-			// Initialize the utility 
-			Utility.init(this.getOwnerComponent());
-
 			this._oConstant 		= this.getOwnerComponent().getModel("constant").getData();
 			this._oRouter 			= this.getOwnerComponent().getRouter();
 			this._oDataModel		= this.getOwnerComponent().getModel();
@@ -1508,7 +1505,7 @@ sap.ui.define([
 
 				if (!bOkCode) {
 					BusyIndicator.hide();
-					MessageBox.error(Utility.getText(this, sErrorMessage));
+					MessageBox.error(Utility.getText(sErrorMessage));
 				} else {
 						var sAttachment1Binary = await Attachment.getFileAsBinary(oDialogData.doc1);
 						var sAttachment1SFId = await Attachment.postAttachment(oDialogData.doc1.name, sAttachment1Binary, sEmpId);
