@@ -104,6 +104,8 @@ sap.ui.define([
 			await PARequestSharedFunction._getHeader(this, sReqId);
 			await PARequestSharedFunction._getItemList(this, sReqId);
 			this._showItemList(sReqId);
+
+			MessageToast.show(Utility.getText(this, "prereq"));
 		},
 
 		/* =========================================================
@@ -238,8 +240,10 @@ sap.ui.define([
 								this.oDeleteDialog.getBeginButton().setEnabled(false);
 								BusyIndicator.show(0);
 
+								const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
+
 								// update status to CANCELLED
-								await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.CANCELLED);
+								await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.CANCELLED);
 
 								MessageToast.show(Utility.getText(this, "req_tm_s_delete_request"));
 								this.oDeleteDialog.close();
@@ -295,7 +299,7 @@ sap.ui.define([
 								BusyIndicator.show(0);
 
 								// budget checking
-								const aResult = budgetCheck.backendBudgetChecking(this);
+								// const aResult = budgetCheck.backendBudgetChecking(this, "REQ");
 
 								// budget checking error handling with aResult , wip
 
@@ -957,11 +961,8 @@ sap.ui.define([
 		},
 
 		async onSaveAddAnother(oEvent) {
-			await this.onSave(oEvent, true); // saves current
-			// Re-open create form fresh
-			// await this._showItemCreate("create");
-
-			// Reset create buffers
+			await this.onSave(oEvent, true);
+			
 			this._setAllControlsVisible(false);
 			const oData = this._oReqModel.getData();
 			oData.req_item = {};
@@ -991,7 +992,7 @@ sap.ui.define([
 
 			// Eligibility Checking
 			// var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this);
-			// var oResult = EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, oPayload);
+			// var oResult = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, oPayload);
 
 			BusyIndicator.show(0);
 

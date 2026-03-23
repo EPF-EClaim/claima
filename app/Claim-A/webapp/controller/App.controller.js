@@ -1568,6 +1568,7 @@ sap.ui.define([
 				const sNewReqId = oContext.getProperty("REQUEST_ID");
 
 				if (sNewReqId) {
+					this.oDialogFragment.close();
 
 					await Attachment.postMDF(sNewReqId, oInputData.doc1?.split(" - ")[0], oInputData.doc2?.split(" - ")[0]);
 					
