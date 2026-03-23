@@ -188,7 +188,7 @@ sap.ui.define([
 
             // --- Sanity check ---
             if (!this.sanityCheck(oModel, "msg_failed_omodel_undefined")) return null;
-            if (!this.sanityCheck(sEEID, "msg_failed_eeid_undefined")) return null;
+            if (!this.sanityCheck(sApproverEEID, "msg_failed_eeid_undefined")) return null;
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
