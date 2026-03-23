@@ -351,7 +351,7 @@ sap.ui.define([
                                         MessageToast.show(Utility.getText(this, "msg_failed_no_budget"));
                                     }else{
                                         oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
-                                        if(oApproverDetails != null){
+                                        if(oApproverDetails){
                                             aApproversDetails.push({
                                                 EEID:   oApproverDetails.EEID,
                                                 NAME:   oApproverDetails.NAME,
@@ -400,8 +400,6 @@ sap.ui.define([
                         if(oPrevOutcome == null){
                             // Block to perform logic checking for first level approver
 
-                            //oPrevOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
-                            //console.log(oCurrentOutcome.RANK);
                             if(oClaimantDetails.RANK < oCurrOutcome.RANK){
                                 iApproverRank = oCurrOutcome.RANK;
                             }
@@ -432,7 +430,7 @@ sap.ui.define([
                         }   
                         // Retrieve Approver based on iApproverRank
                         oApproverDetails = await this.getApprover(oModel, sEmpID, iApproverRank);
-                        if(oApproverDetails != null){
+                        if(oApproverDetails){
                             aApproversDetails.push({
                                 EEID:   oApproverDetails.EEID,
                                 NAME:   oApproverDetails.NAME,
@@ -443,33 +441,10 @@ sap.ui.define([
                     } 
 
                     // Check if approver is found. If approver not found, do not store approver rank and current outcome
-                    if(oApproverDetails !== null){
+                    if(oApproverDetails){
                         iApproverRank = Number(oApproverDetails.RANK);                    
                         oPrevOutcome = oCurrOutcome;
                     }
-                    
-                    /**
-
-
-                    for(var x = 0; x < aAllEmpWithSameDepData.length; x++){
-                        if(aWorkflowApprStep[i] == aAllEmpWithSameDepData[x].ROLE){
-                            aApprEmpID.push(aAllEmpWithSameDepData[x].EEID)						
-                        }else if(aWorkflowApprStep[i] == "Budget" && x == 0){
-                            const oListBudgetBinding = oModel.bindList("/ZBUDGET", null,null, [
-                                new Filter({ path: "YEAR", operator: FilterOperator.EQ, value1: sClaimSubmissionYear }),
-                                new Filter({ path: "FUND_CENTER", operator: FilterOperator.EQ, value1: sClaimsAltCC })
-                            ], null);
-                            const aContexts = await oListBudgetBinding.requestContexts();
-                            const aData = aContexts.map(oContext => oContext.getObject());
-                            const oListEmpBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                                new Filter({ path: "EMAIL", operator: FilterOperator.EQ, value1: aData[0].BUDGET_OWNER_ID })
-                            ], null);
-                            const aEEIDContexts = await oListEmpBinding.requestContexts();
-                            const aEEIDData = aEEIDContexts.map(oContext => oContext.getObject());
-                            aApprEmpID.push(aEEIDData[0].EEID);
-                        }
-                    }
-                     */
                 }
                 // at the end of approver determination, do the following
                 // 1. Remove duplicate approvers
@@ -520,29 +495,6 @@ sap.ui.define([
                     SUB_EMAIL:       sSubstitute_email
                 });
             }
-            /**
-			let aSubEmpID = [];
-			//search for substitute
-            if(aApprEmpID[0] != "Auto"){
-                for(var i = 0; i < aApprEmpID.length; i++){
-                    
-                    const oListSubRulesBinding = oModel.bindList("/ZSUBSTITUTION_RULES", null,null, [
-                        new Filter({ path: "USER_ID", operator: FilterOperator.EQ, value1: aApprEmpID[i] }),
-                        new Filter({ path: "VALID_FROM", operator: FilterOperator.LE, value1: sClaimsSubmissionDate }),
-                        new Filter({ path: "VALID_TO", operator: FilterOperator.GE, value1: sClaimsSubmissionDate })
-                        
-                    ], null);
-                    const aSubEmpContexts = await oListSubRulesBinding.requestContexts();
-                    const aSubEmpData = aSubEmpContexts.map(oContext => oContext.getObject());
-
-                    if(aSubEmpData[0] != null && aSubEmpData[0] != "" && aSubEmpData[0] != undefined){
-                        aSubEmpID.push(aSubEmpData[0].SUBSTITUTE_ID);
-                    }else{
-                        aSubEmpID.push(null);
-                    }
-			    }
-            }
-			*/
 
 			//create ZAPPROVER DETAILS
 			const oBindApprDetailsList = oModel.bindList(Constants.Entities.ZAPPROVER_DETAILS_CLAIMS);
@@ -555,43 +507,12 @@ sap.ui.define([
 
                 var oContext = oBindApprDetailsList.create({
                     "CLAIM_ID": sClaimID,
-                    //"LEVEL": "0",
                     "LEVEL": oApprover.LEVEL,
-                    //"APPROVER_ID": "Auto",
                     "APPROVER_ID": oApprover.APPROVER_EEID,
                     "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
                     "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
                 });
                 aCreatePromises.push(oContext.created());
-                /** 
-                if(aApprEmpID[i] == "Auto"){
-                    var oContext = oBindApprDetailsList.create({
-                        "CLAIM_ID": sClaimID,
-                        "LEVEL": "0",
-                        "APPROVER_ID": "Auto",
-                        "SUBSTITUTE_APPROVER_ID": aFullApproversDetails[i].SUB_EEID,
-                        "STATUS": "STAT05"
-                    });
-                }else{
-                    if(i == 0){                  
-                    var oContext = oBindApprDetailsList.create({
-                        "CLAIM_ID": sClaimID,
-                        "LEVEL": i+1,
-                        "APPROVER_ID": aApprEmpID[i],
-                        "SUBSTITUTE_APPROVER_ID": aSubEmpID[i],
-                        "STATUS": "STAT02"
-                        });
-                    }else{
-                        var oContext = oBindApprDetailsList.create({
-                            "CLAIM_ID": sClaimID,
-                            "LEVEL": i+1,
-                            "APPROVER_ID": aApprEmpID[i],
-                            "SUBSTITUTE_APPROVER_ID": aSubEmpID[i],
-                            "STATUS": null
-                        });
-                    }
-                }
-                */
 			}
 
             // submit the batch
@@ -600,7 +521,6 @@ sap.ui.define([
             // wait for all created
             const aCreatedContext = await Promise.all(aCreatePromises);
 
-            //oContext.created().then(async function (){
             try{
             // Send email notification to first level approver or
             // Start Final Approve Step for Auto approve
@@ -651,89 +571,6 @@ sap.ui.define([
                 // wait for all created
                 const aCreatedContext = await Promise.all(aCreatePromises);
                 
-
-                /** 
-                if(aApprEmpID[0] != "Auto"){
-                    const oListApprDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                        new Filter({ path: "EEID", operator: FilterOperator.EQ, value1: aApprEmpID[0] })
-                    ], null);
-                    const aApprNameContexts = await oListApprDetailsBinding.requestContexts();
-                    const aApprNameData = aApprNameContexts.map(oContext => oContext.getObject());
-                    
-                    const oListClaimantDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                        new Filter({ path: "EEID", operator: FilterOperator.EQ, value1: sEmpID })
-                    ], null);
-                    const aClaimantNameContexts = await oListClaimantDetailsBinding.requestContexts();
-                    const aClaimantNameData = aClaimantNameContexts.map(oContext => oContext.getObject());
-
-                    if(aApprEmpID.length != 1){
-                        const oListNextApprBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                        new Filter({ path: "EEID", operator: FilterOperator.EQ, value1: aApprEmpID[1] })
-                        ], null);
-                        const aNextApprNameContexts = await oListNextApprBinding.requestContexts();
-                        const aNextApprNameData = aNextApprNameContexts.map(oContext => oContext.getObject());
-                        var sNextApprName = aNextApprNameData[0].NAME;
-                    }else{
-                        sNextApprName = null;
-                    }
-                
-                    const oListSubTypeBinding = oModel.bindList("/ZSUBMISSION_TYPE", null,null, [
-                        new Filter({ path: "SUBMISSION_TYPE_ID", operator: FilterOperator.EQ, value1: sClaimsSubmissionType })
-                    ], null);
-                    const aSubmissionTypeNameContexts = await oListSubTypeBinding.requestContexts();
-                    const aSubmissionTypeNameData = aSubmissionTypeNameContexts.map(oContext => oContext.getObject());
-
-                    if(aSubEmpID[0] != null){
-
-                        const oListSubDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                        new Filter({ path: "EEID", operator: FilterOperator.EQ, value1: aSubEmpID[0] })
-                        ], null);
-                        const aApprSubNameContexts = await oListSubDetailsBinding.requestContexts();
-                        const aApprSubNameData = aApprSubNameContexts.map(oContext => oContext.getObject());
-
-                        const aPayloadSub ={
-                            "ApproverName":aApprNameData[0].NAME, 
-                            "SubmissionDate":sClaimsSubmissionDate, 
-                            "ClaimantName":aClaimantNameData[0].NAME, 
-                            "ClaimType":aSubmissionTypeNameData[0].SUBMISSION_TYPE_DESC, 
-                            "ClaimID":sClaimID, 
-                            "RecipientName":aApprSubNameData[0].NAME, 
-                            "Action": "Notify", 
-                            "ReceiverEmail":aApprSubNameData[0].EMAIL, 
-                            "NextApproverName" : sNextApprName 
-                        }
-
-                        const aPayloadMain = {
-                            "ApproverName":aApprNameData[0].NAME, 
-                            "SubmissionDate":sClaimsSubmissionDate, 
-                            "ClaimantName":aClaimantNameData[0].NAME, 
-                            "ClaimType":aSubmissionTypeNameData[0].SUBMISSION_TYPE_DESC, 
-                            "ClaimID":sClaimID, 
-                            "RecipientName":aApprNameData[0].NAME, 
-                            "Action": "Notify", 
-                            "ReceiverEmail":aApprNameData[0].EMAIL, 
-                            "NextApproverName" : sNextApprName 
-                        }
-                        this.onSendEmail(oModel, aPayloadSub);
-                        this.onSendEmail(oModel, aPayloadMain);
-                    }else{
-                        const aPayload ={
-                            "ApproverName":aApprNameData[0].NAME, 
-                            "SubmissionDate":sClaimsSubmissionDate, 
-                            "ClaimantName":aClaimantNameData[0].NAME, 
-                            "ClaimType":aSubmissionTypeNameData[0].SUBMISSION_TYPE_DESC, 
-                            "ClaimID":sClaimID, 
-                            "RecipientName":aApprNameData[0].NAME, 
-                            "Action": "Notify", 
-                            "ReceiverEmail":aApprNameData[0].EMAIL, 
-                            "NextApproverName" : sNextApprName 
-                        }                      
-                        this.onSendEmail(oModel, aPayload);        
-                    }
-                }else{
-                    FinalApproveStep.onFinalApprove(oModel, sClaimID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
-                }
-                */
             }catch(oError){
                 MessageToast.show(Utility.getText(this, "msg_failed_generic_error", [oError]));
             }	
@@ -959,7 +796,7 @@ sap.ui.define([
                                         MessageToast.show(Utility.getText(this, "msg_failed_no_budget"));
                                     }else{
                                         oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
-                                        if(oApproverDetails != null){
+                                        if(oApproverDetails){
                                             aApproversDetails.push({
                                                 EEID:   oApproverDetails.EEID,
                                                 NAME:   oApproverDetails.NAME,
@@ -1006,9 +843,6 @@ sap.ui.define([
                         // Block to check for Approver within the ZROLEHIERARCHY table
                         if(oPrevOutcome == null){
                             // Block to perform logic checking for first level approver
-
-                            //oPrevOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
-                            //console.log(oCurrentOutcome.RANK);
                             if(oClaimantDetails.RANK < oCurrOutcome.RANK){
                                 iApproverRank = oCurrOutcome.RANK;
                             }
@@ -1039,46 +873,21 @@ sap.ui.define([
                         }   
                         // Retrieve Approver based on iApproverRank
                         oApproverDetails = await this.getApprover(oModel, sEmpID, iApproverRank);
-                        if(oApproverDetails != null){
+                        if(oApproverDetails){
                             aApproversDetails.push({
                                 EEID:   oApproverDetails.EEID,
                                 NAME:   oApproverDetails.NAME,
                                 EMAIL:  oApproverDetails.EMAIL,
                                 LEVEL:  Number(i) + 1
                             });
-
-                            //aApproversDetails.push(oApproverDetails, Number(i) + 1);
                         }
                     } 
 
                     // Check if approver is found. If approver not found, do not store approver rank and current outcome
-                    if(oApproverDetails !== null){
+                    if(oApproverDetails){
                         iApproverRank = Number(oApproverDetails.RANK);                    
                         oPrevOutcome = oCurrOutcome;
                     }
-                /**     
-                
-                for(var i = 0; i < aWorkflowApprStep.length; i++){
-                    for(var x = 0; x < aAllEmpWithSameDepData.length; x++){
-                        if(aWorkflowApprStep[i] == aAllEmpWithSameDepData[x].ROLE){
-                            aApprEmpID.push(aAllEmpWithSameDepData[x].EEID)						
-                        }else if(aWorkflowApprStep[i] == "Budget" && x == 0){
-                            const oListBudgetBinding = oModel.bindList("/ZBUDGET", null,null, [
-                                new Filter({ path: "YEAR", operator: FilterOperator.EQ, value1: sParSubmissionYear }),
-                                new Filter({ path: "FUND_CENTER", operator: FilterOperator.EQ, value1: sParAltCC })
-                            ], null);
-                            const aContexts = await oListBudgetBinding.requestContexts();
-                            const aData = aContexts.map(oContext => oContext.getObject());
-                            //aApprEmpID.push(aData[0].BUDGET_OWNER_ID);
-                            const oListBudgetOwnerBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                                new Filter({ path: "EMAIL", operator: FilterOperator.EQ, value1: aData[0].BUDGET_OWNER_ID })
-                            ], null);
-                            const aEEIDContexts = await oListBudgetOwnerBinding.requestContexts();
-                            const aEEIDData = aEEIDContexts.map(oContext => oContext.getObject());
-                            aApprEmpID.push(aEEIDData[0].EEID);
-                        }
-                    }
-                    */
                 }
                 
                // at the end of approver determination, do the following
@@ -1130,29 +939,6 @@ sap.ui.define([
                     SUB_EMAIL:       sSubstitute_email
                 });
             }
-            /** 
-			let aSubEmpID = [];
-			//search for substitute
-            if(aApprEmpID[0] != "Auto"){
-                for(var i = 0; i < aApprEmpID.length; i++){
-
-                    const oListSubRulesBinding = oModel.bindList("/ZSUBSTITUTION_RULES", null,null, [
-                        new Filter({ path: "USER_ID", operator: FilterOperator.EQ, value1: aApprEmpID[i] }),
-                        new Filter({ path: "VALID_FROM", operator: FilterOperator.LE, value1: sParSubmissionDate }),
-                        new Filter({ path: "VALID_TO", operator: FilterOperator.GE, value1: sParSubmissionDate })
-                        
-                    ], null);
-                    const aSubEmpContexts = await oListSubRulesBinding.requestContexts();
-                    const aSubEmpData = aSubEmpContexts.map(oContext => oContext.getObject());
-
-                    if(aSubEmpData[0] != null && aSubEmpData[0] != "" && aSubEmpData[0] != undefined){
-                        aSubEmpID.push(aSubEmpData[0].SUBSTITUTE_ID);
-                    }else{
-                        aSubEmpID.push(null);
-                    }
-                }
-            }
-			*/
 			//create ZAPPROVER DETAILS
 			const oBindApprDetailsList = oModel.bindList(Constants.Entities.ZAPPROVER_DETAILS_PREAPPROVAL);
 
@@ -1171,36 +957,7 @@ sap.ui.define([
                     "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
                     "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
                 });
-                aCreatePromises.push(oContext.created());
-                /**
-				if(aApprEmpID[i] == "Auto"){
-                    var oContext = oBindApprDetailsList.create({
-                        "PREAPPROVAL_ID": sPARID,
-                        "LEVEL": "0",
-                        "APPROVER_ID": "Auto",
-                        "SUBSTITUTE_APPROVER_ID": null,
-                        "STATUS": "STAT05"
-                    });
-                }else{
-                    if(i == 0){
-                        var oContext = oBindApprDetailsList.create({
-                        "PREAPPROVAL_ID": sPARID,
-                        "LEVEL": i+1,
-                        "APPROVER_ID": aApprEmpID[i],
-                        "SUBSTITUTE_APPROVER_ID": aSubEmpID[i],
-                        "STATUS": "STAT02"
-					    });
-                    }else{
-                        var oContext = oBindApprDetailsList.create({
-                        "PREAPPROVAL_ID": sPARID,
-                        "LEVEL": i+1,
-                        "APPROVER_ID": aApprEmpID[i],
-                        "SUBSTITUTE_APPROVER_ID": aSubEmpID[i],
-                        "STATUS": null
-                        });
-                    }
-                } 
-                */           
+                aCreatePromises.push(oContext.created());         
 			}
 
             // submit the batch
@@ -1260,88 +1017,6 @@ sap.ui.define([
                 // wait for all created
                 const aCreatedContext = await Promise.all(aCreatePromises);
 
-                /** 
-                if(aApprEmpID[0] != "Auto"){
-                    const oListApprDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                        new Filter({ path: "EEID", operator: FilterOperator.EQ, value1: aApprEmpID[0] })
-                    ], null);
-                    const aApprNameContexts = await oListApprDetailsBinding.requestContexts();
-                    const aApprNameData = aApprNameContexts.map(oContext => oContext.getObject());
-
-                    const oListClaimantDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                        new Filter({ path: "EEID", operator: FilterOperator.EQ, value1: sEmpID })
-                    ], null);
-                    const aClaimantNameContexts = await oListClaimantDetailsBinding.requestContexts();
-                    const aClaimantNameData = aClaimantNameContexts.map(oContext => oContext.getObject());
-
-                    if(aApprEmpID.length != 1){
-                        const oListNextApprBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                        new Filter({ path: "EEID", operator: FilterOperator.EQ, value1: aApprEmpID[1] })
-                        ], null);
-                        const aNextApprNameContexts = await oListNextApprBinding.requestContexts();
-                        const aNextApprNameData = aNextApprNameContexts.map(oContext => oContext.getObject());
-                        var sNextApprName = aNextApprNameData[0].NAME;
-                    }else{
-                        sNextApprName = null;
-                    }
-
-                    const oListRequestTypeBinding = oModel.bindList("/ZREQUEST_TYPE", null,null, [
-                        new Filter({ path: "REQUEST_TYPE_ID", operator: FilterOperator.EQ, value1: sParSubmissionType })
-                    ], null);
-                    const aSubmissionTypeNameContexts = await oListRequestTypeBinding.requestContexts();
-                    const aSubmissionTypeNameData = aSubmissionTypeNameContexts.map(oContext => oContext.getObject());
-
-                    if(aSubEmpID[0] != null){
-
-                        const oListSubDetailsBinding = oModel.bindList("/ZEMP_MASTER", null,null, [
-                        new Filter({ path: "EEID", operator: FilterOperator.EQ, value1: aSubEmpID[0] })
-                        ], null);
-                        const aApprSubNameContexts = await oListSubDetailsBinding.requestContexts();
-                        const aApprSubNameData = aApprSubNameContexts.map(oContext => oContext.getObject());
-
-                        const aPayloadSub ={
-                            "ApproverName":aApprNameData[0].NAME, 
-                            "SubmissionDate":sParSubmissionDate, 
-                            "ClaimantName":aClaimantNameData[0].NAME, 
-                            "ClaimType":aSubmissionTypeNameData[0].REQUEST_TYPE_DESC, 
-                            "ClaimID":sPARID, 
-                            "RecipientName":aApprSubNameData[0].NAME, 
-                            "Action": "Notify", 
-                            "ReceiverEmail":aApprSubNameData[0].EMAIL, 
-                            "NextApproverName" : sNextApprName 
-                        }
-
-                        const aPayloadMain ={
-                            "ApproverName":aApprNameData[0].NAME, 
-                            "SubmissionDate":sParSubmissionDate, 
-                            "ClaimantName":aClaimantNameData[0].NAME, 
-                            "ClaimType":aSubmissionTypeNameData[0].REQUEST_TYPE_DESC, 
-                            "ClaimID":sPARID, 
-                            "RecipientName":aApprNameData[0].NAME, 
-                            "Action": "Notify", 
-                            "ReceiverEmail":aApprNameData[0].EMAIL, 
-                            "NextApproverName" : sNextApprName 
-                        }
-                        this.onSendEmail(oModel, aPayloadSub);
-                        this.onSendEmail(oModel, aPayloadMain);
-                    }else{
-                        const aPayload ={
-                            "ApproverName":aApprNameData[0].NAME, 
-                            "SubmissionDate":sParSubmissionDate, 
-                            "ClaimantName":aClaimantNameData[0].NAME, 
-                            "ClaimType":aSubmissionTypeNameData[0].REQUEST_TYPE_DESC, 
-                            "ClaimID":sPARID, 
-                            "RecipientName":aApprNameData[0].NAME, 
-                            "Action": "Notify", 
-                            "ReceiverEmail":aApprNameData[0].EMAIL, 
-                            "NextApproverName" : sNextApprName 
-                        }
-                        this.onSendEmail(oModel,aPayload);
-                    }
-                }else{
-                    FinalApproveStep.onFinalApprove(oModel, sPARID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
-                }
-                */
             }catch(oError){
                 MessageToast.show(Utility.getText(this, "msg_failed_generic_error", [oError]));
             }

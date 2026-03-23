@@ -16,17 +16,17 @@ sap.ui.define([
 		async _updateStatus(oModel, sID, sStatus) {
             let sSubmission_type = sID.substring(0,3);
             
-            let sTable = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.Entities.ZREQUEST_HEADER : Constants.EntitiesZCLAIM_HEADER;
+            let sHeaderTablePath = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.Entities.ZREQUEST_HEADER : Constants.EntitiesZCLAIM_HEADER;
             let sField = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.EntitiesFields.REQUESTID : Constants.EntitiesFields.CLAIMID;
 
             // Declare field for status
             // REQ uses STATUS field while CLM uses STATUS_ID field
             let sStatusField = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.EntitiesFields.STATUS : Constants.EntitiesFields.CLAIM_STATUS;
         
-            const oListBinding = oModel.bindList(sTable, null,null,
+            const oListBinding = oModel.bindList(sHeaderTablePath, null,null,
                 [
                     // new sap.ui.model.Filter({ path: "EMP_ID", operator: sap.ui.model.FilterOperator.EQ, value1: empId }),
-                    new sap.ui.model.Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: sID })
+                    new Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: sID })
                 ],
                 {
                     $$ownRequest: true,
