@@ -2,8 +2,9 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/m/MessageToast",
     "sap/ui/model/FilterOperator",
-	"claima/utils/Constants"
-], function (Filter, MessageToast,FilterOperator,Constants) {
+	"claima/utils/Constants",
+    "claima/utils/Utility"
+], function (Filter, MessageToast,FilterOperator,Constants, Utility) {
     "use strict";
 
     return {

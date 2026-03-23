@@ -322,6 +322,7 @@ sap.ui.define([
                 let oApproverDetails = null;    // Variable to store approver details 
                 let oBudgetDetails = null;      // Variable to store budget approver details (If applicable)
                 let aConstantValues = [];       // Variable to store EEID retrieved from ZCONSTANTS table
+                let oPopulatedEmployee = null;  // Variable to store employee details
                 const aRoleRanks = await WorkflowApproverHelper.getRoleRank(oModel);
                 const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
                 for(var i = 0; i < aWorkflowApprStep.length; i++){
@@ -351,13 +352,9 @@ sap.ui.define([
                                         MessageToast.show(Utility.getText(this, "msg_failed_no_budget"));
                                     }else{
                                         oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
-                                        if(oApproverDetails){
-                                            aApproversDetails.push({
-                                                EEID:   oApproverDetails.EEID,
-                                                NAME:   oApproverDetails.NAME,
-                                                EMAIL:  oApproverDetails.EMAIL,
-                                                LEVEL:  Number(i) + 1
-                                            });
+                                        oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
+                                        if(oPopulatedEmployee){
+                                            aApproversDetails.push(oPopulatedEmployee);
                                         }
                                     }
                                 }else{
@@ -375,13 +372,9 @@ sap.ui.define([
                                     for(const id of aConstantValues){
                                         if(id.VALUE){
                                             oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, id.VALUE);
-                                            if(oApproverDetails){
-                                                aApproversDetails.push({
-                                                EEID:   oApproverDetails.EEID,
-                                                NAME:   oApproverDetails.NAME,
-                                                EMAIL:  oApproverDetails.EMAIL,
-                                                LEVEL:  Number(i) + 1
-                                            });
+                                            oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
+                                            if(oPopulatedEmployee){
+                                                aApproversDetails.push(oPopulatedEmployee);
                                             }else{
 
                                                 MessageToast.show(Utility.getText(this, "msg_failed_no_approver_details", [id.VALUE]));
@@ -430,13 +423,9 @@ sap.ui.define([
                         }   
                         // Retrieve Approver based on iApproverRank
                         oApproverDetails = await this.getApprover(oModel, sEmpID, iApproverRank);
-                        if(oApproverDetails){
-                            aApproversDetails.push({
-                                EEID:   oApproverDetails.EEID,
-                                NAME:   oApproverDetails.NAME,
-                                EMAIL:  oApproverDetails.EMAIL,
-                                LEVEL:  Number(i) + 1
-                            });
+                        oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
+                        if(oPopulatedEmployee){
+                            aApproversDetails.push(oPopulatedEmployee);
                         }
                     } 
 
@@ -654,8 +643,7 @@ sap.ui.define([
 			//get workflow rule
 			const oListWorkflowRuleBinding = oModel.bindList(Constants.Entities.ZWORKFLOW_RULE, null,null, [
 				new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.WorkflowType.REQUEST }),
-				new Filter({ path: Constants.EntitiesFields.REQUEST_TYPE_ID, operator: FilterOperator.EQ, value1: sParSubmissionType })//,
-				//new Filter({ path: "ROLE", operator: FilterOperator.EQ, value1: sEmpRole })
+				new Filter({ path: Constants.EntitiesFields.REQUEST_TYPE_ID, operator: FilterOperator.EQ, value1: sParSubmissionType }),
 				
 			], null);
 			const aWorkflowRuleContexts = await oListWorkflowRuleBinding.requestContexts();
@@ -767,6 +755,7 @@ sap.ui.define([
                 let oApproverDetails = null;    // Variable to store approver details 
                 let oBudgetDetails = null;      // Variable to store budget approver details (If applicable)
                 let aConstantValues = [];       // Variable to store EEID retrieved from ZCONSTANTS table
+                let oPopulatedEmployee = null;  // Variable to store populated Employee
                 const aRoleRanks = await WorkflowApproverHelper.getRoleRank(oModel);
                 const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
                 for(var i = 0; i < aWorkflowApprStep.length; i++){
@@ -796,13 +785,9 @@ sap.ui.define([
                                         MessageToast.show(Utility.getText(this, "msg_failed_no_budget"));
                                     }else{
                                         oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
-                                        if(oApproverDetails){
-                                            aApproversDetails.push({
-                                                EEID:   oApproverDetails.EEID,
-                                                NAME:   oApproverDetails.NAME,
-                                                EMAIL:  oApproverDetails.EMAIL,
-                                                LEVEL:  Number(i) + 1
-                                            });
+                                        oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
+                                        if(oPopulatedEmployee){
+                                            aApproversDetails.push(oPopulatedEmployee);
                                         }
                                     }
                                 }else{
@@ -820,13 +805,9 @@ sap.ui.define([
                                     for(const id of aConstantValues){
                                         if(id.VALUE){
                                             oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, id.VALUE);
-                                            if(oApproverDetails){
-                                                aApproversDetails.push({
-                                                EEID:   oApproverDetails.EEID,
-                                                NAME:   oApproverDetails.NAME,
-                                                EMAIL:  oApproverDetails.EMAIL,
-                                                LEVEL:  Number(i) + 1
-                                            });
+                                            oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
+                                            if(oPopulatedEmployee){
+                                                aApproversDetails.push(oPopulatedEmployee);
                                             }else{
                                                 MessageToast.show(Utility.getText(this, "msg_failed_no_approver_details", [id.VALUE]));
                                             }
@@ -873,13 +854,9 @@ sap.ui.define([
                         }   
                         // Retrieve Approver based on iApproverRank
                         oApproverDetails = await this.getApprover(oModel, sEmpID, iApproverRank);
-                        if(oApproverDetails){
-                            aApproversDetails.push({
-                                EEID:   oApproverDetails.EEID,
-                                NAME:   oApproverDetails.NAME,
-                                EMAIL:  oApproverDetails.EMAIL,
-                                LEVEL:  Number(i) + 1
-                            });
+                        oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
+                        if(oPopulatedEmployee){
+                            aApproversDetails.push(oPopulatedEmployee);
                         }
                     } 
 
@@ -945,14 +922,11 @@ sap.ui.define([
             // create all contexts
             let aCreatePromises = [];
 
-			//for(var i = 0; i < aApprEmpID.length; i++){
             for(const oApprover of aFullApproversDetails){
 
                 var oContext = oBindApprDetailsList.create({
                     "CLAIM_ID": sClaimID,
-                    //"LEVEL": "0",
                     "LEVEL": oApprover.LEVEL,
-                    //"APPROVER_ID": "Auto",
                     "APPROVER_ID": oApprover.APPROVER_EEID,
                     "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
                     "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
@@ -1060,6 +1034,22 @@ sap.ui.define([
 
             // Otherwise recurse deeper up the chain
             return await this.getApprover(oModel, oDirectSuperior.EEID, iApproverRank, idepth + 1);
+        },
+        /**
+         * Recursively find the first superior whose rank is higher than the employee.
+         *
+         * @param {object} oApproverDetails - Employee being evaluated
+         * @param {level} iLevel - Level of approver the employee is assigned to
+         * @returns {Promise<object|null>} The Employee details or null if none found
+         */
+        _populateApproverDetails: function (oApproverDetails, iLevel) {
+            if(!oApproverDetails) return null;
+            return {
+                EEID: oApproverDetails.EEID,
+                NAME: oApproverDetails.NAME,
+                EMAIL: oApproverDetails.EMAIL,
+                LEVEL: Number(iLevel) + 1
+            };
         }
     };
     
