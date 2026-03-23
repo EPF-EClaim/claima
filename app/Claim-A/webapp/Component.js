@@ -1,10 +1,10 @@
 sap.ui.define([
     "sap/fe/core/AppComponent",
     "claima/model/models",
-    "sap/ui/core/routing/HashChanger"
+    "sap/ui/core/routing/HashChanger",
+    "claima/utils/Utility"
 ],
-    (AppComponent,
-        models, HashChanger) => {
+    (AppComponent, models, HashChanger, Utility) => {
         "use strict";
 
         return AppComponent.extend("claima.Component", {
@@ -18,9 +18,12 @@ sap.ui.define([
             init() {
                 AppComponent.prototype.init.apply(this, arguments);
 
+                // Initialize the utility 
+			    Utility.init(this);
+
                 // set the device model
                 this.setModel(models.createDeviceModel(), "device");
-
+ 
                 const fmt = sap.ui.getCore().getConfiguration().getFormatSettings();
                 fmt.setDatePattern("medium", "dd MMM yyyy");
                 fmt.setDatePattern("short", "dd MMM yyyy");
