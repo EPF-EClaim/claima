@@ -99,7 +99,7 @@ sap.ui.define([
                 });
                 
                 // Call Budget Processing
-                budgetCheck.budgetProcessingTest(oModel, aDataset, sSubmissionType, sBudgetApprove);
+                budgetCheck.budgetProcessing(oModel, aDataset, sSubmissionType, sBudgetApprove);
 
                 // Call Farisha email Function
                 if (oEmailPayload) {
