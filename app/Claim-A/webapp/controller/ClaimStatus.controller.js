@@ -57,7 +57,7 @@ sap.ui.define([
 				}
 
 				if (!oCtx) {
-					MessageToast.show(Utility.getText(this, "msg_claimstatus_select"));
+					MessageToast.show(Utility.getText("msg_claimstatus_select"));
 					return;
 				}
 
@@ -70,7 +70,7 @@ sap.ui.define([
 					null;
 
 				if (!sClaimId) {
-					MessageToast.show(Utility.getText(this, "msg_claimstatus_missing"));
+					MessageToast.show(Utility.getText("msg_claimstatus_missing"));
 					return;
 				}
 
@@ -82,7 +82,7 @@ sap.ui.define([
                 oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
 			} catch (e) {
 				sap.base.Log.error("openItemFromClaimList failed:", e);
-				MessageToast.show(Utility.getText(this, "msg_claimstatus_failed"));
+				MessageToast.show(Utility.getText("msg_claimstatus_failed"));
 			} finally {
 				this.getView().setBusy(false);
 			}
@@ -230,7 +230,7 @@ sap.ui.define([
 				// Header
 				const oHeaderRaw = aHeaderCtx[0]?.getObject();
 				if (!oHeaderRaw) {
-					MessageToast.show(Utility.getText(this, "msg_claimstatus_header"));
+					MessageToast.show(Utility.getText("msg_claimstatus_header"));
 					oClaimInputModel.setProperty("/claim_header", {});
 					oClaimInputModel.setProperty("/claim_items", []);
 					oClaimInputModel.setProperty("/claim_items_count", 0);

@@ -6,6 +6,13 @@ sap.ui.define([
     "use strict";
 
     return {
+        /**
+		 * Initialize the Utility 
+		 * @public
+		 */
+        init: function(oOwnerComponent) {
+            this._oOwnerComponent = oOwnerComponent;
+		},
 
 		/* =========================================================
 		* Update Status
@@ -40,13 +47,15 @@ sap.ui.define([
 
             await oModel.submitBatch("$auto");
         },
-
-        getResourceBundle: function (oController) {
-            return oController.getOwnerComponent().getModel("i18n").getResourceBundle();
-        },
-
-        getText: function (oController, sKey, aArgs) {
-            return this.getResourceBundle(oController).getText(sKey, aArgs);
+        /**
+		 * Gets text from the resource bundle.
+		 * @public
+		 * @param {string} sKey name of the resource
+		 * @param {string[]} aArgs Array of strings, variables for dynamic content
+		 * @returns {string} the text
+		 */
+        getText: function (sKey, aArgs) {
+            return this._oOwnerComponent.getModel("i18n").getResourceBundle().getText(sKey, aArgs);
         }
 
     };
