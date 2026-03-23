@@ -1,5 +1,5 @@
 <mvc:View
-    controllerName="claima.controller.App"
+    controllerName="claima.controller.Dashboard"
     xmlns="sap.m"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:tnt="sap.tnt"

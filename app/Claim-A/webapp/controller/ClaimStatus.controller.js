@@ -15,6 +15,34 @@ sap.ui.define([
 			// Track current sort direction per path: true = DESC, false = ASC
 			this._mSortState = {};
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
+			this.getOwnerComponent().getRouter().getRoute("ClaimStatus").attachPatternMatched(this._onMatched, this);
+		},
+
+		_onMatched: async function() {
+			const _oReq = this.getOwnerComponent().getModel("claim_status2");
+			const _oModel = this.getOwnerComponent().getModel("employee_view");
+
+			const oListBinding = _oModel.bindList("/ZEMP_CLAIM_EE_VIEW", undefined,
+				[new Sorter("modifiedAt", true)],
+				null,
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$$updateGroupId: "$auto",
+					$count: true
+				}
+			);
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+				_oReq.setProperty("/claim_header_list", a);
+				_oReq.setProperty("/claim_header_count", a.length);
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				_oReq.setProperty("/claim_header_list", []);
+				_oReq.setProperty("/claim_header_count", 0);
+			}
 		},
 
 		_getClaimModel() {

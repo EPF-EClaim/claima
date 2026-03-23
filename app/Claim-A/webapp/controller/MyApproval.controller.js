@@ -15,9 +15,128 @@ sap.ui.define([
         * Lifecycle
         * ======================================================= */
         async onInit() {
+            this._sUserId = null;
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
-
+            const ctx = this.getOwnerComponent().getModel().bindContext("/getUserType()");
+			await ctx.requestObject().then(oData => {
+                this.sUserId = oData.userId || "UNKNOWN";
+            });
+            this.getOwnerComponent().getRouter().getRoute("MyApproval").attachPatternMatched(this._onMatched, this);
         },
+
+        _onMatched: async function() {
+            await this._getMyApproverPAReq();
+			await this._getMyApproverClaim();
+        },
+
+        _getMyApproverPAReq: async function () {
+			const oReq = this.getOwnerComponent().getModel("request_status");
+			const oModel = this.getOwnerComponent().getModel("employee_view");
+
+			const oApproverOrSub = new sap.ui.model.Filter({
+				filters: [
+					new sap.ui.model.Filter("APPROVER_ID", sap.ui.model.FilterOperator.EQ, this._sUserId),
+					new sap.ui.model.Filter("SUBSTITUTE_APPROVER_ID", sap.ui.model.FilterOperator.EQ, this._sUserId)
+				],
+				and: false // OR condition between the two
+			});
+
+			const oStatusPending = new sap.ui.model.Filter(
+				"STATUS",
+				sap.ui.model.FilterOperator.EQ,
+				this._oConstant.ClaimStatus.PENDING_APPROVAL // use the exact code/value your backend expects
+			);
+			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
+			const oCombined = new sap.ui.model.Filter({
+				filters: [oApproverOrSub, oStatusPending],
+				and: true // AND between groups
+			});
+
+
+			const oListBinding = oModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
+				[new sap.ui.model.Sorter("STATUS", true)], // desc by STATUS
+				[oCombined],
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$$updateGroupId: "$auto",
+					$count: true
+				}
+			);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+				a.forEach((it) => {
+					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
+				});
+
+				oReq.setProperty("/req_header_list", a);
+				oReq.setProperty("/req_header_count", a.length);
+
+				return a;
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				oReq.setProperty("/req_header_list", []);
+				oReq.setProperty("/req_header_count", 0);
+				return [];
+			}
+		},
+
+        _getMyApproverClaim: async function () {
+			const oReq = this.getOwnerComponent().getModel("claim_status");
+			const oModel = this.getOwnerComponent().getModel("employee_view");
+
+			const oApproverOrSub = new Filter({
+				filters: [
+					new Filter("APPROVER_ID", FilterOperator.EQ, this._sUserId),
+					new Filter("SUBSTITUTE_APPROVER_ID", FilterOperator.EQ, this._sUserId)
+				],
+				and: false // OR condition between the two
+			});
+
+			const oStatusPending = new Filter(
+				"STATUS",
+				FilterOperator.EQ,
+				this._oConstant.ClaimStatus.PENDING_APPROVAL // use the exact code/value your backend expects
+			);
+			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
+			const oCombined = new Filter({
+				filters: [oApproverOrSub, oStatusPending],
+				and: true // AND between groups
+			});
+			const oListBinding = oModel.bindList("/ZEMP_APPROVER_CLAIM_DETAILS", undefined,
+				[new Sorter("STATUS", true)], // desc by STATUS
+				[oCombined],
+
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$$updateGroupId: "$auto",
+					$count: true
+				}
+			);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+				a.forEach((it) => {
+					if (it.TOTAL_CLAIM_AMOUNT == null) it.TOTAL_CLAIM_AMOUNT = 0.0;
+				});
+
+				oReq.setProperty("/claim_header_list", a);
+				oReq.setProperty("/claim_header_count", a.length);
+
+				return a;
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				oReq.setProperty("/claim_header_list", []);
+				oReq.setProperty("/claim_header_count", 0);
+				return [];
+			}
+		},
 
         /* =========================================================
         * Helpers: Model & Service

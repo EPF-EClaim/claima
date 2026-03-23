@@ -1,9 +1,10 @@
 sap.ui.define([
     "sap/fe/core/AppComponent",
-    "claima/model/models"
+    "claima/model/models",
+    "sap/ui/core/routing/HashChanger"
 ],
     (AppComponent,
-        models) => {
+        models, HashChanger) => {
         "use strict";
 
         return AppComponent.extend("claima.Component", {
@@ -26,6 +27,9 @@ sap.ui.define([
 
                 // enable routing
                 this.getRouter().initialize();
+
+                const sHash = HashChanger.getInstance().getHash();
+                if (sHash === "") this.getRouter().navTo("Dashboard", {}, true);
 
                 var jQueryScript = document.createElement('script');
                 jQueryScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/jszip.js');
