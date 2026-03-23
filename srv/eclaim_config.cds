@@ -414,8 +414,8 @@ annotate service.ZSTATUS with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'Claim/Request Submission',
-            TypeNamePlural: 'Claim/Request Submission',
+            TypeName      : 'Claim/Request Submission Status',
+            TypeNamePlural: 'Claim/Request Submission Status',
         },
         LineItem    : [
             {
