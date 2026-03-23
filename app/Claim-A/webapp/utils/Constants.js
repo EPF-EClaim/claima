@@ -3,8 +3,13 @@ sap.ui.define([
     "use strict";
     return {
         "Approvers":{
-            "AUTO": "Auto",
+            "AUTO": "AUTO",
             "BUDGET": "Budget"
+        },
+        "BudgetCheckAction": {
+            "APPROVE": "APPROVE",
+            "REJECT": "REJECT",
+            "SUBMIT": "SUBMIT"
         },
         "ClaimType": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -96,7 +101,7 @@ sap.ui.define([
         },
         "WorkflowType": {
             "CLAIM": "CLM",
-            "PRE_APPROVAL": "PRE"
+            "REQUEST": "REQ"
         },
         "Date": {
             "DATEFORMAT": "yyyy.MM.dd",
@@ -153,15 +158,15 @@ sap.ui.define([
             "CLAIM_STATUS": "STATUS_ID",
             "CLAIM_TYPE_ITEM_ID": "CLAIM_TYPE_ITEM_ID",
             "COMMENTAPPOVAL": "COMMENT",
-            "EEID": "EEID",
             "DEP": "DEP",
+            "EEID": "EEID",
             "EMAIL": "EMAIL",
             "FUND_CENTER": "FUND_CENTER",
             "ID": "ID",
+            "LEVEL": "LEVEL",
             "PREAPPROVALID": "PREAPPROVAL_ID",
             "REJECT_REASON_ID": "REJECT_REASON_ID",
             "REQUESTID": "REQUEST_ID",
-            "CLAIMID": "CLAIM_ID",
             "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
             "TRAVEL_HOURS": "TRAVEL_HOURS",
             "TRAVEL_DAYS_ID": "TRAVEL_DAYS_ID",

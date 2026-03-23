@@ -9,7 +9,7 @@ sap.ui.define([
 ], function (Filter, FilterOperator, FinalApproveStep, Constants, Utility, DateUtility) {
     "use strict";
 
-    async function _approveMultiLevel(oController, oModel, sId, sUserId, sComment, oModelView, oController) {
+    async function _approveMultiLevel(oModel, sId, sUserId, sComment, oModelView, oController) {
 
         const sSubmissionType = sId.substring(0, 3);
 
@@ -236,7 +236,6 @@ sap.ui.define([
 
     //For Reject and SendBack resend
     async function _rejectOrSendBackMultiLevel(
-        oController,
         oModel,
         sId,
         sUserId,

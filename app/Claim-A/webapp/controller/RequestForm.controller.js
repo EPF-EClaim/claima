@@ -2441,12 +2441,15 @@ sap.ui.define([
 					);
 
 				// 2) Budget release (if your finance process requires release on send back)
+				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
 				await budgetCheck.budgetProcessing(
 					oModelMain,
 					dataset,          // budget rows from the view
 					submissionType,   // "REQ"
 					"release"
 				);
+				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
+				*/
 
 				// 3) Send notifications
 				const oMailModel = this.getOwnerComponent().getModel();
@@ -2505,7 +2508,10 @@ sap.ui.define([
 					);
 
 				// Budget release if applicable
+				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
 				await budgetCheck.budgetProcessing(oModelMain, dataset, submissionType, "release");
+				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
+				*/
 
 				for (const p of payloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, p);

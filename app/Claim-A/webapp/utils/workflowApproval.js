@@ -816,7 +816,7 @@ sap.ui.define([
 
 			//get workflow rule
 			const oListWorkflowRuleBinding = oModel.bindList(Constants.Entities.ZWORKFLOW_RULE, null,null, [
-				new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.WorkflowType.PRE_APPROVAL }),
+				new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.WorkflowType.REQUEST }),
 				new Filter({ path: Constants.EntitiesFields.REQUEST_TYPE_ID, operator: FilterOperator.EQ, value1: sParSubmissionType })//,
 				//new Filter({ path: "ROLE", operator: FilterOperator.EQ, value1: sEmpRole })
 				
@@ -897,7 +897,7 @@ sap.ui.define([
 
 			//get approver levels and approvers
 			const oListWorkflowStepBinding = oModel.bindList(Constants.Entities.ZWORKFLOW_STEP, null,null, [
-				new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.WorkflowType.PRE_APPROVAL }),
+				new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.workflowtype.REQUEST }),
 				new Filter({ path: Constants.EntitiesFields.WORKFLOW_CODE, operator: FilterOperator.EQ, value1: aCommonWorkflowCode[0] }),
 				
 			], null);

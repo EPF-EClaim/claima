@@ -439,6 +439,66 @@ sap.ui.define([
                 ID: r.ID,
                 VALUE: r.VALUE
             }));
+        },
+        /**
+         * Fetch Claim Header record from ZSUBSTITUTION_RULES by EEID
+         *
+         * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
+         * @param {string} sClaimID - Claim ID
+         * @returns {Promise<object|null>} - Employee data or null if not found
+         */
+        getClaimHeader: async function (oModel, sClaimID) {
+
+            // --- Sanity check ---
+            if (!this.sanityCheck(oModel, "msg_failed_omodel_undefined")) return null;
+            if (!this.sanityCheck(sApproverEEID, "msg_failed_eeid_undefined")) return null;
+
+            // Ensure metadata is loaded
+            await oModel.getMetaModel().requestObject("/");
+
+            // Main table path
+            const sSubstitutionRulesTablePath = Constants.Entities.ZSUBSTITUTION_RULES;
+
+            // Convert to ISO date string (YYYY-MM-DD)
+            const sToday = dDate.toISOString().split("T")[0];
+            
+            // Filters:
+            // USER_ID EQ EEID
+            // VALID_FROM LE today
+            // VALID_TO GE today
+            const aFilters = [
+                new Filter(Constants.EntitiesFields.USER_ID, FilterOperator.EQ, sApproverEEID),
+                new Filter(Constants.EntitiesFields.VALID_FROM, FilterOperator.LE, sToday),
+                new Filter(Constants.EntitiesFields.VALID_TO, FilterOperator.GE, sToday)
+            ];
+
+            // Bind list
+            const oBinding = oModel.bindList(
+                sSubstitutionRulesTablePath,
+                null,
+                null,
+                aFilters,
+                { $$ownRequest: true }
+            );
+
+            // Fetch data
+            const aCtx = await oBinding.requestContexts(0, Infinity);
+            if (!aCtx || aCtx.length === 0) {
+                return null; // no substitute found
+            }
+            const oData = aCtx[0].getObject();
+            const oEmployeeDetail = await this.getEmployeeDetails(oModel, oData.SUBSTITUTE_ID);
+
+            // Return only the required fields
+            return {
+                EEID:               oEmployeeDetail.EEID,
+                NAME:               oEmployeeDetail.NAME,
+                EMAIL:              oEmployeeDetail.EMAIL,
+                DEPARTMENT:         oEmployeeDetail.DEPARTMENT,
+                ROLE:               oEmployeeDetail.ROLE,
+                RANK:               oEmployeeDetail.RANK,
+                DIRECT_SUPERIOR:    oEmployeeDetail.DIRECT_SUPPERIOR
+            };
         }
     };
     

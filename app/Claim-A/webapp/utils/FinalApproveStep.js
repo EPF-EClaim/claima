@@ -19,28 +19,29 @@ sap.ui.define([
                 const sSubmissionType = sClaimID.substring(0, 3);  // split front 3 letters to determine if claim or request
 
                 // Set Const Variables for Budget Processing
-                var bIsPre = sSubmissionType === "REQ";
-                const sBudgetApprove = 'approve';
-                var sField_header = bIsPre ? "REQUEST_ID" : "CLAIM_ID";
-                var sPARField = bIsPre ? "PREAPPROVAL_ID" : "CLAIM_ID"; 
-                var sTable = bIsPre ? "/ZEMP_REQUEST_BUDGET_CHECK" : "/ZEMP_CLAIM_BUDGET_CHECK";
-                var sTable2 = bIsPre ? "/ZEMP_APPROVER_REQUEST_DETAILS" : "/ZEMP_APPROVER_CLAIM_DETAILS";
+                var bIsPre = sSubmissionType === Constants.WorkflowType.REQUEST;
+                const sBudgetApprove = Constants.BudgetCheckAction.APPROVE;
+                var sField_header = bIsPre ? Constants.EntitiesFields.REQUESTID : Constants.EntitiesFields.CLAIMID;
+                var sPARField = bIsPre ? Constants.EntitiesFields.PREAPPROVALID : Constants.EntitiesFields.CLAIMID; 
+                var sBudgetCheckViewPath = bIsPre ? Constants.Entities.ZEMP_REQUEST_BUDGET_CHECK : Constants.Entities.ZEMP_CLAIM_BUDGET_CHECK;
+                var sApproverDetailsViewPath = bIsPre ? Constants.Entities.ZEMP_APPROVER_REQUEST_DETAILS : Constants.Entities.ZEMP_APPROVER_CLAIM_DETAILS;
                 var dCurrentDate = new Date().toLocaleDateString('en-CA');
+                const sLevel = "0";
 
                 if(oEmailPayload == null || oEmailPayload == "" || oEmailPayload.length == 0 || oEmailPayload == undefined){
 
                     const oClaimantList = oEmployeeModel.bindList(
-                        sTable2,
+                        sApproverDetailsViewPath,
                         null,
                         null,
                         [
                             new Filter(sPARField, FilterOperator.EQ, sClaimID),
-                            new Filter("LEVEL", FilterOperator.EQ, "0")
+                            new Filter(Constants.EntitiesFields.LEVEL, FilterOperator.EQ, sLevel)
                         ],
                         { $$ownRequest: true }
                     );
 
-                    var sClaimType = bIsPre ? "Pre-Approval" : "Claim";
+                    var sClaimType = bIsPre ? Constants.ApprovalProcess.REQUESTTYPE : Constants.ApprovalProcess.CLAIMTYPE;
 
                     const aClaimantContexts = await oClaimantList.requestContexts();
                     const aClaimantData = aClaimantContexts.map(oCtx => oCtx.getObject());
@@ -52,13 +53,13 @@ sap.ui.define([
                     const sClaimantEmail = aClaimantData[0].EMPLOYEE_EMAIL;
 
                     var oEmailPayload = {
-                        ApproverName: "AUTO",
+                        ApproverName: Constants.Approvers.AUTO,
                         SubmissionDate: sClaimsSubmissionDate,
                         ClaimantName: sClaimantName,
                         ClaimType: sClaimType,
                         ClaimID: sClaimID,
                         RecipientName: sRecipientName,
-                        Action: "APPROVE",
+                        Action: Constants.ApprovalProcessAction.ACTION_APPROVE,
                         ReceiverEmail: sClaimantEmail
                     };
                 }
@@ -66,7 +67,7 @@ sap.ui.define([
                 const aFilters = [new Filter(sField_header, FilterOperator.EQ, sClaimID)];
                 
                 const oBudgetBinding2 = oEmployeeModel.bindList(
-                    sTable,
+                    sBudgetCheckViewPath,
                     null,
                     null,
                     aFilters,
@@ -99,7 +100,11 @@ sap.ui.define([
                 });
                 
                 // Call Budget Processing
+
+                /** Commenting out budgetProcessing as it will be replaced by a backend function by Jefry 
                 budgetCheck.budgetProcessing(oModel, aDataset, sSubmissionType, sBudgetApprove);
+                const aResult = budgetCheck.backendBudgetChecking(oController, sSubmissionType, Constants.BudgetCheckAction.APPROVE);
+                */
 
                 // Call Farisha email Function
                 if (oEmailPayload) {
@@ -125,10 +130,10 @@ sap.ui.define([
 
                     // Read all claim items
                     const oList = oModelView.bindList(
-                        "/ZEMP_CLAIM_DETAILS",
+                        Constants.Entities.ZEMP_CLAIM_DETAILS,
                         null,
                         null,
-                        [new Filter("CLAIM_ID", FilterOperator.EQ, sClaimID)],
+                        [new Filter(Constants.EntitiesFields.CLAIMID, FilterOperator.EQ, sClaimID)],
                         { $$ownRequest: true }
                     );
 
