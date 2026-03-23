@@ -11,17 +11,16 @@ sap.ui.define([
 		* Update Status
 		* ======================================================= */
 
-		async _updateStatus(oModel, id, status) {
-            let submission_type = id.substring(0,3);
+		async _updateStatus(oModel, sId, sStatus) {
+            let sSubmission_type = sId.substring(0,3);
             
-            let sTable = submission_type === 'REQ' ? '/ZREQUEST_HEADER' : "/ZCLAIM_HEADER";
-            let sField = submission_type === 'REQ' ? 'REQUEST_ID' : 'CLAIM_ID';
+            let sTable = sSubmission_type === 'REQ' ? '/ZREQUEST_HEADER' : "/ZCLAIM_HEADER";
+            let sField = sSubmission_type === 'REQ' ? 'REQUEST_ID' : 'CLAIM_ID';
 
 
             const oListBinding = oModel.bindList(sTable, null,null,
                 [
-                    // new sap.ui.model.Filter({ path: "EMP_ID", operator: sap.ui.model.FilterOperator.EQ, value1: empId }),
-                    new sap.ui.model.Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: id })
+                    new Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: sId })
                 ],
                 {
                     $$ownRequest: true,
@@ -37,11 +36,9 @@ sap.ui.define([
                 throw new Error("Record not found.");
             }
 
-            oCtx.setProperty("STATUS", status);
+            oCtx.setProperty("STATUS", sStatus);
 
             await oModel.submitBatch("$auto");
-            
-            sap.m.MessageToast.show("Request submitted successfully");
         },
 
         getResourceBundle: function (oController) {

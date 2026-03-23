@@ -244,7 +244,7 @@ sap.ui.define([
 								MessageToast.show(Utility.getText(this, "req_tm_s_delete_request"));
 								this.oDeleteDialog.close();
 
-								this._oRouter.navTo("Dashboard");
+								this._oRouter.navTo("RequestFormStatus");
 
 							} catch (e) {
 								MessageToast.show(e.message || "Delete failed");
@@ -989,6 +989,10 @@ sap.ui.define([
 			if (!sReqId) return MessageToast.show("Missing Request ID");
 			if (!oData.req_header.claimtype || !oReqItem.claim_type_item_id) return MessageToast.show("Select claim type/item");
 
+			// Eligibility Checking
+			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this);
+			var oResult = EligibleScenarioCheck.onEligibilityCheck(this, oPayload);
+
 			BusyIndicator.show(0);
 
 			try {
@@ -1115,9 +1119,9 @@ sap.ui.define([
                 this._showItemList();
 
 			} catch (e) {
-				sap.m.MessageBox.error(e.message || "Save failed");
+				MessageBox.error(e.message || "Save failed");
 			} finally {
-				sap.ui.core.BusyIndicator.hide();
+				BusyIndicator.hide();
 			}
 		},
 

@@ -225,7 +225,7 @@ sap.ui.define([
 					this.onClickMyRequest();
 					break;
 				case "myrequest":
-					this._navToPARStatus();
+					this._oRouter.navTo("RequestFormStatus");
 					break;
 				case "mysubstitution":
 					var oRouter = this.getOwnerComponent().getRouter();
@@ -1759,12 +1759,6 @@ sap.ui.define([
 			}
 
 			return sap.ui.getCore().byId(`${sFragmentId}--${sId}`) || sap.ui.getCore().byId(sId);
-		},
-
-		_navToPARStatus() {
-			PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
-			PARequestSharedFunction.getPARHeaderList(this._oReqStatusModel, this._oViewModel);
-			this._oRouter.navTo("RequestFormStatus");
 		},
 
 		onClickCancel: function () {

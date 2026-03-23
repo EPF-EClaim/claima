@@ -24,16 +24,53 @@ sap.ui.define([
 			this._oViewModel 		= this.getOwnerComponent().getModel('employee_view');
 			this._oReqModel			= this.getOwnerComponent().getModel('request');
 			this._oReqStatusModel 	= this.getOwnerComponent().getModel("request_status");
-			
-			PARequestSharedFunction.getPARHeaderList(this._oReqStatusModel, this._oViewModel);
+
+			this._oRouter.getRoute("RequestFormStatus").attachPatternMatched(this._onMatched, this);
 			
 			this._mSortState = {};
+		},
+
+		async _onMatched(oEvent) {
+			const oArgs = oEvent.getParameter("arguments");
+			await this.getPARHeaderList(this._oReqStatusModel, this._oViewModel);
 		},
 
 		/* =========================================================
 		* Main Logic
 		* ======================================================= */
 
+		async getPARHeaderList (oReqStatusModel, oViewModel) {
+
+			const oListBinding = oViewModel.bindList("/ZEMP_REQUEST_EE_VIEW", undefined,
+				[new Sorter("modifiedAt", true)], null,
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$$updateGroupId: "$auto",
+					$count: true
+				}
+			);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+				a.forEach((it) => {
+					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
+				});
+
+				oReqStatusModel.setProperty("/req_header_list", a);
+				oReqStatusModel.setProperty("/req_header_count", a.length);
+
+				return a;
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				oReqStatusModel.setProperty("/req_header_list", []);
+				oReqStatusModel.setProperty("/req_header_count", 0);
+				return [];
+			}
+		},
+		
 		async openItemFromList(oEvent) {
 			try {
 				BusyIndicator.show(0);

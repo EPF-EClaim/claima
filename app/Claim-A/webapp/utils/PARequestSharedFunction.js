@@ -23,43 +23,7 @@ sap.ui.define([
 			data.list_count = 0;
 			oReq.setData(data);
 		},
-
-		/* =========================================================
-		* Get My Pre-Approval Status Records
-		* ======================================================= */
-
-		async getPARHeaderList (oReqStatusModel, oViewModel) {
-
-			const oListBinding = oViewModel.bindList("/ZEMP_REQUEST_EE_VIEW", undefined,
-				[new Sorter("modifiedAt", true)], null,
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-					$$updateGroupId: "$auto",
-					$count: true
-				}
-			);
-
-			try {
-				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				const a = aCtx.map((ctx) => ctx.getObject());
-
-				a.forEach((it) => {
-					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
-				});
-
-				oReqStatusModel.setProperty("/req_header_list", a);
-				oReqStatusModel.setProperty("/req_header_count", a.length);
-
-				return a;
-			} catch (err) {
-				console.error("OData bindList failed:", err);
-				oReqStatusModel.setProperty("/req_header_list", []);
-				oReqStatusModel.setProperty("/req_header_count", 0);
-				return [];
-			}
-		},
-
+		
 		/* =========================================================
 		* Get My Pre-Approval Request Details
 		* ======================================================= */
