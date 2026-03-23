@@ -171,32 +171,17 @@ sap.ui.define([
             "WORKFLOW_TYPE": "WORKFLOW_TYPE",
             "YEAR": "YEAR"
         },
-        "Errors": {
-            "COST_CENTER_ERROR": "msg_failed_cost_center_undefined",
-            "EEID_ERROR": "msg_failed_eeid_undefined",
-            "GENERIC_ERROR": "msg_failed_generic_error",
-            "ID_ERROR": "msg_failed_id_undefined",
-            "NO_APPROVER_ERROR": "msg_failed_no_approver",
-            "NO_APPROVER_DETAILS_ERROR": "msg_failed_no_approver_details",
-            "NO_BUDGET_ERROR": "msg_failed_no_budget",
-            "NO_CLAIMANT_ERROR": "msg_failed_no_claimant",
-            "NO_COST_CENTER_ERROR": "msg_failed_no_cost_center",
-            "OMODEL_ERROR": "msg_failed_omodel_undefined",
-            "REQUEST_TYPE_ID_ERROR": "msg_failed_request_type_id_undefined",
-            "SUBMISSION_TYPE_ID_ERROR": "msg_failed_submission_type_id_undefined",
-            "YEAR_ERROR": "msg_failed_year_undefined"
-        },
         "Operators": {
-            "EQ": "EQ",
-            "GE": "GE",
-            "GT": "GT",
-            "LE": "LE",
-            "LT": "LT",
-            "NE": "NE"
+            "EQUAL": "EQ",
+            "GREATEREQUAL": "GE",
+            "GREATERTHAN": "GT",
+            "LESSEQUAL": "LE",
+            "LESSTHAN": "LT",
+            "NOTEQUAL": "NE"
         },
         "Risk_Category":{
-            "L": "L",
-            "H": "H"
+            "LOW": "L",
+            "HIGH": "H"
         },
         "Role": {
             "APPROVER": "Approver",

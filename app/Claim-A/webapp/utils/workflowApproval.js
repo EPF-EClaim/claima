@@ -4,8 +4,8 @@ sap.ui.define([
     "sap/m/MessageToast",
     "sap/ui/model/FilterOperator",
 	"claima/utils/Constants",
-    "claima/utils/Helper"
-], function (FinalApproveStep, Filter, MessageToast,FilterOperator,Constants, Helper) {
+    "claima/utils/WorkflowApproverHelper"
+], function (FinalApproveStep, Filter, MessageToast,FilterOperator,Constants, WorkflowApproverHelper) {
     "use strict";
 
     return {
@@ -35,8 +35,8 @@ sap.ui.define([
                 
             }
             catch(oError){
-                MessageToast.show(Utility.getText(this, Constants.Errors.GENERIC_ERROR, [oError]));
-                throw new Error(Utility.getText(this, Constants.errors.GENERIC_ERROR, [oError]));
+                MessageToast.show(Utility.getText(this, "msg_failed_generic_error", [oError]));
+                throw new Error(Utility.getText(this, "msg_failed_generic_error", [oError]));
             }
             
 
@@ -91,14 +91,14 @@ sap.ui.define([
             const sPreapprovedAmount = aClaimHeaderData[0].PREAPPROVED_AMOUNT;  
             
             // Retrieve claimant details for use of entire function
-            const oClaimantDetails = await Helper.getEmployeeDetails(oModel, sEmpID);
+            const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
             if(oClaimantDetails === null){
-                MessageToast.show(Utility.getText(this, Constants.errors.NO_CLAIMANT_ERROR))
-                throw new Error(Utility.getText(this, Constants.errors.NO_CLAIMANT_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_no_claimant"))
+                throw new Error(Utility.getText(this, "msg_failed_no_claimant"));
             }
 
             // Retrieve Submission Type Description for use of email notification function
-            const oSubmissionTypeDesc = await Helper.getSubmissionTypeDesc(oModel, sClaimsSubmissionType);
+            const oSubmissionTypeDesc = await WorkflowApproverHelper.getSubmissionTypeDesc(oModel, sClaimsSubmissionType);
 
 			//claim Item
 			const oListClaimItemBinding = oModel.bindList(Constants.Entities.ZCLAIM_ITEM, null,null, [
@@ -145,7 +145,7 @@ sap.ui.define([
 			//get overall risk 
 			for(var i = 0; i< aClaimsTypeItemRiskArr.length; i++){
 				if(aClaimsTypeItemRiskArr[i] != aClaimsTypeItemRiskArr[0]){
-					sClaimsOverallRisk = Constants.Risk_Category.H;
+					sClaimsOverallRisk = Constants.Risk_Category.HIGH;
 				}else{
 					sClaimsOverallRisk = aClaimsTypeItemRiskArr[0];
 				}
@@ -221,9 +221,9 @@ sap.ui.define([
 			var sEmpCCVal;
 
             if(sClaimsAltCC == "" || sClaimsAltCC == null) {  
-				sEmpCCVal = Constants.Operators.EQ;
+				sEmpCCVal = Constants.Operators.EQUAL;
             }else{
-                sEmpCCVal = Constants.Operators.NE;
+                sEmpCCVal = Constants.Operators.NOTEQUAL;
             }
 			
 			var sThreshholdVal, sReceiptAge;
@@ -249,12 +249,12 @@ sap.ui.define([
                 // If Total Claim Amount > Preapproved Amount, straight set our indicator to GT 
                 // Else, use Amount vs Threshold Amount in workflow rule table to determine indicator
                 if(sTotalClaimAmount > sPreapprovedAmount){
-                    sThreshholdVal = Constants.Operators.GT
+                    sThreshholdVal = Constants.Operators.GREATERTHAN
                 }else{
                     if(iHighestAmount > aNestedWorkflowRuleArr[i][0]){
-                        sThreshholdVal = Constants.Operators.GT;
+                        sThreshholdVal = Constants.Operators.GREATERTHAN;
                     }else if(iHighestAmount <= aNestedWorkflowRuleArr[i][0]){    
-                        sThreshholdVal = Constants.Operators.LE;
+                        sThreshholdVal = Constants.Operators.LESSEQUAL;
                     }else{
                         sThreshholdVal = null;
                     }
@@ -268,9 +268,9 @@ sap.ui.define([
 				}
 
 				if(iDateDiff > aNestedWorkflowRuleArr[i][1]){
-					sReceiptAge = Constants.Operators.GT;
+					sReceiptAge = Constants.Operators.GREATERTHAN;
 				}else if(iDateDiff <= aNestedWorkflowRuleArr[i][1]){
-					sReceiptAge = Constants.Operators.LE;
+					sReceiptAge = Constants.Operators.LESSEQUAL;
 				}else{
 					sReceiptAge = null;
 				}
@@ -324,8 +324,8 @@ sap.ui.define([
                 let oApproverDetails = null;    // Variable to store approver details 
                 let oBudgetDetails = null;      // Variable to store budget approver details (If applicable)
                 let aConstantValues = [];       // Variable to store EEID retrieved from ZCONSTANTS table
-                const aRoleRanks = await Helper.getRoleRank(oModel);
-                const oClaimantDetails = await Helper.getEmployeeDetails(oModel, sEmpID);
+                const aRoleRanks = await WorkflowApproverHelper.getRoleRank(oModel);
+                const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
                 for(var i = 0; i < aWorkflowApprStep.length; i++){
 
                     // Start of Approver Determination logic
@@ -348,12 +348,12 @@ sap.ui.define([
                         switch(aWorkflowApprStep[i]){
                             case Constants.Approvers.BUDGET:
                                 if(sClaimsFinalCC != null){
-                                    oBudgetDetails = await Helper.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
+                                    oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
                                     if(!oBudgetDetails){
-                                        MessageToast.show(Utility.getText(this, Constants.Errors.No_BUDGET_ERROR));
-                                        throw new Error(Utility.getText(this, Constants.Errors.No_BUDGET_ERROR));
+                                        MessageToast.show(Utility.getText(this, "msg_failed_no_budget"));
+                                        throw new Error(Utility.getText(this, "msg_failed_no_budget"));
                                     }else{
-                                        oApproverDetails = await Helper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
+                                        oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
                                         if(oApproverDetails != null){
                                             aApproversDetails.push({
                                                 EEID:   oApproverDetails.EEID,
@@ -364,8 +364,8 @@ sap.ui.define([
                                         }
                                     }
                                 }else{
-                                    MessageToast.show(Utility.getText(this, Constants.Errors.No_COST_CENTER_ERROR));
-                                    throw new Error(Utility.getText(this, Constants.Errors.No_COST_CENTER_ERROR));
+                                    MessageToast.show(Utility.getText(this, "msg_failed_no_cost_center"));
+                                    throw new Error(Utility.getText(this, "msg_failed_no_cost_center"));
                                 }
                                 break;
                             case Constants.User_Type.CEO_FI:
@@ -374,11 +374,11 @@ sap.ui.define([
                             case Constants.User_Type.FI_SETTLEMENT_B:
                             case Constants.User_Type.HOD_JKEW:
                                 // Possible multiple approvers retrieved from ZCONSTANTS table
-                                aConstantValues = await Helper.getConstants(oModel, aWorkflowApprStep[i]);
+                                aConstantValues = await WorkflowApproverHelper.getConstants(oModel, aWorkflowApprStep[i]);
                                 if(aConstantValues){
                                     for(const id of aConstantValues){
                                         if(id.VALUE){
-                                            oApproverDetails = await Helper.getEmployeeDetails(oModel, id.VALUE);
+                                            oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, id.VALUE);
                                             if(oApproverDetails){
                                                 aApproversDetails.push({
                                                 EEID:   oApproverDetails.EEID,
@@ -388,12 +388,12 @@ sap.ui.define([
                                             });
                                             }else{
 
-                                                MessageToast.show(Utility.getText(this, Constants.Errors.No_APPROVER_DETAILS_ERROR, [id.VALUE]));
-                                                throw new Error(Utility.getText(this, Constants.Errors.No_APPROVER_DETAILS_ERROR, [id.VALUE]));
+                                                MessageToast.show(Utility.getText(this, "msg_failed_no_approver_details", [id.VALUE]));
+                                                throw new Error(Utility.getText(this, "msg_failed_no_approver_details", [id.VALUE]));
                                             }
                                         }else{
-                                            MessageToast.show(Utility.getText(this, Constants.Errors.No_APPROVER_ERROR));
-                                            throw new Error(Utility.getText(this, Constants.Errors.No_APPROVER_ERROR));
+                                            MessageToast.show(Utility.getText(this, "msg_failed_no_approver"));
+                                            throw new Error(Utility.getText(this, "msg_failed_no_approver"));
                                         }
                                     }
                                 }
@@ -504,9 +504,9 @@ sap.ui.define([
             for (const oApprover of aUniqueApproversDetails){
                 // If LEVEL = 0, Approver is Auto
                 if(oApprover.LEVEL > 0){
-                    oSubstitute = await Helper.getSubstitute(oModel, oApprover.EEID);
+                    oSubstitute = await WorkflowApproverHelper.getSubstitute(oModel, oApprover.EEID);
                     if(oSubstitute){
-                        oSubstituteDetails = await Helper.getEmployeeDetails(oModel, oSubstitute.EEID);
+                        oSubstituteDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oSubstitute.EEID);
                         if(oSubstituteDetails){
                             sSubstitute_eeid = oSubstituteDetails.EEID;
                             sSubstitute_name = oSubstituteDetails.NAME;
@@ -741,8 +741,8 @@ sap.ui.define([
                 }
                 */
             }catch(oError){
-                MessageToast.show(Utility.getText(this, Constants.Errors.GENERIC_ERROR, [oError]));
-                throw new Error(Utility.getText(this, Constants.errors.GENERIC_ERROR, [oError]));
+                MessageToast.show(Utility.getText(this, "msg_failed_generic_error", [oError]));
+                throw new Error(Utility.getText(this, "msg_failed_generic_error", [oError]));
             }	
 			
         },
@@ -770,14 +770,14 @@ sap.ui.define([
 			var sParTripStartDate = aPARHeaderData[0].TRIP_START_DATE;
 
             // Retrieve claimant details for use of entire function
-            const oClaimantDetails = await Helper.getEmployeeDetails(oModel, sEmpID);
+            const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
             if(oClaimantDetails === null){
-                MessageToast.show(Utility.getText(this, Constants.Errors.NO_CLAIMANT_ERROR))
-                throw new Error(Utility.getText(this, Constants.Errors.NO_CLAIMANT_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_no_claimant"))
+                throw new Error(Utility.getText(this, "msg_failed_no_claimant"));
             }
 
             // Retrieve Submission Type Description for use of email notification function
-            const oRequestTypeDesc = await Helper.getRequestTypeDesc(oModel, sParSubmissionType);
+            const oRequestTypeDesc = await WorkflowApproverHelper.getRequestTypeDesc(oModel, sParSubmissionType);
 			
 			//request Item
 			const oListRequestItemBinding = oModel.bindList(Constants.Entities.ZREQUEST_ITEM, null,null, [
@@ -846,9 +846,9 @@ sap.ui.define([
 
 			var sEmpCCVal;
             if(sParAltCC == "" || sParAltCC == null) {  
-				sEmpCCVal = Constants.Operators.EQ;
+				sEmpCCVal = Constants.Operators.EQUAL;
             }else{
-                sEmpCCVal = Constants.Operators.NE;
+                sEmpCCVal = Constants.Operators.NOTEQUAL;
             }
             
 			var sTripStartAge;//change for trip start date
@@ -867,9 +867,9 @@ sap.ui.define([
 				}
 
 				if(sParTripStartDate >= dCurrentDate){
-					sTripStartAge = Constants.Operators.GE;
+					sTripStartAge = Constants.Operators.GREATEREQUAL;
 				}else if(sParTripStartDate < dCurrentDate){
-					sTripStartAge = Constants.Operators.LT;
+					sTripStartAge = Constants.Operators.LESSTHAN;
 				}else{
 					sTripStartAge = null;
 				}
@@ -938,8 +938,8 @@ sap.ui.define([
                 let oApproverDetails = null;    // Variable to store approver details 
                 let oBudgetDetails = null;      // Variable to store budget approver details (If applicable)
                 let aConstantValues = [];       // Variable to store EEID retrieved from ZCONSTANTS table
-                const aRoleRanks = await Helper.getRoleRank(oModel);
-                const oClaimantDetails = await Helper.getEmployeeDetails(oModel, sEmpID);
+                const aRoleRanks = await WorkflowApproverHelper.getRoleRank(oModel);
+                const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
                 for(var i = 0; i < aWorkflowApprStep.length; i++){
 
                     // Start of Approver Determination logic
@@ -962,12 +962,12 @@ sap.ui.define([
                         switch(aWorkflowApprStep[i]){
                             case Constants.Approvers.BUDGET:
                                 if(sClaimsFinalCC != null){
-                                    oBudgetDetails = await Helper.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
+                                    oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
                                     if(!oBudgetDetails){
-                                        MessageToast.show(Utility.getText(this, Constants.Errors.No_BUDGET_ERROR));
-                                        throw new Error(Utility.getText(this, Constants.Errors.No_BUDGET_ERROR));
+                                        MessageToast.show(Utility.getText(this, "msg_failed_no_budget"));
+                                        throw new Error(Utility.getText(this, "msg_failed_no_budget"));
                                     }else{
-                                        oApproverDetails = await Helper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
+                                        oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
                                         if(oApproverDetails != null){
                                             aApproversDetails.push({
                                                 EEID:   oApproverDetails.EEID,
@@ -978,8 +978,8 @@ sap.ui.define([
                                         }
                                     }
                                 }else{
-                                    MessageToast.show(Utility.getText(this, Constants.Errors.No_COST_CENTER_ERROR));
-                                    throw new Error(Utility.getText(this, Constants.Errors.No_COST_CENTER_ERROR));
+                                    MessageToast.show(Utility.getText(this, "msg_failed_no_cost_center"));
+                                    throw new Error(Utility.getText(this, "msg_failed_no_cost_center"));
                                 }
                                 break;
                             case Constants.User_Type.CEO_FI:
@@ -988,11 +988,11 @@ sap.ui.define([
                             case Constants.User_Type.FI_SETTLEMENT_B:
                             case Constants.User_Type.HOD_JKEW:
                                 // Possible multiple approvers retrieved from ZCONSTANTS table
-                                aConstantValues = await Helper.getConstants(oModel, aWorkflowApprStep[i]);
+                                aConstantValues = await WorkflowApproverHelper.getConstants(oModel, aWorkflowApprStep[i]);
                                 if(aConstantValues){
                                     for(const id of aConstantValues){
                                         if(id.VALUE){
-                                            oApproverDetails = await Helper.getEmployeeDetails(oModel, id.VALUE);
+                                            oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, id.VALUE);
                                             if(oApproverDetails){
                                                 aApproversDetails.push({
                                                 EEID:   oApproverDetails.EEID,
@@ -1001,12 +1001,12 @@ sap.ui.define([
                                                 LEVEL:  Number(i) + 1
                                             });
                                             }else{
-                                                MessageToast.show(Utility.getText(this, Constants.Errors.No_APPROVER_DETAILS_ERROR, [id.VALUE]));
-                                                throw new Error(Utility.getText(this, Constants.Errors.No_APPROVER_DETAILS_ERROR, [id.VALUE]));
+                                                MessageToast.show(Utility.getText(this, "msg_failed_no_approver_details", [id.VALUE]));
+                                                throw new Error(Utility.getText(this, "msg_failed_no_approver_details", [id.VALUE]));
                                             }
                                         }else{
-                                            MessageToast.show(Utility.getText(this, Constants.Errors.No_APPROVER_ERROR));
-                                            throw new Error(Utility.getText(this, Constants.Errors.No_APPROVER_ERROR));
+                                            MessageToast.show(Utility.getText(this, "msg_failed_no_approver"));
+                                            throw new Error(Utility.getText(this, "msg_failed_no_approver"));
                                         }
                                     }
                                 }
@@ -1120,9 +1120,9 @@ sap.ui.define([
             for (const oApprover of aUniqueApproversDetails){
                 // If LEVEL = 0, Approver is Auto
                 if(oApprover.LEVEL > 0){
-                    oSubstitute = await Helper.getSubstitute(oModel, oApprover.EEID);
+                    oSubstitute = await WorkflowApproverHelper.getSubstitute(oModel, oApprover.EEID);
                     if(oSubstitute){
-                        oSubstituteDetails = await Helper.getEmployeeDetails(oModel, oSubstitute.EEID);
+                        oSubstituteDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oSubstitute.EEID);
                         if(oSubstituteDetails){
                             sSubstitute_eeid = oSubstituteDetails.EEID;
                             sSubstitute_name = oSubstituteDetails.NAME;
@@ -1355,8 +1355,8 @@ sap.ui.define([
                 }
                 */
             }catch(oError){
-                MessageToast.show(Utility.getText(this, Constants.Errors.GENERIC_ERROR, [oError]));
-                throw new Error(Utility.getText(this, Constants.errors.GENERIC_ERROR, [oError]));
+                MessageToast.show(Utility.getText(this, "msg_failed_generic_error", [oError]));
+                throw new Error(Utility.getText(this, "msg_failed_generic_error", [oError]));
             }
         },
         /**
@@ -1375,7 +1375,7 @@ sap.ui.define([
             }
 
             // Fetch employee
-            const oEmp = await Helper.getEmployeeDetails(oModel, sEEID);
+            const oEmp = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEEID);
             if (!oEmp) return null;
 
             // If employee has no superior → stop
@@ -1384,7 +1384,7 @@ sap.ui.define([
             }
 
             // Fetch direct superior
-            const oDirectSuperior = await Helper.getEmployeeDetails(oModel, oEmp.DIRECT_SUPERIOR);
+            const oDirectSuperior = await WorkflowApproverHelper.getEmployeeDetails(oModel, oEmp.DIRECT_SUPERIOR);
             if (!oDirectSuperior) return null;
 
             // CEO check

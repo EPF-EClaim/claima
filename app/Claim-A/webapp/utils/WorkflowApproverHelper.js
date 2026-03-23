@@ -18,19 +18,19 @@ sap.ui.define([
 
             // --- Sanity check ---
             if (!oModel) {
-                MessageToast.show(Utility.getText(this, Constants.Errors.OMODEL_ERROR))
-                throw new Error(Utility.getText(this, Constants.Errors.OMODEL_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_omodel_undefined"))
+                return null;
             }
             if (!sSubmissionTypeID) {
-                MessageToast.show(Utility.getText(this, Constants.Errors.SUBMISSION_TYPE_ID_ERROR))
-                throw new Error(Utility.getText(this, Constants.Errors.SUBMISSION_TYPE_ID_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_submission_type_id_undefined"))
+                return null;
             }
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
 
             // Main table path
-            const sTable = Constants.Entities.ZSUBMISSION_TYPE;
+            const sSubmissionTypeTablePath = Constants.Entities.ZSUBMISSION_TYPE;
 
             // Build filter
             const aFilters = [
@@ -38,8 +38,8 @@ sap.ui.define([
             ];
 
             // Bind list
-            const binding = oModel.bindList(
-                sTable,
+            const oBinding = oModel.bindList(
+                sSubmissionTypeTablePath,
                 null,
                 null,
                 aFilters,
@@ -47,7 +47,7 @@ sap.ui.define([
             );
 
             // Fetch data
-            const aCtx = await binding.requestContexts(0, Infinity);
+            const aCtx = await oBinding.requestContexts(0, Infinity);
             let oData = null;
             if (!aCtx || aCtx.length === 0) {
                 return null; // no employee found
@@ -71,19 +71,19 @@ sap.ui.define([
 
             // --- Sanity check ---
             if (!oModel) {
-                MessageToast.show(Utility.getText(this, Constants.Errors.OMODEL_ERROR))
-                throw new Error(Utility.getText(this, Constants.Errors.OMODEL_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_omodel_undefined"))
+                return null;
             }
             if (!sSubmissionTypeID) {
-                MessageToast.show(Utility.getText(this, Constants.Errors.REQUEST_TYPE_ID_ERROR))
-                throw new Error(Utility.getText(this, Constants.Errors.REQUEST_TYPE_ID_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_request_type_id_undefined"))
+                return null;
             }
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
 
             // Main table path
-            const sTable = Constants.Entities.ZREQUEST_TYPE;
+            const sRequestTypeTablePath = Constants.Entities.ZREQUEST_TYPE;
 
             // Build filter
             const aFilters = [
@@ -91,8 +91,8 @@ sap.ui.define([
             ];
 
             // Bind list
-            const binding = oModel.bindList(
-                sTable,
+            const oBinding = oModel.bindList(
+                sRequestTypeTablePath,
                 null,
                 null,
                 aFilters,
@@ -100,7 +100,7 @@ sap.ui.define([
             );
 
             // Fetch data
-            const aCtx = await binding.requestContexts(0, Infinity);
+            const aCtx = await oBinding.requestContexts(0, Infinity);
             let oData = null;
             if (!aCtx || aCtx.length === 0) {
                 return null; // no employee found
@@ -122,22 +122,22 @@ sap.ui.define([
          */
         getEmployeeDetails: async function (oModel, sEEID) {
 
-            let sRank = "";
+            let iRank = 0;
             // --- Sanity check ---
             if (!oModel) {
-                MessageToast.show(Utility.getText(this, Constants.Errors.OMODEL_ERROR))
-                throw new Error(Utility.getText(this, Constants.Errors.OMODEL_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_omodel_undefined"))
+                return null;
             }
             if (!sEEID) {
-                MessageToast.show(Utility.getText(this, Constants.Errors.EEID))
-                throw new Error(Utility.getText(this, Constants.Errors.EEID_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_eeid_undefined"))
+                return null;
             }
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
 
             // Main table path
-            const sTable = Constants.Entities.ZEMP_MASTER;
+            const sEmpMasterTablePath = Constants.Entities.ZEMP_MASTER;
 
             // Build filter
             const aFilters = [
@@ -145,8 +145,8 @@ sap.ui.define([
             ];
 
             // Bind list
-            const binding = oModel.bindList(
-                sTable,
+            const oBinding = oModel.bindList(
+                sEmpMasterTablePath,
                 null,
                 null,
                 aFilters,
@@ -154,7 +154,7 @@ sap.ui.define([
             );
 
             // Fetch data
-            const aCtx = await binding.requestContexts(0, Infinity);
+            const aCtx = await oBinding.requestContexts(0, Infinity);
             let oData = null;
             if (!aCtx || aCtx.length === 0) {
                 return null; // no employee found
@@ -162,10 +162,10 @@ sap.ui.define([
             else{
                 oData = aCtx[0].getObject();
                 if(oData.ROLE === "" || oData.ROLE === null){
-                    sRank = 0;
+                    iRank = 0;
                 }else{
                     const aEmpRoleRank = await this.getRoleRank(oModel, oData.ROLE)
-                    sRank = aEmpRoleRank[0].RANK;
+                    iRank = aEmpRoleRank[0].RANK;
                 }
             }
 
@@ -176,7 +176,7 @@ sap.ui.define([
                 EMAIL:              oData.EMAIL,
                 DEPARTMENT:         oData.DEPARTMENT,
                 ROLE:               oData.ROLE,
-                RANK:               sRank,
+                RANK:               iRank,
                 DIRECT_SUPERIOR:    oData.DIRECT_SUPPERIOR
             };
         },
@@ -192,19 +192,19 @@ sap.ui.define([
 
             // --- Sanity check ---
             if (!oModel) {
-                MessageToast.show(Utility.getText(this, Constants.Errors.OMODEL_ERROR))
-                throw new Error(Utility.getText(this, Constants.Errors.OMODEL_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_omodel_undefined"))
+                return null;
             }
             if (!sApproverEEID) {
-                MessageToast.show(Utility.getText(this, Constants.Errors.EEID))
-                throw new Error(Utility.getText(this, Constants.Errors.EEID_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_eeid_undefined"))
+                return null;
             }
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
 
             // Main table path
-            const sTable = Constants.Entities.ZSUBSTITUTION_RULES;
+            const sSubstitutionRulesTablePath = Constants.Entities.ZSUBSTITUTION_RULES;
 
             // Convert to ISO date string (YYYY-MM-DD)
             const sToday = dDate.toISOString().split("T")[0];
@@ -220,8 +220,8 @@ sap.ui.define([
             ];
 
             // Bind list
-            const binding = oModel.bindList(
-                sTable,
+            const oBinding = oModel.bindList(
+                sSubstitutionRulesTablePath,
                 null,
                 null,
                 aFilters,
@@ -229,7 +229,7 @@ sap.ui.define([
             );
 
             // Fetch data
-            const aCtx = await binding.requestContexts(0, Infinity);
+            const aCtx = await oBinding.requestContexts(0, Infinity);
             if (!aCtx || aCtx.length === 0) {
                 return null; // no substitute found
             }
@@ -260,23 +260,23 @@ sap.ui.define([
             let oBudgetOwner = null;
             // --- Sanity check ---
             if (!oModel) {
-                MessageToast.show(Utility.getText(this, Constants.Errors.OMODEL_ERROR))
-                throw new Error(Utility.getText(this, Constants.Errors.OMODEL_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_omodel_undefined"))
+                return null;
             }
             if (!sCostCenter) {
-                MessageToast.show(Utility.getText(this, Constants.Errors.COST_CENTER_ERROR))
-                throw new Error(Utility.getText(this, Constants.Errors.COST_CENTER_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_cost_center_undefined"))
+                return null;
             }
             if (!sYear) {
-                MessageToast.show(Utility.getText(this, Constants.Errors.YEAR_ERROR))
-                throw new Error(Utility.getText(this, Constants.Errors.YEAR_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_year_undefined"))
+                return null;
             }
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
 
             // Main table path
-            const sTable = Constants.Entities.ZBUDGET;
+            const sBudgetTablePath = Constants.Entities.ZBUDGET;
 
             // Build filter
             const aFilters = [
@@ -285,8 +285,8 @@ sap.ui.define([
             ];
 
             // Bind list
-            const binding = oModel.bindList(
-                sTable,
+            const oBinding = oModel.bindList(
+                sBudgetTablePath,
                 null,
                 null,
                 aFilters,
@@ -294,7 +294,7 @@ sap.ui.define([
             );
 
             // Fetch data
-            const aCtx = await binding.requestContexts(0, Infinity);
+            const aCtx = await oBinding.requestContexts(0, Infinity);
             if (!aCtx || aCtx.length === 0) {
                 return null; // no budget data found
             }
@@ -323,22 +323,22 @@ sap.ui.define([
          */
         getEmployeeDetailsByEmail: async function (oModel, sEmail) {
 
-            let sRank = 0;
+            let iRank = 0;
             // --- Sanity check ---
             if (!oModel) {
-                MessageToast.show(Utility.getText(this, Constants.Errors.OMODEL_ERROR))
-                throw new Error(Utility.getText(this, Constants.Errors.OMODEL_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_omodel_undefined"))
+                return null;
             }
             if (!sEmail) {
-                MessageToast.show(Utility.getText(this, Constants.Errors.EEID_ERROR))
-                throw new Error(Utility.getText(this, Constants.Errors.EEID_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_eeid_undefined"))
+                return null;
             }
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
 
             // Main table path
-            const sTable = Constants.Entities.ZEMP_MASTER;
+            const sEmpMasterTablePath = Constants.Entities.ZEMP_MASTER;
 
             // Build filter
             const aFilters = [
@@ -346,8 +346,8 @@ sap.ui.define([
             ];
 
             // Bind list
-            const binding = oModel.bindList(
-                sTable,
+            const oBinding = oModel.bindList(
+                sEmpMasterTablePath,
                 null,
                 null,
                 aFilters,
@@ -355,7 +355,7 @@ sap.ui.define([
             );
 
             // Fetch data
-            const aCtx = await binding.requestContexts(0, Infinity);
+            const aCtx = await oBinding.requestContexts(0, Infinity);
             let oData = null;
             if (!aCtx || aCtx.length === 0) {
                 return null; // no employee found
@@ -363,10 +363,10 @@ sap.ui.define([
             else{
                 oData = aCtx[0].getObject();
                 if(oData.ROLE === "" || oData.ROLE === null){
-                    sRank = 0;
+                    iRank = 0;
                 }else{
                     const aEmpRoleRank = await this.getRoleRank(oModel, oData.ROLE)
-                    sRank = aEmpRoleRank[0].RANK;
+                    iRank = aEmpRoleRank[0].RANK;
                 }
             }
 
@@ -377,7 +377,7 @@ sap.ui.define([
                 EMAIL:              oData.EMAIL,
                 DEPARTMENT:         oData.DEPARTMENT,
                 ROLE:               oData.ROLE,
-                RANK:               sRank,
+                RANK:               iRank,
                 DIRECT_SUPERIOR:    oData.DIRECT_SUPPERIOR
             };
         },
@@ -391,14 +391,14 @@ sap.ui.define([
         getRoleRank: async function (oModel, sRole) {
             // --- Sanity check ---
             if (!oModel) {
-                MessageToast.show(Utility.getText(this, Constants.Errors.OMODEL_ERROR))
-                throw new Error(Utility.getText(this, Constants.Errors.OMODEL_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_omodel_undefined"))
+                return null;
             }
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
 
-            const sTable = Constants.Entities.ZROLEHIERARCHY;
+            const sRoleHierarchyTablePath = Constants.Entities.ZROLEHIERARCHY;
             // Build filter list
             const aFilters = [];
             // Apply filter only if ROLE parameter is passed
@@ -408,7 +408,7 @@ sap.ui.define([
 
             // Bind list
             const oBinding = oModel.bindList(
-                sTable,
+                sRoleHierarchyTablePath,
                 null,
                 null,
                 aFilters,
@@ -436,19 +436,19 @@ sap.ui.define([
 
             // --- Sanity check ---
             if (!oModel) {
-                MessageToast.show(Utility.getText(this, Constants.Errors.OMODEL_ERROR))
-                throw new Error(Utility.getText(this, Constants.Errors.OMODEL_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_omodel_undefined"))
+                return null;
             }
             if (!sID) {
-                MessageToast.show(Utility.getText(this, Constants.Errors.ID_ERROR))
-                throw new Error(Utility.getText(this, Constants.Errors.ID_ERROR));
+                MessageToast.show(Utility.getText(this, "msg_failed_id_undefined"))
+                return null;
             }
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
 
             // Main table path
-            const sTable = Constants.Entities.ZCONSTANTS;
+            const sConstantsTablePath = Constants.Entities.ZCONSTANTS;
 
             // Build filter
             const aFilters = [
@@ -456,8 +456,8 @@ sap.ui.define([
             ];
 
             // Bind list
-            const binding = oModel.bindList(
-                sTable,
+            const oBinding = oModel.bindList(
+                sConstantsTablePath,
                 null,
                 null,
                 aFilters,
@@ -465,7 +465,7 @@ sap.ui.define([
             );
 
             // Fetch data
-            const aCtx = await binding.requestContexts(0, Infinity);
+            const aCtx = await oBinding.requestContexts(0, Infinity);
             const rows = aCtx.map(ctx => ctx.getObject());
 
             // Return only needed fields
