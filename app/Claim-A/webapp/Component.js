@@ -128,7 +128,7 @@ sap.ui.define([
                         console.error('currentUser failed:', xhr.status, xhr.responseText);
                         sap.m.MessageToast.show('Failed to load user info (currentUser).');
                     }.bind(this)
-                }).bind(this);
+                });
             },
 
             _initActivityTracking: function () {
