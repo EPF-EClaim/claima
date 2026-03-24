@@ -10,7 +10,6 @@
         <content>
             <VBox class= "roundedBox sapUiSmallMargin">
             <Table id="tblSubs"
-                   class="sapUiSmallMarginTop"
                    mode="SingleSelectMaster"
                    includeItemInSelection="true"
                    selectionChange=".onSelectionChange"

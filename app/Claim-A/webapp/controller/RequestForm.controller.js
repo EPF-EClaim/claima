@@ -80,6 +80,7 @@ sap.ui.define([
 			this._oApprovalLogModel	= this.getOwnerComponent().getModel('approval_log')
 			this._oDataModel 		= this.getOwnerComponent().getModel();
 			this._oViewModel 		= this.getOwnerComponent().getModel("employee_view");
+			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
 			this._oFragments 		= Object.create(null);
 
 			// URL Access
@@ -2027,8 +2028,7 @@ sap.ui.define([
 			const mode = oReject?.getProperty("/mode"); // "REJECT" here
 			//const reason = oReject?.getProperty("/rejectReasonKey");
 			const comment = oReject?.getProperty("/approvalComment")?.trim();
-			const accessModel = this.getOwnerComponent().getModel("access");
-			const userId = accessModel?.getProperty("/userId");
+			const userId = this._oSessionModel.getProperty("/userId");
 			const requestModel = this.getView().getModel("request");
 			const reqId = requestModel?.getProperty("/req_header/reqid")?.trim();
 
@@ -2095,10 +2095,9 @@ sap.ui.define([
 				// Models
 				const oModelMain = this._oDataModel;               // OData main
 				const oModelView = this._oViewModel;// OData views
-				const accessModel = this.getOwnerComponent().getModel("access");
 
 				// Who & what
-				const userId = accessModel?.getProperty("/userId");
+				const userId = this._oSessionModel.getProperty("/userId");
 				const requestModel = this.getOwnerComponent().getModel("request");
 				const reqId = requestModel?.getProperty("/req_header/reqid")?.trim();
 
@@ -2168,8 +2167,6 @@ sap.ui.define([
 
 				const oModelMain = this._oDataModel;
 				const oModelView = this._oViewModel;
-				const accessModel = this.getOwnerComponent().getModel("access");
-				const userId = accessModel?.getProperty("/userId");
 
 				const reqModel = this.getView().getModel("request");
 				const reqId = reqModel?.getProperty("/req_header/reqid")?.trim();
@@ -2180,7 +2177,7 @@ sap.ui.define([
 					await ApproverUtility.rejectOrSendBackMultiLevel(
 						oModelMain,
 						reqId,
-						userId,
+						this._oSessionModel.getProperty("/userId"),
 						reject_status,
 						reason,
 						comment,

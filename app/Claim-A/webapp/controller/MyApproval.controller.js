@@ -20,6 +20,7 @@ sap.ui.define([
             this._oReqStatusModel = this.getOwnerComponent().getModel("request_status");
             this._oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
             this._oClaimStatusModel = this.getOwnerComponent().getModel("claim_status");
+            this._oSessionModel 	= this.getOwnerComponent().getModel("session");
             this.getOwnerComponent().getRouter().getRoute("MyApproval").attachPatternMatched(this._onMatched, this);
         },
 
@@ -31,8 +32,8 @@ sap.ui.define([
         _getMyApproverPAReq: async function () {
 			const oApproverOrSub = new Filter({
 				filters: [
-					new Filter(this._oConstant.EntitiesFields.APPROVER_ID, FilterOperator.EQ, this.getOwnerComponent().getModel("userId").getProperty("/userId")),
-					new Filter(this._oConstant.EntitiesFields.SUBAPPROVER_ID, FilterOperator.EQ, this.getOwnerComponent().getModel("userId").getProperty("/userId"))
+					new Filter(this._oConstant.EntitiesFields.APPROVER_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
+					new Filter(this._oConstant.EntitiesFields.SUBAPPROVER_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId"))
 				],
 				and: false // OR condition between the two
 			});
@@ -83,8 +84,8 @@ sap.ui.define([
         _getMyApproverClaim: async function () {
 			const oApproverOrSub = new Filter({
 				filters: [
-					new Filter(this._oConstant.EntitiesFields.APPROVER_ID, FilterOperator.EQ, this.getOwnerComponent().getModel("userId").getProperty("/userId")),
-					new Filter(this._oConstant.EntitiesFields.SUBAPPROVER_ID, FilterOperator.EQ, this.getOwnerComponent().getModel("userId").getProperty("/userId"))
+					new Filter(this._oConstant.EntitiesFields.APPROVER_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
+					new Filter(this._oConstant.EntitiesFields.SUBAPPROVER_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId"))
 				],
 				and: false // OR condition between the two
 			});
@@ -744,7 +745,7 @@ sap.ui.define([
                 });
 
                 // set employee data
-                const emp_data = await this._getEmpIdDetail(oClaimInputModel.getProperty("/claim_header/emp_id"));
+                const emp_data = await this._getEmpIdDetail(this._oSessionModel.getProperty("/userId"));
                 if (emp_data) {
                     oClaimInputModel.setProperty("/emp_master", emp_data);
                     await this._getEmpDataDescr(oClaimInputModel);
