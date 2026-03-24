@@ -135,43 +135,57 @@ sap.ui.define([
 		* Determine Footer Buttons
 		* ======================================================= */
 
-		_determineCurrentState (oController, oReq) {
-			if (oReq.getProperty('/view') != 'approver') {
-				switch (oReq.getProperty('/req_header/reqstatus')) {
-					case 'DRAFT' || 'SEND BACK':
-						oController.byId('req_back_scr').setVisible(false);
-						oController.byId("req_back").setVisible(true);
-						oController.byId("req_delete").setVisible(true);
-						oController.byId("req_submit").setVisible(true);
-						oReq.setProperty('/view', 'list');
-						break;
-					case 'CANCELLED':
-						oController.byId('req_back_scr').setVisible(true);
-						oController.byId("req_back").setVisible(false);
-						oController.byId("req_delete").setVisible(false);
-						oController.byId("req_submit").setVisible(false);
-						oReq.setProperty('/view', 'view');
-						break;
-					case 'APPROVED':
-						oController.byId('req_back_scr').setVisible(true);
-						oController.byId("req_back").setVisible(false);
-						oController.byId("req_delete").setVisible(false);
-						oController.byId("req_submit").setVisible(true);
-						oReq.setProperty('/view', 'list');
-						break;
-					case 'PENDING APPROVAL':
-						oController.byId('req_back_scr').setVisible(true);
-						oController.byId("req_back").setVisible(false);
-						oController.byId("req_delete").setVisible(true);
-						oController.byId("req_submit").setVisible(false);
-						oReq.setProperty('/view', 'view');
-						break;
-					default:
-						oReq.setProperty('/view', 'view');
-						break;
-				}
+		_determineCurrentState: function (oController, oReq) {
+			if (oReq.getProperty('/view') === 'approver') {
+				return;
 			}
-		},
+
+			const sStatus = oReq.getProperty('/req_header/reqstatus');
+
+			const oBtnBackScr = oController.byId('req_back_scr');
+			const oBtnBack    = oController.byId("req_back");
+			const oBtnDelete  = oController.byId("req_delete");
+			const oBtnSubmit  = oController.byId("req_submit");
+
+			let bShowBackScr = true;
+			let bShowBack    = false;
+			let bShowDelete  = false;
+			let bShowSubmit  = false;
+			let sViewMode    = 'view';
+
+			switch (sStatus) {
+				case 'DRAFT':
+				case 'SEND BACK': 
+					bShowBackScr = false;
+					bShowBack    = true;
+					bShowDelete  = true;
+					bShowSubmit  = true;
+					sViewMode    = 'list';
+					break;
+					
+				case 'CANCELLED':
+					break;
+					
+				case 'APPROVED':
+					bShowSubmit  = true;
+					sViewMode    = 'list';
+					break;
+					
+				case 'PENDING APPROVAL':
+					bShowDelete  = true;
+					break;
+					
+				default:
+					break;
+			}
+
+			if (oBtnBackScr) oBtnBackScr.setVisible(bShowBackScr);
+			if (oBtnBack) oBtnBack.setVisible(bShowBack);
+			if (oBtnDelete) oBtnDelete.setVisible(bShowDelete);
+			if (oBtnSubmit) oBtnSubmit.setVisible(bShowSubmit);
+
+			oReq.setProperty('/view', sViewMode);
+		}
 
 	};
 });
