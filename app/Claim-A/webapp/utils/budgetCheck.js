@@ -340,25 +340,23 @@ sap.ui.define([
 			}
 		},
 
-		budgetCheckHandling(aResult) {
-			var bSufficient = false;
-			var aClaimTypeItem = [];
+		budgetCheckHandling: function (aResult) {
+			const aItems = aResult || [];
+			const aFailedClaimTypes = [];
 
-			aResult.forEach((oRequestItem) => {
-				if (oRequestItem.STATUS == Constant.BudgetCheckStatus.SUFFICIENT || 
-					oRequestItem.STATUS == Constant.BudgetCheckStatus.UPDATED
+			aItems.forEach((oRequestItem) => {
+				if (
+					oRequestItem.STATUS !== Constant.BudgetCheckStatus.SUFFICIENT && 
+					oRequestItem.STATUS !== Constant.BudgetCheckStatus.UPDATED
 				) {
-					bSufficient = true;
-				} else {
-					bSufficient = false;
-					aClaimTypeItem.push(oRequestItem.CLAIM_TYPE_ITEM)
+					aFailedClaimTypes.push(oRequestItem.CLAIM_TYPE_ITEM);
 				}
-			})
+			});
 
 			return {
-				bCanProceed: true,
-				aClaimTypeItem: aClaimTypeItem 
-			} ;
+				bCanProceed: aFailedClaimTypes.length === 0,
+				aClaimTypeItem: aFailedClaimTypes 
+			};
 		}
 
     };
