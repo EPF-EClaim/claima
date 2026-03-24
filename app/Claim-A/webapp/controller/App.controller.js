@@ -19,10 +19,7 @@ sap.ui.define([
 	"sap/ui/core/Icon",
 	"claima/utils/Utility",
 	"claima/utils/PARequestSharedFunction",
-	"claima/utils/Attachment",
-	"claima/utils/claimstatus",
-	"claima/utils/claim",
-	"claima/utils/MyApproval",
+	"claima/utils/Attachment"
 ], function (
 	Popover,
 	Button,
@@ -44,10 +41,7 @@ sap.ui.define([
 	Icon,
 	Utility,
 	PARequestSharedFunction,
-	Attachment,
-	claimstatus,
-	claim,
-	MyApproval
+	Attachment
 ) {
 	"use strict";
 
@@ -1773,40 +1767,7 @@ sap.ui.define([
 			} else {
 				this._oAvatarPopover.openBy(oAvatar);
 			}
-		},
-
-		async openItemFromList(oEvent) {
-			claimstatus.onRowPress({
-				controller: this,
-				event: oEvent,
-				keyProp: "REQUEST_ID",
-				routeName: "RequestForm",
-				modelName: "dashboardModel",
-				paramName: "request_id"
-			});
-		},
-
-		async onRowPress(oEvent) {
-
-			claim.onRowPress({
-				controller: this,
-				event: oEvent,
-				modelName: "dashboardModel",
-				keyProp: "CLAIM_ID",
-				navContainerId: "pageContainer",
-				pageId: "navcontainer_claimsubmission"
-			});
-
-		},
-
-		async openApprovalList(oEvent) {
-			const oItem = oEvent.getParameter("listItem");
-			const oCtx = oItem?.getBindingContext("dashboardModel");
-			const oRow = oCtx?.getObject();
-			const sId = oRow?.ID;
-			await MyApproval.navigateFromId(this, sId);
 		}
-
 
 	});
 });
