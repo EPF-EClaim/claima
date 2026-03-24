@@ -2053,7 +2053,7 @@ sap.ui.define([
 			// validate input data
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-
+			console.log(oClaimSubmissionModel.getProperty("attachment_file_1"));
 			// validate required fields
 			if (
 				!this.byId("select_claimdetails_input_claimitem").getSelectedItem() ||
@@ -2063,25 +2063,34 @@ sap.ui.define([
 				MessageToast.show(Utility.getText(this, "msg_claiminput_required"));
 				return;
 			}
+
+			
 			// validate attachment
 			//// attachment 1
 			if (this.byId("fileuploader_claimdetails_input_attachment1").getValue()) {
-				BusyIndicator.show(0);
-				var attachmentNumber = await Attachment.postAttachment(
+				if(oInputModel.getProperty("/attachments/attachment1/fileName") != null && oInputModel.getProperty("/attachments/attachment1/fileContent") != null){
+					BusyIndicator.show(0);
+					var attachmentNumber = await Attachment.postAttachment(
 					oInputModel.getProperty("/attachments/attachment1/fileName"),
 					oInputModel.getProperty("/attachments/attachment1/fileContent"),
-					oInputModel.getProperty("/claim_item/emp_id")
-				);
-				if (attachmentNumber) {
-					oInputModel.setProperty("/claim_item/attachment_file_1", attachmentNumber);
-					oInputModel.setProperty("/claim_item/descr/attachment_file_1", oInputModel.getProperty("/attachments/attachment1/fileName"));
-					BusyIndicator.hide();
-				}
-				else {
-					MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_error"));
-					// don't proceed claim item if attachment upload fails
-					BusyIndicator.hide();
-					return;
+					"1002200"
+					//oInputModel.getProperty("/claim_item/emp_id")
+					);
+
+					if (attachmentNumber) {
+						oInputModel.setProperty("/claim_item/attachment_file_1", attachmentNumber);
+						oInputModel.setProperty("/claim_item/descr/attachment_file_1", oInputModel.getProperty("/attachments/attachment1/fileName"));
+						BusyIndicator.hide();
+					}
+					else {
+						MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_error"));
+						// don't proceed claim item if attachment upload fails
+						BusyIndicator.hide();
+						return;
+					}
+				}else{
+					oInputModel.setProperty("/claim_item/attachment_file_1", null);
+					oInputModel.setProperty("/claim_item/descr/attachment_file_1", null);
 				}
 			}
 			//// attachment 2
@@ -2090,7 +2099,8 @@ sap.ui.define([
 				var attachmentNumber = await Attachment.postAttachment(
 					oInputModel.getProperty("/attachments/attachment2/fileName"),
 					oInputModel.getProperty("/attachments/attachment2/fileContent"),
-					oInputModel.getProperty("/claim_item/emp_id")
+					"1002200"
+					//oInputModel.getProperty("/claim_item/emp_id")
 				);
 				if (attachmentNumber) {
 					oInputModel.setProperty("/claim_item/attachment_file_2", attachmentNumber);
