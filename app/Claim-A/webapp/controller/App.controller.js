@@ -1061,12 +1061,12 @@ sap.ui.define([
 						claimSaved = true;
 						await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
 						// post MDF for header attachment
-						if (oInputModel.getProperty("/claim_header/attachment_email_approver")) {
+						// if (oInputModel.getProperty("/claim_header/attachment_email_approver")) {
 							await Attachment.postMDF(
 								oInputModel.getProperty("/claim_header/claim_id"),
 								oInputModel.getProperty("/claim_header/attachment_email_approver")
 							)
-						}
+						// }
 
 						if (claimSaved) {
 							MessageToast.show(Utility.getText("msg_claimsubmission_created", [oInputModel.getProperty("/claim_header/claim_id")]));
