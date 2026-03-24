@@ -1355,7 +1355,7 @@ sap.ui.define([
 			BusyIndicator.show(0);
 			const oDialogModel  = this.oDialogFragment.getModel("reqDialog");
 			const oDialogData   = oDialogModel.getData();
-			const sEmpId        = this._oReqModel.getProperty('/user/emp_id');
+			const sEmpId        = this._oSessionModel.getProperty("/userId");
 
 			const oMandatoryFields = {
 				'RT0001': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'eventstartdate', 'eventenddate', 'grptype', 'location', 'transport', 'comment'],
@@ -1425,7 +1425,7 @@ sap.ui.define([
 			const oListBinding  = this._oDataModel.bindList("/ZREQUEST_HEADER");
 
 			let sEmpId          = this._oSessionModel.getProperty("/userId");
-			let sCostCenter     = this._oReqModel.getProperty("/user/cost_center");
+			let sCostCenter     = this._oSessionModel.getProperty("/costCenters");
 
 			try {
 				BusyIndicator.show(0);
