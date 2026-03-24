@@ -318,10 +318,10 @@ sap.ui.define([
 									this._oReqModel.setProperty("/view", 'view');
 
 									// Add in onPARApproverDetermination function
-									var oModelAppr = this.getView().getModel();
+									var oModel = this.getView().getModel();
 									var oEmployeeViewModel = this.getView().getModel("employee_view");
 									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
-									workflowApproval.onPARApproverDetermination(this, oModelAppr, sCurrentReqId, oEmployeeViewModel);
+									workflowApproval.onPARApproverDetermination(this, oModel, sCurrentReqId, oEmployeeViewModel);
 
 									this._oRouter.navTo("RequestFormStatus");
 

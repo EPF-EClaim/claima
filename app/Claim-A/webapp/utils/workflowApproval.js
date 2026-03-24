@@ -649,7 +649,6 @@ sap.ui.define([
 			let aTripStartAgingWorkflowCodeArr = [];
 			let aCashAdvWorkflowCodeArr = [];
 			var dCurrentDate = new Date().toLocaleDateString('en-CA');
-			//sParTripStartDate = new Date(sParTripStartDate);
 
             
 			for(var i = 0; i < aNestedWorkflowRuleArr.length; i++){
@@ -756,7 +755,7 @@ sap.ui.define([
                         switch(aWorkflowApprStep[i]){
                             case Constants.Approvers.BUDGET:
                                 if(sParFinalCC != null){
-                                    oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sParFinalCC, 2026);//sParSubmissionYear);
+                                    oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sParFinalCC, sParSubmissionYear);
                                     if(!oBudgetDetails){
                                         MessageToast.show(Utility.getText("msg_failed_no_budget"));
                                     }else{
