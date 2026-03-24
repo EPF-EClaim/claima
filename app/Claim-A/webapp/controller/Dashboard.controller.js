@@ -5,12 +5,12 @@ sap.ui.define([
 	"claima/utils/Utility",
 	"sap/m/MessageBox",
 	"claima/utils/Request",
-	"claima/utils/claim",
-	"claima/utils/MyApproval"
-], (Controller, JSONModel, Sorter, Utility, MessageBox, Request, claim, MyApproval) => {
+	"claima/utils/MyApproval",
+	"claima/utils/Constants"
+], (Controller, JSONModel, Sorter, Utility, MessageBox, Request, MyApproval, Constants) => {
 	"use strict";
 
-	return Controller.extend("claima.controller.dashboard", {
+	return Controller.extend("claima.controller.Dashboard", {
 		onInit: function () {
 			this._oRouter = this.getOwnerComponent().getRouter();
 			this._oDashboardModel = new JSONModel({
@@ -78,36 +78,29 @@ sap.ui.define([
 			}
 		},
 
-		async openItemFromList(oEvent) {
-			Request.onRowPress({
-				controller: this,
-				event: oEvent,
-				keyProp: "REQUEST_ID",
-				routeName: "RequestForm",
-				modelName: "dashboardModel",
-				paramName: "request_id"
-			});
+		async onRequestFormItemPress(oEvent) {
+			this._oRouter.navTo("RequestForm", { request_id: oEvent.getSource().getSelectedContexts()[0].getProperty('REQUEST_ID')});
 		},
 
-		async onRowPress(oEvent) {
-
-			claim.onRowPress({
-				controller: this,
-				event: oEvent,
-				modelName: "dashboardModel",
-				keyProp: "CLAIM_ID",
-				navContainerId: "pageContainer",
-				pageId: "navcontainer_claimsubmission"
-			});
-
+		async onClaimSubmissionItemPress(oEvent) {
+			this._oRouter.navTo("ClaimSubmission", { claim_id: oEvent.getSource().getSelectedContexts()[0].getProperty('CLAIM_ID') });
 		},
 
 		async openApprovalList(oEvent) {
-			const oItem = oEvent.getParameter("listItem");
-			const oCtx = oItem?.getBindingContext("dashboardModel");
-			const oRow = oCtx?.getObject();
-			const sId = oRow?.ID;
-			await MyApproval.navigateFromId(this, sId);
+			// const oItem = oEvent.getParameter("listItem");
+			// const oCtx = oItem?.getBindingContext("dashboardModel");
+			// const oRow = oCtx?.getObject();
+			// const sId = oRow?.ID;
+			// await MyApproval.navigateFromId(this, sId);
+			// this._oRouter.navTo("ClaimSubmission", { claim_id: oEvent.getSource().getSelectedContexts()[0].getProperty('CLAIM_ID') });
+			debugger;
+			
+			var sId = oEvent.getSource().getSelectedContexts()[0].getProperty("ID");
+			if (sId.startsWith("REQ")) {
+                this._oRouter.navTo("RequestForm", { request_id: sId});
+            } else if (sId.startsWith(Constants.WorkflowType.CLM)) {
+                this._oRouter.navTo("ClaimSubmission", { claim_id: sId });
+            }
 		}
 	});
 }); 

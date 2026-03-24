@@ -484,7 +484,7 @@ sap.ui.define([
       oClaimInputModel.setProperty("/claim_items_count", items.length);
 
       // Enrich employee master
-      const empData = await _getEmpIdDetail(controller, oClaimInputModel.getProperty("/claim_header/emp_id"));
+      const empData = await _getEmpIdDetail(controller, this._oSessionModel.getProperty("/userId"));
       if (empData) {
         oClaimInputModel.setProperty("/emp_master", empData);
         await _getEmpDataDescr(controller, oClaimInputModel);

@@ -63,6 +63,7 @@ sap.ui.define([
 			this._clearExit = false;
 			this.currentHash = null;
 			this._oModel = this.getOwnerComponent().getModel();
+			this._oSessionModel = this.getOwnerComponent().getModel("session");
 
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
@@ -234,7 +235,7 @@ sap.ui.define([
 					let oApprovalLogFragment = await this._getFormFragment("approval_log");
 					let iApproverCount = oApprovalLogModel.getProperty("/approval")?.length || 0;
 					if (oApprovalLogFragment && iApproverCount > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
-						var sUserId = this.getView().getModel("userId")?.getProperty("/userId");
+						var sUserId = this._oSessionModel.getProperty("/userId");
 						if (sUserId) {
 							let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) => oApproval.APPROVER_ID === sUserId);
 							if (iItemIndex !== -1) {
@@ -488,7 +489,7 @@ sap.ui.define([
 				});
 
 				// set employee data
-				const emp_data = await this._getEmpIdDetail(oClaimSubmissionModel.getProperty("/claim_header/emp_id"));
+				const emp_data = await this._getEmpIdDetail(this._oSessionModel.getProperty("/userId"));
 				if (emp_data) {
 					oClaimSubmissionModel.setProperty("/emp_master", emp_data);
 					await this._getEmpDataDescr(oClaimSubmissionModel);
@@ -1218,7 +1219,6 @@ sap.ui.define([
 				oInputModel.setProperty("/is_new", true);
 				//// get claim type from claim header
 				oInputModel.setProperty("/claim_item/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
-				oInputModel.setProperty("/claim_item/emp_id", oClaimSubmissionModel.getProperty("/claim_header/emp_id"));
 				//// get GL account
 				const oModel = this.getOwnerComponent().getModel();
 				var glAccount = await this._getGLAccount(oModel, oInputModel.getProperty("/claim_item/claim_type_id"));
@@ -1591,8 +1591,7 @@ sap.ui.define([
 				const oReject = this.getView().getModel("Reject");
 				const sMode = this.getView().getModel("Type")?.getProperty("/mode");
 				const sComment = oReject?.getProperty("/approvalComment")?.trim();
-				const oAccessModel = this.getOwnerComponent().getModel("access");
-				const sUserId = oAccessModel?.getProperty("/userId");
+				const sUserId = this._oSessionModel.getProperty("/userId");
 				const oClaimModel = this.getView().getModel("claimsubmission_input");
 				const sClaimId = oClaimModel?.getProperty("/claim_header/claim_id")?.trim();
 
@@ -1676,8 +1675,7 @@ sap.ui.define([
 
 				const oModelMain = this.getOwnerComponent().getModel();
 				const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
-				const oAccessModel = this.getOwnerComponent().getModel("access");
-				const sUserId = oAccessModel?.getProperty("/userId");
+				const sUserId = this._oSessionModel.getProperty("/userId");
 
 				const oClaimModel = this.getView().getModel("claimsubmission_input");
 				const sClaimId = oClaimModel?.getProperty("/claim_header/claim_id")?.trim();
@@ -1749,8 +1747,7 @@ sap.ui.define([
 
 				const oModelMain = this.getOwnerComponent().getModel();
 				const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
-				const oAccessModel = this.getOwnerComponent().getModel("access");
-				const sUserId = oAccessModel?.getProperty("/userId");
+				const sUserId = this._oSessionModel.getProperty("/userId");
 
 				const oClaimModel = this.getView().getModel("claimsubmission_input");
 				const sClaimId = oClaimModel?.getProperty("/claim_header/claim_id")?.trim();
@@ -2157,7 +2154,7 @@ sap.ui.define([
 				var attachmentNumber = await Attachment.postAttachment(
 					oInputModel.getProperty("/attachments/attachment1/fileName"),
 					oInputModel.getProperty("/attachments/attachment1/fileContent"),
-					oInputModel.getProperty("/claim_item/emp_id")
+					this._oSessionModel.getProperty("/userId")
 				);
 				if (attachmentNumber) {
 					oInputModel.setProperty("/claim_item/attachment_file_1", attachmentNumber);
@@ -2177,7 +2174,7 @@ sap.ui.define([
 				var attachmentNumber = await Attachment.postAttachment(
 					oInputModel.getProperty("/attachments/attachment2/fileName"),
 					oInputModel.getProperty("/attachments/attachment2/fileContent"),
-					oInputModel.getProperty("/claim_item/emp_id")
+					this._oSessionModel.getProperty("/userId")
 				);
 				if (attachmentNumber) {
 					oInputModel.setProperty("/claim_item/attachment_file_2", attachmentNumber);
@@ -2355,7 +2352,7 @@ sap.ui.define([
 					DEPARTURE_TIME: this._getHanaTime(oInputModel.getProperty("/claim_item/departure_time")),
 					DEPENDENT: oInputModel.getProperty("/claim_item/dependent"),
 					DEPENDENT_RELATIONSHIP: oInputModel.getProperty("/claim_item/dependent_relationship"),
-					EMP_ID: oInputModel.getProperty("/claim_item/emp_id"),
+					EMP_ID: this._oSessionModel.getProperty("/userId"),
 					FARE_TYPE_ID: oInputModel.getProperty("/claim_item/fare_type_id"),
 					INSURANCE_CERT_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_item/insurance_cert_end_date")),
 					INSURANCE_CERT_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_item/insurance_cert_start_date")),
@@ -2912,7 +2909,7 @@ sap.ui.define([
 
 				// set body for update
 				var oBody = new JSONModel({
-					EMP_ID: oInputModel.getProperty("/claim_header/emp_id"),
+					EMP_ID: this._oSessionModel.getProperty("/userId"),
 					PURPOSE: oInputModel.getProperty("/claim_header/purpose"),
 					TRIP_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")),
 					TRIP_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")),
@@ -4056,11 +4053,8 @@ sap.ui.define([
 		getMyApproverPAReq: async function () {
 			const oReq = this.getOwnerComponent().getModel("request_status");
 			const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
-			var sUserId;
-
-			if (this.getView().getModel("userId")) {
-				sUserId = this.getView().getModel("userId").getProperty("/userId");
-			}
+			var sUserId = this._oSessionModel.getProperty("/userId");
+	
 			const oApproverOrSub = new Filter({
 				filters: [
 					new Filter("APPROVER_ID", FilterOperator.EQ, sUserId),
@@ -4116,11 +4110,8 @@ sap.ui.define([
 		getMyApproverClaim: async function () {
 			const oReq = this.getOwnerComponent().getModel("claim_status");
 			const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
-			var sUserId;
+			var sUserId = this._oSessionModel.getProperty("/userId");
 
-			if (this.getView().getModel("userId")) {
-				sUserId = this.getView().getModel("userId").getProperty("/userId");
-			}
 			const oApproverOrSub = new Filter({
 				filters: [
 					new Filter("APPROVER_ID", FilterOperator.EQ, sUserId),
