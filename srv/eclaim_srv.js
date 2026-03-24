@@ -188,7 +188,44 @@ module.exports = (srv) => {
         try {
             const { budget } = req.data;
             if (!budget || budget.length === 0) throw new Error('No Data Sent');
-            await cds.tx(req).run(UPSERT(budget).into(ZBUDGET));
+
+            const tx = cds.tx(req);
+
+            //if record hasnt been created yet, direct insert record into database
+            //else, update the record but exclude the five fields
+            for (const row of budget) {
+
+                const existing = await tx.read(ZBUDGET)
+                    .where({
+                        YEAR: row.YEAR,
+                        INTERNAL_ORDER: row.INTERNAL_ORDER,
+                        COMMITMENT_ITEM: row.COMMITMENT_ITEM,
+                        FUND_CENTER: row.FUND_CENTER,
+                        MATERIAL_GROUP: row.MATERIAL_GROUP
+                    })
+                    .limit(1);
+
+                if (!existing.length) {
+                    await tx.run(INSERT.into(ZBUDGET).entries(row));
+                } else {
+                    const excludeFields = Constant.BudgetUpload.EXCLUDE_FIELDS;
+
+                    const updatePayload = { ...row };
+                    excludeFields.forEach(f => delete updatePayload[f]);
+
+                    await tx.run(
+                        UPDATE(ZBUDGET)
+                            .set(updatePayload)
+                            .where({
+                                YEAR: row.YEAR,
+                                INTERNAL_ORDER: row.INTERNAL_ORDER,
+                                COMMITMENT_ITEM: row.COMMITMENT_ITEM,
+                                FUND_CENTER: row.FUND_CENTER,
+                                MATERIAL_GROUP: row.MATERIAL_GROUP
+                            })
+                    );
+                }
+            }
             return 'Records updated';
         } catch (error) {
             req.error(400, `Fail creating record: ${error.message}`);
@@ -442,7 +479,7 @@ module.exports = (srv) => {
                 INSERT(ApproveRequest).into(ZCLM_APPR_REQ_STAT)
             );
             await tx.commit();
-            
+
             return { success: true };
         } catch (error) {
             req.error(400, `Fail creating record: ${error.message}`, req);

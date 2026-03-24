@@ -678,6 +678,17 @@
                         <f:header>
                             <cards:Header title="{i18n>disbursement}" />
                         </f:header>
+                    </f:Card>
+
+                    <f:Card
+                        id="ZELIGIBILITY_RULE"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="{i18n>eligibility_rule}" />
+                        </f:header>
                     </f:Card>                                                                                                                                                                                                                                                                                                                                         
                 </f:GridContainer>
             </ScrollContainer>

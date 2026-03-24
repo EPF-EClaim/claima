@@ -3960,7 +3960,7 @@ annotate service.ZDISBURSEMENT_STATUS with @(
 annotate service.ZELIGIBILITY_RULE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey             : [DISBURSEMENT_STATUS_ID],
+    Common.SemanticKey             : [CLAIM_TYPE_ID, CLAIM_TYPE_ITEM_ID, ROLE_ID, POSITION_NO_DESC, ROW_COUNT, START_DATE, END_DATE],
     Capabilities                   : {
         Deletable : true,
         Updatable : true,
