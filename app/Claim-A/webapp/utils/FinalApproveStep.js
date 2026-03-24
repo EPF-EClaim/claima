@@ -11,7 +11,7 @@ sap.ui.define([
         "use strict";
 
         return {
-            onFinalApprove: async function (oModel, sClaimID, sStatus, oEmployeeModel, oEmailPayload) {
+            onFinalApprove: async function (oController, oModel, sClaimID, sStatus, oViewModel, oEmailPayload) {
         try{
                 // Call Update Status
                 Utility._updateStatus(oModel, sClaimID, sStatus);
@@ -19,28 +19,29 @@ sap.ui.define([
                 const sSubmissionType = sClaimID.substring(0, 3);  // split front 3 letters to determine if claim or request
 
                 // Set Const Variables for Budget Processing
-                var bIsPre = sSubmissionType === "REQ";
-                const sBudgetApprove = 'approve';
-                var sField_header = bIsPre ? "REQUEST_ID" : "CLAIM_ID";
-                var sPARField = bIsPre ? "PREAPPROVAL_ID" : "CLAIM_ID"; 
-                var sTable = bIsPre ? "/ZEMP_REQUEST_BUDGET_CHECK" : "/ZEMP_CLAIM_BUDGET_CHECK";
-                var sTable2 = bIsPre ? "/ZEMP_APPROVER_REQUEST_DETAILS" : "/ZEMP_APPROVER_CLAIM_DETAILS";
+                var bIsPre = sSubmissionType === Constants.WorkflowType.REQUEST;
+                const sBudgetApprove = Constants.BudgetCheckAction.APPROVE;
+                var sField_header = bIsPre ? Constants.EntitiesFields.REQUESTID : Constants.EntitiesFields.CLAIMID;
+                var sPARField = bIsPre ? Constants.EntitiesFields.PREAPPROVALID : Constants.EntitiesFields.CLAIMID; 
+                var sBudgetCheckViewPath = bIsPre ? Constants.Entities.ZEMP_REQUEST_BUDGET_CHECK : Constants.Entities.ZEMP_CLAIM_BUDGET_CHECK;
+                var sApproverDetailsViewPath = bIsPre ? Constants.Entities.ZEMP_APPROVER_REQUEST_DETAILS : Constants.Entities.ZEMP_APPROVER_CLAIM_DETAILS;
                 var dCurrentDate = new Date().toLocaleDateString('en-CA');
+                const sLevel = "0";
 
                 if(oEmailPayload == null || oEmailPayload == "" || oEmailPayload.length == 0 || oEmailPayload == undefined){
 
-                    const oClaimantList = oEmployeeModel.bindList(
-                        sTable2,
+                    const oClaimantList = oViewModel.bindList(
+                        sApproverDetailsViewPath,
                         null,
                         null,
                         [
                             new Filter(sPARField, FilterOperator.EQ, sClaimID),
-                            new Filter("LEVEL", FilterOperator.EQ, "0")
+                            new Filter(Constants.EntitiesFields.LEVEL, FilterOperator.EQ, sLevel)
                         ],
                         { $$ownRequest: true }
                     );
 
-                    var sClaimType = bIsPre ? "Pre-Approval" : "Claim";
+                    var sClaimType = bIsPre ? Constants.ApprovalProcess.REQUESTTYPE : Constants.ApprovalProcess.CLAIMTYPE;
 
                     const aClaimantContexts = await oClaimantList.requestContexts();
                     const aClaimantData = aClaimantContexts.map(oCtx => oCtx.getObject());
@@ -52,21 +53,21 @@ sap.ui.define([
                     const sClaimantEmail = aClaimantData[0].EMPLOYEE_EMAIL;
 
                     var oEmailPayload = {
-                        ApproverName: "AUTO",
+                        ApproverName: Constants.Approvers.AUTO,
                         SubmissionDate: sClaimsSubmissionDate,
                         ClaimantName: sClaimantName,
                         ClaimType: sClaimType,
                         ClaimID: sClaimID,
                         RecipientName: sRecipientName,
-                        Action: "APPROVE",
+                        Action: Constants.ApprovalProcessAction.ACTION_APPROVE,
                         ReceiverEmail: sClaimantEmail
                     };
                 }
                     
                 const aFilters = [new Filter(sField_header, FilterOperator.EQ, sClaimID)];
                 
-                const oBudgetBinding2 = oEmployeeModel.bindList(
-                    sTable,
+                const oBudgetBinding2 = oViewModel.bindList(
+                    sBudgetCheckViewPath,
                     null,
                     null,
                     aFilters,
@@ -82,10 +83,7 @@ sap.ui.define([
                         : (oRow.SUBMITTED_DATE ? String(oRow.SUBMITTED_DATE).substring(0, 4) : null);
 
 
-                    const bUseAlt = "X";
-                    var sFund_center = bUseAlt
-                        ? (oRow.ALTERNATE_COST_CENTER)
-                        : (oRow.COST_CENTER);
+                    var sFund_center = (oRow.ALTERNATE_COST_CENTER) ?? (oRow.COST_CENTER) ?? "";
 
 
                     var iAmount = bIsPre
@@ -102,7 +100,11 @@ sap.ui.define([
                 });
                 
                 // Call Budget Processing
-                budgetCheck.budgetProcessingTest(oModel, aDataset, sSubmissionType, sBudgetApprove);
+
+                /** Commenting out budgetProcessing as it will be replaced by a backend function by Jefry 
+                budgetCheck.budgetProcessing(oModel, aDataset, sSubmissionType, sBudgetApprove);
+                const aResult = budgetCheck.backendBudgetChecking(oController, sSubmissionType, Constants.BudgetCheckAction.APPROVE);
+                */
 
                 // Call Farisha email Function
                 if (oEmailPayload) {
@@ -110,9 +112,9 @@ sap.ui.define([
                 }
 
                 // SEND CONSOLIDATED IS PAYLOAD (CLM only)
-                    if (sSubmissionType == Constants.WorkflowApproval.Claims) { 
+                    if (sSubmissionType == Constants.WorkflowType.CLAIM) { 
                         
-                        await this.onSendClaimBatch(oEmployeeModel, sClaimID);
+                        await this.onSendClaimBatch(oViewModel, sClaimID);
                     }
                         return true;
 
@@ -124,16 +126,18 @@ sap.ui.define([
                     /**
                      * Single-call consolidated IS posting for final approval
                      */
-                onSendClaimBatch: async function (oModelView, sClaimID) {
+                onSendClaimBatch: async function (oViewModel, sClaimID) {
 
                     // Read all claim items
-                    const oList = oModelView.bindList(
-                        "/ZEMP_CLAIM_DETAILS",
+                    const oList = oViewModel.bindList(
+                        Constants.Entities.ZEMP_CLAIM_DETAILS,
                         null,
                         null,
-                        [new Filter("CLAIM_ID", FilterOperator.EQ, sClaimID)],
+                        [new Filter(Constants.EntitiesFields.CLAIMID, FilterOperator.EQ, sClaimID)],
                         { $$ownRequest: true }
                     );
+
+                    
 
                     var aCtxs = await oList.requestContexts(0, Infinity);
                     var aClaimRows = aCtxs.map(c => c.getObject());
@@ -144,6 +148,7 @@ sap.ui.define([
 
                     // Map to CDS ApprovedClaimItem
                     var aClaimItems = aClaimRows.map(oRow => ({
+                        ClaimID:              sClaimID,
                         ClaimSubID:           oRow.CLAIM_SUB_ID,
                         EmpID:                oRow.EMP_ID,
                         SubmissionDate:       oRow.SUBMITTED_DATE,
@@ -157,7 +162,7 @@ sap.ui.define([
                     }));
 
                     //Call CDS batch action ONCE
-                    const oAction = oModelView.bindContext("/sendApprovedClaimBatch(...)");
+                    const oAction = oViewModel.bindContext("/sendApprovedClaimBatch(...)");
                     oAction.setParameter("batch", {
                         ClaimID: sClaimID,
                         Items: aClaimItems

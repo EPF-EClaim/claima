@@ -1699,14 +1699,15 @@ sap.ui.define([
 					oEmployeeViewModel,
 					this
 				);
-
-				await budgetCheck.budgetProcessingTest(
+				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
+				await budgetCheck.budgetProcessing(
 					oModelMain,
 					aDataset,
 					sSubmissionType,
 					this._oConstant.ApprovalProcessAction.RELEASE_IND
 				);
-
+				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
+				*/
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
 				}
@@ -1763,6 +1764,7 @@ sap.ui.define([
 					submissionType: sSubmissionType,
 					sMessageKey
 				} = await ApproverUtility.rejectOrSendBackMultiLevel(
+					this,
 					oModelMain,
 					sClaimId,
 					sUserId,
@@ -1772,13 +1774,15 @@ sap.ui.define([
 					oEmployeeViewModel,
 					this
 				);
-
-				await budgetCheck.budgetProcessingTest(
+				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
+				await budgetCheck.budgetProcessing(
 					oModelMain,
 					aDataset,
 					sSubmissionType,
 					this._oConstant.ApprovalProcessAction.RELEASE_IND
 				);
+				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
+				*/
 
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
@@ -2998,7 +3002,7 @@ sap.ui.define([
 						if (oAction === 'Submit Report') {
 							var oModelAppr = this.getView().getModel();
 							var oEmployeeViewModel = this.getView().getModel("employee_view");
-							workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
+							workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
 						}
 						MessageToast.show(oMsg);
 						this._onNavBack();
@@ -3047,6 +3051,7 @@ sap.ui.define([
 								MessageToast.show(Utility.getText("msg_claimsubmission_nocc"));
 								return;
 							}
+							/** 
 							const result = await budgetCheck.budgetChecking(
 								oModel,
 								"CLM",
@@ -3056,11 +3061,11 @@ sap.ui.define([
 								oInputModel.getProperty("/claim_header/claim_type_id"),
 								dataRow
 							);
-
+							
 							if (!result.passed) {
 								MessageToast.show(result.messages);
 								return;
-							}
+							}*/
 							else {
 								oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
 								if (oCtx.getProperty("SUBMITTED_DATE", null)) {
@@ -3080,7 +3085,7 @@ sap.ui.define([
 					if (oAction === 'Submit Report') {
 						var oModelAppr = this.getView().getModel();
 						var oEmployeeViewModel = this.getView().getModel("employee_view");
-						workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
+						workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
 					}
 
 					MessageToast.show(oMsg);

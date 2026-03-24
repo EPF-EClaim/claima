@@ -318,7 +318,10 @@ sap.ui.define([
 									this._oReqModel.setProperty("/view", 'view');
 
 									// Add in onPARApproverDetermination function
-									workflowApproval.onPARApproverDetermination(this._oDataModel, sReqId, this._oViewModel);
+									var oModel = this.getView().getModel();
+									var oEmployeeViewModel = this.getView().getModel("employee_view");
+									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
+									workflowApproval.onPARApproverDetermination(this, oModel, sCurrentReqId, oEmployeeViewModel);
 
 									this._oRouter.navTo("RequestFormStatus");
 
@@ -2147,12 +2150,15 @@ sap.ui.define([
 					);
 
 				// 2) Budget release (if your finance process requires release on send back)
+				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
 				await budgetCheck.budgetProcessing(
 					oModelMain,
 					dataset,          // budget rows from the view
 					submissionType,   // "REQ"
 					"release"
 				);
+				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
+				*/
 
 				// 3) Send notifications
 				const oMailModel = this._oDataModel;
@@ -2210,7 +2216,10 @@ sap.ui.define([
 					);
 
 				// Budget release if applicable
+				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
 				await budgetCheck.budgetProcessing(oModelMain, dataset, submissionType, "release");
+				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
+				*/
 
 				for (const p of payloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, p);
