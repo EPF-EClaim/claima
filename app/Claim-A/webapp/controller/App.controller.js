@@ -75,8 +75,6 @@ sap.ui.define([
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
 
-			PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
-
 			const bIsLocal = window.location.hostname.includes("port4004") || 
 							window.location.hostname.includes("applicationstudio.cloud.sap");
 			if (bIsLocal) {
