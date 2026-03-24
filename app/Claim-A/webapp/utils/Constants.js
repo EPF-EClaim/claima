@@ -165,6 +165,11 @@ sap.ui.define([
         "GroupType": {
             "GROUP": "Group",
             "INDIVIDUAL": "Individual"
+        },
+        "RequestFieldVisibilityConfig" : {
+            "SUBMISSION_TYPE"   : "PREAPPROVAL_R",
+            "HEADER"            : "HEADER",
+            "ITEM"              : "ITEM" 
         }
 
     }

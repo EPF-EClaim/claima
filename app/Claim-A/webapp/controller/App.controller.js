@@ -1693,12 +1693,12 @@ sap.ui.define([
 			}
 
 			const oListBinding = this._oDataModel.bindList("/ZCLAIM_TYPE", null, null, [
-				new sap.ui.model.Filter("REQUEST_TYPE", sap.ui.model.FilterOperator.EQ, sReqType)
+				new Filter("REQUEST_TYPE", FilterOperator.EQ, sReqType)
 			]);
 
 			oListBinding.requestContexts().then((aContexts) => {
 				const aData = aContexts.map(oCtx => oCtx.getObject());
-				const oTypeModel = new sap.ui.model.json.JSONModel({ types: aData });
+				const oTypeModel = new JSONModel({ types: aData });
 				
 				if (this.oDialogFragment) {
 					this.oDialogFragment.setModel(oTypeModel, "claim_type_list");
@@ -1721,8 +1721,8 @@ sap.ui.define([
 
 			try {
 				const oListBinding = this._oDataModel.bindList("/ZDB_STRUCTURE", null, null, [
-					new Filter("SUBMISSION_TYPE", FilterOperator.EQ, "PREAPPROVAL_R"),
-					new Filter("COMPONENT_LEVEL", FilterOperator.EQ, "HEADER"),
+					new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.RequestFieldVisibilityConfig.SUBMISSION_TYPE),
+					new Filter("COMPONENT_LEVEL", FilterOperator.EQ, this._oConstant.RequestFieldVisibilityConfig.HEADER),
 					new Filter("REQUEST_TYPE_ID", FilterOperator.EQ, sReqType)
 				]);
 
