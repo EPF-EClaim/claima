@@ -226,7 +226,7 @@ sap.ui.define([
 		},
 
 		onDeleteRequest() {
-			const sEmpId = this._oReqModel.getProperty("/user");
+			const sEmpId = this._oSessionModel.getProperty("/userId");
 			const sReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
 
 			if (!sEmpId || !sReqId) {
@@ -289,7 +289,7 @@ sap.ui.define([
 			}
 
 			const sReqId = String(oReqData.req_header.reqid || "").trim();
-			const sEmpId = this._oReqModel.getProperty("/user");
+			const sEmpId = this._oSessionModel.getProperty("/userId");
 
 			if (!sReqId || !sEmpId) {
 				MessageToast.show(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
@@ -952,7 +952,7 @@ sap.ui.define([
 			const oReqHeader = oData.req_header;
 			const oReqItem = oData.req_item;
 			const sReqId = String(oData.req_header.reqid || "").trim();
-			const sEmpId = String(oData.user.emp_id || "");
+			const sEmpId = this._oSessionModel.getProperty("/userId");
 			const bIsEdit = this._oReqModel.getProperty("/view") === "i_edit";
 
 			if (!sReqId) return MessageToast.show("Missing Request ID");
@@ -1728,7 +1728,7 @@ sap.ui.define([
 		},
 
 		_getDependent() {
-			const sEmpId = this._oReqModel.getProperty("/user");
+			const sEmpId = this._oSessionModel.getProperty("/userId");
 			const oListBinding = this._oDataModel.bindList("/ZEMP_DEPENDENT", null, null, [
 				new Filter("EMP_ID", FilterOperator.EQ, sEmpId)
 			]);
