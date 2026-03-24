@@ -1862,9 +1862,9 @@ sap.ui.define([
 
 			try {
 				const oListBinding = this._oDataModel.bindList("/ZDB_STRUCTURE", null, null, [
-					new sap.ui.model.Filter("SUBMISSION_TYPE", sap.ui.model.FilterOperator.EQ, "PREAPPROVAL_R"),
-					new sap.ui.model.Filter("COMPONENT_LEVEL", sap.ui.model.FilterOperator.EQ, "ITEM"),
-					new sap.ui.model.Filter("CLAIM_TYPE_ITEM_ID", sap.ui.model.FilterOperator.EQ, sClaimTypeItem)
+					new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.RequestFieldVisibilityConfig.SUBMISSION_TYPE),
+					new Filter("COMPONENT_LEVEL", FilterOperator.EQ, this._oConstant.RequestFieldVisibilityConfig.ITEM),
+					new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaimTypeItem)
 				]);
 
 				const aCtx = await oListBinding.requestContexts(0, 1);
@@ -1897,9 +1897,8 @@ sap.ui.define([
 
 			} catch (err) {
 				console.error("OData bindList failed:", err);
-				this._loadClaimTypeSelectionData(false);
 			} finally {
-				sap.ui.core.BusyIndicator.hide();
+				BusyIndicator.hide();
 			}
 		},
 
