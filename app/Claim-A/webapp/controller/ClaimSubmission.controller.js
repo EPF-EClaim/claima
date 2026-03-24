@@ -2144,10 +2144,16 @@ sap.ui.define([
 			// validate required fields
 			if (
 				!this.byId("select_claimdetails_input_claimitem").getSelectedItem() ||
-				(!this.byId("input_claimdetails_input_amount").getValue() && this.byId("input_claimdetails_input_amount").getVisible())
+				(!this.byId("input_claimdetails_input_amount").getValue() && this.byId("input_claimdetails_input_amount").getVisible())				
 			) {
 				// stop claim submission if values empty
 				MessageToast.show(Utility.getText("msg_claiminput_required"));
+				return;
+			}
+
+			if(this.byId("input_claimdetails_input_amount").getValue() == "0.00"){
+				// stop claim submission if amount is zero
+				MessageToast.show(Utility.getText("msg_claiminput_amount_zero"));
 				return;
 			}
 
