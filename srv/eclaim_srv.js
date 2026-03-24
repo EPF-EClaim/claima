@@ -416,6 +416,30 @@ module.exports = (srv) => {
         }
     });
 
+    async function updateClaimHeaderTotals(req, sClaimId, tx) {
+        if (!sClaimId) return;
+
+        const result = await tx.run(
+            SELECT.one`
+                SUM(AMOUNT) as TotalClaimAmount
+            `
+                .from('ZCLAIM_ITEM')
+                .where({ CLAIM_ID: sClaimId })
+        );
+
+        const totalClaimAmount = result.TotalClaimAmount || 0;
+
+        await tx.run(
+            UPDATE('ZCLAIM_HEADER')
+                .set({
+                    TOTAL_CLAIM_AMOUNT: totalClaimAmount
+                })
+                .where({ CLAIM_ID: sClaimId })
+        );
+
+        console.log(`Updated Header ${sClaimId}: ClaimAmount=${totalClaimAmount}`);
+    }
+
     async function updateHeaderTotals(req, sRequestId, tx) {
         if (!sRequestId) return;
 
@@ -442,6 +466,33 @@ module.exports = (srv) => {
 
         console.log(`Updated Header ${sRequestId}: PreApproval=${totalEstAmount}, CashAdvance=${totalCashAdvance}`);
     }
+
+    srv.after('CREATE', 'ZCLAIM_ITEM', async (data, req) => {
+        const tx = cds.tx(req);
+        await updateClaimHeaderTotals(req, data.CLAIM_ID, tx);
+    });
+
+    srv.after('UPDATE', 'ZCLAIM_ITEM', async (data, req) => {
+        const tx = cds.tx(req);
+        const sClaimId = data.CLAIM_ID || req.data.CLAIM_ID;
+
+        if (sClaimId) {
+            await updateClaimHeaderTotals(req, sClaimId, tx);
+        } else {
+            const itemKeys = req.query.UPDATE.entity.keys || [req.data];
+            if (itemKeys && itemKeys.length > 0 && itemKeys[0].CLAIM_ID) {
+                await updateClaimHeaderTotals(req, itemKeys[0].CLAIM_ID, tx);
+            }
+        }
+    });
+
+    srv.after('DELETE', 'ZCLAIM_ITEM', async (data, req) => {
+        const tx = cds.tx(req);
+        const sClaimId = req.data.CLAIM_ID;
+        if (sClaimId) {
+            await updateClaimHeaderTotals(req, sClaimId, tx);
+        }
+    });
 
     srv.after('CREATE', 'ZREQUEST_ITEM', async (data, req) => {
         const tx = cds.tx(req);

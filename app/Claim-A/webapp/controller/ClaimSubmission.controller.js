@@ -326,6 +326,22 @@ sap.ui.define([
 				oClaimSubmissionModel.setProperty("/claim_header", oHeader);
 				await this._getClaimHeaderDataDescr(oClaimSubmissionModel);
 
+				// set view-only
+				if (
+					oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
+					oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
+				) {
+					oClaimSubmissionModel.setProperty("/view_only", true)
+				}
+				else {
+					oClaimSubmissionModel.setProperty("/view_only", false)
+				}
+
+				// disable is_approver from claim status
+				if (oClaimSubmissionModel.getProperty("/is_approver")) {
+					oClaimSubmissionModel.setProperty("/is_approver", false)
+				}
+
 				// Items
 				const aItems = aItemCtx.map(ctx => ctx.getObject()).map(it => ({
 					// Map to the fragment's structure
@@ -2875,6 +2891,9 @@ sap.ui.define([
 					this._displayFooterButtons("claimsubmission_summary_claimitem");
 				}
 				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
+				
+				// Reload when item cancellation
+				this._loadClaimById(String(oClaimSubmissionModel.getProperty("/claim_header/claim_id")));
 			}
 		},
 
