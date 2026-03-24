@@ -2,6 +2,17 @@ sap.ui.define([
 ], function () {
     "use strict";
     return {
+        "Approvers":{
+            "AUTO": "AUTO",
+            "AUTOASSIGN": "AA",
+            "BUDGET": "Budget",
+            "HEADOFSECTION": "HOS"
+        },
+        "BudgetCheckAction": {
+            "APPROVE": "APPROVE",
+            "REJECT": "REJECT",
+            "SUBMIT": "SUBMIT"
+        },
         "ClaimType": {
             "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
             "KURSUS_LUAR_NEGARA": "KURSUS_LUAR_NEGARA",
@@ -86,7 +97,7 @@ sap.ui.define([
         },
         "WorkflowType": {
             "CLAIM": "CLM",
-            "PRE_APPROVAL": "PRE"
+            "REQUEST": "REQ"
         },
         "Date": {
             "DATEFORMAT": "yyyy.MM.dd",
@@ -112,40 +123,93 @@ sap.ui.define([
             "PROJ_CODE1": "1",
             "PROJ_CODE2": "2",
         },
+        "Email_Action": {
+            "NOTIFY": "Notify"
+        },
         "Entities": {
             "ZAPPROVER_DETAILS_PREAPPROVAL": "/ZAPPROVER_DETAILS_PREAPPROVAL",
             "ZAPPROVER_DETAILS_CLAIMS": "/ZAPPROVER_DETAILS_CLAIMS",
+            "ZBUDGET": "/ZBUDGET",
+            "ZCONSTANTS": "/ZCONSTANTS",
+            "ZCLAIM_HEADER": "/ZCLAIM_HEADER",
+            "ZCLAIM_ITEM": "/ZCLAIM_ITEM",
+            "ZCLAIM_TYPE_ITEM": "/ZCLAIM_TYPE_ITEM",
             "ZEMP_APPROVER_REQUEST_DETAILS": "/ZEMP_APPROVER_REQUEST_DETAILS",
             "ZEMP_APPROVER_CLAIM_DETAILS": "/ZEMP_APPROVER_CLAIM_DETAILS",
-            "ZEMP_REQUEST_BUDGET_CHECK": "/ZEMP_REQUEST_BUDGET_CHECK",
             "ZEMP_CLAIM_BUDGET_CHECK": "/ZEMP_CLAIM_BUDGET_CHECK",
+            "ZEMP_CLAIM_DETAILS": "/ZEMP_CLAIM_DETAILS",
+            "ZEMP_MASTER": "/ZEMP_MASTER",
+            "ZEMP_REQUEST_BUDGET_CHECK": "/ZEMP_REQUEST_BUDGET_CHECK",
             "ZREQUEST_HEADER": "/ZREQUEST_HEADER",
+            "ZREQUEST_ITEM": "/ZREQUEST_ITEM",
+            "ZREQUEST_TYPE": "/ZREQUEST_TYPE",
+            "ZROLEHIERARCHY": "/ZROLEHIERARCHY",
             "ZCLAIM_HEADER": "/ZCLAIM_HEADER",
+            "ZSUBMISSION_TYPE": "/ZSUBMISSION_TYPE",
+            "ZSUBSTITUTION_RULES": "/ZSUBSTITUTION_RULES",
+            "ZWORKFLOW_RULE": "/ZWORKFLOW_RULE",
+            "ZWORKFLOW_STEP": "/ZWORKFLOW_STEP"
         },
         "EntitiesFields": {
             "APPROVER_ID": "APPROVER_ID",
-            "SUBAPPROVER_ID": "SUBSTITUTE_APPROVER_ID",
-            "STATUS": "STATUS",
-            "TIMESTAMP": "PROCESS_TIMESTAMP",
-            "REJECT_REASON_ID": "REJECT_REASON_ID",
-            "CLAIM_STATUS": "STATUS_ID",
-            "COMMENTAPPOVAL": "COMMENT",
-            "PREAPPROVALID": "PREAPPROVAL_ID",
-            "REQUESTID": "REQUEST_ID",
             "CLAIMID": "CLAIM_ID",
+            "CLAIM_STATUS": "STATUS_ID",
+            "CLAIM_TYPE_ITEM_ID": "CLAIM_TYPE_ITEM_ID",
+            "COMMENTAPPOVAL": "COMMENT",
+            "DEP": "DEP",
+            "EEID": "EEID",
+            "EMAIL": "EMAIL",
+            "FUND_CENTER": "FUND_CENTER",
+            "ID": "ID",
+            "LEVEL": "LEVEL",
+            "PREAPPROVALID": "PREAPPROVAL_ID",
+            "REJECT_REASON_ID": "REJECT_REASON_ID",
+            "REQUESTID": "REQUEST_ID",
             "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
             "TRAVEL_HOURS": "TRAVEL_HOURS",
             "TRAVEL_DAYS_ID": "TRAVEL_DAYS_ID",
             "ELIGIBLE_AMOUNT": "ELIGIBLE_AMOUNT",
             "ROOM_TYPE_ID": "ROOM_TYPE_ID",
-            "FARE_TYPE_ID": "FARE_TYPE_ID"
+            "FARE_TYPE_ID": "FARE_TYPE_ID",
+            "REQUEST_TYPE_ID": "REQUEST_TYPE_ID",
+            "ROLE": "ROLE",
+            "SUBAPPROVER_ID": "SUBSTITUTE_APPROVER_ID",
+            "SUBMISSION_TYPE_ID" :"SUBMISSION_TYPE_ID",
+            "STATUS": "STATUS",
+            "TIMESTAMP": "PROCESS_TIMESTAMP",
+            "USER_ID": "USER_ID",
+            "VALID_FROM": "VALID_FROM",
+            "VALID_TO": "VALID_TO",
+            "WORKFLOW_CODE": "WORKFLOW_CODE",
+            "WORKFLOW_TYPE": "WORKFLOW_TYPE",
+            "YEAR": "YEAR"
+        },
+        "Operators": {
+            "EQUAL": "EQ",
+            "GREATEREQUAL": "GE",
+            "GREATERTHAN": "GT",
+            "LESSEQUAL": "LE",
+            "LESSTHAN": "LT",
+            "NOTEQUAL": "NE"
+        },
+        "Risk_Category":{
+            "LOW": "L",
+            "HIGH": "H"
         },
         "Role": {
+            "APPROVER": "Approver",
+            "CEO": "CEO",
+            "DTD_ADMIN": "DTD Admin",
             "GA_ADMIN": "GA Admin",
             "JKEW_ADMIN": "JKEW Admin",
-            "DTD_ADMIN": "DTD Admin",
-            "APPROVER": "Approver",
             "SUPER_ADMIN": "Super Admin"
+        },
+        "User_Type":{
+            "CASH_FI": "CASH_FI",
+            "CEO_FI": "CEO_FI",
+            "FI_SETTLEMENT_A": "FI_SETTLEMENT_A",
+            "FI_SETTLEMENT_B": "FI_SETTLEMENT_B",
+            "HOD_JKEW": "HOD_JKEW"
         },
         "Configuration": {
             "ZEMP_MASTER": "ZEMP_MASTER",
@@ -170,6 +234,17 @@ sap.ui.define([
             "SUBMISSION_TYPE"   : "PREAPPROVAL_R",
             "HEADER"            : "HEADER",
             "ITEM"              : "ITEM" 
+        },
+        "SubmissionTypePrefix": {
+            "REQUEST"   : "REQ",
+            "CLAIM"     : "CLM"
+        },
+        "CashAdvanceInfo" : {
+            "COST_CENTER"   : "100000000",
+            "GL_ACCOUNT"    : "214005"
+        },
+        "SubmissionType":{
+            "DIRECT_CLAIM" : "ST0001"
         }
 
     }

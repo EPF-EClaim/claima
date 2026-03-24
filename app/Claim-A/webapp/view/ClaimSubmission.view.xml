@@ -9,12 +9,13 @@
     <Page
         id="page_claimsubmission"
         showHeader="false"
+        floatingFooter="true"
         enableScrolling="true"
     >
         <!-- content here -->
         <footer>
-            <Toolbar>
-                <ToolbarSpacer />
+            <OverflowToolbar>
+                <ToolbarSpacer/>
                 <!-- (Approver) -->
                 <!-- Reject -->
                 <Button
@@ -42,6 +43,13 @@
                 />
 
                 <!-- (Claim Summary) -->
+                <!-- Back -->
+                <Button
+                    id="button_claimsubmission_back"
+                    press="onAction_ClaimSubmission_Toolbar('Back')"
+                    text="{i18n>button_claimsubmission_back}"
+                />
+
                 <!-- Save Draft -->
                 <Button
                     id="button_claimsubmission_savedraft"
@@ -69,13 +77,6 @@
                     visible="{= ${claimsubmission_input>/claim_header/status_id} === 'STAT01' }"
                 />
 
-                <!-- Back -->
-                <Button
-                    id="button_claimsubmission_back"
-                    press="onAction_ClaimSubmission_Toolbar('Back')"
-                    text="{i18n>button_claimsubmission_back}"
-                />
-
                 <!-- (Claim Details) -->
                 <!-- Save -->
                 <Button
@@ -93,7 +94,7 @@
                     text="{i18n>button_claimdetails_input_cancel}"
                     visible="false"
                 />
-            </Toolbar>
+            </OverflowToolbar>
         </footer>
     </Page>
 </mvc:View>

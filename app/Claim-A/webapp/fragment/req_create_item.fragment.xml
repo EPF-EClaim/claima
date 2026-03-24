@@ -6,7 +6,9 @@
     xmlns:f="sap.f"
     xmlns:unified="sap.ui.unified"
     xmlns:table="sap.ui.table"
-    xmlns:mdc="sap.ui.mdc" >
+    xmlns:mdc="sap.ui.mdc"
+    xmlns:mdcvh="sap.ui.mdc.valuehelp"
+    xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content" >
     <VBox
         id="request_create_item_fragment" 
         backgroundDesign="Solid"
@@ -14,7 +16,7 @@
         rowGap="1rem">
         <VBox width="100%" height="100%" rowGap="1rem">
             <OverflowToolbar height="3rem">
-                <Title text="{i18n>req_form_detail_title}" titleStyle="H4" />
+                <Title text="{i18n>req_form_detail_title}"/>
                 <ToolbarSpacer />
                 <MenuButton text="{i18n>req_b_save_request}" 
                     buttonMode="Split" 
@@ -781,14 +783,11 @@
                                             visible="false"
                                             id="i_cash_adv" >
                                     <form:fields>
-                                        <m:Select 
-                                            selectedKey="{request>/req_item/cash_advance}" 
-                                            enabled="{= ${request>/view} !== 'view' }">
-                                            <items>
-                                                <core:Item key="false" text="No"/>
-                                                <core:Item key="true" text="Yes"/>
-                                            </items>
-                                        </m:Select>
+                                        <Switch state="{request>/req_item/cash_advance}" customTextOn="Yes" customTextOff="No">
+                                            <layoutData>
+                                                <FlexItemData growFactor="1" />
+                                            </layoutData>
+                                        </Switch>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -796,10 +795,9 @@
                         </form:FormContainer>
                     </form:formContainers>
                 </form:Form>
-                
                 <VBox rowGap="0.5rem">
                     <OverflowToolbar height="3rem">
-                        <Title text="{i18n>req_participant}" titleStyle="H4" />
+                        <Title text="{i18n>req_participant}"/>
                         <ToolbarSpacer />
                         <Button text="{i18n>req_b_download_template}" press=".onExport"></Button>
                         <unified:FileUploader
@@ -824,30 +822,12 @@
                         <table:Column width="10rem" >
                             <Label text="{i18n>req_p_id}"></Label>
                             <table:template>
-                                <Input 
+                                <mdc:Field
                                     value="{request>PARTICIPANTS_ID}" 
-                                    showSuggestion="true"
-                                    suggestionRows="{/ZEMP_MASTER}"
-                                    suggestionItemSelected=".onParticipantInputChange"
-                                    change=".onUploadParticipants"
-                                    showValueHelp="true"
-                                    valueHelpRequest=".onValueHelpRequest"
-                                    enabled="{= ${request>/req_header/grptype} === 'GRP' || ${request>/view} !== 'view'}">
-                                    <suggestionColumns>
-                                        <Column><Label text="EEID"/></Column>
-                                        <Column><Label text="Name"/></Column>
-                                        <Column><Label text="Cost Center"/></Column>
-                                    </suggestionColumns>
-                                    <suggestionRows>
-                                        <ColumnListItem>
-                                            <cells>
-                                                <Label text="{EEID}"/>
-                                                <Label text="{NAME}"/>
-                                                <Label text="{CC}"/>
-                                            </cells>
-                                        </ColumnListItem>
-                                    </suggestionRows>
-                                </Input>
+                                    editMode="{= (${request>/req_header/grptype} === 'GRP' || ${request>/view} !== 'view') ? 'Editable' : 'Display' }"
+                                    valueHelp="valuehelp_requestinput_emp"
+                                    change=".onParticipantInputChange"
+                                />
                             </table:template>
                         </table:Column>
                         <table:Column width="25rem">
@@ -884,6 +864,47 @@
                             </table:RowAction>
                         </table:rowActionTemplate>
                     </table:Table>
+                    <dependents>
+                        <mdc:ValueHelp
+                            id="valuehelp_requestinput_emp"
+                            delegate="{
+                                name: 'claima/utils/ValueHelpDelegate_emp',
+                                payload: {
+                                    searchKeys: ['EEID', 'NAME', 'CC'],
+                                    columns: [
+                                        '{i18n>valuehelp_claiminput_altcc_col_id}',
+                                        '{i18n>valuehelp_claiminput_altcc_col_name}',
+                                        'Cost Center'
+                                    ],
+                                    openOnClick: true
+                                }
+                            }"
+                        >
+                            <mdc:typeahead>
+                                <mdcvh:Popover id="valuehelp_requestinput_emp_pop" title="Select Employee">
+                                    <mdcvhcnt:MTable id="valuehelp_requestinput_emp_pop_MTable"
+                                        keyPath="EEID"
+                                        descriptionPath="NAME" 
+                                        caseSensitive="false"
+                                        useAsValueHelp="true"> </mdcvhcnt:MTable>
+                                </mdcvh:Popover>
+                            </mdc:typeahead>
+                            
+                            <mdc:dialog>
+                                <mdcvh:Dialog
+                                    id="valuehelp_requestinput_emp_dialog"
+                                    title="{i18n>valuehelp_claiminput_altcc}"
+                                >
+                                    <mdcvhcnt:MTable
+                                        id="valuehelp_requestinput_emp_dialog_MTable"
+                                        keyPath="EEID"
+                                        descriptionPath="NAME"
+                                        caseSensitive="false">
+                                    </mdcvhcnt:MTable>
+                                </mdcvh:Dialog>
+                            </mdc:dialog>
+                        </mdc:ValueHelp>
+                    </dependents>
                 </VBox>
             </VBox>
         </VBox>

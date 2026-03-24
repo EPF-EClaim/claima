@@ -15,6 +15,7 @@ sap.ui.define([
 			// Track current sort direction per path: true = DESC, false = ASC
 			this._mSortState = {};
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
+			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
 			this.getOwnerComponent().getRouter().getRoute("ClaimStatus").attachPatternMatched(this._onMatched, this);
 		},
 
@@ -448,7 +449,7 @@ sap.ui.define([
 				});
 
 				// set employee data
-				const emp_data = await this._getEmpIdDetail(oClaimInputModel.getProperty("/claim_header/emp_id"));
+				const emp_data = await this._getEmpIdDetail(this._oSessionModel.getProperty("/userId"));
 				if (emp_data) {
 					oClaimInputModel.setProperty("/emp_master", emp_data);
 					await this._getEmpDataDescr(oClaimInputModel);
