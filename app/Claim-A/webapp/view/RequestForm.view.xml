@@ -23,8 +23,10 @@
 
     <Page  
         id="request_form"
+        showHeader="false"
         floatingFooter="true"
-        showHeader="false">
+        enableScrolling="true"
+    >
         <content>
             <VBox >
                 <VBox
@@ -34,11 +36,11 @@
                     rowGap="1rem">
                     <OverflowToolbar height="3rem">
                         <Title text="{i18n>req_form_header_title}" titleStyle="H3"/>
-                        <ToolbarSpacer />
+                        <ToolbarSpacer/>
                         <Button
                             type="Default"
                             icon="sap-icon://excel-attachment"
-                            text="Download"
+                            text="Download Details"
                             id="PARDownloadExcelBtn"
                             press=".onDownloadExcelReport"
                         />
@@ -98,25 +100,25 @@
             </VBox>
         </content>
         <footer>
-            <OverflowToolbar >
-                <ToolbarSpacer />
+            <OverflowToolbar>
+                <ToolbarSpacer/>
                 <!-- View Mode -->
-                <Button id="req_back_scr"       type="Back"     text="Back"             press=".onBackView"         visible="{= ${request>/view} === 'view' }"/>
+                <Button id="req_back_scr"       type="Back"         text="Back"                     press=".onBackView"         visible="{= ${request>/view} === 'view' }"/>
 
                 <!-- Header Level -->
-                <Button id="req_back"           type="Back"     text="Back"             press=".onBack"             visible="{= ${request>/view} === 'list' }"/>
-                <Button id="req_delete"         type="Default"  text="Delete Request"   press=".onDeleteRequest"    visible="{= ${request>/view} === 'list' }"/>
-                <Button id="req_submit"         type="Default"  text="Submit Request"   press=".onSubmitRequest"    visible="{= ${request>/view} === 'list' }"/>
+                <Button id="req_back"           type="Back"         text="Back"                     press=".onBack"             visible="{= ${request>/view} === 'list' }"/>
+                <Button id="req_delete"         type="Default"      text="Delete Request"           press=".onDeleteRequest"    visible="{= ${request>/view} === 'list' }"/>
+                <Button id="req_submit"         type="Emphasized"   text="Submit Request"           press=".onSubmitRequest"    visible="{= ${request>/view} === 'list' }"/>
 
                 <!-- Item Level -->
-                <Button id="req_item_cancel"    type="Default"  text="Cancel"           press=".onCancelItem"       visible="{= ${request>/view} === 'create' || ${request>/view} === 'i_edit' }"/>
-                <Button id="req_item_save"      type="Default"  text="Save"             press=".onSaveItem"         visible="{= ${request>/view} === 'create' || ${request>/view} === 'i_edit' }"/>
+                <Button id="req_item_cancel"    type="Default"      text="Cancel"                   press=".onCancelItem"       visible="{= ${request>/view} === 'create' || ${request>/view} === 'i_edit' }"/>
+                <Button id="req_item_save"      type="Default"      text="Save"                     press=".onSaveItem"         visible="{= ${request>/view} === 'create' || ${request>/view} === 'i_edit' }"/>
 
                 <!-- Approver -->
-                <Button id="req_back_scr_appr"  type="Back"     text="Back"                     press=".onBackView"         visible="{= ${request>/view} === 'approver' }"/>
-                <Button id="req_reject"         type="Default"  text="Reject"                   press=".onRejectRequest"    visible="{= ${request>/view} === 'approver' }"/>
-                <Button id="req_send_back"      type="Default"  text="Send Back to Employee"    press=".onSendBackRequest"  visible="{= ${request>/view} === 'approver' }"/>
-                <Button id="req_approve"        type="Default"  text="Approve"                  press=".onApproveRequest"   visible="{= ${request>/view} === 'approver' }"/>
+                <Button id="req_back_scr_appr"  type="Back"         text="Back"                     press=".onBackView"         visible="{= ${request>/view} === 'approver' }"/>
+                <Button id="req_reject"         type="Default"      text="Reject"                   press=".onRejectRequest"    visible="{= ${request>/view} === 'approver' }"/>
+                <Button id="req_send_back"      type="Default"      text="Send Back to Employee"    press=".onSendBackRequest"  visible="{= ${request>/view} === 'approver' }"/>
+                <Button id="req_approve"        type="Default"      text="Approve"                  press=".onApproveRequest"   visible="{= ${request>/view} === 'approver' }"/>
             </OverflowToolbar>
         </footer>
     </Page>
