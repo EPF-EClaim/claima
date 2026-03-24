@@ -26,7 +26,7 @@ sap.ui.define([
                 this.setModel(models.createSessionModel(), "session");
                 this.setModel(models.createUserIdModel(), "userId");
                 this.setModel(models.createImageModel(), "imageModel");
- 
+
                 const fmt = sap.ui.getCore().getConfiguration().getFormatSettings();
                 fmt.setDatePattern("medium", "dd MMM yyyy");
                 fmt.setDatePattern("short", "dd MMM yyyy");
@@ -85,6 +85,8 @@ sap.ui.define([
                 this.setInactivityTimeout(118 * 60 * 1000);
                 this._initActivityTracking(); 
                 this.startInactivityTimer();
+
+                this._oRouter.attachRouteMatched(this._onRouteMatched,this);
             },
 
             _loadCurrentUser: function () {
@@ -229,6 +231,28 @@ sap.ui.define([
             destroy: function () {
                 this.stopInactivityTimer();
                 UIComponent.prototype.destroy.apply(this, arguments);
-            }
+            },
+
+		    _onRouteMatched: function (oEvent) {
+                // To set current key of Side Navigation
+                var _sRoute = oEvent.getParameter("name");
+                var _oSideNavigation = this.getRootControl().byId("sideNavigation");
+                var _oRouteKeyMapping = {
+                    "Dashboard": "dashboard",
+                    "RequestFormStatus": "myrequest",
+                    "ClaimStatus": "myreport",
+                    "MyApproval": "approval",
+                    "ManageSub": "mysubstitution",
+                    "Analytics": "analytics",
+                    "Configuration": "config"
+                };
+
+                var _sKey = _oRouteKeyMapping[_sRoute];
+
+                if (_oSideNavigation && _sKey) {
+                    _oSideNavigation.setSelectedKey(_sKey);
+                }
+		    }
+
         });
     });
