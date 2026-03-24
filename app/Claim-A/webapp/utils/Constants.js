@@ -4,7 +4,9 @@ sap.ui.define([
     return {
         "Approvers":{
             "AUTO": "AUTO",
-            "BUDGET": "Budget"
+            "AUTOASSIGN": "AA",
+            "BUDGET": "Budget",
+            "HEADOFSECTION": "HOS"
         },
         "BudgetCheckAction": {
             "APPROVE": "APPROVE",
@@ -139,6 +141,7 @@ sap.ui.define([
             "ZEMP_MASTER": "/ZEMP_MASTER",
             "ZEMP_REQUEST_BUDGET_CHECK": "/ZEMP_REQUEST_BUDGET_CHECK",
             "ZREQUEST_HEADER": "/ZREQUEST_HEADER",
+            "ZREQUEST_ITEM": "/ZREQUEST_ITEM",
             "ZREQUEST_TYPE": "/ZREQUEST_TYPE",
             "ZROLEHIERARCHY": "/ZROLEHIERARCHY",
             "ZCLAIM_HEADER": "/ZCLAIM_HEADER",

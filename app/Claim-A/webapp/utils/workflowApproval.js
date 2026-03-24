@@ -4,8 +4,9 @@ sap.ui.define([
     "sap/m/MessageToast",
     "sap/ui/model/FilterOperator",
 	"claima/utils/Constants",
-    "claima/utils/WorkflowApproverHelper"
-], function (FinalApproveStep, Filter, MessageToast,FilterOperator,Constants, WorkflowApproverHelper) {
+    "claima/utils/WorkflowApproverHelper",
+    "claima/utils/Utility"
+], function (FinalApproveStep, Filter, MessageToast,FilterOperator,Constants, WorkflowApproverHelper, Utility) {
     "use strict";
 
     return {
@@ -35,7 +36,7 @@ sap.ui.define([
                 
             }
             catch(oError){
-                MessageToast.show(Utility.getText(this, "msg_failed_generic_error", [oError]));
+                MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]));
             }
             
 
@@ -83,7 +84,7 @@ sap.ui.define([
 			const sClaimsSubmissionType = aClaimHeaderData[0].SUBMISSION_TYPE;
 			const sClaimsSubmissionDate = aClaimHeaderData[0].SUBMITTED_DATE;
 			const sClaimSubmissionYear = new Date(aClaimHeaderData[0].SUBMITTED_DATE).getFullYear();
-            const sClaimsFinalCC = sClaimsCC ?? sClaimsAltCC ?? null;
+            const sClaimsFinalCC = sClaimsAltCC ?? sClaimsCC ?? null;
 
             // Add TOTAL_CLAIM_AMOUNT and PREAPPROVED_AMOUNT
             const sTotalClaimAmount = aClaimHeaderData[0].TOTAL_CLAIM_AMOUNT;
@@ -92,7 +93,7 @@ sap.ui.define([
             // Retrieve claimant details for use of entire function
             const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
             if(oClaimantDetails === null){
-                MessageToast.show(Utility.getText(this, "msg_failed_no_claimant"))
+                MessageToast.show(Utility.getText("msg_failed_no_claimant"))
             }
 
             // Retrieve Submission Type Description for use of email notification function
@@ -307,7 +308,7 @@ sap.ui.define([
             
             if(sWorkflowName == Constants.Approvers.AUTO && iWorkflowApprLvl == 0){
                 aApprEmpID.push(Constants.Approvers.AUTO);
-                aApproversDetails.push({
+                aUniqueApproversDetails.push({
                     EEID: null,
                     NAME: Constants.Approvers.AUTO,
                     EMAIL: null,
@@ -338,6 +339,7 @@ sap.ui.define([
                     if(oClaimantDetails.ROLE === Constants.Role.CEO){
                         aWorkflowApprStep[i] = Constants.User_Type.CEO_FI;
                     }
+                    
                     // Populate current role rank
                     oCurrOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
                     
@@ -349,7 +351,7 @@ sap.ui.define([
                                 if(sClaimsFinalCC != null){
                                     oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
                                     if(!oBudgetDetails){
-                                        MessageToast.show(Utility.getText(this, "msg_failed_no_budget"));
+                                        MessageToast.show(Utility.getText("msg_failed_no_budget"));
                                     }else{
                                         oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
                                         oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
@@ -358,7 +360,7 @@ sap.ui.define([
                                         }
                                     }
                                 }else{
-                                    MessageToast.show(Utility.getText(this, "msg_failed_no_cost_center"));
+                                    MessageToast.show(Utility.getText("msg_failed_no_cost_center"));
                                 }
                                 break;
                             case Constants.User_Type.CEO_FI:
@@ -377,10 +379,10 @@ sap.ui.define([
                                                 aApproversDetails.push(oPopulatedEmployee);
                                             }else{
 
-                                                MessageToast.show(Utility.getText(this, "msg_failed_no_approver_details", [id.VALUE]));
+                                                MessageToast.show(Utility.getText("msg_failed_no_approver_details", [id.VALUE]));
                                             }
                                         }else{
-                                            MessageToast.show(Utility.getText(this, "msg_failed_no_approver"));
+                                            MessageToast.show(Utility.getText("msg_failed_no_approver"));
                                         }
                                     }
                                 }
@@ -389,38 +391,12 @@ sap.ui.define([
                         }
                     }
                     else{
-                        // Block to check for Approver within the ZROLEHIERARCHY table
-                        if(oPrevOutcome == null){
-                            // Block to perform logic checking for first level approver
-
-                            if(oClaimantDetails.RANK < oCurrOutcome.RANK){
-                                iApproverRank = oCurrOutcome.RANK;
-                            }
-                            else if(oClaimantDetails.RANK = oCurrOutcome.RANK){
-                                iApproverRank = iApproverRank + 1;
-                            }
-                            else{
-                                iApproverRank = oClaimantDetails.RANK;
-                            }
-                        }else if(oPrevOutcome.RANK < oCurrOutcome.RANK){
-                            // Block to perform logic checking when previous approver is lower rank than current approver
-                            // next level approver would need to be higher than current approver rank
-                            iApproverRank = Number(iApproverRank) + 1;
-                        }else if(oPrevOutcome.RANK == oCurrOutcome.RANK){
-                            // If the Outcome repeats a role, move on to the next role
-                            continue;   
-                        }else{
-                            // If current rank is below previous rank, compare against claimant rank as usual
-                            if(oClaimantDetails.RANK < oCurrOutcome.RANK){
-                                iApproverRank = oCurrOutcome.RANK;
-                            }
-                            else if(oClaimantDetails.RANK = oCurrOutcome.RANK){
-                                iApproverRank = iApproverRank + 1;
-                            }
-                            else{
-                                iApproverRank = oClaimantDetails.RANK;
-                            }
-                        }   
+                        if(oClaimantDetails.RANK < oCurrOutcome.RANK){
+                            iApproverRank = oCurrOutcome.RANK;
+                        }
+                        else{
+                            iApproverRank = oClaimantDetails.RANK + 1;
+                        }
                         // Retrieve Approver based on iApproverRank
                         oApproverDetails = await this.getApprover(oModel, sEmpID, iApproverRank);
                         oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
@@ -561,13 +537,12 @@ sap.ui.define([
                 const aCreatedContext = await Promise.all(aCreatePromises);
                 
             }catch(oError){
-                MessageToast.show(Utility.getText(this, "msg_failed_generic_error", [oError]));
+                MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]));
             }	
 			
         },
         onPARApproverDetermination: async function (oController, oModel, sPARID, oEmployeeModel){
 			// request header
-            const that = this;
 
             // Variable declaration for use of the entire function block
             let aApproversDetails = [];             // Variable to store multiple approvers
@@ -575,7 +550,7 @@ sap.ui.define([
             let aUniqueApproversDetails = [];       // Variable to store unique approvers
 
 			const oListRequestHeaderBinding = oModel.bindList(Constants.Entities.ZREQUEST_HEADER, null,null, [
-				new Filter({ path: Constants.EntitiesFields.REQUEST_ID, operator: FilterOperator.EQ, value1: sPARID })
+				new Filter({ path: Constants.EntitiesFields.REQUESTID, operator: FilterOperator.EQ, value1: sPARID })
 			], null);
 			const aPARHeaderContexts = await oListRequestHeaderBinding.requestContexts();
 			const aPARHeaderData = aPARHeaderContexts.map(oContext => oContext.getObject());
@@ -587,11 +562,12 @@ sap.ui.define([
 			const sParSubmissionDate = aPARHeaderData[0].SUBMITTED_DATE;
 			var sParSubmissionYear = new Date(aPARHeaderData[0].SUBMITTED_DATE).getFullYear();
 			var sParTripStartDate = aPARHeaderData[0].TRIP_START_DATE;
+            const sParFinalCC = sParAltCC ?? sParCC ?? null;
 
             // Retrieve claimant details for use of entire function
             const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
             if(oClaimantDetails === null){
-                MessageToast.show(Utility.getText(this, "msg_failed_no_claimant"))
+                MessageToast.show(Utility.getText("msg_failed_no_claimant"))
             }
 
             // Retrieve Submission Type Description for use of email notification function
@@ -599,7 +575,7 @@ sap.ui.define([
 			
 			//request Item
 			const oListRequestItemBinding = oModel.bindList(Constants.Entities.ZREQUEST_ITEM, null,null, [
-				new Filter({ path: Constants.EntitiesFields.REQUEST_ID, operator: FilterOperator.EQ, value1: sPARID })
+				new Filter({ path: Constants.EntitiesFields.REQUESTID, operator: FilterOperator.EQ, value1: sPARID })
 			], null);
 			const aClaimItemsContexts = await oListRequestItemBinding.requestContexts();
 			const aClaimsItemData = aClaimItemsContexts.map(oContext => oContext.getObject());
@@ -672,8 +648,8 @@ sap.ui.define([
 			let aEmpCCWorkflowCodeArr = [];
 			let aTripStartAgingWorkflowCodeArr = [];
 			let aCashAdvWorkflowCodeArr = [];
-			var dCurrentDate = new Date();
-			sParTripStartDate = new Date(sParTripStartDate);
+			var dCurrentDate = new Date().toLocaleDateString('en-CA');
+			//sParTripStartDate = new Date(sParTripStartDate);
 
             
 			for(var i = 0; i < aNestedWorkflowRuleArr.length; i++){
@@ -722,7 +698,7 @@ sap.ui.define([
 
 			//get approver levels and approvers
 			const oListWorkflowStepBinding = oModel.bindList(Constants.Entities.ZWORKFLOW_STEP, null,null, [
-				new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.workflowtype.REQUEST }),
+				new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.WorkflowType.REQUEST }),
 				new Filter({ path: Constants.EntitiesFields.WORKFLOW_CODE, operator: FilterOperator.EQ, value1: aCommonWorkflowCode[0] }),
 				
 			], null);
@@ -741,7 +717,7 @@ sap.ui.define([
 			let aApprEmpID = [];
             if(sWorkflowName == Constants.Approvers.AUTO && iWorkflowApprLvl == 0){
                 aApprEmpID.push(Constants.Approvers.AUTO);
-                aApproversDetails.push({
+                aUniqueApproversDetails.push({
                     EEID: null,
                     NAME: Constants.Approvers.AUTO,
                     EMAIL: null,
@@ -779,10 +755,10 @@ sap.ui.define([
                         // Block to check for Special Approver within ZCONSTANTS table and budget approver
                         switch(aWorkflowApprStep[i]){
                             case Constants.Approvers.BUDGET:
-                                if(sClaimsFinalCC != null){
-                                    oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
+                                if(sParFinalCC != null){
+                                    oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sParFinalCC, 2026);//sParSubmissionYear);
                                     if(!oBudgetDetails){
-                                        MessageToast.show(Utility.getText(this, "msg_failed_no_budget"));
+                                        MessageToast.show(Utility.getText("msg_failed_no_budget"));
                                     }else{
                                         oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
                                         oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
@@ -791,7 +767,7 @@ sap.ui.define([
                                         }
                                     }
                                 }else{
-                                    MessageToast.show(Utility.getText(this, "msg_failed_no_cost_center"));
+                                    MessageToast.show(Utility.getText("msg_failed_no_cost_center"));
                                 }
                                 break;
                             case Constants.User_Type.CEO_FI:
@@ -809,10 +785,10 @@ sap.ui.define([
                                             if(oPopulatedEmployee){
                                                 aApproversDetails.push(oPopulatedEmployee);
                                             }else{
-                                                MessageToast.show(Utility.getText(this, "msg_failed_no_approver_details", [id.VALUE]));
+                                                MessageToast.show(Utility.getText("msg_failed_no_approver_details", [id.VALUE]));
                                             }
                                         }else{
-                                            MessageToast.show(Utility.getText(this, "msg_failed_no_approver"));
+                                            MessageToast.show(Utility.getText("msg_failed_no_approver"));
                                         }
                                     }
                                 }
@@ -821,37 +797,12 @@ sap.ui.define([
                         }
                     }
                     else{
-                        // Block to check for Approver within the ZROLEHIERARCHY table
-                        if(oPrevOutcome == null){
-                            // Block to perform logic checking for first level approver
-                            if(oClaimantDetails.RANK < oCurrOutcome.RANK){
-                                iApproverRank = oCurrOutcome.RANK;
-                            }
-                            else if(oClaimantDetails.RANK = oCurrOutcome.RANK){
-                                iApproverRank = iApproverRank + 1;
-                            }
-                            else{
-                                iApproverRank = oClaimantDetails.RANK;
-                            }
-                        }else if(oPrevOutcome.RANK < oCurrOutcome.RANK){
-                            // Block to perform logic checking when previous approver is lower rank than current approver
-                            // next level approver would need to be higher than current approver rank
-                            iApproverRank = Number(iApproverRank) + 1;
-                        }else if(oPrevOutcome.RANK == oCurrOutcome.RANK){
-                            // If the Outcome repeats a role, move on to the next role
-                            continue;   
-                        }else{
-                            // If current rank is below previous rank, compare against claimant rank as usual
-                            if(oClaimantDetails.RANK < oCurrOutcome.RANK){
-                                iApproverRank = oCurrOutcome.RANK;
-                            }
-                            else if(oClaimantDetails.RANK = oCurrOutcome.RANK){
-                                iApproverRank = iApproverRank + 1;
-                            }
-                            else{
-                                iApproverRank = oClaimantDetails.RANK;
-                            }
-                        }   
+                        if(oClaimantDetails.RANK < oCurrOutcome.RANK){
+                            iApproverRank = oCurrOutcome.RANK;
+                        }
+                        else{
+                            iApproverRank = oClaimantDetails.RANK + 1;
+                        }
                         // Retrieve Approver based on iApproverRank
                         oApproverDetails = await this.getApprover(oModel, sEmpID, iApproverRank);
                         oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
@@ -925,7 +876,7 @@ sap.ui.define([
             for(const oApprover of aFullApproversDetails){
 
                 var oContext = oBindApprDetailsList.create({
-                    "CLAIM_ID": sClaimID,
+                    "PREAPPROVAL_ID": sPARID,
                     "LEVEL": oApprover.LEVEL,
                     "APPROVER_ID": oApprover.APPROVER_EEID,
                     "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
@@ -952,10 +903,10 @@ sap.ui.define([
                         // Populate array for sending email to approver
                         aPayloadMain.push({
                             "ApproverName":oApprover.APPROVER_NAME, 
-                            "SubmissionDate":sClaimsSubmissionDate, 
+                            "SubmissionDate":sParTripStartDate, 
                             "ClaimantName":oClaimantDetails.NAME, 
-                            "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
-                            "ClaimID":sClaimID, 
+                            "ClaimType":oRequestTypeDesc.REQUEST_TYPE_DESC, 
+                            "ClaimID":sPARID, 
                             "RecipientName":oApprover.APPROVER_NAME, 
                             "Action": Constants.Email_Action.NOTIFY, 
                             "ReceiverEmail":oApprover.APPROVER_EMAIL,
@@ -965,10 +916,10 @@ sap.ui.define([
                             // If substitute available, populate payload and send email to substitute also
                             aPayloadMain.push({
                                 "ApproverName":oApprover.SUB_NAME, 
-                                "SubmissionDate":sClaimsSubmissionDate, 
+                                "SubmissionDate":sParTripStartDate, 
                                 "ClaimantName":oClaimantDetails.NAME, 
-                                "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
-                                "ClaimID":sClaimID, 
+                                "ClaimType":oRequestTypeDesc.REQUEST_TYPE_DESC, 
+                                "ClaimID":sPARID, 
                                 "RecipientName":oApprover.SUB_NAME, 
                                 "Action": Constants.Email_Action.NOTIFY, 
                                 "ReceiverEmail":oApprover.SUB_EMAIL,
@@ -976,7 +927,7 @@ sap.ui.define([
                             }); 
                         }
                     }else if(oApprover.LEVEL == 0){
-                        FinalApproveStep.onFinalApprove(oController, oModel, sClaimID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
+                        FinalApproveStep.onFinalApprove(oController, oModel, sPARID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
                         break;
                     }
                 }
@@ -992,7 +943,7 @@ sap.ui.define([
                 const aCreatedContext = await Promise.all(aCreatePromises);
 
             }catch(oError){
-                MessageToast.show(Utility.getText(this, "msg_failed_generic_error", [oError]));
+                MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]));
             }
         },
         /**

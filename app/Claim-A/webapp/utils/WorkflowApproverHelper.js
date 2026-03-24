@@ -17,7 +17,7 @@ sap.ui.define([
          */
         sanityCheck: function (oValue, sI18nKey) {
             if (oValue === null || oValue === undefined) {
-                MessageToast.show(Utility.getText(this, sI18nKey))
+                MessageToast.show(Utility.getText(sI18nKey))
                 return false;    // ✅ Caller can "return" if needed
             }
             return true;
@@ -276,7 +276,7 @@ sap.ui.define([
             );
 
             // Fetch data
-            const aCtx = await oBinding.requestContexts(0, Infinity);
+            const aCtx = await oBinding.requestContexts(0, 1);
             if (!aCtx || aCtx.length === 0) {
                 return null; // no budget data found
             }

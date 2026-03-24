@@ -303,20 +303,23 @@ sap.ui.define([
 
 								// budget checking error handling with aResult , wip
 
-								if (aResult != false) {
+								//if (aResult != false) {
 
 									// update status to PENDING APPROVAL
 									await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
 									this._oReqModel.setProperty("/view", 'view');
 
 									// Add in onPARApproverDetermination function
-									workflowApproval.onPARApproverDetermination(this, oModel, sReqId, oViewModel);
+									var oModelAppr = this.getView().getModel();
+									var oEmployeeViewModel = this.getView().getModel("employee_view");
+									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
+									workflowApproval.onPARApproverDetermination(this, oModelAppr, sCurrentReqId, oEmployeeViewModel);
 
 									this._oRouter.navTo("RequestFormStatus");
 
-								} else {
-									MessageToast.show(Utility.getText("req_tm_w_inform_cc_owner", [aResult.aErrors]));
-								}
+								//} else {
+								//	MessageToast.show(Utility.getText("req_tm_w_inform_cc_owner", [aResult.aErrors]));
+								//}
 							} catch (e) {
 								MessageToast.show(e.message || "Submission failed");
 							} finally {
