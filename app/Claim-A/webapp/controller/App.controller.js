@@ -1928,19 +1928,14 @@ sap.ui.define([
 				|| this._userType
 				|| "UNKNOWN";
 
-			var oSideNav = this.getOwnerComponent().getRootControl().byId("sideNavigation");
-
 			if (id.includes("dashboard-claim")) {
-				oSideNav.setSelectedKey("myreport");
 				this.getCLAIMHeaderList();
 				var oRouter = this.getOwnerComponent().getRouter();
 				oRouter.navTo("ClaimStatus")
 			} else if (id.includes("request")) {
-				oSideNav.setSelectedKey("myrequest");
-				this._navToPARStatus();
+				this._oRouter.navTo("RequestFormStatus");
 			} else if (id.includes("approval")) {
 				if (userType === "Approver") {
-					oSideNav.setSelectedKey("approval");
 					this.getMyApproverPAReq();
 					this.getMyApproverClaim();
 					oRouter.navTo("MyApproval");
@@ -2185,8 +2180,7 @@ sap.ui.define([
 					console.log("approvals not available for this role");
 					oDashboardModel.setProperty("/approvals", []);
 				});
-		},
-
+		}
 
 	});
 });
