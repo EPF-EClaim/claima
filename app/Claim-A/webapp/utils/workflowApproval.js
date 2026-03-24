@@ -889,8 +889,7 @@ sap.ui.define([
 
             // wait for all created
             const aCreatedContext = await Promise.all(aCreatePromises);
-
-            //oContext.created().then(async function (){
+            
             try{
             // Send email notification to first level approver or
             // Start Final Approve Step for Auto approve
