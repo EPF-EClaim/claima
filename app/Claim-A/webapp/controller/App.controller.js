@@ -74,8 +74,7 @@ sap.ui.define([
 			this._oViewModel 		= this.getOwnerComponent().getModel('employee_view');
 			this._oReqModel			= this.getOwnerComponent().getModel('request');
 			this._oReqStatusModel 	= this.getOwnerComponent().getModel("request_status");
-
-
+			
 			// oReportModel
 			var oReportModel = new JSONModel({
 				"purpose": "",
@@ -240,7 +239,7 @@ sap.ui.define([
 						oRouter.navTo("Configuration_GA");
 					}
 					else {
-						var message = Utility.getText(this, "msg_unauthorized_role");
+						var message = Utility.getText("msg_unauthorized_role");
 						MessageBox.error(message);
 					}
 					//End EY_ATHIRAH
@@ -250,7 +249,7 @@ sap.ui.define([
 					if (type === sAdminDTD || type === sAdminJKEW || type === sSuperUser) {
 						oRouter.navTo("Analytics")
 					} else {
-						var message = Utility.getText(this, "msg_unauthorized_role");
+						var message = Utility.getText("msg_unauthorized_role");
 						MessageBox.error(message);
 					}
 					break;
@@ -269,7 +268,7 @@ sap.ui.define([
 						var oRouter = this.getOwnerComponent().getRouter();
 						oRouter.navTo("MyApproval");
 					} else {
-						var message = Utility.getText(this, "msg_unauthorized_role");
+						var message = Utility.getText("msg_unauthorized_role");
 						MessageBox.error(message);
 					}
 					break;
@@ -344,7 +343,7 @@ sap.ui.define([
 				this.oDialog_ClaimProcess.open();
 			}
 			else {
-				MessageToast.show(Utility.getText(this, "msg_nav_error_fragment", [oName]));
+				MessageToast.show(Utility.getText("msg_nav_error_fragment", [oName]));
 			}
 			BusyIndicator.hide();
 		},
@@ -527,7 +526,7 @@ sap.ui.define([
 			//// set employee data
 			var oUserModelData = this.getView().getModel('user')?.getData() || this.getView().getModel("userId")?.getData() || null;
 			if (!oUserModelData) {
-				MessageToast.show(Utility.getText(this, "msg_claimprocess_nouser"));
+				MessageToast.show(Utility.getText("msg_claimprocess_nouser"));
 				if (this.oDialog_ClaimProcess) {
 					this.oDialog_ClaimProcess.close();
 					return;
@@ -826,7 +825,7 @@ sap.ui.define([
 				this.oDialog_ClaimInput.open();
 			}
 			else {
-				MessageToast.show(Utility.getText(this, "msg_nav_error_fragment", [oName]));
+				MessageToast.show(Utility.getText("msg_nav_error_fragment", [oName]));
 			}
 		},
 
@@ -931,7 +930,7 @@ sap.ui.define([
 					case true:
 						// set text for using email approval
 						oInputModel.setProperty("/claim_header/request_id", "");
-						oInputModel.setProperty("/claim_header/descr/request_id", Utility.getText(this, "text_claiminput_preapprovalreq_email"));
+						oInputModel.setProperty("/claim_header/descr/request_id", Utility.getText("text_claiminput_preapprovalreq_email"));
 
 						// require attachment email approval
 						this.byId("fileuploader_claiminput_attachment").setRequired(true);
@@ -1003,8 +1002,8 @@ sap.ui.define([
 		onAction_ClaimInput: function () {
 			// confirm claim submission dialog
 			this._newDialog(
-				Utility.getText(this, "dialog_claiminput_submit"),
-				Utility.getText(this, "label_claiminput_submit"),
+				Utility.getText("dialog_claiminput_submit"),
+				Utility.getText("label_claiminput_submit"),
 				function () {
 					this.onClaimSubmission_ClaimInput();
 				}.bind(this)
@@ -1028,7 +1027,7 @@ sap.ui.define([
 			for (let i = 0; i < reqFields.length; i++) {
 				if (!this.byId(reqFields[i]).getValue()) {
 					// stop claim submission if values empty
-					MessageToast.show(Utility.getText(this, "msg_claiminput_required"));
+					MessageToast.show(Utility.getText("msg_claiminput_required"));
 					return;
 				}
 			}
@@ -1046,7 +1045,7 @@ sap.ui.define([
 					BusyIndicator.hide();
 				}
 				else {
-					MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_error"));
+					MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
 					// don't proceed claim item if attachment upload fails
 					BusyIndicator.hide();
 					return;
@@ -1092,12 +1091,12 @@ sap.ui.define([
 				}
 				else {
 					this.oDialog = new Dialog({
-						title: Utility.getText(this, "dialog_claiminput_claimid"),
+						title: Utility.getText("dialog_claiminput_claimid"),
 						type: "Message",
 						state: "None",
-						content: [new Label({ text: Utility.getText(this, "msg_claiminput_claimid") })],
+						content: [new Label({ text: Utility.getText("msg_claiminput_claimid") })],
 						endButton: new Button({
-							text: Utility.getText(this, "endbutton_claiminput_claimid"),
+							text: Utility.getText("endbutton_claiminput_claimid"),
 							press: function () {
 								this.oDialog.close();
 							}
@@ -1189,7 +1188,7 @@ sap.ui.define([
 						}
 
 						if (claimSaved) {
-							MessageToast.show(Utility.getText(this, "msg_claimsubmission_created", [oInputModel.getProperty("/claim_header/claim_id")]));
+							MessageToast.show(Utility.getText("msg_claimsubmission_created", [oInputModel.getProperty("/claim_header/claim_id")]));
 						}
 						oInputModel.setProperty("/is_new", false);
 						// close Claim Input dialog
@@ -1202,7 +1201,7 @@ sap.ui.define([
 				}
 
 			} catch (e) {
-				MessageToast.show(Utility.getText(this, "msg_claimsubmission_failed", [e.message]));
+				MessageToast.show(Utility.getText("msg_claimsubmission_failed", [e.message]));
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -1236,11 +1235,11 @@ sap.ui.define([
 		},
 
 		onFileSizeExceed_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_filesize"));
+			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_filesize"));
 		},
 
 		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_mismatch"));
+			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
 		_validDateRange: function (startdate, enddate) {
@@ -1248,14 +1247,14 @@ sap.ui.define([
 			var endDateValue = this.byId(enddate).getValue();
 			// check for missing value
 			if (!startDateValue || !endDateValue) {
-				MessageToast.show(Utility.getText(this, "msg_daterange_missing"));
+				MessageToast.show(Utility.getText("msg_daterange_missing"));
 				return false;
 			}
 			// check if end date earlier than start date
 			var startDateUnix = new Date(startDateValue).valueOf();
 			var endDateUnix = new Date(endDateValue).valueOf();
 			if (startDateUnix > endDateUnix) {
-				MessageToast.show(Utility.getText(this, "msg_daterange_order"));
+				MessageToast.show(Utility.getText("msg_daterange_order"));
 				return false;
 			}
 			else {
@@ -1506,7 +1505,7 @@ sap.ui.define([
 
 				if (!bOkCode) {
 					BusyIndicator.hide();
-					MessageBox.error(Utility.getText(this, sErrorMessage));
+					MessageBox.error(Utility.getText(sErrorMessage));
 				} else {
 						var sAttachment1Binary = await Attachment.getFileAsBinary(oDialogData.doc1);
 						var sAttachment1SFId = await Attachment.postAttachment(oDialogData.doc1.name, sAttachment1Binary, sEmpId);
@@ -1569,6 +1568,7 @@ sap.ui.define([
 				const sNewReqId = oContext.getProperty("REQUEST_ID");
 
 				if (sNewReqId) {
+					this.oDialogFragment.close();
 
 					await Attachment.postMDF(sNewReqId, oInputData.doc1?.split(" - ")[0], oInputData.doc2?.split(" - ")[0]);
 					
@@ -1946,7 +1946,7 @@ sap.ui.define([
 					oRouter.navTo("MyApproval");
 				}
 				else {
-					var message = Utility.getText(this, "msg_unauthorized_role");
+					var message = Utility.getText("msg_unauthorized_role");
 					sap.m.MessageBox.error(message);
 				}
 			}
@@ -1960,14 +1960,14 @@ sap.ui.define([
 				content: [new Label({ text: content })],
 				beginButton: new Button({
 					type: "Emphasized",
-					text: Utility.getText(this, "button_claimsummary_confirm"),
+					text: Utility.getText("button_claimsummary_confirm"),
 					press: async function () {
 						this.oDialog.close();
 						await onPress();
 					}.bind(this)
 				}),
 				endButton: new Button({
-					text: Utility.getText(this, "button_claimsummary_cancel"),
+					text: Utility.getText("button_claimsummary_cancel"),
 					press: function () {
 						this.oDialog.close();
 					}.bind(this)

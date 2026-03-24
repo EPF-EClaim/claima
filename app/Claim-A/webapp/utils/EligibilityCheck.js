@@ -14,7 +14,7 @@ sap.ui.define([
 		generateEligibilityCheckPayload (oController) {
 			var oData     = oController._oReqModel.getProperty('/req_item');
 
-			var sEmpId         = oController._oReqModel.getProperty('/user');
+			var sEmpId         = oController._oReqModel.getProperty('/user/emp_id');
 			var sClaimType     = oController._oReqModel.getProperty('/req_header/claimtype');
 			var sClaimTypeItem = oData.claim_type_item_id;
 
