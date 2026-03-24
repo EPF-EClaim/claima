@@ -144,12 +144,12 @@
                 "transition": "slide",
                 "type": "View",
                 "viewType": "XML",
-                "path": "",
+                "path": "claima.view",
                 "async": true
             },
             "routes": [
                 {
-                    "pattern": "Dashboard",
+                    "pattern": "",
                     "name": "Dashboard",
                     "target": "TargetDashboard"
                 },

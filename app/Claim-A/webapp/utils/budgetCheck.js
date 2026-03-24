@@ -2,12 +2,12 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/m/MessageToast",
-	"claima/utils/Utility"
-], function (Filter, FilterOperator, MessageToast, Utility) {
+	"claima/utils/Utility",
+	"sap/ui/core/BusyIndicator"
+], function (Filter, FilterOperator, MessageToast, Utility, BusyIndicator) {
     "use strict";
 
     return {
-
 		/* =========================================================
 		* Budget Checking Functions
 		* ======================================================= */
@@ -53,7 +53,7 @@ sap.ui.define([
 					const aContexts = await oListBinding.requestContexts(0, 1);
 
 					if (aContexts.length === 0) {
-						aErrors.push(Utility.getText(this, "budget_w_not_found", [row.claim_type_item]));
+						aErrors.push(Utility.getText("budget_w_not_found", [row.claim_type_item]));
 						continue;
 					}
 
@@ -78,7 +78,7 @@ sap.ui.define([
 
 				} catch (err) {
 					console.error("Budget check error:", err);
-					aErrors.push(Utility.getText(this, "budget_w_system_error", [row.CLAIM_TYPE_ITEM_ID]));
+					aErrors.push(Utility.getText("budget_w_system_error", [row.CLAIM_TYPE_ITEM_ID]));
 				}
 			}
 
@@ -161,7 +161,7 @@ sap.ui.define([
 
 			try {
 				await oModel.submitBatch("budgetUpdateGroup");
-				MessageToast.show(Utility.getText(this, "budget_s_update"));
+				MessageToast.show(Utility.getText("budget_s_update"));
 			} catch (err) {
 				console.error('Final Budget Batch failed', e);
 				throw e;
@@ -232,7 +232,7 @@ sap.ui.define([
 					await oModel.submitBatch("budgetUpdateGroup");
 					
 					if (oModel.hasPendingChanges("budgetUpdateGroup")) {
-						throw new Error(Utility.getText(this, "budget_e_batch_update"));
+						throw new Error(Utility.getText("budget_e_batch_update"));
 					}
 					
 				} catch (err) {
@@ -259,7 +259,7 @@ sap.ui.define([
 					const oData = aContexts[0].getObject();
 					return oData.GL_ACCOUNT;
 				} else {
-					console.warn(Utility.getText(this, "budget_w_claim_type_not_found"));
+					console.warn(Utility.getText("budget_w_claim_type_not_found"));
 					return "";
 				}
 			} catch (oError) {
@@ -281,13 +281,62 @@ sap.ui.define([
 					const oData = aContexts[0].getObject();
 					return oData.MATERIAL_CODE;
 				} else {
-					console.warn(Utility.getText(this, "budget_w_claim_type_item_not_found"));
+					console.warn(Utility.getText("budget_w_claim_type_item_not_found"));
 					return "";
 				}
 			} catch (oError) {
 				console.error("Error fetching Claim Type Item detail", oError);
 			}
 			
+		},
+
+		/* =========================================================
+		* Budget Checking payload generation
+		* ======================================================= */
+
+		_generateBudgetCheckPayload (oController, oHeader, aItemRows, sSubmissionType, sAction) {
+			
+			var sDate			= new Date(oHeader.reqdate);
+			var sYear			= String(sDate.getFullYear());
+			var sFundCenter		= oHeader.costcenter;
+			var sInternalCode	= oHeader.projectcode || "1";
+
+			return aItemRows.map(row => {
+				return {
+					"YEAR": sYear,
+					"INTERNAL_ORDER": sInternalCode,
+					"FUND_CENTER": sFundCenter,
+					"MATERIAL_GROUP": row.MATERIAL_CODE,
+					"COMMITMENT_ITEM": row.GL_ACCOUNT,
+					"AMOUNT": parseFloat(row.EST_AMOUNT),
+					"CLAIM_TYPE_ITEM": row.CLAIM_TYPE_ITEM_ID,
+					"INDICATOR": sSubmissionType,
+					"ACTION": sAction
+				};
+			});
+		},
+
+		async backendBudgetChecking (oController, sSubmissionType, sAction = "SUBMIT") {
+
+			var oReqModel	= oController._oReqModel;
+			var oHeader		= oReqModel.getProperty('/req_header');
+			var aItemRows	= oReqModel.getProperty('/req_item_rows');
+
+			const aPayload = await this._generateBudgetCheckPayload(oController, oHeader, aItemRows, sSubmissionType, sAction);
+
+			const oAction	= oController._oDataModel.bindContext("/budgetchecking(...)");
+			oAction.setParameter("budget", aPayload);
+
+			try {
+				BusyIndicator.show(0); 
+				await oAction.execute();
+				const oResponse = oAction.getBoundContext().getObject();
+				const aResults = oResponse.results || oResponse.value || oResponse;
+				return aResults;
+			} catch (err) {
+				console.error("Budget check failed", err);
+				return false;
+			}
 		},
 
     };

@@ -8,98 +8,54 @@ sap.ui.define([
     return {
 
 		/* =========================================================
-		* Eligibility General Check
+		* Eligibility Checking Function
 		* ======================================================= */
 
-		async _eligibilityCheck(oModel, submission_type, date, proj_code, cost_center, claim_type, rows) {
-			
-			const sDate = new Date(date);
-			const sYYYY = String(sDate.getFullYear());
-			const sInternalOrder = String(proj_code);
-			const sFundCenter = String(cost_center);
+		generateEligibilityCheckPayload (oController) {
+			var oData     = oController._oReqModel.getProperty('/req_item');
 
-			for (const row of rows) {
-				const sGLAccount = await this._getGLAccount(oModel, claim_type);
-				const sMaterialCode = await this._getMaterialCode(oModel, row.claim_type_item);
+			var sEmpId         = oController._oReqModel.getProperty('/user/emp_id');
+			var sClaimType     = oController._oReqModel.getProperty('/req_header/claimtype');
+			var sClaimTypeItem = oData.claim_type_item_id;
 
-				const oListBinding = oModel.bindList("/ZELIGIBILITY_RULE", null, null, [
-					new Filter("CLAIM_TYPE_ID", "EQ", sYYYY),
-					new Filter("CLAIM_TYPE_ITEM_ID", "EQ", sInternalOrder),
-					new Filter("PERSONAL_GRADE", "EQ", sInternalOrder),
-					new Filter("ROLE_ID", "EQ", sInternalOrder)
-				]);
-
-				try {
-					const aContexts = await oListBinding.requestContexts(0, Infinity);
-
-					if (aContexts.length === 0) {
-						aErrors.push(
-							`Budget record not found for Claim Item ${row.claim_type_item}`
-						);
-						continue;
-					}
-
-					const oData = aContexts[0].getObject();
-
-					if (oData.BUDGET_BALANCE < row.amount) {
-						aErrors.push(row.claim_type_item);
-					} else {
-						if (aErrors.length == 0) {
-							if (submission_type == 'CLM') {
-								dataset.push({
-									yyyy			: sYYYY,
-									fund_center		: sFundCenter,
-									commitment_item	: sGLAccount,
-									material_code	: sMaterialCode,
-									project_code	: sInternalOrder,
-									amount			: row.EST_AMOUNT
-								})
-							}
-						}
-					}
-
-				} catch (err) {
-					console.error("Budget check error:", err);
-					aErrors.push(
-						`System error while checking Claim Item ${row.CLAIM_TYPE_ITEM_ID}`
-					);
-				}
-			}
-
-			return {
-				passed: aErrors.length === 0,
-				messages: aErrors.join(',')
+			const oMapping = {
+				// field                : db technical name
+				"vehicle_ownership"     : "VEHICLE_OWNERSHIP_ID",
+				"est_amount"            : "ELIGIBLE_AMOUNT",
+				"cat_purpose"           : "MOBILE_PHONE_BILL",
+				"sss"                   : "REGION_ID",
+				"no_of_days"            : "TRAVEL_DAYS_ID",
+				"rate_per_kilometer"    : "RATE",
+				"room_type"             : "ROOM_TYPE_ID",
+				"flight_class"          : "FLIGHT_CLASS_ID",
+				"marriage_cat"          : "MARRIAGE_CATEGORY",
+				"vehicle_class"         : "TRANSPORT_CLASS",
+				"travel_hours"          : "TRAVEL_HOURS"
 			};
-		},
 
-		_checkEligibleAmount() {
+			const aActiveFields = Object.entries(oMapping).reduce((acc, [sKey, sTargetName]) => {
+				const val = oData[sKey];
+				
+				const bIsValid = val !== null && val !== undefined;
 
-		},
+				if (bIsValid) {
+					acc.push({
+						fieldName: sTargetName,
+						value: val,
+						result: null
+					});
+				}
+				return acc;
+			}, []);
 
-		_loadEligibleFlightClass() {
-			const oMainModel = this.getOwnerComponent().getModel();
-			const oListBinding = oMainModel.bindList("/ZINDIV_GROUP", null, null, [
-				new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
-			]);
+			const oPayload = {
+				EmpId: sEmpId,
+				ClaimType: sClaimType,
+				ClaimTypeItem: sClaimTypeItem,
+				CheckFields: aActiveFields
+			};
 
-			oListBinding.requestContexts().then((aContexts) => {
-				const aData = aContexts.map(oCtx => oCtx.getObject());
-				const oTypeModel = new JSONModel({ types: aData });
-				this.getView().setModel(oTypeModel, "indiv_list");
-			}).catch(err => console.error("GroupType Load Failed", err));
-		},
-
-		_loadEligibleFlightClass() {
-			const oMainModel = this.getOwnerComponent().getModel();
-			const oListBinding = oMainModel.bindList("/ZINDIV_GROUP", null, null, [
-				new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
-			]);
-
-			oListBinding.requestContexts().then((aContexts) => {
-				const aData = aContexts.map(oCtx => oCtx.getObject());
-				const oTypeModel = new JSONModel({ types: aData });
-				this.getView().setModel(oTypeModel, "indiv_list");
-			}).catch(err => console.error("GroupType Load Failed", err));
+			return oPayload;
 		},
 
     };

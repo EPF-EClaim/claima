@@ -1,78 +1,66 @@
 sap.ui.define([
-	"sap/ui/Device",
-	"sap/ui/core/mvc/Controller",
-	"sap/ui/model/json/JSONModel",
 	"sap/m/Popover",
-	"sap/ui/core/Fragment",
-	"sap/ui/core/BusyIndicator",
-	"sap/ui/core/Item",
 	"sap/m/Button",
 	"sap/m/Dialog",
 	"sap/m/Label",
 	"sap/m/MessageToast",
 	"sap/m/Text",
-	"sap/m/library",
-	"sap/tnt/library",
+	"sap/m/MessageBox",
+	"sap/m/HBox",
+	"sap/m/VBox",
+	"sap/ui/core/mvc/Controller",
+	"sap/ui/model/json/JSONModel",
+	"sap/ui/core/Fragment",
+	"sap/ui/core/BusyIndicator",
+	"sap/ui/core/Item",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
-	"sap/ui/export/Spreadsheet",
+	"sap/ui/core/Icon",
 	"claima/utils/Utility",
 	"claima/utils/PARequestSharedFunction",
 	"claima/utils/Attachment",
-	"claima/utils/ApprovalLog",
-	"claima/utils/workflowApproval",
 	"claima/utils/claimstatus",
 	"claima/utils/claim",
-	"sap/m/HBox",
-	"sap/m/VBox",
-	"sap/ui/core/Icon",
-	"sap/ui/core/routing/HashChanger",
 	"claima/utils/MyApproval",
-	"sap/m/MessageBox"
 ], function (
-	Device,
-	Controller,
-	JSONModel,
 	Popover,
-	Fragment,
-	BusyIndicator,
-	Item,
 	Button,
 	Dialog,
 	Label,
 	MessageToast,
 	Text,
-	library,
-	tntLibrary,
+	MessageBox,
+	HBox,
+	VBox,
+	Controller,
+	JSONModel,
+	Fragment,
+	BusyIndicator,
+	Item,
 	Filter,
 	FilterOperator,
 	Sorter,
-	Spreadsheet,
+	Icon,
 	Utility,
 	PARequestSharedFunction,
 	Attachment,
-	ApprovalLog,
-	workflowApproval,
 	claimstatus,
 	claim,
-	HBox,
-	VBox,
-	Icon,
-	HashChanger,
-	MyApproval,
-	MessageBox
+	MyApproval
 ) {
 	"use strict";
 
 	return Controller.extend("claima.controller.App", {
 
-		_ReqAttachmentFile1: null,
-		_ReqAttachmentFile2: null,
-
 		onInit: async function () {
-			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
-
+			this._oConstant 		= this.getOwnerComponent().getModel("constant").getData();
+			this._oRouter 			= this.getOwnerComponent().getRouter();
+			this._oDataModel		= this.getOwnerComponent().getModel();
+			this._oViewModel 		= this.getOwnerComponent().getModel('employee_view');
+			this._oReqModel			= this.getOwnerComponent().getModel('request');
+			this._oReqStatusModel 	= this.getOwnerComponent().getModel("request_status");
+			
 			// oReportModel
 			var oReportModel = new JSONModel({
 				"purpose": "",
@@ -87,84 +75,17 @@ sap.ui.define([
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
 
-			const oSession = new sap.ui.model.json.JSONModel({
-				userType: "UNKNOWN",
-				origin: "",
-				grade: "",
-				department: "",
-				position: "",
-				userName: "",
-				initials: ""
-			});
-			this.getView().setModel(oSession, "session");
+			PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
 
-			var oRouter = this.getOwnerComponent().getRouter();
-
-			const oImageModel = new sap.ui.model.json.JSONModel({
-				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png")
-			});
-			this.getView().setModel(oImageModel, "imageModel");
-
-			const oDashboardModel = new JSONModel({
-				claims: [],
-				requests: [],
-				approvals: []
-			});
-			this.getView().setModel(oDashboardModel, "dashboardModel");
-			this._loadCurrentUser();
-
-			const oModel = this.getOwnerComponent().getModel();
-			const ctx = oModel.bindContext("/getUserType()");
-			ctx.requestObject().then(oData => {
-				this._userType = oData.userType || "UNKNOWN";
-				this.costcenters = oData.costcenters || "UNKNOWN"; //Added by Aiman Salim 06/03/2026
-				this.userId = oData.userId || "UNKNOWN";
-				const sName = oData.name || "";
-				const sPosition = oData.position;
-				const sInitials = sName.substring(0, 2).toUpperCase();
-				oSession.setProperty("/initials", sInitials);
-				oSession.setProperty("/userName", sName);
-				oSession.setProperty("/position", sPosition);
-				oSession.setProperty("/grade", oData.grade || "UNKNOWN");
-				oSession.setProperty("/department", oData.department || "UNKNOWN");
-				oSession.setProperty("/origin", oData.origin);
-
-				// save userId to model
-				var oUserIdModel = new JSONModel({
-					"userId": oData.userId,
-					"email": oData.id
+			const bIsLocal = window.location.hostname.includes("port4004") || 
+							window.location.hostname.includes("applicationstudio.cloud.sap");
+			if (bIsLocal) {
+				const emp_data = await this._getEmpIdDetail("jefry.yap@my.ey.com");
+				this._oReqModel.setProperty("/user", { 
+					emp_id		: emp_data.eeid, 
+					name		: emp_data.name,
+					cost_center	: emp_data.cc 
 				});
-				//// set input
-				this.getView().setModel(oUserIdModel, "userId");
-				oSession.setProperty("/userType", this._userType);
-				this._loadDashboardData();
-			}).catch(err => {
-				console.error("getUserType failed:", err);
-				this._userType = "UNKNOWN";
-				console.error("getUserType failed:", err); //Added by Aiman Salim 06/03/2026
-				this.costcenters = "UNKNOWN";
-				console.error("getUserType failed:", err); //Added by Aiman Salim 08/03/2026
-				this.userId = "UNKNOWN";
-			});
-
-			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			// var oUserModel = new sap.ui.model.json.JSONModel({ email: "jefry.yap@my.ey.com" });
-			// this.getView().setModel(oUserModel, 'user');
-			// const emp_data = await this._getEmpIdDetail("jefry.yap@my.ey.com");
-			// const oReqModel = this._getReqModel().getData();
-			// oReqModel.user = emp_data.eeid;
-			// this._getReqModel().setData(oReqModel);
-
-			// Route to Dashboard on first initialize only. Refresh will only reload the page you at.
-			const oHashChanger = HashChanger.getInstance();
-			const sHash = oHashChanger.getHash();
-			oRouter.getRoute("Dashboard").attachMatched(this._onDashboardMatched, this);
-			const bIsDeepLink = sHash.includes("RequestForm") || sHash.includes("Claim");
-
-			if (!bIsDeepLink || sHash === "") {
-				oRouter.navTo("Dashboard", {}, true);
-			} else {
-				oRouter.initialize();
 			}
 		},
 		onCollapseExpandPress: function () {
@@ -182,7 +103,6 @@ sap.ui.define([
 		onNavItemSelect: async function (oEvent) {
 			var oItem = oEvent.getParameter("item");
 			var oKey = oItem.getKey();
-			var oRouter = this.getOwnerComponent().getRouter();
 
 			const sAdminDTD = this._oConstant.Role.DTD_ADMIN,
 				sAdminGA = this._oConstant.Role.GA_ADMIN,
@@ -190,26 +110,12 @@ sap.ui.define([
 				sApprover = this._oConstant.Role.APPROVER,
 				sSuperUser = this._oConstant.Role.SUPER_ADMIN;
 
-			//Start EY_ATHIRAH
-			const key = oEvent.getSource().data("key");
-
 			// Make sure userType is available
-			const type = this._userType; // << read what we stored earlier
-			if (!type) {
+			const sType = this.getOwnerComponent().getModel("session").getProperty("/userType");
+			if (!sType) {
 				MessageToast.show("Please wait… loading your access.");
 				return;
 			}
-
-			//Aiman Salim - 05/03/2026 - Added to make it global usage;
-			const oUserAccessModel = new sap.ui.model.json.JSONModel({
-				userType: this._userType,
-				costcenters: this.costcenters,
-				userId: this.userId, // 08/03/2026 - Added to fetch emp id
-			});
-			this.getOwnerComponent().setModel(oUserAccessModel, "access");
-			//Aiman Salim - 05/03/2026 - Added to make it global;
-
-			//End EY_ATHIRAH
 
 			switch (oKey) {
 				case "nav_claimsubmission":
@@ -219,67 +125,51 @@ sap.ui.define([
 					this.onClickMyRequest();
 					break;
 				case "myrequest":
-					this._navToPARStatus();
+					this._oRouter.navTo("RequestFormStatus");
 					break;
 				case "mysubstitution":
-					var oRouter = this.getOwnerComponent().getRouter();
-					oRouter.navTo("ManageSub");
+					this._oRouter.navTo("ManageSub");
 					break;
 				case "config":
 					//Start EY_ATHIRAH
-					if (type === sAdminDTD || type === sAdminJKEW || type === sSuperUser) {
-						oRouter.navTo("Configuration");
-					} else if (type === sAdminGA ) {
-						oRouter.navTo("Configuration_GA");
+					if (sType === sAdminDTD || sType === sAdminJKEW || sType === sSuperUser) {
+						this._oRouter.navTo("Configuration");
+					} else if (sType === sAdminGA ) {
+						this._oRouter.navTo("Configuration_GA");
 					}
 					else {
-						var message = Utility.getText(this, "msg_unauthorized_role");
+						var message = Utility.getText("msg_unauthorized_role");
 						MessageBox.error(message);
 					}
 					//End EY_ATHIRAH
 					break;
 				// Start Aiman Salim 10/02/2026 - Added for analytics
 				case "analytics":
-					if (type === sAdminDTD || type === sAdminJKEW || type === sSuperUser) {
-						oRouter.navTo("Analytics")
+					if (sType === sAdminDTD || sType === sAdminJKEW || sType === sSuperUser) {
+						this._oRouter.navTo("Analytics")
 					} else {
-						var message = Utility.getText(this, "msg_unauthorized_role");
+						var message = Utility.getText("msg_unauthorized_role");
 						MessageBox.error(message);
 					}
 					break;
 				// End 	 Aiman Salim 10/02/2026 - Added for analytics
 				// Start Aiman Salim 03/03/2026 - Added for MyClaim
 				case "myreport":
-					this.getCLAIMHeaderList();
-					var oRouter = this.getOwnerComponent().getRouter();
-					oRouter.navTo("ClaimStatus")
+					this._oRouter.navTo("ClaimStatus")
 					break;
 				//Start Aiman Salim 08/03/2026 - Added for MyApproval
 				case "approval":
-					if (type === sApprover || type === sSuperUser) {
-						this.getMyApproverPAReq();
-						this.getMyApproverClaim();
-						var oRouter = this.getOwnerComponent().getRouter();
-						oRouter.navTo("MyApproval");
+					if (sType === sApprover || sType === sSuperUser) {
+						this._oRouter.navTo("MyApproval");
 					} else {
-						var message = Utility.getText(this, "msg_unauthorized_role");
+						var message = Utility.getText("msg_unauthorized_role");
 						MessageBox.error(message);
 					}
 					break;
 				//End Aiman Salim 08/03/2026 - Added for MyApproval
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
 				case "dashboard":
-					this.getOwnerComponent().getModel("employee")?.refresh();
-					this.getOwnerComponent().getModel("employee_view")?.refresh();
-					const oDashboardModel = this.getView().getModel("dashboardModel");
-					oDashboardModel.setData({
-						claims: [],
-						requests: [],
-						approvals: []
-					});
-					this._loadDashboardData();
-
-					oRouter.navTo("Dashboard");
+					this._oRouter.navTo("Dashboard");
 					break;
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
 				default:
@@ -337,7 +227,7 @@ sap.ui.define([
 				this.oDialog_ClaimProcess.open();
 			}
 			else {
-				MessageToast.show(Utility.getText(this, "msg_nav_error_fragment", [oName]));
+				MessageToast.show(Utility.getText("msg_nav_error_fragment", [oName]));
 			}
 			BusyIndicator.hide();
 		},
@@ -520,7 +410,7 @@ sap.ui.define([
 			//// set employee data
 			var oUserModelData = this.getView().getModel('user')?.getData() || this.getView().getModel("userId")?.getData() || null;
 			if (!oUserModelData) {
-				MessageToast.show(Utility.getText(this, "msg_claimprocess_nouser"));
+				MessageToast.show(Utility.getText("msg_claimprocess_nouser"));
 				if (this.oDialog_ClaimProcess) {
 					this.oDialog_ClaimProcess.close();
 					return;
@@ -819,7 +709,7 @@ sap.ui.define([
 				this.oDialog_ClaimInput.open();
 			}
 			else {
-				MessageToast.show(Utility.getText(this, "msg_nav_error_fragment", [oName]));
+				MessageToast.show(Utility.getText("msg_nav_error_fragment", [oName]));
 			}
 		},
 
@@ -924,7 +814,7 @@ sap.ui.define([
 					case true:
 						// set text for using email approval
 						oInputModel.setProperty("/claim_header/request_id", "");
-						oInputModel.setProperty("/claim_header/descr/request_id", Utility.getText(this, "text_claiminput_preapprovalreq_email"));
+						oInputModel.setProperty("/claim_header/descr/request_id", Utility.getText("text_claiminput_preapprovalreq_email"));
 
 						// require attachment email approval
 						this.byId("fileuploader_claiminput_attachment").setRequired(true);
@@ -996,8 +886,8 @@ sap.ui.define([
 		onAction_ClaimInput: function () {
 			// confirm claim submission dialog
 			this._newDialog(
-				Utility.getText(this, "dialog_claiminput_submit"),
-				Utility.getText(this, "label_claiminput_submit"),
+				Utility.getText("dialog_claiminput_submit"),
+				Utility.getText("label_claiminput_submit"),
 				function () {
 					this.onClaimSubmission_ClaimInput();
 				}.bind(this)
@@ -1021,7 +911,7 @@ sap.ui.define([
 			for (let i = 0; i < reqFields.length; i++) {
 				if (!this.byId(reqFields[i]).getValue()) {
 					// stop claim submission if values empty
-					MessageToast.show(Utility.getText(this, "msg_claiminput_required"));
+					MessageToast.show(Utility.getText("msg_claiminput_required"));
 					return;
 				}
 			}
@@ -1039,7 +929,7 @@ sap.ui.define([
 					BusyIndicator.hide();
 				}
 				else {
-					MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_error"));
+					MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
 					// don't proceed claim item if attachment upload fails
 					BusyIndicator.hide();
 					return;
@@ -1085,12 +975,12 @@ sap.ui.define([
 				}
 				else {
 					this.oDialog = new Dialog({
-						title: Utility.getText(this, "dialog_claiminput_claimid"),
+						title: Utility.getText("dialog_claiminput_claimid"),
 						type: "Message",
 						state: "None",
-						content: [new Label({ text: Utility.getText(this, "msg_claiminput_claimid") })],
+						content: [new Label({ text: Utility.getText("msg_claiminput_claimid") })],
 						endButton: new Button({
-							text: Utility.getText(this, "endbutton_claiminput_claimid"),
+							text: Utility.getText("endbutton_claiminput_claimid"),
 							press: function () {
 								this.oDialog.close();
 							}
@@ -1182,20 +1072,19 @@ sap.ui.define([
 						}
 
 						if (claimSaved) {
-							MessageToast.show(Utility.getText(this, "msg_claimsubmission_created", [oInputModel.getProperty("/claim_header/claim_id")]));
+							MessageToast.show(Utility.getText("msg_claimsubmission_created", [oInputModel.getProperty("/claim_header/claim_id")]));
 						}
 						oInputModel.setProperty("/is_new", false);
 						// close Claim Input dialog
 						this.oDialog_ClaimInput.close();
 
 						// load Claim Submission page
-						const oRouter = this.getOwnerComponent().getRouter();
-						oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(oInputModel.getProperty("/claim_header/claim_id"))) });
+						this._oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(oInputModel.getProperty("/claim_header/claim_id"))) });
 					});
 				}
 
 			} catch (e) {
-				MessageToast.show(Utility.getText(this, "msg_claimsubmission_failed", [e.message]));
+				MessageToast.show(Utility.getText("msg_claimsubmission_failed", [e.message]));
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -1229,11 +1118,11 @@ sap.ui.define([
 		},
 
 		onFileSizeExceed_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_filesize"));
+			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_filesize"));
 		},
 
 		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_mismatch"));
+			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
 		_validDateRange: function (startdate, enddate) {
@@ -1241,14 +1130,14 @@ sap.ui.define([
 			var endDateValue = this.byId(enddate).getValue();
 			// check for missing value
 			if (!startDateValue || !endDateValue) {
-				MessageToast.show(Utility.getText(this, "msg_daterange_missing"));
+				MessageToast.show(Utility.getText("msg_daterange_missing"));
 				return false;
 			}
 			// check if end date earlier than start date
 			var startDateUnix = new Date(startDateValue).valueOf();
 			var endDateUnix = new Date(endDateValue).valueOf();
 			if (startDateUnix > endDateUnix) {
-				MessageToast.show(Utility.getText(this, "msg_daterange_order"));
+				MessageToast.show(Utility.getText("msg_daterange_order"));
 				return false;
 			}
 			else {
@@ -1440,274 +1329,162 @@ sap.ui.define([
 		// Request Form Controller
 		// ==================================================
 
-		_getReqModel: function () {
-			return this.getOwnerComponent().getModel("request");
-		},
-
 		onClickMyRequest: async function () {
-			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			this._loadDefaultSelection();
-			this._loadReqTypeSelectionData();
+			PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
 
 			if (!this.oDialogFragment) {
 				this.oDialogFragment = await Fragment.load({
-					id: "request",
+					id: "request", 
 					name: "claima.fragment.request",
 					controller: this
 				});
+				
 				this.getView().addDependent(this.oDialogFragment);
+
+				var oRequestDialogModel = new sap.ui.model.json.JSONModel({ reqid: "", grptype: "IND" });
+				this.oDialogFragment.setModel(oRequestDialogModel, "reqDialog");
 
 				this.oDialogFragment.attachAfterClose(() => {
 					this.oDialogFragment.destroy();
 					this.oDialogFragment = null;
 				});
 			}
-			this.oDialogFragment.open();
+
 			this.oDialogFragment.addStyleClass('requestDialog');
+			this.oDialogFragment.open();
 		},
 
 		onClickCreateRequest: async function () {
-			sap.ui.core.BusyIndicator.show(0);
-			const oReqModel = this._getReqModel();
-			const oData = oReqModel.getProperty("/req_header");
-			const emp_id = oReqModel.getProperty('/user');
-			let okcode = true;
-			let message = '';
+			BusyIndicator.show(0);
+			const oDialogModel 	= this.oDialogFragment.getModel("reqDialog");
+			const oDialogData	= oDialogModel.getData();
+			const sEmpId 		= this._oReqModel.getProperty('/user/emp_id');
+			let bOkCode 		= true;
+			let sErrorMessage 	= '';
 
-			// Simplified Validation Logic
-			const mandatoryFields = {
+			const oMandatoryFields = {
 				'RT0001': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'eventstartdate', 'eventenddate', 'grptype', 'location', 'transport', 'comment'],
 				'RT0002': ['purpose', 'reqtype', 'grptype', 'comment'],
 				'RT0003': ['purpose', 'reqtype', 'eventstartdate', 'eventenddate', 'grptype', 'location', 'comment', 'eventdetail1', 'eventdetail2', 'eventdetail3', 'eventdetail4'],
 				'RT0004': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'grptype', 'comment'],
+				'RT0005': ['purpose', 'reqtype'],
+				'RT0006': ['purpose', 'reqtype']
 			};
 
-			const fieldsToCheck = mandatoryFields[oData.reqtype] || ['purpose'];
-			const isMissing = fieldsToCheck.some(field => !oData[field] || oData[field] === "");
+			try {
+				const oFieldsToCheck = oMandatoryFields[oDialogData.reqtype] || [''];
+				const bIsMissing = oFieldsToCheck.some(field => !oDialogData[field] || oDialogData[field] === "");
 
-			if (isMissing) {
-				okcode = false;
-				message = 'Please enter all mandatory details';
-			} else if (!oData.doc1) {
-				okcode = false;
-				message = 'Please upload Attachment 1 (Mandatory)';
-			} else if (oData.tripenddate < oData.tripstartdate) {
-				okcode = false;
-				message = "End Date cannot be earlier than begin date";
-			}
-
-			if (!okcode) {
-				MessageToast.show(message);
-			} else {
-				var attachment_1 = await this.getFileAsBinary("req_attachment_1");
-				var attachment1_ID = await Attachment.postAttachment(oData.doc1, attachment_1, emp_id);
-				oData.doc1 = attachment1_ID;
-				if (oData.doc2) {
-					var attachment_2 = await this.getFileAsBinary("req_attachment_2");
-					var attachment2_ID = await Attachment.postAttachment(oData.doc2, attachment_2, emp_id);
-					oData.doc2 = attachment2_ID;
-				}
-				await this.createRequestHeader(oData, oReqModel);
-			}
-			sap.ui.core.BusyIndicator.hide();
-		},
-
-		onImportChange1(oEvent) {
-			this._ReqAttachmentFile1 = oEvent.getParameters("files").files[0];
-		},
-
-		onImportChange2(oEvent) {
-			this._ReqAttachmentFile2 = oEvent.getParameters("files").files[0];
-		},
-
-		isAllowedFile(file) {
-
-			const ALLOWED_MIME_TYPES = new Set([
-				'application/pdf',
-				'image/jpeg',
-				'image/png',
-			]);
-
-			const ALLOWED_EXTENSIONS = new Set([
-				'pdf', 'jpg', 'jpeg', 'png'
-			]);
-
-			if (!file) return { ok: false, reason: 'No file provided.' };
-
-			// Prefer MIME type check
-			const mime = (file.type || '').toLowerCase().trim();
-			if (mime) {
-				// Allow any image/* plus application/pdf, but also restrict to known image types above for safety.
-				const isPdf = mime === 'application/pdf';
-				const isImage = mime.startsWith('image/') && ALLOWED_MIME_TYPES.has(mime);
-				if (isPdf || isImage) {
-					return { ok: true };
-				}
-			}
-
-			// Fallback to extension if MIME is missing or generic (e.g., application/octet-stream)
-			const name = file.name || '';
-			const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
-			if (ALLOWED_EXTENSIONS.has(ext)) {
-				return { ok: true };
-			}
-
-			return { ok: false, reason: 'Only PDF and image files are allowed.' };
-		},
-
-		getFileAsBinary: function (attachmentID) {
-
-			return new Promise((resolve, reject) => {
-
-				const file =
-					attachmentID === 'req_attachment_1'
-						? this._ReqAttachmentFile1
-						: this._ReqAttachmentFile2;
-
-				// Validate file presence
-				if (!file) {
-					reject(new Error('No file selected.'));
-					sap.ui.core.BusyIndicator.hide();
-					return;
+				if (bIsMissing) {
+					bOkCode = false;
+					sErrorMessage = "req_d_w_mandatory_field";
+				} else if (!oDialogData.doc1) {
+					bOkCode = false;
+					sErrorMessage = 'req_d_w_mandatory_attach1';
+				} else if (oDialogData.tripenddate < oDialogData.tripstartdate) {
+					bOkCode = false;
+					sErrorMessage = "req_d_w_check_date";
 				}
 
-				// Validate type
-				const check = this.isAllowedFile(file);
-				if (!check.ok) {
-					reject(new Error(check.reason));
-					MessageToast.show(new Error(check.reason));
-					sap.ui.core.BusyIndicator.hide();
-					return;
+				if (!bOkCode) {
+					BusyIndicator.hide();
+					MessageBox.error(Utility.getText(sErrorMessage));
+				} else {
+						var sAttachment1Binary = await Attachment.getFileAsBinary(oDialogData.doc1);
+						var sAttachment1SFId = await Attachment.postAttachment(oDialogData.doc1.name, sAttachment1Binary, sEmpId);
+							oDialogData.doc1 = `${sAttachment1SFId} - ${oDialogData.doc1.name}`;
+						if (oDialogData.doc2) {
+							var sAttachment2Binary = await Attachment.getFileAsBinary(oDialogData.doc2);
+							var sAttachment2SFId = await Attachment.postAttachment(oDialogData.doc2.name, sAttachment2Binary, sEmpId);
+							oDialogData.doc2 = `${sAttachment2SFId} - ${oDialogData.doc2.name}`;
+						}
+						await this.createRequestHeader(oDialogData);
 				}
-
-				var reader = new FileReader();
-				reader.onload = (e) => {
-					var vContent = e.currentTarget.result;
-					resolve(vContent.split(",")[1]);
-				}
-
-				reader.onerror = (e) => {
-					reject(new Error(`Failed to read file: ${e?.target?.error?.message || 'Unknown error'}`));
-				};
-
-				if (attachmentID == 'req_attachment_1') {
-					reader.readAsDataURL(this._ReqAttachmentFile1);
-				}
-				else {
-					reader.readAsDataURL(this._ReqAttachmentFile2);
-				}
-			})
-		},
-
-		createRequestHeader: async function (oInputData, oReqModel) {
-			const oMainModel = this.getOwnerComponent().getModel();
-			const oResult = await this._getCurrentReqNumber('NR01');
-
-			if (oResult) {
-				const oListBinding = oMainModel.bindList("/ZREQUEST_HEADER");
-
-				var userModelData = this.getView().getModel('user').getData();
-				const emp_data = await this._getEmpIdDetail(userModelData.email);
-
-				const sCostCenter = emp_data ? emp_data.cc : "";
-
-				const oPayload = {
-					EMP_ID: emp_data.eeid,
-					REQUEST_ID: oResult.reqNo,
-					REQUEST_TYPE_ID: oInputData.reqtype,
-					OBJECTIVE_PURPOSE: oInputData.purpose,
-					REMARK: oInputData.comment,
-					IND_OR_GROUP: oInputData.grptype,
-					ALTERNATE_COST_CENTER: oInputData.altcostcenter,
-					LOCATION: oInputData.location,
-					TYPE_OF_TRANSPORTATION: oInputData.transport,
-					ATTACHMENT1: oInputData.doc1,
-					ATTACHMENT2: oInputData.doc2,
-					COST_CENTER: sCostCenter,
-					EVENT_START_DATE: oInputData.eventstartdate,
-					EVENT_END_DATE: oInputData.eventenddate,
-					TRIP_START_DATE: oInputData.tripstartdate,
-					TRIP_END_DATE: oInputData.tripenddate,
-					STATUS: this._oConstant.ClaimStatus.DRAFT,
-					CLAIM_TYPE_ID: oInputData.claimtype,
-					REQUEST_DATE: new Date().toISOString().slice(0, 10)
-				};
-
-				const oContext = oListBinding.create(oPayload);
-
-				oContext.created().then(async () => {
-					await this._updateCurrentReqNumber(oResult.current);
-					await Attachment.postMDF(oResult.reqNo, oInputData.doc1, oInputData.doc2)
-					this.oDialogFragment.close();
-
-					oReqModel.setProperty("/view", 'list');
-					this._getHeaderView(oResult.reqNo)
-					oReqModel.setProperty("/req_header/reqid", oResult.reqNo);
-					oReqModel.setProperty("/req_header/reqstatus", 'DRAFT');
-					oReqModel.setProperty("/req_header/costcenter", sCostCenter);
-					oReqModel.setProperty("/eeid", emp_data.eeid);
-					// PARequestSharedFunction._getItemList(this, oResult.reqNo, true);
-					//oResult.reqNo send this to approval determination
-
-					var oRouter = this.getOwnerComponent().getRouter();
-					oRouter.navTo("RequestForm", { request_id: oResult.reqNo });
-				}).catch(err => {
-					sap.m.MessageToast.show("Creation failed: " + err.message);
-				});
+			} catch (err) {
+				MessageBox.error(err.message);
+			} finally {
+				BusyIndicator.hide();
 			}
 		},
 
-		async _getHeaderView(reqid) {
+		createRequestHeader: async function (oInputData) {
+			const oListBinding  = this._oDataModel.bindList("/ZREQUEST_HEADER");
 
-			const oReqModel = this._getReqModel();
-			const oModel = this.getOwnerComponent().getModel("employee_view");
-			const oListBinding = oModel.bindList("/ZEMP_REQUEST_VIEW", null, null, [
-				new sap.ui.model.Filter("REQUEST_ID", "EQ", reqid)
-			]);
+			let sEmpId          = this._oReqModel.getProperty("/user/emp_id");
+			let sCostCenter     = this._oReqModel.getProperty("/user/cost_center");
 
 			try {
-				const aContexts = await oListBinding.requestContexts(0, 1);
+				BusyIndicator.show(0);
 
-				if (aContexts.length > 0) {
-					const oData = aContexts[0].getObject();
-					oReqModel.setProperty("/req_header", {
-						purpose: oData.OBJECTIVE_PURPOSE || "",
-						reqid: oData.REQUEST_ID || "",
-						tripstartdate: oData.TRIP_START_DATE || "",
-						tripenddate: oData.TRIP_END_DATE || "",
-						eventstartdate: oData.EVENT_START_DATE || "",
-						eventenddate: oData.EVENT_END_DATE || "",
-						location: oData.LOCATION || "",
-						grptype: oData.IND_OR_GROUP_DESC || "",
-						transport: oData.TYPE_OF_TRANSPORTATION || "",
-						reqstatus: oData.STATUS_DESC || "",
-						costcenter: oData.COST_CENTER || "",
-						altcostcenter: oData.ALTERNATE_COST_CENTER || "",
-						cashadvamt: oData.CASH_ADVANCE || 0,
-						reqamt: oData.PREAPPROVAL_AMOUNT || 0,
-						reqtype: oData.REQUEST_TYPE_DESC || "",
-						comment: oData.REMARK || "",
-						doc1: oData.ATTACHMENT1 || "",
-						doc2: oData.ATTACHMENT2 || "",
-						claimtype: oData.CLAIM_TYPE_ID || "",
-						claimtypedesc: oData.CLAIM_TYPE_DESC || "",
-						reqdate: oData.REQUEST_DATE
-					});
-
-				} else {
-					console.warn("Request Id " + reqid + " not found");
-
+				let sGrpType = oInputData.grptype ? String(oInputData.grptype).trim() : null;
+				if (sGrpType && sGrpType.length > 4) {
+					sGrpType = sGrpType.substring(0, 4); 
 				}
-			} catch (oError) {
-				console.error("Error fetching Header view", oError);
-				return null; // Return null so the app doesn't crash
+
+				const oContext = oListBinding.create({
+					EMP_ID                  : sEmpId || null,
+					REQUEST_TYPE_ID         : oInputData.reqtype || null,
+					OBJECTIVE_PURPOSE       : oInputData.purpose || null,
+					REMARK                  : oInputData.comment || null,
+					IND_OR_GROUP            : sGrpType,
+					ALTERNATE_COST_CENTER   : oInputData.altcostcenter || null,
+					LOCATION                : oInputData.location || null,
+					TYPE_OF_TRANSPORTATION  : oInputData.transport || null,
+					ATTACHMENT1             : oInputData.doc1 || null,
+					ATTACHMENT2             : oInputData.doc2 || null,
+					COST_CENTER             : sCostCenter || null,
+					
+					EVENT_START_DATE        : oInputData.eventstartdate || null,
+					EVENT_END_DATE          : oInputData.eventenddate || null,
+					TRIP_START_DATE         : oInputData.tripstartdate || null,
+					TRIP_END_DATE           : oInputData.tripenddate || null,
+					
+					STATUS                  : this._oConstant.ClaimStatus.DRAFT,
+					CLAIM_TYPE_ID           : oInputData.claimtype || null,
+					REQUEST_DATE            : new Date().toISOString().slice(0, 10),
+					PREAPPROVAL_AMOUNT      : parseFloat(0),
+					CASH_ADVANCE            : parseFloat(0)
+				});
+
+				await oContext.created();
+				
+				const sNewReqId = oContext.getProperty("REQUEST_ID");
+
+				if (sNewReqId) {
+					this.oDialogFragment.close();
+
+					await Attachment.postMDF(sNewReqId, oInputData.doc1?.split(" - ")[0], oInputData.doc2?.split(" - ")[0]);
+					
+					this._oReqModel.setProperty("/view", 'list');
+					this._oReqModel.setProperty("/req_header/reqid", sNewReqId);
+
+					this._oRouter.navTo("RequestForm", { 
+						request_id: sNewReqId 
+					});
+				}
+
+			} catch (err) {
+				MessageBox.error("Creation failed: " + err.message);
+			} finally {
+				BusyIndicator.hide();
 			}
+		},
+
+		onImportChange1( oEvent ) {
+			const oDialogModel 	= this.oDialogFragment.getModel("reqDialog");
+			const oDialogData	= oDialogModel.getData();
+			oDialogData.doc1 = oEvent.getParameters("files").files[0];
+		},
+		
+		onImportChange2( oEvent ) {
+			const oDialogModel 	= this.oDialogFragment.getModel("reqDialog");
+			const oDialogData	= oDialogModel.getData();
+			oDialogData.doc2 = oEvent.getParameters("files").files[0];
 		},
 
 		// get backend data
 		async _getEmpIdDetail(sEMAIL) {
-			const oModel = this.getOwnerComponent().getModel();
-			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
+			const oListBinding = this._oDataModel.bindList("/ZEMP_MASTER", null, null, [
 				new Filter({
 					path: "EMAIL",
 					operator: FilterOperator.EQ,
@@ -1779,37 +1556,11 @@ sap.ui.define([
 			}
 		},
 
-		_loadDefaultSelection: function () {
-			const oMainModel = this.getOwnerComponent().getModel();
-			const oListBinding = oMainModel.bindList("/ZINDIV_GROUP", null, null, [
-				new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
-			]);
-
-			oListBinding.requestContexts().then((aContexts) => {
-				const aData = aContexts.map(oCtx => oCtx.getObject());
-				const oTypeModel = new JSONModel({ types: aData });
-				this.getView().setModel(oTypeModel, "indiv_list");
-			}).catch(err => console.error("GroupType Load Failed", err));
-		},
-
-		_loadReqTypeSelectionData: function () {
-			const oMainModel = this.getOwnerComponent().getModel();
-			const oListBinding = oMainModel.bindList("/ZREQUEST_TYPE", null, null, [
-				new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
-			]);
-
-			oListBinding.requestContexts().then((aContexts) => {
-				const aData = aContexts.map(oCtx => oCtx.getObject());
-				const oTypeModel = new JSONModel({ types: aData });
-				this.getView().setModel(oTypeModel, "req_type_list");
-			}).catch(err => console.error("RequestType Load Failed", err));
-		},
-
-		_loadClaimTypeSelectionData: function (req_type) {
-			if (req_type) {
-				const oMainModel = this.getOwnerComponent().getModel();
-				const oListBinding = oMainModel.bindList("/ZCLAIM_TYPE", null, null, [
-					new Filter("REQUEST_TYPE", FilterOperator.EQ, req_type)
+		_loadClaimTypeSelectionData: function (sReqType) {
+			if (sReqType) {
+				this._oReqModel.setProperty('/req_header/claim_type', "");
+				const oListBinding = this._oDataModel.bindList("/ZCLAIM_TYPE", null, null, [
+					new Filter("REQUEST_TYPE", FilterOperator.EQ, sReqType)
 				]);
 
 				oListBinding.requestContexts().then((aContexts) => {
@@ -1820,216 +1571,26 @@ sap.ui.define([
 			}
 		},
 
-		_getCurrentReqNumber: async function (range_id) {
-			const oMainModel = this.getOwnerComponent().getModel();
-			const oListBinding = oMainModel.bindList("/ZNUM_RANGE", null, null, [
-				new Filter("RANGE_ID", FilterOperator.EQ, range_id)
-			]);
-
-			try {
-				const aContexts = await oListBinding.requestContexts(0, 1);
-				if (aContexts.length === 0) throw new Error("Range ID not found");
-
-				const oData = aContexts[0].getObject();
-				const prefix = oData.PREFIX;
-				const current = Number(oData.CURRENT);
-				const yy = String(new Date().getFullYear()).slice(-2);
-				const reqNo = `${prefix}${yy}${String(current).padStart(9, "0")}`;
-				// const reqNo = `REQ${yy}${String(current).padStart(9, "0")}`;
-
-				return { reqNo, current };
-			} catch (err) {
-				console.error("Number Range Error:", err);
-				return null;
-			}
-		},
-
-		_updateCurrentReqNumber: async function (currentNumber) {
-			const oMainModel = this.getOwnerComponent().getModel();
-			const oContext = oMainModel.bindContext(`/ZNUM_RANGE('${encodeURIComponent('NR01')}')`).getBoundContext();
-
-			try {
-				await oContext.setProperty("CURRENT", String(currentNumber + 1));
-				return true;
-			} catch (e) {
-				console.error("Update Failed", e);
-				return false;
-			}
-		},
-
-		//Aiman Salim - 08/03/2026 - MyApproval - My Pre-Approval Request Status;
-		getMyApproverPAReq: async function () {
-			const oReq = this.getOwnerComponent().getModel("request_status");
-			const oModel = this.getOwnerComponent().getModel("employee_view");
-
-			const userID = this.userId;
-			const oApproverOrSub = new sap.ui.model.Filter({
-				filters: [
-					new sap.ui.model.Filter("APPROVER_ID", sap.ui.model.FilterOperator.EQ, userID),
-					new sap.ui.model.Filter("SUBSTITUTE_APPROVER_ID", sap.ui.model.FilterOperator.EQ, userID)
-				],
-				and: false // OR condition between the two
-			});
-
-			const oStatusPending = new sap.ui.model.Filter(
-				"STATUS",
-				sap.ui.model.FilterOperator.EQ,
-				this._oConstant.ClaimStatus.PENDING_APPROVAL // use the exact code/value your backend expects
-			);
-			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
-			const oCombined = new sap.ui.model.Filter({
-				filters: [oApproverOrSub, oStatusPending],
-				and: true // AND between groups
-			});
-
-
-			const oListBinding = oModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
-				[new sap.ui.model.Sorter("STATUS", true)], // desc by STATUS
-				[oCombined],
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-					$$updateGroupId: "$auto",
-					$count: true
-				}
-			);
-
-			try {
-				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				const a = aCtx.map((ctx) => ctx.getObject());
-
-				a.forEach((it) => {
-					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
-				});
-
-				oReq.setProperty("/req_header_list", a);
-				oReq.setProperty("/req_header_count", a.length);
-
-				return a;
-			} catch (err) {
-				console.error("OData bindList failed:", err);
-				oReq.setProperty("/req_header_list", []);
-				oReq.setProperty("/req_header_count", 0);
-				return [];
-			}
-		},
-		//MyApproval - Claim Request Status;
-
-		getMyApproverClaim: async function () {
-			const oReq = this.getOwnerComponent().getModel("claim_status");
-			const oModel = this.getOwnerComponent().getModel("employee_view");
-
-			const userID = this.userId;
-			const oApproverOrSub = new Filter({
-				filters: [
-					new Filter("APPROVER_ID", FilterOperator.EQ, userID),
-					new Filter("SUBSTITUTE_APPROVER_ID", FilterOperator.EQ, userID)
-				],
-				and: false // OR condition between the two
-			});
-
-			const oStatusPending = new Filter(
-				"STATUS",
-				FilterOperator.EQ,
-				this._oConstant.ClaimStatus.PENDING_APPROVAL // use the exact code/value your backend expects
-			);
-			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
-			const oCombined = new Filter({
-				filters: [oApproverOrSub, oStatusPending],
-				and: true // AND between groups
-			});
-			const oListBinding = oModel.bindList("/ZEMP_APPROVER_CLAIM_DETAILS", undefined,
-				[new Sorter("STATUS", true)], // desc by STATUS
-				[oCombined],
-
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-					$$updateGroupId: "$auto",
-					$count: true
-				}
-			);
-
-			try {
-				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				const a = aCtx.map((ctx) => ctx.getObject());
-
-				a.forEach((it) => {
-					if (it.TOTAL_CLAIM_AMOUNT == null) it.TOTAL_CLAIM_AMOUNT = 0.0;
-				});
-
-				oReq.setProperty("/claim_header_list", a);
-				oReq.setProperty("/claim_header_count", a.length);
-
-				return a;
-			} catch (err) {
-				console.error("OData bindList failed:", err);
-				oReq.setProperty("/claim_header_list", []);
-				oReq.setProperty("/claim_header_count", 0);
-				return [];
-			}
-		},
-
-		//For MyClaimStatus
-		getCLAIMHeaderList: async function () {
-			const oReq = this.getOwnerComponent().getModel("claim_status2");
-			const oModel = this.getOwnerComponent().getModel("employee_view");
-
-			const oListBinding = oModel.bindList("/ZEMP_CLAIM_EE_VIEW", undefined,
-				[new Sorter("modifiedAt", true)],
-				null,
-				{
-					$$ownRequest: true,
-					$$groupId: "$auto",
-					$$updateGroupId: "$auto",
-					$count: true
-				}
-			);
-
-			try {
-				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				const a = aCtx.map((ctx) => ctx.getObject());
-
-				/* 				a.forEach((it) => {
-									if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
-								}); */
-
-				oReq.setProperty("/claim_header_list", a);
-				oReq.setProperty("/claim_header_count", a.length);
-
-				return a;
-			} catch (err) {
-				console.error("OData bindList failed:", err);
-				oReq.setProperty("/claim_header_list", []);
-				oReq.setProperty("/claim_header_count", 0);
-				return [];
-			}
-		},
-		//END - Aiman Salim
-
 		getFieldVisibility_ReqType: async function (oEvent) {
-			const oModel = this.getOwnerComponent().getModel();
 
-			const reqTypeFromSelect = oEvent?.getSource?.().getSelectedKey?.();
-			const reqTypeFromModel = this._getReqModel().getProperty("/req_header/reqtype");
-			const req_type = reqTypeFromSelect || reqTypeFromModel;
+			const sReqType = oEvent?.getSource?.().getSelectedKey?.();
 
-			if (!req_type) {
-				console.warn("No req_type found yet.");
+			if (!sReqType) {
+				console.warn("No request type found.");
 				return;
 			}
 
-			const oListBinding = oModel.bindList("/ZDB_STRUCTURE", null, null, [
+			const oListBinding = this._oDataModel.bindList("/ZDB_STRUCTURE", null, null, [
 				new sap.ui.model.Filter("SUBMISSION_TYPE", "EQ", "PREAPPROVAL_R"),
 				new sap.ui.model.Filter("COMPONENT_LEVEL", "EQ", "HEADER"),
-				new sap.ui.model.Filter("REQUEST_TYPE_ID", "EQ", req_type)
+				new sap.ui.model.Filter("REQUEST_TYPE_ID", "EQ", sReqType)
 			]);
 
 			try {
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 
 				if (!aCtx || aCtx.length === 0) {
-					console.warn("No configuration rows for req_type:", req_type);
+					console.warn("No configuration rows for req_type:", sReqType);
 					this._setAllHeaderControlsVisible(false);
 					return;
 				}
@@ -2051,7 +1612,7 @@ sap.ui.define([
 					this._setAllHeaderControlsVisible(false);
 				}
 
-				this._loadClaimTypeSelectionData(req_type);
+				this._loadClaimTypeSelectionData(sReqType);
 
 			} catch (err) {
 				console.error("OData bindList failed:", err);
@@ -2084,16 +1645,6 @@ sap.ui.define([
 			return sap.ui.getCore().byId(`${sFragmentId}--${sId}`) || sap.ui.getCore().byId(sId);
 		},
 
-		_navToPARStatus() {
-			const oReq = this.getOwnerComponent().getModel("request_status");
-			const oModel = this.getOwnerComponent().getModel('employee_view');
-
-			PARequestSharedFunction._ensureRequestModelDefaults(this._getReqModel());
-			PARequestSharedFunction.getPARHeaderList(oReq, oModel);
-			var oRouter = this.getOwnerComponent().getRouter();
-			oRouter.navTo("RequestFormStatus");
-		},
-
 		onClickCancel: function () {
 			this.oDialogFragment.close();
 		},
@@ -2101,33 +1652,6 @@ sap.ui.define([
 		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		// End of Request Form Controller
 		// ==================================================
-
-		onClickNavigate: function (oEvent) {
-			let id = oEvent.getParameters().id;
-			var oRouter = this.getOwnerComponent().getRouter();
-
-			const userType = this.getView().getModel("session")?.getProperty("/userType")
-				|| this._userType
-				|| "UNKNOWN";
-
-			if (id.includes("dashboard-claim")) {
-				this.getCLAIMHeaderList();
-				var oRouter = this.getOwnerComponent().getRouter();
-				oRouter.navTo("ClaimStatus")
-			} else if (id.includes("request")) {
-				this._navToPARStatus();
-			} else if (id.includes("approval")) {
-				if (userType === "Approver") {
-					this.getMyApproverPAReq();
-					this.getMyApproverClaim();
-					oRouter.navTo("MyApproval");
-				}
-				else {
-					var message = Utility.getText(this, "msg_unauthorized_role");
-					sap.m.MessageBox.error(message);
-				}
-			}
-		},
 
 		_newDialog: function (title, content, onPress) {
 			this.oDialog = new Dialog({
@@ -2137,59 +1661,20 @@ sap.ui.define([
 				content: [new Label({ text: content })],
 				beginButton: new Button({
 					type: "Emphasized",
-					text: Utility.getText(this, "button_claimsummary_confirm"),
+					text: Utility.getText("button_claimsummary_confirm"),
 					press: async function () {
 						this.oDialog.close();
 						await onPress();
 					}.bind(this)
 				}),
 				endButton: new Button({
-					text: Utility.getText(this, "button_claimsummary_cancel"),
+					text: Utility.getText("button_claimsummary_cancel"),
 					press: function () {
 						this.oDialog.close();
 					}.bind(this)
 				})
 			});
 			this.oDialog.open();
-		},
-
-		_loadCurrentUser: function () {
-			var that = this;
-
-			$.ajax({
-				type: "GET",
-				url: "/user-api/currentUser",
-				success: async function (resultData) {
-					// Extract email safely with fallbacks (covers common IdP shapes)
-					var email =
-						resultData.email ||
-						(Array.isArray(resultData.emails) && resultData.emails[0] && resultData.emails[0].value) ||
-						resultData.userPrincipalName ||
-						null;
-
-					if (email && typeof email === 'string' && email.trim() !== '') {
-						// (Optional) set a model if your view needs it
-						var oUserModel = new sap.ui.model.json.JSONModel({ email: email });
-						that.getView().setModel(oUserModel, 'user');
-
-						const emp_data = await that._getEmpIdDetail(email);
-						const oReqModel = that._getReqModel().getData();
-						oReqModel.user = emp_data.eeid;
-						oReqModel.user_grade = emp_data.grade;
-						that._getReqModel().setData(oReqModel);
-
-						sap.m.MessageToast.show('Email: ' + email);
-					} else {
-						sap.m.MessageToast.show('Email is empty or not provided for this user.');
-					}
-				},
-				error: function (xhr) {
-					// If you’re still getting 404 here, your approuter may not expose /user-api
-					console.error('currentUser failed:', xhr.status, xhr.responseText);
-					sap.m.MessageToast.show('Failed to load user info (currentUser).');
-				}
-			});
-
 		},
 
 		onAvatarPress: function (oEvent) {
@@ -2320,48 +1805,7 @@ sap.ui.define([
 			const oRow = oCtx?.getObject();
 			const sId = oRow?.ID;
 			await MyApproval.navigateFromId(this, sId);
-		},
-
-		_onDashboardMatched: function () {
-			if (!this.userId || this.userId === "UNKNOWN") return;
-			const oDashboardModel = this.getView().getModel("dashboardModel");
-			oDashboardModel.setData({
-				claims: [],
-				requests: [],
-				approvals: []
-			});
-			this._loadDashboardData();
-		},
-
-		_loadDashboardData: function () {
-			const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
-			const oDashboardModel = this.getView().getModel("dashboardModel");
-
-			oEmployeeViewModel.bindList("/ZEMP_CLAIM_EE_VIEW", null, [
-				new Sorter("modifiedAt", true)
-			]).requestContexts(0, Infinity)
-				.then(aContexts => {
-					oDashboardModel.setProperty("/claims", aContexts.map(c => c.getObject()));
-				})
-				.catch(err => console.log("claims error:", err));
-
-			oEmployeeViewModel.bindList("/ZEMP_REQUEST_EE_VIEW", null, [
-				new Sorter("modifiedAt", true)
-			]).requestContexts(0, Infinity)
-				.then(aContexts => {
-					oDashboardModel.setProperty("/requests", aContexts.map(c => c.getObject()));
-				})
-				.catch(err => console.log("requests error:", err));
-
-			oEmployeeViewModel.bindList("/ZEMP_APPROVER_DETAILS").requestContexts(0, Infinity)
-				.then(aContexts => {
-					oDashboardModel.setProperty("/approvals", aContexts.map(c => c.getObject()));
-				})
-				.catch(err => {
-					console.log("approvals not available for this role");
-					oDashboardModel.setProperty("/approvals", []);
-				});
-		},
+		}
 
 
 	});

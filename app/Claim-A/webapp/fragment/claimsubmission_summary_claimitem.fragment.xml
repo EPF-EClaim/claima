@@ -59,6 +59,7 @@
             id="table_claimsummary_claimitem"
             inset="false"
             mode="MultiSelect"
+            selectionChange="onSelectionChange_ClaimSummary"
             itemPress="onItemPress_ClaimSubmission"
             items="{
 				path: 'claimsubmission_input>/claim_items',

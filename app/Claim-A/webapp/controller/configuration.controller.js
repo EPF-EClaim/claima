@@ -153,7 +153,7 @@ sap.ui.define([
                     press: function () {
                         var oInputs = oVBox.getItems();
                         if (!this._validateInputs(oVBox, oDataType)) {
-                            MessageToast.show(Utility.getText(this, "msg_required_details"));
+                            MessageToast.show(Utility.getText("msg_required_details"));
                             return;
                         }
 
@@ -167,13 +167,13 @@ sap.ui.define([
                         oNewEntry["IsActiveEntity"] = true;
 
                         if (oNewEntry["END_DATE"] < oNewEntry["START_DATE"]) {
-                            MessageToast.show(Utility.getText(this, "endBeforeStart"));
+                            MessageToast.show(Utility.getText("endBeforeStart"));
                         } else {
 
                             var oListBinding = oModel.bindList(sNewPath),
                                 oContext = oListBinding.create(oNewEntry);
 
-                            MessageToast.show(Utility.getText(this, "msg_record_created"));
+                            MessageToast.show(Utility.getText("msg_record_created"));
                             oModel.refresh();
                             oDialog.close();
                         }
@@ -207,12 +207,12 @@ sap.ui.define([
                     if (sAction !== MessageBox.Action.DELETE) return;
                     try {
                         oContext.delete();
-                        MessageToast.show(Utility.getText(this, "msg_object_deleted"));
+                        MessageToast.show(Utility.getText("msg_object_deleted"));
                         this.getView().getModel("view").setData({
                             hasSelection: false
                         });
                     } catch (e) {
-                        MessageBox.error(e?.message || Utility.getText(this, "msg_delete_fail"));
+                        MessageBox.error(e?.message || Utility.getText("msg_delete_fail"));
                     }
                 }
             })
@@ -236,7 +236,7 @@ sap.ui.define([
                         var oInputs = oVBox.getItems();
 
                         if (!this._validateInputs(oVBox, oDataType)) {
-                            MessageToast.show(Utility.getText(this, "msg_required_details"));
+                            MessageToast.show(Utility.getText("msg_required_details"));
                             return;
                         }
 
@@ -258,13 +258,13 @@ sap.ui.define([
                             sPath = sItemsPath;
                         }
                         if (oNewEntry["END_DATE"] < oNewEntry["START_DATE"]) {
-                            MessageToast.show(Utility.getText(this, "endBeforeStart"));
+                            MessageToast.show(Utility.getText("endBeforeStart"));
                         } else {
                             var oListBinding = oModel.bindList(sPath),
                                 oContext = oListBinding.create(oNewEntry);
 
                             oModel.refresh();
-                            MessageToast.show(Utility.getText(this, "msg_record_created"));
+                            MessageToast.show(Utility.getText("msg_record_created"));
                             oDialog.close();
                             oListBinding.refresh(true);
                         }
@@ -300,7 +300,7 @@ sap.ui.define([
                         var oInputs = oVBox.getItems();
 
                         if (!this._validateInputs(oVBox, oDataType)) {
-                            MessageToast.show(Utility.getText(this, "msg_required_details"));
+                            MessageToast.show(Utility.getText("msg_required_details"));
                             return;
                         }
 
@@ -314,7 +314,7 @@ sap.ui.define([
                         }
 
                         if (dEnd < dStart) {
-                            MessageToast.show(Utility.getText(this, "endBeforeStart"));
+                            MessageToast.show(Utility.getText("endBeforeStart"));
                         } else {
                             for (let i = 1; i < oInputs.length; i += 2) {
                                 const oControl = oInputs[i];
@@ -324,7 +324,7 @@ sap.ui.define([
 
                                 oContext.setProperty(sFieldName, sNewInput);
                             }
-                            MessageToast.show(Utility.getText(this, "msg_record_created"));
+                            MessageToast.show(Utility.getText("msg_record_created"));
                             oModel.refresh();
                             oDialog.close();
                         }
@@ -353,7 +353,7 @@ sap.ui.define([
 
                 if (bRequired && (!sValue || sValue.trim() === '')) {
                     oControl.setValueState("Error");
-                    oControl.setValueStateText(Utility.getText(this, "msg_requiredfield"));
+                    oControl.setValueStateText(Utility.getText("msg_requiredfield"));
                     bValid = false;
                 } else {
                     oControl.setValueState("None");

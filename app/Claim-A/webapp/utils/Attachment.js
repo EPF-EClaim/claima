@@ -3,7 +3,8 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/ui/model/Sorter",
     "sap/m/MessageToast",
-], function (Filter, FilterOperator, Sorter, MessageToast) {
+	"sap/ui/core/BusyIndicator"
+], function (Filter, FilterOperator, Sorter, MessageToast, BusyIndicator) {
     "use strict";
 
     return {
@@ -14,7 +15,7 @@ sap.ui.define([
 
 		_getSrvLink() {
 			const bIsLocal = window.location.hostname.includes("port4004") || 
-							window.location.hostname.includes("127.0.0.1");
+							window.location.hostname.includes("applicationstudio.cloud.sap");
 
 			const sDestination = "SuccessFactors_API";
 			return bIsLocal ? sDestination : "/" + sDestination;
@@ -38,7 +39,7 @@ sap.ui.define([
                     module: "GENERIC_OBJECT",
                     externalId: emp_id,
                     viewable: true,
-                    fileContent: fileBase64   // base64 only, no "data:*;base64," prefix
+                    fileContent: fileBase64
                 })
             });
 
@@ -53,6 +54,10 @@ sap.ui.define([
             const attachmentNumber = id.split('=')[1];
             return attachmentNumber;
         },
+
+        /* =========================================================
+        * Attachments Post to MDF
+        * ======================================================= */
 
         async postMDF(reqID, attachment1, attachment2) {
 
@@ -106,6 +111,10 @@ sap.ui.define([
 				return false;
 			}
 		},
+
+        /* =========================================================
+        * Attachments Post to Child MDF
+        * ======================================================= */
 
 		async postMDFChild(reqID, reqSubID, attachment1, attachment2) {
 			
@@ -161,6 +170,10 @@ sap.ui.define([
 			}
 		},
 
+        /* =========================================================
+        * Delete Attachments
+        * ======================================================= */
+
 		async deleteAttachment(attachmentID) {
 
 			var sDestination = this._getSrvLink();
@@ -181,10 +194,15 @@ sap.ui.define([
 			return true;
 		},
 
+        /* =========================================================
+        * View Attachments
+        * ======================================================= */
+
 		async onViewDocument(that, attachmentID) {
 			var sDestination = this._getSrvLink();
 			var sServiceUrl = sDestination + "/Attachment('" + attachmentID + "')";
 
+			BusyIndicator.show(0);
 			try {
 				const response = await fetch(sServiceUrl, {
 					method: "GET"
@@ -289,10 +307,80 @@ sap.ui.define([
 			} catch (error) {
 				console.log("Error viewing attachment: ", error);
 				MessageToast.show("Error viewing attachment: " + (error.message || error));
+			} finally {
+				BusyIndicator.hide();
 			}
 		},
 
-		
+        /* =========================================================
+        * Attachments Helper Functions
+        * ======================================================= */
+
+		getFileAsBinary: function (oFile) {
+			return new Promise((resolve, reject) => {
+				// 1. Check if file exists
+				if (!oFile) {
+					const sMsg = "No file selected.";
+					sap.ui.core.BusyIndicator.hide();
+					return reject(new Error(sMsg));
+				}
+
+				// 2. Validate format
+				const oCheckFileFormat = this.isAllowedFile(oFile);
+				if (!oCheckFileFormat.ok) {
+					BusyIndicator.hide();
+					return reject(new Error(oCheckFileFormat.reason));
+				}
+
+				var oReader = new FileReader();
+				
+				oReader.onload = (e) => {
+					var vContent = e.target.result; // Use e.target for better compatibility
+					if (vContent) {
+						// Returns only the Base64 string (removing the Data URL prefix)
+						resolve(vContent.split(",")[1]);
+					} else {
+						reject(new Error("File content is empty."));
+					}
+				};
+
+				oReader.onerror = (e) => {
+					sap.ui.core.BusyIndicator.hide();
+					reject(new Error("Failed to read file: " + oReader.error.message));
+				};
+
+				// readAsDataURL is used to get the Base64 string format
+				oReader.readAsDataURL(oFile);
+			});
+		},
+
+		isAllowedFile: function (oFile) {
+			const ALLOWED_MIME_TYPES = new Set([
+				'application/pdf',
+				'image/jpeg',
+				'image/png'
+			]);
+
+			const ALLOWED_EXTENSIONS = new Set(['pdf', 'jpg', 'jpeg', 'png']);
+
+			if (!oFile) return { ok: false, reason: 'No file provided.' };
+
+			// 1. MIME Type Check
+			const sMime = (oFile.type || '').toLowerCase().trim();
+			if (sMime && ALLOWED_MIME_TYPES.has(sMime)) {
+				return { ok: true };
+			}
+
+			// 2. Fallback to Extension Check (if MIME is missing or generic)
+			const sFileName = oFile.name || '';
+			const sFileExtension = sFileName.split('.').pop().toLowerCase();
+			
+			if (ALLOWED_EXTENSIONS.has(sFileExtension)) {
+				return { ok: true };
+			}
+
+			return { ok: false, reason: 'Only PDF and image files (JPG/PNG) are allowed.' };
+		}
 
     };
 });

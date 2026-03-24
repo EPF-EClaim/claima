@@ -15,6 +15,34 @@ sap.ui.define([
 			// Track current sort direction per path: true = DESC, false = ASC
 			this._mSortState = {};
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
+			this.getOwnerComponent().getRouter().getRoute("ClaimStatus").attachPatternMatched(this._onMatched, this);
+		},
+
+		_onMatched: async function() {
+			const _oReq = this.getOwnerComponent().getModel("claim_status2");
+			const _oModel = this.getOwnerComponent().getModel("employee_view");
+
+			const oListBinding = _oModel.bindList("/ZEMP_CLAIM_EE_VIEW", undefined,
+				[new Sorter("modifiedAt", true)],
+				null,
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$$updateGroupId: "$auto",
+					$count: true
+				}
+			);
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+				_oReq.setProperty("/claim_header_list", a);
+				_oReq.setProperty("/claim_header_count", a.length);
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				_oReq.setProperty("/claim_header_list", []);
+				_oReq.setProperty("/claim_header_count", 0);
+			}
 		},
 
 		_getClaimModel() {
@@ -57,7 +85,7 @@ sap.ui.define([
 				}
 
 				if (!oCtx) {
-					MessageToast.show(Utility.getText(this, "msg_claimstatus_select"));
+					MessageToast.show(Utility.getText("msg_claimstatus_select"));
 					return;
 				}
 
@@ -70,7 +98,7 @@ sap.ui.define([
 					null;
 
 				if (!sClaimId) {
-					MessageToast.show(Utility.getText(this, "msg_claimstatus_missing"));
+					MessageToast.show(Utility.getText("msg_claimstatus_missing"));
 					return;
 				}
 
@@ -82,7 +110,7 @@ sap.ui.define([
                 oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
 			} catch (e) {
 				sap.base.Log.error("openItemFromClaimList failed:", e);
-				MessageToast.show(Utility.getText(this, "msg_claimstatus_failed"));
+				MessageToast.show(Utility.getText("msg_claimstatus_failed"));
 			} finally {
 				this.getView().setBusy(false);
 			}
@@ -180,7 +208,6 @@ sap.ui.define([
 			const oClaimInputModel = this._getClaimInputModel()
 
 			const oModel = await this._ensureModelReady("employee_view");
-			const oModel2 = this.getOwnerComponent().getModel();
 			const sId = String(sClaimId);
 
 			const aFilters = [new Filter("CLAIM_ID", FilterOperator.EQ, sId)];
@@ -231,7 +258,7 @@ sap.ui.define([
 				// Header
 				const oHeaderRaw = aHeaderCtx[0]?.getObject();
 				if (!oHeaderRaw) {
-					MessageToast.show(Utility.getText(this, "msg_claimstatus_header"));
+					MessageToast.show(Utility.getText("msg_claimstatus_header"));
 					oClaimInputModel.setProperty("/claim_header", {});
 					oClaimInputModel.setProperty("/claim_items", []);
 					oClaimInputModel.setProperty("/claim_items_count", 0);

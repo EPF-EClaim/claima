@@ -6,22 +6,28 @@ sap.ui.define([
     "use strict";
 
     return {
+        /**
+		 * Initialize the Utility 
+		 * @public
+		 */
+        init: function(oOwnerComponent) {
+            this._oOwnerComponent = oOwnerComponent;
+		},
 
 		/* =========================================================
 		* Update Status
 		* ======================================================= */
 
-		async _updateStatus(oModel, id, status) {
-            let submission_type = id.substring(0,3);
+		async _updateStatus(oModel, sId, sStatus) {
+            let sSubmission_type = sId.substring(0,3);
             
-            let sTable = submission_type === 'REQ' ? '/ZREQUEST_HEADER' : "/ZCLAIM_HEADER";
-            let sField = submission_type === 'REQ' ? 'REQUEST_ID' : 'CLAIM_ID';
+            let sTable = sSubmission_type === 'REQ' ? '/ZREQUEST_HEADER' : "/ZCLAIM_HEADER";
+            let sField = sSubmission_type === 'REQ' ? 'REQUEST_ID' : 'CLAIM_ID';
 
 
             const oListBinding = oModel.bindList(sTable, null,null,
                 [
-                    // new sap.ui.model.Filter({ path: "EMP_ID", operator: sap.ui.model.FilterOperator.EQ, value1: empId }),
-                    new sap.ui.model.Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: id })
+                    new Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: sId })
                 ],
                 {
                     $$ownRequest: true,
@@ -37,19 +43,19 @@ sap.ui.define([
                 throw new Error("Record not found.");
             }
 
-            oCtx.setProperty("STATUS", status);
+            oCtx.setProperty("STATUS", sStatus);
 
             await oModel.submitBatch("$auto");
-            
-            sap.m.MessageToast.show("Request submitted successfully");
         },
-
-        getResourceBundle: function (oController) {
-            return oController.getOwnerComponent().getModel("i18n").getResourceBundle();
-        },
-
-        getText: function (oController, sKey, aArgs) {
-            return this.getResourceBundle(oController).getText(sKey, aArgs);
+        /**
+		 * Gets text from the resource bundle.
+		 * @public
+		 * @param {string} sKey name of the resource
+		 * @param {string[]} aArgs Array of strings, variables for dynamic content
+		 * @returns {string} the text
+		 */
+        getText: function (sKey, aArgs) {
+            return this._oOwnerComponent.getModel("i18n").getResourceBundle().getText(sKey, aArgs);
         }
 
     };
