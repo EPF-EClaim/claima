@@ -75,6 +75,9 @@ sap.ui.define([
             return new Date();
         },
         
+        /**
+         * Merge Date and Time
+         */
         mergeDateTime (oDate, sTime) {
             const dMergedDate = new Date(oDate.getTime()); 
             

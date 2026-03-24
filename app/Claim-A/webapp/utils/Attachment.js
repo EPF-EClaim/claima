@@ -64,19 +64,23 @@ sap.ui.define([
 			var sDestination = this._getSrvLink();
 			const sServiceUrl = sDestination + "/cust_EPF_CLAIM_ATTACHMENTS_Parent";
 
+			const hasAttachment1 = attachment1 && String(attachment1).trim().length > 0;
 			const hasAttachment2 = attachment2 && String(attachment2).trim().length > 0;
 
 			const payload = {
 				__metadata: {
 					type: "SFOData.cust_EPF_CLAIM_ATTACHMENTS_Parent" 
 				},
-				Claim_ID: reqID, 
-				cust_Parent_attachment1Nav: {
+				Claim_ID: reqID
+			};
+
+			if (hasAttachment1) {
+				payload.cust_Parent_attachment1Nav = {
 					__metadata: {
 						uri: `Attachment('${attachment1}')`
 					}
-				}
-			};
+				};
+			}
 
 			if (hasAttachment2) {
 				payload.cust_Parent_attachment2Nav = {
@@ -121,6 +125,7 @@ sap.ui.define([
 			var sDestination = this._getSrvLink();
 			var sServiceUrl = sDestination + "/cust_EPF_CLAIM_ATTACHMENTS";
 
+			const hasAttachment1 = attachment1 && String(attachment1).trim().length > 0;
 			const hasAttachment2 = attachment2 && String(attachment2).trim().length > 0;
 
 			const payload = {
@@ -128,13 +133,16 @@ sap.ui.define([
 					type: "SFOData.cust_EPF_CLAIM_ATTACHMENTS" 
 				},
 				Claim_Sub_ID: reqSubID,
-				cust_EPF_CLAIM_ATTACHMENTS_Parent_Claim_ID: reqID,
-				cust_attachment1Nav: {
+				cust_EPF_CLAIM_ATTACHMENTS_Parent_Claim_ID: reqID
+			};
+
+			if (hasAttachment1) {
+				payload.cust_attachment1Nav = {
 					__metadata: {
 						uri: `Attachment('${attachment1}')`
 					}
-				}
-			};
+				};
+			}
 
 			if (hasAttachment2) {
 				payload.cust_attachment2Nav = {
