@@ -3,8 +3,9 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	"sap/m/MessageToast",
 	"claima/utils/Utility",
-	"sap/ui/core/BusyIndicator"
-], function (Filter, FilterOperator, MessageToast, Utility, BusyIndicator) {
+	"sap/ui/core/BusyIndicator",
+    "claima/utils/Constants"
+], function (Filter, FilterOperator, MessageToast, Utility, BusyIndicator, Constant) {
     "use strict";
 
     return {
@@ -331,13 +332,32 @@ sap.ui.define([
 				BusyIndicator.show(0); 
 				await oAction.execute();
 				const oResponse = oAction.getBoundContext().getObject();
-				const aResults = oResponse.results || oResponse.value || oResponse;
+				const aResults = oResponse.value[0].results;
 				return aResults;
 			} catch (err) {
 				console.error("Budget check failed", err);
 				return false;
 			}
 		},
+
+		budgetCheckHandling: function (aResult) {
+			const aItems = aResult || [];
+			const aFailedClaimTypes = [];
+
+			aItems.forEach((oRequestItem) => {
+				if (
+					oRequestItem.STATUS !== Constant.BudgetCheckStatus.SUFFICIENT && 
+					oRequestItem.STATUS !== Constant.BudgetCheckStatus.UPDATED
+				) {
+					aFailedClaimTypes.push(oRequestItem.CLAIM_TYPE_ITEM);
+				}
+			});
+
+			return {
+				bCanProceed: aFailedClaimTypes.length === 0,
+				aClaimTypeItem: aFailedClaimTypes 
+			};
+		}
 
     };
 });

@@ -67,16 +67,13 @@ sap.ui.define([
     return a;
   }
 
-  // ---- Former controller methods, now util functions ----
   async function openItemFromList({ controller, event, listId, reqModel, reqStatusModel, empViewModel }) {
     const view = controller.getView();
     try {
       view.setBusy(true);
 
       const oTable = listId ? controller.byId(listId) : null;
-      // Prefer event context (model "request")
       let oCtx = event?.getParameter?.("listItem")?.getBindingContext?.("request");
-      // Fallback: selected item context (model "request_status")
       if (!oCtx && oTable) {
         const oSelected = oTable.getSelectedItem?.();
         if (oSelected) oCtx = oSelected.getBindingContext?.("request_status");
@@ -176,7 +173,6 @@ sap.ui.define([
   }
 
   return {
-    // expose everything you need
     openItemFromList,
     onRowPress,
     onSearch,

@@ -1236,7 +1236,7 @@ entity ZELIGIBILITY_RULE : managed {
         RATE                      : Decimal(5, 2)  @Common.Label: 'Rate';
         MARRIAGE_CATEGORY         : String(2)      @Common.Label: 'Marriage Category';
         FLIGHT_CLASS_ID           : String         @Common.Label: 'Flight Class';
-        HOTEL_LODGING_ID          : String(2)      @Common.Label: 'Hotel/Lodjing';
+        HOTEL_LODGING_ID          : String(2)      @Common.Label: 'Hotel/Lodging';
         TRANSPORT_CLASS           : String(2)      @Common.Label: 'Train/Boat Class';
         TRANSPORT_PASSING_ID      : String(2)      @Common.Label: 'Transportation of The Passing (Dead)';
         INSURANCE_PACKAGE_ID      : String(2)      @Common.Label: 'Insurance Package';
@@ -1368,5 +1368,12 @@ entity ZROLEHIERARCHY : managed {
 
 entity ZCONSTANTS : managed {
     key ID    : String  @mandatory  @Common.Label: 'Id';
-        VALUE : String  @mandatory  @Common.Label: 'Value';
+    key VALUE : String  @mandatory  @Common.Label: 'Value';
+}
+
+entity ZCLM_APPR_REQ_STAT : managed {
+    key EMP_ID     : String(6)      @mandatory  @Common.Label: 'Employee Id';
+    key REQUEST_ID : String         @mandatory  @Common.Label: 'Request ID';
+        AMOUNT     : Decimal(20, 2) @Common.Label: 'Amount';
+        CLAIMED    : Boolean        @Common.Label: 'Claimed';
 }

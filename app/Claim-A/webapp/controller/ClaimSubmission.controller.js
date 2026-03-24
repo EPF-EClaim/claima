@@ -24,8 +24,7 @@ sap.ui.define([
 	"claima/utils/SendBackDialog",
 	"claima/utils/ApproverUtility",
 	"claima/utils/workflowApproval",
-	"claima/utils/DateUtility",
-	"claima/utils/Constants"
+	"claima/utils/DateUtility"
 ], function (
 	Fragment,
 	Item,
@@ -52,8 +51,7 @@ sap.ui.define([
 	SendBackDialog,
 	ApproverUtility,
 	workflowApproval,
-	DateUtility,
-	Constants
+	DateUtility
 ) {
 	"use strict";
 
