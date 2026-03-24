@@ -294,7 +294,11 @@ module.exports = (srv) => {
                 if (error) continue;
 
                 if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
-                    successResults.push({ ...condition, STATUS: Constant.BudgetCheckStatus.SUFFICIENT });
+                    successResults.push({ 
+                        ...condition, 
+                        STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
+                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM 
+                    });
                     continue;
                 }
 

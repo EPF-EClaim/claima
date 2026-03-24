@@ -1353,11 +1353,9 @@ sap.ui.define([
 
 		onClickCreateRequest: async function () {
 			BusyIndicator.show(0);
-			const oDialogModel 	= this.oDialogFragment.getModel("reqDialog");
-			const oDialogData	= oDialogModel.getData();
-			const sEmpId 		= this._oReqModel.getProperty('/user/emp_id');
-			let bOkCode 		= true;
-			let sErrorMessage 	= '';
+			const oDialogModel  = this.oDialogFragment.getModel("reqDialog");
+			const oDialogData   = oDialogModel.getData();
+			const sEmpId        = this._oReqModel.getProperty('/user/emp_id');
 
 			const oMandatoryFields = {
 				'RT0001': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'eventstartdate', 'eventenddate', 'grptype', 'location', 'transport', 'comment'],
@@ -1369,36 +1367,55 @@ sap.ui.define([
 			};
 
 			try {
-				const oFieldsToCheck = oMandatoryFields[oDialogData.reqtype] || [''];
-				const bIsMissing = oFieldsToCheck.some(field => !oDialogData[field] || oDialogData[field] === "");
+				const aFieldsToCheck = oMandatoryFields[oDialogData.reqtype] || [];
+				const bIsMissing = aFieldsToCheck.some(field => !oDialogData[field] || String(oDialogData[field]).trim() === "");
 
 				if (bIsMissing) {
-					bOkCode = false;
-					sErrorMessage = "req_d_w_mandatory_field";
-				} else if (!oDialogData.doc1) {
-					bOkCode = false;
-					sErrorMessage = 'req_d_w_mandatory_attach1';
-				} else if (oDialogData.tripenddate < oDialogData.tripstartdate) {
-					bOkCode = false;
-					sErrorMessage = "req_d_w_check_date";
+					MessageBox.error(Utility.getText("req_d_w_mandatory_field"));
+					return; 
 				}
 
-				if (!bOkCode) {
-					BusyIndicator.hide();
-					MessageBox.error(Utility.getText(sErrorMessage));
-				} else {
-						var sAttachment1Binary = await Attachment.getFileAsBinary(oDialogData.doc1);
-						var sAttachment1SFId = await Attachment.postAttachment(oDialogData.doc1.name, sAttachment1Binary, sEmpId);
-							oDialogData.doc1 = `${sAttachment1SFId} - ${oDialogData.doc1.name}`;
-						if (oDialogData.doc2) {
-							var sAttachment2Binary = await Attachment.getFileAsBinary(oDialogData.doc2);
-							var sAttachment2SFId = await Attachment.postAttachment(oDialogData.doc2.name, sAttachment2Binary, sEmpId);
-							oDialogData.doc2 = `${sAttachment2SFId} - ${oDialogData.doc2.name}`;
-						}
-						await this.createRequestHeader(oDialogData);
+				if (!oDialogData.doc1) {
+					MessageBox.error(Utility.getText('req_d_w_mandatory_attach1'));
+					return;
 				}
+
+				const tStart = oDialogData.tripstartdate ? new Date(oDialogData.tripstartdate) : null;
+				const tEnd   = oDialogData.tripenddate   ? new Date(oDialogData.tripenddate)   : null;
+				const eStart = oDialogData.eventstartdate ? new Date(oDialogData.eventstartdate) : null;
+				const eEnd   = oDialogData.eventenddate   ? new Date(oDialogData.eventenddate)   : null;
+
+				if (tStart && tEnd && (tEnd < tStart)) {
+					MessageBox.error(Utility.getText("req_d_w_check_date"));
+					return;
+				}
+
+				if (eStart && eEnd && (eEnd < eStart)) {
+					MessageBox.error(Utility.getText("req_d_w_check_event_date") || "Event End Date cannot be before Event Start Date.");
+					return;
+				}
+
+				if (tStart && tEnd && eStart && eEnd) {
+					if (eStart < tStart || eEnd > tEnd) {
+						MessageBox.error(Utility.getText("req_d_w_event_within_trip") || "Event dates must fall within the Trip dates.");
+						return;
+					}
+				}
+
+				const sAttachment1Binary = await Attachment.getFileAsBinary(oDialogData.doc1);
+				const sAttachment1SFId = await Attachment.postAttachment(oDialogData.doc1.name, sAttachment1Binary, sEmpId);
+				oDialogData.doc1 = `${sAttachment1SFId} - ${oDialogData.doc1.name}`;
+				
+				if (oDialogData.doc2) {
+					const sAttachment2Binary = await Attachment.getFileAsBinary(oDialogData.doc2);
+					const sAttachment2SFId = await Attachment.postAttachment(oDialogData.doc2.name, sAttachment2Binary, sEmpId);
+					oDialogData.doc2 = `${sAttachment2SFId} - ${oDialogData.doc2.name}`;
+				}
+
+				await this.createRequestHeader(oDialogData);
+
 			} catch (err) {
-				MessageBox.error(err.message);
+				MessageBox.error(err.message || "An error occurred during submission.");
 			} finally {
 				BusyIndicator.hide();
 			}
