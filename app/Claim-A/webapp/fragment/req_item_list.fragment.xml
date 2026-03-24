@@ -22,13 +22,13 @@
         class="roundedBox sapUiSmallMargin sapUiTinyMarginTop sapUiTinyMarginBottom"
         rowGap="1rem">
         <VBox width="100%" rowGap="1rem">
-            <OverflowToolbar
+            <OverflowToolbar   
                 height="3rem"
                 style="Clear">
                 <m:Title text="{i18n>req_form_detail_title} ({= ${request>/list_count} })" titleStyle="H3" />
                 <m:ToolbarSpacer />
-                <m:Button text="{i18n>req_b_create_item}"   type="Emphasized"   icon="sap-icon://add"       press=".onAddItem"          enabled="{= ${request>/view} === 'list' }" />
-                <m:Button text="{i18n>req_b_delete}"        type="Default"                                  press=".onRowDeleteReqItem" enabled="{= ${request>/view} === 'list' }" />
+                <m:Button text="{i18n>req_b_create_item}"   type="Emphasized"   press=".onAddItem"          enabled="{= ${request>/view} === 'list' }" />
+                <m:Button text="{i18n>req_b_delete}"        type="Default"      press=".onRowDeleteReqItem" enabled="{= ${request>/view} === 'list' }" />
             </OverflowToolbar>
             <VBox rowGap="1rem">
                 <table:Table 

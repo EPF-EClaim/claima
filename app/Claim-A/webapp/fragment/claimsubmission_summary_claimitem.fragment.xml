@@ -4,18 +4,23 @@
     xmlns:core="sap.ui.core"
     core:require="{FloatType: 'sap/ui/model/type/Float'}"
 >
-    <VBox class="sapUiSmallMargin">
+    <VBox
+        backgroundDesign="Solid"
+        class="roundedBox sapUiSmallMargin sapUiTinyMarginTop sapUiTinyMarginBottom"
+        rowGap="1rem">
         <!-- Claim Item Toolbar -->
-        <Toolbar>
+        <OverflowToolbar
+            height="3rem"
+            style="Clear">
             <!-- Claim Item -->
-            <Title
+            <Title  
                 text="{
 					parts:[
 						{path:'i18n>title_claimsummary_claimitem'},
 						{path:'claimsubmission_input>/claim_items_count'}
 					], 
 					formatter:'jQuery.sap.formatMessage'}"
-                level="H2"
+                titleStyle="H3"
             />
 
             <!-- space -->
@@ -52,7 +57,7 @@
                 press="onAction_ClaimSummary('Delete')"
                 enabled="false"
             />
-        </Toolbar>
+        </OverflowToolbar>
 
         <!-- Table for Claim Items -->
         <Table

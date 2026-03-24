@@ -106,7 +106,7 @@
                 <Button id="req_back_scr"       type="Back"         text="Back"                     press=".onBackView"         visible="{= ${request>/view} === 'view' }"/>
 
                 <!-- Header Level -->
-                <Button id="req_back"           type="Back"         text="Back"                     press=".onBack"             visible="{= ${request>/view} === 'list' }"/>
+                <Button id="req_back"           type="Default"         text="Back"                     press=".onBack"             visible="{= ${request>/view} === 'list' }"/>
                 <Button id="req_delete"         type="Default"      text="Delete Request"           press=".onDeleteRequest"    visible="{= ${request>/view} === 'list' }"/>
                 <Button id="req_submit"         type="Emphasized"   text="Submit Request"           press=".onSubmitRequest"    visible="{= ${request>/view} === 'list' }"/>
 
