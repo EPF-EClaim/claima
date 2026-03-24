@@ -2,9 +2,11 @@ sap.ui.define([
     "sap/fe/core/AppComponent",
     "claima/model/models",
     "sap/ui/core/routing/HashChanger",
-    "claima/utils/Utility"
+    "claima/utils/Utility",
+    "sap/ui/model/json/JSONModel",
+    "claima/utils/PARequestSharedFunction"
 ],
-    (AppComponent, models, HashChanger, Utility) => {
+    (AppComponent, models, HashChanger, Utility, JSONModel, PARequestSharedFunction) => {
         "use strict";
 
         return AppComponent.extend("claima.Component", {
@@ -17,6 +19,8 @@ sap.ui.define([
 
             init() {
                 AppComponent.prototype.init.apply(this, arguments);
+
+                this._oReqModel = this.getModel("request");
 
                 // Initialize the utility 
 			    Utility.init(this);
@@ -37,6 +41,7 @@ sap.ui.define([
                 const sHash = HashChanger.getInstance().getHash();
                 if (sHash === "") this.getRouter().navTo("Dashboard", {}, true);
 
+                PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
                 this._loadCurrentUser();
 
                 const oModel = this.getModel();
@@ -63,7 +68,7 @@ sap.ui.define([
                     });
 
                     // Redundant user access model, to be deleted after references have been moved
-                    const _oUserAccessModel = new sap.ui.model.json.JSONModel({
+                    const _oUserAccessModel = new JSONModel({
                         userType: oData.userType || "UNKNOWN",
                         costcenters: oData.costcenters || "UNKNOWN",
                         userId: oData.userId || "UNKNOWN", // 08/03/2026 - Added to fetch emp id
@@ -104,10 +109,10 @@ sap.ui.define([
                         if (email && typeof email === 'string' && email.trim() !== '') {
                             // (Optional) set a model if your view needs it
                             var oUserModel = new JSONModel({ email: email });
-                            that.getView().setModel(oUserModel, 'user');
+                            this.getView().setModel(oUserModel, 'user');
 
-                            const emp_data = await that._getEmpIdDetail(email);
-                            that._oReqModel.setProperty("/user", { 
+                            const emp_data = await this._getEmpIdDetail(email);
+                            this._oReqModel.setProperty("/user", { 
                                 emp_id		: emp_data.eeid, 
                                 name		: emp_data.name,
                                 cost_center	: emp_data.cc 
@@ -122,7 +127,7 @@ sap.ui.define([
                         // If you’re still getting 404 here, your approuter may not expose /user-api
                         console.error('currentUser failed:', xhr.status, xhr.responseText);
                         sap.m.MessageToast.show('Failed to load user info (currentUser).');
-                    }
+                    }.bind(this)
                 });
             },
 
