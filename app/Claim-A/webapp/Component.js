@@ -214,7 +214,7 @@ sap.ui.define([
             _doLogout: function () {
                 this.stopInactivityTimer();
 
-                ["mousemove", "keydown", "click", "scroll", "touchstart"].forEach(sEvent => {
+                ["keydown", "click", "scroll", "touchstart"].forEach(sEvent => {
                     document.removeEventListener(sEvent, this._fnResetActivity, true);
                 });
 
