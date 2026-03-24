@@ -235,6 +235,14 @@ sap.ui.define([
             "HEADER"            : "HEADER",
             "ITEM"              : "ITEM" 
         },
+        "SubmissionTypePrefix": {
+            "REQUEST"   : "REQ",
+            "CLAIM"     : "CLM"
+        },
+        "CashAdvanceInfo" : {
+            "COST_CENTER"   : "100000000",
+            "GL_ACCOUNT"    : "214005"
+        },
         "SubmissionType":{
             "DIRECT_CLAIM" : "ST0001"
         }

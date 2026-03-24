@@ -327,7 +327,7 @@ sap.ui.define([
 									this._oRouter.navTo("RequestFormStatus");
 
 								} else {
-									MessageBox.show(Utility.getText("req_tm_w_inform_cc_owner", oErrorHandling.aClaimTypeItem));
+									MessageBox.warning(Utility.getText("req_tm_w_inform_cc_owner", oErrorHandling.aClaimTypeItem));
 								}
 							} catch (e) {
 								MessageToast.show(e.message || "Submission failed");
@@ -590,41 +590,34 @@ sap.ui.define([
 
 		async onRowDeleteReqItem(oEvent) {
 			const oTable = this._resolveControl("req_item_table_d", "request") || this._resolveControl("req_item_table", "request");
-			const aRows = this._oReqModel.getProperty("/req_item_rows") || [];
+			let aRows = this._oReqModel.getProperty("/req_item_rows") || [];
 
-			let iFromAction = null;
-			const oRow = oEvent.getParameter && oEvent.getParameter("row");
-			const iRowIdx = oEvent.getParameter && oEvent.getParameter("rowIndex");
-
-			if (oRow) {
-				const oCtx = oRow.getBindingContext("request");
-				if (oCtx) {
-					const i = parseInt(oCtx.getPath().split("/").pop(), 10);
-					if (Number.isInteger(i)) iFromAction = i;
-				}
-			} else if (Number.isInteger(iRowIdx)) {
-				const oCtx = oTable.getContextByIndex(iRowIdx);
-				if (oCtx) {
-					const i = parseInt(oCtx.getPath().split("/").pop(), 10);
-					if (Number.isInteger(i)) iFromAction = i;
-				}
-			}
+			const getIndexFromCtx = (oCtx) => {
+				if (!oCtx) return null;
+				const i = parseInt(oCtx.getPath().split("/").pop(), 10);
+				return Number.isInteger(i) ? i : null;
+			};
 
 			let aToDelete = [];
 			const aSelected = oTable.getSelectedIndices() || [];
+
 			if (aSelected.length > 0) {
-				aToDelete = aSelected.map((vis) => {
-					const oCtx = oTable.getContextByIndex(vis);
-					if (!oCtx) return null;
-					const i = parseInt(oCtx.getPath().split("/").pop(), 10);
-					return Number.isInteger(i) ? i : null;
-				}).filter((x) => x !== null);
-			} else if (Number.isInteger(iFromAction)) {
-				aToDelete = [iFromAction];
+				aToDelete = aSelected
+					.map(idx => getIndexFromCtx(oTable.getContextByIndex(idx)))
+					.filter(idx => idx !== null);
+			} else {
+				const oRow = oEvent.getParameter("row");
+				const iRowIdx = oEvent.getParameter("rowIndex");
+				
+				let oCtx = oRow ? oRow.getBindingContext("request") : 
+						(Number.isInteger(iRowIdx) ? oTable.getContextByIndex(iRowIdx) : null);
+						
+				const iSingleIdx = getIndexFromCtx(oCtx);
+				if (iSingleIdx !== null) aToDelete.push(iSingleIdx);
 			}
 
 			if (aToDelete.length === 0) {
-				MessageToast.show("Select row to delete");
+				MessageToast.show("Select a row to delete");
 				return;
 			}
 
@@ -653,124 +646,86 @@ sap.ui.define([
 						sErrorMsg = e.message || Utility.getText('req_tm_w_delete_req_item');
 					}
 				}
+
+				if (aSuccessIdx.length > 0) {
+					aSuccessIdx.forEach((i) => aRows.splice(i, 1));
+					
+					this._oReqModel.setProperty("/req_item_rows", aRows);
+					this._oReqModel.setProperty("/list_count", aRows.length);
+					MessageToast.show(Utility.getText('req_tm_s_delete_req_item', [aSuccessIdx.length]));
+				}
+
+				if (sErrorMsg) {
+					MessageToast.show(sErrorMsg);
+				}
+
+				const toNumber = (v) => {
+					if (v === null || v === undefined || v === "") return 0;
+					const n = typeof v === "number" ? v : parseFloat(String(v).replace(/,/g, ""));
+					return Number.isFinite(n) ? n : 0;
+				};
+
+				const oTotals = aRows.reduce((acc, row) => {
+					const reqAmt = row?.EST_AMOUNT ?? row?.est_amount ?? row?.EST_AMT ?? 0;
+					
+					const cashAdvAmt = row?.CASH_ADV_AMT ?? row?.cash_advance_amount ?? row?.CASH_ADVANCE_AMT ?? 0;
+					
+					return {
+						reqTotal: acc.reqTotal + toNumber(reqAmt),
+						cashTotal: acc.cashTotal + toNumber(cashAdvAmt)
+					};
+				}, { reqTotal: 0, cashTotal: 0 });
+
+				const round2 = (n) => Math.round(n * 100) / 100;
+
+				const oHeader = this._oReqModel.getProperty("/req_header") || {};
+				oHeader.reqamt = round2(oTotals.reqTotal);
+				oHeader.cashadvamt = round2(oTotals.cashTotal);
+				
+				this._oReqModel.setProperty("/req_header", oHeader);
+				oTable.clearSelection();
+
 			} finally {
 				BusyIndicator.hide();
 			}
-
-			if (aSuccessIdx.length > 0) {
-				aSuccessIdx.sort((a, b) => b - a).forEach((i) => {
-					if (i >= 0 && i < aRows.length) aRows.splice(i, 1);
-				});
-				this._oReqModel.setProperty("/req_item_rows", aRows);
-				this._oReqModel.setProperty("/list_count", aRows.length);
-				MessageToast.show(Utility.getText('req_tm_s_delete_req_item', [aSuccessIdx.length]));
-			}
-
-			if (sErrorMsg) {
-				MessageToast.show(sErrorMsg);
-			}
-
-			const toNumber = (v) => {
-				if (v === null || v === undefined || v === "") return 0;
-				const n = typeof v === "number" ? v : parseFloat(String(v).replace(/,/g, ""));
-				return Number.isFinite(n) ? n : 0;
-			};
-
-			const total = (this._oReqModel.getProperty("/req_item_rows") || []).reduce((acc, row) => {
-				const amt = row?.EST_AMOUNT ?? row?.est_amount ?? row?.EST_AMT ?? 0;
-				return acc + toNumber(amt);
-			}, 0);
-
-			const round2 = (n) => Math.round(n * 100) / 100;
-
-
-			const oHeader = this._oReqModel.getProperty("/req_header") || {};
-			if (!this._oReqModel.getProperty("/req_header")) {
-				this._oReqModel.setProperty("/req_header", oHeader);
-			}
-			this._oReqModel.setProperty("/req_header/reqamt", round2(total));
-
-
-			oTable.clearSelection();
 		},
 
 		async _deleteItemCascade(sReqId, sReqSubId) {
 			const sGroup = "deleteItemCascade";
 
 			const cast = (v) => /^\d+$/.test(String(v)) ? Number(v) : String(v);
-
-			const isNotFound = (e) => {
-				const s = e?.status || e?.statusCode || e?.httpStatus || e?.cause?.status || e?.cause?.statusCode;
-				return s === 404;
-			};
+			const isNotFound = (e) => [404].includes(e?.status || e?.statusCode || e?.httpStatus || e?.cause?.status || e?.cause?.statusCode);
 
 			const vReq = cast(sReqId);
 			const vSub = cast(sReqSubId);
 
-			let aPartCtx = [];
 			try {
-				const oPartList = this._oDataModel.bindList(
-					"/ZREQ_ITEM_PART", null, null,
-					[
-						new Filter({ path: "REQUEST_ID", operator: FilterOperator.EQ, value1: vReq }),
-						new Filter({ path: "REQUEST_SUB_ID", operator: FilterOperator.EQ, value1: vSub })
-					],
-					{
-						$$ownRequest: true,
-						$$groupId: "$auto",
-						$select: "REQUEST_ID,REQUEST_SUB_ID,PARTICIPANTS_ID"
-					}
-				);
-				aPartCtx = await oPartList.requestContexts(0, Infinity);
-			} catch (e) {
-				if (!isNotFound(e)) {
-					console.error("Load participants failed:", e);
-					throw e;
-				}
-			}
+				const oPartList = this._oDataModel.bindList("/ZREQ_ITEM_PART", null, null, [
+					new Filter("REQUEST_ID", FilterOperator.EQ, vReq),
+					new Filter("REQUEST_SUB_ID", FilterOperator.EQ, vSub)
+				], { $$ownRequest: true, $$groupId: "$auto", $select: "REQUEST_ID,REQUEST_SUB_ID,PARTICIPANTS_ID" });
 
-			let oItemCtx = null;
-			try {
-				const oItemList = this._oDataModel.bindList(
-					"/ZREQUEST_ITEM", null, null,
-					[
-						new Filter({ path: "REQUEST_ID", operator: FilterOperator.EQ, value1: vReq }),
-						new Filter({ path: "REQUEST_SUB_ID", operator: FilterOperator.EQ, value1: vSub })
-					], 
-					{
-						$$ownRequest: true,
-						$$groupId: "$auto",
-						$select: "REQUEST_ID,REQUEST_SUB_ID"
-					}
-				);
-				const aItem = await oItemList.requestContexts(0, 1);
-				oItemCtx = aItem[0] || null;
-			} catch (e) {
-				if (!isNotFound(e)) {
-					console.error("Load item failed:", e);
-					throw e;
-				}
-			}
+				const oItemList = this._oDataModel.bindList("/ZREQUEST_ITEM", null, null, [
+					new Filter("REQUEST_ID", FilterOperator.EQ, vReq),
+					new Filter("REQUEST_SUB_ID", FilterOperator.EQ, vSub)
+				], { $$ownRequest: true, $$groupId: "$auto", $select: "REQUEST_ID,REQUEST_SUB_ID" });
 
-			try {
-				aPartCtx.forEach((ctx) => {
-					ctx.delete(sGroup).catch((e) => {
-						if (!isNotFound(e)) {
-							throw e;
-						}
-					});
+				const [aPartCtx, aItemCtx] = await Promise.all([
+					oPartList.requestContexts(0, 500).catch(e => isNotFound(e) ? [] : Promise.reject(e)),
+					oItemList.requestContexts(0, 1).catch(e => isNotFound(e) ? [] : Promise.reject(e))
+				]);
+
+				aPartCtx.forEach(ctx => {
+					ctx.delete(sGroup).catch(e => { if (!isNotFound(e)) throw e; });
 				});
 
-				if (oItemCtx) {
-					oItemCtx.delete(sGroup).catch((e) => {
-						if (!isNotFound(e)) {
-							throw e;
-						}
-					});
+				if (aItemCtx && aItemCtx.length > 0) {
+					aItemCtx[0].delete(sGroup).catch(e => { if (!isNotFound(e)) throw e; });
 				}
 
 				await this._oDataModel.submitBatch(sGroup);
 				return true;
+
 			} catch (e) {
 				console.error("Delete item cascade failed:", e);
 				throw e;
@@ -994,6 +949,7 @@ sap.ui.define([
 		
 		async onSave(oEvent, bAddAnother = false) {
 			const oData = this._oReqModel.getData();
+			const oReqHeader = oData.req_header;
 			const oReqItem = oData.req_item;
 			const sReqId = String(oData.req_header.reqid || "").trim();
 			const sEmpId = String(oData.user.emp_id || "");
@@ -1020,6 +976,15 @@ sap.ui.define([
 				if (oData.doc2) {
 					const attachment_2 = await Attachment.getFileAsBinary(bIsEdit ? "i_attachment_2_file" : oData.doc2);
 					sAttachment2_SFID = await Attachment.postAttachment(oData.doc2, attachment_2, oData.user);
+				}
+
+				if (oReqItem.cash_advance) {
+					oReqItem.cost_center 	= this._oConstant.CashAdvanceInfo.COST_CENTER;
+					oReqItem.gl_account		= this._oConstant.CashAdvanceInfo.GL_ACCOUNT;
+				} else {
+					oReqItem.cost_center 	= oReqHeader.altcostcenter || oReqHeader.costcenter;
+					oReqItem.gl_account		= await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
+					oReqItem.material_code	= await budgetCheck._getMaterialCode(this._oDataModel, oReqItem.claim_type_item_id);
 				}
 
 				let oPayload = {
@@ -1132,6 +1097,7 @@ sap.ui.define([
 
                 MessageToast.show("Success");
 				if (!bAddAnother) {
+					await PARequestSharedFunction._getHeader(this, sReqId);
 					await PARequestSharedFunction._getItemList(this, sReqId);
 					this._showItemList();
 				}
@@ -1375,7 +1341,7 @@ sap.ui.define([
 
 			}.bind(this);
 
-			oReader.readAsArrayBuffer(file);
+			oReader.readAsArrayBuffer(oFile);
 		},
 
 		_sanitizeFileName(s) {
@@ -1726,6 +1692,8 @@ sap.ui.define([
 				return [];
 			}
 
+			BusyIndicator.show(0);
+
 			try {
 				const oListBinding = this._oDataModel.bindList(
 					"/ZCLAIM_TYPE_ITEM",
@@ -1754,6 +1722,8 @@ sap.ui.define([
 				console.error("ODataV4 load claim type items failed:", err);
 				this._oReqModel.setProperty("/claim_type_items", []);
 				return [];
+			} finally {
+				BusyIndicator.hide();
 			}
 		},
 
@@ -1856,6 +1826,7 @@ sap.ui.define([
 			const sClaimTypeItemFromSelect = oEvent?.getSource?.().getSelectedKey?.();
 			const sClaimTypeItemFromModel = this._oReqModel.getProperty("/req_item/claim_type_item_id");
 			const sClaimTypeItem = sClaimTypeItemFromSelect || sClaimTypeItemFromModel;
+			const sClaimType = this._oReqModel.getProperty("/req_header/claimtype");
 
 			if (!sClaimTypeItem) {
 				console.warn("No claim type item found yet.");
@@ -1868,6 +1839,7 @@ sap.ui.define([
 				const oListBinding = this._oDataModel.bindList("/ZDB_STRUCTURE", null, null, [
 					new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.RequestFieldVisibilityConfig.SUBMISSION_TYPE),
 					new Filter("COMPONENT_LEVEL", FilterOperator.EQ, this._oConstant.RequestFieldVisibilityConfig.ITEM),
+					new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimType),
 					new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaimTypeItem)
 				]);
 

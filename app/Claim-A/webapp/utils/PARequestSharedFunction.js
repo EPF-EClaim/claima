@@ -112,15 +112,6 @@ sap.ui.define([
 						EST_NO_PARTICIPANT: parseInt(oItem.EST_NO_PARTICIPANT, 10) || 1
 					};
 				});
-
-				const fCashAdvTotal = aItems.reduce((sum, it) => 
-					it.CASH_ADVANCE === "YES" ? sum + it.EST_AMOUNT : sum, 0);
-
-				const fReqAmtTotal = aItems.reduce((sum, it) => 
-					it.CASH_ADVANCE !== "YES" ? sum + it.EST_AMOUNT : sum, 0);
-
-				oReq.setProperty("/req_header/cashadvamt", fCashAdvTotal);
-				oReq.setProperty("/req_header/reqamt", fReqAmtTotal);
 				oReq.setProperty("/req_item_rows", aItems);
 				oReq.setProperty("/list_count", aItems.length);
 
