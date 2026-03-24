@@ -15,13 +15,10 @@ module.exports = (srv) => {
       }
 
       // Forward the single consolidated payload to IS
-      const oResponse = await ISservice.send({
-        method: 'POST',
-        path: "/http/ApprovedClaims_SF_DEV",  
-        data: {
-          CLAIM_ID: ClaimID,
-          ITEMS: Items.map(oItem => ({
-            CLAIM_ID:                oItem.CLAIM_ID,
+
+      const sData = 
+        Items.map(oItem => ({
+            CLAIM_ID:                oItem.ClaimID,
             CLAIM_SUB_ID:            oItem.ClaimSubID,
             EMP_ID:                  oItem.EmpID,
             SUBMITTED_DATE:          oItem.SubmissionDate,
@@ -32,9 +29,14 @@ module.exports = (srv) => {
             COST_CENTER:             oItem.CostCenter,
             GL_ACCOUNT:              oItem.GLAccount,
             MATERIAL_CODE:           oItem.MaterialCode
-          }))
+        }));
+      const oResponse = await ISservice.send({
+        method: 'POST',
+        path: "/http/ApprovedClaims_SF_DEV",  
+        data: { 
+          ZEMP_CLAIMS_DETAILS: sData
         }
-      });
+        });
 
       return { message: "Approved claim batch sent", oResponse };
 

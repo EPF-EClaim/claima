@@ -23,7 +23,7 @@ sap.ui.define([
 		async _updateStatus(oModel, sID, sStatus) {
             let sSubmission_type = sID.substring(0,3);
             
-            let sHeaderTablePath = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.Entities.ZREQUEST_HEADER : Constants.EntitiesZCLAIM_HEADER;
+            let sHeaderTablePath = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.Entities.ZREQUEST_HEADER : Constants.Entities.ZCLAIM_HEADER;
             let sField = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.EntitiesFields.REQUESTID : Constants.EntitiesFields.CLAIMID;
 
             // Declare field for status

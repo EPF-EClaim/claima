@@ -11,7 +11,7 @@ sap.ui.define([
         "use strict";
 
         return {
-            onFinalApprove: async function (oController, oViewModel, sClaimID, sStatus, oModel, oEmailPayload) {
+            onFinalApprove: async function (oController, oModel, sClaimID, sStatus, oViewModel, oEmailPayload) {
         try{
                 // Call Update Status
                 Utility._updateStatus(oModel, sClaimID, sStatus);
@@ -148,7 +148,7 @@ sap.ui.define([
 
                     // Map to CDS ApprovedClaimItem
                     var aClaimItems = aClaimRows.map(oRow => ({
-                        ClaimID:              oRow.CLAIM_ID,
+                        ClaimID:              sClaimID,
                         ClaimSubID:           oRow.CLAIM_SUB_ID,
                         EmpID:                oRow.EMP_ID,
                         SubmissionDate:       oRow.SUBMITTED_DATE,

@@ -210,7 +210,7 @@ sap.ui.define([
                 ReceiverEmail: sClaimantEmail
             };
 
-            FinalApproveStep.onFinalApprove(oController, oModelView, sId, Constants.ClaimStatus.APPROVED, oModel, oFinalPayload);
+            FinalApproveStep.onFinalApprove(oController, oModel, sId, Constants.ClaimStatus.APPROVED, oModelView, oFinalPayload);
         }
 
         await oModel.submitBatch("$auto");

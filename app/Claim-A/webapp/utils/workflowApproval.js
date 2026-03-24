@@ -309,7 +309,7 @@ sap.ui.define([
             if(sWorkflowName == Constants.Approvers.AUTO && iWorkflowApprLvl == 0){
                 aApprEmpID.push(Constants.Approvers.AUTO);
                 aUniqueApproversDetails.push({
-                    EEID: null,
+                    EEID: Constants.Approvers.AUTO,
                     NAME: Constants.Approvers.AUTO,
                     EMAIL: null,
                     LEVEL: Number(0)
@@ -718,7 +718,7 @@ sap.ui.define([
             if(sWorkflowName == Constants.Approvers.AUTO && iWorkflowApprLvl == 0){
                 aApprEmpID.push(Constants.Approvers.AUTO);
                 aUniqueApproversDetails.push({
-                    EEID: null,
+                    EEID: Constants.Approvers.AUTO,
                     NAME: Constants.Approvers.AUTO,
                     EMAIL: null,
                     LEVEL: Number(0)
