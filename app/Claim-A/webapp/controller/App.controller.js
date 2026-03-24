@@ -19,10 +19,7 @@ sap.ui.define([
 	"sap/ui/core/Icon",
 	"claima/utils/Utility",
 	"claima/utils/PARequestSharedFunction",
-	"claima/utils/Attachment",
-	"claima/utils/claimstatus",
-	"claima/utils/claim",
-	"claima/utils/MyApproval",
+	"claima/utils/Attachment"
 ], function (
 	Popover,
 	Button,
@@ -44,10 +41,7 @@ sap.ui.define([
 	Icon,
 	Utility,
 	PARequestSharedFunction,
-	Attachment,
-	claimstatus,
-	claim,
-	MyApproval
+	Attachment
 ) {
 	"use strict";
 
@@ -74,8 +68,6 @@ sap.ui.define([
 
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
-
-			PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
 
 			const bIsLocal = window.location.hostname.includes("port4004") || 
 							window.location.hostname.includes("applicationstudio.cloud.sap");
@@ -817,6 +809,8 @@ sap.ui.define([
 						oInputModel.setProperty("/claim_header/descr/request_id", Utility.getText("text_claiminput_preapprovalreq_email"));
 
 						// require attachment email approval
+						this.byId("fileuploader_claiminput_attachment").setEnabled(true);
+						this.byId("fileuploader_claiminput_attachment").setVisible(true);
 						this.byId("fileuploader_claiminput_attachment").setRequired(true);
 						break;
 					default:
@@ -842,6 +836,9 @@ sap.ui.define([
 						}
 						break;
 				}
+			}else if(oInputModel.getProperty("/claimtype/category") ==  this._oConstant.SubmissionType.DIRECT_CLAIM){
+				this.byId("fileuploader_claiminput_attachment").setEnabled(false);
+				this.byId("fileuploader_claiminput_attachment").setVisible(false);
 			}
 		},
 
@@ -1815,40 +1812,7 @@ sap.ui.define([
 			} else {
 				this._oAvatarPopover.openBy(oAvatar);
 			}
-		},
-
-		async openItemFromList(oEvent) {
-			claimstatus.onRowPress({
-				controller: this,
-				event: oEvent,
-				keyProp: "REQUEST_ID",
-				routeName: "RequestForm",
-				modelName: "dashboardModel",
-				paramName: "request_id"
-			});
-		},
-
-		async onRowPress(oEvent) {
-
-			claim.onRowPress({
-				controller: this,
-				event: oEvent,
-				modelName: "dashboardModel",
-				keyProp: "CLAIM_ID",
-				navContainerId: "pageContainer",
-				pageId: "navcontainer_claimsubmission"
-			});
-
-		},
-
-		async openApprovalList(oEvent) {
-			const oItem = oEvent.getParameter("listItem");
-			const oCtx = oItem?.getBindingContext("dashboardModel");
-			const oRow = oCtx?.getObject();
-			const sId = oRow?.ID;
-			await MyApproval.navigateFromId(this, sId);
 		}
-
 
 	});
 });

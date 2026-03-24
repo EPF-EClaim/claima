@@ -908,7 +908,7 @@ annotate service.ZSTATE with @(
 annotate service.ZEMP_MASTER with @(
     cds.autoexpose,
 
-    Capabilities.SearchRestrictions: {Searchable: true},
+    Capabilities.SearchRestrictions: {Searchable: false},
     cds.server.body_parser.limit   : '10mb',
     Common.SemanticKey             : [EEID],
     Capabilities                   : {
@@ -3956,3 +3956,369 @@ annotate service.ZDISBURSEMENT_STATUS with @(
         ]
     }
 );
+
+annotate service.ZELIGIBILITY_RULE with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [CLAIM_TYPE_ID, CLAIM_TYPE_ITEM_ID, ROLE_ID, POSITION_NO_DESC, ROW_COUNT, START_DATE, END_DATE],
+    Capabilities                   : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                             : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Eligibility Rule - ZELIGIBILITY_RULE',
+            TypeNamePlural: 'Eligibility Rule - ZELIGIBILITY_RULE',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ITEM_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type Item ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ROLE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Role'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : POSITION_NO_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Position Number/Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ROW_COUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Row Count'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMPLOYEE_TYPE,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Type'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : ASSIGNED_APPROVER,
+                ![@UI.Importance]: #High,
+                Label            : 'Assigned Approver'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : CONFIRMATION_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Confirmation Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PERSONAL_GRADE,
+                ![@UI.Importance]: #High,
+                Label            : 'Personal Grade'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : MOBILE_PHONE_BILL,
+                ![@UI.Importance]: #High,
+                Label            : 'Mobile Phone Bill'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : ELIGIBLE_AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Eligible Amount'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : FREQUENCY,
+                ![@UI.Importance]: #High,
+                Label            : 'Eligible Amount'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : PERIOD,
+                ![@UI.Importance]: #High,
+                Label            : 'Period'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPENDENT,
+                ![@UI.Importance]: #High,
+                Label            : 'Dependent'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PERMITTED_DEPENDENT_COUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Permitted for ? Number of dependent'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_YEARS,
+                ![@UI.Importance]: #High,
+                Label            : 'Allowed to claim up to ? Years'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : SUBSIDIESED_RATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Subsidiesed Rate'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MARITAL_STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Marital Status'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : DEPENDENT_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Anggota/spouse/anak'
+            },
+             {
+                $Type            : 'UI.DataField',
+                Value            : VEHICLE_OWNERSHIP_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Kenderaan Sendiri/Pejabat'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIMABLE_PERIOD_DAYS,
+                ![@UI.Importance]: #High,
+                Label            : 'Claimable Period (Days)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REGION_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Semenanjung or Sabah/Sarawak/Labuan'
+            },
+             {
+                $Type            : 'UI.DataField',
+                Value            : MAXIMUM_DAYS,
+                ![@UI.Importance]: #High,
+                Label            : 'Maximum Days'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_BASIS_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Based on Receipt/Max amount'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRANSFER_MODE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Mode of Transfer'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : EVENT_REASON,
+                ![@UI.Importance]: #High,
+                Label            : 'Event Reason'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : NO_OF_NIGHT,
+                ![@UI.Importance]: #High,
+                Label            : 'Number of Nights'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : VEHICLE_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Vehicle Type'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : RATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Rate'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : MARRIAGE_CATEGORY,
+                ![@UI.Importance]: #High,
+                Label            : 'Marriage Category'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : FLIGHT_CLASS_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Flight Class'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : HOTEL_LODGING_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Hotel/Lodging'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRANSPORT_CLASS,
+                ![@UI.Importance]: #High,
+                Label            : 'Train/Boat Class'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRANSPORT_PASSING_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Transportation of The Passing (Dead)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : INSURANCE_PACKAGE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Insurance Package'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRAVEL_DAYS_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Number of Days Category (Travel Insurance)'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CURRENCY,
+                ![@UI.Importance]: #High,
+                Label            : 'Currency'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : ROOM_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Room Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : IND_OR_GROUP,
+                ![@UI.Importance]: #High,
+                Label            : 'Individual or Group'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRAVEL_HOURS,
+                ![@UI.Importance]: #High,
+                Label            : 'Travel Hours'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : AGING_NUMBER,
+                ![@UI.Importance]: #High,
+                Label            : 'Aging Number'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : AGING_PERIOD,
+                ![@UI.Importance]: #High,
+                Label            : 'Period Number'
+            }, 
+            {
+                $Type            : 'UI.DataField',
+                Value            : STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZCONSTANTS with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [ID, VALUE],
+    Capabilities                   : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                             : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Constants Value Table Maintenance - ZCONSTANTS',
+            TypeNamePlural: 'Constants Value Table Maintenance - ZCONSTANTS',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Constants ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VALUE,
+                ![@UI.Importance]: #High,
+                Label            : 'Constants Value'
+            }
+        ]
+    }
+);
+annotate service.ZROLEHIERARCHY with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [ROLE],
+    Capabilities                   : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                             : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Employee Role Hierarchy Table - ZROLEHIERARCHY',
+            TypeNamePlural: 'Employee Role Hierarchy Table - ZROLEHIERARCHY',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : ROLE,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Role'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RANK,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Rank'
+            }
+        ]
+    }
+);
+

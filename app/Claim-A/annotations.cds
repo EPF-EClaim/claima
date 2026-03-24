@@ -121,31 +121,6 @@ annotate eclaim_srv.ZCLAIM_TYPE with @(
     }
 );
 
-annotate eclaim_srv.ZEMP_MASTER with @(
-    UI.SelectionFields : [
-        EEID,
-        NAME,
-        EMAIL,
-        USER_TYPE,
-        B_PLACE,
-        CC,
-        CONFIRMATION_DATE,
-        CONTACT_NO,
-        COUNTRY,
-        DEP,
-        DIRECT_SUPPERIOR,
-        EFFECTIVE_DATE,
-        EMPLOYEE_TYPE,
-        GRADE,
-        JOB_GROUP,
-        MARITAL,
-        MEDICAL_INSURANCE_ENTITLEMENT,
-        MOBILE_BILL_ELIG_AMOUNT,
-        POS,
-        POSITION_EVENT_REASON,
-    ]
-);
-
 annotate eclaim_srv.ZEMP_MASTER with {
     EEID @Common.Label : 'EEID'
 };

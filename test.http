@@ -25,38 +25,73 @@
 #     }
 #     ]
 # }
-# GET http://localhost:4004/odata/v4/EmployeeSrv/updateDisbursementStatus()
+# GET http://localhost:4004/odata/v4/EmployeeSrv/ZBUDGET
 
-# POST    http://localhost:4004/odata/v4/EmployeeSrv/budgetchecking
-# Content-Type: application/json
-# Authorization: Basic alice
+
+
+POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
+Content-Type: application/json
  
-#    {
-#     "budget": [
-#       {
-#       "YEAR": "2026",
-#       "INTERNAL_ORDER": "1",
-#       "FUND_CENTER": "100010100", 
-#       "MATERIAL_GROUP": "760001901", 
-#       "COMMITMENT_ITEM": "760001",
-#       "CLAIM_TYPE_ITEM": "test",
-#       "AMOUNT": 100.00, 
-#       "INDICATOR": "CLM", 
-#       "ACTION": "APPROVE"
-#      },
-#      {
-#       "YEAR": "2026",
-#       "INTERNAL_ORDER": "1",
-#       "FUND_CENTER": "100010100", 
-#       "MATERIAL_GROUP": "732002901", 
-#       "COMMITMENT_ITEM": "732002",
-#       "CLAIM_TYPE_ITEM": "test",
-#       "AMOUNT": 100.00, 
-#       "INDICATOR": "CLM", 
-#       "ACTION": "APPROVE"
-#      }
-#     ]
-#    }
+   {
+    "budget": [
+      {
+      "ACTUAL": "900.00",
+      "BUDGET_BALANCE": "89.90",
+      "BUDGET_OWNER_ID": "reuben.lai@my.ey.com",
+      "COMMITMENT": "-1869.00",
+      "COMMITMENT_ITEM": "730000",
+      "CONSUMED": "-1869.00",
+      "CURRENCY": "MYR",
+      "CURRENT_BUDGET": "20000.00",
+      "FUND_CENTER": "100020207",
+      "INTERNAL_ORDER": "2",
+      "MATERIAL_GROUP": "730000901",
+      "ORIGINAL_BUDGET": "20000.00",
+      "PROJECT_CODE": null,
+      "RETURN": "0.00",
+      "SUPPLEMENT": "0.00",
+      "VIREMENT_IN": "0.00",
+      "VIREMENT_OUT": "0.00",
+      "WBS_CODE": null,
+      "YEAR": "2900",
+      "createdAt": null,
+      "createdBy": "nur.ain.mohamad1@my.ey.com",
+      "modifiedAt": null,
+      "modifiedBy": "nur.ain.mohamad1@my.ey.com",
+      "HasActiveEntity": false,
+      "HasDraftEntity": false,
+      "IsActiveEntity": true
+    },
+    {
+      "ACTUAL": "78.00",
+      "BUDGET_BALANCE": "90.00",
+      "BUDGET_OWNER_ID": null,
+      "COMMITMENT": null,
+      "COMMITMENT_ITEM": "11111",
+      "CONSUMED": null,
+      "CURRENCY": "MYR",
+      "CURRENT_BUDGET": null,
+      "FUND_CENTER": "222222222",
+      "INTERNAL_ORDER": "1",
+      "MATERIAL_GROUP": "44444444",
+      "ORIGINAL_BUDGET": "30.00",
+      "PROJECT_CODE": null,
+      "RETURN": null,
+      "SUPPLEMENT": null,
+      "VIREMENT_IN": null,
+      "VIREMENT_OUT": null,
+      "WBS_CODE": null,
+      "YEAR": "1995",
+      "createdAt": null,
+      "createdBy": "nur.ain.mohamad1@my.ey.com",
+      "modifiedAt": null,
+      "modifiedBy": "nur.ain.mohamad1@my.ey.com",
+      "HasActiveEntity": false,
+      "HasDraftEntity": false,
+      "IsActiveEntity": true
+    }
+    ]
+   }
 
 # POST    http://localhost:4004/odata/v4/EmployeeSrv/onFinalApproveInsert
 # Content-Type: application/json

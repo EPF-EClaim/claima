@@ -3,6 +3,7 @@ using {ECLAIM} from '../db/eclaim';
 service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
     type ApprovedClaimItem {
+        ClaimID              : String;
         ClaimSubID           : String;
         EmpID                : String;
         SubmissionDate       : String;
