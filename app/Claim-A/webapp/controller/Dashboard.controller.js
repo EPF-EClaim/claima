@@ -77,28 +77,32 @@ sap.ui.define([
 				}
 			}
 		},
-
-		async onRequestFormItemPress(oEvent) {
+		/**
+		 * My Claim Status table row item on press event handlder
+		 * @public
+		 * @param {sap.ui.base.Event} oEvent - on row item press event
+		 */
+		onRequestFormItemPress: function (oEvent) {
 			this._oRouter.navTo("RequestForm", { request_id: oEvent.getSource().getSelectedContexts()[0].getProperty('REQUEST_ID')});
 		},
-
-		async onClaimSubmissionItemPress(oEvent) {
+		/**
+		 * My Pre-Approval Status table row on press event handlder
+		 * @public
+		 * @param {sap.ui.base.Event} oEvent - on row item press event
+		 */
+		onClaimSubmissionItemPress: function (oEvent) {
 			this._oRouter.navTo("ClaimSubmission", { claim_id: oEvent.getSource().getSelectedContexts()[0].getProperty('CLAIM_ID') });
 		},
-
-		async openApprovalList(oEvent) {
-			// const oItem = oEvent.getParameter("listItem");
-			// const oCtx = oItem?.getBindingContext("dashboardModel");
-			// const oRow = oCtx?.getObject();
-			// const sId = oRow?.ID;
-			// await MyApproval.navigateFromId(this, sId);
-			// this._oRouter.navTo("ClaimSubmission", { claim_id: oEvent.getSource().getSelectedContexts()[0].getProperty('CLAIM_ID') });
-			debugger;
-			
+		/**
+		 * Required Approval table row item press event handlder
+		 * @public
+		 * @param {sap.ui.base.Event} oEvent - on row item press event
+		 */
+		onOpenApprovalListItemPress: function (oEvent) {			
 			var sId = oEvent.getSource().getSelectedContexts()[0].getProperty("ID");
-			if (sId.startsWith("REQ")) {
+			if (sId.startsWith(Constants.WorkflowType.REQUEST)) {
                 this._oRouter.navTo("RequestForm", { request_id: sId});
-            } else if (sId.startsWith(Constants.WorkflowType.CLM)) {
+            } else if (sId.startsWith(Constants.WorkflowType.CLAIM)) {
                 this._oRouter.navTo("ClaimSubmission", { claim_id: sId });
             }
 		}
