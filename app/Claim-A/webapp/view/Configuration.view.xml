@@ -678,6 +678,26 @@
                         <f:header>
                             <cards:Header title="{i18n>disbursement}" />
                         </f:header>
+                    </f:Card>
+                    <f:Card
+                        id="ZCONSTANTS"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="{i18n>constants}" />
+                        </f:header>
+                    </f:Card>
+                    <f:Card
+                        id="ZROLEHIERARCHY"
+                        class="sapUiSmallMargin"
+                        width="15rem"
+                        press="onOpenConfigTable"
+                    >
+                        <f:header>
+                            <cards:Header title="{i18n>rolehierarchy}" />
+                        </f:header>
                     </f:Card>                                                                                                                                                                                                                                                                                                                                         
                 </f:GridContainer>
             </ScrollContainer>

@@ -1697,14 +1697,15 @@ sap.ui.define([
 					oEmployeeViewModel,
 					this
 				);
-
-				await budgetCheck.budgetProcessingTest(
+				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
+				await budgetCheck.budgetProcessing(
 					oModelMain,
 					aDataset,
 					sSubmissionType,
 					this._oConstant.ApprovalProcessAction.RELEASE_IND
 				);
-
+				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
+				*/
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
 				}
@@ -1760,6 +1761,7 @@ sap.ui.define([
 					submissionType: sSubmissionType,
 					sMessageKey
 				} = await ApproverUtility.rejectOrSendBackMultiLevel(
+					this,
 					oModelMain,
 					sClaimId,
 					sUserId,
@@ -1769,13 +1771,15 @@ sap.ui.define([
 					oEmployeeViewModel,
 					this
 				);
-
-				await budgetCheck.budgetProcessingTest(
+				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
+				await budgetCheck.budgetProcessing(
 					oModelMain,
 					aDataset,
 					sSubmissionType,
 					this._oConstant.ApprovalProcessAction.RELEASE_IND
 				);
+				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
+				*/
 
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
@@ -2137,35 +2141,45 @@ sap.ui.define([
 			// validate input data
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-
 			// validate required fields
 			if (
 				!this.byId("select_claimdetails_input_claimitem").getSelectedItem() ||
-				(!this.byId("input_claimdetails_input_amount").getValue() && this.byId("input_claimdetails_input_amount").getVisible())
+				(!this.byId("input_claimdetails_input_amount").getValue() && this.byId("input_claimdetails_input_amount").getVisible())				
 			) {
 				// stop claim submission if values empty
 				MessageToast.show(Utility.getText("msg_claiminput_required"));
 				return;
 			}
+
+			if(this.byId("input_claimdetails_input_amount").getValue() == "0.00"){
+				// stop claim submission if amount is zero
+				MessageToast.show(Utility.getText("msg_claiminput_amount_zero"));
+				return;
+			}
+
+			
 			// validate attachment
 			//// attachment 1
 			if (this.byId("fileuploader_claimdetails_input_attachment1").getValue()) {
-				BusyIndicator.show(0);
-				var attachmentNumber = await Attachment.postAttachment(
+				if(oInputModel.getProperty("/attachments/attachment1/fileName") != null && oInputModel.getProperty("/attachments/attachment1/fileContent") != null){
+					BusyIndicator.show(0);
+					var attachmentNumber = await Attachment.postAttachment(
 					oInputModel.getProperty("/attachments/attachment1/fileName"),
 					oInputModel.getProperty("/attachments/attachment1/fileContent"),
 					this._oSessionModel.getProperty("/userId")
-				);
-				if (attachmentNumber) {
-					oInputModel.setProperty("/claim_item/attachment_file_1", attachmentNumber);
-					oInputModel.setProperty("/claim_item/descr/attachment_file_1", oInputModel.getProperty("/attachments/attachment1/fileName"));
-					BusyIndicator.hide();
-				}
-				else {
-					MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
-					// don't proceed claim item if attachment upload fails
-					BusyIndicator.hide();
-					return;
+					);
+
+					if (attachmentNumber) {
+						oInputModel.setProperty("/claim_item/attachment_file_1", attachmentNumber);
+						oInputModel.setProperty("/claim_item/descr/attachment_file_1", oInputModel.getProperty("/attachments/attachment1/fileName"));
+						BusyIndicator.hide();
+					}
+					else {
+						MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
+						// don't proceed claim item if attachment upload fails
+						BusyIndicator.hide();
+						return;
+					}
 				}
 			}
 			//// attachment 2
@@ -2985,7 +2999,7 @@ sap.ui.define([
 						if (oAction === 'Submit Report') {
 							var oModelAppr = this.getView().getModel();
 							var oEmployeeViewModel = this.getView().getModel("employee_view");
-							workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
+							workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
 						}
 						MessageToast.show(oMsg);
 						this._onNavBack();
@@ -3034,6 +3048,7 @@ sap.ui.define([
 								MessageToast.show(Utility.getText("msg_claimsubmission_nocc"));
 								return;
 							}
+							/** 
 							const result = await budgetCheck.budgetChecking(
 								oModel,
 								"CLM",
@@ -3043,11 +3058,11 @@ sap.ui.define([
 								oInputModel.getProperty("/claim_header/claim_type_id"),
 								dataRow
 							);
-
+							
 							if (!result.passed) {
 								MessageToast.show(result.messages);
 								return;
-							}
+							}*/
 							else {
 								oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
 								if (oCtx.getProperty("SUBMITTED_DATE", null)) {
@@ -3067,7 +3082,7 @@ sap.ui.define([
 					if (oAction === 'Submit Report') {
 						var oModelAppr = this.getView().getModel();
 						var oEmployeeViewModel = this.getView().getModel("employee_view");
-						workflowApproval.onClaimsApproverDetermination(oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
+						workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
 					}
 
 					MessageToast.show(oMsg);
