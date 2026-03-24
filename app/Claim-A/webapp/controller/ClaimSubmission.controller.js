@@ -2174,7 +2174,7 @@ sap.ui.define([
 						BusyIndicator.hide();
 					}
 					else {
-						MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_error"));
+						MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
 						// don't proceed claim item if attachment upload fails
 						BusyIndicator.hide();
 						return;
