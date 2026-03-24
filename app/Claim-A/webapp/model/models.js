@@ -21,6 +21,34 @@ function (JSONModel, Device, Constants) {
             var oModel = new JSONModel(Constants);
             oModel.setDefaultBindingMode("OneWay");
             return oModel;
+        },
+
+        createSessionModel: function() {
+            var oSessionModel = new JSONModel({
+				userType: "UNKNOWN",
+				origin: "",
+				grade: "",
+				department: "",
+				position: "",
+				userName: "",
+				initials: ""
+			});
+            return oSessionModel;
+        },
+
+        createUserIdModel: function() {
+            var oUserIdModel = new JSONModel({
+                "userId": "",
+                "email": ""
+            });
+            return oUserIdModel;
+        },
+
+        createImageModel: function() {
+            var oImageModel = new JSONModel({
+				homeIcon: sap.ui.require.toUrl("claima/images/EPFLogo.png")
+			});
+            return oImageModel;
         }
     };
 

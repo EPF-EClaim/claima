@@ -3,8 +3,9 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	"sap/m/MessageToast",
 	"claima/utils/Utility",
-	"sap/ui/core/BusyIndicator"
-], function (Filter, FilterOperator, MessageToast, Utility, BusyIndicator) {
+	"sap/ui/core/BusyIndicator",
+    "claima/utils/Constants"
+], function (Filter, FilterOperator, MessageToast, Utility, BusyIndicator, Constant) {
     "use strict";
 
     return {
@@ -53,7 +54,7 @@ sap.ui.define([
 					const aContexts = await oListBinding.requestContexts(0, 1);
 
 					if (aContexts.length === 0) {
-						aErrors.push(Utility.getText(this, "budget_w_not_found", [row.claim_type_item]));
+						aErrors.push(Utility.getText("budget_w_not_found", [row.claim_type_item]));
 						continue;
 					}
 
@@ -78,7 +79,7 @@ sap.ui.define([
 
 				} catch (err) {
 					console.error("Budget check error:", err);
-					aErrors.push(Utility.getText(this, "budget_w_system_error", [row.CLAIM_TYPE_ITEM_ID]));
+					aErrors.push(Utility.getText("budget_w_system_error", [row.CLAIM_TYPE_ITEM_ID]));
 				}
 			}
 
@@ -161,7 +162,7 @@ sap.ui.define([
 
 			try {
 				await oModel.submitBatch("budgetUpdateGroup");
-				MessageToast.show(Utility.getText(this, "budget_s_update"));
+				MessageToast.show(Utility.getText("budget_s_update"));
 			} catch (err) {
 				console.error('Final Budget Batch failed', e);
 				throw e;
@@ -232,7 +233,7 @@ sap.ui.define([
 					await oModel.submitBatch("budgetUpdateGroup");
 					
 					if (oModel.hasPendingChanges("budgetUpdateGroup")) {
-						throw new Error(Utility.getText(this, "budget_e_batch_update"));
+						throw new Error(Utility.getText("budget_e_batch_update"));
 					}
 					
 				} catch (err) {
@@ -259,7 +260,7 @@ sap.ui.define([
 					const oData = aContexts[0].getObject();
 					return oData.GL_ACCOUNT;
 				} else {
-					console.warn(Utility.getText(this, "budget_w_claim_type_not_found"));
+					console.warn(Utility.getText("budget_w_claim_type_not_found"));
 					return "";
 				}
 			} catch (oError) {
@@ -281,7 +282,7 @@ sap.ui.define([
 					const oData = aContexts[0].getObject();
 					return oData.MATERIAL_CODE;
 				} else {
-					console.warn(Utility.getText(this, "budget_w_claim_type_item_not_found"));
+					console.warn(Utility.getText("budget_w_claim_type_item_not_found"));
 					return "";
 				}
 			} catch (oError) {
@@ -331,13 +332,34 @@ sap.ui.define([
 				BusyIndicator.show(0); 
 				await oAction.execute();
 				const oResponse = oAction.getBoundContext().getObject();
-				const aResults = oResponse.results || oResponse.value || oResponse;
+				const aResults = oResponse.value[0].results;
 				return aResults;
 			} catch (err) {
 				console.error("Budget check failed", err);
 				return false;
 			}
 		},
+
+		budgetCheckHandling(aResult) {
+			var bSufficient = false;
+			var aClaimTypeItem = [];
+
+			aResult.forEach((oRequestItem) => {
+				if (oRequestItem.STATUS == Constant.BudgetCheckStatus.SUFFICIENT || 
+					oRequestItem.STATUS == Constant.BudgetCheckStatus.UPDATED
+				) {
+					bSufficient = true;
+				} else {
+					bSufficient = false;
+					aClaimTypeItem.push(oRequestItem.CLAIM_TYPE_ITEM)
+				}
+			})
+
+			return {
+				bCanProceed: true,
+				aClaimTypeItem: aClaimTypeItem 
+			} ;
+		}
 
     };
 });

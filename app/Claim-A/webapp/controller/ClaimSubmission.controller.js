@@ -24,8 +24,7 @@ sap.ui.define([
 	"claima/utils/SendBackDialog",
 	"claima/utils/ApproverUtility",
 	"claima/utils/workflowApproval",
-	"claima/utils/DateUtility",
-	"claima/utils/Constants"
+	"claima/utils/DateUtility"
 ], function (
 	Fragment,
 	Item,
@@ -52,8 +51,7 @@ sap.ui.define([
 	SendBackDialog,
 	ApproverUtility,
 	workflowApproval,
-	DateUtility,
-	Constants
+	DateUtility
 ) {
 	"use strict";
 
@@ -123,7 +121,7 @@ sap.ui.define([
 			}
 			catch (e) {
 				// unable to decode URL
-				MessageToast.show(Utility.getText(this, "msg_claimsubmission_decode", [sClaimId]))
+				MessageToast.show(Utility.getText("msg_claimsubmission_decode", [sClaimId]))
 				this._onNavBack();
 			}
 
@@ -133,7 +131,7 @@ sap.ui.define([
 				await this._loadClaimById(String(sClaimId));
 				if (Object.keys(oClaimSubmissionModel.getProperty("/claim_header")).length === 0) {
 					// unable to load claim details
-					MessageToast.show(Utility.getText(this, "msg_claimsubmission_missing", [sClaimId]))
+					MessageToast.show(Utility.getText("msg_claimsubmission_missing", [sClaimId]))
 					this._onNavBack();
 				}
 			}
@@ -141,7 +139,7 @@ sap.ui.define([
 				await this._loadClaimById(String(sClaimId));
 				if (!oClaimSubmissionModel.getProperty("/claim_header")) {
 					// unable to load claim details
-					MessageToast.show(Utility.getText(this, "msg_claimsubmission_missing", [sClaimId]))
+					MessageToast.show(Utility.getText("msg_claimsubmission_missing", [sClaimId]))
 					this._onNavBack();
 				}
 			}
@@ -1187,7 +1185,7 @@ sap.ui.define([
 					Attachment.onViewDocument(this, oInputModel.getProperty("/claim_items/" + iItemIndex + "/attachment_file_" + fieldNumber));
 				}
 				else {
-					MessageToast.show(Utility.getText(this, "msg_claimsubmission_viewattachment_error"));
+					MessageToast.show(Utility.getText("msg_claimsubmission_viewattachment_error"));
 					BusyIndicator.hide();
 					return;
 				}
@@ -1240,7 +1238,7 @@ sap.ui.define([
 			if (table) {
 				// dont proceed if no items selected
 				if (table.getSelectedItems().length == 0) {
-					MessageToast.show(Utility.getText(this, "msg_claimsummary_noitem"));
+					MessageToast.show(Utility.getText("msg_claimsummary_noitem"));
 					return;
 				}
 
@@ -1250,7 +1248,7 @@ sap.ui.define([
 					case 'Edit':
 						// only allow one item selection
 						if (table.getSelectedItems().length > 1) {
-							MessageToast.show(Utility.getText(this, "msg_claimsummary_singleitem"));
+							MessageToast.show(Utility.getText("msg_claimsummary_singleitem"));
 							return;
 						}
 						else {
@@ -1261,14 +1259,14 @@ sap.ui.define([
 					case 'Duplicate':
 						// only allow one item selection
 						if (table.getSelectedItems().length > 1) {
-							MessageToast.show(Utility.getText(this, "msg_claimsummary_singleitem"));
+							MessageToast.show(Utility.getText("msg_claimsummary_singleitem"));
 							return;
 						}
 						else {
 							// confirm dialog
 							this._newDialog(
-								Utility.getText(this, "dialog_claimsummary_duplicate"),
-								Utility.getText(this, "label_claimsummary_duplicate"),
+								Utility.getText("dialog_claimsummary_duplicate"),
+								Utility.getText("label_claimsummary_duplicate"),
 								async function () {
 									await this.onDuplicate_ClaimSummary(table.getSelectedItem());
 									table.removeSelections(true);
@@ -1280,8 +1278,8 @@ sap.ui.define([
 					case 'Delete':
 						// confirm dialog
 						this._newDialog(
-							Utility.getText(this, "dialog_claimsummary_delete"),
-							Utility.getText(this, "label_claimsummary_delete"),
+							Utility.getText("dialog_claimsummary_delete"),
+							Utility.getText("label_claimsummary_delete"),
 							async function () {
 								await this.onDelete_ClaimSummary(table.getSelectedItems());
 								table.removeSelections(true);
@@ -1289,12 +1287,12 @@ sap.ui.define([
 						);
 						break;
 					default:
-						MessageToast.show(Utility.getText(this, "msg_claimsummary_noaction"));
+						MessageToast.show(Utility.getText("msg_claimsummary_noaction"));
 						break;
 				}
 			}
 			else {
-				MessageToast.show(Utility.getText(this, "msg_claimsummary_notable"));
+				MessageToast.show(Utility.getText("msg_claimsummary_notable"));
 			}
 		},
 
@@ -1447,8 +1445,8 @@ sap.ui.define([
 				case 'Save Draft':
 					// confirm dialog
 					this._newDialog(
-						Utility.getText(this, "dialog_claimsubmission_savedraft"),
-						Utility.getText(this, "label_claimsubmission_savedraft"),
+						Utility.getText("dialog_claimsubmission_savedraft"),
+						Utility.getText("label_claimsubmission_savedraft"),
 						function () {
 							this._updateClaimSubmission(oAction);
 						}.bind(this)
@@ -1458,8 +1456,8 @@ sap.ui.define([
 				case 'Delete Report':
 					// confirm dialog
 					this._newDialog(
-						Utility.getText(this, "dialog_claimsubmission_deletereport"),
-						Utility.getText(this, "label_claimsubmission_deletereport"),
+						Utility.getText("dialog_claimsubmission_deletereport"),
+						Utility.getText("label_claimsubmission_deletereport"),
 						function () {
 							this._updateClaimSubmission(oAction);
 						}.bind(this)
@@ -1469,8 +1467,8 @@ sap.ui.define([
 				case 'Submit Report':
 					// confirm dialog
 					this._newDialog(
-						Utility.getText(this, "dialog_claimsubmission_submitreport"),
-						Utility.getText(this, "label_claimsubmission_submitreport"),
+						Utility.getText("dialog_claimsubmission_submitreport"),
+						Utility.getText("label_claimsubmission_submitreport"),
 						function () {
 							this._updateClaimSubmission(oAction);
 						}.bind(this)
@@ -1603,7 +1601,7 @@ sap.ui.define([
 				}
 
 				if (!sComment) {
-					MessageToast.show(Utility.getText(this, "msg_claimapprover_comment"));
+					MessageToast.show(Utility.getText("msg_claimapprover_comment"));
 					return;
 				}
 
@@ -1638,7 +1636,7 @@ sap.ui.define([
 					}, 400);
 
 				} catch (oErrorMessage) {
-					MessageToast.show(Utility.getText(this, oErrorMessage.sCode));
+					MessageToast.show(Utility.getText(oErrorMessage.sCode));
 					setTimeout(() => {
 						this._fnGoToDashboard();
 					}, 400);
@@ -1647,7 +1645,7 @@ sap.ui.define([
 				}
 
 			} catch (oErrorApprove) {
-				MessageToast.show(Utility.getText(this, "msg_claimapprover_fail"));
+				MessageToast.show(Utility.getText("msg_claimapprover_fail"));
 				return;
 
 			} finally {
@@ -1664,12 +1662,12 @@ sap.ui.define([
 			const sComment = oReject?.getProperty("/approvalComment")?.trim();
 
 			if (!sReason) {
-				MessageToast.show(Utility.getText(this, "msg_claimapprover_reject"));
+				MessageToast.show(Utility.getText("msg_claimapprover_reject"));
 				return;
 			}
 
 			if (!sComment) {
-				MessageToast.show(Utility.getText(this, "msg_claimapprover_comment"));
+				MessageToast.show(Utility.getText("msg_claimapprover_comment"));
 				return;
 			}
 
@@ -1721,7 +1719,7 @@ sap.ui.define([
 					this._fnGoToDashboard();
 				}, 400);
 			} catch (oErrorReject) {
-				MessageToast.show(Utility.getText(this, oErrorReject.sCode));
+				MessageToast.show(Utility.getText(oErrorReject.sCode));
 				setTimeout(() => {
 					this._fnGoToDashboard();
 				}, 400);
@@ -1737,12 +1735,12 @@ sap.ui.define([
 			const sComment = oReject?.getProperty("/approvalComment")?.trim();
 
 			if (!sReason) {
-				MessageToast.show(Utility.getText(this, "msg_claimapprover_sendback"));
+				MessageToast.show(Utility.getText("msg_claimapprover_sendback"));
 				return;
 			}
 
 			if (!sComment) {
-				MessageToast.show(Utility.getText(this, "msg_claimapprover_comment"));
+				MessageToast.show(Utility.getText("msg_claimapprover_comment"));
 				return;
 			}
 
@@ -1796,7 +1794,7 @@ sap.ui.define([
 
 
 			} catch (oErrorSendBack) {
-				MessageToast.show(Utility.getText(this, oErrorSendBack.sCode));
+				MessageToast.show(Utility.getText(oErrorSendBack.sCode));
 				setTimeout(() => {
 					this._fnGoToDashboard();
 				}, 400);
@@ -1970,7 +1968,7 @@ sap.ui.define([
 					const oData = aContexts[0].getObject();
 					return oData.GL_ACCOUNT;
 				} else {
-					MessageToast.show(Utility.getText(this, "msg_claimdetails_input_glaccount"));
+					MessageToast.show(Utility.getText("msg_claimdetails_input_glaccount"));
 					return "";
 				}
 			} catch (oError) {
@@ -2124,8 +2122,8 @@ sap.ui.define([
 				case 'Save':
 					// confirm dialog
 					this._newDialog(
-						Utility.getText(this, "dialog_claimdetails_input_save"),
-						Utility.getText(this, "label_claimdetails_input_save"),
+						Utility.getText("dialog_claimdetails_input_save"),
+						Utility.getText("label_claimdetails_input_save"),
 						async function () {
 							await this.onSave_ClaimDetails_Input();
 						}.bind(this)
@@ -2133,7 +2131,7 @@ sap.ui.define([
 					break;
 				//// Others
 				default:
-					MessageToast.show(Utility.getText(this, "msg_claimdetails_input_noaction"));
+					MessageToast.show(Utility.getText("msg_claimdetails_input_noaction"));
 					break;
 			}
 		},
@@ -2149,7 +2147,7 @@ sap.ui.define([
 				(!this.byId("input_claimdetails_input_amount").getValue() && this.byId("input_claimdetails_input_amount").getVisible())
 			) {
 				// stop claim submission if values empty
-				MessageToast.show(Utility.getText(this, "msg_claiminput_required"));
+				MessageToast.show(Utility.getText("msg_claiminput_required"));
 				return;
 			}
 			// validate attachment
@@ -2167,7 +2165,7 @@ sap.ui.define([
 					BusyIndicator.hide();
 				}
 				else {
-					MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_error"));
+					MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
 					// don't proceed claim item if attachment upload fails
 					BusyIndicator.hide();
 					return;
@@ -2187,7 +2185,7 @@ sap.ui.define([
 					BusyIndicator.hide();
 				}
 				else {
-					MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_error"));
+					MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
 					// don't proceed claim item if attachment upload fails
 					BusyIndicator.hide();
 					return;
@@ -2229,7 +2227,7 @@ sap.ui.define([
 
 			// Check duplicates
 			if (this._CheckDuplicateClaimItems(aTemp)) {
-				MessageToast.show(Utility.getText(this, "msg_duplication_prompt"));
+				MessageToast.show(Utility.getText("msg_duplication_prompt"));
 				return;
 			}
 
@@ -2392,7 +2390,7 @@ sap.ui.define([
 							)
 						}
 
-						MessageToast.show(Utility.getText(this, "msg_claimsubmission_creation_item", [oInputModel.getProperty("/claim_item/claim_sub_id")]));
+						MessageToast.show(Utility.getText("msg_claimsubmission_creation_item", [oInputModel.getProperty("/claim_item/claim_sub_id")]));
 					});
 				}
 				else {
@@ -2437,7 +2435,7 @@ sap.ui.define([
 								oInputModel.getProperty("/claim_item/attachment_file_2")
 							)
 						}
-						MessageToast.show(Utility.getText(this, "msg_claimsubmission_save_item", [oInputModel.getProperty("/claim_item/claim_sub_id")]));
+						MessageToast.show(Utility.getText("msg_claimsubmission_save_item", [oInputModel.getProperty("/claim_item/claim_sub_id")]));
 					}
 				}
 
@@ -2478,11 +2476,11 @@ sap.ui.define([
 		},
 
 		onFileSizeExceed_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_filesize"));
+			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_filesize"));
 		},
 
 		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(Utility.getText(this, "msg_claiminput_attachment_upload_mismatch"));
+			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
 		onChange_ClaimDetails_DateRange: async function (startdate, enddate) {
@@ -2667,11 +2665,11 @@ sap.ui.define([
 					}
 					this.onChange_ClaimDetails_ProvidedMeals();
 				} else {
-					MessageToast.show(Utility.getText(this, "msg_claimdetails_input_entmeals"));
+					MessageToast.show(Utility.getText("msg_claimdetails_input_entmeals"));
 				}
 				BusyIndicator.hide();
 			} catch (oError) {
-				MessageToast.show(Utility.getText(this, "msg_claimdetails_input_entmeals_err", [oError]));
+				MessageToast.show(Utility.getText("msg_claimdetails_input_entmeals_err", [oError]));
 				BusyIndicator.hide();
 			}
 		},
@@ -2812,14 +2810,14 @@ sap.ui.define([
 			var endDateValue = this.byId(enddate).getValue();
 			// check for missing value
 			if (!startDateValue || !endDateValue) {
-				MessageToast.show(Utility.getText(this, "msg_daterange_missing"));
+				MessageToast.show(Utility.getText("msg_daterange_missing"));
 				return false;
 			}
 			// check if end date earlier than start date
 			var startDateUnix = new Date(startDateValue).valueOf();
 			var endDateUnix = new Date(endDateValue).valueOf();
 			if (startDateUnix > endDateUnix) {
-				MessageToast.show(Utility.getText(this, "msg_daterange_order"));
+				MessageToast.show(Utility.getText("msg_daterange_order"));
 				return false;
 			}
 			else {
@@ -2880,7 +2878,7 @@ sap.ui.define([
 				var aItems = oInputModel.getProperty("/claim_items") || [];
 
 				if (this._CheckDuplicateClaimItems(aItems)) {
-					MessageToast.show(Utility.getText(this, "msg_duplication_prompt"));
+					MessageToast.show(Utility.getText("msg_duplication_prompt"));
 					BusyIndicator.hide();
 					return;
 				}
@@ -2903,7 +2901,7 @@ sap.ui.define([
 						oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
 					}
 					else {
-						MessageToast.show(Utility.getText(this, "msg_claimsubmission_noclaim"));
+						MessageToast.show(Utility.getText("msg_claimsubmission_noclaim"));
 					}
 				}
 				//// set status for new claim as draft
@@ -2976,10 +2974,10 @@ sap.ui.define([
 					oContext.created().then(async () => {
 						switch (oAction) {
 							case 'Save Draft':
-								MessageToast.show(Utility.getText(this, "msg_claimsubmission_created"));
+								MessageToast.show(Utility.getText("msg_claimsubmission_created"));
 								break;
 							case 'Submit Report':
-								MessageToast.show(Utility.getText(this, "msg_claimsubmission_pending"));
+								MessageToast.show(Utility.getText("msg_claimsubmission_pending"));
 								break;
 							default:
 								throw new Error("Invalid action selected: " + oAction);
@@ -2995,7 +2993,7 @@ sap.ui.define([
 						MessageToast.show(oMsg);
 						this._onNavBack();
 					}).catch(err => {
-						MessageToast.show(Utility.getText(this, "msg_claimsubmission_creation_err", [err.message]));
+						MessageToast.show(Utility.getText("msg_claimsubmission_creation_err", [err.message]));
 					});
 				}
 				else {
@@ -3022,11 +3020,11 @@ sap.ui.define([
 					}
 					switch (oAction) {
 						case 'Save Draft':
-							var oMsg = Utility.getText(this, "msg_claimsubmission_changed");
+							var oMsg = Utility.getText("msg_claimsubmission_changed");
 							break;
 						case 'Delete Report':
 							oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.CANCELLED);
-							oMsg = Utility.getText(this, "msg_claimsubmission_deleted");
+							oMsg = Utility.getText("msg_claimsubmission_deleted");
 							break;
 						case 'Submit Report':
 							// budget checking
@@ -3036,7 +3034,7 @@ sap.ui.define([
 							}));
 							var budgetCc = oInputModel.getProperty("/claim_header/cost_center") || oInputModel.getProperty("/claim_header/alternate_cost_center");
 							if (!budgetCc) {
-								MessageToast.show(Utility.getText(this, "msg_claimsubmission_nocc"));
+								MessageToast.show(Utility.getText("msg_claimsubmission_nocc"));
 								return;
 							}
 							const result = await budgetCheck.budgetChecking(
@@ -3059,7 +3057,7 @@ sap.ui.define([
 									var submittedDate = this._getJsonDate(new Date());
 									oCtx.setProperty("SUBMITTED_DATE", this._getHanaDate(submittedDate));
 								}
-								oMsg = Utility.getText(this, "msg_claimsubmission_pending");
+								oMsg = Utility.getText("msg_claimsubmission_pending");
 							}
 							break;
 						default:
@@ -3114,7 +3112,7 @@ sap.ui.define([
 			var aItems = oInputModel.getProperty("/claim_items") || [];
 
 			if (this._CheckDuplicateClaimItems(aItems)) {
-				MessageToast.show(Utility.getText(this, "msg_duplication_prompt"));
+				MessageToast.show(Utility.getText("msg_duplication_prompt"));
 				BusyIndicator.hide();
 				return;
 			}
@@ -3484,7 +3482,7 @@ sap.ui.define([
 				}
 
 			} catch (err) {
-				MessageToast.show(Utility.getText(this, "msg_claimsubmission_numrange_err", [err]));
+				MessageToast.show(Utility.getText("msg_claimsubmission_numrange_err", [err]));
 				return null;
 			}
 		},
@@ -3555,14 +3553,14 @@ sap.ui.define([
 				content: [new Label({ text: oContent })],
 				beginButton: new Button({
 					type: "Emphasized",
-					text: Utility.getText(this, "button_claimsummary_confirm"),
+					text: Utility.getText("button_claimsummary_confirm"),
 					press: async function () {
 						this.oDialog.close();
 						await onPress();
 					}.bind(this)
 				}),
 				endButton: new Button({
-					text: Utility.getText(this, "button_claimsummary_cancel"),
+					text: Utility.getText("button_claimsummary_cancel"),
 					press: async function () {
 						this.oDialog.close();
 						if (onPressE) {
@@ -3964,7 +3962,7 @@ sap.ui.define([
 
 				const input = oView.getModel("claimsubmission_input")?.getData();
 				if (!input) {
-					MessageToast.show(Utility.getText(this, "msg_claimsubmission_noload"));
+					MessageToast.show(Utility.getText("msg_claimsubmission_noload"));
 					return;
 				}
 
@@ -4047,7 +4045,7 @@ sap.ui.define([
 				});
 
 			} catch (e) {
-				MessageToast.show(Utility.getText(this, "msg_claimsubmission_excel", [e]));
+				MessageToast.show(Utility.getText("msg_claimsubmission_excel", [e]));
 			} finally {
 				oView.setBusy(false);
 			}

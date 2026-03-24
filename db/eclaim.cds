@@ -1368,5 +1368,12 @@ entity ZROLEHIERARCHY : managed {
 
 entity ZCONSTANTS : managed {
     key ID    : String  @mandatory  @Common.Label: 'Id';
-        VALUE : String  @mandatory  @Common.Label: 'Value';
+    key VALUE : String  @mandatory  @Common.Label: 'Value';
+}
+
+entity ZCLM_APPR_REQ_STAT : managed {
+    key EMP_ID     : String(6)      @mandatory  @Common.Label: 'Employee Id';
+    key REQUEST_ID : String         @mandatory  @Common.Label: 'Request ID';
+        AMOUNT     : Decimal(20, 2) @Common.Label: 'Amount';
+        CLAIMED    : Boolean        @Common.Label: 'Claimed';
 }

@@ -114,10 +114,7 @@ sap.ui.define([
                         break;
 
                     default:
-                        // if item type not found, mark all fields as fail and quit loop
-                        for (var iRow of oPayload.CheckFields) {
-                            oPayload.CheckFields[iRow].result = false;
-                        }
+                        // if item type not found, quit loop
                         bSkipChecking = true;
                         break;
                 }

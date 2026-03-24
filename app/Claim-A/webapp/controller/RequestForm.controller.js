@@ -14,6 +14,7 @@ sap.ui.define([
 	"sap/m/Dialog",
 	"sap/m/Button",
 	"sap/m/Label",
+	"sap/m/MessageBox",
 	"claima/utils/PARequestSharedFunction",
 	"claima/utils/budgetCheck",
 	"claima/utils/ApprovalLog",
@@ -44,6 +45,7 @@ sap.ui.define([
 	Dialog,
 	Button,
 	Label,
+	MessageBox,
 	PARequestSharedFunction,
 	budgetCheck,
 	ApprovalLog,
@@ -101,11 +103,16 @@ sap.ui.define([
 		},
 
 		async _loadRequest(sReqId) {
-			await PARequestSharedFunction._getHeader(this, sReqId);
-			await PARequestSharedFunction._getItemList(this, sReqId);
-			this._showItemList(sReqId);
-
-			MessageToast.show(Utility.getText(this, "prereq"));
+			BusyIndicator.show(0);
+			try {
+				await PARequestSharedFunction._getHeader(this, sReqId);
+				await PARequestSharedFunction._getItemList(this, sReqId);
+				await this._showItemList(sReqId);
+			} catch (error) {
+				console.log(err);
+			} finally {
+				BusyIndicator.hide();
+			}
 		},
 
 		/* =========================================================
@@ -161,7 +168,9 @@ sap.ui.define([
 			const oPage = this.byId("request_form");
 			if (!oPage) return;
 
+			await this._removeByLocalId("request_item_list_fragment");
 			await this._removeByLocalId("request_create_item_fragment");
+			await this._removeByLocalId("req_approval_log");
 
 			const oList = await this._getFormFragment("req_item_list");
 			await this._replaceContentAt(oPage, 1, oList);
@@ -174,7 +183,7 @@ sap.ui.define([
 				await this._replaceContentAt(oPage, 2, oApproval);
 			}
 
-			PARequestSharedFunction._determineCurrentState(this, this._oReqModel);
+			await PARequestSharedFunction._determineCurrentState(this, this._oReqModel);
 		},
 
 		/* =========================================================
@@ -191,7 +200,7 @@ sap.ui.define([
 						title: "Warning",
 						type: DialogType.Message,
 						state: ValueState.Warning,
-						content: [new Label({ text: Utility.getText(this, "req_d_w_back") })],
+						content: [new Label({ text: Utility.getText("req_d_w_back") })],
 						beginButton: new Button({
 							type: ButtonType.Emphasized,
 							text: "Confirm",
@@ -220,7 +229,7 @@ sap.ui.define([
 			const sReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
 
 			if (!sEmpId || !sReqId) {
-				MessageToast.show(Utility.getText(this, "req_tm_w_emp_id_req_id_not_found"));
+				MessageToast.show(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 				return;
 			}
 
@@ -230,7 +239,7 @@ sap.ui.define([
 					type: DialogType.Message,
 					state: ValueState.Warning,
 					content: [
-						new Label({ text: Utility.getText(this, "req_d_w_delete") })
+						new Label({ text: Utility.getText("req_d_w_delete") })
 					],
 					beginButton: new Button({
 						type: ButtonType.Emphasized,
@@ -245,7 +254,7 @@ sap.ui.define([
 								// update status to CANCELLED
 								await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.CANCELLED);
 
-								MessageToast.show(Utility.getText(this, "req_tm_s_delete_request"));
+								MessageToast.show(Utility.getText("req_tm_s_delete_request"));
 								this.oDeleteDialog.close();
 
 								this._oRouter.navTo("RequestFormStatus");
@@ -282,7 +291,7 @@ sap.ui.define([
 			const sEmpId = this._oReqModel.getProperty("/user");
 
 			if (!sReqId || !sEmpId) {
-				MessageToast.show(Utility.getText(this, "req_tm_w_emp_id_req_id_not_found"));
+				MessageToast.show(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 				return;
 			}
 
@@ -290,7 +299,7 @@ sap.ui.define([
 				this.oSubmitDialog = new Dialog({
 					title: "Submit Request",
 					type: DialogType.Message,
-					content: [new Label({ text: Utility.getText(this, "req_d_w_submit") })],
+					content: [new Label({ text: Utility.getText("req_d_w_submit") })],
 					beginButton: new Button({
 						type: ButtonType.Emphasized,
 						text: "Submit",
@@ -299,11 +308,10 @@ sap.ui.define([
 								BusyIndicator.show(0);
 
 								// budget checking
-								// const aResult = budgetCheck.backendBudgetChecking(this, "REQ");
+								var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
+								var oErrorHandling = budgetCheck.budgetCheckHandling(aResult);
 
-								// budget checking error handling with aResult , wip
-
-								if (aResult != false) {
+								if (oErrorHandling.bCanProceed) {
 
 									// update status to PENDING APPROVAL
 									await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
@@ -315,7 +323,7 @@ sap.ui.define([
 									this._oRouter.navTo("RequestFormStatus");
 
 								} else {
-									MessageToast.show(Utility.getText(this, "req_tm_w_inform_cc_owner", [aResult.aErrors]));
+									MessageBox.show(Utility.getText("req_tm_w_inform_cc_owner", oErrorHandling.aClaimTypeItem));
 								}
 							} catch (e) {
 								MessageToast.show(e.message || "Submission failed");
@@ -340,12 +348,12 @@ sap.ui.define([
 		_showMustAddClaimDialog() {
 			if (!this._oAddClaimDialog) {
 				this._oAddClaimDialog = new Dialog({
-					title: Utility.getText(this, "req_d_w_missing_item"),
+					title: Utility.getText("req_d_w_missing_item"),
 					type: DialogType.Message,
 					state: ValueState.Warning,
 					content: [
 						new Label({
-							text: Utility.getText(this, "req_tm_w_submit"),
+							text: Utility.getText("req_tm_w_submit"),
 						})
 					],
 					beginButton: new Button({
@@ -443,7 +451,7 @@ sap.ui.define([
 			}
 
 			if (!oCtx) {
-				MessageToast.show(Utility.getText(this, "req_tm_w_select"));
+				MessageToast.show(Utility.getText("req_tm_w_select"));
 				return;
 			}
 
@@ -630,7 +638,7 @@ sap.ui.define([
 					const subId = String(row.REQUEST_SUB_ID || "").trim();
 
 					if (!reqId || !subId) {
-						sErrorMsg = Utility.getText(this, "req_tm_w_missing_reqid_reqsubid");
+						sErrorMsg = Utility.getText("req_tm_w_missing_reqid_reqsubid");
 						continue;
 					}
 
@@ -638,7 +646,7 @@ sap.ui.define([
 						await this._deleteItemCascade(reqId, subId);
 						aSuccessIdx.push(i);
 					} catch (e) {
-						sErrorMsg = e.message || Utility.getText(this, 'req_tm_w_delete_req_item');
+						sErrorMsg = e.message || Utility.getText('req_tm_w_delete_req_item');
 					}
 				}
 			} finally {
@@ -651,7 +659,7 @@ sap.ui.define([
 				});
 				this._oReqModel.setProperty("/req_item_rows", aRows);
 				this._oReqModel.setProperty("/list_count", aRows.length);
-				MessageToast.show(Utility.getText(this, 'req_tm_s_delete_req_item', [aSuccessIdx.length]));
+				MessageToast.show(Utility.getText('req_tm_s_delete_req_item', [aSuccessIdx.length]));
 			}
 
 			if (sErrorMsg) {
@@ -850,7 +858,7 @@ sap.ui.define([
 			}
 
 			if (aToDelete.length === 0) {
-				MessageToast.show(Utility.getText(this, "req_tm_w_select_participant"));
+				MessageToast.show(Utility.getText("req_tm_w_select_participant"));
 				return;
 			}
 
@@ -916,7 +924,7 @@ sap.ui.define([
 							});
 						})
 						.catch((e) => {
-							errorMsg = errorMsg || (e && e.message) || Utility.getText(this, "req_tm_w_delete_participant");
+							errorMsg = errorMsg || (e && e.message) || Utility.getText("req_tm_w_delete_participant");
 						});
 
 					deletePromises.push(pDel);
@@ -944,7 +952,7 @@ sap.ui.define([
 
 				this._oReqModel.setProperty("/participant", aRows);
 				oTable.clearSelection();
-				MessageToast.show(Utility.getText(this, "req_tm_s_delete_participant", [aSuccessIdx.length]));
+				MessageToast.show(Utility.getText("req_tm_s_delete_participant", [aSuccessIdx.length]));
 			}
 
 			if (errorMsg) {
@@ -991,8 +999,11 @@ sap.ui.define([
 			if (!oData.req_header.claimtype || !oReqItem.claim_type_item_id) return MessageToast.show("Select claim type/item");
 
 			// Eligibility Checking
-			// var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this);
-			// var oResult = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, oPayload);
+			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this);
+			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, oPayload);
+			var	bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload);
+
+			if (!bCanProceed) return;
 
 			BusyIndicator.show(0);
 
@@ -1838,36 +1849,40 @@ sap.ui.define([
 		* ======================================================= */
 
 		getFieldVisibility_ClaimTypeItem: async function (oEvent) {
-
 			const sClaimTypeItemFromSelect = oEvent?.getSource?.().getSelectedKey?.();
 			const sClaimTypeItemFromModel = this._oReqModel.getProperty("/req_item/claim_type_item_id");
 			const sClaimTypeItem = sClaimTypeItemFromSelect || sClaimTypeItemFromModel;
 
 			if (!sClaimTypeItem) {
-				console.warn("No req_type found yet.");
+				console.warn("No claim type item found yet.");
 				return;
 			}
 
-			const oListBinding = this._oDataModel.bindList("/ZDB_STRUCTURE", null, null, [
-				new Filter("SUBMISSION_TYPE", FilterOperator.EQ, "PREAPPROVAL_R"),
-				new Filter("COMPONENT_LEVEL", FilterOperator.EQ, "ITEM"),
-				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaimTypeItem)
-			]);
+			BusyIndicator.show(0);
 
 			try {
-				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const oListBinding = this._oDataModel.bindList("/ZDB_STRUCTURE", null, null, [
+					new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.RequestFieldVisibilityConfig.SUBMISSION_TYPE),
+					new Filter("COMPONENT_LEVEL", FilterOperator.EQ, this._oConstant.RequestFieldVisibilityConfig.ITEM),
+					new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaimTypeItem)
+				]);
+
+				const aCtx = await oListBinding.requestContexts(0, 1);
 
 				if (!aCtx || aCtx.length === 0) {
 					console.warn("No configuration rows for claim type item:", sClaimTypeItem);
 					this._setAllControlsVisible(false);
-					return;
+					return; 
 				}
+				
 				const oData = aCtx[0].getObject();
+				const sFields = oData.FIELD || "";
 
-				const aFieldIds = oData.FIELD.replace(/[\[\]\s]/g, "").split(",");
+				const aFieldIds = sFields.replace(/[\[\]\s]/g, "").split(",").filter(id => id.length > 0);
 
-				if (aFieldIds != []) {
-					this._setAllControlsVisible(false);
+				this._setAllControlsVisible(false);
+
+				if (aFieldIds.length > 0) {
 					aFieldIds.forEach(id => {
 						const control = this._resolveControl(id, "request");
 						if (control && typeof control.setVisible === "function") {
@@ -1876,15 +1891,14 @@ sap.ui.define([
 							console.warn("Control not found or not visible-capable:", id);
 						}
 					});
-					// calculate no of days
+					
 					this._calculateNumberOfDays();
-				} else {
-					this._setAllControlsVisible(false);
 				}
 
 			} catch (err) {
 				console.error("OData bindList failed:", err);
-				this._loadClaimTypeSelectionData(false);
+			} finally {
+				BusyIndicator.hide();
 			}
 		},
 

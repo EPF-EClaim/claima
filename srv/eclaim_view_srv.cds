@@ -918,4 +918,13 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 VALUE
         };
 
+    entity ZCLM_APPR_REQ_STAT_VIEW       as
+        projection on ECLAIM.ZCLM_APPR_REQ_STAT {
+            key EMP_ID,
+            key REQUEST_ID,
+                AMOUNT,
+                CLAIMED,
+                ZREQUEST_HEADER : Association to one ECLAIM_VIEW_SRV.ZEMP_REQUEST_VIEW
+                                      on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID
+        };
 };

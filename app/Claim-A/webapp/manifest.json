@@ -149,7 +149,7 @@
             },
             "routes": [
                 {
-                    "pattern": "Dashboard",
+                    "pattern": "",
                     "name": "Dashboard",
                     "target": "TargetDashboard"
                 },
