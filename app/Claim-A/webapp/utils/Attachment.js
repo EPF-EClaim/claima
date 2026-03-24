@@ -133,12 +133,7 @@ sap.ui.define([
 					type: "SFOData.cust_EPF_CLAIM_ATTACHMENTS" 
 				},
 				Claim_Sub_ID: reqSubID,
-				cust_EPF_CLAIM_ATTACHMENTS_Parent_Claim_ID: reqID,
-				cust_attachment1Nav: {
-					__metadata: {
-						uri: `Attachment('${attachment1}')`
-					}
-				}
+				cust_EPF_CLAIM_ATTACHMENTS_Parent_Claim_ID: reqID
 			};
 
 			if (hasAttachment1) {
