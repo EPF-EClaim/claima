@@ -5,9 +5,10 @@ sap.ui.define([
     "claima/utils/Utility",
     "sap/ui/model/json/JSONModel",
     "claima/utils/PARequestSharedFunction",
+    "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator"
 ],
-    (AppComponent, models, HashChanger, Utility, JSONModel, PARequestSharedFunction, FilterOperator) => {
+    (AppComponent, models, HashChanger, Utility, JSONModel, PARequestSharedFunction, Filter, FilterOperator) => {
         "use strict";
 
         return AppComponent.extend("claima.Component", {
