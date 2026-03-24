@@ -27,13 +27,11 @@
                                     size="25px"
                                 />
                                 <Title
-                                    level="H3"
                                     text="{i18n>nav_myreport}"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
                                 <Title
-                                    level="H3"
                                     text="{= ${dashboardModel>/claims}.length}"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
@@ -51,13 +49,11 @@
                                     size="25px"
                                 />
                                 <Title
-                                    level="H3"
                                     text="{i18n>nav_preappstatus}"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
                                 <Title
-                                    level="H3"
                                     text="{= ${dashboardModel>/requests}.length}"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
@@ -76,13 +72,11 @@
                                     size="25px"
                                 />
                                 <Title
-                                    level="H3"
                                     text="{i18n>approval}"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
                                 <Title
-                                    level="H3"
                                     text="{= ${dashboardModel>/approvals}.length }"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
@@ -108,7 +102,6 @@
                                         size="25px"
                                     />
                                     <Title
-                                        level="H3"
                                         text="{i18n>myexpensesreport} ({= ${dashboardModel>/claims}.length})"
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"
@@ -231,7 +224,6 @@
                                         size="25px"
                                     />
                                     <Title
-                                        level="H3"
                                         text="{i18n>myrequest} ({= ${dashboardModel>/requests}.length})"
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"
@@ -351,7 +343,6 @@
                                         size="25px"
                                     />
                                     <Title
-                                        level="H3"
                                         text="{i18n>approval} ({= ${dashboardModel>/approvals}.length })"
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"

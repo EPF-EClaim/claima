@@ -13,7 +13,6 @@
             <!-- Claim Header -->
             <Title
                 text="{i18n>title_claimsummary_claimheader}"
-                titleStyle="H3"
             />
 
             <!-- space -->
@@ -32,7 +31,7 @@
             <Button
                 type="Default"
                 icon="sap-icon://excel-attachment"
-                text="Download Details"
+                text="{i18n>downloaddetails}"
                 id="btnExcelDownload2"
                 press=".onDownloadExcelReport"
             />

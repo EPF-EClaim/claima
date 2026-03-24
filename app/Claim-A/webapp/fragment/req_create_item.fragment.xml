@@ -14,7 +14,7 @@
         rowGap="1rem">
         <VBox width="100%" height="100%" rowGap="1rem">
             <OverflowToolbar height="3rem">
-                <Title text="{i18n>req_form_detail_title}" titleStyle="H4" />
+                <Title text="{i18n>req_form_detail_title}"/>
                 <ToolbarSpacer />
                 <MenuButton text="{i18n>req_b_save_request}" 
                     buttonMode="Split" 
@@ -799,7 +799,7 @@
                 
                 <VBox rowGap="0.5rem">
                     <OverflowToolbar height="3rem">
-                        <Title text="{i18n>req_participant}" titleStyle="H4" />
+                        <Title text="{i18n>req_participant}"/>
                         <ToolbarSpacer />
                         <Button text="{i18n>req_b_download_template}" press=".onExport"></Button>
                         <unified:FileUploader

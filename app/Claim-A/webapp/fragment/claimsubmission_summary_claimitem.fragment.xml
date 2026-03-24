@@ -20,7 +20,6 @@
 						{path:'claimsubmission_input>/claim_items_count'}
 					], 
 					formatter:'jQuery.sap.formatMessage'}"
-                titleStyle="H3"
             />
 
             <!-- space -->

@@ -25,7 +25,7 @@
             <OverflowToolbar   
                 height="3rem"
                 style="Clear">
-                <m:Title text="{i18n>req_form_detail_title} ({= ${request>/list_count} })" titleStyle="H3" />
+                <m:Title text="{i18n>req_form_detail_title} ({= ${request>/list_count} })"/>
                 <m:ToolbarSpacer />
                 <m:Button text="{i18n>req_b_create_item}"   type="Emphasized"   press=".onAddItem"          enabled="{= ${request>/view} === 'list' }" />
                 <m:Button text="{i18n>req_b_delete}"        type="Default"      press=".onRowDeleteReqItem" enabled="{= ${request>/view} === 'list' }" />

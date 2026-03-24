@@ -35,12 +35,12 @@
                     class="roundedBox sapUiSmallMargin sapUiTinyMarginBottom"
                     rowGap="1rem">
                     <OverflowToolbar height="3rem">
-                        <Title text="{i18n>req_form_header_title}" titleStyle="H3"/>
+                        <Title text="{i18n>req_form_header_title}"/>
                         <ToolbarSpacer/>
                         <Button
                             type="Default"
                             icon="sap-icon://excel-attachment"
-                            text="Download Details"
+                            text="{i18n>downloaddetails}"
                             id="PARDownloadExcelBtn"
                             press=".onDownloadExcelReport"
                         />
