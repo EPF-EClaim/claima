@@ -836,7 +836,7 @@ sap.ui.define([
 						}
 						break;
 				}
-			}else if(oInputModel.getProperty("/claimtype/category") ==  'ST0001'){
+			}else if(oInputModel.getProperty("/claimtype/category") ==  this._oConstant.SubmissionType.DIRECT_CLAIM){
 				this.byId("fileuploader_claiminput_attachment").setEnabled(false);
 				this.byId("fileuploader_claiminput_attachment").setVisible(false);
 			}

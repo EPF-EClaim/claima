@@ -170,6 +170,9 @@ sap.ui.define([
             "SUBMISSION_TYPE"   : "PREAPPROVAL_R",
             "HEADER"            : "HEADER",
             "ITEM"              : "ITEM" 
+        },
+        "SubmissionType":{
+            "DIRECT_CLAIM" : "ST0001"
         }
 
     }
