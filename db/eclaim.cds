@@ -1236,7 +1236,7 @@ entity ZELIGIBILITY_RULE : managed {
         RATE                      : Decimal(5, 2)  @Common.Label: 'Rate';
         MARRIAGE_CATEGORY         : String(2)      @Common.Label: 'Marriage Category';
         FLIGHT_CLASS_ID           : String         @Common.Label: 'Flight Class';
-        HOTEL_LODGING_ID          : String(2)      @Common.Label: 'Hotel/Lodjing';
+        HOTEL_LODGING_ID          : String(2)      @Common.Label: 'Hotel/Lodging';
         TRANSPORT_CLASS           : String(2)      @Common.Label: 'Train/Boat Class';
         TRANSPORT_PASSING_ID      : String(2)      @Common.Label: 'Transportation of The Passing (Dead)';
         INSURANCE_PACKAGE_ID      : String(2)      @Common.Label: 'Insurance Package';

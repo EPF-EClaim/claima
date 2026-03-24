@@ -4,10 +4,10 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"claima/utils/Utility",
 	"sap/m/MessageBox",
-	"claima/utils/claimstatus",
+	"claima/utils/Request",
 	"claima/utils/claim",
 	"claima/utils/MyApproval"
-], (Controller, JSONModel, Sorter, Utility, MessageBox, claimstatus, claim, MyApproval) => {
+], (Controller, JSONModel, Sorter, Utility, MessageBox, Request, claim, MyApproval) => {
 	"use strict";
 
 	return Controller.extend("claima.controller.dashboard", {
@@ -79,7 +79,7 @@ sap.ui.define([
 		},
 
 		async openItemFromList(oEvent) {
-			claimstatus.onRowPress({
+			Request.onRowPress({
 				controller: this,
 				event: oEvent,
 				keyProp: "REQUEST_ID",
