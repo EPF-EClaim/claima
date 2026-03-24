@@ -54,6 +54,7 @@ sap.ui.define([
 			this._oViewModel 		= this.getOwnerComponent().getModel('employee_view');
 			this._oReqModel			= this.getOwnerComponent().getModel('request');
 			this._oReqStatusModel 	= this.getOwnerComponent().getModel("request_status");
+			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
 			
 			// oReportModel
 			var oReportModel = new JSONModel({
@@ -400,7 +401,7 @@ sap.ui.define([
 			// set new claim submission model;
 			var oInputModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 			//// set employee data
-			var oUserModelData = this.getView().getModel('user')?.getData() || this.getView().getModel("userId")?.getData() || null;
+			var oUserModelData = this.getView().getModel('user')?.getData() || this._oSessionModel?.getData() || null;
 			if (!oUserModelData) {
 				MessageToast.show(Utility.getText("msg_claimprocess_nouser"));
 				if (this.oDialog_ClaimProcess) {
@@ -769,7 +770,6 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var lastModifiedDate = this._getJsonDate(new Date());
 			oInputModel.setProperty("/is_new", true);
-			oInputModel.setProperty("/claim_header/emp_id", oInputModel.getProperty("/emp_master/eeid"));
 			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 			oInputModel.setProperty("/claim_header/claim_type_id", oInputModel.getProperty("/claimtype/type"));
 			oInputModel.setProperty("/claim_header/submission_type", oInputModel.getProperty("/claimtype/category"));
@@ -918,7 +918,7 @@ sap.ui.define([
 				var attachmentNumber = await Attachment.postAttachment(
 					oInputModel.getProperty("/attachment/fileName"),
 					oInputModel.getProperty("/attachment/fileContent"),
-					oInputModel.getProperty("/claim_header/emp_id")
+					this._oSessionModel.getProperty("/userId")
 				);
 				if (attachmentNumber) {
 					oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
@@ -995,7 +995,7 @@ sap.ui.define([
 
 			// set body for update
 			var oBody = new JSONModel({
-				EMP_ID: oInputModel.getProperty("/claim_header/emp_id"),
+				EMP_ID: this._oSessionModel.getProperty("/userId"),
 				PURPOSE: oInputModel.getProperty("/claim_header/purpose"),
 				TRIP_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")),
 				TRIP_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")),
@@ -1424,7 +1424,7 @@ sap.ui.define([
 		createRequestHeader: async function (oInputData) {
 			const oListBinding  = this._oDataModel.bindList("/ZREQUEST_HEADER");
 
-			let sEmpId          = this._oReqModel.getProperty("/user/emp_id");
+			let sEmpId          = this._oSessionModel.getProperty("/userId");
 			let sCostCenter     = this._oReqModel.getProperty("/user/cost_center");
 
 			try {

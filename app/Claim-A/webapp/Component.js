@@ -47,13 +47,14 @@ sap.ui.define([
                 this._loadCurrentUser();
 
                 const oModel = this.getModel();
-                const ctx = oModel.bindContext("/getUserType()");
-                ctx.requestObject().then(oData => {
+                const oUserTypeContext = oModel.bindContext("/getUserType()");
+                oUserTypeContext.requestObject().then(oData => {
                     var oSessionModel = this.getModel("session");
                     const sName = oData.name || "";
                     const sPosition = oData.position;
                     const sInitials = sName.substring(0, 2).toUpperCase();
                     oSessionModel.setProperty("/userId", oData.userId || "UNKNOWN");
+                    oSessionModel.setProperty("/email", oData.id);
                     oSessionModel.setProperty("/initials", sInitials);
                     oSessionModel.setProperty("/userName", sName);
                     oSessionModel.setProperty("/position", sPosition);
@@ -62,20 +63,6 @@ sap.ui.define([
                     oSessionModel.setProperty("/origin", oData.origin);
                     oSessionModel.setProperty("/userType", oData.userType || "UNKNOWN");
                     oSessionModel.setProperty("/costCenters", oData.costcenters || "UNKNOWN");
-
-                    // save userId to model
-                    this.getModel("userId").setData({
-                        "userId": oData.userId,
-                        "email": oData.id
-                    });
-
-                    // Redundant user access model, to be deleted after references have been moved
-                    const _oUserAccessModel = new JSONModel({
-                        userType: oData.userType || "UNKNOWN",
-                        costcenters: oData.costcenters || "UNKNOWN",
-                        userId: oData.userId || "UNKNOWN", // 08/03/2026 - Added to fetch emp id
-                    });
-                    this.setModel(_oUserAccessModel, "access");
                 }).catch(err => {
                     console.error("getUserType failed:", err);
                 });

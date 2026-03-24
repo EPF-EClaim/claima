@@ -130,7 +130,7 @@
                                         mode="SingleSelectMaster"
                                         inset="false"
                                         fixedLayout="true"
-                                        itemPress="onRowPress"
+                                        itemPress="onClaimSubmissionItemPress"
                                     >
                                         <columns>
                                             <Column demandPopin="true">
@@ -250,7 +250,7 @@
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
                                         mode="SingleSelectMaster"
-                                        itemPress="openItemFromList"
+                                        itemPress="onRequestFormItemPress"
                                     >
                                         <columns>
                                             <Column demandPopin="true">
@@ -369,7 +369,7 @@
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
                                         mode="SingleSelectMaster"
-                                        itemPress="openApprovalList"
+                                        itemPress="onOpenApprovalListItemPress"
                                     >
                                         <columns>
                                             <Column demandPopin="true">
