@@ -417,9 +417,9 @@ sap.ui.define([
 			if (aIndividual.includes(sHeaderGrpType)) {
 
 				oReqData.participant = [{
-					PARTICIPANTS_ID: oReqData.user.emp_id,
-					PARTICIPANT_NAME: oReqData.user.name,
-					PARTICIPANT_COST_CENTER: oReqData.user.cost_center,
+					PARTICIPANTS_ID: this._oSessionModel.getProperty("/userId"),
+					PARTICIPANT_NAME: this._oSessionModel.getProperty("/userName"),
+					PARTICIPANT_COST_CENTER: this._oSessionModel.getProperty("/costCenters"),
 					ALLOCATED_AMOUNT: ""
 				}];
 			} else {

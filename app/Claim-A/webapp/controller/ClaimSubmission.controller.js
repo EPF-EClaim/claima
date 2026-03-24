@@ -2629,8 +2629,8 @@ sap.ui.define([
 				new Filter("LOCATION", FilterOperator.EQ, oInputModel.getProperty("/claim_item/region")),
 				new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_id")),
 				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_item_id")),
-				new Filter("EFFECTIVE_START_DATE", FilterOperator.LE, this._getHanaDate(this.byId(startDate).getValue())),
-				new Filter("EFFECTIVE_END_DATE", FilterOperator.GE, this._getHanaDate(this.byId(endDate).getValue()))
+				new Filter("START_DATE", FilterOperator.LE, this._getHanaDate(this.byId(startDate).getValue())),
+				new Filter("END_DATE", FilterOperator.GE, this._getHanaDate(this.byId(endDate).getValue()))
 			]);
 
 			try {
