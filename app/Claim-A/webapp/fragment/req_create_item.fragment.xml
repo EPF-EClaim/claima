@@ -783,14 +783,6 @@
                                             visible="false"
                                             id="i_cash_adv" >
                                     <form:fields>
-                                        <!-- <m:Select 
-                                            selectedKey="{request>/req_item/cash_advance}" 
-                                            enabled="{= ${request>/view} !== 'view' }">
-                                            <items>
-                                                <core:Item key="false" text="No"/>
-                                                <core:Item key="true" text="Yes"/>
-                                            </items>
-                                        </m:Select> -->
                                         <Switch state="{request>/req_item/cash_advance}" customTextOn="Yes" customTextOff="No">
                                             <layoutData>
                                                 <FlexItemData growFactor="1" />

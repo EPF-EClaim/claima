@@ -975,8 +975,8 @@ sap.ui.define([
 				}
 
 				if (oReqItem.cash_advance) {
-					oReqItem.cost_center 	= "100000000";
-					oReqItem.gl_account		= "214005"
+					oReqItem.cost_center 	= this._oConstant.cashAdvanceInfo.COST_CENTER;
+					oReqItem.gl_account		= this._oConstant.cashAdvanceInfo.GL_ACCOUNT;
 				} else {
 					oReqItem.cost_center 	= oReqHeader.altcostcenter || oReqHeader.costcenter;
 					oReqItem.gl_account		= await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
