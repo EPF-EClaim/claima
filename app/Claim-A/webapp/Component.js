@@ -109,7 +109,7 @@ sap.ui.define([
                         if (email && typeof email === 'string' && email.trim() !== '') {
                             // (Optional) set a model if your view needs it
                             var oUserModel = new JSONModel({ email: email });
-                            this.getView().setModel(oUserModel, 'user');
+                            this.setModel(oUserModel, 'user');
 
                             const emp_data = await this._getEmpIdDetail(email);
                             this._oReqModel.setProperty("/user", { 
