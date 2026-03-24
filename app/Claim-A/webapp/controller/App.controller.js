@@ -69,8 +69,6 @@ sap.ui.define([
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
 
-			PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
-
 			const bIsLocal = window.location.hostname.includes("port4004") || 
 							window.location.hostname.includes("applicationstudio.cloud.sap");
 			if (bIsLocal) {
@@ -811,6 +809,8 @@ sap.ui.define([
 						oInputModel.setProperty("/claim_header/descr/request_id", Utility.getText("text_claiminput_preapprovalreq_email"));
 
 						// require attachment email approval
+						this.byId("fileuploader_claiminput_attachment").setEnabled(true);
+						this.byId("fileuploader_claiminput_attachment").setVisible(true);
 						this.byId("fileuploader_claiminput_attachment").setRequired(true);
 						break;
 					default:
@@ -836,6 +836,9 @@ sap.ui.define([
 						}
 						break;
 				}
+			}else if(oInputModel.getProperty("/claimtype/category") ==  this._oConstant.SubmissionType.DIRECT_CLAIM){
+				this.byId("fileuploader_claiminput_attachment").setEnabled(false);
+				this.byId("fileuploader_claiminput_attachment").setVisible(false);
 			}
 		},
 

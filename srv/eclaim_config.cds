@@ -4251,3 +4251,74 @@ annotate service.ZELIGIBILITY_RULE with @(
     }
 );
 
+annotate service.ZCONSTANTS with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [ID, VALUE],
+    Capabilities                   : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                             : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Constants Value Table Maintenance - ZCONSTANTS',
+            TypeNamePlural: 'Constants Value Table Maintenance - ZCONSTANTS',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Constants ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VALUE,
+                ![@UI.Importance]: #High,
+                Label            : 'Constants Value'
+            }
+        ]
+    }
+);
+annotate service.ZROLEHIERARCHY with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [ROLE],
+    Capabilities                   : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                             : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Employee Role Hierarchy Table - ZROLEHIERARCHY',
+            TypeNamePlural: 'Employee Role Hierarchy Table - ZROLEHIERARCHY',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : ROLE,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Role'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RANK,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Rank'
+            }
+        ]
+    }
+);
+

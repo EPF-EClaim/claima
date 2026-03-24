@@ -267,7 +267,11 @@ module.exports = (srv) => {
 
                 if (!budgetRecord) {
                     error = true;
-                    errorResults.push({ ...condition, STATUS: Constant.BudgetCheckStatus.NOT_FOUND });
+                    errorResults.push({ 
+                        ...condition, 
+                        STATUS: Constant.BudgetCheckStatus.NOT_FOUND,
+                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
+                    });
                     continue;
                 }
 
