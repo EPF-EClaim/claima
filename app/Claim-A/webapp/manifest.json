@@ -610,6 +610,16 @@
                     "pattern": "Configuration_GA",
                     "name": "Configuration_GA",
                     "target": "Configuration_GA"
+                },
+                {
+                    "pattern": "ZCONSTANTS",
+                    "name": "ZCONSTANTS",
+                    "target": "ZCONSTANTS"
+                },
+                {
+                    "pattern": "ZROLEHIERARCHY",
+                    "name": "ZROLEHIERARCHY",
+                    "target": "ZROLEHIERARCHY"
                 }
             ],
             "targets": {
@@ -5004,6 +5014,142 @@
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
                                             "visible": true,
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZCONSTANTS": {
+                    "type": "Component",
+                    "id": "ZCONSTANTS",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZCONSTANTS",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "ID,VALUE"
+                                        },
+                                        "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZROLEHIERARCHY": {
+                    "type": "Component",
+                    "id": "ZROLEHIERARCHY",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZROLEHIERARCHY",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "ROLE,RANK"
+                                        },
+                                        "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
