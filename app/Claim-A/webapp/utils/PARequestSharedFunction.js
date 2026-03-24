@@ -14,7 +14,7 @@ sap.ui.define([
 		_ensureRequestModelDefaults (oReq) {
 			const data = oReq.getData() || {};
 			data.req_header = data.req_header;
-			data.req_item_rows = data.req_item_rows || [];
+			data.req_item_rows = [];
 			data.req_item = data.req_item || {
 				cash_advance: false
 			};

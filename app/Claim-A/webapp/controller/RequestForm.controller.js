@@ -103,7 +103,9 @@ sap.ui.define([
 		async _loadRequest(sReqId) {
 			await PARequestSharedFunction._getHeader(this, sReqId);
 			await PARequestSharedFunction._getItemList(this, sReqId);
-			await this._showItemList(sReqId);
+			this._showItemList(sReqId);
+
+			MessageToast.show(Utility.getText("prereq"));
 		},
 
 		/* =========================================================
@@ -189,7 +191,7 @@ sap.ui.define([
 						title: "Warning",
 						type: DialogType.Message,
 						state: ValueState.Warning,
-						content: [new Label({ text: Utility.getText(this, "req_d_w_back") })],
+						content: [new Label({ text: Utility.getText("req_d_w_back") })],
 						beginButton: new Button({
 							type: ButtonType.Emphasized,
 							text: "Confirm",
@@ -218,7 +220,7 @@ sap.ui.define([
 			const sReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
 
 			if (!sEmpId || !sReqId) {
-				MessageToast.show(Utility.getText(this, "req_tm_w_emp_id_req_id_not_found"));
+				MessageToast.show(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 				return;
 			}
 
@@ -228,7 +230,7 @@ sap.ui.define([
 					type: DialogType.Message,
 					state: ValueState.Warning,
 					content: [
-						new Label({ text: Utility.getText(this, "req_d_w_delete") })
+						new Label({ text: Utility.getText("req_d_w_delete") })
 					],
 					beginButton: new Button({
 						type: ButtonType.Emphasized,
@@ -238,10 +240,12 @@ sap.ui.define([
 								this.oDeleteDialog.getBeginButton().setEnabled(false);
 								BusyIndicator.show(0);
 
-								// update status to CANCELLED
-								await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.CANCELLED);
+								const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
 
-								MessageToast.show(Utility.getText(this, "req_tm_s_delete_request"));
+								// update status to CANCELLED
+								await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.CANCELLED);
+
+								MessageToast.show(Utility.getText("req_tm_s_delete_request"));
 								this.oDeleteDialog.close();
 
 								this._oRouter.navTo("RequestFormStatus");
@@ -278,7 +282,7 @@ sap.ui.define([
 			const sEmpId = this._oReqModel.getProperty("/user");
 
 			if (!sReqId || !sEmpId) {
-				MessageToast.show(Utility.getText(this, "req_tm_w_emp_id_req_id_not_found"));
+				MessageToast.show(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 				return;
 			}
 
@@ -286,7 +290,7 @@ sap.ui.define([
 				this.oSubmitDialog = new Dialog({
 					title: "Submit Request",
 					type: DialogType.Message,
-					content: [new Label({ text: Utility.getText(this, "req_d_w_submit") })],
+					content: [new Label({ text: Utility.getText("req_d_w_submit") })],
 					beginButton: new Button({
 						type: ButtonType.Emphasized,
 						text: "Submit",
@@ -295,7 +299,7 @@ sap.ui.define([
 								BusyIndicator.show(0);
 
 								// budget checking
-								const aResult = budgetCheck.backendBudgetChecking(this);
+								// const aResult = budgetCheck.backendBudgetChecking(this, "REQ");
 
 								// budget checking error handling with aResult , wip
 
@@ -308,11 +312,10 @@ sap.ui.define([
 									// Add in onPARApproverDetermination function
 									workflowApproval.onPARApproverDetermination(this._oDataModel, sReqId, this._oViewModel);
 
-									await PARequestSharedFunction.getPARHeaderList(this._oReqStatusModel, this._oViewModel);
 									this._oRouter.navTo("RequestFormStatus");
 
 								} else {
-									MessageToast.show(Utility.getText(this, "req_tm_w_inform_cc_owner", [aResult.aErrors]));
+									MessageToast.show(Utility.getText("req_tm_w_inform_cc_owner", [aResult.aErrors]));
 								}
 							} catch (e) {
 								MessageToast.show(e.message || "Submission failed");
@@ -337,12 +340,12 @@ sap.ui.define([
 		_showMustAddClaimDialog() {
 			if (!this._oAddClaimDialog) {
 				this._oAddClaimDialog = new Dialog({
-					title: Utility.getText(this, "req_d_w_missing_item"),
+					title: Utility.getText("req_d_w_missing_item"),
 					type: DialogType.Message,
 					state: ValueState.Warning,
 					content: [
 						new Label({
-							text: Utility.getText(this, "req_tm_w_submit"),
+							text: Utility.getText("req_tm_w_submit"),
 						})
 					],
 					beginButton: new Button({
@@ -440,7 +443,7 @@ sap.ui.define([
 			}
 
 			if (!oCtx) {
-				MessageToast.show(Utility.getText(this, "req_tm_w_select"));
+				MessageToast.show(Utility.getText("req_tm_w_select"));
 				return;
 			}
 
@@ -627,7 +630,7 @@ sap.ui.define([
 					const subId = String(row.REQUEST_SUB_ID || "").trim();
 
 					if (!reqId || !subId) {
-						sErrorMsg = Utility.getText(this, "req_tm_w_missing_reqid_reqsubid");
+						sErrorMsg = Utility.getText("req_tm_w_missing_reqid_reqsubid");
 						continue;
 					}
 
@@ -635,7 +638,7 @@ sap.ui.define([
 						await this._deleteItemCascade(reqId, subId);
 						aSuccessIdx.push(i);
 					} catch (e) {
-						sErrorMsg = e.message || Utility.getText(this, 'req_tm_w_delete_req_item');
+						sErrorMsg = e.message || Utility.getText('req_tm_w_delete_req_item');
 					}
 				}
 			} finally {
@@ -648,7 +651,7 @@ sap.ui.define([
 				});
 				this._oReqModel.setProperty("/req_item_rows", aRows);
 				this._oReqModel.setProperty("/list_count", aRows.length);
-				MessageToast.show(Utility.getText(this, 'req_tm_s_delete_req_item', [aSuccessIdx.length]));
+				MessageToast.show(Utility.getText('req_tm_s_delete_req_item', [aSuccessIdx.length]));
 			}
 
 			if (sErrorMsg) {
@@ -847,7 +850,7 @@ sap.ui.define([
 			}
 
 			if (aToDelete.length === 0) {
-				MessageToast.show(Utility.getText(this, "req_tm_w_select_participant"));
+				MessageToast.show(Utility.getText("req_tm_w_select_participant"));
 				return;
 			}
 
@@ -913,7 +916,7 @@ sap.ui.define([
 							});
 						})
 						.catch((e) => {
-							errorMsg = errorMsg || (e && e.message) || Utility.getText(this, "req_tm_w_delete_participant");
+							errorMsg = errorMsg || (e && e.message) || Utility.getText("req_tm_w_delete_participant");
 						});
 
 					deletePromises.push(pDel);
@@ -941,7 +944,7 @@ sap.ui.define([
 
 				this._oReqModel.setProperty("/participant", aRows);
 				oTable.clearSelection();
-				MessageToast.show(Utility.getText(this, "req_tm_s_delete_participant", [aSuccessIdx.length]));
+				MessageToast.show(Utility.getText("req_tm_s_delete_participant", [aSuccessIdx.length]));
 			}
 
 			if (errorMsg) {
@@ -957,12 +960,10 @@ sap.ui.define([
 			this.onSave();
 		},
 
-		async onSaveAddAnother() {
-			await this.onSave(); // saves current
-			// Re-open create form fresh
-			await this._showItemCreate("create");
-
-			// Reset create buffers
+		async onSaveAddAnother(oEvent) {
+			await this.onSave(oEvent, true);
+			
+			this._setAllControlsVisible(false);
 			const oData = this._oReqModel.getData();
 			oData.req_item = {};
 			if (oData.req_header.grptype === 'Individual') {
@@ -979,7 +980,7 @@ sap.ui.define([
 			this._oReqModel.setData(oData);
 		},
 		
-		async onSave() {
+		async onSave(oEvent, bAddAnother = false) {
 			const oData = this._oReqModel.getData();
 			const oReqItem = oData.req_item;
 			const sReqId = String(oData.req_header.reqid || "").trim();
@@ -990,8 +991,8 @@ sap.ui.define([
 			if (!oData.req_header.claimtype || !oReqItem.claim_type_item_id) return MessageToast.show("Select claim type/item");
 
 			// Eligibility Checking
-			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this);
-			var oResult = EligibleScenarioCheck.onEligibilityCheck(this, oPayload);
+			// var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this);
+			// var oResult = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, oPayload);
 
 			BusyIndicator.show(0);
 
@@ -1115,8 +1116,10 @@ sap.ui.define([
                 }
 
                 MessageToast.show("Success");
-                await PARequestSharedFunction._getItemList(this, sReqId);
-                this._showItemList();
+				if (!bAddAnother) {
+					await PARequestSharedFunction._getItemList(this, sReqId);
+					this._showItemList();
+				}
 
 			} catch (e) {
 				MessageBox.error(e.message || "Save failed");
