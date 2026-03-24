@@ -1551,22 +1551,42 @@ sap.ui.define([
 		},
 
 		_loadClaimTypeSelectionData: function (sReqType) {
-			if (sReqType) {
-				this._oReqModel.setProperty('/req_header/claim_type', "");
-				const oListBinding = this._oDataModel.bindList("/ZCLAIM_TYPE", null, null, [
-					new Filter("REQUEST_TYPE", FilterOperator.EQ, sReqType)
-				]);
+			if (!sReqType) return;
 
-				oListBinding.requestContexts().then((aContexts) => {
-					const aData = aContexts.map(oCtx => oCtx.getObject());
-					const oTypeModel = new JSONModel({ types: aData });
-					this.getView().setModel(oTypeModel, "claim_type_list");
-				}).catch(err => console.error("ClaimType Load Failed", err));
+			if (this.oDialogFragment) {
+				const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+				if (oDialogModel) {
+					oDialogModel.setProperty('/claimtype', "");
+				}
+			} else {
+				this._oReqModel.setProperty('/req_header/claimtype', ""); 
 			}
+
+			const oSelect = Fragment.byId("request", "req_claimtype");
+			
+			if (oSelect) {
+				oSelect.setForceSelection(false);
+				oSelect.setSelectedKey("");
+			}
+
+			const oListBinding = this._oDataModel.bindList("/ZCLAIM_TYPE", null, null, [
+				new Filter("REQUEST_TYPE", FilterOperator.EQ, sReqType)
+			]);
+
+			oListBinding.requestContexts().then((aContexts) => {
+				const aData = aContexts.map(oCtx => oCtx.getObject());
+				const oTypeModel = new JSONModel({ types: aData });
+				
+				if (this.oDialogFragment) {
+					this.oDialogFragment.setModel(oTypeModel, "claim_type_list");
+				} else {
+					this.getView().setModel(oTypeModel, "claim_type_list");
+				}
+				
+			}).catch(err => console.error("ClaimType Load Failed", err));
 		},
 
 		getFieldVisibility_ReqType: async function (oEvent) {
-
 			const sReqType = oEvent?.getSource?.().getSelectedKey?.();
 
 			if (!sReqType) {
@@ -1574,26 +1594,31 @@ sap.ui.define([
 				return;
 			}
 
-			const oListBinding = this._oDataModel.bindList("/ZDB_STRUCTURE", null, null, [
-				new sap.ui.model.Filter("SUBMISSION_TYPE", "EQ", "PREAPPROVAL_R"),
-				new sap.ui.model.Filter("COMPONENT_LEVEL", "EQ", "HEADER"),
-				new sap.ui.model.Filter("REQUEST_TYPE_ID", "EQ", sReqType)
-			]);
+			BusyIndicator.show(0);
 
 			try {
-				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const oListBinding = this._oDataModel.bindList("/ZDB_STRUCTURE", null, null, [
+					new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.RequestFieldVisibilityConfig.SUBMISSION_TYPE),
+					new Filter("COMPONENT_LEVEL", FilterOperator.EQ, this._oConstant.RequestFieldVisibilityConfig.HEADER),
+					new Filter("REQUEST_TYPE_ID", FilterOperator.EQ, sReqType)
+				]);
+
+				const aCtx = await oListBinding.requestContexts(0, 1);
 
 				if (!aCtx || aCtx.length === 0) {
 					console.warn("No configuration rows for req_type:", sReqType);
 					this._setAllHeaderControlsVisible(false);
 					return;
 				}
+				
 				const oData = aCtx[0].getObject();
+				const sFields = oData.FIELD || "";
 
-				const aFieldIds = oData.FIELD.replace(/[\[\]\s]/g, "").split(",");
+				const aFieldIds = sFields.replace(/[\[\]\s]/g, "").split(",").filter(id => id.length > 0);
 
-				if (aFieldIds != []) {
-					this._setAllHeaderControlsVisible(false);
+				this._setAllHeaderControlsVisible(false);
+
+				if (aFieldIds.length > 0) {
 					aFieldIds.forEach(id => {
 						const control = this._resolveControl(id, "request");
 						if (control && typeof control.setVisible === "function") {
@@ -1602,8 +1627,6 @@ sap.ui.define([
 							console.warn("Control not found or not visible-capable:", id);
 						}
 					});
-				} else {
-					this._setAllHeaderControlsVisible(false);
 				}
 
 				this._loadClaimTypeSelectionData(sReqType);
@@ -1611,6 +1634,8 @@ sap.ui.define([
 			} catch (err) {
 				console.error("OData bindList failed:", err);
 				this._setAllHeaderControlsVisible(false);
+			} finally {
+				BusyIndicator.hide();
 			}
 		},
 
