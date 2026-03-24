@@ -2166,8 +2166,7 @@ sap.ui.define([
 					var attachmentNumber = await Attachment.postAttachment(
 					oInputModel.getProperty("/attachments/attachment1/fileName"),
 					oInputModel.getProperty("/attachments/attachment1/fileContent"),
-					"1002200"
-					//oInputModel.getProperty("/claim_item/emp_id")
+					oInputModel.getProperty("/claim_item/emp_id")
 					);
 
 					if (attachmentNumber) {
@@ -2192,8 +2191,7 @@ sap.ui.define([
 				var attachmentNumber = await Attachment.postAttachment(
 					oInputModel.getProperty("/attachments/attachment2/fileName"),
 					oInputModel.getProperty("/attachments/attachment2/fileContent"),
-					"1002200"
-					//oInputModel.getProperty("/claim_item/emp_id")
+					oInputModel.getProperty("/claim_item/emp_id")
 				);
 				if (attachmentNumber) {
 					oInputModel.setProperty("/claim_item/attachment_file_2", attachmentNumber);
