@@ -978,8 +978,8 @@ sap.ui.define([
 				}
 
 				if (oReqItem.cash_advance) {
-					oReqItem.cost_center 	= this._oConstant.cashAdvanceInfo.COST_CENTER;
-					oReqItem.gl_account		= this._oConstant.cashAdvanceInfo.GL_ACCOUNT;
+					oReqItem.cost_center 	= this._oConstant.CashAdvanceInfo.COST_CENTER;
+					oReqItem.gl_account		= this._oConstant.CashAdvanceInfo.GL_ACCOUNT;
 				} else {
 					oReqItem.cost_center 	= oReqHeader.altcostcenter || oReqHeader.costcenter;
 					oReqItem.gl_account		= await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
