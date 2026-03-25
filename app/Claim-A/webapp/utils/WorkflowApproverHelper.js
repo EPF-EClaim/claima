@@ -458,7 +458,7 @@ sap.ui.define([
             await oModel.getMetaModel().requestObject("/");
 
             // Main table path
-            const sSubstitutionRulesTablePath = Constants.Entities.ZEMP_SUBSTITUTION_RULES;
+            const sSubstitutionRulesTablePath = Constants.Entities.ZEMP_SUBSTITUTION_RULE;
 
             // Convert to ISO date string (YYYY-MM-DD)
             const sToday = dDate.toISOString().split("T")[0];
