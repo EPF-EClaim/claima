@@ -130,19 +130,7 @@ sap.ui.define([
 				this._onNavBack();
 			}
 
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			// set view-only
-			// TODO: Revisit to make sure the claim is reloaded everytime
-			if (
-				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
-				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
-			) {
-				oClaimSubmissionModel.setProperty("/view_only", true)
-			}
-			else {
-				oClaimSubmissionModel.setProperty("/view_only", false)
-			}
-			
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");			
 			if (!oClaimSubmissionModel) {
 				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 				await this._loadClaimById(String(sClaimId));
@@ -159,6 +147,17 @@ sap.ui.define([
 					MessageToast.show(Utility.getText("msg_claimsubmission_missing", [sClaimId]))
 					this._onNavBack();
 				}
+			}
+			// set view-only
+			// TODO: Revisit to make sure the claim is reloaded everytime
+			if (
+				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
+				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
+			) {
+				oClaimSubmissionModel.setProperty("/view_only", true)
+			}
+			else {
+				oClaimSubmissionModel.setProperty("/view_only", false)
 			}
 
 			// load form fragments
