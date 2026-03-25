@@ -488,14 +488,14 @@
             <Toolbar design="Solid" class="sapUiTinyMargin">
                 <ToolbarSpacer />
                 <Button
+                    id="btnCloseAnalytics_req"
+                    text="{i18n>back}"
+                    press=".onBackFromAnalyticsClaimReport" />
+                <Button
                     id="btnExportAnalytics_req"
                     text="{i18n>export}"
                     type="Emphasized"
                     press=".onExportAnalyticsReport" />
-                <Button
-                    id="btnCloseAnalytics_req"
-                    text="{i18n>back}"
-                    press=".onBackFromAnalyticsClaimReport" />
             </Toolbar>
         </footer>
 
