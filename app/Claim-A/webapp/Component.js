@@ -6,10 +6,11 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "claima/utils/PARequestSharedFunction",
     "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator",
+    "sap/ui/model/FilterOperator", 
+    "sap/m/MessageToast",
 	"claima/utils/Validator"
 ],
-    (AppComponent, models, HashChanger, Utility, JSONModel, PARequestSharedFunction, Filter, FilterOperator, Validator) => {
+    (AppComponent, models, HashChanger, Utility, JSONModel, PARequestSharedFunction, Filter, FilterOperator, MessageToast, Validator) => {
         "use strict";
 
         return AppComponent.extend("claima.Component", {
@@ -198,6 +199,13 @@ sap.ui.define([
             },
 
             _showSessionWarning: function () {
+                //countdown another 5 mins if no response to the prompt message
+                //direct force user to logout
+                this.stopInactivityTimer();
+                this._promptExpireHandle = setTimeout(() => {
+                    this._doLogout();
+                }, 5 * 60 * 1000);  
+
                 sap.m.MessageBox.warning(
                     "Session will expire. Click OK to stay logged in.",
                     {
@@ -208,14 +216,31 @@ sap.ui.define([
                         ],
                         emphasizedAction: sap.m.MessageBox.Action.OK,
                         onClose: (sAction) => {
+                            clearTimeout(this._promptExpireHandle);
+                            this._promptExpireHandle = null;
                             if (sAction === "Logout") {
                                 this._doLogout();
                             } else {
-                                this.resetInactivityTimeout();
+                                this._resumeSession();
                             }
                         }
                     }
                 );
+            },
+
+            _resumeSession: function() {
+                $.ajax({
+                    type: "GET",
+                    url: "/user-api/currentUser",
+                    success:() =>{
+                        this.resetInactivityTimeout();
+                        this.startInactivityTimer();
+                    }, 
+                    error: () => {
+                        MessageToast.show("Session logout due to inactivity");
+                        this._doLogout();
+                    }
+                })
             },
 
             _doLogout: function () {
@@ -311,7 +336,9 @@ sap.ui.define([
 
             destroy: function () {
                 this.stopInactivityTimer();
-                UIComponent.prototype.destroy.apply(this, arguments);
+                // UIComponent.prototype.destroy.apply(this, arguments);
+                clearTimeout(this._promptExpireHandle);
+                AppComponent.prototype.destroy.apply(this, arguments);
             },
 
 		    _onRouteMatched: function (oEvent) {
