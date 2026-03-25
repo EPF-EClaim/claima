@@ -1760,6 +1760,19 @@ sap.ui.define([
 										new Text({ text: "{session>/department}" })
 									]
 								}),
+								new HBox({
+									alignItems: "Center",
+									width: "100%",
+									class: "sapUiTinyMarginTop",
+									items: [
+										new Icon({
+											src: "sap-icon://email",
+											width: "1rem",
+											class: "sapUiLargeMarginBeginEnd"
+										}),
+										new Text({ text: "{session>/email}" })
+									]
+								}),								
 								new Button({
 									icon: "sap-icon://log",
 									text: "Sign Out",
