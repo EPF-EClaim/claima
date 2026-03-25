@@ -18,12 +18,13 @@ service eclaim_srv @(requires: 'authenticated-user'){
         operationEnabled : Boolean;
     }
 
-    type budgetdata {
+     type budgetdata {
         YEAR            : String(4);
         INTERNAL_ORDER  : String;
         FUND_CENTER     : String;
         MATERIAL_GROUP  : String;
         COMMITMENT_ITEM : String;
+        CLAIM_TYPE_ITEM : String;
         AMOUNT          : Decimal;
         INDICATOR       : String; //CLM and REQ
         ACTION          : String; //SUBMIT, REJECT, APPROVE
@@ -36,6 +37,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
         MATERIAL_GROUP     : String;
         COMMITMENT_ITEM    : String;
         AMOUNT             : Decimal(15, 2);
+        CLAIM_TYPE_ITEM    : String;
         PREV_CONSUMED      : Decimal(15, 2);
         NEW_CONSUMED       : Decimal(15, 2);
         PREV_ACTUAL        : Decimal(15, 2);
