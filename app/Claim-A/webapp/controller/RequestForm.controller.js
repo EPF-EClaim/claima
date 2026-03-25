@@ -520,8 +520,8 @@ sap.ui.define([
 				meter_cube_actual		: oReqItem.METER_CUBE_ACTUAL || 0
 			});
 
-			if (this._oReqModel.getProperty("/view") != "approver") {
-				this._oReqModel.setProperty("/view", bEdit ? "i_edit" : "view");
+			if (this._oReqModel.getProperty("/view") != this._oConstant.PARMode.APPROVER) {
+				this._oReqModel.setProperty("/view", bEdit ? this._oConstant.PARMode.EDIT : this._oConstant.PARMode.VIEW);
 			}
 
 			this._showItemCreate(this._oReqModel.getProperty("/view"));

@@ -255,6 +255,13 @@ sap.ui.define([
             "SUBMIT"    : "SUBMIT",
             "REJECT"    : "REJECT", 
             "APPROVE"   : "APPROVE"
+        },
+        "PARMode" : {
+            "VIEW": "view",
+            "APPROVER": "approver",
+            "EDIT": "i_edit",
+            "LIST": "list",
+            "CREATE": "create"
         }
 
     }
