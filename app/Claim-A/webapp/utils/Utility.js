@@ -61,7 +61,35 @@ sap.ui.define([
 		 */
         getText: function (sKey, aArgs) {
             return this._oOwnerComponent.getModel("i18n").getResourceBundle().getText(sKey, aArgs);
-        }
+        },
+
+        async _updateSubmittedDate(oModel, sID) {
+            let sSubmission_type = sID.substring(0,3);
+            
+            let sHeaderTablePath = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.Entities.ZREQUEST_HEADER : Constants.Entities.ZCLAIM_HEADER;
+            let sField = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.EntitiesFields.REQUESTID : Constants.EntitiesFields.CLAIMID; 
+        
+            const oListBinding = oModel.bindList(sHeaderTablePath, null,null,
+                [
+                    new Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: sID })
+                ],
+                {
+                    $$ownRequest: true,
+                    $$groupId: "$auto",
+                    $$updateGroupId: "$auto"
+                }
+            );
+
+            const aCtx = await oListBinding.requestContexts(0, 1);
+            const oCtx = aCtx[0];
+
+            if (!oCtx) {
+                throw new Error("Record not found.");
+            }
+            oCtx.setProperty(Constants.EntitiesFields.SUBMITTED_DATE, new Date().toISOString().slice(0, 10));
+
+            await oModel.submitBatch("$auto");
+        },
 
     };
 });
