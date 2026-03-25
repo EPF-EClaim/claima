@@ -843,4 +843,6 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_HEADER : Association to one ECLAIM_VIEW_SRV.ZEMP_REQUEST_VIEW
                                       on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID
         };
+
+    entity ZEMP_SUBSTITUTION_RULE as projection on ECLAIM.ZSUBSTITUTION_RULES;
 };
