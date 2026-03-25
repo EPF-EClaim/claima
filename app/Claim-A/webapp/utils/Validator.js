@@ -241,6 +241,12 @@ sap.ui.define(
 					var oExternalValue = oControl.getProperty(
 						this._aValidateProperties[i]
 					);
+					// Do not validate empty values
+					if (oExternalValue === "") {
+						oControl.setValueState(ValueState.None);
+						isValid = true;
+						return isValid;
+					}
 					var oInternalValue = oControlBinding
 						.getType()
 						.parseValue(oExternalValue, oControlBinding.sInternalType);
