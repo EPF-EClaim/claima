@@ -2662,19 +2662,19 @@ sap.ui.define([
 					var entDinner = parseFloat(oData.AMOUNT) * 0.4;
 					//// modifier based on travel duration (hours)
 					if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
-						if (this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 24) {
+						if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 24) {
 							// full meal allowance
-							entBfast = entBfast * this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
-							entLunch = entLunch * this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
-							entDinner = entDinner * this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+							entBfast = entBfast * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+							entLunch = entLunch * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+							entDinner = entDinner * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
 						}
-						else if (this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 8) {
+						else if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 8) {
 							// daily allowance (half of meal allowance)
 							entBfast = entBfast / 2;
 							entLunch = entLunch / 2;
 							entDinner = entDinner / 2;
 						}
-						else { // if (this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) < 8)
+						else { // if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) < 8)
 							// no meal allowance
 							entBfast = entBfast * 0;
 							entLunch = entLunch * 0;
@@ -3621,7 +3621,7 @@ sap.ui.define([
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 
 				if (!aCtx || aCtx.length === 0) {
-					console.warn("No configuration rows for claim type item:", claim_type_item);
+					MessageToast.show("No configuration rows for claim type item:", sClaim_type_item);
 					this._setAllControlsVisible(false);
 					return;
 				}

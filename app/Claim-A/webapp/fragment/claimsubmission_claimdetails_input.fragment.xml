@@ -75,6 +75,7 @@
 					id="input_claimdetails_input_dependent_name"
 					value="{claimitem_input>/claim_item/dependent_name}"
 					visible="false"
+					required="true"
 				/>
 
 				<!-- Type of Professional Body -->
@@ -86,6 +87,7 @@
 					change="onSelect_ClaimDetails_ProfBodyType"
 					liveChange="onSelect_ClaimDetails_ProfBodyType"
 					visible="false"
+					required="true"
 				>
 				</Select>
 
@@ -123,6 +125,7 @@
 						}
 					}"
 					visible="false"
+					required="true"
 				/>
 
 				<!-- Subsidised Amount (MYR) (50% of actual) -->
@@ -181,6 +184,7 @@
 					id="input_claimdetails_input_course_title"
 					value="{claimitem_input>/claim_item/course_title}"
 					visible="false"
+					required="true"
 				/>
 
 				<!-- Level of Studies -->
@@ -192,6 +196,7 @@
 					change="onSelect_ClaimDetails_LevelStudies"
 					liveChange="onSelect_ClaimDetails_LevelStudies"
 					visible="false"
+					required="true"
 				>
 				</Select>
 
@@ -201,6 +206,7 @@
 					id="input_claimdetails_input_receipt_number"
 					value="{claimitem_input>/claim_item/receipt_number}"
 					visible="false"
+					required="true"
 				/>
 
 				<!-- Receipt Date -->
@@ -210,6 +216,7 @@
 					value="{claimitem_input>/claim_item/receipt_date}"
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
+					required="true"
 				/>
 
 				<!-- Purpose -->
@@ -218,6 +225,7 @@
 					id="input_claimdetails_input_purpose"
 					value="{claimitem_input>/claim_item/purpose}"
 					visible="false"
+					required="true"
 				/>
 
 				<!-- Start Date -->
@@ -228,6 +236,7 @@
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
 					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_startdate','datepicker_claimdetails_input_enddate')"
+					required="true"
 				/>
 
 				<!-- Start Time -->
@@ -248,6 +257,7 @@
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
 					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_startdate','datepicker_claimdetails_input_enddate')"
+					required="true"
 				/>
 
 				<!-- End Time -->
@@ -267,6 +277,7 @@
 					value="{claimitem_input>/claim_item/no_of_days}"
 					type="Number"
 					visible="false"
+					required="true"
 				/>
 
 				<!-- Type of Vehicle -->
@@ -278,6 +289,7 @@
 					change="onSelect_ClaimDetails_VehicleType"
 					liveChange="onSelect_ClaimDetails_VehicleType"
 					visible="false"
+					required="true"
 				>
 				</Select>
 
@@ -327,6 +339,7 @@
 					change="onSelect_ClaimDetails_FareType"
 					liveChange="onSelect_ClaimDetails_FareType"
 					visible="false"
+					required="true"
 				>
 				</Select>
 
@@ -351,6 +364,7 @@
 					change="onSelect_ClaimDetails_FlightClass"
 					liveChange="onSelect_ClaimDetails_FlightClass"
 					visible="false"
+					required="true"
 				>
 				</Select>
 
@@ -387,6 +401,7 @@
 					change="onSelect_ClaimDetails_LocationType"
 					liveChange="onSelect_ClaimDetails_LocationType"
 					visible="false"
+					required="true"
 				>
 				</Select>
 
@@ -404,6 +419,7 @@
 					id="input_claimdetails_input_from_location"
 					value="{claimitem_input>/claim_item/from_location}"
 					visible="false"
+					required="true"
 				/>
 
 				<!-- To State -->
@@ -420,6 +436,7 @@
 					id="input_claimdetails_input_to_location"
 					value="{claimitem_input>/claim_item/to_location}"
 					visible="false"
+					required="true"
 				/>
 
 				<!-- Room Type -->
@@ -431,6 +448,7 @@
 					change="onSelect_ClaimDetails_RoomType"
 					liveChange="onSelect_ClaimDetails_RoomType"
 					visible="false"
+					required="true"
 				>
 				</Select>
 
@@ -443,6 +461,7 @@
 					change="onSelect_ClaimDetails_Country"
 					liveChange="onSelect_ClaimDetails_Country"
 					visible="false"
+					required="true"
 				>
 				</Select>
 
@@ -452,6 +471,7 @@
 					id="input_claimdetails_input_location"
 					value="{claimitem_input>/claim_item/location}"
 					visible="false"
+					required="true"
 				/>
 
 				<!-- Need Foreign Currency? -->
@@ -534,6 +554,7 @@
 					visible="false"
 					displayFormat="HH:mm"
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
+					required="true"
 				/>
 
 				<!-- Trip End Date -->
@@ -564,6 +585,7 @@
 					visible="false"
 					displayFormat="HH:mm"
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
+					required="true"
 				/>
 
 				<!-- Travel Duration (days) -->
@@ -708,6 +730,7 @@
 					id="input_claimdetails_input_lodging_address"
 					value="{claimitem_input>/claim_item/lodging_address}"
 					visible="false"
+					required="true"
 				/>
 
 				<!-- Region (Semenanjung/Sabah/Sarawak) -->
@@ -719,6 +742,7 @@
 					change="onSelect_ClaimDetails_Region"
 					liveChange="onSelect_ClaimDetails_Region"
 					visible="false"
+					required="true"
 				>
 				</Select>
 
@@ -731,6 +755,7 @@
 					change="onSelect_ClaimDetails_Area"
 					liveChange="onSelect_ClaimDetails_Area"
 					visible="false"
+					required="true"
 				>
 				</Select>
 
@@ -743,6 +768,7 @@
 					change="onSelect_ClaimDetails_LodgingCategory"
 					liveChange="onSelect_ClaimDetails_LodgingCategory"
 					visible="false"
+					required="true"
 				>
 				</Select>
 
@@ -753,6 +779,7 @@
 					value="{claimitem_input>/claim_item/no_of_family_member}"
 					type="Number"
 					visible="false"
+					required="true"
 				/>
 
 				<!-- Category/Purpose -->
@@ -828,6 +855,7 @@
 					text="{i18n>checkbox_claimdetails_input_disclaimer_galakan}"
 					visible="false"
 					wrapping="true"
+					required="true"
 				/>
 
 				<!-- Remarks -->
@@ -854,6 +882,7 @@
 					multiple="false"
 					style="Emphasized"
 					visible="false"
+					required="true"
 				>
 				</u:FileUploader>
 
