@@ -185,7 +185,7 @@ sap.ui.define([
          * @param {Date} [dDate] - Optional date (defaults to today)
          * @returns {Promise<object|null>} - Employee data or null if not found
          */
-        getSubstitute: async function (oModel, sApproverEEID, dDate = new Date()) {
+        getSubstitute: async function (oModel, oModelView, sApproverEEID, dDate = new Date()) {
 
             // --- Sanity check ---
             if (!this.sanityCheck(oModel, "msg_failed_omodel_undefined")) return null;
@@ -193,6 +193,7 @@ sap.ui.define([
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
+            await oModelView.getMetaModel().requestObject("/");
 
             // Main table path
             const sSubstitutionRulesTablePath = Constants.Entities.ZEMP_SUBSTITUTION_RULE;
@@ -211,7 +212,7 @@ sap.ui.define([
             ];
 
             // Bind list
-            const oBinding = oModel.bindList(
+            const oBinding = oModelView.bindList(
                 sSubstitutionRulesTablePath,
                 null,
                 null,
