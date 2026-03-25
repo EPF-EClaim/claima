@@ -188,7 +188,7 @@ module.exports = (srv) => {
 
     srv.on('batchCreateBudget', async (req) => {
         const { ZBUDGET } = srv.entities;
-        let original_budget, virement_in, virement_out, supplement, return_value, total_budget;
+        let original_budget, virement_in, virement_out, supplement, return_value, total_budget, current_budget, total_budget_balance, consumed;
         try {
             const { budget } = req.data;
             if (!budget || budget.length === 0) throw new Error('No Data Sent');
@@ -222,9 +222,13 @@ module.exports = (srv) => {
                     virement_out = Number(row.VIREMENT_OUT) || 0;
                     supplement = Number(row.SUPPLEMENT) || 0;
                     return_value = Number(row.RETURN) || 0;
+                    current_budget = Number(row.CURRENT_BUDGET) || 0;
+                    consumed = Number(row.CONSUMED) || 0;
                     
                     total_budget = original_budget + virement_in + virement_out + supplement + return_value;
+                    total_budget_balance = current_budget + consumed;
                     updatePayload.CURRENT_BUDGET = total_budget.toFixed(2);
+                    updatePayload.BUDGET_BALANCE = total_budget_balance.toFixed(2);
 
                     await tx.run(
                         UPDATE(ZBUDGET)
