@@ -2111,6 +2111,8 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_claim_category", "ZCLAIM_CATEGORY");
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
+			//// Currency Code
+			this._setClaimDetailSelectionField("select_claimdetails_input_currency_code", "ZCURRENCY");	
 		},
 
 		_setClaimDetailSelectionField: function (oId, oTable, oField) {
@@ -2126,7 +2128,7 @@ sap.ui.define([
 					],
 					template: new Item({
 						key: "{employee>" + oField + "_ID}",
-						text: "{employee>" + oField + "_DESC}"
+						text: "{employee>" + oField + "_ID} - {employee>" + oField + "_DESC}"
 					})
 				});
 			}
@@ -3689,7 +3691,7 @@ sap.ui.define([
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
 				"checkbox_claimdetails_input_needforeigncurrency",
-				"input_claimdetails_input_currency_code",
+				"select_claimdetails_input_currency_code",
 				"input_claimdetails_input_currency_rate",
 				"input_claimdetails_input_currency_amount",
 				"datepicker_claimdetails_input_trip_start_date",
@@ -3818,7 +3820,7 @@ sap.ui.define([
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
 				"checkbox_claimdetails_input_needforeigncurrency",
-				"input_claimdetails_input_currency_code",
+				"select_claimdetails_input_currency_code",
 				"input_claimdetails_input_currency_rate",
 				"input_claimdetails_input_currency_amount",
 				"datepicker_claimdetails_input_trip_start_date",
