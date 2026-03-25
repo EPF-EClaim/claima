@@ -183,7 +183,8 @@ sap.ui.define([
             "VALID_TO": "VALID_TO",
             "WORKFLOW_CODE": "WORKFLOW_CODE",
             "WORKFLOW_TYPE": "WORKFLOW_TYPE",
-            "YEAR": "YEAR"
+            "YEAR": "YEAR",
+            "SUBMITTED_DATE": "SUBMITTED_DATE"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -246,6 +247,21 @@ sap.ui.define([
         },
         "SubmissionType":{
             "DIRECT_CLAIM" : "ST0001"
+        },
+        "Default" : {
+            "PROJECT_CODE" : "NA"
+        },
+        "BudgetCheckAction" : {
+            "SUBMIT"    : "SUBMIT",
+            "REJECT"    : "REJECT", 
+            "APPROVE"   : "APPROVE"
+        },
+        "PARMode" : {
+            "VIEW": "view",
+            "APPROVER": "approver",
+            "EDIT": "i_edit",
+            "LIST": "list",
+            "CREATE": "create"
         }
 
     }
