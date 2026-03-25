@@ -999,6 +999,11 @@ sap.ui.define([
 					oReqItem.material_code	= await budgetCheck._getMaterialCode(this._oDataModel, oReqItem.claim_type_item_id);
 				}
 
+				if (oReqItem.departure_time || oReqItem.arrival_time) {
+					var departure_date 	= new Date(oReqItem.departure_time).toISOString() || null;
+					var arrival_date 	= new Date(oReqItem.arrival_time).toISOString() || null;
+				}
+
 				let oPayload = {
 					EMP_ID: 					  sEmpId,
 					REQUEST_ID:                   sReqId,
@@ -1038,8 +1043,8 @@ sap.ui.define([
 					TRANSFER_DATE:                oReqItem.tarikh_pindah || null,
 					START_TIME:                   oReqItem.start_time || null, 
 					END_TIME:                     oReqItem.end_time || null,
-					DEPARTURE_TIME:               new Date(oReqItem.departure_time).toISOString() || null,
-					ARRIVAL_TIME:                 new Date(oReqItem.arrival_time).toISOString() || null,
+					DEPARTURE_TIME:               departure_date || null,
+					ARRIVAL_TIME:                 arrival_date || null,
 					NO_OF_DAYS:                   parseInt(oReqItem.no_of_days, 10) || 0,
 					FAMILY_COUNT:                 parseInt(oReqItem.no_of_family_member, 10) || 0,
 					EST_NO_PARTICIPANT:           parseInt(oReqItem.est_no_participant, 10) || 1,
