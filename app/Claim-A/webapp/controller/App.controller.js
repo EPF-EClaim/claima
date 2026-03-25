@@ -889,6 +889,14 @@ sap.ui.define([
 		onClaimSubmission_ClaimInput: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("claimsubmission_input");
+
+			if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
+				MessageToast.show(Utility.getText("msg_claiminput_required"), {
+					closeOnBrowserNavigation: false
+				});
+				return;
+			}
+
 			// validate required fields
 			var reqFields = [
 				"input_claiminput_purpose",
@@ -1352,49 +1360,14 @@ sap.ui.define([
 			const oDialogData   = oDialogModel.getData();
 			const sEmpId        = this._oSessionModel.getProperty("/userId");
 
-			const oMandatoryFields = {
-				'RT0001': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'eventstartdate', 'eventenddate', 'grptype', 'location', 'transport', 'comment'],
-				'RT0002': ['purpose', 'reqtype', 'grptype', 'comment'],
-				'RT0003': ['purpose', 'reqtype', 'eventstartdate', 'eventenddate', 'grptype', 'location', 'comment', 'eventdetail1', 'eventdetail2', 'eventdetail3', 'eventdetail4'],
-				'RT0004': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'grptype', 'comment'],
-				'RT0005': ['purpose', 'reqtype'],
-				'RT0006': ['purpose', 'reqtype']
-			};
-
 			try {
-				const aFieldsToCheck = oMandatoryFields[oDialogData.reqtype] || [];
-				const bIsMissing = aFieldsToCheck.some(field => !oDialogData[field] || String(oDialogData[field]).trim() === "");
 
-				if (bIsMissing) {
-					MessageBox.error(Utility.getText("req_d_w_mandatory_field"));
-					return; 
-				}
-
-				if (!oDialogData.doc1) {
-					MessageBox.error(Utility.getText('req_d_w_mandatory_attach1'));
+				// validate mandatory fields
+				if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
+					MessageToast.show(Utility.getText("req_d_w_mandatory_field"), {
+						closeOnBrowserNavigation: false
+					});
 					return;
-				}
-
-				const tStart = oDialogData.tripstartdate ? new Date(oDialogData.tripstartdate) : null;
-				const tEnd   = oDialogData.tripenddate   ? new Date(oDialogData.tripenddate)   : null;
-				const eStart = oDialogData.eventstartdate ? new Date(oDialogData.eventstartdate) : null;
-				const eEnd   = oDialogData.eventenddate   ? new Date(oDialogData.eventenddate)   : null;
-
-				if (tStart && tEnd && (tEnd < tStart)) {
-					MessageBox.error(Utility.getText("req_d_w_check_date"));
-					return;
-				}
-
-				if (eStart && eEnd && (eEnd < eStart)) {
-					MessageBox.error(Utility.getText("req_d_w_check_event_date") || "Event End Date cannot be before Event Start Date.");
-					return;
-				}
-
-				if (tStart && tEnd && eStart && eEnd) {
-					if (eStart < tStart || eEnd > tEnd) {
-						MessageBox.error(Utility.getText("req_d_w_event_within_trip") || "Event dates must fall within the Trip dates.");
-						return;
-					}
 				}
 
 				const sAttachment1Binary = await Attachment.getFileAsBinary(oDialogData.doc1);
@@ -1787,6 +1760,19 @@ sap.ui.define([
 										new Text({ text: "{session>/department}" })
 									]
 								}),
+								new HBox({
+									alignItems: "Center",
+									width: "100%",
+									class: "sapUiTinyMarginTop",
+									items: [
+										new Icon({
+											src: "sap-icon://email",
+											width: "1rem",
+											class: "sapUiLargeMarginBeginEnd"
+										}),
+										new Text({ text: "{session>/email}" })
+									]
+								}),								
 								new Button({
 									icon: "sap-icon://log",
 									text: "Sign Out",

@@ -191,8 +191,8 @@ entity ZREQUEST_ITEM : managed {
         FROM_LOCATION_OFFICE       : String(10); //office distance
         TOLL                       : Decimal(16, 2);
         VEHICLE_TYPE               : String(2);
-        DEPARTURE_TIME             : Time;
-        ARRIVAL_TIME               : Time;
+        DEPARTURE_TIME             : DateTime;
+        ARRIVAL_TIME               : DateTime;
         REGION                     : String(2);
         ROOM_TYPE                  : String(2);
         LODGING_CATEGORY           : String(2);

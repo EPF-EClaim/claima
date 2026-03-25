@@ -33,7 +33,6 @@ const Constant = {
 
     BudgetUpload: {
         EXCLUDE_FIELDS: [
-            "CURRENT_BUDGET",
             "COMMITMENT",
             "ACTUAL",
             "CONSUMED",
