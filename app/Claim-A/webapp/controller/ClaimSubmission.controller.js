@@ -1592,6 +1592,8 @@ sap.ui.define([
 			if (this._approveDialog) {
 				this._approveDialog.close();
 			}
+			if (this._sendBackDialog) { this._sendBackDialog.close(); }
+			if (this._rejectDialog) { this._rejectDialog.close(); }
 		},
 		//Button config for Approve
 		onClickCreate_app: async function () {
@@ -1777,7 +1779,6 @@ sap.ui.define([
 					submissionType: sSubmissionType,
 					sMessageKey
 				} = await ApproverUtility.rejectOrSendBackMultiLevel(
-					this,
 					oModelMain,
 					sClaimId,
 					sUserId,
@@ -1818,12 +1819,6 @@ sap.ui.define([
 			} finally {
 				BusyIndicator.hide();
 			}
-		},
-
-		onClickCancel_app: function () {
-			if (this._approveDialog) { this._approveDialog.close(); }
-			if (this._sendBackDialog) { this._sendBackDialog.close(); }
-			if (this._rejectDialog) { this._rejectDialog.close(); }
 		},
 
 
@@ -2112,7 +2107,7 @@ sap.ui.define([
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
 			//// Currency Code
-			this._setClaimDetailSelectionField("select_claimdetails_input_currency_code", "ZCURRENCY");	
+			this._setClaimDetailSelectionField("select_claimdetails_input_currency_code", "ZCURRENCY");
 		},
 
 		_setClaimDetailSelectionField: function (oId, oTable, oField) {
@@ -2162,30 +2157,30 @@ sap.ui.define([
 			// validate required fields
 			if (
 				!this.byId("select_claimdetails_input_claimitem").getSelectedItem() ||
-				(!this.byId("input_claimdetails_input_amount").getValue() && this.byId("input_claimdetails_input_amount").getVisible())				
+				(!this.byId("input_claimdetails_input_amount").getValue() && this.byId("input_claimdetails_input_amount").getVisible())
 			) {
 				// stop claim submission if values empty
 				MessageToast.show(Utility.getText("msg_claiminput_required"));
 				return;
 			}
 
-			if(this.byId("input_claimdetails_input_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_amount").getValue() == " " || 
-			   this.byId("input_claimdetails_input_amount").getValue() == "" || this.byId("input_claimdetails_input_amount").getValue() == null){
+			if (this.byId("input_claimdetails_input_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_amount").getValue() == " " ||
+				this.byId("input_claimdetails_input_amount").getValue() == "" || this.byId("input_claimdetails_input_amount").getValue() == null) {
 				// stop claim submission if amount is zero
 				MessageToast.show(Utility.getText("msg_claiminput_amount_zero"));
 				return;
 			}
 
-			
+
 			// validate attachment
 			//// attachment 1
 			if (this.byId("fileuploader_claimdetails_input_attachment1").getValue()) {
-				if(oInputModel.getProperty("/attachments/attachment1/fileName") != null && oInputModel.getProperty("/attachments/attachment1/fileContent") != null){
+				if (oInputModel.getProperty("/attachments/attachment1/fileName") != null && oInputModel.getProperty("/attachments/attachment1/fileContent") != null) {
 					BusyIndicator.show(0);
 					var attachmentNumber = await Attachment.postAttachment(
-					oInputModel.getProperty("/attachments/attachment1/fileName"),
-					oInputModel.getProperty("/attachments/attachment1/fileContent"),
-					this._oSessionModel.getProperty("/userId")
+						oInputModel.getProperty("/attachments/attachment1/fileName"),
+						oInputModel.getProperty("/attachments/attachment1/fileContent"),
+						this._oSessionModel.getProperty("/userId")
 					);
 
 					if (attachmentNumber) {
@@ -2894,7 +2889,7 @@ sap.ui.define([
 					this._displayFooterButtons("claimsubmission_summary_claimitem");
 				}
 				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
-				
+
 				// Reload when item cancellation
 				this._loadClaimById(String(oClaimSubmissionModel.getProperty("/claim_header/claim_id")));
 			}
@@ -2921,7 +2916,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 
 				//assign submitted date for submit oAction
-				if(oAction == "Submit Report"){
+				if (oAction == "Submit Report") {
 					var submittedDate = this._getJsonDate(new Date());
 					oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
 				}
@@ -3067,7 +3062,7 @@ sap.ui.define([
 							break;
 						case 'Submit Report':
 							// budget checking
-							
+
 							const aPayloadResult = await budgetCheck.backendBudgetChecking(this, this._oConstant.SubmissionTypePrefix.CLAIM, this._oConstant.BudgetCheckAction.SUBMIT);
 							const oHandlingResult = await budgetCheck.budgetCheckHandling(aPayloadResult);
 
@@ -4084,7 +4079,7 @@ sap.ui.define([
 			const oReq = this.getOwnerComponent().getModel("request_status");
 			const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 			var sUserId = this._oSessionModel.getProperty("/userId");
-	
+
 			const oApproverOrSub = new Filter({
 				filters: [
 					new Filter("APPROVER_ID", FilterOperator.EQ, sUserId),

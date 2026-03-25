@@ -127,17 +127,22 @@ sap.ui.define([
         new Label({ text: "{i18n>sendback_reason}", required: true }),
         new Select(oView.createId("sendBackReasonSelect"), {
           width: "100%",
-          // IMPORTANT: bind to sendBackReasonKey (not rejectReasonKey)
           selectedKey: "{Reject>/sendBackReasonKey}",
-          items: {
-            path: "employee>/ZREJECT_REASON", // adjust if your model alias differs
-            template: new Item({
-              key: "{employee>REASON_ID}",
-              text: "{employee>REASON_DESC}"
-            }),
-            templateShareable: false
-          }
-        }),
+          forceSelection: false,
+
+          items: [
+            new Item({
+              key: "",
+              text: "— Select Reason —"
+            })
+          ]
+        })
+          .bindAggregation("items", "employee>/ZREJECT_REASON", function (sId, oContext) {
+            return new Item({
+              key: oContext.getProperty("REASON_ID"),
+              text: oContext.getProperty("REASON_DESC")
+            });
+          }),
 
         // Comment (required)
         new Label({ text: "{i18n>approval_comment}", required: true }),
@@ -155,7 +160,7 @@ sap.ui.define([
     const cancelHandler =
       oController.onClickCancel_app ||
       oController.onSendBackCancel ||
-      function () { this.__sendBackDialog && this.__sendBackDialog.close(); };
+      function () { this._sendBackDialog && this._sendBackDialog.close(); };
 
     const submitHandler =
       oController.onSendBack_app ||               // RequestForm
@@ -193,10 +198,10 @@ sap.ui.define([
     // Ensure models BEFORE creating bound controls
     ensureModels(oController);
 
-    if (!oController.__sendBackDialog) {
-      oController.__sendBackDialog = createSendBackDialog(oController);
+    if (!oController._sendBackDialog) {
+      oController._sendBackDialog = createSendBackDialog(oController);
     }
-    return oController.__sendBackDialog;
+    return oController._sendBackDialog;
   }
 
   return {
@@ -213,14 +218,17 @@ sap.ui.define([
         oDlg.setTitle(title);
       } catch (e) { /* ignore if i18n unavailable */ }
 
+      const oRejectModel = oController.getView().getModel("Reject");
+      oRejectModel.setProperty("/sendBackReasonKey", "");
+
       oDlg.open();
       return oDlg;
     },
 
     destroy: function (oController) {
-      if (oController.__sendBackDialog) {
-        oController.__sendBackDialog.destroy();
-        oController.__sendBackDialog = null;
+      if (oController._sendBackDialog) {
+        oController._sendBackDialog.destroy();
+        oController._sendBackDialog = null;
       }
     }
   };

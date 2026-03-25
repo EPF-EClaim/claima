@@ -2081,9 +2081,9 @@ sap.ui.define([
 		},
 		
 		onClickCancel_app: function () {
-			if (this.__approveDialog) { this.__approveDialog.close(); }
-			if (this.__sendBackDialog) { this.__sendBackDialog.close(); }
-			if (this.__rejectDialog) { this.__rejectDialog.close(); }
+			if (this._approveDialog) { this._approveDialog.close(); }
+			if (this._sendBackDialog) { this._sendBackDialog.close(); }
+			if (this._rejectDialog) { this._rejectDialog.close(); }
 		},
 		
 		onClickCreate_app: async function () {
@@ -2125,7 +2125,7 @@ sap.ui.define([
 					}
 
 					// 3. Close dialog
-					this.__approveDialog && this.__approveDialog.close();
+					this._approveDialog && this._approveDialog.close();
 
 					// 4. Navigate back after small delay
 					setTimeout(() => {
@@ -2202,8 +2202,8 @@ sap.ui.define([
 				}
 
 				// 4) Close dialog
-				if (this.__sendBackDialog) {
-					this.__sendBackDialog.close();
+				if (this._sendBackDialog) {
+					this._sendBackDialog.close();
 				}
 
 				// 5) Navigate back
@@ -2258,7 +2258,7 @@ sap.ui.define([
 					await workflowApproval.onSendEmailApprover(oModelMain, p);
 				}
 
-				this.__rejectDialog && this.__rejectDialog.close();
+				this._rejectDialog && this._rejectDialog.close();
 
 				setTimeout(() => this._oRouter.navTo("Dashboard", {}, true), 400);
 
