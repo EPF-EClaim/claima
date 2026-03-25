@@ -287,4 +287,11 @@ service eclaim_srv @(requires: 'authenticated-user'){
 
     entity ZCLM_APPR_REQ_STAT            as projection on ECLAIM.ZCLM_APPR_REQ_STAT;
     action   onFinalApproveInsert(ApproveRequest: many ZCLM_APPR_REQ_STAT) returns Response;
+
+    type DisbursementUpdateInput {
+        REQUEST_ID          : String;
+        DISBURSEMENT_STATUS : String(2);
+    }
+
+    action batchDisbursementUpdate(disbursement: many DisbursementUpdateInput) returns many ZEMP_CA_PAYMENT;
 };

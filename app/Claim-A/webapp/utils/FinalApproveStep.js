@@ -103,8 +103,13 @@ sap.ui.define([
 
                 /** Commenting out budgetProcessing as it will be replaced by a backend function by Jefry 
                 budgetCheck.budgetProcessing(oModel, aDataset, sSubmissionType, sBudgetApprove);
-                const aResult = budgetCheck.backendBudgetChecking(oController, sSubmissionType, Constants.BudgetCheckAction.APPROVE);
                 */
+               try{
+                    const aResult = budgetCheck.backendBudgetChecking(oController, sSubmissionType, Constants.BudgetCheckAction.APPROVE);
+
+               }catch (oError){
+                    
+               }
 
                 // Call Farisha email Function
                 if (oEmailPayload) {
@@ -118,8 +123,8 @@ sap.ui.define([
                     }
                         return true;
 
-                    } catch (err) {
-                        throw err;
+                    } catch (oError) {
+                        //throw err;
                     }
             },
 

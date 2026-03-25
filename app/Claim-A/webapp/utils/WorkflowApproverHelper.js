@@ -178,14 +178,14 @@ sap.ui.define([
             };
         },
         /**
-         * Fetch substitution rule record from ZSUBSTITUTION_RULES by EEID
+         * Fetch substitution rule record from ZEMP_SUBSTITUTION_RULE by EEID
          *
          * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
          * @param {string} sApproverEEID - Approver ID (EEID)
          * @param {Date} [dDate] - Optional date (defaults to today)
          * @returns {Promise<object|null>} - Employee data or null if not found
          */
-        getSubstitute: async function (oModel, sApproverEEID, dDate = new Date()) {
+        getSubstitute: async function (oModel, oModelView, sApproverEEID, dDate = new Date()) {
 
             // --- Sanity check ---
             if (!this.sanityCheck(oModel, "msg_failed_omodel_undefined")) return null;
@@ -193,9 +193,10 @@ sap.ui.define([
 
             // Ensure metadata is loaded
             await oModel.getMetaModel().requestObject("/");
+            await oModelView.getMetaModel().requestObject("/");
 
             // Main table path
-            const sSubstitutionRulesTablePath = Constants.Entities.ZSUBSTITUTION_RULES;
+            const sSubstitutionRulesTablePath = Constants.Entities.ZEMP_SUBSTITUTION_RULE;
 
             // Convert to ISO date string (YYYY-MM-DD)
             const sToday = dDate.toISOString().split("T")[0];
@@ -211,7 +212,7 @@ sap.ui.define([
             ];
 
             // Bind list
-            const oBinding = oModel.bindList(
+            const oBinding = oModelView.bindList(
                 sSubstitutionRulesTablePath,
                 null,
                 null,
@@ -458,7 +459,7 @@ sap.ui.define([
             await oModel.getMetaModel().requestObject("/");
 
             // Main table path
-            const sSubstitutionRulesTablePath = Constants.Entities.ZEMP_SUBSTITUTION_RULES;
+            const sSubstitutionRulesTablePath = Constants.Entities.ZEMP_SUBSTITUTION_RULE;
 
             // Convert to ISO date string (YYYY-MM-DD)
             const sToday = dDate.toISOString().split("T")[0];

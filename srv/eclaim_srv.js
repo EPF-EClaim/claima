@@ -58,7 +58,7 @@ module.exports = (srv) => {
         }),
 
         srv.on('getUserType', async (req) => {
-            const { ZEMP_MASTER } = srv.entities;
+            const { ZEMP_MASTER, ZDEPARTMENT } = srv.entities;
             const emailFromToken =
                 req.user?.attr?.email ||
                 req.user?.attr?.mail ||
@@ -68,6 +68,7 @@ module.exports = (srv) => {
                 "";
 
             let sOrigin = null;
+
             try {
                 const authHeader = req.http?.req?.headers?.authorization ?? '';
                 const token = authHeader.split(' ')[1];
@@ -83,6 +84,8 @@ module.exports = (srv) => {
 
             const email = String(emailFromToken).trim().toLowerCase();
             const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
+            const dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: result.DEP });
+
             return {
                 id: email,
                 userType: result?.USER_TYPE || "UNKNOWN",
@@ -92,7 +95,7 @@ module.exports = (srv) => {
                 position: result?.POSITION_NAME || "UNKNOWN",
                 origin: sOrigin,
                 grade: result?.GRADE || "UNKNOWN",
-                department: result?.DEP || "UNKNOWN"
+                department: dept?.DEPARTMENT_DESC || "UNKNOWN"
             };
         });
 
@@ -185,6 +188,7 @@ module.exports = (srv) => {
 
     srv.on('batchCreateBudget', async (req) => {
         const { ZBUDGET } = srv.entities;
+        let original_budget, virement_in, virement_out, supplement, return_value, total_budget;
         try {
             const { budget } = req.data;
             if (!budget || budget.length === 0) throw new Error('No Data Sent');
@@ -212,6 +216,15 @@ module.exports = (srv) => {
 
                     const updatePayload = { ...row };
                     excludeFields.forEach(f => delete updatePayload[f]);
+
+                    original_budget = Number(row.ORIGINAL_BUDGET) || 0;
+                    virement_in = Number(row.VIREMENT_IN) || 0;
+                    virement_out = Number(row.VIREMENT_OUT) || 0;
+                    supplement = Number(row.SUPPLEMENT) || 0;
+                    return_value = Number(row.RETURN) || 0;
+                    
+                    total_budget = original_budget + virement_in + virement_out + supplement + return_value;
+                    updatePayload.CURRENT_BUDGET = total_budget.toFixed(2);
 
                     await tx.run(
                         UPDATE(ZBUDGET)
@@ -267,8 +280,8 @@ module.exports = (srv) => {
 
                 if (!budgetRecord) {
                     error = true;
-                    errorResults.push({ 
-                        ...condition, 
+                    errorResults.push({
+                        ...condition,
                         STATUS: Constant.BudgetCheckStatus.NOT_FOUND,
                         CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
                     });
@@ -294,10 +307,10 @@ module.exports = (srv) => {
                 if (error) continue;
 
                 if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
-                    successResults.push({ 
-                        ...condition, 
+                    successResults.push({
+                        ...condition,
                         STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
-                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM 
+                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
                     });
                     continue;
                 }
@@ -545,4 +558,40 @@ module.exports = (srv) => {
         }
     });
 
+    srv.on('batchDisbursementUpdate', async (req) => {
+        const { ZEMP_CA_PAYMENT } = srv.entities;
+        try {
+            const { disbursement } = req.data;
+            if (!disbursement || disbursement.length === 0) {
+                throw new Error('No Data Sent')
+            }
+
+            const first = disbursement[0];
+            const tx = cds.tx(req);
+
+            if (!("DISBURSEMENT_STATUS" in first)) {
+
+                const requestIds = disbursement.map(d => d.REQUEST_ID);
+                const results = await tx.run(
+                    SELECT.from(ZEMP_CA_PAYMENT)
+                        .where({ REQUEST_ID: { in: requestIds } })
+                );
+
+                return results;
+
+            } else {
+                const updatePromises = disbursement.map(item => {
+                    return tx.run(
+                        UPDATE(ZEMP_CA_PAYMENT)
+                            .set({ DISBURSEMENT_STATUS: item.DISBURSEMENT_STATUS })
+                            .where({ REQUEST_ID: item.REQUEST_ID })
+                    );
+                });
+                await Promise.all(updatePromises);
+                return "Records updated";
+            }
+        } catch (error) {
+            req.error(400, `Fail creating record: ${error.message}`);
+        }
+    })
 }

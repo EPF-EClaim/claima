@@ -24,7 +24,9 @@ sap.ui.define([
 	"claima/utils/SendBackDialog",
 	"claima/utils/ApproverUtility",
 	"claima/utils/workflowApproval",
-	"claima/utils/DateUtility"
+	"claima/utils/DateUtility",
+	"claima/utils/EligibilityCheck",
+	"claima/utils/EligibilityScenarios/EligibleScenarioCheck"
 ], function (
 	Fragment,
 	Item,
@@ -51,7 +53,9 @@ sap.ui.define([
 	SendBackDialog,
 	ApproverUtility,
 	workflowApproval,
-	DateUtility
+	DateUtility,
+	EligibilityCheck,
+	EligibleScenarioCheck
 ) {
 	"use strict";
 
@@ -126,7 +130,7 @@ sap.ui.define([
 				this._onNavBack();
 			}
 
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");			
 			if (!oClaimSubmissionModel) {
 				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 				await this._loadClaimById(String(sClaimId));
@@ -143,6 +147,17 @@ sap.ui.define([
 					MessageToast.show(Utility.getText("msg_claimsubmission_missing", [sClaimId]))
 					this._onNavBack();
 				}
+			}
+			// set view-only
+			// TODO: Revisit to make sure the claim is reloaded everytime
+			if (
+				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
+				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
+			) {
+				oClaimSubmissionModel.setProperty("/view_only", true)
+			}
+			else {
+				oClaimSubmissionModel.setProperty("/view_only", false)
 			}
 
 			// load form fragments
@@ -1720,8 +1735,13 @@ sap.ui.define([
 					sSubmissionType,
 					this._oConstant.ApprovalProcessAction.RELEASE_IND
 				);
-				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
 				*/
+				const sSubmissionType2 = sClaimId.substring(0, 3);
+				try{
+					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
+				}catch (oError){
+
+				}
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
 				}
@@ -1787,6 +1807,7 @@ sap.ui.define([
 					oEmployeeViewModel,
 					this
 				);
+
 				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
 				await budgetCheck.budgetProcessing(
 					oModelMain,
@@ -1794,8 +1815,16 @@ sap.ui.define([
 					sSubmissionType,
 					this._oConstant.ApprovalProcessAction.RELEASE_IND
 				);
-				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
 				*/
+				
+
+				const sSubmissionType2 = sClaimId.substring(0, 3);
+				try{
+					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
+				}catch (oError){
+
+				}
+				
 
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
@@ -2159,22 +2188,28 @@ sap.ui.define([
 			// validate input data
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			// validate required fields
-			if (
-				!this.byId("select_claimdetails_input_claimitem").getSelectedItem() ||
-				(!this.byId("input_claimdetails_input_amount").getValue() && this.byId("input_claimdetails_input_amount").getVisible())				
-			) {
-				// stop claim submission if values empty
-				MessageToast.show(Utility.getText("msg_claiminput_required"));
+
+			// Validate required fields
+			if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
+				MessageToast.show(Utility.getText("msg_claiminput_required"), {
+					closeOnBrowserNavigation: false
+				});
 				return;
 			}
 
-			if(this.byId("input_claimdetails_input_amount").getValue() == "0.00"){
+			if(this.byId("input_claimdetails_input_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_amount").getValue() == " " || 
+			   this.byId("input_claimdetails_input_amount").getValue() == "" || this.byId("input_claimdetails_input_amount").getValue() == null){
 				// stop claim submission if amount is zero
 				MessageToast.show(Utility.getText("msg_claiminput_amount_zero"));
 				return;
 			}
 
+			// Eligibility Checking
+			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM);
+			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, oPayload);
+			var	bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
+
+			if (!bCanProceed) return;
 			
 			// validate attachment
 			//// attachment 1
@@ -2662,19 +2697,19 @@ sap.ui.define([
 					var entDinner = parseFloat(oData.AMOUNT) * 0.4;
 					//// modifier based on travel duration (hours)
 					if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
-						if (this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 24) {
+						if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 24) {
 							// full meal allowance
-							entBfast = entBfast * this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
-							entLunch = entLunch * this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
-							entDinner = entDinner * this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+							entBfast = entBfast * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+							entLunch = entLunch * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+							entDinner = entDinner * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
 						}
-						else if (this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 8) {
+						else if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 8) {
 							// daily allowance (half of meal allowance)
 							entBfast = entBfast / 2;
 							entLunch = entLunch / 2;
 							entDinner = entDinner / 2;
 						}
-						else { // if (this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) < 8)
+						else { // if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) < 8)
 							// no meal allowance
 							entBfast = entBfast * 0;
 							entLunch = entLunch * 0;
@@ -2919,6 +2954,12 @@ sap.ui.define([
 				var lastModifiedDate = this._getJsonDate(new Date());
 				oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 
+				//assign submitted date for submit oAction
+				if(oAction == "Submit Report"){
+					var submittedDate = this._getJsonDate(new Date());
+					oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
+				}
+
 				// assign report number to new claim
 				if (oInputModel.getProperty("/is_new")) {
 					var currentReportNumber = await this._getCurrentReportNumber('NR02');
@@ -3060,37 +3101,21 @@ sap.ui.define([
 							break;
 						case 'Submit Report':
 							// budget checking
-							const dataRow = oInputModel.getProperty("/claim_items").map(({ claim_type_item_id, amount }) => ({
-								claim_type_item: claim_type_item_id,
-								amount: amount
-							}));
-							var budgetCc = oInputModel.getProperty("/claim_header/cost_center") || oInputModel.getProperty("/claim_header/alternate_cost_center");
-							if (!budgetCc) {
-								MessageToast.show(Utility.getText("msg_claimsubmission_nocc"));
+							
+							const aPayloadResult = await budgetCheck.backendBudgetChecking(this, this._oConstant.SubmissionTypePrefix.CLAIM, this._oConstant.BudgetCheckAction.SUBMIT);
+							const oHandlingResult = await budgetCheck.budgetCheckHandling(aPayloadResult);
+
+							if (!oHandlingResult.bCanProceed) {
+								MessageToast.show(Utility.getText("req_tm_w_inform_cc_owner", oHandlingResult.aClaimTypeItem));
 								return;
 							}
-							/** 
-							const result = await budgetCheck.budgetChecking(
-								oModel,
-								"CLM",
-								oInputModel.getProperty("/claim_header/submitted_date"),
-								oInputModel.getProperty("/claim_header/project_code"),
-								budgetCc,
-								oInputModel.getProperty("/claim_header/claim_type_id"),
-								dataRow
-							);
-							
-							if (!result.passed) {
-								MessageToast.show(result.messages);
-								return;
-							}*/
 							else {
 								oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
 								if (oCtx.getProperty("SUBMITTED_DATE", null)) {
 									var submittedDate = this._getJsonDate(new Date());
 									oCtx.setProperty("SUBMITTED_DATE", this._getHanaDate(submittedDate));
 								}
-								oMsg = Utility.getText("msg_claimsubmission_pending");
+								oMsg = Utility.getText("msg_claimsubmission_pending", []);
 							}
 							break;
 						default:
@@ -3118,6 +3143,7 @@ sap.ui.define([
 							oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.PENDING_APPROVAL);
 							oInputModel.setProperty("/claim_header/descr/status_id", "PENDING APPROVAL");
 							if (!oInputModel.getProperty("/claim_header/submitted_date")) {
+								var submittedDate = this._getJsonDate(new Date());
 								oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
 							}
 							this.onBack_ClaimSubmission();
@@ -3610,10 +3636,11 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel();
 			var oInputModel = this.getView().getModel("claimitem_input");
 
-			const claimTypeItemFromModel = oInputModel.getProperty("/claim_item/claim_type_item_id");
-			const claim_type_item = claimTypeItemFromModel;
+			const sClaimTypeItemFromModel = oInputModel.getProperty("/claim_item/claim_type_item_id");
+			const sClaimTypeID = oInputModel.getProperty("/claim_item/claim_type_id");
+			const sClaim_type_item = sClaimTypeItemFromModel;
 
-			if (!claim_type_item) {
+			if (!sClaim_type_item) {
 				console.warn("No claim item found.");
 				return;
 			}
@@ -3621,14 +3648,15 @@ sap.ui.define([
 			const oListBinding = oModel.bindList("/ZDB_STRUCTURE", null, null, [
 				new Filter("SUBMISSION_TYPE", FilterOperator.EQ, "CLAIM"),
 				new Filter("COMPONENT_LEVEL", FilterOperator.EQ, "ITEM"),
-				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, claim_type_item)
+				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaim_type_item),
+				new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimTypeID)
 			]);
 
 			try {
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 
 				if (!aCtx || aCtx.length === 0) {
-					console.warn("No configuration rows for claim type item:", claim_type_item);
+					MessageToast.show("No configuration rows for claim type item:", sClaim_type_item);
 					this._setAllControlsVisible(false);
 					return;
 				}

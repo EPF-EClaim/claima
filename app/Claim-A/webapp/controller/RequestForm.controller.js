@@ -9,6 +9,7 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
 	"sap/ui/export/Spreadsheet",
+	"sap/ui/mdc/enums/FieldEditMode",
 	"sap/m/library",
 	"sap/m/MessageToast",
 	"sap/m/Dialog",
@@ -40,6 +41,7 @@ sap.ui.define([
 	FilterOperator,
 	Sorter,
 	Spreadsheet,
+	FieldEditMode,
 	mLibrary,
 	MessageToast,
 	Dialog,
@@ -316,6 +318,7 @@ sap.ui.define([
 
 									// update status to PENDING APPROVAL
 									await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
+									await Utility._updateSubmittedDate(this._oDataModel, sReqId);
 									this._oReqModel.setProperty("/view", 'view');
 
 									// Add in onPARApproverDetermination function
@@ -406,7 +409,7 @@ sap.ui.define([
 			this._loadSelections();
 
 			const oReqData = this._oReqModel.getData();
-			const aIndividual = ['IND', 'Individual'];	// will move to constants.js 
+			const aIndividual = ['IND', 'Individual'];
 			const sHeaderGrpType = oReqData.req_header.grptype;
 
 			oReqData.req_item = {
@@ -415,12 +418,15 @@ sap.ui.define([
 
 			// if group type is Individual
 			if (aIndividual.includes(sHeaderGrpType)) {
-
+				this.byId("ipb_upload_participant").setEnabled(false);
+				this.byId("ipb_delete_participant").setEnabled(false);
+				this.byId("idp_delete_row_participant").setVisible(false);
 				oReqData.participant = [{
 					PARTICIPANTS_ID: this._oSessionModel.getProperty("/userId"),
 					PARTICIPANT_NAME: this._oSessionModel.getProperty("/userName"),
 					PARTICIPANT_COST_CENTER: this._oSessionModel.getProperty("/costCenters"),
-					ALLOCATED_AMOUNT: ""
+					ALLOCATED_AMOUNT: "",
+					_EDIT_MODE: "Display"
 				}];
 			} else {
 				oReqData.participant = [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }];
@@ -519,7 +525,9 @@ sap.ui.define([
 				meter_cube_actual		: oReqItem.METER_CUBE_ACTUAL || 0
 			});
 
-			this._oReqModel.setProperty("/view", bEdit ? "i_edit" : "view");
+			if (this._oReqModel.getProperty("/view") != this._oConstant.PARMode.APPROVER) {
+				this._oReqModel.setProperty("/view", bEdit ? this._oConstant.PARMode.EDIT : this._oConstant.PARMode.VIEW);
+			}
 
 			this._showItemCreate(this._oReqModel.getProperty("/view"));
 			this._loadParticipantsForItem(sReqId, sReqSubId);
@@ -561,14 +569,18 @@ sap.ui.define([
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 				const aParticipants = aCtx.map((ctx) => ctx.getObject());
 
+				var sMode = this._oReqModel.getProperty("/view");
+
 				const aMapped = aParticipants.map((p) => ({
 					PARTICIPANTS_ID			: p.PARTICIPANTS_ID 	?? "",
 					PARTICIPANT_NAME		: p.NAME 				?? "",
 					PARTICIPANT_COST_CENTER	: p.CC 					?? "",
-					ALLOCATED_AMOUNT		: p.ALLOCATED_AMOUNT 	?? ""
+					ALLOCATED_AMOUNT		: p.ALLOCATED_AMOUNT 	?? "",
+					_EDIT_MODE				: sMode == this._oConstant.PARMode.VIEW ? "Display" : "Editable"
 				}));
 
-				if (this._oReqModel.getProperty('/req_header/grptype') == this._oConstant.GroupType.GROUP) {
+				if (this._oReqModel.getProperty('/req_header/grptype') == this._oConstant.GroupType.GROUP && 
+					sMode != this._oConstant.PARMode.VIEW) {
 					aMapped.push({ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" });
 				}
 
@@ -958,10 +970,14 @@ sap.ui.define([
 			if (!sReqId) return MessageToast.show("Missing Request ID");
 			if (!oData.req_header.claimtype || !oReqItem.claim_type_item_id) return MessageToast.show("Select claim type/item");
 
+			if (oReqItem.est_amount == undefined || oReqItem.est_amount <= 0) return MessageBox.warning(Utility.getText("req_d_w_zero_amount"))
+
+			this.calculateNumberOfHours();
+
 			// Eligibility Checking
-			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this);
+			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
 			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, oPayload);
-			var	bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload);
+			var	bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.REQUEST);
 
 			if (!bCanProceed) return;
 
@@ -985,6 +1001,11 @@ sap.ui.define([
 					oReqItem.cost_center 	= oReqHeader.altcostcenter || oReqHeader.costcenter;
 					oReqItem.gl_account		= await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
 					oReqItem.material_code	= await budgetCheck._getMaterialCode(this._oDataModel, oReqItem.claim_type_item_id);
+				}
+
+				if (oReqItem.departure_time || oReqItem.arrival_time) {
+					var departure_date 	= new Date(oReqItem.departure_time).toISOString() || null;
+					var arrival_date 	= new Date(oReqItem.arrival_time).toISOString() || null;
 				}
 
 				let oPayload = {
@@ -1026,8 +1047,8 @@ sap.ui.define([
 					TRANSFER_DATE:                oReqItem.tarikh_pindah || null,
 					START_TIME:                   oReqItem.start_time || null, 
 					END_TIME:                     oReqItem.end_time || null,
-					DEPARTURE_TIME:               oReqItem.departure_time || null,
-					ARRIVAL_TIME:                 oReqItem.arrival_time || null,
+					DEPARTURE_TIME:               departure_date || null,
+					ARRIVAL_TIME:                 arrival_date || null,
 					NO_OF_DAYS:                   parseInt(oReqItem.no_of_days, 10) || 0,
 					FAMILY_COUNT:                 parseInt(oReqItem.no_of_family_member, 10) || 0,
 					EST_NO_PARTICIPANT:           parseInt(oReqItem.est_no_participant, 10) || 1,
@@ -1323,25 +1344,84 @@ sap.ui.define([
 
 		onUploadParticipants(oEvent) {
 			var oFile = oEvent.getParameter("files")[0];
-			if (!oFile) return; // Safety check
+			if (!oFile) return;
+			
+			BusyIndicator.show(0);
 
 			var oReader = new FileReader();
 
-			oReader.onload = function (e) {
-				var oData = new Uint8Array(e.target.result);
-				var oWorkbook = XLSX.read(oData, { type: "array" });
-				var oWorkSheet = oWorkbook.Sheets[oWorkbook.SheetNames[0]];
-				var oJsonData = XLSX.utils.sheet_to_json(oWorkSheet);
-				oJsonData.push({ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" });
-				this._oReqModel.setProperty("/participant", oJsonData);
+			oReader.onload = async (e) => { 
+				try {
+					var oData = new Uint8Array(e.target.result);
+					var oWorkbook = XLSX.read(oData, { type: "array" });
+					var oWorkSheet = oWorkbook.Sheets[oWorkbook.SheetNames[0]];
+					var aJsonData = XLSX.utils.sheet_to_json(oWorkSheet);
 
+					if (!aJsonData || aJsonData.length === 0) {
+						MessageToast.show("The uploaded Excel file is empty.");
+						return;
+					}
 
-				var fu = this.byId("participant_list_upload");
-				fu.clear();
+					const aUploadedIds = [...new Set(
+						aJsonData
+							.map(row => String(row.PARTICIPANTS_ID || "").trim())
+							.filter(id => id !== "")
+					)];
 
-			}.bind(this);
+					if (aUploadedIds.length === 0) {
+						MessageToast.show("No valid Participant IDs found in the file.");
+						return;
+					}
+
+					const aInvalidIds = await this._getInvalidParticipantIds(aUploadedIds);
+
+					if (aInvalidIds.length > 0) {
+						MessageBox.error(
+							"Upload failed. The following Employee IDs are invalid or do not exist:\n\n" + 
+							aInvalidIds.join(", ")
+						);
+						return;
+					}
+
+					this._oReqModel.setProperty("/participant", aJsonData);
+					MessageToast.show("Participants successfully validated and uploaded.");
+
+				} catch (err) {
+					MessageBox.error("Error processing file: " + err.message);
+				} finally {
+					var fu = this.byId("participant_list_upload");
+					if (fu) fu.clear();
+					BusyIndicator.hide();
+				}
+			};
 
 			oReader.readAsArrayBuffer(oFile);
+		},
+
+		async _getInvalidParticipantIds(aUploadedIds) {
+			const iChunkSize = 100; 
+			let aFoundIdsInDB = [];
+
+			for (let i = 0; i < aUploadedIds.length; i += iChunkSize) {
+				const aChunk = aUploadedIds.slice(i, i + iChunkSize);
+				
+				const aFilters = aChunk.map(id => new sap.ui.model.Filter("EEID", sap.ui.model.FilterOperator.EQ, id));
+				const oCombinedFilter = new sap.ui.model.Filter({ filters: aFilters, and: false });
+
+				const oListBinding = this._oDataModel.bindList("/ZEMP_MASTER", null, null, [oCombinedFilter], {
+					$$groupId: "$auto",
+					$select: "EEID" 
+				});
+
+				const aContexts = await oListBinding.requestContexts(0, aChunk.length);
+				const aChunkFound = aContexts.map(ctx => ctx.getProperty("EEID"));
+				
+				aFoundIdsInDB = aFoundIdsInDB.concat(aChunkFound);
+			}
+
+			const aInvalidIds = aUploadedIds.filter(id => !aFoundIdsInDB.includes(id));
+			
+			return aInvalidIds;
 		},
 
 		_sanitizeFileName(s) {
@@ -1769,53 +1849,37 @@ sap.ui.define([
 			this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
 		},
 
-		_calculateNumberOfHours: function() {
-			const oHeader = this._oReqModel.getProperty("/req_header") || {};
+		calculateNumberOfHours: function() {
 			const oItem = this._oReqModel.getProperty("/req_item") || {};
 
-			const dHeaderStart = oHeader.tripstartdate ? new Date(oHeader.tripstartdate) : null;
-			const dHeaderEnd = oHeader.tripenddate ? new Date(oHeader.tripenddate) : null;
+			const sDeparture = oItem.departure_time;
+			const sArrival   = oItem.arrival_time;
 
-			if (!dHeaderStart || !dHeaderEnd || isNaN(dHeaderStart.getTime()) || isNaN(dHeaderEnd.getTime())) {
-				this._resetDuration();
+			if (!sDeparture || !sArrival) {
+				this._oReqModel.setProperty("/req_item/no_of_hours", 0);
 				return;
 			}
 
-			const sStartTime = oItem.start_time; 
-			const sEndTime = oItem.end_time;     
+			const dDeparture = new Date(sDeparture);
+			const dArrival   = new Date(sArrival);
 
-			const dFinalStartWithTime = DateUtility.mergeDateTime(dHeaderStart, sStartTime);
-			const dFinalEndWithTime = DateUtility.mergeDateTime(dHeaderEnd, sEndTime);
+			if (isNaN(dDeparture.getTime()) || isNaN(dArrival.getTime())) {
+				this._oReqModel.setProperty("/req_item/no_of_hours", 0);
+				return; 
+			}
 
-			if (!dFinalStartWithTime || !dFinalEndWithTime || isNaN(dFinalStartWithTime.getTime()) || isNaN(dFinalEndWithTime.getTime())) {
-				this._resetDuration();
+			const iDiffMs = dArrival.getTime() - dDeparture.getTime();
+
+			if (iDiffMs < 0) {
+				MessageToast.show("Arrival time cannot be before Departure time.");
+				this._oReqModel.setProperty("/req_item/no_of_hours", 0);
 				return;
 			}
 
-			const iMsPerHour = 1000 * 60 * 60;
-			const iMsPerDay = iMsPerHour * 24;
+			const fHours = Math.round((iDiffMs / (1000 * 60 * 60)) * 100) / 100;
 
-			const iDiffMs = dFinalEndWithTime.getTime() - dFinalStartWithTime.getTime();
-			let fDiffHours = iDiffMs / iMsPerHour;
-			let iDiffDays = 0;
-
-			if (fDiffHours > 0) {
-				const iStartMidnight = new Date(dHeaderStart).setHours(0, 0, 0, 0);
-				const iEndMidnight = new Date(dHeaderEnd).setHours(0, 0, 0, 0);
-				
-				iDiffDays = Math.floor((iEndMidnight - iStartMidnight) / iMsPerDay) + 1;
-			} else {
-				fDiffHours = 0; 
-				iDiffDays = 0;  
-			}
-
-			this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
-			this._oReqModel.setProperty("/req_item/no_of_hours", parseFloat(fDiffHours.toFixed(2))); 
-		},
-
-		_resetDuration: function() {
-			this._oReqModel.setProperty("/req_item/no_of_days", 0);
-			this._oReqModel.setProperty("/req_item/no_of_hours", 0);
+			// 7. Save it back to the JSON model
+			this._oReqModel.setProperty("/req_item/no_of_hours", fHours);
 		},
 
 		/* =========================================================
@@ -2128,8 +2192,13 @@ sap.ui.define([
 					submissionType,   // "REQ"
 					"release"
 				);
-				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
 				*/
+				const sSubmissionType2 = reqId.substring(0, 3);
+				try{
+					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
+				}catch (oError){
+
+				}
 
 				// 3) Send notifications
 				const oMailModel = this._oDataModel;
@@ -2187,8 +2256,13 @@ sap.ui.define([
 				// Budget release if applicable
 				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
 				await budgetCheck.budgetProcessing(oModelMain, dataset, submissionType, "release");
-				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
 				*/
+				const sSubmissionType2 = reqId.substring(0, 3);
+				try{
+					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
+				}catch (oError){
+
+				}
 
 				for (const p of payloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, p);

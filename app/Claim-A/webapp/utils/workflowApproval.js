@@ -85,6 +85,12 @@ sap.ui.define([
 			const sClaimsSubmissionDate = aClaimHeaderData[0].SUBMITTED_DATE;
 			const sClaimSubmissionYear = new Date(aClaimHeaderData[0].SUBMITTED_DATE).getFullYear();
             const sClaimsFinalCC = sClaimsAltCC ?? sClaimsCC ?? null;
+            const bClaimCashAdvance = false;
+
+            // Set cash advance boolean based on cash advance amount. If cash advance amount > 0, cash advance = TRUE
+            if(aClaimHeaderData[0].CASH_ADVANCE_AMOUNT > 0){
+                bClaimCashAdvance = true;
+            }
 
             // Add TOTAL_CLAIM_AMOUNT and PREAPPROVED_AMOUNT
             const sTotalClaimAmount = aClaimHeaderData[0].TOTAL_CLAIM_AMOUNT;
@@ -208,12 +214,15 @@ sap.ui.define([
 				aWorkflowRuleElimArr.push(aWorkflowRuleData[i].OUTCOME_WORKFLOW_CODE);
 				aWorkflowRuleElimArr.push(aWorkflowRuleData[i].THRESHOLD_VALUE);
 				aWorkflowRuleElimArr.push(aWorkflowRuleData[i].RECEIPT_AGE);
+                aWorkflowRuleElimArr.push(aWorkflowRuleData[i].CASH_ADVANCE);
 				
 				aNestedWorkflowRuleArr.push(aWorkflowRuleElimArr);
 				aWorkflowRuleElimArr = [];
 			}
 			
-			var iDateDiff = new Date(dFurthestReceiptDate) - new Date(sClaimsSubmissionDate);
+            const sSystemDate = new Date().toLocaleDateString('en-CA');
+			//var iDateDiff = new Date(dFurthestReceiptDate) - new Date(sClaimsSubmissionDate);
+            var iDateDiff = new Date(dFurthestReceiptDate) - new Date(sSystemDate);
 			iDateDiff = iDateDiff/86400000;
 			iDateDiff = Math.abs(iDateDiff);
 
@@ -230,6 +239,7 @@ sap.ui.define([
 			let aThresholdWorkflowCodeArr = [];
 			let aEmpCCWorkflowCodeArr = [];
 			let aReceiptAgingWorkflowCodeArr = [];
+            let aCashAdvWorkflowCodeArr = [];
 			for(var i = 0; i < aNestedWorkflowRuleArr.length; i++){
 
                 if(aNestedWorkflowRuleArr[i][3] == null){
@@ -279,11 +289,22 @@ sap.ui.define([
                 }else if(sReceiptAge == aNestedWorkflowRuleArr[i][6]){
 					aReceiptAgingWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
 				}
+
+                //cash adv is either true or false. 
+                if(aNestedWorkflowRuleArr[i][7]){
+                    if(bClaimCashAdvance){
+                        aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
+                    }
+                }else{
+                    if(!bClaimCashAdvance){
+                        aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
+                    }
+                }
 			}
 
 			//filter for the only workflow code that is the same among all the rule checks
 			const aCommonWorkflowCode = [...new Set(aRiskLevelWorkflowCodeArr)].filter(item => 
-				new Set(aThresholdWorkflowCodeArr).has(item) && new Set(aEmpCCWorkflowCodeArr).has(item) && new Set(aReceiptAgingWorkflowCodeArr).has(item)
+				new Set(aThresholdWorkflowCodeArr).has(item) && new Set(aEmpCCWorkflowCodeArr).has(item) && new Set(aReceiptAgingWorkflowCodeArr).has(item) && new Set(aCashAdvWorkflowCodeArr).has(item)
 			);
 
 			//get approver levels and approvers
@@ -438,7 +459,7 @@ sap.ui.define([
             for (const oApprover of aUniqueApproversDetails){
                 // If LEVEL = 0, Approver is Auto
                 if(oApprover.LEVEL > 0){
-                    oSubstitute = await WorkflowApproverHelper.getSubstitute(oModel, oApprover.EEID);
+                    oSubstitute = await WorkflowApproverHelper.getSubstitute(oModel, oEmployeeModel, oApprover.EEID);
                     if(oSubstitute){
                         oSubstituteDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oSubstitute.EEID);
                         if(oSubstituteDetails){
@@ -481,7 +502,7 @@ sap.ui.define([
 			}
 
             // submit the batch
-            await oModel.submitBatch("$auto");
+            // await oModel.submitBatch("$auto");
 
             // wait for all created
             const aCreatedContext = await Promise.all(aCreatePromises);
@@ -497,7 +518,7 @@ sap.ui.define([
                         // Populate array for sending email to approver
                         aPayloadMain.push({
                             "ApproverName":oApprover.APPROVER_NAME, 
-                            "SubmissionDate":sClaimsSubmissionDate, 
+                            "SubmissionDate":sSystemDate, 
                             "ClaimantName":oClaimantDetails.NAME, 
                             "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
                             "ClaimID":sClaimID, 
@@ -510,7 +531,7 @@ sap.ui.define([
                             // If substitute available, populate payload and send email to substitute also
                             aPayloadMain.push({
                                 "ApproverName":oApprover.SUB_NAME, 
-                                "SubmissionDate":sClaimsSubmissionDate, 
+                                "SubmissionDate":sSystemDate, 
                                 "ClaimantName":oClaimantDetails.NAME, 
                                 "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
                                 "ClaimID":sClaimID, 
@@ -564,6 +585,8 @@ sap.ui.define([
 			var sParTripStartDate = aPARHeaderData[0].TRIP_START_DATE;
             const sParFinalCC = sParAltCC ?? sParCC ?? null;
 
+            const sSystemDate = new Date().toLocaleDateString('en-CA');
+
             // Retrieve claimant details for use of entire function
             const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
             if(oClaimantDetails === null){
@@ -583,7 +606,7 @@ sap.ui.define([
 			let aParCashAdvArr = [];
 			for(var i = 0; i < aClaimsItemData.length; i++){
 				aParCashAdvArr.push(aClaimsItemData[i].CASH_ADVANCE);
-			}
+            }
 
 			//get employee info
 			const oListPAREmpMasterBinding = oModel.bindList(Constants.Entities.ZEMP_MASTER, null,null, [
@@ -666,24 +689,20 @@ sap.ui.define([
 					sTripStartAge = null;
 				}
 
-                if(aNestedWorkflowRuleArr[i][1] == null){
-                    aEmpCCWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
+                if(aNestedWorkflowRuleArr[i][2] == null){
+                    aTripStartAgingWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
                 }else if(sTripStartAge == aNestedWorkflowRuleArr[i][2]){
 					aTripStartAgingWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
 				}
 
-                //cash adv is either true or false. added a null check for human error when user create in config table
-                if(aNestedWorkflowRuleArr[i][0] == null){
-                    aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
+                //cash adv is either true or false. 
+                if(aNestedWorkflowRuleArr[i][0]){
+                    if(aParCashAdvArr.includes(true)){
+                        aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
+                    }
                 }else{
-                    if(aParCashAdvArr.includes("true") == true){
-                        if(aNestedWorkflowRuleArr[i][0] == 1){
-                            aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
-                        }
-                    }else{
-                        if(aNestedWorkflowRuleArr[i][0] == 0){
-                            aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
-                        }
+                    if(!aParCashAdvArr.includes(true)){
+                        aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
                     }
                 }
 			}
@@ -844,7 +863,7 @@ sap.ui.define([
             for (const oApprover of aUniqueApproversDetails){
                 // If LEVEL = 0, Approver is Auto
                 if(oApprover.LEVEL > 0){
-                    oSubstitute = await WorkflowApproverHelper.getSubstitute(oModel, oApprover.EEID);
+                    oSubstitute = await WorkflowApproverHelper.getSubstitute(oModel, oEmployeeModel, oApprover.EEID);
                     if(oSubstitute){
                         oSubstituteDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oSubstitute.EEID);
                         if(oSubstituteDetails){
@@ -885,10 +904,12 @@ sap.ui.define([
 			}
 
             // submit the batch
-            await oModel.submitBatch("$auto");
+            // await oModel.submitBatch("$auto");
 
             // wait for all created
             const aCreatedContext = await Promise.all(aCreatePromises);
+
+            
             
             try{
             // Send email notification to first level approver or
@@ -901,7 +922,7 @@ sap.ui.define([
                         // Populate array for sending email to approver
                         aPayloadMain.push({
                             "ApproverName":oApprover.APPROVER_NAME, 
-                            "SubmissionDate":sParTripStartDate, 
+                            "SubmissionDate":sSystemDate, 
                             "ClaimantName":oClaimantDetails.NAME, 
                             "ClaimType":oRequestTypeDesc.REQUEST_TYPE_DESC, 
                             "ClaimID":sPARID, 
@@ -914,7 +935,7 @@ sap.ui.define([
                             // If substitute available, populate payload and send email to substitute also
                             aPayloadMain.push({
                                 "ApproverName":oApprover.SUB_NAME, 
-                                "SubmissionDate":sParTripStartDate, 
+                                "SubmissionDate":sSystemDate, 
                                 "ClaimantName":oClaimantDetails.NAME, 
                                 "ClaimType":oRequestTypeDesc.REQUEST_TYPE_DESC, 
                                 "ClaimID":sPARID, 
