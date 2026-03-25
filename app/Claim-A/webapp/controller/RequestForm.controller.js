@@ -968,6 +968,8 @@ sap.ui.define([
 
 			if (oReqItem.est_amount == undefined || oReqItem.est_amount <= 0) return MessageBox.warning(Utility.getText("req_d_w_zero_amount"))
 
+			this.calculateNumberOfHours();
+
 			// Eligibility Checking
 			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
 			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, oPayload);
@@ -1036,8 +1038,8 @@ sap.ui.define([
 					TRANSFER_DATE:                oReqItem.tarikh_pindah || null,
 					START_TIME:                   oReqItem.start_time || null, 
 					END_TIME:                     oReqItem.end_time || null,
-					DEPARTURE_TIME:               oReqItem.departure_time || null,
-					ARRIVAL_TIME:                 oReqItem.arrival_time || null,
+					DEPARTURE_TIME:               new Date(oReqItem.departure_time).toISOString() || null,
+					ARRIVAL_TIME:                 new Date(oReqItem.arrival_time).toISOString() || null,
 					NO_OF_DAYS:                   parseInt(oReqItem.no_of_days, 10) || 0,
 					FAMILY_COUNT:                 parseInt(oReqItem.no_of_family_member, 10) || 0,
 					EST_NO_PARTICIPANT:           parseInt(oReqItem.est_no_participant, 10) || 1,
@@ -1838,53 +1840,37 @@ sap.ui.define([
 			this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
 		},
 
-		_calculateNumberOfHours: function() {
-			const oHeader = this._oReqModel.getProperty("/req_header") || {};
+		calculateNumberOfHours: function() {
 			const oItem = this._oReqModel.getProperty("/req_item") || {};
 
-			const dHeaderStart = oHeader.tripstartdate ? new Date(oHeader.tripstartdate) : null;
-			const dHeaderEnd = oHeader.tripenddate ? new Date(oHeader.tripenddate) : null;
+			const sDeparture = oItem.departure_time;
+			const sArrival   = oItem.arrival_time;
 
-			if (!dHeaderStart || !dHeaderEnd || isNaN(dHeaderStart.getTime()) || isNaN(dHeaderEnd.getTime())) {
-				this._resetDuration();
+			if (!sDeparture || !sArrival) {
+				this._oReqModel.setProperty("/req_item/no_of_hours", 0);
 				return;
 			}
 
-			const sStartTime = oItem.start_time; 
-			const sEndTime = oItem.end_time;     
+			const dDeparture = new Date(sDeparture);
+			const dArrival   = new Date(sArrival);
 
-			const dFinalStartWithTime = DateUtility.mergeDateTime(dHeaderStart, sStartTime);
-			const dFinalEndWithTime = DateUtility.mergeDateTime(dHeaderEnd, sEndTime);
+			if (isNaN(dDeparture.getTime()) || isNaN(dArrival.getTime())) {
+				this._oReqModel.setProperty("/req_item/no_of_hours", 0);
+				return; 
+			}
 
-			if (!dFinalStartWithTime || !dFinalEndWithTime || isNaN(dFinalStartWithTime.getTime()) || isNaN(dFinalEndWithTime.getTime())) {
-				this._resetDuration();
+			const iDiffMs = dArrival.getTime() - dDeparture.getTime();
+
+			if (iDiffMs < 0) {
+				MessageToast.show("Arrival time cannot be before Departure time.");
+				this._oReqModel.setProperty("/req_item/no_of_hours", 0);
 				return;
 			}
 
-			const iMsPerHour = 1000 * 60 * 60;
-			const iMsPerDay = iMsPerHour * 24;
+			const fHours = Math.round((iDiffMs / (1000 * 60 * 60)) * 100) / 100;
 
-			const iDiffMs = dFinalEndWithTime.getTime() - dFinalStartWithTime.getTime();
-			let fDiffHours = iDiffMs / iMsPerHour;
-			let iDiffDays = 0;
-
-			if (fDiffHours > 0) {
-				const iStartMidnight = new Date(dHeaderStart).setHours(0, 0, 0, 0);
-				const iEndMidnight = new Date(dHeaderEnd).setHours(0, 0, 0, 0);
-				
-				iDiffDays = Math.floor((iEndMidnight - iStartMidnight) / iMsPerDay) + 1;
-			} else {
-				fDiffHours = 0; 
-				iDiffDays = 0;  
-			}
-
-			this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
-			this._oReqModel.setProperty("/req_item/no_of_hours", parseFloat(fDiffHours.toFixed(2))); 
-		},
-
-		_resetDuration: function() {
-			this._oReqModel.setProperty("/req_item/no_of_days", 0);
-			this._oReqModel.setProperty("/req_item/no_of_hours", 0);
+			// 7. Save it back to the JSON model
+			this._oReqModel.setProperty("/req_item/no_of_hours", fHours);
 		},
 
 		/* =========================================================

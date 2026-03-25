@@ -744,8 +744,7 @@
                                             visible="false"
                                             id="i_departure_time">
                                     <form:fields>
-                                        <m:TimePicker
-                                            maskMode='On'
+                                        <m:DateTimePicker
                                             value="{request>/req_item/departure_time}"
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
@@ -757,8 +756,7 @@
                                             visible="false"
                                             id="i_arrival_time">
                                     <form:fields>
-                                        <m:TimePicker
-                                            maskMode='On'
+                                        <m:DateTimePicker
                                             value="{request>/req_item/arrival_time}"
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
