@@ -178,7 +178,7 @@ sap.ui.define([
             };
         },
         /**
-         * Fetch substitution rule record from ZEMP_SUBSTITUTION_RULES by EEID
+         * Fetch substitution rule record from ZEMP_SUBSTITUTION_RULE by EEID
          *
          * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
          * @param {string} sApproverEEID - Approver ID (EEID)
