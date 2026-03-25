@@ -339,6 +339,7 @@
 					change="onSelect_ClaimDetails_FareType"
 					liveChange="onSelect_ClaimDetails_FareType"
 					visible="false"
+					required="true"
 				>
 				</Select>
 
