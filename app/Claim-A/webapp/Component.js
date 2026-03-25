@@ -7,9 +7,10 @@ sap.ui.define([
     "claima/utils/PARequestSharedFunction",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator", 
-    "sap/m/MessageToast"
+    "sap/m/MessageToast",
+	"claima/utils/Validator"
 ],
-    (AppComponent, models, HashChanger, Utility, JSONModel, PARequestSharedFunction, Filter, FilterOperator, MessageToast) => {
+    (AppComponent, models, HashChanger, Utility, JSONModel, PARequestSharedFunction, Filter, FilterOperator, MessageToast, Validator) => {
         "use strict";
 
         return AppComponent.extend("claima.Component", {
@@ -141,6 +142,18 @@ sap.ui.define([
                     this._fnResetActivity,
                     this
                 );
+            },
+
+            /**
+             * Returns the validator
+             * @public
+             * @return {Validator} returns the validator
+             */
+            getValidator: function () {
+                if (!this._oValidator) {
+                    this._oValidator = new Validator();
+                }
+                return this._oValidator;
             },
 
             getInactivityTimeout: function () {
