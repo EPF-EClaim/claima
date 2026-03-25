@@ -302,7 +302,7 @@ sap.ui.define([
 			var sFundCenter		= oHeader.costcenter;
 			var sInternalCode	= oHeader.projectcode || "1";
 
-			return aItemRows.map(row => {
+			aItemRows.map(row => {
 				return {
 					"YEAR": sYear,
 					"INTERNAL_ORDER": sInternalCode,
@@ -319,13 +319,68 @@ sap.ui.define([
 
 		async backendBudgetChecking (oController, sSubmissionType, sAction = "SUBMIT") {
 
-			var oReqModel	= oController._oReqModel;
-			var oHeader		= oReqModel.getProperty('/req_header');
-			var aItemRows	= oReqModel.getProperty('/req_item_rows');
+			switch (sSubmissionType) {
+				case Constant.SubmissionTypePrefix.REQUEST:
+					var oReqModel	= oController._oReqModel;
+					var oHeader		= oReqModel.getProperty('/req_header');
+					var aItemRows	= oReqModel.getProperty('/req_item_rows');
 
-			const aPayload = await this._generateBudgetCheckPayload(oController, oHeader, aItemRows, sSubmissionType, sAction);
+					var sDate			= new Date(oHeader.reqdate);
+					var sYear			= String(sDate.getFullYear());
+					var sFundCenter		= oHeader.altcostcenter || oHeader.costcenter;
+					var sInternalCode	= oHeader.projectcode || "1";	// todo change to NA after flush db
 
-			const oAction	= oController._oDataModel.bindContext("/budgetchecking(...)");
+					var aPayload = aItemRows.map(row => {
+						return {
+							"YEAR": sYear,
+							"INTERNAL_ORDER": sInternalCode,
+							"FUND_CENTER": sFundCenter,
+							"MATERIAL_GROUP": row.MATERIAL_CODE,
+							"COMMITMENT_ITEM": row.GL_ACCOUNT,
+							"AMOUNT": parseFloat(row.EST_AMOUNT),
+							"CLAIM_TYPE_ITEM": row.CLAIM_TYPE_ITEM_ID,
+							"INDICATOR": sSubmissionType,
+							"ACTION": sAction
+						};
+					});
+					var oAction	= oController._oDataModel.bindContext("/budgetchecking(...)");
+					break;
+
+				case Constant.SubmissionTypePrefix.CLAIM:
+					var oClaimModel	= oController.getView().getModel("claimsubmission_input");
+					var oHeader		= oClaimModel.getProperty('/claim_header');
+					var aItemRows	= oClaimModel.getProperty('/claim_items');
+
+					var sDate			= new Date();
+					var sYear			= String(sDate.getFullYear());
+					var sFundCenter		= oHeader.alternate_cost_center || oHeader.cost_center;
+					var sInternalCode	= oHeader.project_code || "1";	// todo change to NA after flush db
+					var sCommitmentItem	= await this._getGLAccount(oController._oModel, oHeader.claim_type_id);
+
+					var aReturn = aItemRows.map(async row => {
+						return {
+							"YEAR": sYear,
+							"INTERNAL_ORDER": sInternalCode,
+							"FUND_CENTER": sFundCenter,
+							"MATERIAL_GROUP": await this._getMaterialCode(oController._oModel, row.claim_type_item_id),
+							"COMMITMENT_ITEM": sCommitmentItem,
+							"AMOUNT": parseFloat(row.amount),
+							"CLAIM_TYPE_ITEM": row.claim_type_item_id,
+							"INDICATOR": sSubmissionType,
+							"ACTION": sAction
+						};
+					});
+
+					var aPayload = await Promise.all(aReturn);
+					var oAction	= oController._oModel.bindContext("/budgetchecking(...)");
+					break;
+			
+				default:
+					break;
+			}
+
+			// const aPayload = await this._generateBudgetCheckPayload(oController, oHeader, aItemRows, sSubmissionType, sAction);
+
 			oAction.setParameter("budget", aPayload);
 
 			try {
@@ -340,7 +395,7 @@ sap.ui.define([
 			}
 		},
 
-		budgetCheckHandling: function (aResult) {
+		budgetCheckHandling (aResult) {
 			const aItems = aResult || [];
 			const aFailedClaimTypes = [];
 

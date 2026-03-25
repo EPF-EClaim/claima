@@ -316,6 +316,7 @@ sap.ui.define([
 
 									// update status to PENDING APPROVAL
 									await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
+									await Utility._updateSubmittedDate(this._oDataModel, sReqId);
 									this._oReqModel.setProperty("/view", 'view');
 
 									// Add in onPARApproverDetermination function
@@ -519,7 +520,9 @@ sap.ui.define([
 				meter_cube_actual		: oReqItem.METER_CUBE_ACTUAL || 0
 			});
 
-			this._oReqModel.setProperty("/view", bEdit ? "i_edit" : "view");
+			if (this._oReqModel.getProperty("/view") != "approver") {
+				this._oReqModel.setProperty("/view", bEdit ? "i_edit" : "view");
+			}
 
 			this._showItemCreate(this._oReqModel.getProperty("/view"));
 			this._loadParticipantsForItem(sReqId, sReqSubId);
@@ -958,6 +961,8 @@ sap.ui.define([
 			if (!sReqId) return MessageToast.show("Missing Request ID");
 			if (!oData.req_header.claimtype || !oReqItem.claim_type_item_id) return MessageToast.show("Select claim type/item");
 
+			if (oReqItem.est_amount == undefined || oReqItem.est_amount <= 0) return MessageBox.warning(Utility.getText("req_d_w_zero_amount"))
+
 			// Eligibility Checking
 			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this);
 			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, oPayload);
@@ -1323,25 +1328,84 @@ sap.ui.define([
 
 		onUploadParticipants(oEvent) {
 			var oFile = oEvent.getParameter("files")[0];
-			if (!oFile) return; // Safety check
+			if (!oFile) return;
+			
+			BusyIndicator.show(0);
 
 			var oReader = new FileReader();
 
-			oReader.onload = function (e) {
-				var oData = new Uint8Array(e.target.result);
-				var oWorkbook = XLSX.read(oData, { type: "array" });
-				var oWorkSheet = oWorkbook.Sheets[oWorkbook.SheetNames[0]];
-				var oJsonData = XLSX.utils.sheet_to_json(oWorkSheet);
-				oJsonData.push({ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" });
-				this._oReqModel.setProperty("/participant", oJsonData);
+			oReader.onload = async (e) => { 
+				try {
+					var oData = new Uint8Array(e.target.result);
+					var oWorkbook = XLSX.read(oData, { type: "array" });
+					var oWorkSheet = oWorkbook.Sheets[oWorkbook.SheetNames[0]];
+					var aJsonData = XLSX.utils.sheet_to_json(oWorkSheet);
 
+					if (!aJsonData || aJsonData.length === 0) {
+						MessageToast.show("The uploaded Excel file is empty.");
+						return;
+					}
 
-				var fu = this.byId("participant_list_upload");
-				fu.clear();
+					const aUploadedIds = [...new Set(
+						aJsonData
+							.map(row => String(row.PARTICIPANTS_ID || "").trim())
+							.filter(id => id !== "")
+					)];
 
-			}.bind(this);
+					if (aUploadedIds.length === 0) {
+						MessageToast.show("No valid Participant IDs found in the file.");
+						return;
+					}
+
+					const aInvalidIds = await this._getInvalidParticipantIds(aUploadedIds);
+
+					if (aInvalidIds.length > 0) {
+						MessageBox.error(
+							"Upload failed. The following Employee IDs are invalid or do not exist:\n\n" + 
+							aInvalidIds.join(", ")
+						);
+						return;
+					}
+
+					this._oReqModel.setProperty("/participant", aJsonData);
+					MessageToast.show("Participants successfully validated and uploaded.");
+
+				} catch (err) {
+					MessageBox.error("Error processing file: " + err.message);
+				} finally {
+					var fu = this.byId("participant_list_upload");
+					if (fu) fu.clear();
+					BusyIndicator.hide();
+				}
+			};
 
 			oReader.readAsArrayBuffer(oFile);
+		},
+
+		async _getInvalidParticipantIds(aUploadedIds) {
+			const iChunkSize = 100; 
+			let aFoundIdsInDB = [];
+
+			for (let i = 0; i < aUploadedIds.length; i += iChunkSize) {
+				const aChunk = aUploadedIds.slice(i, i + iChunkSize);
+				
+				const aFilters = aChunk.map(id => new sap.ui.model.Filter("EEID", sap.ui.model.FilterOperator.EQ, id));
+				const oCombinedFilter = new sap.ui.model.Filter({ filters: aFilters, and: false });
+
+				const oListBinding = this._oDataModel.bindList("/ZEMP_MASTER", null, null, [oCombinedFilter], {
+					$$groupId: "$auto",
+					$select: "EEID" 
+				});
+
+				const aContexts = await oListBinding.requestContexts(0, aChunk.length);
+				const aChunkFound = aContexts.map(ctx => ctx.getProperty("EEID"));
+				
+				aFoundIdsInDB = aFoundIdsInDB.concat(aChunkFound);
+			}
+
+			const aInvalidIds = aUploadedIds.filter(id => !aFoundIdsInDB.includes(id));
+			
+			return aInvalidIds;
 		},
 
 		_sanitizeFileName(s) {
