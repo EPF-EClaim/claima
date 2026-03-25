@@ -58,7 +58,7 @@ module.exports = (srv) => {
         }),
 
         srv.on('getUserType', async (req) => {
-            const { ZEMP_MASTER } = srv.entities;
+            const { ZEMP_MASTER, ZDEPARTMENT } = srv.entities;
             const emailFromToken =
                 req.user?.attr?.email ||
                 req.user?.attr?.mail ||
@@ -68,6 +68,7 @@ module.exports = (srv) => {
                 "";
 
             let sOrigin = null;
+
             try {
                 const authHeader = req.http?.req?.headers?.authorization ?? '';
                 const token = authHeader.split(' ')[1];
@@ -83,6 +84,8 @@ module.exports = (srv) => {
 
             const email = String(emailFromToken).trim().toLowerCase();
             const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
+            const dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: result.DEP });
+
             return {
                 id: email,
                 userType: result?.USER_TYPE || "UNKNOWN",
@@ -92,7 +95,7 @@ module.exports = (srv) => {
                 position: result?.POSITION_NAME || "UNKNOWN",
                 origin: sOrigin,
                 grade: result?.GRADE || "UNKNOWN",
-                department: result?.DEP || "UNKNOWN"
+                department: dept?.DEPARTMENT_DESC || "UNKNOWN"
             };
         });
 
