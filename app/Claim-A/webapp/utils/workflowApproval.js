@@ -213,7 +213,9 @@ sap.ui.define([
 				aWorkflowRuleElimArr = [];
 			}
 			
-			var iDateDiff = new Date(dFurthestReceiptDate) - new Date(sClaimsSubmissionDate);
+            var sSystemDate = new Date().toLocaleDateString('en-CA');
+			//var iDateDiff = new Date(dFurthestReceiptDate) - new Date(sClaimsSubmissionDate);
+            var iDateDiff = new Date(dFurthestReceiptDate) - new Date(sSystemDate);
 			iDateDiff = iDateDiff/86400000;
 			iDateDiff = Math.abs(iDateDiff);
 
@@ -438,7 +440,7 @@ sap.ui.define([
             for (const oApprover of aUniqueApproversDetails){
                 // If LEVEL = 0, Approver is Auto
                 if(oApprover.LEVEL > 0){
-                    oSubstitute = await WorkflowApproverHelper.getSubstitute(oEmployeeModel, oApprover.EEID);
+                    oSubstitute = await WorkflowApproverHelper.getSubstitute(oModel, oEmployeeModel, oApprover.EEID);
                     if(oSubstitute){
                         oSubstituteDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oSubstitute.EEID);
                         if(oSubstituteDetails){
@@ -844,7 +846,7 @@ sap.ui.define([
             for (const oApprover of aUniqueApproversDetails){
                 // If LEVEL = 0, Approver is Auto
                 if(oApprover.LEVEL > 0){
-                    oSubstitute = await WorkflowApproverHelper.getSubstitute(oEmployeeModel, oApprover.EEID);
+                    oSubstitute = await WorkflowApproverHelper.getSubstitute(oModel, oEmployeeModel, oApprover.EEID);
                     if(oSubstitute){
                         oSubstituteDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oSubstitute.EEID);
                         if(oSubstituteDetails){

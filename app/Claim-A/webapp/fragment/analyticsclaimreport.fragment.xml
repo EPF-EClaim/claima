@@ -739,8 +739,8 @@
         <footer>
             <Toolbar design="Solid" class="sapUiTinyMargin">
                 <ToolbarSpacer />
-                <Button id="btnExportAnalytics" text="{i18n>export}" type="Emphasized" press=".onExportAnalyticsReport"/>
                 <Button id="btnCloseAnalytics"  text="{i18n>back}" press=".onBackFromAnalyticsClaimReport"/>
+                <Button id="btnExportAnalytics" text="{i18n>export}" type="Emphasized" press=".onExportAnalyticsReport"/>
             </Toolbar>
         </footer>
 

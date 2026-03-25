@@ -9,6 +9,7 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
 	"sap/ui/export/Spreadsheet",
+	"sap/ui/mdc/enums/FieldEditMode",
 	"sap/m/library",
 	"sap/m/MessageToast",
 	"sap/m/Dialog",
@@ -40,6 +41,7 @@ sap.ui.define([
 	FilterOperator,
 	Sorter,
 	Spreadsheet,
+	FieldEditMode,
 	mLibrary,
 	MessageToast,
 	Dialog,
@@ -407,7 +409,7 @@ sap.ui.define([
 			this._loadSelections();
 
 			const oReqData = this._oReqModel.getData();
-			const aIndividual = ['IND', 'Individual'];	// will move to constants.js 
+			const aIndividual = ['IND', 'Individual'];
 			const sHeaderGrpType = oReqData.req_header.grptype;
 
 			oReqData.req_item = {
@@ -416,12 +418,15 @@ sap.ui.define([
 
 			// if group type is Individual
 			if (aIndividual.includes(sHeaderGrpType)) {
-
+				this.byId("ipb_upload_participant").setEnabled(false);
+				this.byId("ipb_delete_participant").setEnabled(false);
+				this.byId("idp_delete_row_participant").setVisible(false);
 				oReqData.participant = [{
 					PARTICIPANTS_ID: this._oSessionModel.getProperty("/userId"),
 					PARTICIPANT_NAME: this._oSessionModel.getProperty("/userName"),
 					PARTICIPANT_COST_CENTER: this._oSessionModel.getProperty("/costCenters"),
-					ALLOCATED_AMOUNT: ""
+					ALLOCATED_AMOUNT: "",
+					_EDIT_MODE: "Display"
 				}];
 			} else {
 				oReqData.participant = [{ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" }];
@@ -964,9 +969,9 @@ sap.ui.define([
 			if (oReqItem.est_amount == undefined || oReqItem.est_amount <= 0) return MessageBox.warning(Utility.getText("req_d_w_zero_amount"))
 
 			// Eligibility Checking
-			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this);
+			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
 			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, oPayload);
-			var	bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload);
+			var	bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.REQUEST);
 
 			if (!bCanProceed) return;
 

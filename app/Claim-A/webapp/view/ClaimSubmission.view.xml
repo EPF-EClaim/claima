@@ -17,6 +17,13 @@
             <OverflowToolbar>
                 <ToolbarSpacer/>
                 <!-- (Approver) -->
+                <!-- Back -->
+                <Button
+                    id="button_claimsubmission_back"
+                    press="onAction_ClaimSubmission_Toolbar('Back')"
+                    text="{i18n>button_claimsubmission_back}"
+                />
+
                 <!-- Reject -->
                 <Button
                     id="button_claimapprover_reject"
@@ -43,13 +50,6 @@
                 />
 
                 <!-- (Claim Summary) -->
-                <!-- Back -->
-                <Button
-                    id="button_claimsubmission_back"
-                    press="onAction_ClaimSubmission_Toolbar('Back')"
-                    text="{i18n>button_claimsubmission_back}"
-                />
-
                 <!-- Save Draft -->
                 <Button
                     id="button_claimsubmission_savedraft"
