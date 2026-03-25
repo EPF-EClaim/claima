@@ -24,7 +24,9 @@ sap.ui.define([
 	"claima/utils/SendBackDialog",
 	"claima/utils/ApproverUtility",
 	"claima/utils/workflowApproval",
-	"claima/utils/DateUtility"
+	"claima/utils/DateUtility",
+	"claima/utils/EligibilityCheck",
+	"claima/utils/EligibilityScenarios/EligibleScenarioCheck"
 ], function (
 	Fragment,
 	Item,
@@ -51,7 +53,9 @@ sap.ui.define([
 	SendBackDialog,
 	ApproverUtility,
 	workflowApproval,
-	DateUtility
+	DateUtility,
+	EligibilityCheck,
+	EligibleScenarioCheck
 ) {
 	"use strict";
 
@@ -2175,6 +2179,12 @@ sap.ui.define([
 				return;
 			}
 
+			// Eligibility Checking
+			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM);
+			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, oPayload);
+			var	bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
+
+			if (!bCanProceed) return;
 			
 			// validate attachment
 			//// attachment 1
