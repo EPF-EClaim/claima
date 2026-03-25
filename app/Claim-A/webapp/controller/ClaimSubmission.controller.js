@@ -1469,7 +1469,7 @@ sap.ui.define([
 					);
 					break;
 				//// Delete Report
-				case 'Delete Claim':
+				case 'Delete Report':
 					// confirm dialog
 					this._newDialog(
 						Utility.getText("dialog_claimsubmission_deletereport"),
@@ -3053,7 +3053,7 @@ sap.ui.define([
 						case 'Save Draft':
 							var oMsg = Utility.getText("msg_claimsubmission_changed");
 							break;
-						case 'Delete Claim':
+						case 'Delete Report':
 							oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.CANCELLED);
 							oMsg = Utility.getText("msg_claimsubmission_deleted");
 							break;
@@ -3092,7 +3092,7 @@ sap.ui.define([
 					MessageToast.show(oMsg);
 					//// change status based on oAction
 					switch (oAction) {
-						case 'Delete Claim':
+						case 'Delete Report':
 							oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.CANCELLED);
 							oInputModel.setProperty("/claim_header/descr/status_id", "CANCELLED");
 							this.onBack_ClaimSubmission();
