@@ -327,7 +327,9 @@ sap.ui.define([
 
 					var sDate			= new Date(oHeader.reqdate);
 					var sYear			= String(sDate.getFullYear());
-					var sFundCenter		= oHeader.altcostcenter || oHeader.costcenter;
+					var sFundCenter = (oHeader.altcostcenter && oHeader.altcostcenter !== "-") 
+										? oHeader.altcostcenter 
+										: oHeader.costcenter;
 					var sInternalCode	= oHeader.projectcode || "1";	// todo change to NA after flush db
 
 					var aPayload = aItemRows.map(row => {
