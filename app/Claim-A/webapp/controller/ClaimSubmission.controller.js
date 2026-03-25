@@ -130,19 +130,7 @@ sap.ui.define([
 				this._onNavBack();
 			}
 
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			// set view-only
-			// TODO: Revisit to make sure the claim is reloaded everytime
-			if (
-				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
-				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
-			) {
-				oClaimSubmissionModel.setProperty("/view_only", true)
-			}
-			else {
-				oClaimSubmissionModel.setProperty("/view_only", false)
-			}
-			
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");			
 			if (!oClaimSubmissionModel) {
 				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 				await this._loadClaimById(String(sClaimId));
@@ -159,6 +147,17 @@ sap.ui.define([
 					MessageToast.show(Utility.getText("msg_claimsubmission_missing", [sClaimId]))
 					this._onNavBack();
 				}
+			}
+			// set view-only
+			// TODO: Revisit to make sure the claim is reloaded everytime
+			if (
+				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
+				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
+			) {
+				oClaimSubmissionModel.setProperty("/view_only", true)
+			}
+			else {
+				oClaimSubmissionModel.setProperty("/view_only", false)
 			}
 
 			// load form fragments
@@ -1736,8 +1735,13 @@ sap.ui.define([
 					sSubmissionType,
 					this._oConstant.ApprovalProcessAction.RELEASE_IND
 				);
-				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
 				*/
+				const sSubmissionType2 = sClaimId.substring(0, 3);
+				try{
+					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
+				}catch (oError){
+
+				}
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
 				}
@@ -1803,6 +1807,7 @@ sap.ui.define([
 					oEmployeeViewModel,
 					this
 				);
+
 				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
 				await budgetCheck.budgetProcessing(
 					oModelMain,
@@ -1810,8 +1815,16 @@ sap.ui.define([
 					sSubmissionType,
 					this._oConstant.ApprovalProcessAction.RELEASE_IND
 				);
-				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
 				*/
+				
+
+				const sSubmissionType2 = sClaimId.substring(0, 3);
+				try{
+					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
+				}catch (oError){
+
+				}
+				
 
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
