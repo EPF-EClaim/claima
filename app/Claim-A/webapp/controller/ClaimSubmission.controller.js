@@ -2167,7 +2167,8 @@ sap.ui.define([
 				return;
 			}
 
-			if(this.byId("input_claimdetails_input_amount").getValue() == "0.00"){
+			if(this.byId("input_claimdetails_input_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_amount").getValue() == " " || 
+			   this.byId("input_claimdetails_input_amount").getValue() == "" || this.byId("input_claimdetails_input_amount").getValue() == null){
 				// stop claim submission if amount is zero
 				MessageToast.show(Utility.getText("msg_claiminput_amount_zero"));
 				return;
@@ -2917,6 +2918,12 @@ sap.ui.define([
 				var lastModifiedDate = this._getJsonDate(new Date());
 				oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 
+				//assign submitted date for submit oAction
+				if(oAction == "Submit Report"){
+					var submittedDate = this._getJsonDate(new Date());
+					oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
+				}
+
 				// assign report number to new claim
 				if (oInputModel.getProperty("/is_new")) {
 					var currentReportNumber = await this._getCurrentReportNumber('NR02');
@@ -3100,6 +3107,7 @@ sap.ui.define([
 							oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.PENDING_APPROVAL);
 							oInputModel.setProperty("/claim_header/descr/status_id", "PENDING APPROVAL");
 							if (!oInputModel.getProperty("/claim_header/submitted_date")) {
+								var submittedDate = this._getJsonDate(new Date());
 								oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
 							}
 							this.onBack_ClaimSubmission();
@@ -3592,10 +3600,11 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel();
 			var oInputModel = this.getView().getModel("claimitem_input");
 
-			const claimTypeItemFromModel = oInputModel.getProperty("/claim_item/claim_type_item_id");
-			const claim_type_item = claimTypeItemFromModel;
+			const sClaimTypeItemFromModel = oInputModel.getProperty("/claim_item/claim_type_item_id");
+			const sClaimTypeID = oInputModel.getProperty("/claim_item/claim_type_id");
+			const sClaim_type_item = sClaimTypeItemFromModel;
 
-			if (!claim_type_item) {
+			if (!sClaim_type_item) {
 				console.warn("No claim item found.");
 				return;
 			}
@@ -3603,7 +3612,8 @@ sap.ui.define([
 			const oListBinding = oModel.bindList("/ZDB_STRUCTURE", null, null, [
 				new Filter("SUBMISSION_TYPE", FilterOperator.EQ, "CLAIM"),
 				new Filter("COMPONENT_LEVEL", FilterOperator.EQ, "ITEM"),
-				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, claim_type_item)
+				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaim_type_item),
+				new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimTypeID)
 			]);
 
 			try {
