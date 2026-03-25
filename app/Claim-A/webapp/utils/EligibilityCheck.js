@@ -33,7 +33,7 @@ sap.ui.define([
 						"flight_class"          : "FLIGHT_CLASS_ID",
 						"marriage_cat"          : "MARRIAGE_CATEGORY",
 						"vehicle_class"         : "TRANSPORT_CLASS",
-						"travel_hours"          : "TRAVEL_HOURS"
+						"no_of_hours"          	: "TRAVEL_HOURS"
 					};
 					break;
 
@@ -63,15 +63,15 @@ sap.ui.define([
 			const aActiveFields = Object.entries(oMapping).reduce((acc, [sKey, sTargetName]) => {
 				const val = oItemData[sKey];
 				
-				const bIsValid = val !== null && val !== undefined;
+				// const bIsValid = val !== null && val !== undefined;
 
-				if (bIsValid) {
+				// if (bIsValid) {
 					acc.push({
 						fieldName: sTargetName,
 						value: val,
 						result: null
 					});
-				}
+				// }
 				return acc;
 			}, []);
 
