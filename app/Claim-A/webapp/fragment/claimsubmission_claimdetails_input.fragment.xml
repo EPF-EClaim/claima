@@ -837,6 +837,7 @@
 					id="input_claimdetails_input_phone_no"
 					value="{claimitem_input>/claim_item/phone_no}"
 					visible="false"
+					required="true"
 				/>
 
 				<!-- Disclaimer -->
