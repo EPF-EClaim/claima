@@ -270,8 +270,8 @@ module.exports = (srv) => {
 
                 if (!budgetRecord) {
                     error = true;
-                    errorResults.push({ 
-                        ...condition, 
+                    errorResults.push({
+                        ...condition,
                         STATUS: Constant.BudgetCheckStatus.NOT_FOUND,
                         CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
                     });
@@ -297,10 +297,10 @@ module.exports = (srv) => {
                 if (error) continue;
 
                 if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
-                    successResults.push({ 
-                        ...condition, 
+                    successResults.push({
+                        ...condition,
                         STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
-                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM 
+                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM
                     });
                     continue;
                 }
@@ -548,4 +548,40 @@ module.exports = (srv) => {
         }
     });
 
+    srv.on('batchDisbursementUpdate', async (req) => {
+        const { ZEMP_CA_PAYMENT } = srv.entities;
+        try {
+            const { disbursement } = req.data;
+            if (!disbursement || disbursement.length === 0) {
+                throw new Error('No Data Sent')
+            }
+
+            const first = disbursement[0];
+            const tx = cds.tx(req);
+
+            if (!("DISBURSEMENT_STATUS" in first)) {
+
+                const requestIds = disbursement.map(d => d.REQUEST_ID);
+                const results = await tx.run(
+                    SELECT.from(ZEMP_CA_PAYMENT)
+                        .where({ REQUEST_ID: { in: requestIds } })
+                );
+
+                return results;
+
+            } else {
+                const updatePromises = disbursement.map(item => {
+                    return tx.run(
+                        UPDATE(ZEMP_CA_PAYMENT)
+                            .set({ DISBURSEMENT_STATUS: item.DISBURSEMENT_STATUS })
+                            .where({ REQUEST_ID: item.REQUEST_ID })
+                    );
+                });
+                await Promise.all(updatePromises);
+                return "Records updated";
+            }
+        } catch (error) {
+            req.error(400, `Fail creating record: ${error.message}`);
+        }
+    })
 }
