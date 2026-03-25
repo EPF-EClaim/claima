@@ -26,14 +26,15 @@ sap.ui.define([
       });
       this.getView().setModel(oVM, "vm");
       this._oSessionModel 	= this.getOwnerComponent().getModel("session");
+      this._oRoleModel      = this.getOwnerComponent().getModel("roleModel");
       
     // Resolve user type via function import
       const oModel = this.getOwnerComponent().getModel();
       const ctx = oModel.bindContext("/getUserType()");
+      var isApprover = this._oRoleModel.getProperty("/isApprover");
       ctx.requestObject().then((oData) => {
         const sType = (oData && oData.userType) || "UNKNOWN";
-        oVM.setProperty("/isApprover", sType === "Approver");
-
+        oVM.setProperty("/isApprover", isApprover);
         // Recompute delete visibility with current selection state
         oVM.setProperty(
           "/canDelete",

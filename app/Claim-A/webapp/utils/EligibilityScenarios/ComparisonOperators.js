@@ -21,7 +21,7 @@ sap.ui.define([
          * @returns {Boolean/Integer/String} Comparison Output
 		 */
         GreaterEquals(sVal1, sVal2){
-            if( sVal1 >= sVal2 ){
+            if( parseFloat(sVal1) >= parseFloat(sVal2) ){
                 return true;
             }else{
                 return sVal2;
@@ -36,7 +36,7 @@ sap.ui.define([
          * @returns {Boolean/Integer/String} Comparison Output
 		 */
         LesserEquals(sVal1, sVal2){
-            if( sVal1 <= sVal2 ){
+            if ( parseFloat(sVal1) <= parseFloat(sVal2) ){
                 return true;
             }else{
                 return sVal2;
