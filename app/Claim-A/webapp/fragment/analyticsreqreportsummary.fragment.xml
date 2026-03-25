@@ -416,15 +416,15 @@
             >
                 <ToolbarSpacer />
                 <Button
+                    id="btnCloseAnalytics_reqsum"
+                    text="{i18n>back}"
+                    press=".onBackFromAnalyticsClaimReport"
+                />
+                <Button
                     id="btnExportAnalytics_reqsum"
                     text="{i18n>export}"
                     type="Emphasized"
                     press=".onExportAnalyticsReport"
-                />
-                <Button
-                    id="btnCloseAnalytics_reqsum"
-                    text="{i18n>back}"
-                    press=".onBackFromAnalyticsClaimReport"
                 />
             </Toolbar>
         </footer>
