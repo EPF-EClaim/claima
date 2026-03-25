@@ -755,7 +755,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             key REQUEST_ID,
             key ZREQUEST_ITEM.REQUEST_SUB_ID,
                 EMP_ID,
-                LAST_MODIFIED_DATE,
+                modifiedAt,
                 SUBMITTED_DATE,
                 CASH_ADVANCE,
                 ZREQUEST_ITEM.EST_AMOUNT,
