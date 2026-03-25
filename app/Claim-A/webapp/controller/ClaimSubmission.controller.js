@@ -1720,8 +1720,13 @@ sap.ui.define([
 					sSubmissionType,
 					this._oConstant.ApprovalProcessAction.RELEASE_IND
 				);
-				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
 				*/
+				const sSubmissionType2 = sClaimId.substring(0, 3);
+				try{
+					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
+				}catch (oError){
+
+				}
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
 				}
@@ -1787,6 +1792,7 @@ sap.ui.define([
 					oEmployeeViewModel,
 					this
 				);
+
 				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
 				await budgetCheck.budgetProcessing(
 					oModelMain,
@@ -1794,8 +1800,16 @@ sap.ui.define([
 					sSubmissionType,
 					this._oConstant.ApprovalProcessAction.RELEASE_IND
 				);
-				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
 				*/
+				
+
+				const sSubmissionType2 = sClaimId.substring(0, 3);
+				try{
+					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
+				}catch (oError){
+
+				}
+				
 
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);

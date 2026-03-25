@@ -2192,8 +2192,13 @@ sap.ui.define([
 					submissionType,   // "REQ"
 					"release"
 				);
-				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
 				*/
+				const sSubmissionType2 = reqId.substring(0, 3);
+				try{
+					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
+				}catch (oError){
+
+				}
 
 				// 3) Send notifications
 				const oMailModel = this._oDataModel;
@@ -2251,8 +2256,13 @@ sap.ui.define([
 				// Budget release if applicable
 				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
 				await budgetCheck.budgetProcessing(oModelMain, dataset, submissionType, "release");
-				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
 				*/
+				const sSubmissionType2 = reqId.substring(0, 3);
+				try{
+					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
+				}catch (oError){
+
+				}
 
 				for (const p of payloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, p);
