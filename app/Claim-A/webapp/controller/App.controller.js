@@ -1737,7 +1737,7 @@ sap.ui.define([
 											width: "1rem",
 											class: "sapUiLargeMarginBeginEnd"
 										}),
-										new Text({ text: "{userId>/userId}" })
+										new Text({ text: "{session>/userId}" })
 									]
 								}),
 								new HBox({

@@ -76,11 +76,11 @@ sap.ui.define([
 
                 this.setModel(models.createConstantModel(), "constant");
 
-                this.setInactivityTimeout(118 * 60 * 1000);
+                this.setInactivityTimeout(600000);
                 this._initActivityTracking(); 
                 this.startInactivityTimer();
 
-                this._oRouter.attachRouteMatched(this._onRouteMatched,this);
+                this.getRouter().attachRouteMatched(this._onRouteMatched,this);
             },
 
             _loadCurrentUser: function () {

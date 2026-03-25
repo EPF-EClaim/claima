@@ -178,7 +178,7 @@ sap.ui.define([
             };
         },
         /**
-         * Fetch substitution rule record from ZSUBSTITUTION_RULES by EEID
+         * Fetch substitution rule record from ZEMP_SUBSTITUTION_RULES by EEID
          *
          * @param {sap.ui.model.odata.v4.ODataModel} oModel - OData model instance
          * @param {string} sApproverEEID - Approver ID (EEID)
@@ -195,7 +195,7 @@ sap.ui.define([
             await oModel.getMetaModel().requestObject("/");
 
             // Main table path
-            const sSubstitutionRulesTablePath = Constants.Entities.ZSUBSTITUTION_RULES;
+            const sSubstitutionRulesTablePath = Constants.Entities.ZEMP_SUBSTITUTION_RULE;
 
             // Convert to ISO date string (YYYY-MM-DD)
             const sToday = dDate.toISOString().split("T")[0];
@@ -458,7 +458,7 @@ sap.ui.define([
             await oModel.getMetaModel().requestObject("/");
 
             // Main table path
-            const sSubstitutionRulesTablePath = Constants.Entities.ZEMP_SUBSTITUTION_RULES;
+            const sSubstitutionRulesTablePath = Constants.Entities.ZEMP_SUBSTITUTION_RULE;
 
             // Convert to ISO date string (YYYY-MM-DD)
             const sToday = dDate.toISOString().split("T")[0];
