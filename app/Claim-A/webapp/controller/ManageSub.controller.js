@@ -25,6 +25,7 @@ sap.ui.define([
         canDelete: false
       });
       this.getView().setModel(oVM, "vm");
+      this._oSessionModel 	= this.getOwnerComponent().getModel("session");
       
     // Resolve user type via function import
       const oModel = this.getOwnerComponent().getModel();
@@ -134,7 +135,7 @@ sap.ui.define([
       const oDRS = this.byId("drs");
       const dStart = oDRS.getDateValue();
       const dEnd   = oDRS.getSecondDateValue();
-      const userModelData = this.getView().getModel('user').getData();
+      const userModelData = this._oSessionModel.getData();
 			const emp_data = await this._getEmpIdDetail(userModelData.email);
       const sUserId = emp_data.eeid;
 
