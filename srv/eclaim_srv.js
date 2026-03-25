@@ -215,6 +215,8 @@ module.exports = (srv) => {
 
                     const updatePayload = { ...row };
                     excludeFields.forEach(f => delete updatePayload[f]);
+                    
+                    updatePayload.CURRENT_BUDGET = row.ORIGINAL_BUDGET + row.VIREMENT_IN + row.VIREMENT_OUT + row.SUPPLEMENT + row.RETURN;
 
                     await tx.run(
                         UPDATE(ZBUDGET)
