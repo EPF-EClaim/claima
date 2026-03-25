@@ -390,7 +390,11 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 NO_OF_DAYS,
                 FAMILY_COUNT,
                 FUNERAL_TRANSPORTATION,
-                createdBy
+                createdBy,
+                ACTUAL_AMOUNT,
+                CURRENCY_CODE,
+                CURRENCY_RATE,
+                CURRENCY_AMOUNT
         };
 
     entity ZEMP_REQUEST_STATUS           as
