@@ -6,9 +6,10 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "claima/utils/PARequestSharedFunction",
     "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator"
+    "sap/ui/model/FilterOperator",
+	"claima/utils/Validator"
 ],
-    (AppComponent, models, HashChanger, Utility, JSONModel, PARequestSharedFunction, Filter, FilterOperator) => {
+    (AppComponent, models, HashChanger, Utility, JSONModel, PARequestSharedFunction, Filter, FilterOperator, Validator) => {
         "use strict";
 
         return AppComponent.extend("claima.Component", {
@@ -140,6 +141,18 @@ sap.ui.define([
                     this._fnResetActivity,
                     this
                 );
+            },
+
+            /**
+             * Returns the validator
+             * @public
+             * @return {Validator} returns the validator
+             */
+            getValidator: function () {
+                if (!this._oValidator) {
+                    this._oValidator = new Validator();
+                }
+                return this._oValidator;
             },
 
             getInactivityTimeout: function () {

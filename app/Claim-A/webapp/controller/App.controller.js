@@ -889,6 +889,14 @@ sap.ui.define([
 		onClaimSubmission_ClaimInput: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("claimsubmission_input");
+
+			if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
+				MessageToast.show(Utility.getText("msg_claiminput_required"), {
+					closeOnBrowserNavigation: false
+				});
+				return;
+			}
+
 			// validate required fields
 			var reqFields = [
 				"input_claiminput_purpose",
