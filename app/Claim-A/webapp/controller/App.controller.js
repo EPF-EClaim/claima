@@ -152,12 +152,7 @@ sap.ui.define([
 					break;
 				//Start Aiman Salim 08/03/2026 - Added for MyApproval
 				case "approval":
-					if (sType === sApprover || sType === sSuperUser) {
 						this._oRouter.navTo("MyApproval");
-					} else {
-						var message = Utility.getText("msg_unauthorized_role");
-						MessageBox.error(message);
-					}
 					break;
 				//End Aiman Salim 08/03/2026 - Added for MyApproval
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
