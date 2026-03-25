@@ -2918,6 +2918,12 @@ sap.ui.define([
 				var lastModifiedDate = this._getJsonDate(new Date());
 				oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 
+				//assign submitted date for submit oAction
+				if(oAction == "Submit Report"){
+					var submittedDate = this._getJsonDate(new Date());
+					oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
+				}
+
 				// assign report number to new claim
 				if (oInputModel.getProperty("/is_new")) {
 					var currentReportNumber = await this._getCurrentReportNumber('NR02');
@@ -3117,6 +3123,7 @@ sap.ui.define([
 							oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.PENDING_APPROVAL);
 							oInputModel.setProperty("/claim_header/descr/status_id", "PENDING APPROVAL");
 							if (!oInputModel.getProperty("/claim_header/submitted_date")) {
+								var submittedDate = this._getJsonDate(new Date());
 								oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
 							}
 							this.onBack_ClaimSubmission();
