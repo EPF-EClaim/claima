@@ -3029,7 +3029,6 @@ sap.ui.define([
 							var oEmployeeViewModel = this.getView().getModel("employee_view");
 							workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
 						}
-
 						MessageToast.show(oMsg);
 						this._onNavBack();
 					}).catch(err => {
