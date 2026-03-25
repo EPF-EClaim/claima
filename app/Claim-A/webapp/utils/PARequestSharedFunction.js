@@ -101,6 +101,16 @@ sap.ui.define([
 				{ $$ownRequest: true, $count: true }
 			);
 
+			const oDateTimeFormatter = sap.ui.core.format.DateFormat.getDateTimeInstance({
+				pattern: "dd MMM yyyy HH:mm"
+			});
+
+			const formatSafeDateTime = (sDate) => {
+				if (!sDate) return null;
+				const dParsed = new Date(sDate);
+				return isNaN(dParsed.getTime()) ? sDate : oDateTimeFormatter.format(dParsed);
+			};
+
 			try {
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 				
@@ -109,7 +119,9 @@ sap.ui.define([
 					return {
 						...oItem,
 						EST_AMOUNT: parseFloat(oItem.EST_AMOUNT) || 0,
-						EST_NO_PARTICIPANT: parseInt(oItem.EST_NO_PARTICIPANT, 10) || 1
+						EST_NO_PARTICIPANT: parseInt(oItem.EST_NO_PARTICIPANT, 10) || 1,
+						DEPARTURE_TIME: formatSafeDateTime(oItem.DEPARTURE_TIME),
+                		ARRIVAL_TIME:   formatSafeDateTime(oItem.ARRIVAL_TIME)
 					};
 				});
 				oReq.setProperty("/req_item_rows", aItems);
