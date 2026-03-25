@@ -38,17 +38,19 @@ sap.ui.define([
 				and: false // OR condition between the two
 			});
 
-			const oStatusPending = new Filter(
-				this._oConstant.EntitiesFields.STATUS,
-				FilterOperator.EQ,
-				this._oConstant.ClaimStatus.PENDING_APPROVAL // use the exact code/value your backend expects
-			);
-			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
-			const oCombined = new Filter({
-				filters: [oApproverOrSub, oStatusPending],
-				and: true // AND between groups
+            const oStatus = new Filter({
+				filters: [
+					new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimStatus.PENDING_APPROVAL),
+					new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimStatus.SEND_BACK)
+				],
+				and: false // OR condition between the two
 			});
 
+			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING_APPROVAL' OR 'SEND_BACK'
+			const oCombined = new Filter({
+				filters: [oApproverOrSub, oStatus],
+				and: true // AND between groups
+			});
 
 			const oListBinding = this._oEmployeeViewModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
 				[new Sorter(this._oConstant.EntitiesFields.STATUS, true)], // desc by STATUS
