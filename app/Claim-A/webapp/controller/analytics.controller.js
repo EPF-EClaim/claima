@@ -33,6 +33,7 @@ sap.ui.define([
 
 
     onInit: function () {
+      this._oSessionModel 	= this.getOwnerComponent().getModel("session");
     },
     /* ===========================================================
      *  NAVIGATION + DIALOG
@@ -115,10 +116,8 @@ sap.ui.define([
 
     //Helper for enable/disable cc
     _applyCostCenterAccess: function () {
-      const accessModel = this.getOwnerComponent().getModel("access");
-      const userType = accessModel?.getProperty("/userType");
-      const userCC = accessModel?.getProperty("/costcenters"); // array or string
-      const isAdmin = this.isAdminRole(userType);
+      const userCC = this._oSessionModel.getProperty("/costcenters"); 
+      const isAdmin = this.isAdminRole(this._oSessionModel.getProperty("/userType"));
       const ccMCB = this.byId("cc");         // MultiComboBox
       const ccText = this.byId("ccText");    // Text input for non-admins
 
@@ -161,14 +160,10 @@ sap.ui.define([
       }
     },
 
-
     isAdminRole: function (userType) {
       const adminRoles = ["DTD Admin", "JKEW Admin", "Super Admin"];
       return adminRoles.includes(userType);
     },
-
-
-
 
     onCloseDialog: function (oEvent) {
       let oCtrl = oEvent.getSource();
@@ -356,10 +351,8 @@ sap.ui.define([
       this._addOrFilter(a, "GL_ACCOUNT", glKeys);
 
       // Cost Center rules
-      const accessModel = this.getOwnerComponent().getModel("access");
-      const userType = accessModel?.getProperty("/userType");
-      const userCC = accessModel?.getProperty("/costcenters");
-      const isAdmin = this.isAdminRole(userType);
+      const userCC = this._oSessionModel.getProperty("/costcenters"); 
+      const isAdmin = this.isAdminRole(this._oSessionModel.getProperty("/userType"));
 
       if (isAdmin) {
         // ADMIN → free selection

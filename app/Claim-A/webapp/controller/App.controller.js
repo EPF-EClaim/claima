@@ -54,6 +54,7 @@ sap.ui.define([
 			this._oViewModel 		= this.getOwnerComponent().getModel('employee_view');
 			this._oReqModel			= this.getOwnerComponent().getModel('request');
 			this._oReqStatusModel 	= this.getOwnerComponent().getModel("request_status");
+			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
 			
 			// oReportModel
 			var oReportModel = new JSONModel({
@@ -400,7 +401,7 @@ sap.ui.define([
 			// set new claim submission model;
 			var oInputModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 			//// set employee data
-			var oUserModelData = this.getView().getModel('user')?.getData() || this.getView().getModel("userId")?.getData() || null;
+			var oUserModelData = this.getView().getModel('user')?.getData() || this._oSessionModel?.getData() || null;
 			if (!oUserModelData) {
 				MessageToast.show(Utility.getText("msg_claimprocess_nouser"));
 				if (this.oDialog_ClaimProcess) {
@@ -769,7 +770,6 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var lastModifiedDate = this._getJsonDate(new Date());
 			oInputModel.setProperty("/is_new", true);
-			oInputModel.setProperty("/claim_header/emp_id", oInputModel.getProperty("/emp_master/eeid"));
 			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 			oInputModel.setProperty("/claim_header/claim_type_id", oInputModel.getProperty("/claimtype/type"));
 			oInputModel.setProperty("/claim_header/submission_type", oInputModel.getProperty("/claimtype/category"));
@@ -918,7 +918,7 @@ sap.ui.define([
 				var attachmentNumber = await Attachment.postAttachment(
 					oInputModel.getProperty("/attachment/fileName"),
 					oInputModel.getProperty("/attachment/fileContent"),
-					oInputModel.getProperty("/claim_header/emp_id")
+					this._oSessionModel.getProperty("/userId")
 				);
 				if (attachmentNumber) {
 					oInputModel.setProperty("/claim_header/attachment_email_approver", attachmentNumber);
@@ -995,7 +995,7 @@ sap.ui.define([
 
 			// set body for update
 			var oBody = new JSONModel({
-				EMP_ID: oInputModel.getProperty("/claim_header/emp_id"),
+				EMP_ID: this._oSessionModel.getProperty("/userId"),
 				PURPOSE: oInputModel.getProperty("/claim_header/purpose"),
 				TRIP_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")),
 				TRIP_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")),
@@ -1061,12 +1061,12 @@ sap.ui.define([
 						claimSaved = true;
 						await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
 						// post MDF for header attachment
-						if (oInputModel.getProperty("/claim_header/attachment_email_approver")) {
+						// if (oInputModel.getProperty("/claim_header/attachment_email_approver")) {
 							await Attachment.postMDF(
 								oInputModel.getProperty("/claim_header/claim_id"),
 								oInputModel.getProperty("/claim_header/attachment_email_approver")
 							)
-						}
+						// }
 
 						if (claimSaved) {
 							MessageToast.show(Utility.getText("msg_claimsubmission_created", [oInputModel.getProperty("/claim_header/claim_id")]));
@@ -1353,11 +1353,9 @@ sap.ui.define([
 
 		onClickCreateRequest: async function () {
 			BusyIndicator.show(0);
-			const oDialogModel 	= this.oDialogFragment.getModel("reqDialog");
-			const oDialogData	= oDialogModel.getData();
-			const sEmpId 		= this._oReqModel.getProperty('/user/emp_id');
-			let bOkCode 		= true;
-			let sErrorMessage 	= '';
+			const oDialogModel  = this.oDialogFragment.getModel("reqDialog");
+			const oDialogData   = oDialogModel.getData();
+			const sEmpId        = this._oSessionModel.getProperty("/userId");
 
 			const oMandatoryFields = {
 				'RT0001': ['purpose', 'reqtype', 'tripstartdate', 'tripenddate', 'eventstartdate', 'eventenddate', 'grptype', 'location', 'transport', 'comment'],
@@ -1369,36 +1367,55 @@ sap.ui.define([
 			};
 
 			try {
-				const oFieldsToCheck = oMandatoryFields[oDialogData.reqtype] || [''];
-				const bIsMissing = oFieldsToCheck.some(field => !oDialogData[field] || oDialogData[field] === "");
+				const aFieldsToCheck = oMandatoryFields[oDialogData.reqtype] || [];
+				const bIsMissing = aFieldsToCheck.some(field => !oDialogData[field] || String(oDialogData[field]).trim() === "");
 
 				if (bIsMissing) {
-					bOkCode = false;
-					sErrorMessage = "req_d_w_mandatory_field";
-				} else if (!oDialogData.doc1) {
-					bOkCode = false;
-					sErrorMessage = 'req_d_w_mandatory_attach1';
-				} else if (oDialogData.tripenddate < oDialogData.tripstartdate) {
-					bOkCode = false;
-					sErrorMessage = "req_d_w_check_date";
+					MessageBox.error(Utility.getText("req_d_w_mandatory_field"));
+					return; 
 				}
 
-				if (!bOkCode) {
-					BusyIndicator.hide();
-					MessageBox.error(Utility.getText(sErrorMessage));
-				} else {
-						var sAttachment1Binary = await Attachment.getFileAsBinary(oDialogData.doc1);
-						var sAttachment1SFId = await Attachment.postAttachment(oDialogData.doc1.name, sAttachment1Binary, sEmpId);
-							oDialogData.doc1 = `${sAttachment1SFId} - ${oDialogData.doc1.name}`;
-						if (oDialogData.doc2) {
-							var sAttachment2Binary = await Attachment.getFileAsBinary(oDialogData.doc2);
-							var sAttachment2SFId = await Attachment.postAttachment(oDialogData.doc2.name, sAttachment2Binary, sEmpId);
-							oDialogData.doc2 = `${sAttachment2SFId} - ${oDialogData.doc2.name}`;
-						}
-						await this.createRequestHeader(oDialogData);
+				if (!oDialogData.doc1) {
+					MessageBox.error(Utility.getText('req_d_w_mandatory_attach1'));
+					return;
 				}
+
+				const tStart = oDialogData.tripstartdate ? new Date(oDialogData.tripstartdate) : null;
+				const tEnd   = oDialogData.tripenddate   ? new Date(oDialogData.tripenddate)   : null;
+				const eStart = oDialogData.eventstartdate ? new Date(oDialogData.eventstartdate) : null;
+				const eEnd   = oDialogData.eventenddate   ? new Date(oDialogData.eventenddate)   : null;
+
+				if (tStart && tEnd && (tEnd < tStart)) {
+					MessageBox.error(Utility.getText("req_d_w_check_date"));
+					return;
+				}
+
+				if (eStart && eEnd && (eEnd < eStart)) {
+					MessageBox.error(Utility.getText("req_d_w_check_event_date") || "Event End Date cannot be before Event Start Date.");
+					return;
+				}
+
+				if (tStart && tEnd && eStart && eEnd) {
+					if (eStart < tStart || eEnd > tEnd) {
+						MessageBox.error(Utility.getText("req_d_w_event_within_trip") || "Event dates must fall within the Trip dates.");
+						return;
+					}
+				}
+
+				const sAttachment1Binary = await Attachment.getFileAsBinary(oDialogData.doc1);
+				const sAttachment1SFId = await Attachment.postAttachment(oDialogData.doc1.name, sAttachment1Binary, sEmpId);
+				oDialogData.doc1 = `${sAttachment1SFId} - ${oDialogData.doc1.name}`;
+				
+				if (oDialogData.doc2) {
+					const sAttachment2Binary = await Attachment.getFileAsBinary(oDialogData.doc2);
+					const sAttachment2SFId = await Attachment.postAttachment(oDialogData.doc2.name, sAttachment2Binary, sEmpId);
+					oDialogData.doc2 = `${sAttachment2SFId} - ${oDialogData.doc2.name}`;
+				}
+
+				await this.createRequestHeader(oDialogData);
+
 			} catch (err) {
-				MessageBox.error(err.message);
+				MessageBox.error(err.message || "An error occurred during submission.");
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -1407,8 +1424,8 @@ sap.ui.define([
 		createRequestHeader: async function (oInputData) {
 			const oListBinding  = this._oDataModel.bindList("/ZREQUEST_HEADER");
 
-			let sEmpId          = this._oReqModel.getProperty("/user/emp_id");
-			let sCostCenter     = this._oReqModel.getProperty("/user/cost_center");
+			let sEmpId          = this._oSessionModel.getProperty("/userId");
+			let sCostCenter     = this._oSessionModel.getProperty("/costCenters");
 
 			try {
 				BusyIndicator.show(0);

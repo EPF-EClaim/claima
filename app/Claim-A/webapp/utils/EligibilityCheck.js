@@ -14,7 +14,7 @@ sap.ui.define([
 		generateEligibilityCheckPayload (oController) {
 			var oData     = oController._oReqModel.getProperty('/req_item');
 
-			var sEmpId         = oController._oReqModel.getProperty('/user/emp_id');
+			var sEmpId         = oController._oSessionModel.getProperty("/userId")
 			var sClaimType     = oController._oReqModel.getProperty('/req_header/claimtype');
 			var sClaimTypeItem = oData.claim_type_item_id;
 
@@ -94,7 +94,7 @@ sap.ui.define([
 					return; 
 				}
 				
-				const sErrorMsg = (typeof oField.result === "string" ? oField.result : `Validation failed for ${oField.fieldName}.`);
+				const sErrorMsg = (`Validation failed for ${oField.fieldName}.`);
 				aErrorMessages.push(sErrorMsg);
 
 				const oInputControl = getControl(oDBToUIControlMap[oField.fieldName]);
@@ -106,13 +106,14 @@ sap.ui.define([
 
 			const bIsEligible = aErrorMessages.length === 0;
 
-			// if (!bIsEligible) {
-			// 	const sFormattedErrors = "• " + aErrorMessages.join("\n• ");
-			// 	MessageBox.error("You are not eligible for this request. Please review the highlighted items:\n\n" + sFormattedErrors, {
-			// 		title: "Eligibility Check Failed",
-			// 		actions: [MessageBox.Action.CLOSE]
-			// 	});
-			// }
+			if (!bIsEligible) {
+				// const sFormattedErrors = "• " + aErrorMessages.join("\n• ");
+				const sFormattedErrors = "• " + aErrorMessages[0];
+				MessageBox.error("You are not eligible for this request. Please review the highlighted items:\n\n" + sFormattedErrors, {
+					title: "Eligibility Check Failed",
+					actions: [MessageBox.Action.CLOSE]
+				});
+			}
 
 			return bIsEligible;
 		}

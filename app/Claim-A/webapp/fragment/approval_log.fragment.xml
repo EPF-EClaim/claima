@@ -18,7 +18,7 @@ xmlns:table2="sap.ui.mdc.table"
             <OverflowToolbar
                 height="3rem"
                 style="Clear">
-                <Title text="{i18n>appr_log_title}" titleStyle="H3" />
+                <Title text="{i18n>appr_log_title}"/>
             </OverflowToolbar>
             <table:Table 
                 id="approval_log_table"

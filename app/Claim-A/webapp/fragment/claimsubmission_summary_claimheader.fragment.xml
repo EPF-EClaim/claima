@@ -5,25 +5,18 @@
     xmlns:core="sap.ui.core"
 	core:require="{FloatType: 'sap/ui/model/type/Float'}"
 >
-    <VBox class="sapUiSmallMargin">
+    <VBox 
+        backgroundDesign="Solid"
+        class="roundedBox sapUiSmallMargin sapUiTinyMarginBottom"
+        rowGap="1rem">
         <OverflowToolbar height="3rem">
             <!-- Claim Header -->
             <Title
                 text="{i18n>title_claimsummary_claimheader}"
-                level="H2"
             />
 
             <!-- space -->
             <ToolbarSpacer />
-
-            <!-- Download details -->
-            <Button
-                type="Default"
-                icon="sap-icon://excel-attachment"
-                text="Download details"
-                id="btnExcelDownload2"
-                press=".onDownloadExcelReport"
-            />
 
             <!-- Attachment -->
             <Button
@@ -33,6 +26,16 @@
                 press="onView_Claim_Attachment('parent')"
                 enabled="false"
             />
+
+            <!-- Download details -->
+            <Button
+                type="Default"
+                icon="sap-icon://excel-attachment"
+                text="{i18n>downloaddetails}"
+                id="btnExcelDownload2"
+                press=".onDownloadExcelReport"
+            />
+            
         </OverflowToolbar>
         <f:SimpleForm
             editable="false"
