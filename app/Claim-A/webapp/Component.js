@@ -76,7 +76,7 @@ sap.ui.define([
 
                 this.setModel(models.createConstantModel(), "constant");
 
-                this.setInactivityTimeout(840000);
+                this.setInactivityTimeout(600000);
                 this._initActivityTracking(); 
                 this.startInactivityTimer();
 
