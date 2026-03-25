@@ -130,6 +130,7 @@ sap.ui.define([
 				this._onNavBack();
 			}
 
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			// set view-only
 			// TODO: Revisit to make sure the claim is reloaded everytime
 			if (
@@ -141,8 +142,7 @@ sap.ui.define([
 			else {
 				oClaimSubmissionModel.setProperty("/view_only", false)
 			}
-
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			
 			if (!oClaimSubmissionModel) {
 				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 				await this._loadClaimById(String(sClaimId));
