@@ -2150,7 +2150,8 @@ sap.ui.define([
 				return;
 			}
 
-			if(this.byId("input_claimdetails_input_amount").getValue() == "0.00"){
+			if(this.byId("input_claimdetails_input_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_amount").getValue() == " " || 
+			   this.byId("input_claimdetails_input_amount").getValue() == "" || this.byId("input_claimdetails_input_amount").getValue() == null){
 				// stop claim submission if amount is zero
 				MessageToast.show(Utility.getText("msg_claiminput_amount_zero"));
 				return;
@@ -3587,10 +3588,11 @@ sap.ui.define([
 			const oModel = this.getOwnerComponent().getModel();
 			var oInputModel = this.getView().getModel("claimitem_input");
 
-			const claimTypeItemFromModel = oInputModel.getProperty("/claim_item/claim_type_item_id");
-			const claim_type_item = claimTypeItemFromModel;
+			const sClaimTypeItemFromModel = oInputModel.getProperty("/claim_item/claim_type_item_id");
+			const sClaimTypeID = oInputModel.getProperty("/claim_item/claim_type_id");
+			const sClaim_type_item = sClaimTypeItemFromModel;
 
-			if (!claim_type_item) {
+			if (!sClaim_type_item) {
 				console.warn("No claim item found.");
 				return;
 			}
@@ -3598,7 +3600,8 @@ sap.ui.define([
 			const oListBinding = oModel.bindList("/ZDB_STRUCTURE", null, null, [
 				new Filter("SUBMISSION_TYPE", FilterOperator.EQ, "CLAIM"),
 				new Filter("COMPONENT_LEVEL", FilterOperator.EQ, "ITEM"),
-				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, claim_type_item)
+				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaim_type_item),
+				new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimTypeID)
 			]);
 
 			try {
