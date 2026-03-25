@@ -3960,7 +3960,7 @@ annotate service.ZDISBURSEMENT_STATUS with @(
 annotate service.ZELIGIBILITY_RULE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey             : [DISBURSEMENT_STATUS_ID],
+    Common.SemanticKey             : [CLAIM_TYPE_ID, CLAIM_TYPE_ITEM_ID, ROLE_ID, POSITION_NO_DESC, ROW_COUNT, START_DATE, END_DATE],
     Capabilities                   : {
         Deletable : true,
         Updatable : true,
@@ -4246,6 +4246,77 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
+            }
+        ]
+    }
+);
+
+annotate service.ZCONSTANTS with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [ID, VALUE],
+    Capabilities                   : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                             : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Constants Value Table Maintenance - ZCONSTANTS',
+            TypeNamePlural: 'Constants Value Table Maintenance - ZCONSTANTS',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Constants ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : VALUE,
+                ![@UI.Importance]: #High,
+                Label            : 'Constants Value'
+            }
+        ]
+    }
+);
+annotate service.ZROLEHIERARCHY with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [ROLE],
+    Capabilities                   : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                             : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Employee Role Hierarchy Table - ZROLEHIERARCHY',
+            TypeNamePlural: 'Employee Role Hierarchy Table - ZROLEHIERARCHY',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : ROLE,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Role'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RANK,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Rank'
             }
         ]
     }

@@ -188,7 +188,44 @@ module.exports = (srv) => {
         try {
             const { budget } = req.data;
             if (!budget || budget.length === 0) throw new Error('No Data Sent');
-            await cds.tx(req).run(UPSERT(budget).into(ZBUDGET));
+
+            const tx = cds.tx(req);
+
+            //if record hasnt been created yet, direct insert record into database
+            //else, update the record but exclude the five fields
+            for (const row of budget) {
+
+                const existing = await tx.read(ZBUDGET)
+                    .where({
+                        YEAR: row.YEAR,
+                        INTERNAL_ORDER: row.INTERNAL_ORDER,
+                        COMMITMENT_ITEM: row.COMMITMENT_ITEM,
+                        FUND_CENTER: row.FUND_CENTER,
+                        MATERIAL_GROUP: row.MATERIAL_GROUP
+                    })
+                    .limit(1);
+
+                if (!existing.length) {
+                    await tx.run(INSERT.into(ZBUDGET).entries(row));
+                } else {
+                    const excludeFields = Constant.BudgetUpload.EXCLUDE_FIELDS;
+
+                    const updatePayload = { ...row };
+                    excludeFields.forEach(f => delete updatePayload[f]);
+
+                    await tx.run(
+                        UPDATE(ZBUDGET)
+                            .set(updatePayload)
+                            .where({
+                                YEAR: row.YEAR,
+                                INTERNAL_ORDER: row.INTERNAL_ORDER,
+                                COMMITMENT_ITEM: row.COMMITMENT_ITEM,
+                                FUND_CENTER: row.FUND_CENTER,
+                                MATERIAL_GROUP: row.MATERIAL_GROUP
+                            })
+                    );
+                }
+            }
             return 'Records updated';
         } catch (error) {
             req.error(400, `Fail creating record: ${error.message}`);
@@ -257,7 +294,11 @@ module.exports = (srv) => {
                 if (error) continue;
 
                 if (entry.INDICATOR === Constant.BudgetSubmissionType.REQUEST) {
-                    successResults.push({ ...condition, STATUS: Constant.BudgetCheckStatus.SUFFICIENT });
+                    successResults.push({ 
+                        ...condition, 
+                        STATUS: Constant.BudgetCheckStatus.SUFFICIENT,
+                        CLAIM_TYPE_ITEM: entry.CLAIM_TYPE_ITEM 
+                    });
                     continue;
                 }
 
@@ -375,6 +416,30 @@ module.exports = (srv) => {
         }
     });
 
+    async function updateClaimHeaderTotals(req, sClaimId, tx) {
+        if (!sClaimId) return;
+
+        const result = await tx.run(
+            SELECT.one`
+                SUM(AMOUNT) as TotalClaimAmount
+            `
+                .from('ZCLAIM_ITEM')
+                .where({ CLAIM_ID: sClaimId })
+        );
+
+        const totalClaimAmount = result.TotalClaimAmount || 0;
+
+        await tx.run(
+            UPDATE('ZCLAIM_HEADER')
+                .set({
+                    TOTAL_CLAIM_AMOUNT: totalClaimAmount
+                })
+                .where({ CLAIM_ID: sClaimId })
+        );
+
+        console.log(`Updated Header ${sClaimId}: ClaimAmount=${totalClaimAmount}`);
+    }
+
     async function updateHeaderTotals(req, sRequestId, tx) {
         if (!sRequestId) return;
 
@@ -401,6 +466,33 @@ module.exports = (srv) => {
 
         console.log(`Updated Header ${sRequestId}: PreApproval=${totalEstAmount}, CashAdvance=${totalCashAdvance}`);
     }
+
+    srv.after('CREATE', 'ZCLAIM_ITEM', async (data, req) => {
+        const tx = cds.tx(req);
+        await updateClaimHeaderTotals(req, data.CLAIM_ID, tx);
+    });
+
+    srv.after('UPDATE', 'ZCLAIM_ITEM', async (data, req) => {
+        const tx = cds.tx(req);
+        const sClaimId = data.CLAIM_ID || req.data.CLAIM_ID;
+
+        if (sClaimId) {
+            await updateClaimHeaderTotals(req, sClaimId, tx);
+        } else {
+            const itemKeys = req.query.UPDATE.entity.keys || [req.data];
+            if (itemKeys && itemKeys.length > 0 && itemKeys[0].CLAIM_ID) {
+                await updateClaimHeaderTotals(req, itemKeys[0].CLAIM_ID, tx);
+            }
+        }
+    });
+
+    srv.after('DELETE', 'ZCLAIM_ITEM', async (data, req) => {
+        const tx = cds.tx(req);
+        const sClaimId = req.data.CLAIM_ID;
+        if (sClaimId) {
+            await updateClaimHeaderTotals(req, sClaimId, tx);
+        }
+    });
 
     srv.after('CREATE', 'ZREQUEST_ITEM', async (data, req) => {
         const tx = cds.tx(req);
@@ -446,7 +538,7 @@ module.exports = (srv) => {
                 INSERT(ApproveRequest).into(ZCLM_APPR_REQ_STAT)
             );
             await tx.commit();
-            
+
             return { success: true };
         } catch (error) {
             req.error(400, `Fail creating record: ${error.message}`, req);
