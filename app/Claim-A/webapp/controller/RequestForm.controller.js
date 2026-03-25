@@ -2091,8 +2091,6 @@ sap.ui.define([
 			const userID = userId;
 			const oModel = this._oDataModel;
 			const oModel2 = this._oViewModel;
-			const oModel3 = this._oDataModel;
-
 
 			if (mode === "APPROVE") {
 				if (!comment) {
@@ -2112,7 +2110,7 @@ sap.ui.define([
 
 					// 2. Send emails (1 or 2 depending on next approver / sub approver)
 					for (const p of payloads) {
-						await workflowApproval.onSendEmailApprover(oModel3, p);
+						await workflowApproval.onSendEmailApprover(oModel, p);
 					}
 
 					// 3. Close dialog
