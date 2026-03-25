@@ -3065,37 +3065,21 @@ sap.ui.define([
 							break;
 						case 'Submit Report':
 							// budget checking
-							const dataRow = oInputModel.getProperty("/claim_items").map(({ claim_type_item_id, amount }) => ({
-								claim_type_item: claim_type_item_id,
-								amount: amount
-							}));
-							var budgetCc = oInputModel.getProperty("/claim_header/cost_center") || oInputModel.getProperty("/claim_header/alternate_cost_center");
-							if (!budgetCc) {
-								MessageToast.show(Utility.getText("msg_claimsubmission_nocc"));
+							
+							const aPayloadResult = await budgetCheck.backendBudgetChecking(this, this._oConstant.SubmissionTypePrefix.CLAIM, this._oConstant.BudgetCheckAction.SUBMIT);
+							const oHandlingResult = await budgetCheck.budgetCheckHandling(aPayloadResult);
+
+							if (!oHandlingResult.bCanProceed) {
+								MessageToast.show(Utility.getText("req_tm_w_inform_cc_owner", oHandlingResult.aClaimTypeItem));
 								return;
 							}
-							/** 
-							const result = await budgetCheck.budgetChecking(
-								oModel,
-								"CLM",
-								oInputModel.getProperty("/claim_header/submitted_date"),
-								oInputModel.getProperty("/claim_header/project_code"),
-								budgetCc,
-								oInputModel.getProperty("/claim_header/claim_type_id"),
-								dataRow
-							);
-							
-							if (!result.passed) {
-								MessageToast.show(result.messages);
-								return;
-							}*/
 							else {
 								oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
 								if (oCtx.getProperty("SUBMITTED_DATE", null)) {
 									var submittedDate = this._getJsonDate(new Date());
 									oCtx.setProperty("SUBMITTED_DATE", this._getHanaDate(submittedDate));
 								}
-								oMsg = Utility.getText("msg_claimsubmission_pending");
+								oMsg = Utility.getText("msg_claimsubmission_pending", []);
 							}
 							break;
 						default:
