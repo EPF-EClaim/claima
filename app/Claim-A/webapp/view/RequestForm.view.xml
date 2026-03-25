@@ -118,7 +118,7 @@
                 <Button id="req_back_scr_appr"  type="Default"      text="Back"                     press=".onBackView"         visible="{= ${request>/view} === 'approver' }"/>
                 <Button id="req_reject"         type="Default"      text="Reject"                   press=".onRejectRequest"    visible="{= ${request>/view} === 'approver' }"/>
                 <Button id="req_send_back"      type="Default"      text="Send Back to Employee"    press=".onSendBackRequest"  visible="{= ${request>/view} === 'approver' }"/>
-                <Button id="req_approve"        type="Default"      text="Approve"                  press=".onApproveRequest"   visible="{= ${request>/view} === 'approver' }"/>
+                <Button id="req_approve"        type="Emphasized"   text="Approve"                  press=".onApproveRequest"   visible="{= ${request>/view} === 'approver' }"/>
             </OverflowToolbar>
         </footer>
     </Page>
