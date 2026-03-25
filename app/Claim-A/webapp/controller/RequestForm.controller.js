@@ -569,14 +569,18 @@ sap.ui.define([
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 				const aParticipants = aCtx.map((ctx) => ctx.getObject());
 
+				var sMode = this._oReqModel.getProperty("/view");
+
 				const aMapped = aParticipants.map((p) => ({
 					PARTICIPANTS_ID			: p.PARTICIPANTS_ID 	?? "",
 					PARTICIPANT_NAME		: p.NAME 				?? "",
 					PARTICIPANT_COST_CENTER	: p.CC 					?? "",
-					ALLOCATED_AMOUNT		: p.ALLOCATED_AMOUNT 	?? ""
+					ALLOCATED_AMOUNT		: p.ALLOCATED_AMOUNT 	?? "",
+					_EDIT_MODE				: sMode == this._oConstant.PARMode.VIEW ? "Display" : "Editable"
 				}));
 
-				if (this._oReqModel.getProperty('/req_header/grptype') == this._oConstant.GroupType.GROUP) {
+				if (this._oReqModel.getProperty('/req_header/grptype') == this._oConstant.GroupType.GROUP && 
+					sMode != this._oConstant.PARMode.VIEW) {
 					aMapped.push({ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" });
 				}
 
