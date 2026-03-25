@@ -14,8 +14,8 @@ sap.ui.define([
         "MEDICAL_INSURANCE_ENTITLEMENT",
         "POST_EDU_ASSISTANT_CLAIM_DATE",
         "POST_EDU_ASSISTANT_ENTITLE_AMOUNT",
-        "MEDICAL_INSURANCE", 
-        "EMAIL" //Temporary for CH testing
+        "MEDICAL_INSURANCE" 
+        // "EMAIL" //Temporary for CH testing
     ]);
 
     const _validateDate = function (oPayload, oDataType) {
