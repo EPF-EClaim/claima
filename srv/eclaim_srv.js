@@ -84,7 +84,25 @@ module.exports = (srv) => {
 
             const email = String(emailFromToken).trim().toLowerCase();
             const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
-            const dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: result.DEP });
+            //no record maintained in ZEMP_MASTER table
+            if (!result) {
+                return {
+                    id: email,
+                    userType: "UNKNOWN",
+                    costcenters: "UNKNOWN",
+                    userId: "UNKNOWN",
+                    name: "UNKNOWN",
+                    position: "UNKNOWN",
+                    origin: sOrigin,
+                    grade: "UNKNOWN",
+                    department: "UNKNOWN"
+                };
+            }
+
+            let dept = null;
+            if (result.DEP) {
+                dept = await SELECT.one.from(ZDEPARTMENT).where({ DEPARTMENT_ID: result.DEP });
+            }
 
             return {
                 id: email,
@@ -224,7 +242,7 @@ module.exports = (srv) => {
                     return_value = Number(row.RETURN) || 0;
                     current_budget = Number(row.CURRENT_BUDGET) || 0;
                     consumed = Number(row.CONSUMED) || 0;
-                    
+
                     total_budget = original_budget + virement_in + virement_out + supplement + return_value;
                     total_budget_balance = current_budget + consumed;
                     updatePayload.CURRENT_BUDGET = total_budget.toFixed(2);
