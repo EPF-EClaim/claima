@@ -2128,8 +2128,6 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_location_type", "ZLOC_TYPE");
 			//// Room Type
 			this._setClaimDetailSelectionField("select_claimdetails_input_room_type", "ZROOM_TYPE");
-			//// Country
-			this._setClaimDetailSelectionField("select_claimdetails_input_country", "ZCOUNTRY");
 			//// Region (Semenanjung/Sabah/Sarawak)
 			this._setClaimDetailSelectionField("select_claimdetails_input_region", "ZREGION");
 			//// Area (Negara/Wilayah)
@@ -2140,8 +2138,6 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_claim_category", "ZCLAIM_CATEGORY");
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
-			//// Currency Code
-			this._setClaimDetailSelectionField("select_claimdetails_input_currency_code", "ZCURRENCY");	
 		},
 
 		_setClaimDetailSelectionField: function (oId, oTable, oField) {
@@ -2414,7 +2410,7 @@ sap.ui.define([
 					CLAIM_TYPE_ID: oInputModel.getProperty("/claim_item/claim_type_id"),
 					COURSE_TITLE: oInputModel.getProperty("/claim_item/course_title"),
 					CURRENCY_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_amount"))).toFixed(2),
-					CURRENCY_CODE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_code"))).toFixed(2),
+					CURRENCY_CODE: oInputModel.getProperty("/claim_item/currency_code"),
 					CURRENCY_RATE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_rate"))).toFixed(2),
 					DEPARTURE_TIME: this._getHanaTime(oInputModel.getProperty("/claim_item/departure_time")),
 					DEPENDENT: oInputModel.getProperty("/claim_item/dependent"),
@@ -3293,7 +3289,7 @@ sap.ui.define([
 						CLAIM_TYPE_ID: claim_item.claim_type_id,
 						COURSE_TITLE: claim_item.course_title,
 						CURRENCY_AMOUNT: this._nonNan(parseFloat(claim_item.currency_amount)).toFixed(2),
-						CURRENCY_CODE: this._nonNan(parseFloat(claim_item.currency_code)).toFixed(2),
+						CURRENCY_CODE: claim_item.currency_code,
 						CURRENCY_RATE: this._nonNan(parseFloat(claim_item.currency_rate)).toFixed(2),
 						DEPARTURE_TIME: this._getHanaTime(claim_item.departure_time),
 						DEPENDENT: claim_item.dependent,
