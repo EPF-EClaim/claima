@@ -496,8 +496,9 @@
                                             visible="false"
                                             id="i_kilometer" >
                                     <form:fields>
-                                        <Text 
-                                            text="{request>/req_header/kilometer}" />
+                                        <Input 
+                                            value="{request>/req_header/kilometer}"
+                                            type="Number" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -573,8 +574,20 @@
                                             visible="false"
                                             id="i_from_state" >
                                     <form:fields>
-                                        <Text 
-                                            text="{request>/req_item/from_state}" />
+                                        <Select 
+                                            selectedKey="{request>/req_item/from_state}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZSTATE',
+                                                    sorter: { path: 'STATE_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                            <items>
+                                                <core:Item key="{employee>STATE_ID}" 
+                                                        text="{employee>STATE_DESC}" />
+                                            </items>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -607,8 +620,20 @@
                                             visible="false"
                                             id="i_to_state" >
                                     <form:fields>
-                                        <Text 
-                                            text="{request>/req_item/to_state}" />
+                                        <Select 
+                                            selectedKey="{request>/req_item/to_state}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZSTATE',
+                                                    sorter: { path: 'STATE_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                            <items>
+                                                <core:Item key="{employee>STATE_ID}" 
+                                                        text="{employee>STATE_DESC}" />
+                                            </items>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -746,6 +771,8 @@
                                     <form:fields>
                                         <m:DateTimePicker
                                             value="{request>/req_item/departure_time}"
+                                            displayFormat="dd MMM yyyy HH:mm"
+                                            valueFormat="dd MMM yyyy HH:mm"
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
@@ -758,6 +785,8 @@
                                     <form:fields>
                                         <m:DateTimePicker
                                             value="{request>/req_item/arrival_time}"
+                                            displayFormat="dd MMM yyyy HH:mm"
+                                            valueFormat="dd MMM yyyy HH:mm"
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
