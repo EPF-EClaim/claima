@@ -69,17 +69,6 @@ sap.ui.define([
 
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
-
-			const bIsLocal = window.location.hostname.includes("port4004") || 
-							window.location.hostname.includes("applicationstudio.cloud.sap");
-			if (bIsLocal) {
-				const emp_data = await this._getEmpIdDetail("jefry.yap@my.ey.com");
-				this._oReqModel.setProperty("/user", { 
-					emp_id		: emp_data.eeid, 
-					name		: emp_data.name,
-					cost_center	: emp_data.cc 
-				});
-			}
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
@@ -1330,7 +1319,7 @@ sap.ui.define([
 		// ==================================================
 
 		onClickMyRequest: async function () {
-			PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
+			// PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
 
 			if (!this.oDialogFragment) {
 				this.oDialogFragment = await Fragment.load({
@@ -1341,7 +1330,7 @@ sap.ui.define([
 				
 				this.getView().addDependent(this.oDialogFragment);
 
-				var oRequestDialogModel = new sap.ui.model.json.JSONModel({ reqid: "", grptype: "IND" });
+				var oRequestDialogModel = new JSONModel({ reqid: "", grptype: "IND" });
 				this.oDialogFragment.setModel(oRequestDialogModel, "reqDialog");
 
 				this.oDialogFragment.attachAfterClose(() => {
@@ -1623,6 +1612,21 @@ sap.ui.define([
 				console.error("OData bindList failed:", err);
 				this._setAllHeaderControlsVisible(false);
 			} finally {
+				switch (sReqType) {
+					case this._oConstant.RequestType.MOBILE:
+						this.oDialogFragment.getModel("reqDialog").setProperty("/grptype", "GRP");
+						Fragment.byId("request","req_grptype").setEnabled(false);
+						break;
+						
+					case this._oConstant.RequestType.REIMBURSEMENT:
+						this.oDialogFragment.getModel("reqDialog").setProperty("/grptype", "IND");
+						Fragment.byId("request","req_grptype").setEnabled(false);
+						break;
+				
+					default:
+						Fragment.byId("request","req_grptype").setEnabled(true);
+						break;
+				}
 				BusyIndicator.hide();
 			}
 		},

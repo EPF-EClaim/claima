@@ -576,7 +576,7 @@ sap.ui.define([
 					PARTICIPANT_NAME		: p.NAME 				?? "",
 					PARTICIPANT_COST_CENTER	: p.CC 					?? "",
 					ALLOCATED_AMOUNT		: p.ALLOCATED_AMOUNT 	?? "",
-					_EDIT_MODE				: sMode == this._oConstant.PARMode.VIEW ? "Display" : "Editable"
+					_EDIT_MODE				: sMode == this._oConstant.PARMode.CREATE ? "Editable" : "Display"
 				}));
 
 				if (this._oReqModel.getProperty('/req_header/grptype') == this._oConstant.GroupType.GROUP && 
@@ -968,11 +968,15 @@ sap.ui.define([
 			const bIsEdit = this._oReqModel.getProperty("/view") === "i_edit";
 
 			if (!sReqId) return MessageToast.show("Missing Request ID");
-			if (!oData.req_header.claimtype || !oReqItem.claim_type_item_id) return MessageToast.show("Select claim type/item");
-
-			if (oReqItem.est_amount == undefined || oReqItem.est_amount <= 0) return MessageBox.warning(Utility.getText("req_d_w_zero_amount"))
-
 			this.calculateNumberOfHours();
+
+			// validate mandatory fields
+			if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
+				MessageToast.show(Utility.getText("req_d_w_mandatory_field"), {
+					closeOnBrowserNavigation: false
+				});
+				return;
+			}
 
 			// Eligibility Checking
 			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
