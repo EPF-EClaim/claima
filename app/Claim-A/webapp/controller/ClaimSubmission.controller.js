@@ -2021,10 +2021,10 @@ sap.ui.define([
 		onSelect_ClaimDetails_ClaimItem: async function (oEvent) {
 			// validate claim item
 			var claimItem = oEvent.getParameters().selectedItem;
+			var oInputModel = this.getView().getModel("claimitem_input");
 			if (claimItem) {
 				// get material code from claim item
 				var materialCode = claimItem.getBindingContext("employee").getObject("MATERIAL_CODE");
-				var oInputModel = this.getView().getModel("claimitem_input");
 				oInputModel.setProperty("/claim_item/material_code", materialCode);
 			}
 
@@ -2042,6 +2042,9 @@ sap.ui.define([
 					this.byId("input_claimdetails_input_amount").setEditable(true);
 				}
 			}
+			const _oItem = oInputModel.getProperty("/claim_item") || {};
+			var iDiffDays = DateUtility.calculateNumberOfDays({}, _oItem);
+			oInputModel.setProperty("/claim_item/no_of_days", iDiffDays);
 		},
 
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
