@@ -112,11 +112,13 @@ sap.ui.define([
 				await PARequestSharedFunction._getItemList(this, sReqId);
 				await this._showItemList(sReqId);
 			} catch (error) {
-				console.log(err);
+				console.log(error);
 			} finally {
 				BusyIndicator.hide();
 			}
 		},
+
+
 
 		/* =========================================================
 		* Helpers: Fragment Management
@@ -181,7 +183,14 @@ sap.ui.define([
 			var sReqStatus = this._oReqModel.getProperty("/req_header/reqstatus");
 			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT && sReqStatus !== this._oConstant.RequestStatus.CANCELLED;
 			if (bApproval) {
-				ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId);
+				var aApprover = await ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId);
+				for (const row of aApprover) {
+					if (row.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL && 
+						(row.SUBSTITUTE_APPROVER_ID == this._oSessionModel.getProperty("/userId") || 
+							row.APPROVER_ID == this._oSessionModel.getProperty("/userId"))) {
+						this._oReqModel.setProperty('/view', 'approver');
+					}
+				}
 				const oApproval = await this._getFormFragment("approval_log");
 				await this._replaceContentAt(oPage, 2, oApproval);
 			}
@@ -325,9 +334,10 @@ sap.ui.define([
 									var oModel = this.getView().getModel();
 									var oEmployeeViewModel = this.getView().getModel("employee_view");
 									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
-									workflowApproval.onPARApproverDetermination(this, oModel, sCurrentReqId, oEmployeeViewModel);
-
-									this._oRouter.navTo("RequestFormStatus");
+									await workflowApproval.onPARApproverDetermination(this, oModel, sCurrentReqId, oEmployeeViewModel);
+									
+									// this._oReqModel.setProperty("/req_header/reqstatus", this._oConstant.ClaimStatus.PENDING_APPROVAL)
+									await this._loadRequest(sCurrentReqId);
 
 								} else {
 									MessageBox.warning(Utility.getText("req_tm_w_inform_cc_owner", oErrorHandling.aClaimTypeItem));
@@ -481,9 +491,9 @@ sap.ui.define([
 				course					: oReqItem.COURSE_TITLE || "",
 				sport_rep				: oReqItem.KWSP_SPORTS_REPRESENTATION || "",
 				club_membership			: oReqItem.DECLARE_CLUB_MEMBERSHIP || false,
-				doc1					: oReqItem.ATTACHMENT1 || "",
+				doc1_filename			: oReqItem.ATTACHMENT1 || "",
 				cat_purpose				: oReqItem.MOBILE_CATEGORY_PURPOSE_ID || "",
-				doc2					: oReqItem.ATTACHMENT2 || "",
+				doc2_filename			: oReqItem.ATTACHMENT2 || "",
 				start_date				: oReqItem.START_DATE || "",
 				end_date				: oReqItem.END_DATE || "",
 				start_time				: oReqItem.START_TIME || "",
@@ -522,7 +532,7 @@ sap.ui.define([
 				gl_account				: oReqItem.GL_ACCOUNT || "",
 				material_code			: oReqItem.MATERIAL_CODE || "",
 				dependent_relationship	: oReqItem.DEPENDENT_RELATIONSHIP || "",
-				meter_cube_actual		: oReqItem.METER_CUBE_ACTUAL || 0
+				meter_cube_actual		: oReqItem.METER_CUBE_ACTUAL || 0,			
 			});
 
 			if (this._oReqModel.getProperty("/view") != this._oConstant.PARMode.APPROVER) {
@@ -989,20 +999,22 @@ sap.ui.define([
 
 			try {
 				let sAttachment1_SFID, sAttachment2_SFID;
-				if (oData.doc1) {
-					const attachment_1 = await Attachment.getFileAsBinary(bIsEdit ? "i_attachment_1_file" : oData.doc1);
-					sAttachment1_SFID = await Attachment.postAttachment(oData.doc1, attachment_1, oData.user);
+				if (oReqItem.doc1) {
+					const sAttachment1Binary = await Attachment.getFileAsBinary(oReqItem.doc1);
+					sAttachment1_SFID = await Attachment.postAttachment(oReqItem.doc1.name, sAttachment1Binary, sEmpId);
 				}
-				if (oData.doc2) {
-					const attachment_2 = await Attachment.getFileAsBinary(bIsEdit ? "i_attachment_2_file" : oData.doc2);
-					sAttachment2_SFID = await Attachment.postAttachment(oData.doc2, attachment_2, oData.user);
+				if (oReqItem.doc2) {
+					const sAttachment2Binary = await Attachment.getFileAsBinary(oReqItem.doc2);
+					sAttachment2_SFID = await Attachment.postAttachment(oReqItem.doc2.name, sAttachment2Binary, sEmpId);
 				}
 
 				if (oReqItem.cash_advance) {
 					oReqItem.cost_center 	= this._oConstant.CashAdvanceInfo.COST_CENTER;
 					oReqItem.gl_account		= this._oConstant.CashAdvanceInfo.GL_ACCOUNT;
 				} else {
-					oReqItem.cost_center 	= oReqHeader.altcostcenter || oReqHeader.costcenter;
+					oReqItem.cost_center 	= (oReqHeader.altcostcenter && oReqHeader.altcostcenter !== "-") 
+										? oReqHeader.altcostcenter 
+										: oReqHeader.costcenter;
 					oReqItem.gl_account		= await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
 					oReqItem.material_code	= await budgetCheck._getMaterialCode(this._oDataModel, oReqItem.claim_type_item_id);
 				}
@@ -1066,8 +1078,8 @@ sap.ui.define([
 					CASH_ADVANCE:                 !!oReqItem.cash_advance
 				};
 
-				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = sAttachment1_SFID;
-				if (sAttachment2_SFID) oPayload.ATTACHMENT2 = sAttachment2_SFID;
+				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
+				if (sAttachment2_SFID) oPayload.ATTACHMENT2 = `${sAttachment2_SFID} - ${oReqItem.doc2.name}`;
 
 				if (bIsEdit) {
                     const sReqSubId = String(oReqItem.req_subid || "").trim();
@@ -1084,6 +1096,8 @@ sap.ui.define([
                     await this._upsertParticipantsForItem(sReqId, sReqSubId, oData.participant);
                     await this._oDataModel.submitBatch("itemSave");
 
+					Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID ,sAttachment2_SFID)
+
                 } else {
                     const oItemContext = this._oDataModel.bindList("/ZREQUEST_ITEM").create(oPayload, { $$updateGroupId: "itemCreate" });
                     
@@ -1095,6 +1109,9 @@ sap.ui.define([
                     if (!sGeneratedSubId) {
                         throw new Error("Failed to retrieve generated Request Sub ID from backend.");
                     }
+					
+					// upload Child MDF
+					Attachment.postMDFChild(sReqId, sGeneratedSubId, sAttachment1_SFID ,sAttachment2_SFID)
 
                     const aParts = oData.participant || [];
                     let bHasParticipants = false;
@@ -1118,13 +1135,15 @@ sap.ui.define([
                     
                     const oHeaderContext = this.getView().getBindingContext(); 
                     if (oHeaderContext) oHeaderContext.refresh();
+
                 }
 
                 MessageToast.show("Success");
 				if (!bAddAnother) {
-					await PARequestSharedFunction._getHeader(this, sReqId);
-					await PARequestSharedFunction._getItemList(this, sReqId);
-					this._showItemList();
+					// await PARequestSharedFunction._getHeader(this, sReqId);
+					// await PARequestSharedFunction._getItemList(this, sReqId);
+					// this._showItemList();
+					this._loadRequest(sReqId);
 				}
 
 			} catch (e) {
@@ -1132,6 +1151,16 @@ sap.ui.define([
 			} finally {
 				BusyIndicator.hide();
 			}
+		},
+
+		onImportChange1( oEvent ) {
+			const oData = this._oReqModel.getProperty("/req_item")
+			oData.doc1 = oEvent.getParameters("files").files[0];
+		},
+		
+		onImportChange2( oEvent ) {
+			const oData = this._oReqModel.getProperty("/req_item")
+			oData.doc2 = oEvent.getParameters("files").files[0];
 		},
 
 		async _upsertParticipantsForItem(sReqId, sReqSubId, aParticipants) {

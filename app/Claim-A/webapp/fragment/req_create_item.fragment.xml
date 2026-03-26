@@ -205,7 +205,7 @@
                                         <Link
                                             id="i_attachment1_link" 
                                             press="onDocLinkPress" 
-                                            text="{request>/req_item/doc1}"
+                                            text="{request>/req_item/doc1_filename}"
                                             class="sapUiTinyMarginTop"
                                             visible="{= ${request>/req_item/doc1} !== null }" />
                                     </form:fields>
@@ -246,7 +246,7 @@
                                         <Link
                                             id="i_attachment2_link" 
                                             press="onDocLinkPress" 
-                                            text="{request>/req_item/doc2}"
+                                            text="{request>/req_item/doc2_filename}"
                                             class="sapUiTinyMarginTop"
                                             visible="{= ${request>/req_item/doc2} !== null }" />
                                     </form:fields>
