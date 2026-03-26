@@ -353,10 +353,7 @@ sap.ui.define([
                     for(var i = 0; i < aWorkflowApprStep.length; i++){
 
                         // Start of Approver Determination logic
-                        // Standard Workflow logic is when following approver level, the next level should be higher than the previous level
-                        // Special case would include first level higher than second level. This case would require the first approver to
-                        // Be handled separately from the next level approvers 
-                        // After that, the logic will follow the Standard Workflow logic
+                        // Standard Workflow logic is when following approver level, the next level should be higher than the claimant level
 
                         // Check if claimant is CEO
                         // If yes, approver for CEO is CEO_FI
