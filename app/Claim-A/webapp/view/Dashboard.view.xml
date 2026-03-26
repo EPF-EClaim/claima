@@ -124,7 +124,13 @@
                                 >
                                     <Table
                                         id="claimtable"
-                                        items="{dashboardModel>/claims}"
+                                        items="{
+                                            path: '{dashboardModel>/claims}',
+                                            sorter: {
+                                                path: 'modifiedAt',
+                                                descending: true
+                                            }
+                                        }"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
                                         mode="SingleSelectMaster"
@@ -245,7 +251,13 @@
                                     horizontal="false"
                                 >
                                     <Table
-                                        items="{dashboardModel>/requests}"
+                                        items="{
+                                            path: '{dashboardModel>/requests}',
+                                            sorter: {
+                                                path: 'modifiedAt',
+                                                descending: true
+                                            }
+                                        }"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
@@ -364,7 +376,13 @@
                                     horizontal="false"
                                 >
                                     <Table
-                                        items="{dashboardModel>/approvals}"
+                                        items="{
+                                            path: 'dashboardModel>/approvals',
+                                            sorter: {
+                                                path: 'modifiedAt',
+                                                descending: true
+                                            }
+                                        }"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
