@@ -2114,6 +2114,10 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_funeral_transportation", "ZTRANSPORT_PASSING");
 			//// Level of Studies
 			this._setClaimDetailSelectionField("select_claimdetails_input_study_levels_id", "ZSTUDY_LEVELS");
+			//// Nama Pembekal Insuran
+			this._setClaimDetailSelectionField("select_claimdetails_input_insurance_provider_id", "ZINSURANCE_PROVIDER");
+			//// Insurance Package
+			this._setClaimDetailSelectionField("select_claimdetails_input_insurance_package_id", "ZINSURANCE_PACKAGE", null, null, "ZINSURANCE_PACKAGE_DESC");
 			//// Type of Vehicle
 			this._setClaimDetailSelectionField("select_claimdetails_input_vehicle_type", "ZVEHICLE_TYPE");
 			//// Vehicle Ownership ID (Sendiri/Penjabat)
@@ -2135,7 +2139,7 @@ sap.ui.define([
 			//// Area (Negara/Wilayah)
 			this._setClaimDetailSelectionField("select_claimdetails_input_area", "ZAREA");
 			//// Lodging Category
-			this._setClaimDetailSelectionField("select_claimdetails_input_lodging_category", "ZLODGING_CAT", "LODGING_CATEGORY");
+			this._setClaimDetailSelectionField("select_claimdetails_input_lodging_category", "ZLODGING_CAT", null, "LODGING_CATEGORY");
 			//// Category/Purpose
 			this._setClaimDetailSelectionField("select_claimdetails_input_claim_category", "ZCLAIM_CATEGORY");
 			//// Category/Purpose (Mobile)
@@ -2144,20 +2148,28 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_currency_code", "ZCURRENCY");	
 		},
 
-		_setClaimDetailSelectionField: function (oId, oTable, oField) {
-			if (this.byId(oId).getVisible()) {
-				if (!oField) {
-					var oField = oTable.slice(1);
+		_setClaimDetailSelectionField: function (sId, sTable, bDisplayId, sField, sFieldDesc) {
+			if (this.byId(sId).getVisible()) {
+				if (!sField) {
+					var sField = sTable.slice(1);
 				}
-				this.byId(oId).bindAggregation("items", {
-					path: "employee>/" + oTable,
+				// determine description field
+				if (!sFieldDesc) {
+					var sFieldDesc = sField + '_DESC';
+				}
+				// show ID in text
+				var sItemText = "{employee>" + sFieldDesc + "}";
+				if (bDisplayId) {
+					sItemText = "{employee>" + sField + "_ID} - {employee>" + sFieldDesc + "}";
+				}
+				this.byId(sId).bindAggregation("items", {
+					path: "employee>/" + sTable,
 					sorter: [
-						new Sorter(oField + '_DESC'),
-						new Sorter(oField + '_ID')
+						new Sorter(sField + '_ID')
 					],
 					template: new Item({
-						key: "{employee>" + oField + "_ID}",
-						text: "{employee>" + oField + "_ID} - {employee>" + oField + "_DESC}"
+						key: "{employee>" + sField + "_ID}",
+						text: sItemText
 					})
 				});
 			}
@@ -3705,6 +3717,12 @@ sap.ui.define([
 				"timepicker_claimdetails_input_starttime",
 				"datepicker_claimdetails_input_enddate",
 				"timepicker_claimdetails_input_endtime",
+				"select_claimdetails_input_insurance_provider_id",
+				"input_claimdetails_input_insurance_provider_name",
+				"select_claimdetails_input_insurance_package_id",
+				"datepicker_claimdetails_input_insurance_purchase_date",
+				"datepicker_claimdetails_input_insurance_cert_start_date",
+				"datepicker_claimdetails_input_insurance_cert_end_date",
 				"input_claimdetails_input_no_of_days",
 				"select_claimdetails_input_vehicle_type",
 				"select_claimdetails_input_vehicle_ownership_id",
@@ -3835,6 +3853,12 @@ sap.ui.define([
 				"timepicker_claimdetails_input_starttime",
 				"datepicker_claimdetails_input_enddate",
 				"timepicker_claimdetails_input_endtime",
+				"select_claimdetails_input_insurance_provider_id",
+				"input_claimdetails_input_insurance_provider_name",
+				"select_claimdetails_input_insurance_package_id",
+				"datepicker_claimdetails_input_insurance_purchase_date",
+				"datepicker_claimdetails_input_insurance_cert_start_date",
+				"datepicker_claimdetails_input_insurance_cert_end_date",
 				"input_claimdetails_input_no_of_days",
 				"select_claimdetails_input_vehicle_type",
 				"select_claimdetails_input_vehicle_ownership_id",

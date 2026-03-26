@@ -270,6 +270,67 @@
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
 				/>
 
+				<!-- Nama Pembekal Insuran -->
+				<Label text="{i18n>label_claimdetails_input_insurance_provider_id}" />
+				<Select
+					id="select_claimdetails_input_insurance_provider_id"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/insurance_provider_id}"
+					change="onSelect_ClaimDetails_InsuranceProvider"
+					liveChange="onSelect_ClaimDetails_InsuranceProvider"
+					visible="false"
+				>
+				</Select>
+
+				<!-- Nama Pembekal Insuran (Long Text) -->
+				<Label text="{i18n>label_claimdetails_input_insurance_provider_name}" />
+				<Input
+					id="input_claimdetails_input_insurance_provider_name"
+					value="{claimitem_input>/claim_item/insurance_provider_name}"
+					visible="false"
+				/>
+
+				<!-- Insurance Package -->
+				<Label text="{i18n>label_claimdetails_input_insurance_package_id}" />
+				<Select
+					id="select_claimdetails_input_insurance_package_id"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/insurance_package_id}"
+					change="onSelect_ClaimDetails_InsurancePackage"
+					liveChange="onSelect_ClaimDetails_InsurancePackage"
+					visible="false"
+				>
+				</Select>
+
+				<!-- Date of Purchase of Insurance -->
+				<Label text="{i18n>label_claimdetails_input_insurance_purchase_date}" />
+				<DatePicker
+					id="datepicker_claimdetails_input_insurance_purchase_date"
+					value="{claimitem_input>/claim_item/insurance_purchase_date}"
+					visible="false"
+					displayFormat="dd-MMM-yyyy"
+				/>
+
+				<!-- Insurance Period of Certificate Start Date -->
+				<Label text="{i18n>label_claimdetails_input_insurance_cert_start_date}" />
+				<DatePicker
+					id="datepicker_claimdetails_input_insurance_cert_start_date"
+					value="{claimitem_input>/claim_item/insurance_cert_start_date}"
+					visible="false"
+					displayFormat="dd-MMM-yyyy"
+					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_insurance_cert_start_date','datepicker_claimdetails_input_insurance_cert_end_date')"
+				/>
+
+				<!-- Insurance Period of Certificate End Date -->
+				<Label text="{i18n>label_claimdetails_input_insurance_cert_end_date}" />
+				<DatePicker
+					id="datepicker_claimdetails_input_insurance_cert_end_date"
+					value="{claimitem_input>/claim_item/insurance_cert_end_date}"
+					visible="false"
+					displayFormat="dd-MMM-yyyy"
+					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_insurance_cert_start_date','datepicker_claimdetails_input_insurance_cert_end_date')"
+				/>
+
 				<!-- Number of Days -->
 				<Label text="{i18n>label_claimdetails_input_numberofdays}" />
 				<Input
