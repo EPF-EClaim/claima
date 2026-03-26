@@ -156,7 +156,7 @@ sap.ui.define([
 			this._oFragments = Object.create(null);
 		},
 
-		async _showItemCreate(state) {
+		async _showItemCreate(state, bEdit) {
 			const oPage = this.byId("request_form");
 			if (!oPage) return;
 
@@ -165,6 +165,11 @@ sap.ui.define([
 
 			const oCreate = await this._getFormFragment("req_create_item");
 			await this._replaceContentAt(oPage, 1, oCreate);
+
+			if (bEdit) {
+				this.byId("i_attachment_1_file").setRequired(false);
+				this.byId("i_attachment_2_file").setRequired(false);
+			}
 
 			this._oReqModel.setProperty("/view", state);
 		},
@@ -415,7 +420,7 @@ sap.ui.define([
 		},
 
 		async onAddItem(oEvent) {
-			await this._showItemCreate("create");
+			await this._showItemCreate("create", false);
 			this._loadSelections();
 
 			const oReqData = this._oReqModel.getData();
@@ -539,7 +544,7 @@ sap.ui.define([
 				this._oReqModel.setProperty("/view", bEdit ? this._oConstant.PARMode.EDIT : this._oConstant.PARMode.VIEW);
 			}
 
-			this._showItemCreate(this._oReqModel.getProperty("/view"));
+			this._showItemCreate(this._oReqModel.getProperty("/view"), bEdit);
 			this._loadParticipantsForItem(sReqId, sReqSubId);
 			this._getClaimTypeItemSelection();
 			this.getFieldVisibility_ClaimTypeItem(oEvent);
@@ -1096,7 +1101,7 @@ sap.ui.define([
                     await this._upsertParticipantsForItem(sReqId, sReqSubId, oData.participant);
                     await this._oDataModel.submitBatch("itemSave");
 
-					Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID ,sAttachment2_SFID)
+					// Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID ,sAttachment2_SFID)
 
                 } else {
                     const oItemContext = this._oDataModel.bindList("/ZREQUEST_ITEM").create(oPayload, { $$updateGroupId: "itemCreate" });
@@ -1111,7 +1116,7 @@ sap.ui.define([
                     }
 					
 					// upload Child MDF
-					Attachment.postMDFChild(sReqId, sGeneratedSubId, sAttachment1_SFID ,sAttachment2_SFID)
+					// Attachment.postMDFChild(sReqId, sGeneratedSubId, sAttachment1_SFID ,sAttachment2_SFID)
 
                     const aParts = oData.participant || [];
                     let bHasParticipants = false;
