@@ -13,6 +13,7 @@ sap.ui.define([
 	"sap/ui/core/Fragment",
 	"sap/ui/core/BusyIndicator",
 	"sap/ui/core/Item",
+	"sap/ui/core/routing/HashChanger",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
@@ -35,6 +36,7 @@ sap.ui.define([
 	Fragment,
 	BusyIndicator,
 	Item,
+	HashChanger,
 	Filter,
 	FilterOperator,
 	Sorter,
@@ -128,7 +130,8 @@ sap.ui.define([
 				// Start Aiman Salim 10/02/2026 - Added for analytics
 				case "analytics":
 					if (sType === sAdminDTD || sType === sAdminJKEW || sType === sSuperUser) {
-						this._oRouter.navTo("Analytics")
+						HashChanger.getInstance().replaceHash("");
+						this._oRouter.navTo("Analytics");
 					} else {
 						var message = Utility.getText("msg_unauthorized_role");
 						MessageBox.error(message);

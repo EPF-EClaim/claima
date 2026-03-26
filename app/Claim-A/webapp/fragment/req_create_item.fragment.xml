@@ -369,18 +369,14 @@
                                             visible="false"
                                             id="i_country"  >
                                     <form:fields>
-                                        <Select 
-                                            selectedKey="{request>/req_item/country}" 
+                                        <mdc:Field
+                                            value="{request>/req_item/country}"
+                                            editMode="Editable"
+                                            display="ValueDescription"
+                                            visible="{= ${request>/view} !== 'view' }"
                                             required="true" 
-                                            forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            items="{path: 'employee>/ZCOUNTRY',
-                                                    sorter: { path: 'COUNTRY_ID', descending: false }}">
-                                            <items>
-                                                <core:Item key="{employee>COUNTRY_ID}" 
-                                                        text="{employee>COUNTRY_DESC}" />
-                                            </items>
-                                        </Select>
+                                            valueHelp="valuehelp_country"
+                                        />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -961,6 +957,55 @@
                                         keyPath="EEID"
                                         descriptionPath="NAME"
                                         caseSensitive="false">
+                                    </mdcvhcnt:MTable>
+                                </mdcvh:Dialog>
+                            </mdc:dialog>
+                        </mdc:ValueHelp>
+
+				        <!-- Value Help for Country -->
+                        <mdc:ValueHelp
+                            id="valuehelp_country"
+                            delegate='{
+                                "name": "claima/utils/ValueHelpDelegate_Common",
+                                "payload": {
+                                    "modelName": "employee",
+                                    "entitySet": "employee>/ZCOUNTRY",
+                                    "keyField": "COUNTRY_ID",
+                                    "descriptionField": "COUNTRY_DESC",
+							        "columns": ["{i18n>valuehelpcountryid}", "{i18n>valuehelpdescription}"],
+                                    "searchKeys": ["COUNTRY_ID", "COUNTRY_DESC"],
+                                    "openOnClick": true
+                                }
+                            }'
+                        >
+                            <!-- Typeahead (Popover) -->
+                            <mdc:typeahead>
+                                <mdcvh:Popover id="valuehelp_country_pop">
+                                    <mdcvhcnt:MTable
+                                        id="valuehelp_country_pop_MTable"
+                                        keyPath="COUNTRY_ID"
+                                        descriptionPath="COUNTRY_DESC"
+                                        caseSensitive="false"
+                                        useAsValueHelp="false"
+                                    >
+                                        <!-- Table content created dynamically by delegate -->
+                                    </mdcvhcnt:MTable>
+                                </mdcvh:Popover>
+                            </mdc:typeahead>
+
+                            <!-- Dialog Mode -->
+                            <mdc:dialog>
+                                <mdcvh:Dialog
+                                    id="valuehelp_country_dialog"
+                                    title="{i18n>valuehelpcountryid}"
+                                >
+                                    <mdcvhcnt:MTable
+                                        id="valuehelp_country_dialog_MTable"
+                                        keyPath="COUNTRY_ID"
+                                        descriptionPath="COUNTRY_DESC"
+                                        caseSensitive="false"
+                                    >
+                                        <!-- Table content created dynamically by delegate -->
                                     </mdcvhcnt:MTable>
                                 </mdcvh:Dialog>
                             </mdc:dialog>

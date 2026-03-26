@@ -2114,9 +2114,9 @@ sap.ui.define([
 		},
 		
 		onClickCancel_app: function () {
-			if (this.__approveDialog) { this.__approveDialog.close(); }
-			if (this.__sendBackDialog) { this.__sendBackDialog.close(); }
-			if (this.__rejectDialog) { this.__rejectDialog.close(); }
+			if (this._approveDialog) { this._approveDialog.close(); }
+			if (this._sendBackDialog) { this._sendBackDialog.close(); }
+			if (this._rejectDialog) { this._rejectDialog.close(); }
 		},
 		
 		onClickCreate_app: async function () {
@@ -2133,8 +2133,6 @@ sap.ui.define([
 			const userID = userId;
 			const oModel = this._oDataModel;
 			const oModel2 = this._oViewModel;
-			const oModel3 = this._oDataModel;
-
 
 			if (mode === "APPROVE") {
 				if (!comment) {
@@ -2154,11 +2152,11 @@ sap.ui.define([
 
 					// 2. Send emails (1 or 2 depending on next approver / sub approver)
 					for (const p of payloads) {
-						await workflowApproval.onSendEmailApprover(oModel3, p);
+						await workflowApproval.onSendEmailApprover(oModel, p);
 					}
 
 					// 3. Close dialog
-					this.__approveDialog && this.__approveDialog.close();
+					this._approveDialog && this._approveDialog.close();
 
 					// 4. Navigate back after small delay
 					setTimeout(() => {
@@ -2240,8 +2238,8 @@ sap.ui.define([
 				}
 
 				// 4) Close dialog
-				if (this.__sendBackDialog) {
-					this.__sendBackDialog.close();
+				if (this._sendBackDialog) {
+					this._sendBackDialog.close();
 				}
 
 				// 5) Navigate back
@@ -2301,7 +2299,7 @@ sap.ui.define([
 					await workflowApproval.onSendEmailApprover(oModelMain, p);
 				}
 
-				this.__rejectDialog && this.__rejectDialog.close();
+				this._rejectDialog && this._rejectDialog.close();
 
 				setTimeout(() => this._oRouter.navTo("Dashboard", {}, true), 400);
 

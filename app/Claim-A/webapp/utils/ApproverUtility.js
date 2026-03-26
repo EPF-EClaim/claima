@@ -49,7 +49,7 @@ sap.ui.define([
 
 
         if (!oCurrentRow) {
-            throw { sCode: Utility.getText(oController, "error_not_current_processor") };
+            throw { sCode: Utility.getText("error_not_current_processor") };
         }
 
         let sMatchedType = null;
@@ -214,7 +214,7 @@ sap.ui.define([
         }
 
         await oModel.submitBatch("$auto");
-        var sMessage = Utility.getText(oController, "approval_successful")
+        var sMessage = Utility.getText("approval_successful")
 
         return {
             payloads: aPayloads,
@@ -283,7 +283,7 @@ sap.ui.define([
         );
 
         if (!oCurrentRow) {
-            throw { sCode: Utility.getText(oController, "error_not_current_processor") };
+            throw { sCode: Utility.getText("error_not_current_processor") };
         }
 
         let sMatchedType = null;
@@ -430,8 +430,8 @@ sap.ui.define([
                 },
                 sMessageKey:
                     sActionStatus === Constants.ClaimStatus.REJECTED
-                        ? Utility.getText(oController, "request_rejected")
-                        : Utility.getText(oController, "request_sent_back")
+                        ? Utility.getText("request_rejected")
+                        : Utility.getText("request_sent_back")
 
             };
 
