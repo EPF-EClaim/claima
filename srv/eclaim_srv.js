@@ -467,7 +467,8 @@ module.exports = (srv) => {
         await tx.run(
             UPDATE('ZCLAIM_HEADER')
                 .set({
-                    TOTAL_CLAIM_AMOUNT: totalClaimAmount
+                    TOTAL_CLAIM_AMOUNT: totalClaimAmount,
+                    FINAL_AMOUNT_TO_RECEIVE: totalClaimAmount
                 })
                 .where({ CLAIM_ID: sClaimId })
         );
