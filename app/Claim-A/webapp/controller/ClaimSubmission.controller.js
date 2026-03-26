@@ -2562,6 +2562,10 @@ sap.ui.define([
 				if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
 					await this._calculatePerDiem();
 				}
+				// Calculate number of days
+				const _oItem = this.getView().getModel("claimitem_input").getProperty("/claim_item") || {};
+				var iDiffDays = DateUtility.calculateNumberOfDays({}, _oItem);
+				this.getView().getModel("claimitem_input").setProperty("/claim_item/no_of_days", iDiffDays);
 			}
 		},
 
