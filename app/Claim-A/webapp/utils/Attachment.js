@@ -111,7 +111,6 @@ sap.ui.define([
 
 			} catch (error) {
 				console.error("Error creating MDF:", error);
-				MessageToast.show("Error creating MDF: " + error.message);
 				return false;
 			}
 		},
