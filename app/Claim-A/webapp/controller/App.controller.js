@@ -20,7 +20,7 @@ sap.ui.define([
 	"sap/ui/core/Icon",
 	"claima/utils/Utility",
 	"claima/utils/PARequestSharedFunction",
-	"claima/utils/Attachment",
+	"claima/utils/Attachment"
 ], function (
 	Popover,
 	Button,

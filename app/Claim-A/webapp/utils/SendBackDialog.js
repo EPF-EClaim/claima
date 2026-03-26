@@ -133,7 +133,6 @@ sap.ui.define([
           items: [
             new Item({
               key: "",
-              text: "— Select Reason —"
             })
           ]
         })
