@@ -934,7 +934,7 @@
                         <mdc:ValueHelp
                             id="valuehelp_country"
                             delegate='{
-                                "name": "claima/utils/ValueHelpDelegate",
+                                "name": "claima/utils/ValueHelpDelegate_Common",
                                 "payload": {
                                     "modelName": "employee",
                                     "entitySet": "employee>/ZCOUNTRY",
