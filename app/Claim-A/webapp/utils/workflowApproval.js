@@ -451,124 +451,122 @@ sap.ui.define([
                         }
                     }
                 }
-            }else{
-                MessageToast.show(Utility.getText("msg_failed_no_workflow"));
-            }
-
-			
             
-            // Variable declaration for substitutes
-            let oSubstitute = null;         // Variable to store substitute user
-            let oSubstituteDetails = null;  // Variable to store substitute user details
-            let sSubstitute_eeid = "";       // Variable to store substitute EEID
-            let sSubstitute_name = "";       // Variable to store substitute name
-            let sSubstitute_email = "";      // Variable to store substitute email
-            // Retrieve substitute for approvers
-            for (const oApprover of aUniqueApproversDetails){
-                // If LEVEL = 0, Approver is Auto
-                if(oApprover.LEVEL > 0){
-                    oSubstitute = await WorkflowApproverHelper.getSubstitute(oModel, oEmployeeModel, oApprover.EEID);
-                    if(oSubstitute){
-                        oSubstituteDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oSubstitute.EEID);
-                        if(oSubstituteDetails){
-                            sSubstitute_eeid = oSubstituteDetails.EEID;
-                            sSubstitute_name = oSubstituteDetails.NAME;
-                            sSubstitute_email = oSubstituteDetails.EMAIL;
+                // Variable declaration for substitutes
+                let oSubstitute = null;         // Variable to store substitute user
+                let oSubstituteDetails = null;  // Variable to store substitute user details
+                let sSubstitute_eeid = "";       // Variable to store substitute EEID
+                let sSubstitute_name = "";       // Variable to store substitute name
+                let sSubstitute_email = "";      // Variable to store substitute email
+                // Retrieve substitute for approvers
+                for (const oApprover of aUniqueApproversDetails){
+                    // If LEVEL = 0, Approver is Auto
+                    if(oApprover.LEVEL > 0){
+                        oSubstitute = await WorkflowApproverHelper.getSubstitute(oModel, oEmployeeModel, oApprover.EEID);
+                        if(oSubstitute){
+                            oSubstituteDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oSubstitute.EEID);
+                            if(oSubstituteDetails){
+                                sSubstitute_eeid = oSubstituteDetails.EEID;
+                                sSubstitute_name = oSubstituteDetails.NAME;
+                                sSubstitute_email = oSubstituteDetails.EMAIL;
+                            }
                         }
+                    }else{
+                        sSubstitute_name = Constants.Approvers.AUTO;
                     }
-                }else{
-                    sSubstitute_name = Constants.Approvers.AUTO;
+                    aFullApproversDetails.push({
+                        APPROVER_EEID:   oApprover.EEID,
+                        APPROVER_NAME:   oApprover.NAME,
+                        APPROVER_EMAIL:  oApprover.EMAIL,
+                        LEVEL:  Number(oApprover.LEVEL),
+                        SUB_EEID:        sSubstitute_eeid,
+                        SUB_NAME:        sSubstitute_name,
+                        SUB_EMAIL:       sSubstitute_email
+                    });
                 }
-                aFullApproversDetails.push({
-                    APPROVER_EEID:   oApprover.EEID,
-                    APPROVER_NAME:   oApprover.NAME,
-                    APPROVER_EMAIL:  oApprover.EMAIL,
-                    LEVEL:  Number(oApprover.LEVEL),
-                    SUB_EEID:        sSubstitute_eeid,
-                    SUB_NAME:        sSubstitute_name,
-                    SUB_EMAIL:       sSubstitute_email
-                });
-            }
 
-			//create ZAPPROVER DETAILS
-			const oBindApprDetailsList = oModel.bindList(Constants.Entities.ZAPPROVER_DETAILS_CLAIMS);
+                //create ZAPPROVER DETAILS
+                const oBindApprDetailsList = oModel.bindList(Constants.Entities.ZAPPROVER_DETAILS_CLAIMS);
 
-            // create all contexts
-            let aCreatePromises = [];
+                // create all contexts
+                let aCreatePromises = [];
 
-			//for(var i = 0; i < aApprEmpID.length; i++){
-            for(const oApprover of aFullApproversDetails){
-
-                var oContext = oBindApprDetailsList.create({
-                    "CLAIM_ID": sClaimID,
-                    "LEVEL": oApprover.LEVEL,
-                    "APPROVER_ID": oApprover.APPROVER_EEID,
-                    "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
-                    "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
-                });
-                aCreatePromises.push(oContext.created());
-			}
-
-            // submit the batch
-            // await oModel.submitBatch("$auto");
-
-            // wait for all created
-            if(aCreatePromises.length > 0){
-                const aCreatedContext = await Promise.all(aCreatePromises);
-            }
-            try{
-            // Send email notification to first level approver or
-            // Start Final Approve Step for Auto approve
-            // Declaration for this block
-                const aPayloadMain = []     // Variable to store payload for sending email
-                
+                //for(var i = 0; i < aApprEmpID.length; i++){
                 for(const oApprover of aFullApproversDetails){
-                    if(oApprover.LEVEL == 1){
-                        // Populate array for sending email to approver
-                        aPayloadMain.push({
-                            "ApproverName":oApprover.APPROVER_NAME, 
-                            "SubmissionDate":sSystemDate, 
-                            "ClaimantName":oClaimantDetails.NAME, 
-                            "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
-                            "ClaimID":sClaimID, 
-                            "RecipientName": oApprover.APPROVER_NAME, 
-                            "Action": Constants.Email_Action.NOTIFY, 
-                            "ReceiverEmail":oApprover.APPROVER_EMAIL,
-                            "NextApproverName":""
-                        });
-                        if(oApprover.SUB_NAME != ""){
-                            // If substitute available, populate payload and send email to substitute also
+
+                    var oContext = oBindApprDetailsList.create({
+                        "CLAIM_ID": sClaimID,
+                        "LEVEL": oApprover.LEVEL,
+                        "APPROVER_ID": oApprover.APPROVER_EEID,
+                        "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
+                        "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
+                    });
+                    aCreatePromises.push(oContext.created());
+                }
+
+                // submit the batch
+                // await oModel.submitBatch("$auto");
+
+                // wait for all created
+                if(aCreatePromises.length > 0){
+                    const aCreatedContext = await Promise.all(aCreatePromises);
+                }
+                try{
+                // Send email notification to first level approver or
+                // Start Final Approve Step for Auto approve
+                // Declaration for this block
+                    const aPayloadMain = []     // Variable to store payload for sending email
+                    
+                    for(const oApprover of aFullApproversDetails){
+                        if(oApprover.LEVEL == 1){
+                            // Populate array for sending email to approver
                             aPayloadMain.push({
-                                "ApproverName":oApprover.SUB_NAME, 
+                                "ApproverName":oApprover.APPROVER_NAME, 
                                 "SubmissionDate":sSystemDate, 
                                 "ClaimantName":oClaimantDetails.NAME, 
                                 "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
                                 "ClaimID":sClaimID, 
-                                "RecipientName":oApprover.SUB_NAME, 
+                                "RecipientName": oApprover.APPROVER_NAME, 
                                 "Action": Constants.Email_Action.NOTIFY, 
-                                "ReceiverEmail":oApprover.SUB_EMAIL,
+                                "ReceiverEmail":oApprover.APPROVER_EMAIL,
                                 "NextApproverName":""
-                            }); 
+                            });
+                            if(oApprover.SUB_NAME != ""){
+                                // If substitute available, populate payload and send email to substitute also
+                                aPayloadMain.push({
+                                    "ApproverName":oApprover.SUB_NAME, 
+                                    "SubmissionDate":sSystemDate, 
+                                    "ClaimantName":oClaimantDetails.NAME, 
+                                    "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
+                                    "ClaimID":sClaimID, 
+                                    "RecipientName":oApprover.SUB_NAME, 
+                                    "Action": Constants.Email_Action.NOTIFY, 
+                                    "ReceiverEmail":oApprover.SUB_EMAIL,
+                                    "NextApproverName":""
+                                }); 
+                            }
+                        }else if(oApprover.LEVEL == 0){
+                            FinalApproveStep.onFinalApprove(oController, oModel, sClaimID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
+                            break;
                         }
-                    }else if(oApprover.LEVEL == 0){
-                        FinalApproveStep.onFinalApprove(oController, oModel, sClaimID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
-                        break;
                     }
-                }
-                if(aPayloadMain.length > 0){
-                    // Send email to approver
-                    this.onSendEmail(oModel, aPayloadMain);
-                }
+                    if(aPayloadMain.length > 0){
+                        // Send email to approver
+                        this.onSendEmail(oModel, aPayloadMain);
+                    }
 
-                // submit the batch
-                await oModel.submitBatch("$auto");
+                    // submit the batch
+                    await oModel.submitBatch("$auto");
 
-                // wait for all created
-                const aCreatedContext = await Promise.all(aCreatePromises);
-                
-            }catch(oError){
-                MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]));
-            }	
+                    // wait for all created
+                    const aCreatedContext = await Promise.all(aCreatePromises);
+                    
+                }catch(oError){
+                    MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]));
+                }	
+            }else{
+                MessageToast.show(Utility.getText("msg_failed_no_workflow"));
+            }
 			
         },
         onPARApproverDetermination: async function (oController, oModel, sPARID, oEmployeeModel){
@@ -863,121 +861,120 @@ sap.ui.define([
                         }
                     }
                 }
-            }else{
-                MessageToast.show(Utility.getText("msg_failed_no_workflow"));
-            }
-			
 
-            // Variable declaration for substitutes
-            let oSubstitute = null;         // Variable to store substitute user
-            let oSubstituteDetails = null;  // Variable to store substitute user details
-            let sSubstitute_eeid = "";       // Variable to store substitute EEID
-            let sSubstitute_name = "";       // Variable to store substitute name
-            let sSubstitute_email = "";      // Variable to store substitute email
-            // Retrieve substitute for approvers
-            for (const oApprover of aUniqueApproversDetails){
-                // If LEVEL = 0, Approver is Auto
-                if(oApprover.LEVEL > 0){
-                    oSubstitute = await WorkflowApproverHelper.getSubstitute(oModel, oEmployeeModel, oApprover.EEID);
-                    if(oSubstitute){
-                        oSubstituteDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oSubstitute.EEID);
-                        if(oSubstituteDetails){
-                            sSubstitute_eeid = oSubstituteDetails.EEID;
-                            sSubstitute_name = oSubstituteDetails.NAME;
-                            sSubstitute_email = oSubstituteDetails.EMAIL;
+                // Variable declaration for substitutes
+                let oSubstitute = null;         // Variable to store substitute user
+                let oSubstituteDetails = null;  // Variable to store substitute user details
+                let sSubstitute_eeid = "";       // Variable to store substitute EEID
+                let sSubstitute_name = "";       // Variable to store substitute name
+                let sSubstitute_email = "";      // Variable to store substitute email
+                // Retrieve substitute for approvers
+                for (const oApprover of aUniqueApproversDetails){
+                    // If LEVEL = 0, Approver is Auto
+                    if(oApprover.LEVEL > 0){
+                        oSubstitute = await WorkflowApproverHelper.getSubstitute(oModel, oEmployeeModel, oApprover.EEID);
+                        if(oSubstitute){
+                            oSubstituteDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oSubstitute.EEID);
+                            if(oSubstituteDetails){
+                                sSubstitute_eeid = oSubstituteDetails.EEID;
+                                sSubstitute_name = oSubstituteDetails.NAME;
+                                sSubstitute_email = oSubstituteDetails.EMAIL;
+                            }
                         }
+                    }else{
+                        sSubstitute_name = Constants.Approvers.AUTO;
                     }
-                }else{
-                    sSubstitute_name = Constants.Approvers.AUTO;
+                    aFullApproversDetails.push({
+                        APPROVER_EEID:   oApprover.EEID,
+                        APPROVER_NAME:   oApprover.NAME,
+                        APPROVER_EMAIL:  oApprover.EMAIL,
+                        LEVEL:  Number(oApprover.LEVEL),
+                        SUB_EEID:        sSubstitute_eeid,
+                        SUB_NAME:        sSubstitute_name,
+                        SUB_EMAIL:       sSubstitute_email
+                    });
                 }
-                aFullApproversDetails.push({
-                    APPROVER_EEID:   oApprover.EEID,
-                    APPROVER_NAME:   oApprover.NAME,
-                    APPROVER_EMAIL:  oApprover.EMAIL,
-                    LEVEL:  Number(oApprover.LEVEL),
-                    SUB_EEID:        sSubstitute_eeid,
-                    SUB_NAME:        sSubstitute_name,
-                    SUB_EMAIL:       sSubstitute_email
-                });
-            }
-			//create ZAPPROVER DETAILS
-			const oBindApprDetailsList = oModel.bindList(Constants.Entities.ZAPPROVER_DETAILS_PREAPPROVAL);
+                //create ZAPPROVER DETAILS
+                const oBindApprDetailsList = oModel.bindList(Constants.Entities.ZAPPROVER_DETAILS_PREAPPROVAL);
 
-            // create all contexts
-            let aCreatePromises = [];
+                // create all contexts
+                let aCreatePromises = [];
 
-            for(const oApprover of aFullApproversDetails){
-
-                var oContext = oBindApprDetailsList.create({
-                    "PREAPPROVAL_ID": sPARID,
-                    "LEVEL": oApprover.LEVEL,
-                    "APPROVER_ID": oApprover.APPROVER_EEID,
-                    "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
-                    "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
-                });
-                aCreatePromises.push(oContext.created());         
-			}
-
-            // submit the batch
-            // await oModel.submitBatch("$auto");
-
-            // wait for all created
-            if(aCreatePromises.length > 0){
-                const aCreatedContext = await Promise.all(aCreatePromises);
-            }            
-            
-            try{
-            // Send email notification to first level approver or
-            // Start Final Approve Step for Auto approve
-            // Declaration for this block
-                const aPayloadMain = []     // Variable to store payload for sending email
-                
                 for(const oApprover of aFullApproversDetails){
-                    if(oApprover.LEVEL == 1){
-                        // Populate array for sending email to approver
-                        aPayloadMain.push({
-                            "ApproverName":oApprover.APPROVER_NAME, 
-                            "SubmissionDate":sSystemDate, 
-                            "ClaimantName":oClaimantDetails.NAME, 
-                            "ClaimType":oRequestTypeDesc.REQUEST_TYPE_DESC, 
-                            "ClaimID":sPARID, 
-                            "RecipientName":oApprover.APPROVER_NAME, 
-                            "Action": Constants.Email_Action.NOTIFY, 
-                            "ReceiverEmail":oApprover.APPROVER_EMAIL,
-                            "NextApproverName":""
-                        });
-                        if(oApprover.SUB_NAME != ""){
-                            // If substitute available, populate payload and send email to substitute also
+
+                    var oContext = oBindApprDetailsList.create({
+                        "PREAPPROVAL_ID": sPARID,
+                        "LEVEL": oApprover.LEVEL,
+                        "APPROVER_ID": oApprover.APPROVER_EEID,
+                        "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
+                        "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
+                    });
+                    aCreatePromises.push(oContext.created());         
+                }
+
+                // submit the batch
+                // await oModel.submitBatch("$auto");
+
+                // wait for all created
+                if(aCreatePromises.length > 0){
+                    const aCreatedContext = await Promise.all(aCreatePromises);
+                }            
+                
+                try{
+                // Send email notification to first level approver or
+                // Start Final Approve Step for Auto approve
+                // Declaration for this block
+                    const aPayloadMain = []     // Variable to store payload for sending email
+                    
+                    for(const oApprover of aFullApproversDetails){
+                        if(oApprover.LEVEL == 1){
+                            // Populate array for sending email to approver
                             aPayloadMain.push({
-                                "ApproverName":oApprover.SUB_NAME, 
+                                "ApproverName":oApprover.APPROVER_NAME, 
                                 "SubmissionDate":sSystemDate, 
                                 "ClaimantName":oClaimantDetails.NAME, 
                                 "ClaimType":oRequestTypeDesc.REQUEST_TYPE_DESC, 
                                 "ClaimID":sPARID, 
-                                "RecipientName":oApprover.SUB_NAME, 
+                                "RecipientName":oApprover.APPROVER_NAME, 
                                 "Action": Constants.Email_Action.NOTIFY, 
-                                "ReceiverEmail":oApprover.SUB_EMAIL,
+                                "ReceiverEmail":oApprover.APPROVER_EMAIL,
                                 "NextApproverName":""
-                            }); 
+                            });
+                            if(oApprover.SUB_NAME != ""){
+                                // If substitute available, populate payload and send email to substitute also
+                                aPayloadMain.push({
+                                    "ApproverName":oApprover.SUB_NAME, 
+                                    "SubmissionDate":sSystemDate, 
+                                    "ClaimantName":oClaimantDetails.NAME, 
+                                    "ClaimType":oRequestTypeDesc.REQUEST_TYPE_DESC, 
+                                    "ClaimID":sPARID, 
+                                    "RecipientName":oApprover.SUB_NAME, 
+                                    "Action": Constants.Email_Action.NOTIFY, 
+                                    "ReceiverEmail":oApprover.SUB_EMAIL,
+                                    "NextApproverName":""
+                                }); 
+                            }
+                        }else if(oApprover.LEVEL == 0){
+                            FinalApproveStep.onFinalApprove(oController, oModel, sPARID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
+                            break;
                         }
-                    }else if(oApprover.LEVEL == 0){
-                        FinalApproveStep.onFinalApprove(oController, oModel, sPARID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
-                        break;
                     }
+                    if(aPayloadMain.length > 0){
+                        // Send email to approver
+                        this.onSendEmail(oModel, aPayloadMain);
+                    }
+
+                    // submit the batch
+                    await oModel.submitBatch("$auto");
+
+                    // wait for all created
+                    const aCreatedContext = await Promise.all(aCreatePromises);
+
+                }catch(oError){
+                    MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]));
                 }
-                if(aPayloadMain.length > 0){
-                    // Send email to approver
-                    this.onSendEmail(oModel, aPayloadMain);
-                }
-
-                // submit the batch
-                await oModel.submitBatch("$auto");
-
-                // wait for all created
-                const aCreatedContext = await Promise.all(aCreatePromises);
-
-            }catch(oError){
-                MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]));
+            }else{
+                MessageToast.show(Utility.getText("msg_failed_no_workflow"));
             }
         },
         /**
