@@ -280,6 +280,7 @@
 					value="{claimitem_input>/claim_item/no_of_days}"
 					type="Number"
 					visible="false"
+					enabled="false"
 					required="true"
 				/>
 

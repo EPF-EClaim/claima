@@ -1857,36 +1857,6 @@ sap.ui.define([
 			}).catch(err => console.error("RequestType Load Failed", err));
 		},
 
-		_calculateNumberOfDays: function() {
-			const oHeader = this._oReqModel.getProperty("/req_header") || {};
-			const oItem = this._oReqModel.getProperty("/req_item") || {};
-
-			const dHeaderStart = oHeader.tripstartdate ? new Date(oHeader.tripstartdate) : null;
-			const dHeaderEnd = oHeader.tripenddate ? new Date(oHeader.tripenddate) : null;
-
-			const dItemStart = oItem.start_date ? new Date(oItem.start_date) : null;
-			const dItemEnd = oItem.end_date ? new Date(oItem.end_date) : null;
-
-			const dFinalStart = dItemStart || dHeaderStart;
-			const dFinalEnd = dItemEnd || dHeaderEnd;
-
-			if (!dFinalStart || !dFinalEnd || isNaN(dFinalStart.getTime()) || isNaN(dFinalEnd.getTime())) {
-				this._oReqModel.setProperty("/req_item/no_of_days", 0);
-			}
-
-			const iStartMidnight = new Date(dFinalStart).setHours(0, 0, 0, 0);
-			const iEndMidnight = new Date(dFinalEnd).setHours(0, 0, 0, 0);
-
-			let iDiffDays = 0;
-
-			if (iEndMidnight >= iStartMidnight) {
-				const iMsPerDay = 1000 * 60 * 60 * 24;
-				iDiffDays = Math.floor((iEndMidnight - iStartMidnight) / iMsPerDay) + 1;
-			}
-
-			this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
-		},
-
 		calculateNumberOfHours: function() {
 			const oItem = this._oReqModel.getProperty("/req_item") || {};
 
@@ -1969,8 +1939,10 @@ sap.ui.define([
 							console.warn("Control not found or not visible-capable:", id);
 						}
 					});
-					
-					this._calculateNumberOfDays();
+					const _oHeader = this._oReqModel.getProperty("/req_header") || {};
+					const _oItem = this._oReqModel.getProperty("/req_item") || {};
+					var iDiffDays = DateUtility.calculateNumberOfDays(_oHeader, _oItem);
+					this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
 				}
 
 			} catch (err) {
@@ -2152,7 +2124,8 @@ sap.ui.define([
 						id,
 						userID,
 						comment,
-						oModel2
+						oModel2,
+						this
 					);
 
 					// 2. Send emails (1 or 2 depending on next approver / sub approver)
