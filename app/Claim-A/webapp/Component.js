@@ -6,9 +6,11 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "claima/utils/PARequestSharedFunction",
     "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator"
+    "sap/ui/model/FilterOperator",
+    "sap/m/MessageToast",
+    "claima/utils/Validator"
 ],
-    (AppComponent, models, HashChanger, Utility, JSONModel, PARequestSharedFunction, Filter, FilterOperator) => {
+    (AppComponent, models, HashChanger, Utility, JSONModel, PARequestSharedFunction, Filter, FilterOperator, MessageToast, Validator) => {
         "use strict";
 
         return AppComponent.extend("claima.Component", {
@@ -25,13 +27,14 @@ sap.ui.define([
                 this._oReqModel = this.getModel("request");
 
                 // Initialize the utility 
-			    Utility.init(this);
+                Utility.init(this);
 
                 // set the device model
                 this.setModel(models.createDeviceModel(), "device");
                 this.setModel(models.createSessionModel(), "session");
                 this.setModel(models.createUserIdModel(), "userId");
                 this.setModel(models.createImageModel(), "imageModel");
+                this.setModel(models.createRoleModel(), "roleModel");
 
                 const fmt = sap.ui.getCore().getConfiguration().getFormatSettings();
                 fmt.setDatePattern("medium", "dd MMM yyyy");
@@ -67,7 +70,7 @@ sap.ui.define([
                     console.error("getUserType failed:", err);
                 });
                 var jQueryScript = document.createElement('script');
-                    jQueryScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/jszip.js');
+                jQueryScript.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.2/jszip.js');
                 document.head.appendChild(jQueryScript);
 
                 jQueryScript = document.createElement('script');
@@ -76,11 +79,11 @@ sap.ui.define([
 
                 this.setModel(models.createConstantModel(), "constant");
 
-                this.setInactivityTimeout(600000);
-                this._initActivityTracking(); 
-                this.startInactivityTimer();
+                // this.setInactivityTimeout(600000);
+                // this._initActivityTracking();
+                // this.startInactivityTimer();
 
-                this.getRouter().attachRouteMatched(this._onRouteMatched,this);
+                this.getRouter().attachRouteMatched(this._onRouteMatched, this);
             },
 
             _loadCurrentUser: function () {
@@ -101,11 +104,31 @@ sap.ui.define([
                             this.setModel(oUserModel, 'user');
 
                             const oEmpData = await this._getEmpIdDetail(email);
-                            this._oReqModel.setProperty("/user", { 
-                                emp_id		: oEmpData.eeid, 
-                                name		: oEmpData.name,
-                                cost_center	: oEmpData.cc 
+                            this._oReqModel.setProperty("/user", {
+                                emp_id: oEmpData.eeid,
+                                name: oEmpData.name,
+                                cost_center: oEmpData.cc
                             });
+
+                            var oRoleModel = this.getModel("roleModel");
+
+                            resultData.scopes.forEach(function (scope) {
+                                if (scope.includes("Claimant")) {
+                                    oRoleModel.setProperty("/isClaimant", true);
+                                }
+                                if (scope.includes("Approver")) {
+                                    oRoleModel.setProperty("/isApprover", true);
+                                }
+                                if (scope.includes("DTD_Admin")) {
+                                    oRoleModel.setProperty("/isDTDAdmin", true);
+                                }
+                                if (scope.includes("Admin_System")) {
+                                    oRoleModel.setProperty("/isAdminSystem", true); 
+                                }
+                                if (scope.includes("Admin_CC")) {
+                                    oRoleModel.setProperty("/isAdminCC", true);
+                                }
+                            })
 
                             sap.m.MessageToast.show('Email: ' + email);
                         } else {
@@ -140,6 +163,18 @@ sap.ui.define([
                     this._fnResetActivity,
                     this
                 );
+            },
+
+            /**
+             * Returns the validator
+             * @public
+             * @return {Validator} returns the validator
+             */
+            getValidator: function () {
+                if (!this._oValidator) {
+                    this._oValidator = new Validator();
+                }
+                return this._oValidator;
             },
 
             getInactivityTimeout: function () {
@@ -185,6 +220,13 @@ sap.ui.define([
             },
 
             _showSessionWarning: function () {
+                //countdown another 5 mins if no response to the prompt message
+                //direct force user to logout
+                this.stopInactivityTimer();
+                this._promptExpireHandle = setTimeout(() => {
+                    this._doLogout();
+                }, 5 * 60 * 1000);
+
                 sap.m.MessageBox.warning(
                     "Session will expire. Click OK to stay logged in.",
                     {
@@ -195,14 +237,31 @@ sap.ui.define([
                         ],
                         emphasizedAction: sap.m.MessageBox.Action.OK,
                         onClose: (sAction) => {
+                            clearTimeout(this._promptExpireHandle);
+                            this._promptExpireHandle = null;
                             if (sAction === "Logout") {
                                 this._doLogout();
                             } else {
-                                this.resetInactivityTimeout();
+                                this._resumeSession();
                             }
                         }
                     }
                 );
+            },
+
+            _resumeSession: function () {
+                $.ajax({
+                    type: "GET",
+                    url: "/user-api/currentUser",
+                    success: () => {
+                        this.resetInactivityTimeout();
+                        this.startInactivityTimer();
+                    },
+                    error: () => {
+                        MessageToast.show("Session logout due to inactivity");
+                        this._doLogout();
+                    }
+                })
             },
 
             _doLogout: function () {
@@ -223,7 +282,7 @@ sap.ui.define([
             },
 
             // get backend data
-		    async _getEmpIdDetail(sEMAIL) {
+            async _getEmpIdDetail(sEMAIL) {
                 const oListBinding = this.getModel().bindList("/ZEMP_MASTER", null, null, [
                     new Filter({
                         path: "EMAIL",
@@ -298,10 +357,12 @@ sap.ui.define([
 
             destroy: function () {
                 this.stopInactivityTimer();
-                UIComponent.prototype.destroy.apply(this, arguments);
+                // UIComponent.prototype.destroy.apply(this, arguments);
+                clearTimeout(this._promptExpireHandle);
+                AppComponent.prototype.destroy.apply(this, arguments);
             },
 
-		    _onRouteMatched: function (oEvent) {
+            _onRouteMatched: function (oEvent) {
                 // To set current key of Side Navigation
                 var _sRoute = oEvent.getParameter("name");
                 var _oSideNavigation = this.getRootControl().byId("sideNavigation");
@@ -320,7 +381,7 @@ sap.ui.define([
                 if (_oSideNavigation && _sKey) {
                     _oSideNavigation.setSelectedKey(_sKey);
                 }
-		    }
+            }
 
         });
     });

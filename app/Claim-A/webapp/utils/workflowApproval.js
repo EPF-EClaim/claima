@@ -85,6 +85,12 @@ sap.ui.define([
 			const sClaimsSubmissionDate = aClaimHeaderData[0].SUBMITTED_DATE;
 			const sClaimSubmissionYear = new Date(aClaimHeaderData[0].SUBMITTED_DATE).getFullYear();
             const sClaimsFinalCC = sClaimsAltCC ?? sClaimsCC ?? null;
+            const bClaimCashAdvance = false;
+
+            // Set cash advance boolean based on cash advance amount. If cash advance amount > 0, cash advance = TRUE
+            if(aClaimHeaderData[0].CASH_ADVANCE_AMOUNT > 0){
+                bClaimCashAdvance = true;
+            }
 
             // Add TOTAL_CLAIM_AMOUNT and PREAPPROVED_AMOUNT
             const sTotalClaimAmount = aClaimHeaderData[0].TOTAL_CLAIM_AMOUNT;
@@ -208,12 +214,13 @@ sap.ui.define([
 				aWorkflowRuleElimArr.push(aWorkflowRuleData[i].OUTCOME_WORKFLOW_CODE);
 				aWorkflowRuleElimArr.push(aWorkflowRuleData[i].THRESHOLD_VALUE);
 				aWorkflowRuleElimArr.push(aWorkflowRuleData[i].RECEIPT_AGE);
+                aWorkflowRuleElimArr.push(aWorkflowRuleData[i].CASH_ADVANCE);
 				
 				aNestedWorkflowRuleArr.push(aWorkflowRuleElimArr);
 				aWorkflowRuleElimArr = [];
 			}
 			
-            var sSystemDate = new Date().toLocaleDateString('en-CA');
+            const sSystemDate = new Date().toLocaleDateString('en-CA');
 			//var iDateDiff = new Date(dFurthestReceiptDate) - new Date(sClaimsSubmissionDate);
             var iDateDiff = new Date(dFurthestReceiptDate) - new Date(sSystemDate);
 			iDateDiff = iDateDiff/86400000;
@@ -232,6 +239,7 @@ sap.ui.define([
 			let aThresholdWorkflowCodeArr = [];
 			let aEmpCCWorkflowCodeArr = [];
 			let aReceiptAgingWorkflowCodeArr = [];
+            let aCashAdvWorkflowCodeArr = [];
 			for(var i = 0; i < aNestedWorkflowRuleArr.length; i++){
 
                 if(aNestedWorkflowRuleArr[i][3] == null){
@@ -281,266 +289,284 @@ sap.ui.define([
                 }else if(sReceiptAge == aNestedWorkflowRuleArr[i][6]){
 					aReceiptAgingWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
 				}
+
+                //cash adv is either true or false. 
+                if(aNestedWorkflowRuleArr[i][7]){
+                    if(bClaimCashAdvance){
+                        aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
+                    }
+                }else{
+                    if(!bClaimCashAdvance){
+                        aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
+                    }
+                }
 			}
 
 			//filter for the only workflow code that is the same among all the rule checks
 			const aCommonWorkflowCode = [...new Set(aRiskLevelWorkflowCodeArr)].filter(item => 
-				new Set(aThresholdWorkflowCodeArr).has(item) && new Set(aEmpCCWorkflowCodeArr).has(item) && new Set(aReceiptAgingWorkflowCodeArr).has(item)
+				new Set(aThresholdWorkflowCodeArr).has(item) && new Set(aEmpCCWorkflowCodeArr).has(item) && new Set(aReceiptAgingWorkflowCodeArr).has(item) && new Set(aCashAdvWorkflowCodeArr).has(item)
 			);
 
-			//get approver levels and approvers
-			const oListWorkflowStepBinding = oModel.bindList(Constants.Entities.ZWORKFLOW_STEP, null,null, [
-				new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.WorkflowType.CLAIM }),
-				new Filter({ path: Constants.EntitiesFields.WORKFLOW_CODE, operator: FilterOperator.EQ, value1: aCommonWorkflowCode[0] }),
-				
-			], null);
-			const aWorkflowStepContexts = await oListWorkflowStepBinding.requestContexts();
-			const aWorkflowStepData = aWorkflowStepContexts.map(oContext => oContext.getObject());
-			
-			const sWorkflowName =  aWorkflowStepData[0].WORKFLOW_NAME;
-			const iWorkflowApprLvl =  aWorkflowStepData[0].WORKFLOW_APPROVAL_LEVELS;
-			if(iWorkflowApprLvl > 1){
-				var aWorkflowApprStep = sWorkflowName.split("-");
-			}else{
-				aWorkflowApprStep = [sWorkflowName];
-			}
+            // If we get no workflow rules or more than 1 workflow rules, do not proceed
+            if(aCommonWorkflowCode.length === 1){
 
-
-			let aApprEmpID = [];
-            
-            if(sWorkflowName == Constants.Approvers.AUTO && iWorkflowApprLvl == 0){
-                aApprEmpID.push(Constants.Approvers.AUTO);
-                aUniqueApproversDetails.push({
-                    EEID: Constants.Approvers.AUTO,
-                    NAME: Constants.Approvers.AUTO,
-                    EMAIL: null,
-                    LEVEL: Number(0)
-                });
-            }else{
-
-                // Variable declarations for Approver Determination logic
-                let oCurrOutcome = null;        // Variable to store current outcome ROLE and RANK
-                let oPrevOutcome = null;        // Variable to store previous outcome ROLE and RANK
-                let iApproverRank = 0;          // Variable to store approver rank to retrieve
-                let oApproverDetails = null;    // Variable to store approver details 
-                let oBudgetDetails = null;      // Variable to store budget approver details (If applicable)
-                let aConstantValues = [];       // Variable to store EEID retrieved from ZCONSTANTS table
-                let oPopulatedEmployee = null;  // Variable to store employee details
-                const aRoleRanks = await WorkflowApproverHelper.getRoleRank(oModel);
-                const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
-                for(var i = 0; i < aWorkflowApprStep.length; i++){
-
-                    // Start of Approver Determination logic
-                    // Standard Workflow logic is when following approver level, the next level should be higher than the previous level
-                    // Special case would include first level higher than second level. This case would require the first approver to
-                    // Be handled separately from the next level approvers 
-                    // After that, the logic will follow the Standard Workflow logic
-
-                    // Check if claimant is CEO
-                    // If yes, approver for CEO is CEO_FI
-                    if(oClaimantDetails.ROLE === Constants.Role.CEO){
-                        aWorkflowApprStep[i] = Constants.User_Type.CEO_FI;
-                    }
+                //get approver levels and approvers
+                const oListWorkflowStepBinding = oModel.bindList(Constants.Entities.ZWORKFLOW_STEP, null,null, [
+                    new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.WorkflowType.CLAIM }),
+                    new Filter({ path: Constants.EntitiesFields.WORKFLOW_CODE, operator: FilterOperator.EQ, value1: aCommonWorkflowCode[0] }),
                     
-                    // Populate current role rank
-                    oCurrOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
-                    
-                    
-                    if(oCurrOutcome == null){
-                        // Block to check for Special Approver within ZCONSTANTS table and budget approver
-                        switch(aWorkflowApprStep[i]){
-                            case Constants.Approvers.BUDGET:
-                                if(sClaimsFinalCC != null){
-                                    oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
-                                    if(!oBudgetDetails){
-                                        MessageToast.show(Utility.getText("msg_failed_no_budget"));
-                                    }else{
-                                        oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
-                                        oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
-                                        if(oPopulatedEmployee){
-                                            aApproversDetails.push(oPopulatedEmployee);
-                                        }
-                                    }
-                                }else{
-                                    MessageToast.show(Utility.getText("msg_failed_no_cost_center"));
-                                }
-                                break;
-                            case Constants.User_Type.CEO_FI:
-                            case Constants.User_Type.CASH_FI:
-                            case Constants.User_Type.FI_SETTLEMENT_A:
-                            case Constants.User_Type.FI_SETTLEMENT_B:
-                            case Constants.User_Type.HOD_JKEW:
-                                // Possible multiple approvers retrieved from ZCONSTANTS table
-                                aConstantValues = await WorkflowApproverHelper.getConstants(oModel, aWorkflowApprStep[i]);
-                                if(aConstantValues){
-                                    for(const id of aConstantValues){
-                                        if(id.VALUE){
-                                            oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, id.VALUE);
+                ], null);
+                const aWorkflowStepContexts = await oListWorkflowStepBinding.requestContexts();
+                const aWorkflowStepData = aWorkflowStepContexts.map(oContext => oContext.getObject());
+                
+                const sWorkflowName =  aWorkflowStepData[0].WORKFLOW_NAME;
+                const iWorkflowApprLvl =  aWorkflowStepData[0].WORKFLOW_APPROVAL_LEVELS;
+                if(iWorkflowApprLvl > 1){
+                    var aWorkflowApprStep = sWorkflowName.split("-");
+                }else{
+                    aWorkflowApprStep = [sWorkflowName];
+                }
+
+
+                let aApprEmpID = [];
+                
+                if(sWorkflowName == Constants.Approvers.AUTO && iWorkflowApprLvl == 0){
+                    aApprEmpID.push(Constants.Approvers.AUTO);
+                    aUniqueApproversDetails.push({
+                        EEID: Constants.Approvers.AUTO,
+                        NAME: Constants.Approvers.AUTO,
+                        EMAIL: null,
+                        LEVEL: Number(0)
+                    });
+                }else{
+
+                    // Variable declarations for Approver Determination logic
+                    let oCurrOutcome = null;        // Variable to store current outcome ROLE and RANK
+                    let oPrevOutcome = null;        // Variable to store previous outcome ROLE and RANK
+                    let iApproverRank = 0;          // Variable to store approver rank to retrieve
+                    let oApproverDetails = null;    // Variable to store approver details 
+                    let oBudgetDetails = null;      // Variable to store budget approver details (If applicable)
+                    let aConstantValues = [];       // Variable to store EEID retrieved from ZCONSTANTS table
+                    let oPopulatedEmployee = null;  // Variable to store employee details
+                    const aRoleRanks = await WorkflowApproverHelper.getRoleRank(oModel);
+                    const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
+                    for(var i = 0; i < aWorkflowApprStep.length; i++){
+
+                        // Start of Approver Determination logic
+                        // Standard Workflow logic is when following approver level, the next level should be higher than the previous level
+                        // Special case would include first level higher than second level. This case would require the first approver to
+                        // Be handled separately from the next level approvers 
+                        // After that, the logic will follow the Standard Workflow logic
+
+                        // Check if claimant is CEO
+                        // If yes, approver for CEO is CEO_FI
+                        if(oClaimantDetails.ROLE === Constants.Role.CEO){
+                            aWorkflowApprStep[i] = Constants.User_Type.CEO_FI;
+                        }
+                        
+                        // Populate current role rank
+                        oCurrOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
+                        
+                        
+                        if(oCurrOutcome == null){
+                            // Block to check for Special Approver within ZCONSTANTS table and budget approver
+                            switch(aWorkflowApprStep[i]){
+                                case Constants.Approvers.BUDGET:
+                                    if(sClaimsFinalCC != null){
+                                        oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
+                                        if(!oBudgetDetails){
+                                            MessageToast.show(Utility.getText("msg_failed_no_budget"));
+                                        }else{
+                                            oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
                                             oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
                                             if(oPopulatedEmployee){
                                                 aApproversDetails.push(oPopulatedEmployee);
-                                            }else{
-
-                                                MessageToast.show(Utility.getText("msg_failed_no_approver_details", [id.VALUE]));
                                             }
-                                        }else{
-                                            MessageToast.show(Utility.getText("msg_failed_no_approver"));
+                                        }
+                                    }else{
+                                        MessageToast.show(Utility.getText("msg_failed_no_cost_center"));
+                                    }
+                                    break;
+                                case Constants.User_Type.CEO_FI:
+                                case Constants.User_Type.CASH_FI:
+                                case Constants.User_Type.FI_SETTLEMENT_A:
+                                case Constants.User_Type.FI_SETTLEMENT_B:
+                                case Constants.User_Type.HOD_JKEW:
+                                    // Possible multiple approvers retrieved from ZCONSTANTS table
+                                    aConstantValues = await WorkflowApproverHelper.getConstants(oModel, aWorkflowApprStep[i]);
+                                    if(aConstantValues){
+                                        for(const id of aConstantValues){
+                                            if(id.VALUE){
+                                                oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, id.VALUE);
+                                                oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
+                                                if(oPopulatedEmployee){
+                                                    aApproversDetails.push(oPopulatedEmployee);
+                                                }else{
+
+                                                    MessageToast.show(Utility.getText("msg_failed_no_approver_details", [id.VALUE]));
+                                                }
+                                            }else{
+                                                MessageToast.show(Utility.getText("msg_failed_no_approver"));
+                                            }
                                         }
                                     }
-                                }
-                                break;
-                            default:
-                        }
-                    }
-                    else{
-                        if(oClaimantDetails.RANK < oCurrOutcome.RANK){
-                            iApproverRank = oCurrOutcome.RANK;
+                                    break;
+                                default:
+                            }
                         }
                         else{
-                            iApproverRank = oClaimantDetails.RANK + 1;
-                        }
-                        // Retrieve Approver based on iApproverRank
-                        oApproverDetails = await this.getApprover(oModel, sEmpID, iApproverRank);
-                        oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
-                        if(oPopulatedEmployee){
-                            aApproversDetails.push(oPopulatedEmployee);
-                        }
-                    } 
+                            if(oClaimantDetails.RANK < oCurrOutcome.RANK){
+                                iApproverRank = oCurrOutcome.RANK;
+                            }
+                            else{
+                                iApproverRank = oClaimantDetails.RANK + 1;
+                            }
+                            // Retrieve Approver based on iApproverRank
+                            oApproverDetails = await this.getApprover(oModel, sEmpID, iApproverRank);
+                            oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
+                            if(oPopulatedEmployee){
+                                aApproversDetails.push(oPopulatedEmployee);
+                            }
+                        } 
 
-                    // Check if approver is found. If approver not found, do not store approver rank and current outcome
-                    if(oApproverDetails){
-                        iApproverRank = Number(oApproverDetails.RANK);                    
-                        oPrevOutcome = oCurrOutcome;
+                        // Check if approver is found. If approver not found, do not store approver rank and current outcome
+                        if(oApproverDetails){
+                            iApproverRank = Number(oApproverDetails.RANK);                    
+                            oPrevOutcome = oCurrOutcome;
+                        }
+                    }
+                    // at the end of approver determination, do the following
+                    // 1. Remove duplicate approvers
+                    // 2. Remove approvers who is the claimant
+                    // 3. Renumber levels after operation
+                    const oSeen = new Set();
+                    let iLevel = 0;
+                    oSeen.add(oClaimantDetails.EEID);
+                    for (const oApprover of aApproversDetails){
+                        if(!oSeen.has(oApprover.EEID)){
+                            oSeen.add(oApprover.EEID);
+                            iLevel = iLevel + 1;
+                            oApprover.LEVEL = iLevel;
+                            aUniqueApproversDetails.push(oApprover);
+                        }
                     }
                 }
-                // at the end of approver determination, do the following
-                // 1. Remove duplicate approvers
-                // 2. Remove approvers who is the claimant
-                // 3. Renumber levels after operation
-                const oSeen = new Set();
-                let iLevel = 0;
-                oSeen.add(oClaimantDetails.EEID);
-                for (const oApprover of aApproversDetails){
-                    if(!oSeen.has(oApprover.EEID)){
-                        oSeen.add(oApprover.EEID);
-                        iLevel = iLevel + 1;
-                        oApprover.LEVEL = iLevel;
-                        aUniqueApproversDetails.push(oApprover);
-                    }
-                }
-            }
             
-            // Variable declaration for substitutes
-            let oSubstitute = null;         // Variable to store substitute user
-            let oSubstituteDetails = null;  // Variable to store substitute user details
-            let sSubstitute_eeid = "";       // Variable to store substitute EEID
-            let sSubstitute_name = "";       // Variable to store substitute name
-            let sSubstitute_email = "";      // Variable to store substitute email
-            // Retrieve substitute for approvers
-            for (const oApprover of aUniqueApproversDetails){
-                // If LEVEL = 0, Approver is Auto
-                if(oApprover.LEVEL > 0){
-                    oSubstitute = await WorkflowApproverHelper.getSubstitute(oModel, oEmployeeModel, oApprover.EEID);
-                    if(oSubstitute){
-                        oSubstituteDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oSubstitute.EEID);
-                        if(oSubstituteDetails){
-                            sSubstitute_eeid = oSubstituteDetails.EEID;
-                            sSubstitute_name = oSubstituteDetails.NAME;
-                            sSubstitute_email = oSubstituteDetails.EMAIL;
+                // Variable declaration for substitutes
+                let oSubstitute = null;         // Variable to store substitute user
+                let oSubstituteDetails = null;  // Variable to store substitute user details
+                let sSubstitute_eeid = "";       // Variable to store substitute EEID
+                let sSubstitute_name = "";       // Variable to store substitute name
+                let sSubstitute_email = "";      // Variable to store substitute email
+                // Retrieve substitute for approvers
+                for (const oApprover of aUniqueApproversDetails){
+                    // If LEVEL = 0, Approver is Auto
+                    if(oApprover.LEVEL > 0){
+                        oSubstitute = await WorkflowApproverHelper.getSubstitute(oModel, oEmployeeModel, oApprover.EEID);
+                        if(oSubstitute){
+                            oSubstituteDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oSubstitute.EEID);
+                            if(oSubstituteDetails){
+                                sSubstitute_eeid = oSubstituteDetails.EEID;
+                                sSubstitute_name = oSubstituteDetails.NAME;
+                                sSubstitute_email = oSubstituteDetails.EMAIL;
+                            }
                         }
+                    }else{
+                        sSubstitute_name = Constants.Approvers.AUTO;
                     }
-                }else{
-                    sSubstitute_name = Constants.Approvers.AUTO;
+                    aFullApproversDetails.push({
+                        APPROVER_EEID:   oApprover.EEID,
+                        APPROVER_NAME:   oApprover.NAME,
+                        APPROVER_EMAIL:  oApprover.EMAIL,
+                        LEVEL:  Number(oApprover.LEVEL),
+                        SUB_EEID:        sSubstitute_eeid,
+                        SUB_NAME:        sSubstitute_name,
+                        SUB_EMAIL:       sSubstitute_email
+                    });
                 }
-                aFullApproversDetails.push({
-                    APPROVER_EEID:   oApprover.EEID,
-                    APPROVER_NAME:   oApprover.NAME,
-                    APPROVER_EMAIL:  oApprover.EMAIL,
-                    LEVEL:  Number(oApprover.LEVEL),
-                    SUB_EEID:        sSubstitute_eeid,
-                    SUB_NAME:        sSubstitute_name,
-                    SUB_EMAIL:       sSubstitute_email
-                });
-            }
 
-			//create ZAPPROVER DETAILS
-			const oBindApprDetailsList = oModel.bindList(Constants.Entities.ZAPPROVER_DETAILS_CLAIMS);
+                //create ZAPPROVER DETAILS
+                const oBindApprDetailsList = oModel.bindList(Constants.Entities.ZAPPROVER_DETAILS_CLAIMS);
 
-            // create all contexts
-            let aCreatePromises = [];
+                // create all contexts
+                let aCreatePromises = [];
 
-			//for(var i = 0; i < aApprEmpID.length; i++){
-            for(const oApprover of aFullApproversDetails){
-
-                var oContext = oBindApprDetailsList.create({
-                    "CLAIM_ID": sClaimID,
-                    "LEVEL": oApprover.LEVEL,
-                    "APPROVER_ID": oApprover.APPROVER_EEID,
-                    "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
-                    "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
-                });
-                aCreatePromises.push(oContext.created());
-			}
-
-            // submit the batch
-            await oModel.submitBatch("$auto");
-
-            // wait for all created
-            const aCreatedContext = await Promise.all(aCreatePromises);
-
-            try{
-            // Send email notification to first level approver or
-            // Start Final Approve Step for Auto approve
-            // Declaration for this block
-                const aPayloadMain = []     // Variable to store payload for sending email
-                
+                //for(var i = 0; i < aApprEmpID.length; i++){
                 for(const oApprover of aFullApproversDetails){
-                    if(oApprover.LEVEL == 1){
-                        // Populate array for sending email to approver
-                        aPayloadMain.push({
-                            "ApproverName":oApprover.APPROVER_NAME, 
-                            "SubmissionDate":sClaimsSubmissionDate, 
-                            "ClaimantName":oClaimantDetails.NAME, 
-                            "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
-                            "ClaimID":sClaimID, 
-                            "RecipientName": oApprover.APPROVER_NAME, 
-                            "Action": Constants.Email_Action.NOTIFY, 
-                            "ReceiverEmail":oApprover.APPROVER_EMAIL,
-                            "NextApproverName":""
-                        });
-                        if(oApprover.SUB_NAME != ""){
-                            // If substitute available, populate payload and send email to substitute also
-                            aPayloadMain.push({
-                                "ApproverName":oApprover.SUB_NAME, 
-                                "SubmissionDate":sClaimsSubmissionDate, 
-                                "ClaimantName":oClaimantDetails.NAME, 
-                                "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
-                                "ClaimID":sClaimID, 
-                                "RecipientName":oApprover.SUB_NAME, 
-                                "Action": Constants.Email_Action.NOTIFY, 
-                                "ReceiverEmail":oApprover.SUB_EMAIL,
-                                "NextApproverName":""
-                            }); 
-                        }
-                    }else if(oApprover.LEVEL == 0){
-                        FinalApproveStep.onFinalApprove(oController, oModel, sClaimID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
-                        break;
-                    }
-                }
-                if(aPayloadMain.length > 0){
-                    // Send email to approver
-                    this.onSendEmail(oModel, aPayloadMain);
+
+                    var oContext = oBindApprDetailsList.create({
+                        "CLAIM_ID": sClaimID,
+                        "LEVEL": oApprover.LEVEL,
+                        "APPROVER_ID": oApprover.APPROVER_EEID,
+                        "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
+                        "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
+                    });
+                    aCreatePromises.push(oContext.created());
                 }
 
                 // submit the batch
-                await oModel.submitBatch("$auto");
+                // await oModel.submitBatch("$auto");
 
                 // wait for all created
-                const aCreatedContext = await Promise.all(aCreatePromises);
-                
-            }catch(oError){
-                MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]));
-            }	
+                if(aCreatePromises.length > 0){
+                    const aCreatedContext = await Promise.all(aCreatePromises);
+                }
+                try{
+                // Send email notification to first level approver or
+                // Start Final Approve Step for Auto approve
+                // Declaration for this block
+                    const aPayloadMain = []     // Variable to store payload for sending email
+                    
+                    for(const oApprover of aFullApproversDetails){
+                        if(oApprover.LEVEL == 1){
+                            // Populate array for sending email to approver
+                            aPayloadMain.push({
+                                "ApproverName":oApprover.APPROVER_NAME, 
+                                "SubmissionDate":sSystemDate, 
+                                "ClaimantName":oClaimantDetails.NAME, 
+                                "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
+                                "ClaimID":sClaimID, 
+                                "RecipientName": oApprover.APPROVER_NAME, 
+                                "Action": Constants.Email_Action.NOTIFY, 
+                                "ReceiverEmail":oApprover.APPROVER_EMAIL,
+                                "NextApproverName":""
+                            });
+                            if(oApprover.SUB_NAME != ""){
+                                // If substitute available, populate payload and send email to substitute also
+                                aPayloadMain.push({
+                                    "ApproverName":oApprover.SUB_NAME, 
+                                    "SubmissionDate":sSystemDate, 
+                                    "ClaimantName":oClaimantDetails.NAME, 
+                                    "ClaimType":oSubmissionTypeDesc.SUBMISSION_TYPE_DESC, 
+                                    "ClaimID":sClaimID, 
+                                    "RecipientName":oApprover.SUB_NAME, 
+                                    "Action": Constants.Email_Action.NOTIFY, 
+                                    "ReceiverEmail":oApprover.SUB_EMAIL,
+                                    "NextApproverName":""
+                                }); 
+                            }
+                        }else if(oApprover.LEVEL == 0){
+                            FinalApproveStep.onFinalApprove(oController, oModel, sClaimID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
+                            break;
+                        }
+                    }
+                    if(aPayloadMain.length > 0){
+                        // Send email to approver
+                        this.onSendEmail(oModel, aPayloadMain);
+                    }
+
+                    // submit the batch
+                    await oModel.submitBatch("$auto");
+
+                    // wait for all created
+                    const aCreatedContext = await Promise.all(aCreatePromises);
+                    
+                }catch(oError){
+                    MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]));
+                }	
+            }else{
+                MessageToast.show(Utility.getText("msg_failed_no_workflow"));
+            }
 			
         },
         onPARApproverDetermination: async function (oController, oModel, sPARID, oEmployeeModel){
@@ -566,6 +592,8 @@ sap.ui.define([
 			var sParTripStartDate = aPARHeaderData[0].TRIP_START_DATE;
             const sParFinalCC = sParAltCC ?? sParCC ?? null;
 
+            const sSystemDate = new Date().toLocaleDateString('en-CA');
+
             // Retrieve claimant details for use of entire function
             const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
             if(oClaimantDetails === null){
@@ -585,7 +613,7 @@ sap.ui.define([
 			let aParCashAdvArr = [];
 			for(var i = 0; i < aClaimsItemData.length; i++){
 				aParCashAdvArr.push(aClaimsItemData[i].CASH_ADVANCE);
-			}
+            }
 
 			//get employee info
 			const oListPAREmpMasterBinding = oModel.bindList(Constants.Entities.ZEMP_MASTER, null,null, [
@@ -674,18 +702,14 @@ sap.ui.define([
 					aTripStartAgingWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
 				}
 
-                //cash adv is either true or false. added a null check for human error when user create in config table
-                if(aNestedWorkflowRuleArr[i][0] == null){
-                    aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
+                //cash adv is either true or false. 
+                if(aNestedWorkflowRuleArr[i][0]){
+                    if(aParCashAdvArr.includes(true)){
+                        aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
+                    }
                 }else{
-                    if(aParCashAdvArr.includes("true") == true){
-                        if(aNestedWorkflowRuleArr[i][0] == 1){
-                            aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
-                        }
-                    }else{
-                        if(aNestedWorkflowRuleArr[i][0] == 0){
-                            aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
-                        }
+                    if(!aParCashAdvArr.includes(true)){
+                        aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
                     }
                 }
 			}
@@ -696,254 +720,261 @@ sap.ui.define([
 				new Set(aTripStartAgingWorkflowCodeArr).has(item) && new Set(aCashAdvWorkflowCodeArr).has(item)
 			); 
 
+            // If we get no workflow rules or more than 1 workflow rules, do not proceed
+            if(aCommonWorkflowCode.length === 1){
 
-			//get approver levels and approvers
-			const oListWorkflowStepBinding = oModel.bindList(Constants.Entities.ZWORKFLOW_STEP, null,null, [
-				new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.WorkflowType.REQUEST }),
-				new Filter({ path: Constants.EntitiesFields.WORKFLOW_CODE, operator: FilterOperator.EQ, value1: aCommonWorkflowCode[0] }),
-				
-			], null);
-			const aWorkflowStepContexts = await oListWorkflowStepBinding.requestContexts();
-			const aWorkflowStepData = aWorkflowStepContexts.map(oContext => oContext.getObject());
-			
-			const sWorkflowName =  aWorkflowStepData[0].WORKFLOW_NAME;
-			const iWorkflowApprLvl =  aWorkflowStepData[0].WORKFLOW_APPROVAL_LEVELS;
-
-			if(iWorkflowApprLvl > 1){
-				var aWorkflowApprStep = sWorkflowName.split("-");
-			}else{
-				aWorkflowApprStep = [sWorkflowName];
-			}
-
-			let aApprEmpID = [];
-            if(sWorkflowName == Constants.Approvers.AUTO && iWorkflowApprLvl == 0){
-                aApprEmpID.push(Constants.Approvers.AUTO);
-                aUniqueApproversDetails.push({
-                    EEID: Constants.Approvers.AUTO,
-                    NAME: Constants.Approvers.AUTO,
-                    EMAIL: null,
-                    LEVEL: Number(0)
-                });
-            }else{
-                // Variable declarations for Approver Determination logic
-                let oCurrOutcome = null;        // Variable to store current outcome ROLE and RANK
-                let oPrevOutcome = null;        // Variable to store previous outcome ROLE and RANK
-                let iApproverRank = 0;          // Variable to store approver rank to retrieve
-                let oApproverDetails = null;    // Variable to store approver details 
-                let oBudgetDetails = null;      // Variable to store budget approver details (If applicable)
-                let aConstantValues = [];       // Variable to store EEID retrieved from ZCONSTANTS table
-                let oPopulatedEmployee = null;  // Variable to store populated Employee
-                const aRoleRanks = await WorkflowApproverHelper.getRoleRank(oModel);
-                const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
-                for(var i = 0; i < aWorkflowApprStep.length; i++){
-
-                    // Start of Approver Determination logic
-                    // Standard Workflow logic is when following approver level, the next level should be higher than the previous level
-                    // Special case would include first level higher than second level. This case would require the first approver to
-                    // Be handled separately from the next level approvers 
-                    // After that, the logic will follow the Standard Workflow logic
-
-                    // Check if claimant is CEO
-                    // If yes, approver for CEO is CEO_FI
-                    if(oClaimantDetails.ROLE === Constants.Role.CEO){
-                        aWorkflowApprStep[i] = Constants.User_Type.CEO_FI;
-                    }
-                    // Populate current role rank
-                    oCurrOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
+                //get approver levels and approvers
+                const oListWorkflowStepBinding = oModel.bindList(Constants.Entities.ZWORKFLOW_STEP, null,null, [
+                    new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.WorkflowType.REQUEST }),
+                    new Filter({ path: Constants.EntitiesFields.WORKFLOW_CODE, operator: FilterOperator.EQ, value1: aCommonWorkflowCode[0] }),
                     
-                    
-                    if(oCurrOutcome == null){
-                        // Block to check for Special Approver within ZCONSTANTS table and budget approver
-                        switch(aWorkflowApprStep[i]){
-                            case Constants.Approvers.BUDGET:
-                                if(sParFinalCC != null){
-                                    oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sParFinalCC, sParSubmissionYear);
-                                    if(!oBudgetDetails){
-                                        MessageToast.show(Utility.getText("msg_failed_no_budget"));
-                                    }else{
-                                        oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
-                                        oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
-                                        if(oPopulatedEmployee){
-                                            aApproversDetails.push(oPopulatedEmployee);
-                                        }
-                                    }
-                                }else{
-                                    MessageToast.show(Utility.getText("msg_failed_no_cost_center"));
-                                }
-                                break;
-                            case Constants.User_Type.CEO_FI:
-                            case Constants.User_Type.CASH_FI:
-                            case Constants.User_Type.FI_SETTLEMENT_A:
-                            case Constants.User_Type.FI_SETTLEMENT_B:
-                            case Constants.User_Type.HOD_JKEW:
-                                // Possible multiple approvers retrieved from ZCONSTANTS table
-                                aConstantValues = await WorkflowApproverHelper.getConstants(oModel, aWorkflowApprStep[i]);
-                                if(aConstantValues){
-                                    for(const id of aConstantValues){
-                                        if(id.VALUE){
-                                            oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, id.VALUE);
+                ], null);
+                const aWorkflowStepContexts = await oListWorkflowStepBinding.requestContexts();
+                const aWorkflowStepData = aWorkflowStepContexts.map(oContext => oContext.getObject());
+                
+                const sWorkflowName =  aWorkflowStepData[0].WORKFLOW_NAME;
+                const iWorkflowApprLvl =  aWorkflowStepData[0].WORKFLOW_APPROVAL_LEVELS;
+
+                if(iWorkflowApprLvl > 1){
+                    var aWorkflowApprStep = sWorkflowName.split("-");
+                }else{
+                    aWorkflowApprStep = [sWorkflowName];
+                }
+
+                let aApprEmpID = [];
+                if(sWorkflowName == Constants.Approvers.AUTO && iWorkflowApprLvl == 0){
+                    aApprEmpID.push(Constants.Approvers.AUTO);
+                    aUniqueApproversDetails.push({
+                        EEID: Constants.Approvers.AUTO,
+                        NAME: Constants.Approvers.AUTO,
+                        EMAIL: null,
+                        LEVEL: Number(0)
+                    });
+                }else{
+                    // Variable declarations for Approver Determination logic
+                    let oCurrOutcome = null;        // Variable to store current outcome ROLE and RANK
+                    let oPrevOutcome = null;        // Variable to store previous outcome ROLE and RANK
+                    let iApproverRank = 0;          // Variable to store approver rank to retrieve
+                    let oApproverDetails = null;    // Variable to store approver details 
+                    let oBudgetDetails = null;      // Variable to store budget approver details (If applicable)
+                    let aConstantValues = [];       // Variable to store EEID retrieved from ZCONSTANTS table
+                    let oPopulatedEmployee = null;  // Variable to store populated Employee
+                    const aRoleRanks = await WorkflowApproverHelper.getRoleRank(oModel);
+                    const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
+                    for(var i = 0; i < aWorkflowApprStep.length; i++){
+
+                        // Start of Approver Determination logic
+                        // Standard Workflow logic is when following approver level, the next level should be higher than the previous level
+                        // Special case would include first level higher than second level. This case would require the first approver to
+                        // Be handled separately from the next level approvers 
+                        // After that, the logic will follow the Standard Workflow logic
+
+                        // Check if claimant is CEO
+                        // If yes, approver for CEO is CEO_FI
+                        if(oClaimantDetails.ROLE === Constants.Role.CEO){
+                            aWorkflowApprStep[i] = Constants.User_Type.CEO_FI;
+                        }
+                        // Populate current role rank
+                        oCurrOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
+                        
+                        
+                        if(oCurrOutcome == null){
+                            // Block to check for Special Approver within ZCONSTANTS table and budget approver
+                            switch(aWorkflowApprStep[i]){
+                                case Constants.Approvers.BUDGET:
+                                    if(sParFinalCC != null){
+                                        oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sParFinalCC, sParSubmissionYear);
+                                        if(!oBudgetDetails){
+                                            MessageToast.show(Utility.getText("msg_failed_no_budget"));
+                                        }else{
+                                            oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
                                             oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
                                             if(oPopulatedEmployee){
                                                 aApproversDetails.push(oPopulatedEmployee);
-                                            }else{
-                                                MessageToast.show(Utility.getText("msg_failed_no_approver_details", [id.VALUE]));
                                             }
-                                        }else{
-                                            MessageToast.show(Utility.getText("msg_failed_no_approver"));
+                                        }
+                                    }else{
+                                        MessageToast.show(Utility.getText("msg_failed_no_cost_center"));
+                                    }
+                                    break;
+                                case Constants.User_Type.CEO_FI:
+                                case Constants.User_Type.CASH_FI:
+                                case Constants.User_Type.FI_SETTLEMENT_A:
+                                case Constants.User_Type.FI_SETTLEMENT_B:
+                                case Constants.User_Type.HOD_JKEW:
+                                    // Possible multiple approvers retrieved from ZCONSTANTS table
+                                    aConstantValues = await WorkflowApproverHelper.getConstants(oModel, aWorkflowApprStep[i]);
+                                    if(aConstantValues){
+                                        for(const id of aConstantValues){
+                                            if(id.VALUE){
+                                                oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, id.VALUE);
+                                                oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
+                                                if(oPopulatedEmployee){
+                                                    aApproversDetails.push(oPopulatedEmployee);
+                                                }else{
+                                                    MessageToast.show(Utility.getText("msg_failed_no_approver_details", [id.VALUE]));
+                                                }
+                                            }else{
+                                                MessageToast.show(Utility.getText("msg_failed_no_approver"));
+                                            }
                                         }
                                     }
-                                }
-                                break;
-                            default:
-                        }
-                    }
-                    else{
-                        if(oClaimantDetails.RANK < oCurrOutcome.RANK){
-                            iApproverRank = oCurrOutcome.RANK;
+                                    break;
+                                default:
+                            }
                         }
                         else{
-                            iApproverRank = oClaimantDetails.RANK + 1;
-                        }
-                        // Retrieve Approver based on iApproverRank
-                        oApproverDetails = await this.getApprover(oModel, sEmpID, iApproverRank);
-                        oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
-                        if(oPopulatedEmployee){
-                            aApproversDetails.push(oPopulatedEmployee);
-                        }
-                    } 
+                            if(oClaimantDetails.RANK < oCurrOutcome.RANK){
+                                iApproverRank = oCurrOutcome.RANK;
+                            }
+                            else{
+                                iApproverRank = oClaimantDetails.RANK + 1;
+                            }
+                            // Retrieve Approver based on iApproverRank
+                            oApproverDetails = await this.getApprover(oModel, sEmpID, iApproverRank);
+                            oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
+                            if(oPopulatedEmployee){
+                                aApproversDetails.push(oPopulatedEmployee);
+                            }
+                        } 
 
-                    // Check if approver is found. If approver not found, do not store approver rank and current outcome
-                    if(oApproverDetails){
-                        iApproverRank = Number(oApproverDetails.RANK);                    
-                        oPrevOutcome = oCurrOutcome;
-                    }
-                }
-                
-               // at the end of approver determination, do the following
-                // 1. Remove duplicate approvers
-                // 2. Remove approvers who is the claimant
-                // 3. Renumber levels after operation
-                const oSeen = new Set();
-                let iLevel = 0;
-                oSeen.add(oClaimantDetails.EEID);
-                for (const oApprover of aApproversDetails){
-                    if(!oSeen.has(oApprover.EEID)){
-                        oSeen.add(oApprover.EEID);
-                        iLevel = iLevel + 1;
-                        oApprover.LEVEL = iLevel;
-                        aUniqueApproversDetails.push(oApprover);
-                    }
-                }
-            }
-
-            // Variable declaration for substitutes
-            let oSubstitute = null;         // Variable to store substitute user
-            let oSubstituteDetails = null;  // Variable to store substitute user details
-            let sSubstitute_eeid = "";       // Variable to store substitute EEID
-            let sSubstitute_name = "";       // Variable to store substitute name
-            let sSubstitute_email = "";      // Variable to store substitute email
-            // Retrieve substitute for approvers
-            for (const oApprover of aUniqueApproversDetails){
-                // If LEVEL = 0, Approver is Auto
-                if(oApprover.LEVEL > 0){
-                    oSubstitute = await WorkflowApproverHelper.getSubstitute(oModel, oEmployeeModel, oApprover.EEID);
-                    if(oSubstitute){
-                        oSubstituteDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oSubstitute.EEID);
-                        if(oSubstituteDetails){
-                            sSubstitute_eeid = oSubstituteDetails.EEID;
-                            sSubstitute_name = oSubstituteDetails.NAME;
-                            sSubstitute_email = oSubstituteDetails.EMAIL;
+                        // Check if approver is found. If approver not found, do not store approver rank and current outcome
+                        if(oApproverDetails){
+                            iApproverRank = Number(oApproverDetails.RANK);                    
+                            oPrevOutcome = oCurrOutcome;
                         }
                     }
-                }else{
-                    sSubstitute_name = Constants.Approvers.AUTO;
+                    
+                // at the end of approver determination, do the following
+                    // 1. Remove duplicate approvers
+                    // 2. Remove approvers who is the claimant
+                    // 3. Renumber levels after operation
+                    const oSeen = new Set();
+                    let iLevel = 0;
+                    oSeen.add(oClaimantDetails.EEID);
+                    for (const oApprover of aApproversDetails){
+                        if(!oSeen.has(oApprover.EEID)){
+                            oSeen.add(oApprover.EEID);
+                            iLevel = iLevel + 1;
+                            oApprover.LEVEL = iLevel;
+                            aUniqueApproversDetails.push(oApprover);
+                        }
+                    }
                 }
-                aFullApproversDetails.push({
-                    APPROVER_EEID:   oApprover.EEID,
-                    APPROVER_NAME:   oApprover.NAME,
-                    APPROVER_EMAIL:  oApprover.EMAIL,
-                    LEVEL:  Number(oApprover.LEVEL),
-                    SUB_EEID:        sSubstitute_eeid,
-                    SUB_NAME:        sSubstitute_name,
-                    SUB_EMAIL:       sSubstitute_email
-                });
-            }
-			//create ZAPPROVER DETAILS
-			const oBindApprDetailsList = oModel.bindList(Constants.Entities.ZAPPROVER_DETAILS_PREAPPROVAL);
 
-            // create all contexts
-            let aCreatePromises = [];
+                // Variable declaration for substitutes
+                let oSubstitute = null;         // Variable to store substitute user
+                let oSubstituteDetails = null;  // Variable to store substitute user details
+                let sSubstitute_eeid = "";       // Variable to store substitute EEID
+                let sSubstitute_name = "";       // Variable to store substitute name
+                let sSubstitute_email = "";      // Variable to store substitute email
+                // Retrieve substitute for approvers
+                for (const oApprover of aUniqueApproversDetails){
+                    // If LEVEL = 0, Approver is Auto
+                    if(oApprover.LEVEL > 0){
+                        oSubstitute = await WorkflowApproverHelper.getSubstitute(oModel, oEmployeeModel, oApprover.EEID);
+                        if(oSubstitute){
+                            oSubstituteDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oSubstitute.EEID);
+                            if(oSubstituteDetails){
+                                sSubstitute_eeid = oSubstituteDetails.EEID;
+                                sSubstitute_name = oSubstituteDetails.NAME;
+                                sSubstitute_email = oSubstituteDetails.EMAIL;
+                            }
+                        }
+                    }else{
+                        sSubstitute_name = Constants.Approvers.AUTO;
+                    }
+                    aFullApproversDetails.push({
+                        APPROVER_EEID:   oApprover.EEID,
+                        APPROVER_NAME:   oApprover.NAME,
+                        APPROVER_EMAIL:  oApprover.EMAIL,
+                        LEVEL:  Number(oApprover.LEVEL),
+                        SUB_EEID:        sSubstitute_eeid,
+                        SUB_NAME:        sSubstitute_name,
+                        SUB_EMAIL:       sSubstitute_email
+                    });
+                }
+                //create ZAPPROVER DETAILS
+                const oBindApprDetailsList = oModel.bindList(Constants.Entities.ZAPPROVER_DETAILS_PREAPPROVAL);
 
-            for(const oApprover of aFullApproversDetails){
+                // create all contexts
+                let aCreatePromises = [];
 
-                var oContext = oBindApprDetailsList.create({
-                    "PREAPPROVAL_ID": sPARID,
-                    "LEVEL": oApprover.LEVEL,
-                    "APPROVER_ID": oApprover.APPROVER_EEID,
-                    "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
-                    "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
-                });
-                aCreatePromises.push(oContext.created());         
-			}
-
-            // submit the batch
-            await oModel.submitBatch("$auto");
-
-            // wait for all created
-            const aCreatedContext = await Promise.all(aCreatePromises);
-            
-            try{
-            // Send email notification to first level approver or
-            // Start Final Approve Step for Auto approve
-            // Declaration for this block
-                const aPayloadMain = []     // Variable to store payload for sending email
-                
                 for(const oApprover of aFullApproversDetails){
-                    if(oApprover.LEVEL == 1){
-                        // Populate array for sending email to approver
-                        aPayloadMain.push({
-                            "ApproverName":oApprover.APPROVER_NAME, 
-                            "SubmissionDate":sParTripStartDate, 
-                            "ClaimantName":oClaimantDetails.NAME, 
-                            "ClaimType":oRequestTypeDesc.REQUEST_TYPE_DESC, 
-                            "ClaimID":sPARID, 
-                            "RecipientName":oApprover.APPROVER_NAME, 
-                            "Action": Constants.Email_Action.NOTIFY, 
-                            "ReceiverEmail":oApprover.APPROVER_EMAIL,
-                            "NextApproverName":""
-                        });
-                        if(oApprover.SUB_NAME != ""){
-                            // If substitute available, populate payload and send email to substitute also
-                            aPayloadMain.push({
-                                "ApproverName":oApprover.SUB_NAME, 
-                                "SubmissionDate":sParTripStartDate, 
-                                "ClaimantName":oClaimantDetails.NAME, 
-                                "ClaimType":oRequestTypeDesc.REQUEST_TYPE_DESC, 
-                                "ClaimID":sPARID, 
-                                "RecipientName":oApprover.SUB_NAME, 
-                                "Action": Constants.Email_Action.NOTIFY, 
-                                "ReceiverEmail":oApprover.SUB_EMAIL,
-                                "NextApproverName":""
-                            }); 
-                        }
-                    }else if(oApprover.LEVEL == 0){
-                        FinalApproveStep.onFinalApprove(oController, oModel, sPARID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
-                        break;
-                    }
-                }
-                if(aPayloadMain.length > 0){
-                    // Send email to approver
-                    this.onSendEmail(oModel, aPayloadMain);
+
+                    var oContext = oBindApprDetailsList.create({
+                        "PREAPPROVAL_ID": sPARID,
+                        "LEVEL": oApprover.LEVEL,
+                        "APPROVER_ID": oApprover.APPROVER_EEID,
+                        "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
+                        "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
+                    });
+                    aCreatePromises.push(oContext.created());         
                 }
 
                 // submit the batch
-                await oModel.submitBatch("$auto");
+                // await oModel.submitBatch("$auto");
 
                 // wait for all created
-                const aCreatedContext = await Promise.all(aCreatePromises);
+                if(aCreatePromises.length > 0){
+                    const aCreatedContext = await Promise.all(aCreatePromises);
+                }            
+                
+                try{
+                // Send email notification to first level approver or
+                // Start Final Approve Step for Auto approve
+                // Declaration for this block
+                    const aPayloadMain = []     // Variable to store payload for sending email
+                    
+                    for(const oApprover of aFullApproversDetails){
+                        if(oApprover.LEVEL == 1){
+                            // Populate array for sending email to approver
+                            aPayloadMain.push({
+                                "ApproverName":oApprover.APPROVER_NAME, 
+                                "SubmissionDate":sSystemDate, 
+                                "ClaimantName":oClaimantDetails.NAME, 
+                                "ClaimType":oRequestTypeDesc.REQUEST_TYPE_DESC, 
+                                "ClaimID":sPARID, 
+                                "RecipientName":oApprover.APPROVER_NAME, 
+                                "Action": Constants.Email_Action.NOTIFY, 
+                                "ReceiverEmail":oApprover.APPROVER_EMAIL,
+                                "NextApproverName":""
+                            });
+                            if(oApprover.SUB_NAME != ""){
+                                // If substitute available, populate payload and send email to substitute also
+                                aPayloadMain.push({
+                                    "ApproverName":oApprover.SUB_NAME, 
+                                    "SubmissionDate":sSystemDate, 
+                                    "ClaimantName":oClaimantDetails.NAME, 
+                                    "ClaimType":oRequestTypeDesc.REQUEST_TYPE_DESC, 
+                                    "ClaimID":sPARID, 
+                                    "RecipientName":oApprover.SUB_NAME, 
+                                    "Action": Constants.Email_Action.NOTIFY, 
+                                    "ReceiverEmail":oApprover.SUB_EMAIL,
+                                    "NextApproverName":""
+                                }); 
+                            }
+                        }else if(oApprover.LEVEL == 0){
+                            FinalApproveStep.onFinalApprove(oController, oModel, sPARID, Constants.ClaimStatus.APPROVED, oEmployeeModel);
+                            break;
+                        }
+                    }
+                    if(aPayloadMain.length > 0){
+                        // Send email to approver
+                        this.onSendEmail(oModel, aPayloadMain);
+                    }
 
-            }catch(oError){
-                MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]));
+                    // submit the batch
+                    await oModel.submitBatch("$auto");
+
+                    // wait for all created
+                    const aCreatedContext = await Promise.all(aCreatePromises);
+
+                }catch(oError){
+                    MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]));
+                }
+            }else{
+                MessageToast.show(Utility.getText("msg_failed_no_workflow"));
             }
         },
         /**

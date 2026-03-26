@@ -69,12 +69,7 @@ sap.ui.define([
 			} else if (sId.includes("request")) {
 				this._oRouter.navTo("RequestFormStatus");
 			} else if (sId.includes("approval")) {
-				if (sUserType === "Approver") {
-					this._oRouter.navTo("MyApproval");
-				} else {
-					var message = Utility.getText("msg_unauthorized_role");
-					MessageBox.error(message);
-				}
+				this._oRouter.navTo("MyApproval");
 			}
 		},
 		/**
@@ -83,7 +78,7 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent - on row item press event
 		 */
 		onRequestFormItemPress: function (oEvent) {
-			this._oRouter.navTo("RequestForm", { request_id: oEvent.getSource().getSelectedContexts()[0].getProperty('REQUEST_ID')});
+			this._oRouter.navTo("RequestForm", { request_id: oEvent.getSource().getSelectedContexts()[0].getProperty('REQUEST_ID') });
 		},
 		/**
 		 * My Pre-Approval Status table row on press event handlder
@@ -98,13 +93,13 @@ sap.ui.define([
 		 * @public
 		 * @param {sap.ui.base.Event} oEvent - on row item press event
 		 */
-		onOpenApprovalListItemPress: function (oEvent) {			
+		onOpenApprovalListItemPress: function (oEvent) {
 			var sId = oEvent.getSource().getSelectedContexts()[0].getProperty("ID");
 			if (sId.startsWith(Constants.WorkflowType.REQUEST)) {
-                this._oRouter.navTo("RequestForm", { request_id: sId});
-            } else if (sId.startsWith(Constants.WorkflowType.CLAIM)) {
-                this._oRouter.navTo("ClaimSubmission", { claim_id: sId });
-            }
+				this._oRouter.navTo("RequestForm", { request_id: sId });
+			} else if (sId.startsWith(Constants.WorkflowType.CLAIM)) {
+				this._oRouter.navTo("ClaimSubmission", { claim_id: sId });
+			}
 		}
 	});
 }); 

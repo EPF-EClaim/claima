@@ -390,7 +390,11 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 NO_OF_DAYS,
                 FAMILY_COUNT,
                 FUNERAL_TRANSPORTATION,
-                createdBy
+                createdBy,
+                ACTUAL_AMOUNT,
+                CURRENCY_CODE,
+                CURRENCY_RATE,
+                CURRENCY_AMOUNT
         };
 
     entity ZEMP_REQUEST_STATUS           as
@@ -827,7 +831,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             key REQUEST_ID,
             key ZREQUEST_ITEM.REQUEST_SUB_ID,
                 EMP_ID,
-                LAST_MODIFIED_DATE,
+                modifiedAt as LAST_MODIFIED_DATE,
                 SUBMITTED_DATE,
                 CASH_ADVANCE,
                 ZREQUEST_ITEM.EST_AMOUNT,

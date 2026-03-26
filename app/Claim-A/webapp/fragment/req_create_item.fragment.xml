@@ -496,8 +496,9 @@
                                             visible="false"
                                             id="i_kilometer" >
                                     <form:fields>
-                                        <Text 
-                                            text="{request>/req_header/kilometer}" />
+                                        <Input 
+                                            value="{request>/req_header/kilometer}"
+                                            type="Number" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -573,8 +574,20 @@
                                             visible="false"
                                             id="i_from_state" >
                                     <form:fields>
-                                        <Text 
-                                            text="{request>/req_item/from_state}" />
+                                        <Select 
+                                            selectedKey="{request>/req_item/from_state}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZSTATE',
+                                                    sorter: { path: 'STATE_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                            <items>
+                                                <core:Item key="{employee>STATE_ID}" 
+                                                        text="{employee>STATE_DESC}" />
+                                            </items>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -607,8 +620,20 @@
                                             visible="false"
                                             id="i_to_state" >
                                     <form:fields>
-                                        <Text 
-                                            text="{request>/req_item/to_state}" />
+                                        <Select 
+                                            selectedKey="{request>/req_item/to_state}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZSTATE',
+                                                    sorter: { path: 'STATE_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                            <items>
+                                                <core:Item key="{employee>STATE_ID}" 
+                                                        text="{employee>STATE_DESC}" />
+                                            </items>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -744,9 +769,10 @@
                                             visible="false"
                                             id="i_departure_time">
                                     <form:fields>
-                                        <m:TimePicker
-                                            maskMode='On'
+                                        <m:DateTimePicker
                                             value="{request>/req_item/departure_time}"
+                                            displayFormat="dd MMM yyyy HH:mm"
+                                            valueFormat="dd MMM yyyy HH:mm"
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
@@ -757,9 +783,10 @@
                                             visible="false"
                                             id="i_arrival_time">
                                     <form:fields>
-                                        <m:TimePicker
-                                            maskMode='On'
+                                        <m:DateTimePicker
                                             value="{request>/req_item/arrival_time}"
+                                            displayFormat="dd MMM yyyy HH:mm"
+                                            valueFormat="dd MMM yyyy HH:mm"
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
@@ -801,7 +828,7 @@
                         <ToolbarSpacer />
                         <Button text="{i18n>req_b_download_template}" press=".onExport"></Button>
                         <unified:FileUploader
-                            id="participant_list_upload"
+                            id="ipb_upload_participant"
                             icon="sap-icon://upload"
                             buttonOnly="true"
                             buttonText="{i18n>req_b_upload_list}"
@@ -810,7 +837,7 @@
                             style="Emphasized"
                             maximumFileSize="5.0"
                             enabled="{= ${request>/view} !== 'view' }"/>
-                        <Button icon="sap-icon://delete" text="{i18n>req_b_delete}" press=".onRowDeleteParticipant" enabled="{= ${request>/view} !== 'view' }"/>
+                        <Button id="ipb_delete_participant" icon="sap-icon://delete" text="{i18n>req_b_delete}" press=".onRowDeleteParticipant" enabled="{= ${request>/view} !== 'view' }"/>
                     </OverflowToolbar>
                     <table:Table 
                         id="req_participant_table"
@@ -823,8 +850,9 @@
                             <Label text="{i18n>req_p_id}"></Label>
                             <table:template>
                                 <mdc:Field
+                                    id="ip_participant_id"
                                     value="{request>PARTICIPANTS_ID}" 
-                                    editMode="{= (${request>/req_header/grptype} === 'GRP' || ${request>/view} !== 'view') ? 'Editable' : 'Display' }"
+                                    editMode="{= ${request>_EDIT_MODE} === 'Display' ? 'Display' : 'Editable' }"
                                     valueHelp="valuehelp_requestinput_emp"
                                     change=".onParticipantInputChange"
                                 />
@@ -857,6 +885,7 @@
                             <table:RowAction>
                                 <table:items>
                                     <table:RowActionItem 
+                                        id="idp_delete_row_participant"
                                         type="Delete" 
                                         press="onRowDeleteParticipant" 
                                         visible="{= ${request>/view} !== 'view' }" />
@@ -893,7 +922,7 @@
                             <mdc:dialog>
                                 <mdcvh:Dialog
                                     id="valuehelp_requestinput_emp_dialog"
-                                    title="{i18n>valuehelp_claiminput_altcc}"
+                                    title="{i18n>req_vh_participant}"
                                 >
                                     <mdcvhcnt:MTable
                                         id="valuehelp_requestinput_emp_dialog_MTable"

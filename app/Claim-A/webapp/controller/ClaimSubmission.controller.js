@@ -24,7 +24,9 @@ sap.ui.define([
 	"claima/utils/SendBackDialog",
 	"claima/utils/ApproverUtility",
 	"claima/utils/workflowApproval",
-	"claima/utils/DateUtility"
+	"claima/utils/DateUtility",
+	"claima/utils/EligibilityCheck",
+	"claima/utils/EligibilityScenarios/EligibleScenarioCheck"
 ], function (
 	Fragment,
 	Item,
@@ -51,7 +53,9 @@ sap.ui.define([
 	SendBackDialog,
 	ApproverUtility,
 	workflowApproval,
-	DateUtility
+	DateUtility,
+	EligibilityCheck,
+	EligibleScenarioCheck
 ) {
 	"use strict";
 
@@ -126,7 +130,7 @@ sap.ui.define([
 				this._onNavBack();
 			}
 
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");			
 			if (!oClaimSubmissionModel) {
 				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 				await this._loadClaimById(String(sClaimId));
@@ -143,6 +147,17 @@ sap.ui.define([
 					MessageToast.show(Utility.getText("msg_claimsubmission_missing", [sClaimId]))
 					this._onNavBack();
 				}
+			}
+			// set view-only
+			// TODO: Revisit to make sure the claim is reloaded everytime
+			if (
+				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
+				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
+			) {
+				oClaimSubmissionModel.setProperty("/view_only", true)
+			}
+			else {
+				oClaimSubmissionModel.setProperty("/view_only", false)
 			}
 
 			// load form fragments
@@ -1720,8 +1735,13 @@ sap.ui.define([
 					sSubmissionType,
 					this._oConstant.ApprovalProcessAction.RELEASE_IND
 				);
-				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
 				*/
+				const sSubmissionType2 = sClaimId.substring(0, 3);
+				try{
+					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
+				}catch (oError){
+
+				}
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
 				}
@@ -1787,6 +1807,7 @@ sap.ui.define([
 					oEmployeeViewModel,
 					this
 				);
+
 				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
 				await budgetCheck.budgetProcessing(
 					oModelMain,
@@ -1794,8 +1815,16 @@ sap.ui.define([
 					sSubmissionType,
 					this._oConstant.ApprovalProcessAction.RELEASE_IND
 				);
-				const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType, Constants.BudgetCheckAction.REJECT);
 				*/
+				
+
+				const sSubmissionType2 = sClaimId.substring(0, 3);
+				try{
+					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
+				}catch (oError){
+
+				}
+				
 
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
@@ -2111,6 +2140,8 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_claim_category", "ZCLAIM_CATEGORY");
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
+			//// Currency Code
+			this._setClaimDetailSelectionField("select_claimdetails_input_currency_code", "ZCURRENCY");	
 		},
 
 		_setClaimDetailSelectionField: function (oId, oTable, oField) {
@@ -2126,7 +2157,7 @@ sap.ui.define([
 					],
 					template: new Item({
 						key: "{employee>" + oField + "_ID}",
-						text: "{employee>" + oField + "_DESC}"
+						text: "{employee>" + oField + "_ID} - {employee>" + oField + "_DESC}"
 					})
 				});
 			}
@@ -2157,13 +2188,12 @@ sap.ui.define([
 			// validate input data
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			// validate required fields
-			if (
-				!this.byId("select_claimdetails_input_claimitem").getSelectedItem() ||
-				(!this.byId("input_claimdetails_input_amount").getValue() && this.byId("input_claimdetails_input_amount").getVisible())				
-			) {
-				// stop claim submission if values empty
-				MessageToast.show(Utility.getText("msg_claiminput_required"));
+
+			// Validate required fields
+			if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
+				MessageToast.show(Utility.getText("msg_claiminput_required"), {
+					closeOnBrowserNavigation: false
+				});
 				return;
 			}
 
@@ -2174,6 +2204,12 @@ sap.ui.define([
 				return;
 			}
 
+			// Eligibility Checking
+			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM);
+			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, oPayload);
+			var	bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
+
+			if (!bCanProceed) return;
 			
 			// validate attachment
 			//// attachment 1
@@ -2661,19 +2697,19 @@ sap.ui.define([
 					var entDinner = parseFloat(oData.AMOUNT) * 0.4;
 					//// modifier based on travel duration (hours)
 					if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
-						if (this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 24) {
+						if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 24) {
 							// full meal allowance
-							entBfast = entBfast * this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
-							entLunch = entLunch * this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
-							entDinner = entDinner * this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+							entBfast = entBfast * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+							entLunch = entLunch * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+							entDinner = entDinner * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
 						}
-						else if (this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 8) {
+						else if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 8) {
 							// daily allowance (half of meal allowance)
 							entBfast = entBfast / 2;
 							entLunch = entLunch / 2;
 							entDinner = entDinner / 2;
 						}
-						else { // if (this._nonNAN(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) < 8)
+						else { // if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) < 8)
 							// no meal allowance
 							entBfast = entBfast * 0;
 							entLunch = entLunch * 0;
@@ -3620,7 +3656,7 @@ sap.ui.define([
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 
 				if (!aCtx || aCtx.length === 0) {
-					console.warn("No configuration rows for claim type item:", claim_type_item);
+					MessageToast.show("No configuration rows for claim type item:", sClaim_type_item);
 					this._setAllControlsVisible(false);
 					return;
 				}
@@ -3688,7 +3724,7 @@ sap.ui.define([
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
 				"checkbox_claimdetails_input_needforeigncurrency",
-				"input_claimdetails_input_currency_code",
+				"select_claimdetails_input_currency_code",
 				"input_claimdetails_input_currency_rate",
 				"input_claimdetails_input_currency_amount",
 				"datepicker_claimdetails_input_trip_start_date",
@@ -3817,7 +3853,7 @@ sap.ui.define([
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
 				"checkbox_claimdetails_input_needforeigncurrency",
-				"input_claimdetails_input_currency_code",
+				"select_claimdetails_input_currency_code",
 				"input_claimdetails_input_currency_rate",
 				"input_claimdetails_input_currency_amount",
 				"datepicker_claimdetails_input_trip_start_date",
