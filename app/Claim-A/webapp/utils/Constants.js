@@ -232,6 +232,10 @@ sap.ui.define([
             "GROUP": "Group",
             "INDIVIDUAL": "Individual"
         },
+        "ClaimFieldVisibilityConfig" : {
+            "SUBMISSION_TYPE"   : "CLAIM",
+            "ITEM"              : "ITEM" 
+        },
         "RequestFieldVisibilityConfig" : {
             "SUBMISSION_TYPE"   : "PREAPPROVAL_R",
             "HEADER"            : "HEADER",

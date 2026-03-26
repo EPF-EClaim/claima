@@ -3646,8 +3646,8 @@ sap.ui.define([
 			}
 
 			const oListBinding = oModel.bindList("/ZDB_STRUCTURE", null, null, [
-				new Filter("SUBMISSION_TYPE", FilterOperator.EQ, "CLAIM"),
-				new Filter("COMPONENT_LEVEL", FilterOperator.EQ, "ITEM"),
+				new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.ClaimFieldVisibilityConfig.SUBMISSION_TYPE),
+				new Filter("COMPONENT_LEVEL", FilterOperator.EQ, this._oConstant.ClaimFieldVisibilityConfig.ITEM),
 				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaim_type_item),
 				new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimTypeID)
 			]);
