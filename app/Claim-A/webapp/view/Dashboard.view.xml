@@ -125,7 +125,7 @@
                                     <Table
                                         id="claimtable"
                                         items="{
-                                            path: '{dashboardModel>/claims}',
+                                            path: 'dashboardModel>/claims',
                                             sorter: {
                                                 path: 'modifiedAt',
                                                 descending: true
@@ -252,7 +252,7 @@
                                 >
                                     <Table
                                         items="{
-                                            path: '{dashboardModel>/requests}',
+                                            path: 'dashboardModel>/requests',
                                             sorter: {
                                                 path: 'modifiedAt',
                                                 descending: true
