@@ -2944,6 +2944,12 @@ sap.ui.define([
 
 				var aItems = oInputModel.getProperty("/claim_items") || [];
 
+				if (aItems.length === 0) {
+					MessageToast.show(Utility.getText("msg_claimdetails_no_items"));
+					BusyIndicator.hide();
+					return;
+				}
+
 				if (this._CheckDuplicateClaimItems(aItems)) {
 					MessageToast.show(Utility.getText("msg_duplication_prompt"));
 					BusyIndicator.hide();

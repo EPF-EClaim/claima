@@ -56,6 +56,8 @@ sap.ui.define([
 					console.log("approvals not available for this role");
 					this._oDashboardModel.setProperty("/approvals", []);
 				});
+			// Hide indicator once everything is loaded
+			BusyIndicator.hide();
 		},
 
 		onClickNavigate: function (oEvent) {
