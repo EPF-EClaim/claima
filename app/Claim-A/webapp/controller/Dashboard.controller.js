@@ -6,8 +6,9 @@ sap.ui.define([
 	"sap/m/MessageBox",
 	"claima/utils/Request",
 	"claima/utils/MyApproval",
-	"claima/utils/Constants"
-], (Controller, JSONModel, Sorter, Utility, MessageBox, Request, MyApproval, Constants) => {
+	"claima/utils/Constants",
+	"sap/ui/core/BusyIndicator"
+], (Controller, JSONModel, Sorter, Utility, MessageBox, Request, MyApproval, Constants, BusyIndicator) => {
 	"use strict";
 
 	return Controller.extend("claima.controller.Dashboard", {
