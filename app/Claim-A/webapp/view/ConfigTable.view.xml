@@ -13,6 +13,17 @@
     xmlns:layout="sap.ui.layout"
 >
     <Page showHeader="true">
+     <customHeader>
+        <Bar>
+            <contentRight>
+                <Button
+                    text="{i18n>back}"
+                    press="onClickBack"
+                    type="Transparent"
+                />
+            </contentRight>
+        </Bar>
+    </customHeader>
         <content>
             <VBox
                 id="listContainer"
@@ -21,7 +32,7 @@
                 width="100%"
             >
                 <Toolbar width="90%">
-                    <Title text="ZCLAIM_TYPE" />
+                    <Title text="{i18n>conf_zclaimtype}" />
                     <ToolbarSpacer />
                     <Button
                         id="EditHeader"
@@ -51,6 +62,12 @@
                         enabled="{view>/hasSelection}"
                         visible="{= ${/FeatureControl/operationEnabled} === true }"
                     />
+                    <Button
+                    icon="sap-icon://action-settings"
+                    press="onOpenViewSettings"
+                    type="Transparent"
+                    tooltip="View Settings"
+                />
                 </Toolbar>
 
                 <Table
@@ -63,31 +80,31 @@
                 >
                     <columns>
                         <Column>
-                            <Text text="Claim Type ID" />
+                            <Text text="{i18n>claimtypeid}" />
                         </Column>
                         <Column>
-                            <Text text="Claim Type Description" />
+                            <Text text="{i18n>claimtypedesc}" />
                         </Column>
                         <Column>
-                            <Text text="GL Account" />
+                            <Text text="{i18n>glacct}" />
                         </Column>
                         <Column>
-                            <Text text="End Date" />
+                            <Text text="{i18n>req_rtype}" />
                         </Column>
                         <Column>
-                            <Text text="Start Date" />
+                            <Text text="{i18n>req_grptype}" />
                         </Column>
                         <Column>
-                            <Text text="Request Type" />
-                        </Column>
+                            <Text text="{i18n>projclaim}" />
+                        </Column> 
                         <Column>
-                            <Text text="Individual/Group" />
-                        </Column>
+                            <Text text="{i18n>start_date}" />
+                        </Column> 
                         <Column>
-                            <Text text="Project Claim" />
-                        </Column>     
+                            <Text text="{i18n>req_i_end_date}" />
+                        </Column>  
                         <Column>
-                            <Text text="Status" />
+                            <Text text="{i18n>appr_status}" />
                         </Column>                                                                                           
                         <Column width="2rem">
                             <Text text="" />
@@ -103,15 +120,15 @@
 
                                 <Text text="{GL_ACCOUNT}" />
 
-                                <Text text="{END_DATE}"/>
-
-                                <Text text="{START_DATE}" />
-
                                 <Text text="{REQUEST_TYPE}" />
 
                                 <Text text="{IND_OR_GROUP}" />
 
                                 <Text text="{PROJECT_CLAIM}" />
+
+                                <Text text="{START_DATE}" />  
+
+                                <Text text="{END_DATE}"/>
 
                                 <Text text="{STATUS}" />
 
@@ -125,6 +142,41 @@
                         </ColumnListItem>
                     </items>
                 </Table>
+                 <dependents>
+                <ViewSettingsDialog
+                    id="viewSettingsDialog"
+                    confirm="onConfirmViewSettings"
+                    reset="onResetViewSettings"
+                >
+                    <sortItems>
+                        <ViewSettingsItem
+                            text="{i18n>claimtypeid}"
+                            key="CLAIM_TYPE_ID"
+                            selected="true"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>claimtypedesc}"
+                            key="CLAIM_TYPE_DESC"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>glacct}"
+                            key="GL_ACCOUNT"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>start_date}"
+                            key="START_DATE"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>req_i_end_date}"
+                            key="END_DATE"
+                        />
+                         <ViewSettingsItem
+                            text="{i18n>appr_status}"
+                            key="STATUS"
+                        />
+                    </sortItems>
+                </ViewSettingsDialog>
+            </dependents>
             </VBox>
             <VBox
                 id="objectContainer"

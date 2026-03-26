@@ -218,7 +218,7 @@
                             <!-- claim status -->
                             <table:Column width="12rem">
                                 <Label text="{i18n>claim_status}" />
-                                <table:template><Text text="{employee_view>STATUS_ID}" /></table:template>
+                                <table:template><Text text="{employee_view>STATUS_DESC}" /></table:template>
                             </table:Column>
 
                             <!-- cc_code -->
@@ -739,8 +739,8 @@
         <footer>
             <Toolbar design="Solid" class="sapUiTinyMargin">
                 <ToolbarSpacer />
+                <Button id="btnCloseAnalytics"  text="{i18n>back}" press=".onBackFromAnalyticsClaimReport"/>
                 <Button id="btnExportAnalytics" text="{i18n>export}" type="Emphasized" press=".onExportAnalyticsReport"/>
-                <Button id="btnCloseAnalytics"  text="Back" press=".onBackFromAnalyticsClaimReport"/>
             </Toolbar>
         </footer>
 

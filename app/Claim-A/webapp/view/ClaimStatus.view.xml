@@ -1,90 +1,150 @@
 <mvc:View
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
-    xmlns:f="sap.f"
     xmlns:core="sap.ui.core"
     controllerName="claima.controller.ClaimStatus"
     height="100%">
 
-    <Page
-        id="claim_status_page"
-        showHeader="false"
-        floatingFooter="true">
-
+    <Page id="claim_status_page" showHeader="false" floatingFooter="true">
         <VBox class="roundedBox sapUiSmallMargin">
 
             <Table
                 id="tb_myexpenserepo"
-                headerText="My Claim Status"
+                headerText="{i18n>myclaimstatus_title}"
                 mode="SingleSelectMaster"
                 width="auto"
                 items="{path: 'claim_status2>/claim_header_list'}"
                 itemPress="onRowPress"
                 growing="true">
 
-                <!-- Header with dynamic count -->
                 <headerToolbar>
                     <Toolbar>
-                        <Title
-                            text="{= ${i18n>nav_myreport} + ' (' + ${claim_status2>/claim_header_count} + ')' }" />
+                        <Title text="{= ${i18n>nav_myreport} + ' (' + ${claim_status2>/claim_header_count} + ')' }" />
+                        <ToolbarSpacer/>
+                        <Button text="{i18n>myclaimstatus_sort_reset}" type="Transparent" icon="sap-icon://refresh" press="onResetSort"/>
                     </Toolbar>
                 </headerToolbar>
 
-                <!-- Column structure now matches RequestFormStatus -->
                 <columns>
+                 <Column>
+                        <header>
+                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                <Text text="{i18n>myclaimstatus_claimid}"/>
+                                <Button type="Transparent" icon="sap-icon://sort"
+                                        tooltip="{i18n>myclaimstatus_sort_claimid}"
+                                        press="onSortToggle">
+                                    <customData>
+                                        <core:CustomData key="path" value="CLAIM_ID"/>
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>
                     <Column>
-                        <Text text="Purpose" />
+                        <header>
+                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                <Text text="{i18n>myclaimstatus_purpose}"/>
+                                <Button type="Transparent" icon="sap-icon://sort"
+                                        tooltip="{i18n>myclaimstatus_sort_purpose}"
+                                        press="onSortToggle">
+                                    <customData>
+                                        <core:CustomData key="path" value="PURPOSE"/>
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>
+
+                   
+
+                    <Column>
+                        <header>
+                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                <Text text="{i18n>myclaimstatus_startd}"/>
+                                <Button type="Transparent" icon="sap-icon://sort"
+                                        tooltip="{i18n>myclaimstatus_sort_startd}"
+                                        press="onSortToggle">
+                                    <customData>
+                                        <core:CustomData key="path" value="TRIP_START_DATE"/>
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>
+
+                    <Column hAlign="End">
+                        <header>
+                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="70%">
+                                <Text text="{i18n>myclaimstatus_amount}"/>
+                                <Button type="Transparent" icon="sap-icon://sort"
+                                        tooltip="{i18n>myclaimstatus_sort_amount}"
+                                        press="onSortToggle">
+                                    <customData>
+                                        <core:CustomData key="path" value="TOTAL_CLAIM_AMOUNT"/>
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
                     </Column>
 
                     <Column>
-                        <Text text="Claim ID" />
-                    </Column>
+                        <header>
+                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                <Text text="{i18n>myclaimstatus_status}"/>
+                                <Button type="Transparent" icon="sap-icon://sort"
+                                        tooltip="{i18n>myclaimstatus_sort_status}"
+                                        press="onSortToggle">
+                                    <customData>
+                                        <core:CustomData key="path" value="STATUS_DESC"/>
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>  
 
                     <Column>
-                        <Text text="Start Date" />
-                    </Column>
-
-                    <Column>
-                        <Text text="Status" />
-                    </Column>
-
-                    <Column>
-                        <Text text="Amount (MYR)" />
-                    </Column>
+                        <header>
+                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                <Text text="{i18n>myclaimstatus_lastmod}"/>
+                                <Button type="Transparent" icon="sap-icon://sort"
+                                        tooltip="{i18n>myclaimstatus_sort_lastmod}"
+                                        press="onSortToggle">
+                                    <customData>
+                                        <core:CustomData key="path" value="modifiedAt"/>
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>  
                 </columns>
 
+                <!-- Your items unchanged -->
                 <items>
                     <ColumnListItem type="Active">
                         <cells>
-
+                         <Text text="{claim_status2>CLAIM_ID}" />
                             <Text text="{claim_status2>PURPOSE}" />
-
-                            <Text text="{claim_status2>CLAIM_ID}" />
-
-                            <Text 
+                           
+                            <Text
                                 text="{
                                     path: 'claim_status2>TRIP_START_DATE',
                                     type: 'sap.ui.model.odata.type.Date',
                                     formatOptions: { pattern: 'dd MMM yyyy' }
                                 }" />
-
-                            <Text text="{claim_status2>STATUS_ID}" />
-
-                            <Text 
-                                text="RM {
+                                 <Text
+                                text="{
                                     path: 'claim_status2>TOTAL_CLAIM_AMOUNT',
                                     type: 'sap.ui.model.type.Float',
                                     formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
                                 }" />
-
+                            <Text text="{claim_status2>STATUS_DESC}" />
+                            <Text text="{claim_status2>modifiedAt}" />
+                           
                         </cells>
                     </ColumnListItem>
                 </items>
-
             </Table>
 
         </VBox>
-
     </Page>
-
 </mvc:View>

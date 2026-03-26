@@ -13,65 +13,68 @@
             class="sapUiMediumMargin"
             width="100%"
         >
-            <HBox>
-                <Text text="Claim Type ID: " />
-                <Text text="{CLAIM_TYPE_ID}" />
-            </HBox>
-            <HBox width="100%">
-                <Text text="Claim Type Description: " />
-                <Text text="{CLAIM_TYPE_DESC}" />
-            </HBox>
-            <HBox>
-                <Text text="End Date: " />
-                <Text
-                    text="{path: 'END_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
-                />
-            </HBox>
-            <HBox>
-                <Text text="Start Date: " />
-                <Text
-                    text="{path: 'START_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}"
-                />
-            </HBox>
-            <HBox>
-                <Text text="Status: " />
-                <Text text="{STATUS}" />
-            </HBox>
+         <HBox class="sapUiTinyMarginBottom" alignItems="Start">
+            <Label text="{i18n>claimtypeid}  :  " />
+            <Text text="{CLAIM_TYPE_ID}" />
+        </HBox>
+
+        <HBox class="sapUiTinyMarginBottom" alignItems="Start">
+            <Label text="{i18n>claimtypedesc} :  " />
+            <Text text="{CLAIM_TYPE_DESC}" wrapping="true" />
+        </HBox>
+
+        <HBox class="sapUiTinyMarginBottom" alignItems="Start">
+            <Label text="{i18n>label_claimdetails_input_startdate} :  " />
+            <Text text="{path: 'START_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}" />
+        </HBox>
+
+        <HBox class="sapUiTinyMarginBottom" alignItems="Start">
+            <Label text="{i18n>label_claimdetails_input_enddate}  :  " />
+            <Text text="{path: 'END_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}" />
+        </HBox>
+
+        <HBox class="sapUiTinyMarginBottom" alignItems="Start">
+            <Label text="{i18n>appr_status}  :" />
+            <Text text="{STATUS}" />
+        </HBox>
         </VBox>
-        <VBox
-            class="sapUiMediumMargin"
-            width="100%"
-        >
+        <VBox width="100%">
             <Toolbar width="90%">
-                <Title text="ZCLAIM_TYPE_ITEM" />
+                <Title text="{i18n>conf_zclaimtpeitem}" />
                 <ToolbarSpacer />
                 <Button
                     id="EditItem"
-                    text="Edit"
+                    text="{i18n>req_b_edit}"
                     press="onEdit"
                     enabled="{view>/hasSelection}"
                     visible="{= ${/FeatureControl/operationEnabled} === true }"
                 />
                 <Button
                     id="CopyItem"
-                    text="Copy"
+                    text="{i18n>copy}"
                     press="onCopy"
                     enabled="{view>/hasSelection}"
                     visible="{= ${/FeatureControl/operationEnabled} === true }"
                 />
                 <Button
                     id="CreateItem"
-                    text="Create"
+                    text="{i18n>create}"
                     press="onCreate"
                     enabled="true"
                     visible="{= ${/FeatureControl/operationEnabled} === true }"
                 />
                 <Button
                     id="DeleteItem"
-                    text="Delete"
+                    text="{i18n>req_b_delete}"
                     press="onDelete"
                     enabled="{view>/hasSelection}"
                     visible="{= ${/FeatureControl/operationEnabled} === true }"
+                />
+                <Button
+                    icon="sap-icon://action-settings"
+                    press="onOpenViewSettings"
+                    type="Transparent"
+                    tooltip="View Settings"
                 />
             </Toolbar>
 
@@ -85,34 +88,34 @@
             >
                 <columns>
                     <Column>
-                        <Text text="Claim Type Item Id" />
+                        <Text text="{i18n>claimtypeitemid}" />
                     </Column>
                     <Column>
-                        <Text text="Claim Type Item Description" />
+                        <Text text="{i18n>claimdesc}" />
                     </Column>
                     <Column>
-                        <Text text="End Date" />
+                        <Text text="{i18n>categoryid}" />
                     </Column>
                     <Column>
-                        <Text text="Start Date" />
+                        <Text text="{i18n>req_cc}" />
                     </Column>
                     <Column>
-                        <Text text="Status" />
+                        <Text text="{i18n>materialcode}" />
                     </Column>
                     <Column>
-                        <Text text="Category ID" />
+                        <Text text="{i18n>risk}" />
                     </Column>
                     <Column>
-                        <Text text="Cost Center" />
+                        <Text text="{i18n>submitted_type}" />
                     </Column>
                     <Column>
-                        <Text text="Material Code" />
+                        <Text text="{i18n>req_i_start_date}" />
                     </Column>
                     <Column>
-                        <Text text="Risk" />
+                        <Text text="{i18n>req_i_end_date}" />
                     </Column>
                     <Column>
-                        <Text text="Submission Type" />
+                        <Text text="{i18n>appr_status}" />
                     </Column>
                 </columns>
 
@@ -121,18 +124,53 @@
                         <cells>
                             <Text text="{CLAIM_TYPE_ITEM_ID}" />
                             <Text text="{CLAIM_TYPE_ITEM_DESC}" />
-                            <Text text="{END_DATE}" />
-                            <Text text="{START_DATE}" />
-                            <Text text="{STATUS}" />
                             <Text text="{CATEGORY_ID}" />
                             <Text text="{COST_CENTER}" />
                             <Text text="{MATERIAL_CODE}" />
                             <Text text="{RISK}" />
                             <Text text="{SUBMISSION_TYPE}" />
+                            <Text text="{START_DATE}" />                            
+                            <Text text="{END_DATE}" />
+                            <Text text="{STATUS}" />                            
                         </cells>
                     </ColumnListItem>
                 </items>
             </Table>
+            <dependents>
+                <ViewSettingsDialog
+                    id="itemViewSettingsDialog"
+                    confirm="onConfirmViewSettings"
+                    reset="onResetViewSettings"
+                >
+                    <sortItems>
+                        <ViewSettingsItem
+                            text="{i18n>claimtypeitemid}"
+                            key="CLAIM_TYPE_ITEM_ID"
+                            selected="true"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>claimdesc}"
+                            key="CLAIM_TYPE_ITEM_DESC"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>categoryid}"
+                            key="CATEGORY_ID"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>req_i_start_date}"
+                            key="START_DATE"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>req_i_end_date}"
+                            key="END_DATE"
+                        />
+                         <ViewSettingsItem
+                            text="{i18n>appr_status}"
+                            key="STATUS"
+                        />
+                    </sortItems>
+                </ViewSettingsDialog>
+            </dependents>
         </VBox>
     </VBox>
 </core:FragmentDefinition>

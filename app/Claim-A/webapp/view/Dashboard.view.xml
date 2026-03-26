@@ -1,5 +1,5 @@
 <mvc:View
-    controllerName="claima.controller.App"
+    controllerName="claima.controller.Dashboard"
     xmlns="sap.m"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:tnt="sap.tnt"
@@ -14,13 +14,8 @@
 >
     <Page showHeader="false">
         <content>
-            <ScrollContainer
-                id="dashboard"
-                horizontal="false"
-                height="100%"
-            >
                 <VBox width="100%">
-                    <HBox>
+                    <HBox wrap="Wrap" fitContainer="true" justifyContent="Start">
                         <Panel
                             width="100%"
                             height="4rem"
@@ -32,14 +27,12 @@
                                     size="25px"
                                 />
                                 <Title
-                                    level="H3"
-                                    text="My Claim Status"
+                                    text="{i18n>nav_myreport}"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
                                 <Title
-                                    level="H3"
-                                    text="{employee>/ZCLAIM_HEADER/$count}"
+                                    text="{= ${dashboardModel>/claims}.length}"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
@@ -56,21 +49,20 @@
                                     size="25px"
                                 />
                                 <Title
-                                    level="H3"
-                                    text="My Pre-Approval Status"
+                                    text="{i18n>nav_preappstatus}"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
                                 <Title
-                                    level="H3"
-                                    text="{employee>/ZREQUEST_HEADER/$count}"
+                                    text="{= ${dashboardModel>/requests}.length}"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
                             </HBox>
                         </Panel>
+
                         <Panel
-                            width="120%"
+                            width="100%"
                             height="4rem"
                             class="sapUiMediumMarginBeginEnd sapUiMediumMarginTopBottom"
                         >
@@ -80,8 +72,12 @@
                                     size="25px"
                                 />
                                 <Title
-                                    level="H3"
-                                    text="Required Approval"
+                                    text="{i18n>approval}"
+                                    textAlign="Center"
+                                    class="sapUiSmallMarginBegin"
+                                />
+                                <Title
+                                    text="{= ${dashboardModel>/approvals}.length }"
                                     textAlign="Center"
                                     class="sapUiSmallMarginBegin"
                                 />
@@ -106,8 +102,7 @@
                                         size="25px"
                                     />
                                     <Title
-                                        level="H3"
-                                        text="{i18n>myexpensesreport} ({employee>/ZCLAIM_HEADER/$count})"
+                                        text="{i18n>myexpensesreport} ({= ${dashboardModel>/claims}.length})"
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"
                                     />
@@ -128,16 +123,42 @@
                                     horizontal="false"
                                 >
                                     <Table
-                                        items="{ path: '/ZCLAIM_HEADER', sorter : { path : 'TRIP_START_DATE' } }"
+                                        id="claimtable"
+                                        items="{dashboardModel>/claims}"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
+                                        mode="SingleSelectMaster"
                                         inset="false"
                                         fixedLayout="true"
+                                        itemPress="onClaimSubmissionItemPress"
                                     >
                                         <columns>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Purpose" />
+                                                    <Text text="{i18n>label_claimsummary_claimheader_claimid}" />
+                                                </header>
+                                            </Column>
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text text="{i18n>label_claimdetails_input_purpose}" />
+                                                </header>
+                                            </Column>
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text text="{i18n>label_claimdetails_input_startdate}" />
+                                                </header>
+                                            </Column>
+                                            <Column hAlign="End">
+                                                <header>
+                                                    <HBox
+                                                        justifyContent="SpaceBetween"
+                                                        alignItems="End"
+                                                        width="100%"
+                                                    >
+                                                        <Text
+                                                            text="{i18n>columntext_claimsummary_amt}"
+                                                        />
+                                                    </HBox>
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
@@ -147,25 +168,35 @@
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Start Date" />
-                                                </header>
-                                            </Column>
-                                            <Column demandPopin="true">
-                                                <header>
-                                                    <Text text="Amount" />
+                                                    <Text
+                                                        text="{i18n>lastmodified}"
+                                                    />
                                                 </header>
                                             </Column>
                                         </columns>
                                         <items>
-                                            <ColumnListItem>
+                                            <ColumnListItem type="Active">
                                                 <cells>
-                                                    <Text text="{PURPOSE}" />
-                                                    <Text text="{STATUS_ID}" />
                                                     <Text
-                                                        text="{TRIP_START_DATE}"
+                                                        text="{dashboardModel>CLAIM_ID}"
                                                     />
                                                     <Text
-                                                        text="{TOTAL_CLAIM_AMOUNT}"
+                                                        text="{dashboardModel>PURPOSE}"
+                                                    />
+                                                    <Text
+                                                        text="{ path: 'dashboardModel>TRIP_START_DATE',
+                                                        type: 'sap.ui.model.odata.type.Date',
+                                                        formatOptions: { pattern: 'dd MMM yyyy'} }"
+                                                    />
+                                                    <Text
+                                                        textAlign="End"
+                                                        text="{dashboardModel>TOTAL_CLAIM_AMOUNT}"
+                                                    />
+                                                    <Text
+                                                        text="{dashboardModel>STATUS_DESC}"
+                                                    />
+                                                    <Text
+                                                        text="{dashboardModel>modifiedAt}"
                                                     />
                                                 </cells>
                                             </ColumnListItem>
@@ -193,8 +224,7 @@
                                         size="25px"
                                     />
                                     <Title
-                                        level="H3"
-                                        text="{i18n>myrequest} ({employee>/ZREQUEST_HEADER/$count})"
+                                        text="{i18n>myrequest} ({= ${dashboardModel>/requests}.length})"
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"
                                     />
@@ -215,45 +245,77 @@
                                     horizontal="false"
                                 >
                                     <Table
-                                        items="{ path: 'employee_view>/ZEMP_REQUEST_VIEW', sorter : { path : 'REQUEST_DATE' } }"
+                                        items="{dashboardModel>/requests}"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
+                                        mode="SingleSelectMaster"
+                                        itemPress="onRequestFormItemPress"
                                     >
                                         <columns>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Purpose" />
+                                                    <Text text="{i18n>requestid}" />
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Status" />
+                                                    <Text text="{i18n>label_claimdetails_input_purpose}" />
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Start Date" />
+                                                    <Text text="{i18n>label_claimdetails_input_startdate}" />
+                                                </header>
+                                            </Column>
+                                            <Column hAlign="End">
+                                                <header>
+                                                    <HBox
+                                                        justifyContent="SpaceBetween"
+                                                        alignItems="End"
+                                                        width="100%"
+                                                    >
+                                                        <Text
+                                                            text="{i18n>columntext_claimsummary_amt}"
+                                                        />
+                                                    </HBox>
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Amount" />
+                                                    <Text text="{i18n>appr_status}" />
+                                                </header>
+                                            </Column>
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text
+                                                        text="{i18n>lastmodified}"
+                                                    />
                                                 </header>
                                             </Column>
                                         </columns>
                                         <items>
-                                            <ColumnListItem>
+                                            <ColumnListItem type="Active">
                                                 <cells>
                                                     <Text
-                                                        text="{employee_view>OBJECTIVE_PURPOSE}"
-                                                    />
-                                                    <Text text="{employee_view>STATUS}" />
-                                                    <Text
-                                                        text="{employee_view>REQUEST_DATE}"
+                                                        text="{dashboardModel>REQUEST_ID}"
                                                     />
                                                     <Text
-                                                        text="{employee_view>PREAPPROVAL_AMOUNT}"
+                                                        text="{dashboardModel>OBJECTIVE_PURPOSE}"
+                                                    />
+                                                    <Text
+                                                        text="{path: 'dashboardModel>REQUEST_DATE', 
+                                                        type: 'sap.ui.model.odata.type.Date',
+                                                        formatOptions: { pattern: 'dd MMM yyyy'} }"
+                                                    />
+                                                    <Text
+                                                        text="{dashboardModel>PREAPPROVAL_AMOUNT}"
+                                                    />
+                                                    <Text
+                                                        text="{dashboardModel>STATUS_DESC}"
+                                                    />
+                                                    <Text
+                                                        text="{dashboardModel>modifiedAt}"
                                                     />
                                                 </cells>
                                             </ColumnListItem>
@@ -263,6 +325,7 @@
                             </VBox>
                         </Panel>
                     </VBox>
+
                     <VBox>
                         <Panel
                             width="80%"
@@ -280,8 +343,7 @@
                                         size="25px"
                                     />
                                     <Title
-                                        level="H3"
-                                        text="{i18n>approval}"
+                                        text="{i18n>approval} ({= ${dashboardModel>/approvals}.length })"
                                         textAlign="Center"
                                         class="sapUiSmallMarginBegin"
                                     />
@@ -302,47 +364,80 @@
                                     horizontal="false"
                                 >
                                     <Table
-                                        items="{ path: '' }"
+                                        items="{dashboardModel>/approvals}"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
+                                        mode="SingleSelectMaster"
+                                        itemPress="onOpenApprovalListItemPress"
                                     >
                                         <columns>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Purpose" />
+                                                    <Text
+                                                        text="{i18n>claimrequestid}"
+                                                    />
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Status" />
+                                                    <Text text="{i18n>label_claimdetails_input_purpose}" />
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Start Date" />
+                                                    <Text text="{i18n>label_claimdetails_input_startdate}" />
+                                                </header>
+                                            </Column>
+                                            <Column hAlign="End">
+                                                <header>
+                                                    <HBox
+                                                        justifyContent="SpaceBetween"
+                                                        alignItems="End"
+                                                        width="100%"
+                                                    >
+                                                        <Text
+                                                            text="{i18n>columntext_claimsummary_amt}"
+                                                        />
+                                                    </HBox>
                                                 </header>
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="Amount" />
+                                                    <Text text="{i18n>appr_status}" />
+                                                </header>
+                                            </Column>
+                                            <Column demandPopin="true">
+                                                <header>
+                                                    <Text
+                                                        text="{i18n>lastmodified}"
+                                                    />
                                                 </header>
                                             </Column>
                                         </columns>
                                         <items>
-                                            <ColumnListItem>
+                                            <ColumnListItem type="Active">
                                                 <cells>
                                                     <Text
-                                                        text=""
+                                                        text="{dashboardModel>ID}"
                                                     />
                                                     <Text
-                                                        text=""
+                                                        text="{dashboardModel>PURPOSE}"
                                                     />
                                                     <Text
-                                                        text=""
+                                                        text="{path: 'dashboardModel>REQUEST_DATE',
+                                                        type: 'sap.ui.model.odata.type.Date',
+                                                        formatOptions: { pattern: 'dd MMM yyyy' }}"
                                                     />
                                                     <Text
-                                                        text=""
+                                                        textAlign="End"
+                                                        text="{dashboardModel>AMOUNT}"
+                                                    />
+                                                    <Text
+                                                        text="{dashboardModel>STATUS_DESC}"
+                                                    />
+                                                    <Text
+                                                        text="{dashboardModel>modifiedAt}"
                                                     />
                                                 </cells>
                                             </ColumnListItem>
@@ -353,7 +448,6 @@
                         </Panel>
                     </VBox>
                 </VBox>
-            </ScrollContainer>
         </content>
     </Page>
 </mvc:View>

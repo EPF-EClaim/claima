@@ -121,3 +121,83 @@ annotate eclaim_srv.ZCLAIM_TYPE with @(
     }
 );
 
+annotate eclaim_srv.ZEMP_MASTER with {
+    EEID @Common.Label : 'EEID'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    NAME @Common.Label : 'NAME'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    EMAIL @Common.Label : 'EMAIL'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    USER_TYPE @Common.Label : 'USER_TYPE'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    B_PLACE @Common.Label : 'B_PLACE'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    CC @Common.Label : 'CC'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    CONFIRMATION_DATE @Common.Label : 'CONFIRMATION_DATE'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    CONTACT_NO @Common.Label : 'CONTACT_NO'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    COUNTRY @Common.Label : 'COUNTRY'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    DEP @Common.Label : 'DEP'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    DIRECT_SUPPERIOR @Common.Label : 'DIRECT_SUPPERIOR'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    EFFECTIVE_DATE @Common.Label : 'EFFECTIVE_DATE'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    EMPLOYEE_TYPE @Common.Label : 'EMPLOYEE_TYPE'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    GRADE @Common.Label : 'GRADE'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    JOB_GROUP @Common.Label : 'JOB_GROUP'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    MARITAL @Common.Label : 'MARITAL'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    MEDICAL_INSURANCE_ENTITLEMENT @Common.Label : 'MEDICAL_INSURANCE_ENTITLEMENT'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    MOBILE_BILL_ELIG_AMOUNT @Common.Label : 'MOBILE_BILL_ELIG_AMOUNT'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    POS @Common.Label : 'POS'
+};
+
+annotate eclaim_srv.ZEMP_MASTER with {
+    POSITION_EVENT_REASON @Common.Label : 'POSITION_EVENT_REASON'
+};
+

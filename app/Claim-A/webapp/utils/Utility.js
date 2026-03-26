@@ -1,27 +1,39 @@
+
 sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
-], function (Filter, FilterOperator, Sorter) {
+	"claima/utils/Constants"
+], function (Filter, FilterOperator, Sorter, Constants) {
     "use strict";
 
     return {
+        /**
+		 * Initialize the Utility 
+		 * @public
+		 */
+        init: function(oOwnerComponent) {
+            this._oOwnerComponent = oOwnerComponent;
+		},
 
 		/* =========================================================
 		* Update Status
 		* ======================================================= */
 
-		async _updateStatus(oModel, id, status) {
-            let submission_type = id.substring(0,3);
+		async _updateStatus(oModel, sID, sStatus) {
+            let sSubmission_type = sID.substring(0,3);
             
-            let sTable = submission_type === 'REQ' ? '/ZREQUEST_HEADER' : "/ZCLAIM_HEADER";
-            let sField = submission_type === 'REQ' ? 'REQUEST_ID' : 'CLAIM_ID';
+            let sHeaderTablePath = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.Entities.ZREQUEST_HEADER : Constants.Entities.ZCLAIM_HEADER;
+            let sField = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.EntitiesFields.REQUESTID : Constants.EntitiesFields.CLAIMID;
 
-
-            const oListBinding = oModel.bindList(sTable, null,null,
+            // Declare field for status
+            // REQ uses STATUS field while CLM uses STATUS_ID field
+            let sStatusField = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.EntitiesFields.STATUS : Constants.EntitiesFields.CLAIM_STATUS;
+        
+            const oListBinding = oModel.bindList(sHeaderTablePath, null,null,
                 [
                     // new sap.ui.model.Filter({ path: "EMP_ID", operator: sap.ui.model.FilterOperator.EQ, value1: empId }),
-                    new sap.ui.model.Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: id })
+                    new Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: sID })
                 ],
                 {
                     $$ownRequest: true,
@@ -36,13 +48,48 @@ sap.ui.define([
             if (!oCtx) {
                 throw new Error("Record not found.");
             }
-
-            oCtx.setProperty("STATUS", status);
+            oCtx.setProperty(sStatusField, sStatus);
 
             await oModel.submitBatch("$auto");
+        },
+        /**
+		 * Gets text from the resource bundle.
+		 * @public
+		 * @param {string} sKey name of the resource
+		 * @param {string[]} aArgs Array of strings, variables for dynamic content
+		 * @returns {string} the text
+		 */
+        getText: function (sKey, aArgs) {
+            return this._oOwnerComponent.getModel("i18n").getResourceBundle().getText(sKey, aArgs);
+        },
+
+        async _updateSubmittedDate(oModel, sID) {
+            let sSubmission_type = sID.substring(0,3);
             
-            sap.m.MessageToast.show("Request submitted successfully");
-        }
+            let sHeaderTablePath = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.Entities.ZREQUEST_HEADER : Constants.Entities.ZCLAIM_HEADER;
+            let sField = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.EntitiesFields.REQUESTID : Constants.EntitiesFields.CLAIMID; 
+        
+            const oListBinding = oModel.bindList(sHeaderTablePath, null,null,
+                [
+                    new Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: sID })
+                ],
+                {
+                    $$ownRequest: true,
+                    $$groupId: "$auto",
+                    $$updateGroupId: "$auto"
+                }
+            );
+
+            const aCtx = await oListBinding.requestContexts(0, 1);
+            const oCtx = aCtx[0];
+
+            if (!oCtx) {
+                throw new Error("Record not found.");
+            }
+            oCtx.setProperty(Constants.EntitiesFields.SUBMITTED_DATE, new Date().toISOString().slice(0, 10));
+
+            await oModel.submitBatch("$auto");
+        },
 
     };
 });

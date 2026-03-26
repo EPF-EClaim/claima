@@ -5,6 +5,19 @@ sap.ui.define([
     DatePicker) {
     'use strict';
 
+    const allowedOnZemp = new Set([
+        "USER_TYPE",
+        "B_PLACE",
+        "MOBILE_BILL_ELIGIBILITY",
+        "ROLE",
+        "MOBILE_BILL_ELIG_AMOUNT",
+        "MEDICAL_INSURANCE_ENTITLEMENT",
+        "POST_EDU_ASSISTANT_CLAIM_DATE",
+        "POST_EDU_ASSISTANT_ENTITLE_AMOUNT",
+        "MEDICAL_INSURANCE", 
+        "EMAIL" //Temporary for CH testing
+    ]);
+
     const _validateDate = function (oPayload, oDataType) {
         if (!oPayload || !oDataType) return true;
         let startField = null;
@@ -35,6 +48,45 @@ sap.ui.define([
 
         return true;
     }
+    const _validateInputs = function (oVBox, oDataType, isZempMaster) {
+    let bValid = true;
+    const oInputs = oVBox.getItems();
+
+    for (let i = 1; i < oInputs.length; i += 2) {
+        const oControl = oInputs[i];
+        const sFieldName = oControl.getName();
+
+        if (isZempMaster && !allowedOnZemp.has(sFieldName)) continue;
+        if (oControl.isA("sap.m.Select")) continue;
+
+        const sValue = oControl.getValue();
+        const oMeta = oDataType?.[sFieldName];
+        const bRequired = oMeta?.$Nullable === false;
+        const nMaxLength = oMeta?.$MaxLength;
+
+        const bIsNumeric = oMeta?.$Type === "Edm.Decimal" ||
+                           oMeta?.$Type === "Edm.Int32"   ||
+                           oMeta?.$Type === "Edm.Int64"   ||
+                           oMeta?.$Type === "Edm.Double";
+
+        if (bRequired && (!sValue || sValue.trim() === '')) {
+            oControl.setValueState("Error");
+            oControl.setValueStateText("This field is required");
+            bValid = false;
+        } else if (nMaxLength && sValue && sValue.length > nMaxLength) {
+            oControl.setValueState("Error");
+            oControl.setValueStateText(`Maximum ${nMaxLength} characters allowed`);
+            bValid = false;
+        } else if (bIsNumeric && sValue && isNaN(Number(sValue))) {
+            oControl.setValueState("Error");
+            oControl.setValueStateText("Please enter a valid number");
+            bValid = false;
+        } else {
+            oControl.setValueState("None");
+        }
+    }
+    return bValid;
+}
 
     const _getDetails = function (oView, aSelectedContexts) {
         const oSelectedContext = aSelectedContexts[0];
@@ -47,19 +99,7 @@ sap.ui.define([
         const oLineItems = oModel.getMetaModel().getContext(`/${sEntityType}/@com.sap.vocabularies.UI.v1.LineItem`).getObject();
         const oKeys = oDataType.$Key || [];
 
-        const allowedOnZemp = new Set([
-            "USER_TYPE",
-            "B_PLACE",
-            "MOBILE_BILL_ELIGIBILITY",
-            "ROLE",
-            "MOBILE_BILL_ELIG_AMOUNT",
-            "MEDICAL_INSURANCE_ENTITLEMENT",
-            "POST_EDU_ASSISTANT_CLAIM_DATE",
-            "POST_EDU_ASSISTANT_ENTITLE_AMOUNT",
-            "MEDICAL_INSURANCE"
-        ]);
-
-        const isZempMaster = sPath?.startsWith("/ZEMP_MASTER") || sPath?.startsWith("/ZEMP_DEPENDENT");
+        const isZempMaster = sPath?.startsWith("/ZEMP_MASTER") || sPath === "/ZEMP_DEPENDENT";
 
         const oVBox = new sap.m.VBox({
             width: "70%",
@@ -120,7 +160,7 @@ sap.ui.define([
 
             oVBox.addItem(oInput);
         });
-        return { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType };
+        return { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster };
     }
 
     return {
@@ -144,6 +184,11 @@ sap.ui.define([
                     text: "Copy",
                     press: function () {
                         var oInputs = oVBox.getItems();
+
+                         if (!_validateInputs(oVBox, oDataType, false)) {
+                            sap.m.MessageToast.show("Please fix the highlighted fields");
+                            return;
+                        }
 
                         for (let i = 1; i < oInputs.length; i += 2) {
                             const oControl = oInputs[i];
@@ -186,7 +231,7 @@ sap.ui.define([
 
         onClickEdit: function (oContext, aSelectedContexts) {
             const oView = this.getRouting().getView();
-            const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType } = _getDetails(oView, aSelectedContexts);
+            const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster } = _getDetails(oView, aSelectedContexts);
 
             const oDialog = new sap.m.Dialog({
                 title: `Edit Record`,
@@ -197,25 +242,32 @@ sap.ui.define([
                     press: async function () {
                         var oInputs = oVBox.getItems();
                         const oEdited = {};
-                        const oOld = oSelectedContext.getObject()
+                        const oOld = oSelectedContext.getObject();
+
+                         if (!_validateInputs(oVBox, oDataType, false)) {
+                            sap.m.MessageToast.show("Please fix the highlighted fields");
+                            return;
+                        }
 
                         for (let i = 1; i < oInputs.length; i += 2) {
                             const oControl = oInputs[i];
 
                             var sFieldName = oControl.getName();
                             var sNewInput;
+                            if (isZempMaster && !allowedOnZemp.has(sFieldName)) continue;
+
                             if (oControl.isA("sap.m.Select")) {
-                                sNewInput = oControl.getSelectedKey() === '' ? null : 
-                                            oControl.getSelectedKey() === 'false'? false:
-                                            oControl.getSelectedKey() === 'true'? true :
-                                            oControl.getSelectedKey() === 'none'? null:
-                                            oControl.getSelectedKey();
+                                sNewInput = oControl.getSelectedKey() === '' ? null :
+                                    oControl.getSelectedKey() === 'false' ? false :
+                                        oControl.getSelectedKey() === 'true' ? true :
+                                            oControl.getSelectedKey() === 'none' ? null :
+                                                oControl.getSelectedKey();
                             } else {
                                 sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
                             }
                             oEdited[sFieldName] = sNewInput;
                         }
-                        
+
                         if (!_validateDate(oEdited, oDataType)) {
                             return;
                         }

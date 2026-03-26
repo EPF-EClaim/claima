@@ -2,13 +2,11 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/m/MessageToast",
     "sap/ui/model/json/JSONModel",
-    "sap/m/Dialog",
-    "sap/m/Button",
-    "sap/m/Label",
-    "sap/ui/core/Fragment",
-    "sap/ui/export/Spreadsheet",
-    "sap/ui/core/BusyIndicator"
-], function (Controller, MessageToast, JSONModel, Dialog, Button, Label, Fragment, Spreadsheet, BusyIndicator) {
+    "sap/ui/model/Filter",
+    "sap/ui/model/FilterOperator",
+    "sap/ui/model/Sorter",
+	"claima/utils/Utility"
+], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, Sorter, Utility) {
     "use strict";
 
     return Controller.extend("claima.controller.MyApproval", {
@@ -16,29 +14,129 @@ sap.ui.define([
         /* =========================================================
         * Lifecycle
         * ======================================================= */
-        async onInit() {
-
+        onInit: async function() {
+			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
+            this._oReqModel = this.getOwnerComponent().getModel("request");
+            this._oReqStatusModel = this.getOwnerComponent().getModel("request_status");
+            this._oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
+            this._oClaimStatusModel = this.getOwnerComponent().getModel("claim_status");
+            this._oSessionModel 	= this.getOwnerComponent().getModel("session");
+            this.getOwnerComponent().getRouter().getRoute("MyApproval").attachPatternMatched(this._onMatched, this);
         },
+
+        _onMatched: async function() {
+            await this._getMyApproverPAReq();
+			await this._getMyApproverClaim();
+        },
+
+        _getMyApproverPAReq: async function () {
+			const oApproverOrSub = new Filter({
+				filters: [
+					new Filter(this._oConstant.EntitiesFields.APPROVER_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
+					new Filter(this._oConstant.EntitiesFields.SUBAPPROVER_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId"))
+				],
+				and: false // OR condition between the two
+			});
+
+            const oStatus = new Filter({
+				filters: [
+					new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimStatus.PENDING_APPROVAL),
+					new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimStatus.SEND_BACK)
+				],
+				and: false // OR condition between the two
+			});
+
+			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING_APPROVAL' OR 'SEND_BACK'
+			const oCombined = new Filter({
+				filters: [oApproverOrSub, oStatus],
+				and: true // AND between groups
+			});
+
+			const oListBinding = this._oEmployeeViewModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
+				[new Sorter(this._oConstant.EntitiesFields.STATUS, true)], // desc by STATUS
+				[oCombined],
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$$updateGroupId: "$auto",
+					$count: true
+				}
+			);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+				a.forEach((it) => {
+					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
+				});
+
+				this._oReqStatusModel.setProperty("/req_header_list", a);
+				this._oReqStatusModel.setProperty("/req_header_count", a.length);
+
+				return a;
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				this._oReqStatusModel.setProperty("/req_header_list", []);
+				this._oReqStatusModel.setProperty("/req_header_count", 0);
+				return [];
+			}
+		},
+
+        _getMyApproverClaim: async function () {
+			const oApproverOrSub = new Filter({
+				filters: [
+					new Filter(this._oConstant.EntitiesFields.APPROVER_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
+					new Filter(this._oConstant.EntitiesFields.SUBAPPROVER_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId"))
+				],
+				and: false // OR condition between the two
+			});
+
+			const oStatusPending = new Filter(
+				"STATUS",
+				FilterOperator.EQ,
+				this._oConstant.ClaimStatus.PENDING_APPROVAL // use the exact code/value your backend expects
+			);
+			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
+			const oCombined = new Filter({
+				filters: [oApproverOrSub, oStatusPending],
+				and: true // AND between groups
+			});
+			const oListBinding = this._oEmployeeViewModel.bindList("/ZEMP_APPROVER_CLAIM_DETAILS", undefined,
+				[new Sorter("STATUS", true)], // desc by STATUS
+				[oCombined],
+
+				{
+					$$ownRequest: true,
+					$$groupId: "$auto",
+					$$updateGroupId: "$auto",
+					$count: true
+				}
+			);
+
+			try {
+				const aCtx = await oListBinding.requestContexts(0, Infinity);
+				const a = aCtx.map((ctx) => ctx.getObject());
+
+				a.forEach((it) => {
+					if (it.TOTAL_CLAIM_AMOUNT == null) it.TOTAL_CLAIM_AMOUNT = 0.0;
+				});
+
+				this._oClaimStatusModel.setProperty("/claim_header_list", a);
+				this._oClaimStatusModel.setProperty("/claim_header_count", a.length);
+
+				return a;
+			} catch (err) {
+				console.error("OData bindList failed:", err);
+				this._oClaimStatusModel.setProperty("/claim_header_list", []);
+				this._oClaimStatusModel.setProperty("/claim_header_count", 0);
+				return [];
+			}
+		},
 
         /* =========================================================
         * Helpers: Model & Service
         * ======================================================= */
-
-        _getReqModel() {
-            return this.getOwnerComponent().getModel("request");
-        },
-
-        _getReqStatModel() {
-            return this.getOwnerComponent().getModel("request_status");
-        },
-
-        _getClaimModel() {
-            return this.getOwnerComponent().getModel("claim");
-        },
-
-        _getClaimStatModel() {
-            return this.getOwnerComponent().getModel("claim_status");
-        },
 
         //Manual Navigation for Claim Submission
 
@@ -49,17 +147,6 @@ sap.ui.define([
             const oPageContainer = oRootView.byId("pageContainer");
             if (!oPageContainer) throw new Error("pageContainer not found in Root view");
             return { oRootView, oPageContainer };
-        },
-
-        /** Navigate manually to Claim Submission (same style as ClaimStatus.controller) */
-        _navToClaimSubmissionManual: function () {
-            const { oRootView, oPageContainer } = this._getRootAndContainer();
-            const oClaimSubmission = oRootView.byId("navcontainer_claimsubmission"); // <-- matches App.view.xml
-            if (!oClaimSubmission) {
-                sap.m.MessageToast.show("Claim Submission page not found.");
-                return;
-            }
-            oPageContainer.to(oClaimSubmission);
         },
 
 
@@ -74,8 +161,7 @@ sap.ui.define([
             try {
                 this.getView().setBusy(true);
 
-                const oReqModel = this._getReqModel();
-                oReqModel.setProperty("/view", "view");
+                this._oReqModel.setProperty("/view", "view");
 
                 // Resolve selected row/context
                 const oListItem = oEvent?.getParameter("listItem");
@@ -95,7 +181,7 @@ sap.ui.define([
                 }
 
                 if (!oCtx) {
-                    sap.m.MessageToast.show("Select an item to open");
+                    MessageToast.show(Utility.getText("msg_approval_select_req"));
                     return;
                 }
 
@@ -110,7 +196,7 @@ sap.ui.define([
                     row.PREAPPROVAL_ID;           // fallback only if header view can be filtered by it
 
                 if (!sRequestId) {
-                    sap.m.MessageToast.show("Request ID is missing on the selected row.");
+                    MessageToast.show(Utility.getText("msg_approval_missing_req"));
                     return;
                 }
 
@@ -119,7 +205,7 @@ sap.ui.define([
 
                 // Keep your DRAFT switching logic if needed
                 if (row.STATUS === "DRAFT") {
-                    oReqModel.setProperty("/view", "list");
+                    this._oReqModel.setProperty("/view", "list");
                 }
 
                 // Navigate with the request_id
@@ -127,7 +213,7 @@ sap.ui.define([
                 oRouter.navTo("RequestForm", { request_id: encodeURIComponent(String(sRequestId)) });
             } catch (e) {
                 jQuery.sap.log.error("openItemFromList failed: " + e);
-                sap.m.MessageToast.show("Failed to open the selected item.");
+                MessageToast.show(Utility.getText("msg_approval_failed_req"));
             } finally {
                 this.getView().setBusy(false);
             }
@@ -138,18 +224,16 @@ sap.ui.define([
  * and populates the "request" JSONModel.
  */
         async _loadRequestById(sRequestId) {
-            const oReq = this._getReqModel();
-            //const oModel = this.getOwnerComponent().getModel("employee_view");
-            const oModel = await this._ensureModelReady("employee_view");
+            const _oEmployeeViewModel = await this._ensureModelReady("employee_view");
             const sReq = String(sRequestId);
 
             // Build a shared filter for both calls
             const aFilters = [
-                new sap.ui.model.Filter("REQUEST_ID", sap.ui.model.FilterOperator.EQ, sReq)
+                new Filter("REQUEST_ID", FilterOperator.EQ, sReq)
             ];
 
             // Header binding (should return one row)
-            const oHeaderBinding = oModel.bindList(
+            const oHeaderBinding = _oEmployeeViewModel.bindList(
                 "/ZEMP_REQUEST_VIEW",
                 null,
                 null,                // no sort needed for single header
@@ -170,10 +254,10 @@ sap.ui.define([
             );
 
             // Item binding (all items for the request)
-            const oItemBinding = oModel.bindList(
+            const oItemBinding = _oEmployeeViewModel.bindList(
                 "/ZEMP_REQUEST_ITEM_VIEW",
                 null,
-                [new sap.ui.model.Sorter("REQUEST_SUB_ID", false)],
+                [new Sorter("REQUEST_SUB_ID", false)],
                 aFilters,
                 {
                     $$ownRequest: true,
@@ -194,17 +278,17 @@ sap.ui.define([
                 // --- Header ---
                 const oHeader = aHeaderCtx[0]?.getObject();
                 if (!oHeader) {
-                    sap.m.MessageToast.show("No header found for the selected request.");
+                    MessageToast.show(Utility.getText("msg_approval_header_req"));
                     // Clear and bail gracefully
-                    oReq.setProperty("/req_header", {});
-                    oReq.setProperty("/req_item_rows", []);
-                    oReq.setProperty("/list_count", 0);
+                    this._oReqModel.setProperty("/req_header", {});
+                    this._oReqModel.setProperty("/req_item_rows", []);
+                    this._oReqModel.setProperty("/list_count", 0);
                     return { header: null, items: [] };
                 }
 
                 // Map/normalize header into your form shape
                 const oReqHeader = this._mapHeaderToForm(oHeader);
-                oReq.setProperty("/req_header", oReqHeader);
+                this._oReqModel.setProperty("/req_header", oReqHeader);
 
                 // --- Items ---
                 const aItems = aItemCtx.map((ctx) => ctx.getObject());
@@ -225,18 +309,18 @@ sap.ui.define([
                         : sum;
                 }, 0);
 
-                oReq.setProperty("/req_header/cashadvamt", cashadv_amt);
-                oReq.setProperty("/req_header/reqamt", req_amt);
-                oReq.setProperty("/req_item_rows", aItems);
-                oReq.setProperty("/list_count", aItems.length);
-                oReq.setProperty("/view", "approver");
+                this._oReqModel.setProperty("/req_header/cashadvamt", cashadv_amt);
+                this._oReqModel.setProperty("/req_header/reqamt", req_amt);
+                this._oReqModel.setProperty("/req_item_rows", aItems);
+                this._oReqModel.setProperty("/list_count", aItems.length);
+                this._oReqModel.setProperty("/view", "approver");
 
                 return { header: oHeader, items: aItems };
             } catch (err) {
                 console.error("Failed to load header/items:", err);
-                oReq.setProperty("/req_header", {});
-                oReq.setProperty("/req_item_rows", []);
-                oReq.setProperty("/list_count", 0);
+                this._oReqModel.setProperty("/req_header", {});
+                this._oReqModel.setProperty("/req_item_rows", []);
+                this._oReqModel.setProperty("/list_count", 0);
                 return { header: null, items: [] };
             }
         },
@@ -296,7 +380,7 @@ sap.ui.define([
                 }
 
                 if (!oCtx) {
-                    sap.m.MessageToast.show("Select a claim to open");
+                    MessageToast.show(Utility.getText("msg_approval_select_clm"));
                     return;
                 }
 
@@ -309,19 +393,19 @@ sap.ui.define([
                     null;
 
                 if (!sClaimId) {
-                    sap.m.MessageToast.show("Claim ID is missing on the selected row.");
+                    MessageToast.show(Utility.getText("msg_approval_missing_clm"));
                     return;
                 }
 
                 // Load claim header + items and populate claimsubmission_input model
                 await this._loadClaimById(String(sClaimId));
 
-                // === Manual navigation to Claim Submission (like ClaimStatus.controller) ===
-                this._navToClaimSubmissionManual();
-
+                // Navigate to claim submission ID
+                const oRouter = this.getOwnerComponent().getRouter();
+                oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
             } catch (e) {
                 console.log("openItemFromClaimList failed:", e);
-                sap.m.MessageToast.show("Failed to open the selected claim.");
+                MessageToast.show(Utility.getText("msg_approval_failed_clm"));
             } finally {
                 this.getView().setBusy(false);
             }
@@ -336,13 +420,14 @@ sap.ui.define([
             if (oModel) return oModel;
 
             // Last resort: create at component so other views can reuse it
-            oModel = new sap.ui.model.json.JSONModel({
+            oModel = new JSONModel({
                 emp_master: {},
                 claim_header: {},
                 claim_items: [],
                 claim_items_count: 0,
                 is_new: false,
-                is_approver: true
+                is_approver: true,
+				view_only: true
             });
             this.getOwnerComponent().setModel(oModel, "claimsubmission_input");
 
@@ -417,15 +502,11 @@ sap.ui.define([
         },
 
         async _loadClaimById(sClaimId) {
-
-            const oClaimInput = this._getClaimInputModel()
-
-            //const oModel = this.getOwnerComponent().getModel("employee_view");
+            const oClaimInputModel = this._getClaimInputModel();
             const oModel = await this._ensureModelReady("employee_view");
-			const oModel2 = this.getOwnerComponent().getModel();
             const sId = String(sClaimId);
 
-            const aFilters = [new sap.ui.model.Filter("CLAIM_ID", sap.ui.model.FilterOperator.EQ, sId)];
+            const aFilters = [new Filter("CLAIM_ID", FilterOperator.EQ, sId)];
 
             // Header binding
             const oHeaderBinding = oModel.bindList(
@@ -436,16 +517,15 @@ sap.ui.define([
                 {
                     $$ownRequest: true,
                     $count: true,
-                    // $select: ["CLAIM_ID","EMP_ID","COST_CENTER","ALTERNATE_COST_CENTER","CLAIM_TYPE_ID","STATUS_ID","PREAPPROVED_AMOUNT","ATTACHMENT_EMAIL_APPROVER","CASH_ADVANCE_AMOUNT","COMMENT","DIST_OLD_HOUSE_TO_NEW_HOUSE_KM","DIST_OLD_HOUSE_TO_OFFICE_KM","EVENT_END_DATE","EVENT_START_DATE","FINAL_AMOUNT_TO_RECEIVE","HOUSE_COMPLETION_DATE","HOUSING_LOAN_SCHEME","LAST_APPROVED_DATE","LAST_APPROVED_TIME","LAST_MODIFIED_DATE","LENDER_NAME","LOCATION","MOVE_IN_DATE","NEW_HOUSE_ADDRESS","PAYMENT_DATE","PURPOSE","REQUEST_ID","SPECIFY_DETAILS","SPOUSE_OFFICE_ADDRESS","SUBMISSION_TYPE","SUBMITTED_DATE","TOTAL_CLAIM_AMOUNT","TRIP_END_DATE","TRIP_START_DATE"]
                     $select: ["*"]
                 }
             );
 
             // Items binding
-            const oItemBinding = oModel2.bindList(
+            const oItemBinding = this.getOwnerComponent().getModel().bindList(
                 "/ZCLAIM_ITEM", // <-- adjust if different
                 null,
-                [new sap.ui.model.Sorter("CLAIM_SUB_ID", false)],
+                [new Sorter("CLAIM_SUB_ID", false)],
                 aFilters,
                 {
                     $$ownRequest: true,
@@ -458,7 +538,7 @@ sap.ui.define([
             const oItemDescrBinding = oModel.bindList(
                 "/ZEMP_CLAIM_ITEM_VIEW", // <-- adjust if different
                 null,
-                [new sap.ui.model.Sorter("CLAIM_SUB_ID", false)],
+                [new Sorter("CLAIM_SUB_ID", false)],
                 aFilters,
                 {
                     $$ownRequest: true,
@@ -477,16 +557,32 @@ sap.ui.define([
                 // Header
                 const oHeaderRaw = aHeaderCtx[0]?.getObject();
                 if (!oHeaderRaw) {
-                    sap.m.MessageToast.show("No claim header found for the selected item.");
-                    oClaimInput.setProperty("/claim_header", {});
-                    oClaimInput.setProperty("/claim_items", []);
-                    oClaimInput.setProperty("/claim_items_count", 0);
+                    MessageToast.show(Utility.getText("msg_approval_header_clm"));
+                    oClaimInputModel.setProperty("/claim_header", {});
+                    oClaimInputModel.setProperty("/claim_items", []);
+                    oClaimInputModel.setProperty("/claim_items_count", 0);
                     return { header: null, items: [] };
                 }
 
                 const oHeader = this._mapClaimHeaderToForm(oHeaderRaw);
-                oClaimInput.setProperty("/claim_header", oHeader);
-				await this._getClaimHeaderDataDescr(oClaimInput);
+                oClaimInputModel.setProperty("/claim_header", oHeader);
+				await this._getClaimHeaderDataDescr(oClaimInputModel);
+
+				// set view-only for non-draft claims
+				if (
+					oClaimInputModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
+					oClaimInputModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
+				) {
+					oClaimInputModel.setProperty("/view_only", true)
+				}
+				else {
+					oClaimInputModel.setProperty("/view_only", false)
+				}
+
+				// enable is_approver from my approval
+				if (!oClaimInputModel.getProperty("/is_approver")) {
+					oClaimInputModel.setProperty("/is_approver", true)
+				}
 
                 // Items
                 const aItems = aItemCtx.map(ctx => ctx.getObject()).map(it => ({
@@ -600,11 +696,11 @@ sap.ui.define([
 
                 // Only overwrite header totals if header had null/0 (tweak to your preference)
                 if (!oHeader.total_claim_amount) {
-                    oClaimInput.setProperty("/claim_header/total_claim_amount", nTotal);
+                    oClaimInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
                 }
 
-                oClaimInput.setProperty("/claim_items", aItems);
-                oClaimInput.setProperty("/claim_items_count", aItems.length);
+                oClaimInputModel.setProperty("/claim_items", aItems);
+                oClaimInputModel.setProperty("/claim_items_count", aItems.length);
 
                 // Items
                 const aItemsD = aItemDCtx.map(ctx => ctx.getObject()).map(it => ({
@@ -646,23 +742,23 @@ sap.ui.define([
                 }));
 
                 // assign description based on claim item index
-                oClaimInput.getProperty("/claim_items").forEach( function (claim_item, i) {
-                    oClaimInput.setProperty("/claim_items/" + i + "/descr", aItemsD[i]);
+                oClaimInputModel.getProperty("/claim_items").forEach( function (claim_item, i) {
+                    oClaimInputModel.setProperty("/claim_items/" + i + "/descr", aItemsD[i]);
                 });
 
                 // set employee data
-                const emp_data = await this._getEmpIdDetail(oClaimInput.getProperty("/claim_header/emp_id"));
+                const emp_data = await this._getEmpIdDetail(this._oSessionModel.getProperty("/userId"));
                 if (emp_data) {
-                    oClaimInput.setProperty("/emp_master", emp_data);
-                    await this._getEmpDataDescr(oClaimInput);
+                    oClaimInputModel.setProperty("/emp_master", emp_data);
+                    await this._getEmpDataDescr(oClaimInputModel);
                 }
 
                 return { header: oHeaderRaw, items: aItems };
             } catch (err) {
                 console.error("Failed to load claim header/items:", err);
-                oClaimInput.setProperty("/claim_header", {});
-                oClaimInput.setProperty("/claim_items", []);
-                oClaimInput.setProperty("/claim_items_count", 0);
+                oClaimInputModel.setProperty("/claim_header", {});
+                oClaimInputModel.setProperty("/claim_items", []);
+                oClaimInputModel.setProperty("/claim_items_count", 0);
                 return { header: null, items: [] };
             }
         },
@@ -707,7 +803,7 @@ sap.ui.define([
 		async _getEmpIdDetail(sEEID) {
 			const oModel = this.getOwnerComponent().getModel();
 			const oListBinding = oModel.bindList("/ZEMP_MASTER", null, null, [
-				new sap.ui.model.Filter("EEID", "EQ", sEEID)
+				new Filter("EEID", FilterOperator.EQ, sEEID)
 			]);
 
 			try {
@@ -786,10 +882,10 @@ sap.ui.define([
 			if (oModel.getProperty("/emp_master/unit_section")) {
 				oModel.setProperty("/emp_master/descr/unit_section", await this._bindEclaimDescr("/ZBRANCH", oModel.getProperty("/emp_master/unit_section"), 'BRANCH_ID', 'BRANCH_DESC'));
 			}
-			// // marital status
-			// if (oModel.getProperty("/emp_master/marital")) {
-			// 	oModel.setProperty("/emp_master/descr/marital", await this._bindEclaimDescr("/ZMARITAL_STAT", oModel.getProperty("/emp_master/marital"), 'MARRIAGE_CATEGORY_ID', 'MARRIAGE_CATEGORY_DESC'));
-			// }
+			// marital status
+			if (oModel.getProperty("/emp_master/marital")) {
+				oModel.setProperty("/emp_master/descr/marital", await this._bindEclaimDescr("/ZMARITAL_STAT", oModel.getProperty("/emp_master/marital"), 'MARRIAGE_STATUS_ID', 'MARRIAGE_STATUS_DESC'));
+			}
 			// job group
 			if (oModel.getProperty("/emp_master/job_group")) {
 				oModel.setProperty("/emp_master/descr/job_group", await this._bindEclaimDescr("/ZJOB_GROUP", oModel.getProperty("/emp_master/job_group"), 'JOB_GROUP_ID', 'JOB_GROUP_DESC'));
@@ -832,12 +928,11 @@ sap.ui.define([
 		},
 
 		_bindEclaimDescr: async function (oTable, oInputValue, oFieldId, oFieldDescr, oInputValue2, oFieldId2) {
-			const oModel = this.getOwnerComponent().getModel();
-			var filterArray = [new sap.ui.model.Filter(oFieldId, "EQ", oInputValue)];
+			var aFilterArray = [new Filter(oFieldId, FilterOperator.EQ, oInputValue)];
 			if (oFieldId2) {
-				filterArray = filterArray.concat(new sap.ui.model.Filter(oFieldId2, "EQ", oInputValue2));
+				aFilterArray = aFilterArray.concat(new Filter(oFieldId2, FilterOperator.EQ, oInputValue2));
 			}
-			const oListBinding = oModel.bindList(oTable, null, null, filterArray);
+			const oListBinding = this.getOwnerComponent().getModel().bindList(oTable, null, null, aFilterArray);
 
 			try {
 				const aContexts = await oListBinding.requestContexts(0, 1);

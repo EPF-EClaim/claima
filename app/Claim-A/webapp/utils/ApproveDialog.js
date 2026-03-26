@@ -76,11 +76,9 @@ sap.ui.define([
       oController.onClickCancel_app ||
       function () { this.__approveDialog && this.__approveDialog.close(); };
 
-    const createHandler =
-      oController.onClickCreate_app ||
-      oController.onApprove_ClaimSubmission ||
-      oController.onApproveRequest ||
-      function () { sap.m.MessageToast.show("No approve handler implemented."); };
+    const fnCreateHandler =
+      (oController.onClickCreate_app || oController.onApproveRequest).bind(oController);
+
 
     const oDialog = new Dialog({
       title: "{i18n>approve_claim}",
@@ -92,10 +90,9 @@ sap.ui.define([
       }),
       endButton: new Button(oView.createId("approver_placeholder_create"), {
         text: "{i18n>approve_btn}",
-        type: "Emphasized",
-        // Enable only if comment present (client-side UX)
+        type: sap.m.ButtonType.Emphasized,
         enabled: "{= !!${Reject>/approvalComment} }",
-        press: createHandler.bind(oController)
+        press: fnCreateHandler.bind(oController)
       })
     });
 
@@ -129,4 +126,3 @@ sap.ui.define([
     }
   };
 });
-``

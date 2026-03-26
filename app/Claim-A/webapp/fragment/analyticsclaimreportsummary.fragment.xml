@@ -263,7 +263,7 @@
                             <table:Column width="16rem">
                                 <Label text="{i18n>claim_status}" />
                                 <table:template>
-                                    <Text text="{employee_view>STATUS_ID}" />
+                                    <Text text="{employee_view>STATUS_DESC}" />
                                 </table:template>
                             </table:Column>
 
@@ -424,7 +424,7 @@
 
                             <!-- Location -->
                             <table:Column width="16rem">
-                                <Label text="Location" />
+                                <Label text="{i18n>location}" />
                                 <table:template>
                                     <Text text="{employee_view>LOCATION}" />
                                 </table:template>
@@ -442,15 +442,15 @@
             >
                 <ToolbarSpacer />
                 <Button
+                    id="btnCloseAnalyticsSum"
+                    text="{i18n>back}"
+                    press=".onBackFromAnalyticsClaimReport"
+                />
+                <Button
                     id="btnExportAnalyticsSum"
                     text="{i18n>export}"
                     type="Emphasized"
                     press=".onExportAnalyticsReport"
-                />
-                <Button
-                    id="btnCloseAnalyticsSum"
-                    text="Back"
-                    press=".onBackFromAnalyticsClaimReport"
                 />
             </Toolbar>
         </footer>

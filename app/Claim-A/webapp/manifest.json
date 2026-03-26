@@ -149,7 +149,7 @@
             },
             "routes": [
                 {
-                    "pattern": "Dashboard",
+                    "pattern": "",
                     "name": "Dashboard",
                     "target": "TargetDashboard"
                 },
@@ -442,11 +442,6 @@
                     "target": "Analytics"
                 },
                 {
-                    "pattern": "ClaimStatus",
-                    "name": "ClaimStatus",
-                    "target": "ClaimStatus"
-                },
-                {
                     "pattern": "MyApproval",
                     "name": "MyApproval",
                     "target": "MyApproval"
@@ -475,6 +470,11 @@
                     "pattern": "ClaimSubmission/{claim_id}",
                     "name": "ClaimSubmission",
                     "target": "ClaimSubmission"
+                },
+                {
+                    "pattern": "ClaimStatus",
+                    "name": "ClaimStatus",
+                    "target": "ClaimStatus"
                 },
                 {
                     "pattern": "ManageSub",
@@ -610,6 +610,26 @@
                     "pattern": "ZDB_STRUCTURE",
                     "name": "ZDB_STRUCTURE",
                     "target": "ZDB_STRUCTURE"
+                },
+                {
+                    "pattern": "Configuration_GA",
+                    "name": "Configuration_GA",
+                    "target": "Configuration_GA"
+                },
+                {
+                    "pattern": "ZCONSTANTS",
+                    "name": "ZCONSTANTS",
+                    "target": "ZCONSTANTS"
+                },
+                {
+                    "pattern": "ZROLEHIERARCHY",
+                    "name": "ZROLEHIERARCHY",
+                    "target": "ZROLEHIERARCHY"
+                },
+                {
+                    "pattern": "ZELIGIBILITY_RULE",
+                    "name": "ZELIGIBILITY_RULE",
+                    "target": "ZELIGIBILITY_RULE"
                 }
             ],
             "targets": {
@@ -640,7 +660,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -676,7 +697,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -699,7 +732,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -732,7 +766,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -755,7 +801,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -788,7 +835,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -811,7 +870,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -844,7 +904,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -867,7 +939,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -900,7 +973,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -923,7 +1008,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -933,7 +1019,7 @@
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "LOC_TYPE_ID,START_DATE,LOC_TYPE_DESC,END_DATE,STATUS"
+                                            "creationFields": "LOC_TYPE_ID,LOC_TYPE_DESC,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -956,7 +1042,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -979,7 +1077,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -1012,7 +1111,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1035,7 +1146,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -1068,7 +1180,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1091,7 +1215,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -1124,7 +1249,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1147,7 +1284,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -1179,7 +1317,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1202,7 +1352,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -1235,7 +1386,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1258,7 +1421,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -1278,9 +1442,21 @@
                                     }
                                 }
                             },
-                            "hideFilterBar": true,
+                            "hideFilterBar": false,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1303,7 +1479,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -1325,7 +1502,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1348,7 +1537,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -1381,7 +1571,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1404,7 +1606,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -1437,7 +1640,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1460,7 +1675,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -1493,7 +1709,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1516,7 +1744,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -1526,7 +1755,7 @@
                                         "enableMassEdit": false,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "PERSONAL_GRADE_FROM,PERSONAL_GRADE_TO,LOCATION,EFFECTIVE_START_DATE,EFFECTIVE_END_DATE,CURRENCY,AMOUNT,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID"
+                                            "creationFields": "PERSONAL_GRADE,LOCATION,CURRENCY,AMOUNT,CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
@@ -1549,7 +1778,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1572,7 +1813,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -1605,7 +1847,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1628,7 +1882,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -1661,7 +1916,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1683,7 +1950,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -1718,7 +1987,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1740,7 +2021,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -1772,7 +2055,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1794,7 +2089,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -1814,7 +2111,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1836,7 +2145,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -1856,7 +2167,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1878,7 +2201,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -1913,7 +2238,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1935,7 +2272,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -1967,7 +2306,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -1989,7 +2340,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -2024,7 +2377,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2046,7 +2411,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -2082,7 +2449,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2104,7 +2483,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -2139,7 +2520,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2161,7 +2554,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -2194,7 +2589,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2216,7 +2623,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -2249,7 +2658,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2271,7 +2692,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -2303,7 +2726,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2325,7 +2760,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -2357,7 +2794,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2379,7 +2828,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -2412,7 +2863,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2434,7 +2897,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -2467,7 +2932,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2489,7 +2966,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -2521,7 +3000,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2543,7 +3034,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -2575,7 +3068,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2597,7 +3102,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -2629,7 +3136,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2651,7 +3170,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -2683,7 +3204,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2705,7 +3238,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -2737,7 +3272,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2759,7 +3306,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -2791,7 +3340,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2813,7 +3374,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -2845,7 +3408,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2867,7 +3442,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -2899,7 +3476,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2921,7 +3510,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -2953,7 +3544,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -2975,7 +3578,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -3007,7 +3612,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3029,7 +3646,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -3061,7 +3680,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3083,7 +3714,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -3115,7 +3748,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3137,7 +3782,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -3169,7 +3816,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3191,7 +3850,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -3223,7 +3884,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3245,7 +3918,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -3277,7 +3952,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3299,7 +3986,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -3331,7 +4020,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3353,7 +4054,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -3385,7 +4088,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3407,7 +4122,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -3439,7 +4156,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3461,7 +4190,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -3493,7 +4224,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3515,7 +4258,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -3547,7 +4292,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3569,7 +4326,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -3601,7 +4360,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3623,7 +4394,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -3655,7 +4428,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3677,7 +4462,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -3692,14 +4479,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/BudgetControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/BudgetControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3709,7 +4496,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3731,7 +4530,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -3763,7 +4564,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3783,18 +4596,18 @@
                     "viewType": "XML",
                     "transition": "slide"
                 },
-                "Analytics": {
-                    "id": "Analytics",
+                "Configuration_GA": {
+                    "id": "Configuration_GA",
                     "path": "claima.view",
-                    "name": "Analytics",
+                    "name": "Configuration_GA",
                     "type": "View",
                     "viewType": "XML",
                     "transition": "slide"
                 },
-                "ClaimStatus": {
-                    "id": "ClaimStatus",
+                "Analytics": {
+                    "id": "Analytics",
                     "path": "claima.view",
-                    "name": "ClaimStatus",
+                    "name": "Analytics",
                     "type": "View",
                     "viewType": "XML",
                     "transition": "slide"
@@ -3839,6 +4652,14 @@
                     "viewType": "XML",
                     "transition": "slide"
                 },
+                "ClaimStatus": {
+                    "id": "ClaimStatus",
+                    "path": "claima.view",
+                    "name": "ClaimStatus",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
+                },
                 "ManageSub": {
                     "id": "ManageSub",
                     "path": "claima.view",
@@ -3874,7 +4695,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -3886,7 +4708,7 @@
                                     "actions": {
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": false,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3896,7 +4718,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3919,7 +4753,8 @@
                                         "selectionMode": "Single",
                                         "personalization": {
                                             "column": false,
-                                            "filter": false
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true,
@@ -3941,7 +4776,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -3963,7 +4810,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -3977,14 +4826,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3994,7 +4843,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -4016,7 +4877,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -4030,14 +4893,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -4047,7 +4910,19 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -4069,7 +4944,9 @@
                                         "selectAll": false,
                                         "selectionMode": "Single",
                                         "personalization": {
-                                            "column": false
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
                                         },
                                         "quickVariantSelection": {
                                             "hideTableTitle": true
@@ -4084,14 +4961,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -4101,7 +4978,223 @@
                             },
                             "hideFilterBar": true,
                             "initialLoad": "Enabled",
-                            "navigation": {}
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZELIGIBILITY_RULE": {
+                    "type": "Component",
+                    "id": "ZELIGIBILITY_RULE",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZELIGIBILITY_RULE",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "disableCopyToClipboard": true,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "CLAIM_TYPE_ID,CLAIM_TYPE_ITEM_ID,ROLE_ID,POSITION_NO_DESC,ROW_COUNT,START_DATE,END_DATE,EMPLOYEE_TYPE,ASSIGNED_APPROVER,CONFIRMATION_DATE,PERSONAL_GRADE,MOBILE_PHONE_BILL,ELIGIBLE_AMOUNT,FREQUENCY,PERIOD,DEPENDENT,PERMITTED_DEPENDENT_COUNT,CLAIM_YEARS,SUBSIDIESED_RATE,MARITAL_STATUS,DEPENDENT_TYPE_ID,VEHICLE_OWNERSHIP_ID,CLAIMABLE_PERIOD_DAYS,REGION_ID,MAXIMUM_DAYS,CLAIM_BASIS_ID,TRANSFER_MODE_ID,EVENT_REASON,NO_OF_NIGHT,VEHICLE_TYPE_ID,RATE,MARRIAGE_CATEGORY,FLIGHT_CLASS_ID,HOTEL_LODGING_ID,TRANSPORT_CLASS,TRANSPORT_PASSING_ID,INSURANCE_PACKAGE_ID,TRAVEL_DAYS_ID,CURRENCY,ROOM_TYPE_ID,IND_OR_GROUP,TRAVEL_HOURS,AGING_NUMBER,AGING_PERIOD,STATUS"
+                                        }
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZCONSTANTS": {
+                    "type": "Component",
+                    "id": "ZCONSTANTS",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZCONSTANTS",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "ID,VALUE"
+                                        },
+                                        "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZROLEHIERARCHY": {
+                    "type": "Component",
+                    "id": "ZROLEHIERARCHY",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZROLEHIERARCHY",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "ROLE,RANK"
+                                        },
+                                        "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

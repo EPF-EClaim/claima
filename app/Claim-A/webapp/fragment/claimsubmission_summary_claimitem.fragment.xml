@@ -1,51 +1,29 @@
 <core:FragmentDefinition
-	xmlns="sap.m"
-	xmlns:l="sap.ui.layout"
-	xmlns:core="sap.ui.core"
-	core:require="{FloatType: 'sap/ui/model/type/Float'}"
+    xmlns="sap.m"
+    xmlns:l="sap.ui.layout"
+    xmlns:core="sap.ui.core"
+    core:require="{FloatType: 'sap/ui/model/type/Float'}"
 >
-	<VBox class="sapUiSmallMargin">
-		<!-- Claim Item Toolbar -->
-		<Toolbar>
-			<!-- Claim Item -->
-			<Title
-				text="{
+    <VBox
+        backgroundDesign="Solid"
+        class="roundedBox sapUiSmallMargin sapUiTinyMarginTop sapUiTinyMarginBottom"
+        rowGap="1rem">
+        <!-- Claim Item Toolbar -->
+        <OverflowToolbar
+            height="3rem"
+            style="Clear">
+            <!-- Claim Item -->
+            <Title  
+                text="{
 					parts:[
 						{path:'i18n>title_claimsummary_claimitem'},
 						{path:'claimsubmission_input>/claim_items_count'}
 					], 
 					formatter:'jQuery.sap.formatMessage'}"
-				level="H2"
-			/>
+            />
 
-			<!-- space -->
-			<ToolbarSpacer />
-
-			<!-- Add Claim Type -->
-			<!-- <MenuButton
-				id="menubutton_claimsummary_addclaimtype"
-				text="{i18n>menubutton_claimsummary_addclaimtype}"
-				buttonMode="Split"
-				useDefaultActionOnly="true"
-			>
-				<menu>
-					<Menu itemSelected="onMenuAction"> -->
-						<!-- Create Claim -->
-						<!-- <MenuItem
-							id="menuitem_claimsummary_createclaim"
-							text="{i18n>menuitem_claimsummary_createclaim}"
-							press="onCreateClaim_ClaimSummary"
-						/> -->
-
-						<!-- Scan Receipt -->
-						<!-- <MenuItem
-							id="menuitem_claimsummary_scanreceipt"
-							text="{i18n>menuitem_claimsummary_scanreceipt}"
-							press="onScanReceipt_ClaimSummary"
-						/>
-					</Menu>
-				</menu>
-			</MenuButton> -->
+            <!-- space -->
+            <ToolbarSpacer />
 
 			<!-- Create Claim -->
 			<Button
@@ -55,20 +33,13 @@
 				type="Emphasized"
 			/>
 
-			<!-- Edit -->
-			<Button
-				id="button_claimsummary_edit"
-				text="{i18n>button_claimsummary_edit}"
-				press="onAction_ClaimSummary('Edit')"
-				enabled="false"
-			/>
-
-			<!-- Scan Receipt -->
-			<!-- <Button
-				id="button_claimsummary_scanreceipt"
-				text="{i18n>button_claimsummary_scanreceipt}"
-				press="onScanReceipt_ClaimSummary"
-			/> -->
+            <!-- Edit -->
+            <Button
+                id="button_claimsummary_edit"
+                text="{i18n>button_claimsummary_edit}"
+                press="onAction_ClaimSummary('Edit')"
+                enabled="false"
+            />
 
 			<!-- Duplicate -->
 			<Button
@@ -78,108 +49,91 @@
 				enabled="false"
 			/>
 
-			<!-- Delete -->
-			<Button
-				id="button_claimsummary_delete"
-				text="{i18n>button_claimsummary_delete}"
-				press="onAction_ClaimSummary('Delete')"
-				enabled="false"
-			/>
-		</Toolbar>
+            <!-- Delete -->
+            <Button
+                id="button_claimsummary_delete"
+                text="{i18n>button_claimsummary_delete}"
+                press="onAction_ClaimSummary('Delete')"
+                enabled="false"
+            />
+        </OverflowToolbar>
 
-		<!-- Table for Claim Items -->
-		<Table
-			id="table_claimsummary_claimitem"
-			inset="false"
-			mode="MultiSelect"
-			itemPress="onItemPress_ClaimSubmission"
-			items="{
+        <!-- Table for Claim Items -->
+        <Table
+            id="table_claimsummary_claimitem"
+            inset="false"
+            mode="MultiSelect"
+            selectionChange="onSelectionChange_ClaimSummary"
+            itemPress="onItemPress_ClaimSubmission"
+            items="{
 				path: 'claimsubmission_input>/claim_items',
 				sorter: {
 					path: 'claim_sub_id'
 				}
 			}"
-			growing="true"
-			growingScrollToLoad="false"
-			sticky="ColumnHeaders"
-		>
-			<columns>
-				<!-- Item -->
-				<Column>
-					<Text text="Item" />
-				</Column>
-
-				<!-- Date -->
-				<!-- <Column>
-					<Text text="{i18n>columntext_claimsummary_date}" />
-				</Column> -->
-
-				<!-- Receipt -->
-				<!-- <Column>
-					<Text text="{i18n>columntext_claimsummary_receipt}" />
-				</Column> -->
+            growing="true"
+            growingScrollToLoad="false"
+            sticky="ColumnHeaders"
+        >
+            <columns>
+                <!-- Item -->
+                <Column>
+                    <Text text="Item" />
+                </Column>
 
 				<!-- Claim Type -->
 				<Column>
 					<Text text="{i18n>columntext_claimsummary_claimtype}" />
 				</Column>
 
-				<!-- Claim Item -->
-				<Column>
-					<Text text="{i18n>columntext_claimsummary_claimitem}" />
-				</Column>
-
-				<!-- Category -->
-				<Column>
-					<Text text="{i18n>columntext_claimsummary_category}" />
-				</Column>
+                <!-- Claim Item -->
+                <Column>
+                    <Text text="{i18n>columntext_claimsummary_claimitem}" />
+                </Column>
 
 				<!-- Amount -->
-				<Column>
+				<Column hAlign="End" >
 					<Text text="{i18n>columntext_claimsummary_amt}" />
 				</Column>
 
-				<!-- Attachment 1 -->
-				<Column>
-					<Text text="{i18n>columntext_claimsummary_attachment1}" />
-				</Column>
+                <!-- Remarks -->
+                <Column>
+                    <Text text="{i18n>columntext_claimsummary_remarks}" />
+                </Column>
 
-				<!-- Attachment 2 -->
-				<Column>
-					<Text text="{i18n>columntext_claimsummary_attachment2}" />
-				</Column>
-			</columns>
+                <!-- Attachment 1 -->
+                <Column>
+                    <Text text="{i18n>columntext_claimsummary_attachment1}" />
+                </Column>
 
-			<items>
-				<ColumnListItem type="Active" vAlign="Middle">
-					<cells>
-						<!-- Item ID -->
-						<ObjectIdentifier text="{claimsubmission_input>claim_sub_id}" />
+                <!-- Attachment 2 -->
+                <Column>
+                    <Text text="{i18n>columntext_claimsummary_attachment2}" />
+                </Column>
+            </columns>
 
-						<!-- Date -->
-						<!-- <Text
-							text="{
-								path: 'claimsubmission_input>start_date',
-								type: 'sap.ui.model.odata.type.Date',
-								formatOptions: { pattern: 'dd-MMM-yyyy' }
-							}"
-						/> -->
-
-						<!-- Receipt -->
-						<!-- <Text text="{claimsubmission_input>receipt_number}" /> -->
+            <items>
+                <ColumnListItem
+                    type="Active"
+                    vAlign="Middle"
+                >
+                    <cells>
+                        <!-- Item ID -->
+                        <ObjectIdentifier
+                            text="{claimsubmission_input>claim_sub_id}"
+                        />
 
 						<!-- Claim Type -->
 						<Text text="{claimsubmission_input>descr/claim_type_id}" />
 
-						<!-- Claim Item -->
-						<Text text="{claimsubmission_input>descr/claim_type_item_id}" />
+                        <!-- Claim Item -->
+                        <Text
+                            text="{claimsubmission_input>descr/claim_type_item_id}"
+                        />
 
-						<!-- Category -->
-						<Text text="{claimsubmission_input>descr/claim_category}" />
-
-						<!-- Amount -->
-						<Text
-							text="{
+                        <!-- Amount -->
+                        <Text
+                            text="{
 								path: 'claimsubmission_input>amount',
 								type: 'FloatType',
 								formatOptions: {
@@ -188,28 +142,31 @@
 									preserveDecimals: false
 								}
 							}"
-						/>
+                        />
 
-						<!-- Attachment 1 -->
-						<Button
-							id="button_claimsummary_attachment1"
-							icon="sap-icon://attachment"
-							text="{i18n>button_claimdetails_input_viewattachment}"
-							press="onView_Claim_Attachment('child','1', ${claimsubmission_input>claim_sub_id})"
-							enabled="{= ${claimsubmission_input>attachment_file_1} !== null }"
-						/>
+                        <!-- Remarks -->
+                        <Text text="{claimsubmission_input>remark}" />
 
-						<!-- Attachment 2 -->
-						<Button
-							id="button_claimsummary_attachment2"
-							icon="sap-icon://attachment"
-							text="{i18n>button_claimdetails_input_viewattachment}"
-							press="onView_Claim_Attachment('child','2', ${claimsubmission_input>claim_sub_id})"
-							enabled="{= ${claimsubmission_input>attachment_file_2} !== null }"
-						/>
-					</cells>
-				</ColumnListItem>
-			</items>
-		</Table>
-	</VBox>
+                        <!-- Attachment 1 -->
+                        <Button
+                            id="button_claimsummary_attachment1"
+                            icon="sap-icon://attachment"
+                            text="{i18n>button_claimdetails_input_viewattachment}"
+                            press="onView_Claim_Attachment('child','1', ${claimsubmission_input>claim_sub_id})"
+                            enabled="{= ${claimsubmission_input>attachment_file_1} !== null }"
+                        />
+
+                        <!-- Attachment 2 -->
+                        <Button
+                            id="button_claimsummary_attachment2"
+                            icon="sap-icon://attachment"
+                            text="{i18n>button_claimdetails_input_viewattachment}"
+                            press="onView_Claim_Attachment('child','2', ${claimsubmission_input>claim_sub_id})"
+                            enabled="{= ${claimsubmission_input>attachment_file_2} !== null }"
+                        />
+                    </cells>
+                </ColumnListItem>
+            </items>
+        </Table>
+    </VBox>
 </core:FragmentDefinition>

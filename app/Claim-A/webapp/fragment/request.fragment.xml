@@ -1,4 +1,13 @@
-<core:FragmentDefinition xmlns:unified="sap.ui.unified" xmlns:l="sap.ui.layout" xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.ui.layout.form">
+<core:FragmentDefinition 
+	xmlns:unified="sap.ui.unified" 
+	xmlns:l="sap.ui.layout" 
+	xmlns:core="sap.ui.core" 
+	xmlns:mvc="sap.ui.core.mvc" 
+	xmlns="sap.m" 
+	xmlns:f="sap.ui.layout.form" 
+	xmlns:mdc="sap.ui.mdc"
+    xmlns:mdcvh="sap.ui.mdc.valuehelp"
+    xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content">
 	<Dialog title="{i18n>req_po_title}" contentWidth="50%" class="requestDialog">
 		<f:SimpleForm 
             id="req_create_form"
@@ -18,23 +27,30 @@
 			columnsM="1" >
 			<f:content>
 				<Label text="{i18n>req_purpose}" />
-				<Input value="{request>/req_header/purpose}" required="true"/>
+				<Input value="{reqDialog>/purpose}" required="true"/>
 
 				<Label text="{i18n>req_rtype}" />
-				<Select selectedKey="{request>/req_header/reqtype}" 
+				<Select selectedKey="{reqDialog>/reqtype}" 
 						required="true" 
 						forceSelection="false"
-						items="{path: 'req_type_list>/types',
-								sorter: { path: 'REQUEST_TYPE_ID', descending: false }}"
+						items="{
+							path: 'employee>/ZREQUEST_TYPE',
+							filters: [
+								{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }
+							],
+							sorter: { path: 'REQUEST_TYPE_ID', descending: false }
+						}"
 						change=".getFieldVisibility_ReqType">
 					<items>
-						<core:Item key="{req_type_list>REQUEST_TYPE_ID}" 
-								text="{req_type_list>REQUEST_TYPE_DESC}" />
+						<core:Item 
+							key="{employee>REQUEST_TYPE_ID}" 
+							text="{employee>REQUEST_TYPE_DESC}" />
 					</items>
 				</Select>
 
 				<Label text="{i18n>req_claimtype}" />
-				<Select selectedKey="{request>/req_header/claimtype}" 
+				<Select selectedKey="{reqDialog>/claimtype}"
+						id="req_claimtype" 
 						required="true" 
 						forceSelection="false"
 						items="{path: 'claim_type_list>/types',
@@ -48,7 +64,7 @@
 				<Label text="{i18n>req_transfer_mode}" />
 				<Select 
                     id="req_transfermode"
-					selectedKey="{request>/req_header/transfermode}" 
+					selectedKey="{reqDialog>/transfermode}" 
 					required="true" 
 					forceSelection="false"
 					visible="false"
@@ -66,10 +82,10 @@
                     displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
                     placeholder="eg: 01 Jan 1990"
-                    value="{request>/req_header/tripstartdate}"
+                    value="{reqDialog>/tripstartdate}"
 					textAlign="Begin"
-					required="{= ${request>/req_header/reqtype} === 'RT0001' || 
-								${request>/req_header/reqtype} === 'RT0004' }"
+					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
+								${reqDialog>/reqtype} === 'RT0004' }"
 					visible="false"/>
 
 				<Label text="{i18n>req_tripenddate}" />
@@ -78,10 +94,10 @@
                     displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
                     placeholder="eg: 01 Jan 1990"
-                    value="{request>/req_header/tripenddate}"
+                    value="{reqDialog>/tripenddate}"
 					textAlign="Begin"
-					required="{= ${request>/req_header/reqtype} === 'RT0001' || 
-								${request>/req_header/reqtype} === 'RT0004' }"
+					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
+								${reqDialog>/reqtype} === 'RT0004' }"
 					visible="false"/>
 
 				<Label text="{i18n>req_eventstartdate}"/>
@@ -90,10 +106,10 @@
                     displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
                     placeholder="eg: 01 Jan 1990"
-                    value="{request>/req_header/eventstartdate}"
+                    value="{reqDialog>/eventstartdate}"
 					textAlign="Begin"
-					required="{= ${request>/req_header/reqtype} === 'RT0001' || 
-								${request>/req_header/reqtype} === 'RT0003' }"
+					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
+								${reqDialog>/reqtype} === 'RT0003' }"
 					visible="false"/>
 
 				<Label text="{i18n>req_eventenddate}" />
@@ -102,25 +118,32 @@
                     displayFormat="dd MMM yyyy"  
                     valueFormat="yyyy-MM-dd" 
                     placeholder="eg: 01 Jan 1990"
-                    value="{request>/req_header/eventenddate}"
+                    value="{reqDialog>/eventenddate}"
 					textAlign="Begin"
-					required="{= ${request>/req_header/reqtype} === 'RT0001' || 
-								${request>/req_header/reqtype} === 'RT0003' }"
+					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
+								${reqDialog>/reqtype} === 'RT0003' }"
 					visible="false" />	
 
 				<Label text="{i18n>req_grptype}" />
 				<Select 
 					id="req_grptype"
-					selectedKey="{request>/req_header/grptype}" 
-						required="true" 
-						forceSelection="false"
-						enabled="{= ${request>/req_header/reqtype} !== 'RT0004'}"
-						visible="false"
-						items="{path: 'indiv_list>/types',
-								sorter: { path: 'IND_OR_GROUP_ID', descending: false }}">
+					selectedKey="{reqDialog>/grptype}" 
+					required="true" 
+					forceSelection="false"
+					enabled="{= ${reqDialog>/reqtype} !== 'RT0004'}"
+					visible="false"
+					items="{
+						path: 'employee>/ZINDIV_GROUP',
+						filters: [
+							{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' },
+							{ path: 'IND_OR_GROUP_ID', operator: 'NE', value1: 'I_G' }
+						],
+						sorter: { path: 'IND_OR_GROUP_ID', descending: false }
+					}">
 					<items>
-						<core:Item key="{indiv_list>IND_OR_GROUP_ID}" 
-								text="{indiv_list>IND_OR_GROUP_DESC}" />
+						<core:Item 
+							key="{employee>IND_OR_GROUP_ID}" 
+							text="{employee>IND_OR_GROUP_DESC}" />
 					</items>
 				</Select>
 
@@ -128,37 +151,34 @@
 			    <Input 
 					id="req_location"
 					textAlign="Begin"
-					value="{request>/req_header/location}"
-					required="{= ${request>/req_header/reqtype} === 'RT0001' || 
-								${request>/req_header/reqtype} === 'RT0003' }"
+					value="{reqDialog>/location}"
+					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
+								${reqDialog>/reqtype} === 'RT0003' }"
 					visible="false"/>
 
 			    <Label text="{i18n>req_transport}" />
 				<Input 
 					id="req_transport"
-					value="{request>/req_header/transport}"
-					required="{= ${request>/req_header/reqtype} === 'RT0001' }"
+					value="{reqDialog>/transport}"
+					required="{= ${reqDialog>/reqtype} === 'RT0001' }"
 					visible="false" />
 
 			    <Label text="{i18n>req_acc}" />
-			    <Select 
-					id="req_acc"
-					selectedKey="{request>/req_header/altcostcenter}" 
-					forceSelection="false"
-					visible="false"
-					items="{path: 'employee>/ZCOST_CENTER',
-							sorter: { path: 'COST_CENTER_ID', descending: false }}">
-					<items>
-						<core:Item key="{employee>COST_CENTER_ID}" 
-								text="{employee>COST_CENTER_DESC}" />
-					</items>
-				</Select>
+				<mdc:Field
+                        id="req_acc"
+                        value="{reqDialog>/altcostcenter}"
+                        editMode="Editable"
+                        display="ValueDescription"
+                        visible="false"
+                        valueHelp="valuehelp_requestinput_altcc"
+                    />
 
 			    <Label text="{i18n>req_attach1}" />
 			    <unified:FileUploader
 					id="req_attachment_1"
 					change="onImportChange1"
-					value="{request>/req_header/doc1}"
+					placeholder="{i18n>req_attachment_format}"
+					value="{reqDialog>/doc1}"
 					required="true"
 					visible="false" />
 
@@ -166,7 +186,8 @@
 			    <unified:FileUploader
 					id="req_attachment_2"
 					change="onImportChange2"
-					value="{request>/req_header/doc2}"
+					placeholder="{i18n>req_attachment_format}"
+					value="{reqDialog>/doc2}"
 					visible="false" />
 
 			    <Label text="{i18n>req_comment}" />
@@ -174,13 +195,13 @@
 					id="req_comment"
 					textAlign="Begin"
 					required="true"
-					value="{request>/req_header/comment}"
+					value="{reqDialog>/comment}"
 					visible="false" />
 
 				<Label text="{i18n>req_project}" />
 				<Select 
 					id="req_project"
-					selectedKey="{request>/req_header/projectcode}" 
+					selectedKey="{reqDialog>/projectcode}" 
 					required="true" 
 					forceSelection="false"
 					visible="false"
@@ -193,6 +214,47 @@
 				</Select>
 								
 			</f:content>
+			<f:dependents>
+				<mdc:ValueHelp
+					id="valuehelp_requestinput_altcc"
+					delegate='\{
+						"name": "claima/utils/ValueHelpDelegate_altcc",
+						"payload": \{
+							"searchKeys": ["COST_CENTER_ID", "COST_CENTER_DESC"],
+							"columns": [
+								"\{i18n>valuehelp_claiminput_altcc_col_id\}",
+								"\{i18n>valuehelp_claiminput_altcc_col_name\}"
+							]
+						\}
+					\}'
+				>
+					<mdc:typeahead>
+						<mdcvh:Popover id="valuehelp_requestinput_altcc_pop">
+							<mdcvhcnt:MTable id="valuehelp_requestinput_altcc_pop_MTable"
+								keyPath="COST_CENTER_ID"
+								descriptionPath="COST_CENTER_DESC"
+								caseSensitive="false"
+								useAsValueHelp="false">
+								<!-- create table via delegate-->
+							</mdcvhcnt:MTable>
+						</mdcvh:Popover>
+					</mdc:typeahead>
+					<mdc:dialog>
+						<mdcvh:Dialog
+							id="valuehelp_requestinput_altcc_dialog"
+							title="{i18n>valuehelp_claiminput_altcc}"
+						>
+							<mdcvhcnt:MTable
+								id="valuehelp_requestinput_altcc_dialog_MTable"
+								keyPath="COST_CENTER_ID"
+								descriptionPath="COST_CENTER_DESC"
+								caseSensitive="false">
+								<!-- create table via delegate-->
+							</mdcvhcnt:MTable>
+						</mdcvh:Dialog>
+					</mdc:dialog>
+				</mdc:ValueHelp>
+			</f:dependents>
         </f:SimpleForm>
 		<HBox id="request_placeholder" alignItems="Center" justifyContent="End" class="sapUiSmallMarginEnd" columnGap="0.5rem">
             <Button id="request_create" press="onClickCreateRequest" 	text="{i18n>req_b_create}" type="Emphasized"/>

@@ -1,13 +1,19 @@
 using {ECLAIM} from '../db/eclaim';
 
 @path: 'EmployeeSrv'
-service eclaim_srv @(requires: 'authenticated-user') {
+service eclaim_srv @(requires: 'authenticated-user'){
     type Response {
         message : String;
     };
 
     @odata.singleton
     entity FeatureControl {
+        operationHidden  : Boolean;
+        operationEnabled : Boolean;
+    };
+
+    @odata.singleton
+    entity BudgetControl {
         operationHidden  : Boolean;
         operationEnabled : Boolean;
     }
@@ -18,6 +24,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         FUND_CENTER     : String;
         MATERIAL_GROUP  : String;
         COMMITMENT_ITEM : String;
+        CLAIM_TYPE_ITEM : String;
         AMOUNT          : Decimal;
         INDICATOR       : String; //CLM and REQ
         ACTION          : String; //SUBMIT, REJECT, APPROVE
@@ -30,6 +37,7 @@ service eclaim_srv @(requires: 'authenticated-user') {
         MATERIAL_GROUP     : String;
         COMMITMENT_ITEM    : String;
         AMOUNT             : Decimal(15, 2);
+        CLAIM_TYPE_ITEM    : String;
         PREV_CONSUMED      : Decimal(15, 2);
         NEW_CONSUMED       : Decimal(15, 2);
         PREV_ACTUAL        : Decimal(15, 2);
@@ -41,20 +49,24 @@ service eclaim_srv @(requires: 'authenticated-user') {
         STATUS             : String;
     }
 
-    action   batchCreateEmployee(employees: many ZEMP_MASTER)          returns Response;
+    action   batchCreateEmployee(employees: many ZEMP_MASTER)              returns Response;
 
-    action   batchCreateDependent(dependents: many ZEMP_DEPENDENT)     returns Response;
+    action   batchCreateDependent(dependents: many ZEMP_DEPENDENT)         returns Response;
 
-    action   batchCreateCostCenter(costcenters: many ZCOST_CENTER)     returns Response;
+    action   batchCreateCostCenter(costcenters: many ZCOST_CENTER)         returns Response;
 
-    action   budgetchecking(budget: many budgetdata)                   returns many BudgetResult;
+    action   budgetchecking(budget: many budgetdata)                       returns many BudgetResult;
 
 
     entity ZREQUEST_TYPE                 as projection on ECLAIM.ZREQUEST_TYPE;
 
     entity ZCLAIM_ITEM                   as projection on ECLAIM.ZCLAIM_ITEM;
 
-    entity ZREQUEST_HEADER               as projection on ECLAIM.ZREQUEST_HEADER;
+    entity ZREQUEST_HEADER               as
+        projection on ECLAIM.ZREQUEST_HEADER {
+            @Core.Computed REQUEST_ID,
+            *
+        };
 
     entity ZEMP_MASTER                   as projection on ECLAIM.ZEMP_MASTER;
 
@@ -77,7 +89,11 @@ service eclaim_srv @(requires: 'authenticated-user') {
                 ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM as Items
         };
 
-    entity ZREQUEST_ITEM                 as projection on ECLAIM.ZREQUEST_ITEM;
+    entity ZREQUEST_ITEM                 as
+        projection on ECLAIM.ZREQUEST_ITEM {
+            @Core.Computed REQUEST_SUB_ID,
+            *
+        };
 
     entity ZREQ_ITEM_PART                as projection on ECLAIM.ZREQ_ITEM_PART;
 
@@ -180,9 +196,14 @@ service eclaim_srv @(requires: 'authenticated-user') {
         userType    : String;
         costcenters : String;
         userId      : String;
+        name        : String;
+        position    : String;
+        origin      : String;
+        grade       : String;
+        department  : String;
     }
 
-    function getUserType()                                             returns UserInfo;
+    function getUserType()                                                 returns UserInfo;
 
     action   sendEmail(ApproverName: String,
                        SubmissionDate: String,
@@ -196,7 +217,9 @@ service eclaim_srv @(requires: 'authenticated-user') {
                        CCEmail: String,
                        EmailTitle: String,
                        EmailBody: String,
-                       NextApproverName: String)                       returns Response;
+                       NextApproverName: String,
+                       RejectReason: String,
+                       ApproverComments: String)                           returns Response;
 
     entity ZINSURANCE_PACKAGE            as projection on ECLAIM.ZINSURANCE_PACKAGE;
 
@@ -242,15 +265,33 @@ service eclaim_srv @(requires: 'authenticated-user') {
 
     entity ZDB_STRUCTURE                 as projection on ECLAIM.ZDB_STRUCTURE;
 
-    function runjob()                                                  returns Response;
+    function runjob()                                                      returns Response;
 
     type PreApproveClaims {
         REQUEST_ID     : String;
         REQUEST_SUB_ID : String;
     }
 
-    action   batchUpdatePreApproved(PreApprove: many PreApproveClaims) returns Response;
+    action   batchUpdatePreApproved(PreApprove: many PreApproveClaims)     returns Response;
+
+    function updateDisbursementStatus()                                    returns array of Response;
 
     entity ZDISBURSEMENT_STATUS          as projection on ECLAIM.ZDISBURSEMENT_STATUS;
 
+    action   batchCreateCourse(course: many ZTRAIN_COURSE_PART)            returns Response;
+
+    action   batchCreateBudget(budget: many ZBUDGET)                       returns Response;
+
+    entity ZROLEHIERARCHY                as projection on ECLAIM.ZROLEHIERARCHY;
+    entity ZCONSTANTS                    as projection on ECLAIM.ZCONSTANTS;
+
+    entity ZCLM_APPR_REQ_STAT            as projection on ECLAIM.ZCLM_APPR_REQ_STAT;
+    action   onFinalApproveInsert(ApproveRequest: many ZCLM_APPR_REQ_STAT) returns Response;
+
+    type DisbursementUpdateInput {
+        REQUEST_ID          : String;
+        DISBURSEMENT_STATUS : String(2);
+    }
+
+    action batchDisbursementUpdate(disbursement: many DisbursementUpdateInput) returns many ZEMP_CA_PAYMENT;
 };

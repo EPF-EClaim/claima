@@ -5,6 +5,9 @@
     xmlns:l="sap.ui.layout"
     xmlns:f="sap.ui.layout.form"
 	xmlns:u="sap.ui.unified"
+    xmlns:mdc="sap.ui.mdc"
+    xmlns:mdcvh="sap.ui.mdc.valuehelp"
+    xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content"
 >
     <Dialog id="dialog_claiminput" title="{i18n>dialog_claiminput}" contentWidth="50em">
 
@@ -108,26 +111,21 @@
 
                     <!-- Alternate Cost Center -->
                     <Label text="{i18n>label_claiminput_altcc}" />
-                    <Select
-                        id="select_claiminput_altcc"
-                        forceSelection="false"
-                        selectedKey="{claimsubmission_input>/claim_header/alternate_cost_center}"
-                        items="{
-                            path: 'employee>/ZCOST_CENTER',
-                            sorter: { path: 'COST_CENTER_ID' }
-                        }"
-                        enabled="true"
-                        editable="true"
+                    <mdc:Field
+                        id="field_claiminput_altcc"
+                        value="{claimsubmission_input>/claim_header/alternate_cost_center}"
+                        additionalValue="{claimsubmission_input>/claim_header/descr/alternate_cost_center}"
+                        editMode="Editable"
+                        display="ValueDescription"
                         visible="true"
-                    >
-                        <core:Item key="{employee>COST_CENTER_ID}" text="{employee>COST_CENTER_ID} {employee>COST_CENTER_DESC}" />
-                    </Select>
+                        valueHelp="valuehelp_claiminput_altcc"
+                    />
                     
                     <!-- Alternate Cost Center (Pre-Approval) -->
                     <Label text="{i18n>label_claiminput_altcc}" />
                     <Input
                         id="input_claiminput_altcc"
-                        value="{claimsubmission_input>/claim_header/alternate_cost_center} {claimsubmission_input>/claim_header/descr/alternate_cost_center}"
+                        value="{claimsubmission_input>/claim_header/alternate_cost_center} ({claimsubmission_input>/claim_header/descr/alternate_cost_center})"
                         enabled="false"
                         editable="false"
                         visible="false"
@@ -159,6 +157,47 @@
                         required="true"
                     />
                 </f:content>
+                <f:dependents>
+                    <mdc:ValueHelp
+                        id="valuehelp_claiminput_altcc"
+                        delegate='\{
+                            "name": "claima/utils/ValueHelpDelegate_altcc",
+                            "payload": \{
+                                "searchKeys": ["COST_CENTER_ID", "COST_CENTER_DESC"],
+                                "columns": [
+                                    "\{i18n>valuehelp_claiminput_altcc_col_id\}",
+                                    "\{i18n>valuehelp_claiminput_altcc_col_name\}"
+                                ]
+                            \}
+                        \}'
+                    >
+                        <mdc:typeahead>
+                            <mdcvh:Popover id="valuehelp_claiminput_altcc_pop">
+                                <mdcvhcnt:MTable id="valuehelp_claiminput_altcc_pop_MTable"
+                                    keyPath="COST_CENTER_ID"
+                                    descriptionPath="COST_CENTER_DESC"
+                                    caseSensitive="false"
+                                    useAsValueHelp="false">
+                                    <!-- create table via delegate-->
+                                </mdcvhcnt:MTable>
+                            </mdcvh:Popover>
+                        </mdc:typeahead>
+                        <mdc:dialog>
+                            <mdcvh:Dialog
+                                id="valuehelp_claiminput_altcc_dialog"
+                                title="{i18n>valuehelp_claiminput_altcc}"
+                            >
+                                <mdcvhcnt:MTable
+                                    id="valuehelp_claiminput_altcc_dialog_MTable"
+                                    keyPath="COST_CENTER_ID"
+                                    descriptionPath="COST_CENTER_DESC"
+                                    caseSensitive="false">
+                                    <!-- create table via delegate-->
+                                </mdcvhcnt:MTable>
+                            </mdcvh:Dialog>
+                        </mdc:dialog>
+                    </mdc:ValueHelp>
+                </f:dependents>
             </f:SimpleForm>
      
 		<buttons>

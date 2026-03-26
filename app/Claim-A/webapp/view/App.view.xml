@@ -18,13 +18,23 @@
     <tnt:ToolPage id="toolPage">
         <tnt:header>
             <f:ShellBar
+            id="shellbar"
                 showMenuButton="true"
-                homeIcon="./images/EPF Logo Registered@2x.png"
-                menuButtonPressed="onMenuButtonPress"
-            />
+                homeIcon="{imageModel>/homeIcon}"
+                homeIconPressed="onHomeIconPressed"
+                menuButtonPressed="onMenuButtonPress">
+                <f:profile>
+        <Avatar
+            id="userAvatar"
+            initials="{session>/initials}"
+            press="onAvatarPress"
+            displaySize="XS"
+        />
+    </f:profile></f:ShellBar>
         </tnt:header>
         <tnt:sideContent>
             <tnt:SideNavigation
+                id="sideNavigation"
                 expanded="true"
                 itemPress=".onNavItemPress"
                 selectedKey="dashboard"
@@ -115,92 +125,8 @@
                     <NavContainer
                         id="navcontainer_claimsubmission"
                     >
-                        <mvc:XMLView
-                            id="view_claimsubmission"
-                            viewName="claima.view.ClaimSubmission"
-                        />
                     </NavContainer>
 
-                    <Page
-                        id="expensereport"
-                        showHeader="false"
-                        enableScrolling="true"
-                        
-                    >
-                        <content>
-                            <VBox id="main" class="fullheight" fitContainer="true" >
-                                <core:Fragment
-                                    fragmentName="claima.fragment.report"
-                                    type="XML"
-                                />
-                                <VBox
-                                    id="expensetypescr"
-                                    visible="true"
-                                    class="fullheight"
-                                >
-                                    <core:Fragment
-                                        fragmentName="claima.fragment.expensetype"
-                                        type="XML"
-                                    />
-                                </VBox>
-                                <VBox
-                                    id="claimscr"
-                                    visible="false"
-                                    class="fullheight"
-                                >
-                                    <core:Fragment
-                                        fragmentName="claima.fragment.claimdetails"
-                                        type="XML"
-                                    />
-                                </VBox>
-                            </VBox>
-                        </content>
-                        <footer>
-                            <Toolbar>
-                                <ToolbarSpacer />
-                                <Button
-                                    id="cancelbtn"
-                                    text="Cancel"
-                                    press="onPressCancel"
-                                    enabled="true"
-                                    visible="false"
-                                />
-                                <Button
-                                    id="savebtn"
-                                    text="Save"
-                                    press="onPressSave"
-                                    enabled="true"
-                                    visible="false"
-                                />
-                                <Button
-                                    id="backbtn"
-                                    text="Back"
-                                    press="onPressBack"
-                                    enabled="true"
-                                />
-                                <Button
-                                    id="draft"
-                                    text="Save Draft"
-                                    press="onPressSaveDraft"
-                                    enabled="true"
-                                />
-
-                                <Button
-                                    id="delete"
-                                    text="Delete Report"
-                                    press="onPress"
-                                    enabled="false"
-                                />
-
-                                <Button
-                                    id="submit"
-                                    text="Submit Report"
-                                    press="onPress"
-                                    enabled="false"
-                                />
-                            </Toolbar>
-                        </footer>
-                    </Page>
                     <ScrollContainer
                         id="config"
                         horizontal="false"
@@ -208,33 +134,6 @@
                         height="100%"
                         class="sapUiContentPadding"
                     />
-                    <!-- ================= Configuration Page ================= -->
-<!--                     <Page
-                        id="configurationPage"
-                        showHeader="false"
-                    >
-                        <content>
-                            <mvc:XMLView
-                                id="configuration_view"
-                                viewName="claima.view.Configuration"
-                            />
-                        </content>
-                    </Page> -->
-                    <!-- ================= Analytics Page ================= -->
-<!-- 
-                    <Page
-                        id="analyticsPage"
-                        showHeader="false"
-                    >
-                        <content>
-                            <mvc:XMLView
-                                id="analytics_view"
-                                viewName="claima.view.Analytics"
-                            />
-                        </content>
-                    </Page> -->
-
-                     
                     <NavContainer
                         id="new_request"
                         class="sapUiContentPadding"

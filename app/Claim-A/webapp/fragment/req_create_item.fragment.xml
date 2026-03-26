@@ -6,7 +6,9 @@
     xmlns:f="sap.f"
     xmlns:unified="sap.ui.unified"
     xmlns:table="sap.ui.table"
-    xmlns:mdc="sap.ui.mdc" >
+    xmlns:mdc="sap.ui.mdc"
+    xmlns:mdcvh="sap.ui.mdc.valuehelp"
+    xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content" >
     <VBox
         id="request_create_item_fragment" 
         backgroundDesign="Solid"
@@ -14,7 +16,7 @@
         rowGap="1rem">
         <VBox width="100%" height="100%" rowGap="1rem">
             <OverflowToolbar height="3rem">
-                <Title text="{i18n>req_form_detail_title}" titleStyle="H4" />
+                <Title text="{i18n>req_form_detail_title}"/>
                 <ToolbarSpacer />
                 <MenuButton text="{i18n>req_b_save_request}" 
                     buttonMode="Split" 
@@ -79,7 +81,7 @@
                                             id="i_no_of_days_1" >
                                     <form:fields>
                                         <Text 
-                                            text="{request>/req_header/no_of_days}" />
+                                            text="{request>/req_item/no_of_days}" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -136,7 +138,8 @@
                                         <m:TextArea 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/remark}"/>
+                                            value="{request>/req_item/remark}"
+                                            width="100%"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -192,8 +195,15 @@
                                     <form:fields>
                                         <unified:FileUploader
                                             change=".onImportChange1"
+                                            placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc1}"
                                             id="i_attachment_1_file" />
+                                        <Link
+                                            id="i_attachment1_link" 
+                                            press="onDocLinkPress" 
+                                            text="{request>/req_item/doc1}"
+                                            class="sapUiTinyMarginTop"
+                                            visible="{= ${request>/req_item/doc1} !== null }" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -226,8 +236,15 @@
                                     <form:fields>
                                         <unified:FileUploader
                                             change=".onImportChange2"
+                                            placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc2}"
                                             id="i_attachment_2_file" />
+                                        <Link
+                                            id="i_attachment2_link" 
+                                            press="onDocLinkPress" 
+                                            text="{request>/req_item/doc2}"
+                                            class="sapUiTinyMarginTop"
+                                            visible="{= ${request>/req_item/doc2} !== null }" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -237,7 +254,7 @@
                                             id="i_no_of_days_2"  >
                                     <form:fields>
                                         <Text 
-                                            text="{request>/req_header/no_of_days}" />
+                                            text="{request>/req_item/no_of_days}" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -272,24 +289,26 @@
                                 </form:FormElement>
 
                                 <!-- Start Time -->
-                                <form:FormElement label="{i18n>req_i_start_date}"
+                                <form:FormElement label="{i18n>req_i_start_time}"
                                             visible="false"
                                             id="i_start_time" >
                                     <form:fields>
                                         <m:TimePicker
                                             value="{request>/req_item/start_time}"
+                                            maskMode='On'
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- End Time -->
-                                <form:FormElement label="{i18n>req_i_end_date}"
+                                <form:FormElement label="{i18n>req_i_end_time}"
                                             visible="false"
                                             id="i_end_time" >
                                     <form:fields>
                                         <m:TimePicker
                                             value="{request>/req_item/end_time}"
+                                            maskMode='On'
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
@@ -349,11 +368,11 @@
                                             required="true" 
                                             forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
-                                            items="{path: 'request>/claim_type_items',
-                                                    sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}">
+                                            items="{path: 'employee>/ZCOUNTRY',
+                                                    sorter: { path: 'COUNTRY_ID', descending: false }}">
                                             <items>
-                                                <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
-                                                        text="{request>CLAIM_TYPE_ITEM_DESC}" />
+                                                <core:Item key="{employee>COUNTRY_ID}" 
+                                                        text="{employee>COUNTRY_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
@@ -428,13 +447,58 @@
                                     </form:fields>
                                 </form:FormElement>
 
+                                <!-- Fare Type -->
+                                <form:FormElement label="{i18n>req_i_vehicle_type}"
+                                            visible="false"
+                                            id="i_fare_type" >
+                                    <form:fields>
+                                        <Select 
+                                            selectedKey="{request>/req_item/fare_type}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZFARE_TYPE',
+                                                    sorter: { path: 'FARE_TYPE_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                            <items>
+                                                <core:Item key="{employee>FARE_TYPE_ID}" 
+                                                        text="{employee>FARE_TYPE_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Vehicle Class -->
+                                <form:FormElement label="{i18n>req_i_vehicle_type}"
+                                            visible="false"
+                                            id="i_vehicle_class" >
+                                    <form:fields>
+                                        <Select 
+                                            selectedKey="{request>/req_item/vehicle_class}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZVEHICLE_CLASS',
+                                                    sorter: { path: 'VEHICLE_CLASS_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                            <items>
+                                                <core:Item key="{employee>VEHICLE_CLASS_ID}" 
+                                                        text="{employee>VEHICLE_CLASS_DESC}" />
+                                            </items>
+                                        </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
                                 <!-- Kilometer (NOT USED FOR NOW)-->
                                 <form:FormElement label="{i18n>req_i_kilometer}"
                                             visible="false"
                                             id="i_kilometer" >
                                     <form:fields>
-                                        <Text 
-                                            text="{request>/req_header/kilometer}" />
+                                        <Input 
+                                            value="{request>/req_header/kilometer}"
+                                            type="Number" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -510,8 +574,20 @@
                                             visible="false"
                                             id="i_from_state" >
                                     <form:fields>
-                                        <Text 
-                                            text="{request>/req_item/from_state}" />
+                                        <Select 
+                                            selectedKey="{request>/req_item/from_state}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZSTATE',
+                                                    sorter: { path: 'STATE_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                            <items>
+                                                <core:Item key="{employee>STATE_ID}" 
+                                                        text="{employee>STATE_DESC}" />
+                                            </items>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -544,8 +620,20 @@
                                             visible="false"
                                             id="i_to_state" >
                                     <form:fields>
-                                        <Text 
-                                            text="{request>/req_item/to_state}" />
+                                        <Select 
+                                            selectedKey="{request>/req_item/to_state}" 
+                                            required="true" 
+                                            forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZSTATE',
+                                                    sorter: { path: 'STATE_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                            <items>
+                                                <core:Item key="{employee>STATE_ID}" 
+                                                        text="{employee>STATE_DESC}" />
+                                            </items>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -616,7 +704,7 @@
                                             id="i_no_of_days_3" >
                                     <form:fields>
                                         <Text 
-                                            text="{request>/req_header/no_of_days}" />
+                                            text="{request>/req_item/no_of_days}" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -681,11 +769,10 @@
                                             visible="false"
                                             id="i_departure_time">
                                     <form:fields>
-                                        <m:TimePicker
-                                            displayFormat="dd MMM yyyy"
-                                            valueFormat="yyyy-MM-dd"
-                                            placeholder="eg: 01 Jan 1990"
+                                        <m:DateTimePicker
                                             value="{request>/req_item/departure_time}"
+                                            displayFormat="dd MMM yyyy HH:mm"
+                                            valueFormat="dd MMM yyyy HH:mm"
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
@@ -696,11 +783,10 @@
                                             visible="false"
                                             id="i_arrival_time">
                                     <form:fields>
-                                        <m:TimePicker
-                                            displayFormat="dd MMM yyyy"
-                                            valueFormat="yyyy-MM-dd"
-                                            placeholder="eg: 01 Jan 1990"
+                                        <m:DateTimePicker
                                             value="{request>/req_item/arrival_time}"
+                                            displayFormat="dd MMM yyyy HH:mm"
+                                            valueFormat="dd MMM yyyy HH:mm"
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
@@ -724,14 +810,11 @@
                                             visible="false"
                                             id="i_cash_adv" >
                                     <form:fields>
-                                        <m:Select 
-                                            selectedKey="{request>/req_item/cash_advance}" 
-                                            enabled="{= ${request>/view} !== 'view' }">
-                                            <items>
-                                                <core:Item key="no_cashadv" text="No"/>
-                                                <core:Item key="yes_cashadv" text="Yes"/>
-                                            </items>
-                                        </m:Select>
+                                        <Switch state="{request>/req_item/cash_advance}" customTextOn="Yes" customTextOff="No">
+                                            <layoutData>
+                                                <FlexItemData growFactor="1" />
+                                            </layoutData>
+                                        </Switch>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -739,14 +822,13 @@
                         </form:FormContainer>
                     </form:formContainers>
                 </form:Form>
-                
                 <VBox rowGap="0.5rem">
                     <OverflowToolbar height="3rem">
-                        <Title text="{i18n>req_participant}" titleStyle="H4" />
+                        <Title text="{i18n>req_participant}"/>
                         <ToolbarSpacer />
                         <Button text="{i18n>req_b_download_template}" press=".onExport"></Button>
                         <unified:FileUploader
-                            id="participant_list_upload"
+                            id="ipb_upload_participant"
                             icon="sap-icon://upload"
                             buttonOnly="true"
                             buttonText="{i18n>req_b_upload_list}"
@@ -755,7 +837,7 @@
                             style="Emphasized"
                             maximumFileSize="5.0"
                             enabled="{= ${request>/view} !== 'view' }"/>
-                        <Button icon="sap-icon://delete" text="{i18n>req_b_delete}" press=".onRowDeleteParticipant" enabled="{= ${request>/view} !== 'view' }"/>
+                        <Button id="ipb_delete_participant" icon="sap-icon://delete" text="{i18n>req_b_delete}" press=".onRowDeleteParticipant" enabled="{= ${request>/view} !== 'view' }"/>
                     </OverflowToolbar>
                     <table:Table 
                         id="req_participant_table"
@@ -767,30 +849,13 @@
                         <table:Column width="10rem" >
                             <Label text="{i18n>req_p_id}"></Label>
                             <table:template>
-                                <Input 
+                                <mdc:Field
+                                    id="ip_participant_id"
                                     value="{request>PARTICIPANTS_ID}" 
-                                    showSuggestion="true"
-                                    suggestionRows="{/ZEMP_MASTER}"
-                                    suggestionItemSelected=".onParticipantInputChange"
-                                    change=".onUploadParticipants"
-                                    showValueHelp="true"
-                                    valueHelpRequest=".onValueHelpRequest"
-                                    enabled="{= ${request>/req_header/grptype} === 'GRP' || ${request>/view} !== 'view'}">
-                                    <suggestionColumns>
-                                        <Column><Label text="EEID"/></Column>
-                                        <Column><Label text="Name"/></Column>
-                                        <Column><Label text="Cost Center"/></Column>
-                                    </suggestionColumns>
-                                    <suggestionRows>
-                                        <ColumnListItem>
-                                            <cells>
-                                                <Label text="{EEID}"/>
-                                                <Label text="{NAME}"/>
-                                                <Label text="{CC}"/>
-                                            </cells>
-                                        </ColumnListItem>
-                                    </suggestionRows>
-                                </Input>
+                                    editMode="{= ${request>_EDIT_MODE} === 'Display' ? 'Display' : 'Editable' }"
+                                    valueHelp="valuehelp_requestinput_emp"
+                                    change=".onParticipantInputChange"
+                                />
                             </table:template>
                         </table:Column>
                         <table:Column width="25rem">
@@ -820,6 +885,7 @@
                             <table:RowAction>
                                 <table:items>
                                     <table:RowActionItem 
+                                        id="idp_delete_row_participant"
                                         type="Delete" 
                                         press="onRowDeleteParticipant" 
                                         visible="{= ${request>/view} !== 'view' }" />
@@ -827,6 +893,47 @@
                             </table:RowAction>
                         </table:rowActionTemplate>
                     </table:Table>
+                    <dependents>
+                        <mdc:ValueHelp
+                            id="valuehelp_requestinput_emp"
+                            delegate="{
+                                name: 'claima/utils/ValueHelpDelegate_emp',
+                                payload: {
+                                    searchKeys: ['EEID', 'NAME', 'CC'],
+                                    columns: [
+                                        '{i18n>valuehelp_claiminput_altcc_col_id}',
+                                        '{i18n>valuehelp_claiminput_altcc_col_name}',
+                                        'Cost Center'
+                                    ],
+                                    openOnClick: true
+                                }
+                            }"
+                        >
+                            <mdc:typeahead>
+                                <mdcvh:Popover id="valuehelp_requestinput_emp_pop" title="Select Employee">
+                                    <mdcvhcnt:MTable id="valuehelp_requestinput_emp_pop_MTable"
+                                        keyPath="EEID"
+                                        descriptionPath="NAME" 
+                                        caseSensitive="false"
+                                        useAsValueHelp="true"> </mdcvhcnt:MTable>
+                                </mdcvh:Popover>
+                            </mdc:typeahead>
+                            
+                            <mdc:dialog>
+                                <mdcvh:Dialog
+                                    id="valuehelp_requestinput_emp_dialog"
+                                    title="{i18n>req_vh_participant}"
+                                >
+                                    <mdcvhcnt:MTable
+                                        id="valuehelp_requestinput_emp_dialog_MTable"
+                                        keyPath="EEID"
+                                        descriptionPath="NAME"
+                                        caseSensitive="false">
+                                    </mdcvhcnt:MTable>
+                                </mdcvh:Dialog>
+                            </mdc:dialog>
+                        </mdc:ValueHelp>
+                    </dependents>
                 </VBox>
             </VBox>
         </VBox>
