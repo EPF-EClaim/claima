@@ -2114,7 +2114,8 @@ sap.ui.define([
 						id,
 						userID,
 						comment,
-						oModel2
+						oModel2,
+						this
 					);
 
 					// 2. Send emails (1 or 2 depending on next approver / sub approver)
