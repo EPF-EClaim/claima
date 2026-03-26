@@ -396,7 +396,7 @@ sap.ui.define([
 			// set new claim submission model;
 			var oInputModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 			//// set employee data
-			var oUserModelData = this.getView().getModel('user')?.getData() || this._oSessionModel?.getData() || null;
+			var oUserModelData = this._oSessionModel?.getData() || null;
 			if (!oUserModelData) {
 				MessageToast.show(Utility.getText("msg_claimprocess_nouser"));
 				if (this.oDialog_ClaimProcess) {
