@@ -272,8 +272,6 @@ service eclaim_srv @(requires: 'authenticated-user'){
 
     entity ZDB_STRUCTURE                 as projection on ECLAIM.ZDB_STRUCTURE;
 
-    function runjob()                                                      returns Response;
-
     type PreApproveClaims {
         REQUEST_ID     : String;
         REQUEST_SUB_ID : String;
@@ -301,4 +299,51 @@ service eclaim_srv @(requires: 'authenticated-user'){
     }
 
     action batchDisbursementUpdate(disbursement: many DisbursementUpdateInput) returns many ZEMP_CA_PAYMENT;
+
+    type ApproverDetails{
+        ID         : String;
+        LEVEL                  : Integer;
+        APPROVER_ID            : String;
+        SUBSTITUTE_APPROVER_ID : String;
+        STATUS                 : String;
+        REJECT_REASON_ID       : String(3);
+        PROCESS_TIMESTAMP      : String;
+        COMMENT                : String;
+    }
+
+    action UpdateApproverDetails(aPayloadToCreateApproverDetailsTable: many ApproverDetails) returns Response;
+
+    // entity ClaimsWorkflowApproval as projection on ZCLAIM_HEADER{
+    //     key CLAIM_ID as ClaimID,
+    //     EMP_ID as ClaimantID,
+    //     COST_CENTER,
+    //     ALTERNATE_COST_CENTER,
+    //     SUBMISSION_TYPE,
+    //     SUBMITTED_DATE,
+    //     CASH_ADVANCE_AMOUNT,
+    //     TOTAL_CLAIM_AMOUNT,
+    //     PREAPPROVED_AMOUNT,
+
+    //     ZCLAIM_ITEM.CLAIM_SUB_ID,
+    //     ZCLAIM_ITEM.AMOUNT,
+    //     ZCLAIM_ITEM.RECEIPT_DATE,
+    //     ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
+
+    //     ZCLAIM_ITEM.ZCLAIM_TYPE_ITEM.RISK,
+
+    //     ZEMP_MASTER.NAME,
+    //     ZEMP_MASTER.EMAIL,
+    //     ZEMP_MASTER.DEP,
+    //     ZEMP_MASTER.ROLE,
+    //     ZEMP_MASTER.CC,
+    //     ZEMP_MASTER.DIRECT_SUPPERIOR,
+    //     RANK: Association to ZROLEHIERARCHY 
+    //                     on RANK.ROLE = ROLE,
+
+    //     ZSUBMISSION_TYPE.SUBMISSION_TYPE_ID,
+    //     ZSUBMISSION_TYPE.SUBMISSION_TYPE_DESC,
+    // };
+
+
+    // action WorkflowApproval(ClaimID: String) returns Response;
 };
