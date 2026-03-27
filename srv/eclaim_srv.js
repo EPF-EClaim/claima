@@ -654,6 +654,12 @@ module.exports = (srv) => {
         }
     });
 
+    /**
+	 * Deletes and re-inserts Approver details based on Claim or Request ID
+	 * @public
+     * @param {Array} aPayloadToCreateApproverDetailsTable - Array of Approver Details;
+     * @returns {String} If Success, Results of Deletion and Insert Calls. If fail, Returns error message
+	 */
     srv.on('UpdateApproverDetails', async (req) => {
         try {
             const { aPayloadToCreateApproverDetailsTable } = req.data;
@@ -663,11 +669,13 @@ module.exports = (srv) => {
             }
             const tx = cds.tx(req);
             const sIDType = aPayloadToCreateApproverDetailsTable[0].ID.substring(0, 3);
-            var sResult = "";
+            var sDelete = "";
+            var sInsert = "";
+            var aApproverDetails = "";
 
             if (sIDType == Constant.WorkflowType.REQUEST) {
 
-                const aPreApprovalDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
+                aApproverDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
                     PREAPPROVAL_ID: item.ID,
                     LEVEL: item.LEVEL,
                     APPROVER_ID: item.APPROVER_ID,
@@ -678,11 +686,12 @@ module.exports = (srv) => {
                     COMMENT: item.COMMENT
                 }));
 
-                sResult = await UpdatePreApprovalApprover(aPreApprovalDetails, tx);
+                sTableName = Constant.ApproverDetailsTable.REQUEST;
+                sKeyName = Constant.ApproverDetailsTable.PREAPPROVAL_ID;
             }
             else if (sIDType == Constant.WorkflowType.CLAIM) {
 
-                const aClaimsDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
+                aApproverDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
                     CLAIM_ID: item.ID,
                     LEVEL: item.LEVEL,
                     APPROVER_ID: item.APPROVER_ID,
@@ -693,40 +702,86 @@ module.exports = (srv) => {
                     COMMENT: item.COMMENT
                 }));
 
-                sResult = await UpdateClaimsApprover(aClaimsDetails, tx);
+                sTableName = Constant.ApproverDetailsTable.CLAIM;
+                sKeyName = Constant.ApproverDetailsTable.CLAIM_ID;
             }
 
-            return { success: true, sResult };
+            sDelete = await DeleteApproverDetails(sTableName, sKeyName, aPayloadToCreateApproverDetailsTable[0].ID, tx);
+            sInsert = await InsertRecords(sTableName, aApproverDetails, tx);
+
+            return { success: true, sDelete, sInsert };
         } catch (error) {
             req.error(400, `Fail creating record: ${error.message}`, req);
         }
     });
 
-    async function UpdatePreApprovalApprover(aPreApprovalApprover, tx) {
-
-        await tx.run(
-            DELETE.from('ZAPPROVER_DETAILS_PREAPPROVAL').where({ PREAPPROVAL_ID: aPreApprovalApprover[0].PREAPPROVAL_ID })
-        )
+    /**
+	 * Deletes Approver Details based on Table name and Claim ID / Preapproval ID field
+	 * @public
+	 * @param {String} sTableName - Table name to delete records from;
+     * @param {String} sKeyName - Claim ID field name;
+     * @param {String} sClaimID - Claim ID / Preapproval ID;
+     * @param {Array} tx - CDS call;
+     * @returns {String} sResult - Result of deletion of records
+	 */
+    async function DeleteApproverDetails(sTableName, sKeyName, sClaimID, tx) {
 
         sResult = await tx.run(
-            INSERT(aPreApprovalApprover).into('ZAPPROVER_DETAILS_PREAPPROVAL')
+            DELETE.from(sTableName).where({ [sKeyName]: sClaimID })
         )
-        await tx.commit();
         return sResult;
     };
 
-    async function UpdateClaimsApprover(aClaimsApprover, tx) {
-
-        await tx.run(
-            DELETE.from('ZAPPROVER_DETAILS_CLAIMS').where({ CLAIM_ID: aClaimsApprover[0].CLAIM_ID })
-        )
-
+    /**
+	 * Inserts Records into table
+	 * @public
+	 * @param {String} sTableName - Table name for records to be inserted;
+     * @param {Array} aRecordDetails - Array of records to be inserted;
+     * @param {Array} tx - CDS call;
+     * @returns {String} sResult - Result of Insertion of records
+	 */
+    async function InsertRecords(sTableName, aRecordDetails, tx) {
         sResult = await tx.run(
-            INSERT(aClaimsApprover).into('ZAPPROVER_DETAILS_CLAIMS')
+            INSERT(aRecordDetails).into(sTableName)
         )
-        await tx.commit();
         return sResult;
     };
+
+     /**
+	 * Delete Approver Detail Records From table
+	 * @public
+	 * @param {String} req - Claim ID to be deleted;
+     * @returns {String} sResult - Result of Deletion of records
+	 */
+    srv.on('DeleteApproverDetails', async (req) => {
+        try {
+            const { ID } = req.data;
+            console.log(ID);
+            if (!ID) {
+                throw new Error('No Data Sent')
+            }
+            const tx = cds.tx(req);
+            const sIDType = ID.substring(0, 3);
+            var sDelete = "";
+
+            if (sIDType == Constant.WorkflowType.REQUEST) {
+
+                sTableName = Constant.ApproverDetailsTable.REQUEST;
+                sKeyName = Constant.ApproverDetailsTable.PREAPPROVAL_ID;
+            }
+            else if (sIDType == Constant.WorkflowType.CLAIM) {
+
+                sTableName = Constant.ApproverDetailsTable.CLAIM;
+                sKeyName = Constant.ApproverDetailsTable.CLAIM_ID;
+            }
+
+            sDelete = await DeleteApproverDetails(sTableName, sKeyName, ID, tx);
+
+            return { success: true, sDelete };
+        } catch (error) {
+            req.error(400, `Fail creating record: ${error.message}`, req);
+        }
+    });
 
     // srv.on('WorkflowApproval', async (req) => {
     //     // const {ClaimsWorkflowApproval} = srv.entities;

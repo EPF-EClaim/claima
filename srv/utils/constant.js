@@ -51,6 +51,13 @@ const Constant = {
             "REQUEST": "REQ"
         },
 
+    ApproverDetailsTable: {
+        "CLAIM": "ZAPPROVER_DETAILS_CLAIMS",
+        "REQUEST": "ZAPPROVER_DETAILS_PREAPPROVAL",
+        "CLAIM_ID": "CLAIM_ID",
+        "PREAPPROVAL_ID": "PREAPPROVAL_ID"
+    }
+
 };
 
 module.exports = { Constant };
