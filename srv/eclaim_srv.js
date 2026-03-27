@@ -66,7 +66,7 @@ module.exports = (srv) => {
                 req.user?.attr?.login_name ||
                 req.user?.id ||
                 "";
-
+            const user = req.user;
             let sOrigin = null;
 
             try {
@@ -95,7 +95,8 @@ module.exports = (srv) => {
                     position: "UNKNOWN",
                     origin: sOrigin,
                     grade: "UNKNOWN",
-                    department: "UNKNOWN"
+                    department: "UNKNOWN",
+                    user: user
                 };
             }
 
@@ -113,21 +114,26 @@ module.exports = (srv) => {
                 position: result?.POSITION_NAME || "UNKNOWN",
                 origin: sOrigin,
                 grade: result?.GRADE || "UNKNOWN",
-                department: dept?.DEPARTMENT_DESC || "UNKNOWN"
+                department: dept?.DEPARTMENT_DESC || "UNKNOWN", 
+                user: user
             };
         });
 
     srv.on('READ', 'FeatureControl', async (req) => {
         const { ZEMP_MASTER } = srv.entities;
+        const userRoles = req.user.roles;
+
         const emailFromToken = req.user?.attr?.email || req.user?.id || "";
         const email = String(emailFromToken).trim().toLowerCase();
         const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
         const user_type = result?.USER_TYPE;
 
         let operationHidden = true;
-        if (user_type === Constant.UserType.JKEW_ADMIN) {
+        // if (user_type === Constant.UserType.JKEW_ADMIN) {
+        if(req.user.is(Constant.Admin.Admin_System)) {
             operationHidden = true;
-        } else if (user_type === Constant.UserType.DTD_ADMIN || user_type === Constant.UserType.SUPER_ADMIN) {
+        // } else if (user_type === Constant.UserType.DTD_ADMIN || user_type === Constant.UserType.SUPER_ADMIN) {
+        } else if (req.user.is(Constant.Admin.DTD_Admin)) {
             operationHidden = false;
         }
 
@@ -139,12 +145,18 @@ module.exports = (srv) => {
 
     srv.on('READ', 'BudgetControl', async (req) => {
         const { ZEMP_MASTER } = srv.entities;
+        const userRoles = req.user.roles;
+        
         const emailFromToken = req.user?.attr?.email || req.user?.id || "";
         const email = String(emailFromToken).trim().toLowerCase();
         const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
         const user_type = result?.USER_TYPE;
 
-        let operationHidden = (user_type === Constant.UserType.GA_ADMIN);
+        let operationHidden = false;
+        
+        if(req.user.is(Constant.Admin.Admin_CC)){
+            operationHidden = true;
+        }
         return {
             operationHidden: operationHidden,
             operationEnabled: !operationHidden,
