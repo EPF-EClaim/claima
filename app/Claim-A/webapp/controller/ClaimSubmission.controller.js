@@ -3829,8 +3829,8 @@ sap.ui.define([
 				if (this.byId("select_claimdetails_input_claimitem").getEditable()) {
 					this.byId("select_claimdetails_input_claimitem").setEditable(false);
 				}
-				aScreenArray.forEach(id => {
-					const oControl = this._resolveControl(id, "claimsubmission_claimdetails_input");
+				aScreenArray.forEach(sId => {
+					const oControl = this._resolveControl(sId, "claimsubmission_claimdetails_input");
 					if (oControl && typeof oControl.setEditable === "function") {
 						oControl.setEditable(false);
 					} else if (oControl.getMetadata().getName().includes("FileUploader")) {
@@ -3843,7 +3843,7 @@ sap.ui.define([
 							oOpenAttachment.setVisible(true);
 						}
 					} else {
-						console.warn("Control not found or not editable-capable:", id);
+						console.warn("Control not found or not editable-capable:", sId);
 					}
 				});
 			}
