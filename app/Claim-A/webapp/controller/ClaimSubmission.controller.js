@@ -3125,8 +3125,17 @@ sap.ui.define([
 							var oMsg = Utility.getText("msg_claimsubmission_changed");
 							break;
 						case 'Delete Report':
-							oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.CANCELLED);
+							oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.CANCELLED);							 
 							oMsg = Utility.getText("msg_claimsubmission_deleted");
+							// Placeholder to put delete function for ZAPPROVER_DETAILS_CLAIMS
+							//Call CAP action 
+							const oAction = oModel.bindContext("/DeleteApproverDetails(...)");
+							oAction.setParameter("ID", oInputModel.getProperty("/claim_header/claim_id"));
+							try {
+								await oAction.execute();
+							} catch (oError) {
+								MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]))
+							}    
 							break;
 						case 'Submit Report':
 							// budget checking
