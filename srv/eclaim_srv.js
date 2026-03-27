@@ -642,6 +642,12 @@ module.exports = (srv) => {
         }
     });
 
+    /**
+	 * Deletes and re-inserts Approver details based on Claim or Request ID
+	 * @public
+     * @param {Array} aPayloadToCreateApproverDetailsTable - Array of Approver Details;
+     * @returns {String} If Success, Results of Deletion and Insert Calls. If fail, Returns error message
+	 */
     srv.on('UpdateApproverDetails', async (req) => {
         try {
             const { aPayloadToCreateApproverDetailsTable } = req.data;
@@ -689,7 +695,7 @@ module.exports = (srv) => {
             }
 
             sDelete = await DeleteApproverDetails(sTableName, sKeyName, aPayloadToCreateApproverDetailsTable[0].ID, tx);
-            sInsert = await InsertApproverDetails(sTableName, aApproverDetails, tx);
+            sInsert = await InsertRecords(sTableName, aApproverDetails, tx);
 
             return { success: true, sDelete, sInsert };
         } catch (error) {
@@ -697,6 +703,15 @@ module.exports = (srv) => {
         }
     });
 
+    /**
+	 * Deletes Approver Details based on Table name and Claim ID / Preapproval ID field
+	 * @public
+	 * @param {String} sTableName - Table name to delete records from;
+     * @param {String} sKeyName - Claim ID field name;
+     * @param {String} sClaimID - Claim ID / Preapproval ID;
+     * @param {Array} tx - CDS call;
+     * @returns {String} sResult - Result of deletion of records
+	 */
     async function DeleteApproverDetails(sTableName, sKeyName, sClaimID, tx) {
 
         sResult = await tx.run(
@@ -705,38 +720,20 @@ module.exports = (srv) => {
         return sResult;
     };
 
-    async function InsertApproverDetails(sTableName, aApproverDetails, tx) {
+    /**
+	 * Inserts Records into table
+	 * @public
+	 * @param {String} sTableName - Table name for records to be inserted;
+     * @param {Array} aRecordDetails - Array of records to be inserted;
+     * @param {Array} tx - CDS call;
+     * @returns {String} sResult - Result of Insertion of records
+	 */
+    async function InsertRecords(sTableName, aRecordDetails, tx) {
         sResult = await tx.run(
-            INSERT(aApproverDetails).into(sTableName)
+            INSERT(aRecordDetails).into(sTableName)
         )
         return sResult;
     };
-
-    // async function UpdatePreApprovalApprover(aPreApprovalApprover, tx) {
-
-    //     await tx.run(
-    //         DELETE.from(Constant.ApproverDetailsTable.REQUEST).where({ PREAPPROVAL_ID: aPreApprovalApprover[0].PREAPPROVAL_ID })
-    //     )
-
-    //     sResult = await tx.run(
-    //         INSERT(aPreApprovalApprover).into(Constant.ApproverDetailsTable.REQUEST)
-    //     )
-    //     await tx.commit();
-    //     return sResult;
-    // };
-
-    // async function UpdateClaimsApprover(aClaimsApprover, tx) {
-
-    //     await tx.run(
-    //         DELETE.from(Constant.ApproverDetailsTable.CLAIM).where({ CLAIM_ID: aClaimsApprover[0].CLAIM_ID })
-    //     )
-
-    //     sResult = await tx.run(
-    //         INSERT(aClaimsApprover).into(Constant.ApproverDetailsTable.REQUEST)
-    //     )
-    //     await tx.commit();
-    //     return sResult;
-    // };
 
     // srv.on('WorkflowApproval', async (req) => {
     //     // const {ClaimsWorkflowApproval} = srv.entities;
