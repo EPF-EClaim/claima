@@ -732,6 +732,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_HEADER.PURPOSE,
                 ZCLAIM_HEADER.SUBMITTED_DATE,
                 ZCLAIM_HEADER.FINAL_AMOUNT_TO_RECEIVE,
+                ZCLAIM_HEADER.TOTAL_CLAIM_AMOUNT,
                 ZCLAIM_HEADER.PREAPPROVED_AMOUNT,
                 REJECT_REASON_ID,
                 ZREJECT_REASON.REASON_DESC,
