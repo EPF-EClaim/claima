@@ -109,24 +109,24 @@
 #     "ClaimID": "CLM26000000001"
 #    }
 
-POST    http://localhost:4004/odata/v4/EmployeeSrv/UpdateApproverDetails
-Content-Type: application/json
-Authorization: Basic alice
+# POST    http://localhost:4004/odata/v4/EmployeeSrv/UpdateApproverDetails
+# Content-Type: application/json
+# Authorization: Basic alice
  
-   {
-    "aPayloadToCreateApproverDetailsTable": [
-     {
-        "ID"         : "CLM26000000140",
-        "LEVEL"                  : "1",
-        "APPROVER_ID"            : "903783",
-        "SUBSTITUTE_APPROVER_ID" : "902733",
-        "STATUS"                 : "STAT02",
-        "REJECT_REASON_ID"       : "R01",
-        "PROCESS_TIMESTAMP"      : "2026-03-27 01:45:57.546000000",
-        "COMMENT"                : "SEND BACk"
-     }
-    ]
-   }
+#    {
+#     "aPayloadToCreateApproverDetailsTable": [
+#      {
+#         "ID"         : "CLM26000000140",
+#         "LEVEL"                  : "1",
+#         "APPROVER_ID"            : "903783",
+#         "SUBSTITUTE_APPROVER_ID" : "902733",
+#         "STATUS"                 : "STAT02",
+#         "REJECT_REASON_ID"       : "R01",
+#         "PROCESS_TIMESTAMP"      : "2026-03-27 01:45:57.546000000",
+#         "COMMENT"                : "SEND BACk"
+#      }
+#     ]
+#    }
 
    # {
    #      "ID"         : "CLM26000000140",
@@ -189,3 +189,11 @@ Authorization: Basic alice
    #      "PROCESS_TIMESTAMP"      : null,
    #      "COMMENT"                : null
    #   }
+
+   POST    http://localhost:4004/odata/v4/EmployeeSrv/DeleteApproverDetails
+Content-Type: application/json
+Authorization: Basic alice
+ 
+   {
+    "ID": "REQ26000000022"
+   }

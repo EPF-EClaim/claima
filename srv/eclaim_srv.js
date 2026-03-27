@@ -735,6 +735,36 @@ module.exports = (srv) => {
         return sResult;
     };
 
+    srv.on('DeleteApproverDetails', async (req) => {
+        try {
+            const { ID } = req.data;
+            console.log(ID);
+            if (!ID) {
+                throw new Error('No Data Sent')
+            }
+            const tx = cds.tx(req);
+            const sIDType = ID.substring(0, 3);
+            var sDelete = "";
+
+            if (sIDType == Constant.WorkflowType.REQUEST) {
+
+                sTableName = Constant.ApproverDetailsTable.REQUEST;
+                sKeyName = Constant.ApproverDetailsTable.PREAPPROVAL_ID;
+            }
+            else if (sIDType == Constant.WorkflowType.CLAIM) {
+
+                sTableName = Constant.ApproverDetailsTable.CLAIM;
+                sKeyName = Constant.ApproverDetailsTable.CLAIM_ID;
+            }
+
+            sDelete = await DeleteApproverDetails(sTableName, sKeyName, ID, tx);
+
+            return { success: true, sDelete };
+        } catch (error) {
+            req.error(400, `Fail creating record: ${error.message}`, req);
+        }
+    });
+
     // srv.on('WorkflowApproval', async (req) => {
     //     // const {ClaimsWorkflowApproval} = srv.entities;
     //     const tx = cds.tx(req);
