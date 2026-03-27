@@ -2,7 +2,7 @@ sap.ui.define([
 ], function () {
     "use strict";
     return {
-        "Approvers":{
+        "Approvers": {
             "AUTO": "AUTO",
             "AUTOASSIGN": "AA",
             "BUDGET": "Budget",
@@ -22,7 +22,7 @@ sap.ui.define([
             "ELAUN_TUKAR": "ELAUN_TUKAR",
             "ELAUN_PINDAH": "ELAUN_PINDAH"
         },
-        "ClaimTypeItem":{
+        "ClaimTypeItem": {
             "BAGAI": "BAGAI",
             "BYR_YURAN": "BYR_YURAN",
             "CERAMAH": "CERAMAH",
@@ -175,7 +175,7 @@ sap.ui.define([
             "REQUEST_TYPE_ID": "REQUEST_TYPE_ID",
             "ROLE": "ROLE",
             "SUBAPPROVER_ID": "SUBSTITUTE_APPROVER_ID",
-            "SUBMISSION_TYPE_ID" :"SUBMISSION_TYPE_ID",
+            "SUBMISSION_TYPE_ID": "SUBMISSION_TYPE_ID",
             "STATUS": "STATUS",
             "TIMESTAMP": "PROCESS_TIMESTAMP",
             "USER_ID": "USER_ID",
@@ -194,7 +194,7 @@ sap.ui.define([
             "LESSTHAN": "LT",
             "NOTEQUAL": "NE"
         },
-        "Risk_Category":{
+        "Risk_Category": {
             "LOW": "L",
             "HIGH": "H"
         },
@@ -206,7 +206,7 @@ sap.ui.define([
             "JKEW_ADMIN": "JKEW Admin",
             "SUPER_ADMIN": "Super Admin"
         },
-        "User_Type":{
+        "User_Type": {
             "CASH_FI": "CASH_FI",
             "CEO_FI": "CEO_FI",
             "FI_SETTLEMENT_A": "FI_SETTLEMENT_A",
@@ -222,41 +222,41 @@ sap.ui.define([
             "ZNUM_RANGE_DTD": "ZNUM_RANGE_DTD",
             "ZBUDGET": "ZBUDGET"
         },
-        "BudgetCheckStatus" : {
-            "NOT_FOUND"       : "RECORD NOT FOUND",
-            "INSUFFICIENT"    : "INSUFFICIENT BALANCE",
-            "SUFFICIENT"      : "OK",
-            "UPDATED"         : "RECORD UPDATED"
+        "BudgetCheckStatus": {
+            "NOT_FOUND": "RECORD NOT FOUND",
+            "INSUFFICIENT": "INSUFFICIENT BALANCE",
+            "SUFFICIENT": "OK",
+            "UPDATED": "RECORD UPDATED"
         },
         "GroupType": {
             "GROUP": "Group",
             "INDIVIDUAL": "Individual"
         },
-        "RequestFieldVisibilityConfig" : {
-            "SUBMISSION_TYPE"   : "PREAPPROVAL_R",
-            "HEADER"            : "HEADER",
-            "ITEM"              : "ITEM" 
+        "RequestFieldVisibilityConfig": {
+            "SUBMISSION_TYPE": "PREAPPROVAL_R",
+            "HEADER": "HEADER",
+            "ITEM": "ITEM"
         },
         "SubmissionTypePrefix": {
-            "REQUEST"   : "REQ",
-            "CLAIM"     : "CLM"
+            "REQUEST": "REQ",
+            "CLAIM": "CLM"
         },
-        "CashAdvanceInfo" : {
-            "COST_CENTER"   : "100000000",
-            "GL_ACCOUNT"    : "214005"
+        "CashAdvanceInfo": {
+            "COST_CENTER": "100000000",
+            "GL_ACCOUNT": "214005"
         },
-        "SubmissionType":{
-            "DIRECT_CLAIM" : "ST0001"
+        "SubmissionType": {
+            "DIRECT_CLAIM": "ST0001"
         },
-        "Default" : {
-            "PROJECT_CODE" : "NA"
+        "Default": {
+            "PROJECT_CODE": "NA"
         },
-        "BudgetCheckAction" : {
-            "SUBMIT"    : "SUBMIT",
-            "REJECT"    : "REJECT", 
-            "APPROVE"   : "APPROVE"
+        "BudgetCheckAction": {
+            "SUBMIT": "SUBMIT",
+            "REJECT": "REJECT",
+            "APPROVE": "APPROVE"
         },
-        "PARMode" : {
+        "PARMode": {
             "VIEW": "view",
             "APPROVER": "approver",
             "EDIT": "i_edit",
@@ -264,13 +264,52 @@ sap.ui.define([
             "CREATE": "create"
         },
         "RequestType": {
-            "TRAVEL"        : "RT0001",
-            "MOBILE"        : "RT0002",
-            "EVENTS"        : "RT0003",
-            "REIMBURSEMENT" : "RT0004",
-            "MEDICAL"       : "RT0005",
-            "PROJECT"       : "RT0006"
-        }
+            "TRAVEL": "RT0001",
+            "MOBILE": "RT0002",
+            "EVENTS": "RT0003",
+            "REIMBURSEMENT": "RT0004",
+            "MEDICAL": "RT0005",
+            "PROJECT": "RT0006"
+        },
+        "ConfigAccess": {
+            "DTD Admin": [
+                "ZRISK", "ZREQUEST_TYPE", "ZCLAIM_TYPE", "ZNUM_RANGE", "ZCLAIM_CATEGORY",
+                "ZSTATUS", "ZLODGING_CAT", "ZROOM_TYPE", "ZCOUNTRY", "ZAREA",
+                "ZMARITAL_STAT", "ZVEHICLE_TYPE", "ZJOB_GROUP", "ZSTATE", "ZDEPARTMENT",
+                "ZROLE", "ZUSER_TYPE", "ZEMP_TYPE", "ZFLIGHT_CLASS", "ZEMP_MASTER",
+                "ZREGION", "ZSUBMISSION_TYPE", "ZLENDER_NAME", "ZHOUSING_LOAN_SCHEME",
+                "ZPERDIEM_ENT", "ZEMP_CA_PAYMENT", "ZBRANCH", "ZPROJECT_HDR", "ZMARITAL_CAT",
+                "ZEMP_RELATIONSHIP", "ZINDIV_GROUP", "ZMATERIAL_GROUP", "ZLOC_TYPE",
+                "ZOFFICE_DISTANCE", "ZOFFICE_LOCATION", "ZRATE_KM", "ZEMP_DEPENDENT",
+                "ZREJECT_REASON", "ZCURRENCY", "ZVEHICLE_OWNERSHIP", "ZTRAVEL_DAYS",
+                "ZMETER_CUBE", "ZFARE_TYPE", "ZHOTEL_LODGING", "ZCLAIM_BASIS",
+                "ZEMP_DEPENDENT_TYPE", "ZPOSITION_EVENT_REASON", "ZSPORTS_REPRESENTATION",
+                "ZFAMILY_TIMING", "ZTRAVEL_TYPE", "ZTRANSPORT_PASSING", "ZTRANSFER_MODE",
+                "ZSTUDY_LEVELS", "ZPROFESIONAL_BODY", "ZINSURANCE_PACKAGE", "ZINSURANCE_PROVIDER",
+                "ZVEHICLE_CLASS", "ZMOBILE_CATEGORY_PURPOSE", "ZBUDGET", "ZDB_STRUCTURE",
+                "ZDISBURSEMENT_STATUS", "ZCONSTANTS", "ZROLEHIERARCHY", "ZELIGIBILITY_RULE"
+            ],
+            "JKEW Admin": [
+                "ZRISK", "ZREQUEST_TYPE", "ZCLAIM_TYPE", "ZNUM_RANGE", "ZCLAIM_CATEGORY",
+                "ZSTATUS", "ZLODGING_CAT", "ZROOM_TYPE", "ZCOUNTRY", "ZAREA",
+                "ZMARITAL_STAT", "ZVEHICLE_TYPE", "ZJOB_GROUP", "ZSTATE", "ZDEPARTMENT",
+                "ZROLE", "ZUSER_TYPE", "ZEMP_TYPE", "ZFLIGHT_CLASS", "ZEMP_MASTER",
+                "ZREGION", "ZSUBMISSION_TYPE", "ZLENDER_NAME", "ZHOUSING_LOAN_SCHEME",
+                "ZPERDIEM_ENT", "ZEMP_CA_PAYMENT", "ZBRANCH", "ZPROJECT_HDR", "ZMARITAL_CAT",
+                "ZEMP_RELATIONSHIP", "ZINDIV_GROUP", "ZMATERIAL_GROUP", "ZLOC_TYPE",
+                "ZOFFICE_DISTANCE", "ZOFFICE_LOCATION", "ZRATE_KM", "ZEMP_DEPENDENT",
+                "ZREJECT_REASON", "ZCURRENCY", "ZVEHICLE_OWNERSHIP", "ZTRAVEL_DAYS",
+                "ZMETER_CUBE", "ZFARE_TYPE", "ZHOTEL_LODGING", "ZCLAIM_BASIS",
+                "ZEMP_DEPENDENT_TYPE", "ZPOSITION_EVENT_REASON", "ZSPORTS_REPRESENTATION",
+                "ZFAMILY_TIMING", "ZTRAVEL_TYPE", "ZTRANSPORT_PASSING", "ZTRANSFER_MODE",
+                "ZSTUDY_LEVELS", "ZPROFESIONAL_BODY", "ZINSURANCE_PACKAGE", "ZINSURANCE_PROVIDER",
+                "ZVEHICLE_CLASS", "ZMOBILE_CATEGORY_PURPOSE", "ZBUDGET", "ZDB_STRUCTURE",
+                "ZDISBURSEMENT_STATUS", "ZCONSTANTS", "ZROLEHIERARCHY", "ZELIGIBILITY_RULE"
+            ],
+            "GA Admin": [
+                "ZBUDGET"
+            ]
+        },
 
     }
 });

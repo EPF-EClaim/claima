@@ -126,6 +126,8 @@ module.exports = (srv) => {
 
     srv.on('READ', 'FeatureControl', async (req) => {
         const { ZEMP_MASTER } = srv.entities;
+        const userRoles = req.user.roles;
+        
         const emailFromToken = req.user?.attr?.email || req.user?.id || "";
         const email = String(emailFromToken).trim().toLowerCase();
         const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });

@@ -427,7 +427,7 @@
                     ]
                 },
                 {
-                    "pattern": "ZCLAIM_TYPE",
+                    "pattern": ":?query:",
                     "name": "ZCLAIM_TYPE",
                     "target": "ZCLAIM_TYPE"
                 },
