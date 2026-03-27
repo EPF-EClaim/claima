@@ -2080,7 +2080,7 @@ sap.ui.define([
 
 		_setClaimDetailSelection: function (oModel) {
 			//// Claim Item
-			this.byId("select_claimdetails_input_claimitem").bindAggregation("items", {
+			this.byId("select_claimdetails_input_claim_type_item_id").bindAggregation("items", {
 				path: "employee>/ZCLAIM_TYPE_ITEM",
 				filters: [
 					new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id")),
@@ -2270,8 +2270,8 @@ sap.ui.define([
 			}
 			// validate date range
 			//// start/end date
-			if (this.byId("datepicker_claimdetails_input_startdate").getValue() || this.byId("datepicker_claimdetails_input_enddate").getValue()) {
-				if (!this._validDateRange("datepicker_claimdetails_input_startdate", "datepicker_claimdetails_input_enddate")) {
+			if (this.byId("datepicker_claimdetails_input_start_date").getValue() || this.byId("datepicker_claimdetails_input_end_date").getValue()) {
+				if (!this._validDateRange("datepicker_claimdetails_input_start_date", "datepicker_claimdetails_input_end_date")) {
 					// stop claim details if incomplete
 					return;
 				}
@@ -2285,7 +2285,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/claim_sub_id", totalClaimSubId);
 			}
 			// get descriptions
-			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
+			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claim_type_item_id")._getSelectedItemText());
 
 			//// Added for duplication check;
 
@@ -2649,17 +2649,17 @@ sap.ui.define([
 		_calculatePerDiem: async function () {
 			// check date/time values to be used for calculation
 			//// Start Date/Start Time/End Date/End Time
-			if (this.byId("datepicker_claimdetails_input_startdate").getVisible()) {
-				var startDate = "datepicker_claimdetails_input_startdate";
-				var startTime = "timepicker_claimdetails_input_starttime";
-				var endDate = "datepicker_claimdetails_input_enddate";
-				var endTime = "timepicker_claimdetails_input_endtime";
+			if (this.byId("datepicker_claimdetails_input_start_date").getVisible()) {
+				var startDate = "datepicker_claimdetails_input_start_date";
+				var startTime = "timepicker_claimdetails_input_start_time";
+				var endDate = "datepicker_claimdetails_input_end_date";
+				var endTime = "timepicker_claimdetails_input_end_time";
 			}
 			else if (this.byId("datepicker_claimdetails_input_trip_start_date").getVisible()) {
 				startDate = "datepicker_claimdetails_input_trip_start_date";
-				startTime = "timepicker_claimdetails_input_trip_starttime";
+				startTime = "timepicker_claimdetails_input_trip_start_time";
 				endDate = "datepicker_claimdetails_input_trip_end_date";
-				endTime = "timepicker_claimdetails_input_trip_endtime";
+				endTime = "timepicker_claimdetails_input_trip_end_time";
 			}
 			else {
 				return;
@@ -2931,8 +2931,8 @@ sap.ui.define([
 					}
 					this._setAllControlsEditable(true);
 					// set claim item field as editable
-					if (!this.byId("select_claimdetails_input_claimitem").getEditable()) {
-						this.byId("select_claimdetails_input_claimitem").setEditable(true);
+					if (!this.byId("select_claimdetails_input_claim_type_item_id").getEditable()) {
+						this.byId("select_claimdetails_input_claim_type_item_id").setEditable(true);
 					}
 				}
 
@@ -3737,10 +3737,10 @@ sap.ui.define([
 				"input_claimdetails_input_receipt_number",
 				"datepicker_claimdetails_input_receipt_date",
 				"input_claimdetails_input_purpose",
-				"datepicker_claimdetails_input_startdate",
-				"timepicker_claimdetails_input_starttime",
-				"datepicker_claimdetails_input_enddate",
-				"timepicker_claimdetails_input_endtime",
+				"datepicker_claimdetails_input_start_date",
+				"timepicker_claimdetails_input_start_time",
+				"datepicker_claimdetails_input_end_date",
+				"timepicker_claimdetails_input_end_time",
 				"select_claimdetails_input_insurance_provider_id",
 				"input_claimdetails_input_insurance_provider_name",
 				"select_claimdetails_input_insurance_package_id",
@@ -3765,15 +3765,15 @@ sap.ui.define([
 				"select_claimdetails_input_room_type",
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
-				"checkbox_claimdetails_input_needforeigncurrency",
+				"checkbox_claimdetails_input_need_foreign_currency",
 				"select_claimdetails_input_currency_code",
 				"input_claimdetails_input_currency_rate",
 				"input_claimdetails_input_currency_amount",
 				"datepicker_claimdetails_input_trip_start_date",
-				"timepicker_claimdetails_input_trip_starttime",
+				"timepicker_claimdetails_input_trip_start_time",
 				"timepicker_claimdetails_input_departure_time",
 				"datepicker_claimdetails_input_trip_end_date",
-				"timepicker_claimdetails_input_trip_endtime",
+				"timepicker_claimdetails_input_trip_end_time",
 				"timepicker_claimdetails_input_arrival_time",
 				"input_claimdetails_input_travel_duration_day",
 				"input_claimdetails_input_travel_duration_hour",
@@ -3837,8 +3837,8 @@ sap.ui.define([
 				this._setAllControlsEditable(true);
 
 				// set claim item field as not editable
-				if (this.byId("select_claimdetails_input_claimitem").getEditable()) {
-					this.byId("select_claimdetails_input_claimitem").setEditable(false);
+				if (this.byId("select_claimdetails_input_claim_type_item_id").getEditable()) {
+					this.byId("select_claimdetails_input_claim_type_item_id").setEditable(false);
 				}
 				aScreenArray.forEach(sId => {
 					const oControl = this._resolveControl(sId, "claimsubmission_claimdetails_input");
@@ -3869,10 +3869,10 @@ sap.ui.define([
 				"input_claimdetails_input_receipt_number",
 				"datepicker_claimdetails_input_receipt_date",
 				"input_claimdetails_input_purpose",
-				"datepicker_claimdetails_input_startdate",
-				"timepicker_claimdetails_input_starttime",
-				"datepicker_claimdetails_input_enddate",
-				"timepicker_claimdetails_input_endtime",
+				"datepicker_claimdetails_input_start_date",
+				"timepicker_claimdetails_input_start_time",
+				"datepicker_claimdetails_input_end_date",
+				"timepicker_claimdetails_input_end_time",
 				"select_claimdetails_input_insurance_provider_id",
 				"input_claimdetails_input_insurance_provider_name",
 				"select_claimdetails_input_insurance_package_id",
@@ -3896,15 +3896,15 @@ sap.ui.define([
 				"select_claimdetails_input_room_type",
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
-				"checkbox_claimdetails_input_needforeigncurrency",
+				"checkbox_claimdetails_input_need_foreign_currency",
 				"select_claimdetails_input_currency_code",
 				"input_claimdetails_input_currency_rate",
 				"input_claimdetails_input_currency_amount",
 				"datepicker_claimdetails_input_trip_start_date",
-				"timepicker_claimdetails_input_trip_starttime",
+				"timepicker_claimdetails_input_trip_start_time",
 				"timepicker_claimdetails_input_departure_time",
 				"datepicker_claimdetails_input_trip_end_date",
-				"timepicker_claimdetails_input_trip_endtime",
+				"timepicker_claimdetails_input_trip_end_time",
 				"timepicker_claimdetails_input_arrival_time",
 				"input_claimdetails_input_provided_breakfast",
 				"input_claimdetails_input_provided_lunch",

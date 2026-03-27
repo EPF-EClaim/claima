@@ -46,16 +46,16 @@
 			singleContainerFullSize="false" >
 			<f:content>
 				<!-- Claim Type -->
-				<Label text="{i18n>label_claimdetails_input_claimtype}" />
+				<Label text="{i18n>label_claimdetails_input_claim_type_id}" />
 				<Text
-					id="text_claimdetails_input_claimtype"
+					id="text_claimdetails_input_claim_type_id"
 					text="{claimitem_input>/claim_item/descr/claim_type_id}"
 				/>
 
 				<!-- Claim Item -->
-				<Label text="{i18n>label_claimdetails_input_claimitem}" />
+				<Label text="{i18n>label_claimdetails_input_claim_type_item_id}" />
 				<Select
-					id="select_claimdetails_input_claimitem"
+					id="select_claimdetails_input_claim_type_item_id"
 					forceSelection="false"
 					selectedKey="{claimitem_input>/claim_item/claim_type_item_id}"
 					change="onSelect_ClaimDetails_ClaimItem"
@@ -65,7 +65,7 @@
 				</Select>
 
 				<!-- Anggota Name -->
-				<Label text="{i18n>label_claimdetails_input_anggota}" />
+				<Label text="{i18n>label_claimdetails_input_anggota_name}" />
 				<Input
 					id="input_claimdetails_input_anggota_name"
 					value="{claimitem_input>/claim_item/anggota_name}"
@@ -73,7 +73,7 @@
 				/>
 
 				<!-- Dependent Name -->
-				<Label text="{i18n>label_claimdetails_input_dependent}" />
+				<Label text="{i18n>label_claimdetails_input_dependent_name}" />
 				<Input
 					id="input_claimdetails_input_dependent_name"
 					value="{claimitem_input>/claim_item/dependent_name}"
@@ -82,7 +82,7 @@
 				/>
 
 				<!-- Type of Professional Body -->
-				<Label text="{i18n>label_claimdetails_input_profbodytype}" />
+				<Label text="{i18n>label_claimdetails_input_type_of_professional_body}" />
 				<Select
 					id="select_claimdetails_input_type_of_professional_body"
 					forceSelection="false"
@@ -95,7 +95,7 @@
 				</Select>
 
 				<!-- Policy Number -->
-				<Label text="{i18n>label_claimdetails_input_policyno}" />
+				<Label text="{i18n>label_claimdetails_input_policy_number}" />
 				<Input
 					id="input_claimdetails_input_policy_number"
 					value="{claimitem_input>/claim_item/policy_number}"
@@ -103,7 +103,7 @@
 				/>
 
 				<!-- Funeral Transportation (Dalam Stesen/Luar Stesen/Flight) -->
-				<Label text="{i18n>label_claimdetails_input_funeraltransport}" />
+				<Label text="{i18n>label_claimdetails_input_funeral_transportation}" />
 				<Select
 					id="select_claimdetails_input_funeral_transportation"
 					forceSelection="false"
@@ -115,7 +115,7 @@
 				</Select>
 
 				<!-- Actual Amount (MYR) -->
-				<Label text="{i18n>label_claimdetails_input_amount_actual}" />
+				<Label text="{i18n>label_claimdetails_input_actual_amount}" />
 				<Input
 					id="input_claimdetails_input_actual_amount"
 					value="{
@@ -132,7 +132,7 @@
 				/>
 
 				<!-- Subsidised Amount (MYR) (50% of actual) -->
-				<Label text="{i18n>label_claimdetails_input_amount_subsidised}" />
+				<Label text="{i18n>label_claimdetails_input_subsidised_amount}" />
 				<Input
 					id="input_claimdetails_input_subsidised_amount"
 					editable="false"
@@ -140,7 +140,7 @@
 				/>
 
 				<!-- Request Approved Amount (MYR) -->
-				<Label text="{i18n>label_claimdetails_input_amount_reqapproved}" />
+				<Label text="{i18n>label_claimdetails_input_request_approval_amount}" />
 				<Input
 					id="input_claimdetails_input_request_approval_amount"
 					value="{
@@ -173,7 +173,7 @@
 				/>
 
 				<!-- % Compensation -->
-				<Label text="{i18n>label_claimdetails_input_compensation}" />
+				<Label text="{i18n>label_claimdetails_input_percentage_compensation}" />
 				<Input
 					id="input_claimdetails_input_percentage_compensation"
 					value="{claimitem_input>/claim_item/percentage_compensation}"
@@ -182,7 +182,7 @@
 				/>
 
 				<!-- Course Title -->
-				<Label text="{i18n>label_claimdetails_input_coursetitle}" />
+				<Label text="{i18n>label_claimdetails_input_course_title}" />
 				<Input
 					id="input_claimdetails_input_course_title"
 					value="{claimitem_input>/claim_item/course_title}"
@@ -191,7 +191,7 @@
 				/>
 
 				<!-- Level of Studies -->
-				<Label text="{i18n>label_claimdetails_input_levelstudies}" />
+				<Label text="{i18n>label_claimdetails_input_study_levels_id}" />
 				<Select
 					id="select_claimdetails_input_study_levels_id"
 					forceSelection="false"
@@ -204,7 +204,7 @@
 				</Select>
 
 				<!-- Receipt Number -->
-				<Label text="{i18n>label_claimdetails_input_receiptno}" />
+				<Label text="{i18n>label_claimdetails_input_receipt_number}" />
 				<Input
 					id="input_claimdetails_input_receipt_number"
 					value="{claimitem_input>/claim_item/receipt_number}"
@@ -213,7 +213,7 @@
 				/>
 
 				<!-- Receipt Date -->
-				<Label text="{i18n>label_claimdetails_input_receiptdate}" />
+				<Label text="{i18n>label_claimdetails_input_receipt_date}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_receipt_date"
 					value="{claimitem_input>/claim_item/receipt_date}"
@@ -232,45 +232,45 @@
 				/>
 
 				<!-- Start Date -->
-				<Label text="{i18n>label_claimdetails_input_startdate}" />
+				<Label text="{i18n>label_claimdetails_input_start_date}" />
 				<DatePicker
-					id="datepicker_claimdetails_input_startdate"
+					id="datepicker_claimdetails_input_start_date"
 					value="{claimitem_input>/claim_item/start_date}"
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
-					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_startdate','datepicker_claimdetails_input_enddate')"
+					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_start_date','datepicker_claimdetails_input_end_date')"
 					required="true"
 				/>
 
 				<!-- Start Time -->
-				<Label text="{i18n>label_claimdetails_input_starttime}" />
+				<Label text="{i18n>label_claimdetails_input_start_time}" />
 				<TimePicker
-					id="timepicker_claimdetails_input_starttime"
+					id="timepicker_claimdetails_input_start_time"
 					value="{claimitem_input>/claim_item/start_time}"
 					visible="false"
 					displayFormat="HH:mm"
-					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
+					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_start_date','timepicker_claimdetails_input_start_time','datepicker_claimdetails_input_end_date','timepicker_claimdetails_input_end_time')"
 				/>
 
 				<!-- End Date -->
-				<Label text="{i18n>label_claimdetails_input_enddate}" />
+				<Label text="{i18n>label_claimdetails_input_end_date}" />
 				<DatePicker
-					id="datepicker_claimdetails_input_enddate"
+					id="datepicker_claimdetails_input_end_date"
 					value="{claimitem_input>/claim_item/end_date}"
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
-					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_startdate','datepicker_claimdetails_input_enddate')"
+					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_start_date','datepicker_claimdetails_input_end_date')"
 					required="true"
 				/>
 
 				<!-- End Time -->
-				<Label text="{i18n>label_claimdetails_input_endtime}" />
+				<Label text="{i18n>label_claimdetails_input_end_time}" />
 				<TimePicker
-					id="timepicker_claimdetails_input_endtime"
+					id="timepicker_claimdetails_input_end_time"
 					value="{claimitem_input>/claim_item/end_time}"
 					visible="false"
 					displayFormat="HH:mm"
-					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
+					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_start_date','timepicker_claimdetails_input_start_time','datepicker_claimdetails_input_end_date','timepicker_claimdetails_input_end_time')"
 				/>
 
 				<!-- Nama Pembekal Insuran -->
@@ -335,7 +335,7 @@
 				/>
 
 				<!-- Number of Days -->
-				<Label text="{i18n>label_claimdetails_input_numberofdays}" />
+				<Label text="{i18n>label_claimdetails_input_no_of_days}" />
 				<Input
 					id="input_claimdetails_input_no_of_days"
 					value="{claimitem_input>/claim_item/no_of_days}"
@@ -346,7 +346,7 @@
 				/>
 
 				<!-- Type of Vehicle -->
-				<Label text="{i18n>label_claimdetails_input_typeofvehicle}" />
+				<Label text="{i18n>label_claimdetails_input_vehicle_type}" />
 				<Select
 					id="select_claimdetails_input_vehicle_type"
 					forceSelection="false"
@@ -359,7 +359,7 @@
 				</Select>
 
 				<!-- Vehicle Ownership ID (Sendiri/Penjabat) -->
-				<Label text="{i18n>label_claimdetails_input_vehicleownership}" />
+				<Label text="{i18n>label_claimdetails_input_vehicle_ownership_id}" />
 				<Select
 					id="select_claimdetails_input_vehicle_ownership_id"
 					forceSelection="false"
@@ -387,7 +387,7 @@
 				/>
 
 				<!-- Rate Per Kilometer -->
-				<Label text="{i18n>label_claimdetails_input_km_rate}" />
+				<Label text="{i18n>label_claimdetails_input_rate_per_km}" />
 				<Input
 					id="input_claimdetails_input_rate_per_km"
 					value="{claimitem_input>/claim_item/descr/rate_per_km}"
@@ -396,7 +396,7 @@
 				/>
 
 				<!-- Type of Fare -->
-				<Label text="{i18n>label_claimdetails_input_faretype}" />
+				<Label text="{i18n>label_claimdetails_input_fare_type_id}" />
 				<Select
 					id="select_claimdetails_input_fare_type_id"
 					forceSelection="false"
@@ -409,7 +409,7 @@
 				</Select>
 
 				<!-- Vehicle Class -->
-				<Label text="{i18n>label_claimdetails_input_vehicleclass}" />
+				<Label text="{i18n>label_claimdetails_input_vehicle_class_id}" />
 				<Select
 					id="select_claimdetails_input_vehicle_class_id"
 					forceSelection="false"
@@ -421,7 +421,7 @@
 				</Select>
 
 				<!-- Flight Class -->
-				<Label text="{i18n>label_claimdetails_input_flightclass}" />
+				<Label text="{i18n>label_claimdetails_input_flight_class}" />
 				<Select
 					id="select_claimdetails_input_flight_class"
 					forceSelection="false"
@@ -458,7 +458,7 @@
 				/>
 
 				<!-- Location Type -->
-				<Label text="{i18n>label_claimdetails_input_locationtype}" />
+				<Label text="{i18n>label_claimdetails_input_location_type}" />
 				<Select
 					id="select_claimdetails_input_location_type"
 					forceSelection="false"
@@ -471,7 +471,7 @@
 				</Select>
 
 				<!-- From State -->
-				<Label text="{i18n>label_claimdetails_input_state_from}" />
+				<Label text="{i18n>label_claimdetails_input_from_state_id}" />
 				<Input
 					id="input_claimdetails_input_from_state_id"
 					value="{claimitem_input>/claim_item/from_state_id}"
@@ -479,7 +479,7 @@
 				/>
 
 				<!-- From Location -->
-				<Label text="{i18n>label_claimdetails_input_location_from}" />
+				<Label text="{i18n>label_claimdetails_input_from_location}" />
 				<Input
 					id="input_claimdetails_input_from_location"
 					value="{claimitem_input>/claim_item/from_location}"
@@ -488,7 +488,7 @@
 				/>
 
 				<!-- To State -->
-				<Label text="{i18n>label_claimdetails_input_state_to}" />
+				<Label text="{i18n>label_claimdetails_input_to_state_id}" />
 				<Input
 					id="input_claimdetails_input_to_state_id"
 					value="{claimitem_input>/claim_item/to_state_id}"
@@ -496,7 +496,7 @@
 				/>
 
 				<!-- To Location -->
-				<Label text="{i18n>label_claimdetails_input_location_to}" />
+				<Label text="{i18n>label_claimdetails_input_to_location}" />
 				<Input
 					id="input_claimdetails_input_to_location"
 					value="{claimitem_input>/claim_item/to_location}"
@@ -505,7 +505,7 @@
 				/>
 
 				<!-- Room Type -->
-				<Label text="{i18n>label_claimdetails_input_roomtype}" />
+				<Label text="{i18n>label_claimdetails_input_room_type}" />
 				<Select
 					id="select_claimdetails_input_room_type"
 					forceSelection="false"
@@ -539,15 +539,15 @@
 				/>
 
 				<!-- Need Foreign Currency? -->
-				<Label text="{i18n>label_claimdetails_input_needforeigncurrency}" />
+				<Label text="{i18n>label_claimdetails_input_need_foreign_currency}" />
 				<CheckBox
-					id="checkbox_claimdetails_input_needforeigncurrency"
+					id="checkbox_claimdetails_input_need_foreign_currency"
 					visible="false"
 					wrapping="true"
 				/>
 
 				<!-- Currency Code -->
-				<Label text="{i18n>label_claimdetails_input_currencycode}" />
+				<Label text="{i18n>label_claimdetails_input_currency_code}" />
 				<mdc:Field
 					id="select_claimdetails_input_currency_code"
 					value="{claimitem_input>/claim_item/currency_code}"
@@ -558,7 +558,7 @@
 				/>
 
 				<!-- Currency Rate -->
-				<Label text="{i18n>label_claimdetails_input_currencyrate}" />
+				<Label text="{i18n>label_claimdetails_input_currency_rate}" />
 				<Input
 					id="input_claimdetails_input_currency_rate"
 					value="{
@@ -574,7 +574,7 @@
 				/>
 
 				<!-- Currency Amount -->
-				<Label text="{i18n>label_claimdetails_input_currencyamt}" />
+				<Label text="{i18n>label_claimdetails_input_currency_amount}" />
 				<Input
 					id="input_claimdetails_input_currency_amount"
 					value="{
@@ -590,7 +590,7 @@
 				/>
 
 				<!-- Trip Start Date -->
-				<Label text="{i18n>label_claimdetails_input_trip_startdate}" />
+				<Label text="{i18n>label_claimdetails_input_trip_start_date}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_trip_start_date"
 					value="{claimitem_input>/claim_item/trip_start_date}"
@@ -600,17 +600,17 @@
 				/>
 
 				<!-- Trip Start Time -->
-				<Label text="{i18n>label_claimdetails_input_trip_starttime}" />
+				<Label text="{i18n>label_claimdetails_input_trip_start_time}" />
 				<TimePicker
-					id="timepicker_claimdetails_input_trip_starttime"
+					id="timepicker_claimdetails_input_trip_start_time"
 					value="{claimitem_input>/claim_item/trip_start_time}"
 					visible="false"
 					displayFormat="HH:mm"
-					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_starttime','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_endtime')"
+					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_start_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_end_time')"
 				/>
 
 				<!-- Departure Time -->
-				<Label text="{i18n>label_claimdetails_input_time_depart}" />
+				<Label text="{i18n>label_claimdetails_input_departure_time}" />
 				<TimePicker
 					id="timepicker_claimdetails_input_departure_time"
 					value="{claimitem_input>/claim_item/departure_time}"
@@ -621,7 +621,7 @@
 				/>
 
 				<!-- Trip End Date -->
-				<Label text="{i18n>label_claimdetails_input_trip_enddate}" />
+				<Label text="{i18n>label_claimdetails_input_trip_end_date}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_trip_end_date"
 					value="{claimitem_input>/claim_item/trip_end_date}"
@@ -631,17 +631,17 @@
 				/>
 
 				<!-- Trip End Time -->
-				<Label text="{i18n>label_claimdetails_input_trip_endtime}" />
+				<Label text="{i18n>label_claimdetails_input_trip_end_time}" />
 				<TimePicker
-					id="timepicker_claimdetails_input_trip_endtime"
+					id="timepicker_claimdetails_input_trip_end_time"
 					value="{claimitem_input>/claim_item/trip_end_time}"
 					visible="false"
 					displayFormat="HH:mm"
-					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_starttime','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_endtime')"
+					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_start_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_end_time')"
 				/>
 
 				<!-- Arrival Time -->
-				<Label text="{i18n>label_claimdetails_input_time_arrive}" />
+				<Label text="{i18n>label_claimdetails_input_arrival_time}" />
 				<TimePicker
 					id="timepicker_claimdetails_input_arrival_time"
 					value="{claimitem_input>/claim_item/arrival_time}"
@@ -836,7 +836,7 @@
 				</Select>
 
 				<!-- Number of Family Members -->
-				<Label text="{i18n>label_claimdetails_input_familyno}" />
+				<Label text="{i18n>label_claimdetails_input_no_of_family_member}" />
 				<Input
 					id="input_claimdetails_input_no_of_family_member"
 					value="{claimitem_input>/claim_item/no_of_family_member}"
@@ -846,7 +846,7 @@
 				/>
 
 				<!-- Category/Purpose -->
-				<Label text="{i18n>label_claimdetails_input_cat_purpose}" />
+				<Label text="{i18n>label_claimdetails_input_claim_category}" />
 				<Select
 					id="select_claimdetails_input_claim_category"
 					forceSelection="false"
@@ -858,7 +858,7 @@
 				</Select>
 
 				<!-- Category/Purpose (Mobile) -->
-				<Label text="{i18n>label_claimdetails_input_cat_purpose}" />
+				<Label text="{i18n>label_claimdetails_input_claim_category}" />
 				<Select
 					id="select_claimdetails_input_mobile_category_purpose_id"
 					forceSelection="false"
@@ -870,7 +870,7 @@
 				</Select>
 
 				<!-- Bill No -->
-				<Label text="{i18n>label_claimdetails_input_billno}" />
+				<Label text="{i18n>label_claimdetails_input_bill_no}" />
 				<Input
 					id="input_claimdetails_input_bill_no"
 					value="{claimitem_input>/claim_item/bill_no}"
@@ -878,7 +878,7 @@
 				/>
 
 				<!-- Account No -->
-				<Label text="{i18n>label_claimdetails_input_accountno}" />
+				<Label text="{i18n>label_claimdetails_input_account_no}" />
 				<Input
 					id="input_claimdetails_input_account_no"
 					value="{claimitem_input>/claim_item/account_no}"
@@ -886,7 +886,7 @@
 				/>
 
 				<!-- Bill Date -->
-				<Label text="{i18n>label_claimdetails_input_billdate}" />
+				<Label text="{i18n>label_claimdetails_input_bill_date}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_bill_date"
 					value="{claimitem_input>/claim_item/bill_date}"
@@ -895,7 +895,7 @@
 				/>
 
 				<!-- Phone No -->
-				<Label text="{i18n>label_claimdetails_input_phoneno}" />
+				<Label text="{i18n>label_claimdetails_input_phone_no}" />
 				<Input
 					id="input_claimdetails_input_phone_no"
 					value="{claimitem_input>/claim_item/phone_no}"
@@ -923,7 +923,7 @@
 				/>
 
 				<!-- Remarks -->
-				<Label text="{i18n>label_claimdetails_input_remarks}" />
+				<Label text="{i18n>label_claimdetails_input_remark}" />
 				<Input
 					id="input_claimdetails_input_remarks"
 					value="{claimitem_input>/claim_item/remark}"
@@ -931,9 +931,9 @@
 				/>
 
 				<!-- Attachment 1 -->
-				<Label text="{i18n>label_claimdetails_input_attachment1}" />
+				<Label text="{i18n>label_claimdetails_input_attachment_file_1}" />
 				<u:FileUploader
-					id="fileuploader_claimdetails_input_attachment1"
+					id="fileuploader_claimdetails_input_attachment_file_1"
 					name="fileUploaderClaimDetailsInputAttachment1"
 					placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
 					uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
@@ -958,9 +958,9 @@
 				/>
 
 				<!-- Attachment 2 -->
-				<Label text="{i18n>label_claimdetails_input_attachment2}" />
+				<Label text="{i18n>label_claimdetails_input_attachment_file_2}" />
 				<u:FileUploader
-					id="fileuploader_claimdetails_input_attachment2"
+					id="fileuploader_claimdetails_input_attachment_file_2"
 					name="fileUploaderClaimDetailsInputAttachment2"
 					placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
 					uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
