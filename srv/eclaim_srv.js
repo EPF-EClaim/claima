@@ -648,11 +648,13 @@ module.exports = (srv) => {
             }
             const tx = cds.tx(req);
             const sIDType = aPayloadToCreateApproverDetailsTable[0].ID.substring(0, 3);
-            var sResult = "";
+            var sDelete = "";
+            var sInsert = "";
+            var aApproverDetails = "";
 
             if (sIDType == Constant.WorkflowType.REQUEST) {
 
-                const aPreApprovalDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
+                aApproverDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
                     PREAPPROVAL_ID: item.ID,
                     LEVEL: item.LEVEL,
                     APPROVER_ID: item.APPROVER_ID,
@@ -663,11 +665,12 @@ module.exports = (srv) => {
                     COMMENT: item.COMMENT
                 }));
 
-                sResult = await UpdatePreApprovalApprover(aPreApprovalDetails, tx);
+                sTableName = Constant.ApproverDetailsTable.REQUEST;
+                sKeyName = Constant.ApproverDetailsTable.PREAPPROVAL_ID;
             }
             else if (sIDType == Constant.WorkflowType.CLAIM) {
 
-                const aClaimsDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
+                aApproverDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
                     CLAIM_ID: item.ID,
                     LEVEL: item.LEVEL,
                     APPROVER_ID: item.APPROVER_ID,
@@ -678,40 +681,59 @@ module.exports = (srv) => {
                     COMMENT: item.COMMENT
                 }));
 
-                sResult = await UpdateClaimsApprover(aClaimsDetails, tx);
+                sTableName = Constant.ApproverDetailsTable.CLAIM;
+                sKeyName = Constant.ApproverDetailsTable.CLAIM_ID;
             }
 
-            return { success: true, sResult };
+            sDelete = await DeleteApproverDetails(sTableName, sKeyName, aPayloadToCreateApproverDetailsTable[0].ID, tx);
+            sInsert = await InsertApproverDetails(sTableName, aApproverDetails, tx);
+
+            return { success: true, sDelete, sInsert };
         } catch (error) {
             req.error(400, `Fail creating record: ${error.message}`, req);
         }
     });
 
-    async function UpdatePreApprovalApprover(aPreApprovalApprover, tx) {
-
-        await tx.run(
-            DELETE.from('ZAPPROVER_DETAILS_PREAPPROVAL').where({ PREAPPROVAL_ID: aPreApprovalApprover[0].PREAPPROVAL_ID })
-        )
+    async function DeleteApproverDetails(sTableName, sKeyName, sClaimID, tx) {
 
         sResult = await tx.run(
-            INSERT(aPreApprovalApprover).into('ZAPPROVER_DETAILS_PREAPPROVAL')
+            DELETE.from(sTableName).where({ [sKeyName]: sClaimID })
         )
-        await tx.commit();
         return sResult;
     };
 
-    async function UpdateClaimsApprover(aClaimsApprover, tx) {
-
-        await tx.run(
-            DELETE.from('ZAPPROVER_DETAILS_CLAIMS').where({ CLAIM_ID: aClaimsApprover[0].CLAIM_ID })
-        )
-
+    async function InsertApproverDetails(sTableName, aApproverDetails, tx) {
         sResult = await tx.run(
-            INSERT(aClaimsApprover).into('ZAPPROVER_DETAILS_CLAIMS')
+            INSERT(aApproverDetails).into(sTableName)
         )
-        await tx.commit();
         return sResult;
     };
+
+    // async function UpdatePreApprovalApprover(aPreApprovalApprover, tx) {
+
+    //     await tx.run(
+    //         DELETE.from(Constant.ApproverDetailsTable.REQUEST).where({ PREAPPROVAL_ID: aPreApprovalApprover[0].PREAPPROVAL_ID })
+    //     )
+
+    //     sResult = await tx.run(
+    //         INSERT(aPreApprovalApprover).into(Constant.ApproverDetailsTable.REQUEST)
+    //     )
+    //     await tx.commit();
+    //     return sResult;
+    // };
+
+    // async function UpdateClaimsApprover(aClaimsApprover, tx) {
+
+    //     await tx.run(
+    //         DELETE.from(Constant.ApproverDetailsTable.CLAIM).where({ CLAIM_ID: aClaimsApprover[0].CLAIM_ID })
+    //     )
+
+    //     sResult = await tx.run(
+    //         INSERT(aClaimsApprover).into(Constant.ApproverDetailsTable.REQUEST)
+    //     )
+    //     await tx.commit();
+    //     return sResult;
+    // };
 
     // srv.on('WorkflowApproval', async (req) => {
     //     // const {ClaimsWorkflowApproval} = srv.entities;
