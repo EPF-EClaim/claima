@@ -2650,16 +2650,16 @@ sap.ui.define([
 			// check date/time values to be used for calculation
 			//// Start Date/Start Time/End Date/End Time
 			if (this.byId("datepicker_claimdetails_input_start_date").getVisible()) {
-				var startDate = "datepicker_claimdetails_input_start_date";
-				var startTime = "timepicker_claimdetails_input_start_time";
-				var endDate = "datepicker_claimdetails_input_end_date";
-				var endTime = "timepicker_claimdetails_input_end_time";
+				var sStartDate = "datepicker_claimdetails_input_start_date";
+				var sStartTime = "timepicker_claimdetails_input_start_time";
+				var sEndDate = "datepicker_claimdetails_input_end_date";
+				var sEndTime = "timepicker_claimdetails_input_end_time";
 			}
 			else if (this.byId("datepicker_claimdetails_input_trip_start_date").getVisible()) {
-				startDate = "datepicker_claimdetails_input_trip_start_date";
-				startTime = "timepicker_claimdetails_input_trip_start_time";
-				endDate = "datepicker_claimdetails_input_trip_end_date";
-				endTime = "timepicker_claimdetails_input_trip_end_time";
+				sStartDate = "datepicker_claimdetails_input_trip_start_date";
+				sStartTime = "timepicker_claimdetails_input_trip_start_time";
+				sEndDate = "datepicker_claimdetails_input_trip_end_date";
+				sEndTime = "timepicker_claimdetails_input_trip_end_time";
 			}
 			else {
 				return;
@@ -2668,31 +2668,31 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (
-				(this.byId(startDate).getVisible() && !this.byId(startDate).getValue()) ||
-				(this.byId(startTime).getVisible() && !this.byId(startTime).getValue()) ||
-				(this.byId(endDate).getVisible() && !this.byId(endDate).getValue()) ||
-				(this.byId(endTime).getVisible() && !this.byId(endTime).getValue()) ||
+				(this.byId(sStartDate).getVisible() && !this.byId(sStartDate).getValue()) ||
+				(this.byId(sStartTime).getVisible() && !this.byId(sStartTime).getValue()) ||
+				(this.byId(sEndDate).getVisible() && !this.byId(sEndDate).getValue()) ||
+				(this.byId(sEndTime).getVisible() && !this.byId(sEndTime).getValue()) ||
 				(this.byId("select_claimdetails_input_region").getVisible() && !oInputModel.getProperty("/claim_item/region"))
 			) {
 				return;
 			}
 			// calculate travel duration (days/hours)
-			var startDateValue = this.byId(startDate).getValue();
-			var endDateValue = this.byId(endDate).getValue();
-			var startTimeValue = this.byId(startTime).getDateValue();
-			var endTimeValue = this.byId(endTime).getDateValue();
-			var startDateUnix = new Date(startDateValue).valueOf();
-			startDateUnix = startDateUnix + new Date(startTimeValue).valueOf();
-			var endDateUnix = new Date(endDateValue).valueOf();
-			endDateUnix = endDateUnix + new Date(endTimeValue).valueOf();
+			var sStartDateValue = this.byId(sStartDate).getValue();
+			var sEndDateValue = this.byId(sEndDate).getValue();
+			var sStartTimeValue = this.byId(sStartTime).getDateValue();
+			var sEndTimeValue = this.byId(sEndTime).getDateValue();
+			var iStartDateUnix = new Date(sStartDateValue).valueOf();
+			iStartDateUnix = iStartDateUnix + new Date(sStartTimeValue).valueOf();
+			var iEndDateUnix = new Date(sEndDateValue).valueOf();
+			iEndDateUnix = iEndDateUnix + new Date(sEndTimeValue).valueOf();
 
 			if (this.byId("input_claimdetails_input_travel_duration_day").getVisible()) {
-				var travelDays = Math.floor((endDateUnix - startDateUnix) / 86400000); // round down days
-				this.byId("input_claimdetails_input_travel_duration_day").setValue(travelDays);
+				var iTravelDays = Math.floor((iEndDateUnix - iStartDateUnix) / 86400000); // round down days
+				this.byId("input_claimdetails_input_travel_duration_day").setValue(iTravelDays);
 			}
 			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
-				var travelHours = Math.floor((endDateUnix - startDateUnix) / 3600000); // round down hours
-				this.byId("input_claimdetails_input_travel_duration_hour").setValue(travelHours);
+				var iTravelHours = Math.floor((iEndDateUnix - iStartDateUnix) / 3600000); // round down hours
+				this.byId("input_claimdetails_input_travel_duration_hour").setValue(iTravelHours);
 			}
 
 			// get details from per diem table
@@ -2703,8 +2703,8 @@ sap.ui.define([
 				new Filter("LOCATION", FilterOperator.EQ, oInputModel.getProperty("/claim_item/region")),
 				new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_id")),
 				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_item_id")),
-				new Filter("START_DATE", FilterOperator.LE, this._getHanaDate(this.byId(startDate).getValue())),
-				new Filter("END_DATE", FilterOperator.GE, this._getHanaDate(this.byId(endDate).getValue()))
+				new Filter("START_DATE", FilterOperator.LE, this._getHanaDate(this.byId(sStartDate).getValue())),
+				new Filter("END_DATE", FilterOperator.GE, this._getHanaDate(this.byId(sEndDate).getValue()))
 			]);
 
 			try {
@@ -2713,40 +2713,40 @@ sap.ui.define([
 				if (aContexts.length > 0) {
 					// get amount from oData
 					var oData = aContexts[0].getObject();
-					var entBfast = parseFloat(oData.AMOUNT) * 0.2;
-					var entLunch = parseFloat(oData.AMOUNT) * 0.4;
-					var entDinner = parseFloat(oData.AMOUNT) * 0.4;
+					var iEntBfast = parseFloat(oData.AMOUNT) * 0.2;
+					var iEntLunch = parseFloat(oData.AMOUNT) * 0.4;
+					var iEntDinner = parseFloat(oData.AMOUNT) * 0.4;
 					//// modifier based on travel duration (hours)
 					if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
 						if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 24) {
 							// full meal allowance
-							entBfast = entBfast * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
-							entLunch = entLunch * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
-							entDinner = entDinner * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+							iEntBfast = iEntBfast * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+							iEntLunch = iEntLunch * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+							iEntDinner = iEntDinner * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
 						}
 						else if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 8) {
 							// daily allowance (half of meal allowance)
-							entBfast = entBfast / 2;
-							entLunch = entLunch / 2;
-							entDinner = entDinner / 2;
+							iEntBfast = iEntBfast / 2;
+							iEntLunch = iEntLunch / 2;
+							iEntDinner = iEntDinner / 2;
 						}
 						else { // if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) < 8)
 							// no meal allowance
-							entBfast = entBfast * 0;
-							entLunch = entLunch * 0;
-							entDinner = entDinner * 0;
+							iEntBfast = iEntBfast * 0;
+							iEntLunch = iEntLunch * 0;
+							iEntDinner = iEntDinner * 0;
 						}
 					}
 
 					// assign entitled meal values
 					if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
-						this.byId("input_claimdetails_input_entitled_breakfast").setValue(entBfast);
+						this.byId("input_claimdetails_input_entitled_breakfast").setValue(iEntBfast);
 					}
 					if (this.byId("input_claimdetails_input_entitled_lunch").getVisible()) {
-						this.byId("input_claimdetails_input_entitled_lunch").setValue(entLunch);
+						this.byId("input_claimdetails_input_entitled_lunch").setValue(iEntLunch);
 					}
 					if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
-						this.byId("input_claimdetails_input_entitled_dinner").setValue(entDinner);
+						this.byId("input_claimdetails_input_entitled_dinner").setValue(iEntDinner);
 					}
 					this.onChange_ClaimDetails_ProvidedMeals();
 				} else {
@@ -2760,18 +2760,18 @@ sap.ui.define([
 		},
 
 		onChange_ClaimDetails_ProvidedMeals: function () {
-			var provBfast = parseFloat(this.byId("input_claimdetails_input_provided_breakfast"));
-			if (isNaN(provBfast)) { provBfast = 0.0; }
-			var provLunch = parseFloat(this.byId("input_claimdetails_input_provided_lunch"));
-			if (isNaN(provLunch)) { provLunch = 0.0; }
-			var provDinner = parseFloat(this.byId("input_claimdetails_input_provided_dinner"));
-			if (isNaN(provDinner)) { provDinner = 0.0; }
-			var entBfast = parseFloat(this.byId("input_claimdetails_input_entitled_breakfast"));
-			if (isNaN(entBfast)) { entBfast = 0.0; }
-			var entLunch = parseFloat(this.byId("input_claimdetails_input_entitled_lunch"));
-			if (isNaN(entLunch)) { entLunch = 0.0; }
-			var entDinner = parseFloat(this.byId("input_claimdetails_input_entitled_dinner"));
-			if (isNaN(entDinner)) { entDinner = 0.0; }
+			var iProvBfast = parseFloat(this.byId("input_claimdetails_input_provided_breakfast"));
+			if (isNaN(iProvBfast)) { iProvBfast = 0.0; }
+			var iProvLunch = parseFloat(this.byId("input_claimdetails_input_provided_lunch"));
+			if (isNaN(iProvLunch)) { iProvLunch = 0.0; }
+			var iProvDinner = parseFloat(this.byId("input_claimdetails_input_provided_dinner"));
+			if (isNaN(iProvDinner)) { iProvDinner = 0.0; }
+			var iEntBfast = parseFloat(this.byId("input_claimdetails_input_entitled_breakfast"));
+			if (isNaN(iEntBfast)) { iEntBfast = 0.0; }
+			var iEntLunch = parseFloat(this.byId("input_claimdetails_input_entitled_lunch"));
+			if (isNaN(iEntLunch)) { iEntLunch = 0.0; }
+			var iEntDinner = parseFloat(this.byId("input_claimdetails_input_entitled_dinner"));
+			if (isNaN(iEntDinner)) { iEntDinner = 0.0; }
 			var amount = 0.0;
 
 			// calculate total amount
@@ -2782,25 +2782,25 @@ sap.ui.define([
 				return;
 			}
 			//// breakfast
-			if (entBfast > 0.0 && provBfast > entBfast) {
-				this.byId("input_claimdetails_input_amount").setValue(amount + entBfast);
+			if (iEntBfast > 0.0 && iProvBfast > iEntBfast) {
+				this.byId("input_claimdetails_input_amount").setValue(amount + iEntBfast);
 			}
 			else {
-				this.byId("input_claimdetails_input_amount").setValue(amount + provBfast);
+				this.byId("input_claimdetails_input_amount").setValue(amount + iProvBfast);
 			}
 			//// lunch
-			if (entLunch > 0.0 && provLunch > entLunch) {
-				this.byId("input_claimdetails_input_amount").setValue(amount + entLunch);
+			if (iEntLunch > 0.0 && iProvLunch > iEntLunch) {
+				this.byId("input_claimdetails_input_amount").setValue(amount + iEntLunch);
 			}
 			else {
-				this.byId("input_claimdetails_input_amount").setValue(amount + provLunch);
+				this.byId("input_claimdetails_input_amount").setValue(amount + iProvLunch);
 			}
 			//// dinner
-			if (entDinner > 0.0 && provDinner > entDinner) {
-				this.byId("input_claimdetails_input_amount").setValue(amount + entDinner);
+			if (iEntDinner > 0.0 && iProvDinner > iEntDinner) {
+				this.byId("input_claimdetails_input_amount").setValue(amount + iEntDinner);
 			}
 			else {
-				this.byId("input_claimdetails_input_amount").setValue(amount + provDinner);
+				this.byId("input_claimdetails_input_amount").setValue(amount + iProvDinner);
 			}
 		},
 
