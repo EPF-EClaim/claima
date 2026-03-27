@@ -505,6 +505,43 @@ sap.ui.define([
                 RANK:               oEmployeeDetail.RANK,
                 DIRECT_SUPERIOR:    oEmployeeDetail.DIRECT_SUPPERIOR
             };
+        },
+
+        getRejectReasonDescription:async function(oModel, sReasonID){
+            if (!this.sanityCheck(oModel, "msg_failed_omodel_undefined")) return null;
+            if (!this.sanityCheck(sReasonID, "msg_failed_reasonid_undefined")) return null;
+
+            // Ensure metadata is loaded
+            await oModel.getMetaModel().requestObject("/");
+
+            // Main table path
+            const sRejectReasonTablePath = Constants.Entities.ZREJECT_REASON;
+            
+            // Filters:
+            // REASON_ID EQ sReasonID
+            const aFilters = [
+                new Filter(Constants.EntitiesFields.REASON_ID, FilterOperator.EQ, sReasonID),
+            ];
+
+            // Bind list
+            const oBinding = oModel.bindList(
+                sRejectReasonTablePath,
+                null,
+                null,
+                aFilters,
+                { $$ownRequest: true }
+            );
+
+            // Fetch data
+            const aCtx = await oBinding.requestContexts(0, Infinity);
+            if (!aCtx || aCtx.length === 0) {
+                return null; // no status id found
+            }
+            const oData = aCtx[0].getObject();
+            // Return only the required fields
+            return {
+                REASON_DESC:               oData.REASON_DESC
+            };
         }
     };
     

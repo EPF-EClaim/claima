@@ -94,8 +94,8 @@
                                     <Column><Text text="{i18n>claimPurpose}" /></Column>
                                     <Column><Text text="{i18n>employee_name}" /></Column>
                                     <Column><Text text="{i18n>claimDate}" /></Column>
-                                    <Column><Text text="{i18n>amtdue}" /></Column>
-                                    <Column><Text text="{i18n>amtreq}" /></Column>
+                                    <Column><Text text="{i18n>final_amt}" /></Column>
+                                    <Column><Text text="{i18n>preapp_amt}" /></Column>
                                 </columns>
 
                                 <items>
@@ -114,7 +114,7 @@
                                                 formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
                                             }"/>
                                             <Text text="{
-                                                path: 'claim_status>TOTAL_CLAIM_AMOUNT',
+                                                path: 'claim_status>PREAPPROVED_AMOUNT',
                                                 type: 'sap.ui.model.type.Float',
                                                 formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
                                             }"/>
