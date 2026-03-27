@@ -647,11 +647,11 @@ module.exports = (srv) => {
                 throw new Error('No Data Sent')
             }
             const tx = cds.tx(req);
-            const IDType = aPayloadToCreateApproverDetailsTable[0].ID.substring(0, 3);
+            const sIDType = aPayloadToCreateApproverDetailsTable[0].ID.substring(0, 3);
 
-            if (IDType == Constant.WorkflowType.REQUEST) {
+            if (sIDType == Constant.WorkflowType.REQUEST) {
 
-                const PreApprovalDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
+                const aPreApprovalDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
                     PREAPPROVAL_ID: item.ID,
                     LEVEL: item.LEVEL,
                     APPROVER_ID: item.APPROVER_ID,
@@ -662,11 +662,11 @@ module.exports = (srv) => {
                     COMMENT: item.COMMENT
                 }));
 
-                const result = await UpdatePreApprovalApprover(PreApprovalDetails, tx);
+                const sResult = await UpdatePreApprovalApprover(aPreApprovalDetails, tx);
             }
-            else if (IDType == Constant.WorkflowType.CLAIM) {
+            else if (sIDType == Constant.WorkflowType.CLAIM) {
 
-                const ClaimsDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
+                const aClaimsDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
                     CLAIM_ID: item.ID,
                     LEVEL: item.LEVEL,
                     APPROVER_ID: item.APPROVER_ID,
@@ -677,39 +677,39 @@ module.exports = (srv) => {
                     COMMENT: item.COMMENT
                 }));
 
-                result = await UpdateClaimsApprover(ClaimsDetails, tx);
+                sResult = await UpdateClaimsApprover(aClaimsDetails, tx);
             }
 
-            return { success: true, result };
+            return { success: true, sResult };
         } catch (error) {
             req.error(400, `Fail creating record: ${error.message}`, req);
         }
     });
 
-    async function UpdatePreApprovalApprover(PreApprovalApprover, tx) {
+    async function UpdatePreApprovalApprover(aPreApprovalApprover, tx) {
 
         await tx.run(
-            DELETE.from('ZAPPROVER_DETAILS_PREAPPROVAL').where({ PREAPPROVAL_ID: PreApprovalApprover[0].PREAPPROVAL_ID })
+            DELETE.from('ZAPPROVER_DETAILS_PREAPPROVAL').where({ PREAPPROVAL_ID: aPreApprovalApprover[0].PREAPPROVAL_ID })
         )
 
-        result = await tx.run(
-            INSERT(PreApprovalApprover).into('ZAPPROVER_DETAILS_PREAPPROVAL')
+        aResult = await tx.run(
+            INSERT(aPreApprovalApprover).into('ZAPPROVER_DETAILS_PREAPPROVAL')
         )
         await tx.commit();
-        return result;
+        return aResult;
     };
 
-    async function UpdateClaimsApprover(ClaimsApprover, tx) {
+    async function UpdateClaimsApprover(aClaimsApprover, tx) {
 
         await tx.run(
-            DELETE.from('ZAPPROVER_DETAILS_CLAIMS').where({ CLAIM_ID: ClaimsApprover[0].CLAIM_ID })
+            DELETE.from('ZAPPROVER_DETAILS_CLAIMS').where({ CLAIM_ID: aClaimsApprover[0].CLAIM_ID })
         )
 
-        result = await tx.run(
-            INSERT(ClaimsApprover).into('ZAPPROVER_DETAILS_CLAIMS')
+        aResult = await tx.run(
+            INSERT(aClaimsApprover).into('ZAPPROVER_DETAILS_CLAIMS')
         )
         await tx.commit();
-        return result;
+        return aResult;
     };
 
     // srv.on('WorkflowApproval', async (req) => {
