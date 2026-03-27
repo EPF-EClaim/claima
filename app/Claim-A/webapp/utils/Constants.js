@@ -266,6 +266,14 @@ sap.ui.define([
             "EDIT": "i_edit",
             "LIST": "list",
             "CREATE": "create"
+        },
+        "RequestType": {
+            "TRAVEL"        : "RT0001",
+            "MOBILE"        : "RT0002",
+            "EVENTS"        : "RT0003",
+            "REIMBURSEMENT" : "RT0004",
+            "MEDICAL"       : "RT0005",
+            "PROJECT"       : "RT0006"
         }
 
     }

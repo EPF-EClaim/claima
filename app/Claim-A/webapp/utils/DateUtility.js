@@ -90,6 +90,33 @@ sap.ui.define([
                 dMergedDate.setHours(0, 0, 0, 0);
             }
             return dMergedDate;
-        }
+        },
+
+        calculateNumberOfDays: function(oHeader, oItem) {
+			const dHeaderStart = oHeader.tripstartdate ? new Date(oHeader.tripstartdate) : null;
+			const dHeaderEnd = oHeader.tripenddate ? new Date(oHeader.tripenddate) : null;
+
+			const dItemStart = oItem.start_date ? new Date(oItem.start_date) : null;
+			const dItemEnd = oItem.end_date ? new Date(oItem.end_date) : null;
+
+			const dFinalStart = dItemStart || dHeaderStart;
+			const dFinalEnd = dItemEnd || dHeaderEnd;
+
+			if (!dFinalStart || !dFinalEnd || isNaN(dFinalStart.getTime()) || isNaN(dFinalEnd.getTime())) {
+				return 0;
+			}
+
+			const iStartMidnight = new Date(dFinalStart).setHours(0, 0, 0, 0);
+			const iEndMidnight = new Date(dFinalEnd).setHours(0, 0, 0, 0);
+
+			let iDiffDays = 0;
+
+			if (iEndMidnight >= iStartMidnight) {
+				const iMsPerDay = 1000 * 60 * 60 * 24;
+				iDiffDays = Math.floor((iEndMidnight - iStartMidnight) / iMsPerDay) + 1;
+			}
+
+			return iDiffDays;
+		}
     };
 });
