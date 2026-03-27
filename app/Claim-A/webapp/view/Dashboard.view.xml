@@ -151,7 +151,7 @@
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="{i18n>label_claimdetails_input_startdate}" />
+                                                    <Text text="{i18n>label_claimdetails_input_start_date}" />
                                                 </header>
                                             </Column>
                                             <Column hAlign="End">
@@ -277,7 +277,7 @@
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="{i18n>label_claimdetails_input_startdate}" />
+                                                    <Text text="{i18n>label_claimdetails_input_start_date}" />
                                                 </header>
                                             </Column>
                                             <Column hAlign="End">
@@ -404,7 +404,7 @@
                                             </Column>
                                             <Column demandPopin="true">
                                                 <header>
-                                                    <Text text="{i18n>label_claimdetails_input_startdate}" />
+                                                    <Text text="{i18n>label_claimdetails_input_start_date}" />
                                                 </header>
                                             </Column>
                                             <Column hAlign="End">

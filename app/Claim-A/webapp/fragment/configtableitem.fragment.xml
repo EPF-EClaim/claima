@@ -24,12 +24,12 @@
         </HBox>
 
         <HBox class="sapUiTinyMarginBottom" alignItems="Start">
-            <Label text="{i18n>label_claimdetails_input_startdate} :  " />
+            <Label text="{i18n>label_claimdetails_input_start_date} :  " />
             <Text text="{path: 'START_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}" />
         </HBox>
 
         <HBox class="sapUiTinyMarginBottom" alignItems="Start">
-            <Label text="{i18n>label_claimdetails_input_enddate}  :  " />
+            <Label text="{i18n>label_claimdetails_input_end_date}  :  " />
             <Text text="{path: 'END_DATE', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd MMM yyyy' }}" />
         </HBox>
 
