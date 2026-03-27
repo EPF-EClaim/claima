@@ -1,22 +1,22 @@
-POST    http://localhost:4004/odata/v4/EmployeeSrv/budgetchecking
-Content-Type: application/json
-Authorization: Basic alice
+# POST    http://localhost:4004/odata/v4/EmployeeSrv/budgetchecking
+# Content-Type: application/json
+# Authorization: Basic alice
  
-{
-    "budget": [
-      {
-      "YEAR": "2026",
-      "INTERNAL_ORDER": "1",
-      "FUND_CENTER": "112S30006", 
-      "MATERIAL_GROUP": "732002901", 
-      "COMMITMENT_ITEM": "732002",
-      "CLAIM_TYPE_ITEM": "KILOMETER",
-      "AMOUNT": 100.00, 
-      "INDICATOR": "REQ", 
-      "ACTION": "SUBMIT"
-     }
-    ]
-}
+# {
+#     "budget": [
+#       {
+#       "YEAR": "2026",
+#       "INTERNAL_ORDER": "1",
+#       "FUND_CENTER": "112S30006", 
+#       "MATERIAL_GROUP": "732002901", 
+#       "COMMITMENT_ITEM": "732002",
+#       "CLAIM_TYPE_ITEM": "KILOMETER",
+#       "AMOUNT": 100.00, 
+#       "INDICATOR": "REQ", 
+#       "ACTION": "SUBMIT"
+#      }
+#     ]
+# }
 
 # GET http://localhost:4004/odata/v4/EmployeeSrv/ZBUDGET
 
@@ -100,3 +100,81 @@ Authorization: Basic alice
 #      }
 #     ]
 #    }
+
+# POST    http://localhost:4004/odata/v4/EmployeeSrv/WorkflowApproval
+# Content-Type: application/json
+# Authorization: Basic alice
+ 
+#    {
+#     "ClaimID": "CLM26000000001"
+#    }
+
+POST    http://localhost:4004/odata/v4/EmployeeSrv/UpdateApproverDetails
+Content-Type: application/json
+Authorization: Basic alice
+ 
+   {
+    "ApproverDetails": [
+      {
+        "ID"         : "CLM26000000140",
+        "LEVEL"                  : "1",
+        "APPROVER_ID"            : "903783",
+        "SUBSTITUTE_APPROVER_ID" : "902733",
+        "STATUS"                 : "STAT02",
+        "REJECT_REASON_ID"       : "R01",
+        "PROCESS_TIMESTAMP"      : "2026-03-27 01:45:57.546000000",
+        "COMMENT"                : "SEND BACk"
+     },
+     {
+        "ID"         : "CLM26000000140",
+        "LEVEL"                  : "2",
+        "APPROVER_ID"            : "903783",
+        "SUBSTITUTE_APPROVER_ID" : "902733",
+        "STATUS"                 : "STAT02",
+        "REJECT_REASON_ID"       : "R02",
+        "PROCESS_TIMESTAMP"      : "2026-03-27 01:45:57.546000000",
+        "COMMENT"                : "REJECT"
+     },
+     {
+        "ID"         : "CLM26000000140",
+        "LEVEL"                  : "3",
+        "APPROVER_ID"            : "903783",
+        "SUBSTITUTE_APPROVER_ID" : "902733",
+        "STATUS"                 : "STAT02",
+        "REJECT_REASON_ID"       : "R03",
+        "PROCESS_TIMESTAMP"      : "2026-03-27 01:45:57.546000000",
+        "COMMENT"                : "TEST"
+     }
+    ]
+   }
+
+  #  {
+  #       "ID"         : "REQ26000000022",
+  #       "LEVEL"                  : "1",
+  #       "APPROVER_ID"            : "1900522",
+  #       "SUBSTITUTE_APPROVER_ID" : null,
+  #       "STATUS"                 : "STAT02",
+  #       "REJECT_REASON_ID"       : null,
+  #       "PROCESS_TIMESTAMP"      : null,
+  #       "COMMENT"                : null
+  #    },
+  #    {
+  #       "ID"         : "REQ26000000022",
+  #       "LEVEL"                  : "2",
+  #       "APPROVER_ID"            : "1900522",
+  #       "SUBSTITUTE_APPROVER_ID" : null,
+  #       "STATUS"                 : "STAT02",
+  #       "REJECT_REASON_ID"       : null,
+  #       "PROCESS_TIMESTAMP"      : null,
+  #       "COMMENT"                : null
+  #    },
+  #    {
+  #       "ID"         : "REQ26000000022",
+  #       "LEVEL"                  : "3",
+  #       "APPROVER_ID"            : "1900522",
+  #       "SUBSTITUTE_APPROVER_ID" : null,
+  #       "STATUS"                 : "STAT02",
+  #       "REJECT_REASON_ID"       : null,
+  #       "PROCESS_TIMESTAMP"      : null,
+  #       "COMMENT"                : null
+  #    }

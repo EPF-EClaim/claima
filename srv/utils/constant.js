@@ -39,7 +39,12 @@ const Constant = {
             "CONSUMED",
             "BUDGET_BALANCE"
         ]
-    }
+    },
+
+    WorkflowType: {
+            "CLAIM": "CLM",
+            "REQUEST": "REQ"
+        },
 
 };
 
