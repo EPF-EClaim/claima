@@ -1,5 +1,5 @@
 const cds = require('@sap/cds');
-const { INSERT, UPDATE, UPSERT, SELECT, where } = require('@sap/cds/lib/ql/cds-ql');
+const { INSERT, UPDATE, UPSERT, SELECT, DELETE, where } = require('@sap/cds/lib/ql/cds-ql');
 const express = require('express');
 const app = express();
 const { Constant } = require("./utils/constant");
@@ -116,13 +116,6 @@ module.exports = (srv) => {
                 department: dept?.DEPARTMENT_DESC || "UNKNOWN"
             };
         });
-
-    srv.on('runjob', req => {
-        console.log('==> [APP JOB LOG] Job is running . . .');
-        return {
-            responseArray: [{ "message": "finished" }]
-        };
-    });
 
     srv.on('READ', 'FeatureControl', async (req) => {
         const { ZEMP_MASTER } = srv.entities;
@@ -482,6 +475,8 @@ module.exports = (srv) => {
     async function updateClaimHeaderTotals(req, sClaimId, tx) {
         if (!sClaimId) return;
 
+        const headerResult = await SELECT.one.from('ZCLAIM_HEADER').where({ CLAIM_ID: sClaimId });
+
         const result = await tx.run(
             SELECT.one`
                 SUM(AMOUNT) as TotalClaimAmount
@@ -491,12 +486,13 @@ module.exports = (srv) => {
         );
 
         const totalClaimAmount = result.TotalClaimAmount || 0;
+        const finalAmountToReceive = (totalClaimAmount - headerResult.CASH_ADVANCE_AMOUNT) || 0;    
 
         await tx.run(
             UPDATE('ZCLAIM_HEADER')
                 .set({
                     TOTAL_CLAIM_AMOUNT: totalClaimAmount,
-                    FINAL_AMOUNT_TO_RECEIVE: totalClaimAmount
+                    FINAL_AMOUNT_TO_RECEIVE: finalAmountToReceive
                 })
                 .where({ CLAIM_ID: sClaimId })
         );
@@ -644,5 +640,119 @@ module.exports = (srv) => {
         } catch (error) {
             req.error(400, `Fail creating record: ${error.message}`);
         }
-    })
+    });
+
+    srv.on('UpdateApproverDetails', async (req) => {
+        try {
+            const { aPayloadToCreateApproverDetailsTable } = req.data;
+            console.log(aPayloadToCreateApproverDetailsTable);
+            if (!aPayloadToCreateApproverDetailsTable || aPayloadToCreateApproverDetailsTable.length === 0) {
+                throw new Error('No Data Sent')
+            }
+            const tx = cds.tx(req);
+            const sIDType = aPayloadToCreateApproverDetailsTable[0].ID.substring(0, 3);
+            var sResult = "";
+
+            if (sIDType == Constant.WorkflowType.REQUEST) {
+
+                const aPreApprovalDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
+                    PREAPPROVAL_ID: item.ID,
+                    LEVEL: item.LEVEL,
+                    APPROVER_ID: item.APPROVER_ID,
+                    SUBSTITUTE_APPROVER_ID: item.SUBSTITUTE_APPROVER_ID,
+                    STATUS: item.STATUS,
+                    REJECT_REASON_ID: item.REJECT_REASON_ID,
+                    PROCESS_TIMESTAMP: item.PROCESS_TIMESTAMP,
+                    COMMENT: item.COMMENT
+                }));
+
+                sResult = await UpdatePreApprovalApprover(aPreApprovalDetails, tx);
+            }
+            else if (sIDType == Constant.WorkflowType.CLAIM) {
+
+                const aClaimsDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
+                    CLAIM_ID: item.ID,
+                    LEVEL: item.LEVEL,
+                    APPROVER_ID: item.APPROVER_ID,
+                    SUBSTITUTE_APPROVER_ID: item.SUBSTITUTE_APPROVER_ID,
+                    STATUS: item.STATUS,
+                    REJECT_REASON_ID: item.REJECT_REASON_ID,
+                    PROCESS_TIMESTAMP: item.PROCESS_TIMESTAMP,
+                    COMMENT: item.COMMENT
+                }));
+
+                sResult = await UpdateClaimsApprover(aClaimsDetails, tx);
+            }
+
+            return { success: true, sResult };
+        } catch (error) {
+            req.error(400, `Fail creating record: ${error.message}`, req);
+        }
+    });
+
+    async function UpdatePreApprovalApprover(aPreApprovalApprover, tx) {
+
+        await tx.run(
+            DELETE.from('ZAPPROVER_DETAILS_PREAPPROVAL').where({ PREAPPROVAL_ID: aPreApprovalApprover[0].PREAPPROVAL_ID })
+        )
+
+        sResult = await tx.run(
+            INSERT(aPreApprovalApprover).into('ZAPPROVER_DETAILS_PREAPPROVAL')
+        )
+        await tx.commit();
+        return sResult;
+    };
+
+    async function UpdateClaimsApprover(aClaimsApprover, tx) {
+
+        await tx.run(
+            DELETE.from('ZAPPROVER_DETAILS_CLAIMS').where({ CLAIM_ID: aClaimsApprover[0].CLAIM_ID })
+        )
+
+        sResult = await tx.run(
+            INSERT(aClaimsApprover).into('ZAPPROVER_DETAILS_CLAIMS')
+        )
+        await tx.commit();
+        return sResult;
+    };
+
+    // srv.on('WorkflowApproval', async (req) => {
+    //     // const {ClaimsWorkflowApproval} = srv.entities;
+    //     const tx = cds.tx(req);
+    //     try {
+    //         const { ClaimID } = req.data;
+    //         // oClaimsHeaderItemClaimantData = await RetrieveClaimsData(ClaimID, tx);
+
+    //         // if (oClaimsData.CASH_ADVANCE_AMOUNT > 0) {
+    //         //     const bClaimCashAdvance = true;
+    //         // }else{
+    //         //     bClaimCashAdvance = false;
+    //         // };
+
+    //         // RetrieveWorkflow(req);
+    //         // RetrieveApprovers(req);
+
+    //         return ClaimID;
+    //     } catch (error) {
+    //         req.error(400, `Fail creating record: ${error.message}`);
+    //     }
+    // });
+
+    // async function RetrieveClaimsData(sClaimID, tx) {
+    //     if (!sClaimID) return;
+    //     const { ClaimsWorkflowApproval } = srv.entities;
+    //     const result = await tx.run(
+    //         SELECT.from(ClaimsWorkflowApproval).where({ClaimID: sClaimID})
+    //     );
+    //     return result;
+    // }
+
+    // async function RetrieveWorkflow(oClaimsData) {
+
+    // };
+
+    // async function RetrieveApprovers(req) {
+
+    // };
+
 }

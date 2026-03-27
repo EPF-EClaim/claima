@@ -260,6 +260,7 @@ sap.ui.define([
 
             // Main table path
             const sBudgetTablePath = Constants.Entities.ZBUDGET;
+            let sEEID = "";
 
             // Build filter
             const aFilters = [
@@ -284,6 +285,9 @@ sap.ui.define([
             else{
                 oData = aCtx[0].getObject();
                 oBudgetOwner = await this.getEmployeeDetailsByEmail(oModel, oData.BUDGET_OWNER_ID)
+                if (oBudgetOwner){
+                    sEEID = oBudgetOwner.EEID
+                }
             }
 
             // Return only the required fields
@@ -294,7 +298,7 @@ sap.ui.define([
                 FUND_CENTER:        oData.FUND_CENTER,
                 MATERIAL_GROUP:     oData.MATERIAL_GROUP,
                 BUDGET_OWNER_EMAIL: oData.BUDGET_OWNER_ID,
-                BUDGET_OWNER_ID:    oBudgetOwner.EEID
+                BUDGET_OWNER_ID:    sEEID
             };
         },
         /**
@@ -500,6 +504,43 @@ sap.ui.define([
                 ROLE:               oEmployeeDetail.ROLE,
                 RANK:               oEmployeeDetail.RANK,
                 DIRECT_SUPERIOR:    oEmployeeDetail.DIRECT_SUPPERIOR
+            };
+        },
+
+        getRejectReasonDescription:async function(oModel, sReasonID){
+            if (!this.sanityCheck(oModel, "msg_failed_omodel_undefined")) return null;
+            if (!this.sanityCheck(sReasonID, "msg_failed_reasonid_undefined")) return null;
+
+            // Ensure metadata is loaded
+            await oModel.getMetaModel().requestObject("/");
+
+            // Main table path
+            const sRejectReasonTablePath = Constants.Entities.ZREJECT_REASON;
+            
+            // Filters:
+            // REASON_ID EQ sReasonID
+            const aFilters = [
+                new Filter(Constants.EntitiesFields.REASON_ID, FilterOperator.EQ, sReasonID),
+            ];
+
+            // Bind list
+            const oBinding = oModel.bindList(
+                sRejectReasonTablePath,
+                null,
+                null,
+                aFilters,
+                { $$ownRequest: true }
+            );
+
+            // Fetch data
+            const aCtx = await oBinding.requestContexts(0, Infinity);
+            if (!aCtx || aCtx.length === 0) {
+                return null; // no status id found
+            }
+            const oData = aCtx[0].getObject();
+            // Return only the required fields
+            return {
+                REASON_DESC:               oData.REASON_DESC
             };
         }
     };
