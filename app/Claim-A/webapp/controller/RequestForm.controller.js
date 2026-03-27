@@ -274,7 +274,7 @@ sap.ui.define([
 								MessageToast.show(Utility.getText("req_tm_s_delete_request"));
 								// Placeholder to put delete function for ZAPPROVER_DETAILS_PREAPPROVAL
 								//Call CAP action 
-								const oAction = oModel.bindContext("/DeleteApproverDetails(...)");
+								const oAction = this._oDataModel.bindContext("/DeleteApproverDetails(...)");
 								oAction.setParameter("ID", sCurrentReqId);
 								try {
 									await oAction.execute();
