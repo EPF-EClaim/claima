@@ -23,7 +23,7 @@
                     defaultAction="onSave" 
                     beforeMenuOpen="onBeforeMenuOpen" 
                     useDefaultActionOnly="true" 
-                    enabled="{= ${request>/view} !== 'view' }">
+                    enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }">
                     <menu>
                         <Menu itemSelected="onMenuAction">
                             <MenuItem text="{i18n>req_b_save_n_add}" press=".onSaveAddAnother" />
@@ -66,7 +66,7 @@
                                             change=".getFieldVisibility_ClaimTypeItem"
                                             items="{path: 'request>/claim_type_items',
                                                     sorter: { path: 'CLAIM_TYPE_ITEM_ID', descending: false }}"
-                                            enabled="{= ${request>/view} !== 'view' }" >
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }" >
                                             <items>
                                                 <core:Item key="{request>CLAIM_TYPE_ITEM_ID}" 
                                                         text="{request>CLAIM_TYPE_ITEM_DESC}" />
@@ -92,7 +92,7 @@
                                     <form:fields>
                                         <m:Input 
                                             textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             value="{request>/req_item/purpose}"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -106,7 +106,7 @@
                                             type="Number" 
                                             textAlign="Begin" 
                                             required="true" 
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="false"
                                             value="{request>/req_item/est_amount}"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -120,7 +120,7 @@
                                             selectedKey="{request>/req_item/dependent}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'request>/ZEMP_DEPENDENT',
                                                     sorter: { path: 'DEPENDENT_NO', descending: false }}">
                                             <items>
@@ -138,7 +138,7 @@
                                     <form:fields>
                                         <m:TextArea 
                                             textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             value="{request>/req_item/remark}"
                                             width="100%"/>
                                     </form:fields>
@@ -152,7 +152,7 @@
                                         <m:Input 
                                             textAlign="Begin" 
                                             required="true" 
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             value="{request>/req_item/course}"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -166,7 +166,7 @@
                                             selectedKey="{request>/req_item/sport_rep}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'employee>/ZSPORTS_REPRESENTATION',
                                                     sorter: { path: 'SPORTS_REPRESENTATION_ID', descending: false },
                                                     filters: [
@@ -187,7 +187,7 @@
                                         <CheckBox 
                                             required="true" 
                                             selected="{request>/req_item/club_membership}"
-                                            enabled="{= ${request>/view} !== 'view' }" />
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -198,7 +198,7 @@
                                     <form:fields>
                                         <unified:FileUploader
                                             change=".onImportChange1"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             required="true" 
                                             maximumFileSize='5.0'
                                             placeholder="{i18n>req_attachment_format}"
@@ -221,7 +221,7 @@
                                             selectedKey="{request>/req_item/cat_purpose}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'employee>/ZMOBILE_CATEGORY_PURPOSE',
                                                     sorter: { path: 'MOBILE_CATEGORY_PURPOSE_ID', descending: false },
                                                     filters: [
@@ -241,7 +241,7 @@
                                     <form:fields>
                                         <unified:FileUploader
                                             change=".onImportChange2"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             maximumFileSize='5.0'
                                             placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc2}"
@@ -276,7 +276,7 @@
                                             value="{request>/req_item/start_date}"
                                             textAlign="Begin"
                                             required="true" 
-                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -292,7 +292,7 @@
                                             value="{request>/req_item/end_date}"
                                             textAlign="Begin"
                                             required="true" 
-                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -305,7 +305,7 @@
                                             value="{request>/req_item/start_time}"
                                             maskMode='On'
                                             textAlign="Begin"
-                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -318,7 +318,7 @@
                                             value="{request>/req_item/end_time}"
                                             maskMode='On'
                                             textAlign="Begin"
-                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -331,7 +331,7 @@
                                             selectedKey="{request>/req_item/vehicle_ownership}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'employee>/ZVEHICLE_OWNERSHIP',
                                                     sorter: { path: 'VEHICLE_OWNERSHIP_ID', descending: false },
                                                     filters: [
@@ -353,7 +353,7 @@
                                             selectedKey="{request>/req_item/room_type}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'employee>/ZROOM_TYPE',
                                                     sorter: { path: 'ROOM_TYPE_ID', descending: false },
                                                     filters: [
@@ -375,7 +375,7 @@
                                             value="{request>/req_item/country}"
                                             editMode="Editable"
                                             display="ValueDescription"
-                                            visible="{= ${request>/view} !== 'view' }"
+                                            visible="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             required="true" 
                                             valueHelp="valuehelp_country"
                                         />
@@ -389,7 +389,7 @@
                                     <form:fields>
                                         <m:Input 
                                             textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             value="{request>/req_item/location}"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -403,7 +403,7 @@
                                             selectedKey="{request>/req_item/area}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'employee>/ZAREA',
                                                     sorter: { path: 'AREA_ID', descending: false },
                                                     filters: [
@@ -424,7 +424,7 @@
                                         <m:Input 
                                             type="Number"
                                             textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             value="{request>/req_item/no_of_family_member}"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -438,7 +438,7 @@
                                             selectedKey="{request>/req_item/type_of_vehicle}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'employee>/ZVEHICLE_TYPE',
                                                     sorter: { path: 'VEHICLE_TYPE_ID', descending: false },
                                                     filters: [
@@ -460,7 +460,7 @@
                                             selectedKey="{request>/req_item/fare_type}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'employee>/ZFARE_TYPE',
                                                     sorter: { path: 'FARE_TYPE_ID', descending: false },
                                                     filters: [
@@ -482,7 +482,7 @@
                                             selectedKey="{request>/req_item/vehicle_class}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'employee>/ZVEHICLE_CLASS',
                                                     sorter: { path: 'VEHICLE_CLASS_ID', descending: false },
                                                     filters: [
@@ -525,7 +525,7 @@
                                         <m:Input 
                                             type="Number" 
                                             textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             value="{request>/req_item/toll_amt}"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -539,7 +539,7 @@
                                             selectedKey="{request>/req_item/flight_class}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'employee>/ZFLIGHT_CLASS',
                                                     sorter: { path: 'FLIGHT_CLASS_ID', descending: false },
                                                     filters: [
@@ -561,7 +561,8 @@
                                             selectedKey="{request>/req_item/location_type}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            change=".onSelectLocationType"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'employee>/ZLOC_TYPE',
                                                     sorter: { path: 'LOC_TYPE_ID', descending: false },
                                                     filters: [
@@ -583,7 +584,7 @@
                                             selectedKey="{request>/req_item/from_state}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'employee>/ZSTATE',
                                                     sorter: { path: 'STATE_ID', descending: false },
                                                     filters: [
@@ -604,7 +605,7 @@
                                         <m:Input 
                                             required="true" 
                                             textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             value="{request>/req_item/from_location}"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -617,7 +618,7 @@
                                         <m:Input 
                                             required="true" 
                                             textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             value="{request>/req_item/from_location_office}"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -631,7 +632,7 @@
                                             selectedKey="{request>/req_item/to_state}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'employee>/ZSTATE',
                                                     sorter: { path: 'STATE_ID', descending: false },
                                                     filters: [
@@ -652,7 +653,7 @@
                                         <m:Input 
                                             required="true" 
                                             textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             value="{request>/req_item/to_location}"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -665,7 +666,7 @@
                                         <m:Input 
                                             required="true" 
                                             textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             value="{request>/req_item/to_location_office}"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -678,7 +679,7 @@
                                         <Select 
                                             selectedKey="{request>/req_item/mode_of_transfer}"
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'employee>/ZTRANSFER_MODE',
                                                     sorter: { path: 'TRANSFER_MODE_ID', descending: false },
                                                     filters: [
@@ -702,7 +703,7 @@
                                             placeholder="eg: 01 Jan 1990"
                                             value="{request>/req_item/tarikh_pindah}"
                                             textAlign="Begin"
-                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -725,7 +726,7 @@
                                             selectedKey="{request>/req_item/sss}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'employee>/ZREGION',
                                                     sorter: { path: 'REGION_ID', descending: false },
                                                     filters: [
@@ -746,7 +747,7 @@
                                         <Select 
                                             selectedKey="{request>/req_item/marriage_cat}" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'employee>/ZMARITAL_CAT',
                                                     sorter: { path: 'MARRIAGE_CATEGORY_ID', descending: false },
                                                     filters: [
@@ -766,7 +767,7 @@
                                     <form:fields>
                                         <m:Input 
                                             textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             value="{request>/req_item/cube_eligible}"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -782,7 +783,7 @@
                                             displayFormat="dd MMM yyyy HH:mm"
                                             valueFormat="dd MMM yyyy HH:mm"
                                             textAlign="Begin"
-                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -797,7 +798,7 @@
                                             displayFormat="dd MMM yyyy HH:mm"
                                             valueFormat="dd MMM yyyy HH:mm"
                                             textAlign="Begin"
-                                            enabled="{= ${request>/view} !== 'view' }"/>
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -809,7 +810,7 @@
                                         <Select 
                                             selectedKey="{request>/req_item/lodging_cat}" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             items="{path: 'employee>/ZLODGING_CAT',
                                                     sorter: { path: 'LODGING_CATEGORY_ID', descending: false },
                                                     filters: [
@@ -830,7 +831,8 @@
                                         <m:Input 
                                             type="Number" 
                                             textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            required="true"
+                                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"
                                             value="{request>/req_item/est_no_participant}"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -866,8 +868,8 @@
                             change=".onUploadParticipants"
                             style="Emphasized"
                             maximumFileSize="5.0"
-                            enabled="{= ${request>/view} !== 'view' }"/>
-                        <Button id="ipb_delete_participant" icon="sap-icon://delete" text="{i18n>req_b_delete}" press=".onRowDeleteParticipant" enabled="{= ${request>/view} !== 'view' }"/>
+                            enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"/>
+                        <Button id="ipb_delete_participant" icon="sap-icon://delete" text="{i18n>req_b_delete}" press=".onRowDeleteParticipant" enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }"/>
                     </OverflowToolbar>
                     <table:Table 
                         id="req_participant_table"
@@ -908,7 +910,8 @@
                                     textAlign="End" 
                                     value="{request>ALLOCATED_AMOUNT}" 
                                     type="Number"
-                                    enabled="{= ${request>/view} !== 'view'}"></Input>
+                                    change="populateEstimatedAmount"
+                                    enabled="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver'}"></Input>
                             </table:template>
                         </table:Column>
                         <table:rowActionTemplate>
@@ -918,7 +921,7 @@
                                         id="idp_delete_row_participant"
                                         type="Delete" 
                                         press="onRowDeleteParticipant" 
-                                        visible="{= ${request>/view} !== 'view' }" />
+                                        visible="{= ${request>/view} !== 'view' || ${request>/view} !== 'approver' }" />
                                 </table:items>
                             </table:RowAction>
                         </table:rowActionTemplate>

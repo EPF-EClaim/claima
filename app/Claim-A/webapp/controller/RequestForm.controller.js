@@ -154,7 +154,7 @@ sap.ui.define([
 			this._oFragments = Object.create(null);
 		},
 
-		async _showItemCreate(state, bEdit) {
+		async _showItemCreate(sState, bEdit) {
 			const oPage = this.byId("request_form");
 			if (!oPage) return;
 
@@ -169,7 +169,11 @@ sap.ui.define([
 				this.byId("i_attachment_2_file").setRequired(false);
 			} 
 
-			this._oReqModel.setProperty("/view", state);
+			if (sState === this._oConstant.PARMode.APPROVER) {
+				this._setAllControlsVisible(false);
+			}
+
+			this._oReqModel.setProperty("/view", sState);
 		},
 
 		async _showItemList(sReqId) {
@@ -390,8 +394,9 @@ sap.ui.define([
 
 		async onBackView() {
 			var oCreate = this.byId('request_create_item_fragment');
+			const sReqId = this._oReqModel.getProperty("/req_header/reqid");
 			if (oCreate) {
-				this._showItemList();
+				this._showItemList(sReqId);
 				this._oReqModel.setProperty('/req_item', {});
 			} else {
 				PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
@@ -404,6 +409,15 @@ sap.ui.define([
 					this._oRouter.navTo("RequestFormStatus");
 				}
 			}
+		},
+
+		onCancelItem() {
+			const oData = this._oReqModel.getData();
+			const sReqId = String(oData.req_header.reqid || "").trim();
+			this._oReqModel.setProperty('/req_item', {})
+
+			PARequestSharedFunction._getItemList(this, sReqId);
+			this._showItemList(sReqId);
 		},
 
 		/* =========================================================
@@ -1019,7 +1033,7 @@ sap.ui.define([
 										? oReqHeader.altcostcenter 
 										: oReqHeader.costcenter;
 					oReqItem.gl_account		= await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
-					oReqItem.material_code	= await budgetCheck._getMaterialCode(this._oDataModel, oReqItem.claim_type_item_id);
+					oReqItem.material_code	= await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
 				}
 
 				if (oReqItem.departure_time || oReqItem.arrival_time) {
@@ -1099,7 +1113,7 @@ sap.ui.define([
                     await this._upsertParticipantsForItem(sReqId, sReqSubId, oData.participant);
                     await this._oDataModel.submitBatch("itemSave");
 
-					// Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID ,sAttachment2_SFID)
+					Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID ,sAttachment2_SFID)
 
                 } else {
                     const oItemContext = this._oDataModel.bindList("/ZREQUEST_ITEM").create(oPayload, { $$updateGroupId: "itemCreate" });
@@ -1114,7 +1128,7 @@ sap.ui.define([
                     }
 					
 					// upload Child MDF
-					// Attachment.postMDFChild(sReqId, sGeneratedSubId, sAttachment1_SFID ,sAttachment2_SFID)
+					Attachment.postMDFChild(sReqId, sGeneratedSubId, sAttachment1_SFID ,sAttachment2_SFID)
 
                     const aParts = oData.participant || [];
                     let bHasParticipants = false;
@@ -1143,9 +1157,6 @@ sap.ui.define([
 
                 MessageToast.show("Success");
 				if (!bAddAnother) {
-					// await PARequestSharedFunction._getHeader(this, sReqId);
-					// await PARequestSharedFunction._getItemList(this, sReqId);
-					// this._showItemList();
 					this._loadRequest(sReqId);
 				}
 
@@ -1236,13 +1247,15 @@ sap.ui.define([
 			}
 		},
 
-		onCancelItem() {
-			const oData = this._oReqModel.getData();
-			const sReqId = String(oData.req_header.reqid || "").trim();
-			this._oReqModel.setProperty('/req_item', {})
+		populateEstimatedAmount(oEvent) {
+			const aParticipantList = this._oReqModel.getProperty("/participant");
 
-			PARequestSharedFunction._getItemList(this, sReqId);
-			this._showItemList(sReqId);
+			// Use let OR use reduce directly
+			const fEstAmount = aParticipantList.reduce((sum, row) => {
+				return sum + parseFloat(row.ALLOCATED_AMOUNT || 0);
+			}, 0);
+
+			this._oReqModel.setProperty("/req_item/est_amount", fEstAmount.toFixed(2));
 		},
 
 		/* =========================================================
@@ -1600,8 +1613,8 @@ sap.ui.define([
 					"Individual/Group"			: header.grptype || "",
 					"Type of Transportation"	: header.transport || "",
 					"Request Status"			: header.reqstatus,
-					"Cost Center"				: header.cc,
-					"Alternate Cost Center"		: header.acc || "-",
+					"Cost Center"				: header.costcenter,
+					"Alternate Cost Center"		: header.altcostcenter || "-",
 					"Cash Advance (MYR)"		: header.cashadvamt,
 					"Pre Approval Amount (MYR)"	: header.reqamt,
 					"Request Type"				: header.reqtype,
@@ -1802,6 +1815,7 @@ sap.ui.define([
 		async _getClaimTypeItemSelection() {
 			const oData = this._oReqModel.getData();
 			const sClaimTypeId = oData.req_header.claimtype;
+			const sGroupType = oData.req_header.grptype;
 
 			if (!sClaimTypeId) {
 				this._oReqModel.setProperty("/claim_type_items", []);
@@ -1819,7 +1833,9 @@ sap.ui.define([
 					],
 					[
 						new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimTypeId),
-						new Filter("SUBMISSION_TYPE", 'NE', "ST0001" )
+						new Filter("SUBMISSION_TYPE", FilterOperator.NE, "ST0001" )
+						// new Filter("IND_OR_GROUP", FilterOperator.EQ, sGroupType),
+						// new Filter("IND_OR_GROUP", FilterOperator.EQ, "I_G")
 					],
 					{
 						$$ownRequest: true,
@@ -1962,7 +1978,29 @@ sap.ui.define([
 			}
 		},
 
-		_setAllControlsVisible: function (bVisible) {
+		onSelectLocationType (oEvent) {
+			const sLocationType = this._oReqModel.getProperty("/req_item/location_type");
+
+			if (sLocationType === "2") {
+				this.byId("i_from_location").setVisible(false);
+				this.byId("i_to_location").setVisible(false);
+
+				this.byId("i_from_state").setVisible(true);
+				this.byId("i_from_location_office").setVisible(true);
+				this.byId("i_to_state").setVisible(true);
+				this.byId("i_to_location_office").setVisible(true);
+			} else {
+				this.byId("i_from_location").setVisible(true);
+				this.byId("i_to_location").setVisible(true);
+
+				this.byId("i_from_state").setVisible(false);
+				this.byId("i_from_location_office").setVisible(false);
+				this.byId("i_to_state").setVisible(false);
+				this.byId("i_to_location_office").setVisible(false);
+			}
+		},
+
+		_setAllControlsVisible (bVisible) {
 			const aControlIds = [
 				"i_no_of_days_1",
 				"i_purpose",
