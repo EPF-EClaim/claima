@@ -1455,6 +1455,7 @@ sap.ui.define([
 			// calculate new total
 			const nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
 			oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
+			oInputModel.setProperty("/claim_header/final_amount_to_receive", nTotal);
 
 			// update to database
 			var updateSuccess = await this._updateClaimItems();
@@ -2319,6 +2320,25 @@ sap.ui.define([
 		_saveClaimItem: async function () {
 			// get input model
 			var oInputModel = this.getView().getModel("claimitem_input");
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+
+			/* 	4 scenarios for Receipt Date to be populated
+					1. Get Receipt Date based on input
+					2. If Receipt Date is null, get item Bill Date
+					3. If Bill Date is null, get item Start Date
+					4. If Start Date is null, get header Trip Start Date 
+			*/
+			if(oInputModel.getProperty("/claim_item/receipt_date") === null){
+				if(oInputModel.getProperty("/claim_item/bill_date") !== null){
+					oInputModel.setProperty("/claim_item/receipt_date", oInputModel.getProperty("/claim_item/bill_date"));
+				}else {
+					if(oInputModel.getProperty("/claim_item/start_date") !== null){
+						oInputModel.setProperty("/claim_item/receipt_date", oInputModel.getProperty("/claim_item/start_date"));
+					} else {
+						oInputModel.setProperty("/claim_item/receipt_date", oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"));
+					}
+				}
+			}
 
 			try {
 				BusyIndicator.show(0);
@@ -2931,9 +2951,14 @@ sap.ui.define([
 
 				// get input model
 				var oInputModel = this.getView().getModel("claimsubmission_input");
-
-
 				var aItems = oInputModel.getProperty("/claim_items") || [];
+
+				// Cash Advance Repayment Validation checking
+				if(oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0){
+					MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
+					BusyIndicator.hide();
+					return;
+				}
 
 				if (this._CheckDuplicateClaimItems(aItems)) {
 					MessageToast.show(Utility.getText("msg_duplication_prompt"));
