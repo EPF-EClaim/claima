@@ -29,8 +29,8 @@ server:
         backend:
         - path: /SuccessFactors_API
           pathPrefix: /
-          url: https://api44preview.sapsf.com/odata/v2/
-          destination: Conn_SF_DEV_API
+          url: https://api44.sapsf.com/odata/v2/
+          destination: Conn_SF_UAT_API
           #
     - name: fiori-tools-appreload
       afterMiddleware: compression

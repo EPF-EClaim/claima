@@ -1362,7 +1362,7 @@ sap.ui.define([
 
 				// validate mandatory fields
 				if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
-					MessageToast.show(Utility.getText("req_d_w_mandatory_field"), {
+					MessageBox.show(Utility.getText("req_d_w_mandatory_field"), {
 						closeOnBrowserNavigation: false
 					});
 					return;
@@ -1570,6 +1570,43 @@ sap.ui.define([
 				}
 
 			}).catch(err => console.error("ClaimType Load Failed", err));
+		},
+
+		_loadCourseCodeSelectionData: function (sClaimType) {
+			if (!sReqType) return;
+
+			if (this.oDialogFragment) {
+				const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+				if (oDialogModel) {
+					oDialogModel.setProperty('/coursecode', "");
+				}
+			} else {
+				this._oReqModel.setProperty('/req_header/coursecode', ""); 
+			}
+
+			const oSelect = Fragment.byId("request", "req_coursecode");
+			
+			if (oSelect) {
+				oSelect.setForceSelection(false);
+				oSelect.setSelectedKey("");
+			}
+
+			const oListBinding = this._oDataModel.bindList("/ZTRAIN_COURSE_PART", null, null, [
+				new Filter("PARTICIPANT_ID", FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
+				new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, false)
+			]);
+
+			oListBinding.requestContexts().then((aContexts) => {
+				const aData = aContexts.map(oCtx => oCtx.getObject());
+				const oTypeModel = new JSONModel({ types: aData });
+				
+				if (this.oDialogFragment) {
+					this.oDialogFragment.setModel(oTypeModel, "course_list");
+				} else {
+					this.getView().setModel(oTypeModel, "course_list");
+				}
+				
+			}).catch(err => console.error("Course List Load Failed", err));
 		},
 
 		getFieldVisibility_ReqType: async function (oEvent) {

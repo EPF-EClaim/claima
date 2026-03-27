@@ -89,8 +89,8 @@ sap.ui.define([
         },
         "RequestStatus": {
             "DRAFT": "DRAFT",
-            "PENDING_APPROVAL": "PENDING_APPROVAL",
-            "SEND_BACK": "SEND_BACK",
+            "PENDING_APPROVAL": "PENDING APPROVAL",
+            "SEND_BACK": "SEND BACK",
             "REJECTED": "REJECTED",
             "APPROVED": "APPROVED",
             "CANCELLED": "CANCELLED"
@@ -247,8 +247,12 @@ sap.ui.define([
             "COST_CENTER": "100000000",
             "GL_ACCOUNT": "214005"
         },
-        "SubmissionType": {
-            "DIRECT_CLAIM": "ST0001"
+        "SubmissionType":{
+            "DIRECT_CLAIM"  : "ST0001",
+            "AUTO_APPROVE"  : "ST0002",
+            "PRE_APPROVE"   : "ST0003",
+            "CASH_REPAYMENT": "ST0004",
+            "CURR_SUBSIDY"  : "ST0005"
         },
         "Default": {
             "PROJECT_CODE": "NA"
@@ -263,15 +267,20 @@ sap.ui.define([
             "APPROVER": "approver",
             "EDIT": "i_edit",
             "LIST": "list",
-            "CREATE": "create"
+            "CREATE": "create",
+            "VIEWAPPR": "view_appr"
         },
         "RequestType": {
-            "TRAVEL": "RT0001",
-            "MOBILE": "RT0002",
-            "EVENTS": "RT0003",
-            "REIMBURSEMENT": "RT0004",
-            "MEDICAL": "RT0005",
-            "PROJECT": "RT0006"
+            "TRAVEL"        : "RT0001",
+            "MOBILE"        : "RT0002",
+            "EVENTS"        : "RT0003",
+            "REIMBURSEMENT" : "RT0004",
+            "MEDICAL"       : "RT0005",
+            "PROJECT"       : "RT0006"
+        },
+        "LocationType" : {
+            "OTHER" : "1",
+            "KWSP"  : "2"
         },
         "ConfigAccess": 
              [
