@@ -735,6 +735,12 @@ module.exports = (srv) => {
         return sResult;
     };
 
+     /**
+	 * Delete Approver Detail Records From table
+	 * @public
+	 * @param {String} req - Claim ID to be deleted;
+     * @returns {String} sResult - Result of Deletion of records
+	 */
     srv.on('DeleteApproverDetails', async (req) => {
         try {
             const { ID } = req.data;
