@@ -3856,7 +3856,7 @@ sap.ui.define([
 						if (openAttachment && !openAttachment.getVisible()) {
 							openAttachment.setVisible(true);
 						}
-					} else if (control.getMetadata().getName() === "sap.ui.mdc.Field") {
+					} else if (control instanceof sap.ui.mdc.Field) {
 						control.setEditMode("Display");
 					}
 				});
