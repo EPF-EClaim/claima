@@ -641,17 +641,17 @@ module.exports = (srv) => {
 
     srv.on('UpdateApproverDetails', async (req) => {
         try {
-            const { ApproverDetails } = req.data;
-            console.log(ApproverDetails);
-            if (!ApproverDetails || ApproverDetails.length === 0) {
+            const { aPayloadToCreateApproverDetailsTable } = req.data;
+            console.log(aPayloadToCreateApproverDetailsTable);
+            if (!aPayloadToCreateApproverDetailsTable || aPayloadToCreateApproverDetailsTable.length === 0) {
                 throw new Error('No Data Sent')
             }
             const tx = cds.tx(req);
-            const IDType = ApproverDetails[0].ID.substring(0, 3);
+            const IDType = aPayloadToCreateApproverDetailsTable[0].ID.substring(0, 3);
 
             if (IDType == Constant.WorkflowType.REQUEST) {
 
-                const PreApprovalDetails = ApproverDetails.map(item => ({
+                const PreApprovalDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
                     PREAPPROVAL_ID: item.ID,
                     LEVEL: item.LEVEL,
                     APPROVER_ID: item.APPROVER_ID,
@@ -666,7 +666,7 @@ module.exports = (srv) => {
             }
             else if (IDType == Constant.WorkflowType.CLAIM) {
 
-                const ClaimsDetails = ApproverDetails.map(item => ({
+                const ClaimsDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
                     CLAIM_ID: item.ID,
                     LEVEL: item.LEVEL,
                     APPROVER_ID: item.APPROVER_ID,

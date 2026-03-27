@@ -482,32 +482,29 @@ sap.ui.define([
                     });
                 }
 
-                //create ZAPPROVER DETAILS
-                const oBindApprDetailsList = oModel.bindList(Constants.Entities.ZAPPROVER_DETAILS_CLAIMS);
-
-                // create all contexts
-                let aCreatePromises = [];
+                let aPayloadToCreateApproverDetailsTable = [];
 
                 //for(var i = 0; i < aApprEmpID.length; i++){
                 for(const oApprover of aFullApproversDetails){
 
-                    var oContext = oBindApprDetailsList.create({
-                        "CLAIM_ID": sClaimID,
+                    aPayloadToCreateApproverDetailsTable.push({
+                        "ID": sClaimID,
                         "LEVEL": oApprover.LEVEL,
                         "APPROVER_ID": oApprover.APPROVER_EEID,
                         "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
                         "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
                     });
-                    aCreatePromises.push(oContext.created());
+                }
+                //Call CAP action 
+                const oAction = oModel.bindContext("/UpdateApproverDetails(...)");
+                oAction.setParameter("aPayloadToCreateApproverDetailsTable", aPayloadToCreateApproverDetailsTable);
+
+                try {
+                    await oAction.execute();
+                } catch (oError) {
+                    MessageToast.show(Utility.getText("msg_failed_generic_error"))
                 }
 
-                // submit the batch
-                // await oModel.submitBatch("$auto");
-
-                // wait for all created
-                if(aCreatePromises.length > 0){
-                    const aCreatedContext = await Promise.all(aCreatePromises);
-                }
                 try{
                 // Send email notification to first level approver or
                 // Start Final Approve Step for Auto approve
@@ -554,9 +551,6 @@ sap.ui.define([
 
                     // submit the batch
                     await oModel.submitBatch("$auto");
-
-                    // wait for all created
-                    const aCreatedContext = await Promise.all(aCreatePromises);
                     
                 }catch(oError){
                     MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]));
@@ -895,28 +889,28 @@ sap.ui.define([
                 //create ZAPPROVER DETAILS
                 const oBindApprDetailsList = oModel.bindList(Constants.Entities.ZAPPROVER_DETAILS_PREAPPROVAL);
 
-                // create all contexts
-                let aCreatePromises = [];
+                 let aPayloadToCreateApproverDetailsTable = [];
 
+                //for(var i = 0; i < aApprEmpID.length; i++){
                 for(const oApprover of aFullApproversDetails){
 
-                    var oContext = oBindApprDetailsList.create({
-                        "PREAPPROVAL_ID": sPARID,
+                    aPayloadToCreateApproverDetailsTable.push({
+                        "ID": sPARID,
                         "LEVEL": oApprover.LEVEL,
                         "APPROVER_ID": oApprover.APPROVER_EEID,
                         "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
                         "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
                     });
-                    aCreatePromises.push(oContext.created());         
                 }
+                //Call CAP action 
+                const oAction = oModel.bindContext("/UpdateApproverDetails(...)");
+                oAction.setParameter("aPayloadToCreateApproverDetailsTable", aPayloadToCreateApproverDetailsTable);
 
-                // submit the batch
-                // await oModel.submitBatch("$auto");
-
-                // wait for all created
-                if(aCreatePromises.length > 0){
-                    const aCreatedContext = await Promise.all(aCreatePromises);
-                }            
+                try {
+                    await oAction.execute();
+                } catch (oError) {
+                    MessageToast.show(Utility.getText("msg_failed_generic_error"))
+                }           
                 
                 try{
                 // Send email notification to first level approver or
@@ -964,9 +958,6 @@ sap.ui.define([
 
                     // submit the batch
                     await oModel.submitBatch("$auto");
-
-                    // wait for all created
-                    const aCreatedContext = await Promise.all(aCreatePromises);
 
                 }catch(oError){
                     MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]));

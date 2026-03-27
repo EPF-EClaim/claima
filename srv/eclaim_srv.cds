@@ -310,7 +310,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
         COMMENT                : String;
     }
 
-    action UpdateApproverDetails(ApproverDetails: many ApproverDetails) returns Response;
+    action UpdateApproverDetails(aPayloadToCreateApproverDetailsTable: many ApproverDetails) returns Response;
 
     // entity ClaimsWorkflowApproval as projection on ZCLAIM_HEADER{
     //     key CLAIM_ID as ClaimID,
