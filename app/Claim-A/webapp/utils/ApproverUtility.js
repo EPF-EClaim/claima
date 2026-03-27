@@ -397,8 +397,8 @@ sap.ui.define([
 
         const aPayloads = [];
         const sMessageKey = null;
-        var sReasonDesc = await WorkflowApproverHelper.getRejectReasonDescription(oModel, sReason);
-        
+        var oReasonDesc = await WorkflowApproverHelper.getRejectReasonDescription(oModel, sReason);
+
         aPayloads.push({
             ApproverName: sCurrentName,
             SubmissionDate: DateUtility.toYMD(new Date()),
@@ -409,7 +409,7 @@ sap.ui.define([
             Action: sActionText,
             ReceiverEmail: sClaimantEmail,
             NextApproverName: Constants.ApprovalProcessAction.NOTAVAILABLE,
-            RejectReason: sReasonDesc.REASON_DESC,
+            RejectReason: oReasonDesc.REASON_DESC,
             ApproverComments: sComment
         });
         try {
