@@ -125,15 +125,11 @@ sap.ui.define([
 					break;
 				case "config":
 					//Start EY_ATHIRAH
-					if (sType === sAdminDTD || sType === sAdminJKEW || sType === sSuperUser) {
+					//  if (sType === sAdminDTD || sType === sAdminJKEW || sType === sSuperUser) {
 						this._oRouter.navTo("Configuration");
-					} else if (sType === sAdminGA ) {
-						this._oRouter.navTo("Configuration_GA");
-					}
-					else {
-						var message = Utility.getText("msg_unauthorized_role");
-						MessageBox.error(message);
-					}
+					// } else if (sType === sAdminGA ) {
+					// 	this._oRouter.navTo("Configuration_GA");
+					
 					//End EY_ATHIRAH
 					break;
 				// Start Aiman Salim 10/02/2026 - Added for analytics

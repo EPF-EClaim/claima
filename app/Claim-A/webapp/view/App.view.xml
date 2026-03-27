@@ -1,4 +1,3 @@
-
 <mvc:View
     controllerName="claima.controller.App"
     xmlns="sap.m"
@@ -18,19 +17,21 @@
     <tnt:ToolPage id="toolPage">
         <tnt:header>
             <f:ShellBar
-            id="shellbar"
+                id="shellbar"
                 showMenuButton="true"
                 homeIcon="{imageModel>/homeIcon}"
                 homeIconPressed="onHomeIconPressed"
-                menuButtonPressed="onMenuButtonPress">
+                menuButtonPressed="onMenuButtonPress"
+            >
                 <f:profile>
-        <Avatar
-            id="userAvatar"
-            initials="{session>/initials}"
-            press="onAvatarPress"
-            displaySize="XS"
-        />
-    </f:profile></f:ShellBar>
+                    <Avatar
+                        id="userAvatar"
+                        initials="{session>/initials}"
+                        press="onAvatarPress"
+                        displaySize="XS"
+                    />
+                </f:profile>
+            </f:ShellBar>
         </tnt:header>
         <tnt:sideContent>
             <tnt:SideNavigation
@@ -99,26 +100,280 @@
                         expanded="false"
                     />
                     <tnt:NavigationListItem
+                    id="configNavItem"
                         key="config"
                         text="{i18n>nav_config}"
                         icon="sap-icon://action-settings"
                         enabled="true"
                         expanded="false"
-                    />
-
+                    >
+                        <tnt:items>
+                            <tnt:NavigationListItem
+                                key="ZRISK"
+                                text="{i18n>risklevel}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZREQUEST_TYPE"
+                                text="{i18n>partype}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZCLAIM_TYPE"
+                                text="{i18n>claimtyp}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZNUM_RANGE"
+                                text="{i18n>claimsq}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZCLAIM_CATEGORY"
+                                text="{i18n>claimcat}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZSTATUS"
+                                text="{i18n>claimstat}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZLODGING_CAT"
+                                text="{i18n>lodgingcat}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZROOM_TYPE"
+                                text="{i18n>hoteltyp}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZCOUNTRY"
+                                text="{i18n>country}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZAREA"
+                                text="{i18n>region}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZMARITAL_STAT"
+                                text="{i18n>marital}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZVEHICLE_TYPE"
+                                text="{i18n>vehicletyp}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZJOB_GROUP"
+                                text="{i18n>jobgrp}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZSTATE"
+                                text="{i18n>state}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZDEPARTMENT"
+                                text="{i18n>dept}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZROLE"
+                                text="{i18n>role}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZUSER_TYPE"
+                                text="{i18n>usertyp}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZEMP_TYPE"
+                                text="{i18n>empstat}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZFLIGHT_CLASS"
+                                text="{i18n>flightclass}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZEMP_MASTER"
+                                text="{i18n>empmaster}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZREGION"
+                                text="{i18n>region_ss}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZSUBMISSION_TYPE"
+                                text="{i18n>subtyp}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZLENDER_NAME"
+                                text="{i18n>loan}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZHOUSING_LOAN_SCHEME"
+                                text="{i18n>housing}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZPERDIEM_ENT"
+                                text="{i18n>perdiem}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZEMP_CA_PAYMENT"
+                                text="{i18n>cashadv}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZBRANCH"
+                                text="{i18n>branch}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZPROJECT_HDR"
+                                text="{i18n>prjcode}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZMARITAL_CAT"
+                                text="{i18n>mrgcat}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZEMP_RELATIONSHIP"
+                                text="{i18n>relationship}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZINDIV_GROUP"
+                                text="{i18n>indgrp}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZMATERIAL_GROUP"
+                                text="{i18n>matgrp}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZLOC_TYPE"
+                                text="{i18n>loctyp}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZOFFICE_DISTANCE"
+                                text="{i18n>officedist}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZOFFICE_LOCATION"
+                                text="{i18n>officeloc}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZRATE_KM"
+                                text="{i18n>rartekm}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZEMP_DEPENDENT"
+                                text="{i18n>empldep}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZREJECT_REASON"
+                                text="{i18n>rejreason}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZCURRENCY"
+                                text="{i18n>curr}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZVEHICLE_OWNERSHIP"
+                                text="{i18n>vehicle_ownership}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZTRAVEL_DAYS"
+                                text="{i18n>traveldays}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZMETER_CUBE"
+                                text="{i18n>metercube}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZFARE_TYPE"
+                                text="{i18n>faretyp}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZHOTEL_LODGING"
+                                text="{i18n>hotellodging}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZCLAIM_BASIS"
+                                text="{i18n>claimbasis}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZEMP_DEPENDENT_TYPE"
+                                text="{i18n>deptype}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZPOSITION_EVENT_REASON"
+                                text="{i18n>positionreason}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZSPORTS_REPRESENTATION"
+                                text="{i18n>sportrep}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZFAMILY_TIMING"
+                                text="{i18n>family_timing}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZTRAVEL_TYPE"
+                                text="{i18n>travel_type}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZTRANSPORT_PASSING"
+                                text="{i18n>transport_passing}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZTRANSFER_MODE"
+                                text="{i18n>transfer_mode}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZSTUDY_LEVELS"
+                                text="{i18n>study_lvl}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZPROFESIONAL_BODY"
+                                text="{i18n>prof_body}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZINSURANCE_PACKAGE"
+                                text="{i18n>ins_pkg}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZINSURANCE_PROVIDER"
+                                text="{i18n>ins_pvd}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZVEHICLE_CLASS"
+                                text="{i18n>vehicle_class}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZMOBILE_CATEGORY_PURPOSE"
+                                text="{i18n>mobilecat}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZBUDGET"
+                                text="{i18n>budget_data}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZDB_STRUCTURE"
+                                text="{i18n>structure}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZDISBURSEMENT_STATUS"
+                                text="{i18n>disbursement}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZCONSTANTS"
+                                text="{i18n>constants}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZROLEHIERARCHY"
+                                text="{i18n>rolehierarchy}"
+                            />
+                            <tnt:NavigationListItem
+                                key="ZELIGIBILITY_RULE"
+                                text="{i18n>eligibility_rule}"
+                            />
+                        </tnt:items>
+                    </tnt:NavigationListItem>
                 </tnt:NavigationList>
             </tnt:SideNavigation>
         </tnt:sideContent>
         <tnt:mainContents>
-            <NavContainer
-                id="pageContainer"
-                >
+            <NavContainer id="pageContainer">
                 <pages>
                     <!-- Claim Submission -->
-                    <NavContainer
-                        id="navcontainer_claimsubmission"
-                    >
-                    </NavContainer>
+                    <NavContainer id="navcontainer_claimsubmission" />
 
                     <ScrollContainer
                         id="config"
@@ -150,10 +405,10 @@
                             id="request_form_status_view"
                             viewName="claima.view.PARequestStatus"
                         />
-                    </content> 
+                    </content>
                 </Page>
                 <!-- === My Claim Status Page (added) === -->
-    <!--             <Page
+                <!--             <Page
                     id="myreport"
                     showHeader="false"
                     class="sapUiNoContentPadding"
@@ -176,8 +431,8 @@
                             id="add_sub"
                             viewName="claima.view.ManageSub"
                         />
-                    </content> 
-                </Page> 
+                    </content>
+                </Page>
             </NavContainer>
         </tnt:mainContents>
     </tnt:ToolPage>

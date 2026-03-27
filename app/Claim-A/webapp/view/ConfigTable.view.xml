@@ -39,28 +39,28 @@
                         text="Edit"
                         press="onEdit"
                         enabled="{view>/hasSelection}"
-                        visible="{= ${/FeatureControl/operationEnabled} === true }"
+                        visible="{= ${/FeatureControl/operationEnabled} }"
                     />
                     <Button
                         id="CopyHeader"
                         text="Copy"
                         press="onCopy"
                         enabled="{view>/hasSelection}"
-                        visible="{= ${/FeatureControl/operationEnabled} === true }"
+                        visible="{= ${/FeatureControl/operationEnabled} }"
                     />
                     <Button
                         id="CreateHeader"
                         text="Create"
                         press="onCreate"
                         enabled="true"
-                        visible="{= ${/FeatureControl/operationEnabled} === true }"
+                        visible="{= ${/FeatureControl/operationEnabled} }"
                     />
                     <Button
                         id="DeleteHeader"
                         text="Delete"
                         press="onDelete"
                         enabled="{view>/hasSelection}"
-                        visible="{= ${/FeatureControl/operationEnabled} === true }"
+                        visible="{= ${/FeatureControl/operationEnabled} }"
                     />
                     <Button
                     icon="sap-icon://action-settings"
@@ -161,6 +161,18 @@
                         <ViewSettingsItem
                             text="{i18n>glacct}"
                             key="GL_ACCOUNT"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>req_rtype}"
+                            key="REQUEST_TYPE"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>req_grptype}"
+                            key="IND_OR_GROUP"
+                        />
+                        <ViewSettingsItem
+                            text="{i18n>projclaim}"
+                            key="PROJECT_CLAIM"
                         />
                         <ViewSettingsItem
                             text="{i18n>start_date}"
