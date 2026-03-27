@@ -449,7 +449,7 @@
                                                     />
                                                     <Text
                                                         textAlign="End"
-                                                        text="{dashboardModel>TOTAL_AMOUNT}"
+                                                        text="{dashboardModel>AMOUNT}"
                                                     />
                                                     <Text
                                                         text="{dashboardModel>STATUS_DESC}"
