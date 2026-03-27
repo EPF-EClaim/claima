@@ -149,7 +149,8 @@ sap.ui.define([
             "ZSUBMISSION_TYPE": "/ZSUBMISSION_TYPE",
             "ZSUBSTITUTION_RULES": "/ZSUBSTITUTION_RULES",
             "ZWORKFLOW_RULE": "/ZWORKFLOW_RULE",
-            "ZWORKFLOW_STEP": "/ZWORKFLOW_STEP"
+            "ZWORKFLOW_STEP": "/ZWORKFLOW_STEP",
+            "ZREJECT_REASON": "/ZREJECT_REASON"
         },
         "EntitiesFields": {
             "APPROVER_ID": "APPROVER_ID",
@@ -165,6 +166,7 @@ sap.ui.define([
             "LEVEL": "LEVEL",
             "PREAPPROVALID": "PREAPPROVAL_ID",
             "REJECT_REASON_ID": "REJECT_REASON_ID",
+            "REASON_ID": "REASON_ID",
             "REQUESTID": "REQUEST_ID",
             "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
             "TRAVEL_HOURS": "TRAVEL_HOURS",
