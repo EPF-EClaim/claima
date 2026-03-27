@@ -420,6 +420,13 @@
                     ]
                 },
                 {
+                    "pattern": "ZBUDGET_GA",
+                    "name": "ZBUDGET_GA",
+                    "target": [
+                        "ZBUDGET_GA"
+                    ]
+                },
+                {
                     "pattern": "ZOFFICE_LOCATION",
                     "name": "ZOFFICE_LOCATION",
                     "target": [
@@ -427,14 +434,9 @@
                     ]
                 },
                 {
-                    "pattern": ":?query:",
+                    "pattern": "ZCLAIM_TYPE",
                     "name": "ZCLAIM_TYPE",
                     "target": "ZCLAIM_TYPE"
-                },
-                {
-                    "pattern": "ZCLAIM_TYPE({key}):?query:",
-                    "name": "ZCLAIM_TYPEObjectPage",
-                    "target": "ZCLAIM_TYPEObjectPage"
                 },
                 {
                     "pattern": "Configuration",
@@ -1430,19 +1432,10 @@
                                         },
                                         "disableCopyToClipboard": true,
                                         "enableMassEdit": false
-                                    },
-                                    "actions": {
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": false,
-                                            "enabled": false,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
-                                        }
                                     }
                                 }
                             },
-                            "hideFilterBar": false,
+                            "hideFilterBar": true,
                             "initialLoad": "Enabled",
                             "navigation": {},
                             "content": {
@@ -4476,18 +4469,66 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/BudgetControl/operationEnabled} }",
+                                            "visible": true,
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/BudgetControl/operationEnabled} }",
+                                            "visible": true,
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
                                         }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZBUDGET_GA": {
+                    "type": "Component",
+                    "id": "ZBUDGET_GA",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZBUDGET",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "disableCopyToClipboard": true
                                     }
                                 }
                             },
@@ -4578,118 +4619,12 @@
                     }
                 },
                 "ZCLAIM_TYPE": {
-                    "type": "Component",
-                    "id": "ZCLAIM_TYPE",
-                    "name": "sap.fe.templates.ListReport",
-                    "options": {
-                        "settings": {
-                            "contextPath": "/ZCLAIM_TYPE",
-                            "variantManagement": "None",
-                            "navigation": {
-                                "ZCLAIM_TYPE": {
-                                    "detail": {
-                                        "route": "ZCLAIM_TYPEObjectPage"
-                                    }
-                                }
-                            },
-                            "controlConfiguration": {
-                                "@com.sap.vocabularies.UI.v1.LineItem": {
-                                    "tableSettings": {
-                                        "creationMode": {
-                                            "name": "CreationDialog",
-                                            "creationFields": "CLAIM_TYPE_ID,CLAIM_TYPE_DESC,GL_ACCOUNT,START_DATE,END_DATE,REQUEST_TYPE,IND_OR_GROUP,PROJECT_CLAIM,STATUS"
-                                        },
-                                        "selectionMode": "Single",
-                                        "personalization": {
-                                            "filter": true,
-                                            "sort": true,
-                                            "column": false
-                                        },
-                                        "type": "GridTable",
-                                        "createMode": "inline",
-                                        "initialLoad": "Enabled",
-                                        "disableCopyToClipboard": true,
-                                        "quickVariantSelection": {
-                                            "hideTableTitle": true,
-                                            "showCounts": true
-                                        }
-                                    },
-                                    "actions": {
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
-                                        },
-                                        "newCopy": {
-                                            "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Copy"
-                                        }
-                                    }
-                                }
-                            },
-                            "hideFilterBar": true,
-                            "initialLoad": "Enabled",
-                            "content": {
-                                "header": {
-                                    "actions": {
-                                        "onBack": {
-                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "text": "Back"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "ZCLAIM_TYPEObjectPage": {
-                    "type": "Component",
-                    "id": "ZCLAIM_TYPEObjectPage",
-                    "name": "sap.fe.templates.ObjectPage",
-                    "options": {
-                        "settings": {
-                            "contextPath": "/ZCLAIM_TYPE",
-                            "navigation": {},
-                            "editableHeaderContent": false,
-                            "content": {
-                                "header": {
-                                    "visible": true
-                                }
-                            },
-                            "controlConfiguration": {
-                                "Items/@com.sap.vocabularies.UI.v1.LineItem": {
-                                    "tableSettings": {
-                                        "selectAll": false,
-                                        "selectionMode": "Single",
-                                        "creationMode": {
-                                            "name": "CreationDialog",
-                                            "creationFields": "CLAIM_TYPE_ITEM_ID,RISK,CLAIM_TYPE_ITEM_DESC,START_DATE,END_DATE,STATUS,CATEGORY_ID,COST_CENTER,GL_ACCOUNT,MATERIAL_CODE,SUBMISSION_TYPE"
-                                        },
-                                        "personalization": {
-                                            "filter": true,
-                                            "sort": true
-                                        }
-                                    },
-                                    "actions": {
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
-                                            "enabled": true,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    "id": "ConfigTable",
+                    "path": "claima.view",
+                    "name": "ConfigTable",
+                    "type": "View",
+                    "viewType": "XML",
+                    "transition": "slide"
                 },
                 "Configuration": {
                     "id": "Configuration",

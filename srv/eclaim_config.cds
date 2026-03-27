@@ -699,7 +699,7 @@ annotate service.ZCOUNTRY with @(
 
 annotate service.ZAREA with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: true},
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey             : [AREA_ID],
     Capabilities                   : {
         Deletable : true,
@@ -753,7 +753,7 @@ annotate service.ZAREA with @(
 
 annotate service.ZMARITAL_STAT with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: true},
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey             : [MARRIAGE_STATUS_ID],
     Capabilities                   : {
         Deletable : true,
@@ -807,7 +807,7 @@ annotate service.ZMARITAL_STAT with @(
 
 annotate service.ZVEHICLE_TYPE with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: true},
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey             : [VEHICLE_TYPE_ID],
     Capabilities                   : {
         Deletable : true,
@@ -861,7 +861,7 @@ annotate service.ZVEHICLE_TYPE with @(
 
 annotate service.ZSTATE with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: true},
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey             : [
         COUNTRY_ID,
         STATE_ID
@@ -2594,7 +2594,7 @@ annotate service.ZCURRENCY with @(
 
 annotate service.ZEMP_DEPENDENT with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: true},
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey             : [
         EMP_ID,
         RELATIONSHIP,

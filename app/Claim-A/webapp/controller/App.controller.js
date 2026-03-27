@@ -88,12 +88,21 @@ sap.ui.define([
 		onNavItemSelect: async function (oEvent) {
 			var oItem = oEvent.getParameter("item");
 			var oKey = oItem.getKey();
+			// const oCtx = oModel.bindContext("/FeatureControl");
 
 			const bDTDAdmin = this._oRoleModel.getProperty("/isDTDAdmin"),
 				bAdminSystem = this._oRoleModel.getProperty("/isAdminSystem"),
 				bAdminCC = this._oRoleModel.getProperty("/isAdminCC"),
-				bClaimant = this._oRoleModel.getProperty("/isClaimant") ,
+				bClaimant = this._oRoleModel.getProperty("/isClaimant"),
 				bApprover = this._oRoleModel.getProperty("/isApprover");
+
+			const sEmpMaster = this._oConstant.Configuration.ZEMP_MASTER,
+				sEmpMasterDTD = this._oConstant.Configuration.ZEMP_MASTER_DTD,
+				sEmpDep = this._oConstant.Configuration.ZEMP_DEPENDENT,
+				sEmpDepDTD = this._oConstant.Configuration.ZEMP_DEPENDENT_DTD,
+				sNumRange = this._oConstant.Configuration.ZNUM_RANGE,
+				sNumRangeDTD = this._oConstant.Configuration.ZNUM_RANGE_DTD,
+				sBudget = this._oConstant.Configuration.ZBUDGET;
 
 			// Make sure userType is available
 			// const sType = this.getOwnerComponent().getModel("session").getProperty("/userType");
@@ -115,21 +124,8 @@ sap.ui.define([
 				case "mysubstitution":
 					this._oRouter.navTo("ManageSub");
 					break;
-				case "config":
-					//Start EY_ATHIRAH
-					if (bDTDAdmin === true || bAdminSystem === true) {
-						this._oRouter.navTo("Configuration");
-					} else if (bAdminCC === true) {
-						this._oRouter.navTo("Configuration_GA");
-					} else {
-						var message = Utility.getText("msg_unauthorized_role");
-						MessageBox.error(message);
-					}
-					//End EY_ATHIRAH
-					break;
 				// Start Aiman Salim 10/02/2026 - Added for analytics
 				case "analytics":
-					// if (sType === sAdminDTD || sType === sAdminJKEW || sType === sSuperUser) {
 					if (bDTDAdmin === true || bAdminSystem === true || bAdminCC === true) {
 						HashChanger.getInstance().replaceHash("");
 						this._oRouter.navTo("Analytics");
@@ -155,9 +151,27 @@ sap.ui.define([
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
 				default:
 					// navigate to page with ID same as the key
-					var oPage = this.byId(oKey); // make sure your NavContainer has a page with this ID
-					if (oPage) {
-						this.byId("pageContainer").to(oPage);
+					if (this._oConstant.ConfigAccess.includes(oKey)) {
+						if (bDTDAdmin === true || bAdminSystem === true || bAdminCC === true) {
+							if (bDTDAdmin === true && oKey === sEmpMaster) {
+								oKey = sEmpMasterDTD;
+							} else if (bDTDAdmin === true && oKey === sEmpDep) {
+								oKey = sEmpDepDTD;
+							} else if (bDTDAdmin === true && oKey === sNumRange) {
+								oKey = sNumRangeDTD;
+							} else if (bAdminCC === true && oKey === sBudget) {
+								oKey = "ZBUDGET_GA";
+							}
+							this._oRouter.navTo(oKey);
+						} else {
+							var message = Utility.getText("msg_unauthorized_role");
+							MessageBox.error(message);
+						}
+					} else {
+						var oPage = this.byId(oKey); // make sure your NavContainer has a page with this ID
+						if (oPage) {
+							this.byId("pageContainer").to(oPage);
+						}
 					}
 					break;
 			}
