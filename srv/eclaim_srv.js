@@ -475,6 +475,8 @@ module.exports = (srv) => {
     async function updateClaimHeaderTotals(req, sClaimId, tx) {
         if (!sClaimId) return;
 
+        const headerResult = await SELECT.one.from('ZCLAIM_HEADER').where({ CLAIM_ID: sClaimId });
+
         const result = await tx.run(
             SELECT.one`
                 SUM(AMOUNT) as TotalClaimAmount
@@ -484,12 +486,13 @@ module.exports = (srv) => {
         );
 
         const totalClaimAmount = result.TotalClaimAmount || 0;
+        const finalAmountToReceive = (totalClaimAmount - headerResult.CASH_ADVANCE_AMOUNT) || 0;    
 
         await tx.run(
             UPDATE('ZCLAIM_HEADER')
                 .set({
                     TOTAL_CLAIM_AMOUNT: totalClaimAmount,
-                    FINAL_AMOUNT_TO_RECEIVE: totalClaimAmount
+                    FINAL_AMOUNT_TO_RECEIVE: finalAmountToReceive
                 })
                 .where({ CLAIM_ID: sClaimId })
         );
