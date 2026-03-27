@@ -64,9 +64,6 @@ sap.ui.define([
 		onClickNavigate: function (oEvent) {
 			let sId = oEvent.getParameters().id;
 
-			const sUserType = this.getView().getModel("session")?.getProperty("/userType")
-				|| "UNKNOWN";
-
 			if (sId.includes("dashboard-claim")) {
 				this._oRouter.navTo("ClaimStatus")
 			} else if (sId.includes("request")) {

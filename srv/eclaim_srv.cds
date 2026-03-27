@@ -207,6 +207,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
         origin      : String;
         grade       : String;
         department  : String;
+        user        : String;
     }
 
     function getUserType()                                                 returns UserInfo;
@@ -311,6 +312,8 @@ service eclaim_srv @(requires: 'authenticated-user'){
     }
 
     action UpdateApproverDetails(aPayloadToCreateApproverDetailsTable: many ApproverDetails) returns Response;
+
+    action DeleteApproverDetails(ID: String) returns Response;
 
     // entity ClaimsWorkflowApproval as projection on ZCLAIM_HEADER{
     //     key CLAIM_ID as ClaimID,

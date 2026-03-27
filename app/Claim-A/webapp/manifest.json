@@ -420,6 +420,13 @@
                     ]
                 },
                 {
+                    "pattern": "ZBUDGET_GA",
+                    "name": "ZBUDGET_GA",
+                    "target": [
+                        "ZBUDGET_GA"
+                    ]
+                },
+                {
                     "pattern": "ZOFFICE_LOCATION",
                     "name": "ZOFFICE_LOCATION",
                     "target": [
@@ -647,7 +654,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -672,7 +679,7 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy",
@@ -682,7 +689,7 @@
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -719,7 +726,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -744,14 +751,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -788,7 +795,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -813,14 +820,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -857,7 +864,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -882,14 +889,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -926,7 +933,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -951,14 +958,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -995,7 +1002,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -1020,14 +1027,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1064,7 +1071,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -1089,14 +1096,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1133,7 +1140,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -1158,14 +1165,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1202,7 +1209,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -1227,14 +1234,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1271,7 +1278,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -1296,13 +1303,13 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1339,7 +1346,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -1364,14 +1371,14 @@
                                     "actions": {
                                         "copybtn": {
                                             "press": "claima.ext.controller.Config.onClickCopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1408,7 +1415,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -1425,19 +1432,10 @@
                                         },
                                         "disableCopyToClipboard": true,
                                         "enableMassEdit": false
-                                    },
-                                    "actions": {
-                                        "newEdit": {
-                                            "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": false,
-                                            "enabled": false,
-                                            "requiresSelection": true,
-                                            "text": "Edit"
-                                        }
                                     }
                                 }
                             },
-                            "hideFilterBar": false,
+                            "hideFilterBar": true,
                             "initialLoad": "Enabled",
                             "navigation": {},
                             "content": {
@@ -1466,7 +1464,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -1524,7 +1522,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -1549,14 +1547,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1593,7 +1591,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -1618,14 +1616,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1662,7 +1660,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -1687,14 +1685,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1731,7 +1729,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -1756,14 +1754,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1800,7 +1798,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -1825,14 +1823,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1869,7 +1867,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -1894,14 +1892,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -1938,7 +1936,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -1960,19 +1958,16 @@
                                         "disableCopyToClipboard": true
                                     },
                                     "actions": {
-                                        "DataFieldForAction::eclaim_srv.Copy": {
-                                            "enableOnSelect": "single"
-                                        },
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2009,7 +2004,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -2033,14 +2028,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2077,7 +2072,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -2133,7 +2128,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -2189,7 +2184,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -2216,14 +2211,14 @@
                                         },
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2260,7 +2255,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -2284,14 +2279,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2328,7 +2323,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -2355,14 +2350,14 @@
                                         },
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2399,7 +2394,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -2423,14 +2418,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit",
@@ -2471,7 +2466,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -2498,14 +2493,14 @@
                                         },
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2542,7 +2537,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -2567,14 +2562,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2611,7 +2606,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -2636,14 +2631,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2680,7 +2675,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -2704,14 +2699,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2748,7 +2743,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -2772,14 +2767,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2816,7 +2811,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -2841,14 +2836,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2885,7 +2880,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -2910,14 +2905,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -2954,7 +2949,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -2978,14 +2973,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3022,7 +3017,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -3046,14 +3041,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3090,7 +3085,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -3114,14 +3109,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3158,7 +3153,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -3182,14 +3177,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3226,7 +3221,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -3250,14 +3245,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3294,7 +3289,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -3318,14 +3313,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3362,7 +3357,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -3386,14 +3381,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3430,7 +3425,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -3454,14 +3449,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3498,7 +3493,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -3522,14 +3517,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3566,7 +3561,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -3590,14 +3585,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3634,7 +3629,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -3658,14 +3653,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3702,7 +3697,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -3726,14 +3721,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3770,7 +3765,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -3794,14 +3789,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3838,7 +3833,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -3862,14 +3857,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3906,7 +3901,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -3930,14 +3925,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -3974,7 +3969,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -3998,14 +3993,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -4042,7 +4037,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -4066,14 +4061,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -4110,7 +4105,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -4134,14 +4129,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -4178,7 +4173,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -4202,14 +4197,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -4246,7 +4241,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -4270,14 +4265,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -4314,7 +4309,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -4338,14 +4333,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -4382,7 +4377,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -4406,14 +4401,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -4450,7 +4445,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -4474,18 +4469,66 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/BudgetControl/operationEnabled} === true }",
+                                            "visible": true,
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/BudgetControl/operationEnabled} === true }",
+                                            "visible": true,
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
                                         }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZBUDGET_GA": {
+                    "type": "Component",
+                    "id": "ZBUDGET_GA",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZBUDGET",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "disableCopyToClipboard": true
                                     }
                                 }
                             },
@@ -4518,7 +4561,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -4542,14 +4585,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -4674,7 +4717,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -4695,7 +4738,7 @@
                                     "actions": {
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -4732,7 +4775,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -4790,7 +4833,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -4813,14 +4856,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -4857,7 +4900,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -4880,14 +4923,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -4924,7 +4967,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -4948,14 +4991,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -4992,7 +5035,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -5016,14 +5059,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -5060,7 +5103,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -5084,14 +5127,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
@@ -5128,7 +5171,7 @@
                             "controlConfiguration": {
                                 "@com.sap.vocabularies.UI.v1.LineItem": {
                                     "tableSettings": {
-                                        "type": "ResponsiveTable",
+                                        "type": "GridTable",
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
@@ -5152,14 +5195,14 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} === true }",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"

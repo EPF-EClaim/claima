@@ -273,8 +273,17 @@ sap.ui.define([
 
 								// update status to CANCELLED
 								await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.CANCELLED);
-
+								
 								MessageToast.show(Utility.getText("req_tm_s_delete_request"));
+								// Placeholder to put delete function for ZAPPROVER_DETAILS_PREAPPROVAL
+								//Call CAP action 
+								const oAction = this._oDataModel.bindContext("/DeleteApproverDetails(...)");
+								oAction.setParameter("ID", sCurrentReqId);
+								try {
+									await oAction.execute();
+								} catch (oError) {
+									MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]))
+								}    
 								this.oDeleteDialog.close();
 
 								this._oRouter.navTo("RequestFormStatus");
