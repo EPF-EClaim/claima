@@ -57,7 +57,7 @@ sap.ui.define([
 			this._oReqModel = this.getOwnerComponent().getModel('request');
 			this._oReqStatusModel = this.getOwnerComponent().getModel("request_status");
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
-			this._oRoleModel = this.getOwnerComponent().getModel("rolemodel");
+			this._oRoleModel = this.getOwnerComponent().getModel("roleModel");
 
 			// oReportModel
 			var oReportModel = new JSONModel({
@@ -92,21 +92,15 @@ sap.ui.define([
 			const bDTDAdmin = this._oRoleModel.getProperty("/isDTDAdmin"),
 				bAdminSystem = this._oRoleModel.getProperty("/isAdminSystem"),
 				bAdminCC = this._oRoleModel.getProperty("/isAdminCC"),
-				bClaimant = true, 	//this._oRoleModel.getProperty("/isClaimant") ,
+				bClaimant = this._oRoleModel.getProperty("/isClaimant") ,
 				bApprover = this._oRoleModel.getProperty("/isApprover");
-
-			const sAdminDTD = this._oConstant.Role.DTD_ADMIN,
-				sAdminGA = this._oConstant.Role.GA_ADMIN,
-				sAdminJKEW = this._oConstant.Role.JKEW_ADMIN,
-				sApprover = this._oConstant.Role.APPROVER,
-				sSuperUser = this._oConstant.Role.SUPER_ADMIN;
 
 			// Make sure userType is available
 			// const sType = this.getOwnerComponent().getModel("session").getProperty("/userType");
-			if (!bClaimant || !bApprover) {
-				MessageToast.show("Please wait… loading your access.");
-				return;
-			}
+			// if (!bClaimant || !bApprover) {
+			// 	MessageToast.show("Please wait… loading your access.");
+			// 	return;
+			// }
 
 			switch (oKey) {
 				case "nav_claimsubmission":
@@ -127,6 +121,9 @@ sap.ui.define([
 						this._oRouter.navTo("Configuration");
 					} else if (bAdminCC === true) {
 						this._oRouter.navTo("Configuration_GA");
+					} else {
+						var message = Utility.getText("msg_unauthorized_role");
+						MessageBox.error(message);
 					}
 					//End EY_ATHIRAH
 					break;

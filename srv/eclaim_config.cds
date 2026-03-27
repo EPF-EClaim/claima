@@ -230,7 +230,7 @@ annotate service.ZCLAIM_TYPE with @(
             {
                 $Type : 'UI.ReferenceFacet',
                 Label : 'Items',
-                Target: 'ZCLAIM_TYPE_ITEM/@UI.LineItem'
+                Target: 'Items/@UI.LineItem'
             }
         ]
     }

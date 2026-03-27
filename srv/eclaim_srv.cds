@@ -207,6 +207,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
         origin      : String;
         grade       : String;
         department  : String;
+        user        : String;
     }
 
     function getUserType()                                                 returns UserInfo;
