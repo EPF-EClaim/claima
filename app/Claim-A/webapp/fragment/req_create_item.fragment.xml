@@ -198,7 +198,9 @@
                                     <form:fields>
                                         <unified:FileUploader
                                             change=".onImportChange1"
+                                            enabled="{= ${request>/view} !== 'view' }"
                                             required="true" 
+                                            maximumFileSize='5.0'
                                             placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc1}"
                                             id="i_attachment_1_file" />
@@ -206,7 +208,6 @@
                                             id="i_attachment1_link" 
                                             press="onDocLinkPress" 
                                             text="{request>/req_item/doc1_filename}"
-                                            class="sapUiTinyMarginTop"
                                             visible="{= ${request>/req_item/doc1} !== null }" />
                                     </form:fields>
                                 </form:FormElement>
@@ -240,6 +241,8 @@
                                     <form:fields>
                                         <unified:FileUploader
                                             change=".onImportChange2"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            maximumFileSize='5.0'
                                             placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc2}"
                                             id="i_attachment_2_file" />
@@ -247,7 +250,6 @@
                                             id="i_attachment2_link" 
                                             press="onDocLinkPress" 
                                             text="{request>/req_item/doc2_filename}"
-                                            class="sapUiTinyMarginTop"
                                             visible="{= ${request>/req_item/doc2} !== null }" />
                                     </form:fields>
                                 </form:FormElement>

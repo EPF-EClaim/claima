@@ -118,8 +118,6 @@ sap.ui.define([
 			}
 		},
 
-
-
 		/* =========================================================
 		* Helpers: Fragment Management
 		* ======================================================= */
@@ -169,7 +167,7 @@ sap.ui.define([
 			if (bEdit) {
 				this.byId("i_attachment_1_file").setRequired(false);
 				this.byId("i_attachment_2_file").setRequired(false);
-			}
+			} 
 
 			this._oReqModel.setProperty("/view", state);
 		},
@@ -1244,7 +1242,7 @@ sap.ui.define([
 			this._oReqModel.setProperty('/req_item', {})
 
 			PARequestSharedFunction._getItemList(this, sReqId);
-			this._showItemList();
+			this._showItemList(sReqId);
 		},
 
 		/* =========================================================
@@ -1934,7 +1932,19 @@ sap.ui.define([
 					aFieldIds.forEach(id => {
 						const control = this._resolveControl(id, "request");
 						if (control && typeof control.setVisible === "function") {
-							control.setVisible(true);
+
+							switch (id) {
+								case "i_cash_adv":
+									if (this._oReqModel.getProperty("/req_header/grptype") == this._oConstant.GroupType.INDIVIDUAL) {
+										control.setVisible(true); 
+									}
+									break;
+							
+								default:
+									control.setVisible(true);
+									break;
+							}
+
 						} else {
 							console.warn("Control not found or not visible-capable:", id);
 						}
