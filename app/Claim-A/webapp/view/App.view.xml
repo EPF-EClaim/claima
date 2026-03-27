@@ -102,7 +102,7 @@
 
                     <tnt:NavigationListGroup text="Configuration">
                         <tnt:NavigationListItem
-                            key="config"
+                        icon="sap-icon://database"
                             text="Master Data"
                             enabled="true"
                             expanded="false"
@@ -241,8 +241,8 @@
                             </tnt:items>
                         </tnt:NavigationListItem>
                         <tnt:NavigationListItem
-                            key="config"
                             text="{i18n>hr_employee_setup}"
+                            icon="sap-icon://employee"
                             enabled="true"
                             expanded="false"
                         >
@@ -286,8 +286,8 @@
                             </tnt:items>
                         </tnt:NavigationListItem>
                         <tnt:NavigationListItem
-                            key="config"
                             text="{i18n>travel_claim_setup}"
+                            icon="sap-icon://flight"
                             enabled="true"
                             expanded="false"
                         >
@@ -360,8 +360,8 @@
                             </tnt:items>
                         </tnt:NavigationListItem>
                         <tnt:NavigationListItem
-                            key="config"
                             text="{i18n>system_workflow_setup}"
+                            icon="sap-icon://action-settings"
                             enabled="true"
                             expanded="false"
                         >
