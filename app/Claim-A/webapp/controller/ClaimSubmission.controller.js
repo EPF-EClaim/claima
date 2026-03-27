@@ -1226,6 +1226,14 @@ sap.ui.define([
 		},
 
 		onCreateClaim_ClaimSummary: async function (indexNumber) {
+			
+			// Destroy previous detail fragment to avoid stale bindings
+			if (this._fragments["claimsubmission_claimdetails_input"]) {
+				const frag = await this._fragments["claimsubmission_claimdetails_input"];
+				frag.destroy(true);
+				delete this._fragments["claimsubmission_claimdetails_input"];
+			}
+
 			BusyIndicator.show(0);
 			// show claim details screen
 			var oPage = this.byId("page_claimsubmission");
@@ -2049,6 +2057,11 @@ sap.ui.define([
 		},
 
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
+			
+    		// HARD RESET – prevents stale binding values
+    		this.getView().setModel(null, "claimitem_input");
+	    	sap.ui.getCore().applyChanges();
+
 			// set claim item model
 			var oInputModel = this._getNewClaimItemModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
@@ -2061,7 +2074,7 @@ sap.ui.define([
 			// update selection fields
 			if (Number.isInteger(indexNumber)) {
 				// add claim item values to claim detail screen
-				oInputModel.setProperty("/claim_item", oClaimSubmissionModel.getProperty("/claim_items/" + indexNumber));
+				oInputModel.setProperty("/claim_item", structuredClone(oClaimSubmissionModel.getProperty("/claim_items/" + indexNumber)));
 
 				// set app visibility controls
 				await this.getFieldVisibility_ClaimTypeItem();
@@ -3835,6 +3848,12 @@ sap.ui.define([
 				this.byId("select_claimdetails_input_claimitem").setEditable(false);
 				screenArray.forEach(id => {
 					const control = this._resolveControl(id, "claimsubmission_claimdetails_input");
+					
+					if (!control) {
+						console.warn("Control not found or not editable-capable:", id);
+						return;
+					}
+		
 					if (control && typeof control.setEditable === "function") {
 						control.setEditable(false);
 					} else if (control.getMetadata().getName().includes("FileUploader")) {
@@ -3846,8 +3865,8 @@ sap.ui.define([
 						if (openAttachment && !openAttachment.getVisible()) {
 							openAttachment.setVisible(true);
 						}
-					} else {
-						console.warn("Control not found or not editable-capable:", id);
+					} else if (control instanceof sap.ui.mdc.Field) {
+						control.setEditMode("Display");
 					}
 				});
 			}

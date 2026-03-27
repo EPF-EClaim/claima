@@ -371,9 +371,8 @@
                                     <form:fields>
                                         <mdc:Field
                                             value="{request>/req_item/country}"
-                                            editMode="Editable"
+                                            editMode="{= ${request>/view} === 'view' ? 'Display' : 'Editable' }"
                                             display="ValueDescription"
-                                            visible="{= ${request>/view} !== 'view' }"
                                             required="true" 
                                             valueHelp="valuehelp_country"
                                         />
@@ -838,7 +837,8 @@
                                             visible="false"
                                             id="i_cash_adv" >
                                     <form:fields>
-                                        <Switch state="{request>/req_item/cash_advance}" customTextOn="Yes" customTextOff="No">
+                                        <Switch state="{request>/req_item/cash_advance}" customTextOn="Yes" customTextOff="No"
+                                                enabled="{= ${request>/view} !== 'view' }">
                                             <layoutData>
                                                 <FlexItemData growFactor="1" />
                                             </layoutData>
