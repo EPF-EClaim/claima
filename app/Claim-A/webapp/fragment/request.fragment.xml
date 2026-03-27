@@ -130,7 +130,7 @@
 					selectedKey="{reqDialog>/grptype}" 
 					required="true" 
 					forceSelection="false"
-					enabled="{= ${reqDialog>/reqtype} !== 'RT0004'}"
+					enabled="false"
 					visible="false"
 					items="{
 						path: 'employee>/ZINDIV_GROUP',

@@ -32,16 +32,12 @@ sap.ui.define([
       const oModel = this.getOwnerComponent().getModel();
       const ctx = oModel.bindContext("/getUserType()");
       var isApprover = this._oRoleModel.getProperty("/isApprover");
-      ctx.requestObject().then((oData) => {
-        const sType = (oData && oData.userType) || "UNKNOWN";
         oVM.setProperty("/isApprover", isApprover);
         // Recompute delete visibility with current selection state
         oVM.setProperty(
           "/canDelete",
           oVM.getProperty("/isApprover") && oVM.getProperty("/hasSelection")
         );
-      }).catch(() => {
-      });
 
       const oTable = this.byId("tblSubs");
       oTable.attachEventOnce("updateFinished", () => {
