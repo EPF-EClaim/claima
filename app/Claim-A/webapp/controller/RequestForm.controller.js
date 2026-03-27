@@ -1954,19 +1954,7 @@ sap.ui.define([
 					aFieldIds.forEach(id => {
 						const control = this._resolveControl(id, "request");
 						if (control && typeof control.setVisible === "function") {
-
-							switch (id) {
-								case "i_cash_adv":
-									if (this._oReqModel.getProperty("/req_header/grptype") == this._oConstant.GroupType.INDIVIDUAL) {
-										control.setVisible(true); 
-									}
-									break;
-							
-								default:
-									control.setVisible(true);
-									break;
-							}
-
+							control.setVisible(true);
 						} else {
 							console.warn("Control not found or not visible-capable:", id);
 						}
@@ -1981,28 +1969,6 @@ sap.ui.define([
 				console.error("OData bindList failed:", err);
 			} finally {
 				BusyIndicator.hide();
-			}
-		},
-
-		onSelectLocationType (oEvent) {
-			const sLocationType = this._oReqModel.getProperty("/req_item/location_type");
-
-			if (sLocationType === "2") {
-				this.byId("i_from_location").setVisible(false);
-				this.byId("i_to_location").setVisible(false);
-
-				this.byId("i_from_state").setVisible(true);
-				this.byId("i_from_location_office").setVisible(true);
-				this.byId("i_to_state").setVisible(true);
-				this.byId("i_to_location_office").setVisible(true);
-			} else {
-				this.byId("i_from_location").setVisible(true);
-				this.byId("i_to_location").setVisible(true);
-
-				this.byId("i_from_state").setVisible(false);
-				this.byId("i_from_location_office").setVisible(false);
-				this.byId("i_to_state").setVisible(false);
-				this.byId("i_to_location_office").setVisible(false);
 			}
 		},
 
@@ -2036,12 +2002,8 @@ sap.ui.define([
 				"i_toll",
 				"i_flight_class",
 				"i_location_type",
-				"i_from_state",
 				"i_from_location",
-				"i_from_location_office",
-				"i_to_state",
 				"i_to_location",
-				"i_to_location_office",
 				"i_mode_of_transfer",
 				"i_tarikh_pindah",
 				"i_no_of_days_3",
@@ -2049,8 +2011,7 @@ sap.ui.define([
 				"i_marriage_cat",
 				"i_cube_eligible",
 				"i_departure_time",
-				"i_arrival_time",
-				"i_cash_adv"
+				"i_arrival_time"
 			];
 
 			aControlIds.forEach(id => {

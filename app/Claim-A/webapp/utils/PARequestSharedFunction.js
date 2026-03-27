@@ -144,32 +144,7 @@ sap.ui.define([
 		* Determine Footer Buttons
 		* ======================================================= */
 
-		_removeAllButton: function (oController) {
-
-			const oBtnBackScr 	= oController.byId('req_back_scr');
-			const oBtnBack    	= oController.byId("req_back");
-			const oBtnDelete  	= oController.byId("req_delete");
-			const oBtnSubmit  	= oController.byId("req_submit");
-			const oBtnReject  	= oController.byId("req_reject");
-			const oBtnSendBack	= oController.byId("req_send_back");
-			const oBtnApprove  	= oController.byId("req_approve");
-			const oBtnCancel  	= oController.byId("req_item_cancel");
-			const oBtnSave  	= oController.byId("req_item_save");
-
-			if (oBtnBackScr) oBtnBackScr.setVisible(false);
-			if (oBtnBack) oBtnBack.setVisible(false);
-			if (oBtnDelete) oBtnDelete.setVisible(false);
-			if (oBtnSubmit) oBtnSubmit.setVisible(false);
-			if (oBtnReject) oBtnSubmit.setVisible(false);
-			if (oBtnSendBack) oBtnSubmit.setVisible(false);
-			if (oBtnApprove) oBtnSubmit.setVisible(false);
-			if (oBtnCancel) oBtnSubmit.setVisible(false);
-			if (oBtnSave) oBtnSubmit.setVisible(false);
-
-		},
-
 		determineFooterButton(oController) {
-			this._removeAllButton(oController);
 			const sState = oController._oReqModel.getProperty('/view');
 			const sReqStatus = oController._oReqModel.getProperty('/req_header/reqstatus');
 
@@ -182,7 +157,7 @@ sap.ui.define([
 			const oBtnApprove  	= oController.byId("req_approve");
 			const oBtnCancel  	= oController.byId("req_item_cancel");
 			const oBtnSave  	= oController.byId("req_item_save");
-
+			
 			let bShowBackScr	= false;
 			let bShowBack   	= false;
 			let bShowDelete 	= false;
