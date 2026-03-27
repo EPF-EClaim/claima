@@ -260,6 +260,7 @@ sap.ui.define([
 
             // Main table path
             const sBudgetTablePath = Constants.Entities.ZBUDGET;
+            let sEEID = "";
 
             // Build filter
             const aFilters = [
@@ -284,6 +285,9 @@ sap.ui.define([
             else{
                 oData = aCtx[0].getObject();
                 oBudgetOwner = await this.getEmployeeDetailsByEmail(oModel, oData.BUDGET_OWNER_ID)
+                if (oBudgetOwner){
+                    sEEID = oBudgetOwner.EEID
+                }
             }
 
             // Return only the required fields
@@ -294,7 +298,7 @@ sap.ui.define([
                 FUND_CENTER:        oData.FUND_CENTER,
                 MATERIAL_GROUP:     oData.MATERIAL_GROUP,
                 BUDGET_OWNER_EMAIL: oData.BUDGET_OWNER_ID,
-                BUDGET_OWNER_ID:    oBudgetOwner.EEID
+                BUDGET_OWNER_ID:    sEEID
             };
         },
         /**

@@ -105,6 +105,7 @@
                                         <m:Input 
                                             type="Number" 
                                             textAlign="Begin" 
+                                            required="true" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/est_amount}"/>
                                     </form:fields>
@@ -150,6 +151,7 @@
                                     <form:fields>
                                         <m:Input 
                                             textAlign="Begin" 
+                                            required="true" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/course}"/>
                                     </form:fields>
@@ -183,6 +185,7 @@
                                             id="i_club_membership" >
                                     <form:fields>
                                         <CheckBox 
+                                            required="true" 
                                             selected="{request>/req_item/club_membership}"
                                             enabled="{= ${request>/view} !== 'view' }" />
                                     </form:fields>
@@ -195,13 +198,14 @@
                                     <form:fields>
                                         <unified:FileUploader
                                             change=".onImportChange1"
+                                            required="true" 
                                             placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc1}"
                                             id="i_attachment_1_file" />
                                         <Link
                                             id="i_attachment1_link" 
                                             press="onDocLinkPress" 
-                                            text="{request>/req_item/doc1}"
+                                            text="{request>/req_item/doc1_filename}"
                                             class="sapUiTinyMarginTop"
                                             visible="{= ${request>/req_item/doc1} !== null }" />
                                     </form:fields>
@@ -242,7 +246,7 @@
                                         <Link
                                             id="i_attachment2_link" 
                                             press="onDocLinkPress" 
-                                            text="{request>/req_item/doc2}"
+                                            text="{request>/req_item/doc2_filename}"
                                             class="sapUiTinyMarginTop"
                                             visible="{= ${request>/req_item/doc2} !== null }" />
                                     </form:fields>
@@ -269,6 +273,7 @@
                                             placeholder="eg: 01 Jan 1990"
                                             value="{request>/req_item/start_date}"
                                             textAlign="Begin"
+                                            required="true" 
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -284,6 +289,7 @@
                                             placeholder="eg: 01 Jan 1990"
                                             value="{request>/req_item/end_date}"
                                             textAlign="Begin"
+                                            required="true" 
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -493,6 +499,7 @@
                                             id="i_kilometer" >
                                     <form:fields>
                                         <Input 
+                                            required="true" 
                                             value="{request>/req_header/kilometer}"
                                             type="Number" />
                                     </form:fields>
@@ -593,6 +600,7 @@
                                             id="i_from_location" >
                                     <form:fields>
                                         <m:Input 
+                                            required="true" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/from_location}"/>
@@ -605,6 +613,7 @@
                                             id="i_from_location_office" >
                                     <form:fields>
                                         <m:Input 
+                                            required="true" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/from_location_office}"/>
@@ -639,6 +648,7 @@
                                             id="i_to_location"  >
                                     <form:fields>
                                         <m:Input 
+                                            required="true" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/to_location}"/>
@@ -651,6 +661,7 @@
                                             id="i_to_location_office"  >
                                     <form:fields>
                                         <m:Input 
+                                            required="true" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/to_location_office}"/>
@@ -663,8 +674,7 @@
                                             id="i_mode_of_transfer" >
                                     <form:fields>
                                         <Select 
-                                            selectedKey="{request>/req_item/mode_of_transfer}" 
-                                            required="true" 
+                                            selectedKey="{request>/req_item/mode_of_transfer}"
                                             forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             items="{path: 'employee>/ZTRANSFER_MODE',
@@ -733,7 +743,6 @@
                                     <form:fields>
                                         <Select 
                                             selectedKey="{request>/req_item/marriage_cat}" 
-                                            required="true" 
                                             forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             items="{path: 'employee>/ZMARITAL_CAT',
@@ -766,6 +775,7 @@
                                             id="i_departure_time">
                                     <form:fields>
                                         <m:DateTimePicker
+                                            required="true" 
                                             value="{request>/req_item/departure_time}"
                                             displayFormat="dd MMM yyyy HH:mm"
                                             valueFormat="dd MMM yyyy HH:mm"
@@ -780,11 +790,33 @@
                                             id="i_arrival_time">
                                     <form:fields>
                                         <m:DateTimePicker
+                                            required="true" 
                                             value="{request>/req_item/arrival_time}"
                                             displayFormat="dd MMM yyyy HH:mm"
                                             valueFormat="dd MMM yyyy HH:mm"
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Lodging Category -->
+                                <form:FormElement label="{i18n>req_i_lodging}"
+                                            visible="false"
+                                            id="i_lodging_cat" >
+                                    <form:fields>
+                                        <Select 
+                                            selectedKey="{request>/req_item/lodging_cat}" 
+                                            forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZLODGING_CAT',
+                                                    sorter: { path: 'LODGING_CATEGORY_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                            <items>
+                                                <core:Item key="{employee>LODGING_CATEGORY_ID}" 
+                                                        text="{employee>LODGING_CATEGORY_DESC}" />
+                                            </items>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 

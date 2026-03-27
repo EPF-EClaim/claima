@@ -1,8 +1,9 @@
 sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
-	"sap/ui/model/Sorter"
-], function (Filter, FilterOperator, Sorter) {
+	"sap/ui/model/Sorter",
+	"sap/ui/core/format/DateFormat"
+], function (Filter, FilterOperator, Sorter, DateFormat) {
 	"use strict";
 
 	return {
@@ -96,12 +97,12 @@ sap.ui.define([
 			const oListBinding = oModel.bindList(
 				"/ZEMP_REQUEST_ITEM_VIEW",
 				null,
-				[new sap.ui.model.Sorter("REQUEST_SUB_ID", false)],
-				[new sap.ui.model.Filter("REQUEST_ID", sap.ui.model.FilterOperator.EQ, sReqId)],
+				[new Sorter("REQUEST_SUB_ID", false)],
+				[new Filter("REQUEST_ID", FilterOperator.EQ, sReqId)],
 				{ $$ownRequest: true, $count: true }
 			);
 
-			const oDateTimeFormatter = sap.ui.core.format.DateFormat.getDateTimeInstance({
+			const oDateTimeFormatter = DateFormat.getDateTimeInstance({
 				pattern: "dd MMM yyyy HH:mm"
 			});
 

@@ -24,7 +24,8 @@ const Constant = {
         UPDATED: "RECORD UPDATED"
     },
     NumberRange: {
-        REQUEST: "NR01"
+        REQUEST: "NR01",
+        CLAIM: "NR02"
     },
     DisbursementStatus: {
         BYPASS: "02",
@@ -38,7 +39,12 @@ const Constant = {
             "CONSUMED",
             "BUDGET_BALANCE"
         ]
-    }
+    },
+
+    WorkflowType: {
+            "CLAIM": "CLM",
+            "REQUEST": "REQ"
+        },
 
 };
 
