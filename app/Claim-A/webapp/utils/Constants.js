@@ -277,6 +277,10 @@ sap.ui.define([
             "REIMBURSEMENT" : "RT0004",
             "MEDICAL"       : "RT0005",
             "PROJECT"       : "RT0006"
+        },
+        "LocationType" : {
+            "OTHER" : "1",
+            "KWSP"  : "2"
         }
 
     }
