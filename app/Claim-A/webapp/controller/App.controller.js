@@ -126,7 +126,7 @@ sap.ui.define([
 					break;
 				// Start Aiman Salim 10/02/2026 - Added for analytics
 				case "analytics":
-					if (bDTDAdmin === true || bAdminSystem === true || bAdminCC === true) {
+					if (bDTDAdmin || bAdminSystem || bAdminCC ) {
 						HashChanger.getInstance().replaceHash("");
 						this._oRouter.navTo("Analytics");
 					} else {
@@ -152,14 +152,14 @@ sap.ui.define([
 				default:
 					// navigate to page with ID same as the key
 					if (this._oConstant.ConfigAccess.includes(oKey)) {
-						if (bDTDAdmin === true || bAdminSystem === true || bAdminCC === true) {
-							if (bDTDAdmin === true && oKey === sEmpMaster) {
+						if (bDTDAdmin || bAdminSystem || bAdminCC ) {
+							if (bDTDAdmin && oKey === sEmpMaster) {
 								oKey = sEmpMasterDTD;
-							} else if (bDTDAdmin === true && oKey === sEmpDep) {
+							} else if (bDTDAdmin && oKey === sEmpDep) {
 								oKey = sEmpDepDTD;
-							} else if (bDTDAdmin === true && oKey === sNumRange) {
+							} else if (bDTDAdmin && oKey === sNumRange) {
 								oKey = sNumRangeDTD;
-							} else if (bAdminCC === true && oKey === sBudget) {
+							} else if (bAdminCC && oKey === sBudget) {
 								oKey = "ZBUDGET_GA";
 							}
 							this._oRouter.navTo(oKey);

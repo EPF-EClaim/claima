@@ -47,7 +47,7 @@
                     text="{i18n>req_b_edit}"
                     press="onEdit"
                     enabled="{view>/hasSelection}"
-                    visible="{= ${/FeatureControl/operationEnabled} === true }"
+                    visible="{= ${/FeatureControl/operationEnabled} }"
                 />
                 <Button
                     id="CopyItem"
@@ -136,57 +136,6 @@
                     </ColumnListItem>
                 </items>
             </Table>
-            <dependents>
-                <ViewSettingsDialog
-                    id="itemViewSettingsDialog"
-                    confirm="onConfirmViewSettings"
-                    reset="onResetViewSettings"
-                >
-                    <sortItems>
-                        <!-- <ViewSettingsItem
-                            text="{i18n>claimtypeitemid}"
-                            key="CLAIM_TYPE_ITEM_ID"
-                            selected="true"
-                        /> -->
-                        <!-- <ViewSettingsItem
-                            text="{i18n>claimdesc}"
-                            key="CLAIM_TYPE_ITEM_DESC"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>categoryid}"
-                            key="CATEGORY_ID"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>req_cc}"
-                            key="COST_CENTER"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>materialcode}"
-                            key="MATERIAL_CODE"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>risk}"
-                            key="RISK"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>submitted_type}"
-                            key="SUBMISSION_TYPE"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>req_i_start_date}"
-                            key="START_DATE"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>req_i_end_date}"
-                            key="END_DATE"
-                        />
-                         <ViewSettingsItem
-                            text="{i18n>appr_status}"
-                            key="STATUS"
-                        /> -->
-                    </sortItems>
-                </ViewSettingsDialog>
-            </dependents>
         </VBox>
     </VBox>
 </core:FragmentDefinition>
