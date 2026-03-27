@@ -1607,6 +1607,8 @@ sap.ui.define([
 			if (this._approveDialog) {
 				this._approveDialog.close();
 			}
+			if (this._sendBackDialog) { this._sendBackDialog.close(); }
+			if (this._rejectDialog) { this._rejectDialog.close(); }
 		},
 		//Button config for Approve
 		onClickCreate_app: async function () {
@@ -1797,7 +1799,6 @@ sap.ui.define([
 					submissionType: sSubmissionType,
 					sMessageKey
 				} = await ApproverUtility.rejectOrSendBackMultiLevel(
-					this,
 					oModelMain,
 					sClaimId,
 					sUserId,
@@ -1847,12 +1848,6 @@ sap.ui.define([
 			} finally {
 				BusyIndicator.hide();
 			}
-		},
-
-		onClickCancel_app: function () {
-			if (this._approveDialog) { this._approveDialog.close(); }
-			if (this._sendBackDialog) { this._sendBackDialog.close(); }
-			if (this._rejectDialog) { this._rejectDialog.close(); }
 		},
 
 
@@ -2026,10 +2021,10 @@ sap.ui.define([
 		onSelect_ClaimDetails_ClaimItem: async function (oEvent) {
 			// validate claim item
 			var claimItem = oEvent.getParameters().selectedItem;
+			var oInputModel = this.getView().getModel("claimitem_input");
 			if (claimItem) {
 				// get material code from claim item
 				var materialCode = claimItem.getBindingContext("employee").getObject("MATERIAL_CODE");
-				var oInputModel = this.getView().getModel("claimitem_input");
 				oInputModel.setProperty("/claim_item/material_code", materialCode);
 			}
 
@@ -2047,6 +2042,9 @@ sap.ui.define([
 					this.byId("input_claimdetails_input_amount").setEditable(true);
 				}
 			}
+			const _oItem = oInputModel.getProperty("/claim_item") || {};
+			var iDiffDays = DateUtility.calculateNumberOfDays({}, _oItem);
+			oInputModel.setProperty("/claim_item/no_of_days", iDiffDays);
 		},
 
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
@@ -2128,8 +2126,6 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_location_type", "ZLOC_TYPE");
 			//// Room Type
 			this._setClaimDetailSelectionField("select_claimdetails_input_room_type", "ZROOM_TYPE");
-			//// Country
-			this._setClaimDetailSelectionField("select_claimdetails_input_country", "ZCOUNTRY");
 			//// Region (Semenanjung/Sabah/Sarawak)
 			this._setClaimDetailSelectionField("select_claimdetails_input_region", "ZREGION");
 			//// Area (Negara/Wilayah)
@@ -2140,8 +2136,6 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_claim_category", "ZCLAIM_CATEGORY");
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
-			//// Currency Code
-			this._setClaimDetailSelectionField("select_claimdetails_input_currency_code", "ZCURRENCY");	
 		},
 
 		_setClaimDetailSelectionField: function (oId, oTable, oField) {
@@ -2197,8 +2191,8 @@ sap.ui.define([
 				return;
 			}
 
-			if(this.byId("input_claimdetails_input_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_amount").getValue() == " " || 
-			   this.byId("input_claimdetails_input_amount").getValue() == "" || this.byId("input_claimdetails_input_amount").getValue() == null){
+			if (this.byId("input_claimdetails_input_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_amount").getValue() == " " ||
+				this.byId("input_claimdetails_input_amount").getValue() == "" || this.byId("input_claimdetails_input_amount").getValue() == null) {
 				// stop claim submission if amount is zero
 				MessageToast.show(Utility.getText("msg_claiminput_amount_zero"));
 				return;
@@ -2214,12 +2208,12 @@ sap.ui.define([
 			// validate attachment
 			//// attachment 1
 			if (this.byId("fileuploader_claimdetails_input_attachment1").getValue()) {
-				if(oInputModel.getProperty("/attachments/attachment1/fileName") != null && oInputModel.getProperty("/attachments/attachment1/fileContent") != null){
+				if (oInputModel.getProperty("/attachments/attachment1/fileName") != null && oInputModel.getProperty("/attachments/attachment1/fileContent") != null) {
 					BusyIndicator.show(0);
 					var attachmentNumber = await Attachment.postAttachment(
-					oInputModel.getProperty("/attachments/attachment1/fileName"),
-					oInputModel.getProperty("/attachments/attachment1/fileContent"),
-					this._oSessionModel.getProperty("/userId")
+						oInputModel.getProperty("/attachments/attachment1/fileName"),
+						oInputModel.getProperty("/attachments/attachment1/fileContent"),
+						this._oSessionModel.getProperty("/userId")
 					);
 
 					if (attachmentNumber) {
@@ -2414,7 +2408,7 @@ sap.ui.define([
 					CLAIM_TYPE_ID: oInputModel.getProperty("/claim_item/claim_type_id"),
 					COURSE_TITLE: oInputModel.getProperty("/claim_item/course_title"),
 					CURRENCY_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_amount"))).toFixed(2),
-					CURRENCY_CODE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_code"))).toFixed(2),
+					CURRENCY_CODE: oInputModel.getProperty("/claim_item/currency_code"),
 					CURRENCY_RATE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_rate"))).toFixed(2),
 					DEPARTURE_TIME: this._getHanaTime(oInputModel.getProperty("/claim_item/departure_time")),
 					DEPENDENT: oInputModel.getProperty("/claim_item/dependent"),
@@ -2568,6 +2562,10 @@ sap.ui.define([
 				if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
 					await this._calculatePerDiem();
 				}
+				// Calculate number of days
+				const _oItem = this.getView().getModel("claimitem_input").getProperty("/claim_item") || {};
+				var iDiffDays = DateUtility.calculateNumberOfDays({}, _oItem);
+				this.getView().getModel("claimitem_input").setProperty("/claim_item/no_of_days", iDiffDays);
 			}
 		},
 
@@ -2928,7 +2926,7 @@ sap.ui.define([
 					this._displayFooterButtons("claimsubmission_summary_claimitem");
 				}
 				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
-				
+
 				// Reload when item cancellation
 				this._loadClaimById(String(oClaimSubmissionModel.getProperty("/claim_header/claim_id")));
 			}
@@ -2944,6 +2942,12 @@ sap.ui.define([
 
 				var aItems = oInputModel.getProperty("/claim_items") || [];
 
+				if (aItems.length === 0) {
+					MessageToast.show(Utility.getText("msg_claimdetails_no_items"));
+					BusyIndicator.hide();
+					return;
+				}
+
 				if (this._CheckDuplicateClaimItems(aItems)) {
 					MessageToast.show(Utility.getText("msg_duplication_prompt"));
 					BusyIndicator.hide();
@@ -2955,7 +2959,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 
 				//assign submitted date for submit oAction
-				if(oAction == "Submit Report"){
+				if (oAction == "Submit Report") {
 					var submittedDate = this._getJsonDate(new Date());
 					oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
 				}
@@ -3101,7 +3105,7 @@ sap.ui.define([
 							break;
 						case 'Submit Report':
 							// budget checking
-							
+
 							const aPayloadResult = await budgetCheck.backendBudgetChecking(this, this._oConstant.SubmissionTypePrefix.CLAIM, this._oConstant.BudgetCheckAction.SUBMIT);
 							const oHandlingResult = await budgetCheck.budgetCheckHandling(aPayloadResult);
 
@@ -3293,7 +3297,7 @@ sap.ui.define([
 						CLAIM_TYPE_ID: claim_item.claim_type_id,
 						COURSE_TITLE: claim_item.course_title,
 						CURRENCY_AMOUNT: this._nonNan(parseFloat(claim_item.currency_amount)).toFixed(2),
-						CURRENCY_CODE: this._nonNan(parseFloat(claim_item.currency_code)).toFixed(2),
+						CURRENCY_CODE: claim_item.currency_code,
 						CURRENCY_RATE: this._nonNan(parseFloat(claim_item.currency_rate)).toFixed(2),
 						DEPARTURE_TIME: this._getHanaTime(claim_item.departure_time),
 						DEPENDENT: claim_item.dependent,
@@ -4118,7 +4122,7 @@ sap.ui.define([
 			const oReq = this.getOwnerComponent().getModel("request_status");
 			const oEmployeeViewModel = this.getOwnerComponent().getModel("employee_view");
 			var sUserId = this._oSessionModel.getProperty("/userId");
-	
+
 			const oApproverOrSub = new Filter({
 				filters: [
 					new Filter("APPROVER_ID", FilterOperator.EQ, sUserId),

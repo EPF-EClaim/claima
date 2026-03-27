@@ -13,6 +13,7 @@ sap.ui.define([
 	"sap/ui/core/Fragment",
 	"sap/ui/core/BusyIndicator",
 	"sap/ui/core/Item",
+	"sap/ui/core/routing/HashChanger",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
@@ -35,6 +36,7 @@ sap.ui.define([
 	Fragment,
 	BusyIndicator,
 	Item,
+	HashChanger,
 	Filter,
 	FilterOperator,
 	Sorter,
@@ -69,17 +71,6 @@ sap.ui.define([
 
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
-
-			const bIsLocal = window.location.hostname.includes("port4004") || 
-							window.location.hostname.includes("applicationstudio.cloud.sap");
-			if (bIsLocal) {
-				const emp_data = await this._getEmpIdDetail("jefry.yap@my.ey.com");
-				this._oReqModel.setProperty("/user", { 
-					emp_id		: emp_data.eeid, 
-					name		: emp_data.name,
-					cost_center	: emp_data.cc 
-				});
-			}
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
@@ -135,7 +126,8 @@ sap.ui.define([
 				// Start Aiman Salim 10/02/2026 - Added for analytics
 				case "analytics":
 					if (sType === sAdminDTD || sType === sAdminJKEW || sType === sSuperUser) {
-						this._oRouter.navTo("Analytics")
+						HashChanger.getInstance().replaceHash("");
+						this._oRouter.navTo("Analytics");
 					} else {
 						var message = Utility.getText("msg_unauthorized_role");
 						MessageBox.error(message);
@@ -956,36 +948,6 @@ sap.ui.define([
 			var lastModifiedDate = this._getJsonDate(new Date());
 			oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 
-			// assign report number to new claim
-			if (oInputModel.getProperty("/is_new")) {
-				var currentReportNumber = await this._getCurrentReportNumber('NR02');
-				var retries = 5;
-				while (retries-- > 0 && currentReportNumber.result === 'X') {
-					await this._updateCurrentReportNumber('NR02', currentReportNumber.current);
-					currentReportNumber = await this._getCurrentReportNumber('NR02');
-				}
-				if (!isNaN(currentReportNumber.result.slice(-1))) {
-					oInputModel.setProperty("/claim_header/claim_id", currentReportNumber.result);
-					oInputModel.setProperty("/reportnumber/reportno", currentReportNumber.result);
-					oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
-				}
-				else {
-					this.oDialog = new Dialog({
-						title: Utility.getText("dialog_claiminput_claimid"),
-						type: "Message",
-						state: "None",
-						content: [new Label({ text: Utility.getText("msg_claiminput_claimid") })],
-						endButton: new Button({
-							text: Utility.getText("endbutton_claiminput_claimid"),
-							press: function () {
-								this.oDialog.close();
-							}
-						})
-					});
-					this.oDialog.open();
-					return;
-				}
-			}
 			//// set status for new claim as draft
 			if (oInputModel.getProperty("/is_new")) {
 				oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.DRAFT);
@@ -1058,14 +1020,35 @@ sap.ui.define([
 					const oContext = oListBinding.create(oBody.getData());
 					oContext.created().then(async () => {
 						claimSaved = true;
-						await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
-						// post MDF for header attachment
-						// if (oInputModel.getProperty("/claim_header/attachment_email_approver")) {
-							await Attachment.postMDF(
-								oInputModel.getProperty("/claim_header/claim_id"),
-								oInputModel.getProperty("/claim_header/attachment_email_approver")
-							)
-						// }
+
+						// assign report number to new claim
+						var currentReportNumber = oContext.getProperty("CLAIM_ID");
+						if (!isNaN(currentReportNumber.slice(-1))) {
+							oInputModel.setProperty("/claim_header/claim_id", currentReportNumber);
+							oInputModel.setProperty("/reportnumber/reportno", currentReportNumber);
+							// oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
+						}
+						else {
+							this.oDialog = new Dialog({
+								title: Utility.getText("dialog_claiminput_claimid"),
+								type: "Message",
+								state: "None",
+								content: [new Label({ text: Utility.getText("msg_claiminput_claimid") })],
+								endButton: new Button({
+									text: Utility.getText("endbutton_claiminput_claimid"),
+									press: function () {
+										this.oDialog.close();
+									}
+								})
+							});
+							this.oDialog.open();
+							return;
+						}
+						// Always post Parent MDF
+						await Attachment.postMDF(
+							oInputModel.getProperty("/claim_header/claim_id"),
+							oInputModel.getProperty("/claim_header/attachment_email_approver")
+						)
 
 						if (claimSaved) {
 							MessageToast.show(Utility.getText("msg_claimsubmission_created", [oInputModel.getProperty("/claim_header/claim_id")]));
@@ -1326,7 +1309,7 @@ sap.ui.define([
 		// ==================================================
 
 		onClickMyRequest: async function () {
-			PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
+			// PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
 
 			if (!this.oDialogFragment) {
 				this.oDialogFragment = await Fragment.load({
@@ -1337,7 +1320,7 @@ sap.ui.define([
 				
 				this.getView().addDependent(this.oDialogFragment);
 
-				var oRequestDialogModel = new sap.ui.model.json.JSONModel({ reqid: "", grptype: "IND" });
+				var oRequestDialogModel = new JSONModel({ reqid: "", grptype: "IND" });
 				this.oDialogFragment.setModel(oRequestDialogModel, "reqDialog");
 
 				this.oDialogFragment.attachAfterClose(() => {
@@ -1619,6 +1602,21 @@ sap.ui.define([
 				console.error("OData bindList failed:", err);
 				this._setAllHeaderControlsVisible(false);
 			} finally {
+				switch (sReqType) {
+					case this._oConstant.RequestType.MOBILE:
+						this.oDialogFragment.getModel("reqDialog").setProperty("/grptype", "GRP");
+						Fragment.byId("request","req_grptype").setEnabled(false);
+						break;
+						
+					case this._oConstant.RequestType.REIMBURSEMENT:
+						this.oDialogFragment.getModel("reqDialog").setProperty("/grptype", "IND");
+						Fragment.byId("request","req_grptype").setEnabled(false);
+						break;
+				
+					default:
+						Fragment.byId("request","req_grptype").setEnabled(true);
+						break;
+				}
 				BusyIndicator.hide();
 			}
 		},

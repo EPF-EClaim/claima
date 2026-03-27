@@ -451,6 +451,34 @@ module.exports = (srv) => {
         }
     });
 
+    srv.before('CREATE', 'ZCLAIM_HEADER', async (req) => {
+        const tx = cds.tx(req);
+        const range_id = Constant.NumberRange.CLAIM;
+
+        const row = await tx.run(
+            SELECT.one.from('ZNUM_RANGE')
+                .where({ RANGE_ID: String(range_id) })
+                .forUpdate()
+        );
+
+        if (!row) return req.error(404, `Range ID ${range_id} not found`);
+
+        const prefix = row.PREFIX || "";
+        const current = Number(row.CURRENT || 0);
+        const yy = String(new Date().getFullYear()).slice(-2);
+
+        const nextNumber = `${prefix}${yy}${String(current).padStart(9, "0")}`;
+        req.data.CLAIM_ID = String(nextNumber);
+
+        await tx.run(
+            UPDATE('ZNUM_RANGE')
+                .set({ CURRENT: String(current + 1) })
+                .where({ RANGE_ID: String(range_id) })
+        );
+
+        console.log(`[HANA] Assigned ID: ${req.data.CLAIM_ID}`);
+    });
+
     async function updateClaimHeaderTotals(req, sClaimId, tx) {
         if (!sClaimId) return;
 
@@ -467,7 +495,8 @@ module.exports = (srv) => {
         await tx.run(
             UPDATE('ZCLAIM_HEADER')
                 .set({
-                    TOTAL_CLAIM_AMOUNT: totalClaimAmount
+                    TOTAL_CLAIM_AMOUNT: totalClaimAmount,
+                    FINAL_AMOUNT_TO_RECEIVE: totalClaimAmount
                 })
                 .where({ CLAIM_ID: sClaimId })
         );

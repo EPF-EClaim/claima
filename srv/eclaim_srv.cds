@@ -60,7 +60,10 @@ service eclaim_srv @(requires: 'authenticated-user'){
 
     entity ZREQUEST_TYPE                 as projection on ECLAIM.ZREQUEST_TYPE;
 
-    entity ZCLAIM_ITEM                   as projection on ECLAIM.ZCLAIM_ITEM;
+    entity ZCLAIM_ITEM                   as projection on ECLAIM.ZCLAIM_ITEM {
+        @Core.Computed CLAIM_SUB_ID,
+        *
+    };
 
     entity ZREQUEST_HEADER               as
         projection on ECLAIM.ZREQUEST_HEADER {
@@ -97,7 +100,10 @@ service eclaim_srv @(requires: 'authenticated-user'){
 
     entity ZREQ_ITEM_PART                as projection on ECLAIM.ZREQ_ITEM_PART;
 
-    entity ZCLAIM_HEADER                 as projection on ECLAIM.ZCLAIM_HEADER;
+    entity ZCLAIM_HEADER                 as projection on ECLAIM.ZCLAIM_HEADER {
+        @Core.Computed CLAIM_ID,
+        *
+    };
 
     entity ZNUM_RANGE                    as projection on ECLAIM.ZNUM_RANGE;
 
