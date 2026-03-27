@@ -2919,11 +2919,20 @@ sap.ui.define([
 						this.byId("button_claimdetails_input_return").setVisible(false);
 					}
 					this._setAllControlsEditable(true);
+					// set claim item field as editable
+					if (!this.byId("select_claimdetails_input_claimitem").getEditable()) {
+						this.byId("select_claimdetails_input_claimitem").setEditable(true);
+					}
 				}
 
 				// clear fileuploader fields
 				for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
 					this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
+
+					// remove Open Attachment button for claim item if visible
+					if(this.byId("button_claimdetails_input_attachment" + i) && this.byId("button_claimdetails_input_attachment" + i).getVisible()) {
+						this.byId("button_claimdetails_input_attachment" + i).setVisible(false);
+					}
 				}
 
 				oPage.removeContent(oClaimItemFragment);
@@ -3805,30 +3814,33 @@ sap.ui.define([
 		},
 
 		_getFieldEditable_ClaimTypeItem: async function () {
-			const oModel = this.getOwnerComponent().getModel();
 			var oInputModel = this.getView().getModel("claimitem_input");
-			var screenArray = oInputModel.getProperty("/screen_array");
+			var aScreenArray = oInputModel.getProperty("/screen_array");
 
-			if (!screenArray) {
+			if (!aScreenArray) {
 				console.warn("Cannot get field list for claim items");
 				this._setAllControlsEditable(true);
 				return;
 			}
 			else {
 				this._setAllControlsEditable(true);
-				this.byId("select_claimdetails_input_claimitem").setEditable(false);
-				screenArray.forEach(id => {
-					const control = this._resolveControl(id, "claimsubmission_claimdetails_input");
-					if (control && typeof control.setEditable === "function") {
-						control.setEditable(false);
-					} else if (control.getMetadata().getName().includes("FileUploader")) {
-						control.setVisible(false);
+
+				// set claim item field as not editable
+				if (this.byId("select_claimdetails_input_claimitem").getEditable()) {
+					this.byId("select_claimdetails_input_claimitem").setEditable(false);
+				}
+				aScreenArray.forEach(id => {
+					const oControl = this._resolveControl(id, "claimsubmission_claimdetails_input");
+					if (oControl && typeof oControl.setEditable === "function") {
+						oControl.setEditable(false);
+					} else if (oControl.getMetadata().getName().includes("FileUploader")) {
+						oControl.setVisible(false);
 
 						// set button to open attachment
-						var fieldNumber = control.getId().slice(-1);
-						var openAttachment = this.byId("button_claimdetails_input_attachment" + fieldNumber);
-						if (openAttachment && !openAttachment.getVisible()) {
-							openAttachment.setVisible(true);
+						var iFieldNumber = oControl.getId().slice(-1);
+						var oOpenAttachment = this.byId("button_claimdetails_input_attachment" + iFieldNumber);
+						if (oOpenAttachment && !oOpenAttachment.getVisible()) {
+							oOpenAttachment.setVisible(true);
 						}
 					} else {
 						console.warn("Control not found or not editable-capable:", id);
@@ -3911,23 +3923,24 @@ sap.ui.define([
 				"fileuploader_claimdetails_input_attachment2",
 			];
 
-			aControlIds.forEach(id => {
-				const c = this._resolveControl(id, "claimsubmission_claimdetails_input");
-				if (c && typeof c.setEditable === "function") {
-					c.setEditable(bEditable);
-				} else if (c.getMetadata().getName().includes("FileUploader")) {
-					if (c.getVisible() !== bEditable) {
-						c.setVisible(bEditable);
-					}
-
-					// set button to open attachment
-					var fieldNumber = c.getId().slice(-1);
-					var openAttachment = this.byId("button_claimdetails_input_attachment" + fieldNumber);
-					if (openAttachment && openAttachment.getVisible() === bEditable) {
-						openAttachment.setVisible(!bEditable);
+			aControlIds.forEach(sId => {
+				const oControl = this._resolveControl(sId, "claimsubmission_claimdetails_input");
+				if (oControl && typeof oControl.setEditable === "function") {
+					oControl.setEditable(bEditable);
+				} else if (oControl.getMetadata().getName().includes("FileUploader")) {
+					// if view-only, set button to display Open Attachment button instead of fileuploader field
+					if (!bEditable) {
+						if (oControl.getVisible()) {
+							oControl.setVisible(false);
+						}
+						var iFieldNumber = oControl.getId().slice(-1);
+						var oOpenAttachment = this.byId("button_claimdetails_input_attachment" + iFieldNumber);
+						if (oOpenAttachment && !oOpenAttachment.getVisible()) {
+							oOpenAttachment.setVisible(true);
+						}
 					}
 				} else {
-					console.warn("Control not found or not editable-capable:", id);
+					console.warn("Control not found or not editable-capable:", sId);
 				}
 			});
 		},
