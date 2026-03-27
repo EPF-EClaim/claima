@@ -1193,36 +1193,31 @@ sap.ui.define([
 			return this.getView().getModel(modelName);
 		},
 
-		onView_Claim_Attachment: function (oLevel, fieldNumber, itemSubId) {
-			var that = this;
+		onView_Claim_Attachment: function (oLevel, iFieldNumber) {
 			// Write to Success Factors API
-			var fileName = "";
 			BusyIndicator.show(0);
 			if (oLevel == 'parent') {
 				// get parent attachment
 				var oInputModel = this.getView().getModel("claimsubmission_input");
 				Attachment.onViewDocument(this, oInputModel.getProperty("/claim_header/attachment_email_approver"));
 			}
-			else if (oLevel == 'child_det') {
+			else if (oLevel == 'child') {
 				// get child attachment
 				oInputModel = this.getView().getModel("claimitem_input");
-				Attachment.onViewDocument(this, oInputModel.getProperty("/claim_item/attachment_file_" + fieldNumber));
-			}
-			else {
-				// get child attachment
-				oInputModel = this.getView().getModel("claimsubmission_input");
-				//// get claim item index from claim submission
-				let iItemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
-				if (iItemIndex !== -1) {
-					Attachment.onViewDocument(this, oInputModel.getProperty("/claim_items/" + iItemIndex + "/attachment_file_" + fieldNumber));
-				}
-				else {
-					MessageToast.show(Utility.getText("msg_claimsubmission_viewattachment_error"));
-					BusyIndicator.hide();
-					return;
-				}
+				var iAttachmentId = this._determineAttachmentId(oInputModel.getProperty("/claim_item/attachment_file_" + iFieldNumber));
+				Attachment.onViewDocument(this, iAttachmentId);
 			}
 			BusyIndicator.hide();
+		},
+
+		_determineAttachmentId: function (sAttachment) {
+			if (sAttachment.indexOf(' ') > 0) {
+				return sAttachment.substring(0, sAttachment.indexOf(' '));
+			}
+			else {
+				// for attachments with no filename in db
+				return sAttachment;
+			}
 		},
 
 		onCreateClaim_ClaimSummary: async function (indexNumber) {
@@ -2074,6 +2069,13 @@ sap.ui.define([
 				}
 				this._getFieldEditable_ClaimTypeItem();
 			}
+
+			// set text for label
+			for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
+				if (!this.byId("fileuploader_claimdetails_input_attachment" + i).getVisible()) {
+					this.byId("label_claimdetails_input_attachment" + i).setText(Utility.getText("label_claimdetails_input_attachment" + i));
+				}
+			}
 		},
 
 		_setClaimDetailSelection: function (oModel) {
@@ -2222,14 +2224,15 @@ sap.ui.define([
 			if (this.byId("fileuploader_claimdetails_input_attachment1").getValue()) {
 				if (oInputModel.getProperty("/attachments/attachment1/fileName") != null && oInputModel.getProperty("/attachments/attachment1/fileContent") != null) {
 					BusyIndicator.show(0);
-					var attachmentNumber = await Attachment.postAttachment(
+					var iAttachmentNumber = await Attachment.postAttachment(
 						oInputModel.getProperty("/attachments/attachment1/fileName"),
 						oInputModel.getProperty("/attachments/attachment1/fileContent"),
 						this._oSessionModel.getProperty("/userId")
 					);
 
-					if (attachmentNumber) {
-						oInputModel.setProperty("/claim_item/attachment_file_1", attachmentNumber);
+					if (iAttachmentNumber) {
+						var sAttachmentString = iAttachmentNumber + ' - ' + oInputModel.getProperty("/attachments/attachment1/fileName");
+						oInputModel.setProperty("/claim_item/attachment_file_1", sAttachmentString);
 						oInputModel.setProperty("/claim_item/descr/attachment_file_1", oInputModel.getProperty("/attachments/attachment1/fileName"));
 						BusyIndicator.hide();
 					}
@@ -2243,22 +2246,26 @@ sap.ui.define([
 			}
 			//// attachment 2
 			if (this.byId("fileuploader_claimdetails_input_attachment2").getValue()) {
-				BusyIndicator.show(0);
-				var attachmentNumber = await Attachment.postAttachment(
-					oInputModel.getProperty("/attachments/attachment2/fileName"),
-					oInputModel.getProperty("/attachments/attachment2/fileContent"),
-					this._oSessionModel.getProperty("/userId")
-				);
-				if (attachmentNumber) {
-					oInputModel.setProperty("/claim_item/attachment_file_2", attachmentNumber);
-					oInputModel.setProperty("/claim_item/descr/attachment_file_2", oInputModel.getProperty("/attachments/attachment2/fileName"));
-					BusyIndicator.hide();
-				}
-				else {
-					MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
-					// don't proceed claim item if attachment upload fails
-					BusyIndicator.hide();
-					return;
+				if (oInputModel.getProperty("/attachments/attachment2/fileName") != null && oInputModel.getProperty("/attachments/attachment2/fileContent") != null) {
+					BusyIndicator.show(0);
+					var iAttachmentNumber = await Attachment.postAttachment(
+						oInputModel.getProperty("/attachments/attachment2/fileName"),
+						oInputModel.getProperty("/attachments/attachment2/fileContent"),
+						this._oSessionModel.getProperty("/userId")
+					);
+
+					if (iAttachmentNumber) {
+						var sAttachmentString = iAttachmentNumber + ' - ' + oInputModel.getProperty("/attachments/attachment2/fileName");
+						oInputModel.setProperty("/claim_item/attachment_file_2", sAttachmentString);
+						oInputModel.setProperty("/claim_item/descr/attachment_file_2", oInputModel.getProperty("/attachments/attachment2/fileName"));
+						BusyIndicator.hide();
+					}
+					else {
+						MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
+						// don't proceed claim item if attachment upload fails
+						BusyIndicator.hide();
+						return;
+					}
 				}
 			}
 			// validate date range
@@ -2452,11 +2459,13 @@ sap.ui.define([
 					await oContext.created().then(async () => {
 						// post MDF for item attachments
 						if (oInputModel.getProperty("/claim_item/attachment_file_1") || oInputModel.getProperty("/claim_item/attachment_file_2")) {
+							var iAttachmentId1 = this._determineAttachmentId(oInputModel.getProperty("/claim_item/attachment_file_1"));
+							var iAttachmentId2 = this._determineAttachmentId(oInputModel.getProperty("/claim_item/attachment_file_2"));
 							await Attachment.postMDFChild(
 								oInputModel.getProperty("/claim_item/claim_id"),
 								oInputModel.getProperty("/claim_item/claim_sub_id"),
-								oInputModel.getProperty("/claim_item/attachment_file_1"),
-								oInputModel.getProperty("/claim_item/attachment_file_2")
+								iAttachmentId1,
+								iAttachmentId2
 							)
 						}
 
@@ -2498,11 +2507,13 @@ sap.ui.define([
 							(oInputModel.getProperty("/claim_item/attachment_file_1") && oInputModel.getProperty("/claim_item/attachment_file_1") !== oAttachmentFile1) ||
 							(oInputModel.getProperty("/claim_item/attachment_file_2") && oInputModel.getProperty("/claim_item/attachment_file_2") !== oAttachmentFile2)
 						) {
+							var iAttachmentId1 = this._determineAttachmentId(oInputModel.getProperty("/claim_item/attachment_file_1"));
+							var iAttachmentId2 = this._determineAttachmentId(oInputModel.getProperty("/claim_item/attachment_file_2"));
 							await Attachment.postMDFChild(
 								oInputModel.getProperty("/claim_item/claim_id"),
 								oInputModel.getProperty("/claim_item/claim_sub_id"),
-								oInputModel.getProperty("/claim_item/attachment_file_1"),
-								oInputModel.getProperty("/claim_item/attachment_file_2")
+								iAttachmentId1,
+								iAttachmentId2
 							)
 						}
 						MessageToast.show(Utility.getText("msg_claimsubmission_save_item", [oInputModel.getProperty("/claim_item/claim_sub_id")]));
@@ -2929,9 +2940,9 @@ sap.ui.define([
 				for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
 					this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
 
-					// remove Open Attachment button for claim item if visible
-					if(this.byId("button_claimdetails_input_attachment" + i) && this.byId("button_claimdetails_input_attachment" + i).getVisible()) {
-						this.byId("button_claimdetails_input_attachment" + i).setVisible(false);
+					// undo text for label
+					if (this.byId("label_claimdetails_input_attachment" + i).getText()) {
+						this.byId("label_claimdetails_input_attachment" + i).setText('');
 					}
 				}
 
@@ -3835,13 +3846,6 @@ sap.ui.define([
 						oControl.setEditable(false);
 					} else if (oControl.getMetadata().getName().includes("FileUploader")) {
 						oControl.setVisible(false);
-
-						// set button to open attachment
-						var iFieldNumber = oControl.getId().slice(-1);
-						var oOpenAttachment = this.byId("button_claimdetails_input_attachment" + iFieldNumber);
-						if (oOpenAttachment && !oOpenAttachment.getVisible()) {
-							oOpenAttachment.setVisible(true);
-						}
 					} else {
 						console.warn("Control not found or not editable-capable:", sId);
 					}
@@ -3927,20 +3931,10 @@ sap.ui.define([
 				const oControl = this._resolveControl(sId, "claimsubmission_claimdetails_input");
 				if (oControl && typeof oControl.setEditable === "function") {
 					oControl.setEditable(bEditable);
-				} else if (oControl.getMetadata().getName().includes("FileUploader")) {
-					// if view-only, set button to display Open Attachment button instead of fileuploader field
-					if (!bEditable) {
-						if (oControl.getVisible()) {
-							oControl.setVisible(false);
-						}
-						var iFieldNumber = oControl.getId().slice(-1);
-						var oOpenAttachment = this.byId("button_claimdetails_input_attachment" + iFieldNumber);
-						if (oOpenAttachment && !oOpenAttachment.getVisible()) {
-							oOpenAttachment.setVisible(true);
-						}
-					}
 				} else {
-					console.warn("Control not found or not editable-capable:", sId);
+					if (!oControl.getMetadata().getName().includes("FileUploader")) {
+						console.warn("Control not found or not editable-capable:", sId);
+					}
 				}
 			});
 		},

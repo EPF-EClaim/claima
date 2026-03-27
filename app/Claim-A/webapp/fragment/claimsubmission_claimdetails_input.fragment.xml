@@ -949,16 +949,12 @@
 					required="true"
 				>
 				</u:FileUploader>
-
-				<!-- Attachment 1 (Existing) -->
-				<Label text="{i18n>label_claimdetails_input_attachment1}" />
-				<Button
-					id="button_claimdetails_input_attachment1"
-					icon="sap-icon://attachment"
-					text="{i18n>button_claimdetails_input_viewattachment}"
-					press="onView_Claim_Attachment('child_det','1')"
-					enabled="{= ${claimitem_input>/claim_item/attachment_file_1} !== null }"
-					visible="false"
+				<Label id="label_claimdetails_input_attachment1" />
+				<Link
+					id="link_claimdetails_input_attachment1" 
+					press="onView_Claim_Attachment('child','1')"
+					text="{claimitem_input>/claim_item/attachment_file_1}"
+					visible="{= ${claimitem_input>/claim_item/attachment_file_1} !== null }"
 				/>
 
 				<!-- Attachment 2 -->
@@ -979,16 +975,12 @@
 					visible="false"
 				>
 				</u:FileUploader>
-
-				<!-- Attachment 2 (Existing) -->
-				<Label text="{i18n>label_claimdetails_input_attachment2}" />
-				<Button
-					id="button_claimdetails_input_attachment2"
-					icon="sap-icon://attachment"
-					text="{i18n>button_claimdetails_input_viewattachment}"
-					press="onView_Claim_Attachment('child_det','2')"
-					enabled="{= ${claimitem_input>/claim_item/attachment_file_2} !== null }"
-					visible="false"
+				<Label id="label_claimdetails_input_attachment2" />
+				<Link
+					id="link_claimdetails_input_attachment2" 
+					press="onView_Claim_Attachment('child','2')"
+					text="{claimitem_input>/claim_item/attachment_file_2}"
+					visible="{= ${claimitem_input>/claim_item/attachment_file_2} !== null }"
 				/>
 			</f:content>
 			<f:dependents>
