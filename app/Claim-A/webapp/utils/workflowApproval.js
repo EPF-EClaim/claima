@@ -502,7 +502,7 @@ sap.ui.define([
                 try {
                     await oAction.execute();
                 } catch (oError) {
-                    MessageToast.show(Utility.getText("msg_failed_generic_error"))
+                    MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]))
                 }
 
                 try{
@@ -909,7 +909,7 @@ sap.ui.define([
                 try {
                     await oAction.execute();
                 } catch (oError) {
-                    MessageToast.show(Utility.getText("msg_failed_generic_error"))
+                    MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]))
                 }           
                 
                 try{

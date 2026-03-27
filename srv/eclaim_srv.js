@@ -648,6 +648,7 @@ module.exports = (srv) => {
             }
             const tx = cds.tx(req);
             const sIDType = aPayloadToCreateApproverDetailsTable[0].ID.substring(0, 3);
+            var sResult = "";
 
             if (sIDType == Constant.WorkflowType.REQUEST) {
 
@@ -662,7 +663,7 @@ module.exports = (srv) => {
                     COMMENT: item.COMMENT
                 }));
 
-                const sResult = await UpdatePreApprovalApprover(aPreApprovalDetails, tx);
+                sResult = await UpdatePreApprovalApprover(aPreApprovalDetails, tx);
             }
             else if (sIDType == Constant.WorkflowType.CLAIM) {
 
@@ -692,11 +693,11 @@ module.exports = (srv) => {
             DELETE.from('ZAPPROVER_DETAILS_PREAPPROVAL').where({ PREAPPROVAL_ID: aPreApprovalApprover[0].PREAPPROVAL_ID })
         )
 
-        aResult = await tx.run(
+        sResult = await tx.run(
             INSERT(aPreApprovalApprover).into('ZAPPROVER_DETAILS_PREAPPROVAL')
         )
         await tx.commit();
-        return aResult;
+        return sResult;
     };
 
     async function UpdateClaimsApprover(aClaimsApprover, tx) {
@@ -705,11 +706,11 @@ module.exports = (srv) => {
             DELETE.from('ZAPPROVER_DETAILS_CLAIMS').where({ CLAIM_ID: aClaimsApprover[0].CLAIM_ID })
         )
 
-        aResult = await tx.run(
+        sResult = await tx.run(
             INSERT(aClaimsApprover).into('ZAPPROVER_DETAILS_CLAIMS')
         )
         await tx.commit();
-        return aResult;
+        return sResult;
     };
 
     // srv.on('WorkflowApproval', async (req) => {
