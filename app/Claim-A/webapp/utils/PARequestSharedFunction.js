@@ -2,8 +2,13 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
-	"sap/ui/core/format/DateFormat"
-], function (Filter, FilterOperator, Sorter, DateFormat) {
+	"sap/ui/core/format/DateFormat",
+	"claima/utils/ApprovalLog"
+], function (Filter,
+	FilterOperator,
+	Sorter,
+	DateFormat,
+	ApprovalLog) {
 	"use strict";
 
 	return {
@@ -139,56 +144,153 @@ sap.ui.define([
 		* Determine Footer Buttons
 		* ======================================================= */
 
-		_determineCurrentState: function (oController, oReq) {
-			if (oReq.getProperty('/view') === 'approver') {
-				return;
-			}
+		_removeAllButton: function (oController) {
 
-			const sStatus = oReq.getProperty('/req_header/reqstatus');
+			const oBtnBackScr 	= oController.byId('req_back_scr');
+			const oBtnBack    	= oController.byId("req_back");
+			const oBtnDelete  	= oController.byId("req_delete");
+			const oBtnSubmit  	= oController.byId("req_submit");
+			const oBtnReject  	= oController.byId("req_reject");
+			const oBtnSendBack	= oController.byId("req_send_back");
+			const oBtnApprove  	= oController.byId("req_approve");
+			const oBtnCancel  	= oController.byId("req_item_cancel");
+			const oBtnSave  	= oController.byId("req_item_save");
 
-			const oBtnBackScr = oController.byId('req_back_scr');
-			const oBtnBack    = oController.byId("req_back");
-			const oBtnDelete  = oController.byId("req_delete");
-			const oBtnSubmit  = oController.byId("req_submit");
+			if (oBtnBackScr) oBtnBackScr.setVisible(false);
+			if (oBtnBack) oBtnBack.setVisible(false);
+			if (oBtnDelete) oBtnDelete.setVisible(false);
+			if (oBtnSubmit) oBtnSubmit.setVisible(false);
+			if (oBtnReject) oBtnSubmit.setVisible(false);
+			if (oBtnSendBack) oBtnSubmit.setVisible(false);
+			if (oBtnApprove) oBtnSubmit.setVisible(false);
+			if (oBtnCancel) oBtnSubmit.setVisible(false);
+			if (oBtnSave) oBtnSubmit.setVisible(false);
 
-			let bShowBackScr = true;
-			let bShowBack    = false;
-			let bShowDelete  = false;
-			let bShowSubmit  = false;
-			let sViewMode    = 'view';
+		},
 
-			switch (sStatus) {
-				case 'DRAFT':
-				case 'SEND BACK': 
-					bShowBackScr = false;
-					bShowBack    = true;
-					bShowDelete  = true;
-					bShowSubmit  = true;
-					sViewMode    = 'list';
+		determineFooterButton(oController) {
+			this._removeAllButton(oController);
+			const sState = oController._oReqModel.getProperty('/view');
+			const sReqStatus = oController._oReqModel.getProperty('/req_header/reqstatus');
+
+			const oBtnBackScr 	= oController.byId('req_back_scr');
+			const oBtnBack    	= oController.byId("req_back");
+			const oBtnDelete  	= oController.byId("req_delete");
+			const oBtnSubmit  	= oController.byId("req_submit");
+			const oBtnReject  	= oController.byId("req_reject");
+			const oBtnSendBack	= oController.byId("req_send_back");
+			const oBtnApprove  	= oController.byId("req_approve");
+			const oBtnCancel  	= oController.byId("req_item_cancel");
+			const oBtnSave  	= oController.byId("req_item_save");
+
+			let bShowBackScr	= false;
+			let bShowBack   	= false;
+			let bShowDelete 	= false;
+			let bShowSubmit 	= false;
+			let bShowReject 	= false;
+			let bShowSendBack	= false;
+			let bShowApprove	= false;
+			let bShowCancel		= false;
+			let bShowSave		= false;
+
+			switch(sState) {
+				case oController._oConstant.PARMode.APPROVER:	// approver
+					bShowBackScr	= true;
+					bShowReject 	= true;
+					bShowSendBack	= true;
+					bShowApprove	= true;
 					break;
-					
-				case 'CANCELLED':
+				
+				case oController._oConstant.PARMode.CREATE:		// create
+				case oController._oConstant.PARMode.EDIT:		// i_edit
+					bShowCancel		= true;
+					bShowSave		= true;
 					break;
+
+				case oController._oConstant.PARMode.LIST:		// list
+					switch (sReqStatus) {
+						case oController._oConstant.RequestStatus.DRAFT:			// draft
+						case oController._oConstant.RequestStatus.SEND_BACK:		// send back
+							bShowBack   	= true;
+							bShowDelete 	= true;
+							bShowSubmit 	= true;
+							break;
+							
+						case oController._oConstant.RequestStatus.PENDING_APPROVAL:	// pending approval
+							bShowBack   	= true;
+							bShowDelete 	= true;
+							break;
+							
+						case oController._oConstant.RequestStatus.REJECTED:			// rejected
+						case oController._oConstant.RequestStatus.CANCELLED:		// cancelled
+							bShowBack   	= true;
+							break;
 					
-				case 'APPROVED':
-					bShowSubmit  = true;
-					sViewMode    = 'list';
+						case oController._oConstant.RequestStatus.APPROVED:			// approved
+							bShowBack   	= true;
+							bShowSubmit 	= true;
+							break;					}
 					break;
+
+				case oController._oConstant.PARMode.VIEW:		// view
+					switch (sReqStatus) {
+						case oController._oConstant.RequestStatus.PENDING_APPROVAL:	// pending approval
+							bShowBackScr	= true;
+							bShowDelete 	= true;
+							break;
+							
+						case oController._oConstant.RequestStatus.REJECTED:			// rejected
+						case oController._oConstant.RequestStatus.CANCELLED:		// cancelled
+							bShowBackScr	= true;
+							break;
 					
-				case 'PENDING APPROVAL':
-					bShowDelete  = true;
+						case oController._oConstant.RequestStatus.APPROVED:			// approved
+							bShowBackScr	= true;
+							break;
+
+						default:
+							bShowBackScr	= true;
+							break;
+					}
 					break;
-					
+				
+				case oController._oConstant.PARMode.VIEWAPPR:		// i_edit
+					bShowBackScr	= true;
+					oController._oReqModel.setProperty("/view", oController._oConstant.PARMode.VIEW);
+					break;
+				
 				default:
 					break;
 			}
+
 
 			if (oBtnBackScr) oBtnBackScr.setVisible(bShowBackScr);
 			if (oBtnBack) oBtnBack.setVisible(bShowBack);
 			if (oBtnDelete) oBtnDelete.setVisible(bShowDelete);
 			if (oBtnSubmit) oBtnSubmit.setVisible(bShowSubmit);
+			if (oBtnReject) oBtnReject.setVisible(bShowReject);
+			if (oBtnSendBack) oBtnSendBack.setVisible(bShowSendBack);
+			if (oBtnApprove) oBtnApprove.setVisible(bShowApprove);
+			if (oBtnCancel) oBtnCancel.setVisible(bShowCancel);
+			if (oBtnSave) oBtnSave.setVisible(bShowSave);
+		},
 
-			oReq.setProperty('/view', sViewMode);
+		getCurrentState(oController) {
+			const sReqStatus = oController._oReqModel.getProperty('/req_header/reqstatus');
+			let sState;
+
+			switch (sReqStatus) {
+				case oController._oConstant.RequestStatus.DRAFT:
+				case oController._oConstant.RequestStatus.SEND_BACK:
+					sState = "list";
+					break;
+			
+				default:
+					sState = "view";
+					break;
+			}
+
+			oController._oReqModel.setProperty("/view", sState);
 		}
 
 	};

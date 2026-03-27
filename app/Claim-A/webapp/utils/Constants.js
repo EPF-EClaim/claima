@@ -89,8 +89,8 @@ sap.ui.define([
         },
         "RequestStatus": {
             "DRAFT": "DRAFT",
-            "PENDING_APPROVAL": "PENDING_APPROVAL",
-            "SEND_BACK": "SEND_BACK",
+            "PENDING_APPROVAL": "PENDING APPROVAL",
+            "SEND_BACK": "SEND BACK",
             "REJECTED": "REJECTED",
             "APPROVED": "APPROVED",
             "CANCELLED": "CANCELLED"
@@ -246,7 +246,11 @@ sap.ui.define([
             "GL_ACCOUNT"    : "214005"
         },
         "SubmissionType":{
-            "DIRECT_CLAIM" : "ST0001"
+            "DIRECT_CLAIM"  : "ST0001",
+            "AUTO_APPROVE"  : "ST0002",
+            "PRE_APPROVE"   : "ST0003",
+            "CASH_REPAYMENT": "ST0004",
+            "CURR_SUBSIDY"  : "ST0005"
         },
         "Default" : {
             "PROJECT_CODE" : "NA"
@@ -261,7 +265,8 @@ sap.ui.define([
             "APPROVER": "approver",
             "EDIT": "i_edit",
             "LIST": "list",
-            "CREATE": "create"
+            "CREATE": "create",
+            "VIEWAPPR": "view_appr"
         },
         "RequestType": {
             "TRAVEL"        : "RT0001",

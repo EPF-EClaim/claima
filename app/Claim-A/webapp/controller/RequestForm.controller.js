@@ -101,6 +101,7 @@ sap.ui.define([
 			console.log("Deep-link request ID:", sRequestId);
 
 			this._oReqModel.setProperty("/req_header/reqid", sRequestId);
+			this._oReqModel.setProperty('/view', 'view');
 
 			this._loadRequest(sRequestId);
 		},
@@ -154,7 +155,7 @@ sap.ui.define([
 			this._oFragments = Object.create(null);
 		},
 
-		async _showItemCreate(sState, bEdit) {
+		async _showItemCreate(bEdit) {
 			const oPage = this.byId("request_form");
 			if (!oPage) return;
 
@@ -169,11 +170,7 @@ sap.ui.define([
 				this.byId("i_attachment_2_file").setRequired(false);
 			} 
 
-			if (sState === this._oConstant.PARMode.APPROVER) {
-				this._setAllControlsVisible(false);
-			}
-
-			this._oReqModel.setProperty("/view", sState);
+			PARequestSharedFunction.determineFooterButton(this);
 		},
 
 		async _showItemList(sReqId) {
@@ -200,9 +197,11 @@ sap.ui.define([
 				}
 				const oApproval = await this._getFormFragment("approval_log");
 				await this._replaceContentAt(oPage, 2, oApproval);
+			} else {
+				PARequestSharedFunction.getCurrentState(this);
 			}
 
-			await PARequestSharedFunction._determineCurrentState(this, this._oReqModel);
+			PARequestSharedFunction.determineFooterButton(this);
 		},
 
 		/* =========================================================
@@ -240,6 +239,8 @@ sap.ui.define([
 					});
 				}
 				this.oBackDialog.open();
+			} else {
+				this.onBackView();
 			}
 		},
 
@@ -335,7 +336,6 @@ sap.ui.define([
 									// update status to PENDING APPROVAL
 									await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
 									await Utility._updateSubmittedDate(this._oDataModel, sReqId);
-									this._oReqModel.setProperty("/view", 'view');
 
 									// Add in onPARApproverDetermination function
 									var oModel = this.getView().getModel();
@@ -414,7 +414,8 @@ sap.ui.define([
 		onCancelItem() {
 			const oData = this._oReqModel.getData();
 			const sReqId = String(oData.req_header.reqid || "").trim();
-			this._oReqModel.setProperty('/req_item', {})
+			this._oReqModel.setProperty('/req_item', {});
+			this._oReqModel.setProperty('/view', "view");
 
 			PARequestSharedFunction._getItemList(this, sReqId);
 			this._showItemList(sReqId);
@@ -432,7 +433,8 @@ sap.ui.define([
 		},
 
 		async onAddItem(oEvent) {
-			await this._showItemCreate("create", false);
+			this._oReqModel.setProperty("/view", this._oConstant.PARMode.CREATE);
+			await this._showItemCreate(false);
 			this._loadSelections();
 
 			const oReqData = this._oReqModel.getData();
@@ -552,13 +554,15 @@ sap.ui.define([
 				meter_cube_actual		: oReqItem.METER_CUBE_ACTUAL || 0,			
 			});
 
-			if (this._oReqModel.getProperty("/view") != this._oConstant.PARMode.APPROVER) {
+			const sState = this._oReqModel.getProperty("/view");
+			if (sState != this._oConstant.PARMode.APPROVER) {
 				this._oReqModel.setProperty("/view", bEdit ? this._oConstant.PARMode.EDIT : this._oConstant.PARMode.VIEW);
+				this._getClaimTypeItemSelection();
+			} else {
+				this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEWAPPR);
 			}
-
-			this._showItemCreate(this._oReqModel.getProperty("/view"), bEdit);
+			this._showItemCreate(bEdit);
 			this._loadParticipantsForItem(sReqId, sReqSubId);
-			this._getClaimTypeItemSelection();
 			this.getFieldVisibility_ClaimTypeItem(oEvent);
 		},
 
@@ -606,8 +610,8 @@ sap.ui.define([
 					_EDIT_MODE				: sMode == this._oConstant.PARMode.CREATE ? "Editable" : "Display"
 				}));
 
-				if (this._oReqModel.getProperty('/req_header/grptype') == this._oConstant.GroupType.GROUP && 
-					sMode != this._oConstant.PARMode.VIEW) {
+				if ( this._oReqModel.getProperty('/req_header/grptype') == this._oConstant.GroupType.GROUP && 
+					( sMode != this._oConstant.PARMode.VIEW && sMode != this._oConstant.PARMode.APPROVER) ) {
 					aMapped.push({ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" });
 				}
 
@@ -1833,7 +1837,9 @@ sap.ui.define([
 					],
 					[
 						new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimTypeId),
-						new Filter("SUBMISSION_TYPE", FilterOperator.NE, "ST0001" )
+						new Filter("SUBMISSION_TYPE", FilterOperator.NE, this._oConstant.SubmissionType.DIRECT_CLAIM ),
+						new Filter("SUBMISSION_TYPE", FilterOperator.NE, this._oConstant.SubmissionType.CASH_REPAYMENT ),
+						new Filter("SUBMISSION_TYPE", FilterOperator.NE, this._oConstant.SubmissionType.CURR_SUBSIDY )
 						// new Filter("IND_OR_GROUP", FilterOperator.EQ, sGroupType),
 						// new Filter("IND_OR_GROUP", FilterOperator.EQ, "I_G")
 					],
