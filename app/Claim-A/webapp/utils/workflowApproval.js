@@ -355,14 +355,14 @@ sap.ui.define([
                         // Start of Approver Determination logic
                         // Standard Workflow logic is when following approver level, the next level should be higher than the claimant level
 
-                        // Check if claimant is CEO
-                        // If yes, approver for CEO is CEO_FI
-                        if(oClaimantDetails.ROLE === Constants.Role.CEO){
-                            aWorkflowApprStep[i] = Constants.User_Type.CEO_FI;
-                        }
-                        
                         // Populate current role rank
                         oCurrOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
+
+                         // Check if claimant is CEO
+                        // If yes, approver for CEO is CEO_FI
+                        if(oCurrOutcome != null && oClaimantDetails.ROLE === Constants.Role.CEO){
+                            aWorkflowApprStep[i] = Constants.User_Type.CEO_FI;
+                        }
                         
                         
                         if(oCurrOutcome == null){
@@ -766,13 +766,14 @@ sap.ui.define([
                         // Be handled separately from the next level approvers 
                         // After that, the logic will follow the Standard Workflow logic
 
-                        // Check if claimant is CEO
-                        // If yes, approver for CEO is CEO_FI
-                        if(oClaimantDetails.ROLE === Constants.Role.CEO){
-                            aWorkflowApprStep[i] = Constants.User_Type.CEO_FI;
-                        }
                         // Populate current role rank
                         oCurrOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
+
+                         // Check if claimant is CEO
+                        // If yes, approver for CEO is CEO_FI
+                        if(oCurrOutcome != null && oClaimantDetails.ROLE === Constants.Role.CEO){
+                            aWorkflowApprStep[i] = Constants.User_Type.CEO_FI;
+                        }
                         
                         
                         if(oCurrOutcome == null){

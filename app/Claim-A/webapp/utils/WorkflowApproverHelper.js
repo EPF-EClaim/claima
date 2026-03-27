@@ -284,6 +284,9 @@ sap.ui.define([
             else{
                 oData = aCtx[0].getObject();
                 oBudgetOwner = await this.getEmployeeDetailsByEmail(oModel, oData.BUDGET_OWNER_ID)
+                if (!oBudgetOwner){
+                    return null;
+                }
             }
 
             // Return only the required fields
