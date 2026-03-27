@@ -807,8 +807,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                     ZEMP_MASTER_APPROVER.NAME          as APPROVER_NAME,
                     ZEMP_MASTER_APPROVER.EMAIL         as APPROVER_EMAIL,
                     ZREQUEST_HEADER.REQUEST_DATE       as REQUEST_DATE,
-                    ZREQUEST_HEADER.CASH_ADVANCE       as AMOUNT,
-                    ZREQUEST_HEADER.PREAPPROVAL_AMOUNT as TOTAL_AMOUNT,
+                    ZREQUEST_HEADER.PREAPPROVAL_AMOUNT as AMOUNT,
+                    ZREQUEST_HEADER.CASH_ADVANCE        as TOTAL_AMOUNT,
                     modifiedAt
             }
             where
