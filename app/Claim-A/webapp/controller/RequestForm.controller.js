@@ -1846,9 +1846,8 @@ sap.ui.define([
 					],
 					[
 						new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimTypeId),
-						new Filter("SUBMISSION_TYPE", FilterOperator.NE, this._oConstant.SubmissionType.DIRECT_CLAIM ),
-						new Filter("SUBMISSION_TYPE", FilterOperator.NE, this._oConstant.SubmissionType.CASH_REPAYMENT ),
-						new Filter("SUBMISSION_TYPE", FilterOperator.NE, this._oConstant.SubmissionType.CURR_SUBSIDY )
+						new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.SubmissionType.AUTO_APPROVE ),
+						new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.SubmissionType.PRE_APPROVE )
 						// new Filter("IND_OR_GROUP", FilterOperator.EQ, sGroupType),
 						// new Filter("IND_OR_GROUP", FilterOperator.EQ, "I_G")
 					],
