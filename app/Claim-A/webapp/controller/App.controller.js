@@ -1563,7 +1563,7 @@ sap.ui.define([
             ];
 
             if (sUserType !== this._oConstant.Role.GA_ADMIN) {
-                aFilters.push(new Filter("REQUEST_TYPE_ID", Filterperator.NE, this._oConstant.RequestType.MOBILE));
+                aFilters.push(new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.MOBILE));
             }
 
             oBinding.filter(aFilters);

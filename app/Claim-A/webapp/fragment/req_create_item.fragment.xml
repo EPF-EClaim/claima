@@ -105,7 +105,6 @@
                                         <m:Input 
                                             type="Number" 
                                             textAlign="Begin" 
-                                            required="true" 
                                             enabled="false"
                                             value="{request>/req_item/est_amount}"/>
                                     </form:fields>
@@ -589,7 +588,8 @@
                                             items="{path: 'employee>/ZSTATE',
                                                     sorter: { path: 'STATE_ID', descending: false },
                                                     filters: [
-                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}" >
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}" 
+                                            change=".getFromLocationByState" >
                                             <items>
                                                 <core:Item key="{employee>STATE_ID}" 
                                                         text="{employee>STATE_DESC}" />
@@ -616,11 +616,21 @@
                                             visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/KWSP}}"
                                             id="i_from_location_office" >
                                     <form:fields>
-                                        <m:Input 
+                                        <Select 
+                                            id="item_from_location_office"
+                                            selectedKey="{request>/req_item/from_location_office}" 
                                             required="true" 
-                                            textAlign="Begin" 
+                                            forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/from_location_office}"/>
+                                            items="{
+                                                    path: 'employee>/ZOFFICE_LOCATION',
+                                                    sorter: { path: 'LOCATION_ID', descending: false }
+                                            }" >
+                                            <items>
+                                                <core:Item key="{employee>LOCATION_ID}" 
+                                                        text="{employee>LOCATION_DESC}" />
+                                            </items>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -637,7 +647,8 @@
                                             items="{path: 'employee>/ZSTATE',
                                                     sorter: { path: 'STATE_ID', descending: false },
                                                     filters: [
-                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
+                                            change=".getToLocationByState" >
                                             <items>
                                                 <core:Item key="{employee>STATE_ID}" 
                                                         text="{employee>STATE_DESC}" />
@@ -664,11 +675,19 @@
                                             visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/KWSP}}"
                                             id="i_to_location_office"  >
                                     <form:fields>
-                                        <m:Input 
+                                        <Select 
+                                            id="item_to_location_office"
+                                            selectedKey="{request>/req_item/to_location_office}" 
                                             required="true" 
-                                            textAlign="Begin" 
+                                            forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/to_location_office}"/>
+                                            items="{path: 'employee>/ZOFFICE_LOCATION',
+                                                    sorter: { path: 'LOCATION_ID', descending: false }}" >
+                                            <items>
+                                                <core:Item key="{employee>LOCATION_ID}" 
+                                                        text="{employee>LOCATION_DESC}" />
+                                            </items>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 

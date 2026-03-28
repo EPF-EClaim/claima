@@ -1885,7 +1885,7 @@ sap.ui.define([
 			}).catch(err => console.error("RequestType Load Failed", err));
 		},
 
-		calculateNumberOfHours: function() {
+		calculateNumberOfHours () {
 			const oItem = this._oReqModel.getProperty("/req_item") || {};
 
 			const sDeparture = oItem.departure_time;
@@ -1917,6 +1917,40 @@ sap.ui.define([
 			// 7. Save it back to the JSON model
 			this._oReqModel.setProperty("/req_item/no_of_hours", fHours);
 		},
+
+		getFromLocationByState () {
+            var oSelect = this.byId("item_from_location_office");
+            
+            var oBinding = oSelect.getBinding("items");
+
+            if (!oBinding) {
+                return;
+            }
+
+            var aFilters = [
+                new Filter("STATUS", FilterOperator.EQ, "ACTIVE"),
+				new Filter("STATE_ID", FilterOperator.EQ, this._oReqModel.getProperty("/req_item/from_state"))
+            ];
+
+            oBinding.filter(aFilters);
+        },
+
+		getToLocationByState () {
+            var oSelect = this.byId("item_to_location_office");
+            
+            var oBinding = oSelect.getBinding("items");
+
+            if (!oBinding) {
+                return;
+            }
+
+            var aFilters = [
+                new Filter("STATUS", FilterOperator.EQ, "ACTIVE"),
+				new Filter("STATE_ID", FilterOperator.EQ, this._oReqModel.getProperty("/req_item/to_state"))
+            ];
+
+            oBinding.filter(aFilters);
+        },
 
 		/* =========================================================
 		* Field Visibility Functions 
