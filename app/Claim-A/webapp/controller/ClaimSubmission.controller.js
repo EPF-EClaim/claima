@@ -130,7 +130,7 @@ sap.ui.define([
 				this._onNavBack();
 			}
 
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");			
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			if (!oClaimSubmissionModel) {
 				oClaimSubmissionModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 				await this._loadClaimById(String(sClaimId));
@@ -1193,40 +1193,35 @@ sap.ui.define([
 			return this.getView().getModel(modelName);
 		},
 
-		onView_Claim_Attachment: function (oLevel, fieldNumber, itemSubId) {
-			var that = this;
+		onView_Claim_Attachment: function (oLevel, iFieldNumber) {
 			// Write to Success Factors API
-			var fileName = "";
 			BusyIndicator.show(0);
 			if (oLevel == 'parent') {
 				// get parent attachment
 				var oInputModel = this.getView().getModel("claimsubmission_input");
 				Attachment.onViewDocument(this, oInputModel.getProperty("/claim_header/attachment_email_approver"));
 			}
-			else if (oLevel == 'child_det') {
+			else if (oLevel == 'child') {
 				// get child attachment
 				oInputModel = this.getView().getModel("claimitem_input");
-				Attachment.onViewDocument(this, oInputModel.getProperty("/claim_item/attachment_file_" + fieldNumber));
-			}
-			else {
-				// get child attachment
-				oInputModel = this.getView().getModel("claimsubmission_input");
-				//// get claim item index from claim submission
-				let iItemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
-				if (iItemIndex !== -1) {
-					Attachment.onViewDocument(this, oInputModel.getProperty("/claim_items/" + iItemIndex + "/attachment_file_" + fieldNumber));
-				}
-				else {
-					MessageToast.show(Utility.getText("msg_claimsubmission_viewattachment_error"));
-					BusyIndicator.hide();
-					return;
-				}
+				var iAttachmentId = this._determineAttachmentId(oInputModel.getProperty("/claim_item/attachment_file_" + iFieldNumber));
+				Attachment.onViewDocument(this, iAttachmentId);
 			}
 			BusyIndicator.hide();
 		},
 
+		_determineAttachmentId: function (sAttachment) {
+			if (sAttachment.indexOf(' ') > 0) {
+				return sAttachment.substring(0, sAttachment.indexOf(' '));
+			}
+			else {
+				// for attachments with no filename in db
+				return sAttachment;
+			}
+		},
+
 		onCreateClaim_ClaimSummary: async function (indexNumber) {
-			
+
 			// Destroy previous detail fragment to avoid stale bindings
 			if (this._fragments["claimsubmission_claimdetails_input"]) {
 				const frag = await this._fragments["claimsubmission_claimdetails_input"];
@@ -1748,9 +1743,9 @@ sap.ui.define([
 				);
 				*/
 				const sSubmissionType2 = sClaimId.substring(0, 3);
-				try{
+				try {
 					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
-				}catch (oError){
+				} catch (oError) {
 
 				}
 				for (const oPayload of aPayloads) {
@@ -1826,15 +1821,15 @@ sap.ui.define([
 					this._oConstant.ApprovalProcessAction.RELEASE_IND
 				);
 				*/
-				
+
 
 				const sSubmissionType2 = sClaimId.substring(0, 3);
-				try{
+				try {
 					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
-				}catch (oError){
+				} catch (oError) {
 
 				}
-				
+
 
 				for (const oPayload of aPayloads) {
 					await workflowApproval.onSendEmailApprover(oModelMain, oPayload);
@@ -2057,10 +2052,10 @@ sap.ui.define([
 		},
 
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
-			
-    		// HARD RESET – prevents stale binding values
-    		this.getView().setModel(null, "claimitem_input");
-	    	sap.ui.getCore().applyChanges();
+
+			// HARD RESET – prevents stale binding values
+			this.getView().setModel(null, "claimitem_input");
+			sap.ui.getCore().applyChanges();
 
 			// set claim item model
 			var oInputModel = this._getNewClaimItemModel("claimitem_input");
@@ -2215,54 +2210,26 @@ sap.ui.define([
 			// Eligibility Checking
 			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM);
 			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, oPayload);
-			var	bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
+			var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
 
 			if (!bCanProceed) return;
-			
-			// validate attachment
-			//// attachment 1
-			if (this.byId("fileuploader_claimdetails_input_attachment1").getValue()) {
-				if (oInputModel.getProperty("/attachments/attachment1/fileName") != null && oInputModel.getProperty("/attachments/attachment1/fileContent") != null) {
-					BusyIndicator.show(0);
-					var attachmentNumber = await Attachment.postAttachment(
-						oInputModel.getProperty("/attachments/attachment1/fileName"),
-						oInputModel.getProperty("/attachments/attachment1/fileContent"),
-						this._oSessionModel.getProperty("/userId")
-					);
 
-					if (attachmentNumber) {
-						oInputModel.setProperty("/claim_item/attachment_file_1", attachmentNumber);
-						oInputModel.setProperty("/claim_item/descr/attachment_file_1", oInputModel.getProperty("/attachments/attachment1/fileName"));
-						BusyIndicator.hide();
-					}
-					else {
-						MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
-						// don't proceed claim item if attachment upload fails
-						BusyIndicator.hide();
-						return;
-					}
-				}
-			}
-			//// attachment 2
-			if (this.byId("fileuploader_claimdetails_input_attachment2").getValue()) {
-				BusyIndicator.show(0);
-				var attachmentNumber = await Attachment.postAttachment(
-					oInputModel.getProperty("/attachments/attachment2/fileName"),
-					oInputModel.getProperty("/attachments/attachment2/fileContent"),
-					this._oSessionModel.getProperty("/userId")
-				);
-				if (attachmentNumber) {
-					oInputModel.setProperty("/claim_item/attachment_file_2", attachmentNumber);
-					oInputModel.setProperty("/claim_item/descr/attachment_file_2", oInputModel.getProperty("/attachments/attachment2/fileName"));
-					BusyIndicator.hide();
-				}
-				else {
-					MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
-					// don't proceed claim item if attachment upload fails
-					BusyIndicator.hide();
-					return;
-				}
-			}
+			// upload Attachment 1
+			const bUploadAttachment1 = await this._handleAttachmentUpload(
+				oInputModel,
+				"/attachments/attachment1",
+				"/claim_item/attachment_file_1"
+			);
+			if (!bUploadAttachment1) return; // stop processing if upload fails for attachment 1
+
+			// upload Attachment 2
+			const bUploadAttachment2 = await this._handleAttachmentUpload(
+				oInputModel,
+				"/attachments/attachment2",
+				"/claim_item/attachment_file_2"
+			);
+			if (!bUploadAttachment2) return; // stop processing if upload fails for attachment 2
+
 			// validate date range
 			//// start/end date
 			if (this.byId("datepicker_claimdetails_input_startdate").getValue() || this.byId("datepicker_claimdetails_input_enddate").getValue()) {
@@ -2283,11 +2250,8 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
 
 			//// Added for duplication check;
-
-
 			var aExistingItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
 			var oNewItem = oInputModel.getProperty("/claim_item");
-
 
 			var aTemp = [];
 			if (!oInputModel.getProperty("/is_new")) {
@@ -2302,7 +2266,6 @@ sap.ui.define([
 				MessageToast.show(Utility.getText("msg_duplication_prompt"));
 				return;
 			}
-
 
 			// update claim item to database
 			var saveSuccess = await this._saveClaimItem();
@@ -2332,6 +2295,42 @@ sap.ui.define([
 				this.onCancel_ClaimDetails_Input();
 			}
 		},
+		/**
+		 * Handle Attachment Upload
+		 * @public
+		 * @param {JSONModel} oInputModel - Claim input JSON Model;
+         * @param {String} sAttachmentPath - Attachment Path;
+		 * @param {String} sClaimItemPathPrefix - Claim item path prefix;
+         * @returns {Boolean} Upload successful indicator
+		 */
+		_handleAttachmentUpload: async function (oInputModel, sAttachmentPath, sClaimItemPathPrefix) {
+			const sFileName = oInputModel.getProperty(`${sAttachmentPath}/fileName`);
+			const sFileBinary = oInputModel.getProperty(`${sAttachmentPath}/fileContent`);
+
+			if (!sFileName || !sFileBinary) {
+				// nothing to upload
+				return true;
+			}
+
+			BusyIndicator.show(0);
+
+			try {
+				const sAttachmentNumber = await Attachment.postAttachment(sFileName, sFileBinary, this._oSessionModel.getProperty("/userId"));
+			}catch(oError){
+				BusyIndicator.hide();
+				MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_error"));
+				return false;   // stop further processing
+			}
+
+			// success
+			const sAttachmentString = `${sAttachmentNumber} - ${sFileName}`;
+
+			oInputModel.setProperty(`${sClaimItemPathPrefix}`, sAttachmentString);
+			oInputModel.setProperty(`${sClaimItemPathPrefix.replace("/claim_item/", "/claim_item/descr/")}`, sFileName);
+
+			BusyIndicator.hide();
+			return true;
+		},
 
 		_saveClaimItem: async function () {
 			// get input model
@@ -2344,11 +2343,11 @@ sap.ui.define([
 					3. If Bill Date is null, get item Start Date
 					4. If Start Date is null, get header Trip Start Date 
 			*/
-			if(oInputModel.getProperty("/claim_item/receipt_date") === null){
-				if(oInputModel.getProperty("/claim_item/bill_date") !== null){
+			if (oInputModel.getProperty("/claim_item/receipt_date") === null) {
+				if (oInputModel.getProperty("/claim_item/bill_date") !== null) {
 					oInputModel.setProperty("/claim_item/receipt_date", oInputModel.getProperty("/claim_item/bill_date"));
-				}else {
-					if(oInputModel.getProperty("/claim_item/start_date") !== null){
+				} else {
+					if (oInputModel.getProperty("/claim_item/start_date") !== null) {
 						oInputModel.setProperty("/claim_item/receipt_date", oInputModel.getProperty("/claim_item/start_date"));
 					} else {
 						oInputModel.setProperty("/claim_item/receipt_date", oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"));
@@ -2980,7 +2979,7 @@ sap.ui.define([
 				}
 
 				// Cash Advance Repayment Validation checking
-				if(oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0){
+				if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
 					MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
 					BusyIndicator.hide();
 					return;
@@ -3138,7 +3137,7 @@ sap.ui.define([
 							var oMsg = Utility.getText("msg_claimsubmission_changed");
 							break;
 						case 'Delete Report':
-							oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.CANCELLED);							 
+							oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.CANCELLED);
 							oMsg = Utility.getText("msg_claimsubmission_deleted");
 							// Placeholder to put delete function for ZAPPROVER_DETAILS_CLAIMS
 							//Call CAP action 
@@ -3148,7 +3147,7 @@ sap.ui.define([
 								await oAction.execute();
 							} catch (oError) {
 								MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]))
-							}    
+							}
 							break;
 						case 'Submit Report':
 							// budget checking
@@ -3848,12 +3847,12 @@ sap.ui.define([
 				this.byId("select_claimdetails_input_claimitem").setEditable(false);
 				screenArray.forEach(id => {
 					const control = this._resolveControl(id, "claimsubmission_claimdetails_input");
-					
+
 					if (!control) {
 						console.warn("Control not found or not editable-capable:", id);
 						return;
 					}
-		
+
 					if (control && typeof control.setEditable === "function") {
 						control.setEditable(false);
 					} else if (control.getMetadata().getName().includes("FileUploader")) {
@@ -3936,8 +3935,8 @@ sap.ui.define([
 				"checkbox_claimdetails_input_disclaimer",
 				"checkbox_claimdetails_input_disclaimer_galakan",
 				"input_claimdetails_input_remarks",
-				"fileuploader_claimdetails_input_attachment1",
-				"fileuploader_claimdetails_input_attachment2",
+				"fileuploader_claimdetails_input_attachment_file_1",
+				"fileuploader_claimdetails_input_attachment_file_2",
 			];
 
 			aControlIds.forEach(id => {
