@@ -2976,6 +2976,13 @@ sap.ui.define([
 					return;
 				}
 
+				// Total Claim Amount Validation checking
+				if(aItems.length > 0 && (isNaN(oInputModel.getProperty("/claim_header/total_claim_amount")) || oInputModel.getProperty("/claim_header/total_claim_amount") <= 0)){
+					MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount"));
+					BusyIndicator.hide();
+					return;
+				}
+
 				// Cash Advance Repayment Validation checking
 				if(oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0){
 					MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
