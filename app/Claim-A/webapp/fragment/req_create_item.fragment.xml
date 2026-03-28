@@ -870,7 +870,7 @@
 
                                 <!-- Cash Advance -->
                                 <form:FormElement label="{i18n>req_i_cashadv}"
-                                            visible="{= ${request>/die/grptype} === ${constant>/GroupType/INDIVIDUAL} &amp;&amp; 
+                                            visible="{= ${request>/req_header/grptype} === ${constant>/GroupType/INDIVIDUAL} &amp;&amp; 
                                                       ( ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L}     || 
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_L}      || 
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER}    || 
