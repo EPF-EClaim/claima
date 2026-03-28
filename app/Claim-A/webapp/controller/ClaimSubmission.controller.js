@@ -2219,10 +2219,9 @@ sap.ui.define([
 				return;
 			}
 
-			if (this.byId("input_claimdetails_input_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_amount").getValue() == " " ||
-				this.byId("input_claimdetails_input_amount").getValue() == "" || this.byId("input_claimdetails_input_amount").getValue() == null) {
-				// stop claim submission if amount is zero
-				MessageToast.show(Utility.getText("msg_claiminput_amount_zero"));
+			if (isNaN(this.byId("input_claimdetails_input_amount").getValue()) || this.byId("input_claimdetails_input_amount").getValue() <= 0 ) {
+				// stop claim submission if amount is zero or less
+				MessageToast.show(Utility.getText("msg_claiminput_amount_invalid"));
 				return;
 			}
 
