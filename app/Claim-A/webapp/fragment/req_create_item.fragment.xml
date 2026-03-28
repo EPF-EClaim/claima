@@ -100,7 +100,8 @@
                                 <!-- Estimated Amount -->
                                 <form:FormElement label="{i18n>req_i_est_amt}"
                                             visible="false"
-                                            id="i_amount"  >
+                                            id="i_amount"
+                                            tooltip="(This value is automatically reflected)"   >
                                     <form:fields>
                                         <Text text="RM {
                                             path: 'request>/req_item/est_amount',
@@ -108,8 +109,8 @@
                                             formatOptions: {
                                                 minFractionDigits: 2,
                                                 maxFractionDigits: 2
-                                            }
-                                        }" />
+                                                }
+                                            } &#10; {i18n>req_i_est_amount_note}"/>
                                     </form:fields>
                                 </form:FormElement>
 

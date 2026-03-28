@@ -26,7 +26,11 @@
                                 itemPress="openItemFromList"
                                 growing="true"
                                 items="{
-                                    path: 'request_status>/req_header_list'
+                                    path: 'request_status>/req_header_list',
+                                    sorter: {
+                                        path: 'modifiedAt',
+                                        descending: true
+                                    }
                                 }">
 
                                 <headerToolbar>
@@ -81,7 +85,11 @@
                                 itemPress="openItemFromClaimList"
                                 growing="true"
                                 items="{
-                                    path: 'claim_status>/claim_header_list'
+                                    path: 'claim_status>/claim_header_list',
+                                    sorter: {
+                                        path: 'modifiedAt',
+                                        descending: true
+                                    }
                                 }">
 
                                 <headerToolbar>
