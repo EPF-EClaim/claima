@@ -2204,10 +2204,11 @@ sap.ui.define([
 			// Reuben (FUT Issue 17)
 			// When creating claim for post education assistance, actual amount is used instead of amount for input
 			// To resolve issue, check first if the element is visible and active before performing the value check
-			// will create a variable to store the ID of element for future ease of use
+			// Also will check for actual_amount as this is specific to post education asssistance scenario
+			// will create a variable to store the IDs of elements for future ease of use
 
 			const oInputAmountField = this.byId("input_claimdetails_input_amount");
-
+			const oInputActualAmountField = this.byId("input_claimdetails_input_actual_amount");
 			if(oInputAmountField && oInputAmountField.getVisible()){
 				const sInputAmount = oInputAmountField.getValue()?.trim();
 				if(!sInputAmount || sInputAmount === "0.00" ){
@@ -2218,6 +2219,19 @@ sap.ui.define([
 					return;
 				}
 			}
+
+			if(oInputActualAmountField && oInputActualAmountField.getVisible()){
+				const sInputActualAmount = oInputActualAmountField.getValue()?.trim();
+				if(!sInputActualAmount || sInputActualAmount === "0.00" ){
+				//if (this.byId("input_claimdetails_input_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_amount").getValue() == " " ||
+				//	this.byId("input_claimdetails_input_amount").getValue() == "" || this.byId("input_claimdetails_input_amount").getValue() == null) {
+					// stop claim submission if amount is zero
+					MessageToast.show(Utility.getText("msg_claiminput_amount_zero"));
+					return;
+				}
+			}
+
+			// Reuben End Issue 17
 
 			
 
