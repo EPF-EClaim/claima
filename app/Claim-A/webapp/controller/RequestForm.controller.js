@@ -339,21 +339,28 @@ sap.ui.define([
 								// budget checking
 								var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
 								var oErrorHandling = budgetCheck.budgetCheckHandling(aResult);
+								var bApproversDetermined = true;
 
 								if (oErrorHandling.bCanProceed) {
 
+									// move approver determination function before claim is saved
+									// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
+									// else, do not change claim status
 									// update status to PENDING APPROVAL
-									await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
-									await Utility._updateSubmittedDate(this._oDataModel, sReqId);
-
-									// Add in onPARApproverDetermination function
 									var oModel = this.getView().getModel();
 									var oEmployeeViewModel = this.getView().getModel("employee_view");
 									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
-									await workflowApproval.onPARApproverDetermination(this, oModel, sCurrentReqId, oEmployeeViewModel);
-									
-									// this._oReqModel.setProperty("/req_header/reqstatus", this._oConstant.ClaimStatus.PENDING_APPROVAL)
-									await this._loadRequest(sCurrentReqId);
+									bApproversDetermined = await workflowApproval.onPARApproverDetermination(this, oModel, sCurrentReqId, oEmployeeViewModel);
+									if(bApproversDetermined){
+										await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
+										await Utility._updateSubmittedDate(this._oDataModel, sReqId);
+										this._oReqModel.setProperty("/view", 'view');
+										
+										// this._oReqModel.setProperty("/req_header/reqstatus", this._oConstant.ClaimStatus.PENDING_APPROVAL)
+										await this._loadRequest(sCurrentReqId);
+									}else{
+										throw new Error(Utility.getText("msg_failed_no_approver"))
+									}
 
 								} else {
 									MessageBox.warning(Utility.getText("req_tm_w_inform_cc_owner", oErrorHandling.aClaimTypeItem));
