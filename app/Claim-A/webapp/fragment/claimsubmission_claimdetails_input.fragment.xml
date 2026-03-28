@@ -4,6 +4,9 @@
 	xmlns:f="sap.ui.layout.form"
 	xmlns:core="sap.ui.core"
 	xmlns:u="sap.ui.unified"
+	xmlns:mdc="sap.ui.mdc"
+    xmlns:mdcvh="sap.ui.mdc.valuehelp"
+    xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content"
 	core:require="{FloatType: 'sap/ui/model/type/Float'}"
 >
 	<VBox class="sapUiSmallMargin">
@@ -277,6 +280,7 @@
 					value="{claimitem_input>/claim_item/no_of_days}"
 					type="Number"
 					visible="false"
+					enabled="false"
 					required="true"
 				/>
 
@@ -454,16 +458,15 @@
 
 				<!-- Country -->
 				<Label text="{i18n>label_claimdetails_input_country}" />
-				<Select
+				<mdc:Field
 					id="select_claimdetails_input_country"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/country}"
-					change="onSelect_ClaimDetails_Country"
-					liveChange="onSelect_ClaimDetails_Country"
+					value="{claimitem_input>/claim_item/country}"
+					editMode="Editable"
+					display="ValueDescription"
 					visible="false"
 					required="true"
-				>
-				</Select>
+					valueHelp="valuehelp_country"
+				/>
 
 				<!-- Location -->
 				<Label text="{i18n>label_claimdetails_input_location}" />
@@ -484,15 +487,14 @@
 
 				<!-- Currency Code -->
 				<Label text="{i18n>label_claimdetails_input_currencycode}" />
-				<Select
+				<mdc:Field
 					id="select_claimdetails_input_currency_code"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/currency_code}"
-					change="onSelect_ClaimDetails_CurrencyCode"
-					liveChange="onSelect_ClaimDetails_CurrencyCode"
+					value="{claimitem_input>/claim_item/currency_code}"
+					editMode="Editable"
+					display="ValueDescription"
 					visible="false"
-				>
-				</Select>
+					valueHelp="valuehelp_currency_code"
+				/>
 
 				<!-- Currency Rate -->
 				<Label text="{i18n>label_claimdetails_input_currencyrate}" />
@@ -928,6 +930,105 @@
 					visible="false"
 				/>
 			</f:content>
+			<f:dependents>
+				<!-- Value Help for Country -->
+				<mdc:ValueHelp
+					id="valuehelp_country"
+					delegate='{
+						"name": "claima/utils/ValueHelpDelegate_Common",
+						"payload": {
+							"modelName": "employee",
+							"entitySet": "employee>/ZCOUNTRY",
+							"keyField": "COUNTRY_ID",
+							"descriptionField": "COUNTRY_DESC",
+							"columns": ["{i18n>valuehelpcountryid}", "{i18n>valuehelpdescription}"],
+							"searchKeys": ["COUNTRY_ID", "COUNTRY_DESC"],
+							"openOnClick": true
+						}
+					}'
+				>
+					<!-- Typeahead (Popover) -->
+					<mdc:typeahead>
+						<mdcvh:Popover id="valuehelp_country_pop">
+							<mdcvhcnt:MTable
+								id="valuehelp_country_pop_MTable"
+								keyPath="COUNTRY_ID"
+								descriptionPath="COUNTRY_DESC"
+								caseSensitive="false"
+								useAsValueHelp="false"
+							>
+								<!-- Table content created dynamically by delegate -->
+							</mdcvhcnt:MTable>
+						</mdcvh:Popover>
+					</mdc:typeahead>
+
+					<!-- Dialog Mode -->
+					<mdc:dialog>
+						<mdcvh:Dialog
+							id="valuehelp_country_dialog"
+							title="{i18n>valuehelpcountryid}"
+						>
+							<mdcvhcnt:MTable
+								id="valuehelp_country_dialog_MTable"
+								keyPath="COUNTRY_ID"
+								descriptionPath="COUNTRY_DESC"
+								caseSensitive="false"
+							>
+								<!-- Table content created dynamically by delegate -->
+							</mdcvhcnt:MTable>
+						</mdcvh:Dialog>
+					</mdc:dialog>
+				</mdc:ValueHelp>
+
+				<!-- Value Help for Currency Code -->
+				<mdc:ValueHelp
+					id="valuehelp_currency_code"
+					delegate='{
+						"name": "claima/utils/ValueHelpDelegate_Common",
+						"payload": {
+							"modelName": "employee",
+							"entitySet": "employee>/ZCURRENCY",
+							"keyField": "CURRENCY_ID",
+							"descriptionField": "CURRENCY_DESC",
+							"columns": ["{i18n>valuehelpcurrencycode}", "{i18n>valuehelpdescription}"],
+							"searchKeys": ["CURRENCY_ID", "CURRENCY_DESC"],
+							"openOnClick": true
+						}
+					}'
+				>
+					<!-- Typeahead (Popover) -->
+					<mdc:typeahead>
+						<mdcvh:Popover id="valuehelp_currency_code_pop">
+							<mdcvhcnt:MTable
+								id="valuehelp_currency_code_pop_MTable"
+								keyPath="CURRENCY_ID"
+								descriptionPath="CURRENCY_DESC"
+								caseSensitive="false"
+								useAsValueHelp="false"
+							>
+								<!-- Table content created dynamically by delegate -->
+							</mdcvhcnt:MTable>
+						</mdcvh:Popover>
+					</mdc:typeahead>
+
+					<!-- Dialog Mode -->
+					<mdc:dialog>
+						<mdcvh:Dialog
+							id="valuehelp_currency_code_dialog"
+							title="{i18n>valuehelpcurrencycode}"
+						>
+							<mdcvhcnt:MTable
+								id="valuehelp_currency_code_dialog_MTable"
+								keyPath="CURRENCY_ID"
+								descriptionPath="CURRENCY_DESC"
+								caseSensitive="false"
+							>
+								<!-- Table content created dynamically by delegate -->
+							</mdcvhcnt:MTable>
+						</mdcvh:Dialog>
+					</mdc:dialog>
+				</mdc:ValueHelp>
+			</f:dependents>
 		</f:SimpleForm>
 	</VBox>
 </core:FragmentDefinition>

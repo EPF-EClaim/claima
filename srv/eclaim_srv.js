@@ -1,5 +1,5 @@
 const cds = require('@sap/cds');
-const { INSERT, UPDATE, UPSERT, SELECT, where } = require('@sap/cds/lib/ql/cds-ql');
+const { INSERT, UPDATE, UPSERT, SELECT, DELETE, where } = require('@sap/cds/lib/ql/cds-ql');
 const express = require('express');
 const app = express();
 const { Constant } = require("./utils/constant");
@@ -66,7 +66,7 @@ module.exports = (srv) => {
                 req.user?.attr?.login_name ||
                 req.user?.id ||
                 "";
-
+            const user = req.user;
             let sOrigin = null;
 
             try {
@@ -95,7 +95,8 @@ module.exports = (srv) => {
                     position: "UNKNOWN",
                     origin: sOrigin,
                     grade: "UNKNOWN",
-                    department: "UNKNOWN"
+                    department: "UNKNOWN",
+                    user: user
                 };
             }
 
@@ -113,28 +114,26 @@ module.exports = (srv) => {
                 position: result?.POSITION_NAME || "UNKNOWN",
                 origin: sOrigin,
                 grade: result?.GRADE || "UNKNOWN",
-                department: dept?.DEPARTMENT_DESC || "UNKNOWN"
+                department: dept?.DEPARTMENT_DESC || "UNKNOWN", 
+                user: user
             };
         });
 
-    srv.on('runjob', req => {
-        console.log('==> [APP JOB LOG] Job is running . . .');
-        return {
-            responseArray: [{ "message": "finished" }]
-        };
-    });
-
     srv.on('READ', 'FeatureControl', async (req) => {
         const { ZEMP_MASTER } = srv.entities;
+        const userRoles = req.user.roles;
+
         const emailFromToken = req.user?.attr?.email || req.user?.id || "";
         const email = String(emailFromToken).trim().toLowerCase();
         const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
         const user_type = result?.USER_TYPE;
 
         let operationHidden = true;
-        if (user_type === Constant.UserType.JKEW_ADMIN) {
+        // if (user_type === Constant.UserType.JKEW_ADMIN) {
+        if(req.user.is(Constant.Admin.Admin_System)) {
             operationHidden = true;
-        } else if (user_type === Constant.UserType.DTD_ADMIN || user_type === Constant.UserType.SUPER_ADMIN) {
+        // } else if (user_type === Constant.UserType.DTD_ADMIN || user_type === Constant.UserType.SUPER_ADMIN) {
+        } else if (req.user.is(Constant.Admin.DTD_Admin)) {
             operationHidden = false;
         }
 
@@ -146,12 +145,18 @@ module.exports = (srv) => {
 
     srv.on('READ', 'BudgetControl', async (req) => {
         const { ZEMP_MASTER } = srv.entities;
+        const userRoles = req.user.roles;
+        
         const emailFromToken = req.user?.attr?.email || req.user?.id || "";
         const email = String(emailFromToken).trim().toLowerCase();
         const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
         const user_type = result?.USER_TYPE;
 
-        let operationHidden = (user_type === Constant.UserType.GA_ADMIN);
+        let operationHidden = false;
+        
+        if(req.user.is(Constant.Admin.Admin_CC)){
+            operationHidden = true;
+        }
         return {
             operationHidden: operationHidden,
             operationEnabled: !operationHidden,
@@ -451,8 +456,38 @@ module.exports = (srv) => {
         }
     });
 
+    srv.before('CREATE', 'ZCLAIM_HEADER', async (req) => {
+        const tx = cds.tx(req);
+        const range_id = Constant.NumberRange.CLAIM;
+
+        const row = await tx.run(
+            SELECT.one.from('ZNUM_RANGE')
+                .where({ RANGE_ID: String(range_id) })
+                .forUpdate()
+        );
+
+        if (!row) return req.error(404, `Range ID ${range_id} not found`);
+
+        const prefix = row.PREFIX || "";
+        const current = Number(row.CURRENT || 0);
+        const yy = String(new Date().getFullYear()).slice(-2);
+
+        const nextNumber = `${prefix}${yy}${String(current).padStart(9, "0")}`;
+        req.data.CLAIM_ID = String(nextNumber);
+
+        await tx.run(
+            UPDATE('ZNUM_RANGE')
+                .set({ CURRENT: String(current + 1) })
+                .where({ RANGE_ID: String(range_id) })
+        );
+
+        console.log(`[HANA] Assigned ID: ${req.data.CLAIM_ID}`);
+    });
+
     async function updateClaimHeaderTotals(req, sClaimId, tx) {
         if (!sClaimId) return;
+
+        const headerResult = await SELECT.one.from('ZCLAIM_HEADER').where({ CLAIM_ID: sClaimId });
 
         const result = await tx.run(
             SELECT.one`
@@ -463,11 +498,13 @@ module.exports = (srv) => {
         );
 
         const totalClaimAmount = result.TotalClaimAmount || 0;
+        const finalAmountToReceive = (totalClaimAmount - headerResult.CASH_ADVANCE_AMOUNT) || 0;    
 
         await tx.run(
             UPDATE('ZCLAIM_HEADER')
                 .set({
-                    TOTAL_CLAIM_AMOUNT: totalClaimAmount
+                    TOTAL_CLAIM_AMOUNT: totalClaimAmount,
+                    FINAL_AMOUNT_TO_RECEIVE: finalAmountToReceive
                 })
                 .where({ CLAIM_ID: sClaimId })
         );
@@ -615,5 +652,174 @@ module.exports = (srv) => {
         } catch (error) {
             req.error(400, `Fail creating record: ${error.message}`);
         }
-    })
+    });
+
+    /**
+	 * Deletes and re-inserts Approver details based on Claim or Request ID
+	 * @public
+     * @param {Array} aPayloadToCreateApproverDetailsTable - Array of Approver Details;
+     * @returns {String} If Success, Results of Deletion and Insert Calls. If fail, Returns error message
+	 */
+    srv.on('UpdateApproverDetails', async (req) => {
+        try {
+            const { aPayloadToCreateApproverDetailsTable } = req.data;
+            console.log(aPayloadToCreateApproverDetailsTable);
+            if (!aPayloadToCreateApproverDetailsTable || aPayloadToCreateApproverDetailsTable.length === 0) {
+                throw new Error('No Data Sent')
+            }
+            const tx = cds.tx(req);
+            const sIDType = aPayloadToCreateApproverDetailsTable[0].ID.substring(0, 3);
+            var sDelete = "";
+            var sInsert = "";
+            var aApproverDetails = "";
+
+            if (sIDType == Constant.WorkflowType.REQUEST) {
+
+                aApproverDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
+                    PREAPPROVAL_ID: item.ID,
+                    LEVEL: item.LEVEL,
+                    APPROVER_ID: item.APPROVER_ID,
+                    SUBSTITUTE_APPROVER_ID: item.SUBSTITUTE_APPROVER_ID,
+                    STATUS: item.STATUS,
+                    REJECT_REASON_ID: item.REJECT_REASON_ID,
+                    PROCESS_TIMESTAMP: item.PROCESS_TIMESTAMP,
+                    COMMENT: item.COMMENT
+                }));
+
+                sTableName = Constant.ApproverDetailsTable.REQUEST;
+                sKeyName = Constant.ApproverDetailsTable.PREAPPROVAL_ID;
+            }
+            else if (sIDType == Constant.WorkflowType.CLAIM) {
+
+                aApproverDetails = aPayloadToCreateApproverDetailsTable.map(item => ({
+                    CLAIM_ID: item.ID,
+                    LEVEL: item.LEVEL,
+                    APPROVER_ID: item.APPROVER_ID,
+                    SUBSTITUTE_APPROVER_ID: item.SUBSTITUTE_APPROVER_ID,
+                    STATUS: item.STATUS,
+                    REJECT_REASON_ID: item.REJECT_REASON_ID,
+                    PROCESS_TIMESTAMP: item.PROCESS_TIMESTAMP,
+                    COMMENT: item.COMMENT
+                }));
+
+                sTableName = Constant.ApproverDetailsTable.CLAIM;
+                sKeyName = Constant.ApproverDetailsTable.CLAIM_ID;
+            }
+
+            sDelete = await DeleteApproverDetails(sTableName, sKeyName, aPayloadToCreateApproverDetailsTable[0].ID, tx);
+            sInsert = await InsertRecords(sTableName, aApproverDetails, tx);
+
+            return { success: true, sDelete, sInsert };
+        } catch (error) {
+            req.error(400, `Fail creating record: ${error.message}`, req);
+        }
+    });
+
+    /**
+	 * Deletes Approver Details based on Table name and Claim ID / Preapproval ID field
+	 * @public
+	 * @param {String} sTableName - Table name to delete records from;
+     * @param {String} sKeyName - Claim ID field name;
+     * @param {String} sClaimID - Claim ID / Preapproval ID;
+     * @param {Array} tx - CDS call;
+     * @returns {String} sResult - Result of deletion of records
+	 */
+    async function DeleteApproverDetails(sTableName, sKeyName, sClaimID, tx) {
+
+        sResult = await tx.run(
+            DELETE.from(sTableName).where({ [sKeyName]: sClaimID })
+        )
+        return sResult;
+    };
+
+    /**
+	 * Inserts Records into table
+	 * @public
+	 * @param {String} sTableName - Table name for records to be inserted;
+     * @param {Array} aRecordDetails - Array of records to be inserted;
+     * @param {Array} tx - CDS call;
+     * @returns {String} sResult - Result of Insertion of records
+	 */
+    async function InsertRecords(sTableName, aRecordDetails, tx) {
+        sResult = await tx.run(
+            INSERT(aRecordDetails).into(sTableName)
+        )
+        return sResult;
+    };
+
+     /**
+	 * Delete Approver Detail Records From table
+	 * @public
+	 * @param {String} req - Claim ID to be deleted;
+     * @returns {String} sResult - Result of Deletion of records
+	 */
+    srv.on('DeleteApproverDetails', async (req) => {
+        try {
+            const { ID } = req.data;
+            console.log(ID);
+            if (!ID) {
+                throw new Error('No Data Sent')
+            }
+            const tx = cds.tx(req);
+            const sIDType = ID.substring(0, 3);
+            var sDelete = "";
+
+            if (sIDType == Constant.WorkflowType.REQUEST) {
+
+                sTableName = Constant.ApproverDetailsTable.REQUEST;
+                sKeyName = Constant.ApproverDetailsTable.PREAPPROVAL_ID;
+            }
+            else if (sIDType == Constant.WorkflowType.CLAIM) {
+
+                sTableName = Constant.ApproverDetailsTable.CLAIM;
+                sKeyName = Constant.ApproverDetailsTable.CLAIM_ID;
+            }
+
+            sDelete = await DeleteApproverDetails(sTableName, sKeyName, ID, tx);
+
+            return { success: true, sDelete };
+        } catch (error) {
+            req.error(400, `Fail creating record: ${error.message}`, req);
+        }
+    });
+
+    // srv.on('WorkflowApproval', async (req) => {
+    //     // const {ClaimsWorkflowApproval} = srv.entities;
+    //     const tx = cds.tx(req);
+    //     try {
+    //         const { ClaimID } = req.data;
+    //         // oClaimsHeaderItemClaimantData = await RetrieveClaimsData(ClaimID, tx);
+
+    //         // if (oClaimsData.CASH_ADVANCE_AMOUNT > 0) {
+    //         //     const bClaimCashAdvance = true;
+    //         // }else{
+    //         //     bClaimCashAdvance = false;
+    //         // };
+
+    //         // RetrieveWorkflow(req);
+    //         // RetrieveApprovers(req);
+
+    //         return ClaimID;
+    //     } catch (error) {
+    //         req.error(400, `Fail creating record: ${error.message}`);
+    //     }
+    // });
+
+    // async function RetrieveClaimsData(sClaimID, tx) {
+    //     if (!sClaimID) return;
+    //     const { ClaimsWorkflowApproval } = srv.entities;
+    //     const result = await tx.run(
+    //         SELECT.from(ClaimsWorkflowApproval).where({ClaimID: sClaimID})
+    //     );
+    //     return result;
+    // }
+
+    // async function RetrieveWorkflow(oClaimsData) {
+
+    // };
+
+    // async function RetrieveApprovers(req) {
+
+    // };
+
 }

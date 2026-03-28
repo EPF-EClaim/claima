@@ -62,14 +62,14 @@ sap.ui.define([
         async postMDF(reqID, attachment1, attachment2) {
 
 			var sDestination = this._getSrvLink();
-			const sServiceUrl = sDestination + "/cust_EPF_CLAIM_ATTACHMENTS_Parent";
+			const sServiceUrl = sDestination + "/upsert";
 
 			const hasAttachment1 = attachment1 && String(attachment1).trim().length > 0;
 			const hasAttachment2 = attachment2 && String(attachment2).trim().length > 0;
 
 			const payload = {
 				__metadata: {
-					type: "SFOData.cust_EPF_CLAIM_ATTACHMENTS_Parent" 
+					uri: "cust_EPF_CLAIM_ATTACHMENTS_Parent" 
 				},
 				Claim_ID: reqID
 			};
@@ -111,7 +111,6 @@ sap.ui.define([
 
 			} catch (error) {
 				console.error("Error creating MDF:", error);
-				MessageToast.show("Error creating MDF: " + error.message);
 				return false;
 			}
 		},
@@ -123,14 +122,14 @@ sap.ui.define([
 		async postMDFChild(reqID, reqSubID, attachment1, attachment2) {
 			
 			var sDestination = this._getSrvLink();
-			var sServiceUrl = sDestination + "/cust_EPF_CLAIM_ATTACHMENTS";
+			var sServiceUrl = sDestination + "/upsert";
 
 			const hasAttachment1 = attachment1 && String(attachment1).trim().length > 0;
 			const hasAttachment2 = attachment2 && String(attachment2).trim().length > 0;
 
 			const payload = {
 				__metadata: {
-					type: "SFOData.cust_EPF_CLAIM_ATTACHMENTS" 
+					uri: "cust_EPF_CLAIM_ATTACHMENTS" 
 				},
 				Claim_Sub_ID: reqSubID,
 				cust_EPF_CLAIM_ATTACHMENTS_Parent_Claim_ID: reqID

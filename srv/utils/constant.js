@@ -24,7 +24,8 @@ const Constant = {
         UPDATED: "RECORD UPDATED"
     },
     NumberRange: {
-        REQUEST: "NR01"
+        REQUEST: "NR01",
+        CLAIM: "NR02"
     },
     DisbursementStatus: {
         BYPASS: "02",
@@ -38,6 +39,23 @@ const Constant = {
             "CONSUMED",
             "BUDGET_BALANCE"
         ]
+    }, 
+    Admin: {
+        Admin_System: "Admin_System",
+        DTD_Admin: "DTD_Admin",
+        Admin_CC: "Admin_CC"
+    },
+
+    WorkflowType: {
+            "CLAIM": "CLM",
+            "REQUEST": "REQ"
+        },
+
+    ApproverDetailsTable: {
+        "CLAIM": "ZAPPROVER_DETAILS_CLAIMS",
+        "REQUEST": "ZAPPROVER_DETAILS_PREAPPROVAL",
+        "CLAIM_ID": "CLAIM_ID",
+        "PREAPPROVAL_ID": "PREAPPROVAL_ID"
     }
 
 };
