@@ -23,3 +23,9 @@ File or Folder | Purpose
 ## Learn More
 
 Learn more at https://cap.cloud.sap/docs/get-started/.
+
+
+## HANA Cloud
+-If expose new field to CDS view and does not reflect when query, try run below command to reflect latest changes.
+    - cds build --for hana
+    - cds deploy --to hana

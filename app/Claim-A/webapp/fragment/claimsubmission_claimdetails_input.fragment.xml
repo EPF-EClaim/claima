@@ -870,9 +870,9 @@
 				/>
 
 				<!-- Attachment 1 -->
-				<Label text="{i18n>label_claimdetails_input_attachment1}" />
+				<Label text="{i18n>label_claimdetails_input_attachment_file_1}" />
 				<u:FileUploader
-					id="fileuploader_claimdetails_input_attachment1"
+					id="fileuploader_claimdetails_input_attachment_file_1"
 					name="fileUploaderClaimDetailsInputAttachment1"
 					placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
 					uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
@@ -885,25 +885,21 @@
 					multiple="false"
 					style="Emphasized"
 					visible="false"
-					required="true"
+					required="{= ${claimitem_input>/claim_item/attachment_file_1} === null }"
 				>
 				</u:FileUploader>
-
-				<!-- Attachment 1 (Existing) -->
-				<Label text="{i18n>label_claimdetails_input_attachment1}" />
-				<Button
-					id="button_claimdetails_input_attachment1"
-					icon="sap-icon://attachment"
-					text="{i18n>button_claimdetails_input_viewattachment}"
-					press="onView_Claim_Attachment('child_det','1')"
-					enabled="{= ${claimitem_input>/claim_item/attachment_file_1} !== null }"
-					visible="false"
+				<Label id="label_claimdetails_input_attachment_file_1" />
+				<Link
+					id="link_claimdetails_input_attachment_file_1" 
+					press="onView_Claim_Attachment('child','1')"
+					text="{claimitem_input>/claim_item/attachment_file_1}"
+					visible="{= ${claimitem_input>/claim_item/attachment_file_1} !== null }"
 				/>
 
 				<!-- Attachment 2 -->
-				<Label text="{i18n>label_claimdetails_input_attachment2}" />
+				<Label text="{i18n>label_claimdetails_input_attachment_file_2}" />
 				<u:FileUploader
-					id="fileuploader_claimdetails_input_attachment2"
+					id="fileuploader_claimdetails_input_attachment_file_2"
 					name="fileUploaderClaimDetailsInputAttachment2"
 					placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
 					uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
@@ -918,16 +914,12 @@
 					visible="false"
 				>
 				</u:FileUploader>
-
-				<!-- Attachment 2 (Existing) -->
-				<Label text="{i18n>label_claimdetails_input_attachment2}" />
-				<Button
-					id="button_claimdetails_input_attachment2"
-					icon="sap-icon://attachment"
-					text="{i18n>button_claimdetails_input_viewattachment}"
-					press="onView_Claim_Attachment('child_det','2')"
-					enabled="{= ${claimitem_input>/claim_item/attachment_file_2} !== null }"
-					visible="false"
+				<Label id="label_claimdetails_input_attachment_file_2" />
+				<Link
+					id="link_claimdetails_input_attachment_file_2" 
+					press="onView_Claim_Attachment('child','2')"
+					text="{claimitem_input>/claim_item/attachment_file_2}"
+					visible="{= ${claimitem_input>/claim_item/attachment_file_2} !== null }"
 				/>
 			</f:content>
 			<f:dependents>
