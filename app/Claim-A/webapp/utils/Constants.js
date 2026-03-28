@@ -20,7 +20,8 @@ sap.ui.define([
             "LUAR_NEGARA": "LUAR_NEGARA",
             "PELBAGAI": "PELBAGAI",
             "ELAUN_TUKAR": "ELAUN_TUKAR",
-            "ELAUN_PINDAH": "ELAUN_PINDAH"
+            "ELAUN_PINDAH": "ELAUN_PINDAH",
+            "HANDPHONE": "HANDPHONE"
         },
         "ClaimTypeItem": {
             "BAGAI": "BAGAI",
