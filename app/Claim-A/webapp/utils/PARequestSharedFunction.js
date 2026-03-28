@@ -22,6 +22,8 @@ sap.ui.define([
 			data.req_header = data.req_header;
 			data.req_item_rows = [];
 			data.req_item = data.req_item || {
+				est_amount: 0,
+				rate_per_kilometer: 0,
 				cash_advance: false
 			};
 			data.participant = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];

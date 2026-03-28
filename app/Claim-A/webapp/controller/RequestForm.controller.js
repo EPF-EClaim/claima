@@ -451,6 +451,8 @@ sap.ui.define([
 			const sHeaderGrpType = oReqData.req_header.grptype;
 
 			oReqData.req_item = {
+				est_amount: 0,
+				rate_per_kilometer: 0,
 				cash_advance: false
 			};
 
@@ -1951,6 +1953,24 @@ sap.ui.define([
 
             oBinding.filter(aFilters);
         },
+
+		async getRatePerKM () {
+			var sVehicleType = this._oReqModel.getProperty("/req_item/type_of_vehicle");
+			const oListBinding = this._oDataModel.bindList("/ZRATE_KM", null, null, [
+				new sap.ui.model.Filter("VEHICLE_TYPE_ID", "EQ", sVehicleType)
+			]);
+
+			try {
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					this._oReqModel.setProperty("/req_item/rate_per_kilometer", oData.RATE);
+				}
+			} catch (oError) {
+				console.error("Error fetching Rate Per KM detail", oError);
+			}
+		},
 
 		/* =========================================================
 		* Field Visibility Functions 

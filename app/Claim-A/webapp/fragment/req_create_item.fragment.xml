@@ -102,11 +102,14 @@
                                             visible="false"
                                             id="i_amount"  >
                                     <form:fields>
-                                        <m:Input 
-                                            type="Number" 
-                                            textAlign="Begin" 
-                                            enabled="false"
-                                            value="{request>/req_item/est_amount}"/>
+                                        <Text text="RM {
+                                            path: 'request>/req_item/est_amount',
+                                            type: 'sap.ui.model.type.Float',
+                                            formatOptions: {
+                                                minFractionDigits: 2,
+                                                maxFractionDigits: 2
+                                            }
+                                        }" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -442,7 +445,8 @@
                                             items="{path: 'employee>/ZVEHICLE_TYPE',
                                                     sorter: { path: 'VEHICLE_TYPE_ID', descending: false },
                                                     filters: [
-                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
+                                            change="getRatePerKM" >
                                             <items>
                                                 <core:Item key="{employee>VEHICLE_TYPE_ID}" 
                                                         text="{employee>VEHICLE_TYPE_DESC}" />
@@ -502,7 +506,7 @@
                                     <form:fields>
                                         <Input 
                                             required="true" 
-                                            value="{request>/req_header/kilometer}"
+                                            value="{request>/req_item/kilometer}"
                                             type="Number" />
                                     </form:fields>
                                 </form:FormElement>
@@ -512,8 +516,14 @@
                                             visible="false"
                                             id="i_rate_per_kilometer" >
                                     <form:fields>
-                                        <Text 
-                                            text="{request>/req_header/rate_per_kilometer}" />
+                                        <Text text="RM {
+                                            path: 'request>/req_item/rate_per_kilometer',
+                                            type: 'sap.ui.model.type.Float',
+                                            formatOptions: {
+                                                minFractionDigits: 2,
+                                                maxFractionDigits: 2
+                                            }
+                                        }" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -859,7 +869,7 @@
 
                                 <!-- Cash Advance -->
                                 <form:FormElement label="{i18n>req_i_cashadv}"
-                                            visible="{= ${request>/req_header/grptype} === ${constant>/GroupType/INDIVIDUAL} &amp;&amp; 
+                                            visible="{= ${request>/die/grptype} === ${constant>/GroupType/INDIVIDUAL} &amp;&amp; 
                                                       ( ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L}     || 
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_L}      || 
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER}    || 
