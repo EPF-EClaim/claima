@@ -110,6 +110,7 @@ sap.ui.define([
                             });
 
                             var oRoleModel = this.getModel("roleModel");
+                            var oSessionModel = this.getModel("session");
 
                             resultData.scopes.forEach(function (scope) {
                                 if (scope.includes("Claimant")) {
