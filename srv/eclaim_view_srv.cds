@@ -374,7 +374,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ACTUAL_AMOUNT,
                 CURRENCY_CODE,
                 CURRENCY_RATE,
-                CURRENCY_AMOUNT
+                CURRENCY_AMOUNT,
+                FARE_TYPE_ID,
+                VEHICLE_CLASS_ID
         };
 
     entity ZEMP_REQUEST_STATUS           as

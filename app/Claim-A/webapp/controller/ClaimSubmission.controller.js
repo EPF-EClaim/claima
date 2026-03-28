@@ -274,6 +274,7 @@ sap.ui.define([
 
 		_loadClaimById: async function (sClaimId) {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			const oModel = this.getOwnerComponent().getModel();
 			const oEmployeeViewModel = await this._ensureModelReady("employee_view");
 			const sId = String(sClaimId);
 
@@ -293,8 +294,8 @@ sap.ui.define([
 			);
 
 			// Items binding
-			const oItemBinding = oEmployeeViewModel.bindList(
-				"/ZEMP_CLAIM_ITEM_VIEW", // <-- adjust if different
+			const oItemBinding = oModel.bindList(
+				"/ZCLAIM_ITEM", // <-- adjust if different
 				null,
 				[new Sorter("CLAIM_SUB_ID", false)],
 				aFilters,
