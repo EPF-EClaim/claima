@@ -2201,8 +2201,8 @@ sap.ui.define([
 				return;
 			}
 
-			if (this.byId("input_claimdetails_input_actual_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_actual_amount").getValue() == " " ||
-				this.byId("input_claimdetails_input_actual_amount").getValue() == "" || this.byId("input_claimdetails_input_actual_amount").getValue() == null) {
+			if (this.byId("input_claimdetails_input_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_amount").getValue() == " " ||
+				this.byId("input_claimdetails_input_amount").getValue() == "" || this.byId("input_claimdetails_input_amount").getValue() == null) {
 				// stop claim submission if amount is zero
 				MessageToast.show(Utility.getText("msg_claiminput_amount_zero"));
 				return;
