@@ -223,6 +223,13 @@ sap.ui.define([
 							bShowBackScr	= true;
 							break;
 
+						case oController._oConstant.RequestStatus.SEND_BACK:		// send back
+							bShowBack   	= true;
+							bShowDelete 	= true;
+							bShowSubmit 	= true;
+							oController._oReqModel.setProperty("/view", oController._oConstant.PARMode.LIST);
+							break;
+
 						default:
 							bShowBackScr	= true;
 							break;
