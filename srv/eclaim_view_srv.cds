@@ -714,7 +714,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 REJECT_REASON_ID,
                 ZREJECT_REASON.REASON_DESC,
                 PROCESS_TIMESTAMP,
-                COMMENT
+                COMMENT,
+                modifiedAt
         };
 
     entity ZEMP_APPROVER_CLAIM_DETAILS   as
@@ -740,7 +741,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 REJECT_REASON_ID,
                 ZREJECT_REASON.REASON_DESC,
                 PROCESS_TIMESTAMP,
-                COMMENT
+                COMMENT,
+                modifiedAt
         };
 
     entity ZEMP_CLAIM_DETAILS            as

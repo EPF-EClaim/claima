@@ -583,6 +583,34 @@ module.exports = (srv) => {
         }
     });
 
+    srv.on('checkEligibleMobileClaim', async (req) => {
+        const { sEmployeeId } = req.data; 
+
+        if (!sEmployeeId) {
+            return req.error(400, 'Please provide an Employee ID.');
+        }
+
+        try {
+            const employeeRecord = await SELECT.one('MOBILE_BILL_ELIGIBILITY', 'MOBILE_BILL_ELIG_AMOUNT')
+                .from('ZEMP_MASTER')
+                .where({ EEID: sEmployeeId }); 
+
+            if (!employeeRecord) {
+                return req.error(404, `Employee with ID ${sEmployeeId} not found in master data.`);
+            }
+
+            return {
+                eligible: employeeRecord.MOBILE_BILL_ELIGIBILITY,
+                amount: employeeRecord.MOBILE_BILL_ELIG_AMOUNT
+            };
+
+        } catch (error) {
+            // Handle unexpected database or server errors
+            console.error('Error fetching mobile eligibility:', error);
+            return req.error(500, 'An error occurred while checking eligibility.');
+        }
+    });
+
     /* ======================================================================================================================================= */
     /* Above are Jefry's functions with the help of Ain. Don't slot your function in between tq. You are making my life harder. Appreciate it. */
     /* ======================================================================================================================================= */

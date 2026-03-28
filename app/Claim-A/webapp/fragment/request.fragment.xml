@@ -30,14 +30,13 @@
 				<Input value="{reqDialog>/purpose}" required="true"/>
 
 				<Label text="{i18n>req_rtype}" />
-				<Select selectedKey="{reqDialog>/reqtype}" 
+				<Select 
+						id="req_reqtype"
+						selectedKey="{reqDialog>/reqtype}" 
 						required="true" 
 						forceSelection="false"
 						items="{
 							path: 'employee>/ZREQUEST_TYPE',
-							filters: [
-								{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }
-							],
 							sorter: { path: 'REQUEST_TYPE_ID', descending: false }
 						}"
 						change=".getFieldVisibility_ReqType">
