@@ -2074,6 +2074,9 @@ sap.ui.define([
 
 				// set app visibility controls
 				await this.getFieldVisibility_ClaimTypeItem();
+
+				// set state/location dropdown visibility
+				this.onSelect_ClaimDetails_LocationType();
 			}
 			this._setClaimDetailSelection(oClaimSubmissionModel);
 
@@ -2145,6 +2148,23 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_flight_class", "ZFLIGHT_CLASS");
 			//// Location Type
 			this._setClaimDetailSelectionField("select_claimdetails_input_location_type", "ZLOC_TYPE");
+			//// From State
+			this._setClaimDetailSelectionField("select_claimdetails_input_from_state_id", "ZSTATE", null, null, null, [new Filter("COUNTRY_ID", FilterOperator.EQ, this._oConstant.Country.MALAYSIA)]);
+			//// From Location (Office)
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var aFilters = null;
+			if (oInputModel && (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) && oInputModel.getProperty("/claim_item/from_state_id")) {
+				aFilters = [ new Filter("STATE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/from_state_id")) ];
+			}
+			this._setClaimDetailSelectionField("select_claimdetails_input_from_location_office", "ZOFFICE_LOCATION", null, "LOCATION", null, aFilters);
+			//// To State
+			this._setClaimDetailSelectionField("select_claimdetails_input_to_state_id", "ZSTATE", null, null, null, [new Filter("COUNTRY_ID", FilterOperator.EQ, this._oConstant.Country.MALAYSIA)]);
+			//// To Location (Office)
+			aFilters = null;
+			if (oInputModel && (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) && oInputModel.getProperty("/claim_item/to_state_id")) {
+				aFilters = [ new Filter("STATE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/to_state_id")) ];
+			}
+			this._setClaimDetailSelectionField("select_claimdetails_input_to_location_office", "ZOFFICE_LOCATION", null, "LOCATION", null, aFilters);
 			//// Room Type
 			this._setClaimDetailSelectionField("select_claimdetails_input_room_type", "ZROOM_TYPE");
 			//// Region (Semenanjung/Sabah/Sarawak)
@@ -2159,7 +2179,7 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
 		},
 
-		_setClaimDetailSelectionField: function (sId, sTable, bDisplayId, sField, sFieldDesc) {
+		_setClaimDetailSelectionField: function (sId, sTable, bDisplayId, sField, sFieldDesc, aFilters) {
 			if (this.byId(sId).getVisible()) {
 				if (!sField) {
 					var sField = sTable.slice(1);
@@ -2175,6 +2195,7 @@ sap.ui.define([
 				}
 				this.byId(sId).bindAggregation("items", {
 					path: "employee>/" + sTable,
+					filters: aFilters,
 					sorter: [
 						new Sorter(sField + '_ID')
 					],
@@ -2887,6 +2908,89 @@ sap.ui.define([
 				ctx.controller.prefill({ from: sFrom, to: sTo });
 				ctx.controller.open();
 			}.bind(this));
+		},
+
+		onSelect_ClaimDetails_LocationType: function () {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var sLocType = oInputModel.getProperty("/claim_item/location_type");
+
+			if (this.byId("select_claimdetails_input_location_type").getVisible()) {
+				switch (sLocType) {
+					case this._oConstant.LocationType.KWSP:
+						// hide input from/to state
+						if (this.byId("input_claimdetails_input_from_state_id").getVisible()) {
+							this.byId("input_claimdetails_input_from_state_id").setVisible(false);
+						}
+						if (this.byId("input_claimdetails_input_to_state_id").getVisible()) {
+							this.byId("input_claimdetails_input_to_state_id").setVisible(false);
+						}
+						// enable from/to state dropdown selection
+						if (!this.byId("select_claimdetails_input_from_state_id").getVisible()) {
+							this.byId("select_claimdetails_input_from_state_id").setVisible(true);
+							this._setClaimDetailSelectionField("select_claimdetails_input_from_state_id", "ZSTATE", null, null, null, [new Filter("COUNTRY_ID", FilterOperator.EQ, this._oConstant.Country.MALAYSIA)]);
+						}
+						if (!this.byId("select_claimdetails_input_to_state_id").getVisible()) {
+							this.byId("select_claimdetails_input_to_state_id").setVisible(true);
+							this._setClaimDetailSelectionField("select_claimdetails_input_to_state_id", "ZSTATE", null, null, null, [new Filter("COUNTRY_ID", FilterOperator.EQ, this._oConstant.Country.MALAYSIA)]);
+						}
+
+						// hide input from/to location
+						if (this.byId("input_claimdetails_input_from_location").getVisible()) {
+							this.byId("input_claimdetails_input_from_location").setVisible(false);
+						}
+						if (this.byId("input_claimdetails_input_to_location").getVisible()) {
+							this.byId("input_claimdetails_input_to_location").setVisible(false);
+						}
+						// enable from/to location dropdown selection
+						if (!this.byId("select_claimdetails_input_from_location_office").getVisible()) {
+							this.byId("select_claimdetails_input_from_location_office").setVisible(true);
+						}
+						if (!this.byId("select_claimdetails_input_to_location_office").getVisible()) {
+							this.byId("select_claimdetails_input_to_location_office").setVisible(true);
+						}
+						break;
+					default:	// case this._oConstant.LocationType.OTHER
+						// display input from/to state
+						if (!this.byId("input_claimdetails_input_from_state_id").getVisible()) {
+							this.byId("input_claimdetails_input_from_state_id").setVisible(true);
+						}
+						if (!this.byId("input_claimdetails_input_to_state_id").getVisible()) {
+							this.byId("input_claimdetails_input_to_state_id").setVisible(true);
+						}
+						// hide from/to state dropdown selection
+						if (this.byId("select_claimdetails_input_from_state_id").getVisible()) {
+							this.byId("select_claimdetails_input_from_state_id").setVisible(false);
+						}
+						if (this.byId("select_claimdetails_input_to_state_id").getVisible()) {
+							this.byId("select_claimdetails_input_to_state_id").setVisible(false);
+						}
+
+						// display input from/to location
+						if (!this.byId("input_claimdetails_input_from_location").getVisible()) {
+							this.byId("input_claimdetails_input_from_location").setVisible(true);
+						}
+						if (!this.byId("input_claimdetails_input_to_location").getVisible()) {
+							this.byId("input_claimdetails_input_to_location").setVisible(true);
+						}
+						// hide from/to location dropdown selection
+						if (this.byId("select_claimdetails_input_from_location_office").getVisible()) {
+							this.byId("select_claimdetails_input_from_location_office").setVisible(false);
+						}
+						if (this.byId("select_claimdetails_input_to_location_office").getVisible()) {
+							this.byId("select_claimdetails_input_to_location_office").setVisible(false);
+						}
+						break;
+				}
+			}
+		},
+
+		onSelect_ClaimDetails_StateId: function (sFromTo) {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var aFilters = null;
+			if (oInputModel && (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) && oInputModel.getProperty("/claim_item/" + sFromTo + "_state_id")) {
+				aFilters = [ new Filter("STATE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/" + sFromTo + "_state_id")) ];
+			}
+			this._setClaimDetailSelectionField("select_claimdetails_input_" + sFromTo + "_location_office", "ZOFFICE_LOCATION", null, "LOCATION", null, aFilters);
 		},
 
 		_validDateRange: function (startdate, enddate) {
@@ -3779,9 +3883,13 @@ sap.ui.define([
 				"checkbox_claimdetails_input_parking",
 				"select_claimdetails_input_location_type",
 				"input_claimdetails_input_from_state_id",
+				"select_claimdetails_input_from_state_id",
 				"input_claimdetails_input_from_location",
+				"select_claimdetails_input_from_location_office",
 				"input_claimdetails_input_to_state_id",
+				"select_claimdetails_input_to_state_id",
 				"input_claimdetails_input_to_location",
+				"select_claimdetails_input_to_location_office",
 				"select_claimdetails_input_room_type",
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
@@ -3918,9 +4026,13 @@ sap.ui.define([
 				"checkbox_claimdetails_input_parking",
 				"select_claimdetails_input_location_type",
 				"input_claimdetails_input_from_state_id",
+				"select_claimdetails_input_from_state_id",
 				"input_claimdetails_input_from_location",
+				"select_claimdetails_input_from_location_office",
 				"input_claimdetails_input_to_state_id",
+				"select_claimdetails_input_to_state_id",
 				"input_claimdetails_input_to_location",
+				"select_claimdetails_input_to_location_office",
 				"select_claimdetails_input_room_type",
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
@@ -4329,7 +4441,7 @@ sap.ui.define([
 						if (oColumn.type === "date") return that._toDate(oItem[oColumn.property]);
 						if (oColumn.type === "time") return that._toTime(oItem[oColumn.property]);
 						if (oColumn.type === "number") return _num(oItem[oColumn.property]);
-						if (oColumn.type === "descr") return oItem["descr"][oColumn.property];
+						if (oColumn.type === "descr") return (oItem["descr"][oColumn.property] || oItem[oColumn.property]);
 						return oItem[oColumn.property] ?? "";
 					});
 				});

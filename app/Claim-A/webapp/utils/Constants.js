@@ -286,6 +286,9 @@ sap.ui.define([
             "OTHER" : "1",
             "KWSP"  : "2"
         },
+        "Country" : {
+            "MALAYSIA" : "MYS"
+        },
         "ConfigAccess": 
              [
                 "ZRISK", "ZREQUEST_TYPE", "ZCLAIM_TYPE", "ZNUM_RANGE", "ZCLAIM_CATEGORY",

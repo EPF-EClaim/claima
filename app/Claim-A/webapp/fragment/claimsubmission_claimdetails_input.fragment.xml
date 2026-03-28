@@ -482,6 +482,16 @@
 					value="{claimitem_input>/claim_item/from_state_id}"
 					visible="false"
 				/>
+				<Label text="{i18n>label_claimdetails_input_from_state_id}" />
+				<Select
+					id="select_claimdetails_input_from_state_id"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/from_state_id}"
+					change="onSelect_ClaimDetails_StateId('from')"
+					liveChange="onSelect_ClaimDetails_StateId('from')"
+					visible="false"
+				>
+				</Select>
 
 				<!-- From Location -->
 				<Label text="{i18n>label_claimdetails_input_from_location}" />
@@ -491,6 +501,17 @@
 					visible="false"
 					required="true"
 				/>
+				<Label text="{i18n>label_claimdetails_input_from_location_office}" />
+				<Select
+					id="select_claimdetails_input_from_location_office"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/from_location_office}"
+					change="onSelect_ClaimDetails_LocationOffice('from')"
+					liveChange="onSelect_ClaimDetails_LocationOffice('from')"
+					visible="false"
+					required="true"
+				>
+				</Select>
 
 				<!-- To State -->
 				<Label text="{i18n>label_claimdetails_input_to_state_id}" />
@@ -499,6 +520,16 @@
 					value="{claimitem_input>/claim_item/to_state_id}"
 					visible="false"
 				/>
+				<Label text="{i18n>label_claimdetails_input_to_state_id}" />
+				<Select
+					id="select_claimdetails_input_to_state_id"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/to_state_id}"
+					change="onSelect_ClaimDetails_StateId('to')"
+					liveChange="onSelect_ClaimDetails_StateId('to')"
+					visible="false"
+				>
+				</Select>
 
 				<!-- To Location -->
 				<Label text="{i18n>label_claimdetails_input_to_location}" />
@@ -508,6 +539,17 @@
 					visible="false"
 					required="true"
 				/>
+				<Label text="{i18n>label_claimdetails_input_to_location_office}" />
+				<Select
+					id="select_claimdetails_input_to_location_office"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/to_location_office}"
+					change="onSelect_ClaimDetails_LocationOffice('to')"
+					liveChange="onSelect_ClaimDetails_LocationOffice('to')"
+					visible="false"
+					required="true"
+				>
+				</Select>
 
 				<!-- Room Type -->
 				<Label text="{i18n>label_claimdetails_input_room_type}" />
