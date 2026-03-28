@@ -2655,6 +2655,11 @@ sap.ui.define([
 			await this._calculatePerDiem();
 		},
 
+		onSelect_ClaimDetails_LocationType: function (oEvent) {
+			var key = oEvent.getSource().getSelectedKey();
+			this.getView().getModel("claimitem_input").setProperty("/claim_item/location_type", key);
+		},
+
 		_calculatePerDiem: async function () {
 			// check date/time values to be used for calculation
 			//// Start Date/Start Time/End Date/End Time
@@ -3729,6 +3734,30 @@ sap.ui.define([
 					this._setAllControlsVisible(false);
 				}
 
+				// ------------------------------------------------------------------
+				// Force correct visibility of state & location fields on screen load
+				// ------------------------------------------------------------------
+				var sLocType = oInputModel.getProperty("/claim_item/location_type");
+
+				switch (sLocType) {
+					case this._oConstant.LocationType.OTHER:	// Other Location
+						this.byId("select_claimdetails_input_from_state_id")?.setVisible(false);
+						this.byId("select_claimdetails_input_to_state_id")?.setVisible(false);
+						this.byId("select_claimdetails_input_from_location")?.setVisible(false);
+						this.byId("select_claimdetails_input_to_location")?.setVisible(false);
+						break;
+
+					case this._oConstant.LocationType.KWSP:		// KWSP Office
+						this.byId("input_claimdetails_input_from_location")?.setVisible(false);
+						this.byId("input_claimdetails_input_to_location")?.setVisible(false);
+						break;
+
+					default:
+						this.byId("input_claimdetails_input_from_location")?.setVisible(false);
+						this.byId("input_claimdetails_input_to_location")?.setVisible(false);
+						break;
+				}
+
 			} catch (err) {
 				console.error("OData bindList failed:", err);
 			}
@@ -3766,9 +3795,7 @@ sap.ui.define([
 				"input_claimdetails_input_toll",
 				"checkbox_claimdetails_input_parking",
 				"select_claimdetails_input_location_type",
-				"input_claimdetails_input_from_state_id",
 				"input_claimdetails_input_from_location",
-				"input_claimdetails_input_to_state_id",
 				"input_claimdetails_input_to_location",
 				"select_claimdetails_input_room_type",
 				"select_claimdetails_input_country",
@@ -3901,9 +3928,11 @@ sap.ui.define([
 				"input_claimdetails_input_toll",
 				"checkbox_claimdetails_input_parking",
 				"select_claimdetails_input_location_type",
-				"input_claimdetails_input_from_state_id",
+				"select_claimdetails_input_from_state_id",
+				"select_claimdetails_input_from_location",
 				"input_claimdetails_input_from_location",
-				"input_claimdetails_input_to_state_id",
+				"select_claimdetails_input_to_state_id",
+				"select_claimdetails_input_to_location",
 				"input_claimdetails_input_to_location",
 				"select_claimdetails_input_room_type",
 				"select_claimdetails_input_country",
