@@ -1003,7 +1003,7 @@
 					multiple="false"
 					style="Emphasized"
 					visible="false"
-					required="true"
+					required="{= ${claimitem_input>/claim_item/attachment_file_1} === null }"
 				>
 				</u:FileUploader>
 				<Label id="label_claimdetails_input_attachment_file_1" />

@@ -296,6 +296,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 CLAIM_TYPE_ITEM_ID,
                 ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_DESC,
                 PERCENTAGE_COMPENSATION,
+                COURSE_TITLE,
                 ACCOUNT_NO,
                 AMOUNT,
                 ATTACHMENT_FILE_1,
