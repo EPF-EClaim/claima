@@ -411,37 +411,95 @@
 
 				<!-- From State -->
 				<Label text="{i18n>label_claimdetails_input_state_from}" />
-				<Input
-					id="input_claimdetails_input_from_state_id"
-					value="{claimitem_input>/claim_item/from_state_id}"
-					visible="false"
-				/>
+				<Select
+					id="select_claimdetails_input_from_state_id"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/from_state_id}"
+					change="onSelect_ClaimDetails_FromState"
+					liveChange="onSelect_ClaimDetails_FromState"
+					visible="{= ${claimitem_input>/claim_item/location_type} === '2' }"
+					items="{path: 'employee>/ZSTATE',
+                            sorter: { path: 'STATE_ID', descending: false },
+                            filters: [
+                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                    <items>
+                        <core:Item key="{employee>STATE_ID}" 
+                        		   text="{employee>STATE_DESC}" />
+                    </items>
+				</Select>
 
 				<!-- From Location -->
 				<Label text="{i18n>label_claimdetails_input_location_from}" />
 				<Input
 					id="input_claimdetails_input_from_location"
 					value="{claimitem_input>/claim_item/from_location}"
-					visible="false"
+					visible="{= ${claimitem_input>/claim_item/location_type} === '1'}"
 					required="true"
 				/>
+				<Label text="{i18n>fromloc}" />	
+				<Select
+					id="select_claimdetails_input_from_location"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/from_location}"
+					change="onSelect_ClaimDetails_FromLocation"
+					liveChange="onSelect_ClaimDetails_FromLocation"
+					visible="{= ${claimitem_input>/claim_item/location_type} === '2'}"
+					required="true"
+					items="{path: 'employee>/ZOFFICE_LOCATION',
+                            sorter: { path: 'LOCATION_ID', descending: false },
+                            filters: [
+                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                    <items>
+                        <core:Item key="{employee>LOCATION_ID}" 
+                        		   text="{employee>LOCATION_DESC}" />
+                    </items>
+				</Select>
 
 				<!-- To State -->
 				<Label text="{i18n>label_claimdetails_input_state_to}" />
-				<Input
-					id="input_claimdetails_input_to_state_id"
-					value="{claimitem_input>/claim_item/to_state_id}"
-					visible="false"
-				/>
+				<Select
+					id="select_claimdetails_input_to_state_id"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/to_state_id}"
+					change="onSelect_ClaimDetails_ToState"
+					liveChange="onSelect_ClaimDetails_ToState"
+					visible="{= ${claimitem_input>/claim_item/location_type} === '2' }"
+					items="{path: 'employee>/ZSTATE',
+                            sorter: { path: 'STATE_ID', descending: false },
+                            filters: [
+                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                    <items>
+                        <core:Item key="{employee>STATE_ID}" 
+                        		   text="{employee>STATE_DESC}" />
+                    </items>
+				</Select>
 
 				<!-- To Location -->
 				<Label text="{i18n>label_claimdetails_input_location_to}" />
 				<Input
 					id="input_claimdetails_input_to_location"
 					value="{claimitem_input>/claim_item/to_location}"
-					visible="false"
+					visible="{= ${claimitem_input>/claim_item/location_type} === '1'}"
 					required="true"
 				/>
+				<Label text="{i18n>to_loc}" />
+				<Select
+					id="select_claimdetails_input_to_location"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/to_location}"
+					change="onSelect_ClaimDetails_ToLocation"
+					liveChange="onSelect_ClaimDetails_ToLocation"
+					visible="{= ${claimitem_input>/claim_item/location_type} === '2'}"
+					required="true"
+					items="{path: 'employee>/ZOFFICE_LOCATION',
+                            sorter: { path: 'LOCATION_ID', descending: false },
+                            filters: [
+                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                    <items>
+                        <core:Item key="{employee>LOCATION_ID}" 
+                        		   text="{employee>LOCATION_DESC}" />
+                    </items>
+				</Select>
 
 				<!-- Room Type -->
 				<Label text="{i18n>label_claimdetails_input_roomtype}" />
