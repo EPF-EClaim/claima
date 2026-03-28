@@ -274,12 +274,13 @@
 				/>
 
 				<!-- Mode of Transfer-->
-				<Label text="{i18n>label_claimdetails_mode_of_transfer}" />
+				<Label text="{i18n>req_i_transfer_mode}" />
 				<Select 
 					id="input_claimdetails_mode_of_transfer"
 					selectedKey="{claimitem_input>/claim_item/mode_of_transfer}"
 					forceSelection="false"
 					enabled="false"
+					visible="false"
 					items="{path: 'employee>/ZTRANSFER_MODE',
 							sorter: { path: 'TRANSFER_MODE_ID', descending: false },
 							filters: [
@@ -292,7 +293,7 @@
 
 				<Label text="{i18n>req_i_tarikh_pindah}"
                                             id="i_tarikh_pindah"/>
-				<m:DatePicker
+				<DatePicker
 					id="input_claimdetails_transfer_date"
 					displayFormat="dd MMM yyyy"
 					valueFormat="yyyy-MM-dd"
@@ -440,95 +441,37 @@
 
 				<!-- From State -->
 				<Label text="{i18n>label_claimdetails_input_state_from}" />
-				<Select
-					id="select_claimdetails_input_from_state_id"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/from_state_id}"
-					change="onSelect_ClaimDetails_FromState"
-					liveChange="onSelect_ClaimDetails_FromState"
-					visible="{= ${claimitem_input>/claim_item/location_type} === '2' }"
-					items="{path: 'employee>/ZSTATE',
-                            sorter: { path: 'STATE_ID', descending: false },
-                            filters: [
-                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
-                    <items>
-                        <core:Item key="{employee>STATE_ID}" 
-                        		   text="{employee>STATE_DESC}" />
-                    </items>
-				</Select>
+				<Input
+					id="input_claimdetails_input_from_state_id"
+					value="{claimitem_input>/claim_item/from_state_id}"
+					visible="false"
+				/>
 
 				<!-- From Location -->
 				<Label text="{i18n>label_claimdetails_input_location_from}" />
 				<Input
 					id="input_claimdetails_input_from_location"
 					value="{claimitem_input>/claim_item/from_location}"
-					visible="{= ${claimitem_input>/claim_item/location_type} === '1'}"
+					visible="false"
 					required="true"
 				/>
-				<Label text="{i18n>fromloc}" />	
-				<Select
-					id="select_claimdetails_input_from_location"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/from_location}"
-					change="onSelect_ClaimDetails_FromLocation"
-					liveChange="onSelect_ClaimDetails_FromLocation"
-					visible="{= ${claimitem_input>/claim_item/location_type} === '2'}"
-					required="true"
-					items="{path: 'employee>/ZOFFICE_LOCATION',
-                            sorter: { path: 'LOCATION_ID', descending: false },
-                            filters: [
-                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
-                    <items>
-                        <core:Item key="{employee>LOCATION_ID}" 
-                        		   text="{employee>LOCATION_DESC}" />
-                    </items>
-				</Select>
 
 				<!-- To State -->
 				<Label text="{i18n>label_claimdetails_input_state_to}" />
-				<Select
-					id="select_claimdetails_input_to_state_id"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/to_state_id}"
-					change="onSelect_ClaimDetails_ToState"
-					liveChange="onSelect_ClaimDetails_ToState"
-					visible="{= ${claimitem_input>/claim_item/location_type} === '2' }"
-					items="{path: 'employee>/ZSTATE',
-                            sorter: { path: 'STATE_ID', descending: false },
-                            filters: [
-                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
-                    <items>
-                        <core:Item key="{employee>STATE_ID}" 
-                        		   text="{employee>STATE_DESC}" />
-                    </items>
-				</Select>
+				<Input
+					id="input_claimdetails_input_to_state_id"
+					value="{claimitem_input>/claim_item/to_state_id}"
+					visible="false"
+				/>
 
 				<!-- To Location -->
 				<Label text="{i18n>label_claimdetails_input_location_to}" />
 				<Input
 					id="input_claimdetails_input_to_location"
 					value="{claimitem_input>/claim_item/to_location}"
-					visible="{= ${claimitem_input>/claim_item/location_type} === '1'}"
+					visible="false"
 					required="true"
 				/>
-				<Label text="{i18n>to_loc}" />
-				<Select
-					id="select_claimdetails_input_to_location"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/to_location}"
-					change="onSelect_ClaimDetails_ToLocation"
-					liveChange="onSelect_ClaimDetails_ToLocation"
-					visible="{= ${claimitem_input>/claim_item/location_type} === '2'}"
-					required="true"
-					items="{path: 'employee>/ZOFFICE_LOCATION',
-                            sorter: { path: 'LOCATION_ID', descending: false },
-                            filters: [
-                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
-                    <items>
-                        <core:Item key="{employee>LOCATION_ID}" 
-                        		   text="{employee>LOCATION_DESC}" />
-                    </items>
-				</Select>
 
 				<!-- Room Type -->
 				<Label text="{i18n>label_claimdetails_input_roomtype}" />
@@ -957,9 +900,9 @@
 				/>
 
 				<!-- Attachment 1 -->
-				<Label text="{i18n>label_claimdetails_input_attachment_file_1}" />
+				<Label text="{i18n>label_claimdetails_input_attachment1}" />
 				<u:FileUploader
-					id="fileuploader_claimdetails_input_attachment_file_1"
+					id="fileuploader_claimdetails_input_attachment1"
 					name="fileUploaderClaimDetailsInputAttachment1"
 					placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
 					uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
@@ -972,21 +915,25 @@
 					multiple="false"
 					style="Emphasized"
 					visible="false"
-					required="{= ${claimitem_input>/claim_item/attachment_file_1} === null }"
+					required="true"
 				>
 				</u:FileUploader>
-				<Label id="label_claimdetails_input_attachment_file_1" />
-				<Link
-					id="link_claimdetails_input_attachment_file_1" 
-					press="onView_Claim_Attachment('child','1')"
-					text="{claimitem_input>/claim_item/attachment_file_1}"
-					visible="{= ${claimitem_input>/claim_item/attachment_file_1} !== null }"
+
+				<!-- Attachment 1 (Existing) -->
+				<Label text="{i18n>label_claimdetails_input_attachment1}" />
+				<Button
+					id="button_claimdetails_input_attachment1"
+					icon="sap-icon://attachment"
+					text="{i18n>button_claimdetails_input_viewattachment}"
+					press="onView_Claim_Attachment('child_det','1')"
+					enabled="{= ${claimitem_input>/claim_item/attachment_file_1} !== null }"
+					visible="false"
 				/>
 
 				<!-- Attachment 2 -->
-				<Label text="{i18n>label_claimdetails_input_attachment_file_2}" />
+				<Label text="{i18n>label_claimdetails_input_attachment2}" />
 				<u:FileUploader
-					id="fileuploader_claimdetails_input_attachment_file_2"
+					id="fileuploader_claimdetails_input_attachment2"
 					name="fileUploaderClaimDetailsInputAttachment2"
 					placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
 					uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
@@ -1001,12 +948,16 @@
 					visible="false"
 				>
 				</u:FileUploader>
-				<Label id="label_claimdetails_input_attachment_file_2" />
-				<Link
-					id="link_claimdetails_input_attachment_file_2" 
-					press="onView_Claim_Attachment('child','2')"
-					text="{claimitem_input>/claim_item/attachment_file_2}"
-					visible="{= ${claimitem_input>/claim_item/attachment_file_2} !== null }"
+
+				<!-- Attachment 2 (Existing) -->
+				<Label text="{i18n>label_claimdetails_input_attachment2}" />
+				<Button
+					id="button_claimdetails_input_attachment2"
+					icon="sap-icon://attachment"
+					text="{i18n>button_claimdetails_input_viewattachment}"
+					press="onView_Claim_Attachment('child_det','2')"
+					enabled="{= ${claimitem_input>/claim_item/attachment_file_2} !== null }"
+					visible="false"
 				/>
 			</f:content>
 			<f:dependents>
