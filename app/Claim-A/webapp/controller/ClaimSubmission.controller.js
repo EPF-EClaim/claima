@@ -2201,12 +2201,25 @@ sap.ui.define([
 				return;
 			}
 
-			if (this.byId("input_claimdetails_input_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_amount").getValue() == " " ||
-				this.byId("input_claimdetails_input_amount").getValue() == "" || this.byId("input_claimdetails_input_amount").getValue() == null) {
-				// stop claim submission if amount is zero
-				MessageToast.show(Utility.getText("msg_claiminput_amount_zero"));
-				return;
+			// Reuben (FUT Issue 17)
+			// When creating claim for post education assistance, actual amount is used instead of amount for input
+			// To resolve issue, check first if the element is visible and active before performing the value check
+			// will create a variable to store the ID of element for future ease of use
+
+			const oInputAmountField = this.byId("input_claimdetails_input_amount");
+
+			if(oInputAmountField && oInputAmountField.getVisible()){
+				const sInputAmount = oInputAmountField.getValue()?.trim();
+				if(!sInputAmount || sInputAmount === "0.00" ){
+				//if (this.byId("input_claimdetails_input_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_amount").getValue() == " " ||
+				//	this.byId("input_claimdetails_input_amount").getValue() == "" || this.byId("input_claimdetails_input_amount").getValue() == null) {
+					// stop claim submission if amount is zero
+					MessageToast.show(Utility.getText("msg_claiminput_amount_zero"));
+					return;
+				}
 			}
+
+			
 
 			// Eligibility Checking
 			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM);
