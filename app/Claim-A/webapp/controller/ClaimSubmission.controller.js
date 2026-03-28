@@ -2214,51 +2214,22 @@ sap.ui.define([
 
 			if (!bCanProceed) return;
 
-			// validate attachment
-			//// attachment 1
-			if (oInputModel.getProperty("/attachments/attachment1/fileName") != null && oInputModel.getProperty("/attachments/attachment1/fileContent") != null) {
-				BusyIndicator.show(0);
-				var iAttachmentNumber = await Attachment.postAttachment(
-					oInputModel.getProperty("/attachments/attachment1/fileName"),
-					oInputModel.getProperty("/attachments/attachment1/fileContent"),
-					this._oSessionModel.getProperty("/userId")
-				);
+			// upload Attachment 1
+			const bUploadAttachment1 = await this._handleAttachmentUpload(
+				oInputModel,
+				"/attachments/attachment1",
+				"/claim_item/attachment_file_1"
+			);
+			if (!bUploadAttachment1) return; // stop processing if upload fails for attachment 1
 
-				if (iAttachmentNumber) {
-					var sAttachmentString = iAttachmentNumber + ' - ' + oInputModel.getProperty("/attachments/attachment1/fileName");
-					oInputModel.setProperty("/claim_item/attachment_file_1", sAttachmentString);
-					oInputModel.setProperty("/claim_item/descr/attachment_file_1", oInputModel.getProperty("/attachments/attachment1/fileName"));
-					BusyIndicator.hide();
-				}
-				else {
-					MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
-					// don't proceed claim item if attachment upload fails
-					BusyIndicator.hide();
-					return;
-				}
-			}
-			//// attachment 2
-			if (oInputModel.getProperty("/attachments/attachment2/fileName") != null && oInputModel.getProperty("/attachments/attachment2/fileContent") != null) {
-				BusyIndicator.show(0);
-				var iAttachmentNumber = await Attachment.postAttachment(
-					oInputModel.getProperty("/attachments/attachment2/fileName"),
-					oInputModel.getProperty("/attachments/attachment2/fileContent"),
-					this._oSessionModel.getProperty("/userId")
-				);
+			// upload Attachment 2
+			const bUploadAttachment2 = await this._handleAttachmentUpload(
+				oInputModel,
+				"/attachments/attachment2",
+				"/claim_item/attachment_file_2"
+			);
+			if (!bUploadAttachment2) return; // stop processing if upload fails for attachment 2
 
-				if (iAttachmentNumber) {
-					var sAttachmentString = iAttachmentNumber + ' - ' + oInputModel.getProperty("/attachments/attachment2/fileName");
-					oInputModel.setProperty("/claim_item/attachment_file_2", sAttachmentString);
-					oInputModel.setProperty("/claim_item/descr/attachment_file_2", oInputModel.getProperty("/attachments/attachment2/fileName"));
-					BusyIndicator.hide();
-				}
-				else {
-					MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
-					// don't proceed claim item if attachment upload fails
-					BusyIndicator.hide();
-					return;
-				}
-			}
 			// validate date range
 			//// start/end date
 			if (this.byId("datepicker_claimdetails_input_startdate").getValue() || this.byId("datepicker_claimdetails_input_enddate").getValue()) {
@@ -2279,11 +2250,8 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
 
 			//// Added for duplication check;
-
-
 			var aExistingItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
 			var oNewItem = oInputModel.getProperty("/claim_item");
-
 
 			var aTemp = [];
 			if (!oInputModel.getProperty("/is_new")) {
@@ -2298,7 +2266,6 @@ sap.ui.define([
 				MessageToast.show(Utility.getText("msg_duplication_prompt"));
 				return;
 			}
-
 
 			// update claim item to database
 			var saveSuccess = await this._saveClaimItem();
@@ -2327,6 +2294,42 @@ sap.ui.define([
 				// return to claim item screen
 				this.onCancel_ClaimDetails_Input();
 			}
+		},
+		/**
+		 * Handle Attachment Upload
+		 * @public
+		 * @param {JSONModel} oInputModel - Claim input JSON Model;
+         * @param {String} sAttachmentPath - Attachment Path;
+		 * @param {String} sClaimItemPathPrefix - Claim item path prefix;
+         * @returns {Boolean} Upload successful indicator
+		 */
+		_handleAttachmentUpload: async function (oInputModel, sAttachmentPath, sClaimItemPathPrefix) {
+			const sFileName = oInputModel.getProperty(`${sAttachmentPath}/fileName`);
+			const sFileBinary = oInputModel.getProperty(`${sAttachmentPath}/fileContent`);
+
+			if (!sFileName || !sFileBinary) {
+				// nothing to upload
+				return true;
+			}
+
+			BusyIndicator.show(0);
+
+			try {
+				const sAttachmentNumber = await Attachment.postAttachment(sFileName, sFileBinary, this._oSessionModel.getProperty("/userId"));
+			}catch(oError){
+				BusyIndicator.hide();
+				MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_error"));
+				return false;   // stop further processing
+			}
+
+			// success
+			const sAttachmentString = `${sAttachmentNumber} - ${sFileName}`;
+
+			oInputModel.setProperty(`${sClaimItemPathPrefix}`, sAttachmentString);
+			oInputModel.setProperty(`${sClaimItemPathPrefix.replace("/claim_item/", "/claim_item/descr/")}`, sFileName);
+
+			BusyIndicator.hide();
+			return true;
 		},
 
 		_saveClaimItem: async function () {
