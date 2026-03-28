@@ -106,7 +106,7 @@
                                             type="Number" 
                                             textAlign="Begin" 
                                             required="true" 
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="false"
                                             value="{request>/req_item/est_amount}"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -198,7 +198,10 @@
                                     <form:fields>
                                         <unified:FileUploader
                                             change=".onImportChange1"
+                                            enabled="{= ${request>/view} !== 'view' }"
                                             required="true" 
+                                            maximumFileSize='5.0'
+					                        mimeType="application/pdf,image/png,image/jpeg"
                                             placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc1}"
                                             id="i_attachment_1_file" />
@@ -206,7 +209,6 @@
                                             id="i_attachment1_link" 
                                             press="onDocLinkPress" 
                                             text="{request>/req_item/doc1_filename}"
-                                            class="sapUiTinyMarginTop"
                                             visible="{= ${request>/req_item/doc1} !== null }" />
                                     </form:fields>
                                 </form:FormElement>
@@ -240,6 +242,9 @@
                                     <form:fields>
                                         <unified:FileUploader
                                             change=".onImportChange2"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            maximumFileSize='5.0'
+					                        mimeType="application/pdf,image/png,image/jpeg"
                                             placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc2}"
                                             id="i_attachment_2_file" />
@@ -247,7 +252,6 @@
                                             id="i_attachment2_link" 
                                             press="onDocLinkPress" 
                                             text="{request>/req_item/doc2_filename}"
-                                            class="sapUiTinyMarginTop"
                                             visible="{= ${request>/req_item/doc2} !== null }" />
                                     </form:fields>
                                 </form:FormElement>
@@ -371,9 +375,8 @@
                                     <form:fields>
                                         <mdc:Field
                                             value="{request>/req_item/country}"
-                                            editMode="Editable"
+                                            editMode="{= ${request>/view} === 'view' ? 'Display' : 'Editable' }"
                                             display="ValueDescription"
-                                            visible="{= ${request>/view} !== 'view' }"
                                             required="true" 
                                             valueHelp="valuehelp_country"
                                         />
@@ -559,6 +562,7 @@
                                             selectedKey="{request>/req_item/location_type}" 
                                             required="true" 
                                             forceSelection="false"
+                                            change=".onSelectLocationType"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             items="{path: 'employee>/ZLOC_TYPE',
                                                     sorter: { path: 'LOC_TYPE_ID', descending: false },
@@ -574,7 +578,7 @@
 
                                 <!-- From State -->
                                 <form:FormElement label="{i18n>req_i_from_state}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/KWSP}}"
                                             id="i_from_state" >
                                     <form:fields>
                                         <Select 
@@ -585,7 +589,7 @@
                                             items="{path: 'employee>/ZSTATE',
                                                     sorter: { path: 'STATE_ID', descending: false },
                                                     filters: [
-                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}" >
                                             <items>
                                                 <core:Item key="{employee>STATE_ID}" 
                                                         text="{employee>STATE_DESC}" />
@@ -596,7 +600,7 @@
 
                                 <!-- From Location -->
                                 <form:FormElement label="{i18n>req_i_from_location}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/OTHER}}"
                                             id="i_from_location" >
                                     <form:fields>
                                         <m:Input 
@@ -609,7 +613,7 @@
 
                                 <!-- From Location Office-->
                                 <form:FormElement label="{i18n>req_i_from_location_office}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/KWSP}}"
                                             id="i_from_location_office" >
                                     <form:fields>
                                         <m:Input 
@@ -622,7 +626,7 @@
 
                                 <!-- To State -->
                                 <form:FormElement label="{i18n>req_i_to_state}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/KWSP}}"
                                             id="i_to_state" >
                                     <form:fields>
                                         <Select 
@@ -644,7 +648,7 @@
 
                                 <!-- To Location -->
                                 <form:FormElement label="{i18n>req_i_to_location}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/OTHER}}"
                                             id="i_to_location"  >
                                     <form:fields>
                                         <m:Input 
@@ -657,7 +661,7 @@
 
                                 <!-- To Location Office -->
                                 <form:FormElement label="{i18n>req_i_to_location_office}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/KWSP}}"
                                             id="i_to_location_office"  >
                                     <form:fields>
                                         <m:Input 
@@ -828,6 +832,7 @@
                                         <m:Input 
                                             type="Number" 
                                             textAlign="Begin" 
+                                            required="true"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/est_no_participant}"/>
                                     </form:fields>
@@ -835,10 +840,21 @@
 
                                 <!-- Cash Advance -->
                                 <form:FormElement label="{i18n>req_i_cashadv}"
-                                            visible="false"
+                                            visible="{= ${request>/req_header/grptype} === ${constant>/GroupType/INDIVIDUAL} &amp;&amp; 
+                                                      ( ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L}     || 
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_L}      || 
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER}    || 
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LODGING_L}    ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_L}      ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_O}     ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_O}      ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O}      ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LODG_O} )
+                                                    }"
                                             id="i_cash_adv" >
                                     <form:fields>
-                                        <Switch state="{request>/req_item/cash_advance}" customTextOn="Yes" customTextOff="No">
+                                        <Switch state="{request>/req_item/cash_advance}" customTextOn="Yes" customTextOff="No"
+                                                enabled="{= ${request>/view} !== 'view' }">
                                             <layoutData>
                                                 <FlexItemData growFactor="1" />
                                             </layoutData>
@@ -906,6 +922,7 @@
                                     textAlign="End" 
                                     value="{request>ALLOCATED_AMOUNT}" 
                                     type="Number"
+                                    change="populateEstimatedAmount"
                                     enabled="{= ${request>/view} !== 'view'}"></Input>
                             </table:template>
                         </table:Column>

@@ -101,6 +101,7 @@ sap.ui.define([
 			console.log("Deep-link request ID:", sRequestId);
 
 			this._oReqModel.setProperty("/req_header/reqid", sRequestId);
+			this._oReqModel.setProperty('/view', 'view');
 
 			this._loadRequest(sRequestId);
 		},
@@ -117,8 +118,6 @@ sap.ui.define([
 				BusyIndicator.hide();
 			}
 		},
-
-
 
 		/* =========================================================
 		* Helpers: Fragment Management
@@ -156,7 +155,7 @@ sap.ui.define([
 			this._oFragments = Object.create(null);
 		},
 
-		async _showItemCreate(state, bEdit) {
+		async _showItemCreate(bEdit) {
 			const oPage = this.byId("request_form");
 			if (!oPage) return;
 
@@ -169,9 +168,9 @@ sap.ui.define([
 			if (bEdit) {
 				this.byId("i_attachment_1_file").setRequired(false);
 				this.byId("i_attachment_2_file").setRequired(false);
-			}
+			} 
 
-			this._oReqModel.setProperty("/view", state);
+			PARequestSharedFunction.determineFooterButton(this);
 		},
 
 		async _showItemList(sReqId) {
@@ -198,9 +197,11 @@ sap.ui.define([
 				}
 				const oApproval = await this._getFormFragment("approval_log");
 				await this._replaceContentAt(oPage, 2, oApproval);
+			} else {
+				PARequestSharedFunction.getCurrentState(this);
 			}
 
-			await PARequestSharedFunction._determineCurrentState(this, this._oReqModel);
+			PARequestSharedFunction.determineFooterButton(this);
 		},
 
 		/* =========================================================
@@ -238,6 +239,8 @@ sap.ui.define([
 					});
 				}
 				this.oBackDialog.open();
+			} else {
+				this.onBackView();
 			}
 		},
 
@@ -270,8 +273,17 @@ sap.ui.define([
 
 								// update status to CANCELLED
 								await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.CANCELLED);
-
+								
 								MessageToast.show(Utility.getText("req_tm_s_delete_request"));
+								// Placeholder to put delete function for ZAPPROVER_DETAILS_PREAPPROVAL
+								//Call CAP action 
+								const oAction = this._oDataModel.bindContext("/DeleteApproverDetails(...)");
+								oAction.setParameter("ID", sCurrentReqId);
+								try {
+									await oAction.execute();
+								} catch (oError) {
+									MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]))
+								}    
 								this.oDeleteDialog.close();
 
 								this._oRouter.navTo("RequestFormStatus");
@@ -333,7 +345,6 @@ sap.ui.define([
 									// update status to PENDING APPROVAL
 									await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
 									await Utility._updateSubmittedDate(this._oDataModel, sReqId);
-									this._oReqModel.setProperty("/view", 'view');
 
 									// Add in onPARApproverDetermination function
 									var oModel = this.getView().getModel();
@@ -392,8 +403,9 @@ sap.ui.define([
 
 		async onBackView() {
 			var oCreate = this.byId('request_create_item_fragment');
+			const sReqId = this._oReqModel.getProperty("/req_header/reqid");
 			if (oCreate) {
-				this._showItemList();
+				this._showItemList(sReqId);
 				this._oReqModel.setProperty('/req_item', {});
 			} else {
 				PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
@@ -408,6 +420,16 @@ sap.ui.define([
 			}
 		},
 
+		onCancelItem() {
+			const oData = this._oReqModel.getData();
+			const sReqId = String(oData.req_header.reqid || "").trim();
+			this._oReqModel.setProperty('/req_item', {});
+			this._oReqModel.setProperty('/view', "view");
+
+			PARequestSharedFunction._getItemList(this, sReqId);
+			this._showItemList(sReqId);
+		},
+
 		/* =========================================================
 		* Header & Item List Area
 		* ======================================================= */
@@ -420,7 +442,8 @@ sap.ui.define([
 		},
 
 		async onAddItem(oEvent) {
-			await this._showItemCreate("create", false);
+			this._oReqModel.setProperty("/view", this._oConstant.PARMode.CREATE);
+			await this._showItemCreate(false);
 			this._loadSelections();
 
 			const oReqData = this._oReqModel.getData();
@@ -540,13 +563,15 @@ sap.ui.define([
 				meter_cube_actual		: oReqItem.METER_CUBE_ACTUAL || 0,			
 			});
 
-			if (this._oReqModel.getProperty("/view") != this._oConstant.PARMode.APPROVER) {
+			const sState = this._oReqModel.getProperty("/view");
+			if (sState != this._oConstant.PARMode.APPROVER) {
 				this._oReqModel.setProperty("/view", bEdit ? this._oConstant.PARMode.EDIT : this._oConstant.PARMode.VIEW);
+				this._getClaimTypeItemSelection();
+			} else {
+				this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEWAPPR);
 			}
-
-			this._showItemCreate(this._oReqModel.getProperty("/view"), bEdit);
+			this._showItemCreate(bEdit);
 			this._loadParticipantsForItem(sReqId, sReqSubId);
-			this._getClaimTypeItemSelection();
 			this.getFieldVisibility_ClaimTypeItem(oEvent);
 		},
 
@@ -594,8 +619,8 @@ sap.ui.define([
 					_EDIT_MODE				: sMode == this._oConstant.PARMode.CREATE ? "Editable" : "Display"
 				}));
 
-				if (this._oReqModel.getProperty('/req_header/grptype') == this._oConstant.GroupType.GROUP && 
-					sMode != this._oConstant.PARMode.VIEW) {
+				if ( this._oReqModel.getProperty('/req_header/grptype') == this._oConstant.GroupType.GROUP && 
+					( sMode != this._oConstant.PARMode.VIEW && sMode != this._oConstant.PARMode.APPROVER) ) {
 					aMapped.push({ PARTICIPANTS_ID: "", PARTICIPANT_NAME: "", PARTICIPANT_COST_CENTER: "", ALLOCATED_AMOUNT: "" });
 				}
 
@@ -1021,7 +1046,7 @@ sap.ui.define([
 										? oReqHeader.altcostcenter 
 										: oReqHeader.costcenter;
 					oReqItem.gl_account		= await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
-					oReqItem.material_code	= await budgetCheck._getMaterialCode(this._oDataModel, oReqItem.claim_type_item_id);
+					oReqItem.material_code	= await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
 				}
 
 				if (oReqItem.departure_time || oReqItem.arrival_time) {
@@ -1101,7 +1126,7 @@ sap.ui.define([
                     await this._upsertParticipantsForItem(sReqId, sReqSubId, oData.participant);
                     await this._oDataModel.submitBatch("itemSave");
 
-					// Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID ,sAttachment2_SFID)
+					Attachment.postMDFChild(sReqId, sReqSubId, sAttachment1_SFID ,sAttachment2_SFID)
 
                 } else {
                     const oItemContext = this._oDataModel.bindList("/ZREQUEST_ITEM").create(oPayload, { $$updateGroupId: "itemCreate" });
@@ -1116,7 +1141,7 @@ sap.ui.define([
                     }
 					
 					// upload Child MDF
-					// Attachment.postMDFChild(sReqId, sGeneratedSubId, sAttachment1_SFID ,sAttachment2_SFID)
+					Attachment.postMDFChild(sReqId, sGeneratedSubId, sAttachment1_SFID ,sAttachment2_SFID)
 
                     const aParts = oData.participant || [];
                     let bHasParticipants = false;
@@ -1145,9 +1170,6 @@ sap.ui.define([
 
                 MessageToast.show("Success");
 				if (!bAddAnother) {
-					// await PARequestSharedFunction._getHeader(this, sReqId);
-					// await PARequestSharedFunction._getItemList(this, sReqId);
-					// this._showItemList();
 					this._loadRequest(sReqId);
 				}
 
@@ -1238,13 +1260,15 @@ sap.ui.define([
 			}
 		},
 
-		onCancelItem() {
-			const oData = this._oReqModel.getData();
-			const sReqId = String(oData.req_header.reqid || "").trim();
-			this._oReqModel.setProperty('/req_item', {})
+		populateEstimatedAmount(oEvent) {
+			const aParticipantList = this._oReqModel.getProperty("/participant");
 
-			PARequestSharedFunction._getItemList(this, sReqId);
-			this._showItemList();
+			// Use let OR use reduce directly
+			const fEstAmount = aParticipantList.reduce((sum, row) => {
+				return sum + parseFloat(row.ALLOCATED_AMOUNT || 0);
+			}, 0);
+
+			this._oReqModel.setProperty("/req_item/est_amount", fEstAmount.toFixed(2));
 		},
 
 		/* =========================================================
@@ -1602,8 +1626,8 @@ sap.ui.define([
 					"Individual/Group"			: header.grptype || "",
 					"Type of Transportation"	: header.transport || "",
 					"Request Status"			: header.reqstatus,
-					"Cost Center"				: header.cc,
-					"Alternate Cost Center"		: header.acc || "-",
+					"Cost Center"				: header.costcenter,
+					"Alternate Cost Center"		: header.altcostcenter || "-",
 					"Cash Advance (MYR)"		: header.cashadvamt,
 					"Pre Approval Amount (MYR)"	: header.reqamt,
 					"Request Type"				: header.reqtype,
@@ -1804,6 +1828,7 @@ sap.ui.define([
 		async _getClaimTypeItemSelection() {
 			const oData = this._oReqModel.getData();
 			const sClaimTypeId = oData.req_header.claimtype;
+			const sGroupType = oData.req_header.grptype;
 
 			if (!sClaimTypeId) {
 				this._oReqModel.setProperty("/claim_type_items", []);
@@ -1821,7 +1846,11 @@ sap.ui.define([
 					],
 					[
 						new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimTypeId),
-						new Filter("SUBMISSION_TYPE", 'NE', "ST0001" )
+						new Filter("SUBMISSION_TYPE", FilterOperator.NE, this._oConstant.SubmissionType.DIRECT_CLAIM ),
+						new Filter("SUBMISSION_TYPE", FilterOperator.NE, this._oConstant.SubmissionType.CASH_REPAYMENT ),
+						new Filter("SUBMISSION_TYPE", FilterOperator.NE, this._oConstant.SubmissionType.CURR_SUBSIDY )
+						// new Filter("IND_OR_GROUP", FilterOperator.EQ, sGroupType),
+						// new Filter("IND_OR_GROUP", FilterOperator.EQ, "I_G")
 					],
 					{
 						$$ownRequest: true,
@@ -1952,7 +1981,7 @@ sap.ui.define([
 			}
 		},
 
-		_setAllControlsVisible: function (bVisible) {
+		_setAllControlsVisible (bVisible) {
 			const aControlIds = [
 				"i_no_of_days_1",
 				"i_purpose",
@@ -1982,12 +2011,8 @@ sap.ui.define([
 				"i_toll",
 				"i_flight_class",
 				"i_location_type",
-				"i_from_state",
 				"i_from_location",
-				"i_from_location_office",
-				"i_to_state",
 				"i_to_location",
-				"i_to_location_office",
 				"i_mode_of_transfer",
 				"i_tarikh_pindah",
 				"i_no_of_days_3",
@@ -1995,8 +2020,7 @@ sap.ui.define([
 				"i_marriage_cat",
 				"i_cube_eligible",
 				"i_departure_time",
-				"i_arrival_time",
-				"i_cash_adv"
+				"i_arrival_time"
 			];
 
 			aControlIds.forEach(id => {

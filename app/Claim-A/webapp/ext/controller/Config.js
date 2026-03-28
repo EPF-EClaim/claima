@@ -15,8 +15,9 @@ sap.ui.define([
         "POST_EDU_ASSISTANT_CLAIM_DATE",
         "POST_EDU_ASSISTANT_ENTITLE_AMOUNT",
         "MEDICAL_INSURANCE" 
-        // "EMAIL" //Temporary for CH testing
     ]);
+
+    const sDisabledField = "RANGE_ID";
 
     const _validateDate = function (oPayload, oDataType) {
         if (!oPayload || !oDataType) return true;
@@ -128,7 +129,7 @@ sap.ui.define([
                     width: "130%",
                     displayFormat: "dd MMM yyyy",
                     valueFormat: "yyyy-MM-dd",
-                    enabled: `${sPath}` === '/ZEMP_MASTER' ? false : true
+                    enabled: `${sPath}` === '/ZEMP_MASTER' ? false : true 
                 }) :
                 fieldType?.includes('Edm.Boolean') ?
                     new sap.m.Select({
@@ -232,6 +233,17 @@ sap.ui.define([
         onClickEdit: function (oContext, aSelectedContexts) {
             const oView = this.getRouting().getView();
             const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster } = _getDetails(oView, aSelectedContexts);
+
+            if (sPath.includes("/ZNUM_RANGE")) {
+                const oItems = oVBox.getItems();
+                for (let i = 1; i < oItems.length; i += 2) {
+                    const oControl = oItems[i];
+                    if (oControl.getName() === sDisabledField) {
+                        oControl.setEnabled(false);
+                        break;
+                    }
+                }
+            }
 
             const oDialog = new sap.m.Dialog({
                 title: `Edit Record`,

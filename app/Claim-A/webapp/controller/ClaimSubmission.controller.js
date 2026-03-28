@@ -1221,6 +1221,14 @@ sap.ui.define([
 		},
 
 		onCreateClaim_ClaimSummary: async function (indexNumber) {
+			
+			// Destroy previous detail fragment to avoid stale bindings
+			if (this._fragments["claimsubmission_claimdetails_input"]) {
+				const frag = await this._fragments["claimsubmission_claimdetails_input"];
+				frag.destroy(true);
+				delete this._fragments["claimsubmission_claimdetails_input"];
+			}
+
 			BusyIndicator.show(0);
 			// show claim details screen
 			var oPage = this.byId("page_claimsubmission");
@@ -1450,6 +1458,7 @@ sap.ui.define([
 			// calculate new total
 			const nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
 			oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
+			oInputModel.setProperty("/claim_header/final_amount_to_receive", nTotal);
 
 			// update to database
 			var updateSuccess = await this._updateClaimItems();
@@ -2043,6 +2052,11 @@ sap.ui.define([
 		},
 
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
+			
+    		// HARD RESET – prevents stale binding values
+    		this.getView().setModel(null, "claimitem_input");
+	    	sap.ui.getCore().applyChanges();
+
 			// set claim item model
 			var oInputModel = this._getNewClaimItemModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
@@ -2055,7 +2069,7 @@ sap.ui.define([
 			// update selection fields
 			if (Number.isInteger(indexNumber)) {
 				// add claim item values to claim detail screen
-				oInputModel.setProperty("/claim_item", oClaimSubmissionModel.getProperty("/claim_items/" + indexNumber));
+				oInputModel.setProperty("/claim_item", structuredClone(oClaimSubmissionModel.getProperty("/claim_items/" + indexNumber)));
 
 				// set app visibility controls
 				await this.getFieldVisibility_ClaimTypeItem();
@@ -2341,6 +2355,25 @@ sap.ui.define([
 		_saveClaimItem: async function () {
 			// get input model
 			var oInputModel = this.getView().getModel("claimitem_input");
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+
+			/* 	4 scenarios for Receipt Date to be populated
+					1. Get Receipt Date based on input
+					2. If Receipt Date is null, get item Bill Date
+					3. If Bill Date is null, get item Start Date
+					4. If Start Date is null, get header Trip Start Date 
+			*/
+			if(oInputModel.getProperty("/claim_item/receipt_date") === null){
+				if(oInputModel.getProperty("/claim_item/bill_date") !== null){
+					oInputModel.setProperty("/claim_item/receipt_date", oInputModel.getProperty("/claim_item/bill_date"));
+				}else {
+					if(oInputModel.getProperty("/claim_item/start_date") !== null){
+						oInputModel.setProperty("/claim_item/receipt_date", oInputModel.getProperty("/claim_item/start_date"));
+					} else {
+						oInputModel.setProperty("/claim_item/receipt_date", oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"));
+					}
+				}
+			}
 
 			try {
 				BusyIndicator.show(0);
@@ -2970,12 +3003,17 @@ sap.ui.define([
 
 				// get input model
 				var oInputModel = this.getView().getModel("claimsubmission_input");
-
-
 				var aItems = oInputModel.getProperty("/claim_items") || [];
 
 				if (aItems.length === 0) {
 					MessageToast.show(Utility.getText("msg_claimdetails_no_items"));
+					BusyIndicator.hide();
+					return;
+				}
+
+				// Cash Advance Repayment Validation checking
+				if(oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0){
+					MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
 					BusyIndicator.hide();
 					return;
 				}
@@ -3132,8 +3170,17 @@ sap.ui.define([
 							var oMsg = Utility.getText("msg_claimsubmission_changed");
 							break;
 						case 'Delete Report':
-							oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.CANCELLED);
+							oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.CANCELLED);							 
 							oMsg = Utility.getText("msg_claimsubmission_deleted");
+							// Placeholder to put delete function for ZAPPROVER_DETAILS_CLAIMS
+							//Call CAP action 
+							const oAction = oModel.bindContext("/DeleteApproverDetails(...)");
+							oAction.setParameter("ID", oInputModel.getProperty("/claim_header/claim_id"));
+							try {
+								await oAction.execute();
+							} catch (oError) {
+								MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]))
+							}    
 							break;
 						case 'Submit Report':
 							// budget checking
@@ -3842,12 +3889,18 @@ sap.ui.define([
 				}
 				aScreenArray.forEach(sId => {
 					const oControl = this._resolveControl(sId, "claimsubmission_claimdetails_input");
+
+					if (!oControl) {
+						console.warn("Control not found or not editable-capable:", sId);
+						return;
+					}
+						
 					if (oControl && typeof oControl.setEditable === "function") {
 						oControl.setEditable(false);
 					} else if (oControl.getMetadata().getName().includes("FileUploader")) {
 						oControl.setVisible(false);
-					} else {
-						console.warn("Control not found or not editable-capable:", sId);
+					} else if (oControl instanceof sap.ui.mdc.Field) {
+						oControl.setEditMode("Display");
 					}
 				});
 			}

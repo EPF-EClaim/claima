@@ -177,6 +177,7 @@
 			    <unified:FileUploader
 					id="req_attachment_1"
 					change="onImportChange1"
+					mimeType="application/pdf,image/png,image/jpeg"
 					placeholder="{i18n>req_attachment_format}"
 					value="{reqDialog>/doc1}"
 					required="true"
@@ -186,6 +187,7 @@
 			    <unified:FileUploader
 					id="req_attachment_2"
 					change="onImportChange2"
+					mimeType="application/pdf,image/png,image/jpeg"
 					placeholder="{i18n>req_attachment_format}"
 					value="{reqDialog>/doc2}"
 					visible="false" />
@@ -210,6 +212,21 @@
 					<items>
 						<core:Item key="{employee>PROJECT_CODE_IO}" 
 								text="{employee>PROJECT_CODE_IO} :: {employee>PROJECT_DESC}" />
+					</items>
+				</Select>
+
+				<Label text="{i18n>req_course}" />
+				<Select 
+					id="req_course"
+					selectedKey="{reqDialog>/coursecode}" 
+					required="true" 
+					forceSelection="false"
+					visible="false"
+					items="{path: 'employee>/ZTRAIN_COURSE_PART',
+							sorter: { path: 'COURSE_ID', descending: false }}">
+					<items>
+						<core:Item key="{employee>COURSE_ID}" 
+								text="{employee>COURSE_ID} :: {employee>PROJECT_DESC}" />
 					</items>
 				</Select>
 								

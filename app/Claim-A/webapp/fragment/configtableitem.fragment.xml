@@ -47,28 +47,28 @@
                     text="{i18n>req_b_edit}"
                     press="onEdit"
                     enabled="{view>/hasSelection}"
-                    visible="{= ${/FeatureControl/operationEnabled} === true }"
+                    visible="{= ${/FeatureControl/operationEnabled} }"
                 />
                 <Button
                     id="CopyItem"
                     text="{i18n>copy}"
                     press="onCopy"
                     enabled="{view>/hasSelection}"
-                    visible="{= ${/FeatureControl/operationEnabled} === true }"
+                    visible="{= ${/FeatureControl/operationEnabled} }"
                 />
                 <Button
                     id="CreateItem"
                     text="{i18n>create}"
                     press="onCreate"
                     enabled="true"
-                    visible="{= ${/FeatureControl/operationEnabled} === true }"
+                    visible="{= ${/FeatureControl/operationEnabled} }"
                 />
                 <Button
                     id="DeleteItem"
                     text="{i18n>req_b_delete}"
                     press="onDelete"
                     enabled="{view>/hasSelection}"
-                    visible="{= ${/FeatureControl/operationEnabled} === true }"
+                    visible="{= ${/FeatureControl/operationEnabled} }"
                 />
                 <Button
                     icon="sap-icon://action-settings"
@@ -136,41 +136,6 @@
                     </ColumnListItem>
                 </items>
             </Table>
-            <dependents>
-                <ViewSettingsDialog
-                    id="itemViewSettingsDialog"
-                    confirm="onConfirmViewSettings"
-                    reset="onResetViewSettings"
-                >
-                    <sortItems>
-                        <ViewSettingsItem
-                            text="{i18n>claimtypeitemid}"
-                            key="CLAIM_TYPE_ITEM_ID"
-                            selected="true"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>claimdesc}"
-                            key="CLAIM_TYPE_ITEM_DESC"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>categoryid}"
-                            key="CATEGORY_ID"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>req_i_start_date}"
-                            key="START_DATE"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>req_i_end_date}"
-                            key="END_DATE"
-                        />
-                         <ViewSettingsItem
-                            text="{i18n>appr_status}"
-                            key="STATUS"
-                        />
-                    </sortItems>
-                </ViewSettingsDialog>
-            </dependents>
         </VBox>
     </VBox>
 </core:FragmentDefinition>

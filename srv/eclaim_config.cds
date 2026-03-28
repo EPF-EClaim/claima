@@ -118,6 +118,13 @@ annotate service.ZCLAIM_TYPE with @(
     Common.SemanticKey             : [CLAIM_TYPE_ID],
 
     UI                             : {
+        CreateHidden  : {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden  : {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo    : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Claim Type - ZCLAIM_TYPE',
+            TypeNamePlural: 'Claim Type - ZCLAIM_TYPE',
+        },
         Identification: [
             {
                 $Type: 'UI.DataField',
@@ -165,7 +172,7 @@ annotate service.ZCLAIM_TYPE with @(
                 Label: 'Status'
             }
         ],
-
+        
         LineItem      : [
             {
                 $Type: 'UI.DataField',
@@ -186,7 +193,7 @@ annotate service.ZCLAIM_TYPE with @(
                 $Type: 'UI.DataField',
                 Value: START_DATE,
                 Label: 'Start Date'
-            },            
+            },
             {
                 $Type: 'UI.DataField',
                 Value: END_DATE,
@@ -238,8 +245,8 @@ annotate service.ZNUM_RANGE with @(
         DeleteHidden: true,
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'Claim ID Number Sequence',
-            TypeNamePlural: 'Claim ID Number Sequence',
+            TypeName      : 'Claim ID Number Sequence - ZNUM_RANGE',
+            TypeNamePlural: 'Claim ID Number Sequence - ZNUM_RANGE',
         },
         LineItem    : [
             {
@@ -290,58 +297,68 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
         CLAIM_TYPE_ITEM_ID
     ],
 
-    UI                             : {LineItem: [
-        {
-            $Type: 'UI.DataField',
-            Value: CLAIM_TYPE_ITEM_ID,
-            Label: 'Item ID'
+    UI                             : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Claim Type Item - ZCLAIM_TYPE_ITEM',
+            TypeNamePlural: 'Claim Type Item - ZCLAIM_TYPE_ITEM',
         },
-        {
-            $Type: 'UI.DataField',
-            Value: CLAIM_TYPE_ITEM_DESC,
-            Label: 'Description'
-        },
-        {
-            $Type: 'UI.DataField',
-            Value: START_DATE,
-            Label: 'Start Date'
-        },
-        {
-            $Type: 'UI.DataField',
-            Value: END_DATE,
-            Label: 'End Date'
-        },
-        {
-            $Type: 'UI.DataField',
-            Value: STATUS,
-            Label: 'Status'
-        },
-        {
-            $Type: 'UI.DataField',
-            Value: CATEGORY_ID,
-            Label: 'Category ID'
-        },
-        {
-            $Type: 'UI.DataField',
-            Value: COST_CENTER,
-            Label: 'Cost Center'
-        },
-        {
-            $Type: 'UI.DataField',
-            Value: MATERIAL_CODE,
-            Label: 'Material Code'
-        },
-        {
-            $Type: 'UI.DataField',
-            Value: RISK,
-            Label: 'Risk'
-        },
-        {
-            $Type: 'UI.DataField',
-            Value: SUBMISSION_TYPE,
-            Label: 'Submission Type'
-        }
-    ]}
+
+        LineItem    : [
+            {
+                $Type: 'UI.DataField',
+                Value: CLAIM_TYPE_ITEM_ID,
+                Label: 'Item ID'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: CLAIM_TYPE_ITEM_DESC,
+                Label: 'Description'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: START_DATE,
+                Label: 'Start Date'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: END_DATE,
+                Label: 'End Date'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: STATUS,
+                Label: 'Status'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: CATEGORY_ID,
+                Label: 'Category ID'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: COST_CENTER,
+                Label: 'Cost Center'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: MATERIAL_CODE,
+                Label: 'Material Code'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: RISK,
+                Label: 'Risk'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: SUBMISSION_TYPE,
+                Label: 'Submission Type'
+            }
+        ]
+    }
 );
 
 annotate service.ZCLAIM_CATEGORY with @(
@@ -360,8 +377,8 @@ annotate service.ZCLAIM_CATEGORY with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'Travel Claim Category',
-            TypeNamePlural: 'Travel Claim Category',
+            TypeName      : 'Travel Claim Category - ZCLAIM_CATEGORY',
+            TypeNamePlural: 'Travel Claim Category - ZCLAIM_CATEGORY',
         },
         LineItem    : [
             {
@@ -414,8 +431,8 @@ annotate service.ZSTATUS with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'Claim/Request Submission Status',
-            TypeNamePlural: 'Claim/Request Submission Status',
+            TypeName      : 'Claim/Request Submission Status - ZSTATUS',
+            TypeNamePlural: 'Claim/Request Submission Status - ZSTATUS',
         },
         LineItem    : [
             {
@@ -468,8 +485,8 @@ annotate service.ZLODGING_CAT with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'Lodging Category',
-            TypeNamePlural: 'Lodging Category',
+            TypeName      : 'Lodging Category - ZLODGING_CAT',
+            TypeNamePlural: 'Lodging Category - ZLODGING_CAT',
         },
         LineItem    : [
             {
@@ -522,8 +539,8 @@ annotate service.ZROOM_TYPE with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'Hotel Room Type',
-            TypeNamePlural: 'Hotel Room Type',
+            TypeName      : 'Hotel Room Type - ZROOM_TYPE',
+            TypeNamePlural: 'Hotel Room Type - ZROOM_TYPE',
         },
         LineItem    : [
             {
@@ -582,8 +599,8 @@ annotate service.ZFLIGHT_CLASS with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'Flight Class',
-            TypeNamePlural: 'Flight Class',
+            TypeName      : 'Flight Class - ZFLIGHT_CLASS',
+            TypeNamePlural: 'Flight Class - ZFLIGHT_CLASS',
         },
         LineItem    : [
             {
@@ -642,8 +659,8 @@ annotate service.ZCOUNTRY with @(
         DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
-            TypeName      : 'Country',
-            TypeNamePlural: 'Country',
+            TypeName      : 'Country - ZCOUNTRY',
+            TypeNamePlural: 'Country - ZCOUNTRY',
         },
         LineItem    : [
             {
@@ -682,7 +699,7 @@ annotate service.ZCOUNTRY with @(
 
 annotate service.ZAREA with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: true},
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey             : [AREA_ID],
     Capabilities                   : {
         Deletable : true,
@@ -736,7 +753,7 @@ annotate service.ZAREA with @(
 
 annotate service.ZMARITAL_STAT with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: true},
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey             : [MARRIAGE_STATUS_ID],
     Capabilities                   : {
         Deletable : true,
@@ -790,7 +807,7 @@ annotate service.ZMARITAL_STAT with @(
 
 annotate service.ZVEHICLE_TYPE with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: true},
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey             : [VEHICLE_TYPE_ID],
     Capabilities                   : {
         Deletable : true,
@@ -844,7 +861,7 @@ annotate service.ZVEHICLE_TYPE with @(
 
 annotate service.ZSTATE with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: true},
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey             : [
         COUNTRY_ID,
         STATE_ID
@@ -2577,7 +2594,7 @@ annotate service.ZCURRENCY with @(
 
 annotate service.ZEMP_DEPENDENT with @(
     cds.autoexpose,
-    Capabilities.SearchRestrictions: {Searchable: true},
+    Capabilities.SearchRestrictions: {Searchable: false},
     Common.SemanticKey             : [
         EMP_ID,
         RELATIONSHIP,
@@ -3960,7 +3977,15 @@ annotate service.ZDISBURSEMENT_STATUS with @(
 annotate service.ZELIGIBILITY_RULE with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey             : [CLAIM_TYPE_ID, CLAIM_TYPE_ITEM_ID, ROLE_ID, POSITION_NO_DESC, ROW_COUNT, START_DATE, END_DATE],
+    Common.SemanticKey             : [
+        CLAIM_TYPE_ID,
+        CLAIM_TYPE_ITEM_ID,
+        ROLE_ID,
+        POSITION_NO_DESC,
+        ROW_COUNT,
+        START_DATE,
+        END_DATE
+    ],
     Capabilities                   : {
         Deletable : true,
         Updatable : true,
@@ -4018,19 +4043,19 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : END_DATE,
                 ![@UI.Importance]: #High,
                 Label            : 'End Date'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : EMPLOYEE_TYPE,
                 ![@UI.Importance]: #High,
                 Label            : 'Employee Type'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : ASSIGNED_APPROVER,
                 ![@UI.Importance]: #High,
                 Label            : 'Assigned Approver'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CONFIRMATION_DATE,
@@ -4042,25 +4067,25 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : PERSONAL_GRADE,
                 ![@UI.Importance]: #High,
                 Label            : 'Personal Grade'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : MOBILE_PHONE_BILL,
                 ![@UI.Importance]: #High,
                 Label            : 'Mobile Phone Bill'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : ELIGIBLE_AMOUNT,
                 ![@UI.Importance]: #High,
                 Label            : 'Eligible Amount'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : FREQUENCY,
                 ![@UI.Importance]: #High,
                 Label            : 'Eligible Amount'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : PERIOD,
@@ -4096,19 +4121,19 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : MARITAL_STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Marital Status'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : DEPENDENT_TYPE_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Anggota/spouse/anak'
             },
-             {
+            {
                 $Type            : 'UI.DataField',
                 Value            : VEHICLE_OWNERSHIP_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Kenderaan Sendiri/Pejabat'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : CLAIMABLE_PERIOD_DAYS,
@@ -4121,7 +4146,7 @@ annotate service.ZELIGIBILITY_RULE with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Semenanjung or Sabah/Sarawak/Labuan'
             },
-             {
+            {
                 $Type            : 'UI.DataField',
                 Value            : MAXIMUM_DAYS,
                 ![@UI.Importance]: #High,
@@ -4132,31 +4157,31 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : CLAIM_BASIS_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Based on Receipt/Max amount'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : TRANSFER_MODE_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Mode of Transfer'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : EVENT_REASON,
                 ![@UI.Importance]: #High,
                 Label            : 'Event Reason'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : NO_OF_NIGHT,
                 ![@UI.Importance]: #High,
                 Label            : 'Number of Nights'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : VEHICLE_TYPE_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Vehicle Type'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : RATE,
@@ -4174,7 +4199,7 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : FLIGHT_CLASS_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Flight Class'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : HOTEL_LODGING_ID,
@@ -4186,7 +4211,7 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : TRANSPORT_CLASS,
                 ![@UI.Importance]: #High,
                 Label            : 'Train/Boat Class'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : TRANSPORT_PASSING_ID,
@@ -4198,7 +4223,7 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : INSURANCE_PACKAGE_ID,
                 ![@UI.Importance]: #High,
                 Label            : 'Insurance Package'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : TRAVEL_DAYS_ID,
@@ -4210,7 +4235,7 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : CURRENCY,
                 ![@UI.Importance]: #High,
                 Label            : 'Currency'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : ROOM_TYPE_ID,
@@ -4222,7 +4247,7 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : IND_OR_GROUP,
                 ![@UI.Importance]: #High,
                 Label            : 'Individual or Group'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : TRAVEL_HOURS,
@@ -4240,7 +4265,7 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : AGING_PERIOD,
                 ![@UI.Importance]: #High,
                 Label            : 'Period Number'
-            }, 
+            },
             {
                 $Type            : 'UI.DataField',
                 Value            : STATUS,
@@ -4254,7 +4279,10 @@ annotate service.ZELIGIBILITY_RULE with @(
 annotate service.ZCONSTANTS with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
-    Common.SemanticKey             : [ID, VALUE],
+    Common.SemanticKey             : [
+        ID,
+        VALUE
+    ],
     Capabilities                   : {
         Deletable : true,
         Updatable : true,
@@ -4286,6 +4314,7 @@ annotate service.ZCONSTANTS with @(
         ]
     }
 );
+
 annotate service.ZROLEHIERARCHY with @(
     cds.autoexpose,
     Capabilities.SearchRestrictions: {Searchable: false},
@@ -4321,4 +4350,3 @@ annotate service.ZROLEHIERARCHY with @(
         ]
     }
 );
-
