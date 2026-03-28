@@ -41,6 +41,7 @@ sap.ui.define([
 
 		async getPARHeaderList (oReqStatusModel, oViewModel) {
 
+			const oReqModel = this._oReqModel
 			const oListBinding = oViewModel.bindList("/ZEMP_REQUEST_EE_VIEW", undefined,
 				[new Sorter("modifiedAt", true)], null,
 				{
@@ -61,12 +62,14 @@ sap.ui.define([
 
 				oReqStatusModel.setProperty("/req_header_list", a);
 				oReqStatusModel.setProperty("/req_header_count", a.length);
+				oReqModel.setProperty("/view", "View");
 
 				return a;
 			} catch (err) {
 				console.error("OData bindList failed:", err);
 				oReqStatusModel.setProperty("/req_header_list", []);
 				oReqStatusModel.setProperty("/req_header_count", 0);
+				oReqModel.setProperty("/view", "View");
 				return [];
 			}
 		},

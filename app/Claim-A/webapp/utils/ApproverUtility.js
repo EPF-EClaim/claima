@@ -313,7 +313,7 @@ sap.ui.define([
 
         // Sean confirmed that after REJECTED and SEND BACK status, Higher level approvers will have blank status
 
-        const oBindingHeader = oModel.bindList(
+/*         const oBindingHeader = oModel.bindList(
             sHeaderSet,
             null,
             null,
@@ -326,7 +326,10 @@ sap.ui.define([
         if (oCtxHeader) {
             const sHeaderStatusField = bIsPre ? Constants.EntitiesFields.STATUS : Constants.EntitiesFields.CLAIM_STATUS;
             oCtxHeader.setProperty(sHeaderStatusField, sActionStatus); // STAT04 / STAT03
-        }
+        } */
+       
+        //Call Update Status.
+        Utility._updateStatus(oModel, sId, sActionStatus)
 
         const oBindingBudget = oModelView.bindList(
             sBudgetViewTbl,
