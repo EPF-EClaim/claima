@@ -330,11 +330,12 @@ sap.ui.define([
 				// Header
 				const oHeaderRaw = aHeaderCtx[0]?.getObject();
 				if (!oHeaderRaw) {
-					console.error("Failed to load claim submission ", sClaimId);
+					var _oRouter = this.getOwnerComponent().getRouter();
+					console.error("Failed to load claim submission!");
 					oClaimSubmissionModel.setProperty("/claim_header", {});
 					oClaimSubmissionModel.setProperty("/claim_items", []);
 					oClaimSubmissionModel.setProperty("/claim_items_count", 0);
-					return { header: null, items: [] };
+					_oRouter.navTo("ClaimStatus", {}, {}, true);
 				}
 
 				const oHeader = this._mapClaimHeaderToForm(oHeaderRaw);
