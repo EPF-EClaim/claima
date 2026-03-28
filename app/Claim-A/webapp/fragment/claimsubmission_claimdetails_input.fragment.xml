@@ -394,7 +394,7 @@
 				<Label text="{i18n>label_claimdetails_input_rate_per_km}" />
 				<Input
 					id="input_claimdetails_input_rate_per_km"
-					value="{claimitem_input>/claim_item/descr/rate_per_km}"
+					value="{claimitem_input>/claim_item/rate_per_km}"
 					editable="false"
 					visible="false"
 				/>
