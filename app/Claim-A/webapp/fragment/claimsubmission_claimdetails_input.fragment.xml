@@ -124,7 +124,8 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							preserveDecimals: false,
+							emptystring: 0
 						}
 					}"
 					visible="false"
@@ -149,7 +150,8 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							preserveDecimals: false,
+							emptystring: 0
 						}
 					}"
 					visible="false"
@@ -165,7 +167,8 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							preserveDecimals: false,
+							emptystring: 0
 						}
 					}"
 					required="true"
@@ -249,7 +252,7 @@
 					value="{claimitem_input>/claim_item/start_time}"
 					visible="false"
 					displayFormat="HH:mm"
-					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_start_date','timepicker_claimdetails_input_start_time','datepicker_claimdetails_input_end_date','timepicker_claimdetails_input_end_time')"
+					change="onChange_ClaimDetails_TimeRange($event, 'datepicker_claimdetails_input_start_date','timepicker_claimdetails_input_start_time','datepicker_claimdetails_input_end_date','timepicker_claimdetails_input_end_time')"
 				/>
 
 				<!-- End Date -->
@@ -270,7 +273,7 @@
 					value="{claimitem_input>/claim_item/end_time}"
 					visible="false"
 					displayFormat="HH:mm"
-					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_start_date','timepicker_claimdetails_input_start_time','datepicker_claimdetails_input_end_date','timepicker_claimdetails_input_end_time')"
+					change="onChange_ClaimDetails_TimeRange($event, 'datepicker_claimdetails_input_start_date','timepicker_claimdetails_input_start_time','datepicker_claimdetails_input_end_date','timepicker_claimdetails_input_end_time')"
 				/>
 
 				<!-- Nama Pembekal Insuran -->
@@ -380,7 +383,8 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							preserveDecimals: false,
+							emptystring: 0
 						}
 					}"
 					visible="false"
@@ -443,7 +447,8 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							preserveDecimals: false,
+							emptystring: 0
 						}
 					}"
 					visible="false"
@@ -567,7 +572,8 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							preserveDecimals: false,
+							emptystring: 0
 						}
 					}"
 					visible="false"
@@ -583,7 +589,8 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							preserveDecimals: false,
+							emptystring: 0
 						}
 					}"
 					visible="false"
@@ -606,7 +613,7 @@
 					value="{claimitem_input>/claim_item/trip_start_time}"
 					visible="false"
 					displayFormat="HH:mm"
-					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_start_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_end_time')"
+					change="onChange_ClaimDetails_TimeRange($event, 'datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_start_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_end_time')"
 				/>
 
 				<!-- Departure Time -->
@@ -616,7 +623,7 @@
 					value="{claimitem_input>/claim_item/departure_time}"
 					visible="false"
 					displayFormat="HH:mm"
-					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
+					change="onChange_ClaimDetails_TimeRange($event, 'datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
 					required="true"
 				/>
 
@@ -637,7 +644,7 @@
 					value="{claimitem_input>/claim_item/trip_end_time}"
 					visible="false"
 					displayFormat="HH:mm"
-					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_start_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_end_time')"
+					change="onChange_ClaimDetails_TimeRange($event, 'datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_start_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_end_time')"
 				/>
 
 				<!-- Arrival Time -->
@@ -647,7 +654,7 @@
 					value="{claimitem_input>/claim_item/arrival_time}"
 					visible="false"
 					displayFormat="HH:mm"
-					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
+					change="onChange_ClaimDetails_TimeRange($event, 'datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
 					required="true"
 				/>
 
@@ -661,7 +668,8 @@
 						formatOptions: {
 							minFractionDigits: 1,
 							maxFractionDigits: 1,
-							preserveDecimals: false
+							preserveDecimals: false,
+							emptystring: 0
 						}
 					}"
 					editable="false"
@@ -678,7 +686,8 @@
 						formatOptions: {
 							minFractionDigits: 1,
 							maxFractionDigits: 1,
-							preserveDecimals: false
+							preserveDecimals: false,
+							emptystring: 0
 						}
 					}"
 					editable="false"
@@ -695,7 +704,8 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							preserveDecimals: false,
+							emptystring: 0
 						}
 					}"
 					visible="false"
@@ -712,7 +722,8 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							preserveDecimals: false,
+							emptystring: 0
 						}
 					}"
 					visible="false"
@@ -729,7 +740,8 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							preserveDecimals: false,
+							emptystring: 0
 						}
 					}"
 					visible="false"
@@ -746,7 +758,8 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							preserveDecimals: false,
+							emptystring: 0
 						}
 					}"
 					editable="false"
@@ -763,7 +776,8 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							preserveDecimals: false,
+							emptystring: 0
 						}
 					}"
 					editable="false"
@@ -780,7 +794,8 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							preserveDecimals: false,
+							emptystring: 0
 						}
 					}"
 					editable="false"
@@ -925,7 +940,7 @@
 				<!-- Remarks -->
 				<Label text="{i18n>label_claimdetails_input_remark}" />
 				<Input
-					id="input_claimdetails_input_remarks"
+					id="input_claimdetails_input_remark"
 					value="{claimitem_input>/claim_item/remark}"
 					visible="false"
 				/>
@@ -949,9 +964,9 @@
 					required="true"
 				>
 				</u:FileUploader>
-				<Label id="label_claimdetails_input_attachment1" />
+				<Label id="label_claimdetails_input_attachment_file_1" />
 				<Link
-					id="link_claimdetails_input_attachment1" 
+					id="link_claimdetails_input_attachment_file_1" 
 					press="onView_Claim_Attachment('child','1')"
 					text="{claimitem_input>/claim_item/attachment_file_1}"
 					visible="{= ${claimitem_input>/claim_item/attachment_file_1} !== null }"
@@ -975,9 +990,9 @@
 					visible="false"
 				>
 				</u:FileUploader>
-				<Label id="label_claimdetails_input_attachment2" />
+				<Label id="label_claimdetails_input_attachment_file_2" />
 				<Link
-					id="link_claimdetails_input_attachment2" 
+					id="link_claimdetails_input_attachment_file_2" 
 					press="onView_Claim_Attachment('child','2')"
 					text="{claimitem_input>/claim_item/attachment_file_2}"
 					visible="{= ${claimitem_input>/claim_item/attachment_file_2} !== null }"

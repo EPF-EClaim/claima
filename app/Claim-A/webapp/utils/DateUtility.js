@@ -86,6 +86,8 @@ sap.ui.define([
                 if (aParts.length >= 2) {
                     dMergedDate.setHours(parseInt(aParts[0], 10), parseInt(aParts[1], 10), 0, 0);
                 }
+            } else if (sTime && typeof sTime === "object") {
+                dMergedDate.setHours(sTime.getHours(), sTime.getMinutes(), 0, 0);
             } else {
                 dMergedDate.setHours(0, 0, 0, 0);
             }
@@ -117,6 +119,57 @@ sap.ui.define([
 			}
 
 			return iDiffDays;
-		}
+		},
+
+        calculateNumberOfHours: function(oItem) {
+			const dItemStartDate = oItem.start_date ? new Date(oItem.start_date) : null;
+			const dItemEndDate = oItem.end_date ? new Date(oItem.end_date) : null;
+
+			const sItemStartTime = oItem.start_time || null;
+			const sItemEndTime = oItem.end_time || null;
+
+			if ( !dItemStartDate || !dItemEndDate || !sItemStartTime || !sItemEndTime || isNaN(dItemStartDate.getTime()) || isNaN(dItemEndDate.getTime())) {
+				return 0;
+			}
+
+            // convert time to 24-hours
+            if (sItemStartTime.endsWith('AM') || sItemStartTime.endsWith('PM')) {
+                var sItemStartTime24H = this.convertTime12to24(sItemStartTime);
+            } else {
+                sItemStartTime24H = sItemStartTime;
+            }
+            if (sItemEndTime.endsWith('AM') || sItemEndTime.endsWith('PM')) {
+                var sItemEndTime24H = this.convertTime12to24(sItemEndTime);
+            } else {
+                sItemEndTime24H = sItemEndTime;
+            }
+
+			const iStartDateTime = this.mergeDateTime(dItemStartDate, sItemStartTime24H);
+			const iEndDateTime = this.mergeDateTime(dItemEndDate, sItemEndTime24H);
+
+			let iDiffHours = 0;
+
+			if (iEndDateTime >= iStartDateTime) {
+				const iMsPerHour = 1000 * 60 * 60;
+				iDiffHours = Math.floor((iEndDateTime - iStartDateTime) / iMsPerHour);
+			}
+
+			return iDiffHours;
+		},
+
+        convertTime12to24: function(sTimeAMPM) {
+            const [sTime, sModifier] = sTimeAMPM.split(' ');
+            let [iHours, iMinutes] = sTime.split(':');
+
+            if (iHours === '12') {
+                iHours = '00';
+            }
+
+            if (sModifier === 'PM') {
+                iHours = parseInt(iHours, 10) + 12;
+            }
+
+            return `${iHours}:${iMinutes}`;
+        }
     };
 });

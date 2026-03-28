@@ -2086,8 +2086,8 @@ sap.ui.define([
 
 			// set text for label
 			for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
-				if (!this.byId("fileuploader_claimdetails_input_attachment" + i).getVisible()) {
-					this.byId("label_claimdetails_input_attachment" + i).setText(Utility.getText("label_claimdetails_input_attachment" + i));
+				if (!this.byId("fileuploader_claimdetails_input_attachment_file_" + i).getVisible()) {
+					this.byId("label_claimdetails_input_attachment_file_" + i).setText(Utility.getText("label_claimdetails_input_attachment_file_" + i));
 				}
 			}
 		},
@@ -2235,7 +2235,7 @@ sap.ui.define([
 			
 			// validate attachment
 			//// attachment 1
-			if (this.byId("fileuploader_claimdetails_input_attachment1").getValue()) {
+			if (this.byId("fileuploader_claimdetails_input_attachment_file_1").getValue()) {
 				if (oInputModel.getProperty("/attachments/attachment1/fileName") != null && oInputModel.getProperty("/attachments/attachment1/fileContent") != null) {
 					BusyIndicator.show(0);
 					var iAttachmentNumber = await Attachment.postAttachment(
@@ -2259,7 +2259,7 @@ sap.ui.define([
 				}
 			}
 			//// attachment 2
-			if (this.byId("fileuploader_claimdetails_input_attachment2").getValue()) {
+			if (this.byId("fileuploader_claimdetails_input_attachment_file_2").getValue()) {
 				if (oInputModel.getProperty("/attachments/attachment2/fileName") != null && oInputModel.getProperty("/attachments/attachment2/fileContent") != null) {
 					BusyIndicator.show(0);
 					var iAttachmentNumber = await Attachment.postAttachment(
@@ -2282,15 +2282,6 @@ sap.ui.define([
 					}
 				}
 			}
-			// validate date range
-			//// start/end date
-			if (this.byId("datepicker_claimdetails_input_start_date").getValue() || this.byId("datepicker_claimdetails_input_end_date").getValue()) {
-				if (!this._validDateRange("datepicker_claimdetails_input_start_date", "datepicker_claimdetails_input_end_date")) {
-					// stop claim details if incomplete
-					return;
-				}
-			}
-
 			// get claim item sub ID
 			if (oInputModel.getProperty("/is_new")) {
 				oInputModel.setProperty("/claim_item/claim_id", oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
@@ -2597,20 +2588,27 @@ sap.ui.define([
 			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
-		onChange_ClaimDetails_DateRange: async function (startdate, enddate) {
+		onChange_ClaimDetails_DateRange: async function (sStartDate, sEndDate) {
 			// reset claim detail amounts
 			this._resetPerDiem();
 
-			var startDateValue = this.byId(startdate).getValue();
-			var endDateValue = this.byId(enddate).getValue();
-			// check for missing value
-			if (!startDateValue || !endDateValue) {
+			// validate minDate + maxDate
+			if (this.byId(sEndDate).getMinDate() && this.byId(sEndDate).getDateValue() < this.byId(sEndDate).getMinDate()) {
+				this.byId(sEndDate).setValue("");
+				MessageToast.show(Utility.getText("msg_claimdetails_input_daterange"));
 				return;
 			}
-			// check if end date earlier than start date
-			var startDateUnix = new Date(startDateValue).valueOf();
-			var endDateUnix = new Date(endDateValue).valueOf();
-			if (startDateUnix > endDateUnix) {
+			if (this.byId(sStartDate).getMaxDate() && this.byId(sStartDate).getDateValue() > this.byId(sStartDate).getMaxDate()) {
+				this.byId(sStartDate).setValue("");
+				MessageToast.show(Utility.getText("msg_claimdetails_input_daterange"));
+				return;
+			}
+			// set minDate + maxDate
+			this.byId(sStartDate).setMaxDate(this.byId(sEndDate).getDateValue());
+			this.byId(sEndDate).setMinDate(this.byId(sStartDate).getDateValue());
+
+			// check for missing value
+			if (!this.byId(sStartDate).getDateValue() || !this.byId(sEndDate).getDateValue()) {
 				return;
 			}
 			else {
@@ -2625,27 +2623,18 @@ sap.ui.define([
 			}
 		},
 
-		onChange_ClaimDetails_TimeRange: async function (startdate, starttime, enddate, endtime) {
+		onChange_ClaimDetails_TimeRange: async function (oEvent, sStartDate, sStartTime, sEndDate, sEndTime) {
 			// reset claim detail amounts
 			this._resetPerDiem();
 
 			// check for missing value
-			var startDateValue = this.byId(startdate).getValue();
-			var endDateValue = this.byId(enddate).getValue();
-			if (!startDateValue || !endDateValue) {
-				return;
-			}
-			var startTimeValue = this.byId(starttime).getDateValue();
-			var endTimeValue = this.byId(endtime).getDateValue();
-			if (!startTimeValue || !endTimeValue) {
+			if (!this.byId(sStartDate).getDateValue() || !this.byId(sEndDate).getDateValue() || !this.byId(sStartTime).getDateValue() || !this.byId(sEndTime).getDateValue()) {
 				return;
 			}
 			// check if end datetime earlier than start datetime
-			var startDateUnix = new Date(startDateValue).valueOf();
-			startDateUnix = startDateUnix + new Date(startTimeValue).valueOf()
-			var endDateUnix = new Date(endDateValue).valueOf();
-			endDateUnix = endDateUnix + new Date(endTimeValue).valueOf()
-			if (startDateUnix > endDateUnix) {
+			if (DateUtility.mergeDateTime(this.byId(sStartDate).getDateValue(), this.byId(sStartTime).getDateValue()) > DateUtility.mergeDateTime(this.byId(sEndDate).getDateValue(), this.byId(sEndTime).getDateValue())) {
+				oEvent.getSource().setValue("");
+				MessageToast.show(Utility.getText("msg_claimdetails_input_timerange"));
 				return;
 			}
 			else {
@@ -2659,19 +2648,19 @@ sap.ui.define([
 		_resetPerDiem: function () {
 			// reset claim detail amounts
 			if (this.byId("input_claimdetails_input_travel_duration_day").getVisible()) {
-				this.byId("input_claimdetails_input_travel_duration_day").setValue("");
+				this.byId("input_claimdetails_input_travel_duration_day").setValue(0);
 			}
 			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
-				this.byId("input_claimdetails_input_travel_duration_hour").setValue("");
+				this.byId("input_claimdetails_input_travel_duration_hour").setValue(0);
 			}
 			if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
-				this.byId("input_claimdetails_input_entitled_breakfast").setValue("");
+				this.byId("input_claimdetails_input_entitled_breakfast").setValue(0);
 			}
 			if (this.byId("input_claimdetails_input_entitled_lunch").getVisible()) {
-				this.byId("input_claimdetails_input_entitled_lunch").setValue("");
+				this.byId("input_claimdetails_input_entitled_lunch").setValue(0);
 			}
 			if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
-				this.byId("input_claimdetails_input_entitled_dinner").setValue("");
+				this.byId("input_claimdetails_input_entitled_dinner").setValue(0);
 			}
 		},
 
@@ -2700,34 +2689,17 @@ sap.ui.define([
 			// check if required fields have values
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
-			if (
-				(this.byId(sStartDate).getVisible() && !this.byId(sStartDate).getValue()) ||
-				(this.byId(sStartTime).getVisible() && !this.byId(sStartTime).getValue()) ||
-				(this.byId(sEndDate).getVisible() && !this.byId(sEndDate).getValue()) ||
-				(this.byId(sEndTime).getVisible() && !this.byId(sEndTime).getValue()) ||
-				(this.byId("select_claimdetails_input_region").getVisible() && !oInputModel.getProperty("/claim_item/region"))
-			) {
+
+			// calculate travel duration (days/hours)
+			const _oItem = oInputModel.getProperty("/claim_item") || {};
+			var iDiffDays = DateUtility.calculateNumberOfDays({}, _oItem);
+			this.byId("input_claimdetails_input_travel_duration_day").setValue(iDiffDays);
+			var iDiffHours = DateUtility.calculateNumberOfHours(_oItem);
+			this.byId("input_claimdetails_input_travel_duration_hour").setValue(iDiffHours);
+
+			if (this.byId("select_claimdetails_input_region").getVisible() && !oInputModel.getProperty("/claim_item/region")) {
 				return;
 			}
-			// calculate travel duration (days/hours)
-			var sStartDateValue = this.byId(sStartDate).getValue();
-			var sEndDateValue = this.byId(sEndDate).getValue();
-			var sStartTimeValue = this.byId(sStartTime).getDateValue();
-			var sEndTimeValue = this.byId(sEndTime).getDateValue();
-			var iStartDateUnix = new Date(sStartDateValue).valueOf();
-			iStartDateUnix = iStartDateUnix + new Date(sStartTimeValue).valueOf();
-			var iEndDateUnix = new Date(sEndDateValue).valueOf();
-			iEndDateUnix = iEndDateUnix + new Date(sEndTimeValue).valueOf();
-
-			if (this.byId("input_claimdetails_input_travel_duration_day").getVisible()) {
-				var iTravelDays = Math.floor((iEndDateUnix - iStartDateUnix) / 86400000); // round down days
-				this.byId("input_claimdetails_input_travel_duration_day").setValue(iTravelDays);
-			}
-			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
-				var iTravelHours = Math.floor((iEndDateUnix - iStartDateUnix) / 3600000); // round down hours
-				this.byId("input_claimdetails_input_travel_duration_hour").setValue(iTravelHours);
-			}
-
 			// get details from per diem table
 			BusyIndicator.show(0);
 			const oModel = this.getOwnerComponent().getModel();
@@ -2794,17 +2766,11 @@ sap.ui.define([
 
 		onChange_ClaimDetails_ProvidedMeals: function () {
 			var iProvBfast = parseFloat(this.byId("input_claimdetails_input_provided_breakfast"));
-			if (isNaN(iProvBfast)) { iProvBfast = 0.0; }
 			var iProvLunch = parseFloat(this.byId("input_claimdetails_input_provided_lunch"));
-			if (isNaN(iProvLunch)) { iProvLunch = 0.0; }
 			var iProvDinner = parseFloat(this.byId("input_claimdetails_input_provided_dinner"));
-			if (isNaN(iProvDinner)) { iProvDinner = 0.0; }
 			var iEntBfast = parseFloat(this.byId("input_claimdetails_input_entitled_breakfast"));
-			if (isNaN(iEntBfast)) { iEntBfast = 0.0; }
 			var iEntLunch = parseFloat(this.byId("input_claimdetails_input_entitled_lunch"));
-			if (isNaN(iEntLunch)) { iEntLunch = 0.0; }
 			var iEntDinner = parseFloat(this.byId("input_claimdetails_input_entitled_dinner"));
-			if (isNaN(iEntDinner)) { iEntDinner = 0.0; }
 			var amount = 0.0;
 
 			// calculate total amount
@@ -2971,11 +2937,11 @@ sap.ui.define([
 
 				// clear fileuploader fields
 				for (let i = 1; i <= 2; i++) { // 2 attachment fields per claim item
-					this.byId("fileuploader_claimdetails_input_attachment" + i)?.clear();
+					this.byId("fileuploader_claimdetails_input_attachment_file_" + i)?.clear();
 
 					// undo text for label
-					if (this.byId("label_claimdetails_input_attachment" + i).getText()) {
-						this.byId("label_claimdetails_input_attachment" + i).setText('');
+					if (this.byId("label_claimdetails_input_attachment_file_" + i).getText()) {
+						this.byId("label_claimdetails_input_attachment_file_" + i).setText('');
 					}
 				}
 
@@ -3843,9 +3809,9 @@ sap.ui.define([
 				"input_claimdetails_input_phone_no",
 				"checkbox_claimdetails_input_disclaimer",
 				"checkbox_claimdetails_input_disclaimer_galakan",
-				"input_claimdetails_input_remarks",
-				"fileuploader_claimdetails_input_attachment1",
-				"fileuploader_claimdetails_input_attachment2",
+				"input_claimdetails_input_remark",
+				"fileuploader_claimdetails_input_attachment_file_1",
+				"fileuploader_claimdetails_input_attachment_file_2",
 			];
 
 			aControlIds.forEach(id => {
@@ -3914,6 +3880,7 @@ sap.ui.define([
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",
 				"input_claimdetails_input_actual_amount",
+				"input_claimdetails_input_subsidised_amount",
 				"input_claimdetails_input_request_approval_amount",
 				"input_claimdetails_input_amount",
 				"input_claimdetails_input_percentage_compensation",
@@ -3936,6 +3903,7 @@ sap.ui.define([
 				"select_claimdetails_input_vehicle_type",
 				"select_claimdetails_input_vehicle_ownership_id",
 				"input_claimdetails_input_km",
+				"input_claimdetails_input_rate_per_km",
 				"select_claimdetails_input_fare_type_id",
 				"select_claimdetails_input_vehicle_class_id",
 				"select_claimdetails_input_flight_class",
@@ -3959,9 +3927,14 @@ sap.ui.define([
 				"datepicker_claimdetails_input_trip_end_date",
 				"timepicker_claimdetails_input_trip_end_time",
 				"timepicker_claimdetails_input_arrival_time",
+				"input_claimdetails_input_travel_duration_day",
+				"input_claimdetails_input_travel_duration_hour",
 				"input_claimdetails_input_provided_breakfast",
 				"input_claimdetails_input_provided_lunch",
 				"input_claimdetails_input_provided_dinner",
+				"input_claimdetails_input_entitled_breakfast",
+				"input_claimdetails_input_entitled_lunch",
+				"input_claimdetails_input_entitled_dinner",
 				"input_claimdetails_input_lodging_address",
 				"select_claimdetails_input_region",
 				"select_claimdetails_input_area",
@@ -3975,9 +3948,9 @@ sap.ui.define([
 				"input_claimdetails_input_phone_no",
 				"checkbox_claimdetails_input_disclaimer",
 				"checkbox_claimdetails_input_disclaimer_galakan",
-				"input_claimdetails_input_remarks",
-				"fileuploader_claimdetails_input_attachment1",
-				"fileuploader_claimdetails_input_attachment2",
+				"input_claimdetails_input_remark",
+				"fileuploader_claimdetails_input_attachment_file_1",
+				"fileuploader_claimdetails_input_attachment_file_2",
 			];
 
 			aControlIds.forEach(sId => {
