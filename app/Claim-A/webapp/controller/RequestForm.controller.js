@@ -358,6 +358,8 @@ sap.ui.define([
 										
 										// this._oReqModel.setProperty("/req_header/reqstatus", this._oConstant.ClaimStatus.PENDING_APPROVAL)
 										await this._loadRequest(sCurrentReqId);
+									}else{
+										throw new Error(Utility.getText("msg_failed_no_approver"))
 									}
 
 								} else {

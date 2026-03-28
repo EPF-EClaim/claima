@@ -404,11 +404,11 @@ sap.ui.define([
                                                 }else{
 
                                                     MessageToast.show(Utility.getText("msg_failed_no_approver_details", [id.VALUE]));
-                                                    continue;
+                                                    return false;
                                                 }
                                             }else{
                                                 MessageToast.show(Utility.getText("msg_failed_no_approver"));
-                                                continue;
+                                                return false;
                                             }
                                         }
                                     }
@@ -576,6 +576,7 @@ sap.ui.define([
             }else{
                 MessageToast.show(Utility.getText("msg_failed_no_workflow"));
             }
+            return true;
 			
         },
         onPARApproverDetermination: async function (oController, oModel, sPARID, oEmployeeModel){
@@ -826,11 +827,11 @@ sap.ui.define([
                                                     aApproversDetails.push(oPopulatedEmployee);
                                                 }else{
                                                     MessageToast.show(Utility.getText("msg_failed_no_approver_details", [id.VALUE]));
-                                                    continue;
+                                                    return false;
                                                 }
                                             }else{
                                                 MessageToast.show(Utility.getText("msg_failed_no_approver"));
-                                                continue;
+                                                return false;
                                             }
                                         }
                                     }

@@ -1,5 +1,3 @@
-const { error } = require("@sap/cds");
-
 sap.ui.define([
 	"sap/ui/core/Fragment",
 	"sap/ui/core/Item",
@@ -2207,8 +2205,8 @@ sap.ui.define([
 				return;
 			}
 
-			if (this.byId("input_claimdetails_input_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_amount").getValue() == " " ||
-				this.byId("input_claimdetails_input_amount").getValue() == "" || this.byId("input_claimdetails_input_amount").getValue() == null) {
+			if (this.byId("input_claimdetails_input_actual_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_actual_amount").getValue() == " " ||
+				this.byId("input_claimdetails_input_actual_amount").getValue() == "" || this.byId("input_claimdetails_input_actual_amount").getValue() == null) {
 				// stop claim submission if amount is zero
 				MessageToast.show(Utility.getText("msg_claiminput_amount_zero"));
 				return;
@@ -3182,6 +3180,8 @@ sap.ui.define([
 										oCtx.setProperty("SUBMITTED_DATE", this._getHanaDate(submittedDate));
 									}
 									oMsg = Utility.getText("msg_claimsubmission_pending", []);
+								}else{
+									throw new Error(Utility.getText("msg_failed_no_approver"))
 								}
 							}
 							break;
@@ -3214,7 +3214,8 @@ sap.ui.define([
 				}
 
 			} catch (e) {
-				MessageToast.show(e.message);
+				// Sync with request error message
+				MessageToast.show(e.message || "Submission failed");
 			} finally {
 				BusyIndicator.hide();
 			}
