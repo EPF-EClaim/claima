@@ -1,3 +1,5 @@
+const { error } = require("@sap/cds");
+
 sap.ui.define([
 	"sap/ui/core/Fragment",
 	"sap/ui/core/Item",
@@ -3082,6 +3084,7 @@ sap.ui.define([
 				const oModel = this.getOwnerComponent().getModel();
 				var oListBinding;
 				var claimSaved;
+				var bApproversDetermined = true;
 
 				if (oInputModel.getProperty("/is_new")) {
 					oListBinding = oModel.bindList("/ZCLAIM_HEADER");
@@ -3092,19 +3095,23 @@ sap.ui.define([
 								MessageToast.show(Utility.getText("msg_claimsubmission_created"));
 								break;
 							case 'Submit Report':
-								MessageToast.show(Utility.getText("msg_claimsubmission_pending"));
+								// move approver determination function before claim is saved
+								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
+								// else, do not send message claim submission pending
+								// instead, jump to catch statement with error no approver found
+								var oModelAppr = this.getView().getModel();
+								var oEmployeeViewModel = this.getView().getModel("employee_view");
+								bApproversDetermined = await workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
+								if(bApproversDetermined){	
+									MessageToast.show(Utility.getText("msg_claimsubmission_pending"));
+								}else{
+									throw new Error(Utility.getText("msg_failed_no_approver"))
+								}
 								break;
 							default:
 								throw new Error("Invalid action selected: " + oAction);
 						}
 						await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
-
-						// determine claims approver
-						if (oAction === 'Submit Report') {
-							var oModelAppr = this.getView().getModel();
-							var oEmployeeViewModel = this.getView().getModel("employee_view");
-							workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
-						}
 						MessageToast.show(oMsg);
 						this._onNavBack();
 					}).catch(err => {
@@ -3161,12 +3168,21 @@ sap.ui.define([
 								return;
 							}
 							else {
-								oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-								if (oCtx.getProperty("SUBMITTED_DATE", null)) {
-									var submittedDate = this._getJsonDate(new Date());
-									oCtx.setProperty("SUBMITTED_DATE", this._getHanaDate(submittedDate));
+
+								// move approver determination function before claim is saved
+								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
+								// else, do not change claim status
+								var oModelAppr = this.getView().getModel();
+								var oEmployeeViewModel = this.getView().getModel("employee_view");
+								var bApproversDetermined = await workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
+								if(bApproversDetermined){
+									oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+									if (oCtx.getProperty("SUBMITTED_DATE", null)) {
+										var submittedDate = this._getJsonDate(new Date());
+										oCtx.setProperty("SUBMITTED_DATE", this._getHanaDate(submittedDate));
+									}
+									oMsg = Utility.getText("msg_claimsubmission_pending", []);
 								}
-								oMsg = Utility.getText("msg_claimsubmission_pending", []);
 							}
 							break;
 						default:
@@ -3174,13 +3190,6 @@ sap.ui.define([
 					}
 
 					await oModel.submitBatch("$auto");
-
-					// determine claims approver
-					if (oAction === 'Submit Report') {
-						var oModelAppr = this.getView().getModel();
-						var oEmployeeViewModel = this.getView().getModel("employee_view");
-						workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
-					}
 
 					MessageToast.show(oMsg);
 					//// change status based on oAction
