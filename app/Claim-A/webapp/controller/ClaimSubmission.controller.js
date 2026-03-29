@@ -4373,7 +4373,7 @@ sap.ui.define([
 						if (oColumn.type === "date") return that._toDate(oItem[oColumn.property]);
 						if (oColumn.type === "time") return that._toTime(oItem[oColumn.property]);
 						if (oColumn.type === "number") return _num(oItem[oColumn.property]);
-						if (oColumn.type === "descr") return oItem["descr"][oColumn.property];
+						if (oColumn.type === "descr") return (oItem["descr"][oColumn.property] || oItem[oColumn.property]);
 						return oItem[oColumn.property] ?? "";
 					});
 				});
