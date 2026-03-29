@@ -348,4 +348,12 @@ service eclaim_srv @(requires: 'authenticated-user'){
 
 
     // action WorkflowApproval(ClaimID: String) returns Response;
+
+    type eligibleCheck {
+        MOBILE_BILL_ELIGIBLE    : Boolean;
+        MOBILE_BILL_ELIG_AMOUNT : Decimal(15, 2);
+    }
+
+    function checkEligibleMobileClaim(sEmployeeId: String) returns String; 
+
 };

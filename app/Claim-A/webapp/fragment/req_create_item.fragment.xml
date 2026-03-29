@@ -100,14 +100,17 @@
                                 <!-- Estimated Amount -->
                                 <form:FormElement label="{i18n>req_i_est_amt}"
                                             visible="false"
-                                            id="i_amount"  >
+                                            id="i_amount"
+                                            tooltip="(This value is automatically reflected)"   >
                                     <form:fields>
-                                        <m:Input 
-                                            type="Number" 
-                                            textAlign="Begin" 
-                                            required="true" 
-                                            enabled="false"
-                                            value="{request>/req_item/est_amount}"/>
+                                        <Text text="RM {
+                                            path: 'request>/req_item/est_amount',
+                                            type: 'sap.ui.model.type.Float',
+                                            formatOptions: {
+                                                minFractionDigits: 2,
+                                                maxFractionDigits: 2
+                                                }
+                                            } &#10; {i18n>req_i_est_amount_note}"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -443,7 +446,8 @@
                                             items="{path: 'employee>/ZVEHICLE_TYPE',
                                                     sorter: { path: 'VEHICLE_TYPE_ID', descending: false },
                                                     filters: [
-                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
+                                            change="getRatePerKM" >
                                             <items>
                                                 <core:Item key="{employee>VEHICLE_TYPE_ID}" 
                                                         text="{employee>VEHICLE_TYPE_DESC}" />
@@ -503,7 +507,7 @@
                                     <form:fields>
                                         <Input 
                                             required="true" 
-                                            value="{request>/req_header/kilometer}"
+                                            value="{request>/req_item/kilometer}"
                                             type="Number" />
                                     </form:fields>
                                 </form:FormElement>
@@ -513,8 +517,14 @@
                                             visible="false"
                                             id="i_rate_per_kilometer" >
                                     <form:fields>
-                                        <Text 
-                                            text="{request>/req_header/rate_per_kilometer}" />
+                                        <Text text="RM {
+                                            path: 'request>/req_item/rate_per_kilometer',
+                                            type: 'sap.ui.model.type.Float',
+                                            formatOptions: {
+                                                minFractionDigits: 2,
+                                                maxFractionDigits: 2
+                                            }
+                                        }" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -589,7 +599,8 @@
                                             items="{path: 'employee>/ZSTATE',
                                                     sorter: { path: 'STATE_ID', descending: false },
                                                     filters: [
-                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}" >
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}" 
+                                            change=".getFromLocationByState" >
                                             <items>
                                                 <core:Item key="{employee>STATE_ID}" 
                                                         text="{employee>STATE_DESC}" />
@@ -616,11 +627,21 @@
                                             visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/KWSP}}"
                                             id="i_from_location_office" >
                                     <form:fields>
-                                        <m:Input 
+                                        <Select 
+                                            id="item_from_location_office"
+                                            selectedKey="{request>/req_item/from_location_office}" 
                                             required="true" 
-                                            textAlign="Begin" 
+                                            forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/from_location_office}"/>
+                                            items="{
+                                                    path: 'employee>/ZOFFICE_LOCATION',
+                                                    sorter: { path: 'LOCATION_ID', descending: false }
+                                            }" >
+                                            <items>
+                                                <core:Item key="{employee>LOCATION_ID}" 
+                                                        text="{employee>LOCATION_DESC}" />
+                                            </items>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -637,7 +658,8 @@
                                             items="{path: 'employee>/ZSTATE',
                                                     sorter: { path: 'STATE_ID', descending: false },
                                                     filters: [
-                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
+                                            change=".getToLocationByState" >
                                             <items>
                                                 <core:Item key="{employee>STATE_ID}" 
                                                         text="{employee>STATE_DESC}" />
@@ -664,11 +686,19 @@
                                             visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/KWSP}}"
                                             id="i_to_location_office"  >
                                     <form:fields>
-                                        <m:Input 
+                                        <Select 
+                                            id="item_to_location_office"
+                                            selectedKey="{request>/req_item/to_location_office}" 
                                             required="true" 
-                                            textAlign="Begin" 
+                                            forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/to_location_office}"/>
+                                            items="{path: 'employee>/ZOFFICE_LOCATION',
+                                                    sorter: { path: 'LOCATION_ID', descending: false }}" >
+                                            <items>
+                                                <core:Item key="{employee>LOCATION_ID}" 
+                                                        text="{employee>LOCATION_DESC}" />
+                                            </items>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 

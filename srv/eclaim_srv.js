@@ -66,7 +66,7 @@ module.exports = (srv) => {
                 req.user?.attr?.login_name ||
                 req.user?.id ||
                 "";
-            const user = req.user;
+
             let sOrigin = null;
 
             try {
@@ -95,8 +95,7 @@ module.exports = (srv) => {
                     position: "UNKNOWN",
                     origin: sOrigin,
                     grade: "UNKNOWN",
-                    department: "UNKNOWN",
-                    user: user
+                    department: "UNKNOWN"
                 };
             }
 
@@ -114,15 +113,12 @@ module.exports = (srv) => {
                 position: result?.POSITION_NAME || "UNKNOWN",
                 origin: sOrigin,
                 grade: result?.GRADE || "UNKNOWN",
-                department: dept?.DEPARTMENT_DESC || "UNKNOWN", 
-                user: user
+                department: dept?.DEPARTMENT_DESC || "UNKNOWN"
             };
         });
 
     srv.on('READ', 'FeatureControl', async (req) => {
         const { ZEMP_MASTER } = srv.entities;
-        const userRoles = req.user.roles;
-
         const emailFromToken = req.user?.attr?.email || req.user?.id || "";
         const email = String(emailFromToken).trim().toLowerCase();
         const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
@@ -145,18 +141,12 @@ module.exports = (srv) => {
 
     srv.on('READ', 'BudgetControl', async (req) => {
         const { ZEMP_MASTER } = srv.entities;
-        const userRoles = req.user.roles;
-        
         const emailFromToken = req.user?.attr?.email || req.user?.id || "";
         const email = String(emailFromToken).trim().toLowerCase();
         const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
         const user_type = result?.USER_TYPE;
 
-        let operationHidden = false;
-        
-        if(req.user.is(Constant.Admin.Admin_CC)){
-            operationHidden = true;
-        }
+        let operationHidden = (user_type === Constant.UserType.GA_ADMIN);
         return {
             operationHidden: operationHidden,
             operationEnabled: !operationHidden,
@@ -590,6 +580,34 @@ module.exports = (srv) => {
         const requestId = req.data.REQUEST_ID;
         if (requestId) {
             await updateHeaderTotals(req, requestId, tx);
+        }
+    });
+
+    srv.on('checkEligibleMobileClaim', async (req) => {
+        const { sEmployeeId } = req.data; 
+
+        if (!sEmployeeId) {
+            return req.error(400, 'Please provide an Employee ID.');
+        }
+
+        try {
+            const employeeRecord = await SELECT.one('MOBILE_BILL_ELIGIBILITY', 'MOBILE_BILL_ELIG_AMOUNT')
+                .from('ZEMP_MASTER')
+                .where({ EEID: sEmployeeId }); 
+
+            if (!employeeRecord) {
+                return req.error(404, `Employee with ID ${sEmployeeId} not found in master data.`);
+            }
+
+            return {
+                eligible: employeeRecord.MOBILE_BILL_ELIGIBILITY,
+                amount: employeeRecord.MOBILE_BILL_ELIG_AMOUNT
+            };
+
+        } catch (error) {
+            // Handle unexpected database or server errors
+            console.error('Error fetching mobile eligibility:', error);
+            return req.error(500, 'An error occurred while checking eligibility.');
         }
     });
 

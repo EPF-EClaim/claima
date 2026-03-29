@@ -22,6 +22,8 @@ sap.ui.define([
 			data.req_header = data.req_header;
 			data.req_item_rows = [];
 			data.req_item = data.req_item || {
+				est_amount: 0,
+				rate_per_kilometer: 0,
 				cash_advance: false
 			};
 			data.participant = Array.isArray(data.participant) ? data.participant : [{ PARTICIPANTS_ID: "", ALLOCATED_AMOUNT: "" }];
@@ -221,6 +223,13 @@ sap.ui.define([
 					
 						case oController._oConstant.RequestStatus.APPROVED:			// approved
 							bShowBackScr	= true;
+							break;
+
+						case oController._oConstant.RequestStatus.SEND_BACK:		// send back
+							bShowBack   	= true;
+							bShowDelete 	= true;
+							bShowSubmit 	= true;
+							oController._oReqModel.setProperty("/view", oController._oConstant.PARMode.LIST);
 							break;
 
 						default:

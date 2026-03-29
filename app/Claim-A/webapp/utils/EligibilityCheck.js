@@ -162,6 +162,27 @@ sap.ui.define([
 			}
 
 			return bIsEligible;
+		},
+
+		async onCheckEligibility (oController) {
+			const sEmployeeId = oController._oSessionModel.getProperty("/userId");
+
+			try {
+				const oFunction = oController._oDataModel.bindContext("/checkEligibleMobileClaim(...)");
+				
+				oFunction.setParameter("sEmployeeId", sEmployeeId);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				const oResult = oContext.getObject();
+
+				return oResult.eligible;
+
+
+			} catch (oError) {
+				console.error("Failed to check eligibility", oError);
+			}
 		}
 
     };

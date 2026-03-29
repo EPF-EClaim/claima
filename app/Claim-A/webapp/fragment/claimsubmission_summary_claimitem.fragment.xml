@@ -101,15 +101,6 @@
                     <Text text="{i18n>columntext_claimsummary_remarks}" />
                 </Column>
 
-                <!-- Attachment 1 -->
-                <Column>
-                    <Text text="{i18n>columntext_claimsummary_attachment1}" />
-                </Column>
-
-                <!-- Attachment 2 -->
-                <Column>
-                    <Text text="{i18n>columntext_claimsummary_attachment2}" />
-                </Column>
             </columns>
 
             <items>
@@ -147,23 +138,6 @@
                         <!-- Remarks -->
                         <Text text="{claimsubmission_input>remark}" />
 
-                        <!-- Attachment 1 -->
-                        <Button
-                            id="button_claimsummary_attachment1"
-                            icon="sap-icon://attachment"
-                            text="{i18n>button_claimdetails_input_viewattachment}"
-                            press="onView_Claim_Attachment('child','1', ${claimsubmission_input>claim_sub_id})"
-                            enabled="{= ${claimsubmission_input>attachment_file_1} !== null }"
-                        />
-
-                        <!-- Attachment 2 -->
-                        <Button
-                            id="button_claimsummary_attachment2"
-                            icon="sap-icon://attachment"
-                            text="{i18n>button_claimdetails_input_viewattachment}"
-                            press="onView_Claim_Attachment('child','2', ${claimsubmission_input>claim_sub_id})"
-                            enabled="{= ${claimsubmission_input>attachment_file_2} !== null }"
-                        />
                     </cells>
                 </ColumnListItem>
             </items>
