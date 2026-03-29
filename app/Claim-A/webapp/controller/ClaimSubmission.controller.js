@@ -2347,17 +2347,14 @@ sap.ui.define([
 
 			try {
 				const sAttachmentNumber = await Attachment.postAttachment(sFileName, sFileBinary, this._oSessionModel.getProperty("/userId"));
+				const sAttachmentString = `${sAttachmentNumber} - ${sFileName}`;
+				oInputModel.setProperty(`${sClaimItemPathPrefix}`, sAttachmentString);
+				oInputModel.setProperty(`${sClaimItemPathPrefix.replace("/claim_item/", "/claim_item/descr/")}`, sFileName);
 			}catch(oError){
 				BusyIndicator.hide();
 				MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_error"));
 				return false;   // stop further processing
 			}
-
-			// success
-			const sAttachmentString = `${sAttachmentNumber} - ${sFileName}`;
-
-			oInputModel.setProperty(`${sClaimItemPathPrefix}`, sAttachmentString);
-			oInputModel.setProperty(`${sClaimItemPathPrefix.replace("/claim_item/", "/claim_item/descr/")}`, sFileName);
 
 			BusyIndicator.hide();
 			return true;
