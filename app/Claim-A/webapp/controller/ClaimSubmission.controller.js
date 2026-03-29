@@ -331,11 +331,12 @@ sap.ui.define([
 				// Header
 				const oHeaderRaw = aHeaderCtx[0]?.getObject();
 				if (!oHeaderRaw) {
-					console.error("Failed to load claim submission ", sClaimId);
+					var _oRouter = this.getOwnerComponent().getRouter();
+					console.error("Failed to load claim submission!");
 					oClaimSubmissionModel.setProperty("/claim_header", {});
 					oClaimSubmissionModel.setProperty("/claim_items", []);
 					oClaimSubmissionModel.setProperty("/claim_items_count", 0);
-					return { header: null, items: [] };
+					_oRouter.navTo("ClaimStatus", {}, {}, true);
 				}
 
 				const oHeader = this._mapClaimHeaderToForm(oHeaderRaw);
@@ -2241,11 +2242,41 @@ sap.ui.define([
 				return;
 			}
 
-			if (isNaN(this.byId("input_claimdetails_input_amount").getValue()) || this.byId("input_claimdetails_input_amount").getValue() <= 0 ) {
-				// stop claim submission if amount is zero or less
-				MessageToast.show(Utility.getText("msg_claiminput_amount_invalid"));
-				return;
+			// Reuben (FUT Issue 17)
+			// When creating claim for post education assistance, actual amount is used instead of amount for input
+			// To resolve issue, check first if the element is visible and active before performing the value check
+			// Also will check for actual_amount as this is specific to post education asssistance scenario
+			// will create a variable to store the IDs of elements for future ease of use
+
+			const oInputAmountField = this.byId("input_claimdetails_input_amount");
+			const oInputActualAmountField = this.byId("input_claimdetails_input_actual_amount");
+
+			// Check for amount field visibility and value
+			if(oInputAmountField && oInputAmountField.getVisible()){
+				const sInputAmount = oInputAmountField.getValue()?.trim();
+				if(!isNaN(sInputAmount) || sInputAmount <= 0 ){
+				// if (isNaN(this.byId("input_claimdetails_input_amount").getValue()) || this.byId("input_claimdetails_input_amount").getValue() <= 0 ) {
+					// stop claim submission if amount is zero or less
+					MessageToast.show(Utility.getText("msg_claiminput_amount_invalid"));
+					return;
+				}
 			}
+
+			// Check for actual amount field visibility and value
+			if(oInputActualAmountField && oInputActualAmountField.getVisible()){
+				const sInputActualAmount = oInputActualAmountField.getValue()?.trim();
+				if(!sInputActualAmount || sInputActualAmount === "0.00" ){
+				//if (this.byId("input_claimdetails_input_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_amount").getValue() == " " ||
+				//	this.byId("input_claimdetails_input_amount").getValue() == "" || this.byId("input_claimdetails_input_amount").getValue() == null) {
+					// stop claim submission if amount is zero
+					MessageToast.show(Utility.getText("msg_claiminput_amount_zero"));
+					return;
+				}
+			}
+
+			// Reuben End Issue 17
+
+			
 
 			// Eligibility Checking
 			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM);
@@ -2700,6 +2731,11 @@ sap.ui.define([
 
 		onSelect_ClaimDetails_Region: async function () {
 			await this._calculatePerDiem();
+		},
+
+		onSelect_ClaimDetails_LocationType: function (oEvent) {
+			var key = oEvent.getSource().getSelectedKey();
+			this.getView().getModel("claimitem_input").setProperty("/claim_item/location_type", key);
 		},
 
 		_calculatePerDiem: async function () {
@@ -3204,6 +3240,7 @@ sap.ui.define([
 				const oModel = this.getOwnerComponent().getModel();
 				var oListBinding;
 				var claimSaved;
+				var bApproversDetermined = true;
 
 				if (oInputModel.getProperty("/is_new")) {
 					oListBinding = oModel.bindList("/ZCLAIM_HEADER");
@@ -3214,19 +3251,23 @@ sap.ui.define([
 								MessageToast.show(Utility.getText("msg_claimsubmission_created"));
 								break;
 							case 'Submit Report':
-								MessageToast.show(Utility.getText("msg_claimsubmission_pending"));
+								// move approver determination function before claim is saved
+								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
+								// else, do not send message claim submission pending
+								// instead, jump to catch statement with error no approver found
+								var oModelAppr = this.getView().getModel();
+								var oEmployeeViewModel = this.getView().getModel("employee_view");
+								bApproversDetermined = await workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
+								if(bApproversDetermined){	
+									MessageToast.show(Utility.getText("msg_claimsubmission_pending"));
+								}else{
+									throw new Error(Utility.getText("msg_failed_no_approver"))
+								}
 								break;
 							default:
 								throw new Error("Invalid action selected: " + oAction);
 						}
 						await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
-
-						// determine claims approver
-						if (oAction === 'Submit Report') {
-							var oModelAppr = this.getView().getModel();
-							var oEmployeeViewModel = this.getView().getModel("employee_view");
-							workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
-						}
 						MessageToast.show(oMsg);
 						this._onNavBack();
 					}).catch(err => {
@@ -3283,12 +3324,23 @@ sap.ui.define([
 								return;
 							}
 							else {
-								oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
-								if (oCtx.getProperty("SUBMITTED_DATE", null)) {
-									var submittedDate = this._getJsonDate(new Date());
-									oCtx.setProperty("SUBMITTED_DATE", this._getHanaDate(submittedDate));
+
+								// move approver determination function before claim is saved
+								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
+								// else, do not change claim status
+								var oModelAppr = this.getView().getModel();
+								var oEmployeeViewModel = this.getView().getModel("employee_view");
+								var bApproversDetermined = await workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
+								if(bApproversDetermined){
+									oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.PENDING_APPROVAL);
+									if (oCtx.getProperty("SUBMITTED_DATE", null)) {
+										var submittedDate = this._getJsonDate(new Date());
+										oCtx.setProperty("SUBMITTED_DATE", this._getHanaDate(submittedDate));
+									}
+									oMsg = Utility.getText("msg_claimsubmission_pending", []);
+								}else{
+									throw new Error(Utility.getText("msg_failed_no_approver"))
 								}
-								oMsg = Utility.getText("msg_claimsubmission_pending", []);
 							}
 							break;
 						default:
@@ -3296,13 +3348,6 @@ sap.ui.define([
 					}
 
 					await oModel.submitBatch("$auto");
-
-					// determine claims approver
-					if (oAction === 'Submit Report') {
-						var oModelAppr = this.getView().getModel();
-						var oEmployeeViewModel = this.getView().getModel("employee_view");
-						workflowApproval.onClaimsApproverDetermination(this, oModelAppr, oInputModel.getProperty("/claim_header/claim_id"), oEmployeeViewModel);
-					}
 
 					MessageToast.show(oMsg);
 					//// change status based on oAction
@@ -3327,7 +3372,8 @@ sap.ui.define([
 				}
 
 			} catch (e) {
-				MessageToast.show(e.message);
+				// Sync with request error message
+				MessageToast.show(e.message || "Submission failed");
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -3850,6 +3896,30 @@ sap.ui.define([
 					});
 				} else {
 					this._setAllControlsVisible(false);
+				}
+
+				// ------------------------------------------------------------------
+				// Force correct visibility of state & location fields on screen load
+				// ------------------------------------------------------------------
+				var sLocType = oInputModel.getProperty("/claim_item/location_type");
+
+				switch (sLocType) {
+					case this._oConstant.LocationType.OTHER:	// Other Location
+						this.byId("select_claimdetails_input_from_state_id")?.setVisible(false);
+						this.byId("select_claimdetails_input_to_state_id")?.setVisible(false);
+						this.byId("select_claimdetails_input_from_location")?.setVisible(false);
+						this.byId("select_claimdetails_input_to_location")?.setVisible(false);
+						break;
+
+					case this._oConstant.LocationType.KWSP:		// KWSP Office
+						this.byId("input_claimdetails_input_from_location")?.setVisible(false);
+						this.byId("input_claimdetails_input_to_location")?.setVisible(false);
+						break;
+
+					default:
+						this.byId("input_claimdetails_input_from_location")?.setVisible(false);
+						this.byId("input_claimdetails_input_to_location")?.setVisible(false);
+						break;
 				}
 
 			} catch (err) {

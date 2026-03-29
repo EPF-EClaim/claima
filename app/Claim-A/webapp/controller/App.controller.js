@@ -20,7 +20,8 @@ sap.ui.define([
 	"sap/ui/core/Icon",
 	"claima/utils/Utility",
 	"claima/utils/PARequestSharedFunction",
-	"claima/utils/Attachment"
+	"claima/utils/Attachment",
+	"claima/utils/EligibilityCheck"
 ], function (
 	Popover,
 	Button,
@@ -43,7 +44,8 @@ sap.ui.define([
 	Icon,
 	Utility,
 	PARequestSharedFunction,
-	Attachment
+	Attachment,
+	EligibilityCheck
 ) {
 	"use strict";
 
@@ -72,6 +74,7 @@ sap.ui.define([
 
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
+			
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
@@ -689,6 +692,16 @@ sap.ui.define([
 			}
 			if (this.byId("switch_claimprocess_req_emailapprove").getEnabled()) {
 				oInputModel.setProperty("/claimtype/req_emailapprove", this.byId("switch_claimprocess_req_emailapprove").getState());
+			}
+
+			// Mobile Eligibility Pre-check
+			var sClaimType = oInputModel.getProperty("/claimtype/type")
+			if (sClaimType === this._oConstant.ClaimType.HANDPHONE) {
+				var bEligible = await EligibilityCheck.onCheckEligibility(this);
+				if (!bEligible) {
+					MessageBox.warning(Utility.getText("warning_msg_mobile_not_eligible"));
+					return;
+				}
 			}
 
 			// close Claim Process dialog
@@ -1328,7 +1341,6 @@ sap.ui.define([
 		// ==================================================
 
 		onClickMyRequest: async function () {
-			// PARequestSharedFunction._ensureRequestModelDefaults(this._oReqModel);
 
 			if (!this.oDialogFragment) {
 				this.oDialogFragment = await Fragment.load({
@@ -1350,6 +1362,7 @@ sap.ui.define([
 
 			this.oDialogFragment.addStyleClass('requestDialog');
 			this.oDialogFragment.open();
+			this._applyReqTypeFilters(this._oSessionModel.getProperty("/userType"));
 		},
 
 		onClickCreateRequest: async function () {
@@ -1535,6 +1548,26 @@ sap.ui.define([
 				return null; // Return null so the app doesn't crash
 			}
 		},
+
+		_applyReqTypeFilters: function (sUserType) {
+            var oSelect = Fragment.byId("request", "req_reqtype");
+            
+            var oBinding = oSelect.getBinding("items");
+
+            if (!oBinding) {
+                return;
+            }
+
+            var aFilters = [
+                new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
+            ];
+
+            if (sUserType !== this._oConstant.Role.GA_ADMIN) {
+                aFilters.push(new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.MOBILE));
+            }
+
+            oBinding.filter(aFilters);
+        },
 
 		_loadClaimTypeSelectionData: function (sReqType) {
 			if (!sReqType) return;

@@ -339,21 +339,28 @@ sap.ui.define([
 								// budget checking
 								var aResult = await budgetCheck.backendBudgetChecking(this, "REQ");
 								var oErrorHandling = budgetCheck.budgetCheckHandling(aResult);
+								var bApproversDetermined = true;
 
 								if (oErrorHandling.bCanProceed) {
 
+									// move approver determination function before claim is saved
+									// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
+									// else, do not change claim status
 									// update status to PENDING APPROVAL
-									await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
-									await Utility._updateSubmittedDate(this._oDataModel, sReqId);
-
-									// Add in onPARApproverDetermination function
 									var oModel = this.getView().getModel();
 									var oEmployeeViewModel = this.getView().getModel("employee_view");
 									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
-									await workflowApproval.onPARApproverDetermination(this, oModel, sCurrentReqId, oEmployeeViewModel);
-									
-									// this._oReqModel.setProperty("/req_header/reqstatus", this._oConstant.ClaimStatus.PENDING_APPROVAL)
-									await this._loadRequest(sCurrentReqId);
+									bApproversDetermined = await workflowApproval.onPARApproverDetermination(this, oModel, sCurrentReqId, oEmployeeViewModel);
+									if(bApproversDetermined){
+										await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
+										await Utility._updateSubmittedDate(this._oDataModel, sReqId);
+										this._oReqModel.setProperty("/view", 'view');
+										
+										// this._oReqModel.setProperty("/req_header/reqstatus", this._oConstant.ClaimStatus.PENDING_APPROVAL)
+										await this._loadRequest(sCurrentReqId);
+									}else{
+										throw new Error(Utility.getText("msg_failed_no_approver"))
+									}
 
 								} else {
 									MessageBox.warning(Utility.getText("req_tm_w_inform_cc_owner", oErrorHandling.aClaimTypeItem));
@@ -451,6 +458,8 @@ sap.ui.define([
 			const sHeaderGrpType = oReqData.req_header.grptype;
 
 			oReqData.req_item = {
+				est_amount: 0,
+				rate_per_kilometer: 0,
 				cash_advance: false
 			};
 
@@ -1885,7 +1894,7 @@ sap.ui.define([
 			}).catch(err => console.error("RequestType Load Failed", err));
 		},
 
-		calculateNumberOfHours: function() {
+		calculateNumberOfHours () {
 			const oItem = this._oReqModel.getProperty("/req_item") || {};
 
 			const sDeparture = oItem.departure_time;
@@ -1916,6 +1925,58 @@ sap.ui.define([
 
 			// 7. Save it back to the JSON model
 			this._oReqModel.setProperty("/req_item/no_of_hours", fHours);
+		},
+
+		getFromLocationByState () {
+            var oSelect = this.byId("item_from_location_office");
+            
+            var oBinding = oSelect.getBinding("items");
+
+            if (!oBinding) {
+                return;
+            }
+
+            var aFilters = [
+                new Filter("STATUS", FilterOperator.EQ, "ACTIVE"),
+				new Filter("STATE_ID", FilterOperator.EQ, this._oReqModel.getProperty("/req_item/from_state"))
+            ];
+
+            oBinding.filter(aFilters);
+        },
+
+		getToLocationByState () {
+            var oSelect = this.byId("item_to_location_office");
+            
+            var oBinding = oSelect.getBinding("items");
+
+            if (!oBinding) {
+                return;
+            }
+
+            var aFilters = [
+                new Filter("STATUS", FilterOperator.EQ, "ACTIVE"),
+				new Filter("STATE_ID", FilterOperator.EQ, this._oReqModel.getProperty("/req_item/to_state"))
+            ];
+
+            oBinding.filter(aFilters);
+        },
+
+		async getRatePerKM () {
+			var sVehicleType = this._oReqModel.getProperty("/req_item/type_of_vehicle");
+			const oListBinding = this._oDataModel.bindList("/ZRATE_KM", null, null, [
+				new sap.ui.model.Filter("VEHICLE_TYPE_ID", "EQ", sVehicleType)
+			]);
+
+			try {
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					this._oReqModel.setProperty("/req_item/rate_per_kilometer", oData.RATE);
+				}
+			} catch (oError) {
+				console.error("Error fetching Rate Per KM detail", oError);
+			}
 		},
 
 		/* =========================================================

@@ -337,6 +337,36 @@
 					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_insurance_cert_start_date','datepicker_claimdetails_input_insurance_cert_end_date')"
 				/>
 
+				<!-- Mode of Transfer-->
+				<Label text="{i18n>req_i_transfer_mode}" />
+				<Select 
+					id="input_claimdetails_mode_of_transfer"
+					selectedKey="{claimitem_input>/claim_item/mode_of_transfer}"
+					forceSelection="false"
+					enabled="false"
+					visible="false"
+					items="{path: 'employee>/ZTRANSFER_MODE',
+							sorter: { path: 'TRANSFER_MODE_ID', descending: false },
+							filters: [
+								{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+					<items>
+						<core:Item key="{employee>TRANSFER_MODE_ID}" 
+								text="{employee>TRANSFER_MODE_DESC}" />
+					</items>
+				</Select>
+
+				<Label text="{i18n>req_i_tarikh_pindah}"
+                                            id="i_tarikh_pindah"/>
+				<DatePicker
+					id="input_claimdetails_transfer_date"
+					displayFormat="dd MMM yyyy"
+					valueFormat="yyyy-MM-dd"
+					placeholder="eg: 01 Jan 1990"
+					value="{claimitem_input>/claim_item/transfer_date}"
+					textAlign="Begin"
+					visible="false"
+					enabled="false"/>
+
 				<!-- Number of Days -->
 				<Label text="{i18n>label_claimdetails_input_no_of_days}" />
 				<Input
@@ -498,7 +528,7 @@
 				<Input
 					id="input_claimdetails_input_from_location"
 					value="{claimitem_input>/claim_item/from_location}"
-					visible="false"
+					visible="{= ${claimitem_input>/claim_item/location_type} === '1'}"
 					required="true"
 				/>
 				<Label text="{i18n>label_claimdetails_input_from_location_office}" />
@@ -536,7 +566,7 @@
 				<Input
 					id="input_claimdetails_input_to_location"
 					value="{claimitem_input>/claim_item/to_location}"
-					visible="false"
+					visible="{= ${claimitem_input>/claim_item/location_type} === '1'}"
 					required="true"
 				/>
 				<Label text="{i18n>label_claimdetails_input_to_location_office}" />
