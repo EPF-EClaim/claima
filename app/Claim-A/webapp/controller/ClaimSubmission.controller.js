@@ -2301,20 +2301,6 @@ sap.ui.define([
 			);
 			if (!bUploadAttachment2) return; // stop processing if upload fails for attachment 2
 
-
-			if (iAttachmentNumber) {
-				var sAttachmentString = iAttachmentNumber + ' - ' + oInputModel.getProperty("/attachments/attachment2/fileName");
-				oInputModel.setProperty("/claim_item/attachment_file_2", sAttachmentString);
-				oInputModel.setProperty("/claim_item/descr/attachment_file_2", oInputModel.getProperty("/attachments/attachment2/fileName"));
-				BusyIndicator.hide();
-			}
-			else {
-				MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_error"));
-				// don't proceed claim item if attachment upload fails
-				BusyIndicator.hide();
-				return;
-			}
-
 			// get claim item sub ID
 			if (oInputModel.getProperty("/is_new")) {
 				oInputModel.setProperty("/claim_item/claim_id", oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
