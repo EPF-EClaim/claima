@@ -274,12 +274,13 @@
 				/>
 
 				<!-- Mode of Transfer-->
-				<Label text="{i18n>label_claimdetails_mode_of_transfer}" />
+				<Label text="{i18n>req_i_transfer_mode}" />
 				<Select 
 					id="input_claimdetails_mode_of_transfer"
 					selectedKey="{claimitem_input>/claim_item/mode_of_transfer}"
 					forceSelection="false"
 					enabled="false"
+					visible="false"
 					items="{path: 'employee>/ZTRANSFER_MODE',
 							sorter: { path: 'TRANSFER_MODE_ID', descending: false },
 							filters: [
@@ -292,7 +293,7 @@
 
 				<Label text="{i18n>req_i_tarikh_pindah}"
                                             id="i_tarikh_pindah"/>
-				<m:DatePicker
+				<DatePicker
 					id="input_claimdetails_transfer_date"
 					displayFormat="dd MMM yyyy"
 					valueFormat="yyyy-MM-dd"
