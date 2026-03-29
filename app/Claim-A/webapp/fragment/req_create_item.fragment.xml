@@ -100,13 +100,17 @@
                                 <!-- Estimated Amount -->
                                 <form:FormElement label="{i18n>req_i_est_amt}"
                                             visible="false"
-                                            id="i_amount"  >
+                                            id="i_amount"
+                                            tooltip="(This value is automatically reflected)"   >
                                     <form:fields>
-                                        <m:Input 
-                                            type="Number" 
-                                            textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/est_amount}"/>
+                                        <Text text="RM {
+                                            path: 'request>/req_item/est_amount',
+                                            type: 'sap.ui.model.type.Float',
+                                            formatOptions: {
+                                                minFractionDigits: 2,
+                                                maxFractionDigits: 2
+                                                }
+                                            } &#10; {i18n>req_i_est_amount_note}"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -150,6 +154,7 @@
                                     <form:fields>
                                         <m:Input 
                                             textAlign="Begin" 
+                                            required="true" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/course}"/>
                                     </form:fields>
@@ -183,6 +188,7 @@
                                             id="i_club_membership" >
                                     <form:fields>
                                         <CheckBox 
+                                            required="true" 
                                             selected="{request>/req_item/club_membership}"
                                             enabled="{= ${request>/view} !== 'view' }" />
                                     </form:fields>
@@ -195,14 +201,17 @@
                                     <form:fields>
                                         <unified:FileUploader
                                             change=".onImportChange1"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            required="true" 
+                                            maximumFileSize='5.0'
+					                        mimeType="application/pdf,image/png,image/jpeg"
                                             placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc1}"
                                             id="i_attachment_1_file" />
                                         <Link
                                             id="i_attachment1_link" 
                                             press="onDocLinkPress" 
-                                            text="{request>/req_item/doc1}"
-                                            class="sapUiTinyMarginTop"
+                                            text="{request>/req_item/doc1_filename}"
                                             visible="{= ${request>/req_item/doc1} !== null }" />
                                     </form:fields>
                                 </form:FormElement>
@@ -236,14 +245,16 @@
                                     <form:fields>
                                         <unified:FileUploader
                                             change=".onImportChange2"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            maximumFileSize='5.0'
+					                        mimeType="application/pdf,image/png,image/jpeg"
                                             placeholder="{i18n>req_attachment_format}"
                                             value="{request>/req_item/doc2}"
                                             id="i_attachment_2_file" />
                                         <Link
                                             id="i_attachment2_link" 
                                             press="onDocLinkPress" 
-                                            text="{request>/req_item/doc2}"
-                                            class="sapUiTinyMarginTop"
+                                            text="{request>/req_item/doc2_filename}"
                                             visible="{= ${request>/req_item/doc2} !== null }" />
                                     </form:fields>
                                 </form:FormElement>
@@ -269,6 +280,7 @@
                                             placeholder="eg: 01 Jan 1990"
                                             value="{request>/req_item/start_date}"
                                             textAlign="Begin"
+                                            required="true" 
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -284,6 +296,7 @@
                                             placeholder="eg: 01 Jan 1990"
                                             value="{request>/req_item/end_date}"
                                             textAlign="Begin"
+                                            required="true" 
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -363,18 +376,13 @@
                                             visible="false"
                                             id="i_country"  >
                                     <form:fields>
-                                        <Select 
-                                            selectedKey="{request>/req_item/country}" 
+                                        <mdc:Field
+                                            value="{request>/req_item/country}"
+                                            editMode="{= ${request>/view} === 'view' ? 'Display' : 'Editable' }"
+                                            display="ValueDescription"
                                             required="true" 
-                                            forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            items="{path: 'employee>/ZCOUNTRY',
-                                                    sorter: { path: 'COUNTRY_ID', descending: false }}">
-                                            <items>
-                                                <core:Item key="{employee>COUNTRY_ID}" 
-                                                        text="{employee>COUNTRY_DESC}" />
-                                            </items>
-                                        </Select>
+                                            valueHelp="valuehelp_country"
+                                        />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -438,7 +446,8 @@
                                             items="{path: 'employee>/ZVEHICLE_TYPE',
                                                     sorter: { path: 'VEHICLE_TYPE_ID', descending: false },
                                                     filters: [
-                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
+                                            change="getRatePerKM" >
                                             <items>
                                                 <core:Item key="{employee>VEHICLE_TYPE_ID}" 
                                                         text="{employee>VEHICLE_TYPE_DESC}" />
@@ -497,7 +506,8 @@
                                             id="i_kilometer" >
                                     <form:fields>
                                         <Input 
-                                            value="{request>/req_header/kilometer}"
+                                            required="true" 
+                                            value="{request>/req_item/kilometer}"
                                             type="Number" />
                                     </form:fields>
                                 </form:FormElement>
@@ -507,8 +517,14 @@
                                             visible="false"
                                             id="i_rate_per_kilometer" >
                                     <form:fields>
-                                        <Text 
-                                            text="{request>/req_header/rate_per_kilometer}" />
+                                        <Text text="RM {
+                                            path: 'request>/req_item/rate_per_kilometer',
+                                            type: 'sap.ui.model.type.Float',
+                                            formatOptions: {
+                                                minFractionDigits: 2,
+                                                maxFractionDigits: 2
+                                            }
+                                        }" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -556,6 +572,7 @@
                                             selectedKey="{request>/req_item/location_type}" 
                                             required="true" 
                                             forceSelection="false"
+                                            change=".onSelectLocationType"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             items="{path: 'employee>/ZLOC_TYPE',
                                                     sorter: { path: 'LOC_TYPE_ID', descending: false },
@@ -571,7 +588,7 @@
 
                                 <!-- From State -->
                                 <form:FormElement label="{i18n>req_i_from_state}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/KWSP}}"
                                             id="i_from_state" >
                                     <form:fields>
                                         <Select 
@@ -582,7 +599,8 @@
                                             items="{path: 'employee>/ZSTATE',
                                                     sorter: { path: 'STATE_ID', descending: false },
                                                     filters: [
-                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}" 
+                                            change=".getFromLocationByState" >
                                             <items>
                                                 <core:Item key="{employee>STATE_ID}" 
                                                         text="{employee>STATE_DESC}" />
@@ -593,10 +611,11 @@
 
                                 <!-- From Location -->
                                 <form:FormElement label="{i18n>req_i_from_location}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/OTHER}}"
                                             id="i_from_location" >
                                     <form:fields>
                                         <m:Input 
+                                            required="true" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/from_location}"/>
@@ -605,19 +624,30 @@
 
                                 <!-- From Location Office-->
                                 <form:FormElement label="{i18n>req_i_from_location_office}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/KWSP}}"
                                             id="i_from_location_office" >
                                     <form:fields>
-                                        <m:Input 
-                                            textAlign="Begin" 
+                                        <Select 
+                                            id="item_from_location_office"
+                                            selectedKey="{request>/req_item/from_location_office}" 
+                                            required="true" 
+                                            forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/from_location_office}"/>
+                                            items="{
+                                                    path: 'employee>/ZOFFICE_LOCATION',
+                                                    sorter: { path: 'LOCATION_ID', descending: false }
+                                            }" >
+                                            <items>
+                                                <core:Item key="{employee>LOCATION_ID}" 
+                                                        text="{employee>LOCATION_DESC}" />
+                                            </items>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 
                                 <!-- To State -->
                                 <form:FormElement label="{i18n>req_i_to_state}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/KWSP}}"
                                             id="i_to_state" >
                                     <form:fields>
                                         <Select 
@@ -628,7 +658,8 @@
                                             items="{path: 'employee>/ZSTATE',
                                                     sorter: { path: 'STATE_ID', descending: false },
                                                     filters: [
-                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
+                                            change=".getToLocationByState" >
                                             <items>
                                                 <core:Item key="{employee>STATE_ID}" 
                                                         text="{employee>STATE_DESC}" />
@@ -639,10 +670,11 @@
 
                                 <!-- To Location -->
                                 <form:FormElement label="{i18n>req_i_to_location}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/OTHER}}"
                                             id="i_to_location"  >
                                     <form:fields>
                                         <m:Input 
+                                            required="true" 
                                             textAlign="Begin" 
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/to_location}"/>
@@ -651,13 +683,22 @@
 
                                 <!-- To Location Office -->
                                 <form:FormElement label="{i18n>req_i_to_location_office}"
-                                            visible="false"
+                                            visible="{= ${request>/req_item/location_type} === ${constant>/LocationType/KWSP}}"
                                             id="i_to_location_office"  >
                                     <form:fields>
-                                        <m:Input 
-                                            textAlign="Begin" 
+                                        <Select 
+                                            id="item_to_location_office"
+                                            selectedKey="{request>/req_item/to_location_office}" 
+                                            required="true" 
+                                            forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/to_location_office}"/>
+                                            items="{path: 'employee>/ZOFFICE_LOCATION',
+                                                    sorter: { path: 'LOCATION_ID', descending: false }}" >
+                                            <items>
+                                                <core:Item key="{employee>LOCATION_ID}" 
+                                                        text="{employee>LOCATION_DESC}" />
+                                            </items>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -667,8 +708,7 @@
                                             id="i_mode_of_transfer" >
                                     <form:fields>
                                         <Select 
-                                            selectedKey="{request>/req_item/mode_of_transfer}" 
-                                            required="true" 
+                                            selectedKey="{request>/req_item/mode_of_transfer}"
                                             forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             items="{path: 'employee>/ZTRANSFER_MODE',
@@ -737,7 +777,6 @@
                                     <form:fields>
                                         <Select 
                                             selectedKey="{request>/req_item/marriage_cat}" 
-                                            required="true" 
                                             forceSelection="false"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             items="{path: 'employee>/ZMARITAL_CAT',
@@ -770,6 +809,7 @@
                                             id="i_departure_time">
                                     <form:fields>
                                         <m:DateTimePicker
+                                            required="true" 
                                             value="{request>/req_item/departure_time}"
                                             displayFormat="dd MMM yyyy HH:mm"
                                             valueFormat="dd MMM yyyy HH:mm"
@@ -784,11 +824,33 @@
                                             id="i_arrival_time">
                                     <form:fields>
                                         <m:DateTimePicker
+                                            required="true" 
                                             value="{request>/req_item/arrival_time}"
                                             displayFormat="dd MMM yyyy HH:mm"
                                             valueFormat="dd MMM yyyy HH:mm"
                                             textAlign="Begin"
                                             enabled="{= ${request>/view} !== 'view' }"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Lodging Category -->
+                                <form:FormElement label="{i18n>req_i_lodging}"
+                                            visible="false"
+                                            id="i_lodging_cat" >
+                                    <form:fields>
+                                        <Select 
+                                            selectedKey="{request>/req_item/lodging_cat}" 
+                                            forceSelection="false"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            items="{path: 'employee>/ZLODGING_CAT',
+                                                    sorter: { path: 'LODGING_CATEGORY_ID', descending: false },
+                                                    filters: [
+                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                                            <items>
+                                                <core:Item key="{employee>LODGING_CATEGORY_ID}" 
+                                                        text="{employee>LODGING_CATEGORY_DESC}" />
+                                            </items>
+                                        </Select>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -800,6 +862,7 @@
                                         <m:Input 
                                             type="Number" 
                                             textAlign="Begin" 
+                                            required="true"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/est_no_participant}"/>
                                     </form:fields>
@@ -807,10 +870,21 @@
 
                                 <!-- Cash Advance -->
                                 <form:FormElement label="{i18n>req_i_cashadv}"
-                                            visible="false"
+                                            visible="{= ${request>/req_header/grptype} === ${constant>/GroupType/INDIVIDUAL} &amp;&amp; 
+                                                      ( ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L}     || 
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_L}      || 
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER}    || 
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LODGING_L}    ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_L}      ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_O}     ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_O}      ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O}      ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LODG_O} )
+                                                    }"
                                             id="i_cash_adv" >
                                     <form:fields>
-                                        <Switch state="{request>/req_item/cash_advance}" customTextOn="Yes" customTextOff="No">
+                                        <Switch state="{request>/req_item/cash_advance}" customTextOn="Yes" customTextOff="No"
+                                                enabled="{= ${request>/view} !== 'view' }">
                                             <layoutData>
                                                 <FlexItemData growFactor="1" />
                                             </layoutData>
@@ -878,6 +952,7 @@
                                     textAlign="End" 
                                     value="{request>ALLOCATED_AMOUNT}" 
                                     type="Number"
+                                    change="populateEstimatedAmount"
                                     enabled="{= ${request>/view} !== 'view'}"></Input>
                             </table:template>
                         </table:Column>
@@ -929,6 +1004,55 @@
                                         keyPath="EEID"
                                         descriptionPath="NAME"
                                         caseSensitive="false">
+                                    </mdcvhcnt:MTable>
+                                </mdcvh:Dialog>
+                            </mdc:dialog>
+                        </mdc:ValueHelp>
+
+				        <!-- Value Help for Country -->
+                        <mdc:ValueHelp
+                            id="valuehelp_country"
+                            delegate='{
+                                "name": "claima/utils/ValueHelpDelegate_Common",
+                                "payload": {
+                                    "modelName": "employee",
+                                    "entitySet": "employee>/ZCOUNTRY",
+                                    "keyField": "COUNTRY_ID",
+                                    "descriptionField": "COUNTRY_DESC",
+							        "columns": ["{i18n>valuehelpcountryid}", "{i18n>valuehelpdescription}"],
+                                    "searchKeys": ["COUNTRY_ID", "COUNTRY_DESC"],
+                                    "openOnClick": true
+                                }
+                            }'
+                        >
+                            <!-- Typeahead (Popover) -->
+                            <mdc:typeahead>
+                                <mdcvh:Popover id="valuehelp_country_pop">
+                                    <mdcvhcnt:MTable
+                                        id="valuehelp_country_pop_MTable"
+                                        keyPath="COUNTRY_ID"
+                                        descriptionPath="COUNTRY_DESC"
+                                        caseSensitive="false"
+                                        useAsValueHelp="false"
+                                    >
+                                        <!-- Table content created dynamically by delegate -->
+                                    </mdcvhcnt:MTable>
+                                </mdcvh:Popover>
+                            </mdc:typeahead>
+
+                            <!-- Dialog Mode -->
+                            <mdc:dialog>
+                                <mdcvh:Dialog
+                                    id="valuehelp_country_dialog"
+                                    title="{i18n>valuehelpcountryid}"
+                                >
+                                    <mdcvhcnt:MTable
+                                        id="valuehelp_country_dialog_MTable"
+                                        keyPath="COUNTRY_ID"
+                                        descriptionPath="COUNTRY_DESC"
+                                        caseSensitive="false"
+                                    >
+                                        <!-- Table content created dynamically by delegate -->
                                     </mdcvhcnt:MTable>
                                 </mdcvh:Dialog>
                             </mdc:dialog>

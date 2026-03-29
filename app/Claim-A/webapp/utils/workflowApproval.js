@@ -353,19 +353,17 @@ sap.ui.define([
                     for(var i = 0; i < aWorkflowApprStep.length; i++){
 
                         // Start of Approver Determination logic
-                        // Standard Workflow logic is when following approver level, the next level should be higher than the previous level
-                        // Special case would include first level higher than second level. This case would require the first approver to
-                        // Be handled separately from the next level approvers 
-                        // After that, the logic will follow the Standard Workflow logic
+                        // Standard Workflow logic is when following approver level, the next level should be higher than the claimant level
 
-                        // Check if claimant is CEO
-                        // If yes, approver for CEO is CEO_FI
-                        if(oClaimantDetails.ROLE === Constants.Role.CEO){
-                            aWorkflowApprStep[i] = Constants.User_Type.CEO_FI;
-                        }
-                        
                         // Populate current role rank
                         oCurrOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
+
+                         // Check if claimant is CEO
+                        // If yes, approver for CEO is CEO_FI
+                        if(oCurrOutcome != null && oClaimantDetails.ROLE === Constants.Role.CEO){
+                            aWorkflowApprStep[i] = Constants.User_Type.CEO_FI;
+                            oCurrOutcome = null;
+                        }
                         
                         
                         if(oCurrOutcome == null){
@@ -376,6 +374,7 @@ sap.ui.define([
                                         oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
                                         if(!oBudgetDetails){
                                             MessageToast.show(Utility.getText("msg_failed_no_budget"));
+                                            return false;
                                         }else{
                                             oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
                                             oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
@@ -385,6 +384,7 @@ sap.ui.define([
                                         }
                                     }else{
                                         MessageToast.show(Utility.getText("msg_failed_no_cost_center"));
+                                        return false;
                                     }
                                     break;
                                 case Constants.User_Type.CEO_FI:
@@ -404,9 +404,11 @@ sap.ui.define([
                                                 }else{
 
                                                     MessageToast.show(Utility.getText("msg_failed_no_approver_details", [id.VALUE]));
+                                                    return false;
                                                 }
                                             }else{
                                                 MessageToast.show(Utility.getText("msg_failed_no_approver"));
+                                                return false;
                                             }
                                         }
                                     }
@@ -423,9 +425,13 @@ sap.ui.define([
                             }
                             // Retrieve Approver based on iApproverRank
                             oApproverDetails = await this.getApprover(oModel, sEmpID, iApproverRank);
-                            oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
-                            if(oPopulatedEmployee){
-                                aApproversDetails.push(oPopulatedEmployee);
+                            if(oApproverDetails){
+                                oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
+                                if(oPopulatedEmployee){
+                                    aApproversDetails.push(oPopulatedEmployee);
+                                }
+                            }else{
+                                // Placeholder for error handling 
                             }
                         } 
 
@@ -451,7 +457,7 @@ sap.ui.define([
                         }
                     }
                 }
-            
+
                 // Variable declaration for substitutes
                 let oSubstitute = null;         // Variable to store substitute user
                 let oSubstituteDetails = null;  // Variable to store substitute user details
@@ -485,32 +491,38 @@ sap.ui.define([
                     });
                 }
 
-                //create ZAPPROVER DETAILS
-                const oBindApprDetailsList = oModel.bindList(Constants.Entities.ZAPPROVER_DETAILS_CLAIMS);
+                let aPayloadToCreateApproverDetailsTable = [];
 
-                // create all contexts
-                let aCreatePromises = [];
+                if(aFullApproversDetails.length > 0){
+                    //for(var i = 0; i < aApprEmpID.length; i++){
+                    for(const oApprover of aFullApproversDetails){
 
-                //for(var i = 0; i < aApprEmpID.length; i++){
-                for(const oApprover of aFullApproversDetails){
+                        aPayloadToCreateApproverDetailsTable.push({
+                            "ID": sClaimID,
+                            "LEVEL": oApprover.LEVEL,
+                            "APPROVER_ID": oApprover.APPROVER_EEID,
+                            "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
+                            "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
+                        });
+                    }
+                    //Call CAP action 
+                    const oAction = oModel.bindContext("/UpdateApproverDetails(...)");
+                    oAction.setParameter("aPayloadToCreateApproverDetailsTable", aPayloadToCreateApproverDetailsTable);
 
-                    var oContext = oBindApprDetailsList.create({
-                        "CLAIM_ID": sClaimID,
-                        "LEVEL": oApprover.LEVEL,
-                        "APPROVER_ID": oApprover.APPROVER_EEID,
-                        "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
-                        "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
-                    });
-                    aCreatePromises.push(oContext.created());
+                    try {
+                        await oAction.execute();
+                    } catch (oError) {
+                        MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]))
+                        return false;
+                    }
                 }
-
-                // submit the batch
-                // await oModel.submitBatch("$auto");
-
-                // wait for all created
-                if(aCreatePromises.length > 0){
-                    const aCreatedContext = await Promise.all(aCreatePromises);
+                else{
+                    MessageToast.show(Utility.getText("msg_failed_no_approver"))
+                    return false;
                 }
+            
+                
+
                 try{
                 // Send email notification to first level approver or
                 // Start Final Approve Step for Auto approve
@@ -557,9 +569,6 @@ sap.ui.define([
 
                     // submit the batch
                     await oModel.submitBatch("$auto");
-
-                    // wait for all created
-                    const aCreatedContext = await Promise.all(aCreatePromises);
                     
                 }catch(oError){
                     MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]));
@@ -567,6 +576,7 @@ sap.ui.define([
             }else{
                 MessageToast.show(Utility.getText("msg_failed_no_workflow"));
             }
+            return true;
 			
         },
         onPARApproverDetermination: async function (oController, oModel, sPARID, oEmployeeModel){
@@ -769,13 +779,15 @@ sap.ui.define([
                         // Be handled separately from the next level approvers 
                         // After that, the logic will follow the Standard Workflow logic
 
-                        // Check if claimant is CEO
-                        // If yes, approver for CEO is CEO_FI
-                        if(oClaimantDetails.ROLE === Constants.Role.CEO){
-                            aWorkflowApprStep[i] = Constants.User_Type.CEO_FI;
-                        }
                         // Populate current role rank
                         oCurrOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
+
+                         // Check if claimant is CEO
+                        // If yes, approver for CEO is CEO_FI
+                        if(oCurrOutcome != null && oClaimantDetails.ROLE === Constants.Role.CEO){
+                            aWorkflowApprStep[i] = Constants.User_Type.CEO_FI;
+                            oCurrOutcome = null;
+                        }
                         
                         
                         if(oCurrOutcome == null){
@@ -786,6 +798,7 @@ sap.ui.define([
                                         oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sParFinalCC, sParSubmissionYear);
                                         if(!oBudgetDetails){
                                             MessageToast.show(Utility.getText("msg_failed_no_budget"));
+                                            return false;
                                         }else{
                                             oApproverDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, oBudgetDetails.BUDGET_OWNER_ID);
                                             oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
@@ -795,6 +808,7 @@ sap.ui.define([
                                         }
                                     }else{
                                         MessageToast.show(Utility.getText("msg_failed_no_cost_center"));
+                                        return false;
                                     }
                                     break;
                                 case Constants.User_Type.CEO_FI:
@@ -813,9 +827,11 @@ sap.ui.define([
                                                     aApproversDetails.push(oPopulatedEmployee);
                                                 }else{
                                                     MessageToast.show(Utility.getText("msg_failed_no_approver_details", [id.VALUE]));
+                                                    return false;
                                                 }
                                             }else{
                                                 MessageToast.show(Utility.getText("msg_failed_no_approver"));
+                                                return false;
                                             }
                                         }
                                     }
@@ -832,10 +848,15 @@ sap.ui.define([
                             }
                             // Retrieve Approver based on iApproverRank
                             oApproverDetails = await this.getApprover(oModel, sEmpID, iApproverRank);
-                            oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
-                            if(oPopulatedEmployee){
-                                aApproversDetails.push(oPopulatedEmployee);
+                            if(oApproverDetails){
+                                 oPopulatedEmployee = this._populateApproverDetails(oApproverDetails, i);
+                                if(oPopulatedEmployee){
+                                    aApproversDetails.push(oPopulatedEmployee);
+                                }
+                            }else{
+                                // Placeholder for error handling
                             }
+                           
                         } 
 
                         // Check if approver is found. If approver not found, do not store approver rank and current outcome
@@ -895,30 +916,34 @@ sap.ui.define([
                     });
                 }
                 //create ZAPPROVER DETAILS
-                const oBindApprDetailsList = oModel.bindList(Constants.Entities.ZAPPROVER_DETAILS_PREAPPROVAL);
+                 let aPayloadToCreateApproverDetailsTable = [];
 
-                // create all contexts
-                let aCreatePromises = [];
+                //for(var i = 0; i < aApprEmpID.length; i++){
+                if(aFullApproversDetails.length > 0){
+                    for(const oApprover of aFullApproversDetails){
+                        aPayloadToCreateApproverDetailsTable.push({
+                            "ID": sPARID,
+                            "LEVEL": oApprover.LEVEL,
+                            "APPROVER_ID": oApprover.APPROVER_EEID,
+                            "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
+                            "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
+                        });
+                    }
+                    //Call CAP action 
+                    const oAction = oModel.bindContext("/UpdateApproverDetails(...)");
+                    oAction.setParameter("aPayloadToCreateApproverDetailsTable", aPayloadToCreateApproverDetailsTable);
 
-                for(const oApprover of aFullApproversDetails){
-
-                    var oContext = oBindApprDetailsList.create({
-                        "PREAPPROVAL_ID": sPARID,
-                        "LEVEL": oApprover.LEVEL,
-                        "APPROVER_ID": oApprover.APPROVER_EEID,
-                        "SUBSTITUTE_APPROVER_ID": oApprover.SUB_EEID,
-                        "STATUS": oApprover.LEVEL === 1 ? Constants.ClaimStatus.PENDING_APPROVAL : (oApprover.LEVEL === 0 ? Constants.ClaimStatus.APPROVED : "")
-                    });
-                    aCreatePromises.push(oContext.created());         
+                    try {
+                        await oAction.execute();
+                    } catch (oError) {
+                        MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]))
+                        return false;
+                    }  
+                }else{
+                    MessageToast.show(Utility.getText("msg_failed_no_approver"))
+                    return false;
                 }
-
-                // submit the batch
-                // await oModel.submitBatch("$auto");
-
-                // wait for all created
-                if(aCreatePromises.length > 0){
-                    const aCreatedContext = await Promise.all(aCreatePromises);
-                }            
+                         
                 
                 try{
                 // Send email notification to first level approver or
@@ -967,15 +992,14 @@ sap.ui.define([
                     // submit the batch
                     await oModel.submitBatch("$auto");
 
-                    // wait for all created
-                    const aCreatedContext = await Promise.all(aCreatePromises);
-
                 }catch(oError){
                     MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]));
                 }
             }else{
                 MessageToast.show(Utility.getText("msg_failed_no_workflow"));
             }
+
+            return true;
         },
         /**
          * Recursively find the first superior whose rank is higher than the employee.

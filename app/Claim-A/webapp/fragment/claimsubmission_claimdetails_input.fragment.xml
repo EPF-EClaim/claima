@@ -4,6 +4,9 @@
 	xmlns:f="sap.ui.layout.form"
 	xmlns:core="sap.ui.core"
 	xmlns:u="sap.ui.unified"
+	xmlns:mdc="sap.ui.mdc"
+    xmlns:mdcvh="sap.ui.mdc.valuehelp"
+    xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content"
 	core:require="{FloatType: 'sap/ui/model/type/Float'}"
 >
 	<VBox class="sapUiSmallMargin">
@@ -270,6 +273,36 @@
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
 				/>
 
+				<!-- Mode of Transfer-->
+				<Label text="{i18n>req_i_transfer_mode}" />
+				<Select 
+					id="input_claimdetails_mode_of_transfer"
+					selectedKey="{claimitem_input>/claim_item/mode_of_transfer}"
+					forceSelection="false"
+					enabled="false"
+					visible="false"
+					items="{path: 'employee>/ZTRANSFER_MODE',
+							sorter: { path: 'TRANSFER_MODE_ID', descending: false },
+							filters: [
+								{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+					<items>
+						<core:Item key="{employee>TRANSFER_MODE_ID}" 
+								text="{employee>TRANSFER_MODE_DESC}" />
+					</items>
+				</Select>
+
+				<Label text="{i18n>req_i_tarikh_pindah}"
+                                            id="i_tarikh_pindah"/>
+				<DatePicker
+					id="input_claimdetails_transfer_date"
+					displayFormat="dd MMM yyyy"
+					valueFormat="yyyy-MM-dd"
+					placeholder="eg: 01 Jan 1990"
+					value="{claimitem_input>/claim_item/transfer_date}"
+					textAlign="Begin"
+					visible="false"
+					enabled="false"/>
+
 				<!-- Number of Days -->
 				<Label text="{i18n>label_claimdetails_input_numberofdays}" />
 				<Input
@@ -277,6 +310,7 @@
 					value="{claimitem_input>/claim_item/no_of_days}"
 					type="Number"
 					visible="false"
+					enabled="false"
 					required="true"
 				/>
 
@@ -407,37 +441,95 @@
 
 				<!-- From State -->
 				<Label text="{i18n>label_claimdetails_input_state_from}" />
-				<Input
-					id="input_claimdetails_input_from_state_id"
-					value="{claimitem_input>/claim_item/from_state_id}"
-					visible="false"
-				/>
+				<Select
+					id="select_claimdetails_input_from_state_id"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/from_state_id}"
+					change="onSelect_ClaimDetails_FromState"
+					liveChange="onSelect_ClaimDetails_FromState"
+					visible="{= ${claimitem_input>/claim_item/location_type} === '2' }"
+					items="{path: 'employee>/ZSTATE',
+                            sorter: { path: 'STATE_ID', descending: false },
+                            filters: [
+                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                    <items>
+                        <core:Item key="{employee>STATE_ID}" 
+                        		   text="{employee>STATE_DESC}" />
+                    </items>
+				</Select>
 
 				<!-- From Location -->
 				<Label text="{i18n>label_claimdetails_input_location_from}" />
 				<Input
 					id="input_claimdetails_input_from_location"
 					value="{claimitem_input>/claim_item/from_location}"
-					visible="false"
+					visible="{= ${claimitem_input>/claim_item/location_type} === '1'}"
 					required="true"
 				/>
+				<Label text="{i18n>fromloc}" />	
+				<Select
+					id="select_claimdetails_input_from_location"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/from_location}"
+					change="onSelect_ClaimDetails_FromLocation"
+					liveChange="onSelect_ClaimDetails_FromLocation"
+					visible="{= ${claimitem_input>/claim_item/location_type} === '2'}"
+					required="true"
+					items="{path: 'employee>/ZOFFICE_LOCATION',
+                            sorter: { path: 'LOCATION_ID', descending: false },
+                            filters: [
+                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                    <items>
+                        <core:Item key="{employee>LOCATION_ID}" 
+                        		   text="{employee>LOCATION_DESC}" />
+                    </items>
+				</Select>
 
 				<!-- To State -->
 				<Label text="{i18n>label_claimdetails_input_state_to}" />
-				<Input
-					id="input_claimdetails_input_to_state_id"
-					value="{claimitem_input>/claim_item/to_state_id}"
-					visible="false"
-				/>
+				<Select
+					id="select_claimdetails_input_to_state_id"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/to_state_id}"
+					change="onSelect_ClaimDetails_ToState"
+					liveChange="onSelect_ClaimDetails_ToState"
+					visible="{= ${claimitem_input>/claim_item/location_type} === '2' }"
+					items="{path: 'employee>/ZSTATE',
+                            sorter: { path: 'STATE_ID', descending: false },
+                            filters: [
+                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                    <items>
+                        <core:Item key="{employee>STATE_ID}" 
+                        		   text="{employee>STATE_DESC}" />
+                    </items>
+				</Select>
 
 				<!-- To Location -->
 				<Label text="{i18n>label_claimdetails_input_location_to}" />
 				<Input
 					id="input_claimdetails_input_to_location"
 					value="{claimitem_input>/claim_item/to_location}"
-					visible="false"
+					visible="{= ${claimitem_input>/claim_item/location_type} === '1'}"
 					required="true"
 				/>
+				<Label text="{i18n>to_loc}" />
+				<Select
+					id="select_claimdetails_input_to_location"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/to_location}"
+					change="onSelect_ClaimDetails_ToLocation"
+					liveChange="onSelect_ClaimDetails_ToLocation"
+					visible="{= ${claimitem_input>/claim_item/location_type} === '2'}"
+					required="true"
+					items="{path: 'employee>/ZOFFICE_LOCATION',
+                            sorter: { path: 'LOCATION_ID', descending: false },
+                            filters: [
+                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                    <items>
+                        <core:Item key="{employee>LOCATION_ID}" 
+                        		   text="{employee>LOCATION_DESC}" />
+                    </items>
+				</Select>
 
 				<!-- Room Type -->
 				<Label text="{i18n>label_claimdetails_input_roomtype}" />
@@ -454,16 +546,15 @@
 
 				<!-- Country -->
 				<Label text="{i18n>label_claimdetails_input_country}" />
-				<Select
+				<mdc:Field
 					id="select_claimdetails_input_country"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/country}"
-					change="onSelect_ClaimDetails_Country"
-					liveChange="onSelect_ClaimDetails_Country"
+					value="{claimitem_input>/claim_item/country}"
+					editMode="Editable"
+					display="ValueDescription"
 					visible="false"
 					required="true"
-				>
-				</Select>
+					valueHelp="valuehelp_country"
+				/>
 
 				<!-- Location -->
 				<Label text="{i18n>label_claimdetails_input_location}" />
@@ -484,15 +575,14 @@
 
 				<!-- Currency Code -->
 				<Label text="{i18n>label_claimdetails_input_currencycode}" />
-				<Select
+				<mdc:Field
 					id="select_claimdetails_input_currency_code"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/currency_code}"
-					change="onSelect_ClaimDetails_CurrencyCode"
-					liveChange="onSelect_ClaimDetails_CurrencyCode"
+					value="{claimitem_input>/claim_item/currency_code}"
+					editMode="Editable"
+					display="ValueDescription"
 					visible="false"
-				>
-				</Select>
+					valueHelp="valuehelp_currency_code"
+				/>
 
 				<!-- Currency Rate -->
 				<Label text="{i18n>label_claimdetails_input_currencyrate}" />
@@ -868,9 +958,9 @@
 				/>
 
 				<!-- Attachment 1 -->
-				<Label text="{i18n>label_claimdetails_input_attachment1}" />
+				<Label text="{i18n>label_claimdetails_input_attachment_file_1}" />
 				<u:FileUploader
-					id="fileuploader_claimdetails_input_attachment1"
+					id="fileuploader_claimdetails_input_attachment_file_1"
 					name="fileUploaderClaimDetailsInputAttachment1"
 					placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
 					uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
@@ -883,25 +973,21 @@
 					multiple="false"
 					style="Emphasized"
 					visible="false"
-					required="true"
+					required="{= ${claimitem_input>/claim_item/attachment_file_1} === null }"
 				>
 				</u:FileUploader>
-
-				<!-- Attachment 1 (Existing) -->
-				<Label text="{i18n>label_claimdetails_input_attachment1}" />
-				<Button
-					id="button_claimdetails_input_attachment1"
-					icon="sap-icon://attachment"
-					text="{i18n>button_claimdetails_input_viewattachment}"
-					press="onView_Claim_Attachment('child_det','1')"
-					enabled="{= ${claimitem_input>/claim_item/attachment_file_1} !== null }"
-					visible="false"
+				<Label id="label_claimdetails_input_attachment_file_1" />
+				<Link
+					id="link_claimdetails_input_attachment_file_1" 
+					press="onView_Claim_Attachment('child','1')"
+					text="{claimitem_input>/claim_item/attachment_file_1}"
+					visible="{= ${claimitem_input>/claim_item/attachment_file_1} !== null }"
 				/>
 
 				<!-- Attachment 2 -->
-				<Label text="{i18n>label_claimdetails_input_attachment2}" />
+				<Label text="{i18n>label_claimdetails_input_attachment_file_2}" />
 				<u:FileUploader
-					id="fileuploader_claimdetails_input_attachment2"
+					id="fileuploader_claimdetails_input_attachment_file_2"
 					name="fileUploaderClaimDetailsInputAttachment2"
 					placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
 					uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
@@ -916,18 +1002,113 @@
 					visible="false"
 				>
 				</u:FileUploader>
-
-				<!-- Attachment 2 (Existing) -->
-				<Label text="{i18n>label_claimdetails_input_attachment2}" />
-				<Button
-					id="button_claimdetails_input_attachment2"
-					icon="sap-icon://attachment"
-					text="{i18n>button_claimdetails_input_viewattachment}"
-					press="onView_Claim_Attachment('child_det','2')"
-					enabled="{= ${claimitem_input>/claim_item/attachment_file_2} !== null }"
-					visible="false"
+				<Label id="label_claimdetails_input_attachment_file_2" />
+				<Link
+					id="link_claimdetails_input_attachment_file_2" 
+					press="onView_Claim_Attachment('child','2')"
+					text="{claimitem_input>/claim_item/attachment_file_2}"
+					visible="{= ${claimitem_input>/claim_item/attachment_file_2} !== null }"
 				/>
 			</f:content>
+			<f:dependents>
+				<!-- Value Help for Country -->
+				<mdc:ValueHelp
+					id="valuehelp_country"
+					delegate='{
+						"name": "claima/utils/ValueHelpDelegate_Common",
+						"payload": {
+							"modelName": "employee",
+							"entitySet": "employee>/ZCOUNTRY",
+							"keyField": "COUNTRY_ID",
+							"descriptionField": "COUNTRY_DESC",
+							"columns": ["{i18n>valuehelpcountryid}", "{i18n>valuehelpdescription}"],
+							"searchKeys": ["COUNTRY_ID", "COUNTRY_DESC"],
+							"openOnClick": true
+						}
+					}'
+				>
+					<!-- Typeahead (Popover) -->
+					<mdc:typeahead>
+						<mdcvh:Popover id="valuehelp_country_pop">
+							<mdcvhcnt:MTable
+								id="valuehelp_country_pop_MTable"
+								keyPath="COUNTRY_ID"
+								descriptionPath="COUNTRY_DESC"
+								caseSensitive="false"
+								useAsValueHelp="false"
+							>
+								<!-- Table content created dynamically by delegate -->
+							</mdcvhcnt:MTable>
+						</mdcvh:Popover>
+					</mdc:typeahead>
+
+					<!-- Dialog Mode -->
+					<mdc:dialog>
+						<mdcvh:Dialog
+							id="valuehelp_country_dialog"
+							title="{i18n>valuehelpcountryid}"
+						>
+							<mdcvhcnt:MTable
+								id="valuehelp_country_dialog_MTable"
+								keyPath="COUNTRY_ID"
+								descriptionPath="COUNTRY_DESC"
+								caseSensitive="false"
+							>
+								<!-- Table content created dynamically by delegate -->
+							</mdcvhcnt:MTable>
+						</mdcvh:Dialog>
+					</mdc:dialog>
+				</mdc:ValueHelp>
+
+				<!-- Value Help for Currency Code -->
+				<mdc:ValueHelp
+					id="valuehelp_currency_code"
+					delegate='{
+						"name": "claima/utils/ValueHelpDelegate_Common",
+						"payload": {
+							"modelName": "employee",
+							"entitySet": "employee>/ZCURRENCY",
+							"keyField": "CURRENCY_ID",
+							"descriptionField": "CURRENCY_DESC",
+							"columns": ["{i18n>valuehelpcurrencycode}", "{i18n>valuehelpdescription}"],
+							"searchKeys": ["CURRENCY_ID", "CURRENCY_DESC"],
+							"openOnClick": true
+						}
+					}'
+				>
+					<!-- Typeahead (Popover) -->
+					<mdc:typeahead>
+						<mdcvh:Popover id="valuehelp_currency_code_pop">
+							<mdcvhcnt:MTable
+								id="valuehelp_currency_code_pop_MTable"
+								keyPath="CURRENCY_ID"
+								descriptionPath="CURRENCY_DESC"
+								caseSensitive="false"
+								useAsValueHelp="false"
+							>
+								<!-- Table content created dynamically by delegate -->
+							</mdcvhcnt:MTable>
+						</mdcvh:Popover>
+					</mdc:typeahead>
+
+					<!-- Dialog Mode -->
+					<mdc:dialog>
+						<mdcvh:Dialog
+							id="valuehelp_currency_code_dialog"
+							title="{i18n>valuehelpcurrencycode}"
+						>
+							<mdcvhcnt:MTable
+								id="valuehelp_currency_code_dialog_MTable"
+								keyPath="CURRENCY_ID"
+								descriptionPath="CURRENCY_DESC"
+								caseSensitive="false"
+							>
+								<!-- Table content created dynamically by delegate -->
+							</mdcvhcnt:MTable>
+						</mdcvh:Dialog>
+					</mdc:dialog>
+				</mdc:ValueHelp>
+			</f:dependents>
 		</f:SimpleForm>
 	</VBox>
 </core:FragmentDefinition>

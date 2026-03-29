@@ -247,10 +247,10 @@ sap.ui.define([
 		* Budget Checking Helper Functions
 		* ======================================================= */
 
-		async _getGLAccount(oModel, claim_type) {
+		async _getGLAccount(oModel, sClaimType) {
 
 			const oListBinding = oModel.bindList("/ZCLAIM_TYPE", null, null, [
-				new sap.ui.model.Filter("CLAIM_TYPE_ID", "EQ", claim_type)
+				new sap.ui.model.Filter("CLAIM_TYPE_ID", "EQ", sClaimType)
 			]);
 
 			try {
@@ -269,10 +269,11 @@ sap.ui.define([
 			
 		},
 
-		async _getMaterialCode(oModel, claim_type_item) {
+		async _getMaterialCode(oModel, sClaimType, sClaimTypeItem) {
 
 			const oListBinding = oModel.bindList("/ZCLAIM_TYPE_ITEM", null, null, [
-				new sap.ui.model.Filter("CLAIM_TYPE_ITEM_ID", "EQ", claim_type_item)
+				new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimType),
+				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, sClaimTypeItem)
 			]);
 
 			try {
@@ -328,8 +329,8 @@ sap.ui.define([
 					var sDate			= new Date(oHeader.reqdate);
 					var sYear			= String(sDate.getFullYear());
 					var sFundCenter = (oHeader.altcostcenter && oHeader.altcostcenter !== "-") 
-										? oHeader.altcostcenter 
-										: oHeader.costcenter;
+										? oHeader.altcostcenter.split(" - ")[0]
+										: oHeader.costcenter.split(" - ")[0];
 					var sInternalCode	= oHeader.projectcode || "1";	// todo change to NA after flush db
 
 					var aPayload = aItemRows.map(row => {
@@ -364,7 +365,7 @@ sap.ui.define([
 							"YEAR": sYear,
 							"INTERNAL_ORDER": sInternalCode,
 							"FUND_CENTER": sFundCenter,
-							"MATERIAL_GROUP": await this._getMaterialCode(oController._oModel, row.claim_type_item_id),
+							"MATERIAL_GROUP": await this._getMaterialCode(oController._oModel, oHeader.claim_type_id, row.claim_type_item_id),
 							"COMMITMENT_ITEM": sCommitmentItem,
 							"AMOUNT": parseFloat(row.amount),
 							"CLAIM_TYPE_ITEM": row.claim_type_item_id,

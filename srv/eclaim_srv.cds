@@ -74,7 +74,10 @@ service eclaim_srv @(requires: 'authenticated-user'){
         }
     ])                                   as projection on ECLAIM.ZREQUEST_TYPE;
 
-    entity ZCLAIM_ITEM                   as projection on ECLAIM.ZCLAIM_ITEM;
+    entity ZCLAIM_ITEM                   as projection on ECLAIM.ZCLAIM_ITEM {
+        @Core.Computed CLAIM_SUB_ID,
+        *
+    };
 
     entity ZREQUEST_HEADER               as
         projection on ECLAIM.ZREQUEST_HEADER {
@@ -142,7 +145,10 @@ service eclaim_srv @(requires: 'authenticated-user'){
 
     entity ZREQ_ITEM_PART                as projection on ECLAIM.ZREQ_ITEM_PART;
 
-    entity ZCLAIM_HEADER                 as projection on ECLAIM.ZCLAIM_HEADER;
+    entity ZCLAIM_HEADER                 as projection on ECLAIM.ZCLAIM_HEADER {
+        @Core.Computed CLAIM_ID,
+        *
+    };
 
     entity ZNUM_RANGE @(restrict: [
         {
@@ -937,6 +943,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
         origin      : String;
         grade       : String;
         department  : String;
+        user        : String;
     }
 
     function getUserType()                                                 returns UserInfo;
@@ -1249,8 +1256,6 @@ service eclaim_srv @(requires: 'authenticated-user'){
         }
     ])                                   as projection on ECLAIM.ZDB_STRUCTURE;
 
-    function runjob()                                                      returns Response;
-
     type PreApproveClaims {
         REQUEST_ID     : String;
         REQUEST_SUB_ID : String;
@@ -1278,4 +1283,61 @@ service eclaim_srv @(requires: 'authenticated-user'){
     }
 
     action batchDisbursementUpdate(disbursement: many DisbursementUpdateInput) returns many ZEMP_CA_PAYMENT;
+
+    type ApproverDetails{
+        ID         : String;
+        LEVEL                  : Integer;
+        APPROVER_ID            : String;
+        SUBSTITUTE_APPROVER_ID : String;
+        STATUS                 : String;
+        REJECT_REASON_ID       : String(3);
+        PROCESS_TIMESTAMP      : String;
+        COMMENT                : String;
+    }
+
+    action UpdateApproverDetails(aPayloadToCreateApproverDetailsTable: many ApproverDetails) returns Response;
+
+    action DeleteApproverDetails(ID: String) returns Response;
+
+    // entity ClaimsWorkflowApproval as projection on ZCLAIM_HEADER{
+    //     key CLAIM_ID as ClaimID,
+    //     EMP_ID as ClaimantID,
+    //     COST_CENTER,
+    //     ALTERNATE_COST_CENTER,
+    //     SUBMISSION_TYPE,
+    //     SUBMITTED_DATE,
+    //     CASH_ADVANCE_AMOUNT,
+    //     TOTAL_CLAIM_AMOUNT,
+    //     PREAPPROVED_AMOUNT,
+
+    //     ZCLAIM_ITEM.CLAIM_SUB_ID,
+    //     ZCLAIM_ITEM.AMOUNT,
+    //     ZCLAIM_ITEM.RECEIPT_DATE,
+    //     ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
+
+    //     ZCLAIM_ITEM.ZCLAIM_TYPE_ITEM.RISK,
+
+    //     ZEMP_MASTER.NAME,
+    //     ZEMP_MASTER.EMAIL,
+    //     ZEMP_MASTER.DEP,
+    //     ZEMP_MASTER.ROLE,
+    //     ZEMP_MASTER.CC,
+    //     ZEMP_MASTER.DIRECT_SUPPERIOR,
+    //     RANK: Association to ZROLEHIERARCHY 
+    //                     on RANK.ROLE = ROLE,
+
+    //     ZSUBMISSION_TYPE.SUBMISSION_TYPE_ID,
+    //     ZSUBMISSION_TYPE.SUBMISSION_TYPE_DESC,
+    // };
+
+
+    // action WorkflowApproval(ClaimID: String) returns Response;
+
+    type eligibleCheck {
+        MOBILE_BILL_ELIGIBLE    : Boolean;
+        MOBILE_BILL_ELIG_AMOUNT : Decimal(15, 2);
+    }
+
+    function checkEligibleMobileClaim(sEmployeeId: String) returns String; 
+
 };

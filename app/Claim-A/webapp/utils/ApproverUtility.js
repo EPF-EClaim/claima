@@ -6,7 +6,8 @@ sap.ui.define([
     "claima/utils/Constants",
     "claima/utils/Utility",
     "claima/utils/DateUtility",
-], function (Filter, FilterOperator, FinalApproveStep, Constants, Utility, DateUtility) {
+    "claima/utils/WorkflowApproverHelper"
+], function (Filter, FilterOperator, FinalApproveStep, Constants, Utility, DateUtility,WorkflowApproverHelper) {
     "use strict";
 
     async function _approveMultiLevel(oModel, sId, sUserId, sComment, oModelView, oController) {
@@ -49,7 +50,7 @@ sap.ui.define([
 
 
         if (!oCurrentRow) {
-            throw { sCode: Utility.getText(oController, "error_not_current_processor") };
+            throw { sCode: Utility.getText("error_not_current_processor") };
         }
 
         let sMatchedType = null;
@@ -214,7 +215,7 @@ sap.ui.define([
         }
 
         await oModel.submitBatch("$auto");
-        var sMessage = Utility.getText(oController, "approval_successful")
+        var sMessage = Utility.getText("approval_successful")
 
         return {
             payloads: aPayloads,
@@ -283,7 +284,7 @@ sap.ui.define([
         );
 
         if (!oCurrentRow) {
-            throw { sCode: Utility.getText(oController, "error_not_current_processor") };
+            throw { sCode: Utility.getText("error_not_current_processor") };
         }
 
         let sMatchedType = null;
@@ -396,6 +397,7 @@ sap.ui.define([
 
         const aPayloads = [];
         const sMessageKey = null;
+        var oReasonDesc = await WorkflowApproverHelper.getRejectReasonDescription(oModel, sReason);
 
         aPayloads.push({
             ApproverName: sCurrentName,
@@ -407,7 +409,7 @@ sap.ui.define([
             Action: sActionText,
             ReceiverEmail: sClaimantEmail,
             NextApproverName: Constants.ApprovalProcessAction.NOTAVAILABLE,
-            RejectReason: sReason,
+            RejectReason: oReasonDesc.REASON_DESC,
             ApproverComments: sComment
         });
         try {
@@ -430,8 +432,8 @@ sap.ui.define([
                 },
                 sMessageKey:
                     sActionStatus === Constants.ClaimStatus.REJECTED
-                        ? Utility.getText(oController, "request_rejected")
-                        : Utility.getText(oController, "request_sent_back")
+                        ? Utility.getText("request_rejected")
+                        : Utility.getText("request_sent_back")
 
             };
 

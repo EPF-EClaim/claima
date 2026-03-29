@@ -6,8 +6,9 @@ sap.ui.define([
 	"sap/m/MessageBox",
 	"claima/utils/Request",
 	"claima/utils/MyApproval",
-	"claima/utils/Constants"
-], (Controller, JSONModel, Sorter, Utility, MessageBox, Request, MyApproval, Constants) => {
+	"claima/utils/Constants",
+	"sap/ui/core/BusyIndicator"
+], (Controller, JSONModel, Sorter, Utility, MessageBox, Request, MyApproval, Constants, BusyIndicator) => {
 	"use strict";
 
 	return Controller.extend("claima.controller.Dashboard", {
@@ -56,13 +57,12 @@ sap.ui.define([
 					console.log("approvals not available for this role");
 					this._oDashboardModel.setProperty("/approvals", []);
 				});
+			// Hide indicator once everything is loaded
+			BusyIndicator.hide();
 		},
 
 		onClickNavigate: function (oEvent) {
 			let sId = oEvent.getParameters().id;
-
-			const sUserType = this.getView().getModel("session")?.getProperty("/userType")
-				|| "UNKNOWN";
 
 			if (sId.includes("dashboard-claim")) {
 				this._oRouter.navTo("ClaimStatus")

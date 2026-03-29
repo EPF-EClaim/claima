@@ -424,7 +424,7 @@ sap.ui.define([
 
         onClickBack: function () {
             var oRouter = this.getOwnerComponent().getRouter();
-            oRouter.navTo("Configuration");
+            oRouter.navTo("Dashboard");
         },
 
         onOpenViewSettings: function () {
