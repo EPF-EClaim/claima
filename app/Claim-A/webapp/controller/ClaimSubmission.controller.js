@@ -2953,6 +2953,7 @@ sap.ui.define([
 			var oPage = this.byId("page_claimsubmission");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oClaimItemFragment = await this._getFormFragment("claimsubmission_claimdetails_input");
+			// await this._afterLoadFragments();
 			if (oClaimItemFragment) {
 				// disable item visibility
 				this._setAllControlsVisible(false);
