@@ -44,7 +44,7 @@ sap.ui.define([
                         // bSkipChecking assigned to exit when result is true
                         bSkipChecking = oPayload.CheckFields[iIndex].result;
                         // Check if min travel hours required
-                        if (oRule.TRAVEL_HOURS != undefined || oRule.TRAVEL_HOURS != null) {
+                        if ((bSkipChecking) && (oRule.TRAVEL_HOURS != undefined || oRule.TRAVEL_HOURS != null)) {
                             iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constants.EntitiesFields.TRAVEL_HOURS);
                             // if user has 4 hr flight while Rules table is min 3 hrs, return true
                             // if user has 1 hr flight while Rules table is min 3 hrs, return Rules table value (3)
