@@ -13,6 +13,8 @@ sap.ui.define([
     "sap/m/MessageToast",
     "sap/m/MessageBox",
     "claima/utils/Utility",
+    "sap/ui/export/Spreadsheet",
+    "sap/ui/export/library"
 ], (Controller,
     Sorter,
     Filter,
@@ -26,7 +28,9 @@ sap.ui.define([
     Label,
     MessageToast,
     MessageBox,
-    Utility
+    Utility,
+    Spreadsheet,
+    exportLibrary
 ) => {
     "use strict";
 
@@ -431,44 +435,8 @@ sap.ui.define([
             this.byId("viewSettingsDialog").open();
         },
 
-        onOpenItemViewSettings: function () {
-            this.byId("itemViewSettingsDialog").open();
-        },
-
-        onConfirmViewSettings: function (oEvent) {
-            var oSource = oEvent.getSource();
-            var sDialogId = oSource.getId();
-
-            var oTable;
-            if (sDialogId.includes("itemViewSettingsDialog")) {
-                oTable = this.byId("claimitemTable");
-            } else {
-                oTable = this.byId("claimTable");
-            }
-
-            var oBinding = oTable.getBinding("items");
-            var mParams = oEvent.getParameters();
-
-            var oSorter;
-            if (mParams.sortItem) {
-                oSorter = new Sorter(
-                    mParams.sortItem.getKey(),
-                    mParams.sortDescending
-                );
-            }
-
-            var aFilters = [];
-            if (mParams.filterItems && mParams.filterItems.length > 0) {
-                mParams.filterItems.forEach(function (oItem) {
-                    var sParts = oItem.getKey().split("___");
-                    aFilters.push(
-                        new Filter(sParts[0], FilterOperator.EQ, sParts[1])
-                    );
-                });
-            }
-
-            oBinding.sort(oSorter);
-            oBinding.filter(aFilters, "Application");
+        onOpenViewItemSettings: function () {
+            this.byId("viewSettingsDialogItem").open();
         },
 
         onResetViewSettings: function (oEvent) {
@@ -476,8 +444,8 @@ sap.ui.define([
             var sDialogId = oSource.getId();
 
             var oTable;
-            if (sDialogId.includes("itemViewSettingsDialog")) {
-                oTable = this.byId("claimitemTable");
+            if (sDialogId.includes("viewSettingsDialogItem")) {
+                oTable = this.byId("ClaimItems--claimitemTable");
             } else {
                 oTable = this.byId("claimTable");
             }
@@ -485,6 +453,114 @@ sap.ui.define([
             var oBinding = oTable.getBinding("items");
             oBinding.sort(null);
             oBinding.filter([], "Application");
-        }
+        }, 
+
+         onExportToExcel: function (oEvent) {
+            var oItemTable = this.byId("ClaimItems--claimitemTable");
+            var oMainTable = this.byId("claimTable");
+
+            var bIsItems = !!(oItemTable && oItemTable.getBinding("items"));
+
+            var oTable = bIsItems ? oItemTable : oMainTable;
+            var oBinding = oTable.getBinding("items") || oTable.getBinding("rows");
+
+            if (!oBinding) {
+                MessageToast.show("No data to export");
+                return;
+            }
+            const EdmType = exportLibrary.EdmType;
+            var aColumns = bIsItems ? [
+                { label: "Claim Type Item ID", property: "CLAIM_TYPE_ITEM_ID", type: EdmType.String },
+                { label: "Item Description", property: "CLAIM_TYPE_ITEM_DESC", type: EdmType.String },
+                { label: "Category ID", property: "CATEGORY_ID", type: EdmType.String },
+                { label: "Cost Center", property: "COST_CENTER", type: EdmType.String },
+                { label: "Material Code", property: "MATERIAL_CODE", type: EdmType.String },
+                { label: "Risk", property: "RISK", type: EdmType.String },
+                { label: "Submission Type", property: "SUBMISSION_TYPE", type: EdmType.String },
+                { label: "Start Date", property: "START_DATE", type: EdmType.Date },
+                { label: "End Date", property: "END_DATE", type: EdmType.Date },
+                { label: "Status", property: "STATUS", type: EdmType.String }
+            ] : [
+                { label: "Claim Type ID", property: "CLAIM_TYPE_ID", type: EdmType.String },
+                { label: "Claim Type Desc", property: "CLAIM_TYPE_DESC", type: EdmType.String },
+                { label: "GL Account", property: "GL_ACCOUNT", type: EdmType.String },
+                { label: "Request Type", property: "REQUEST_TYPE", type: EdmType.String },
+                { label: "Ind or Group", property: "IND_OR_GROUP", type: EdmType.String },
+                { label: "Project Claim", property: "PROJECT_CLAIM", type: EdmType.String },
+                { label: "Start Date", property: "START_DATE", type: EdmType.Date },
+                { label: "End Date", property: "END_DATE", type: EdmType.Date },
+                { label: "Status", property: "STATUS", type: EdmType.String }
+            ];
+
+            var oSheet = new Spreadsheet({
+                workbook: { columns: aColumns },
+                dataSource: oBinding,
+                fileName: bIsItems ? "ClaimTypeItems_Export.xlsx" : "ClaimType_Export.xlsx",
+                worker: false
+            });
+
+            oSheet.build()
+                .then(function () { MessageToast.show("Export successful"); })
+                .catch(function (oError) { MessageBox.error("Export failed: " + (oError.message || oError)); })
+                .finally(function () { oSheet.destroy(); });
+        },
+
+        onConfirmViewSettings: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var sDialogId = oSource.getId();
+
+            var oTable;
+            if (sDialogId.includes("viewSettingsDialogItem")) {
+                oTable = this.byId("ClaimItems--claimitemTable");
+            } else {
+                oTable = this.byId("claimTable");
+            }
+
+            var oBinding = oTable.getBinding("items") || oTable.getBinding("rows");
+            var mParams = oEvent.getParameters();
+
+            // Sort
+            var oSorter;
+            if (mParams.sortItem) {
+                oSorter = new Sorter(mParams.sortItem.getKey(), mParams.sortDescending);
+            }
+            oBinding.sort(oSorter);
+
+            // Filter
+            var aFilters = [];
+            var aHeaderFilter = [
+                { id: "filterClaimTypeId", property: "CLAIM_TYPE_ID" },
+                { id: "filterClaimTypeDesc", property: "CLAIM_TYPE_DESC" },
+                { id: "filterGlAccount", property: "GL_ACCOUNT" },
+                { id: "filterRequestType", property: "REQUEST_TYPE" },
+                { id: "filterIndOrGroup", property: "IND_OR_GROUP" },
+                { id: "filterProjectClaim", property: "PROJECT_CLAIM" },
+                { id: "filterStatus", property: "STATUS" }
+            ];
+
+            var aItemFilters = [
+                { id: "filterClaimTypeItemId", property: "CLAIM_TYPE_ITEM_ID" },
+                { id: "filterClaimTypeItemDesc", property: "CLAIM_TYPE_ITEM_DESC" },
+                { id: "filterCategoryId", property: "CATEGORY_ID" },
+                { id: "filterCostcenter", property: "COST_CENTER" },
+                { id: "filterMaterialCode", property: "MATERIAL_CODE" },
+                { id: "filterRisk", property: "RISK" },
+                { id: "filterItemStartDate", property: "START_DATE" },
+                { id: "filterItemEndDate", property: "END_DATE" },
+                { id: "filterItemStatus", property: "STATUS" }
+            ];
+
+            var aMainFilters = oBinding.sPath === "Items"? aItemFilters: aHeaderFilter;
+
+            aMainFilters.forEach(function (oItem) {
+                var oInput = this.byId(oItem.id);
+                var sValue = oInput && oInput.getValue();
+                if (sValue) {
+                    aFilters.push(new Filter(oItem.property, FilterOperator.Contains, sValue));
+                }
+            }.bind(this));
+
+            oBinding.filter(aFilters, "Application");
+        },
     });
 });
