@@ -190,8 +190,7 @@ sap.ui.define([
 			if (bApproval) {
 				var aApprover = await ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId);
 				for (const row of aApprover) {
-					if ((row.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL || 
-						row.STATUS === this._oConstant.ClaimStatus.SEND_BACK) && 
+					if (row.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL && 
 						(row.SUBSTITUTE_APPROVER_ID == this._oSessionModel.getProperty("/userId") || 
 							row.APPROVER_ID == this._oSessionModel.getProperty("/userId"))) {
 						this._oReqModel.setProperty('/view', this._oConstant.PARMode.APPROVER);
