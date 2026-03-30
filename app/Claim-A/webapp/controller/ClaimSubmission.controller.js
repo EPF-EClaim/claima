@@ -2608,7 +2608,9 @@ sap.ui.define([
 		},
 
         /**
-		 * On changing value of actual amount, set value of 'amount' property to 50% of 'actual_amount' property
+		 * On changing value of 'actual amount' field, change value of 'amount' property to 50% of 'actual_amount' property
+		 * This applies to claim items that have fields for both 'amount' and 'actual amount'. In this case,
+		 * 'amount' is auto-populated while 'actual amount' comes from user input
 		 * @public
 		 */
 		onChange_ClaimDetails_ActualAmount: function () {
