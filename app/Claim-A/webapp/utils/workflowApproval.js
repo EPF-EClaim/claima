@@ -371,7 +371,7 @@ sap.ui.define([
                             switch(aWorkflowApprStep[i]){
                                 case Constants.Approvers.BUDGET:
                                     if(sClaimsFinalCC != null){
-                                        oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sClaimsFinalCC, sClaimSubmissionYear);
+                                        oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sClaimsFinalCC, sSystemDate);
                                         if(!oBudgetDetails){
                                             MessageToast.show(Utility.getText("msg_failed_no_budget"));
                                             return false;
@@ -795,7 +795,7 @@ sap.ui.define([
                             switch(aWorkflowApprStep[i]){
                                 case Constants.Approvers.BUDGET:
                                     if(sParFinalCC != null){
-                                        oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sParFinalCC, sParSubmissionYear);
+                                        oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sParFinalCC, sSystemDate);
                                         if(!oBudgetDetails){
                                             MessageToast.show(Utility.getText("msg_failed_no_budget"));
                                             return false;
