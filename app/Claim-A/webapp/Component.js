@@ -35,6 +35,7 @@ sap.ui.define([
                 this.setModel(models.createUserIdModel(), "userId");
                 this.setModel(models.createImageModel(), "imageModel");
                 this.setModel(models.createRoleModel(), "roleModel");
+                this.setModel(models.createConfigModel(), "config");
 
                 const fmt = sap.ui.getCore().getConfiguration().getFormatSettings();
                 fmt.setDatePattern("medium", "dd MMM yyyy");
@@ -83,6 +84,7 @@ sap.ui.define([
                 this.startInactivityTimer();
 
                 this.getRouter().attachRouteMatched(this._onRouteMatched, this);
+                var oConfigModel = this.getModel("config");
             },
 
             _loadCurrentUser: function () {
@@ -111,6 +113,7 @@ sap.ui.define([
 
                             var oRoleModel = this.getModel("roleModel");
                             var oSessionModel = this.getModel("session");
+                            var oConfigModel = this.getModel("config");
 
                             resultData.scopes.forEach(function (scope) {
                                 if (scope.includes("Claimant")) {
@@ -122,10 +125,13 @@ sap.ui.define([
                                 if (scope.includes("DTD_Admin")) {
                                     oRoleModel.setProperty("/isDTDAdmin", true);
                                     oSessionModel.setProperty("/userType", "DTD Admin");
+                                    oConfigModel.setProperty("/visible", true);
+                                    oConfigModel.setProperty("/visible_ga_jkew", true);
                                 }
                                 if (scope.includes("Admin_System")) {
                                     oRoleModel.setProperty("/isAdminSystem", true);
                                     oSessionModel.setProperty("/userType", "JKEW Admin"); 
+                                    oConfigModel.setProperty("/visible_ga_jkew", true);
                                 }
                                 if (scope.includes("Admin_CC")) {
                                     oRoleModel.setProperty("/isAdminCC", true);

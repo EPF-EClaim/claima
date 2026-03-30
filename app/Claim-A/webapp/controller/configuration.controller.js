@@ -13,6 +13,9 @@ sap.ui.define([
     "sap/m/MessageToast",
     "sap/m/MessageBox",
     "claima/utils/Utility",
+    "sap/ui/export/Spreadsheet",
+    "sap/ui/export/EdmType", 
+    "sap/ui/core/routing/HashChanger"
 ], (Controller,
     Sorter,
     Filter,
@@ -26,7 +29,10 @@ sap.ui.define([
     Label,
     MessageToast,
     MessageBox,
-    Utility
+    Utility,
+    Spreadsheet, 
+    EdmType,
+    HashChanger
 ) => {
     "use strict";
 
@@ -62,13 +68,13 @@ sap.ui.define([
                 sNumRangeDTD = this._oConstant.Configuration.ZNUM_RANGE_DTD,
                 sBudget = this._oConstant.Configuration.ZBUDGET;
 
-            if (sNavigation === sEmpMaster|| sNavigation === sEmpDep || sNavigation === sNumRange) {
+            if (sNavigation === sEmpMaster || sNavigation === sEmpDep || sNavigation === sNumRange) {
                 try {
                     const oData = await oCtx.requestObject();
                     if (sNavigation === sEmpMaster) {
                         var sTable = oData.operationHidden === false && sNavigation === sEmpMaster ? sEmpMasterDTD : sNavigation;
-                    } else if (sNavigation === sEmpDep ) {
-                        sTable = oData.operationHidden === false && sNavigation === sEmpDep  ? sEmpDepDTD : sNavigation;
+                    } else if (sNavigation === sEmpDep) {
+                        sTable = oData.operationHidden === false && sNavigation === sEmpDep ? sEmpDepDTD : sNavigation;
                     } else if (sNavigation === sNumRange) {
                         sTable = oData.operationHidden === false && sNavigation === sNumRange ? sNumRangeDTD : sNavigation;
                     }
@@ -424,7 +430,8 @@ sap.ui.define([
 
         onClickBack: function () {
             var oRouter = this.getOwnerComponent().getRouter();
-            oRouter.navTo("Dashboard");
+            HashChanger.getInstance().replaceHash("");
+            oRouter.navTo("ZCLAIM_TYPE");
         },
 
         onOpenViewSettings: function () {
@@ -485,6 +492,100 @@ sap.ui.define([
             var oBinding = oTable.getBinding("items");
             oBinding.sort(null);
             oBinding.filter([], "Application");
-        }
+        },
+
+        onExportToExcel: function (oEvent) {
+            var oItemTable = this.byId("ClaimItems--claimitemTable");
+            var oMainTable = this.byId("claimTable");
+
+            var bIsItems = !!(oItemTable && oItemTable.getBinding("items"));
+
+            var oTable = bIsItems ? oItemTable : oMainTable;
+            var oBinding = oTable.getBinding("items") || oTable.getBinding("rows");
+
+            if (!oBinding) {
+                MessageToast.show("No data to export");
+                return;
+            }
+
+            var aColumns = bIsItems ? [
+                { label: "Claim Type Item ID", property: "CLAIM_TYPE_ITEM_ID", type: EdmType.String },
+                { label: "Item Description", property: "CLAIM_TYPE_ITEM_DESC", type: EdmType.String },
+                { label: "Category ID", property: "CATEGORY_ID", type: EdmType.String },
+                { label: "Cost Center", property: "COST_CENTER", type: EdmType.String },
+                { label: "Material Code", property: "MATERIAL_CODE", type: EdmType.String },
+                { label: "Risk", property: "RISK", type: EdmType.String },
+                { label: "Submission Type", property: "SUBMISSION_TYPE", type: EdmType.String },
+                { label: "Start Date", property: "START_DATE", type: EdmType.Date },
+                { label: "End Date", property: "END_DATE", type: EdmType.Date },
+                { label: "Status", property: "STATUS", type: EdmType.String }
+            ] : [
+                { label: "Claim Type ID", property: "CLAIM_TYPE_ID", type: EdmType.String },
+                { label: "Claim Type Desc", property: "CLAIM_TYPE_DESC", type: EdmType.String },
+                { label: "GL Account", property: "GL_ACCOUNT", type: EdmType.String },
+                { label: "Request Type", property: "REQUEST_TYPE", type: EdmType.String },
+                { label: "Ind or Group", property: "IND_OR_GROUP", type: EdmType.String },
+                { label: "Project Claim", property: "PROJECT_CLAIM", type: EdmType.String },
+                { label: "Start Date", property: "START_DATE", type: EdmType.Date },
+                { label: "End Date", property: "END_DATE", type: EdmType.Date },
+                { label: "Status", property: "STATUS", type: EdmType.String }
+            ];
+
+            var oSheet = new Spreadsheet({
+                workbook: { columns: aColumns },
+                dataSource: oBinding,
+                fileName: bIsItems ? "ClaimTypeItems_Export.xlsx" : "ClaimType_Export.xlsx",
+                worker: false
+            });
+
+            oSheet.build()
+                .then(function () { MessageToast.show("Export successful"); })
+                .catch(function (oError) { MessageBox.error("Export failed: " + (oError.message || oError)); })
+                .finally(function () { oSheet.destroy(); });
+        },
+
+        onConfirmViewSettings: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var sDialogId = oSource.getId();
+
+            var oTable;
+            if (sDialogId.includes("itemViewSettingsDialog")) {
+                oTable = this.byId("ClaimItems--claimitemTable");
+            } else {
+                oTable = this.byId("claimTable");
+            }
+
+            var oBinding = oTable.getBinding("items") || oTable.getBinding("rows");
+            var mParams = oEvent.getParameters();
+
+            // Sort
+            var oSorter;
+            if (mParams.sortItem) {
+                oSorter = new Sorter(mParams.sortItem.getKey(), mParams.sortDescending);
+            }
+            oBinding.sort(oSorter);
+
+            // Filter
+            var aFilters = [];
+            var aMainFilters = [
+                { id: "filterClaimTypeId", property: "CLAIM_TYPE_ID" },
+                { id: "filterClaimTypeDesc", property: "CLAIM_TYPE_DESC" },
+                { id: "filterGlAccount", property: "GL_ACCOUNT" },
+                { id: "filterRequestType", property: "REQUEST_TYPE" },
+                { id: "filterIndOrGroup", property: "IND_OR_GROUP" },
+                { id: "filterProjectClaim", property: "PROJECT_CLAIM" },
+                { id: "filterStatus", property: "STATUS" }
+            ];
+
+            aMainFilters.forEach(function (oItem) {
+                var oInput = this.byId(oItem.id);
+                var sValue = oInput && oInput.getValue();
+                if (sValue) {
+                    aFilters.push(new Filter(oItem.property, FilterOperator.Contains, sValue));
+                }
+            }.bind(this));
+
+            oBinding.filter(aFilters, "Application");
+        },
     });
 });

@@ -11,19 +11,21 @@
     xmlns:card="sap.f.cards"
     xmlns:core="sap.ui.core"
     xmlns:layout="sap.ui.layout"
+    xmlns:table="sap.ui.table"
+    xmlns:unified="sap.ui.unified"
 >
     <Page showHeader="true">
-     <customHeader>
-        <Bar>
-            <contentRight>
-                <Button
-                    text="{i18n>back}"
-                    press="onClickBack"
-                    type="Transparent"
-                />
-            </contentRight>
-        </Bar>
-    </customHeader>
+        <customHeader>
+            <Bar>
+                <contentRight>
+                    <Button
+                        text="{i18n>back}"
+                        press="onClickBack"
+                        type="Transparent"
+                    />
+                </contentRight>
+            </Bar>
+        </customHeader>
         <content>
             <VBox
                 id="listContainer"
@@ -63,18 +65,24 @@
                         visible="{= ${/FeatureControl/operationEnabled} }"
                     />
                     <Button
-                    icon="sap-icon://action-settings"
-                    press="onOpenViewSettings"
-                    type="Transparent"
-                    tooltip="View Settings"
-                />
+                        icon="sap-icon://action-settings"
+                        press="onOpenViewSettings"
+                        type="Transparent"
+                        tooltip="View Settings"
+                    />
+                    <Button
+                        icon="sap-icon://excel-attachment"
+                        press="onExportToExcel"
+                        type="Transparent"
+                        tooltip="Export to Excel"
+                    />
                 </Toolbar>
 
                 <Table
                     id="claimTable"
                     width="90%"
                     items="{ path: '/ZCLAIM_TYPE',sorter : { path : 'modifiedAt' }}"
-                    mode="SingleSelectLeft"
+                    mode="MultiSelect"
                     selectionChange="onSelectionChange"
                     includeItemInSelection="true"
                 >
@@ -96,16 +104,16 @@
                         </Column>
                         <Column>
                             <Text text="{i18n>projclaim}" />
-                        </Column> 
+                        </Column>
                         <Column>
                             <Text text="{i18n>start_date}" />
-                        </Column> 
+                        </Column>
                         <Column>
                             <Text text="{i18n>req_i_end_date}" />
-                        </Column>  
+                        </Column>
                         <Column>
                             <Text text="{i18n>appr_status}" />
-                        </Column>                                                                                           
+                        </Column>
                         <Column width="2rem">
                             <Text text="" />
                         </Column>
@@ -126,9 +134,9 @@
 
                                 <Text text="{PROJECT_CLAIM}" />
 
-                                <Text text="{START_DATE}" />  
+                                <Text text="{START_DATE}" />
 
-                                <Text text="{END_DATE}"/>
+                                <Text text="{END_DATE}" />
 
                                 <Text text="{STATUS}" />
 
@@ -138,57 +146,136 @@
                                     tooltip="View Item"
                                     class="sapUiIconColorSubtle"
                                 />
-                            </cells> 
+                            </cells>
                         </ColumnListItem>
                     </items>
                 </Table>
-                 <dependents>
-                <ViewSettingsDialog
-                    id="viewSettingsDialog"
-                    confirm="onConfirmViewSettings"
-                    reset="onResetViewSettings"
-                >
-                    <sortItems>
-                        <ViewSettingsItem
-                            text="{i18n>claimtypeid}"
-                            key="CLAIM_TYPE_ID"
-                            selected="true"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>claimtypedesc}"
-                            key="CLAIM_TYPE_DESC"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>glacct}"
-                            key="GL_ACCOUNT"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>req_rtype}"
-                            key="REQUEST_TYPE"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>req_grptype}"
-                            key="IND_OR_GROUP"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>projclaim}"
-                            key="PROJECT_CLAIM"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>start_date}"
-                            key="START_DATE"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>req_i_end_date}"
-                            key="END_DATE"
-                        />
-                         <ViewSettingsItem
-                            text="{i18n>appr_status}"
-                            key="STATUS"
-                        />
-                    </sortItems>
-                </ViewSettingsDialog>
-            </dependents>
+                <dependents>
+                    <ViewSettingsDialog
+                        id="viewSettingsDialog"
+                        confirm="onConfirmViewSettings"
+                        reset="onResetViewSettings"
+                    >
+                        <sortItems>
+                            <ViewSettingsItem
+                                text="{i18n>claimtypeid}"
+                                key="CLAIM_TYPE_ID"
+                                selected="true"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>claimtypedesc}"
+                                key="CLAIM_TYPE_DESC"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>glacct}"
+                                key="GL_ACCOUNT"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>req_rtype}"
+                                key="REQUEST_TYPE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>req_grptype}"
+                                key="IND_OR_GROUP"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>projclaim}"
+                                key="PROJECT_CLAIM"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>start_date}"
+                                key="START_DATE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>req_i_end_date}"
+                                key="END_DATE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>appr_status}"
+                                key="STATUS"
+                            />
+                        </sortItems>
+                        <filterItems>
+                            <ViewSettingsCustomItem
+                                text="{i18n>claimtypeid}"
+                                key="CLAIM_TYPE_ID"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterClaimTypeId"
+                                        placeholder="Enter Claim Type ID..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>claimtypedesc}"
+                                key="CLAIM_TYPE_DESC"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterClaimTypeDesc"
+                                        placeholder="Enter Description..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>glacct}"
+                                key="GL_ACCOUNT"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterGlAccount"
+                                        placeholder="Enter GL Account..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>req_rtype}"
+                                key="REQUEST_TYPE"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterRequestType"
+                                        placeholder="Enter Request Type..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>req_grptype}"
+                                key="IND_OR_GROUP"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterIndOrGroup"
+                                        placeholder="Enter Group Type..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>projclaim}"
+                                key="PROJECT_CLAIM"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterProjectClaim"
+                                        placeholder="Enter Project Claim..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>appr_status}"
+                                key="STATUS"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterStatus"
+                                        placeholder="Enter Status..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                        </filterItems>
+                    </ViewSettingsDialog>
+                </dependents>
             </VBox>
             <VBox
                 id="objectContainer"

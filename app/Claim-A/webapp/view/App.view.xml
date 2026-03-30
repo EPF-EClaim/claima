@@ -100,9 +100,9 @@
                         expanded="false"
                     />
 
-                    <tnt:NavigationListGroup text="Configuration">
+                    <tnt:NavigationListGroup text="Configuration" expanded="false">
                         <tnt:NavigationListItem
-                        icon="sap-icon://database"
+                            icon="sap-icon://database"
                             text="Master Data"
                             enabled="true"
                             expanded="false"
@@ -111,120 +111,149 @@
                                 <tnt:NavigationListItem
                                     key="ZRISK"
                                     text="{i18n>risklevel}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZREQUEST_TYPE"
                                     text="{i18n>partype}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZCLAIM_TYPE"
                                     text="{i18n>claimtyp}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZSTATUS"
                                     text="{i18n>claimstat}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZCOUNTRY"
                                     text="{i18n>country}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZAREA"
                                     text="{i18n>region}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZVEHICLE_TYPE"
                                     text="{i18n>vehicletyp}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZSTATE"
                                     text="{i18n>state}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZDEPARTMENT"
                                     text="{i18n>dept}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZREGION"
                                     text="{i18n>region_ss}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZBRANCH"
                                     text="{i18n>branch}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZMARITAL_CAT"
                                     text="{i18n>mrgcat}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZINDIV_GROUP"
                                     text="{i18n>indgrp}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZMATERIAL_GROUP"
                                     text="{i18n>matgrp}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZLOC_TYPE"
                                     text="{i18n>loctyp}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZOFFICE_DISTANCE"
                                     text="{i18n>officedist}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZOFFICE_LOCATION"
                                     text="{i18n>officeloc}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZCURRENCY"
                                     text="{i18n>curr}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZVEHICLE_OWNERSHIP"
                                     text="{i18n>vehicle_ownership}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZPOSITION_EVENT_REASON"
                                     text="{i18n>positionreason}"
+                                    visible="{config>/visible}"
                                 />
 
                                 <tnt:NavigationListItem
                                     key="ZFAMILY_TIMING"
                                     text="{i18n>family_timing}"
+                                    visible="{config>/visible}"
                                 />
 
                                 <tnt:NavigationListItem
                                     key="ZTRANSPORT_PASSING"
                                     text="{i18n>transport_passing}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZTRANSFER_MODE"
                                     text="{i18n>transfer_mode}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZSTUDY_LEVELS"
                                     text="{i18n>study_lvl}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZPROFESIONAL_BODY"
                                     text="{i18n>prof_body}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZINSURANCE_PACKAGE"
                                     text="{i18n>ins_pkg}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZINSURANCE_PROVIDER"
                                     text="{i18n>ins_pvd}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZVEHICLE_CLASS"
                                     text="{i18n>vehicle_class}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZMOBILE_CATEGORY_PURPOSE"
                                     text="{i18n>mobilecat}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZBUDGET"
@@ -233,10 +262,12 @@
                                 <tnt:NavigationListItem
                                     key="ZDB_STRUCTURE"
                                     text="{i18n>structure}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZROLEHIERARCHY"
                                     text="{i18n>rolehierarchy}"
+                                    visible="{config>/visible}"
                                 />
                             </tnt:items>
                         </tnt:NavigationListItem>
@@ -245,43 +276,53 @@
                             icon="sap-icon://employee"
                             enabled="true"
                             expanded="false"
+                            visible="{config>/visible}"
                         >
                             <tnt:items>
                                 <tnt:NavigationListItem
                                     key="ZEMP_MASTER"
                                     text="{i18n>empmaster}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZEMP_DEPENDENT"
                                     text="{i18n>empldep}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZEMP_DEPENDENT_TYPE"
                                     text="{i18n>deptype}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZEMP_TYPE"
                                     text="{i18n>empstat}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZMARITAL_STAT"
                                     text="{i18n>marital}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZEMP_RELATIONSHIP"
                                     text="{i18n>relationship}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZROLE"
                                     text="{i18n>role}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZUSER_TYPE"
                                     text="{i18n>usertyp}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZJOB_GROUP"
                                     text="{i18n>jobgrp}"
+                                    visible="{config>/visible}"
                                 />
                             </tnt:items>
                         </tnt:NavigationListItem>
@@ -290,72 +331,89 @@
                             icon="sap-icon://flight"
                             enabled="true"
                             expanded="false"
+                            visible="{config>/visible_ga_jkew}"
                         >
                             <tnt:items>
                                 <tnt:NavigationListItem
                                     key="ZLODGING_CAT"
                                     text="{i18n>lodgingcat}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZEMP_CA_PAYMENT"
                                     text="{i18n>cashadv}"
+                                    visible="{config>/visible_ga_jkew}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZROOM_TYPE"
                                     text="{i18n>hoteltyp}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZTRAVEL_DAYS"
                                     text="{i18n>traveldays}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZTRAVEL_TYPE"
                                     text="{i18n>travel_type}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZFARE_TYPE"
                                     text="{i18n>faretyp}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZHOTEL_LODGING"
                                     text="{i18n>hotellodging}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZCLAIM_BASIS"
                                     text="{i18n>claimbasis}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZRATE_KM"
                                     text="{i18n>rartekm}"
+                                    visible="{config>/visible}"
                                 />
 
                                 <tnt:NavigationListItem
                                     key="ZPERDIEM_ENT"
                                     text="{i18n>perdiem}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZCLAIM_CATEGORY"
                                     text="{i18n>claimcat}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZMETER_CUBE"
                                     text="{i18n>metercube}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZFLIGHT_CLASS"
                                     text="{i18n>flightclass}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZLENDER_NAME"
                                     text="{i18n>loan}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZSPORTS_REPRESENTATION"
                                     text="{i18n>sportrep}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZHOUSING_LOAN_SCHEME"
                                     text="{i18n>housing}"
+                                    visible="{config>/visible}"
                                 />
                             </tnt:items>
                         </tnt:NavigationListItem>
@@ -364,35 +422,43 @@
                             icon="sap-icon://action-settings"
                             enabled="true"
                             expanded="false"
+                            visible="{config>/visible}"
                         >
                             <tnt:items>
                                 <tnt:NavigationListItem
                                     key="ZNUM_RANGE"
                                     text="{i18n>claimsq}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZSUBMISSION_TYPE"
                                     text="{i18n>subtyp}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZREJECT_REASON"
                                     text="{i18n>rejreason}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZELIGIBILITY_RULE"
                                     text="{i18n>eligibility_rule}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZCONSTANTS"
                                     text="{i18n>constants}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZDISBURSEMENT_STATUS"
                                     text="{i18n>disbursement}"
+                                    visible="{config>/visible}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZPROJECT_HDR"
                                     text="{i18n>prjcode}"
+                                    visible="{config>/visible}"
                                 />
                             </tnt:items>
                         </tnt:NavigationListItem>

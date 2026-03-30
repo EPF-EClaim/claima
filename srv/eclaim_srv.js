@@ -122,13 +122,10 @@ module.exports = (srv) => {
         const emailFromToken = req.user?.attr?.email || req.user?.id || "";
         const email = String(emailFromToken).trim().toLowerCase();
         const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
-        const user_type = result?.USER_TYPE;
 
         let operationHidden = true;
-        // if (user_type === Constant.UserType.JKEW_ADMIN) {
         if(req.user.is(Constant.Admin.Admin_System)) {
             operationHidden = true;
-        // } else if (user_type === Constant.UserType.DTD_ADMIN || user_type === Constant.UserType.SUPER_ADMIN) {
         } else if (req.user.is(Constant.Admin.DTD_Admin)) {
             operationHidden = false;
         }
@@ -146,7 +143,12 @@ module.exports = (srv) => {
         const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
         const user_type = result?.USER_TYPE;
 
-        let operationHidden = (user_type === Constant.UserType.GA_ADMIN);
+        // let operationHidden = (user_type === Constant.UserType.GA_ADMIN);
+        let operationHidden = false;
+        if(req.user.is(Constant.Admin.Admin_CC)) {
+            operationHidden = true;
+        }
+
         return {
             operationHidden: operationHidden,
             operationEnabled: !operationHidden,
