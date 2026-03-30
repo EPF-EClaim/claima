@@ -119,6 +119,12 @@ sap.ui.define([
 			return iDiffDays;
 		},
 
+        /**
+         * Used to return date for Excel download functionality, based on object passed into method
+         * @public
+		 * @param {object} oValue object to be converted into date value
+		 * @returns {date} returns date
+         */
 		toDate: function (oValue) {
 
 			if (!oValue) return null;
@@ -151,6 +157,12 @@ sap.ui.define([
 			return null;
 		},
 
+        /**
+         * Used to return time for Excel download functionality, based on object passed into method
+         * @public
+		 * @param {object} oValue object to be converted into date value
+		 * @returns {date} returns date variable with hours, minutes, seconds populated
+         */
 		toTime: function (oValue) {
 
 			if (!oValue) return null;
