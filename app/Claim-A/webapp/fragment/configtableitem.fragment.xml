@@ -72,7 +72,7 @@
                 />
                 <Button
                     icon="sap-icon://action-settings"
-                    press="onOpenViewSettings"
+                    press="onOpenViewItemSettings"
                     type="Transparent"
                     tooltip="View Settings"
                 />
@@ -140,6 +140,158 @@
                     </ColumnListItem>
                 </items>
             </Table>
+            <!-- <dependents>
+             <ViewSettingsDialog
+                        id="viewSettingsDialogItem"
+                        confirm="onConfirmViewSettings"
+                        reset="onResetViewSettings"
+                    >
+                        <sortItems >
+                            <ViewSettingsItem
+                                text="{i18n>claimtypeitemid}"
+                                key="CLAIM_TYPE_ITEM_ID"
+                                
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>claimtypedesc}"
+                                key="CLAIM_TYPE_DESC"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>categoryid}"
+                                key="CATEGORY_ID"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>req_cc}"
+                                key="COST_CENTER"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>materialcode}"
+                                key="MATERIAL_CODE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>risk}"
+                                key="RISK"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>submitted_type}"
+                                key="SUBMISSION_TYPE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>req_i_start_date}"
+                                key="START_DATE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>req_i_end_date}"
+                                key="END_DATE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>appr_status}"
+                                key="STATUS"
+                            />
+                        </sortItems>
+                        <filterItems>
+                            <ViewSettingsCustomItem
+                                text="{i18n>claimtypeitemid}"
+                                key="CLAIM_TYPE_ID"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterClaimTypeItemId"
+                                        placeholder="Enter Claim Type ID..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>claimtypedesc}"
+                                key="CLAIM_TYPE_DESC"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterClaimTypeItemDesc"
+                                        placeholder="Enter Description..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>categoryid}"
+                                key="CATEGORY_ID"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterCategoryId"
+                                        placeholder="Enter Category Id..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>req_cc}"
+                                key="COST_CENTER"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterCostcenter"
+                                        placeholder="Enter Cost Center"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>materialcode}"
+                                key="MATERIAL_CODE"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterMaterialCode"
+                                        placeholder="Enter Material Code..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>risk}"
+                                key="RISK"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterRisk"
+                                        placeholder="Enter Risk..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>req_i_start_date}"
+                                key="START_DATE"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterItemStartDate"
+                                        placeholder="Enter Start Date..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>req_i_end_date}"
+                                key="END_DATE"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterItemEndDate"
+                                        placeholder="Enter End Date..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>appr_status}"
+                                key="STATUS"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterItemStatus"
+                                        placeholder="Enter Status..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                        </filterItems>
+                    </ViewSettingsDialog>
+            </dependents> -->
         </VBox>
     </VBox>
 </core:FragmentDefinition>

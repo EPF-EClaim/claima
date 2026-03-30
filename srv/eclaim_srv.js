@@ -213,6 +213,8 @@ module.exports = (srv) => {
             //if record hasnt been created yet, direct insert record into database
             //else, update the record but exclude the five fields
             for (const row of budget) {
+                total_budget = 0;
+                total_budget_balance = 0;
 
                 const existing = await tx.read(ZBUDGET)
                     .where({
@@ -244,6 +246,7 @@ module.exports = (srv) => {
                     total_budget_balance = current_budget + consumed;
                     updatePayload.CURRENT_BUDGET = total_budget.toFixed(2);
                     updatePayload.BUDGET_BALANCE = total_budget_balance.toFixed(2);
+                    
 
                     await tx.run(
                         UPDATE(ZBUDGET)
@@ -256,9 +259,10 @@ module.exports = (srv) => {
                                 MATERIAL_GROUP: row.MATERIAL_GROUP
                             })
                     );
+                    message =  updatePayload.BUDGET_BALANCE 
                 }
             }
-            return 'Records updated';
+            return'Records updated';
         } catch (error) {
             req.error(400, `Fail creating record: ${error.message}`);
         }

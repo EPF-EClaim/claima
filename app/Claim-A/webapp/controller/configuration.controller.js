@@ -14,7 +14,7 @@ sap.ui.define([
     "sap/m/MessageBox",
     "claima/utils/Utility",
     "sap/ui/export/Spreadsheet",
-    "sap/ui/export/EdmType", 
+    "sap/ui/export/EdmType",
     "sap/ui/core/routing/HashChanger"
 ], (Controller,
     Sorter,
@@ -30,7 +30,7 @@ sap.ui.define([
     MessageToast,
     MessageBox,
     Utility,
-    Spreadsheet, 
+    Spreadsheet,
     EdmType,
     HashChanger
 ) => {
@@ -379,7 +379,12 @@ sap.ui.define([
                     oData = {},
                     oSelected = null;
             } else {
-                oSelected = oTable.getSelectedItem();
+                oSelected = oTable.getSelectedItems();
+
+                // If(oSelected.length > 1) {
+                //     MessageToast.show("You can only edit one record at a time.");
+                //     return;
+                // } 
                 sPath = oSelected.getBindingContext().getBinding().sPath === 'Items' ? '/ZCLAIM_TYPE/Items' : oSelected.getBindingContext().getBinding().sPath;
                 oData = oSelected.getBindingContext().getObject();
             }
@@ -430,52 +435,15 @@ sap.ui.define([
 
         onClickBack: function () {
             var oRouter = this.getOwnerComponent().getRouter();
-            HashChanger.getInstance().replaceHash("");
-            oRouter.navTo("ZCLAIM_TYPE");
+            oRouter.navTo("Dashboard");
         },
 
         onOpenViewSettings: function () {
             this.byId("viewSettingsDialog").open();
         },
 
-        onOpenItemViewSettings: function () {
-            this.byId("itemViewSettingsDialog").open();
-        },
-
-        onConfirmViewSettings: function (oEvent) {
-            var oSource = oEvent.getSource();
-            var sDialogId = oSource.getId();
-
-            var oTable;
-            if (sDialogId.includes("itemViewSettingsDialog")) {
-                oTable = this.byId("claimitemTable");
-            } else {
-                oTable = this.byId("claimTable");
-            }
-
-            var oBinding = oTable.getBinding("items");
-            var mParams = oEvent.getParameters();
-
-            var oSorter;
-            if (mParams.sortItem) {
-                oSorter = new Sorter(
-                    mParams.sortItem.getKey(),
-                    mParams.sortDescending
-                );
-            }
-
-            var aFilters = [];
-            if (mParams.filterItems && mParams.filterItems.length > 0) {
-                mParams.filterItems.forEach(function (oItem) {
-                    var sParts = oItem.getKey().split("___");
-                    aFilters.push(
-                        new Filter(sParts[0], FilterOperator.EQ, sParts[1])
-                    );
-                });
-            }
-
-            oBinding.sort(oSorter);
-            oBinding.filter(aFilters, "Application");
+        onOpenViewItemSettings: function () {
+            this.byId("viewSettingsDialogItem").open();
         },
 
         onResetViewSettings: function (oEvent) {
@@ -549,7 +517,7 @@ sap.ui.define([
             var sDialogId = oSource.getId();
 
             var oTable;
-            if (sDialogId.includes("itemViewSettingsDialog")) {
+            if (sDialogId.includes("viewSettingsDialogItem")) {
                 oTable = this.byId("ClaimItems--claimitemTable");
             } else {
                 oTable = this.byId("claimTable");

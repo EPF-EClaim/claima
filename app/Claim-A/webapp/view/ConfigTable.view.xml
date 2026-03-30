@@ -36,7 +36,7 @@
                 <Toolbar width="90%">
                     <Title text="{i18n>conf_zclaimtype}" />
                     <ToolbarSpacer />
-                    <Button
+                    <!-- <Button
                         id="EditHeader"
                         text="Edit"
                         press="onEdit"
@@ -49,6 +49,18 @@
                         press="onCopy"
                         enabled="{view>/hasSelection}"
                         visible="{= ${/FeatureControl/operationEnabled} }"
+                    /> -->
+                    <Button
+                        id="EditHeader"
+                        text="Edit"
+                        press="onEdit"
+                        enabled="{view>/hasSelection}"
+                    />
+                    <Button
+                        id="CopyHeader"
+                        text="Copy"
+                        press="onCopy"
+                        enabled="{view>/hasSelection}"
                     />
                     <Button
                         id="CreateHeader"
@@ -150,12 +162,11 @@
                         </ColumnListItem>
                     </items>
                 </Table>
-                <dependents>
+                <dependents >
                     <ViewSettingsDialog
                         id="viewSettingsDialog"
                         confirm="onConfirmViewSettings"
                         reset="onResetViewSettings"
-                        visible="{claimheader>visible}"
                     >
                         <sortItems >
                             <ViewSettingsItem
@@ -276,11 +287,10 @@
                             </ViewSettingsCustomItem>
                         </filterItems>
                     </ViewSettingsDialog>
-                    <ViewSettingsDialog
+                     <ViewSettingsDialog
                         id="viewSettingsDialogItem"
                         confirm="onConfirmViewSettings"
                         reset="onResetViewSettings"
-                        visible="{claimhitem>visible}"
                     >
                         <sortItems >
                             <ViewSettingsItem
@@ -290,26 +300,30 @@
                             />
                             <ViewSettingsItem
                                 text="{i18n>claimtypedesc}"
-                                key="CLAIM_TYPE_DESC"
+                                key="CLAIM_TYPE_ITEM_DESC"
                             />
                             <ViewSettingsItem
-                                text="{i18n>glacct}"
-                                key="GL_ACCOUNT"
+                                text="{i18n>categoryid}"
+                                key="CATEGORY_ID"
                             />
                             <ViewSettingsItem
-                                text="{i18n>req_rtype}"
-                                key="REQUEST_TYPE"
+                                text="{i18n>req_cc}"
+                                key="COST_CENTER"
                             />
                             <ViewSettingsItem
-                                text="{i18n>req_grptype}"
-                                key="IND_OR_GROUP"
+                                text="{i18n>materialcode}"
+                                key="MATERIAL_CODE"
                             />
                             <ViewSettingsItem
-                                text="{i18n>projclaim}"
-                                key="PROJECT_CLAIM"
+                                text="{i18n>risk}"
+                                key="RISK"
                             />
                             <ViewSettingsItem
-                                text="{i18n>start_date}"
+                                text="{i18n>submitted_type}"
+                                key="SUBMISSION_TYPE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>req_i_start_date}"
                                 key="START_DATE"
                             />
                             <ViewSettingsItem
@@ -323,68 +337,90 @@
                         </sortItems>
                         <filterItems>
                             <ViewSettingsCustomItem
-                                text="{i18n>claimtypeid}"
-                                key="CLAIM_TYPE_ID"
+                                text="{i18n>claimtypeitemid}"
+                                key="CLAIM_TYPE_ITEM_ID"
                             >
                                 <customControl>
                                     <Input
-                                        id="filterClaimTypeId"
-                                        placeholder="Enter Claim Type ID..."
+                                        id="filterClaimTypeItemId"
+                                        placeholder="Enter Claim Type Item ID..."
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
                             <ViewSettingsCustomItem
                                 text="{i18n>claimtypedesc}"
-                                key="CLAIM_TYPE_DESC"
+                                key="CLAIM_TYPE_ITEM_DESC"
                             >
                                 <customControl>
                                     <Input
-                                        id="filterClaimTypeDesc"
+                                        id="filterClaimTypeItemDesc"
                                         placeholder="Enter Description..."
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
                             <ViewSettingsCustomItem
-                                text="{i18n>glacct}"
-                                key="GL_ACCOUNT"
+                                text="{i18n>categoryid}"
+                                key="CATEGORY_ID"
                             >
                                 <customControl>
                                     <Input
-                                        id="filterGlAccount"
-                                        placeholder="Enter GL Account..."
+                                        id="filterCategoryId"
+                                        placeholder="Enter Category Id..."
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
                             <ViewSettingsCustomItem
-                                text="{i18n>req_rtype}"
-                                key="REQUEST_TYPE"
+                                text="{i18n>req_cc}"
+                                key="COST_CENTER"
                             >
                                 <customControl>
                                     <Input
-                                        id="filterRequestType"
-                                        placeholder="Enter Request Type..."
+                                        id="filterCostcenter"
+                                        placeholder="Enter Cost Center"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
                             <ViewSettingsCustomItem
-                                text="{i18n>req_grptype}"
-                                key="IND_OR_GROUP"
+                                text="{i18n>materialcode}"
+                                key="MATERIAL_CODE"
                             >
                                 <customControl>
                                     <Input
-                                        id="filterIndOrGroup"
-                                        placeholder="Enter Group Type..."
+                                        id="filterMaterialCode"
+                                        placeholder="Enter Material Code..."
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
                             <ViewSettingsCustomItem
-                                text="{i18n>projclaim}"
-                                key="PROJECT_CLAIM"
+                                text="{i18n>risk}"
+                                key="RISK"
                             >
                                 <customControl>
                                     <Input
-                                        id="filterProjectClaim"
-                                        placeholder="Enter Project Claim..."
+                                        id="filterRisk"
+                                        placeholder="Enter Risk..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>req_i_start_date}"
+                                key="START_DATE"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterItemStartDate"
+                                        placeholder="Enter Start Date..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>req_i_end_date}"
+                                key="END_DATE"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterItemEndDate"
+                                        placeholder="Enter End Date..."
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -394,7 +430,7 @@
                             >
                                 <customControl>
                                     <Input
-                                        id="filterStatus"
+                                        id="filterItemStatus"
                                         placeholder="Enter Status..."
                                     />
                                 </customControl>

@@ -1282,7 +1282,7 @@
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
-                                        "selectAll": true,
+                                        "selectAll": false,
                                         "selectionMode": "Multi",
                                         "personalization": {
                                             "column": false,
@@ -4449,7 +4449,7 @@
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
-                                        "selectAll": true,
+                                        "selectAll": false,
                                         "selectionMode": "Multi",
                                         "personalization": {
                                             "column": false,
