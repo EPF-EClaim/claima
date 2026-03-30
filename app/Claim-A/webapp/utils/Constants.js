@@ -243,6 +243,10 @@ sap.ui.define([
             "HEADER": "HEADER",
             "ITEM": "ITEM"
         },
+        "ClaimFieldVisibilityConfig": {
+            "SUBMISSION_TYPE": "CLAIM",
+            "ITEM": "ITEM"
+        },
         "SubmissionTypePrefix": {
             "REQUEST": "REQ",
             "CLAIM": "CLM"
