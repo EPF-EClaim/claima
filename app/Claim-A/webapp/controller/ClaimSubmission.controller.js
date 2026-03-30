@@ -3671,11 +3671,6 @@ sap.ui.define([
 		},
 
 		onBack_ClaimSubmission: async function (oSideNav) {
-			// disable view attachment button if enabled
-			if (this.byId("button_claimsummary_viewattachment") && this.byId("button_claimsummary_viewattachment").getEnabled()) {
-				this.byId("button_claimsummary_viewattachment").setEnabled(false);
-			}
-
 			// remove approval log fragment
 			if (await this._getFormFragment("approval_log")) {
 				this._setApprovalLog(false);
