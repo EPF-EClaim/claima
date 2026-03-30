@@ -2675,6 +2675,58 @@ sap.ui.define([
 			}
 		},
 
+		onSelect_ClaimDetails_VehicleType: async function () {
+			if (this.byId("input_claimdetails_input_rate_per_km").getVisible()) {
+				
+			}
+			var oInputModel = this.getView().getModel("claimitem_input");
+			const oModel = this.getOwnerComponent().getModel();
+			// filter by vehicle type or * (all)
+			const oFilterVehicleType = new Filter({
+				filters: [
+					new Filter("VEHICLE_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/vehicle_type")),
+					new Filter("VEHICLE_TYPE_ID", FilterOperator.EQ, '*')
+				],
+				and: false
+			});
+			// filter by claim type item or * (all)
+			const oFilterClaimTypeItem = new Filter({
+				filters: [
+					new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_item_id")),
+					new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, '*')
+				],
+				and: false
+			});
+			const oListBinding = oModel.bindList("/ZRATE_KM", null, [
+				new Sorter("CLAIM_TYPE_ITEM_ID", true),
+				new Sorter("VEHICLE_TYPE_ID", true)
+			], [
+				oFilterVehicleType,
+				oFilterClaimTypeItem,
+				// ensure status is active
+				new Filter("STATUS", FilterOperator.EQ, this._oConstant.MasterData.ACTIVE),
+				new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
+			]);
+
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					oInputModel.setProperty("/claim_item/rate_per_km", oData.RATE_KM_ID)
+					oInputModel.setProperty("/claim_item/descr/rate_per_km", oData.RATE)
+				} else {
+					MessageToast.show(Utility.getText("msg_claimdetails_input_rateperkm"));
+				}
+			} catch (oError) {
+				MessageToast.show(Utility.getText("msg_claimdetails_input_rateperkm_err", [oError]));
+			} finally {
+				BusyIndicator.hide();
+			}
+		},
+
 		onSelect_ClaimDetails_Region: async function () {
 			await this._calculatePerDiem();
 		},

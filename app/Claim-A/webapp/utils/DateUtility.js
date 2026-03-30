@@ -76,6 +76,19 @@ sap.ui.define([
         },
         
         /**
+         * Get Hana Date format for binding calls
+         */
+		getHanaDate: function (dDateInput) {
+			if (dDateInput) {
+				var dDate = new Date(dDateInput);
+				var sDateString = dDate.getFullYear() + '-' + ('0' + (dDate.getMonth() + 1)).slice(-2) + '-' + ('0' + dDate.getDate()).slice(-2);
+				return sDateString;
+			} else {
+				return null;
+			}
+		},
+
+        /**
          * Merge Date and Time
          */
         mergeDateTime (oDate, sTime) {
