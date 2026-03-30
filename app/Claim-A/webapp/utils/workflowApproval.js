@@ -85,7 +85,7 @@ sap.ui.define([
 			const sClaimsSubmissionDate = aClaimHeaderData[0].SUBMITTED_DATE;
 			const sClaimSubmissionYear = new Date(aClaimHeaderData[0].SUBMITTED_DATE).getFullYear();
             const sClaimsFinalCC = sClaimsAltCC ?? sClaimsCC ?? null;
-            const bClaimCashAdvance = false;
+            let bClaimCashAdvance = false;
             const iClaimCashAdvanceAmt = Number(aClaimHeaderData[0].CASH_ADVANCE_AMOUNT);
 
             // Set cash advance boolean based on cash advance amount. If cash advance amount > 0, cash advance = TRUE
