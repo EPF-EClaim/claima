@@ -156,6 +156,7 @@ sap.ui.define([
 		},
 
 		async _showItemCreate(bEdit) {
+			this._loadSelections();
 			const oPage = this.byId("request_form");
 			if (!oPage) return;
 
@@ -189,10 +190,14 @@ sap.ui.define([
 			if (bApproval) {
 				var aApprover = await ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId);
 				for (const row of aApprover) {
-					if (row.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL && 
+					if ((row.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL || 
+						row.STATUS === this._oConstant.ClaimStatus.SEND_BACK) && 
 						(row.SUBSTITUTE_APPROVER_ID == this._oSessionModel.getProperty("/userId") || 
 							row.APPROVER_ID == this._oSessionModel.getProperty("/userId"))) {
-						this._oReqModel.setProperty('/view', 'approver');
+						this._oReqModel.setProperty('/view', this._oConstant.PARMode.APPROVER);
+						break;
+					} else {
+						this._oReqModel.setProperty('/view', this._oConstant.PARMode.VIEW);
 					}
 				}
 				const oApproval = await this._getFormFragment("approval_log");
