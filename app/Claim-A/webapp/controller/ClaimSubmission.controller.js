@@ -2048,8 +2048,19 @@ sap.ui.define([
 					this.byId("input_claimdetails_input_amount").setEditable(true);
 				}
 			}
-			const _oItem = oInputModel.getProperty("/claim_item") || {};
-			var iDiffDays = DateUtility.calculateNumberOfDays({}, _oItem);
+			// calculate number of days
+			var oHeader = {};
+			var oItem = {};
+			//// get header if claim type item is DOBI
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DOBI) {
+				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+				oHeader =  oClaimSubmissionModel.getProperty("/claim_header") || {};
+			}
+			//// get item if header is not populated
+			if (Object.keys(oHeader).length === 0) {
+				oItem = oInputModel.getProperty("/claim_item") || {};
+			}
+			var iDiffDays = DateUtility.calculateNumberOfDays(oHeader, oItem);
 			oInputModel.setProperty("/claim_item/no_of_days", iDiffDays);
 		},
 
@@ -2620,9 +2631,20 @@ sap.ui.define([
 					await this._calculatePerDiem();
 				}
 				// Calculate number of days
-				const _oItem = this.getView().getModel("claimitem_input").getProperty("/claim_item") || {};
-				var iDiffDays = DateUtility.calculateNumberOfDays({}, _oItem);
-				this.getView().getModel("claimitem_input").setProperty("/claim_item/no_of_days", iDiffDays);
+				var oHeader = {};
+				var oItem = {};
+				//// get header if claim type item is DOBI
+				var oInputModel = this.getView().getModel("claimitem_input");
+				if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DOBI) {
+					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+					oHeader =  oClaimSubmissionModel.getProperty("/claim_header") || {};
+				}
+				//// get item if header is not populated
+				if (Object.keys(oHeader).length === 0) {
+					oItem = oInputModel.getProperty("/claim_item") || {};
+				}
+				var iDiffDays = DateUtility.calculateNumberOfDays(oHeader, oItem);
+				oInputModel.setProperty("/claim_item/no_of_days", iDiffDays);
 			}
 		},
 

@@ -93,8 +93,8 @@ sap.ui.define([
         },
 
         calculateNumberOfDays: function(oHeader, oItem) {
-			const dHeaderStart = oHeader.tripstartdate ? new Date(oHeader.tripstartdate) : null;
-			const dHeaderEnd = oHeader.tripenddate ? new Date(oHeader.tripenddate) : null;
+			const dHeaderStart = oHeader.tripstartdate ? new Date(oHeader.tripstartdate) : oHeader.trip_start_date ? new Date(oHeader.trip_start_date) : null;
+			const dHeaderEnd = oHeader.tripenddate ? new Date(oHeader.tripenddate) : oHeader.trip_end_date ? new Date(oHeader.trip_end_date) : null;
 
 			const dItemStart = oItem.start_date ? new Date(oItem.start_date) : null;
 			const dItemEnd = oItem.end_date ? new Date(oItem.end_date) : null;
