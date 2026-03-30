@@ -155,12 +155,138 @@
                         id="viewSettingsDialog"
                         confirm="onConfirmViewSettings"
                         reset="onResetViewSettings"
+                        visible="{claimheader>visible}"
                     >
-                        <sortItems>
+                        <sortItems >
                             <ViewSettingsItem
                                 text="{i18n>claimtypeid}"
                                 key="CLAIM_TYPE_ID"
-                                selected="true"
+                                
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>claimtypedesc}"
+                                key="CLAIM_TYPE_DESC"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>glacct}"
+                                key="GL_ACCOUNT"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>req_rtype}"
+                                key="REQUEST_TYPE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>req_grptype}"
+                                key="IND_OR_GROUP"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>projclaim}"
+                                key="PROJECT_CLAIM"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>start_date}"
+                                key="START_DATE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>req_i_end_date}"
+                                key="END_DATE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>appr_status}"
+                                key="STATUS"
+                            />
+                        </sortItems>
+                        <filterItems>
+                            <ViewSettingsCustomItem
+                                text="{i18n>claimtypeid}"
+                                key="CLAIM_TYPE_ID"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterClaimTypeId"
+                                        placeholder="Enter Claim Type ID..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>claimtypedesc}"
+                                key="CLAIM_TYPE_DESC"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterClaimTypeDesc"
+                                        placeholder="Enter Description..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>glacct}"
+                                key="GL_ACCOUNT"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterGlAccount"
+                                        placeholder="Enter GL Account..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>req_rtype}"
+                                key="REQUEST_TYPE"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterRequestType"
+                                        placeholder="Enter Request Type..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>req_grptype}"
+                                key="IND_OR_GROUP"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterIndOrGroup"
+                                        placeholder="Enter Group Type..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>projclaim}"
+                                key="PROJECT_CLAIM"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterProjectClaim"
+                                        placeholder="Enter Project Claim..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>appr_status}"
+                                key="STATUS"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterStatus"
+                                        placeholder="Enter Status..."
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                        </filterItems>
+                    </ViewSettingsDialog>
+                    <ViewSettingsDialog
+                        id="viewSettingsDialogItem"
+                        confirm="onConfirmViewSettings"
+                        reset="onResetViewSettings"
+                        visible="{claimhitem>visible}"
+                    >
+                        <sortItems >
+                            <ViewSettingsItem
+                                text="{i18n>claimtypeitemid}"
+                                key="CLAIM_TYPE_ITEM_ID"
+                                
                             />
                             <ViewSettingsItem
                                 text="{i18n>claimtypedesc}"
