@@ -129,7 +129,7 @@
 					}"
 					change="onChange_ClaimDetails_ActualAmount"
 					liveChange="onChange_ClaimDetails_ActualAmount"
-					visible="{claimitem_property>/actual_amount/isVisible}"
+					visible="{claimitem_property>/actual_amount/is_visible}"
 					required="true"
 				/>
 
@@ -171,8 +171,8 @@
 						}
 					}"
 					required="true"
-					editable="{= ${claimitem_property>/actual_amount/isVisible} === false}"
-					visible="false"
+					editable="{= ${claimitem_property>/actual_amount/is_visible} === false}"
+					visible="{claimitem_property>/amount/is_visible}"
 				/>
 
 				<!-- % Compensation -->

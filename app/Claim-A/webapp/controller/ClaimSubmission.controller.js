@@ -2065,7 +2065,10 @@ sap.ui.define([
 			// set claim item property model
 			var oClaimItemPropertyData = {
 				actual_amount: {
-					isVisible: false
+					is_visible: false
+				},
+				amount: {
+					is_visible: false
 				}
 			};
 			var oModel = new JSONModel(oClaimItemPropertyData);
@@ -2614,8 +2617,8 @@ sap.ui.define([
 		 * @public
 		 */
 		onChange_ClaimDetails_ActualAmount: function () {
-			// check if amount field is visible
-			if (this.byId("input_claimdetails_input_amount").getVisible()) {
+			// verify if property exists and 'amount' field is visible
+			if (this.getView().getModel("claimitem_property")?.getProperty("/amount/is_visible")) {
 				// set 'amount' property to 50% of actual amount
 				var oInputModel = this.getView().getModel("claimitem_input");
 				oInputModel.setProperty("/claim_item/amount", oInputModel.getProperty("/claim_item/actual_amount") * 0.5);
