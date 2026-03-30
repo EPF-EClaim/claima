@@ -43,15 +43,22 @@ sap.ui.define([
                 const { ListMode } = library;
 
                 const oTable = new Table(oContainer.getId() + "-Table", {
-                    width: oContainer.isTypeahead() ? "13rem" : "100%",
+                    width: "100%",
                     mode: oContainer.isTypeahead() ?
                         ListMode.SingleSelectMaster :
                         ListMode.SingleSelectLeft,
 
                     // Build table columns from payload
-                    columns: oPayload.columns.map(col => new Column({
-                        header: new Label({ text: col })
-                    })),
+                    columns: [
+                        new Column({
+                            width: "75px",
+                            header: new Label({ text: oPayload.columns[0] })
+                        }),
+                        new Column({
+                            width: "auto",
+                            header: new Label({ text: oPayload.columns[1] })
+                        })
+                    ],
 
                     // Bind table rows dynamically
                     items: {
@@ -70,6 +77,43 @@ sap.ui.define([
                     }
                 });
 
+                // Resize Popover
+                function resizePopoverToField() {
+
+                    const oField = oValueHelp.getControl();
+                    if (!oField) return;
+
+                    const oDom = oField.getDomRef();
+                    if (!oDom) return;
+
+                    const fieldWidth = oDom.getBoundingClientRect().width;
+
+                    const oInnerPopover = oContainer.getAggregation("_container");
+
+                    if (oInnerPopover?.setContentWidth) {
+                        oInnerPopover.setContentWidth(fieldWidth + "px");
+                    }
+
+                    if (oTable?.setWidth) {
+                        oTable.setWidth(fieldWidth + "px");
+                    }
+                }
+
+                // Hook into the REAL popover's rendering lifecycle
+                const oInnerPopover = oContainer.getAggregation("_container");
+                if (oInnerPopover) {
+                    oInnerPopover.addEventDelegate({
+                        onAfterRendering: resizePopoverToField
+                    });
+                }
+
+                // Apply after table renders
+                oTable.addEventDelegate({
+                    onAfterRendering: resizePopoverToField
+                });
+
+                // Required for MDC
+                oContent.setUseAsValueHelp(true);
                 oContent.setTable(oTable);
                 resolve();
             }, reject);
@@ -82,6 +126,12 @@ sap.ui.define([
     // -----------------------------------------------------------------------
     DynamicVH.updateBindingInfo = function (oValueHelp, oContent, oBindingInfo) {
         ValueHelpDelegate.updateBindingInfo(oValueHelp, oContent, oBindingInfo);
+
+        oBindingInfo.length = 300;
+        if (!oBindingInfo.parameters) {
+            oBindingInfo.parameters = {};
+        }
+        oBindingInfo.parameters.threshold = 300;
 
         const oPayload = oValueHelp.getPayload();
 
