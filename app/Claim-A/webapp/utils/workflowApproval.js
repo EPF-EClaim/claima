@@ -85,10 +85,11 @@ sap.ui.define([
 			const sClaimsSubmissionDate = aClaimHeaderData[0].SUBMITTED_DATE;
 			const sClaimSubmissionYear = new Date(aClaimHeaderData[0].SUBMITTED_DATE).getFullYear();
             const sClaimsFinalCC = sClaimsAltCC ?? sClaimsCC ?? null;
-            const bClaimCashAdvance = false;
+            let bClaimCashAdvance = false;
+            const iClaimCashAdvanceAmt = Number(aClaimHeaderData[0].CASH_ADVANCE_AMOUNT);
 
             // Set cash advance boolean based on cash advance amount. If cash advance amount > 0, cash advance = TRUE
-            if(aClaimHeaderData[0].CASH_ADVANCE_AMOUNT > 0){
+            if(iClaimCashAdvanceAmt > 0){
                 bClaimCashAdvance = true;
             }
 
@@ -221,6 +222,7 @@ sap.ui.define([
 			}
 			
             const sSystemDate = new Date().toLocaleDateString('en-CA');
+            const sSystemYear = new Date(sSystemDate).getFullYear();
 			//var iDateDiff = new Date(dFurthestReceiptDate) - new Date(sClaimsSubmissionDate);
             var iDateDiff = new Date(dFurthestReceiptDate) - new Date(sSystemDate);
 			iDateDiff = iDateDiff/86400000;
@@ -322,9 +324,9 @@ sap.ui.define([
                 const sWorkflowName =  aWorkflowStepData[0].WORKFLOW_NAME;
                 const iWorkflowApprLvl =  aWorkflowStepData[0].WORKFLOW_APPROVAL_LEVELS;
                 if(iWorkflowApprLvl > 1){
-                    var aWorkflowApprStep = sWorkflowName.split("-");
+                    var aWorkflowApprStep = sWorkflowName.split("-").map(s => s.trim());
                 }else{
-                    aWorkflowApprStep = [sWorkflowName];
+                    aWorkflowApprStep = [sWorkflowName.trim()];
                 }
 
 
@@ -371,7 +373,7 @@ sap.ui.define([
                             switch(aWorkflowApprStep[i]){
                                 case Constants.Approvers.BUDGET:
                                     if(sClaimsFinalCC != null){
-                                        oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sClaimsFinalCC, sSystemDate);
+                                        oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sClaimsFinalCC, sSystemYear);
                                         if(!oBudgetDetails){
                                             MessageToast.show(Utility.getText("msg_failed_no_budget"));
                                             return false;
@@ -603,6 +605,7 @@ sap.ui.define([
             const sParFinalCC = sParAltCC ?? sParCC ?? null;
 
             const sSystemDate = new Date().toLocaleDateString('en-CA');
+            const sSystemYear = new Date(sSystemDate).getFullYear();
 
             // Retrieve claimant details for use of entire function
             const oClaimantDetails = await WorkflowApproverHelper.getEmployeeDetails(oModel, sEmpID);
@@ -795,7 +798,7 @@ sap.ui.define([
                             switch(aWorkflowApprStep[i]){
                                 case Constants.Approvers.BUDGET:
                                     if(sParFinalCC != null){
-                                        oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sParFinalCC, sSystemDate);
+                                        oBudgetDetails = await WorkflowApproverHelper.getBudgetDetails(oModel, sParFinalCC, sSystemYear);
                                         if(!oBudgetDetails){
                                             MessageToast.show(Utility.getText("msg_failed_no_budget"));
                                             return false;
