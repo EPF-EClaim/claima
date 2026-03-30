@@ -3671,7 +3671,7 @@ sap.ui.define([
 		},
 
 		onBack_ClaimSubmission: async function (oSideNav) {
-			// disable view attachment button if disabled
+			// disable view attachment button if enabled
 			if (this.byId("button_claimsummary_viewattachment") && this.byId("button_claimsummary_viewattachment").getEnabled()) {
 				this.byId("button_claimsummary_viewattachment").setEnabled(false);
 			}
