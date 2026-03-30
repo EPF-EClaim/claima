@@ -9,6 +9,7 @@
     "@sap-cloud-sdk/resilience": "^4",
     "@sap/approuter": "^20.10.0",
     "@sap/xssec": "^4",
+    "cds": "^0.2.0",
     "express": "^4",
     "xlsx": "^0.18.5",
     "xml-js": "^1.6.11"
@@ -50,7 +51,7 @@
       "deploy-format": "hdbtable"
     },
     "requires": {
-      "IS_NonProd_Conn": { 
+      "IS_NonProd_Conn": {
         "kind": "odata",
         "credentials": {
           "destination": "IS_NonProd_Conn"

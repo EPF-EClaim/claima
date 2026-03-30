@@ -1560,249 +1560,253 @@ sap.ui.define([
 		},
 
 		async onDownloadExcelReport() {
-			const oView = this.getView();
-			const XLSX = window.XLSX;
-			const that = this;
+            const oView = this.getView();
+            const XLSX = window.XLSX;
+            const that = this;
 
-			function _num(val) {
-				if (val === null || val === undefined || val === "") return null;
-				const n = Number(val);
-				return Number.isFinite(n) ? n : null;
-			}
+            function _num(val) {
+                if (val === null || val === undefined || val === "") return null;
+                const n = Number(val);
+                return Number.isFinite(n) ? n : null;
+            }
 
-			function _applyColumnMeta(ws, columns, startDataRow) {
-				ws["!cols"] = columns.map(c => ({ wch: c.width || 12 }));
+            function _applyColumnMeta(ws, columns, startDataRow) {
+                ws["!cols"] = columns.map(c => ({ wch: c.width || 12 }));
 
-				const ref = ws["!ref"];
-				if (!ref) return;
+                const ref = ws["!ref"];
+                if (!ref) return;
 
-				const range = XLSX.utils.decode_range(ref);
+                const range = XLSX.utils.decode_range(ref);
 
-				for (let c = 0; c < columns.length; c++) {
-					const meta = columns[c];
-					if (!meta.type) continue;
+                for (let c = 0; c < columns.length; c++) {
+                    const meta = columns[c];
+                    if (!meta.type) continue;
 
-					for (let r = startDataRow; r <= range.e.r; r++) {
-						const addr = XLSX.utils.encode_cell({ c, r });
-						const cell = ws[addr];
-						if (!cell) continue;
+                    for (let r = startDataRow; r <= range.e.r; r++) {
+                        const addr = XLSX.utils.encode_cell({ c, r });
+                        const cell = ws[addr];
+                        if (!cell) continue;
 
-						if (meta.type === "date") {
-							const dt = that._toDate(cell.v);
+                        if (meta.type === "date") {
+                            const dt = that._toDate(cell.v);
 
-							if (dt) {
-								cell.t = "d";
-								cell.v = dt;
-								cell.z = "yyyy-mm-dd";
-							} else {
-								delete ws[addr];
-							}
-						}
-						
-						if (meta.type === "number") {
-							const n = _num(cell.v);
-							if (n === null) {
-								delete ws[addr];
-							} else {
-								cell.t = "n";
-								cell.v = n;
-								cell.z = meta.scale === 2 ? "#,##0.00" : "#,##0";
-							}
-						}
-					}
-				}
-			}
+                            if (dt) {
+                                cell.t = "d";
+                                cell.v = dt;
+                                cell.z = "yyyy-mm-dd";
+                            } else {
+                                delete ws[addr];
+                            }
+                        }
+                        
+                        if (meta.type === "number") {
+                            const n = _num(cell.v);
+                            if (n === null) {
+                                delete ws[addr];
+                            } else {
+                                cell.t = "n";
+                                cell.v = n;
+                                cell.z = meta.scale === 2 ? "#,##0.00" : "#,##0";
+                            }
+                        }
+                    }
+                }
+            }
 
-			try {
-				oView.setBusy(true);
+            try {
+                oView.setBusy(true);
 
-				const input = this._oReqModel?.getData();
-				if (!input) {
-					MessageToast.show("No request data loaded.");
-					return;
-				}
+                const input = this._oReqModel?.getData();
+                if (!input) {
+                    MessageToast.show("No request data loaded.");
+                    return;
+                }
 
-				const header = input.req_header || {};
-				const items = input.req_item_rows || [];
-				const item_part = await this._getParticipantsList(header.reqid);
+                const header = input.req_header || {};
+                const items = input.req_item_rows || [];
+                const item_part = await this._getParticipantsList(header.reqid);
 
-				// -------------------------------
-				// Build Header Row
-				// -------------------------------
-				const headerRow = {
-					"Request ID"				: header.reqid,
-					"Purpose"					: header.purpose,
-					"Trip Start Date"			: header.tripstartdate,
-					"Trip End Date"				: header.tripenddate,
-					"Event Start Date"			: header.eventstartdate,
-					"Event End Date"			: header.eventenddate,
-					"Location"					: header.location || "",
-					"Individual/Group"			: header.grptype || "",
-					"Type of Transportation"	: header.transport || "",
-					"Request Status"			: header.reqstatus,
-					"Cost Center"				: header.costcenter,
-					"Alternate Cost Center"		: header.altcostcenter || "-",
-					"Cash Advance (MYR)"		: header.cashadvamt,
-					"Pre Approval Amount (MYR)"	: header.reqamt,
-					"Request Type"				: header.reqtype,
-					"Comment"					: header.comment || "",
-					"Claim Type"				: header.claimtype,
-				};
+                // -------------------------------
+                // Build Header Row
+                // -------------------------------
+                const headerRow = {
+                    "Request ID"                : header.reqid,
+                    "Purpose"                   : header.purpose,
+                    "Trip Start Date"           : header.tripstartdate,
+                    "Trip End Date"             : header.tripenddate,
+                    "Event Start Date"          : header.eventstartdate,
+                    "Event End Date"            : header.eventenddate,
+                    "Location"                  : header.location || "",
+                    "Individual/Group"          : header.grptype || "",
+                    "Type of Transportation"    : header.transport || "",
+                    "Request Status"            : header.reqstatus,
+                    "Cost Center"               : header.costcenter,
+                    "Alternate Cost Center"     : header.altcostcenter || "-",
+                    "Cash Advance (MYR)"        : header.cashadvamt,
+                    "Pre Approval Amount (MYR)" : header.reqamt,
+                    "Request Type"              : header.reqtype,
+                    "Comment"                   : header.comment || "",
+                    "Claim Type"                : header.claimtype,
+                    "Attachment 1"              : header.doc1,
+                    "Attachment 2"              : header.doc2
+                };
 
-				const headerColumns = [
-					{ label: "Request ID", property: "Request ID", type: "string" },
-					{ label: "Purpose", property: "Purpose", type: "string" },
-					{ label: "Trip Start Date", property: "Trip Start Date", type: "date" },
-					{ label: "Trip End Date", property: "Trip End Date", type: "date" },
-					{ label: "Event Start Date", property: "Event Start Date", type: "date" },
-					{ label: "Event End Date", property: "Event End Date", type: "date" },
-					{ label: "Location", property: "Location", type: "string" },
-					{ label: "Individual/Group", property: "Individual/Group", type: "string" },
-					{ label: "Type of Transportation", property: "Type of Transportation", type: "string" },
-					{ label: "Request Status", property: "Request Status", type: "string" },
-					{ label: "Cost Center", property: "Cost Center", type: "string" },
-					{ label: "Alternate Cost Center", property: "Alternate Cost Center", type: "string" },
-					{ label: "Cash Advance (MYR)", property: "Cash Advance (MYR)", type: "number", scale: 2 },
-					{ label: "Pre Approval Amount (MYR)", property: "Pre Approval Amount (MYR)", type: "number", scale: 2 },
-					{ label: "Request Type", property: "Request Type", type: "string" },
-					{ label: "Comment", property: "Comment", type: "string" },
-					{ label: "Claim Type", property: "Claim Type", type: "string" }
-				];
+                const headerColumns = [
+                    { label: "Request ID", property: "Request ID", type: "string" },
+                    { label: "Purpose", property: "Purpose", type: "string" },
+                    { label: "Trip Start Date", property: "Trip Start Date", type: "date" },
+                    { label: "Trip End Date", property: "Trip End Date", type: "date" },
+                    { label: "Event Start Date", property: "Event Start Date", type: "date" },
+                    { label: "Event End Date", property: "Event End Date", type: "date" },
+                    { label: "Location", property: "Location", type: "string" },
+                    { label: "Individual/Group", property: "Individual/Group", type: "string" },
+                    { label: "Type of Transportation", property: "Type of Transportation", type: "string" },
+                    { label: "Request Status", property: "Request Status", type: "string" },
+                    { label: "Cost Center", property: "Cost Center", type: "string" },
+                    { label: "Alternate Cost Center", property: "Alternate Cost Center", type: "string" },
+                    { label: "Cash Advance (MYR)", property: "Cash Advance (MYR)", type: "number", scale: 2 },
+                    { label: "Pre Approval Amount (MYR)", property: "Pre Approval Amount (MYR)", type: "number", scale: 2 },
+                    { label: "Request Type", property: "Request Type", type: "string" },
+                    { label: "Comment", property: "Comment", type: "string" },
+                    { label: "Claim Type", property: "Claim Type", type: "string" },
+                    { label: "Attachment 1", property: "Attachment 1", type: "string" },
+                    { label: "Attachment 2", property: "Attachment 2", type: "string" }
+                ];
 
-				const headerLabels = headerColumns.map(c => c.label);
-				const headerValues = headerColumns.map(c => headerRow[c.property] ?? "");
+                const headerLabels = headerColumns.map(c => c.label);
+                const headerValues = headerColumns.map(c => headerRow[c.property] ?? "");
 
-				const wsHeader = XLSX.utils.aoa_to_sheet([headerLabels, headerValues]);
-				_applyColumnMeta(wsHeader, headerColumns, 1);
+                const wsHeader = XLSX.utils.aoa_to_sheet([headerLabels, headerValues]);
+                _applyColumnMeta(wsHeader, headerColumns, 1);
 
-				// -------------------------------
-				// Items Sheet
-				// -------------------------------
-				const itemsColumns = [
-					{ label: "Employee ID", property: "EMP_ID", type: "string" },
-					{ label: "Request ID", property: "REQUEST_ID", type: "string" },
-					{ label: "Request Sub ID", property: "REQUEST_SUB_ID", type: "string" },
-					{ label: "Claim Type ID", property: "CLAIM_TYPE_ID", type: "string" },
-					{ label: "Claim Type Desc", property: "CLAIM_TYPE_DESC", type: "string" },
-					{ label: "GL Account", property: "GL_ACCOUNT", type: "string" },
-					{ label: "Claim Type Item ID", property: "CLAIM_TYPE_ITEM_ID", type: "string" },
-					{ label: "Claim Type Item Desc", property: "CLAIM_TYPE_ITEM_DESC", type: "string" },
-					{ label: "Cost Center", property: "COST_CENTER", type: "string" },
-					{ label: "Material Code", property: "MATERIAL_CODE", type: "string" },
-					{ label: "Number of days", property: "NO_OF_DAYS", type: "number" },
-					{ label: "Purpose", property: "PURPOSE", type: "string" },
-					{ label: "Est. Amount (MYR)", property: "EST_AMOUNT", type: "string" },
-					{ label: "Dependent", property: "DEPENDENT", type: "string" },
-					{ label: "Dependent Name", property: "LEGAL_NAME", type: "string" },
-					{ label: "Dependent Relationship", property: "RELATIONSHIP", type: "string" },
-					{ label: "Remarks/Justification", property: "REMARK", type: "string" },
-					{ label: "Course Title", property: "COURSE TITLE", type: "string" },
-					{ label: "KWSP Sport Represent", property: "KWSP_SPORTS_REPRESENTATION", type: "string" },
-					{ label: "Sport Represent Desc", property: "SPORTS_REPRESENTATION_DESC", type: "string" },
-					{ label: "Declare Club Membership", property: "DECLARE_CLUB_MEMBERSHIP", type: "string" },
-					{ label: "Category/Purpose (Mobile) ID", property: "MOBILE_CATEGORY_PURPOSE_ID", type: "string" },
-					{ label: "Category/Purpose (Mobile) Desc", property: "MOBILE_CATEGORY_PURPOSE_DESC", type: "string" },
-					{ label: "Attachment 1", property: "ATTACHMENT 1", type: "string" },
-					{ label: "Attachment 2", property: "ATTACHMENT 2", type: "string" },
-					{ label: "Start Date", property: "START DATE", type: "date" },
-					{ label: "End Date", property: "END DATE", type: "date" },
-					{ label: "Vehicle Ownership ID", property: "VEHICLE OWNERSHIP_ID", type: "string" },
-					{ label: "Vehicle Ownership Desc", property: "VEHICLE OWNERSHIP_DESC", type: "string" },
-					{ label: "Room Type", property: "ROOM TYPE", type: "string" },
-					{ label: "Room Type Desc", property: "ROOM_TYPE_DESC", type: "string" },
-					{ label: "Country", property: "COUNTRY", type: "string" },
-					{ label: "Location", property: "LOCATION", type: "string" },
-					{ label: "Negara/Wilayah", property: "AREA", type: "string" },
-					{ label: "Description", property: "AREA_DESC", type: "string" },
-					{ label: "Number of Family Member", property: "FAMILY_COUNT", type: "number" },
-					{ label: "Vehicle Type", property: "VEHICLE_TYPE", type: "string" },
-					{ label: "vehicle Type Desc", property: "VEHICLE_TYPE_DESC", type: "string" },
-					{ label: "Kilometer", property: "KILOMETER", type: "number" },
-					{ label: "Rate per KM ID", property: "RATE PER KM (RATE_KM_ID)", type: "string" },
-					{ label: "Rate", property: "RATE", type: "number" },
-					{ label: "Toll", property: "TOLL", type: "string" },
-					{ label: "Flight Class ID", property: "FLIGHT CLASS", type: "string" },
-					{ label: "Flight Class Desc", property: "FLIGHT_CLASS_DESC", type: "string" },
-					{ label: "Location Type", property: "LOCATION TYPE", type: "string" },
-					{ label: "Location Type Desc", property: "LOC_TYPE_DESC", type: "string" },
-					{ label: "From State", property: "FROM STATE", type: "string" },
-					{ label: "From Location", property: "FROM LOCATION", type: "string" },
-					{ label: "From Location (Office)", property: "FROM_LOCATION_OFFICE", type: "string" },
-					{ label: "To State", property: "TO STATE", type: "string" },
-					{ label: "To Location", property: "TO LOCATION", type: "string" },
-					{ label: "To Location (Office)", property: "TO_LOCATION_OFFICE", type: "string" },
-					{ label: "Mode of Transfer", property: "MODE OF TRANSFER", type: "string" },
-					{ label: "Tarikh Pindah", property: "TARIKH PINDAH", type: "date" },
-					{ label: "Region", property: "REGION", type: "string" },
-					{ label: "Region Description", property: "REGION_DESC", type: "string" },
-					{ label: "Marriage Category ID", property: "MARRIAGE_CATEGORY", type: "string" },
-					{ label: "Marriage Category Desc", property: "MARRIAGE_CATEGORY_DESC", type: "string" },
-					{ label: "Member Cube (Eligible)", property: "MEMBER CUBE ELIGIBLE", type: "string" },
-					{ label: "Member Cube (Actual)", property: "MEMBER CUBE ACTUAL", type: "string" },
-					{ label: "Departure Time", property: "DEPARTURE TIME", type: "time" },
-					{ label: "Arrival Time", property: "ARRIVAL TIME", type: "time" },
-					{ label: "Lodging Category ID", property: "LODGING CATEGORY", type: "string" },
-					{ label: "Lodging Category Desc", property: "LODGING_CATEGORY_DESC", type: "string" },
-					{ label: "Estimated Participants", property: "ESTIMATED PARTICIPANTS", type: "string" },
-					{ label: "Cash Advance (Yes/No)", property: "CASH ADVANCE", type: "string" }
-				];
+                // -------------------------------
+                // Items Sheet
+                // -------------------------------
+                const itemsColumns = [
+                    { label: "Employee ID", property: "EMP_ID", type: "string" },
+                    { label: "Request ID", property: "REQUEST_ID", type: "string" },
+                    { label: "Request Sub ID", property: "REQUEST_SUB_ID", type: "string" },
+                    { label: "Claim Type ID", property: "CLAIM_TYPE_ID", type: "string" },
+                    { label: "Claim Type Desc", property: "CLAIM_TYPE_DESC", type: "string" },
+                    { label: "GL Account", property: "GL_ACCOUNT", type: "string" },
+                    { label: "Claim Type Item ID", property: "CLAIM_TYPE_ITEM_ID", type: "string" },
+                    { label: "Claim Type Item Desc", property: "CLAIM_TYPE_ITEM_DESC", type: "string" },
+                    { label: "Cost Center", property: "COST_CENTER", type: "string" },
+                    { label: "Material Code", property: "MATERIAL_CODE", type: "string" },
+                    { label: "Number of days", property: "NO_OF_DAYS", type: "number" },
+                    { label: "Purpose", property: "PURPOSE", type: "string" },
+                    { label: "Est. Amount (MYR)", property: "EST_AMOUNT", type: "string" },
+                    { label: "Dependent", property: "DEPENDENT", type: "string" },
+                    { label: "Dependent Name", property: "LEGAL_NAME", type: "string" },
+                    { label: "Dependent Relationship", property: "RELATIONSHIP", type: "string" },
+                    { label: "Remarks/Justification", property: "REMARK", type: "string" },
+                    { label: "Course Title", property: "COURSE TITLE", type: "string" },
+                    { label: "KWSP Sport Represent", property: "KWSP_SPORTS_REPRESENTATION", type: "string" },
+                    { label: "Sport Represent Desc", property: "SPORTS_REPRESENTATION_DESC", type: "string" },
+                    { label: "Declare Club Membership", property: "DECLARE_CLUB_MEMBERSHIP", type: "string" },
+                    { label: "Category/Purpose (Mobile) ID", property: "MOBILE_CATEGORY_PURPOSE_ID", type: "string" },
+                    { label: "Category/Purpose (Mobile) Desc", property: "MOBILE_CATEGORY_PURPOSE_DESC", type: "string" },
+                    { label: "Attachment 1", property: "ATTACHMENT1", type: "string" },
+                    { label: "Attachment 2", property: "ATTACHMENT_2", type: "string" },
+                    { label: "Start Date", property: "START_DATE", type: "date" },
+                    { label: "End Date", property: "END_DATE", type: "date" },
+                    { label: "Vehicle Ownership ID", property: "VEHICLE_OWNERSHIP_ID", type: "string" },
+                    { label: "Vehicle Ownership Desc", property: "VEHICLE_OWNERSHIP_DESC", type: "string" },
+                    { label: "Room Type", property: "ROOM_TYPE", type: "string" },
+                    { label: "Room Type Desc", property: "ROOM_TYPE_DESC", type: "string" },
+                    { label: "Country", property: "COUNTRY", type: "string" },
+                    { label: "Location", property: "LOCATION", type: "string" },
+                    { label: "Negara/Wilayah", property: "AREA", type: "string" },
+                    { label: "Description", property: "AREA_DESC", type: "string" },
+                    { label: "Number of Family Member", property: "FAMILY_COUNT", type: "number" },
+                    { label: "Vehicle Type", property: "VEHICLE_TYPE", type: "string" },
+                    { label: "vehicle Type Desc", property: "VEHICLE_TYPE_DESC", type: "string" },
+                    { label: "Kilometer", property: "KILOMETER", type: "number" },
+                    { label: "Rate per KM ID", property: "RATE_PER_KM", type: "string" },
+                    { label: "Rate", property: "RATE", type: "number" },
+                    { label: "Toll", property: "TOLL", type: "string" },
+                    { label: "Flight Class ID", property: "FLIGHT_CLASS", type: "string" },
+                    { label: "Flight Class Desc", property: "FLIGHT_CLASS_DESC", type: "string" },
+                    { label: "Location Type", property: "LOCATION_TYPE", type: "string" },
+                    { label: "Location Type Desc", property: "LOC_TYPE_DESC", type: "string" },
+                    { label: "From State", property: "FROM_STATE", type: "string" },
+                    { label: "From Location", property: "FROM_LOCATION", type: "string" },
+                    { label: "From Location (Office)", property: "FROM_LOCATION_OFFICE", type: "string" },
+                    { label: "To State", property: "TO_STATE", type: "string" },
+                    { label: "To Location", property: "TO_LOCATION", type: "string" },
+                    { label: "To Location (Office)", property: "TO_LOCATION_OFFICE", type: "string" },
+                    { label: "Mode of Transfer", property: "MODE_OF_TRANSFER", type: "string" },
+                    { label: "Tarikh Pindah", property: "TRANSFER_DATE", type: "date" },
+                    { label: "Region", property: "REGION", type: "string" },
+                    { label: "Region Description", property: "REGION_DESC", type: "string" },
+                    { label: "Marriage Category ID", property: "MARRIAGE_CATEGORY", type: "string" },
+                    { label: "Marriage Category Desc", property: "MARRIAGE_CATEGORY_DESC", type: "string" },
+                    { label: "Member Cube (Eligible)", property: "MEMBER_CUBE_ELIGIBLE", type: "string" },
+                    { label: "Member Cube (Actual)", property: "MEMBER_CUBE_ACTUAL", type: "string" },
+                    { label: "Departure Time", property: "DEPARTURE_TIME", type: "time" },
+                    { label: "Arrival Time", property: "ARRIVAL_TIME", type: "time" },
+                    { label: "Lodging Category ID", property: "LODGING_CATEGORY", type: "string" },
+                    { label: "Lodging Category Desc", property: "LODGING_CATEGORY_DESC", type: "string" },
+                    { label: "Estimated Participants", property: "ESTIMATED_PARTICIPANTS", type: "string" },
+                    { label: "Cash Advance (Yes/No)", property: "CASH_ADVANCE", type: "string" }
+                ];
 
-				const itemsLabels = itemsColumns.map(c => c.label);
+                const itemsLabels = itemsColumns.map(c => c.label);
 
-				const itemRows = items.map(it => {
-					return itemsColumns.map(c => {
-						if (c.type === "date") return that._toDate(it[c.property]);
-						if (c.type === "number") return _num(it[c.property]);
-						return it[c.property] ?? "";
-					});
-				});
+                const itemRows = items.map(it => {
+                    return itemsColumns.map(c => {
+                        if (c.type === "date") return that._toDate(it[c.property]);
+                        if (c.type === "number") return _num(it[c.property]);
+                        return it[c.property] ?? "";
+                    });
+                });
 
-				const wsItems = XLSX.utils.aoa_to_sheet([itemsLabels, ...itemRows]);
-				_applyColumnMeta(wsItems, itemsColumns, 1);
+                const wsItems = XLSX.utils.aoa_to_sheet([itemsLabels, ...itemRows]);
+                _applyColumnMeta(wsItems, itemsColumns, 1);
 
-				// -------------------------------
-				// Build Item Participants Row
-				// -------------------------------
+                // -------------------------------
+                // Build Item Participants Row
+                // -------------------------------
 
-				const itemPartColumns = [
-					{ label: "Request ID", property: "REQUEST_ID", type: "string", width: 15 },
-					{ label: "Request Sub ID", property: "REQUEST_SUB_ID", type: "string", width: 15 },
-					{ label: "Participant ID", property: "PARTICIPANTS_ID", type: "string", width: 13 },
-					{ label: "Participant Name", property: "NAME", type: "string", width: 20 },
-					{ label: "Cost Center", property: "CC", type: "string", width: 13 },
-					{ label: "Allocated Amount (MYR)", property: "ALLOCATED_AMOUNT", type: "string", width: 21 }
-				];
+                const itemPartColumns = [
+                    { label: "Request ID", property: "REQUEST_ID", type: "string", width: 15 },
+                    { label: "Request Sub ID", property: "REQUEST_SUB_ID", type: "string", width: 15 },
+                    { label: "Participant ID", property: "PARTICIPANTS_ID", type: "string", width: 13 },
+                    { label: "Participant Name", property: "NAME", type: "string", width: 20 },
+                    { label: "Cost Center", property: "CC", type: "string", width: 13 },
+                    { label: "Allocated Amount (MYR)", property: "ALLOCATED_AMOUNT", type: "string", width: 21 }
+                ];
 
-				const itemPartLabels = itemPartColumns.map(c => c.label);
-				const itemPartValues = item_part.map(it => {
-					return itemPartColumns.map(c => {
-						if (c.type === "date") return that._toDate(it[c.property]);
-						if (c.type === "number") return _num(it[c.property]);
-						return it[c.property] ?? "";
-					});
-				});
+                const itemPartLabels = itemPartColumns.map(c => c.label);
+                const itemPartValues = item_part.map(it => {
+                    return itemPartColumns.map(c => {
+                        if (c.type === "date") return that._toDate(it[c.property]);
+                        if (c.type === "number") return _num(it[c.property]);
+                        return it[c.property] ?? "";
+                    });
+                });
 
-				const wsItemParts = XLSX.utils.aoa_to_sheet([itemPartLabels, ...itemPartValues]);
-				_applyColumnMeta(wsItemParts, itemPartColumns, 1);
+                const wsItemParts = XLSX.utils.aoa_to_sheet([itemPartLabels, ...itemPartValues]);
+                _applyColumnMeta(wsItemParts, itemPartColumns, 1);
 
-				const wb = XLSX.utils.book_new();
-				XLSX.utils.book_append_sheet(wb, wsHeader, "Header");
-				XLSX.utils.book_append_sheet(wb, wsItems, "Items");
-				XLSX.utils.book_append_sheet(wb, wsItemParts, "Participants");
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, wsHeader, "Header");
+                XLSX.utils.book_append_sheet(wb, wsItems, "Items");
+                XLSX.utils.book_append_sheet(wb, wsItemParts, "Participants");
 
-				XLSX.writeFile(wb, this._getExcelFileName(), {
-					bookType: "xlsx",
-					cellDates: true,
-					compression: true
-				});
+                XLSX.writeFile(wb, this._getExcelFileName(), {
+                    bookType: "xlsx",
+                    cellDates: true,
+                    compression: true
+                });
 
-			} catch (e) {
-				console.error("Excel export failed:", e);
-				MessageToast.show("Excel export failed.");
-			} finally {
-				oView.setBusy(false);
-			}
-		},
+            } catch (e) {
+                console.error("Excel export failed:", e);
+                MessageToast.show("Excel export failed.");
+            } finally {
+                oView.setBusy(false);
+            }
+        },
 
 		async _getParticipantsList(reqid) {
 			const oListBinding = this._oViewModel.bindList(
