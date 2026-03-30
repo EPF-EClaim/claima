@@ -156,6 +156,7 @@ sap.ui.define([
 		},
 
 		async _showItemCreate(bEdit) {
+			this._loadSelections();
 			const oPage = this.byId("request_form");
 			if (!oPage) return;
 
@@ -192,7 +193,10 @@ sap.ui.define([
 					if (row.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL && 
 						(row.SUBSTITUTE_APPROVER_ID == this._oSessionModel.getProperty("/userId") || 
 							row.APPROVER_ID == this._oSessionModel.getProperty("/userId"))) {
-						this._oReqModel.setProperty('/view', 'approver');
+						this._oReqModel.setProperty('/view', this._oConstant.PARMode.APPROVER);
+						break;
+					} else {
+						this._oReqModel.setProperty('/view', this._oConstant.PARMode.VIEW);
 					}
 				}
 				const oApproval = await this._getFormFragment("approval_log");
@@ -2071,8 +2075,6 @@ sap.ui.define([
 				"i_toll",
 				"i_flight_class",
 				"i_location_type",
-				"i_from_location",
-				"i_to_location",
 				"i_mode_of_transfer",
 				"i_tarikh_pindah",
 				"i_no_of_days_3",
