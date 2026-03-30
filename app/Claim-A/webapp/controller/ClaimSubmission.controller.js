@@ -2063,6 +2063,25 @@ sap.ui.define([
 			var oInputModel = this._getNewClaimItemModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
+			// set claim item property model
+			var oClaimItemPropertyData = {
+				amount: {
+					is_visible: false
+				},
+				km: {
+					is_visible: false
+				},
+				rate_per_km: {
+					is_visible: false
+				},
+				toll: {
+					is_visible: false
+				}
+			};
+			var oModel = new JSONModel(oClaimItemPropertyData);
+			//// set input
+			this.getView().setModel(oModel, "claimitem_property");
+			
 			// change footer buttons
 			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
 				this._displayFooterButtons("claimsubmission_claimdetails_input");
@@ -2676,55 +2695,112 @@ sap.ui.define([
 			}
 		},
 
+        /**
+         * On selecting vehicle type from dropdown, method determines rate per km based on vehicle type and claim item used
+         * @public
+         */
 		onSelect_ClaimDetails_VehicleType: async function () {
-			if (this.byId("input_claimdetails_input_rate_per_km").getVisible()) {
-				
-			}
-			var oInputModel = this.getView().getModel("claimitem_input");
-			const oModel = this.getOwnerComponent().getModel();
-			// filter by vehicle type or * (all)
-			const oFilterVehicleType = new Filter({
-				filters: [
-					new Filter("VEHICLE_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/vehicle_type")),
-					new Filter("VEHICLE_TYPE_ID", FilterOperator.EQ, '*')
-				],
-				and: false
-			});
-			// filter by claim type item or * (all)
-			const oFilterClaimTypeItem = new Filter({
-				filters: [
-					new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_item_id")),
-					new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, '*')
-				],
-				and: false
-			});
-			const oListBinding = oModel.bindList("/ZRATE_KM", null, [
-				new Sorter("CLAIM_TYPE_ITEM_ID", true),
-				new Sorter("VEHICLE_TYPE_ID", true)
-			], [
-				oFilterVehicleType,
-				oFilterClaimTypeItem,
-				// ensure status is active
-				new Filter("STATUS", FilterOperator.EQ, this._oConstant.MasterData.ACTIVE),
-				new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
-			]);
+			if (this.getView().getModel("claimitem_property")?.getProperty("/rate_per_km/is_visible")) {
+				var oInputModel = this.getView().getModel("claimitem_input");
+				const oModel = this.getOwnerComponent().getModel();
+				// filter by vehicle type or * (all)
+				const oFilterVehicleType = new Filter({
+					filters: [
+						new Filter("VEHICLE_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/vehicle_type")),
+						new Filter("VEHICLE_TYPE_ID", FilterOperator.EQ, '*')
+					],
+					and: false
+				});
+				// filter by claim type item or * (all)
+				const oFilterClaimTypeItem = new Filter({
+					filters: [
+						new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_item_id")),
+						new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, '*')
+					],
+					and: false
+				});
+				const oListBinding = oModel.bindList("/ZRATE_KM", null, [
+					new Sorter("CLAIM_TYPE_ITEM_ID", true),
+					new Sorter("VEHICLE_TYPE_ID", true)
+				], [
+					oFilterVehicleType,
+					oFilterClaimTypeItem,
+					// ensure status is active
+					new Filter("STATUS", FilterOperator.EQ, this._oConstant.MasterData.ACTIVE),
+					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
+				]);
 
-			try {
-				BusyIndicator.show(0);
-				const aContexts = await oListBinding.requestContexts(0, Infinity);
+				try {
+					BusyIndicator.show(0);
+					const aContexts = await oListBinding.requestContexts(0, Infinity);
 
-				if (aContexts.length > 0) {
-					const oData = aContexts[0].getObject();
-					oInputModel.setProperty("/claim_item/rate_per_km", oData.RATE_KM_ID)
-					oInputModel.setProperty("/claim_item/descr/rate_per_km", oData.RATE)
-				} else {
-					MessageToast.show(Utility.getText("msg_claimdetails_input_rateperkm"));
+					if (aContexts.length > 0) {
+						const oData = aContexts[0].getObject();
+						oInputModel.setProperty("/claim_item/rate_per_km", oData.RATE_KM_ID)
+						oInputModel.setProperty("/claim_item/descr/rate_per_km", oData.RATE)
+					} else {
+						oInputModel.setProperty("/claim_item/rate_per_km", null)
+						oInputModel.setProperty("/claim_item/descr/rate_per_km", null)
+						MessageToast.show(Utility.getText("msg_claimdetails_input_rateperkm"));
+					}
+				} catch (oError) {
+					oInputModel.setProperty("/claim_item/rate_per_km", null)
+					oInputModel.setProperty("/claim_item/descr/rate_per_km", null)
+					MessageToast.show(Utility.getText("msg_claimdetails_input_rateperkm_err", [oError]));
+				} finally {
+					this._calculateRatePerKm();
+					BusyIndicator.hide();
 				}
-			} catch (oError) {
-				MessageToast.show(Utility.getText("msg_claimdetails_input_rateperkm_err", [oError]));
-			} finally {
-				BusyIndicator.hide();
+			}
+		},
+
+        /**
+         * On changing kilometer field, method checks if rate per km field exists to calculate amount
+         * @public
+         */
+		onChange_ClaimDetails_Kilometer: function () {
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			// calculate amount if rate per km exists 
+			if (oPropertyModel.getProperty("/rate_per_km/is_visible")) {
+				this._calculateRatePerKm();
+			}
+		},
+
+        /**
+         * On changing toll field, method checks if km and rate per km fields exist to calculate amount
+         * @public
+         */
+		onChange_ClaimDetails_Toll: function () {
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			// calculate amount if km and rate per km exists 
+			if (oPropertyModel.getProperty("/km/is_visible") && oPropertyModel.getProperty("/rate_per_km/is_visible")) {
+				this._calculateRatePerKm();
+			}
+		},
+
+        /**
+         * If rate per km (and toll) fields are available, auto-populate amount value
+         * Formulas:
+		 * with toll - ((km * rate_per_km) + toll)
+		 * without toll - (km * rate_per_km)
+         * @private
+         */
+		_calculateRatePerKm: function () {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			if (oPropertyModel.getProperty("/km/is_visible") && oPropertyModel.getProperty("/rate_per_km/is_visible")) {
+				// calculate amount with toll
+				if (oPropertyModel.getProperty("/toll/is_visible")) {
+					var fAmount = (parseFloat(oInputModel.getProperty("/claim_item/km")) *
+						parseFloat(oInputModel.getProperty("/claim_item/descr/rate_per_km"))) +
+						parseFloat(oInputModel.getProperty("/claim_item/toll"));
+					oInputModel.setProperty("/claim_item/amount", fAmount)
+				}
+				else {
+					var fAmount = parseFloat(oInputModel.getProperty("/claim_item/km")) * parseFloat(oInputModel.getProperty("/claim_item/descr/rate_per_km"));
+					oInputModel.setProperty("/claim_item/amount", fAmount)
+				}
 			}
 		},
 
@@ -4270,7 +4346,7 @@ sap.ui.define([
 					{ label: Utility.getText("label_claimdetails_input_typeofvehicle"), property: "vehicle_type", field: "select_claimdetails_input_vehicle_type", type:"descr", width: 18 },
 					{ label: Utility.getText("label_claimdetails_input_vehicleownership"), property: "vehicle_ownership_id", field: "select_claimdetails_input_vehicle_ownership_id", type:"descr", width: 18 },
 					{ label: Utility.getText("label_claimdetails_input_km"), property: "km", field: "input_claimdetails_input_km", type:"number", scale: 2, width: 10 },
-					{ label: Utility.getText("label_claimdetails_input_km_rate"), property: "rate_per_km", field: "input_claimdetails_input_rate_per_km", width: 14 },
+					{ label: Utility.getText("label_claimdetails_input_km_rate"), property: "rate_per_km", field: "input_claimdetails_input_rate_per_km", type:"descr", width: 14 },
 					{ label: Utility.getText("label_claimdetails_input_faretype"), property: "fare_type_id", field: "select_claimdetails_input_fare_type_id", type:"descr", width: 18 },
 					{ label: Utility.getText("label_claimdetails_input_vehicleclass"), property: "vehicle_class_id", field: "select_claimdetails_input_vehicle_class_id", type:"descr", width: 18 },
 					{ label: Utility.getText("label_claimdetails_input_flightclass"), property: "flight_class", field: "select_claimdetails_input_flight_class", type:"descr", width: 18 },

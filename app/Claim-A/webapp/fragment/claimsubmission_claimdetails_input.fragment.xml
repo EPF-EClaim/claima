@@ -169,7 +169,8 @@
 						}
 					}"
 					required="true"
-					visible="false"
+					editable="{= ${claimitem_property>/rate_per_km/is_visible} === false}"
+					visible="{claimitem_property>/amount/is_visible}"
 				/>
 
 				<!-- % Compensation -->
@@ -352,16 +353,18 @@
 							preserveDecimals: false
 						}
 					}"
-					visible="false"
+					change="onChange_ClaimDetails_Kilometer"
+					liveChange="onChange_ClaimDetails_Kilometer"
+					visible="{claimitem_property>/km/is_visible}"
 				/>
 
 				<!-- Rate Per Kilometer -->
 				<Label text="{i18n>label_claimdetails_input_km_rate}" />
 				<Input
 					id="input_claimdetails_input_rate_per_km"
-					value="{claimitem_input>/claim_item/rate_per_km}"
+					value="{claimitem_input>/claim_item/descr/rate_per_km}"
 					editable="false"
-					visible="false"
+					visible="{claimitem_property>/rate_per_km/is_visible}"
 				/>
 
 				<!-- Type of Fare -->
@@ -415,7 +418,9 @@
 							preserveDecimals: false
 						}
 					}"
-					visible="false"
+					change="onChange_ClaimDetails_Toll"
+					liveChange="onChange_ClaimDetails_Toll"
+					visible="{claimitem_property>/toll/is_visible}"
 				/>
 
 				<!-- Parking -->

@@ -76,7 +76,10 @@ sap.ui.define([
         },
         
         /**
-         * Get Hana Date format for binding calls
+         * Get Hana Date format for binding calls, used for passing dates when upserting records
+         * @public
+         * @param {date} dDateInput - date value to be transformed
+         * @return {string} sDateString - readable value when submitting data to backend
          */
 		getHanaDate: function (dDateInput) {
 			if (dDateInput) {
