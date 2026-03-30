@@ -624,6 +624,16 @@
                     "target": "ZCONSTANTS"
                 },
                 {
+                    "pattern": "ZWORKFLOW_STEP",
+                    "name": "ZWORKFLOW_STEP",
+                    "target": "ZWORKFLOW_STEP"
+                },
+                {
+                    "pattern": "ZWORKFLOW_RULE",
+                    "name": "ZWORKFLOW_RULE",
+                    "target": "ZWORKFLOW_RULE"
+                },
+                {
                     "pattern": "ZROLEHIERARCHY",
                     "name": "ZROLEHIERARCHY",
                     "target": "ZROLEHIERARCHY"
@@ -4579,6 +4589,142 @@
                                         "creationMode": {
                                             "name": "CreationDialog",
                                             "creationFields": "DISBURSEMENT_STATUS_ID,DISBURSEMENT_STATUS_DESC,START_DATE,END_DATE,STATUS"
+                                        },
+                                        "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZWORKFLOW_STEP": {
+                    "type": "Component",
+                    "id": "ZWORKFLOW_STEP",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZWORKFLOW_STEP",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "WORKFLOW_CODE, WORKFLOW_TYPE, START_DATE, END_DATE"
+                                        },
+                                        "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZWORKFLOW_RULE": {
+                    "type": "Component",
+                    "id": "ZWORKFLOW_RULE",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZWORKFLOW_RULE",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "WORKFLOW_ID, WORKFLOW_TYPE, CLAIM_TYPE_ID, CLAIM_TYPE_ITEM_ID, START_DATE, END_DATE, RISK_LEVEL, THRESHOLD_AMOUNT, THRESHOLD_VALUE, RECEIPT_DAY, RECEIPT_AGE, EMPLOYEE_COST_CENTER, OUTCOME_WORKFLOW_CODE, REMARK, REQUEST_TYPE_ID, CASH_ADVANCE, TRIP_START_DATE, ROLE"
                                         },
                                         "disableCopyToClipboard": true
                                     },

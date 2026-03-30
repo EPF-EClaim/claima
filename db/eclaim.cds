@@ -1011,34 +1011,34 @@ entity ZREJECT_REASON : managed {
 }
 
 entity ZWORKFLOW_STEP : managed {
-    key WORKFLOW_CODE            : String;
-    key WORKFLOW_TYPE            : String;
-    key START_DATE               : String;
-    key END_DATE                 : String;
+    key WORKFLOW_CODE            : String  @mandatory  @Common.Label: 'Workflow Code';
+    key WORKFLOW_TYPE            : String  @mandatory  @Common.Label: 'Workflow Type';
+    key START_DATE               : String  @mandatory  @Common.Label: 'Start Date';
+    key END_DATE                 : String  @mandatory  @Common.Label: 'End Date';
         WORKFLOW_NAME            : String;
         WORKFLOW_APPROVAL_LEVELS : Integer;
         REMARK                   : String;
 }
 
 entity ZWORKFLOW_RULE : managed {
-    key WORKFLOW_ID           : String;
-    key WORKFLOW_TYPE         : String;
-    key CLAIM_TYPE_ID         : String;
-    key CLAIM_TYPE_ITEM_ID    : String;
-    key START_DATE            : String;
-    key END_DATE              : String;
-        RISK_LEVEL            : String(1);
-        THRESHOLD_AMOUNT      : Decimal(7, 2);
-        THRESHOLD_VALUE       : String(2);
-        RECEIPT_DAY           : Integer;
-        RECEIPT_AGE           : String;
-        EMPLOYEE_COST_CENTER  : String(9);
-        OUTCOME_WORKFLOW_CODE : String(3);
-        REMARK                : String(255);
-        REQUEST_TYPE_ID       : String;
-        CASH_ADVANCE          : Boolean;
-        TRIP_START_DATE       : String(2);
-        ROLE                  : String(15);
+    key WORKFLOW_ID           : String        @mandatory  @Common.Label: 'Workflow ID';
+    key WORKFLOW_TYPE         : String        @mandatory  @Common.Label: 'Workflow Type';
+    key CLAIM_TYPE_ID         : String        @mandatory  @Common.Label: 'Claim Type ID';
+    key CLAIM_TYPE_ITEM_ID    : String        @mandatory  @Common.Label: 'Claim Type Item ID';
+    key START_DATE            : String        @mandatory  @Common.Label: 'Start Date';
+    key END_DATE              : String        @mandatory  @Common.Label: 'End Date';
+        RISK_LEVEL            : String(1)     @Common.Label: 'Risk Level';
+        THRESHOLD_AMOUNT      : Decimal(7, 2) @Common.Label: 'Threshold Amount';
+        THRESHOLD_VALUE       : String(2)     @Common.Label: 'Threshold Value';
+        RECEIPT_DAY           : Integer       @Common.Label: 'Receipt Day';
+        RECEIPT_AGE           : String        @Common.Label: 'Receipt Age';
+        EMPLOYEE_COST_CENTER  : String(9)     @Common.Label: 'Employee Cost Center';
+        OUTCOME_WORKFLOW_CODE : String(3)     @Common.Label: 'Outcome Workflow Code';
+        REMARK                : String(255)   @Common.Label: 'Remark';
+        REQUEST_TYPE_ID       : String        @Common.Label: 'Request Type ID';
+        CASH_ADVANCE          : Boolean       @Common.Label: 'Cash Advance';
+        TRIP_START_DATE       : String(2)     @Common.Label: 'Trip Start Date';
+        ROLE                  : String(15)    @Common.Label: 'Role';
         ZREQUEST_TYPE         : Association to ZREQUEST_TYPE
                                     on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
 }

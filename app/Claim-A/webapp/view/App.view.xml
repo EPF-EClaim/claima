@@ -394,6 +394,14 @@
                                     key="ZPROJECT_HDR"
                                     text="{i18n>prjcode}"
                                 />
+                                <tnt:NavigationListItem
+                                    key="ZWORKFLOW_RULE"
+                                    text="{i18n>workflowrule}"
+                                />
+                                <tnt:NavigationListItem
+                                    key="ZWORKFLOW_STEP"
+                                    text="{i18n>workflowstep}"
+                                />                                                                
                             </tnt:items>
                         </tnt:NavigationListItem>
                     </tnt:NavigationListGroup>
