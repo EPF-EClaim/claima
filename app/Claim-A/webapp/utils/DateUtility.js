@@ -117,6 +117,65 @@ sap.ui.define([
 			}
 
 			return iDiffDays;
+		},
+
+		toDate: function (oValue) {
+
+			if (!oValue) return null;
+
+			// ISO 8601 with or without milliseconds
+			if (typeof oValue === "string" && /^\d{4}-\d{2}-\d{2}T/i.test(oValue)) {
+				const oDate = new Date(oValue);
+				if (!isNaN(oDate.getTime())) {
+					return new Date(Date.UTC(oDate.getUTCFullYear(), oDate.getUTCMonth(), oDate.getUTCDate()));
+				}
+				return null;
+			}
+
+			// YYYY-MM-DD
+			if (typeof oValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(oValue)) {
+				const [sYear, sMonth, sDay] = oValue.split("-").map(Number);
+				return new Date(Date.UTC(sYear, sMonth - 1, sDay));
+			}
+
+			// JS Date
+			if (oValue instanceof Date && !isNaN(oValue.getTime())) {
+				return new Date(Date.UTC(oValue.getFullYear(), oValue.getMonth(), oValue.getDate()));
+			}
+
+			// SAP Edm.Date { year, month, day }
+			if (typeof oValue === "object" && oValue.year && oValue.month && oValue.day) {
+				return new Date(Date.UTC(oValue.year, oValue.month - 1, oValue.day));
+			}
+
+			return null;
+		},
+
+		toTime: function (oValue) {
+
+			if (!oValue) return null;
+
+			// ISO 8601 with or without milliseconds
+			if (typeof oValue === "string" && /^\d{2}:\d{2}:\d{2}Z/i.test(oValue)) {
+				const oDate = new Date(oValue);
+				if (!isNaN(oDate.getTime())) {
+					return new Date(Date.UTC(0, 0, 0, oDate.getUTCHours(), oDate.getUTCMinutes(), oDate.getUTCSeconds()));
+				}
+				return null;
+			}
+
+			// HH:MM:SS
+			if (typeof oValue === "string" && /^\d{2}:\d{2}:\d{2}$/.test(oValue)) {
+				const [sHour, sMinute, sSecond] = oValue.split(":").map(Number);
+				return new Date(Date.UTC(0, 0, 0, sHour, sMinute, sSecond));
+			}
+
+			// JS Date
+			if (oValue instanceof Date && !isNaN(oValue.getTime())) {
+				return new Date(Date.UTC(0, 0, 0, oValue.getHours(), oValue.getMinutes(), oValue.getSeconds()));
+			}
+
+			return null;
 		}
     };
 });

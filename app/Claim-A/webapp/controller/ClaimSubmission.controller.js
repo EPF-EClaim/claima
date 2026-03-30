@@ -4048,69 +4048,9 @@ sap.ui.define([
 			return this._sanitizeFileName(`Claim_${id}_${this._getTodayString()}.xlsx`);
 		},
 
-		_toDate: function (oValue) {
-
-			if (!oValue) return null;
-
-			// ISO 8601 with or without milliseconds
-			if (typeof oValue === "string" && /^\d{4}-\d{2}-\d{2}T/i.test(oValue)) {
-				const oDate = new Date(oValue);
-				if (!isNaN(oDate.getTime())) {
-					return new Date(Date.UTC(oDate.getUTCFullYear(), oDate.getUTCMonth(), oDate.getUTCDate()));
-				}
-				return null;
-			}
-
-			// YYYY-MM-DD
-			if (typeof oValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(oValue)) {
-				const [sYear, sMonth, sDay] = oValue.split("-").map(Number);
-				return new Date(Date.UTC(sYear, sMonth - 1, sDay));
-			}
-
-			// JS Date
-			if (oValue instanceof Date && !isNaN(oValue.getTime())) {
-				return new Date(Date.UTC(oValue.getFullYear(), oValue.getMonth(), oValue.getDate()));
-			}
-
-			// SAP Edm.Date { year, month, day }
-			if (typeof oValue === "object" && oValue.year && oValue.month && oValue.day) {
-				return new Date(Date.UTC(oValue.year, oValue.month - 1, oValue.day));
-			}
-
-			return null;
-		},
-
-		_toTime: function (oValue) {
-
-			if (!oValue) return null;
-
-			// ISO 8601 with or without milliseconds
-			if (typeof oValue === "string" && /^\d{2}:\d{2}:\d{2}Z/i.test(oValue)) {
-				const oDate = new Date(oValue);
-				if (!isNaN(oDate.getTime())) {
-					return new Date(Date.UTC(0, 0, 0, oDate.getUTCHours(), oDate.getUTCMinutes(), oDate.getUTCSeconds()));
-				}
-				return null;
-			}
-
-			// HH:MM:SS
-			if (typeof oValue === "string" && /^\d{2}:\d{2}:\d{2}$/.test(oValue)) {
-				const [sHour, sMinute, sSecond] = oValue.split(":").map(Number);
-				return new Date(Date.UTC(0, 0, 0, sHour, sMinute, sSecond));
-			}
-
-			// JS Date
-			if (oValue instanceof Date && !isNaN(oValue.getTime())) {
-				return new Date(Date.UTC(0, 0, 0, oValue.getHours(), oValue.getMinutes(), oValue.getSeconds()));
-			}
-
-			return null;
-		},
-
 		onDownloadExcelReport: async function () {
 			const oView = this.getView();
 			const oExcel = window.XLSX;
-			const that = this;
 
 			function _num(iVal) {
 				if (iVal === null || iVal === undefined || iVal === "") return null;
@@ -4138,7 +4078,7 @@ sap.ui.define([
 						// FORCE DATE FORMAT YYYY-MM-DD
 
 						if (oMeta.type === "date") {
-							const oDate = that._toDate(oCell.v);
+							const oDate = DateUtility.toDate(oCell.v);
 
 							if (oDate) {
 								oCell.t = "d";
@@ -4152,7 +4092,7 @@ sap.ui.define([
 
 						// Time
 						if (oMeta.type === "time") {
-							const oTime = that._toTime(oCell.v);
+							const oTime = DateUtility.toTime(oCell.v);
 
 							if (oTime) {
 								oCell.t = "d";
@@ -4373,8 +4313,8 @@ sap.ui.define([
 				// get item values to include in excel
 				const aItemRows = aItems.map(oItem => {
 					return aItemsColumns.map(oColumn => {
-						if (oColumn.type === "date") return that._toDate(oItem[oColumn.property]);
-						if (oColumn.type === "time") return that._toTime(oItem[oColumn.property]);
+						if (oColumn.type === "date") return DateUtility.toDate(oItem[oColumn.property]);
+						if (oColumn.type === "time") return DateUtility.toTime(oItem[oColumn.property]);
 						if (oColumn.type === "number") return _num(oItem[oColumn.property]);
 						if (oColumn.type === "descr") return (oItem["descr"][oColumn.property] || oItem[oColumn.property]);
 						return oItem[oColumn.property] ?? "";
