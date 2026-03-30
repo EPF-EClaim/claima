@@ -755,9 +755,9 @@ sap.ui.define([
                 const iWorkflowApprLvl =  aWorkflowStepData[0].WORKFLOW_APPROVAL_LEVELS;
 
                 if(iWorkflowApprLvl > 1){
-                    var aWorkflowApprStep = sWorkflowName.split("-");
+                    var aWorkflowApprStep = sWorkflowName.split("-").map(s => s.trim());
                 }else{
-                    aWorkflowApprStep = [sWorkflowName];
+                    aWorkflowApprStep = [sWorkflowName.trim()];
                 }
 
                 let aApprEmpID = [];
