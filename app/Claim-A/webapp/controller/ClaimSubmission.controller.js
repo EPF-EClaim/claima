@@ -2213,11 +2213,9 @@ sap.ui.define([
 			// Check for amount field visibility and value
 			if(oInputAmountField && oInputAmountField.getVisible()){
 				const sInputAmount = oInputAmountField.getValue()?.trim();
-				if(!sInputAmount || sInputAmount === "0.00" ){
-				//if (this.byId("input_claimdetails_input_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_amount").getValue() == " " ||
-				//	this.byId("input_claimdetails_input_amount").getValue() == "" || this.byId("input_claimdetails_input_amount").getValue() == null) {
-					// stop claim submission if amount is zero
-					MessageToast.show(Utility.getText("msg_claiminput_amount_zero"));
+				if(isNaN(sInputAmount) || sInputAmount <= 0 ){
+					// stop claim submission if amount is zero or less
+					MessageToast.show(Utility.getText("msg_claiminput_amount_invalid"));
 					return;
 				}
 			}
@@ -2225,11 +2223,9 @@ sap.ui.define([
 			// Check for actual amount field visibility and value
 			if(oInputActualAmountField && oInputActualAmountField.getVisible()){
 				const sInputActualAmount = oInputActualAmountField.getValue()?.trim();
-				if(!sInputActualAmount || sInputActualAmount === "0.00" ){
-				//if (this.byId("input_claimdetails_input_amount").getValue() == "0.00" || this.byId("input_claimdetails_input_amount").getValue() == " " ||
-				//	this.byId("input_claimdetails_input_amount").getValue() == "" || this.byId("input_claimdetails_input_amount").getValue() == null) {
-					// stop claim submission if amount is zero
-					MessageToast.show(Utility.getText("msg_claiminput_amount_zero"));
+				if(isNaN(sInputActualAmount) || sInputActualAmount <= 0 ){
+					// stop claim submission if amount is zero or less
+					MessageToast.show(Utility.getText("msg_claiminput_amount_invalid"));
 					return;
 				}
 			}
@@ -3011,6 +3007,13 @@ sap.ui.define([
 					return;
 				}
 
+				// Total Claim Amount Validation checking
+				if(aItems.length > 0 && (isNaN(oInputModel.getProperty("/claim_header/total_claim_amount")) || oInputModel.getProperty("/claim_header/total_claim_amount") <= 0)){
+					MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount"));
+					BusyIndicator.hide();
+					return;
+				}
+				
 				// Cash Advance Repayment Validation checking
 				if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
 					MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
