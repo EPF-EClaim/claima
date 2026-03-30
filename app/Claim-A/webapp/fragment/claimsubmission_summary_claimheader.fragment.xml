@@ -24,7 +24,7 @@
                 icon="sap-icon://attachment"
                 text="{i18n>button_claimsummary_viewattachment}"
                 press="onView_Claim_Attachment('parent')"
-                enabled="false"
+                enabled="{= ${claimsubmission_input>/claim_header/attachment_email_approver} !== null}"
             />
 
             <!-- Download details -->

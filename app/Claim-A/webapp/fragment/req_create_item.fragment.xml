@@ -1019,7 +1019,7 @@
                                     "entitySet": "employee>/ZCOUNTRY",
                                     "keyField": "COUNTRY_ID",
                                     "descriptionField": "COUNTRY_DESC",
-							        "columns": ["{i18n>valuehelpcountryid}", "{i18n>valuehelpdescription}"],
+							        "columns": ["{i18n>valuehelpid}", "{i18n>valuehelpdescription}"],
                                     "searchKeys": ["COUNTRY_ID", "COUNTRY_DESC"],
                                     "openOnClick": true
                                 }
@@ -1033,7 +1033,7 @@
                                         keyPath="COUNTRY_ID"
                                         descriptionPath="COUNTRY_DESC"
                                         caseSensitive="false"
-                                        useAsValueHelp="false"
+                                        useAsValueHelp="true"
                                     >
                                         <!-- Table content created dynamically by delegate -->
                                     </mdcvhcnt:MTable>
