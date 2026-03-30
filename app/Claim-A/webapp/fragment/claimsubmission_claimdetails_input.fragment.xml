@@ -171,6 +171,7 @@
 						}
 					}"
 					required="true"
+					editable="{= ${claimitem_input>/screen_array}.includes('input_claimdetails_input_actual_amount') === false}"
 					visible="false"
 				/>
 

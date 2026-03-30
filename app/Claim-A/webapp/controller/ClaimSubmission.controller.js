@@ -2079,11 +2079,6 @@ sap.ui.define([
 			}
 			this._setClaimDetailSelection(oClaimSubmissionModel);
 
-			// check if actual amount is visible
-			if (this.byId("input_claimdetails_input_actual_amount").getVisible()) {
-				this.byId("input_claimdetails_input_amount").setEditable(false);
-			}
-
 			// approver view changes
 			if (oClaimSubmissionModel.getProperty("/view_only")) {
 				if (!this.byId("button_claimdetails_input_return").getVisible()) {
@@ -2605,6 +2600,7 @@ sap.ui.define([
 		},
 
 		onChange_ClaimDetails_ActualAmount: function () {
+			// set amount to 50% of actual amount (subsidised amount)
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (oInputModel.getProperty("/screen_array") && oInputModel.getProperty("/screen_array").includes("input_claimdetails_input_amount")) {
 				oInputModel.setProperty("/claim_item/amount", this.byId("input_claimdetails_input_actual_amount").getValue() * 0.5);
