@@ -2076,11 +2076,11 @@ sap.ui.define([
 				await this.getFieldVisibility_ClaimTypeItem();
 
 				//FUT issue #58
-				if(this.byId("checkbox_claimdetails_input_disclaimer").getVisible() == true){
+				if(this.byId("checkbox_claimdetails_input_disclaimer").getVisible()){
 					this.byId("checkbox_claimdetails_input_disclaimer").setSelected(true);
 				}
 
-				if(this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible() == true){
+				if(this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()){
 					this.byId("checkbox_claimdetails_input_disclaimer_galakan").setSelected(true);
 				}
 			}
@@ -2394,10 +2394,10 @@ sap.ui.define([
 			}
 
 			if(this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible() == true){
-				oInputModel.setProperty("/claim_item/disclaimer_galakan", this.byId("checkbox_claimdetails_input_disclaimer_galakan").getSelected().toString());
+				oInputModel.setProperty("/claim_item/disclaimer_galakan", this.byId("checkbox_claimdetails_input_disclaimer_galakan").getSelected());
 			}
 			//checking for galakan disclaimer if its ticked or not
-			if(oInputModel.getProperty(("/claim_item/disclaimer_galakan")) == "false" || oInputModel.getProperty(("/claim_item/disclaimer")) == false){
+			if(oInputModel.getProperty(("/claim_item/disclaimer_galakan")) == false || oInputModel.getProperty(("/claim_item/disclaimer")) == false){
 				MessageToast.show(Utility.getText("msg_claimdetails_no_check_disclaimer"));
 				return;
 			}
@@ -3035,8 +3035,7 @@ sap.ui.define([
 					MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount"));
 					BusyIndicator.hide();
 					return;
-				}
-				
+				}				
 				// Cash Advance Repayment Validation checking
 				if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
 					MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
