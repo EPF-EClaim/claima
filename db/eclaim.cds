@@ -460,7 +460,7 @@ entity ZCLAIM_ITEM : managed {
         ANGGOTA_NAME               : String;
         DEPENDENT_NAME             : String;
         TYPE_OF_PROFESSIONAL_BODY  : String(3);
-        DISCLAIMER_GALAKAN         : String;
+        DISCLAIMER_GALAKAN         : Boolean;
         VEHICLE_OWNERSHIP_ID       : String(2);
         MODE_OF_TRANSFER           : String(2);
         TRANSFER_DATE              : Date;
