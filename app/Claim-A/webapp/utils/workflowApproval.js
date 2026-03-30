@@ -245,15 +245,15 @@ sap.ui.define([
 			for(var i = 0; i < aNestedWorkflowRuleArr.length; i++){
 
                 if(aNestedWorkflowRuleArr[i][3] == null){
-                    aRiskLevelWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
+                    aRiskLevelWorkflowCodeArr.push(i);
                 }else if(sClaimsOverallRisk == aNestedWorkflowRuleArr[i][3]){
-                    aRiskLevelWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
+                    aRiskLevelWorkflowCodeArr.push(i);
                 }
                 
                 if(aNestedWorkflowRuleArr[i][2] == null){
-                    aEmpCCWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
+                    aEmpCCWorkflowCodeArr.push(i);
                 }else if(sEmpCCVal == aNestedWorkflowRuleArr[i][2]){
-					aEmpCCWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
+					aEmpCCWorkflowCodeArr.push(i);
 				}
 
                 // Add logic to include TOTAL_CLAIM_AMOUNT vs PREAPPROVED_AMOUNT
@@ -273,9 +273,9 @@ sap.ui.define([
                 
 
                 if(aNestedWorkflowRuleArr[i][5] == null){
-                    aThresholdWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
+                    aThresholdWorkflowCodeArr.push(i);
                 }else if(sThreshholdVal == aNestedWorkflowRuleArr[i][5]){
-					aThresholdWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
+					aThresholdWorkflowCodeArr.push(i);
 				}
 
 				if(iDateDiff > aNestedWorkflowRuleArr[i][1]){
@@ -287,19 +287,19 @@ sap.ui.define([
 				}
 
                 if(aNestedWorkflowRuleArr[i][6] == null){
-                    aReceiptAgingWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
+                    aReceiptAgingWorkflowCodeArr.push(i);
                 }else if(sReceiptAge == aNestedWorkflowRuleArr[i][6]){
-					aReceiptAgingWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
+					aReceiptAgingWorkflowCodeArr.push(i);
 				}
 
                 //cash adv is either true or false. 
                 if(aNestedWorkflowRuleArr[i][7]){
                     if(bClaimCashAdvance){
-                        aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
+                        aCashAdvWorkflowCodeArr.push(i);
                     }
                 }else{
                     if(!bClaimCashAdvance){
-                        aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][4]);
+                        aCashAdvWorkflowCodeArr.push(i);
                     }
                 }
 			}
@@ -312,10 +312,12 @@ sap.ui.define([
             // If we get no workflow rules or more than 1 workflow rules, do not proceed
             if(aCommonWorkflowCode.length === 1){
 
+                // get workflowname
+                const sCommonWorkflowName = aNestedWorkflowRuleArr[aCommonWorkflowCode[0]][4];
                 //get approver levels and approvers
                 const oListWorkflowStepBinding = oModel.bindList(Constants.Entities.ZWORKFLOW_STEP, null,null, [
                     new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.WorkflowType.CLAIM }),
-                    new Filter({ path: Constants.EntitiesFields.WORKFLOW_CODE, operator: FilterOperator.EQ, value1: aCommonWorkflowCode[0] }),
+                    new Filter({ path: Constants.EntitiesFields.WORKFLOW_CODE, operator: FilterOperator.EQ, value1: sCommonWorkflowName }),
                     
                 ], null);
                 const aWorkflowStepContexts = await oListWorkflowStepBinding.requestContexts();
@@ -577,6 +579,7 @@ sap.ui.define([
                 }	
             }else{
                 MessageToast.show(Utility.getText("msg_failed_no_workflow"));
+                return false;
             }
             return true;
 			
@@ -696,9 +699,9 @@ sap.ui.define([
             
 			for(var i = 0; i < aNestedWorkflowRuleArr.length; i++){
                 if(aNestedWorkflowRuleArr[i][1] == null){
-                    aEmpCCWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
+                    aEmpCCWorkflowCodeArr.push(i);
                 }else if(sEmpCCVal == aNestedWorkflowRuleArr[i][1]){
-					aEmpCCWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
+					aEmpCCWorkflowCodeArr.push(i);
 				}
 
 				if(sParTripStartDate >= dCurrentDate){
@@ -710,19 +713,19 @@ sap.ui.define([
 				}
 
                 if(aNestedWorkflowRuleArr[i][2] == null){
-                    aTripStartAgingWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
+                    aTripStartAgingWorkflowCodeArr.push(i);
                 }else if(sTripStartAge == aNestedWorkflowRuleArr[i][2]){
-					aTripStartAgingWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
+					aTripStartAgingWorkflowCodeArr.push(i);
 				}
 
                 //cash adv is either true or false. 
                 if(aNestedWorkflowRuleArr[i][0]){
                     if(aParCashAdvArr.includes(true)){
-                        aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
+                        aCashAdvWorkflowCodeArr.push(i);
                     }
                 }else{
                     if(!aParCashAdvArr.includes(true)){
-                        aCashAdvWorkflowCodeArr.push(aNestedWorkflowRuleArr[i][3]);
+                        aCashAdvWorkflowCodeArr.push(i);
                     }
                 }
 			}
@@ -735,11 +738,14 @@ sap.ui.define([
 
             // If we get no workflow rules or more than 1 workflow rules, do not proceed
             if(aCommonWorkflowCode.length === 1){
+                
+                // get workflowname
+                const sCommonWorkflowName = aNestedWorkflowRuleArr[aCommonWorkflowCode[0]][3];
 
                 //get approver levels and approvers
                 const oListWorkflowStepBinding = oModel.bindList(Constants.Entities.ZWORKFLOW_STEP, null,null, [
                     new Filter({ path: Constants.EntitiesFields.WORKFLOW_TYPE, operator: FilterOperator.EQ, value1: Constants.WorkflowType.REQUEST }),
-                    new Filter({ path: Constants.EntitiesFields.WORKFLOW_CODE, operator: FilterOperator.EQ, value1: aCommonWorkflowCode[0] }),
+                    new Filter({ path: Constants.EntitiesFields.WORKFLOW_CODE, operator: FilterOperator.EQ, value1: sCommonWorkflowName }),
                     
                 ], null);
                 const aWorkflowStepContexts = await oListWorkflowStepBinding.requestContexts();
@@ -1000,6 +1006,7 @@ sap.ui.define([
                 }
             }else{
                 MessageToast.show(Utility.getText("msg_failed_no_workflow"));
+                return false;
             }
 
             return true;
