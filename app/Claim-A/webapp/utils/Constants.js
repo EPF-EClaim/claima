@@ -88,6 +88,9 @@ sap.ui.define([
             "COMPLETED_DISBURSEMENT": "STAT06",
             "CANCELLED": "STAT07",
         },
+        "Departments": {
+            "FI_DEPT":"0500000000"
+        },
         "RequestStatus": {
             "DRAFT": "DRAFT",
             "PENDING_APPROVAL": "PENDING APPROVAL",
@@ -207,7 +210,8 @@ sap.ui.define([
             "DTD_ADMIN": "DTD Admin",
             "GA_ADMIN": "GA Admin",
             "JKEW_ADMIN": "JKEW Admin",
-            "SUPER_ADMIN": "Super Admin"
+            "SUPER_ADMIN": "Super Admin",
+            "HEADOFDEP": "HOD"
         },
         "User_Type": {
             "CASH_FI": "CASH_FI",
