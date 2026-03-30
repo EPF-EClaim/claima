@@ -2074,6 +2074,15 @@ sap.ui.define([
 
 				// set app visibility controls
 				await this.getFieldVisibility_ClaimTypeItem();
+
+				//FUT issue #58
+				if(this.byId("checkbox_claimdetails_input_disclaimer").getVisible() == true){
+					this.byId("checkbox_claimdetails_input_disclaimer").setSelected(true);
+				}
+
+				if(this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible() == true){
+					this.byId("checkbox_claimdetails_input_disclaimer_galakan").setSelected(true);
+				}
 			}
 			this._setClaimDetailSelection(oClaimSubmissionModel);
 
@@ -2377,6 +2386,20 @@ sap.ui.define([
 						oInputModel.setProperty("/claim_item/receipt_date", oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"));
 					}
 				}
+			}
+
+			//FUT issue #58
+			if(this.byId("checkbox_claimdetails_input_disclaimer").getVisible() == true){
+				oInputModel.setProperty("/claim_item/disclaimer", this.byId("checkbox_claimdetails_input_disclaimer").getSelected());
+			}
+
+			if(this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible() == true){
+				oInputModel.setProperty("/claim_item/disclaimer_galakan", this.byId("checkbox_claimdetails_input_disclaimer_galakan").getSelected().toString());
+			}
+
+			if(oInputModel.getProperty(("/claim_item/disclaimer_galakan")) == "false" || oInputModel.getProperty(("/claim_item/disclaimer")) == false){
+				MessageToast.show(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+				return;
 			}
 
 			try {
