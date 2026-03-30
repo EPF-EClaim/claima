@@ -129,7 +129,7 @@
 					}"
 					change="onChange_ClaimDetails_ActualAmount"
 					liveChange="onChange_ClaimDetails_ActualAmount"
-					visible="false"
+					visible="{claimitem_property>/actual_amount/isVisible}"
 					required="true"
 				/>
 
@@ -171,7 +171,7 @@
 						}
 					}"
 					required="true"
-					editable="{= ${claimitem_input>/screen_array}.includes('input_claimdetails_input_actual_amount') === false}"
+					editable="{= ${claimitem_property>/actual_amount/isVisible} === false}"
 					visible="false"
 				/>
 

@@ -2038,10 +2038,8 @@ sap.ui.define([
 			// set claim detail selection values
 			this._setClaimDetailSelectionMaster();
 
-			// check if actual amount or provided/entitled meals is visible
-			if (this.byId("input_claimdetails_input_actual_amount").getVisible() ||
-				this.byId("input_claimdetails_input_entitled_breakfast").getVisible()
-			) {
+			// check if provided/entitled meals is visible
+			if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
 				this.byId("input_claimdetails_input_amount").setEditable(false);
 			}
 			else {
@@ -2063,6 +2061,16 @@ sap.ui.define([
 			// set claim item model
 			var oInputModel = this._getNewClaimItemModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+
+			// set claim item property model
+			var oClaimItemPropertyData = {
+				actual_amount: {
+					isVisible: false
+				}
+			};
+			var oModel = new JSONModel(oClaimItemPropertyData);
+			//// set input
+			this.getView().setModel(oModel, "claimitem_property");
 
 			// change footer buttons
 			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
@@ -2599,11 +2607,16 @@ sap.ui.define([
 			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
+        /**
+		 * On changing value of actual amount, set value of 'amount' property to 50% of 'actual_amount' property
+		 * @public
+		 */
 		onChange_ClaimDetails_ActualAmount: function () {
-			// set amount to 50% of actual amount (subsidised amount)
-			var oInputModel = this.getView().getModel("claimitem_input");
-			if (oInputModel.getProperty("/screen_array") && oInputModel.getProperty("/screen_array").includes("input_claimdetails_input_amount")) {
-				oInputModel.setProperty("/claim_item/amount", this.byId("input_claimdetails_input_actual_amount").getValue() * 0.5);
+			// check if amount field is visible
+			if (this.byId("input_claimdetails_input_amount").getVisible()) {
+				// set 'amount' property to 50% of actual amount
+				var oInputModel = this.getView().getModel("claimitem_input");
+				oInputModel.setProperty("/claim_item/amount", oInputModel.getProperty("/claim_item/actual_amount") * 0.5);
 			}
 		},
 
