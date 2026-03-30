@@ -2397,7 +2397,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/disclaimer_galakan", this.byId("checkbox_claimdetails_input_disclaimer_galakan").getSelected().toString());
 			}
 			//checking for galakan disclaimer if its ticked or not
-			if(oInputModel.getProperty(("/claim_item/disclaimer_galakan")) == "false"){
+			if(oInputModel.getProperty(("/claim_item/disclaimer_galakan")) == "false" || oInputModel.getProperty(("/claim_item/disclaimer")) == false){
 				MessageToast.show(Utility.getText("msg_claimdetails_no_check_disclaimer"));
 				return;
 			}

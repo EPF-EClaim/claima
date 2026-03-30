@@ -925,7 +925,7 @@
 				/>
 
 				<!-- Disclaimer -->
-				<Label text="{i18n>label_claimdetails_input_disclaimer}" />
+				<Label text="{i18n>label_claimdetails_input_disclaimer}" required="true"/>
 				<CheckBox
 					id="checkbox_claimdetails_input_disclaimer"
 					text="{i18n>checkbox_claimdetails_input_disclaimer}"
@@ -934,13 +934,12 @@
 				/>
 
 				<!-- Disclaimer (Galakan) -->
-				<Label text="{i18n>label_claimdetails_input_disclaimer}" />
+				<Label text="{i18n>label_claimdetails_input_disclaimer}" required="true" />
 				<CheckBox
 					id="checkbox_claimdetails_input_disclaimer_galakan"
 					text="{i18n>checkbox_claimdetails_input_disclaimer_galakan}"
 					visible="false"
 					wrapping="true"
-					required="true"
 				/>
 
 				<!-- Remarks -->
