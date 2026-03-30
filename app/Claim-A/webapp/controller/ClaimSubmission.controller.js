@@ -2038,8 +2038,10 @@ sap.ui.define([
 			// set claim detail selection values
 			this._setClaimDetailSelectionMaster();
 
-			// check if provided/entitled meals is visible
-			if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
+			// check if actual amount or provided/entitled meals is visible
+			if (this.byId("input_claimdetails_input_actual_amount").getVisible() ||
+				this.byId("input_claimdetails_input_entitled_breakfast").getVisible()
+			) {
 				this.byId("input_claimdetails_input_amount").setEditable(false);
 			}
 			else {
@@ -2076,6 +2078,11 @@ sap.ui.define([
 				await this.getFieldVisibility_ClaimTypeItem();
 			}
 			this._setClaimDetailSelection(oClaimSubmissionModel);
+
+			// check if actual amount is visible
+			if (this.byId("input_claimdetails_input_actual_amount").getVisible()) {
+				this.byId("input_claimdetails_input_amount").setEditable(false);
+			}
 
 			// approver view changes
 			if (oClaimSubmissionModel.getProperty("/view_only")) {
@@ -2595,6 +2602,13 @@ sap.ui.define([
 
 		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
 			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
+		},
+
+		onChange_ClaimDetails_ActualAmount: function () {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (oInputModel.getProperty("/screen_array") && oInputModel.getProperty("/screen_array").includes("input_claimdetails_input_amount")) {
+				oInputModel.setProperty("/claim_item/amount", this.byId("input_claimdetails_input_actual_amount").getValue() * 0.5);
+			}
 		},
 
 		onChange_ClaimDetails_DateRange: async function (startdate, enddate) {

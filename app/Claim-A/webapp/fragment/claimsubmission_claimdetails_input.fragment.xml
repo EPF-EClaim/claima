@@ -127,6 +127,8 @@
 							preserveDecimals: false
 						}
 					}"
+					change="onChange_ClaimDetails_ActualAmount"
+					liveChange="onChange_ClaimDetails_ActualAmount"
 					visible="false"
 					required="true"
 				/>
