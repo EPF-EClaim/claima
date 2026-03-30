@@ -313,22 +313,7 @@ sap.ui.define([
         oCtxCurrent.setProperty(Constants.EntitiesFields.STATUS, sActionStatus);
 
         // Sean confirmed that after REJECTED and SEND BACK status, Higher level approvers will have blank status
-
-/*         const oBindingHeader = oModel.bindList(
-            sHeaderSet,
-            null,
-            null,
-            [new sap.ui.model.Filter(sHeaderIdField, sap.ui.model.FilterOperator.EQ, sId)],
-            { $$ownRequest: true, $$updateGroupId: sUpdateGroupId }
-        );
-
-        const [oCtxHeader] = await oBindingHeader.requestContexts(0, 1);
-
-        if (oCtxHeader) {
-            const sHeaderStatusField = bIsPre ? Constants.EntitiesFields.STATUS : Constants.EntitiesFields.CLAIM_STATUS;
-            oCtxHeader.setProperty(sHeaderStatusField, sActionStatus); // STAT04 / STAT03
-        } */
-       
+      
         //Call Update Status.
         Utility._updateStatus(oModel, sId, sActionStatus)
 
