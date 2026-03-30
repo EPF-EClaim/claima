@@ -173,7 +173,7 @@ module.exports = (srv) => {
         const ISserivce = await cds.connect.to('IS_NonProd_Conn');
         ISserivce.send({
             method: 'POST',
-            path: "/http/EmailNotification_BTP_DEV",
+            path: "/http/EmailNotification_BTP",
             data: { ...req.data }
         });
     });
