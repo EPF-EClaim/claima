@@ -2702,7 +2702,10 @@ sap.ui.define([
 			//// get header if claim type item is DOBI
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DOBI) {
 				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-				oHeader =  oClaimSubmissionModel.getProperty("/claim_header") || {};
+				oHeader = {
+					tripstartdate: oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"),
+					tripenddate: oClaimSubmissionModel.getProperty("/claim_header/trip_end_date"),
+				};
 			}
 			//// get item if header is not populated
 			if (Object.keys(oHeader).length === 0) {
