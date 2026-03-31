@@ -165,7 +165,11 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							maxIntegerDigits: 16,
+							preserveDecimals: false,
+							constraints: {
+								minimum: 0.01
+							}
 						}
 					}"
 					required="true"
@@ -350,7 +354,11 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							maxIntegerDigits: 6,
+							preserveDecimals: false,
+							constraints: {
+								minimum: 0
+							}
 						}
 					}"
 					change="onChange_ClaimDetails_Kilometer"
@@ -362,7 +370,10 @@
 				<Label text="{i18n>label_claimdetails_input_km_rate}" />
 				<Input
 					id="input_claimdetails_input_rate_per_km"
-					value="{claimitem_input>/claim_item/descr/rate_per_km}"
+					value="{
+						path: 'claimitem_input>/claim_item/descr/rate_per_km',
+						type: 'FloatType'
+					}"
 					editable="false"
 					visible="{claimitem_property>/rate_per_km/is_visible}"
 				/>
@@ -415,7 +426,11 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							maxIntegerDigits: 16,
+							preserveDecimals: false,
+							constraints: {
+								minimum: 0
+							}
 						}
 					}"
 					change="onChange_ClaimDetails_Toll"
