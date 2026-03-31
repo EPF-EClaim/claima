@@ -13,6 +13,7 @@ sap.ui.define([
     "sap/m/MessageToast",
     "sap/m/MessageBox",
     "claima/utils/Utility",
+    "your/app/util/ExcelExport",
     "sap/ui/export/Spreadsheet",
     "sap/ui/export/library"
 ], (Controller,
@@ -29,6 +30,7 @@ sap.ui.define([
     MessageToast,
     MessageBox,
     Utility,
+    ExcelExport,
     Spreadsheet,
     exportLibrary
 ) => {
@@ -66,13 +68,13 @@ sap.ui.define([
                 sNumRangeDTD = this._oConstant.Configuration.ZNUM_RANGE_DTD,
                 sBudget = this._oConstant.Configuration.ZBUDGET;
 
-            if (sNavigation === sEmpMaster|| sNavigation === sEmpDep || sNavigation === sNumRange) {
+            if (sNavigation === sEmpMaster || sNavigation === sEmpDep || sNavigation === sNumRange) {
                 try {
                     const oData = await oCtx.requestObject();
                     if (sNavigation === sEmpMaster) {
                         var sTable = oData.operationHidden === false && sNavigation === sEmpMaster ? sEmpMasterDTD : sNavigation;
-                    } else if (sNavigation === sEmpDep ) {
-                        sTable = oData.operationHidden === false && sNavigation === sEmpDep  ? sEmpDepDTD : sNavigation;
+                    } else if (sNavigation === sEmpDep) {
+                        sTable = oData.operationHidden === false && sNavigation === sEmpDep ? sEmpDepDTD : sNavigation;
                     } else if (sNavigation === sNumRange) {
                         sTable = oData.operationHidden === false && sNavigation === sNumRange ? sNumRangeDTD : sNavigation;
                     }
@@ -453,9 +455,9 @@ sap.ui.define([
             var oBinding = oTable.getBinding("items");
             oBinding.sort(null);
             oBinding.filter([], "Application");
-        }, 
+        },
 
-         onExportToExcel: function (oEvent) {
+        onExportToExcel: function (oEvent) {
             var oItemTable = this.byId("ClaimItems--claimitemTable");
             var oMainTable = this.byId("claimTable");
 
@@ -469,6 +471,7 @@ sap.ui.define([
                 return;
             }
             const EdmType = exportLibrary.EdmType;
+
             var aColumns = bIsItems ? [
                 { label: "Claim Type Item ID", property: "CLAIM_TYPE_ITEM_ID", type: EdmType.String },
                 { label: "Item Description", property: "CLAIM_TYPE_ITEM_DESC", type: EdmType.String },
@@ -492,17 +495,24 @@ sap.ui.define([
                 { label: "Status", property: "STATUS", type: EdmType.String }
             ];
 
-            var oSheet = new Spreadsheet({
-                workbook: { columns: aColumns },
-                dataSource: oBinding,
-                fileName: bIsItems ? "ClaimTypeItems_Export.xlsx" : "ClaimType_Export.xlsx",
-                worker: false
-            });
+            // var oSheet = new Spreadsheet({
+            //     workbook: { columns: aColumns },
+            //     dataSource: oBinding,
+            //     fileName: bIsItems ? "ClaimTypeItems_Export.xlsx" : "ClaimType_Export.xlsx",
+            //     worker: false
+            // });
 
-            oSheet.build()
-                .then(function () { MessageToast.show("Export successful"); })
-                .catch(function (oError) { MessageBox.error("Export failed: " + (oError.message || oError)); })
-                .finally(function () { oSheet.destroy(); });
+            // oSheet.build()
+            //     .then(function () { MessageToast.show("Export successful"); })
+            //     .catch(function (oError) { MessageBox.error("Export failed: " + (oError.message || oError)); })
+            //     .finally(function () { oSheet.destroy(); });
+
+            ExcelExport.exportToExcel(
+                oTable,
+                aColumns,
+                bIsItems ? "ClaimTypeItems_Export.xlsx" : "ClaimType_Export.xlsx"
+            );
+
         },
 
         onConfirmViewSettings: function (oEvent) {
@@ -550,7 +560,7 @@ sap.ui.define([
                 { id: "filterItemStatus", property: "STATUS" }
             ];
 
-            var aMainFilters = oBinding.sPath === "Items"? aItemFilters: aHeaderFilter;
+            var aMainFilters = oBinding.sPath === "Items" ? aItemFilters : aHeaderFilter;
 
             aMainFilters.forEach(function (oItem) {
                 var oInput = this.byId(oItem.id);
