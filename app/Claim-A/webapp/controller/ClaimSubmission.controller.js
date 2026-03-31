@@ -2213,8 +2213,9 @@ sap.ui.define([
 
 			// Check for amount field visibility and value
 			if(oInputAmountField && oInputAmountField.getVisible()){
-				const sInputAmount = oInputAmountField.getValue()?.trim();
-				if(isNaN(sInputAmount) || sInputAmount <= 0 ){
+				const sInputAmount = oInputAmountField.getValue()?.trim().replace(/[^0-9.-]+/g, "");
+				const fInputAmount = parseFloat(sInputAmount);
+				if(isNaN(fInputAmount) || fInputAmount <= 0 ){
 					// stop claim submission if amount is zero or less
 					MessageToast.show(Utility.getText("msg_claiminput_amount_invalid"));
 					return;
@@ -2223,8 +2224,9 @@ sap.ui.define([
 
 			// Check for actual amount field visibility and value
 			if(oInputActualAmountField && oInputActualAmountField.getVisible()){
-				const sInputActualAmount = oInputActualAmountField.getValue()?.trim();
-				if(isNaN(sInputActualAmount) || sInputActualAmount <= 0 ){
+				const sInputActualAmount = oInputActualAmountField.getValue()?.trim().replace(/[^0-9.-]+/g, "");
+				const fInputActualAmount = parseFloat(sInputActualAmount);
+				if(isNaN(fInputActualAmount) || fInputActualAmount <= 0 ){
 					// stop claim submission if amount is zero or less
 					MessageToast.show(Utility.getText("msg_claiminput_amount_invalid"));
 					return;
