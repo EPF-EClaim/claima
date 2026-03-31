@@ -75,7 +75,7 @@
                         icon="sap-icon://excel-attachment"
                         press="onExportToExcel"
                         type="Transparent"
-                        tooltip="Export to Excel"
+                        tooltip="{i18n>export_excel}"
                     />
                 </Toolbar>
 
@@ -204,7 +204,7 @@
                                 <customControl>
                                     <Input
                                         id="filterClaimTypeId"
-                                        placeholder="Enter Claim Type ID..."
+                                        placeholder="{i18n>zclaim_typeid}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -215,7 +215,7 @@
                                 <customControl>
                                     <Input
                                         id="filterClaimTypeDesc"
-                                        placeholder="Enter Description..."
+                                        placeholder="{i18n>zclaim_type_desc}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -226,7 +226,7 @@
                                 <customControl>
                                     <Input
                                         id="filterGlAccount"
-                                        placeholder="Enter GL Account..."
+                                        placeholder="{i18n>zclaim_gl}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -237,7 +237,7 @@
                                 <customControl>
                                     <Input
                                         id="filterRequestType"
-                                        placeholder="Enter Request Type..."
+                                        placeholder="{i18n>zclaim_request_type}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -248,7 +248,7 @@
                                 <customControl>
                                     <Input
                                         id="filterIndOrGroup"
-                                        placeholder="Enter Group Type..."
+                                        placeholder="{i18n>zclaim_ind}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -259,7 +259,7 @@
                                 <customControl>
                                     <Input
                                         id="filterProjectClaim"
-                                        placeholder="Enter Project Claim..."
+                                        placeholder="{i18n>zclaim_proj_claim}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -270,7 +270,7 @@
                                 <customControl>
                                     <Input
                                         id="filterStatus"
-                                        placeholder="Enter Status..."
+                                        placeholder="{i18n>zclaim_status}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -332,7 +332,7 @@
                                 <customControl>
                                     <Input
                                         id="filterClaimTypeItemId"
-                                        placeholder="Enter Claim Type Item ID..."
+                                        placeholder="{i18n>zclaim_type_itemid}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -343,7 +343,7 @@
                                 <customControl>
                                     <Input
                                         id="filterClaimTypeItemDesc"
-                                        placeholder="Enter Description..."
+                                        placeholder="{i18n>zclaim_type_desc}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -354,7 +354,7 @@
                                 <customControl>
                                     <Input
                                         id="filterCategoryId"
-                                        placeholder="Enter Category Id..."
+                                        placeholder="{i18n>zclaim_cat_id}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -365,7 +365,7 @@
                                 <customControl>
                                     <Input
                                         id="filterCostcenter"
-                                        placeholder="Enter Cost Center"
+                                        placeholder="{i18n>zclaim_cost_center}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -376,7 +376,7 @@
                                 <customControl>
                                     <Input
                                         id="filterMaterialCode"
-                                        placeholder="Enter Material Code..."
+                                        placeholder="{i18n>zclaim_mat_code}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -387,7 +387,7 @@
                                 <customControl>
                                     <Input
                                         id="filterRisk"
-                                        placeholder="Enter Risk..."
+                                        placeholder="{i18n>zclaim_risk}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -398,7 +398,7 @@
                                 <customControl>
                                     <Input
                                         id="filterItemStartDate"
-                                        placeholder="Enter Start Date..."
+                                        placeholder="{i18n>zclaim_start_date}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -409,7 +409,7 @@
                                 <customControl>
                                     <Input
                                         id="filterItemEndDate"
-                                        placeholder="Enter End Date..."
+                                        placeholder="{i18n>zclaim_end_date}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -420,7 +420,7 @@
                                 <customControl>
                                     <Input
                                         id="filterItemStatus"
-                                        placeholder="Enter Status..."
+                                        placeholder="{i18n>zclaim_status}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
