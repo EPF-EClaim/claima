@@ -302,10 +302,6 @@ sap.ui.define([
 
 				console.log(pdfUrl);
 
-				// Update viewer properties each time
-				// that._PDFViewer.setTitle(
-				// 	that._getTexti18n("pdfviewer_claimsummary_attachment", [jsonData.fileName])
-				// );
 				that._PDFViewer.setSource(pdfUrl);
 
 				// Register blob as trusted/whitelisted (older UI5)
@@ -314,8 +310,6 @@ sap.ui.define([
 				// Open viewer
 				that._PDFViewer.open();
 			} catch (error) {
-				// console.log("Error viewing attachment: ", error);
-				// MessageToast.show("Error viewing attachment: " + (error.message || error));
 				MessageBox.warning(Utility.getText("req_d_w_attachment_not_found"));
 			} finally {
 				BusyIndicator.hide();
