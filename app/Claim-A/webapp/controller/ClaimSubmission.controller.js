@@ -2613,7 +2613,7 @@ sap.ui.define([
 			if (oPropertyModel.getProperty("/amount/is_visible") && (
 				// ensure this only applies to valid scenarios
 				( oInputModel.getProperty("/claim_item/claim_type_id") === this._oConstant.ClaimType.ELAUN_PINDAH && oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH ) ||
-				( oInputModel.getProperty("/claim_item/claim_type_id") === this._oConstant.ClaimType.PEDU && oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEDU )
+				( oInputModel.getProperty("/claim_item/claim_type_id") === this._oConstant.ClaimType.POST_EDUCATION_ASSISTANCE && oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE )
 			)) {
 				// set 'amount' property to 50% of actual amount
 				oInputModel.setProperty("/claim_item/amount", oInputModel.getProperty("/claim_item/actual_amount") * 0.5);
