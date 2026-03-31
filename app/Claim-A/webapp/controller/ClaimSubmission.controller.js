@@ -2089,11 +2089,11 @@ sap.ui.define([
 
 				//FUT issue #58
 				if(this.byId("checkbox_claimdetails_input_disclaimer").getVisible()){
-					this.byId("checkbox_claimdetails_input_disclaimer").setSelected(true);
+					oInputModel.setProperty("/claim_item/disclaimer", true)
 				}
 
 				if(this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()){
-					this.byId("checkbox_claimdetails_input_disclaimer_galakan").setSelected(true);
+					oInputModel.setProperty("/claim_item/disclaimer_galakan", true)
 				}
 
 				
@@ -2409,6 +2409,7 @@ sap.ui.define([
 				return;
 			}
 
+			//FUT issue #81
 			try {
 				BusyIndicator.show(0);
 				var oModel = this.getOwnerComponent().getModel();
