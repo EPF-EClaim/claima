@@ -35,7 +35,6 @@ sap.ui.define([
                 this.setModel(models.createUserIdModel(), "userId");
                 this.setModel(models.createImageModel(), "imageModel");
                 this.setModel(models.createRoleModel(), "roleModel");
-                this.setModel(models.createConfigModel(), "config");
 
                 const fmt = sap.ui.getCore().getConfiguration().getFormatSettings();
                 fmt.setDatePattern("medium", "dd MMM yyyy");
@@ -112,7 +111,6 @@ sap.ui.define([
 
                             var oRoleModel = this.getModel("roleModel");
                             var oSessionModel = this.getModel("session");
-                            var oConfigModel = this.getModel("config");
 
                             resultData.scopes.forEach(function (scope) {
                                 if (scope.includes("Claimant")) {
@@ -125,22 +123,22 @@ sap.ui.define([
                                     oRoleModel.setProperty("/isDTDAdmin", true);
                                     oSessionModel.setProperty("/userType", "DTD Admin");
 
-                                    oConfigModel.setProperty("/admin", true);
-                                    oConfigModel.setProperty("/visible_dtd_jkew", true);
-                                    oConfigModel.setProperty("/visible", true);
+                                    oRoleModel.setProperty("/Admin_role", true);
+                                    oRoleModel.setProperty("/DTD_JKEW_role", true);
+                                    oRoleModel.setProperty("/DTDAdmin_role", true);
                                 }
                                 if (scope.includes("Admin_System")) {
                                     oRoleModel.setProperty("/isAdminSystem", true);
                                     oSessionModel.setProperty("/userType", "JKEW Admin"); 
 
-                                    oConfigModel.setProperty("/admin", true);
-                                    oConfigModel.setProperty("/visible_dtd_jkew", true);
+                                    oRoleModel.setProperty("/Admin_role", true);
+                                    oRoleModel.setProperty("/DTD_JKEW_role", true);
                                 }
                                 if (scope.includes("Admin_CC")) {
                                     oRoleModel.setProperty("/isAdminCC", true);
                                     oSessionModel.setProperty("/userType", "GA Admin"); 
                                     
-                                    oConfigModel.setProperty("/admin", true);
+                                    oRoleModel.setProperty("/Admin_role", true);
                                 }
                             })
 
