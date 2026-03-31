@@ -170,7 +170,7 @@ module.exports = (srv) => {
     });
 
     srv.on('sendEmail', async (req) => {
-        const ISserivce = await cds.connect.to('IS_NonProd_Conn');
+        const ISserivce = await cds.connect.to('IS_Conn');
         ISserivce.send({
             method: 'POST',
             path: "/http/EmailNotification_BTP",

@@ -5,7 +5,7 @@ module.exports = (srv) => {
 
   srv.on('sendApprovedClaimBatch', async (req) => {
     try {
-      const ISservice = await cds.connect.to('IS_NonProd_Conn');
+      const ISservice = await cds.connect.to('IS_Conn');
 
       const oBatch = req.data.batch || {};
       const { ClaimID, Items } = oBatch;
