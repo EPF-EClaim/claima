@@ -3053,16 +3053,7 @@ sap.ui.define([
 					return;
 				}
 
-				//claim items amount validation checking might be deleted due to new changes
-				console.log(aItems[0].amount);
-				for(var i = 0; i < aItems.length; i++){
-					if (aItems[i].amount <= 0){
-						MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount"));
-						BusyIndicator.hide();
-						return;
-					}
-				} 
-				
+								
 				// Cash Advance Repayment Validation checking
 				if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
 					MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
