@@ -2029,6 +2029,9 @@ sap.ui.define([
 			var claimItem = oEvent.getParameters().selectedItem;
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (claimItem) {
+				// Reset Location Type
+	       		oInputModel.setProperty("/claim_item/location_type", "");
+
 				// get material code from claim item
 				var materialCode = claimItem.getBindingContext("employee").getObject("MATERIAL_CODE");
 				oInputModel.setProperty("/claim_item/material_code", materialCode);
@@ -2036,6 +2039,14 @@ sap.ui.define([
 
 			// set app visibility controls
 			await this.getFieldVisibility_ClaimTypeItem();
+			
+			// When Location Type is visible but no selection yet, hide From State & To State by default
+			// If show, then State will be Select but Location will be input, which inconsistent from UI
+			if (this.byId("select_claimdetails_input_location_type").getVisible()) {
+				this.byId("select_claimdetails_input_from_state_id")?.setVisible(false);
+				this.byId("select_claimdetails_input_to_state_id")?.setVisible(false);
+			}
+
 			// set claim detail selection values
 			this._setClaimDetailSelectionMaster();
 
@@ -2109,12 +2120,34 @@ sap.ui.define([
 		},
 
 		_setClaimDetailSelection: function (oModel) {
-			//// Claim Item
+			// filter by submission type
+			if (oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.PRE_APPROVE ||
+				oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.CASH_REPAYMENT ||
+				oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.CURR_SUBSIDY
+			) {
+				// filter items by claim header submission type + cash repayment
+				var oFilterSubsmissionType = new Filter({
+					filters: [
+						new Filter('SUBMISSION_TYPE', FilterOperator.EQ, this._oConstant.SubmissionType.PRE_APPROVE),
+						new Filter('SUBMISSION_TYPE', FilterOperator.EQ, this._oConstant.SubmissionType.CASH_REPAYMENT),
+						new Filter('SUBMISSION_TYPE', FilterOperator.EQ, this._oConstant.SubmissionType.CURR_SUBSIDY),
+					],
+					and: false
+				});
+			} else {
+				oFilterSubsmissionType = new Filter('SUBMISSION_TYPE', FilterOperator.EQ, oModel.getProperty("/claim_header/submission_type"));
+			}
+
+			// set dropdown for claim items
 			this.byId("select_claimdetails_input_claimitem").bindAggregation("items", {
 				path: "employee>/ZCLAIM_TYPE_ITEM",
 				filters: [
-					new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id")),
-					new Filter('SUBMISSION_TYPE', FilterOperator.EQ, oModel.getProperty("/claim_header/submission_type"))
+					new Filter('CLAIM_TYPE_ID', FilterOperator.EQ,oModel.getProperty("/claim_header/claim_type_id")),
+					oFilterSubsmissionType,
+					// ensure status is active
+					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
 				],
 				sorter: [
 					new Sorter('CLAIM_TYPE_ITEM_DESC'),
@@ -2730,11 +2763,6 @@ sap.ui.define([
 
 		onSelect_ClaimDetails_Region: async function () {
 			await this._calculatePerDiem();
-		},
-
-		onSelect_ClaimDetails_LocationType: function (oEvent) {
-			var key = oEvent.getSource().getSelectedKey();
-			this.getView().getModel("claimitem_input").setProperty("/claim_item/location_type", key);
 		},
 
 		_calculatePerDiem: async function () {
@@ -3782,6 +3810,44 @@ sap.ui.define([
 			this.oDialog.open();
 		},
 
+		getFromLocationOfficeByState: function () {
+            var _oSelect = this.byId("select_claimdetails_input_from_location");
+            var _oBinding = _oSelect.getBinding("items");
+            if (!_oBinding) {
+                return;
+            }
+
+			var _oInputModel = this.getView().getModel("claimitem_input");
+			if (!_oInputModel) {
+				return;
+			}
+
+            var _aFilters = [
+                new Filter("STATUS", FilterOperator.EQ, this._oConstant.Status.ACTIVE),
+				new Filter("STATE_ID", FilterOperator.EQ, _oInputModel.getProperty("/claim_item/from_state_id"))
+            ];
+            _oBinding.filter(_aFilters);
+        },
+
+		getToLocationOfficeByState: function () {
+            var _oSelect = this.byId("select_claimdetails_input_to_location");
+            var _oBinding = _oSelect.getBinding("items");
+            if (!_oBinding) {
+                return;
+            }
+
+			var _oInputModel = this.getView().getModel("claimitem_input");
+			if (!_oInputModel) {
+				return;
+			}
+
+            var _aFilters = [
+                new Filter("STATUS", FilterOperator.EQ, this._oConstant.Status.ACTIVE),
+				new Filter("STATE_ID", FilterOperator.EQ, _oInputModel.getProperty("/claim_item/to_state_id"))
+            ];
+            _oBinding.filter(_aFilters);
+        },
+
 		// App Control Visibility
 		getFieldVisibility_ClaimTypeItem: async function () {
 			const oModel = this.getOwnerComponent().getModel();
@@ -3832,8 +3898,6 @@ sap.ui.define([
 
 				// ------------------------------------------------------------------
 				// Force correct visibility of state & location fields on screen load
-				// as From Location (Input) & To Location (Input) fields are not make
-				// visible dynamically based on DB Structure 
 				// ------------------------------------------------------------------
 				var sLocType = oInputModel.getProperty("/claim_item/location_type");
 				if (sLocType === this._oConstant.LocationType.OTHER) { // Other Location
@@ -3847,6 +3911,18 @@ sap.ui.define([
 					this.byId("select_claimdetails_input_to_state_id")?.setVisible(false);
 					this.byId("select_claimdetails_input_from_location")?.setVisible(false);
 					this.byId("select_claimdetails_input_to_location")?.setVisible(false);
+				}
+				else if (sLocType === this._oConstant.LocationType.KWSP) { // KWSP Office	
+
+					// Hide Other Location fields (Input)
+					this.byId("input_claimdetails_input_from_location")?.setVisible(false);
+					this.byId("input_claimdetails_input_to_location")?.setVisible(false);
+
+					// Show KWSP Office fields (Select)
+					this.byId("select_claimdetails_input_from_state_id")?.setVisible(true);
+					this.byId("select_claimdetails_input_to_state_id")?.setVisible(true);
+					this.byId("select_claimdetails_input_from_location")?.setVisible(true);
+					this.byId("select_claimdetails_input_to_location")?.setVisible(true);
 				}
 
 			} catch (err) {
@@ -3887,9 +3963,9 @@ sap.ui.define([
 				"checkbox_claimdetails_input_parking",
 				"select_claimdetails_input_location_type",
 				"select_claimdetails_input_from_state_id",
-				"select_claimdetails_input_from_location",
+				"input_claimdetails_input_from_location",
 				"select_claimdetails_input_to_state_id",
-				"select_claimdetails_input_to_location",
+				"input_claimdetails_input_to_location",
 				"select_claimdetails_input_room_type",
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
@@ -4022,9 +4098,9 @@ sap.ui.define([
 				"checkbox_claimdetails_input_parking",
 				"select_claimdetails_input_location_type",
 				"select_claimdetails_input_from_state_id",
-				"select_claimdetails_input_from_location",
+				"input_claimdetails_input_from_location",
 				"select_claimdetails_input_to_state_id",
-				"select_claimdetails_input_to_location",
+				"input_claimdetails_input_to_location",
 				"select_claimdetails_input_room_type",
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",

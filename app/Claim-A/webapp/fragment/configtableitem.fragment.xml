@@ -72,10 +72,14 @@
                 />
                 <Button
                     icon="sap-icon://action-settings"
-                    press="onOpenViewSettings"
+                    press="onOpenViewItemSettings"
                     type="Transparent"
                     tooltip="View Settings"
                 />
+                <Button icon="sap-icon://excel-attachment" 
+                press="onExportToExcel" 
+                type="Transparent" 
+                tooltip="{i18n>export_excel}" />
             </Toolbar>
 
             <Table
