@@ -3035,8 +3035,8 @@ sap.ui.define([
 				var oInputModel = this.getView().getModel("claimsubmission_input");
 				var aItems = oInputModel.getProperty("/claim_items") || [];
 
-				if (aItems.length === 0) {
-					MessageBox.error(Utility.getText("msg_claimdetails_no_items"));
+				if (oAction !== "Delete Report" && aItems.length === 0) {
+					MessageToast.show(Utility.getText("msg_claimdetails_no_items"));
 					BusyIndicator.hide();
 					return;
 				}
