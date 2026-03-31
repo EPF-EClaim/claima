@@ -126,8 +126,12 @@
 							maxFractionDigits: 2,
 							maxIntegerDigits: 16,
 							preserveDecimals: false
+						},
+						constraints: {
+							minimum: 0.01
 						}
 					}"
+					type="Number"
 					change="onChange_ClaimDetails_ActualAmount"
 					liveChange="onChange_ClaimDetails_ActualAmount"
 					visible="{claimitem_property>/actual_amount/is_visible}"
@@ -169,9 +173,13 @@
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
 							maxIntegerDigits: 16,
-							preserveDecimals: false
+							preserveDecimals: false,
+							constraints: {
+								minimum: 0.01
+							}
 						}
 					}"
+					type="Number"
 					required="true"
 					editable="{= ${claimitem_property>/actual_amount/is_visible} === false &amp;&amp;
 						${claimitem_property>/entitled_breakfast/is_visible} === false

@@ -2298,42 +2298,6 @@ sap.ui.define([
 			const oInputAmountField = this.byId("input_claimdetails_input_amount");
 			const oInputActualAmountField = this.byId("input_claimdetails_input_actual_amount");
 
-			// Check for amount field visibility and value
-			if(oInputAmountField && oInputAmountField.getVisible()){
-				const sInputAmount = oInputAmountField.getValue()?.trim().replace(/[^0-9.-]+/g, "");
-				if(isNaN(sInputAmount)){
-					// stop saving claim item if amount is invalid
-					MessageBox.show(Utility.getText("msg_claiminput_amount_invalid", [oInputAmountField.getValue(), Utility.getText("label_claimdetails_input_amount")]));
-					return;
-				} else if (sInputAmount < 0) {
-					// stop saving claim item if amount is negative
-					MessageBox.show(Utility.getText("msg_claiminput_amount_negative", [oInputAmountField.getValue(), Utility.getText("label_claimdetails_input_amount")]));
-					return;
-				} else if (sInputAmount == 0) {
-					// stop saving claim item if amount is zero
-					MessageBox.show(Utility.getText("msg_claiminput_amount_empty", [oInputAmountField.getValue(), Utility.getText("label_claimdetails_input_amount")]));
-					return;
-				}
-			}
-
-			// Check for actual amount field visibility and value
-			if(oInputActualAmountField && oInputActualAmountField.getVisible()){
-				const sInputActualAmount = oInputActualAmountField.getValue()?.trim().replace(/[^0-9.-]+/g, "");
-				if(isNaN(sInputActualAmount)){
-					// stop saving claim item if amount is invalid
-					MessageBox.show(Utility.getText("msg_claiminput_amount_invalid", [oInputActualAmountField.getValue(), Utility.getText("label_claimdetails_input_amount_actual")]));
-					return;
-				} else if (sInputAmount < 0) {
-					// stop saving claim item if amount is negative
-					MessageBox.show(Utility.getText("msg_claiminput_amount_negative", [oInputActualAmountField.getValue(), Utility.getText("label_claimdetails_input_amount_actual")]));
-					return;
-				} else if (sInputAmount == 0) {
-					// stop saving claim item if amount is zero
-					MessageBox.show(Utility.getText("msg_claiminput_amount_empty", [oInputActualAmountField.getValue(), Utility.getText("label_claimdetails_input_amount_actual")]));
-					return;
-				}
-			}
-
 			// Reuben End Issue 17
 
 			
