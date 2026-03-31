@@ -170,12 +170,16 @@ module.exports = (srv) => {
     });
 
     srv.on('sendEmail', async (req) => {
-        const ISserivce = await cds.connect.to('IS_Conn');
-        ISserivce.send({
-            method: 'POST',
-            path: "/http/EmailNotification_BTP",
-            data: { ...req.data }
-        });
+        try {
+            const ISserivce = await cds.connect.to('IS_Conn');
+            ISserivce.send({
+                method: 'POST',
+                path: "/http/EmailNotification_BTP",
+                data: { ...req.data }
+            });
+        } catch (error) {
+            req.error(400, `Fail sending email: ${error.message}`);
+        }
     });
 
     srv.on('updateDisbursementStatus', async (req) => {
