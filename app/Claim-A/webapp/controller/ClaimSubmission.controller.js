@@ -2042,6 +2042,27 @@ sap.ui.define([
 			const _oItem = oInputModel.getProperty("/claim_item") || {};
 			var iDiffDays = DateUtility.calculateNumberOfDays({}, _oItem);
 			oInputModel.setProperty("/claim_item/no_of_days", iDiffDays);
+
+			// set percentage (%) compensation based on claim item
+			switch (oInputModel.getProperty("/claim_item/claim_type_item_id")) {
+				case this._oConstant.ClaimTypeItem.MATAWANG:
+					// 3% Kerugian Matawang
+					oInputModel.setProperty("/claim_item/percentage_compensation", 3);
+					break;
+				case this._oConstant.ClaimTypeItem.PEM_PINDAH:
+					// Pemberian Perpindahan (50%)
+					oInputModel.setProperty("/claim_item/percentage_compensation", 50);
+					break;
+				default:
+					// claim item has no percentage compensation
+					if (this.getView().getModel("claimitem_property")?.getProperty("/percentage_compensation/is_visible")) {
+						// show zero value if field is visible
+						oInputModel.setProperty("/claim_item/percentage_compensation", 0);
+					} else {
+						oInputModel.setProperty("/claim_item/percentage_compensation", null);
+					}
+					break;
+			}
 		},
 
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
@@ -2633,12 +2654,6 @@ sap.ui.define([
 			)) {
 				// set 'amount' property to 50% of actual amount
 				oInputModel.setProperty("/claim_item/amount", oInputModel.getProperty("/claim_item/actual_amount") * 0.5);
-
-				// set % compensation if field is visible
-				if (oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
-					let fPctValue = (oInputModel.getProperty("/claim_item/amount") / oInputModel.getProperty("/claim_item/actual_amount")) * 100;
-					oInputModel.setProperty("/claim_item/percentage_compensation", fPctValue);
-				}
 			}
 		},
 

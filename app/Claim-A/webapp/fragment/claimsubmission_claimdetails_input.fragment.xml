@@ -194,7 +194,7 @@
 						}
 					}"
 					type="Number"
-					editable="{= ${claimitem_property>/actual_amount/is_visible} === false}"
+					editable="{= ${claimitem_property>/amount/is_visible} === false}"
 					visible="{claimitem_property>/percentage_compensation/is_visible}"
 				/>
 
