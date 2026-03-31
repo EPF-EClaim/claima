@@ -2048,6 +2048,17 @@ sap.ui.define([
 					this.byId("input_claimdetails_input_amount").setEditable(true);
 				}
 			}
+
+			//set disclaimer field as false if they are visible for validation
+			if(this.byId("checkbox_claimdetails_input_disclaimer").getVisible()){
+				oInputModel.setProperty("/claim_item/disclaimer", false);
+			}
+
+			if(this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()){
+				//remove to string when db is updated
+				oInputModel.setProperty("/claim_item/disclaimer_galakan", false);
+			}
+
 			const _oItem = oInputModel.getProperty("/claim_item") || {};
 			var iDiffDays = DateUtility.calculateNumberOfDays({}, _oItem);
 			oInputModel.setProperty("/claim_item/no_of_days", iDiffDays);
@@ -2075,6 +2086,17 @@ sap.ui.define([
 
 				// set app visibility controls
 				await this.getFieldVisibility_ClaimTypeItem();
+
+				//FUT issue #58
+				if(this.byId("checkbox_claimdetails_input_disclaimer").getVisible()){
+					oInputModel.setProperty("/claim_item/disclaimer", true)
+				}
+
+				if(this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()){
+					oInputModel.setProperty("/claim_item/disclaimer_galakan", true)
+				}
+
+				
 			}
 			this._setClaimDetailSelection(oClaimSubmissionModel);
 
@@ -2382,6 +2404,14 @@ sap.ui.define([
 				}
 			}
 
+			//FUT issue #58
+			//checking for galakan disclaimer if its ticked or not
+			if(oInputModel.getProperty("/claim_item/disclaimer_galakan") == false || oInputModel.getProperty("/claim_item/disclaimer") == false){
+				MessageToast.show(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+				return;
+			}
+
+			//FUT issue #81
 			try {
 				BusyIndicator.show(0);
 				var oModel = this.getOwnerComponent().getModel();
@@ -3017,7 +3047,8 @@ sap.ui.define([
 					BusyIndicator.hide();
 					return;
 				}
-				
+
+								
 				// Cash Advance Repayment Validation checking
 				if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
 					MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
@@ -4458,6 +4489,6 @@ sap.ui.define([
 				oReq.setProperty("/claim_header_count", 0);
 				return [];
 			}
-		},
+		}
 	});
 });
