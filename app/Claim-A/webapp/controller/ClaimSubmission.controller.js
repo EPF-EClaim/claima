@@ -2095,6 +2095,16 @@ sap.ui.define([
 				if(this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()){
 					this.byId("checkbox_claimdetails_input_disclaimer_galakan").setSelected(true);
 				}
+
+				if(oInputModel.getProperty("/claim_item/claim_type_item_id") == "PEM_PINDAH"){
+				if(this.byId("input_claimdetails_input_percentage_compensation").getVisible()){
+					this.byId("input_claimdetails_input_percentage_compensation").setEditable(false);
+				}
+
+				if(this.byId("input_claimdetails_input_amount").getVisible()){
+					this.byId("input_claimdetails_input_amount").setEditable(false);
+				}
+			}
 			}
 			this._setClaimDetailSelection(oClaimSubmissionModel);
 
@@ -2401,9 +2411,8 @@ sap.ui.define([
 			}
 
 			//FUT issue #58
-			
 			//checking for galakan disclaimer if its ticked or not
-			if(oInputModel.getProperty(("/claim_item/disclaimer_galakan")) == false || oInputModel.getProperty(("/claim_item/disclaimer")) == false){
+			if(oInputModel.getProperty("/claim_item/disclaimer_galakan") == false || oInputModel.getProperty("/claim_item/disclaimer") == false){
 				MessageToast.show(Utility.getText("msg_claimdetails_no_check_disclaimer"));
 				return;
 			}
@@ -4494,21 +4503,6 @@ sap.ui.define([
 				oReq.setProperty("/claim_header_count", 0);
 				return [];
 			}
-		},
-		onCheckSelectBox: function(oEvent){
-			var sCheckboxID = oEvent.getParameter("id");
-			var bSelected = oEvent.getParameter("selected");
-			var oInputModel = this.getView().getModel("claimitem_input");
-
-			if(sCheckboxID == "container-claima---ClaimSubmission--checkbox_claimdetails_input_disclaimer"){
-				oInputModel.setProperty("/claim_item/disclaimer", bSelected);
-			}else if(sCheckboxID == "container-claima---ClaimSubmission--checkbox_claimdetails_input_disclaimer_galakan"){
-				oInputModel.setProperty("/claim_item/disclaimer_galakan", bSelected);
-			}else{
-				MessageToast.show("error")
-			}
-			
-			
 		}
 	});
 });

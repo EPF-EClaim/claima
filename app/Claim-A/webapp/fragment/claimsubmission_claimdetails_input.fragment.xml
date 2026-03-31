@@ -931,6 +931,7 @@
 					text="{i18n>checkbox_claimdetails_input_disclaimer}"
 					visible="false"
 					wrapping="true"
+					selected="{claimitem_input>/claim_item/disclaimer}"
 				/>
 
 				<!-- Disclaimer (Galakan) -->
@@ -940,7 +941,7 @@
 					text="{i18n>checkbox_claimdetails_input_disclaimer_galakan}"
 					visible="false"
 					wrapping="true"
-					select="onCheckSelectBox"
+					selected="{claimitem_input>/claim_item/disclaimer_galakan}"	
 				/>
 
 				<!-- Remarks -->
