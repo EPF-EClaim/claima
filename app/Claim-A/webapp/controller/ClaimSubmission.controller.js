@@ -2056,15 +2056,10 @@ sap.ui.define([
 
 			// set claim item property model
 			var oClaimItemPropertyData = {
-				actual_amount: {
-					is_visible: false
-				},
-				amount: {
-					is_visible: false
-				},
-				entitled_breakfast: {
-					is_visible: false
-				}
+				percentage_compensation: { is_visible: false },
+				actual_amount: { is_visible: false },
+				amount: { is_visible: false },
+				entitled_breakfast: { is_visible: false }
 			};
 			var oModel = new JSONModel(oClaimItemPropertyData);
 			//// set input
@@ -2613,10 +2608,21 @@ sap.ui.define([
 		 */
 		onChange_ClaimDetails_ActualAmount: function () {
 			// verify if property exists and 'amount' field is visible
-			if (this.getView().getModel("claimitem_property")?.getProperty("/amount/is_visible")) {
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (oPropertyModel.getProperty("/amount/is_visible") && (
+				// ensure this only applies to valid scenarios
+				( oInputModel.getProperty("/claim_item/claim_type_id") === this._oConstant.ClaimType.ELAUN_PINDAH && oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH ) ||
+				( oInputModel.getProperty("/claim_item/claim_type_id") === this._oConstant.ClaimType.PEDU && oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEDU )
+			)) {
 				// set 'amount' property to 50% of actual amount
-				var oInputModel = this.getView().getModel("claimitem_input");
 				oInputModel.setProperty("/claim_item/amount", oInputModel.getProperty("/claim_item/actual_amount") * 0.5);
+
+				// set % compensation if field is visible
+				if (oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
+					let fPctValue = (oInputModel.getProperty("/claim_item/amount") / oInputModel.getProperty("/claim_item/actual_amount")) * 100;
+					oInputModel.setProperty("/claim_item/percentage_compensation", fPctValue);
+				}
 			}
 		},
 
