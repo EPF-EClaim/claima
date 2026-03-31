@@ -2072,6 +2072,7 @@ sap.ui.define([
 				oItem = oInputModel.getProperty("/claim_item") || {};
 			}
 			var iDiffDays = DateUtility.calculateNumberOfDays(oHeader, oItem);
+			oInputModel.setProperty("/claim_item/no_of_days", iDiffDays);
 		},
 
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
