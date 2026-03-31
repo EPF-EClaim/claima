@@ -1375,7 +1375,7 @@ sap.ui.define([
 
 				// validate mandatory fields
 				if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
-					MessageBox.show(Utility.getText("req_d_w_mandatory_field"), {
+					MessageBox.error(Utility.getText("req_d_w_mandatory_field"), {
 						closeOnBrowserNavigation: false
 					});
 					return;
