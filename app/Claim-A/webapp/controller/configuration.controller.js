@@ -473,26 +473,26 @@ sap.ui.define([
             const EdmType = ExcelExport.EdmType;
 
             var aColumns = bIsItems ? [
-                { label: "Claim Type Item ID", property: "CLAIM_TYPE_ITEM_ID", type: EdmType.String },
-                { label: "Item Description", property: "CLAIM_TYPE_ITEM_DESC", type: EdmType.String },
-                { label: "Category ID", property: "CATEGORY_ID", type: EdmType.String },
-                { label: "Cost Center", property: "COST_CENTER", type: EdmType.String },
-                { label: "Material Code", property: "MATERIAL_CODE", type: EdmType.String },
-                { label: "Risk", property: "RISK", type: EdmType.String },
-                { label: "Submission Type", property: "SUBMISSION_TYPE", type: EdmType.String },
-                { label: "Start Date", property: "START_DATE", type: EdmType.Date },
-                { label: "End Date", property: "END_DATE", type: EdmType.Date },
-                { label: "Status", property: "STATUS", type: EdmType.String }
+                { label: Utility.getText("claimtypeitemid"), property: "CLAIM_TYPE_ITEM_ID", type: EdmType.String },
+                { label: Utility.getText("itemdesc"), property: "CLAIM_TYPE_ITEM_DESC", type: EdmType.String },
+                { label: Utility.getText("categoryid"), property: "CATEGORY_ID", type: EdmType.String },
+                { label: Utility.getText("claimcc"), property: "COST_CENTER", type: EdmType.String },
+                { label: Utility.getText("materialcode"), property: "MATERIAL_CODE", type: EdmType.String },
+                { label: Utility.getText("claim_risk"), property: "RISK", type: EdmType.String },
+                { label: Utility.getText("claim_subtyp"), property: "SUBMISSION_TYPE", type: EdmType.String },
+                { label: Utility.getText("claim_startdate"), property: "START_DATE", type: EdmType.Date },
+                { label: Utility.getText("claim_enddate"), property: "END_DATE", type: EdmType.Date },
+                { label: Utility.getText("claim_status"), property: "STATUS", type: EdmType.String }
             ] : [
-                { label: "Claim Type ID", property: "CLAIM_TYPE_ID", type: EdmType.String },
-                { label: "Claim Type Desc", property: "CLAIM_TYPE_DESC", type: EdmType.String },
-                { label: "GL Account", property: "GL_ACCOUNT", type: EdmType.String },
-                { label: "Request Type", property: "REQUEST_TYPE", type: EdmType.String },
-                { label: "Ind or Group", property: "IND_OR_GROUP", type: EdmType.String },
-                { label: "Project Claim", property: "PROJECT_CLAIM", type: EdmType.String },
-                { label: "Start Date", property: "START_DATE", type: EdmType.Date },
-                { label: "End Date", property: "END_DATE", type: EdmType.Date },
-                { label: "Status", property: "STATUS", type: EdmType.String }
+                { label: Utility.getText("claimtypeid"), property: "CLAIM_TYPE_ID", type: EdmType.String },
+                { label: Utility.getText("claimtypedesc"), property: "CLAIM_TYPE_DESC", type: EdmType.String },
+                { label: Utility.getText("glacct"), property: "GL_ACCOUNT", type: EdmType.String },
+                { label: Utility.getText("req_rtype"), property: "REQUEST_TYPE", type: EdmType.String },
+                { label: Utility.getText("claim_grp"), property: "IND_OR_GROUP", type: EdmType.String },
+                { label: Utility.getText("claim_projectclaim"), property: "PROJECT_CLAIM", type: EdmType.String },
+                { label: Utility.getText("claim_startdate"), property: "START_DATE", type: EdmType.Date },
+                { label: Utility.getText("claim_enddate"), property: "END_DATE", type: EdmType.Date },
+                { label: Utility.getText("claim_status"), property: "STATUS", type: EdmType.String }
             ];
 
             ExcelExport.exportToExcel(
