@@ -171,7 +171,7 @@ sap.ui.define([
                 EEID:               oData.EEID,
                 NAME:               oData.NAME,
                 EMAIL:              oData.EMAIL,
-                DEPARTMENT:         oData.DEPARTMENT,
+                DEP:                oData.DEP,
                 ROLE:               oData.ROLE,
                 RANK:               iRank,
                 DIRECT_SUPERIOR:    oData.DIRECT_SUPPERIOR
@@ -233,7 +233,7 @@ sap.ui.define([
                 EEID:               oEmployeeDetail.EEID,
                 NAME:               oEmployeeDetail.NAME,
                 EMAIL:              oEmployeeDetail.EMAIL,
-                DEPARTMENT:         oEmployeeDetail.DEPARTMENT,
+                DEP:                oEmployeeDetail.DEPARTMENT,
                 ROLE:               oEmployeeDetail.ROLE,
                 RANK:               oEmployeeDetail.RANK,
                 DIRECT_SUPERIOR:    oEmployeeDetail.DIRECT_SUPPERIOR
@@ -356,7 +356,7 @@ sap.ui.define([
                 EEID:               oData.EEID,
                 NAME:               oData.NAME,
                 EMAIL:              oData.EMAIL,
-                DEPARTMENT:         oData.DEPARTMENT,
+                DEPARTMENT:         oData.DEP,
                 ROLE:               oData.ROLE,
                 RANK:               iRank,
                 DIRECT_SUPERIOR:    oData.DIRECT_SUPPERIOR
