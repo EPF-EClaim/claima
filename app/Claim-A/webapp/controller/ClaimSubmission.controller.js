@@ -2039,15 +2039,6 @@ sap.ui.define([
 			// set claim detail selection values
 			this._setClaimDetailSelectionMaster();
 
-			// check if provided/entitled meals is visible
-			if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
-				this.byId("input_claimdetails_input_amount").setEditable(false);
-			}
-			else {
-				if (!this.byId("input_claimdetails_input_amount").getEditable()) {
-					this.byId("input_claimdetails_input_amount").setEditable(true);
-				}
-			}
 			const _oItem = oInputModel.getProperty("/claim_item") || {};
 			var iDiffDays = DateUtility.calculateNumberOfDays({}, _oItem);
 			oInputModel.setProperty("/claim_item/no_of_days", iDiffDays);
@@ -2069,6 +2060,9 @@ sap.ui.define([
 					is_visible: false
 				},
 				amount: {
+					is_visible: false
+				},
+				entitled_breakfast: {
 					is_visible: false
 				}
 			};

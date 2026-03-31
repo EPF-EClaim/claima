@@ -124,6 +124,7 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
+							maxIntegerDigits: 16,
 							preserveDecimals: false
 						}
 					}"
@@ -167,11 +168,14 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
+							maxIntegerDigits: 16,
 							preserveDecimals: false
 						}
 					}"
 					required="true"
-					editable="{= ${claimitem_property>/actual_amount/is_visible} === false}"
+					editable="{= ${claimitem_property>/actual_amount/is_visible} === false &amp;&amp;
+						${claimitem_property>/entitled_breakfast/is_visible} === false
+					}"
 					visible="{claimitem_property>/amount/is_visible}"
 				/>
 
@@ -179,7 +183,16 @@
 				<Label text="{i18n>label_claimdetails_input_compensation}" />
 				<Input
 					id="input_claimdetails_input_percentage_compensation"
-					value="{claimitem_input>/claim_item/percentage_compensation}"
+					value="{
+						path: 'claimitem_input>/claim_item/percentage_compensation',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 1,
+							maxFractionDigits: 2,
+							maxIntegerDigits: 5,
+							preserveDecimals: false
+						}
+					}"
 					type="Number"
 					visible="false"
 				/>
@@ -774,7 +787,7 @@
 						}
 					}"
 					editable="false"
-					visible="false"
+					visible="{claimitem_property>/entitled_breakfast/is_visible}"
 				/>
 
 				<!-- Entitled Lunch -->
