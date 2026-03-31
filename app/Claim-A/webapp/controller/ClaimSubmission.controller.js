@@ -3730,6 +3730,44 @@ sap.ui.define([
 			this.oDialog.open();
 		},
 
+		getFromLocationOfficeByState () {
+            var oSelect = this.byId("select_claimdetails_input_from_location");
+            var oBinding = oSelect.getBinding("items");
+            if (!oBinding) {
+                return;
+            }
+
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (!oInputModel) {
+				return;
+			}
+
+            var aFilters = [
+                new Filter("STATUS", FilterOperator.EQ, "ACTIVE"),
+				new Filter("STATE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/from_state_id"))
+            ];
+            oBinding.filter(aFilters);
+        },
+
+		getToLocationOfficeByState () {
+            var oSelect = this.byId("select_claimdetails_input_to_location");
+            var oBinding = oSelect.getBinding("items");
+            if (!oBinding) {
+                return;
+            }
+
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (!oInputModel) {
+				return;
+			}
+
+            var aFilters = [
+                new Filter("STATUS", FilterOperator.EQ, "ACTIVE"),
+				new Filter("STATE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/to_state_id"))
+            ];
+            oBinding.filter(aFilters);
+        },
+
 		// App Control Visibility
 		getFieldVisibility_ClaimTypeItem: async function () {
 			const oModel = this.getOwnerComponent().getModel();

@@ -447,7 +447,8 @@
 					items="{path: 'employee>/ZSTATE',
                             sorter: { path: 'STATE_ID', descending: false },
                             filters: [
-                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
+					change=".getFromLocationOfficeByState">
                     <items>
                         <core:Item key="{employee>STATE_ID}" 
                         		   text="{employee>STATE_DESC}" />
@@ -462,11 +463,12 @@
 					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER}}"
 					required="true"
 				/>
+				<!-- From Location Office -->
 				<Label text="{i18n>req_i_from_location_office}" />	
 				<Select
 					id="select_claimdetails_input_from_location"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/from_location}"
+					selectedKey="{claimitem_input>/claim_item/from_location_office}"
 					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
 					editable="{= !${claimsubmission_input>/view_only} }"
 					required="true"
@@ -490,7 +492,8 @@
 					items="{path: 'employee>/ZSTATE',
                             sorter: { path: 'STATE_ID', descending: false },
                             filters: [
-                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
+					change=".getToLocationOfficeByState">
                     <items>
                         <core:Item key="{employee>STATE_ID}" 
                         		   text="{employee>STATE_DESC}" />
@@ -505,11 +508,12 @@
 					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER}}"
 					required="true"
 				/>
+				<!-- To Location Office -->
 				<Label text="{i18n>req_i_to_location_office}" />
 				<Select
 					id="select_claimdetails_input_to_location"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/to_location}"
+					selectedKey="{claimitem_input>/claim_item/to_location_office}"
 					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
 					editable="{= !${claimsubmission_input>/view_only} }"
 					required="true"
