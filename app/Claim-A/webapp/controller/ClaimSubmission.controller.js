@@ -2088,13 +2088,28 @@ sap.ui.define([
 		},
 
 		_setClaimDetailSelection: function (oModel) {
-			//// Claim Item
+			// filter by submission type
+			if (oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.PRE_APPROVE ||
+				oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.CASH_REPAYMENT ||
+				oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.CURR_SUBSIDY
+			) {
+				// filter items by claim header submission type + cash repayment
+				var oFilterSubsmissionType = new Filter({
+					filters: [
+						new Filter('SUBMISSION_TYPE', FilterOperator.EQ, this._oConstant.SubmissionType.PRE_APPROVE),
+						new Filter('SUBMISSION_TYPE', FilterOperator.EQ, this._oConstant.SubmissionType.CASH_REPAYMENT),
+						new Filter('SUBMISSION_TYPE', FilterOperator.EQ, this._oConstant.SubmissionType.CURR_SUBSIDY),
+					],
+					and: false
+				});
+			} else {
+				oFilterSubsmissionType = new Filter('SUBMISSION_TYPE', FilterOperator.EQ, oModel.getProperty("/claim_header/submission_type"));
+			}
+
+			// set dropdown for claim items
 			this.byId("select_claimdetails_input_claimitem").bindAggregation("items", {
 				path: "employee>/ZCLAIM_TYPE_ITEM",
-				filters: [
-					new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id")),
-					new Filter('SUBMISSION_TYPE', FilterOperator.EQ, oModel.getProperty("/claim_header/submission_type"))
-				],
+				filters: [ new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id")), oFilterSubsmissionType ],
 				sorter: [
 					new Sorter('CLAIM_TYPE_ITEM_DESC'),
 					new Sorter('CLAIM_TYPE_ITEM_ID')

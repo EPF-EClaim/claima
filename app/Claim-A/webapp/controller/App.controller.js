@@ -550,7 +550,10 @@ sap.ui.define([
 				var oInputModel = this.getView().getModel("claimsubmission_input");
 
 				// enable 'Request Form' selection
-				if (categoryId == 'ST0003') {
+				if (categoryId === this._oConstant.SubmissionType.PRE_APPROVE ||
+					categoryId === this._oConstant.SubmissionType.CASH_REPAYMENT ||
+					categoryId === this._oConstant.SubmissionType.CURR_SUBSIDY
+				) {
 					if (!this.byId("select_claimprocess_requestform").getVisible()) {
 						this.byId("select_claimprocess_requestform").bindAggregation("items", {
 							path: "employee>/ZREQUEST_HEADER",
@@ -813,7 +816,10 @@ sap.ui.define([
 
 			// pre-approval request values
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			if (oInputModel.getProperty("/claimtype/category") == 'ST0003') {
+			if (oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.PRE_APPROVE ||
+				oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CASH_REPAYMENT ||
+				oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CURR_SUBSIDY
+			) {
 				// make Pre-Approval Request, Approve Amount visible
 				this.byId("text_claiminput_preapprovalreq").setVisible(true);
 				this.byId("text_claiminput_amtapproved").setVisible(true);
@@ -851,7 +857,7 @@ sap.ui.define([
 						}
 						break;
 				}
-			} else if (oInputModel.getProperty("/claimtype/category") == this._oConstant.SubmissionType.DIRECT_CLAIM) {
+			} else {
 				this.byId("fileuploader_claiminput_attachment").setEnabled(false);
 				this.byId("fileuploader_claiminput_attachment").setVisible(false);
 			}
