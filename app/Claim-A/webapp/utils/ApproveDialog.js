@@ -61,7 +61,7 @@ sap.ui.define([
         new Text({ text: "{claimsubmission_input>/claim_header/claim_id}", visible: "{= ${Type>/mode} === 'APPROVE_CLAIM' }", wrapping: false }),
 
         // Approval comment (always visible)
-        new Label({ text: "{i18n>approval_comment}", required: true }),
+        new Label({ text: "{i18n>approval_remarks}", required: true }),
         new TextArea(oView.createId("approvalCommentArea"), {
           value: "{Reject>/approvalComment}",
           width: "100%",

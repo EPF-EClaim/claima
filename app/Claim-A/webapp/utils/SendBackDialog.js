@@ -140,7 +140,7 @@ sap.ui.define([
         }),
 
         // Comment (required)
-        new Label({ text: "{i18n>approval_comment}", required: true }),
+        new Label({ text: "{i18n>approval_remarks}", required: true }),
         new TextArea(oView.createId("sendBackApprovalCommentArea"), {
           value: "{Reject>/approvalComment}",
           width: "100%",
