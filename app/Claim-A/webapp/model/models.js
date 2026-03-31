@@ -60,6 +60,15 @@ sap.ui.define([
                     isAdminSystem: false
                 });
                 return oRoleModel;
+            }, 
+
+            createConfigModel: function () {
+                var oConfigModel = new JSONModel({
+                    visible: false,
+                    visible_dtd_jkew: false, 
+                    admin: false
+                }); 
+                return oConfigModel;
             }
         };
 

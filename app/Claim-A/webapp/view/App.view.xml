@@ -106,6 +106,7 @@
                             text="Master Data"
                             enabled="true"
                             expanded="false"
+                            visible="{config>/admin}"
                         >
                             <tnt:items>
                                 <tnt:NavigationListItem
@@ -258,6 +259,7 @@
                                 <tnt:NavigationListItem
                                     key="ZBUDGET"
                                     text="{i18n>budget_data}"
+                                    visible="{config>/admin}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZDB_STRUCTURE"
@@ -331,7 +333,7 @@
                             icon="sap-icon://flight"
                             enabled="true"
                             expanded="false"
-                            visible="{config>/visible_ga_jkew}"
+                            visible="{config>/visible_dtd_jkew}"
                         >
                             <tnt:items>
                                 <tnt:NavigationListItem
@@ -342,7 +344,7 @@
                                 <tnt:NavigationListItem
                                     key="ZEMP_CA_PAYMENT"
                                     text="{i18n>cashadv}"
-                                    visible="{config>/visible_ga_jkew}"
+                                    visible="{config>/visible_dtd_jkew}"
                                 />
                                 <tnt:NavigationListItem
                                     key="ZROOM_TYPE"
