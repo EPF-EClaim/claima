@@ -2382,6 +2382,15 @@ sap.ui.define([
 				}
 			}
 
+			//FUT issue #81
+			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
+			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
+
+			if(dReceiptDate > dTripEndDate){
+				MessageToast.show(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
+				return;
+			}
+
 			try {
 				BusyIndicator.show(0);
 				var oModel = this.getOwnerComponent().getModel();
