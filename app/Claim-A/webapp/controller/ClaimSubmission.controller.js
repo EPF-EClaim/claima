@@ -2087,23 +2087,16 @@ sap.ui.define([
 
 			// set claim item property model
 			var oClaimItemPropertyData = {
-				amount: {
-					is_visible: false
-				},
-				km: {
-					is_visible: false
-				},
-				rate_per_km: {
-					is_visible: false
-				},
-				toll: {
-					is_visible: false
-				}
+				percentage_compensation: { is_visible: false },
+				amount: { is_visible: false },
+				km: { is_visible: false },
+				rate_per_km: { is_visible: false },
+				toll: { is_visible: false }
 			};
 			var oModel = new JSONModel(oClaimItemPropertyData);
 			//// set input
-			this.getView().setModel(oModel, "claimitem_property");
-			
+			this.getView().setModel(oModel, "claimitem_property");			
+
 			// change footer buttons
 			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
 				this._displayFooterButtons("claimsubmission_claimdetails_input");
@@ -2791,7 +2784,7 @@ sap.ui.define([
 					oFilterVehicleType,
 					oFilterClaimTypeItem,
 					// ensure status is active
-					new Filter("STATUS", FilterOperator.EQ, this._oConstant.MasterData.ACTIVE),
+					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
 					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
 					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
 				]);
@@ -2812,7 +2805,7 @@ sap.ui.define([
 				} catch (oError) {
 					oInputModel.setProperty("/claim_item/rate_per_km", null)
 					oInputModel.setProperty("/claim_item/descr/rate_per_km", null)
-					MessageToast.show(Utility.getText("msg_claimdetails_input_rateperkm_err", [oError]));
+					MessageBox.error(Utility.getText("msg_claimdetails_input_rateperkm_err", [oError]));
 				} finally {
 					this._calculateRatePerKm();
 					BusyIndicator.hide();

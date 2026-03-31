@@ -203,9 +203,6 @@ sap.ui.define([
             "LESSTHAN": "LT",
             "NOTEQUAL": "NE"
         },
-        "MasterData": {
-            "ACTIVE": "ACTIVE"
-        },
         "Risk_Category": {
             "LOW": "L",
             "HIGH": "H"
