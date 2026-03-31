@@ -397,7 +397,34 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 CURRENCY_RATE,
                 CURRENCY_AMOUNT,
                 FARE_TYPE_ID,
-                VEHICLE_CLASS_ID
+                ZFARE_TYPE.FARE_TYPE_DESC,
+                VEHICLE_CLASS_ID,
+                ZVEHICLE_CLASS.VEHICLE_CLASS_DESC,
+                EMP_ID,
+                ZEMP_MASTER.NAME,
+                ROUND_TRIP,
+                TRIP_START_TIME,
+                TRIP_END_TIME,
+                COST_CENTER,
+                ZCOSTCENTER.COST_CENTER_DESC,
+                GL_ACCOUNT,
+                ZGL_ACCOUNT.GL_ACCOUNT_DESC,
+                MATERIAL_CODE,
+                ZMATERIAL_GROUP.MATERIAL_CODE_DESC,
+                PURPOSE,
+                MOBILE_CATEGORY_PURPOSE_ID,
+                ZMOBILE_CATEGORY_PURPOSE.MOBILE_CATEGORY_PURPOSE_DESC,
+                STUDY_LEVELS_ID,
+                ZSTUDY_LEVELS.STUDY_LEVELS_DESC,
+                NEED_FOREIGN_CURRENCY,
+                REQUEST_APPROVAL_AMOUNT,
+                DEPARTURE_TIME,
+                ARRIVAL_TIME,
+                DEPENDENT,
+                DEPENDENT_RELATIONSHIP,
+                POLICY_NUMBER,
+                INSURANCE_PROVIDER_ID,
+                ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_DESC
         };
 
     entity ZEMP_REQUEST_STATUS           as
@@ -940,4 +967,18 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         };
 
     entity ZEMP_SUBSTITUTION_RULE as projection on ECLAIM.ZSUBSTITUTION_RULES;
+
+     entity ZCLM_OFFICE_LOCATION_SELECTION       as
+        projection on ECLAIM.ZCLAIM_ITEM {
+            key CLAIM_ID,
+            key CLAIM_SUB_ID ,
+            FROM_STATE_ID,
+            ZSTATE.STATE_DESC as FROM_STATE_DESC,
+            TO_STATE_ID,
+            ZTOSTATE.STATE_DESC as TO_STATE_DESC,
+            FROM_LOCATION_OFFICE,
+            ZOFFICE_DISTANCE.ZOFFICE_LOCATION.LOCATION_DESC as FROM_LOCATION_DESC,
+            TO_LOCATION_OFFICE,
+            ZOFFICE_DISTANCE.ZOFFICE_LOCATION1.LOCATION_DESC as TO_LOCATION_DESC
+        };
 };
