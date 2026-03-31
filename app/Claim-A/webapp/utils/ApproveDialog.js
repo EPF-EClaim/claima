@@ -74,7 +74,7 @@ sap.ui.define([
 
     const cancelHandler =
       oController.onClickCancel_app ||
-      function () { this.__approveDialog && this.__approveDialog.close(); };
+      function () { this._approveDialog && this._approveDialog.close(); };
 
     const fnCreateHandler =
       (oController.onClickCreate_app || oController.onApproveRequest).bind(oController);
@@ -104,10 +104,10 @@ sap.ui.define([
   function getOrCreate(oController) {
     // Ensure both models exist BEFORE creating controls
     ensureModels(oController);
-    if (!oController.__approveDialog) {
-      oController.__approveDialog = createApproveDialog(oController);
+    if (!oController._approveDialog) {
+      oController._approveDialog = createApproveDialog(oController);
     }
-    return oController.__approveDialog;
+    return oController._approveDialog;
   }
 
   return {

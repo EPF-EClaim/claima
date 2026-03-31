@@ -7,10 +7,12 @@ sap.ui.define([
   "sap/m/Text",
   "sap/m/TextArea",
   "sap/m/Select",
+  "sap/m/MessageToast",
   "sap/ui/core/Item",
   "sap/ui/layout/form/SimpleForm",
   "sap/ui/model/Filter",
-  "sap/ui/model/FilterOperator"
+  "sap/ui/model/FilterOperator",
+  "claima/utils/Utility"
 ], function (
   JSONModel,
   Dialog,
@@ -19,10 +21,12 @@ sap.ui.define([
   Text,
   TextArea,
   Select,
+  MessageToast,
   Item,
   SimpleForm,
   Filter,
-  FilterOperator
+  FilterOperator,
+  Utility
 ) {
   "use strict";
 
@@ -58,8 +62,7 @@ sap.ui.define([
         new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
       ]);
     } else {
-      // eslint-disable-next-line no-console
-      console.warn("[RejectDialog] items binding not found on rejectReasonSelect.");
+
     }
   }
 
@@ -67,12 +70,14 @@ sap.ui.define([
     const oView = oController.getView();
 
     const oForm = new SimpleForm(oView.createId("approver_reject_form"), {
+
       editable: true,
       layout: "ResponsiveGridLayout",
       labelSpanXL: 2, labelSpanL: 2, labelSpanM: 2, labelSpanS: 12,
       adjustLabelSpan: true,
       emptySpanXL: 0, emptySpanL: 0, emptySpanM: 0, emptySpanS: 0,
       columnsXL: 2, columnsL: 2, columnsM: 2,
+
       content: [
         // ----- Pre-Approval (Request) fields -----
         new Label({
@@ -119,15 +124,19 @@ sap.ui.define([
         new Select(oView.createId("rejectReasonSelect"), {
           width: "100%",
           selectedKey: "{Reject>/rejectReasonKey}",
-          items: {
-            path: "employee>/ZREJECT_REASON", // model alias must exist
-            template: new Item({
-              key: "{employee>REASON_ID}",
-              text: "{employee>REASON_DESC}"
-            }),
-            templateShareable: false
-          }
-        }),
+          forceSelection: false,
+          items: [
+            new Item({
+              key: "",
+            })
+          ]
+        })
+          .bindAggregation("items", "employee>/ZREJECT_REASON", function (sId, oContext) {
+            return new Item({
+              key: oContext.getProperty("REASON_ID"),
+              text: oContext.getProperty("REASON_DESC")
+            });
+          }),
 
         // Approval Comment (required)
         new Label({ text: "{i18n>approval_remarks}", required: true }),
@@ -143,23 +152,23 @@ sap.ui.define([
     });
 
     // Resolve handlers at creation (fallbacks)
-    const cancelHandler =
+    const fncancelHandler =
       oController.onClickCancel_app ||
       oController.onRejectCancel ||
-      function () { this.__rejectDialog && this.__rejectDialog.close(); };
+      function () { this._rejectDialog && this._rejectDialog.close(); };
 
-    const submitHandler =
-      oController.onReject_app ||               // RequestForm
-      oController.onReject_ClaimSubmission ||   // ClaimSubmission
-      function () { sap.m.MessageToast.show("No Reject handler implemented."); };
+    const fnsubmitHandler =
+      oController.onReject_app ||
+      oController.onReject_ClaimSubmission ||
+      function () { MessageToast.show(Utility.getText("no_reject_handler")) };
 
     const oDialog = new Dialog({
-      title: "{i18n>sendback_request}",           // default; will be overwritten in open()
+      title: "{i18n>sendback_request}",
       contentWidth: "50%",
       content: [oForm],
       beginButton: new Button(oView.createId("reject_placeholder_cancel"), {
         text: "{i18n>req_b_cancel}",
-        press: cancelHandler.bind(oController)
+        press: fncancelHandler.bind(oController)
       }),
       endButton: new Button(oView.createId("reject_placeholder_submit"), {
         text: "{i18n>reject_btn}",
@@ -180,10 +189,10 @@ sap.ui.define([
 
   function getOrCreate(oController) {
     ensureModels(oController);
-    if (!oController.__rejectDialog) {
-      oController.__rejectDialog = createRejectDialog(oController);
+    if (!oController._rejectDialog) {
+      oController._rejectDialog = createRejectDialog(oController);
     }
-    return oController.__rejectDialog;
+    return oController._rejectDialog;
   }
 
   return {
@@ -194,7 +203,7 @@ sap.ui.define([
         const handler =
           oController.onReject_app ||
           oController.onReject_ClaimSubmission ||
-          function () { sap.m.MessageToast.show("No Reject handler implemented."); };
+          function () { MessageToast.show(Utility.getText("no_reject_handler")) };
 
         // detach previous, attach new
         if (btn.__rejHandler) btn.detachPress(btn.__rejHandler);
@@ -202,33 +211,36 @@ sap.ui.define([
           try {
             return handler.apply(oController, arguments);
           } catch (e) {
-            sap.m.MessageBox.error("Reject failed:\n" + (e?.message || e));
-            console.error("[RejectDialog] handler error", e);
+
           }
         };
         btn.attachPress(btn.__rejHandler);
       } catch (e) {
-        console.warn("[RejectDialog] Failed to wire endButton handler:", e);
+
       }
 
       // Title by mode
       try {
         const rb = oController.getOwnerComponent().getModel("i18n").getResourceBundle();
         const mode = oController.getView().getModel("Type").getProperty("/mode");
-        const title = mode === "REJECT_REQ"
+        const sTitle = mode === "REJECT_REQ"
           ? (rb.getText("reject_request") || rb.getText("reject_claim"))
           : rb.getText("reject_claim");
-        oDlg.setTitle(title);
+        oDlg.setTitle(sTitle);
       } catch (e) { /* ignore */ }
+
+      const oRejectModel = oController.getView().getModel("Reject");
+      oRejectModel.setProperty("/rejectReasonKey", "");
+      oRejectModel.setProperty("/approvalComment", "");
 
       oDlg.open();
       return oDlg;
     },
 
     destroy: function (oController) {
-      if (oController.__rejectDialog) {
-        oController.__rejectDialog.destroy();
-        oController.__rejectDialog = null;
+      if (oController._rejectDialog) {
+        oController._rejectDialog.destroy();
+        oController._rejectDialog = null;
       }
     }
   };

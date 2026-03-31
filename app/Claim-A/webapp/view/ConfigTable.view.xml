@@ -1,3 +1,4 @@
+
 <mvc:View
     controllerName="claima.controller.configuration"
     xmlns="sap.m"
@@ -11,19 +12,21 @@
     xmlns:card="sap.f.cards"
     xmlns:core="sap.ui.core"
     xmlns:layout="sap.ui.layout"
+    xmlns:table="sap.ui.table"
+    xmlns:unified="sap.ui.unified"
 >
     <Page showHeader="true">
-     <customHeader>
-        <Bar>
-            <contentRight>
-                <Button
-                    text="{i18n>back}"
-                    press="onClickBack"
-                    type="Transparent"
-                />
-            </contentRight>
-        </Bar>
-    </customHeader>
+        <customHeader>
+            <Bar>
+                <contentRight>
+                    <Button
+                        text="{i18n>back}"
+                        press="onClickBack"
+                        type="Transparent"
+                    />
+                </contentRight>
+            </Bar>
+        </customHeader>
         <content>
             <VBox
                 id="listContainer"
@@ -39,35 +42,41 @@
                         text="Edit"
                         press="onEdit"
                         enabled="{view>/hasSelection}"
-                        visible="{= ${/FeatureControl/operationEnabled} === true }"
+                        visible="{= ${/FeatureControl/operationEnabled} }"
                     />
                     <Button
                         id="CopyHeader"
                         text="Copy"
                         press="onCopy"
                         enabled="{view>/hasSelection}"
-                        visible="{= ${/FeatureControl/operationEnabled} === true }"
+                        visible="{= ${/FeatureControl/operationEnabled} }"
                     />
                     <Button
                         id="CreateHeader"
                         text="Create"
                         press="onCreate"
                         enabled="true"
-                        visible="{= ${/FeatureControl/operationEnabled} === true }"
+                        visible="{= ${/FeatureControl/operationEnabled} }"
                     />
                     <Button
                         id="DeleteHeader"
                         text="Delete"
                         press="onDelete"
                         enabled="{view>/hasSelection}"
-                        visible="{= ${/FeatureControl/operationEnabled} === true }"
+                        visible="{= ${/FeatureControl/operationEnabled} }"
                     />
                     <Button
-                    icon="sap-icon://action-settings"
-                    press="onOpenViewSettings"
-                    type="Transparent"
-                    tooltip="View Settings"
-                />
+                        icon="sap-icon://action-settings"
+                        press="onOpenViewSettings"
+                        type="Transparent"
+                        tooltip="View Settings"
+                    />
+                    <Button
+                        icon="sap-icon://excel-attachment"
+                        press="onExportToExcel"
+                        type="Transparent"
+                        tooltip="{i18n>export_excel}"
+                    />
                 </Toolbar>
 
                 <Table
@@ -96,16 +105,16 @@
                         </Column>
                         <Column>
                             <Text text="{i18n>projclaim}" />
-                        </Column> 
+                        </Column>
                         <Column>
                             <Text text="{i18n>start_date}" />
-                        </Column> 
+                        </Column>
                         <Column>
                             <Text text="{i18n>req_i_end_date}" />
-                        </Column>  
+                        </Column>
                         <Column>
                             <Text text="{i18n>appr_status}" />
-                        </Column>                                                                                           
+                        </Column>
                         <Column width="2rem">
                             <Text text="" />
                         </Column>
@@ -126,9 +135,9 @@
 
                                 <Text text="{PROJECT_CLAIM}" />
 
-                                <Text text="{START_DATE}" />  
+                                <Text text="{START_DATE}" />
 
-                                <Text text="{END_DATE}"/>
+                                <Text text="{END_DATE}" />
 
                                 <Text text="{STATUS}" />
 
@@ -138,45 +147,286 @@
                                     tooltip="View Item"
                                     class="sapUiIconColorSubtle"
                                 />
-                            </cells> 
+                            </cells>
                         </ColumnListItem>
                     </items>
                 </Table>
-                 <dependents>
-                <ViewSettingsDialog
-                    id="viewSettingsDialog"
-                    confirm="onConfirmViewSettings"
-                    reset="onResetViewSettings"
-                >
-                    <sortItems>
-                        <ViewSettingsItem
-                            text="{i18n>claimtypeid}"
-                            key="CLAIM_TYPE_ID"
-                            selected="true"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>claimtypedesc}"
-                            key="CLAIM_TYPE_DESC"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>glacct}"
-                            key="GL_ACCOUNT"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>start_date}"
-                            key="START_DATE"
-                        />
-                        <ViewSettingsItem
-                            text="{i18n>req_i_end_date}"
-                            key="END_DATE"
-                        />
-                         <ViewSettingsItem
-                            text="{i18n>appr_status}"
-                            key="STATUS"
-                        />
-                    </sortItems>
-                </ViewSettingsDialog>
-            </dependents>
+                <dependents >
+                    <ViewSettingsDialog
+                        id="viewSettingsDialog"
+                        confirm="onConfirmViewSettings"
+                        reset="onResetViewSettings"
+                    >
+                        <sortItems >
+                            <ViewSettingsItem
+                                text="{i18n>claimtypeid}"
+                                key="CLAIM_TYPE_ID"
+                                
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>claimtypedesc}"
+                                key="CLAIM_TYPE_DESC"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>glacct}"
+                                key="GL_ACCOUNT"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>req_rtype}"
+                                key="REQUEST_TYPE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>req_grptype}"
+                                key="IND_OR_GROUP"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>projclaim}"
+                                key="PROJECT_CLAIM"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>start_date}"
+                                key="START_DATE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>req_i_end_date}"
+                                key="END_DATE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>appr_status}"
+                                key="STATUS"
+                            />
+                        </sortItems>
+                        <filterItems>
+                            <ViewSettingsCustomItem
+                                text="{i18n>claimtypeid}"
+                                key="CLAIM_TYPE_ID"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterClaimTypeId"
+                                        placeholder="{i18n>zclaim_typeid}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>claimtypedesc}"
+                                key="CLAIM_TYPE_DESC"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterClaimTypeDesc"
+                                        placeholder="{i18n>zclaim_type_desc}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>glacct}"
+                                key="GL_ACCOUNT"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterGlAccount"
+                                        placeholder="{i18n>zclaim_gl}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>req_rtype}"
+                                key="REQUEST_TYPE"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterRequestType"
+                                        placeholder="{i18n>zclaim_request_type}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>req_grptype}"
+                                key="IND_OR_GROUP"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterIndOrGroup"
+                                        placeholder="{i18n>zclaim_ind}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>projclaim}"
+                                key="PROJECT_CLAIM"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterProjectClaim"
+                                        placeholder="{i18n>zclaim_proj_claim}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>appr_status}"
+                                key="STATUS"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterStatus"
+                                        placeholder="{i18n>zclaim_status}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                        </filterItems>
+                    </ViewSettingsDialog>
+                     <ViewSettingsDialog
+                        id="viewSettingsDialogItem"
+                        confirm="onConfirmViewSettings"
+                        reset="onResetViewSettings"
+                    >
+                        <sortItems >
+                            <ViewSettingsItem
+                                text="{i18n>claimtypeitemid}"
+                                key="CLAIM_TYPE_ITEM_ID"
+                                
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>claimtypedesc}"
+                                key="CLAIM_TYPE_ITEM_DESC"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>categoryid}"
+                                key="CATEGORY_ID"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>req_cc}"
+                                key="COST_CENTER"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>materialcode}"
+                                key="MATERIAL_CODE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>risk}"
+                                key="RISK"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>submitted_type}"
+                                key="SUBMISSION_TYPE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>req_i_start_date}"
+                                key="START_DATE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>req_i_end_date}"
+                                key="END_DATE"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>appr_status}"
+                                key="STATUS"
+                            />
+                        </sortItems>
+                        <filterItems>
+                            <ViewSettingsCustomItem
+                                text="{i18n>claimtypeitemid}"
+                                key="CLAIM_TYPE_ITEM_ID"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterClaimTypeItemId"
+                                        placeholder="{i18n>zclaim_type_itemid}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>claimtypedesc}"
+                                key="CLAIM_TYPE_ITEM_DESC"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterClaimTypeItemDesc"
+                                        placeholder="{i18n>zclaim_type_desc}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>categoryid}"
+                                key="CATEGORY_ID"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterCategoryId"
+                                        placeholder="{i18n>zclaim_cat_id}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>req_cc}"
+                                key="COST_CENTER"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterCostcenter"
+                                        placeholder="{i18n>zclaim_cost_center}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>materialcode}"
+                                key="MATERIAL_CODE"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterMaterialCode"
+                                        placeholder="{i18n>zclaim_mat_code}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>risk}"
+                                key="RISK"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterRisk"
+                                        placeholder="{i18n>zclaim_risk}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>req_i_start_date}"
+                                key="START_DATE"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterItemStartDate"
+                                        placeholder="{i18n>zclaim_start_date}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>req_i_end_date}"
+                                key="END_DATE"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterItemEndDate"
+                                        placeholder="{i18n>zclaim_end_date}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>appr_status}"
+                                key="STATUS"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterItemStatus"
+                                        placeholder="{i18n>zclaim_status}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                        </filterItems>
+                    </ViewSettingsDialog>
+                </dependents>
             </VBox>
             <VBox
                 id="objectContainer"

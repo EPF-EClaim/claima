@@ -1,97 +1,90 @@
 # POST    http://localhost:4004/odata/v4/EmployeeSrv/budgetchecking
 # Content-Type: application/json
+# Authorization: Basic alice
  
 # {
-#    "PreApprove": [
-#     {
-#     "REQUEST_ID": "REQ26000000002",
-#     "REQUEST_SUB_ID": "REQ26000000004"
-#     },
-#     {
-#     "REQUEST_ID": "REQ26000000003",
-#     "REQUEST_SUB_ID": "REQ26000000008"
-#     },
-#     {
-#     "REQUEST_ID": "REQ2600000aaaa",
-#     "REQUEST_SUB_ID": "REQ260000aaaa"  
-#     },
-#     {
-#     "REQUEST_ID": "REQ26000000003",
-#     "REQUEST_SUB_ID": "REQ26000000009"  
-#     },
-#     {
-#     "REQUEST_ID": "REQ26000000004",
-#     "REQUEST_SUB_ID": "REQ26000000010"  
-#     }
+#     "budget": [
+#       {
+#       "YEAR": "2026",
+#       "INTERNAL_ORDER": "1",
+#       "FUND_CENTER": "112S30006", 
+#       "MATERIAL_GROUP": "732002901", 
+#       "COMMITMENT_ITEM": "732002",
+#       "CLAIM_TYPE_ITEM": "KILOMETER",
+#       "AMOUNT": 100.00, 
+#       "INDICATOR": "REQ", 
+#       "ACTION": "SUBMIT"
+#      }
 #     ]
 # }
+
 # GET http://localhost:4004/odata/v4/EmployeeSrv/ZBUDGET
 
 
 
-POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
-Content-Type: application/json
+# POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
+# Content-Type: application/json
  
-   {
-    "budget": [
-      {
-      "ACTUAL": "900.00",
-      "BUDGET_BALANCE": "89.90",
-      "BUDGET_OWNER_ID": "reuben.lai@my.ey.com",
-      "COMMITMENT": "-1869.00",
-      "COMMITMENT_ITEM": "730000",
-      "CONSUMED": "-1869.00",
-      "CURRENCY": "MYR",
-      "CURRENT_BUDGET": "20000.00",
-      "FUND_CENTER": "100020207",
-      "INTERNAL_ORDER": "2",
-      "MATERIAL_GROUP": "730000901",
-      "ORIGINAL_BUDGET": "20000.00",
-      "PROJECT_CODE": null,
-      "RETURN": "0.00",
-      "SUPPLEMENT": "0.00",
-      "VIREMENT_IN": "0.00",
-      "VIREMENT_OUT": "0.00",
-      "WBS_CODE": null,
-      "YEAR": "2900",
-      "createdAt": null,
-      "createdBy": "nur.ain.mohamad1@my.ey.com",
-      "modifiedAt": null,
-      "modifiedBy": "nur.ain.mohamad1@my.ey.com",
-      "HasActiveEntity": false,
-      "HasDraftEntity": false,
-      "IsActiveEntity": true
-    },
-    {
-      "ACTUAL": "78.00",
-      "BUDGET_BALANCE": "90.00",
-      "BUDGET_OWNER_ID": null,
-      "COMMITMENT": null,
-      "COMMITMENT_ITEM": "11111",
-      "CONSUMED": null,
-      "CURRENCY": "MYR",
-      "CURRENT_BUDGET": null,
-      "FUND_CENTER": "222222222",
-      "INTERNAL_ORDER": "1",
-      "MATERIAL_GROUP": "44444444",
-      "ORIGINAL_BUDGET": "30.00",
-      "PROJECT_CODE": null,
-      "RETURN": null,
-      "SUPPLEMENT": null,
-      "VIREMENT_IN": null,
-      "VIREMENT_OUT": null,
-      "WBS_CODE": null,
-      "YEAR": "1995",
-      "createdAt": null,
-      "createdBy": "nur.ain.mohamad1@my.ey.com",
-      "modifiedAt": null,
-      "modifiedBy": "nur.ain.mohamad1@my.ey.com",
-      "HasActiveEntity": false,
-      "HasDraftEntity": false,
-      "IsActiveEntity": true
-    }
-    ]
-   }
+#    {
+#     "budget": [
+#       {
+#       "ACTUAL": "900.00",
+#       "BUDGET_BALANCE": "89.90",
+#       "BUDGET_OWNER_ID": "reuben.lai@my.ey.com",
+#       "COMMITMENT": "-1869.00",
+#       "COMMITMENT_ITEM": "730000",
+#       "CONSUMED": "-1869.00",
+#       "CURRENCY": "MYR",
+#       "CURRENT_BUDGET": "20000.00",
+#       "FUND_CENTER": "100020207",
+#       "INTERNAL_ORDER": "2",
+#       "MATERIAL_GROUP": "730000901",
+#       "ORIGINAL_BUDGET": "20000.00",
+#       "PROJECT_CODE": null,
+#       "RETURN": "0.00",
+#       "SUPPLEMENT": "0.00",
+#       "VIREMENT_IN": "0.00",
+#       "VIREMENT_OUT": "0.00",
+#       "WBS_CODE": null,
+#       "YEAR": "2900",
+#       "createdAt": null,
+#       "createdBy": "nur.ain.mohamad1@my.ey.com",
+#       "modifiedAt": null,
+#       "modifiedBy": "nur.ain.mohamad1@my.ey.com",
+#       "HasActiveEntity": false,
+#       "HasDraftEntity": false,
+#       "IsActiveEntity": true
+#     },
+#     {
+#       "ACTUAL": "78.00",
+#       "BUDGET_BALANCE": "90.00",
+#       "BUDGET_OWNER_ID": null,
+#       "COMMITMENT": null,
+#       "COMMITMENT_ITEM": "11111",
+#       "CONSUMED": null,
+#       "CURRENCY": "MYR",
+#       "CURRENT_BUDGET": null,
+#       "FUND_CENTER": "222222222",
+#       "INTERNAL_ORDER": "1",
+#       "MATERIAL_GROUP": "44444444",
+#       "ORIGINAL_BUDGET": "30.00",
+#       "PROJECT_CODE": null,
+#       "RETURN": null,
+#       "SUPPLEMENT": null,
+#       "VIREMENT_IN": null,
+#       "VIREMENT_OUT": null,
+#       "WBS_CODE": null,
+#       "YEAR": "1995",
+#       "createdAt": null,
+#       "createdBy": "nur.ain.mohamad1@my.ey.com",
+#       "modifiedAt": null,
+#       "modifiedBy": "nur.ain.mohamad1@my.ey.com",
+#       "HasActiveEntity": false,
+#       "HasDraftEntity": false,
+#       "IsActiveEntity": true
+#     }
+#     ]
+#    }
 
 # POST    http://localhost:4004/odata/v4/EmployeeSrv/onFinalApproveInsert
 # Content-Type: application/json
@@ -107,3 +100,100 @@ Content-Type: application/json
 #      }
 #     ]
 #    }
+
+# POST    http://localhost:4004/odata/v4/EmployeeSrv/WorkflowApproval
+# Content-Type: application/json
+# Authorization: Basic alice
+ 
+#    {
+#     "ClaimID": "CLM26000000001"
+#    }
+
+# POST    http://localhost:4004/odata/v4/EmployeeSrv/UpdateApproverDetails
+# Content-Type: application/json
+# Authorization: Basic alice
+ 
+#    {
+#     "aPayloadToCreateApproverDetailsTable": [
+#      {
+#         "ID"         : "CLM26000000140",
+#         "LEVEL"                  : "1",
+#         "APPROVER_ID"            : "903783",
+#         "SUBSTITUTE_APPROVER_ID" : "902733",
+#         "STATUS"                 : "STAT02",
+#         "REJECT_REASON_ID"       : "R01",
+#         "PROCESS_TIMESTAMP"      : "2026-03-27 01:45:57.546000000",
+#         "COMMENT"                : "SEND BACk"
+#      }
+#     ]
+#    }
+
+   # {
+   #      "ID"         : "CLM26000000140",
+   #      "LEVEL"                  : "1",
+   #      "APPROVER_ID"            : "903783",
+   #      "SUBSTITUTE_APPROVER_ID" : "902733",
+   #      "STATUS"                 : "STAT02",
+   #      "REJECT_REASON_ID"       : "R01",
+   #      "PROCESS_TIMESTAMP"      : "2026-03-27 01:45:57.546000000",
+   #      "COMMENT"                : "SEND BACk"
+   #   },
+   #   {
+   #      "ID"         : "CLM26000000140",
+   #      "LEVEL"                  : "2",
+   #      "APPROVER_ID"            : "903783",
+   #      "SUBSTITUTE_APPROVER_ID" : "902733",
+   #      "STATUS"                 : "STAT02",
+   #      "REJECT_REASON_ID"       : "R02",
+   #      "PROCESS_TIMESTAMP"      : "2026-03-27 01:45:57.546000000",
+   #      "COMMENT"                : "REJECT"
+   #   },
+   #   {
+   #      "ID"         : "CLM26000000140",
+   #      "LEVEL"                  : "3",
+   #      "APPROVER_ID"            : "903783",
+   #      "SUBSTITUTE_APPROVER_ID" : "902733",
+   #      "STATUS"                 : "STAT02",
+   #      "REJECT_REASON_ID"       : "R03",
+   #      "PROCESS_TIMESTAMP"      : "2026-03-27 01:45:57.546000000",
+   #      "COMMENT"                : "TEST"
+   #   }
+
+   # {
+   #      "ID"         : "REQ26000000022",
+   #      "LEVEL"                  : "1",
+   #      "APPROVER_ID"            : "1900522",
+   #      "SUBSTITUTE_APPROVER_ID" : null,
+   #      "STATUS"                 : "STAT02",
+   #      "REJECT_REASON_ID"       : null,
+   #      "PROCESS_TIMESTAMP"      : null,
+   #      "COMMENT"                : null
+   #   },
+   #   {
+   #      "ID"         : "REQ26000000022",
+   #      "LEVEL"                  : "2",
+   #      "APPROVER_ID"            : "1900522",
+   #      "SUBSTITUTE_APPROVER_ID" : null,
+   #      "STATUS"                 : "STAT02",
+   #      "REJECT_REASON_ID"       : null,
+   #      "PROCESS_TIMESTAMP"      : null,
+   #      "COMMENT"                : null
+   #   },
+   #   {
+   #      "ID"         : "REQ26000000022",
+   #      "LEVEL"                  : "3",
+   #      "APPROVER_ID"            : "1900522",
+   #      "SUBSTITUTE_APPROVER_ID" : null,
+   #      "STATUS"                 : "STAT02",
+   #      "REJECT_REASON_ID"       : null,
+   #      "PROCESS_TIMESTAMP"      : null,
+   #      "COMMENT"                : null
+   #   }
+
+   POST    http://localhost:4004/odata/v4/EmployeeSrv/DeleteApproverDetails
+Content-Type: application/json
+Authorization: Basic alice
+ 
+   {
+    "ID": "REQ26000000022"
+   }
