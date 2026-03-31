@@ -2047,6 +2047,17 @@ sap.ui.define([
 					this.byId("input_claimdetails_input_amount").setEditable(true);
 				}
 			}
+
+			//set disclaimer field as false if they are visible for validation
+			if(this.byId("checkbox_claimdetails_input_disclaimer").getVisible()){
+				oInputModel.setProperty("/claim_item/disclaimer", false);
+			}
+
+			if(this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()){
+				//remove to string when db is updated
+				oInputModel.setProperty("/claim_item/disclaimer_galakan", false);
+			}
+
 			const _oItem = oInputModel.getProperty("/claim_item") || {};
 			var iDiffDays = DateUtility.calculateNumberOfDays({}, _oItem);
 			oInputModel.setProperty("/claim_item/no_of_days", iDiffDays);
@@ -2389,13 +2400,7 @@ sap.ui.define([
 			}
 
 			//FUT issue #58
-			if(this.byId("checkbox_claimdetails_input_disclaimer").getVisible() == true){
-				oInputModel.setProperty("/claim_item/disclaimer", this.byId("checkbox_claimdetails_input_disclaimer").getSelected());
-			}
-
-			if(this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible() == true){
-				oInputModel.setProperty("/claim_item/disclaimer_galakan", this.byId("checkbox_claimdetails_input_disclaimer_galakan").getSelected());
-			}
+			
 			//checking for galakan disclaimer if its ticked or not
 			if(oInputModel.getProperty(("/claim_item/disclaimer_galakan")) == false || oInputModel.getProperty(("/claim_item/disclaimer")) == false){
 				MessageToast.show(Utility.getText("msg_claimdetails_no_check_disclaimer"));
@@ -3035,7 +3040,18 @@ sap.ui.define([
 					MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount"));
 					BusyIndicator.hide();
 					return;
-				}				
+				}
+
+				//claim items amount validation checking might be deleted due to new changes
+				console.log(aItems[0].amount);
+				for(var i = 0; i < aItems.length; i++){
+					if (aItems[i].amount <= 0){
+						MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount"));
+						BusyIndicator.hide();
+						return;
+					}
+				} 
+				
 				// Cash Advance Repayment Validation checking
 				if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
 					MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
@@ -4368,5 +4384,20 @@ sap.ui.define([
 				return [];
 			}
 		},
+		onCheckSelectBox: function(oEvent){
+			var sCheckboxID = oEvent.getParameter("id");
+			var bSelected = oEvent.getParameter("selected");
+			var oInputModel = this.getView().getModel("claimitem_input");
+
+			if(sCheckboxID == "container-claima---ClaimSubmission--checkbox_claimdetails_input_disclaimer"){
+				oInputModel.setProperty("/claim_item/disclaimer", bSelected);
+			}else if(sCheckboxID == "container-claima---ClaimSubmission--checkbox_claimdetails_input_disclaimer_galakan"){
+				oInputModel.setProperty("/claim_item/disclaimer_galakan", bSelected);
+			}else{
+				MessageToast.show("error")
+			}
+			
+			
+		}
 	});
 });

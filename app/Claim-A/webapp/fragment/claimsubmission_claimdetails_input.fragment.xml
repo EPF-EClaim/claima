@@ -940,6 +940,7 @@
 					text="{i18n>checkbox_claimdetails_input_disclaimer_galakan}"
 					visible="false"
 					wrapping="true"
+					select="onCheckSelectBox"
 				/>
 
 				<!-- Remarks -->
