@@ -103,7 +103,7 @@
                                             id="i_amount"
                                             tooltip="(This value is automatically reflected)"   >
                                     <form:fields>
-                                        <Text text="RM {
+                                        <Text text="{
                                             path: 'request>/req_item/est_amount',
                                             type: 'sap.ui.model.type.Float',
                                             formatOptions: {
@@ -918,7 +918,7 @@
                         rows="{request>/participant}"
                         columnHeaderHeight="3rem"
                         selectionMode="MultiToggle"
-                        rowActionCount="1"
+                        rowActionCount="{= ${request>/req_header/grptype} === 'Individual' ? 0 : 1 }"
                         >
                         <table:Column width="10rem" >
                             <Label text="{i18n>req_p_id}"></Label>
@@ -950,10 +950,18 @@
                                 <Input 
                                     id="alloc_amount" 
                                     textAlign="End" 
-                                    value="{request>ALLOCATED_AMOUNT}" 
+                                    value="{
+                                        path: 'request>ALLOCATED_AMOUNT',
+                                        type: 'sap.ui.model.type.Float',
+                                        formatOptions: {
+                                            minFractionDigits: 2,
+                                            maxFractionDigits: 2
+                                        }
+                                    }" 
                                     type="Number"
                                     change="populateEstimatedAmount"
-                                    enabled="{= ${request>/view} !== 'view'}"></Input>
+                                    enabled="{= ${request>/view} !== 'view'}">
+                                </Input>
                             </table:template>
                         </table:Column>
                         <table:rowActionTemplate>

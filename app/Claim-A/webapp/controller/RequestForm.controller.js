@@ -1035,8 +1035,7 @@ sap.ui.define([
 
 			var fEstAmount = this._oReqModel.getProperty('/req_item/est_amount');
 			if (parseFloat(fEstAmount) == parseFloat(0)) {
-				MessageBox.warning()
-				
+				MessageBox.warning(Utility.getText("req_d_w_error_amount"))
 				return;
 			}
 
