@@ -2217,7 +2217,7 @@ sap.ui.define([
 				const fInputAmount = parseFloat(sInputAmount);
 				if(isNaN(fInputAmount) || fInputAmount <= 0 ){
 					// stop claim submission if amount is zero or less
-					MessageToast.show(Utility.getText("msg_claiminput_amount_invalid"));
+					MessageBox.error(Utility.getText("msg_claiminput_amount_invalid"));
 					return;
 				}
 			}
@@ -2228,7 +2228,7 @@ sap.ui.define([
 				const fInputActualAmount = parseFloat(sInputActualAmount);
 				if(isNaN(fInputActualAmount) || fInputActualAmount <= 0 ){
 					// stop claim submission if amount is zero or less
-					MessageToast.show(Utility.getText("msg_claiminput_amount_invalid"));
+					MessageBox.error(Utility.getText("msg_claiminput_amount_invalid"));
 					return;
 				}
 			}
