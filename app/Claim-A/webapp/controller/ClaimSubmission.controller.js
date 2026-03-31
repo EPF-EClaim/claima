@@ -2239,15 +2239,15 @@ sap.ui.define([
 				const sInputAmount = oInputAmountField.getValue()?.trim().replace(/[^0-9.-]+/g, "");
 				if(isNaN(sInputAmount)){
 					// stop saving claim item if amount is invalid
-					MessageToast.show(Utility.getText("msg_claiminput_amount_invalid", [oInputAmountField.getValue(), Utility.getText("label_claimdetails_input_amount")]));
+					MessageBox.show(Utility.getText("msg_claiminput_amount_invalid", [oInputAmountField.getValue(), Utility.getText("label_claimdetails_input_amount")]));
 					return;
 				} else if (sInputAmount < 0) {
 					// stop saving claim item if amount is negative
-					MessageToast.show(Utility.getText("msg_claiminput_amount_negative", [oInputAmountField.getValue(), Utility.getText("label_claimdetails_input_amount")]));
+					MessageBox.show(Utility.getText("msg_claiminput_amount_negative", [oInputAmountField.getValue(), Utility.getText("label_claimdetails_input_amount")]));
 					return;
 				} else if (sInputAmount == 0) {
 					// stop saving claim item if amount is zero
-					MessageToast.show(Utility.getText("msg_claiminput_amount_empty", [oInputAmountField.getValue(), Utility.getText("label_claimdetails_input_amount")]));
+					MessageBox.show(Utility.getText("msg_claiminput_amount_empty", [oInputAmountField.getValue(), Utility.getText("label_claimdetails_input_amount")]));
 					return;
 				}
 			}
@@ -2257,15 +2257,15 @@ sap.ui.define([
 				const sInputActualAmount = oInputActualAmountField.getValue()?.trim().replace(/[^0-9.-]+/g, "");
 				if(isNaN(sInputActualAmount)){
 					// stop saving claim item if amount is invalid
-					MessageToast.show(Utility.getText("msg_claiminput_amount_invalid", [oInputActualAmountField.getValue(), Utility.getText("label_claimdetails_input_amount_actual")]));
+					MessageBox.show(Utility.getText("msg_claiminput_amount_invalid", [oInputActualAmountField.getValue(), Utility.getText("label_claimdetails_input_amount_actual")]));
 					return;
 				} else if (sInputAmount < 0) {
 					// stop saving claim item if amount is negative
-					MessageToast.show(Utility.getText("msg_claiminput_amount_negative", [oInputActualAmountField.getValue(), Utility.getText("label_claimdetails_input_amount_actual")]));
+					MessageBox.show(Utility.getText("msg_claiminput_amount_negative", [oInputActualAmountField.getValue(), Utility.getText("label_claimdetails_input_amount_actual")]));
 					return;
 				} else if (sInputAmount == 0) {
 					// stop saving claim item if amount is zero
-					MessageToast.show(Utility.getText("msg_claiminput_amount_empty", [oInputActualAmountField.getValue(), Utility.getText("label_claimdetails_input_amount_actual")]));
+					MessageBox.show(Utility.getText("msg_claiminput_amount_empty", [oInputActualAmountField.getValue(), Utility.getText("label_claimdetails_input_amount_actual")]));
 					return;
 				}
 			}
