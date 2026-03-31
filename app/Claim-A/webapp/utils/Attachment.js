@@ -3,8 +3,10 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/ui/model/Sorter",
     "sap/m/MessageToast",
-	"sap/ui/core/BusyIndicator"
-], function (Filter, FilterOperator, Sorter, MessageToast, BusyIndicator) {
+	"sap/ui/core/BusyIndicator",
+	"sap/m/MessageBox",
+	"claima/utils/Utility"
+], function (Filter, FilterOperator, Sorter, MessageToast, BusyIndicator, MessageBox, Utility) {
     "use strict";
 
     return {
@@ -312,8 +314,9 @@ sap.ui.define([
 				// Open viewer
 				that._PDFViewer.open();
 			} catch (error) {
-				console.log("Error viewing attachment: ", error);
-				MessageToast.show("Error viewing attachment: " + (error.message || error));
+				// console.log("Error viewing attachment: ", error);
+				// MessageToast.show("Error viewing attachment: " + (error.message || error));
+				MessageBox.warning(Utility.getText("req_d_w_attachment_not_found"));
 			} finally {
 				BusyIndicator.hide();
 			}
