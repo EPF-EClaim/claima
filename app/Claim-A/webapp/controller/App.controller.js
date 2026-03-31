@@ -19,6 +19,7 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"sap/ui/core/Icon",
 	"claima/utils/Utility",
+	"claima/utils/DateUtility",
 	"claima/utils/PARequestSharedFunction",
 	"claima/utils/Attachment",
 	"claima/utils/EligibilityCheck"
@@ -43,6 +44,7 @@ sap.ui.define([
 	Sorter,
 	Icon,
 	Utility,
+	DateUtility,
 	PARequestSharedFunction,
 	Attachment,
 	EligibilityCheck
@@ -499,7 +501,13 @@ sap.ui.define([
 				// set claim items based on selected claim type
 				this.byId("select_claimprocess_claimitem").bindAggregation("items", {
 					path: "employee>/ZCLAIM_TYPE_ITEM",
-					filters: [new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, claimType.getKey())],
+					filters: [
+						new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, claimType.getKey()),
+						// ensure status is active
+						new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+						new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+						new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+					],
 					sorter: [
 						new Sorter('CLAIM_TYPE_ITEM_DESC'),
 						new Sorter('CLAIM_TYPE_ITEM_ID')
