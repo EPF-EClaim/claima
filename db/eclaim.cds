@@ -235,10 +235,9 @@ entity ZREQUEST_ITEM : managed {
                                          on ZCOUNTRY.COUNTRY_ID = COUNTRY;
         ZOFFICE_DISTANCE           : Association to ZOFFICE_DISTANCE
                                          on  ZOFFICE_DISTANCE.FROM_LOCATION_ID = FROM_LOCATION_OFFICE
-                                         and ZOFFICE_DISTANCE.FROM_STATE_ID    = FROM_STATE_ID;
-        ZOFFICE_DISTANCE1          : Association to ZOFFICE_DISTANCE
-                                         on  ZOFFICE_DISTANCE1.TO_LOCATION_ID = TO_LOCATION_OFFICE
-                                         and ZOFFICE_DISTANCE1.TO_STATE_ID    = TO_STATE_ID;
+                                         and ZOFFICE_DISTANCE.FROM_STATE_ID    = FROM_STATE_ID
+                                         and ZOFFICE_DISTANCE.TO_LOCATION_ID = TO_LOCATION_OFFICE
+                                         and ZOFFICE_DISTANCE.TO_STATE_ID = TO_STATE_ID;
         ZRATE_KM                   : Association to ZRATE_KM
                                          on ZRATE_KM.RATE_KM_ID = RATE_PER_KM;
         ZVEHICLE_TYPE              : Association to one ZVEHICLE_TYPE
@@ -525,10 +524,9 @@ entity ZCLAIM_ITEM : managed {
                                          on ZCOUNTRY.COUNTRY_ID = COUNTRY;
         ZOFFICE_DISTANCE           : Association to ZOFFICE_DISTANCE
                                          on  ZOFFICE_DISTANCE.FROM_LOCATION_ID = FROM_LOCATION_OFFICE
-                                         and ZOFFICE_DISTANCE.FROM_STATE_ID    = FROM_STATE_ID;
-        ZOFFICE_DISTANCE1          : Association to ZOFFICE_DISTANCE
-                                         on  ZOFFICE_DISTANCE1.TO_LOCATION_ID = TO_LOCATION_OFFICE
-                                         and ZOFFICE_DISTANCE1.TO_STATE_ID    = TO_STATE_ID;
+                                         and ZOFFICE_DISTANCE.FROM_STATE_ID    = FROM_STATE_ID
+                                         and ZOFFICE_DISTANCE.TO_LOCATION_ID = TO_LOCATION_OFFICE
+                                         and ZOFFICE_DISTANCE.TO_STATE_ID = TO_STATE_ID;
         ZCOSTCENTER                : Association to ZCOST_CENTER
                                          on ZCOSTCENTER.COST_CENTER_ID = COST_CENTER;
         ZSTATE                     : Association to ZSTATE
@@ -823,6 +821,12 @@ entity ZOFFICE_LOCATION : managed {
         START_DATE     : Date        @Common.Label: 'Start Date';
         END_DATE       : Date        @Common.Label: 'End Date';
         STATUS         : String(10)  @Common.Label: 'Status';
+        ZOFFICE_DISTANCE : Association to ZOFFICE_DISTANCE
+                           on ZOFFICE_DISTANCE.FROM_LOCATION_ID = LOCATION_ID
+                           and ZOFFICE_DISTANCE.FROM_STATE_ID = STATE_ID;
+        ZOFFICE_DISTANCE1 : Association to ZOFFICE_DISTANCE
+                           on ZOFFICE_DISTANCE1.TO_LOCATION_ID = LOCATION_ID
+                           and ZOFFICE_DISTANCE1.TO_STATE_ID = STATE_ID;
 
 }
 
@@ -835,6 +839,12 @@ entity ZOFFICE_DISTANCE : managed {
         START_DATE       : Date        @Common.Label: 'Start Date';
         END_DATE         : Date        @Common.Label: 'End Date';
         STATUS           : String(10)  @Common.Label: 'Status';
+        ZOFFICE_LOCATION : Association to ZOFFICE_LOCATION
+                           on ZOFFICE_LOCATION.LOCATION_ID = FROM_LOCATION_ID
+                           and ZOFFICE_LOCATION.STATE_ID = FROM_STATE_ID;
+        ZOFFICE_LOCATION1: Association to ZOFFICE_LOCATION
+                           on ZOFFICE_LOCATION1.LOCATION_ID = TO_LOCATION_ID
+                           and ZOFFICE_LOCATION1.STATE_ID = TO_STATE_ID;
 }
 
 entity ZGL_ACCOUNT : managed {
