@@ -2060,19 +2060,7 @@ sap.ui.define([
 			}
 
 			// calculate number of days
-			var oHeader = {};
-			var oItem = {};
-			//// get header if claim type item is DOBI
-			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DOBI) {
-				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-				oHeader =  oClaimSubmissionModel.getProperty("/claim_header") || {};
-			}
-			//// get item if header is not populated
-			if (Object.keys(oHeader).length === 0) {
-				oItem = oInputModel.getProperty("/claim_item") || {};
-			}
-			var iDiffDays = DateUtility.calculateNumberOfDays(oHeader, oItem);
-			oInputModel.setProperty("/claim_item/no_of_days", iDiffDays);
+			oInputModel.setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
 		},
 
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
@@ -2663,21 +2651,31 @@ sap.ui.define([
 					await this._calculatePerDiem();
 				}
 				// Calculate number of days
-				var oHeader = {};
-				var oItem = {};
-				//// get header if claim type item is DOBI
-				var oInputModel = this.getView().getModel("claimitem_input");
-				if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DOBI) {
-					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-					oHeader =  oClaimSubmissionModel.getProperty("/claim_header") || {};
-				}
-				//// get item if header is not populated
-				if (Object.keys(oHeader).length === 0) {
-					oItem = oInputModel.getProperty("/claim_item") || {};
-				}
-				var iDiffDays = DateUtility.calculateNumberOfDays(oHeader, oItem);
-				oInputModel.setProperty("/claim_item/no_of_days", iDiffDays);
+				oInputModel.setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
 			}
+		},
+
+        /**
+         * Determine which method to use when calculating number of days for claim item
+		 * if claim item is Dobi, pass start/end date value from claim header
+		 * else if header is empty, pass start/end date value from claim item
+         * @private
+         * @return {integer} retrieve number of days value based on start/end date from claim
+         */
+		_calculateNumberOfDays: function () {
+			var oHeader = {};
+			var oItem = {};
+			var oInputModel = this.getView().getModel("claimitem_input");
+			//// get header if claim type item is DOBI
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DOBI) {
+				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+				oHeader =  oClaimSubmissionModel.getProperty("/claim_header") || {};
+			}
+			//// get item if header is not populated
+			if (Object.keys(oHeader).length === 0) {
+				oItem = oInputModel.getProperty("/claim_item") || {};
+			}
+			return DateUtility.calculateNumberOfDays(oHeader, oItem);
 		},
 
 		onChange_ClaimDetails_TimeRange: async function (startdate, starttime, enddate, endtime) {
