@@ -2028,13 +2028,13 @@ sap.ui.define([
 			var claimItem = oEvent.getParameters().selectedItem;
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (claimItem) {
+				// Reset Location Type
+	       		oInputModel.setProperty("/claim_item/location_type", "");
+
 				// get material code from claim item
 				var materialCode = claimItem.getBindingContext("employee").getObject("MATERIAL_CODE");
 				oInputModel.setProperty("/claim_item/material_code", materialCode);
 			}
-
-			// Reset Location Type
-			oInputModel.setProperty("/claim_item/location_type", null);
 
 			// set app visibility controls
 			await this.getFieldVisibility_ClaimTypeItem();
@@ -2692,11 +2692,6 @@ sap.ui.define([
 
 		onSelect_ClaimDetails_Region: async function () {
 			await this._calculatePerDiem();
-		},
-
-		onSelect_ClaimDetails_LocationType: function (oEvent) {
-			var key = oEvent.getSource().getSelectedKey();
-			this.getView().getModel("claimitem_input").setProperty("/claim_item/location_type", key);
 		},
 
 		_calculatePerDiem: async function () {

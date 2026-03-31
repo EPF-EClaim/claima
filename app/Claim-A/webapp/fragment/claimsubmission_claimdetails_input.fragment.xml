@@ -432,8 +432,6 @@
 					id="select_claimdetails_input_location_type"
 					forceSelection="false"
 					selectedKey="{claimitem_input>/claim_item/location_type}"
-					change="onSelect_ClaimDetails_LocationType"
-					liveChange="onSelect_ClaimDetails_LocationType"
 					visible="false"
 					required="true"
 				>
