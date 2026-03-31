@@ -38,6 +38,6 @@ sap.ui.define([
                 .finally(() => oSheet.destroy());
         },
 
-        // EdmType: exportLibrary.EdmType
+        EdmType: exportLibrary.EdmType
     };
 });

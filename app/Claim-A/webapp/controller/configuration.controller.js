@@ -13,7 +13,7 @@ sap.ui.define([
     "sap/m/MessageToast",
     "sap/m/MessageBox",
     "claima/utils/Utility",
-    "your/app/util/ExcelExport",
+    "claima/utils/ExcelExport",
     "sap/ui/export/Spreadsheet",
     "sap/ui/export/library"
 ], (Controller,
@@ -467,10 +467,10 @@ sap.ui.define([
             var oBinding = oTable.getBinding("items") || oTable.getBinding("rows");
 
             if (!oBinding) {
-                MessageToast.show("No data to export");
+                MessageToast.show(Utility.getText("msg_export_no_data"));
                 return;
             }
-            const EdmType = exportLibrary.EdmType;
+            const EdmType = ExcelExport.EdmType;
 
             var aColumns = bIsItems ? [
                 { label: "Claim Type Item ID", property: "CLAIM_TYPE_ITEM_ID", type: EdmType.String },
@@ -494,18 +494,6 @@ sap.ui.define([
                 { label: "End Date", property: "END_DATE", type: EdmType.Date },
                 { label: "Status", property: "STATUS", type: EdmType.String }
             ];
-
-            // var oSheet = new Spreadsheet({
-            //     workbook: { columns: aColumns },
-            //     dataSource: oBinding,
-            //     fileName: bIsItems ? "ClaimTypeItems_Export.xlsx" : "ClaimType_Export.xlsx",
-            //     worker: false
-            // });
-
-            // oSheet.build()
-            //     .then(function () { MessageToast.show("Export successful"); })
-            //     .catch(function (oError) { MessageBox.error("Export failed: " + (oError.message || oError)); })
-            //     .finally(function () { oSheet.destroy(); });
 
             ExcelExport.exportToExcel(
                 oTable,
