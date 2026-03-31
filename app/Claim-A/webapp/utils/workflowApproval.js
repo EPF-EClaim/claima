@@ -187,7 +187,7 @@ sap.ui.define([
 				sEmpRole = null;
 			}
 
-			if(sEmpDept == "0500000000"){
+			if(sEmpDept == Constants.Departments.FI_DEPT){
 				if(sEmpRole == null || sEmpRole == ""){
 					sEmpRole = "JKEW"
 				}else{
@@ -358,6 +358,11 @@ sap.ui.define([
 
                         // Start of Approver Determination logic
                         // Standard Workflow logic is when following approver level, the next level should be higher than the claimant level
+
+                        // If claimant is in the same department as JKEW, HOD_JKEW will be considered as HOD and go thru the standard approver determination logic
+                        if(oClaimantDetails.DEP === Constants.Departments.FI_DEPT && aWorkflowApprStep[i] === Constants.User_Type.HOD_JKEW){
+                            aWorkflowApprStep[i] = Constants.Role.HEADOFDEP;
+                        }
 
                         // Populate current role rank
                         oCurrOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
@@ -787,6 +792,12 @@ sap.ui.define([
                         // Special case would include first level higher than second level. This case would require the first approver to
                         // Be handled separately from the next level approvers 
                         // After that, the logic will follow the Standard Workflow logic
+
+                        
+                        // If claimant is in the same department as JKEW, HOD_JKEW will be considered as HOD and go thru the standard approver determination logic
+                        if(oClaimantDetails.DEP === Constants.Departments.FI_DEPT && aWorkflowApprStep[i] === Constants.User_Type.HOD_JKEW){
+                            aWorkflowApprStep[i] = Constants.Role.HEADOFDEP;
+                        }
 
                         // Populate current role rank
                         oCurrOutcome = aRoleRanks.find(r => r.ROLE === aWorkflowApprStep[i]);
