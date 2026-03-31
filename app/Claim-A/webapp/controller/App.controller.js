@@ -19,6 +19,7 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"sap/ui/core/Icon",
 	"claima/utils/Utility",
+	"claima/utils/DateUtility",
 	"claima/utils/PARequestSharedFunction",
 	"claima/utils/Attachment",
 	"claima/utils/EligibilityCheck"
@@ -43,6 +44,7 @@ sap.ui.define([
 	Sorter,
 	Icon,
 	Utility,
+	DateUtility,
 	PARequestSharedFunction,
 	Attachment,
 	EligibilityCheck
@@ -500,7 +502,13 @@ sap.ui.define([
 				// set claim items based on selected claim type
 				this.byId("select_claimprocess_claimitem").bindAggregation("items", {
 					path: "employee>/ZCLAIM_TYPE_ITEM",
-					filters: [new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, claimType.getKey())],
+					filters: [
+						new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, claimType.getKey()),
+						// ensure status is active
+						new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+						new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+						new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+					],
 					sorter: [
 						new Sorter('CLAIM_TYPE_ITEM_DESC'),
 						new Sorter('CLAIM_TYPE_ITEM_ID')
@@ -551,7 +559,10 @@ sap.ui.define([
 				var oInputModel = this.getView().getModel("claimsubmission_input");
 
 				// enable 'Request Form' selection
-				if (categoryId == 'ST0003') {
+				if (categoryId === this._oConstant.SubmissionType.PRE_APPROVE ||
+					categoryId === this._oConstant.SubmissionType.CASH_REPAYMENT ||
+					categoryId === this._oConstant.SubmissionType.CURR_SUBSIDY
+				) {
 					if (!this.byId("select_claimprocess_requestform").getVisible()) {
 						this.byId("select_claimprocess_requestform").bindAggregation("items", {
 							path: "employee>/ZREQUEST_HEADER",
@@ -821,7 +832,10 @@ sap.ui.define([
 
 			// pre-approval request values
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			if (oInputModel.getProperty("/claimtype/category") == 'ST0003') {
+			if (oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.PRE_APPROVE ||
+				oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CASH_REPAYMENT ||
+				oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CURR_SUBSIDY
+			) {
 				// make Pre-Approval Request, Approve Amount visible
 				this.byId("text_claiminput_preapprovalreq").setVisible(true);
 				this.byId("text_claiminput_amtapproved").setVisible(true);
@@ -859,7 +873,7 @@ sap.ui.define([
 						}
 						break;
 				}
-			} else if (oInputModel.getProperty("/claimtype/category") == this._oConstant.SubmissionType.DIRECT_CLAIM) {
+			} else {
 				this.byId("fileuploader_claiminput_attachment").setEnabled(false);
 				this.byId("fileuploader_claiminput_attachment").setVisible(false);
 			}
