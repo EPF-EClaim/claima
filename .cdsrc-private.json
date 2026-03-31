@@ -5,8 +5,8 @@
         "binding": {
           "type": "cf",
           "apiEndpoint": "https://api.cf.ap11.hana.ondemand.com",
-          "org": "EMPLOYEES PROVIDENT FUND BOARD",
-          "space": "EPF_SF_IS_NonProd_Space",
+          "org": "EMPLOYEES PROVIDENT FUND BOARD_Dev",
+          "space": "EPF_SF_Tech_Dev_Space",
           "instance": "claima-backend-db",
           "key": "claima-backend-db-key"
         },
@@ -29,20 +29,20 @@
           "name": "auth"
         }
       }
+    },
+    "destinations": {
+      "binding": {
+        "type": "cf",
+        "apiEndpoint": "https://api.cf.ap11.hana.ondemand.com",
+        "org": "EMPLOYEES PROVIDENT FUND BOARD",
+        "space": "EPF_SF_IS_NonProd_Space",
+        "instance": "claima-backend-destination",
+        "key": "claima-backend-destination-key"
       },
-      "destinations": {
-        "binding": {
-          "type": "cf",
-          "apiEndpoint": "https://api.cf.ap11.hana.ondemand.com",
-          "org": "EMPLOYEES PROVIDENT FUND BOARD",
-          "space": "EPF_SF_IS_NonProd_Space",
-          "instance": "claima-backend-destination",
-          "key": "claima-backend-destination-key"
-        },
-        "kind": "destinations",
-        "vcap": {
-          "name": "destinations"
-        }
+      "kind": "destinations",
+      "vcap": {
+        "name": "destinations"
+      }
     }
   }
 }
