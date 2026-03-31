@@ -462,7 +462,6 @@
 					id="input_claimdetails_input_from_location"
 					value="{claimitem_input>/claim_item/from_location}"
 					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER}}"
-					editable="{= !${claimsubmission_input>/view_only} }"
 					required="true"
 				/>
 				<Label text="{i18n>fromloc}" />	
@@ -471,6 +470,7 @@
 					forceSelection="false"
 					selectedKey="{claimitem_input>/claim_item/from_location}"
 					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
+					editable="{= !${claimsubmission_input>/view_only} }"
 					required="true"
 					items="{path: 'employee>/ZOFFICE_LOCATION',
                             sorter: { path: 'LOCATION_ID', descending: false },
@@ -505,7 +505,6 @@
 					id="input_claimdetails_input_to_location"
 					value="{claimitem_input>/claim_item/to_location}"
 					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER}}"
-					editable="{= !${claimsubmission_input>/view_only} }"
 					required="true"
 				/>
 				<Label text="{i18n>to_loc}" />
@@ -514,6 +513,7 @@
 					forceSelection="false"
 					selectedKey="{claimitem_input>/claim_item/to_location}"
 					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
+					editable="{= !${claimsubmission_input>/view_only} }"
 					required="true"
 					items="{path: 'employee>/ZOFFICE_LOCATION',
                             sorter: { path: 'LOCATION_ID', descending: false },

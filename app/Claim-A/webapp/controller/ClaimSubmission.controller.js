@@ -2033,8 +2033,19 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/material_code", materialCode);
 			}
 
+			// Reset Location Type
+			oInputModel.setProperty("/claim_item/location_type", null);
+
 			// set app visibility controls
 			await this.getFieldVisibility_ClaimTypeItem();
+			
+			// When Location Type is visible but no selection yet, hide From State & To State by default
+			// If show, then State will be Select but Location will be input, which inconsistent from UI
+			if (this.byId("select_claimdetails_input_location_type").getVisible()) {
+				this.byId("select_claimdetails_input_from_state_id")?.setVisible(false);
+				this.byId("select_claimdetails_input_to_state_id")?.setVisible(false);
+			}
+
 			// set claim detail selection values
 			this._setClaimDetailSelectionMaster();
 
@@ -3774,8 +3785,6 @@ sap.ui.define([
 
 				// ------------------------------------------------------------------
 				// Force correct visibility of state & location fields on screen load
-				// as From Location (Input) & To Location (Input) fields are not make
-				// visible dynamically based on DB Structure 
 				// ------------------------------------------------------------------
 				var sLocType = oInputModel.getProperty("/claim_item/location_type");
 				if (sLocType === this._oConstant.LocationType.OTHER) { // Other Location
@@ -3789,6 +3798,18 @@ sap.ui.define([
 					this.byId("select_claimdetails_input_to_state_id")?.setVisible(false);
 					this.byId("select_claimdetails_input_from_location")?.setVisible(false);
 					this.byId("select_claimdetails_input_to_location")?.setVisible(false);
+				}
+				else if (sLocType === this._oConstant.LocationType.KWSP) { // KWSP Office	
+
+					// Hide Other Location fields (Input)
+					this.byId("input_claimdetails_input_from_location")?.setVisible(false);
+					this.byId("input_claimdetails_input_to_location")?.setVisible(false);
+
+					// Show KWSP Office fields (Select)
+					this.byId("select_claimdetails_input_from_state_id")?.setVisible(true);
+					this.byId("select_claimdetails_input_to_state_id")?.setVisible(true);
+					this.byId("select_claimdetails_input_from_location")?.setVisible(true);
+					this.byId("select_claimdetails_input_to_location")?.setVisible(true);
 				}
 
 			} catch (err) {
@@ -3829,9 +3850,9 @@ sap.ui.define([
 				"checkbox_claimdetails_input_parking",
 				"select_claimdetails_input_location_type",
 				"select_claimdetails_input_from_state_id",
-				"select_claimdetails_input_from_location",
+				"input_claimdetails_input_from_location",
 				"select_claimdetails_input_to_state_id",
-				"select_claimdetails_input_to_location",
+				"input_claimdetails_input_to_location",
 				"select_claimdetails_input_room_type",
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
@@ -3964,9 +3985,9 @@ sap.ui.define([
 				"checkbox_claimdetails_input_parking",
 				"select_claimdetails_input_location_type",
 				"select_claimdetails_input_from_state_id",
-				"select_claimdetails_input_from_location",
+				"input_claimdetails_input_from_location",
 				"select_claimdetails_input_to_state_id",
-				"select_claimdetails_input_to_location",
+				"input_claimdetails_input_to_location",
 				"select_claimdetails_input_room_type",
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
