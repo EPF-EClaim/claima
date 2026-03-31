@@ -335,7 +335,7 @@ sap.ui.define([
 					content: [new Label({ text: Utility.getText("req_d_w_submit") })],
 					beginButton: new Button({
 						type: ButtonType.Emphasized,
-						text: "Submit",
+						text: Utility.getText("req_btn_confirm"),
 						press: async () => {
 							try {
 								BusyIndicator.show(0);
