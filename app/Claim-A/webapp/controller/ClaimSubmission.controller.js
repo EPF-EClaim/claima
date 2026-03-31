@@ -2651,7 +2651,7 @@ sap.ui.define([
 					await this._calculatePerDiem();
 				}
 				// Calculate number of days
-				oInputModel.setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
+				this.getView().getModel("claimitem_input").setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
 			}
 		},
 
