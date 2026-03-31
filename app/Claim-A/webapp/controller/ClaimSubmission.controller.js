@@ -2096,15 +2096,7 @@ sap.ui.define([
 					this.byId("checkbox_claimdetails_input_disclaimer_galakan").setSelected(true);
 				}
 
-				if(oInputModel.getProperty("/claim_item/claim_type_item_id") == "PEM_PINDAH"){
-				if(this.byId("input_claimdetails_input_percentage_compensation").getVisible()){
-					this.byId("input_claimdetails_input_percentage_compensation").setEditable(false);
-				}
-
-				if(this.byId("input_claimdetails_input_amount").getVisible()){
-					this.byId("input_claimdetails_input_amount").setEditable(false);
-				}
-			}
+				
 			}
 			this._setClaimDetailSelection(oClaimSubmissionModel);
 
