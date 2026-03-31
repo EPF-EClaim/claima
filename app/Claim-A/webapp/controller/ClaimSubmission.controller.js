@@ -2029,6 +2029,9 @@ sap.ui.define([
 			var claimItem = oEvent.getParameters().selectedItem;
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (claimItem) {
+				// Reset Location Type
+	       		oInputModel.setProperty("/claim_item/location_type", "");
+
 				// get material code from claim item
 				var materialCode = claimItem.getBindingContext("employee").getObject("MATERIAL_CODE");
 				oInputModel.setProperty("/claim_item/material_code", materialCode);
@@ -2036,8 +2039,36 @@ sap.ui.define([
 
 			// set app visibility controls
 			await this.getFieldVisibility_ClaimTypeItem();
+			
+			// When Location Type is visible but no selection yet, hide From State & To State by default
+			// If show, then State will be Select but Location will be input, which inconsistent from UI
+			if (this.byId("select_claimdetails_input_location_type").getVisible()) {
+				this.byId("select_claimdetails_input_from_state_id")?.setVisible(false);
+				this.byId("select_claimdetails_input_to_state_id")?.setVisible(false);
+			}
+
 			// set claim detail selection values
 			this._setClaimDetailSelectionMaster();
+
+			// check if provided/entitled meals is visible
+			if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
+				this.byId("input_claimdetails_input_amount").setEditable(false);
+			}
+			else {
+				if (!this.byId("input_claimdetails_input_amount").getEditable()) {
+					this.byId("input_claimdetails_input_amount").setEditable(true);
+				}
+			}
+
+			//set disclaimer field as false if they are visible for validation
+			if(this.byId("checkbox_claimdetails_input_disclaimer").getVisible()){
+				oInputModel.setProperty("/claim_item/disclaimer", false);
+			}
+
+			if(this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()){
+				//remove to string when db is updated
+				oInputModel.setProperty("/claim_item/disclaimer_galakan", false);
+			}
 
 			const _oItem = oInputModel.getProperty("/claim_item") || {};
 			var iDiffDays = DateUtility.calculateNumberOfDays({}, _oItem);
@@ -2098,6 +2129,17 @@ sap.ui.define([
 
 				// set app visibility controls
 				await this.getFieldVisibility_ClaimTypeItem();
+
+				//FUT issue #58
+				if(this.byId("checkbox_claimdetails_input_disclaimer").getVisible()){
+					oInputModel.setProperty("/claim_item/disclaimer", true)
+				}
+
+				if(this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()){
+					oInputModel.setProperty("/claim_item/disclaimer_galakan", true)
+				}
+
+				
 			}
 			this._setClaimDetailSelection(oClaimSubmissionModel);
 
@@ -2111,12 +2153,34 @@ sap.ui.define([
 		},
 
 		_setClaimDetailSelection: function (oModel) {
-			//// Claim Item
+			// filter by submission type
+			if (oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.PRE_APPROVE ||
+				oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.CASH_REPAYMENT ||
+				oModel.getProperty("/claim_header/submission_type") === this._oConstant.SubmissionType.CURR_SUBSIDY
+			) {
+				// filter items by claim header submission type + cash repayment
+				var oFilterSubsmissionType = new Filter({
+					filters: [
+						new Filter('SUBMISSION_TYPE', FilterOperator.EQ, this._oConstant.SubmissionType.PRE_APPROVE),
+						new Filter('SUBMISSION_TYPE', FilterOperator.EQ, this._oConstant.SubmissionType.CASH_REPAYMENT),
+						new Filter('SUBMISSION_TYPE', FilterOperator.EQ, this._oConstant.SubmissionType.CURR_SUBSIDY),
+					],
+					and: false
+				});
+			} else {
+				oFilterSubsmissionType = new Filter('SUBMISSION_TYPE', FilterOperator.EQ, oModel.getProperty("/claim_header/submission_type"));
+			}
+
+			// set dropdown for claim items
 			this.byId("select_claimdetails_input_claimitem").bindAggregation("items", {
 				path: "employee>/ZCLAIM_TYPE_ITEM",
 				filters: [
-					new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id")),
-					new Filter('SUBMISSION_TYPE', FilterOperator.EQ, oModel.getProperty("/claim_header/submission_type"))
+					new Filter('CLAIM_TYPE_ID', FilterOperator.EQ,oModel.getProperty("/claim_header/claim_type_id")),
+					oFilterSubsmissionType,
+					// ensure status is active
+					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
 				],
 				sorter: [
 					new Sorter('CLAIM_TYPE_ITEM_DESC'),
@@ -2419,6 +2483,14 @@ sap.ui.define([
 				}
 			}
 
+			//FUT issue #58
+			//checking for galakan disclaimer if its ticked or not
+			if(oInputModel.getProperty("/claim_item/disclaimer_galakan") == false || oInputModel.getProperty("/claim_item/disclaimer") == false){
+				MessageToast.show(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+				return;
+			}
+
+			//FUT issue #81
 			try {
 				BusyIndicator.show(0);
 				var oModel = this.getOwnerComponent().getModel();
@@ -2739,11 +2811,6 @@ sap.ui.define([
 			await this._calculatePerDiem();
 		},
 
-		onSelect_ClaimDetails_LocationType: function (oEvent) {
-			var key = oEvent.getSource().getSelectedKey();
-			this.getView().getModel("claimitem_input").setProperty("/claim_item/location_type", key);
-		},
-
 		_calculatePerDiem: async function () {
 			// check date/time values to be used for calculation
 			//// Start Date/Start Time/End Date/End Time
@@ -3062,8 +3129,8 @@ sap.ui.define([
 				var oInputModel = this.getView().getModel("claimsubmission_input");
 				var aItems = oInputModel.getProperty("/claim_items") || [];
 
-				if (aItems.length === 0) {
-					MessageBox.error(Utility.getText("msg_claimdetails_no_items"));
+				if (oAction !== "Delete Report" && aItems.length === 0) {
+					MessageToast.show(Utility.getText("msg_claimdetails_no_items"));
 					BusyIndicator.hide();
 					return;
 				}
@@ -3074,7 +3141,8 @@ sap.ui.define([
 					BusyIndicator.hide();
 					return;
 				}
-				
+
+								
 				// Cash Advance Repayment Validation checking
 				if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
 					MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
@@ -3788,6 +3856,44 @@ sap.ui.define([
 			this.oDialog.open();
 		},
 
+		getFromLocationOfficeByState: function () {
+            var _oSelect = this.byId("select_claimdetails_input_from_location");
+            var _oBinding = _oSelect.getBinding("items");
+            if (!_oBinding) {
+                return;
+            }
+
+			var _oInputModel = this.getView().getModel("claimitem_input");
+			if (!_oInputModel) {
+				return;
+			}
+
+            var _aFilters = [
+                new Filter("STATUS", FilterOperator.EQ, this._oConstant.Status.ACTIVE),
+				new Filter("STATE_ID", FilterOperator.EQ, _oInputModel.getProperty("/claim_item/from_state_id"))
+            ];
+            _oBinding.filter(_aFilters);
+        },
+
+		getToLocationOfficeByState: function () {
+            var _oSelect = this.byId("select_claimdetails_input_to_location");
+            var _oBinding = _oSelect.getBinding("items");
+            if (!_oBinding) {
+                return;
+            }
+
+			var _oInputModel = this.getView().getModel("claimitem_input");
+			if (!_oInputModel) {
+				return;
+			}
+
+            var _aFilters = [
+                new Filter("STATUS", FilterOperator.EQ, this._oConstant.Status.ACTIVE),
+				new Filter("STATE_ID", FilterOperator.EQ, _oInputModel.getProperty("/claim_item/to_state_id"))
+            ];
+            _oBinding.filter(_aFilters);
+        },
+
 		// App Control Visibility
 		getFieldVisibility_ClaimTypeItem: async function () {
 			const oModel = this.getOwnerComponent().getModel();
@@ -3838,8 +3944,6 @@ sap.ui.define([
 
 				// ------------------------------------------------------------------
 				// Force correct visibility of state & location fields on screen load
-				// as From Location (Input) & To Location (Input) fields are not make
-				// visible dynamically based on DB Structure 
 				// ------------------------------------------------------------------
 				var sLocType = oInputModel.getProperty("/claim_item/location_type");
 				if (sLocType === this._oConstant.LocationType.OTHER) { // Other Location
@@ -3853,6 +3957,18 @@ sap.ui.define([
 					this.byId("select_claimdetails_input_to_state_id")?.setVisible(false);
 					this.byId("select_claimdetails_input_from_location")?.setVisible(false);
 					this.byId("select_claimdetails_input_to_location")?.setVisible(false);
+				}
+				else if (sLocType === this._oConstant.LocationType.KWSP) { // KWSP Office	
+
+					// Hide Other Location fields (Input)
+					this.byId("input_claimdetails_input_from_location")?.setVisible(false);
+					this.byId("input_claimdetails_input_to_location")?.setVisible(false);
+
+					// Show KWSP Office fields (Select)
+					this.byId("select_claimdetails_input_from_state_id")?.setVisible(true);
+					this.byId("select_claimdetails_input_to_state_id")?.setVisible(true);
+					this.byId("select_claimdetails_input_from_location")?.setVisible(true);
+					this.byId("select_claimdetails_input_to_location")?.setVisible(true);
 				}
 
 			} catch (err) {
@@ -3893,9 +4009,9 @@ sap.ui.define([
 				"checkbox_claimdetails_input_parking",
 				"select_claimdetails_input_location_type",
 				"select_claimdetails_input_from_state_id",
-				"select_claimdetails_input_from_location",
+				"input_claimdetails_input_from_location",
 				"select_claimdetails_input_to_state_id",
-				"select_claimdetails_input_to_location",
+				"input_claimdetails_input_to_location",
 				"select_claimdetails_input_room_type",
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
@@ -4028,9 +4144,9 @@ sap.ui.define([
 				"checkbox_claimdetails_input_parking",
 				"select_claimdetails_input_location_type",
 				"select_claimdetails_input_from_state_id",
-				"select_claimdetails_input_from_location",
+				"input_claimdetails_input_from_location",
 				"select_claimdetails_input_to_state_id",
-				"select_claimdetails_input_to_location",
+				"input_claimdetails_input_to_location",
 				"select_claimdetails_input_room_type",
 				"select_claimdetails_input_country",
 				"input_claimdetails_input_location",
@@ -4515,6 +4631,6 @@ sap.ui.define([
 				oReq.setProperty("/claim_header_count", 0);
 				return [];
 			}
-		},
+		}
 	});
 });

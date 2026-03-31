@@ -81,6 +81,9 @@ sap.ui.define([
             "YURAN": "YURAN",
             "YURAN_KLJ": "YURAN_KLJ"
         },
+        "ClaimTypeItemStatus": {
+            "ACTIVE": "ACTIVE",
+        },
         "ClaimStatus": {
             "DRAFT": "STAT01",
             "PENDING_APPROVAL": "STAT02",
@@ -292,6 +295,9 @@ sap.ui.define([
         "LocationType" : {
             "OTHER" : "1",
             "KWSP"  : "2"
+        },
+        "Status" : {
+            "ACTIVE" : "ACTIVE"
         },
         "ConfigAccess": 
              [
