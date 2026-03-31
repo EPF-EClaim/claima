@@ -126,7 +126,7 @@ sap.ui.define([
 			}
 			catch (e) {
 				// unable to decode URL
-				MessageToast.show(Utility.getText("msg_claimsubmission_decode", [sClaimId]))
+				MessageBox.error(Utility.getText("msg_claimsubmission_decode", [sClaimId]))
 				this._onNavBack();
 			}
 
@@ -136,7 +136,7 @@ sap.ui.define([
 				await this._loadClaimById(String(sClaimId));
 				if (Object.keys(oClaimSubmissionModel.getProperty("/claim_header")).length === 0) {
 					// unable to load claim details
-					MessageToast.show(Utility.getText("msg_claimsubmission_missing", [sClaimId]))
+					MessageBox.error(Utility.getText("msg_claimsubmission_missing", [sClaimId]))
 					this._onNavBack();
 				}
 			}
@@ -144,7 +144,7 @@ sap.ui.define([
 				await this._loadClaimById(String(sClaimId));
 				if (!oClaimSubmissionModel.getProperty("/claim_header")) {
 					// unable to load claim details
-					MessageToast.show(Utility.getText("msg_claimsubmission_missing", [sClaimId]))
+					MessageBox.error(Utility.getText("msg_claimsubmission_missing", [sClaimId]))
 					this._onNavBack();
 				}
 			}
@@ -1274,7 +1274,7 @@ sap.ui.define([
 			if (table) {
 				// dont proceed if no items selected
 				if (table.getSelectedItems().length == 0) {
-					MessageToast.show(Utility.getText("msg_claimsummary_noitem"));
+					MessageBox.error(Utility.getText("msg_claimsummary_noitem"));
 					return;
 				}
 
@@ -1284,7 +1284,7 @@ sap.ui.define([
 					case 'Edit':
 						// only allow one item selection
 						if (table.getSelectedItems().length > 1) {
-							MessageToast.show(Utility.getText("msg_claimsummary_singleitem"));
+							MessageBox.error(Utility.getText("msg_claimsummary_singleitem"));
 							return;
 						}
 						else {
@@ -1295,7 +1295,7 @@ sap.ui.define([
 					case 'Duplicate':
 						// only allow one item selection
 						if (table.getSelectedItems().length > 1) {
-							MessageToast.show(Utility.getText("msg_claimsummary_singleitem"));
+							MessageBox.error(Utility.getText("msg_claimsummary_singleitem"));
 							return;
 						}
 						else {
@@ -1323,12 +1323,12 @@ sap.ui.define([
 						);
 						break;
 					default:
-						MessageToast.show(Utility.getText("msg_claimsummary_noaction"));
+						MessageBox.error(Utility.getText("msg_claimsummary_noaction"));
 						break;
 				}
 			}
 			else {
-				MessageToast.show(Utility.getText("msg_claimsummary_notable"));
+				MessageBox.error(Utility.getText("msg_claimsummary_notable"));
 			}
 		},
 
@@ -1639,7 +1639,7 @@ sap.ui.define([
 				}
 
 				if (!sComment) {
-					MessageToast.show(Utility.getText("msg_claimapprover_comment"));
+					MessageBox.error(Utility.getText("msg_claimapprover_comment"));
 					return;
 				}
 
@@ -1674,7 +1674,7 @@ sap.ui.define([
 					}, 400);
 
 				} catch (oErrorMessage) {
-					MessageToast.show(Utility.getText(oErrorMessage.sCode));
+					MessageBox.error(Utility.getText(oErrorMessage.sCode));
 					setTimeout(() => {
 						this._fnGoToDashboard();
 					}, 400);
@@ -1683,7 +1683,7 @@ sap.ui.define([
 				}
 
 			} catch (oErrorApprove) {
-				MessageToast.show(Utility.getText("msg_claimapprover_fail"));
+				MessageBox.error(Utility.getText("msg_claimapprover_fail"));
 				return;
 
 			} finally {
@@ -1700,12 +1700,12 @@ sap.ui.define([
 			const sComment = oReject?.getProperty("/approvalComment")?.trim();
 
 			if (!sReason) {
-				MessageToast.show(Utility.getText("msg_claimapprover_reject"));
+				MessageBox.error(Utility.getText("msg_claimapprover_reject"));
 				return;
 			}
 
 			if (!sComment) {
-				MessageToast.show(Utility.getText("msg_claimapprover_comment"));
+				MessageBox.error(Utility.getText("msg_claimapprover_comment"));
 				return;
 			}
 
@@ -1762,7 +1762,7 @@ sap.ui.define([
 					this._fnGoToDashboard();
 				}, 400);
 			} catch (oErrorReject) {
-				MessageToast.show(Utility.getText(oErrorReject.sCode));
+				MessageBox.error(Utility.getText(oErrorReject.sCode));
 				setTimeout(() => {
 					this._fnGoToDashboard();
 				}, 400);
@@ -1778,12 +1778,12 @@ sap.ui.define([
 			const sComment = oReject?.getProperty("/approvalComment")?.trim();
 
 			if (!sReason) {
-				MessageToast.show(Utility.getText("msg_claimapprover_sendback"));
+				MessageBox.error(Utility.getText("msg_claimapprover_sendback"));
 				return;
 			}
 
 			if (!sComment) {
-				MessageToast.show(Utility.getText("msg_claimapprover_comment"));
+				MessageBox.error(Utility.getText("msg_claimapprover_comment"));
 				return;
 			}
 
@@ -1847,7 +1847,7 @@ sap.ui.define([
 
 
 			} catch (oErrorSendBack) {
-				MessageToast.show(Utility.getText(oErrorSendBack.sCode));
+				MessageBox.error(Utility.getText(oErrorSendBack.sCode));
 				setTimeout(() => {
 					this._fnGoToDashboard();
 				}, 400);
@@ -2015,7 +2015,7 @@ sap.ui.define([
 					const oData = aContexts[0].getObject();
 					return oData.GL_ACCOUNT;
 				} else {
-					MessageToast.show(Utility.getText("msg_claimdetails_input_glaccount"));
+					MessageBox.error(Utility.getText("msg_claimdetails_input_glaccount"));
 					return "";
 				}
 			} catch (oError) {
@@ -2048,6 +2048,17 @@ sap.ui.define([
 					this.byId("input_claimdetails_input_amount").setEditable(true);
 				}
 			}
+
+			//set disclaimer field as false if they are visible for validation
+			if(this.byId("checkbox_claimdetails_input_disclaimer").getVisible()){
+				oInputModel.setProperty("/claim_item/disclaimer", false);
+			}
+
+			if(this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()){
+				//remove to string when db is updated
+				oInputModel.setProperty("/claim_item/disclaimer_galakan", false);
+			}
+
 			const _oItem = oInputModel.getProperty("/claim_item") || {};
 			var iDiffDays = DateUtility.calculateNumberOfDays({}, _oItem);
 			oInputModel.setProperty("/claim_item/no_of_days", iDiffDays);
@@ -2075,6 +2086,17 @@ sap.ui.define([
 
 				// set app visibility controls
 				await this.getFieldVisibility_ClaimTypeItem();
+
+				//FUT issue #58
+				if(this.byId("checkbox_claimdetails_input_disclaimer").getVisible()){
+					oInputModel.setProperty("/claim_item/disclaimer", true)
+				}
+
+				if(this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()){
+					oInputModel.setProperty("/claim_item/disclaimer_galakan", true)
+				}
+
+				
 			}
 			this._setClaimDetailSelection(oClaimSubmissionModel);
 
@@ -2184,7 +2206,7 @@ sap.ui.define([
 					break;
 				//// Others
 				default:
-					MessageToast.show(Utility.getText("msg_claimdetails_input_noaction"));
+					MessageBox.error(Utility.getText("msg_claimdetails_input_noaction"));
 					break;
 			}
 		},
@@ -2196,7 +2218,7 @@ sap.ui.define([
 
 			// Validate required fields
 			if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
-				MessageToast.show(Utility.getText("msg_claiminput_required"), {
+				MessageBox.error(Utility.getText("msg_claiminput_required"), {
 					closeOnBrowserNavigation: false
 				});
 				return;
@@ -2213,20 +2235,22 @@ sap.ui.define([
 
 			// Check for amount field visibility and value
 			if(oInputAmountField && oInputAmountField.getVisible()){
-				const sInputAmount = oInputAmountField.getValue()?.trim();
-				if(isNaN(sInputAmount) || sInputAmount <= 0 ){
+				const sInputAmount = oInputAmountField.getValue()?.trim().replace(/[^0-9.-]+/g, "");
+				const fInputAmount = parseFloat(sInputAmount);
+				if(isNaN(fInputAmount) || fInputAmount <= 0 ){
 					// stop claim submission if amount is zero or less
-					MessageToast.show(Utility.getText("msg_claiminput_amount_invalid"));
+					MessageBox.error(Utility.getText("msg_claiminput_amount_invalid"));
 					return;
 				}
 			}
 
 			// Check for actual amount field visibility and value
 			if(oInputActualAmountField && oInputActualAmountField.getVisible()){
-				const sInputActualAmount = oInputActualAmountField.getValue()?.trim();
-				if(isNaN(sInputActualAmount) || sInputActualAmount <= 0 ){
+				const sInputActualAmount = oInputActualAmountField.getValue()?.trim().replace(/[^0-9.-]+/g, "");
+				const fInputActualAmount = parseFloat(sInputActualAmount);
+				if(isNaN(fInputActualAmount) || fInputActualAmount <= 0 ){
 					// stop claim submission if amount is zero or less
-					MessageToast.show(Utility.getText("msg_claiminput_amount_invalid"));
+					MessageBox.error(Utility.getText("msg_claiminput_amount_invalid"));
 					return;
 				}
 			}
@@ -2291,7 +2315,7 @@ sap.ui.define([
 
 			// Check duplicates
 			if (this._CheckDuplicateClaimItems(aTemp)) {
-				MessageToast.show(Utility.getText("msg_duplication_prompt"));
+				MessageBox.error(Utility.getText("msg_duplication_prompt"));
 				return;
 			}
 
@@ -2380,6 +2404,14 @@ sap.ui.define([
 				}
 			}
 
+			//FUT issue #58
+			//checking for galakan disclaimer if its ticked or not
+			if(oInputModel.getProperty("/claim_item/disclaimer_galakan") == false || oInputModel.getProperty("/claim_item/disclaimer") == false){
+				MessageToast.show(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+				return;
+			}
+
+			//FUT issue #81
 			try {
 				BusyIndicator.show(0);
 				var oModel = this.getOwnerComponent().getModel();
@@ -2556,7 +2588,7 @@ sap.ui.define([
 
 				return true;
 			} catch (e) {
-				MessageToast.show(e.message);
+				MessageBox.error(e.message);
 				return false;
 			} finally {
 				BusyIndicator.hide();
@@ -2591,11 +2623,11 @@ sap.ui.define([
 		},
 
 		onFileSizeExceed_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_filesize"));
+			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_filesize"));
 		},
 
 		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
-			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
+			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
 		onChange_ClaimDetails_DateRange: async function (startdate, enddate) {
@@ -2793,7 +2825,7 @@ sap.ui.define([
 				}
 				BusyIndicator.hide();
 			} catch (oError) {
-				MessageToast.show(Utility.getText("msg_claimdetails_input_entmeals_err", [oError]));
+				MessageBox.error(Utility.getText("msg_claimdetails_input_entmeals_err", [oError]));
 				BusyIndicator.hide();
 			}
 		},
@@ -2934,14 +2966,14 @@ sap.ui.define([
 			var endDateValue = this.byId(enddate).getValue();
 			// check for missing value
 			if (!startDateValue || !endDateValue) {
-				MessageToast.show(Utility.getText("msg_daterange_missing"));
+				MessageBox.error(Utility.getText("msg_daterange_missing"));
 				return false;
 			}
 			// check if end date earlier than start date
 			var startDateUnix = new Date(startDateValue).valueOf();
 			var endDateUnix = new Date(endDateValue).valueOf();
 			if (startDateUnix > endDateUnix) {
-				MessageToast.show(Utility.getText("msg_daterange_order"));
+				MessageBox.error(Utility.getText("msg_daterange_order"));
 				return false;
 			}
 			else {
@@ -3004,7 +3036,7 @@ sap.ui.define([
 				var aItems = oInputModel.getProperty("/claim_items") || [];
 
 				if (aItems.length === 0) {
-					MessageToast.show(Utility.getText("msg_claimdetails_no_items"));
+					MessageBox.error(Utility.getText("msg_claimdetails_no_items"));
 					BusyIndicator.hide();
 					return;
 				}
@@ -3015,7 +3047,8 @@ sap.ui.define([
 					BusyIndicator.hide();
 					return;
 				}
-				
+
+								
 				// Cash Advance Repayment Validation checking
 				if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
 					MessageBox.error(Utility.getText("msg_error_cash_advance_repayment_prompt"));
@@ -3024,7 +3057,7 @@ sap.ui.define([
 				}
 
 				if (this._CheckDuplicateClaimItems(aItems)) {
-					MessageToast.show(Utility.getText("msg_duplication_prompt"));
+					MessageBox.error(Utility.getText("msg_duplication_prompt"));
 					BusyIndicator.hide();
 					return;
 				}
@@ -3053,7 +3086,7 @@ sap.ui.define([
 						oInputModel.setProperty("/reportnumber/current", currentReportNumber.current);
 					}
 					else {
-						MessageToast.show(Utility.getText("msg_claimsubmission_noclaim"));
+						MessageBox.error(Utility.getText("msg_claimsubmission_noclaim"));
 					}
 				}
 				//// set status for new claim as draft
@@ -3150,7 +3183,7 @@ sap.ui.define([
 						MessageToast.show(oMsg);
 						this._onNavBack();
 					}).catch(err => {
-						MessageToast.show(Utility.getText("msg_claimsubmission_creation_err", [err.message]));
+						MessageBox.error(Utility.getText("msg_claimsubmission_creation_err", [err.message]));
 					});
 				}
 				else {
@@ -3189,7 +3222,7 @@ sap.ui.define([
 							try {
 								await oAction.execute();
 							} catch (oError) {
-								MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]))
+								MessageBox.error(Utility.getText("msg_failed_generic_error", [oError]))
 							}
 							break;
 						case 'Submit Report':
@@ -3199,7 +3232,7 @@ sap.ui.define([
 							const oHandlingResult = await budgetCheck.budgetCheckHandling(aPayloadResult);
 
 							if (!oHandlingResult.bCanProceed) {
-								MessageToast.show(Utility.getText("req_tm_w_inform_cc_owner", oHandlingResult.aClaimTypeItem));
+								MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oHandlingResult.aClaimTypeItem));
 								return;
 							}
 							else {
@@ -3252,7 +3285,7 @@ sap.ui.define([
 
 			} catch (e) {
 				// Sync with request error message
-				MessageToast.show(e.message || "Submission failed");
+				MessageBox.error(e.message || "Submission failed");
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -3269,7 +3302,7 @@ sap.ui.define([
 			var aItems = oInputModel.getProperty("/claim_items") || [];
 
 			if (this._CheckDuplicateClaimItems(aItems)) {
-				MessageToast.show(Utility.getText("msg_duplication_prompt"));
+				MessageBox.error(Utility.getText("msg_duplication_prompt"));
 				BusyIndicator.hide();
 				return;
 			}
@@ -3639,7 +3672,7 @@ sap.ui.define([
 				}
 
 			} catch (err) {
-				MessageToast.show(Utility.getText("msg_claimsubmission_numrange_err", [err]));
+				MessageBox.error(Utility.getText("msg_claimsubmission_numrange_err", [err]));
 				return null;
 			}
 		},
@@ -3754,7 +3787,7 @@ sap.ui.define([
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
 
 				if (!aCtx || aCtx.length === 0) {
-					MessageToast.show("No configuration rows for claim type item:", sClaim_type_item);
+					MessageBox.error("No configuration rows for claim type item:", sClaim_type_item);
 					this._setAllControlsVisible(false);
 					return;
 				}
@@ -4126,7 +4159,7 @@ sap.ui.define([
 
 				const oInput = oView.getModel("claimsubmission_input")?.getData();
 				if (!oInput) {
-					MessageToast.show(Utility.getText("msg_claimsubmission_noload"));
+					MessageBox.error(Utility.getText("msg_claimsubmission_noload"));
 					return;
 				}
 
@@ -4337,7 +4370,7 @@ sap.ui.define([
 				});
 
 			} catch (e) {
-				MessageToast.show(Utility.getText("msg_claimsubmission_excel", [e]));
+				MessageBox.error(Utility.getText("msg_claimsubmission_excel", [e]));
 			} finally {
 				oView.setBusy(false);
 				BusyIndicator.hide();
@@ -4456,6 +4489,6 @@ sap.ui.define([
 				oReq.setProperty("/claim_header_count", 0);
 				return [];
 			}
-		},
+		}
 	});
 });
