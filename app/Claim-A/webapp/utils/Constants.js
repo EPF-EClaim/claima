@@ -79,6 +79,9 @@ sap.ui.define([
             "YURAN": "YURAN",
             "YURAN_KLJ": "YURAN_KLJ"
         },
+        "ClaimTypeItemStatus": {
+            "ACTIVE": "ACTIVE",
+        },
         "ClaimStatus": {
             "DRAFT": "STAT01",
             "PENDING_APPROVAL": "STAT02",
@@ -87,6 +90,9 @@ sap.ui.define([
             "APPROVED": "STAT05",
             "COMPLETED_DISBURSEMENT": "STAT06",
             "CANCELLED": "STAT07",
+        },
+        "Departments": {
+            "FI_DEPT":"0500000000"
         },
         "RequestStatus": {
             "DRAFT": "DRAFT",
@@ -210,7 +216,8 @@ sap.ui.define([
             "DTD_ADMIN": "DTD Admin",
             "GA_ADMIN": "GA Admin",
             "JKEW_ADMIN": "JKEW Admin",
-            "SUPER_ADMIN": "Super Admin"
+            "SUPER_ADMIN": "Super Admin",
+            "HEADOFDEP": "HOD"
         },
         "User_Type": {
             "CASH_FI": "CASH_FI",
@@ -289,6 +296,9 @@ sap.ui.define([
         "LocationType" : {
             "OTHER" : "1",
             "KWSP"  : "2"
+        },
+        "Status" : {
+            "ACTIVE" : "ACTIVE"
         },
         "ConfigAccess": 
              [
