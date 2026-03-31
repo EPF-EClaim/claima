@@ -3,6 +3,7 @@ const { INSERT, UPDATE, UPSERT, SELECT, DELETE, where } = require('@sap/cds/lib/
 const express = require('express');
 const app = express();
 const { Constant } = require("./utils/constant");
+const { results } = require('@sap/cds/lib/utils/cds-utils');
 
 module.exports = (srv) => {
 
@@ -126,9 +127,9 @@ module.exports = (srv) => {
 
         let operationHidden = true;
         // if (user_type === Constant.UserType.JKEW_ADMIN) {
-        if(req.user.is(Constant.Admin.Admin_System)) {
+        if (req.user.is(Constant.Admin.Admin_System)) {
             operationHidden = true;
-        // } else if (user_type === Constant.UserType.DTD_ADMIN || user_type === Constant.UserType.SUPER_ADMIN) {
+            // } else if (user_type === Constant.UserType.DTD_ADMIN || user_type === Constant.UserType.SUPER_ADMIN) {
         } else if (req.user.is(Constant.Admin.DTD_Admin)) {
             operationHidden = false;
         }
@@ -146,7 +147,11 @@ module.exports = (srv) => {
         const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
         const user_type = result?.USER_TYPE;
 
-        let operationHidden = (user_type === Constant.UserType.GA_ADMIN);
+        // let operationHidden = (user_type === Constant.UserType.GA_ADMIN);
+        let operationHidden = false;
+        if(req.user.is(Constant.Admin.Admin_CC)){
+            operationHidden = true;
+        }
         return {
             operationHidden: operationHidden,
             operationEnabled: !operationHidden,
@@ -202,6 +207,7 @@ module.exports = (srv) => {
     srv.on('batchCreateBudget', async (req) => {
         const { ZBUDGET } = srv.entities;
         let original_budget, virement_in, virement_out, supplement, return_value, total_budget, current_budget, total_budget_balance, consumed;
+        let results = [];
         try {
             const { budget } = req.data;
             if (!budget || budget.length === 0) throw new Error('No Data Sent');
@@ -209,8 +215,10 @@ module.exports = (srv) => {
             const tx = cds.tx(req);
 
             //if record hasnt been created yet, direct insert record into database
-            //else, update the record but exclude the five fields
+            //else, update the record but exclude the commitment, actual, consumed
             for (const row of budget) {
+                total_budget = 0;
+                total_budget_balance = 0;
 
                 const existing = await tx.read(ZBUDGET)
                     .where({
@@ -224,6 +232,18 @@ module.exports = (srv) => {
 
                 if (!existing.length) {
                     await tx.run(INSERT.into(ZBUDGET).entries(row));
+
+                    results.push({
+                        status: " record inserted",
+                        year: row.YEAR,
+                        internalorder: row.INTERNAL_ORDER,
+                        commitment_item: row.COMMITMENT_ITEM,
+                        fund_center: row.FUND_CENTER,
+                        materialgroup: row.MATERIAL_GROUP,
+                        currentBudget: row.CURRENT_BUDGET,
+                        budgetBalance: row.BUDGET_BALANCE
+                    });
+
                 } else {
                     const excludeFields = Constant.BudgetUpload.EXCLUDE_FIELDS;
 
@@ -254,9 +274,23 @@ module.exports = (srv) => {
                                 MATERIAL_GROUP: row.MATERIAL_GROUP
                             })
                     );
+                    results.push(
+                        {
+                            status: " record updated",
+                            year: row.YEAR,
+                            internalorder: row.INTERNAL_ORDER,
+                            commitment_item: row.COMMITMENT_ITEM,
+                            fund_center: row.FUND_CENTER,
+                            materialgroup: row.MATERIAL_GROUP,
+                            currentBudget: updatePayload.CURRENT_BUDGET,
+                            budgetBalance: updatePayload.BUDGET_BALANCE
+                        }
+
+                    )
+
                 }
             }
-            return 'Records updated';
+            return { results };
         } catch (error) {
             req.error(400, `Fail creating record: ${error.message}`);
         }
@@ -488,7 +522,7 @@ module.exports = (srv) => {
         );
 
         const totalClaimAmount = result.TotalClaimAmount || 0;
-        const finalAmountToReceive = (totalClaimAmount - headerResult.CASH_ADVANCE_AMOUNT) || 0;    
+        const finalAmountToReceive = (totalClaimAmount - headerResult.CASH_ADVANCE_AMOUNT) || 0;
 
         await tx.run(
             UPDATE('ZCLAIM_HEADER')
@@ -584,7 +618,7 @@ module.exports = (srv) => {
     });
 
     srv.on('checkEligibleMobileClaim', async (req) => {
-        const { sEmployeeId } = req.data; 
+        const { sEmployeeId } = req.data;
 
         if (!sEmployeeId) {
             return req.error(400, 'Please provide an Employee ID.');
@@ -593,7 +627,7 @@ module.exports = (srv) => {
         try {
             const employeeRecord = await SELECT.one('MOBILE_BILL_ELIGIBILITY', 'MOBILE_BILL_ELIG_AMOUNT')
                 .from('ZEMP_MASTER')
-                .where({ EEID: sEmployeeId }); 
+                .where({ EEID: sEmployeeId });
 
             if (!employeeRecord) {
                 return req.error(404, `Employee with ID ${sEmployeeId} not found in master data.`);
@@ -673,11 +707,11 @@ module.exports = (srv) => {
     });
 
     /**
-	 * Deletes and re-inserts Approver details based on Claim or Request ID
-	 * @public
+     * Deletes and re-inserts Approver details based on Claim or Request ID
+     * @public
      * @param {Array} aPayloadToCreateApproverDetailsTable - Array of Approver Details;
      * @returns {String} If Success, Results of Deletion and Insert Calls. If fail, Returns error message
-	 */
+     */
     srv.on('UpdateApproverDetails', async (req) => {
         try {
             const { aPayloadToCreateApproverDetailsTable } = req.data;
@@ -734,14 +768,14 @@ module.exports = (srv) => {
     });
 
     /**
-	 * Deletes Approver Details based on Table name and Claim ID / Preapproval ID field
-	 * @public
-	 * @param {String} sTableName - Table name to delete records from;
+     * Deletes Approver Details based on Table name and Claim ID / Preapproval ID field
+     * @public
+     * @param {String} sTableName - Table name to delete records from;
      * @param {String} sKeyName - Claim ID field name;
      * @param {String} sClaimID - Claim ID / Preapproval ID;
      * @param {Array} tx - CDS call;
      * @returns {String} sResult - Result of deletion of records
-	 */
+     */
     async function DeleteApproverDetails(sTableName, sKeyName, sClaimID, tx) {
 
         sResult = await tx.run(
@@ -751,13 +785,13 @@ module.exports = (srv) => {
     };
 
     /**
-	 * Inserts Records into table
-	 * @public
-	 * @param {String} sTableName - Table name for records to be inserted;
+     * Inserts Records into table
+     * @public
+     * @param {String} sTableName - Table name for records to be inserted;
      * @param {Array} aRecordDetails - Array of records to be inserted;
      * @param {Array} tx - CDS call;
      * @returns {String} sResult - Result of Insertion of records
-	 */
+     */
     async function InsertRecords(sTableName, aRecordDetails, tx) {
         sResult = await tx.run(
             INSERT(aRecordDetails).into(sTableName)
@@ -765,12 +799,12 @@ module.exports = (srv) => {
         return sResult;
     };
 
-     /**
-	 * Delete Approver Detail Records From table
-	 * @public
-	 * @param {String} req - Claim ID to be deleted;
-     * @returns {String} sResult - Result of Deletion of records
-	 */
+    /**
+    * Delete Approver Detail Records From table
+    * @public
+    * @param {String} req - Claim ID to be deleted;
+    * @returns {String} sResult - Result of Deletion of records
+    */
     srv.on('DeleteApproverDetails', async (req) => {
         try {
             const { ID } = req.data;
