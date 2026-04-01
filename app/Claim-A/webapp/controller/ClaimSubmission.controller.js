@@ -239,6 +239,7 @@ sap.ui.define([
 				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT && 
 					oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK) {
 					this._setApprovalLog(true);
+					this._displayFooterButtons("claimsubmission_view");
 
 					// display approval log data
 					const oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
@@ -1921,6 +1922,9 @@ sap.ui.define([
 				"button_claimapprover_approve",
 				"button_claimsubmission_back"
 			];
+			var button_view = [
+				"button_claimsubmission_back"
+			];
 
 			// select visible buttons based on visible fragment
 			var button_set;
@@ -1933,6 +1937,9 @@ sap.ui.define([
 					break;
 				case "claimsubmission_approver":
 					button_set = button_approver;
+					break;
+				case "claimsubmission_view":
+					button_set = button_view;
 					break;
 			}
 
