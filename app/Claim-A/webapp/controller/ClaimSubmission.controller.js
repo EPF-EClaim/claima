@@ -1586,7 +1586,7 @@ sap.ui.define([
 						try {
 							SendBackDialog.open(this);
 						} catch (e) {
-							MessageBox.error("Failed to open Send Back Dialog:\n" + (e?.message || e));
+							MessageBox.error("Failed to open Push Back Dialog:\n" + (e?.message || e));
 						}
 					}
 					break;
@@ -1781,7 +1781,7 @@ sap.ui.define([
 				BusyIndicator.hide();
 			}
 		},
-		//Button config for Send Back
+		//Button config for Push Back
 		onSendBack_ClaimSubmission: async function () {
 
 			const oReject = this.getView().getModel("Reject");
@@ -1789,7 +1789,7 @@ sap.ui.define([
 			const sComment = oReject?.getProperty("/approvalComment")?.trim();
 
 			if (!sReason) {
-				MessageBox.error(Utility.getText("msg_claimapprover_sendback"));
+				MessageBox.error(Utility.getText("msg_claimapprover_pushback"));
 				return;
 			}
 
@@ -1879,7 +1879,7 @@ sap.ui.define([
 
 
 
-		// Example: wire this to your "Push Back" or "Send Back" action
+		// Example: wire this to your "Push Back" action
 		onOpenSendBack_Claim: function () {
 			// Ensure form model
 			let oReject = this.getView().getModel("Reject");
