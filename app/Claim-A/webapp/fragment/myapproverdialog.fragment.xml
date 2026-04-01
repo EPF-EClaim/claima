@@ -86,7 +86,7 @@
 
             <!-- Approval Comment (required TextArea) -->
             <Label
-                text="{i18n>approval_comment}"
+                text="{i18n>approval_remarks}"
                 required="true"
             />
             <TextArea
