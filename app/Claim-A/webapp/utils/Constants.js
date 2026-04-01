@@ -94,6 +94,9 @@ sap.ui.define([
         "Departments": {
             "FI_DEPT":"0500000000"
         },
+        "EligibilityRule": {
+            "RATE_PER_KM": "RATE",
+        },
         "RequestStatus": {
             "DRAFT": "DRAFT",
             "PENDING_APPROVAL": "PENDING APPROVAL",
