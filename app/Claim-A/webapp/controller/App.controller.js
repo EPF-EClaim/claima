@@ -19,6 +19,7 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"sap/ui/core/Icon",
 	"claima/utils/Utility",
+	"claima/utils/DateUtility",
 	"claima/utils/PARequestSharedFunction",
 	"claima/utils/Attachment",
 	"claima/utils/EligibilityCheck"
@@ -43,6 +44,7 @@ sap.ui.define([
 	Sorter,
 	Icon,
 	Utility,
+	DateUtility,
 	PARequestSharedFunction,
 	Attachment,
 	EligibilityCheck
@@ -305,6 +307,7 @@ sap.ui.define([
 						"event_start_date": null,
 						"event_end_date": null,
 						"alternate_cost_center": null,
+						"cash_advance": null,
 						"descr": {
 							"alternate_cost_center": null
 						}
@@ -499,7 +502,13 @@ sap.ui.define([
 				// set claim items based on selected claim type
 				this.byId("select_claimprocess_claimitem").bindAggregation("items", {
 					path: "employee>/ZCLAIM_TYPE_ITEM",
-					filters: [new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, claimType.getKey())],
+					filters: [
+						new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, claimType.getKey()),
+						// ensure status is active
+						new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+						new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+						new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+					],
 					sorter: [
 						new Sorter('CLAIM_TYPE_ITEM_DESC'),
 						new Sorter('CLAIM_TYPE_ITEM_ID')
@@ -550,7 +559,10 @@ sap.ui.define([
 				var oInputModel = this.getView().getModel("claimsubmission_input");
 
 				// enable 'Request Form' selection
-				if (categoryId == 'ST0003') {
+				if (categoryId === this._oConstant.SubmissionType.PRE_APPROVE ||
+					categoryId === this._oConstant.SubmissionType.CASH_REPAYMENT ||
+					categoryId === this._oConstant.SubmissionType.CURR_SUBSIDY
+				) {
 					if (!this.byId("select_claimprocess_requestform").getVisible()) {
 						this.byId("select_claimprocess_requestform").bindAggregation("items", {
 							path: "employee>/ZREQUEST_HEADER",
@@ -564,7 +576,7 @@ sap.ui.define([
 									"ZCOST_CENTER": { $select: "COST_CENTER_DESC" },
 									"COSTCENTER": { $select: "COST_CENTER_DESC" },
 								},
-								$select: "PREAPPROVAL_AMOUNT,EVENT_START_DATE,EVENT_END_DATE,COST_CENTER,ALTERNATE_COST_CENTER"
+								$select: "PREAPPROVAL_AMOUNT,EVENT_START_DATE,EVENT_END_DATE,COST_CENTER,ALTERNATE_COST_CENTER,CASH_ADVANCE"
 							},
 							template: new Item({
 								key: "{employee>REQUEST_ID}",
@@ -681,14 +693,18 @@ sap.ui.define([
 			oInputModel.setProperty("/claimtype/category", this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("SUBMISSION_TYPE"));
 			//// get request form values
 			if (this.byId("select_claimprocess_requestform").getSelectedItem() && !this.byId("switch_claimprocess_req_emailapprove").getState()) {
-				oInputModel.setProperty("/claimtype/requestform/objective_purpose", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("OBJECTIVE_PURPOSE"));
-				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT"));
-				oInputModel.setProperty("/claimtype/requestform/trip_start_date", this._getJsonDate(this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("TRIP_START_DATE")));
-				oInputModel.setProperty("/claimtype/requestform/trip_end_date", this._getJsonDate(this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("TRIP_END_DATE")));
-				oInputModel.setProperty("/claimtype/requestform/event_start_date", this._getJsonDate(this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("EVENT_START_DATE")));
-				oInputModel.setProperty("/claimtype/requestform/event_end_date", this._getJsonDate(this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("EVENT_END_DATE")));
-				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("ALTERNATE_COST_CENTER"));
-				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee").getObject("COSTCENTER/COST_CENTER_DESC"));
+				var oRequestForm = this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee");
+				if (oRequestForm) {
+					oInputModel.setProperty("/claimtype/requestform/objective_purpose", oRequestForm.getObject("OBJECTIVE_PURPOSE"));
+					oInputModel.setProperty("/claimtype/requestform/preapproval_amount", oRequestForm.getObject("PREAPPROVAL_AMOUNT"));
+					oInputModel.setProperty("/claimtype/requestform/trip_start_date", this._getJsonDate(oRequestForm.getObject("TRIP_START_DATE")));
+					oInputModel.setProperty("/claimtype/requestform/trip_end_date", this._getJsonDate(oRequestForm.getObject("TRIP_END_DATE")));
+					oInputModel.setProperty("/claimtype/requestform/event_start_date", this._getJsonDate(oRequestForm.getObject("EVENT_START_DATE")));
+					oInputModel.setProperty("/claimtype/requestform/event_end_date", this._getJsonDate(oRequestForm.getObject("EVENT_END_DATE")));
+					oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", oRequestForm.getObject("ALTERNATE_COST_CENTER"));
+					oInputModel.setProperty("/claimtype/requestform/cash_advance", oRequestForm.getObject("CASH_ADVANCE"));
+					oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", oRequestForm.getObject("COSTCENTER/COST_CENTER_DESC"));
+				}
 			}
 			if (this.byId("switch_claimprocess_req_emailapprove").getEnabled()) {
 				oInputModel.setProperty("/claimtype/req_emailapprove", this.byId("switch_claimprocess_req_emailapprove").getState());
@@ -798,12 +814,15 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/event_end_date", oInputModel.getProperty("/claimtype/requestform/event_end_date"));
 			oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/alternate_cost_center"));
 			oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/descr/alternate_cost_center"));
+			oInputModel.setProperty("/claim_header/cash_advance_amount", oInputModel.getProperty("/claimtype/requestform/cash_advance"));
 			//// initialized amount values
 			oInputModel.setProperty("/claim_header/total_claim_amount", "0.00");
 			oInputModel.setProperty("/claim_header/final_amount_to_receive", "0.00");
-			oInputModel.setProperty("/claim_header/cash_advance_amount", "0.00");
 			if (!oInputModel.getProperty("/claim_header/preapproved_amount")) {
 				oInputModel.setProperty("/claim_header/preapproved_amount", "0.00");
+			}
+			if (!oInputModel.getProperty("/claim_header/cash_advance_amount")) {
+				oInputModel.setProperty("/claim_header/cash_advance_amount", "0.00");
 			}
 			//// include description in data
 			oInputModel.setProperty("/claim_header/descr/claim_type_id", oInputModel.getProperty("/claimtype/descr/type"));
@@ -813,7 +832,10 @@ sap.ui.define([
 
 			// pre-approval request values
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			if (oInputModel.getProperty("/claimtype/category") == 'ST0003') {
+			if (oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.PRE_APPROVE ||
+				oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CASH_REPAYMENT ||
+				oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CURR_SUBSIDY
+			) {
 				// make Pre-Approval Request, Approve Amount visible
 				this.byId("text_claiminput_preapprovalreq").setVisible(true);
 				this.byId("text_claiminput_amtapproved").setVisible(true);
@@ -851,7 +873,7 @@ sap.ui.define([
 						}
 						break;
 				}
-			} else if (oInputModel.getProperty("/claimtype/category") == this._oConstant.SubmissionType.DIRECT_CLAIM) {
+			} else {
 				this.byId("fileuploader_claiminput_attachment").setEnabled(false);
 				this.byId("fileuploader_claiminput_attachment").setVisible(false);
 			}
@@ -1375,7 +1397,7 @@ sap.ui.define([
 
 				// validate mandatory fields
 				if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
-					MessageBox.show(Utility.getText("req_d_w_mandatory_field"), {
+					MessageBox.error(Utility.getText("req_d_w_mandatory_field"), {
 						closeOnBrowserNavigation: false
 					});
 					return;
