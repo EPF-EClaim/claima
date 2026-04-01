@@ -217,18 +217,12 @@ sap.ui.define([
          * @returns {boolean} returns true if the given date is greater than today's date;
          *                    otherwise returns false
          */
-        isfutureDate: function (sDate) {
-            if (!sDate) return false;
 
-            const oDate = new Date(sDate);
-            if (isNaN(oDate)) return false;
+        isFutureDate: function (sDate) {
+            const dDate = new Date(sDate);
+            if (!sDate || isNaN(dDate)) return false;
 
-            // Normalize both dates to midnight
-            const oCheckDate = new Date(oDate.setHours(0, 0, 0, 0));
-            const oToday = new Date();
-            oToday.setHours(0, 0, 0, 0);
-
-            return oCheckDate > oToday;
+            return dDate.setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0);
         }
 
     };
