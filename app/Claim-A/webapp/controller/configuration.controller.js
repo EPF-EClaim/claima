@@ -248,7 +248,9 @@ sap.ui.define([
 
         onCopy: function (oEvent) {
             const oNewEntry = {};
-            var { oVBox, sPath, oSelected, oModel } = this._getDetails(oEvent);
+            const oDetails = this._getDetails(oEvent);
+            if (!oDetails) return;
+            var { oVBox, sPath, oSelected, oModel } = oDetails; 
 
             const oEntityType = oModel.getMetaModel().getContext(sPath).getObject();
             const sEntityType = oEntityType.$Type;
@@ -298,7 +300,7 @@ sap.ui.define([
                         }
                     }.bind(this)
                 }),
-                endButton: new sap.m.Button({
+                endButton: new Button({
                     text: "Cancel",
                     press: function () { oDialog.close(); }
                 }),
@@ -309,7 +311,9 @@ sap.ui.define([
         },
 
         onEdit: function (oEvent) {
-            const { oVBox, sPath, oSelected, oModel } = this._getDetails(oEvent);
+            const oDetails = this._getDetails(oEvent);
+            if (!oDetails) return;
+            const { oVBox, sPath, oSelected, oModel } = oDetails;
             const oContext = oSelected.getBindingContext();
 
             const oEntityType = oModel.getMetaModel().getContext(sPath).getObject();
@@ -359,7 +363,14 @@ sap.ui.define([
                             MessageToast.show(Utility.getText("endBeforeStart"));
                         } else {
                             if (bKeyChanged) {
-                                const oListBinding = oModel.bindList(sPath);
+                                let oListBinding;
+
+                                if (sPath.includes('Items')) {
+                                    const oHeaderContext = this._oItemsFragment?.getBindingContext();
+                                    oListBinding = oModel.bindList("Items", oHeaderContext);
+                                } else {
+                                    oListBinding = oModel.bindList(sPath);
+                                }
                                 await oListBinding.create(oNewData);
                                 await oContext.delete();
 
@@ -379,7 +390,7 @@ sap.ui.define([
                         }
                     }.bind(this)
                 }),
-                endButton: new sap.m.Button({
+                endButton: new Button({
                     text: "Cancel",
                     press: function () { oDialog.close(); }
                 }),
@@ -435,11 +446,7 @@ sap.ui.define([
                     ? "/ZCLAIM_TYPE/Items"
                     : oContext.getBinding().sPath;
 
-                oData = oContext.getObject()
-
-                // oSelected = oTable.getSelectedItem();
-                // sPath = oSelected.getBindingContext().getBinding().sPath === 'Items' ? '/ZCLAIM_TYPE/Items' : oSelected.getBindingContext().getBinding().sPath;
-                // oData = oSelected.getBindingContext().getObject();
+                oData = oContext.getObject();
             }
 
             const oEntityType = oModel.getMetaModel().getContext(sPath).getObject(),

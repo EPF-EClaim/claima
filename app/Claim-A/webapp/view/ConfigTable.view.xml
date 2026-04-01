@@ -42,33 +42,29 @@
                         text="Edit"
                         press="onEdit"
                         enabled="{view>/hasSelection}"
-                        visible="true"
+                        visible="{= ${/FeatureControl/operationEnabled} }"
                     />
-                    <!-- "{= ${/FeatureControl/operationEnabled} }" -->
                     <Button
                         id="CopyHeader"
                         text="Copy"
                         press="onCopy"
                         enabled="{view>/hasSelection}"
-                        visible="true"
+                        visible="{= ${/FeatureControl/operationEnabled} }"
                     />
-                    <!-- "{= ${/FeatureControl/operationEnabled} }" -->
                     <Button
                         id="CreateHeader"
                         text="Create"
                         press="onCreate"
                         enabled="true"
-                        visible="true"
+                        visible="{= ${/FeatureControl/operationEnabled} }"
                     />
-                    <!-- "{= ${/FeatureControl/operationEnabled} }" -->
                     <Button
                         id="DeleteHeader"
                         text="Delete"
                         press="onDelete"
                         enabled="{view>/hasSelection}"
-                        visible="true"
+                        visible="{= ${/FeatureControl/operationEnabled} }"
                     />
-                    <!-- "{= ${/FeatureControl/operationEnabled} }" -->
                     <Button
                         icon="sap-icon://action-settings"
                         press="onOpenViewSettings"

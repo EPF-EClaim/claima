@@ -47,33 +47,29 @@
                     text="{i18n>req_b_edit}"
                     press="onEdit"
                     enabled="{view>/hasSelection}"
-                    visible="true"
+                    visible="{= ${/FeatureControl/operationEnabled} }"
                 />
-                <!-- "{= ${/FeatureControl/operationEnabled} }" -->
                 <Button
                     id="CopyItem"
                     text="{i18n>copy}"
                     press="onCopy"
                     enabled="{view>/hasSelection}"
-                    visible="true"
+                    visible="{= ${/FeatureControl/operationEnabled} }"
                 />
-                <!-- "{= ${/FeatureControl/operationEnabled} }" -->
                 <Button
                     id="CreateItem"
                     text="{i18n>create}"
                     press="onCreate"
                     enabled="true"
-                    visible="true"
+                    visible="{= ${/FeatureControl/operationEnabled} }"
                 />
-                <!-- "{= ${/FeatureControl/operationEnabled} }" -->
                 <Button
                     id="DeleteItem"
                     text="{i18n>req_b_delete}"
                     press="onDelete"
                     enabled="{view>/hasSelection}"
-                    visible="true"
+                    visible="{= ${/FeatureControl/operationEnabled} }"
                 />
-                <!-- "{= ${/FeatureControl/operationEnabled} }" -->
                 <Button
                     icon="sap-icon://action-settings"
                     press="onOpenViewItemSettings"
