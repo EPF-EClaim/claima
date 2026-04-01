@@ -12,8 +12,16 @@ sap.ui.define([
             this._oOwnerComponent = oOwnerComponent;
 		},
         
+        /**
+         * Validates all common and scenario-specific rules during submission
+         *
+         * This method retrieves the necessary validation data from
+         * `this._oOwnerComponent`, including both common fields and scenario-based
+         * input values. It is to ensure data consistency before proceeding with submission or
+         * further processing.
+         * @public
+         */
         validate: function (sSubmissionType) {
-            // Retrieve the model for checking from this._oOwnerComponent
             // Common validations (Applicable for both scenarios)
 
             // Type and Item Type checking (Applicable for both scenarios)
