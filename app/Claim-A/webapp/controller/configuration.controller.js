@@ -315,14 +315,20 @@ sap.ui.define([
             const oEntityType = oModel.getMetaModel().getContext(sPath).getObject();
             const sEntityType = oEntityType.$Type;
             const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
+            const aKeyFields = oDataType.$Key || [];
+            const oOriginalData = { ...oContext.getObject() };
+
+            const oNewData = { ...oOriginalData };
+            let bKeyChanged = false;
+
 
             const oDialog = new Dialog({
                 title: `Edit Record`,
                 contentWidth: "15%",
                 horizontalScrolling: false,
-                beginButton: new sap.m.Button({
+                beginButton: new Button({
                     text: "Edit",
-                    press: function () {
+                    press: async function () {
                         let dStart = null;
                         let dEnd = null;
                         var oInputs = oVBox.getItems();
@@ -336,23 +342,38 @@ sap.ui.define([
                             const oControl = oInputs[i];
                             const sFieldName = oControl.getName();
                             const sValue = oControl.getValue() === '' ? null : oControl.getValue();
+                            oNewData[sFieldName] = sValue;
 
                             if (sFieldName === 'START_DATE') dStart = new Date(sValue);
                             if (sFieldName === 'END_DATE') dEnd = new Date(sValue);
+
+                            if (
+                                aKeyFields.includes(sFieldName) &&
+                                oOriginalData[sFieldName] !== sValue
+                            ) {
+                                bKeyChanged = true;
+                            }
                         }
 
                         if (dEnd < dStart) {
                             MessageToast.show(Utility.getText("endBeforeStart"));
                         } else {
-                            for (let i = 1; i < oInputs.length; i += 2) {
-                                const oControl = oInputs[i];
+                            if (bKeyChanged) {
+                                const oListBinding = oModel.bindList(sPath);
+                                await oListBinding.create(oNewData);
+                                await oContext.delete();
 
-                                var sFieldName = oControl.getName();
-                                var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+                            } else {
+                                for (let i = 1; i < oInputs.length; i += 2) {
+                                    const oControl = oInputs[i];
 
-                                oContext.setProperty(sFieldName, sNewInput);
+                                    var sFieldName = oControl.getName();
+                                    var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+
+                                    oContext.setProperty(sFieldName, sNewInput);
+                                }
                             }
-                            MessageToast.show(Utility.getText("msg_record_created"));
+                            MessageToast.show(Utility.getText("msg_record_updated"));
                             oModel.refresh();
                             oDialog.close();
                         }
@@ -401,9 +422,24 @@ sap.ui.define([
                     oData = {},
                     oSelected = null;
             } else {
-                oSelected = oTable.getSelectedItem();
-                sPath = oSelected.getBindingContext().getBinding().sPath === 'Items' ? '/ZCLAIM_TYPE/Items' : oSelected.getBindingContext().getBinding().sPath;
-                oData = oSelected.getBindingContext().getObject();
+                const aSelectedItems = oTable.getSelectedItems();
+
+                if (aSelectedItems.length !== 1) {
+                    MessageBox.warning(Utility.getText("msg_select_one"));
+                    return null;
+                }
+                oSelected = aSelectedItems[0];
+                const oContext = oSelected.getBindingContext();
+
+                sPath = oContext.getBinding().sPath === "Items"
+                    ? "/ZCLAIM_TYPE/Items"
+                    : oContext.getBinding().sPath;
+
+                oData = oContext.getObject()
+
+                // oSelected = oTable.getSelectedItem();
+                // sPath = oSelected.getBindingContext().getBinding().sPath === 'Items' ? '/ZCLAIM_TYPE/Items' : oSelected.getBindingContext().getBinding().sPath;
+                // oData = oSelected.getBindingContext().getObject();
             }
 
             const oEntityType = oModel.getMetaModel().getContext(sPath).getObject(),
