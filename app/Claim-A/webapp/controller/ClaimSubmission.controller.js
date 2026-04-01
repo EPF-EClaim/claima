@@ -2436,6 +2436,15 @@ sap.ui.define([
 				}
 			}
 
+			//FUT issue #81
+			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
+			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
+
+			if(dReceiptDate > dTripEndDate){
+				MessageToast.show(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
+				return;
+			}
+
 			//FUT issue #58
 			//checking for galakan disclaimer if its ticked or not
 			if(oInputModel.getProperty("/claim_item/disclaimer_galakan") == false || oInputModel.getProperty("/claim_item/disclaimer") == false){
@@ -2444,6 +2453,13 @@ sap.ui.define([
 			}
 
 			//FUT issue #81
+			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
+			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
+
+			if(dReceiptDate > dTripEndDate){
+				MessageToast.show(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
+				return;
+			}
 			try {
 				BusyIndicator.show(0);
 				var oModel = this.getOwnerComponent().getModel();
