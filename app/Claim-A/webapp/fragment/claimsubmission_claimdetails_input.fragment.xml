@@ -912,9 +912,18 @@
 				<Label text="{i18n>label_claimdetails_input_billdate}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_bill_date"
-					value="{claimitem_input>/claim_item/bill_date}"
-					visible="false"
+					value="{
+						path: 'claimitem_input>/claim_item/bill_date'
+					}"
+					showCurrentDateButton="true"
+					valueFormat="yyyy-MM-dd"
 					displayFormat="dd-MMM-yyyy"
+					visible="false"
+					maxDate="{
+						path: 'claimsubmission_input>/claim_header/trip_end_date',
+						formatter: '.DateUtility.toDate'
+					}"
+    				change=".onBillDateChange"
 				/>
 
 				<!-- Phone No -->

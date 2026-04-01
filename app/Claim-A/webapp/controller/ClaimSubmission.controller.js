@@ -61,6 +61,8 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.ClaimSubmission", {
 
+		DateUtility: DateUtility,
+
 		onInit: function () {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._fragments = Object.create(null);
@@ -3612,6 +3614,20 @@ sap.ui.define([
 			}
 
 			return false;
+		},
+
+		onBillDateChange: function (oEvent) {
+			const oDatePicker = oEvent.getSource();
+			const oBillDate = oEvent.getParameter("value");
+			const oMaxDate = oDatePicker.getMaxDate();
+
+			const bExceed = DateUtility.checkAgainstMaxDate(oBillDate, oMaxDate);
+			if (bExceed) {
+				const sPattern = oDatePicker.getDisplayFormat();
+				const oDateFormat = sap.ui.core.format.DateFormat.getDateInstance({pattern: sPattern});
+				oDatePicker.setValue(""); // Clear invalid value
+				MessageBox.error(Utility.getText("msg_bill_date_exceed_max_date", [oDateFormat.format(oMaxDate)]));
+			}
 		},
 
 		_getJsonDate: function (iDate) {

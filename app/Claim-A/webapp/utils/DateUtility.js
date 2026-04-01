@@ -204,6 +204,16 @@ sap.ui.define([
 			}
 
 			return null;
+		},
+
+        checkAgainstMaxDate: function (oSelectedDate, oMaxDate) {
+			const dSelectedDate = new Date(oSelectedDate);
+			dSelectedDate.setHours(0, 0, 0, 0);
+			const dMaxDate = new Date(oMaxDate);
+			dMaxDate.setHours(0, 0, 0, 0);
+			if ( dSelectedDate > dMaxDate) {
+				return true;
+			}
 		}
     };
 });
