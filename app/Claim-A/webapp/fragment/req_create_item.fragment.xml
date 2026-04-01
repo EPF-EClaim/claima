@@ -92,6 +92,7 @@
                                     <form:fields>
                                         <m:Input 
                                             textAlign="Begin" 
+                                            required="true"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/purpose}"/>
                                     </form:fields>
@@ -958,7 +959,6 @@
                                             maxFractionDigits: 2
                                         }
                                     }" 
-                                    type="Number"
                                     change="populateEstimatedAmount"
                                     enabled="{= ${request>/view} !== 'view'}">
                                 </Input>
