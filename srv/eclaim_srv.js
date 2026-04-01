@@ -160,18 +160,22 @@ module.exports = (srv) => {
         }
     });
 
-        srv.on('sendEmail', async (req) => {
-            try {
-                const ISserivce = await cds.connect.to('IS_Conn');
-                ISserivce.send({
-                    method: 'POST',
-                    path: "/http/EmailNotification_BTP",
-                    data: { ...req.data }
-                });
-            } catch (error) {
-                req.error(400, `Fail sending email: ${error.message}`);
-            }
-        });
+    srv.on('sendEmail', async (req) => {
+        try {
+            const ISservice = await cds.connect.to('IS_Conn');
+
+            const response = await ISservice.send({
+                method: 'POST',
+                path: "/http/SendEmailNotification_eClaim",
+                data: req.data
+            });
+
+            return response;
+
+        } catch (error) {
+            req.error(400, `Fail sending email: ${error.message}`);
+        }
+    });
 
     srv.on('updateDisbursementStatus', async (req) => {
         const { ZEMP_CA_PAYMENT } = srv.entities;
