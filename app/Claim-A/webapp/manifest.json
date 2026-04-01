@@ -4643,8 +4643,8 @@
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
-                                        "selectAll": false,
-                                        "selectionMode": "Single",
+                                        "selectAll": true,
+                                        "selectionMode": "Multi",
                                         "personalization": {
                                             "column": false,
                                             "filter": true,
@@ -4711,8 +4711,8 @@
                                         "createMode": "inline",
                                         "initialLoad": "Enabled",
                                         "enableExport": true,
-                                        "selectAll": false,
-                                        "selectionMode": "Single",
+                                        "selectAll": true,
+                                        "selectionMode": "Multi",
                                         "personalization": {
                                             "column": false,
                                             "filter": true,
