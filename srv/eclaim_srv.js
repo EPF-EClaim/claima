@@ -125,10 +125,8 @@ module.exports = (srv) => {
         const user_type = result?.USER_TYPE;
 
         let operationHidden = true;
-        // if (user_type === Constant.UserType.JKEW_ADMIN) {
-        if(req.user.is(Constant.Admin.Admin_System)) {
+        if (req.user.is(Constant.Admin.Admin_System)) {
             operationHidden = true;
-        // } else if (user_type === Constant.UserType.DTD_ADMIN || user_type === Constant.UserType.SUPER_ADMIN) {
         } else if (req.user.is(Constant.Admin.DTD_Admin)) {
             operationHidden = false;
         }
@@ -146,7 +144,11 @@ module.exports = (srv) => {
         const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
         const user_type = result?.USER_TYPE;
 
-        let operationHidden = (user_type === Constant.UserType.GA_ADMIN);
+        // let operationHidden = (user_type === Constant.UserType.GA_ADMIN);
+        let operationHidden = false;
+        if (req.user.is(Constant.Admin.Admin_CC)) {
+            operationHidden = true;
+        }
         return {
             operationHidden: operationHidden,
             operationEnabled: !operationHidden,
@@ -170,12 +172,20 @@ module.exports = (srv) => {
     });
 
     srv.on('sendEmail', async (req) => {
-        const ISserivce = await cds.connect.to('IS_NonProd_Conn');
-        ISserivce.send({
-            method: 'POST',
-            path: "/http/EmailNotification_BTP_DEV",
-            data: { ...req.data }
-        });
+        try {
+            const ISservice = await cds.connect.to('IS_Conn');
+
+            const response = await ISservice.send({
+                method: 'POST',
+                path: "/http/SendEmailNotification_eClaim",
+                data: req.data
+            });
+
+            return response;
+
+        } catch (error) {
+            req.error(400, `Fail sending email: ${error.message}`);
+        }
     });
 
     srv.on('updateDisbursementStatus', async (req) => {
@@ -488,7 +498,7 @@ module.exports = (srv) => {
         );
 
         const totalClaimAmount = result.TotalClaimAmount || 0;
-        const finalAmountToReceive = (totalClaimAmount - headerResult.CASH_ADVANCE_AMOUNT) || 0;    
+        const finalAmountToReceive = (totalClaimAmount - headerResult.CASH_ADVANCE_AMOUNT) || 0;
 
         await tx.run(
             UPDATE('ZCLAIM_HEADER')
@@ -584,7 +594,7 @@ module.exports = (srv) => {
     });
 
     srv.on('checkEligibleMobileClaim', async (req) => {
-        const { sEmployeeId } = req.data; 
+        const { sEmployeeId } = req.data;
 
         if (!sEmployeeId) {
             return req.error(400, 'Please provide an Employee ID.');
@@ -593,7 +603,7 @@ module.exports = (srv) => {
         try {
             const employeeRecord = await SELECT.one('MOBILE_BILL_ELIGIBILITY', 'MOBILE_BILL_ELIG_AMOUNT')
                 .from('ZEMP_MASTER')
-                .where({ EEID: sEmployeeId }); 
+                .where({ EEID: sEmployeeId });
 
             if (!employeeRecord) {
                 return req.error(404, `Employee with ID ${sEmployeeId} not found in master data.`);
@@ -673,11 +683,11 @@ module.exports = (srv) => {
     });
 
     /**
-	 * Deletes and re-inserts Approver details based on Claim or Request ID
-	 * @public
+     * Deletes and re-inserts Approver details based on Claim or Request ID
+     * @public
      * @param {Array} aPayloadToCreateApproverDetailsTable - Array of Approver Details;
      * @returns {String} If Success, Results of Deletion and Insert Calls. If fail, Returns error message
-	 */
+     */
     srv.on('UpdateApproverDetails', async (req) => {
         try {
             const { aPayloadToCreateApproverDetailsTable } = req.data;
@@ -734,14 +744,14 @@ module.exports = (srv) => {
     });
 
     /**
-	 * Deletes Approver Details based on Table name and Claim ID / Preapproval ID field
-	 * @public
-	 * @param {String} sTableName - Table name to delete records from;
+     * Deletes Approver Details based on Table name and Claim ID / Preapproval ID field
+     * @public
+     * @param {String} sTableName - Table name to delete records from;
      * @param {String} sKeyName - Claim ID field name;
      * @param {String} sClaimID - Claim ID / Preapproval ID;
      * @param {Array} tx - CDS call;
      * @returns {String} sResult - Result of deletion of records
-	 */
+     */
     async function DeleteApproverDetails(sTableName, sKeyName, sClaimID, tx) {
 
         sResult = await tx.run(
@@ -751,13 +761,13 @@ module.exports = (srv) => {
     };
 
     /**
-	 * Inserts Records into table
-	 * @public
-	 * @param {String} sTableName - Table name for records to be inserted;
+     * Inserts Records into table
+     * @public
+     * @param {String} sTableName - Table name for records to be inserted;
      * @param {Array} aRecordDetails - Array of records to be inserted;
      * @param {Array} tx - CDS call;
      * @returns {String} sResult - Result of Insertion of records
-	 */
+     */
     async function InsertRecords(sTableName, aRecordDetails, tx) {
         sResult = await tx.run(
             INSERT(aRecordDetails).into(sTableName)
@@ -765,12 +775,12 @@ module.exports = (srv) => {
         return sResult;
     };
 
-     /**
-	 * Delete Approver Detail Records From table
-	 * @public
-	 * @param {String} req - Claim ID to be deleted;
-     * @returns {String} sResult - Result of Deletion of records
-	 */
+    /**
+    * Delete Approver Detail Records From table
+    * @public
+    * @param {String} req - Claim ID to be deleted;
+    * @returns {String} sResult - Result of Deletion of records
+    */
     srv.on('DeleteApproverDetails', async (req) => {
         try {
             const { ID } = req.data;

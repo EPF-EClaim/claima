@@ -235,10 +235,9 @@ entity ZREQUEST_ITEM : managed {
                                          on ZCOUNTRY.COUNTRY_ID = COUNTRY;
         ZOFFICE_DISTANCE           : Association to ZOFFICE_DISTANCE
                                          on  ZOFFICE_DISTANCE.FROM_LOCATION_ID = FROM_LOCATION_OFFICE
-                                         and ZOFFICE_DISTANCE.FROM_STATE_ID    = FROM_STATE_ID;
-        ZOFFICE_DISTANCE1          : Association to ZOFFICE_DISTANCE
-                                         on  ZOFFICE_DISTANCE1.TO_LOCATION_ID = TO_LOCATION_OFFICE
-                                         and ZOFFICE_DISTANCE1.TO_STATE_ID    = TO_STATE_ID;
+                                         and ZOFFICE_DISTANCE.FROM_STATE_ID    = FROM_STATE_ID
+                                         and ZOFFICE_DISTANCE.TO_LOCATION_ID = TO_LOCATION_OFFICE
+                                         and ZOFFICE_DISTANCE.TO_STATE_ID = TO_STATE_ID;
         ZRATE_KM                   : Association to ZRATE_KM
                                          on ZRATE_KM.RATE_KM_ID = RATE_PER_KM;
         ZVEHICLE_TYPE              : Association to one ZVEHICLE_TYPE
@@ -460,7 +459,7 @@ entity ZCLAIM_ITEM : managed {
         ANGGOTA_NAME               : String;
         DEPENDENT_NAME             : String;
         TYPE_OF_PROFESSIONAL_BODY  : String(3);
-        DISCLAIMER_GALAKAN         : String;
+        DISCLAIMER_GALAKAN         : Boolean;
         VEHICLE_OWNERSHIP_ID       : String(2);
         MODE_OF_TRANSFER           : String(2);
         TRANSFER_DATE              : Date;
@@ -525,10 +524,9 @@ entity ZCLAIM_ITEM : managed {
                                          on ZCOUNTRY.COUNTRY_ID = COUNTRY;
         ZOFFICE_DISTANCE           : Association to ZOFFICE_DISTANCE
                                          on  ZOFFICE_DISTANCE.FROM_LOCATION_ID = FROM_LOCATION_OFFICE
-                                         and ZOFFICE_DISTANCE.FROM_STATE_ID    = FROM_STATE_ID;
-        ZOFFICE_DISTANCE1          : Association to ZOFFICE_DISTANCE
-                                         on  ZOFFICE_DISTANCE1.TO_LOCATION_ID = TO_LOCATION_OFFICE
-                                         and ZOFFICE_DISTANCE1.TO_STATE_ID    = TO_STATE_ID;
+                                         and ZOFFICE_DISTANCE.FROM_STATE_ID    = FROM_STATE_ID
+                                         and ZOFFICE_DISTANCE.TO_LOCATION_ID = TO_LOCATION_OFFICE
+                                         and ZOFFICE_DISTANCE.TO_STATE_ID = TO_STATE_ID;
         ZCOSTCENTER                : Association to ZCOST_CENTER
                                          on ZCOSTCENTER.COST_CENTER_ID = COST_CENTER;
         ZSTATE                     : Association to ZSTATE
@@ -823,6 +821,12 @@ entity ZOFFICE_LOCATION : managed {
         START_DATE     : Date        @Common.Label: 'Start Date';
         END_DATE       : Date        @Common.Label: 'End Date';
         STATUS         : String(10)  @Common.Label: 'Status';
+        ZOFFICE_DISTANCE : Association to ZOFFICE_DISTANCE
+                           on ZOFFICE_DISTANCE.FROM_LOCATION_ID = LOCATION_ID
+                           and ZOFFICE_DISTANCE.FROM_STATE_ID = STATE_ID;
+        ZOFFICE_DISTANCE1 : Association to ZOFFICE_DISTANCE
+                           on ZOFFICE_DISTANCE1.TO_LOCATION_ID = LOCATION_ID
+                           and ZOFFICE_DISTANCE1.TO_STATE_ID = STATE_ID;
 
 }
 
@@ -835,6 +839,12 @@ entity ZOFFICE_DISTANCE : managed {
         START_DATE       : Date        @Common.Label: 'Start Date';
         END_DATE         : Date        @Common.Label: 'End Date';
         STATUS           : String(10)  @Common.Label: 'Status';
+        ZOFFICE_LOCATION : Association to ZOFFICE_LOCATION
+                           on ZOFFICE_LOCATION.LOCATION_ID = FROM_LOCATION_ID
+                           and ZOFFICE_LOCATION.STATE_ID = FROM_STATE_ID;
+        ZOFFICE_LOCATION1: Association to ZOFFICE_LOCATION
+                           on ZOFFICE_LOCATION1.LOCATION_ID = TO_LOCATION_ID
+                           and ZOFFICE_LOCATION1.STATE_ID = TO_STATE_ID;
 }
 
 entity ZGL_ACCOUNT : managed {
@@ -1011,34 +1021,34 @@ entity ZREJECT_REASON : managed {
 }
 
 entity ZWORKFLOW_STEP : managed {
-    key WORKFLOW_CODE            : String;
-    key WORKFLOW_TYPE            : String;
-    key START_DATE               : String;
-    key END_DATE                 : String;
+    key WORKFLOW_CODE            : String  @mandatory  @Common.Label: 'Workflow Code';
+    key WORKFLOW_TYPE            : String  @mandatory  @Common.Label: 'Workflow Type';
+    key START_DATE               : String  @mandatory  @Common.Label: 'Start Date';
+    key END_DATE                 : String  @mandatory  @Common.Label: 'End Date';
         WORKFLOW_NAME            : String;
         WORKFLOW_APPROVAL_LEVELS : Integer;
         REMARK                   : String;
 }
 
 entity ZWORKFLOW_RULE : managed {
-    key WORKFLOW_ID           : String;
-    key WORKFLOW_TYPE         : String;
-    key CLAIM_TYPE_ID         : String;
-    key CLAIM_TYPE_ITEM_ID    : String;
-    key START_DATE            : String;
-    key END_DATE              : String;
-        RISK_LEVEL            : String(1);
-        THRESHOLD_AMOUNT      : Decimal(7, 2);
-        THRESHOLD_VALUE       : String(2);
-        RECEIPT_DAY           : Integer;
-        RECEIPT_AGE           : String;
-        EMPLOYEE_COST_CENTER  : String(9);
-        OUTCOME_WORKFLOW_CODE : String(3);
-        REMARK                : String(255);
-        REQUEST_TYPE_ID       : String;
-        CASH_ADVANCE          : Boolean;
-        TRIP_START_DATE       : String(2);
-        ROLE                  : String(15);
+    key WORKFLOW_ID           : String        @mandatory  @Common.Label: 'Workflow ID';
+    key WORKFLOW_TYPE         : String        @mandatory  @Common.Label: 'Workflow Type';
+    key CLAIM_TYPE_ID         : String        @mandatory  @Common.Label: 'Claim Type ID';
+    key CLAIM_TYPE_ITEM_ID    : String        @mandatory  @Common.Label: 'Claim Type Item ID';
+    key START_DATE            : String        @mandatory  @Common.Label: 'Start Date';
+    key END_DATE              : String        @mandatory  @Common.Label: 'End Date';
+        RISK_LEVEL            : String(1)     @Common.Label: 'Risk Level';
+        THRESHOLD_AMOUNT      : Decimal(7, 2) @Common.Label: 'Threshold Amount';
+        THRESHOLD_VALUE       : String(2)     @Common.Label: 'Threshold Value';
+        RECEIPT_DAY           : Integer       @Common.Label: 'Receipt Day';
+        RECEIPT_AGE           : String        @Common.Label: 'Receipt Age';
+        EMPLOYEE_COST_CENTER  : String(9)     @Common.Label: 'Employee Cost Center';
+        OUTCOME_WORKFLOW_CODE : String(3)     @Common.Label: 'Outcome Workflow Code';
+        REMARK                : String(255)   @Common.Label: 'Remark';
+        REQUEST_TYPE_ID       : String        @Common.Label: 'Request Type ID';
+        CASH_ADVANCE          : Boolean       @Common.Label: 'Cash Advance';
+        TRIP_START_DATE       : String(2)     @Common.Label: 'Trip Start Date';
+        ROLE                  : String(15)    @Common.Label: 'Role';
         ZREQUEST_TYPE         : Association to ZREQUEST_TYPE
                                     on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE_ID;
 }

@@ -8,9 +8,10 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/m/MessageToast",
-    "claima/utils/Validator"
+    "claima/utils/Validator",
+    "claima/utils/CustomValidator"
 ],
-    (AppComponent, models, HashChanger, Utility, JSONModel, PARequestSharedFunction, Filter, FilterOperator, MessageToast, Validator) => {
+    (AppComponent, models, HashChanger, Utility, JSONModel, PARequestSharedFunction, Filter, FilterOperator, MessageToast, Validator, CustomValidator) => {
         "use strict";
 
         return AppComponent.extend("claima.Component", {
@@ -28,6 +29,8 @@ sap.ui.define([
 
                 // Initialize the utility 
                 Utility.init(this);
+                // Initialize Custom Validator
+                CustomValidator.init(this);
 
                 // set the device model
                 this.setModel(models.createDeviceModel(), "device");
@@ -122,14 +125,23 @@ sap.ui.define([
                                 if (scope.includes("DTD_Admin")) {
                                     oRoleModel.setProperty("/isDTDAdmin", true);
                                     oSessionModel.setProperty("/userType", "DTD Admin");
+
+                                    oRoleModel.setProperty("/Admin_role", true);
+                                    oRoleModel.setProperty("/DTD_JKEW_role", true);
+                                    oRoleModel.setProperty("/DTDAdmin_role", true);
                                 }
                                 if (scope.includes("Admin_System")) {
                                     oRoleModel.setProperty("/isAdminSystem", true);
                                     oSessionModel.setProperty("/userType", "JKEW Admin"); 
+
+                                    oRoleModel.setProperty("/Admin_role", true);
+                                    oRoleModel.setProperty("/DTD_JKEW_role", true);
                                 }
                                 if (scope.includes("Admin_CC")) {
                                     oRoleModel.setProperty("/isAdminCC", true);
                                     oSessionModel.setProperty("/userType", "GA Admin"); 
+                                    
+                                    oRoleModel.setProperty("/Admin_role", true);
                                 }
                             })
 

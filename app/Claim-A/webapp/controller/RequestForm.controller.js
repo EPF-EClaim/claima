@@ -190,8 +190,7 @@ sap.ui.define([
 			if (bApproval) {
 				var aApprover = await ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId);
 				for (const row of aApprover) {
-					if ((row.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL || 
-						row.STATUS === this._oConstant.ClaimStatus.SEND_BACK) && 
+					if (row.STATUS === this._oConstant.ClaimStatus.PENDING_APPROVAL && 
 						(row.SUBSTITUTE_APPROVER_ID == this._oSessionModel.getProperty("/userId") || 
 							row.APPROVER_ID == this._oSessionModel.getProperty("/userId"))) {
 						this._oReqModel.setProperty('/view', this._oConstant.PARMode.APPROVER);
@@ -254,7 +253,7 @@ sap.ui.define([
 			const sReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
 
 			if (!sEmpId || !sReqId) {
-				MessageToast.show(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
+				MessageBox.error(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 				return;
 			}
 
@@ -287,14 +286,14 @@ sap.ui.define([
 								try {
 									await oAction.execute();
 								} catch (oError) {
-									MessageToast.show(Utility.getText("msg_failed_generic_error", [oError]))
+									MessageBox.error(Utility.getText("msg_failed_generic_error", [oError]))
 								}    
 								this.oDeleteDialog.close();
 
 								this._oRouter.navTo("RequestFormStatus");
 
 							} catch (e) {
-								MessageToast.show(e.message || "Delete failed");
+								MessageBox.error(e.message || Utility.getText("req_d_e_delete_failed"));
 							} finally {
 								BusyIndicator.hide();
 								this.oDeleteDialog.getBeginButton().setEnabled(true);
@@ -325,7 +324,7 @@ sap.ui.define([
 			const sEmpId = this._oSessionModel.getProperty("/userId");
 
 			if (!sReqId || !sEmpId) {
-				MessageToast.show(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
+				MessageBox.error(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 				return;
 			}
 
@@ -336,7 +335,7 @@ sap.ui.define([
 					content: [new Label({ text: Utility.getText("req_d_w_submit") })],
 					beginButton: new Button({
 						type: ButtonType.Emphasized,
-						text: "Submit",
+						text: Utility.getText("req_btn_confirm"),
 						press: async () => {
 							try {
 								BusyIndicator.show(0);
@@ -368,10 +367,10 @@ sap.ui.define([
 									}
 
 								} else {
-									MessageBox.warning(Utility.getText("req_tm_w_inform_cc_owner", oErrorHandling.aClaimTypeItem));
+									MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oErrorHandling.aClaimTypeItem));
 								}
 							} catch (e) {
-								MessageToast.show(e.message || "Submission failed");
+								MessageBox.error(e.message || Utility.getText("req_d_e_submit_failed"));
 							} finally {
 								BusyIndicator.hide();
 								this.oSubmitDialog.close();
@@ -513,7 +512,7 @@ sap.ui.define([
 			}
 
 			if (!oCtx) {
-				MessageToast.show(Utility.getText("req_tm_w_select"));
+				MessageBox.warning(Utility.getText("req_tm_w_select"));
 				return;
 			}
 
@@ -683,7 +682,7 @@ sap.ui.define([
 			}
 
 			if (aToDelete.length === 0) {
-				MessageToast.show("Select a row to delete");
+				MessageBox.warning(Utility.getText("req_d_e_select_item"));
 				return;
 			}
 
@@ -722,7 +721,7 @@ sap.ui.define([
 				}
 
 				if (sErrorMsg) {
-					MessageToast.show(sErrorMsg);
+					MessageBox.error(sErrorMsg);
 				}
 
 				const toNumber = (v) => {
@@ -883,7 +882,7 @@ sap.ui.define([
 			}
 
 			if (aToDelete.length === 0) {
-				MessageToast.show(Utility.getText("req_tm_w_select_participant"));
+				MessageBox.warning(Utility.getText("req_tm_w_select_participant"));
 				return;
 			}
 
@@ -960,6 +959,8 @@ sap.ui.define([
 				if (deletePromises.length > 0) {
 					await this._oDataModel.submitBatch(sGroupId);
 				}
+			} catch {
+				MessageBox.error(Utility.getText("req_d_e_delete_participant"));
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -981,7 +982,7 @@ sap.ui.define([
 			}
 
 			if (errorMsg) {
-				MessageToast.show(errorMsg);
+				MessageBox.error(errorMsg);
 			}
 		},
 
@@ -1021,14 +1022,20 @@ sap.ui.define([
 			const sEmpId = this._oSessionModel.getProperty("/userId");
 			const bIsEdit = this._oReqModel.getProperty("/view") === "i_edit";
 
-			if (!sReqId) return MessageToast.show("Missing Request ID");
+			if (!sReqId || !sEmpId) return MessageBox.error(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 			this.calculateNumberOfHours();
 
 			// validate mandatory fields
 			if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
-				MessageToast.show(Utility.getText("req_d_w_mandatory_field"), {
+				MessageBox.error(Utility.getText("req_d_w_mandatory_field"), {
 					closeOnBrowserNavigation: false
 				});
+				return;
+			}
+
+			var fEstAmount = this._oReqModel.getProperty('/req_item/est_amount');
+			if (parseFloat(fEstAmount) <= parseFloat(0)) {
+				MessageBox.error(Utility.getText("req_d_w_error_amount"))
 				return;
 			}
 
@@ -1057,8 +1064,8 @@ sap.ui.define([
 					oReqItem.gl_account		= this._oConstant.CashAdvanceInfo.GL_ACCOUNT;
 				} else {
 					oReqItem.cost_center 	= (oReqHeader.altcostcenter && oReqHeader.altcostcenter !== "-") 
-										? oReqHeader.altcostcenter 
-										: oReqHeader.costcenter;
+											? oReqHeader.altcostcenter 
+											: oReqHeader.costcenter;
 					oReqItem.gl_account		= await budgetCheck._getGLAccount(this._oDataModel, oReqHeader.claimtype);
 					oReqItem.material_code	= await budgetCheck._getMaterialCode(this._oDataModel, oReqHeader.claimtype, oReqItem.claim_type_item_id);
 				}
@@ -1185,10 +1192,11 @@ sap.ui.define([
                 MessageToast.show("Success");
 				if (!bAddAnother) {
 					this._loadRequest(sReqId);
+					this._oReqModel.setProperty("/view", this._oConstant.PARMode.VIEW);
 				}
 
 			} catch (e) {
-				MessageBox.error(e.message || "Save failed");
+				MessageBox.error(e.message || Utility.getText("req_d_e_save_failed"));
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -1334,7 +1342,7 @@ sap.ui.define([
 					this.appendNewRow(oEvent);
 				} else {
 					this._updateParticipantData(sPath, null);
-					MessageToast.show("Employee ID not found");
+					MessageBox.error(Utility.getText("req_d_e_emp_not_found"));
 				}
 			}).catch(() => oInput.setBusy(false));
 		},
@@ -1434,7 +1442,7 @@ sap.ui.define([
 					var aJsonData = XLSX.utils.sheet_to_json(oWorkSheet);
 
 					if (!aJsonData || aJsonData.length === 0) {
-						MessageToast.show("The uploaded Excel file is empty.");
+						MessageBox.error(Utility.getText("req_d_e_excel_file_empty"));
 						return;
 					}
 
@@ -1445,7 +1453,7 @@ sap.ui.define([
 					)];
 
 					if (aUploadedIds.length === 0) {
-						MessageToast.show("No valid Participant IDs found in the file.");
+						MessageBox.error(Utility.getText("req_d_e_excel_no_valid_participant"));
 						return;
 					}
 
@@ -1453,7 +1461,7 @@ sap.ui.define([
 
 					if (aInvalidIds.length > 0) {
 						MessageBox.error(
-							"Upload failed. The following Employee IDs are invalid or do not exist:\n\n" + 
+							Utility.getText("req_d_e_excel_upload_failed") + 
 							aInvalidIds.join(", ")
 						);
 						return;
@@ -1616,11 +1624,11 @@ sap.ui.define([
             try {
                 oView.setBusy(true);
 
-                const input = this._oReqModel?.getData();
-                if (!input) {
-                    MessageToast.show("No request data loaded.");
-                    return;
-                }
+				const input = this._oReqModel?.getData();
+				if (!input) {
+					MessageBox.error(Utility.getText("req_d_e_excel_no_request_data"));
+					return;
+				}
 
                 const header = input.req_header || {};
                 const items = input.req_item_rows || [];
@@ -1800,13 +1808,12 @@ sap.ui.define([
                     compression: true
                 });
 
-            } catch (e) {
-                console.error("Excel export failed:", e);
-                MessageToast.show("Excel export failed.");
-            } finally {
-                oView.setBusy(false);
-            }
-        },
+			} catch (e) {
+				MessageBox.error(Utility.getText("req_d_e_excel_export_failed"));
+			} finally {
+				oView.setBusy(false);
+			}
+		},
 
 		async _getParticipantsList(reqid) {
 			const oListBinding = this._oViewModel.bindList(
@@ -1863,9 +1870,11 @@ sap.ui.define([
 						new Sorter("CLAIM_TYPE_ITEM_ID", false)
 					],
 					[
+						new Filter("STATUS", FilterOperator.EQ, "ACTIVE"),
 						new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, sClaimTypeId),
 						new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.SubmissionType.AUTO_APPROVE ),
-						new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.SubmissionType.PRE_APPROVE )
+						new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.SubmissionType.PRE_APPROVE ),
+						new Filter("CATEGORY_ID", FilterOperator.NE, "X" )			// filter out claim type item that is not required for PAR
 						// new Filter("IND_OR_GROUP", FilterOperator.EQ, sGroupType),
 						// new Filter("IND_OR_GROUP", FilterOperator.EQ, "I_G")
 					],
@@ -1925,7 +1934,7 @@ sap.ui.define([
 			const iDiffMs = dArrival.getTime() - dDeparture.getTime();
 
 			if (iDiffMs < 0) {
-				MessageToast.show("Arrival time cannot be before Departure time.");
+				MessageBox.error(Utility.getText("req_d_e_arrival_time_departure_time"));
 				this._oReqModel.setProperty("/req_item/no_of_hours", 0);
 				return;
 			}
@@ -2204,7 +2213,7 @@ sap.ui.define([
 
 			if (mode === "APPROVE") {
 				if (!comment) {
-					MessageToast.show("Please enter approval comment.");
+					MessageBox.error(Utility.getText("req_d_e_approval_comment"));
 					return;
 				}
 				try {
@@ -2233,7 +2242,7 @@ sap.ui.define([
 					}, 400);
 
 				} catch (e) {
-					MessageToast.show(e.message);
+					MessageBox.error(e.message);
 				}
 			}
 		},
@@ -2250,8 +2259,8 @@ sap.ui.define([
 			const comment = oReject?.getProperty("/approvalComment")?.trim();
 
 			// Client-side validation (dialog also disables button, but keep server-safe checks)
-			if (!reason) { MessageToast.show("Please select a Send Back Reason."); return; }
-			if (!comment) { MessageToast.show("Please enter approval comment."); return; }
+			if (!reason) { MessageBox.error(Utility.getText("req_d_e_approval_send_back_reason")); return; }
+			if (!comment) { MessageBox.error(Utility.getText("req_d_e_approval_comment_empty")); return; }
 
 			try {
 				BusyIndicator.show(0);
@@ -2266,7 +2275,7 @@ sap.ui.define([
 				const reqId = requestModel?.getProperty("/req_header/reqid")?.trim();
 
 				if (!userId || !reqId) {
-					throw new Error("Missing User ID or Request ID.");
+					throw new Error(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 				}
 
 				// STAT03 = SEND BACK
@@ -2317,7 +2326,7 @@ sap.ui.define([
 				}, 400);
 
 			} catch (e) {
-				MessageToast.show(e.message || "Send Back failed");
+				MessageBox.error(e.message || Utility.getText("req_d_e_send_back_failed"));
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -2328,8 +2337,8 @@ sap.ui.define([
 			const reason = oReject?.getProperty("/rejectReasonKey");
 			const comment = oReject?.getProperty("/approvalComment")?.trim();
 
-			if (!reason) { MessageToast.show("Please select a Reject Reason."); return; }
-			if (!comment) { MessageToast.show("Please enter approval comment."); return; }
+			if (!reason) { MessageBox.error(Utility.getText("req_d_e_approval_reject_reason")); return; }
+			if (!comment) { MessageBox.error(Utility.getText("req_d_e_approval_comment")); return; }
 
 			try {
 				BusyIndicator.show(0);
@@ -2373,7 +2382,7 @@ sap.ui.define([
 				setTimeout(() => this._oRouter.navTo("Dashboard", {}, true), 400);
 
 			} catch (e) {
-				MessageToast.show(e.message || "Reject failed");
+				MessageBox.error(e.message || Utility.getText("req_d_e_reject_failed"));
 			} finally {
 				BusyIndicator.hide();
 			}

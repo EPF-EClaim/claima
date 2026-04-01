@@ -51,10 +51,10 @@
       "deploy-format": "hdbtable"
     },
     "requires": {
-      "IS_NonProd_Conn": {
+      "IS_Conn": { 
         "kind": "odata",
         "credentials": {
-          "destination": "IS_NonProd_Conn"
+          "destination": "IS_Conn"
         }
       },
       "[production]": {
