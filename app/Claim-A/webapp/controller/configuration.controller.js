@@ -199,12 +199,7 @@ sap.ui.define([
             const sSource = oEvent.getSource().getId(),
                 sTableId = sSource?.includes("Header") ? "claimTable" : "ClaimItems--claimitemTable",
                 oTable = this.byId(sTableId),
-                aSelectedItems = oTable.getSelectedItems(),
-
-            // oContext = oTable.getSelectedItem().getBindingContext(),
-            // oObject = oContext.getObject();
-
-            var sObjectId = sSource?.includes("Header") ? oObject.CLAIM_TYPE_ID : oObject.CLAIM_TYPE_ITEM_ID;
+                aSelectedItems = oTable.getSelectedItems();
 
             if (!aSelectedItems.length) {
                 MessageToast.show(Utility.getText("msg_select_at_least_one"));
@@ -249,25 +244,6 @@ sap.ui.define([
                     }
                 }
             );
-
-            // MessageBox.confirm(`Delete object ${sObjectId}?`, {
-            //     icon: MessageBox.Icon.WARNING,
-            //     title: "Delete",
-            //     actions: [MessageBox.Action.DELETE, MessageBox.Action.CANCEL],
-            //     emphasizedAction: MessageBox.Action.DELETE,
-            //     onClose: async (sAction) => {
-            //         if (sAction !== MessageBox.Action.DELETE) return;
-            //         try {
-            //             oContext.delete();
-            //             MessageToast.show(Utility.getText("msg_object_deleted"));
-            //             this.getView().getModel("view").setData({
-            //                 hasSelection: false
-            //             });
-            //         } catch (e) {
-            //             MessageBox.error(e?.message || Utility.getText("msg_delete_fail"));
-            //         }
-            //     }
-            // })
         },
 
         onCopy: function (oEvent) {
