@@ -1508,7 +1508,7 @@ sap.ui.define([
 					var sTripEndDate = oInputModel.getProperty("/claim_header/trip_end_date");
 
 
-					if (DateUtility.futureDate(sTripEndDate)) {
+					if (DateUtility.isfutureDate(sTripEndDate)) {
 						MessageBox.error(Utility.getText("msg_claimsubmit_datecheck"));
 						return;
 					}

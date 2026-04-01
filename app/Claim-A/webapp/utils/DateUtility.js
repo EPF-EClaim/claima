@@ -81,15 +81,15 @@ sap.ui.define([
          * @param {date} dDateInput - date value to be transformed
          * @return {string} sDateString - readable value when submitting data to backend
          */
-		getHanaDate: function (dDateInput) {
-			if (dDateInput) {
-				var dDate = new Date(dDateInput);
-				var sDateString = dDate.getFullYear() + '-' + ('0' + (dDate.getMonth() + 1)).slice(-2) + '-' + ('0' + dDate.getDate()).slice(-2);
-				return sDateString;
-			} else {
-				return null;
-			}
-		},
+        getHanaDate: function (dDateInput) {
+            if (dDateInput) {
+                var dDate = new Date(dDateInput);
+                var sDateString = dDate.getFullYear() + '-' + ('0' + (dDate.getMonth() + 1)).slice(-2) + '-' + ('0' + dDate.getDate()).slice(-2);
+                return sDateString;
+            } else {
+                return null;
+            }
+        },
 
         /**
          * Merge Date and Time
@@ -205,11 +205,22 @@ sap.ui.define([
 
             return null;
         },
-        
-        futureDate: function (vDate) {
-            if (!vDate) return false;
 
-            const oDate = new Date(vDate);
+
+        /**
+         * Used for date validation when submitting a Claim Report.  
+         * This method checks whether the provided date value represents
+         * a future date when compared against the current system date.
+         *
+         * @public
+         * @param {Date} sDate date value to be validated
+         * @returns {boolean} returns true if the given date is greater than today's date;
+         *                    otherwise returns false
+         */
+        isfutureDate: function (sDate) {
+            if (!sDate) return false;
+
+            const oDate = new Date(sDate);
             if (isNaN(oDate)) return false;
 
             // Normalize both dates to midnight
