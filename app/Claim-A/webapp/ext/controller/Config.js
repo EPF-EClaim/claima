@@ -7,8 +7,8 @@ sap.ui.define([
 ], function (ControllerExtension,
     DatePicker,
     MessageBox,
-    Utility,
-    MessageToast) {
+    MessageToast,
+    Utility) {
     'use strict';
 
     const allowedOnZemp = new Set([
@@ -271,7 +271,7 @@ sap.ui.define([
                         const oOld = oSelectedContext.getObject();
 
                         if (!_validateInputs(oVBox, oDataType, false)) {
-                            sap.m.MessageToast.show("Please fix the highlighted fields");
+                            MessageToast.show(Utility.getText("msg_fix_input"));
                             return;
                         }
 
