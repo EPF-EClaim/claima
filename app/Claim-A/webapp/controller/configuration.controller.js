@@ -200,30 +200,74 @@ sap.ui.define([
                 sTableId = sSource?.includes("Header") ? "claimTable" : "ClaimItems--claimitemTable",
                 oTable = this.byId(sTableId),
                 aSelectedItems = oTable.getSelectedItems(),
-                
-                oContext = oTable.getSelectedItem().getBindingContext(),
-                oObject = oContext.getObject();
+
+            // oContext = oTable.getSelectedItem().getBindingContext(),
+            // oObject = oContext.getObject();
 
             var sObjectId = sSource?.includes("Header") ? oObject.CLAIM_TYPE_ID : oObject.CLAIM_TYPE_ITEM_ID;
 
-            MessageBox.confirm(`Delete object ${sObjectId}?`, {
-                icon: MessageBox.Icon.WARNING,
-                title: "Delete",
-                actions: [MessageBox.Action.DELETE, MessageBox.Action.CANCEL],
-                emphasizedAction: MessageBox.Action.DELETE,
-                onClose: async (sAction) => {
-                    if (sAction !== MessageBox.Action.DELETE) return;
-                    try {
-                        oContext.delete();
-                        MessageToast.show(Utility.getText("msg_object_deleted"));
-                        this.getView().getModel("view").setData({
-                            hasSelection: false
-                        });
-                    } catch (e) {
-                        MessageBox.error(e?.message || Utility.getText("msg_delete_fail"));
+            if (!aSelectedItems.length) {
+                MessageToast.show(Utility.getText("msg_select_at_least_one"));
+                return;
+            }
+
+            const aContexts = aSelectedItems.map(item =>
+                item.getBindingContext()
+            );
+
+
+            MessageBox.confirm(
+                `Delete selected record(s)?`,
+                {
+                    icon: MessageBox.Icon.WARNING,
+                    title: "Delete",
+                    actions: [MessageBox.Action.DELETE, MessageBox.Action.CANCEL],
+                    emphasizedAction: MessageBox.Action.DELETE,
+                    onClose: async (sAction) => {
+                        if (sAction !== MessageBox.Action.DELETE) return;
+
+                        try {
+                            await Promise.all(
+                                aContexts.map(oContext => oContext.delete())
+                            );
+
+                            MessageToast.show(
+                                Utility.getText("msg_object_deleted")
+                            );
+
+                            oTable.removeSelections(true);
+
+                            this.getView()
+                                .getModel("view")
+                                .setProperty("/hasSelection", false);
+
+                        } catch (e) {
+                            MessageBox.error(
+                                e?.message || Utility.getText("msg_delete_fail")
+                            );
+                        }
                     }
                 }
-            })
+            );
+
+            // MessageBox.confirm(`Delete object ${sObjectId}?`, {
+            //     icon: MessageBox.Icon.WARNING,
+            //     title: "Delete",
+            //     actions: [MessageBox.Action.DELETE, MessageBox.Action.CANCEL],
+            //     emphasizedAction: MessageBox.Action.DELETE,
+            //     onClose: async (sAction) => {
+            //         if (sAction !== MessageBox.Action.DELETE) return;
+            //         try {
+            //             oContext.delete();
+            //             MessageToast.show(Utility.getText("msg_object_deleted"));
+            //             this.getView().getModel("view").setData({
+            //                 hasSelection: false
+            //             });
+            //         } catch (e) {
+            //             MessageBox.error(e?.message || Utility.getText("msg_delete_fail"));
+            //         }
+            //     }
+            // })
         },
 
         onCopy: function (oEvent) {
