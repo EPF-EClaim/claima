@@ -310,7 +310,7 @@
 					value="{claimitem_input>/claim_item/no_of_days}"
 					type="Number"
 					visible="false"
-					enabled="false"
+					editable="{claimitem_property>/no_of_days/is_editable}"
 					required="true"
 				/>
 

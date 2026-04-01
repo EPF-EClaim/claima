@@ -2084,6 +2084,14 @@ sap.ui.define([
 			var oInputModel = this._getNewClaimItemModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
+			// set claim item property model
+			var oClaimItemPropertyData = {
+				no_of_days: { is_editable: false }
+			};
+			var oModel = new JSONModel(oClaimItemPropertyData);
+			//// set input
+			this.getView().setModel(oModel, "claimitem_property");
+
 			// change footer buttons
 			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
 				this._displayFooterButtons("claimsubmission_claimdetails_input");
