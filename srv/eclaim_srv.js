@@ -119,7 +119,7 @@ module.exports = (srv) => {
         });
 
     srv.on('READ', 'FeatureControl', async (req) => {
-
+        //crud operation visibility in config table for DTD and JKEW
         let operationHidden = true;
         if(req.user.is(Constant.Admin.DTD_Admin)) {
             operationHidden = false;
@@ -132,7 +132,8 @@ module.exports = (srv) => {
     });
 
     srv.on('READ', 'BudgetControl', async (req) => {
-
+        //crud operation visibility for Budget table  
+        // should be accessible for edit by DTD and JKEW only - hidden for GA
         let operationHidden = false;
         if(req.user.is(Constant.Admin.Admin_CC)){
             operationHidden = true;
