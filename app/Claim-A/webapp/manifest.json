@@ -1313,13 +1313,13 @@
                                     "actions": {
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": true,
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
