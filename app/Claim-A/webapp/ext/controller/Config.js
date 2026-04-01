@@ -78,7 +78,7 @@ sap.ui.define([
 
             if (bRequired && (!sValue || sValue.trim() === '')) {
                 oControl.setValueState("Error");
-                oControl.setValueStateText("This field is required");
+                oControl.setValueStateText(Utility.getText("msg_requiredfield"));
                 bValid = false;
             } else if (nMaxLength && sValue && sValue.length > nMaxLength) {
                 oControl.setValueState("Error");
@@ -86,7 +86,7 @@ sap.ui.define([
                 bValid = false;
             } else if (bIsNumeric && sValue && isNaN(Number(sValue))) {
                 oControl.setValueState("Error");
-                oControl.setValueStateText("Please enter a valid number");
+                oControl.setValueStateText(Utility.getText("msg_valid_number"));
                 bValid = false;
             } else {
                 oControl.setValueState("None");
