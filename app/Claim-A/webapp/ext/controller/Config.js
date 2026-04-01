@@ -1,8 +1,14 @@
 sap.ui.define([
     "sap/ui/core/mvc/ControllerExtension",
     "sap/m/DatePicker",
+    "sap/m/MessageBox",
+    "sap/m/MessageToast",
+    "claima/utils/Utility"
 ], function (ControllerExtension,
-    DatePicker) {
+    DatePicker,
+    MessageBox,
+    Utility,
+    MessageToast) {
     'use strict';
 
     const allowedOnZemp = new Set([
@@ -14,7 +20,7 @@ sap.ui.define([
         "MEDICAL_INSURANCE_ENTITLEMENT",
         "POST_EDU_ASSISTANT_CLAIM_DATE",
         "POST_EDU_ASSISTANT_ENTITLE_AMOUNT",
-        "MEDICAL_INSURANCE" 
+        "MEDICAL_INSURANCE"
     ]);
 
     const sDisabledField = "RANGE_ID";
@@ -43,51 +49,51 @@ sap.ui.define([
         if (!start || !end) return true;
 
         if (end < start) {
-            sap.m.MessageToast.show("End date cannot be earlier than start date");
+            MessageToast.show(Utility.getText("endBeforeStart"));
             return false;
         }
 
         return true;
     }
     const _validateInputs = function (oVBox, oDataType, isZempMaster) {
-    let bValid = true;
-    const oInputs = oVBox.getItems();
+        let bValid = true;
+        const oInputs = oVBox.getItems();
 
-    for (let i = 1; i < oInputs.length; i += 2) {
-        const oControl = oInputs[i];
-        const sFieldName = oControl.getName();
+        for (let i = 1; i < oInputs.length; i += 2) {
+            const oControl = oInputs[i];
+            const sFieldName = oControl.getName();
 
-        if (isZempMaster && !allowedOnZemp.has(sFieldName)) continue;
-        if (oControl.isA("sap.m.Select")) continue;
+            if (isZempMaster && !allowedOnZemp.has(sFieldName)) continue;
+            if (oControl.isA("sap.m.Select")) continue;
 
-        const sValue = oControl.getValue();
-        const oMeta = oDataType?.[sFieldName];
-        const bRequired = oMeta?.$Nullable === false;
-        const nMaxLength = oMeta?.$MaxLength;
+            const sValue = oControl.getValue();
+            const oMeta = oDataType?.[sFieldName];
+            const bRequired = oMeta?.$Nullable === false;
+            const nMaxLength = oMeta?.$MaxLength;
 
-        const bIsNumeric = oMeta?.$Type === "Edm.Decimal" ||
-                           oMeta?.$Type === "Edm.Int32"   ||
-                           oMeta?.$Type === "Edm.Int64"   ||
-                           oMeta?.$Type === "Edm.Double";
+            const bIsNumeric = oMeta?.$Type === "Edm.Decimal" ||
+                oMeta?.$Type === "Edm.Int32" ||
+                oMeta?.$Type === "Edm.Int64" ||
+                oMeta?.$Type === "Edm.Double";
 
-        if (bRequired && (!sValue || sValue.trim() === '')) {
-            oControl.setValueState("Error");
-            oControl.setValueStateText("This field is required");
-            bValid = false;
-        } else if (nMaxLength && sValue && sValue.length > nMaxLength) {
-            oControl.setValueState("Error");
-            oControl.setValueStateText(`Maximum ${nMaxLength} characters allowed`);
-            bValid = false;
-        } else if (bIsNumeric && sValue && isNaN(Number(sValue))) {
-            oControl.setValueState("Error");
-            oControl.setValueStateText("Please enter a valid number");
-            bValid = false;
-        } else {
-            oControl.setValueState("None");
+            if (bRequired && (!sValue || sValue.trim() === '')) {
+                oControl.setValueState("Error");
+                oControl.setValueStateText("This field is required");
+                bValid = false;
+            } else if (nMaxLength && sValue && sValue.length > nMaxLength) {
+                oControl.setValueState("Error");
+                oControl.setValueStateText(`Maximum ${nMaxLength} characters allowed`);
+                bValid = false;
+            } else if (bIsNumeric && sValue && isNaN(Number(sValue))) {
+                oControl.setValueState("Error");
+                oControl.setValueStateText("Please enter a valid number");
+                bValid = false;
+            } else {
+                oControl.setValueState("None");
+            }
         }
+        return bValid;
     }
-    return bValid;
-}
 
     const _getDetails = function (oView, aSelectedContexts) {
         const oSelectedContext = aSelectedContexts[0];
@@ -129,7 +135,7 @@ sap.ui.define([
                     width: "130%",
                     displayFormat: "dd MMM yyyy",
                     valueFormat: "yyyy-MM-dd",
-                    enabled: `${sPath}` === '/ZEMP_MASTER' ? false : true 
+                    enabled: `${sPath}` === '/ZEMP_MASTER' ? false : true
                 }) :
                 fieldType?.includes('Edm.Boolean') ?
                     new sap.m.Select({
@@ -173,6 +179,10 @@ sap.ui.define([
          */
 
         onclickcopy: function (oContext, aSelectedContexts) {
+            if (aSelectedContexts.length !== 1) {
+                MessageBox.warning(Utility.getText("msg_select_one"));
+                return;
+            }
             const oNewEntry = {};
             const oView = this.getRouting().getView();
             const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType } = _getDetails(oView, aSelectedContexts);
@@ -186,8 +196,8 @@ sap.ui.define([
                     press: function () {
                         var oInputs = oVBox.getItems();
 
-                         if (!_validateInputs(oVBox, oDataType, false)) {
-                            sap.m.MessageToast.show("Please fix the highlighted fields");
+                        if (!_validateInputs(oVBox, oDataType, false)) {
+                            MessageToast.show(Utility.getText("msg_fix_input"));
                             return;
                         }
 
@@ -231,6 +241,10 @@ sap.ui.define([
         },
 
         onClickEdit: function (oContext, aSelectedContexts) {
+            if (aSelectedContexts.length !== 1) {
+                MessageBox.warning(Utility.getText("msg_select_one"));
+                return;
+            }
             const oView = this.getRouting().getView();
             const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster } = _getDetails(oView, aSelectedContexts);
 
@@ -256,7 +270,7 @@ sap.ui.define([
                         const oEdited = {};
                         const oOld = oSelectedContext.getObject();
 
-                         if (!_validateInputs(oVBox, oDataType, false)) {
+                        if (!_validateInputs(oVBox, oDataType, false)) {
                             sap.m.MessageToast.show("Please fix the highlighted fields");
                             return;
                         }
