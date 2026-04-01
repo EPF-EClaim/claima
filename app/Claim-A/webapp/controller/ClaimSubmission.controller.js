@@ -2472,7 +2472,7 @@ sap.ui.define([
 				var dDateDiff = Math.abs(dCurrentDate - dReceiptDateWithoutFormatting);
 				dDateDiff = Math.trunc(dDateDiff/86400000);
 				
-				if(dDateDiff >= 90){
+				if(dDateDiff < 90){
 					MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date_for_visa"));
 					return;
 				}
