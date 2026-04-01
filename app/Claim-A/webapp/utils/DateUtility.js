@@ -74,13 +74,13 @@ sap.ui.define([
         today: function () {
             return new Date();
         },
-        
+
         /**
          * Merge Date and Time
          */
-        mergeDateTime (oDate, sTime) {
-            const dMergedDate = new Date(oDate.getTime()); 
-            
+        mergeDateTime(oDate, sTime) {
+            const dMergedDate = new Date(oDate.getTime());
+
             if (sTime && typeof sTime === "string") {
                 const aParts = sTime.split(":");
                 if (aParts.length >= 2) {
@@ -92,102 +92,117 @@ sap.ui.define([
             return dMergedDate;
         },
 
-        calculateNumberOfDays: function(oHeader, oItem) {
-			const dHeaderStart = oHeader.tripstartdate ? new Date(oHeader.tripstartdate) : null;
-			const dHeaderEnd = oHeader.tripenddate ? new Date(oHeader.tripenddate) : null;
+        calculateNumberOfDays: function (oHeader, oItem) {
+            const dHeaderStart = oHeader.tripstartdate ? new Date(oHeader.tripstartdate) : null;
+            const dHeaderEnd = oHeader.tripenddate ? new Date(oHeader.tripenddate) : null;
 
-			const dItemStart = oItem.start_date ? new Date(oItem.start_date) : null;
-			const dItemEnd = oItem.end_date ? new Date(oItem.end_date) : null;
+            const dItemStart = oItem.start_date ? new Date(oItem.start_date) : null;
+            const dItemEnd = oItem.end_date ? new Date(oItem.end_date) : null;
 
-			const dFinalStart = dItemStart || dHeaderStart;
-			const dFinalEnd = dItemEnd || dHeaderEnd;
+            const dFinalStart = dItemStart || dHeaderStart;
+            const dFinalEnd = dItemEnd || dHeaderEnd;
 
-			if (!dFinalStart || !dFinalEnd || isNaN(dFinalStart.getTime()) || isNaN(dFinalEnd.getTime())) {
-				return 0;
-			}
+            if (!dFinalStart || !dFinalEnd || isNaN(dFinalStart.getTime()) || isNaN(dFinalEnd.getTime())) {
+                return 0;
+            }
 
-			const iStartMidnight = new Date(dFinalStart).setHours(0, 0, 0, 0);
-			const iEndMidnight = new Date(dFinalEnd).setHours(0, 0, 0, 0);
+            const iStartMidnight = new Date(dFinalStart).setHours(0, 0, 0, 0);
+            const iEndMidnight = new Date(dFinalEnd).setHours(0, 0, 0, 0);
 
-			let iDiffDays = 0;
+            let iDiffDays = 0;
 
-			if (iEndMidnight >= iStartMidnight) {
-				const iMsPerDay = 1000 * 60 * 60 * 24;
-				iDiffDays = Math.floor((iEndMidnight - iStartMidnight) / iMsPerDay) + 1;
-			}
+            if (iEndMidnight >= iStartMidnight) {
+                const iMsPerDay = 1000 * 60 * 60 * 24;
+                iDiffDays = Math.floor((iEndMidnight - iStartMidnight) / iMsPerDay) + 1;
+            }
 
-			return iDiffDays;
-		},
+            return iDiffDays;
+        },
 
         /**
          * Used to return date for Excel download functionality, based on object passed into method
          * @public
-		 * @param {object} oValue object to be converted into date value
-		 * @returns {date} returns date
+         * @param {object} oValue object to be converted into date value
+         * @returns {date} returns date
          */
-		toDate: function (oValue) {
+        toDate: function (oValue) {
 
-			if (!oValue) return null;
+            if (!oValue) return null;
 
-			// ISO 8601 with or without milliseconds
-			if (typeof oValue === "string" && /^\d{4}-\d{2}-\d{2}T/i.test(oValue)) {
-				const oDate = new Date(oValue);
-				if (!isNaN(oDate.getTime())) {
-					return new Date(Date.UTC(oDate.getUTCFullYear(), oDate.getUTCMonth(), oDate.getUTCDate()));
-				}
-				return null;
-			}
+            // ISO 8601 with or without milliseconds
+            if (typeof oValue === "string" && /^\d{4}-\d{2}-\d{2}T/i.test(oValue)) {
+                const oDate = new Date(oValue);
+                if (!isNaN(oDate.getTime())) {
+                    return new Date(Date.UTC(oDate.getUTCFullYear(), oDate.getUTCMonth(), oDate.getUTCDate()));
+                }
+                return null;
+            }
 
-			// YYYY-MM-DD
-			if (typeof oValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(oValue)) {
-				const [sYear, sMonth, sDay] = oValue.split("-").map(Number);
-				return new Date(Date.UTC(sYear, sMonth - 1, sDay));
-			}
+            // YYYY-MM-DD
+            if (typeof oValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(oValue)) {
+                const [sYear, sMonth, sDay] = oValue.split("-").map(Number);
+                return new Date(Date.UTC(sYear, sMonth - 1, sDay));
+            }
 
-			// JS Date
-			if (oValue instanceof Date && !isNaN(oValue.getTime())) {
-				return new Date(Date.UTC(oValue.getFullYear(), oValue.getMonth(), oValue.getDate()));
-			}
+            // JS Date
+            if (oValue instanceof Date && !isNaN(oValue.getTime())) {
+                return new Date(Date.UTC(oValue.getFullYear(), oValue.getMonth(), oValue.getDate()));
+            }
 
-			// SAP Edm.Date { year, month, day }
-			if (typeof oValue === "object" && oValue.year && oValue.month && oValue.day) {
-				return new Date(Date.UTC(oValue.year, oValue.month - 1, oValue.day));
-			}
+            // SAP Edm.Date { year, month, day }
+            if (typeof oValue === "object" && oValue.year && oValue.month && oValue.day) {
+                return new Date(Date.UTC(oValue.year, oValue.month - 1, oValue.day));
+            }
 
-			return null;
-		},
+            return null;
+        },
 
         /**
          * Used to return time for Excel download functionality, based on object passed into method
          * @public
-		 * @param {object} oValue object to be converted into date value
-		 * @returns {date} returns date variable with hours, minutes, seconds populated
+         * @param {object} oValue object to be converted into date value
+         * @returns {date} returns date variable with hours, minutes, seconds populated
          */
-		toTime: function (oValue) {
+        toTime: function (oValue) {
 
-			if (!oValue) return null;
+            if (!oValue) return null;
 
-			// ISO 8601 with or without milliseconds
-			if (typeof oValue === "string" && /^\d{2}:\d{2}:\d{2}Z/i.test(oValue)) {
-				const oDate = new Date(oValue);
-				if (!isNaN(oDate.getTime())) {
-					return new Date(Date.UTC(0, 0, 0, oDate.getUTCHours(), oDate.getUTCMinutes(), oDate.getUTCSeconds()));
-				}
-				return null;
-			}
+            // ISO 8601 with or without milliseconds
+            if (typeof oValue === "string" && /^\d{2}:\d{2}:\d{2}Z/i.test(oValue)) {
+                const oDate = new Date(oValue);
+                if (!isNaN(oDate.getTime())) {
+                    return new Date(Date.UTC(0, 0, 0, oDate.getUTCHours(), oDate.getUTCMinutes(), oDate.getUTCSeconds()));
+                }
+                return null;
+            }
 
-			// HH:MM:SS
-			if (typeof oValue === "string" && /^\d{2}:\d{2}:\d{2}$/.test(oValue)) {
-				const [sHour, sMinute, sSecond] = oValue.split(":").map(Number);
-				return new Date(Date.UTC(0, 0, 0, sHour, sMinute, sSecond));
-			}
+            // HH:MM:SS
+            if (typeof oValue === "string" && /^\d{2}:\d{2}:\d{2}$/.test(oValue)) {
+                const [sHour, sMinute, sSecond] = oValue.split(":").map(Number);
+                return new Date(Date.UTC(0, 0, 0, sHour, sMinute, sSecond));
+            }
 
-			// JS Date
-			if (oValue instanceof Date && !isNaN(oValue.getTime())) {
-				return new Date(Date.UTC(0, 0, 0, oValue.getHours(), oValue.getMinutes(), oValue.getSeconds()));
-			}
+            // JS Date
+            if (oValue instanceof Date && !isNaN(oValue.getTime())) {
+                return new Date(Date.UTC(0, 0, 0, oValue.getHours(), oValue.getMinutes(), oValue.getSeconds()));
+            }
 
-			return null;
-		}
+            return null;
+        },
+        
+        futureDate: function (vDate) {
+            if (!vDate) return false;
+
+            const oDate = new Date(vDate);
+            if (isNaN(oDate)) return false;
+
+            // Normalize both dates to midnight
+            const oCheckDate = new Date(oDate.setHours(0, 0, 0, 0));
+            const oToday = new Date();
+            oToday.setHours(0, 0, 0, 0);
+
+            return oCheckDate > oToday;
+        }
+
     };
 });

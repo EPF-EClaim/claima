@@ -1507,19 +1507,12 @@ sap.ui.define([
 					var oInputModel = this.getView().getModel("claimsubmission_input");
 					var sTripEndDate = oInputModel.getProperty("/claim_header/trip_end_date");
 
-					if (sTripEndDate) {
-						var oTripEndDate = new Date(sTripEndDate);
-						var oTodayDate = new Date();
-						
-						oTripEndDate.setHours(0, 0, 0, 0);
-						oTodayDate.setHours(0, 0, 0, 0);
 
-						var bInvalidEndDate = oTripEndDate > oTodayDate;
-						if (bInvalidEndDate) {
-							MessageBox.error(Utility.getText("msg_claimsubmit_datecheck"));
-							return;							
-						}
+					if (DateUtility.futureDate(sTripEndDate)) {
+						MessageBox.error(Utility.getText("msg_claimsubmit_datecheck"));
+						return;
 					}
+
 					// confirm dialog
 					this._newDialog(
 						Utility.getText("dialog_claimsubmission_submitreport"),
