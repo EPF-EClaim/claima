@@ -639,6 +639,7 @@
 					value="{claimitem_input>/claim_item/departure_time}"
 					visible="false"
 					displayFormat="HH:mm"
+					valueFormat="HH:mm"
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
 					required="true"
 				/>
@@ -670,6 +671,7 @@
 					value="{claimitem_input>/claim_item/arrival_time}"
 					visible="false"
 					displayFormat="HH:mm"
+					valueFormat="HH:mm"
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
 					required="true"
 				/>
