@@ -2437,6 +2437,7 @@ sap.ui.define([
 			}
 
 			//FUT issue #81
+			//checking if the receipt date is over the trip date, if it is a message error box will appear
 			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
 			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
 
@@ -2452,8 +2453,9 @@ sap.ui.define([
 				return;
 			}
 
-			//FUT issue #54
-			if(oInputModel.getProperty("/claim_item/claim_type_item_id") == "VISA"){
+			//FUT issue #54 
+			//checking if visa backdated receipt date is over 90 days, if over 90 days a message error box will appear
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") == this._oConstant.ClaimTypeItem.VISA){
 				var dReceiptDateWithoutFormatting = new Date(oInputModel.getProperty("/claim_item/receipt_date"));
 				var dCurrentDate = new Date()
 				var dDateDiff = Math.abs(dCurrentDate - dReceiptDateWithoutFormatting);
