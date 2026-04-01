@@ -2244,8 +2244,10 @@ annotate service.ZEMP_CA_PAYMENT with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
-        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        //removed the conditional checking for crud operation visibility as the table is accessible for view/edit to JKEW and DTD
+        //table visibility is controlled in the app side navigation menu - hidden for GA admin
+        CreateHidden: false,
+        DeleteHidden: false,
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'Cash Advance Payment Date Bypass - ZEMP_CA_PAYMENT',
@@ -4347,6 +4349,186 @@ annotate service.ZROLEHIERARCHY with @(
                 ![@UI.Importance]: #High,
                 Label            : 'Employee Rank'
             }
+        ]
+    }
+);
+
+annotate service.ZWORKFLOW_STEP with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [WORKFLOW_CODE, WORKFLOW_TYPE, START_DATE, END_DATE],
+    Capabilities                   : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                             : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Workflow Step - ZWORKFLOW_STEP',
+            TypeNamePlural: 'Workflow Step - ZWORKFLOW_STEP',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : WORKFLOW_CODE,
+                ![@UI.Importance]: #High,
+                Label            : 'Workflow Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : WORKFLOW_TYPE,
+                ![@UI.Importance]: #High,
+                Label            : 'Workflow Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            }            
+        ]
+    }
+);
+
+annotate service.ZWORKFLOW_RULE with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [WORKFLOW_ID, WORKFLOW_TYPE, CLAIM_TYPE_ID, CLAIM_TYPE_ITEM_ID, START_DATE, END_DATE],
+    Capabilities                   : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                             : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'Workflow Rule - ZWORKFLOW_RULE',
+            TypeNamePlural: 'Workflow Rule - ZWORKFLOW_RULE',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : WORKFLOW_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Workflow ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : WORKFLOW_TYPE,
+                ![@UI.Importance]: #High,
+                Label            : 'Workflow Type'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CLAIM_TYPE_ITEM_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Claim Type Item ID'
+            },          
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RISK_LEVEL,
+                ![@UI.Importance]: #High,
+                Label            : 'Risk Level'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : THRESHOLD_AMOUNT,
+                ![@UI.Importance]: #High,
+                Label            : 'Threshold Amount'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : THRESHOLD_VALUE,
+                ![@UI.Importance]: #High,
+                Label            : 'Threshold Value'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RECEIPT_DAY,
+                ![@UI.Importance]: #High,
+                Label            : 'Receipt Day'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : RECEIPT_AGE,
+                ![@UI.Importance]: #High,
+                Label            : 'Receipt Age'
+            },  
+            {
+                $Type            : 'UI.DataField',
+                Value            : EMPLOYEE_COST_CENTER,
+                ![@UI.Importance]: #High,
+                Label            : 'Employee Cost Center'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : OUTCOME_WORKFLOW_CODE,
+                ![@UI.Importance]: #High,
+                Label            : 'Outcome Workflow Code'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : REMARK,
+                ![@UI.Importance]: #High,
+                Label            : 'Remark'
+            },  
+            {
+                $Type            : 'UI.DataField',
+                Value            : REQUEST_TYPE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Request Type ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : CASH_ADVANCE,
+                ![@UI.Importance]: #High,
+                Label            : 'Cash Advance'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : TRIP_START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Trip Start Date'
+            },   
+            {
+                $Type            : 'UI.DataField',
+                Value            : ROLE,
+                ![@UI.Importance]: #High,
+                Label            : 'Role'
+            }                                                                        
         ]
     }
 );
