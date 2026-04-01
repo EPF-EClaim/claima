@@ -2441,16 +2441,30 @@ sap.ui.define([
 			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
 
 			if(dReceiptDate > dTripEndDate){
-				MessageToast.show(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
+				MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
 				return;
 			}
 
 			//FUT issue #58
 			//checking for galakan disclaimer if its ticked or not
 			if(oInputModel.getProperty("/claim_item/disclaimer_galakan") == false || oInputModel.getProperty("/claim_item/disclaimer") == false){
-				MessageToast.show(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+				MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
 				return;
 			}
+
+			//FUT issue #54
+			if(oInputModel.getProperty("/claim_item/claim_type_item_id") == "VISA"){
+				var dReceiptDateWithoutFormatting = new Date(oInputModel.getProperty("/claim_item/receipt_date"));
+				var dCurrentDate = new Date()
+				var dDateDiff = Math.abs(dCurrentDate - dReceiptDateWithoutFormatting);
+				dDateDiff = Math.trunc(dDateDiff/86400000);
+				
+				if(dDateDiff >= 90){
+					MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date_for_visa"));
+					return;
+				}
+			}
+
 
 			try {
 				BusyIndicator.show(0);
