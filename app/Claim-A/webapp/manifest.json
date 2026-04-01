@@ -2350,14 +2350,14 @@
                                         },
                                         "newCopy": {
                                             "press": "claima.ext.controller.Config.onclickcopy",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
+                                            "visible": true,
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Copy"
                                         },
                                         "newEdit": {
                                             "press": "claima.ext.controller.Config.onClickEdit",
-                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
+                                            "visible": true,
                                             "enabled": true,
                                             "requiresSelection": true,
                                             "text": "Edit"
