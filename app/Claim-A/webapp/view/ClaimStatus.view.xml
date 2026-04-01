@@ -40,6 +40,22 @@
                             </HBox>
                         </header>
                     </Column>
+
+                    <Column>
+                        <header>
+                            <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                                <Text text="{i18n>myclaimstatus_claimtype}"/>
+                                <Button type="Transparent" icon="sap-icon://sort"
+                                        tooltip="{i18n>myclaimstatus_sort_claimtype}"
+                                        press="onSortToggle">
+                                    <customData>
+                                        <core:CustomData key="path" value="CLAIM_TYPE_DESC"/>
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>
+
                     <Column>
                         <header>
                             <HBox justifyContent="SpaceBetween" alignItems="Center" width="100%">
@@ -123,6 +139,7 @@
                     <ColumnListItem type="Active">
                         <cells>
                          <Text text="{claim_status2>CLAIM_ID}" />
+                         <Text text="{claim_status2>CLAIM_TYPE_DESC}" />
                             <Text text="{claim_status2>PURPOSE}" />
                            
                             <Text
