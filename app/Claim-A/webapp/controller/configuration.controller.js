@@ -199,6 +199,8 @@ sap.ui.define([
             const sSource = oEvent.getSource().getId(),
                 sTableId = sSource?.includes("Header") ? "claimTable" : "ClaimItems--claimitemTable",
                 oTable = this.byId(sTableId),
+                aSelectedItems = oTable.getSelectedItems(),
+                
                 oContext = oTable.getSelectedItem().getBindingContext(),
                 oObject = oContext.getObject();
 
