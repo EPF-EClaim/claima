@@ -2244,8 +2244,8 @@ annotate service.ZEMP_CA_PAYMENT with @(
     odata.draft.enabled,
 
     UI                             : {
-        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
-        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        CreateHidden: false,
+        DeleteHidden: false,
         HeaderInfo  : {
             $Type         : 'UI.HeaderInfoType',
             TypeName      : 'Cash Advance Payment Date Bypass - ZEMP_CA_PAYMENT',
