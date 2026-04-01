@@ -2244,6 +2244,8 @@ annotate service.ZEMP_CA_PAYMENT with @(
     odata.draft.enabled,
 
     UI                             : {
+        //removed the conditional checking for crud operation visibility as the table is accessible for view/edit to JKEW and DTD
+        //table visibility is controlled in the app side navigation menu - hidden for GA admin
         CreateHidden: false,
         DeleteHidden: false,
         HeaderInfo  : {
