@@ -432,8 +432,6 @@
 					id="select_claimdetails_input_location_type"
 					forceSelection="false"
 					selectedKey="{claimitem_input>/claim_item/location_type}"
-					change="onSelect_ClaimDetails_LocationType"
-					liveChange="onSelect_ClaimDetails_LocationType"
 					visible="false"
 					required="true"
 				>
@@ -449,7 +447,8 @@
 					items="{path: 'employee>/ZSTATE',
                             sorter: { path: 'STATE_ID', descending: false },
                             filters: [
-                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
+					change=".getFromLocationOfficeByState">
                     <items>
                         <core:Item key="{employee>STATE_ID}" 
                         		   text="{employee>STATE_DESC}" />
@@ -462,15 +461,16 @@
 					id="input_claimdetails_input_from_location"
 					value="{claimitem_input>/claim_item/from_location}"
 					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER}}"
-					editable="{= !${claimsubmission_input>/view_only} }"
 					required="true"
 				/>
-				<Label text="{i18n>fromloc}" />	
+				<!-- From Location Office -->
+				<Label text="{i18n>req_i_from_location_office}" />	
 				<Select
 					id="select_claimdetails_input_from_location"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/from_location}"
+					selectedKey="{claimitem_input>/claim_item/from_location_office}"
 					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
+					editable="{= !${claimsubmission_input>/view_only} }"
 					required="true"
 					items="{path: 'employee>/ZOFFICE_LOCATION',
                             sorter: { path: 'LOCATION_ID', descending: false },
@@ -492,7 +492,8 @@
 					items="{path: 'employee>/ZSTATE',
                             sorter: { path: 'STATE_ID', descending: false },
                             filters: [
-                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
+					change=".getToLocationOfficeByState">
                     <items>
                         <core:Item key="{employee>STATE_ID}" 
                         		   text="{employee>STATE_DESC}" />
@@ -505,15 +506,16 @@
 					id="input_claimdetails_input_to_location"
 					value="{claimitem_input>/claim_item/to_location}"
 					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER}}"
-					editable="{= !${claimsubmission_input>/view_only} }"
 					required="true"
 				/>
-				<Label text="{i18n>to_loc}" />
+				<!-- To Location Office -->
+				<Label text="{i18n>req_i_to_location_office}" />
 				<Select
 					id="select_claimdetails_input_to_location"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/to_location}"
+					selectedKey="{claimitem_input>/claim_item/to_location_office}"
 					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
+					editable="{= !${claimsubmission_input>/view_only} }"
 					required="true"
 					items="{path: 'employee>/ZOFFICE_LOCATION',
                             sorter: { path: 'LOCATION_ID', descending: false },
