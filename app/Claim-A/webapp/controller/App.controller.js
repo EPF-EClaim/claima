@@ -74,7 +74,7 @@ sap.ui.define([
 
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
-			
+
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
@@ -129,7 +129,7 @@ sap.ui.define([
 					break;
 				// Start Aiman Salim 10/02/2026 - Added for analytics
 				case "analytics":
-					if (bDTDAdmin || bAdminSystem || bAdminCC ) {
+					if (bDTDAdmin || bAdminSystem || bAdminCC) {
 						HashChanger.getInstance().replaceHash("");
 						this._oRouter.navTo("Analytics");
 					} else {
@@ -152,10 +152,13 @@ sap.ui.define([
 					this._oRouter.navTo("Dashboard");
 					break;
 				// End 	 Aiman Salim 03/03/2026 - Added for MyClaim
+				case "Claims":
+					this._oRouter.navTo("ZEMP_CLAIM_EE_VIEW");
+					break;
 				default:
 					// navigate to page with ID same as the key
 					if (this._oConstant.ConfigAccess.includes(oKey)) {
-						if (bDTDAdmin || bAdminSystem || bAdminCC ) {
+						if (bDTDAdmin || bAdminSystem || bAdminCC) {
 							if (bDTDAdmin && oKey === sEmpMaster) {
 								oKey = sEmpMasterDTD;
 							} else if (bDTDAdmin && oKey === sEmpDep) {
@@ -1550,24 +1553,24 @@ sap.ui.define([
 		},
 
 		_applyReqTypeFilters: function (sUserType) {
-            var oSelect = Fragment.byId("request", "req_reqtype");
-            
-            var oBinding = oSelect.getBinding("items");
+			var oSelect = Fragment.byId("request", "req_reqtype");
 
-            if (!oBinding) {
-                return;
-            }
+			var oBinding = oSelect.getBinding("items");
 
-            var aFilters = [
-                new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
-            ];
+			if (!oBinding) {
+				return;
+			}
 
-            if (sUserType !== this._oConstant.Role.GA_ADMIN) {
-                aFilters.push(new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.MOBILE));
-            }
+			var aFilters = [
+				new Filter("STATUS", FilterOperator.EQ, "ACTIVE")
+			];
 
-            oBinding.filter(aFilters);
-        },
+			if (sUserType !== this._oConstant.Role.GA_ADMIN) {
+				aFilters.push(new Filter("REQUEST_TYPE_ID", FilterOperator.NE, this._oConstant.RequestType.MOBILE));
+			}
+
+			oBinding.filter(aFilters);
+		},
 
 		_loadClaimTypeSelectionData: function (sReqType) {
 			if (!sReqType) return;
@@ -1614,11 +1617,11 @@ sap.ui.define([
 					oDialogModel.setProperty('/coursecode', "");
 				}
 			} else {
-				this._oReqModel.setProperty('/req_header/coursecode', ""); 
+				this._oReqModel.setProperty('/req_header/coursecode', "");
 			}
 
 			const oSelect = Fragment.byId("request", "req_coursecode");
-			
+
 			if (oSelect) {
 				oSelect.setForceSelection(false);
 				oSelect.setSelectedKey("");
@@ -1632,13 +1635,13 @@ sap.ui.define([
 			oListBinding.requestContexts().then((aContexts) => {
 				const aData = aContexts.map(oCtx => oCtx.getObject());
 				const oTypeModel = new JSONModel({ types: aData });
-				
+
 				if (this.oDialogFragment) {
 					this.oDialogFragment.setModel(oTypeModel, "course_list");
 				} else {
 					this.getView().setModel(oTypeModel, "course_list");
 				}
-				
+
 			}).catch(err => console.error("Course List Load Failed", err));
 		},
 
@@ -1877,6 +1880,5 @@ sap.ui.define([
 				this._oAvatarPopover.openBy(oAvatar);
 			}
 		}
-
 	});
 });

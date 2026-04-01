@@ -99,7 +99,10 @@
                         enabled="true"
                         expanded="false"
                     />
-
+                    <tnt:NavigationListItem 
+                        text="Claims"
+                        icon="sap-icon://list"
+                        key="Claims"/>
                     <tnt:NavigationListGroup text="Configuration">
                         <tnt:NavigationListItem
                         icon="sap-icon://database"

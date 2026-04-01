@@ -642,7 +642,17 @@
                     "pattern": "ZELIGIBILITY_RULE",
                     "name": "ZELIGIBILITY_RULE",
                     "target": "ZELIGIBILITY_RULE"
-                }
+                },
+                {
+                    "pattern": "ZEMP_CLAIM_EE_VIEW",
+                    "name": "ZEMP_CLAIM_EE_VIEW",
+                    "target": "ZEMP_CLAIM_EE_VIEW"
+                },
+                {
+                    "pattern": "ZEMP_REQUEST_EE_VIEW",
+                    "name": "ZEMP_REQUEST_EE_VIEW",
+                    "target": "ZEMP_REQUEST_EE_VIEW"
+                }                
             ],
             "targets": {
                 "TargetMain": {
@@ -4968,6 +4978,108 @@
                         }
                     }
                 },
+                "ZEMP_CLAIM_EE_VIEW": {
+                    "type": "Component",
+                    "id": "ZEMP_CLAIM_EE_VIEW",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_CLAIM_EE_VIEW",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "disableCopyToClipboard": true
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "ZEMP_REQUEST_EE_VIEW": {
+                    "type": "Component",
+                    "id": "ZEMP_REQUEST_EE_VIEW",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZEMP_REQUEST_EE_VIEW",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "ResponsiveTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": false,
+                                        "selectionMode": "Single",
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },                
                 "ZREJECT_REASON": {
                     "type": "Component",
                     "id": "ZREJECT_REASON",
