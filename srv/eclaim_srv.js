@@ -119,11 +119,9 @@ module.exports = (srv) => {
         });
 
     srv.on('READ', 'FeatureControl', async (req) => {
-        
+
         let operationHidden = true;
-        if(req.user.is(Constant.Admin.Admin_System)) {
-            operationHidden = true;
-        } else if (req.user.is(Constant.Admin.DTD_Admin)) {
+        if(req.user.is(Constant.Admin.DTD_Admin)) {
             operationHidden = false;
         }
 
