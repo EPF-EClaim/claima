@@ -4410,8 +4410,8 @@ sap.ui.define([
 					{ label: Utility.getText("label_claimdetails_input_phoneno"), property: "phone_no", field: "input_claimdetails_input_phone_no", width: 18 },
 					{ label: Utility.getText("label_claimdetails_input_disclaimer"), property: "disclaimer", field: "checkbox_claimdetails_input_disclaimer", width: 10 },
 					{ label: Utility.getText("label_claimdetails_input_remarks"), property: "remark", field: "input_claimdetails_input_remarks", width: 30 },
-					{ label: Utility.getText("label_claimdetails_input_attachment1"), property: "attachment_file_1", field: "fileuploader_claimdetails_input_attachment_file_1", width: 30 },
-					{ label: Utility.getText("label_claimdetails_input_attachment2"), property: "attachment_file_2", field: "fileuploader_claimdetails_input_attachment_file_2", width: 30 },
+					{ label: Utility.getText("label_claimdetails_input_attachment_file_1"), property: "attachment_file_1", field: "fileuploader_claimdetails_input_attachment_file_1", width: 30 },
+					{ label: Utility.getText("label_claimdetails_input_attachment_file_2"), property: "attachment_file_2", field: "fileuploader_claimdetails_input_attachment_file_2", width: 30 },
 				];
 
 				// find claim type items used
@@ -4426,8 +4426,9 @@ sap.ui.define([
 				// get columns based on claim type items used
 				var aItemsColumns = aItemsColumnsMain;
 				BusyIndicator.show(0);
-				for (var i = 0; i < aClaimTypeItemsUnique.length; i++) {
-					var oClaimTypeItem = aClaimTypeItemsUnique[i];
+				var aFieldIdsCombined = [];
+				for (var iClaimTypeItem = 0; iClaimTypeItem < aClaimTypeItemsUnique.length; iClaimTypeItem++) {
+					var oClaimTypeItem = aClaimTypeItemsUnique[iClaimTypeItem];
 					const oModel = this.getOwnerComponent().getModel();
 					const oListBinding = oModel.bindList("/ZDB_STRUCTURE", null, null, [
 						new Filter("SUBMISSION_TYPE", FilterOperator.EQ, this._oConstant.ClaimFieldVisibilityConfig.SUBMISSION_TYPE),
@@ -4446,14 +4447,16 @@ sap.ui.define([
 						const aFieldIds = oData.FIELD.replace(/[\[\]\s]/g, "").split(",");
 
 						if (aFieldIds != []) {
-							for (var i = 0; i < aClaimDetailColumns.length; i++) {
-								if (aFieldIds.includes(aClaimDetailColumns[i]["field"]) && aItemsColumns.some(oColumn => oColumn["field"]) !== aClaimDetailColumns[i]["field"]) {
-									aItemsColumns.push(aClaimDetailColumns[i]);
-								}
-							}
+							aFieldIdsCombined.push(...aFieldIds);
 						} else {
 							continue;
 						}
+					}
+				}
+				// set visible fields based on combined items
+				for (var iClaimDetailColumn = 0; iClaimDetailColumn < aClaimDetailColumns.length; iClaimDetailColumn++) {
+					if (aFieldIdsCombined.includes(aClaimDetailColumns[iClaimDetailColumn]["field"])) {
+						aItemsColumns.push(aClaimDetailColumns[iClaimDetailColumn]);
 					}
 				}
 
