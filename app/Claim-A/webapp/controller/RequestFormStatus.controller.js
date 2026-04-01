@@ -1,15 +1,25 @@
 sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/m/MessageToast",
+	"sap/m/StandardListItem",
+	"sap/m/SelectDialog",
 	"sap/ui/core/BusyIndicator",
 	"claima/utils/PARequestSharedFunction",
-	"sap/ui/model/Sorter"
+	"claima/utils/Utility",
+	"sap/ui/model/Sorter",
+	"sap/ui/model/Filter",
+	"sap/ui/model/FilterOperator"
 ], function (
-	Controller, 
+	Controller,
 	MessageToast,
-	BusyIndicator, 
-	PARequestSharedFunction, 
-	Sorter) {
+	StandardListItem,
+	SelectDialog,
+	BusyIndicator,
+	PARequestSharedFunction,
+	Utility,
+	Sorter,
+	Filter,
+	FilterOperator) {
 	"use strict";
 
 	return Controller.extend("claima.controller.RequestFormStatus", {
@@ -18,15 +28,15 @@ sap.ui.define([
 		* Lifecycle
 		* ======================================================= */
 		onInit() {
-			this._oConstant 		= this.getOwnerComponent().getModel("constant").getData();
-			this._oRouter 			= this.getOwnerComponent().getRouter();
-			this._oDataModel		= this.getOwnerComponent().getModel();
-			this._oViewModel 		= this.getOwnerComponent().getModel('employee_view');
-			this._oReqModel			= this.getOwnerComponent().getModel('request');
-			this._oReqStatusModel 	= this.getOwnerComponent().getModel("request_status");
+			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
+			this._oRouter = this.getOwnerComponent().getRouter();
+			this._oDataModel = this.getOwnerComponent().getModel();
+			this._oViewModel = this.getOwnerComponent().getModel('employee_view');
+			this._oReqModel = this.getOwnerComponent().getModel('request');
+			this._oReqStatusModel = this.getOwnerComponent().getModel("request_status");
 
 			this._oRouter.getRoute("RequestFormStatus").attachPatternMatched(this._onMatched, this);
-			
+
 			this._mSortState = {};
 		},
 
@@ -39,7 +49,7 @@ sap.ui.define([
 		* Main Logic
 		* ======================================================= */
 
-		async getPARHeaderList (oReqStatusModel, oViewModel) {
+		async getPARHeaderList(oReqStatusModel, oViewModel) {
 
 			const oListBinding = oViewModel.bindList("/ZEMP_REQUEST_EE_VIEW", undefined,
 				[new Sorter("modifiedAt", true)], null,
@@ -70,7 +80,7 @@ sap.ui.define([
 				return [];
 			}
 		},
-		
+
 		async openItemFromList(oEvent) {
 			try {
 				BusyIndicator.show(0);
@@ -92,8 +102,8 @@ sap.ui.define([
 
 				const oSelectedRequest = oCtx.getObject();
 				const sReqId = oSelectedRequest.REQUEST_ID;
-				
-				this._oRouter.navTo("RequestForm", {request_id: encodeURIComponent(sReqId)});
+
+				this._oRouter.navTo("RequestForm", { request_id: encodeURIComponent(sReqId) });
 			} catch (e) {
 				jQuery.sap.log.error("openItemFromList failed: " + e);
 				MessageToast.show("Failed to open the selected item.");
@@ -156,13 +166,61 @@ sap.ui.define([
 					});
 				}
 			});
+		},
+
+		onOpenFilterDialog: function () {
+			var oModel = this.getView().getModel("request_status");
+			var aList = oModel.getProperty("/req_header_list") || [];
+
+			var aTypes = [...new Set(aList.map(item => item.CLAIM_TYPE_DESC).filter(Boolean))];
+			var aItems = aTypes.map(sType => new StandardListItem({ title: sType }));
+
+			if (!this._oFilterDialog) {
+				this._oFilterDialog = new SelectDialog({
+					title: Utility.getText("myclaimstatus_filter"),
+					multiSelect: true,
+					confirm: this.onFilterConfirm.bind(this),
+					cancel: function () { this._oFilterDialog.close(); }.bind(this),
+					search: function (oEvent) {
+						var sValue = oEvent.getParameter("value");
+						var oFilter = new Filter("title", FilterOperator.Contains, sValue);
+						oEvent.getParameter("itemsBinding").filter([oFilter]);
+					}
+				});
+				this.getView().addDependent(this._oFilterDialog);
+			}
+
+			this._oFilterDialog.destroyItems();
+			aItems.forEach(item => this._oFilterDialog.addItem(item));
+
+			var aSelectedTypes = this._aActiveClaimTypeFilters || [];
+			this._oFilterDialog.getItems().forEach(oItem => {
+				if (aSelectedTypes.includes(oItem.getTitle())) {
+					oItem.setSelected(true);
+				}
+			});
+
+			this._oFilterDialog.open();
+		},
+
+		onFilterConfirm: function (oEvent) {
+			var aSelectedItems = oEvent.getParameter("selectedItems");
+			var aSelectedTypes = aSelectedItems.map(item => item.getTitle());
+			this._aActiveClaimTypeFilters = aSelectedTypes;
+
+			var oModel = this.getView().getModel("request_status");
+			var aFullList = oModel.getProperty("/req_header_list_full") || oModel.getProperty("/req_header_list") || [];
+
+			if (!oModel.getProperty("/req_header_list_full")) {
+				oModel.setProperty("/req_header_list_full", [...aFullList]);
+			}
+
+			var aFiltered = aSelectedTypes.length
+				? aFullList.filter(item => aSelectedTypes.includes(item.CLAIM_TYPE_DESC))
+				: aFullList;
+
+			oModel.setProperty("/req_header_list", aFiltered);
+			oModel.setProperty("/req_header_count", aFiltered.length);
 		}
-
-
-
-
-
-
-
 	});
 });

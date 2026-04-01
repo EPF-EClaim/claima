@@ -22,6 +22,7 @@
                         <Title text="{= ${i18n>nav_myreport} + ' (' + ${claim_status2>/claim_header_count} + ')' }" />
                         <ToolbarSpacer/>
                         <Button text="{i18n>myclaimstatus_sort_reset}" type="Transparent" icon="sap-icon://refresh" press="onResetSort"/>
+                        <Button type="Transparent" icon="sap-icon://action-settings" tooltip="Filter" press="onOpenFilterDialog"/>
                     </Toolbar>
                 </headerToolbar>
 

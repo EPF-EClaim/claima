@@ -7,7 +7,8 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"claima/utils/Utility",
 	"sap/suite/ui/commons/BusinessCard",
-	"sap/m/BusyIndicator"
+	"sap/m/BusyIndicator",
+	"sap/m/SelectDialog"
 ], function (Controller,
 	JSONModel,
 	MessageToast,
@@ -16,7 +17,8 @@ sap.ui.define([
 	Sorter,
 	Utility,
 	BusinessCard,
-	BusyIndicator) {
+	BusyIndicator, 
+	SelectDialog) {
 	"use strict";
 
 	return Controller.extend("claima.controller.ClaimStatus", {
@@ -25,11 +27,11 @@ sap.ui.define([
 			// Track current sort direction per path: true = DESC, false = ASC
 			this._mSortState = {};
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
-			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
+			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this.getOwnerComponent().getRouter().getRoute("ClaimStatus").attachPatternMatched(this._onMatched, this);
 		},
 
-		_onMatched: async function() {
+		_onMatched: async function () {
 			const _oReq = this.getOwnerComponent().getModel("claim_status2");
 			const _oModel = this.getOwnerComponent().getModel("employee_view");
 
@@ -105,9 +107,9 @@ sap.ui.define([
 					MessageToast.show(Utility.getText("msg_claimstatus_missing"));
 					return;
 				}
-                // Navigate to claim submission ID
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
+				// Navigate to claim submission ID
+				const oRouter = this.getOwnerComponent().getRouter();
+				oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
 			} catch (e) {
 				sap.base.Log.error("openItemFromClaimList failed:", e);
 				MessageToast.show(Utility.getText("msg_claimstatus_failed"));
@@ -176,6 +178,61 @@ sap.ui.define([
 					});
 				}
 			});
-		}
+		},
+
+		onOpenFilterDialog: function () {
+			var oModel = this.getView().getModel("claim_status2");
+			var aList = oModel.getProperty("/claim_header_list") || [];
+			var aTypes = [...new Set(aList.map(item => item.CLAIM_TYPE_DESC).filter(Boolean))];
+
+			var aItems = aTypes.map(sType => new sap.m.StandardListItem({ title: sType }));
+
+			if (!this._oFilterDialog) {
+				this._oFilterDialog = new SelectDialog({
+					title: Utility.getText("myclaimstatus_filter"),
+					multiSelect: true,
+					confirm: this.onFilterConfirm.bind(this),
+					cancel: function () { this._oFilterDialog.close(); }.bind(this),
+					search: function (oEvent) {
+						var sValue = oEvent.getParameter("value");
+						var oFilter = new Filter("title", FilterOperator.Contains, sValue);
+						oEvent.getParameter("itemsBinding").filter([oFilter]);
+					}
+				});
+				this.getView().addDependent(this._oFilterDialog);
+			}
+
+			this._oFilterDialog.destroyItems();
+			aItems.forEach(item => this._oFilterDialog.addItem(item));
+
+			var aSelectedTypes = this._aActiveClaimTypeFilters || [];
+			this._oFilterDialog.getItems().forEach(oItem => {
+				if (aSelectedTypes.includes(oItem.getTitle())) {
+					oItem.setSelected(true);
+				}
+			});
+
+			this._oFilterDialog.open();
+		},
+
+		onFilterConfirm: function (oEvent) {
+			var aSelectedItems = oEvent.getParameter("selectedItems");
+			var aSelectedTypes = aSelectedItems.map(item => item.getTitle());
+			this._aActiveClaimTypeFilters = aSelectedTypes;
+
+			var oModel = this.getView().getModel("claim_status2");
+			var aFullList = oModel.getProperty("/claim_header_list_full") || oModel.getProperty("/claim_header_list") || [];
+
+			if (!oModel.getProperty("/claim_header_list_full")) {
+				oModel.setProperty("/claim_header_list_full", [...aFullList]);
+			}
+
+			var aFiltered = aSelectedTypes.length
+				? aFullList.filter(item => aSelectedTypes.includes(item.CLAIM_TYPE_DESC))
+				: aFullList;
+
+			oModel.setProperty("/claim_header_list", aFiltered);
+			oModel.setProperty("/claim_header_count", aFiltered.length);
+		},
 	});
 });
