@@ -2085,24 +2085,50 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
 			
 			// set percentage (%) compensation based on claim item
-			switch (oInputModel.getProperty("/claim_item/claim_type_item_id")) {
-				case this._oConstant.ClaimTypeItem.MATAWANG:
-					// 3% Kerugian Matawang
-					oInputModel.setProperty("/claim_item/percentage_compensation", 3);
-					break;
-				case this._oConstant.ClaimTypeItem.PEM_PINDAH:
-					// Pemberian Perpindahan (50%)
-					oInputModel.setProperty("/claim_item/percentage_compensation", 50);
-					break;
-				default:
-					// claim item has no percentage compensation
-					if (this.getView().getModel("claimitem_property")?.getProperty("/percentage_compensation/is_visible")) {
-						// show zero value if field is visible
-						oInputModel.setProperty("/claim_item/percentage_compensation", 0);
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			if (oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
+				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+				var oInputModel = this.getView().getModel("claimitem_input");
+				const oModel = this.getOwnerComponent().getModel();
+				//// filter by employee role ID or * (all)
+				const oFilterRoleId = new Filter({
+					filters: [
+						new Filter("ROLE_ID", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/role")),
+						new Filter("ROLE_ID", FilterOperator.EQ, '*')
+					],
+					and: false
+				});
+				const oListBinding = oModel.bindList("/ZELIGIBILITY_RULE", null, [
+					new Sorter("ROLE_ID", true),
+					new Sorter("POSITION_NO_DESC", true),
+					new Sorter("ROW_COUNT", true),
+				], [
+					new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_id")),
+					new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_item_id")),
+					oFilterRoleId,
+					// ensure status is active
+					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
+				]);
+
+				try {
+					BusyIndicator.show(0);
+					const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+					if (aContexts.length > 0) {
+						const oData = aContexts[0].getObject();
+						oInputModel.setProperty("/claim_item/percentage_compensation", oData[this._oConstant.EligibilityRule.SUBSIDISED_RATE]);
 					} else {
-						oInputModel.setProperty("/claim_item/percentage_compensation", null);
+						oInputModel.setProperty("/claim_item/percentage_compensation", 0.0);
+						MessageToast.show(Utility.getText("msg_claimdetails_input_percentage_compensation_none"));
 					}
-					break;
+				} catch (oError) {
+					oInputModel.setProperty("/claim_item/percentage_compensation", 0.0);
+					MessageBox.error(Utility.getText("msg_claimdetails_input_percentage_compensation_err", [oError]));
+				} finally {
+					BusyIndicator.hide();
+				}
 			}
 		},
 
@@ -2700,7 +2726,7 @@ sap.ui.define([
 		},
 
         /**
-		 * On changing value of 'actual amount' field, change value of 'amount' property to 50% of 'actual_amount' property
+		 * On changing value of 'actual amount' field, change value of 'amount' property to percentage of 'actual_amount' property based on subsidised rate
 		 * This applies to claim items that have fields for both 'amount' and 'actual amount'. In this case,
 		 * 'amount' is auto-populated while 'actual amount' comes from user input
 		 * @public
@@ -2709,13 +2735,9 @@ sap.ui.define([
 			// verify if property exists and 'amount' field is visible
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			var oInputModel = this.getView().getModel("claimitem_input");
-			if (oPropertyModel.getProperty("/amount/is_visible") && (
-				// ensure this only applies to valid scenarios
-				( oInputModel.getProperty("/claim_item/claim_type_id") === this._oConstant.ClaimType.ELAUN_PINDAH && oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH ) ||
-				( oInputModel.getProperty("/claim_item/claim_type_id") === this._oConstant.ClaimType.POST_EDUCATION_ASSISTANCE && oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.POST_EDUCATION_ASSISTANCE )
-			)) {
-				// set 'amount' property to 50% of actual amount
-				oInputModel.setProperty("/claim_item/amount", oInputModel.getProperty("/claim_item/actual_amount") * 0.5);
+			if (oPropertyModel.getProperty("/amount/is_visible") && oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
+				// set 'amount' property to % of actual amount based on percentage compensation
+				oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
 			}
 		},
 

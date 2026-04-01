@@ -93,6 +93,9 @@ sap.ui.define([
             "COMPLETED_DISBURSEMENT": "STAT06",
             "CANCELLED": "STAT07",
         },
+        "EligibilityRule": {
+            "SUBSIDISED_RATE": "SUBSIDIESED_RATE",
+        },
         "Departments": {
             "FI_DEPT":"0500000000"
         },
