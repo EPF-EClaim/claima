@@ -116,7 +116,7 @@
 
                 <!-- Approver -->
                 <Button id="req_reject"         type="Default"      text="Reject"                   press=".onRejectRequest"    visible="false" />
-                <Button id="req_send_back"      type="Default"      text="Send Back to Employee"    press=".onSendBackRequest"  visible="false" />
+                <Button id="req_send_back"      type="Default"      text="Send Back"                press=".onSendBackRequest"  visible="false" />
                 <Button id="req_approve"        type="Emphasized"   text="Approve"                  press=".onApproveRequest"   visible="false" />
             </OverflowToolbar>
         </footer>

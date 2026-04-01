@@ -1545,8 +1545,8 @@ sap.ui.define([
 					break;
 				}
 
-				//// Back to Employee
-				case 'Back to Employee':
+				//// Push Back
+				case 'Push Back':
 
 					{
 						// 1) Ensure Reject model (form data: reason + comment)
@@ -1868,7 +1868,7 @@ sap.ui.define([
 
 
 
-		// Example: wire this to your "Back to Employee" or "Send Back" action
+		// Example: wire this to your "Push Back" or "Send Back" action
 		onOpenSendBack_Claim: function () {
 			// Ensure form model
 			let oReject = this.getView().getModel("Reject");
@@ -1893,7 +1893,7 @@ sap.ui.define([
 		_displayFooterButtons: function (oId) {
 			var button = [
 				"button_claimapprover_reject",
-				"button_claimapprover_backtoemp",
+				"button_claimapprover_pushback",
 				"button_claimapprover_approve",
 
 				"button_claimsubmission_savedraft",
@@ -1917,7 +1917,7 @@ sap.ui.define([
 			];
 			var button_approver = [
 				"button_claimapprover_reject",
-				"button_claimapprover_backtoemp",
+				"button_claimapprover_pushback",
 				"button_claimapprover_approve",
 				"button_claimsubmission_back"
 			];
