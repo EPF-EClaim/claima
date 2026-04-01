@@ -462,6 +462,16 @@
                                     text="{i18n>prjcode}"
                                     visible="{roleModel>/DTDAdmin_role}"
                                 />
+                                <tnt:NavigationListItem
+                                    key="ZWORKFLOW_RULE"
+                                    text="{i18n>workflowrule}"
+                                    visible="{roleModel>/DTDAdmin_role}"
+                                />
+                                <tnt:NavigationListItem
+                                    key="ZWORKFLOW_STEP"
+                                    text="{i18n>workflowstep}"
+                                    visible="{roleModel>/DTDAdmin_role}"
+                                />                                 
                             </tnt:items>
                         </tnt:NavigationListItem>
                     </tnt:NavigationListGroup>
