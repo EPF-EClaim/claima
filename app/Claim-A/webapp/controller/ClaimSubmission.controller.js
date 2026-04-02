@@ -2453,16 +2453,23 @@ sap.ui.define([
 			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
 
 			if(dReceiptDate > dTripEndDate){
-				MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
+				MessageToast.show(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
 				return;
 			}
 
 			//FUT issue #58
 			//checking for galakan disclaimer if its ticked or not
 			if(oInputModel.getProperty("/claim_item/disclaimer_galakan") == false || oInputModel.getProperty("/claim_item/disclaimer") == false){
-				MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+				MessageToast.show(Utility.getText("msg_claimdetails_no_check_disclaimer"));
 				return;
 			}
+
+			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
+			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
+
+			if(dReceiptDate > dTripEndDate){
+				MessageToast.show(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
+				return;
 
 			//FUT issue #54 
 			//checking if visa backdated receipt date is over 90 days, if over 90 days a message error box will appear
