@@ -811,41 +811,76 @@ module.exports = (srv) => {
         }
     });
 
-    srv.on('getAmountEntitlement', async(req) => {
+    srv.on('getAmountEntitlement', async (req) => {
         const { ZEMP_MASTER, ZPERDIEM_ENT } = srv.entities;
         const tx = cds.tx(req);
         const emailFromToken =
-                req.user?.attr?.email ||
-                req.user?.attr?.mail ||
-                req.user?.attr?.user_name ||
-                req.user?.attr?.login_name ||
-                req.user?.id ||
-                "";
+            req.user?.attr?.email ||
+            req.user?.attr?.mail ||
+            req.user?.attr?.user_name ||
+            req.user?.attr?.login_name ||
+            req.user?.id ||
+            "";
         const today = new Date().toISOString().slice(0, 10);
 
         let entitlement = null;
-        
+        let meal_allowance = null;
+        let daily_allowance = null;
+        let time_difference = null;
+        let bfast, lunch, dinner, total_meal_allowance = null;
+        let bNoAllowance = false;
+
         //get employee personal grade 
         const email = String(emailFromToken).trim().toLowerCase();
-        const result = await tx.run( 
-            SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email }) 
+        const result = await tx.run(
+            SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email })
         );
 
-        if(result.GRADE){
-            entitlement = await tx.run(SELECT.one.from(ZPERDIEM_ENT).where({ PERSONAL_GRADE: result.GRADE, 
-                                                                      LOCATION: req.data.location, 
-                                                                      CLAIM_TYPE_ID: req.data.claimtypeid,
-                                                                      CLAIM_TYPE_ITEM: req.data.claimtypeitem })
-                                                                      .and('START_DATE <=?', today)
-                                                                      .and('END_DATE >= ?', today)
-    )}
-        
-        if(!entitlement){
+        if (result.GRADE) {
+            entitlement = await tx.run(SELECT.one.from(ZPERDIEM_ENT).where({
+                PERSONAL_GRADE: result.GRADE,
+                LOCATION: req.data.location,
+                CLAIM_TYPE_ID: req.data.claimtypeid,
+                CLAIM_TYPE_ITEM: req.data.claimtypeitem
+            })
+                .and('START_DATE <=?', today)
+                .and('END_DATE >= ?', today)
+            )
+        }
+
+        time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
+
+        //checking on the daily and meal allowance entitlement
+        if (req.data.day = 0 && req.data.hours < 8.0) {
+            //no entitlement
+            meal_allowance = 0;
+            bNoAllowance = true;
+        } else if (req.data.day = 0 && req.data.hours >= 8.0 && req.data.hours < 24.0) {
+            //entitle for daily allowance
+            meal_allowance = entitlement.AMOUNT / 2;
+        }
+        else if (req.data.day > 0) {
+            meal_allowance = req.data.day * entitlement.AMOUNT;
+            if (time_difference >= 8.0 && time_difference < 24.0) {
+                daily_allowance = entitlement.AMOUNT / 2;
+            }
+            meal_allowance += daily_allowance;
+        }
+
+        //deduction of meal allowance
+        //20% from breakfast, 40% from lunch, 40% from dinner 
+        bfast = req.data.breakfast != 0 ? 0.2 * entitlement.AMOUNT : 0;
+        lunch = req.data.lunch != 0 ? 0.4 * entitlement.AMOUNT : 0;
+        dinner = req.data.dinner != 0 ? 0.4 * entitlement.AMOUNT : 0;
+
+        total_meal_allowance = bNoAllowance === false? (meal_allowance - bfast - lunch - dinner): 0;
+
+        if (!entitlement) {
             return null;
         } else {
-            return entitlement.AMOUNT;
+            return total_meal_allowance;
         }
-    })
+    });
 
     // srv.on('WorkflowApproval', async (req) => {
     //     // const {ClaimsWorkflowApproval} = srv.entities;

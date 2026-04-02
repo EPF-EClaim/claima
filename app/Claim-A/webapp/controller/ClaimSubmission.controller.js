@@ -2921,9 +2921,22 @@ sap.ui.define([
 		onChange_ClaimDetails_ProvidedMeals: function () {
 			let nEntBfast, nEntLunch, nEntDinner;
 			//check if there is any input, if yes then recalculate entitled meals 
+			//breakfast meal entitlement
 			if(this.byId("input_claimdetails_input_provided_breakfast").getValue() != null){
-				nEntBfast = this.byId("input_claimdetails_input_entitled_breakfast").getValue() - this.byId("input_claimdetails_input_provided_breakfast").getValue()
+				nEntBfast = this.byId("input_claimdetails_input_travel_duration_day").getValue() - this.byId("input_claimdetails_input_provided_breakfast").getValue()
 				this.byId("input_claimdetails_input_entitled_breakfast").setValue(nEntBfast);
+			}
+
+			//lunch meal entitlement
+			if(this.byId("input_claimdetails_input_provided_lunch").getValue() != null){
+				nEntBfast = this.byId("input_claimdetails_input_travel_duration_day").getValue() - this.byId("input_claimdetails_input_provided_lunch").getValue()
+				this.byId("input_claimdetails_input_entitled_lunch").setValue(nEntBfast);
+			}
+			
+			//dinner meal entitlement
+			if(this.byId("input_claimdetails_input_provided_dinner").getValue() != null){
+				nEntBfast = this.byId("input_claimdetails_input_travel_duration_day").getValue() - this.byId("input_claimdetails_input_provided_dinner").getValue()
+				this.byId("input_claimdetails_input_entitled_dinner").setValue(nEntBfast);
 			}
 
 			var provBfast = parseFloat(this.byId("input_claimdetails_input_provided_breakfast"));

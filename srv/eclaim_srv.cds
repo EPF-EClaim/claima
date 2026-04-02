@@ -360,6 +360,13 @@ service eclaim_srv @(requires: 'authenticated-user'){
         amount : Decimal(15, 2);
     }
 
-    function getAmountEntitlement(location: String, claimtypeid: String, claimtypeitem: String) returns perdiem;
+    function getAmountEntitlement(day:Integer, 
+                                  hours: Decimal(5, 1), 
+                                  location: String, 
+                                  claimtypeid: String, 
+                                  claimtypeitem: String,
+                                  breakfast: Integer, 
+                                  lunch: Integer, 
+                                  dinner: Integer) returns perdiem;
 
 };
