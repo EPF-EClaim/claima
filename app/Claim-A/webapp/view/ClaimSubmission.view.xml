@@ -32,11 +32,11 @@
                     visible="false"
                 />
 
-                <!-- Back to Employee -->
+                <!-- Push Back -->
                 <Button
-                    id="button_claimapprover_backtoemp"
-                    press="onAction_ClaimSubmission_Toolbar('Back to Employee')"
-                    text="{i18n>button_claimapprover_backtoemp}"
+                    id="button_claimapprover_pushback"
+                    press="onAction_ClaimSubmission_Toolbar('Push Back')"
+                    text="{i18n>button_claimapprover_pushback}"
                     visible="false"
                 />
 

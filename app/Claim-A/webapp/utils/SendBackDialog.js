@@ -1,5 +1,3 @@
-
-// claima/utils/SendBackDialog.js
 sap.ui.define([
   "sap/ui/model/json/JSONModel",
   "sap/m/Dialog",
@@ -8,10 +6,12 @@ sap.ui.define([
   "sap/m/Text",
   "sap/m/TextArea",
   "sap/m/Select",
+  "sap/m/MessageToast",
   "sap/ui/core/Item",
   "sap/ui/layout/form/SimpleForm",
   "sap/ui/model/Filter",
-  "sap/ui/model/FilterOperator"
+  "sap/ui/model/FilterOperator",
+  "claima/utils/Utility"
 ], function (
   JSONModel,
   Dialog,
@@ -20,10 +20,12 @@ sap.ui.define([
   Text,
   TextArea,
   Select,
+  MessageToast,
   Item,
   SimpleForm,
   Filter,
-  FilterOperator
+  FilterOperator,
+  Utility
 ) {
   "use strict";
 
@@ -123,8 +125,8 @@ sap.ui.define([
           visible: "{= ${Type>/mode} === 'SENDBACK_CLAIM' }"
         }),
 
-        // Send Back Reason (required)
-        new Label({ text: "{i18n>sendback_reason}", required: true }),
+        // Push Back Reason (required)
+        new Label({ text: "{i18n>pushback_reason}", required: true }),
         new Select(oView.createId("sendBackReasonSelect"), {
           width: "100%",
           selectedKey: "{Reject>/sendBackReasonKey}",
@@ -150,7 +152,7 @@ sap.ui.define([
           width: "100%",
           growing: true,
           growingMaxLines: 5,
-          placeholder: "{i18n>send_comment_placeholder}"
+          placeholder: "{i18n>push_comment_placeholder}"
         })
       ]
     });
@@ -164,11 +166,11 @@ sap.ui.define([
     const submitHandler =
       oController.onSendBack_app ||               // RequestForm
       oController.onSendBack_ClaimSubmission ||   // ClaimSubmission
-      function () { sap.m.MessageToast.show("No Send Back handler implemented."); };
+      function () { MessageToast.show(Utility.getText("msg_myapproval_pushback")) };
 
     const oDialog = new Dialog({
       // Will set dynamically in open()
-      title: "{i18n>sendback_claim}",
+      title: "{i18n>pushback_claim}",
       contentWidth: "50%",
       content: [oForm],
       beginButton: new Button(oView.createId("sendback_placeholder_cancel"), {
@@ -176,7 +178,7 @@ sap.ui.define([
         press: cancelHandler.bind(oController)
       }),
       endButton: new Button(oView.createId("sendback_placeholder_submit"), {
-        text: "{i18n>sendback_btn}",
+        text: "{i18n>pushback_btn}",
         type: sap.m.ButtonType.Emphasized,
         enabled: "{= !!${Reject>/sendBackReasonKey} && !!${Reject>/approvalComment} }",
         press: submitHandler.bind(oController)
@@ -212,8 +214,8 @@ sap.ui.define([
         const rb = oController.getOwnerComponent().getModel("i18n").getResourceBundle();
         const mode = oController.getView().getModel("Type").getProperty("/mode");
         const title = mode === "SENDBACK_REQ"
-          ? (rb.getText("sendback_request") || rb.getText("sendback_claim"))
-          : rb.getText("sendback_claim");
+          ? (rb.getText("pushback_request") || rb.getText("pushback_claim"))
+          : rb.getText("pushback_claim");
         oDlg.setTitle(title);
       } catch (e) { /* ignore if i18n unavailable */ }
 
