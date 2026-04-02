@@ -728,7 +728,7 @@ sap.ui.define([
 			//// get claim item category ID
 			oInputModel.setProperty("/claimtype/category", this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("SUBMISSION_TYPE"));
 			//// get cost center from claim type if value exists
-			var sClaimTypeCostCenter = await CustomValidator.costCenterDetermination(oInputModel.getProperty("/claimtype/type"));
+			var sClaimTypeCostCenter = await CustomValidator.costCenterDetermination(this, oInputModel.getProperty("/claimtype/type"));
 			if (sClaimTypeCostCenter) {
 				oInputModel.setProperty("/claimtype/cost_center", sClaimTypeCostCenter);
 				oInputModel.setProperty("/claimtype/descr/cost_center", await this._bindEclaimDescr("/ZCOST_CENTER", sClaimTypeCostCenter, 'COST_CENTER_ID', 'COST_CENTER_DESC'));
@@ -1537,7 +1537,7 @@ sap.ui.define([
     		var sClaimTypeId = oSelectControl.getSelectedKey();
 			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
 
-			var sDefaultCostCenter = await CustomValidator.costCenterDetermination(sClaimTypeId);
+			var sDefaultCostCenter = await CustomValidator.costCenterDetermination(this, sClaimTypeId);
 			if (sDefaultCostCenter) {
 				Fragment.byId("request", "req_acc").setEditMode("ReadOnly");
 				oDialogModel.setProperty("/altcostcenter", sDefaultCostCenter);
