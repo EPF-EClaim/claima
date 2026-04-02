@@ -1050,7 +1050,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             key ID,
                 VALUE
         };
-        
+
     entity ZCLM_APPR_REQ_STAT_VIEW       as
         projection on ECLAIM.ZCLM_APPR_REQ_STAT {
             key EMP_ID,
