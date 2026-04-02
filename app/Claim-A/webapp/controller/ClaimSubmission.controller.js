@@ -2098,14 +2098,24 @@ sap.ui.define([
 					],
 					and: false
 				});
+				//// filter by employee role ID or * (all)
+				const oFilterPersonalGrade = new Filter({
+					filters: [
+						new Filter("PERSONAL_GRADE", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/grade")),
+						new Filter("PERSONAL_GRADE", FilterOperator.EQ, '*')
+					],
+					and: false
+				});
 				const oListBinding = oModel.bindList("/ZELIGIBILITY_RULE", null, [
 					new Sorter("ROLE_ID", true),
+					new Sorter("PERSONAL_GRADE", true),
 					new Sorter("POSITION_NO_DESC", true),
 					new Sorter("ROW_COUNT", true),
 				], [
 					new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_id")),
 					new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_item_id")),
 					oFilterRoleId,
+					oFilterPersonalGrade,
 					// ensure status is active
 					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
 					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
