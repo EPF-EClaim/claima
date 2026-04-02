@@ -2242,6 +2242,16 @@ sap.ui.define([
 			}
 		},
 
+		/**
+        * Set preset values for claim item fields
+		* if claim item is Dobi, pass start/end date value from claim header
+		* if start/end date is not in claim item fields, pass start/end date value from claim header
+		* else if header is empty, pass start/end date value from claim item
+        * @private
+		* @param {string} sClaimItemField - claim item field to be populated
+		* @param {string} sEligibilityRule - field to retrieve value from db table
+		* @param {string} sDefaultValue - default value to set if none found
+        */
 		_setPresetValues_ClaimItem: async function (sClaimItemField, sEligibilityRule, sDefaultValue) {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
