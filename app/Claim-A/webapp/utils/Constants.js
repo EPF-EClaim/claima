@@ -79,7 +79,8 @@ sap.ui.define([
             "TOLL": "TOLL",
             "VISA": "VISA",
             "YURAN": "YURAN",
-            "YURAN_KLJ": "YURAN_KLJ"
+            "YURAN_KLJ": "YURAN_KLJ",
+            "CASH_REPAY": "CASH_REPAY"
         },
         "ClaimTypeItemStatus": {
             "ACTIVE": "ACTIVE",
