@@ -63,7 +63,7 @@ sap.ui.define([
 
 		DateUtility: DateUtility,
 
-		onInit: function () {
+		onInit: function () {		
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._fragments = Object.create(null);
 			this._clearExit = false;
@@ -75,7 +75,19 @@ sap.ui.define([
 			const oRouter = this.getOwnerComponent().getRouter();
 			oRouter.getRoute("ClaimSubmission").attachPatternMatched((event) => { this._onMatched(event); }, this);
 			oRouter.attachBeforeRouteMatched((event) => { this._beforeRouteMatched(event); }, this);
-
+			
+			this.getOwnerComponent().setModel(new JSONModel({ fieldControl: { 
+				RECEIPT_DATE: {
+					customErrorMessage: "",
+					customMinDateError: "",
+					customMaxDateError: ""
+				},
+				BILL_DATE: {
+					customErrorMessage: "",
+					customMinDateError: "",
+					customMaxDateError: ""
+				}
+			} }), "appModel");
 
 		},
 

@@ -234,6 +234,10 @@ sap.ui.define(
 
 			if (editable) {
 				try {
+					var sCustomErrorMessage = oControl.data("customErrorMessage");
+					var sCustomMinDateError = oControl.data("customMinDateError");
+					var sCustomMaxDateError = oControl.data("customMaxDateError");
+					oControl.setValueStateText("");
 					// try validating the bound value
 					var oControlBinding = oControl.getBinding(
 						this._aValidateProperties[i]
@@ -246,6 +250,20 @@ sap.ui.define(
 						oControl.setValueState(ValueState.None);
 						isValid = true;
 						return isValid;
+					}
+					if (oControl instanceof sap.m.DatePicker && oControl.getMinDate()) {
+						if (oControl.getMinDate() && new Date(oControl.getValue()) < oControl.getMinDate()) {
+							isValid = false;
+							this._setValueState(oControl, ValueState.Error, sCustomMinDateError || "Date is not valid.");
+							return; 
+						}
+					}
+					if (oControl instanceof sap.m.DatePicker && oControl.getMaxDate()) {
+						if (oControl.getMaxDate() && new Date(oControl.getValue()) > oControl.getMaxDate()) {
+							isValid = false;
+							this._setValueState(oControl, ValueState.Error, sCustomMaxDateError || "Date is not valid.");
+							return; 
+						}
 					}
 					var oInternalValue = oControlBinding
 						.getType()
