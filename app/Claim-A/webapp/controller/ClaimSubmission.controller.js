@@ -2477,12 +2477,6 @@ sap.ui.define([
 				}
 			}
 
-			if (oInputModel.getProperty("/claim_item/disclaimer_galakan") == false || oInputModel.getProperty("/claim_item/disclaimer") == false) {
-				MessageToast.show(Utility.getText("msg_claimdetails_no_check_disclaimer"));
-				return;
-			}
-			
-
 			//FUT issue #81
 			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
 			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
