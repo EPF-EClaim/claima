@@ -3134,6 +3134,15 @@ sap.ui.define([
 					return;
 				}
 
+				//FUT issue 102
+				// solving the issue of having 0 amount claim item when submitting claims
+				for(var i = 0; i < aItems.length; i++){
+					if(aItems[i].amount == 0){
+						MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
+						return;
+					}
+				}
+
 				if (this._CheckDuplicateClaimItems(aItems)) {
 					MessageBox.error(Utility.getText("msg_duplication_prompt"));
 					BusyIndicator.hide();
