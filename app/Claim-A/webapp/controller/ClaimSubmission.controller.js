@@ -77,12 +77,12 @@ sap.ui.define([
 			oRouter.attachBeforeRouteMatched((event) => { this._beforeRouteMatched(event); }, this);
 			
 			this.getOwnerComponent().setModel(new JSONModel({ fieldControl: { 
-				RECEIPT_DATE: {
+				[this._oConstant.EntitiesFields.RECEIPT_DATE]: {
 					customErrorMessage: "",
 					customMinDateError: "",
 					customMaxDateError: ""
 				},
-				BILL_DATE: {
+				[this._oConstant.EntitiesFields.BILL_DATE]: {
 					customErrorMessage: "",
 					customMinDateError: "",
 					customMaxDateError: ""
