@@ -31,17 +31,10 @@
                         id="select_claimprocess_claimtype"
                         forceSelection="false"
                         selectedKey="{claimsubmission_input>/claimtype/type}"
-                        items="{
-                            path: 'employee>/ZCLAIM_TYPE',
-                            sorter: [
-                                { path: 'CLAIM_TYPE_DESC' },
-                                { path: 'CLAIM_TYPE_ID' }
-                            ]
-                        }"
+                        busy="{app_viewfields>/select_claimprocess_claimtype/is_busy}"
                         change="onSelect_ClaimProcess_ClaimType"
                         liveChange="onSelect_ClaimProcess_ClaimType"
                     >
-                        <core:Item key="{employee>CLAIM_TYPE_ID}" text="{employee>CLAIM_TYPE_DESC}" />
                     </Select>
 
                     <!-- Claim Item -->

@@ -79,6 +79,11 @@ sap.ui.define([
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
 			
+			// set field property model for App view/fragments
+			this.getView().setModel(new JSONModel({
+				"select_claimprocess_claimtype": { "is_busy": false },
+				"field_claiminput_altcc": { "has_existing_value": false }
+			}), "app_viewfields");
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
@@ -300,6 +305,7 @@ sap.ui.define([
 					"type": null,
 					"item": null,
 					"category": null,
+					"cost_center": null,
 					"requestform": {
 						"request_id": null,
 						"objective_purpose": null,
@@ -320,6 +326,7 @@ sap.ui.define([
 						"type": null,
 						"item": null,
 						"category": null,
+						"cost_center": null,
 					}
 				},
 				"is_new": false,
@@ -424,6 +431,33 @@ sap.ui.define([
 				oInputModel.setProperty("/emp_master", oEmpData);
 				await this._getEmpDataDescr(oInputModel);
 			}
+
+			// set claim items based on selected claim type
+			this.byId("select_claimprocess_claimtype").bindAggregation("items", {
+				path: "employee>/ZCLAIM_TYPE",
+				filters: [
+					// ensure status is active
+					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+				],
+				sorter: [
+					new Sorter('CLAIM_TYPE_DESC'),
+					new Sorter('CLAIM_TYPE_ID')
+				],
+				template: new Item({
+					key: "{employee>CLAIM_TYPE_ID}",
+					text: "{employee>CLAIM_TYPE_DESC}"
+				}),
+				events: {
+					dataRequested: function() {
+						this.getView().getModel("app_viewfields").setProperty("/select_claimprocess_claimtype/is_busy", true);
+					}.bind(this),
+					dataReceived: function() {
+						this.getView().getModel("app_viewfields").setProperty("/select_claimprocess_claimtype/is_busy", false);
+					}.bind(this)
+				}
+			});
 		},
 
 		_getEmpDataDescr: async function (oModel) {
@@ -693,6 +727,12 @@ sap.ui.define([
 			oInputModel.setProperty("/claimtype/descr/item", this.byId("select_claimprocess_claimitem")._getSelectedItemText());
 			//// get claim item category ID
 			oInputModel.setProperty("/claimtype/category", this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("SUBMISSION_TYPE"));
+			//// get cost center from claim type if value exists
+			var sClaimTypeCostCenter = await CustomValidator.costCenterDetermination(oInputModel.getProperty("/claimtype/type"));
+			if (sClaimTypeCostCenter) {
+				oInputModel.setProperty("/claimtype/cost_center", sClaimTypeCostCenter);
+				oInputModel.setProperty("/claimtype/descr/cost_center", await this._bindEclaimDescr("/ZCOST_CENTER", sClaimTypeCostCenter, 'COST_CENTER_ID', 'COST_CENTER_DESC'));
+			}
 			//// get request form values
 			if (this.byId("select_claimprocess_requestform").getSelectedItem() && !this.byId("switch_claimprocess_req_emailapprove").getState()) {
 				var oRequestForm = this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee");
@@ -814,9 +854,21 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/trip_end_date", oInputModel.getProperty("/claimtype/requestform/trip_end_date"));
 			oInputModel.setProperty("/claim_header/event_start_date", oInputModel.getProperty("/claimtype/requestform/event_start_date"));
 			oInputModel.setProperty("/claim_header/event_end_date", oInputModel.getProperty("/claimtype/requestform/event_end_date"));
-			oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/alternate_cost_center"));
-			oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/descr/alternate_cost_center"));
 			oInputModel.setProperty("/claim_header/cash_advance_amount", oInputModel.getProperty("/claimtype/requestform/cash_advance"));
+			//// set alternate cost center based on claim type / pre-approval
+			if (oInputModel.getProperty("/claimtype/cost_center")) {
+				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/cost_center"));
+				oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/descr/cost_center"));
+				this.getView().getModel("app_viewfields").setProperty("/field_claiminput_altcc/has_existing_value", true);
+			}
+			else if (oInputModel.getProperty("/claimtype/requestform/alternate_cost_center")) {
+				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/alternate_cost_center"));
+				oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/descr/alternate_cost_center"));
+				this.getView().getModel("app_viewfields").setProperty("/field_claiminput_altcc/has_existing_value", true);
+			}
+			else {
+				this.getView().getModel("app_viewfields").setProperty("/field_claiminput_altcc/has_existing_value", false);
+			}
 			//// initialized amount values
 			oInputModel.setProperty("/claim_header/total_claim_amount", "0.00");
 			oInputModel.setProperty("/claim_header/final_amount_to_receive", "0.00");
@@ -865,13 +917,6 @@ sap.ui.define([
 						}
 						if (oInputModel.getProperty("/claimtype/requestform/event_end_date")) {
 							this.byId("datepicker_claiminput_eventenddate").setEditable(false);
-						}
-						//// disable editing alternate cost center if already set from request
-						if (oInputModel.getProperty("/claimtype/requestform/alternate_cost_center")) {
-							this.byId("field_claiminput_altcc").setVisible(false);
-
-							this.byId("input_claiminput_altcc").setEnabled(true);
-							this.byId("input_claiminput_altcc").setVisible(true);
 						}
 						break;
 				}
@@ -1220,18 +1265,6 @@ sap.ui.define([
 			//// location
 			if (this.byId("input_claiminput_location").getValue()) {
 				this.byId("input_claiminput_location").setValue(null);
-			}
-			//// alternate cost center
-			if (!this.byId("field_claiminput_altcc").getVisible()) {
-				this.byId("field_claiminput_altcc").setVisible(true);
-			}
-			if (this.byId("field_claiminput_altcc").getValue()) {
-				this.byId("field_claiminput_altcc").setValue(null);
-			}
-			if (this.byId("input_claiminput_altcc").getEnabled()) {
-				this.byId("input_claiminput_altcc").setEnabled(false);
-				this.byId("input_claiminput_altcc").setEditable(false);
-				this.byId("input_claiminput_altcc").setVisible(false);
 			}
 			//// attachment email approval
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {

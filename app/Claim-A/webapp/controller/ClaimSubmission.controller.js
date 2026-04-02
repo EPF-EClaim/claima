@@ -933,6 +933,7 @@ sap.ui.define([
 					"type": null,
 					"item": null,
 					"category": null,
+					"cost_center": null,
 					"requestform": {
 						"request_id": null,
 						"objective_purpose": null,
@@ -952,6 +953,7 @@ sap.ui.define([
 						"type": null,
 						"item": null,
 						"category": null,
+						"cost_center": null,
 					}
 				},
 				"is_new": false,
