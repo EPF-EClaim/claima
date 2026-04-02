@@ -2096,7 +2096,9 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
 			// set claim item property model
-			var oClaimItemPropertyData = {
+			var oClaimItemPropertyModel = {
+				start_date: { is_visible: false },
+				end_date: { is_visible: false },
 				insurance_cert_end_date: { is_visible: false },
 				insurance_cert_start_date: { is_visible: false },
 				insurance_package_id: { is_visible: false },
@@ -2105,7 +2107,7 @@ sap.ui.define([
 				insurance_purchase_date: { is_visible: false },
 				no_of_days: { is_editable: false }
 			};
-			var oModel = new JSONModel(oClaimItemPropertyData);
+			var oModel = new JSONModel(oClaimItemPropertyModel);
 			//// set input
 			this.getView().setModel(oModel, "claimitem_property");
 
@@ -2744,7 +2746,7 @@ sap.ui.define([
 
         /**
          * Determine which method to use when calculating number of days for claim item
-		 * if claim item is Dobi, pass start/end date value from claim header
+		 * if start/end date is not in claim item fields, pass start/end date value from claim header
 		 * else if header is empty, pass start/end date value from claim item
          * @private
          * @return {integer} retrieve number of days value based on start/end date from claim
@@ -2753,8 +2755,9 @@ sap.ui.define([
 			var oHeader = {};
 			var oItem = {};
 			var oInputModel = this.getView().getModel("claimitem_input");
-			//// get header if claim type item is DOBI
-			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DOBI) {
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			//// get header if start/end date is not visible in claim item fields
+			if (!oPropertyModel.getProperty("/start_date/is_visible") || !oPropertyModel.getProperty("/end_date/is_visible")) {
 				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 				oHeader = {
 					tripstartdate: oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"),

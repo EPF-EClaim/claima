@@ -236,7 +236,7 @@
 				<DatePicker
 					id="datepicker_claimdetails_input_startdate"
 					value="{claimitem_input>/claim_item/start_date}"
-					visible="false"
+					visible="{claimitem_property>/start_date/is_visible}"
 					displayFormat="dd-MMM-yyyy"
 					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_startdate','datepicker_claimdetails_input_enddate')"
 					required="true"
@@ -257,7 +257,7 @@
 				<DatePicker
 					id="datepicker_claimdetails_input_enddate"
 					value="{claimitem_input>/claim_item/end_date}"
-					visible="false"
+					visible="{claimitem_property>/end_date/is_visible}"
 					displayFormat="dd-MMM-yyyy"
 					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_startdate','datepicker_claimdetails_input_enddate')"
 					required="true"
