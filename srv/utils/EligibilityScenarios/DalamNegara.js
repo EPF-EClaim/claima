@@ -56,7 +56,7 @@ module.exports = {
                     // no handler, remain as string
                 }
 
-                switch (key) {
+                switch (oPayload.CheckFields[i].fieldName) {
                 case Constant.EntitiesFields.TRAVEL_DAYS_ID:
                     sTravelDaysId = oPayload.CheckFields[i].value;
                     break;
