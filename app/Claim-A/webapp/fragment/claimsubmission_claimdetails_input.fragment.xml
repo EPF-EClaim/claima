@@ -242,7 +242,7 @@
 					}"
 					maxDate="{
 						parts: [
-							{ value: 'RECEIPT_DATE' },
+							'constant>/EntitiesFields/RECEIPT_DATE',
 							'claimsubmission_input>/claim_header/claim_id',
 							'claimsubmission_input>/claim_header/claim_type_id',
 							'claimitem_input>/claim_item/claim_type_item_id',
