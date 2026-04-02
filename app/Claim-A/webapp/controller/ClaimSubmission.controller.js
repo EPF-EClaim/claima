@@ -72,6 +72,7 @@ sap.ui.define([
 			this.currentHash = null;
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
+			
 
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
@@ -2432,7 +2433,7 @@ sap.ui.define([
 			// get input model
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-
+			CustomValidator.init(this.getView());
 			/* 	4 scenarios for Receipt Date to be populated
 					1. Get Receipt Date based on input
 					2. If Receipt Date is null, get item Bill Date
@@ -2463,18 +2464,10 @@ sap.ui.define([
 
 			//FUT issue #58
 			//checking for galakan disclaimer if its ticked or not
-			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === "TELEFON_B") {
-				if(!oInputModel.getProperty("/claim_item/disclaimer")) {
-					MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
-					return;
-				}
-			}
-
-			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === "GALAKAN") {
-				if(!oInputModel.getProperty("/claim_item/disclaimer_galakan")) {
-					MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
-					return;
-				}
+			
+			if(!CustomValidator.validate("CLM")){
+                MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+				return;
 			}
 
 			//FUT issue #81
