@@ -2458,7 +2458,7 @@ sap.ui.define([
 			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
 
 			if(dReceiptDate > dTripEndDate){
-				MessageToast.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
+				MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
 				return;
 			}
 
@@ -2475,7 +2475,7 @@ sap.ui.define([
 			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
 
 			if(dReceiptDate > dTripEndDate){
-				MessageToast.show(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
+				MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
 				return;
 			}
 			try {
