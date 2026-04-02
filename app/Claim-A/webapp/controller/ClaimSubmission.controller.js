@@ -65,6 +65,8 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.ClaimSubmission", {
 
+		DateUtility: DateUtility,
+
 		onInit: function () {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._fragments = Object.create(null);
@@ -1661,11 +1663,6 @@ sap.ui.define([
 				const sClaimId = oClaimModel?.getProperty("/claim_header/claim_id")?.trim();
 
 				if (sMode !== this._oConstant.ApprovalProcess.CLAIM_APPROVE) {
-					return;
-				}
-
-				if (!sComment) {
-					MessageBox.error(Utility.getText("msg_claimapprover_comment"));
 					return;
 				}
 
