@@ -31,6 +31,22 @@ sap.ui.define([
                 case Constants.SubmissionTypePrefix.REQUEST:
                     break;
                 case Constants.SubmissionTypePrefix.CLAIM:
+                    var oInputModel = this.oOwnerComponent.getModel("claimitem_input");
+
+                    if(oInputModel.getProperty("/claim_item/claim_type_item_id" === "GALAKAN")){
+                        if(!oInputModel.getProperty("/claim_item/disclaimer")) {
+                                MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+                                return;
+                        }
+                        
+
+                        if(!oInputModel.getProperty("/claim_item/disclaimer_galakan")) {
+                            MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+                            return;
+                    
+                        }
+                    }
+                        
                     break;
             }
         }

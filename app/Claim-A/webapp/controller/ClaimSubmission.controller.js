@@ -26,7 +26,8 @@ sap.ui.define([
 	"claima/utils/workflowApproval",
 	"claima/utils/DateUtility",
 	"claima/utils/EligibilityCheck",
-	"claima/utils/EligibilityScenarios/EligibleScenarioCheck"
+	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
+	"claima/utils/CustomValidator"
 ], function (
 	Fragment,
 	Item,
@@ -55,7 +56,8 @@ sap.ui.define([
 	workflowApproval,
 	DateUtility,
 	EligibilityCheck,
-	EligibleScenarioCheck
+	EligibleScenarioCheck,
+	CustomValidator
 ) {
 	"use strict";
 
@@ -2459,20 +2461,7 @@ sap.ui.define([
 
 			//FUT issue #58
 			//checking for galakan disclaimer if its ticked or not
-			if (this.byId("checkbox_claimdetails_input_disclaimer").getVisible()) {
-				if(!oInputModel.getProperty("/claim_item/disclaimer")) {
-					MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
-					return;
-				}
-			}
-
-			if (this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()) {
-				if(!oInputModel.getProperty("/claim_item/disclaimer_galakan")) {
-					MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
-					return;
-				}
-			}
-
+			CusomValidator.validate("CLM").bind(this);
 
 			try {
 				BusyIndicator.show(0);
