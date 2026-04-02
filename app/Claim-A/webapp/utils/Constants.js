@@ -78,7 +78,8 @@ sap.ui.define([
             "VISA": "VISA",
             "YURAN": "YURAN",
             "YURAN_KLJ": "YURAN_KLJ",
-            "CASH_REPAY": "CASH_REPAY"
+            "CASH_REPAY": "CASH_REPAY",
+            "TELEFON_B": "TELEFON_B"
         },
         "ClaimTypeItemStatus": {
             "ACTIVE": "ACTIVE",

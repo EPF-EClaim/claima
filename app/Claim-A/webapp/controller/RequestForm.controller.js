@@ -1282,10 +1282,39 @@ sap.ui.define([
 			}
 		},
 
-		populateEstimatedAmount(oEvent) {
+		populateEstimatedAmount: function(oEvent) {
+			const oInput = oEvent.getSource();
+			
+			const oContext = oInput.getBindingContext("request");
+			const sPath = oContext.getPath(); 
+			
+			let fEnteredAmount = parseFloat(oInput.getValue() || 0);
+
+			const sClaimTypeItem = this._oReqModel.getProperty("/req_item/claim_type_item_id");
+
+			if (!sClaimTypeItem) {
+				MessageBox.error(Utility.getText("req_d_e_select_claim_type_item"));
+				return;
+			}
+			
+			const sRestrictedType = this._oConstant.ClaimTypeItem.TELEFON_B; 
+			const fMaxLimit = 100.00;
+			const fMinLimit = 0.00;
+
+			if (sClaimTypeItem === sRestrictedType && fEnteredAmount > fMaxLimit && fEnteredAmount > fMinLimit) {
+				MessageBox.error(`The maximum amount allowed per person is ${fMaxLimit.toFixed(2)}.`);
+				
+				this._oReqModel.setProperty(sPath + "/ALLOCATED_AMOUNT", fEnteredAmount.toFixed(2));
+				
+				oInput.setValueState(ValueState.Error);
+			} else {
+				if (oInput.setValueState) {
+					oInput.setValueState(ValueState.None);
+				}
+			}
+
 			const aParticipantList = this._oReqModel.getProperty("/participant");
 
-			// Use let OR use reduce directly
 			const fEstAmount = aParticipantList.reduce((sum, row) => {
 				return sum + parseFloat(row.ALLOCATED_AMOUNT || 0);
 			}, 0);
