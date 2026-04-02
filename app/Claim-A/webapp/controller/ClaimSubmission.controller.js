@@ -2209,19 +2209,19 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
 			
 			// set dropdown for dependent names
-			this.byId("select_claimdetails_input_dependent_name").bindAggregation("items", {
-				path: "employee>/ZEMP_DEPENDENT",
-				filters: [
-					new Filter('EMP_ID', FilterOperator.EQ ,this._oSessionModel.getProperty("/userId")),
-				],
-				sorter: [
-					new Sorter('DEPENDENT_NO'),
-				],
-				template: new Item({
-					key: "{employee>LEGAL_NAME}",
-					text: "{employee>LEGAL_NAME}"
-				})
-			});
+			// this.byId("select_claimdetails_input_dependent_name").bindAggregation("items", {
+			// 	path: "employee>/ZEMP_DEPENDENT",
+			// 	filters: [
+			// 		new Filter('EMP_ID', FilterOperator.EQ ,this._oSessionModel.getProperty("/userId")),
+			// 	],
+			// 	sorter: [
+			// 		new Sorter('DEPENDENT_NO'),
+			// 	],
+			// 	template: new Item({
+			// 		key: "{employee>LEGAL_NAME}",
+			// 		text: "{employee>LEGAL_NAME}"
+			// 	})
+			// });
 		},
 
 		_setClaimDetailSelectionField: function (oId, oTable, oField) {
