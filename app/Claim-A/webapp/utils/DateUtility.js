@@ -226,6 +226,19 @@ sap.ui.define([
             return dDate.setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0);
         },
 
+        /**
+         * Determines the minimum allowable date for specific date fields
+         * based on submission type (REQUEST/CLAIM) & the following parameters.
+         *
+         * @param {string} sFieldName - The field name (e.g., RECEIPT_DATE, BILL_DATE).
+         * @param {string} sId - Submission ID; first 3 chars determine submission type.
+         * @param {string} sType - Claim Type.
+         * @param {string} sItemType - Claim Item Type.
+         * @param {object} oHeader - Header data.
+         * @param {object} oItem - Item data.
+         * @returns {Date|null} Minimum allowed date or null if invalid input.
+         *
+        **/
         determineMinDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem) {
             if (!sId || !sType || !sItemType) return null;
 
@@ -248,6 +261,19 @@ sap.ui.define([
             return dMinDate;
         },
 
+        /**
+         * Determines the maximum allowable date for specific date fields
+         * based on submission type (REQUEST/CLAIM) & the following parameters.
+         *
+         * @param {string} sFieldName - The field name (e.g., RECEIPT_DATE, BILL_DATE).
+         * @param {string} sId - Submission ID; first 3 chars determine submission type.
+         * @param {string} sType - Claim Type.
+         * @param {string} sItemType - Claim Item Type.
+         * @param {object} oHeader - Header data.
+         * @param {object} oItem - Item data.
+         * @returns {Date|null} Maximum allowed date or null if invalid input.
+         *
+        **/
         determineMaxDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem) {
             if (!sId || !sType || !sItemType) return null;
 
