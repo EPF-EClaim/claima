@@ -22,7 +22,8 @@ sap.ui.define([
 	"claima/utils/DateUtility",
 	"claima/utils/PARequestSharedFunction",
 	"claima/utils/Attachment",
-	"claima/utils/EligibilityCheck"
+	"claima/utils/EligibilityCheck",
+	"claima/utils/CustomValidator"
 ], function (
 	Popover,
 	Button,
@@ -47,7 +48,8 @@ sap.ui.define([
 	DateUtility,
 	PARequestSharedFunction,
 	Attachment,
-	EligibilityCheck
+	EligibilityCheck,
+	CustomValidator
 ) {
 	"use strict";
 
@@ -1495,6 +1497,18 @@ sap.ui.define([
 			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
 			const oDialogData = oDialogModel.getData();
 			oDialogData.doc2 = oEvent.getParameters("files").files[0];
+		},
+
+		async onDefaultCostCenterDetermination(oEvent) {
+			var oSelectControl = oEvent.getSource();
+    		var sClaimTypeId = oSelectControl.getSelectedKey();
+			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+
+			var sDefaultCostCenter = await CustomValidator.costCenterDetermination(sClaimTypeId);
+			if (sDefaultCostCenter) {
+				Fragment.byId("request", "req_acc").setEditMode("ReadOnly");
+				oDialogModel.setProperty("/altcostcenter", sDefaultCostCenter);
+			}
 		},
 
 		// get backend data

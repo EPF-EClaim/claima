@@ -356,4 +356,6 @@ service eclaim_srv @(requires: 'authenticated-user'){
 
     function checkEligibleMobileClaim(sEmployeeId: String) returns String; 
 
+    function checkDefaultCostCenter(sClaimTypeId: String) returns String;
+
 };

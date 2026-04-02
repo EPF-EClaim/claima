@@ -272,10 +272,6 @@ module.exports = (srv) => {
         }
     });
 
-    /* ======================================================================================================================================= */
-    /* Below are Jefry's functions with the help of Ain. Don't slot your function in between tq. You are making my life harder. Appreciate it. */
-    /* ======================================================================================================================================= */
-
     srv.on('budgetchecking', async (req) => {
         const { ZBUDGET } = srv.entities;
         const { budget } = req.data;
@@ -621,10 +617,6 @@ module.exports = (srv) => {
         }
     });
 
-    /* ======================================================================================================================================= */
-    /* Above are Jefry's functions with the help of Ain. Don't slot your function in between tq. You are making my life harder. Appreciate it. */
-    /* ======================================================================================================================================= */
-
     srv.on('onFinalApproveInsert', async (req) => {
         const { ZCLM_APPR_REQ_STAT } = srv.entities;
         try {
@@ -808,6 +800,31 @@ module.exports = (srv) => {
             return { success: true, sDelete };
         } catch (error) {
             req.error(400, `Fail creating record: ${error.message}`, req);
+        }
+    });
+
+    srv.on('checkDefaultCostCenter', async (req) => {
+        const { sClaimTypeId } = req.data;
+
+        if (!sClaimTypeId) {
+            return req.error(400, 'Please provide an Employee ID.');
+        }
+
+        try {
+            const oClaimTypeRecord = await SELECT.one('COST_CENTER')
+                .from('ZCLAIM_TYPE')
+                .where({ CLAIM_TYPE_ID: sClaimTypeId });
+
+            if (!oClaimTypeRecord) {
+                return req.error(404, `Claim Type ${oClaimTypeRecord} not found.`);
+            }
+
+            return {
+                sCostCenter: String(oClaimTypeRecord.COST_CENTER)
+            }
+
+        } catch (error) {
+            return req.error(500, 'An error occurred while checking claim type table.');
         }
     });
 
