@@ -2459,7 +2459,7 @@ sap.ui.define([
 
 			//FUT issue #58
 			//checking for galakan disclaimer if its ticked or not
-			if(oInputModel.getProperty("/claim_item/disclaimer_galakan") == false || oInputModel.getProperty("/claim_item/disclaimer") == false){
+			if(oInputModel.getProperty("/claim_item/disclaimer_galakan") == false || oInputModel.getProperty("/claim_item/disclaimer") == false) {
 				MessageToast.show(Utility.getText("msg_claimdetails_no_check_disclaimer"));
 				return;
 			}
