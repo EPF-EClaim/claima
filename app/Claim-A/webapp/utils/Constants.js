@@ -300,6 +300,16 @@ sap.ui.define([
         "Status" : {
             "ACTIVE" : "ACTIVE"
         },
+        "Claim_Action" : {
+            "DRAFT" : "Save Draft",
+            "DELETE" : "Delete Report",
+            "SUBMIT" : "Submit Report",
+            "BACK" : "Back",
+            "REJECT" : "Reject",
+            "PUSHBACK" : "Push Back",
+            "APPROVE" : "Approve"
+
+        },
         "ConfigAccess": 
              [
                 "ZRISK", "ZREQUEST_TYPE", "ZCLAIM_TYPE", "ZNUM_RANGE", "ZCLAIM_CATEGORY",
