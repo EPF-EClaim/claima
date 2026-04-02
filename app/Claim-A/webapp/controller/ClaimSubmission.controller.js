@@ -2470,6 +2470,7 @@ sap.ui.define([
 			if(dReceiptDate > dTripEndDate){
 				MessageToast.show(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
 				return;
+			}
 
 			//FUT issue #54 
 			//checking if visa backdated receipt date is over 90 days, if over 90 days a message error box will appear
