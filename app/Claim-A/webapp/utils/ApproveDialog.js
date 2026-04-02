@@ -61,7 +61,7 @@ sap.ui.define([
         new Text({ text: "{claimsubmission_input>/claim_header/claim_id}", visible: "{= ${Type>/mode} === 'APPROVE_CLAIM' }", wrapping: false }),
 
         // Approval comment (always visible)
-        new Label({ text: "{i18n>approval_remarks}", required: true }),
+        new Label({ text: "{i18n>approval_remarks}"}),
         new TextArea(oView.createId("approvalCommentArea"), {
           value: "{Reject>/approvalComment}",
           width: "100%",
@@ -91,7 +91,6 @@ sap.ui.define([
       endButton: new Button(oView.createId("approver_placeholder_create"), {
         text: "{i18n>approve_btn}",
         type: sap.m.ButtonType.Emphasized,
-        enabled: "{= !!${Reject>/approvalComment} }",
         press: fnCreateHandler.bind(oController)
       })
     });
