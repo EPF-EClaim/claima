@@ -173,7 +173,9 @@
 						}
 					}"
 					required="true"
-					editable="{= ${claimitem_property>/rate_per_km/is_visible} === false}"
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						!${claimitem_property>/rate_per_km/is_visible}
+					}"
 					visible="{claimitem_property>/amount/is_visible}"
 				/>
 

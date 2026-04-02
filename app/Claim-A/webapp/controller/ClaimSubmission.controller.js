@@ -2151,17 +2151,16 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
 			// set claim item property model
-			var oClaimItemPropertyModel = {
-				percentage_compensation: { is_visible: false },
+			var oClaimItemProperties = {
 				amount: { is_visible: false },
 				vehicle_type: { is_visible: false },
 				km: { is_visible: false },
 				rate_per_km: { is_visible: false },
 				toll: { is_visible: false }
 			};
-			var oModel = new JSONModel(oClaimItemPropertyModel);
+			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
-			this.getView().setModel(oModel, "claimitem_property");			
+			this.getView().setModel(oClaimItemPropertyModel, "claimitem_property");			
 
 			// change footer buttons
 			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
