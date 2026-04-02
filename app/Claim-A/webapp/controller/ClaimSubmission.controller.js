@@ -61,6 +61,8 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.ClaimSubmission", {
 
+		DateUtility: DateUtility,
+
 		onInit: function () {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._fragments = Object.create(null);

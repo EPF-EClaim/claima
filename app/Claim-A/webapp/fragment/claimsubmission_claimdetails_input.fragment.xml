@@ -216,10 +216,36 @@
 				<Label text="{i18n>label_claimdetails_input_receiptdate}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_receipt_date"
-					value="{claimitem_input>/claim_item/receipt_date}"
+					value="{
+						path: 'claimitem_input>/claim_item/receipt_date'
+					}"
+					showCurrentDateButton="true"
+					valueFormat="yyyy-MM-dd"
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
 					required="true"
+					minDate="{
+						parts: [
+							{ value: 'RECEIPT_DATE' },
+							'claimsubmission_input>/claim_header/claim_id',
+							'claimsubmission_input>/claim_header/claim_type_id',
+							'claimitem_input>/claim_item/claim_type_item_id',
+							'claimsubmission_input>/claim_header',
+							'claimitem_input>/claim_item'
+						],
+						formatter: '.DateUtility.determineMinDate'
+					}"
+					maxDate="{
+						parts: [
+							{ value: 'RECEIPT_DATE' },
+							'claimsubmission_input>/claim_header/claim_id',
+							'claimsubmission_input>/claim_header/claim_type_id',
+							'claimitem_input>/claim_item/claim_type_item_id',
+							'claimsubmission_input>/claim_header',
+							'claimitem_input>/claim_item'
+						],
+						formatter: '.DateUtility.determineMaxDate'
+					}"
 				/>
 
 				<!-- Purpose -->
@@ -912,9 +938,24 @@
 				<Label text="{i18n>label_claimdetails_input_billdate}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_bill_date"
-					value="{claimitem_input>/claim_item/bill_date}"
+					value="{
+						path: 'claimitem_input>/claim_item/bill_date'
+					}"
+					showCurrentDateButton="true"
+					valueFormat="yyyy-MM-dd"
 					visible="false"
 					displayFormat="dd-MMM-yyyy"
+					maxDate="{
+						parts: [
+							{ value: 'BILL_DATE' },
+							'claimsubmission_input>/claim_header/claim_id',
+							'claimsubmission_input>/claim_header/claim_type_id',
+							'claimitem_input>/claim_item/claim_type_item_id',
+							'claimsubmission_input>/claim_header',
+							'claimitem_input>/claim_item'
+						],
+						formatter: '.DateUtility.determineMaxDate'
+					}"
 				/>
 
 				<!-- Phone No -->

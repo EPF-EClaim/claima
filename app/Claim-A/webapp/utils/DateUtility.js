@@ -1,6 +1,7 @@
 sap.ui.define([
-    "sap/ui/core/format/DateFormat"
-], function (DateFormat) {
+    "sap/ui/core/format/DateFormat",
+	"claima/utils/Constants",
+], function (DateFormat, Constants) {
     "use strict";
 
     return {
@@ -223,6 +224,61 @@ sap.ui.define([
             if (!sDate || isNaN(dDate)) return false;
 
             return dDate.setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0);
+        },
+
+        determineMinDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem) {
+            if (!sId || !sType || !sItemType) return null;
+
+            const sSubmissionType = sId.substring(0, 3);
+            var dMinDate = new Date();
+
+            switch (sFieldName) {
+                case Constants.EntitiesFields.RECEIPT_DATE:
+                    switch (sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            dMinDate = new Date(oHeader.trip_start_date); // default
+                            break;
+                    }
+                    break;
+            }
+
+            return dMinDate;
+        },
+
+        determineMaxDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem) {
+            if (!sId || !sType || !sItemType) return null;
+
+            const sSubmissionType = sId.substring(0, 3);
+            var dMaxDate = new Date();
+
+            switch (sFieldName) {
+                case Constants.EntitiesFields.RECEIPT_DATE:
+                    switch (sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            dMaxDate = new Date(oHeader.trip_end_date); // default
+                            break;
+                    }
+                    break;
+
+                case Constants.EntitiesFields.BILL_DATE:
+                    switch (sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            dMaxDate = new Date(oHeader.trip_end_date); // default
+                            break;
+                    }
+                    break;
+            }
+
+            return dMaxDate;
         }
 
     };
