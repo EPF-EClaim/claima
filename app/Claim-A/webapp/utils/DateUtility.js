@@ -243,7 +243,7 @@ sap.ui.define([
             if (!sId || !sType || !sItemType) return null;
 
             const sSubmissionType = sId.substring(0, 3);
-            var dMinDate = new Date();
+            var dMinDate = null;
 
             switch (sFieldName) {
                 case Constants.EntitiesFields.RECEIPT_DATE:
@@ -252,7 +252,13 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            dMinDate = new Date(oHeader.trip_start_date); // default
+                            // Specific Claim Type
+                            if (sItemType === Constants.ClaimTypeItem.VISA) {
+                                
+                            } else {
+                                // Other Claim Type
+                                dMinDate = new Date(oHeader.trip_start_date);
+                            }
                             break;
                     }
                     break;
@@ -278,7 +284,7 @@ sap.ui.define([
             if (!sId || !sType || !sItemType) return null;
 
             const sSubmissionType = sId.substring(0, 3);
-            var dMaxDate = new Date();
+            var dMaxDate = null;
 
             switch (sFieldName) {
                 case Constants.EntitiesFields.RECEIPT_DATE:
