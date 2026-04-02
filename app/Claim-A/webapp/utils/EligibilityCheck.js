@@ -68,7 +68,7 @@ sap.ui.define([
 				
 					acc.push({
 						fieldName: sTargetName,
-						value: val,
+						value: String(val),
 						result: null
 					});
 				return acc;
@@ -81,7 +81,7 @@ sap.ui.define([
 						var oNewField = { ...field }; 
 						
 						if (oNewField.fieldName === "ELIGIBLE_AMOUNT") {
-							oNewField.value = row.ALLOCATED_AMOUNT;
+							oNewField.value = String(row.ALLOCATED_AMOUNT);
 						}
 						
 						return oNewField;
@@ -164,11 +164,11 @@ sap.ui.define([
 
 			Object.values(oDBToUIControlMap).forEach(sId => {
 				if (sId === "TABLE_ALLOC_AMOUNT") {
-					setTableValueState(null, sap.ui.core.ValueState.None);
+					setTableValueState(null, ValueState.None);
 				} else {
 					const oInputControl = getControl(sId);
 					if (oInputControl?.setValueState) {
-						oInputControl.setValueState(sap.ui.core.ValueState.None);
+						oInputControl.setValueState(ValueState.None);
 						oInputControl.setValueStateText("");
 					}
 				}
@@ -191,11 +191,11 @@ sap.ui.define([
 					const sMappedId = oDBToUIControlMap[oField.fieldName];
 					
 					if (sMappedId === "TABLE_ALLOC_AMOUNT") {
-						setTableValueState(sEmpId, sap.ui.core.ValueState.Error);
+						setTableValueState(sEmpId, ValueState.Error);
 					} else {
 						const oInputControl = getControl(sMappedId);
 						if (oInputControl?.setValueState) {
-							oInputControl.setValueState(sap.ui.core.ValueState.Error);
+							oInputControl.setValueState(ValueState.Error);
 						}
 					}
 				});
