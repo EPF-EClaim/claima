@@ -840,11 +840,10 @@ module.exports = (srv) => {
         const today = new Date().toISOString().slice(0, 10);
 
         let entitlement = null;
-        let meal_allowance = null;
-        let daily_allowance = null;
-        let time_difference = null;
-        let bfast, lunch, dinner, total_meal_allowance = null;
-        let bNoAllowance = false;
+        let meal_allowance = 0;
+        let daily_allowance = 0;
+        let time_difference = 0;
+        let bfast, lunch, dinner, total_meal_allowance = 0;
 
         //get employee personal grade 
         const email = String(emailFromToken).trim().toLowerCase();
@@ -857,45 +856,45 @@ module.exports = (srv) => {
                 PERSONAL_GRADE: result.GRADE,
                 LOCATION: req.data.location,
                 CLAIM_TYPE_ID: req.data.claimtypeid,
-                CLAIM_TYPE_ITEM: req.data.claimtypeitem
+                CLAIM_TYPE_ITEM_ID: req.data.claimtypeitem,
+                START_DATE: { '<=': today },
+                END_DATE: { '>=': today }
             })
-                .and('START_DATE <=?', today)
-                .and('END_DATE >= ?', today)
             )
         }
-
-        time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
-
-        //checking on the daily and meal allowance entitlement
-        if (req.data.day = 0 && req.data.hours < 8.0) {
-            //no entitlement
-            meal_allowance = 0;
-            bNoAllowance = true;
-        } else if (req.data.day = 0 && req.data.hours >= 8.0 && req.data.hours < 24.0) {
-            //entitle for daily allowance
-            meal_allowance = entitlement.AMOUNT / 2;
-        }
-        else if (req.data.day > 0) {
-            meal_allowance = req.data.day * entitlement.AMOUNT;
-            if (time_difference >= 8.0 && time_difference < 24.0) {
-                daily_allowance = entitlement.AMOUNT / 2;
-            }
-            meal_allowance += daily_allowance;
-        }
-
-        //deduction of meal allowance
-        //20% from breakfast, 40% from lunch, 40% from dinner 
-        bfast = req.data.breakfast != 0 ? 0.2 * entitlement.AMOUNT : 0;
-        lunch = req.data.lunch != 0 ? 0.4 * entitlement.AMOUNT : 0;
-        dinner = req.data.dinner != 0 ? 0.4 * entitlement.AMOUNT : 0;
-
-        total_meal_allowance = bNoAllowance === false? (meal_allowance - bfast - lunch - dinner): 0;
-
         if (!entitlement) {
-            return null;
+            return { amount: null };
         } else {
-            return total_meal_allowance;
+            time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
+
+            //checking on the daily and meal allowance entitlement
+            if (req.data.day === 0 && req.data.hours < 8.0) {
+                //no entitlement
+                meal_allowance = 0;
+            } else if (req.data.day === 0 && req.data.hours >= 8.0 && req.data.hours < 24.0) {
+                //entitle for daily allowance
+                meal_allowance = entitlement.AMOUNT / 2;
+            }
+            else if (req.data.day > 0) {
+                meal_allowance = req.data.day * entitlement.AMOUNT;
+                if (time_difference >= 8.0 && time_difference < 24.0) {
+                    daily_allowance = entitlement.AMOUNT / 2;
+                }
+                meal_allowance += daily_allowance;
+            }
+
+            //deduction of meal allowance
+            //20% from breakfast, 40% from lunch, 40% from dinner 
+            bfast = req.data.breakfast != 0 ? (0.2 * entitlement.AMOUNT) * req.data.breakfast : 0;
+            lunch = req.data.lunch != 0 ? (0.4 * entitlement.AMOUNT) * req.data.lunch : 0;
+            dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
+
+            total_meal_allowance = meal_allowance != 0 ? (meal_allowance - bfast - lunch - dinner) : 0;
+            return { amount: total_meal_allowance, 
+                     daily_allowance: entitlement.AMOUNT
+             };
         }
+
     });
 
 

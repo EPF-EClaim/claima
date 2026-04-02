@@ -2856,131 +2856,226 @@ sap.ui.define([
 
 			// get details from per diem table
 			BusyIndicator.show(0);
-			const oModel = this.getOwnerComponent().getModel();
-			const oListBinding = oModel.bindList("/ZPERDIEM_ENT", null, null, [
-				new Filter("PERSONAL_GRADE", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/grade")),
-				new Filter("LOCATION", FilterOperator.EQ, oInputModel.getProperty("/claim_item/region")),
-				new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_id")),
-				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_item_id")),
-				new Filter("START_DATE", FilterOperator.LE, this._getHanaDate(this.byId(startDate).getValue())),
-				new Filter("END_DATE", FilterOperator.GE, this._getHanaDate(this.byId(endDate).getValue()))
-			]);
+			var nDay = this.byId("input_claimdetails_input_travel_duration_day").getValue();
+			var nHour = this.byId("input_claimdetails_input_travel_duration_hour").getValue();
+			var sLocation = oInputModel.getProperty("/claim_item/region");
+			var sClaimtype = oInputModel.getProperty("/claim_item/claim_type_id");
+			var sClaimItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
 
-			try {
-				const aContexts = await oListBinding.requestContexts(0, 1);
+			var nBreakfast = parseInt(this.byId("input_claimdetails_input_provided_breakfast").getValue());
+			var nLunch = parseInt(this.byId("input_claimdetails_input_provided_lunch").getValue());
+			var nDinner = parseInt(this.byId("input_claimdetails_input_provided_dinner").getValue());
 
-				if (aContexts.length > 0) {
-					// get amount from oData
-					var oData = aContexts[0].getObject();
-					var entBfast = parseFloat(oData.AMOUNT) * 0.2;
-					var entLunch = parseFloat(oData.AMOUNT) * 0.4;
-					var entDinner = parseFloat(oData.AMOUNT) * 0.4;
-					//// modifier based on travel duration (hours)
-					if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
-						if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 24) {
-							// full meal allowance
-							entBfast = entBfast * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
-							entLunch = entLunch * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
-							entDinner = entDinner * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
-						}
-						else if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 8) {
-							// daily allowance (half of meal allowance)
-							entBfast = entBfast / 2;
-							entLunch = entLunch / 2;
-							entDinner = entDinner / 2;
-						}
-						else { // if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) < 8)
-							// no meal allowance
-							entBfast = entBfast * 0;
-							entLunch = entLunch * 0;
-							entDinner = entDinner * 0;
-						}
+			nBreakfast = Number.isNaN(nBreakfast) ? 0 : nBreakfast;
+			nLunch = Number.isNaN(nLunch) ? 0 : nLunch;
+			nDinner = Number.isNaN(nDinner) ? 0 : nDinner;
+
+			const oModel = this.getView().getModel();
+
+			const oContext = oModel.bindContext("/getAmountEntitlement(...)");
+
+			// Set parameters
+			oContext.setParameter("day", nDay);
+			oContext.setParameter("hours", nHour);
+			oContext.setParameter("location", sLocation != null? sLocation: '03');
+			oContext.setParameter("claimtypeid", sClaimtype);
+			oContext.setParameter("claimtypeitem", sClaimItem);
+			oContext.setParameter("breakfast", nBreakfast);
+			oContext.setParameter("lunch", nLunch);
+			oContext.setParameter("dinner", nDinner);
+
+
+			oContext.execute()
+				.then(() => oContext.requestObject())
+				.then(oResult => {
+					if (!oResult) {
+						console.log("No entitlement found");
+						return;
+					}
+					BusyIndicator.hide();
+					if (this.byId("input_claimdetails_input_amount").getVisible()){
+					this.byId("input_claimdetails_input_amount").setValue(oResult.amount);
 					}
 
-					// assign entitled meal values
-					if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
-						this.byId("input_claimdetails_input_entitled_breakfast").setValue(entBfast);
+					if (this.byId("input_claimdetails_input_dailyallowance").getVisible()){
+					this.byId("input_claimdetails_input_dailyallowance").setValue(oResult.daily_allowance);
 					}
-					if (this.byId("input_claimdetails_input_entitled_lunch").getVisible()) {
-						this.byId("input_claimdetails_input_entitled_lunch").setValue(entLunch);
-					}
-					if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
-						this.byId("input_claimdetails_input_entitled_dinner").setValue(entDinner);
-					}
-					this.onChange_ClaimDetails_ProvidedMeals();
-				} else {
-					MessageToast.show(Utility.getText("msg_claimdetails_input_entmeals"));
-				}
-				BusyIndicator.hide();
-			} catch (oError) {
-				MessageBox.error(Utility.getText("msg_claimdetails_input_entmeals_err", [oError]));
-				BusyIndicator.hide();
-			}
+
+					console.log("Entitlement amount:", oResult.amount);
+					// oInputModel.setProperty("/claim_item/entitled_amount", oResult.amount);
+				})
+				.catch(err => {
+					console.error("Error calling getAmountEntitlement", err);
+				});
+			// const oModel = this.getOwnerComponent().getModel();
+			// const oListBinding = oModel.bindList("/ZPERDIEM_ENT", null, null, [
+			// 	new Filter("PERSONAL_GRADE", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/grade")),
+			// 	new Filter("LOCATION", FilterOperator.EQ, oInputModel.getProperty("/claim_item/region")),
+			// 	new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_id")),
+			// 	new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_item_id")),
+			// 	new Filter("START_DATE", FilterOperator.LE, this._getHanaDate(this.byId(startDate).getValue())),
+			// 	new Filter("END_DATE", FilterOperator.GE, this._getHanaDate(this.byId(endDate).getValue()))
+			// ]);
+
+			// try {
+			// 	const aContexts = await oListBinding.requestContexts(0, 1);
+
+			// 	if (aContexts.length > 0) {
+			// 		// get amount from oData
+			// 		var oData = aContexts[0].getObject();
+			// 		var entBfast = parseFloat(oData.AMOUNT) * 0.2;
+			// 		var entLunch = parseFloat(oData.AMOUNT) * 0.4;
+			// 		var entDinner = parseFloat(oData.AMOUNT) * 0.4;
+			// 		//// modifier based on travel duration (hours)
+			// 		if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
+			// 			if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 24) {
+			// 				// full meal allowance
+			// 				entBfast = entBfast * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+			// 				entLunch = entLunch * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+			// 				entDinner = entDinner * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
+			// 			}
+			// 			else if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 8) {
+			// 				// daily allowance (half of meal allowance)
+			// 				entBfast = entBfast / 2;
+			// 				entLunch = entLunch / 2;
+			// 				entDinner = entDinner / 2;
+			// 			}
+			// 			else { // if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) < 8)
+			// 				// no meal allowance
+			// 				entBfast = entBfast * 0;
+			// 				entLunch = entLunch * 0;
+			// 				entDinner = entDinner * 0;
+			// 			}
+			// 		}
+
+			// 		// assign entitled meal values
+			// 		if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
+			// 			this.byId("input_claimdetails_input_entitled_breakfast").setValue(entBfast);
+			// 		}
+			// 		if (this.byId("input_claimdetails_input_entitled_lunch").getVisible()) {
+			// 			this.byId("input_claimdetails_input_entitled_lunch").setValue(entLunch);
+			// 		}
+			// 		if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
+			// 			this.byId("input_claimdetails_input_entitled_dinner").setValue(entDinner);
+			// 		}
+			// 		this.onChange_ClaimDetails_ProvidedMeals();
+			// 	} else {
+			// 		MessageToast.show(Utility.getText("msg_claimdetails_input_entmeals"));
+			// 	}
+			// 	BusyIndicator.hide();
+			// } catch (oError) {
+			// 	MessageBox.error(Utility.getText("msg_claimdetails_input_entmeals_err", [oError]));
+			// 	BusyIndicator.hide();
+			// }
 		},
 
 		onChange_ClaimDetails_ProvidedMeals: function () {
 			let nEntBfast, nEntLunch, nEntDinner;
+			var oInputModel = this.getView().getModel("claimitem_input");
 			//check if there is any input, if yes then recalculate entitled meals 
 			//breakfast meal entitlement
-			if(this.byId("input_claimdetails_input_provided_breakfast").getValue() != null){
+			if (this.byId("input_claimdetails_input_provided_breakfast").getValue() != null) {
 				nEntBfast = this.byId("input_claimdetails_input_travel_duration_day").getValue() - this.byId("input_claimdetails_input_provided_breakfast").getValue()
 				this.byId("input_claimdetails_input_entitled_breakfast").setValue(nEntBfast);
 			}
 
 			//lunch meal entitlement
-			if(this.byId("input_claimdetails_input_provided_lunch").getValue() != null){
-				nEntBfast = this.byId("input_claimdetails_input_travel_duration_day").getValue() - this.byId("input_claimdetails_input_provided_lunch").getValue()
-				this.byId("input_claimdetails_input_entitled_lunch").setValue(nEntBfast);
+			if (this.byId("input_claimdetails_input_provided_lunch").getValue() != null) {
+				nEntLunch = this.byId("input_claimdetails_input_travel_duration_day").getValue() - this.byId("input_claimdetails_input_provided_lunch").getValue()
+				this.byId("input_claimdetails_input_entitled_lunch").setValue(nEntLunch);
 			}
-			
+
 			//dinner meal entitlement
-			if(this.byId("input_claimdetails_input_provided_dinner").getValue() != null){
-				nEntBfast = this.byId("input_claimdetails_input_travel_duration_day").getValue() - this.byId("input_claimdetails_input_provided_dinner").getValue()
-				this.byId("input_claimdetails_input_entitled_dinner").setValue(nEntBfast);
+			if (this.byId("input_claimdetails_input_provided_dinner").getValue() != null) {
+				nEntDinner = this.byId("input_claimdetails_input_travel_duration_day").getValue() - this.byId("input_claimdetails_input_provided_dinner").getValue()
+				this.byId("input_claimdetails_input_entitled_dinner").setValue(nEntDinner);
 			}
 
-			var provBfast = parseFloat(this.byId("input_claimdetails_input_provided_breakfast"));
-			if (isNaN(provBfast)) { provBfast = 0.0; }
-			var provLunch = parseFloat(this.byId("input_claimdetails_input_provided_lunch"));
-			if (isNaN(provLunch)) { provLunch = 0.0; }
-			var provDinner = parseFloat(this.byId("input_claimdetails_input_provided_dinner"));
-			if (isNaN(provDinner)) { provDinner = 0.0; }
-			var entBfast = parseFloat(this.byId("input_claimdetails_input_entitled_breakfast"));
-			if (isNaN(entBfast)) { entBfast = 0.0; }
-			var entLunch = parseFloat(this.byId("input_claimdetails_input_entitled_lunch"));
-			if (isNaN(entLunch)) { entLunch = 0.0; }
-			var entDinner = parseFloat(this.byId("input_claimdetails_input_entitled_dinner"));
-			if (isNaN(entDinner)) { entDinner = 0.0; }
-			var amount = 0.0;
+			var nDay = this.byId("input_claimdetails_input_travel_duration_day").getValue();
+			var nHour = this.byId("input_claimdetails_input_travel_duration_hour").getValue();
+			var sLocation = oInputModel.getProperty("/claim_item/region");
+			var sClaimtype = oInputModel.getProperty("/claim_item/claim_type_id");
+			var sClaimItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
 
-			// calculate total amount
-			if (this.byId("input_claimdetails_input_amount").getVisible()) {
-				this.byId("input_claimdetails_input_amount").setValue(amount);
-			}
-			else {
-				return;
-			}
-			//// breakfast
-			if (entBfast > 0.0 && provBfast > entBfast) {
-				this.byId("input_claimdetails_input_amount").setValue(amount + entBfast);
-			}
-			else {
-				this.byId("input_claimdetails_input_amount").setValue(amount + provBfast);
-			}
-			//// lunch
-			if (entLunch > 0.0 && provLunch > entLunch) {
-				this.byId("input_claimdetails_input_amount").setValue(amount + entLunch);
-			}
-			else {
-				this.byId("input_claimdetails_input_amount").setValue(amount + provLunch);
-			}
-			//// dinner
-			if (entDinner > 0.0 && provDinner > entDinner) {
-				this.byId("input_claimdetails_input_amount").setValue(amount + entDinner);
-			}
-			else {
-				this.byId("input_claimdetails_input_amount").setValue(amount + provDinner);
-			}
+			var nBreakfast = parseInt(this.byId("input_claimdetails_input_provided_breakfast").getValue());
+			var nLunch = parseInt(this.byId("input_claimdetails_input_provided_lunch").getValue());
+			var nDinner = parseInt(this.byId("input_claimdetails_input_provided_dinner").getValue());
+
+			nBreakfast = Number.isNaN(nBreakfast) ? 0 : nBreakfast;
+			nLunch = Number.isNaN(nLunch) ? 0 : nLunch;
+			nDinner = Number.isNaN(nDinner) ? 0 : nDinner;
+
+			const oModel = this.getView().getModel();
+
+			const oContext = oModel.bindContext("/getAmountEntitlement(...)");
+
+			// Set parameters
+			oContext.setParameter("day", nDay);
+			oContext.setParameter("hours", nHour);
+			oContext.setParameter("location", sLocation);
+			oContext.setParameter("claimtypeid", sClaimtype);
+			oContext.setParameter("claimtypeitem", sClaimItem);
+			oContext.setParameter("breakfast", nBreakfast);
+			oContext.setParameter("lunch", nLunch);
+			oContext.setParameter("dinner", nDinner);
+
+
+			oContext.execute()
+				.then(() => oContext.requestObject())
+				.then(oResult => {
+					if (!oResult) {
+						console.log("No entitlement found");
+						return;
+					}
+					this.byId("input_claimdetails_input_amount").setValue(oResult.amount);
+					this.byId("input_claimdetails_input_dailyallowance").setValue(oResult.daily_allowance);
+					console.log("Entitlement amount:", oResult.amount);
+				})
+				.catch(err => {
+					console.error("Error calling getAmountEntitlement", err);
+				});
+			// var provBfast = parseFloat(this.byId("input_claimdetails_input_provided_breakfast"));
+			// if (isNaN(provBfast)) { provBfast = 0.0; }
+			// var provLunch = parseFloat(this.byId("input_claimdetails_input_provided_lunch"));
+			// if (isNaN(provLunch)) { provLunch = 0.0; }
+			// var provDinner = parseFloat(this.byId("input_claimdetails_input_provided_dinner"));
+			// if (isNaN(provDinner)) { provDinner = 0.0; }
+			// var entBfast = parseFloat(this.byId("input_claimdetails_input_entitled_breakfast"));
+			// if (isNaN(entBfast)) { entBfast = 0.0; }
+			// var entLunch = parseFloat(this.byId("input_claimdetails_input_entitled_lunch"));
+			// if (isNaN(entLunch)) { entLunch = 0.0; }
+			// var entDinner = parseFloat(this.byId("input_claimdetails_input_entitled_dinner"));
+			// if (isNaN(entDinner)) { entDinner = 0.0; }
+			// var amount = 0.0;
+
+			// // calculate total amount
+			// if (this.byId("input_claimdetails_input_amount").getVisible()) {
+			// 	this.byId("input_claimdetails_input_amount").setValue(amount);
+			// }
+			// else {
+			// 	return;
+			// }
+			// //// breakfast
+			// if (entBfast > 0.0 && provBfast > entBfast) {
+			// 	this.byId("input_claimdetails_input_amount").setValue(amount + entBfast);
+			// }
+			// else {
+			// 	this.byId("input_claimdetails_input_amount").setValue(amount + provBfast);
+			// }
+			// //// lunch
+			// if (entLunch > 0.0 && provLunch > entLunch) {
+			// 	this.byId("input_claimdetails_input_amount").setValue(amount + entLunch);
+			// }
+			// else {
+			// 	this.byId("input_claimdetails_input_amount").setValue(amount + provLunch);
+			// }
+			// //// dinner
+			// if (entDinner > 0.0 && provDinner > entDinner) {
+			// 	this.byId("input_claimdetails_input_amount").setValue(amount + entDinner);
+			// }
+			// else {
+			// 	this.byId("input_claimdetails_input_amount").setValue(amount + provDinner);
+			// }
 		},
 
 		/* =========================================================

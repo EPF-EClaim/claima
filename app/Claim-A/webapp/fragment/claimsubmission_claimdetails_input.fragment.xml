@@ -941,6 +941,15 @@
 					visible="false"
 				/>
 
+				<!-- Daily Allowance -->
+				<Label text="{i18n>label_claimdetails_input_dailyallowance}" />
+				<Input
+					id="input_claimdetails_input_dailyallowance"
+					value="{claimitem_input>/claim_item/dailyallowance}"
+					visible="false"
+					editable="false"
+				/>
+
 				<!-- Attachment 1 -->
 				<Label text="{i18n>label_claimdetails_input_attachment_file_1}" />
 				<u:FileUploader
