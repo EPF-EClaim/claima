@@ -36,8 +36,7 @@ const Constant = {
         EXCLUDE_FIELDS: [
             "COMMITMENT",
             "ACTUAL",
-            "CONSUMED",
-            "BUDGET_BALANCE"
+            "CONSUMED"
         ]
     },
     Admin: {

@@ -49,21 +49,22 @@ service eclaim_srv @(requires: 'authenticated-user'){
         STATUS             : String;
     }
 
-    action   batchCreateEmployee(employees: many ZEMP_MASTER)              returns Response;
+    action   batchCreateEmployee(employees: many ZEMP_MASTER)                                  returns Response;
 
-    action   batchCreateDependent(dependents: many ZEMP_DEPENDENT)         returns Response;
+    action   batchCreateDependent(dependents: many ZEMP_DEPENDENT)                             returns Response;
 
-    action   batchCreateCostCenter(costcenters: many ZCOST_CENTER)         returns Response;
+    action   batchCreateCostCenter(costcenters: many ZCOST_CENTER)                             returns Response;
 
-    action   budgetchecking(budget: many budgetdata)                       returns many BudgetResult;
+    action   budgetchecking(budget: many budgetdata)                                           returns many BudgetResult;
 
 
     entity ZREQUEST_TYPE                 as projection on ECLAIM.ZREQUEST_TYPE;
 
-    entity ZCLAIM_ITEM                   as projection on ECLAIM.ZCLAIM_ITEM {
-        @Core.Computed CLAIM_SUB_ID,
-        *
-    };
+    entity ZCLAIM_ITEM                   as
+        projection on ECLAIM.ZCLAIM_ITEM {
+            @Core.Computed CLAIM_SUB_ID,
+            *
+        };
 
     entity ZREQUEST_HEADER               as
         projection on ECLAIM.ZREQUEST_HEADER {
@@ -100,10 +101,11 @@ service eclaim_srv @(requires: 'authenticated-user'){
 
     entity ZREQ_ITEM_PART                as projection on ECLAIM.ZREQ_ITEM_PART;
 
-    entity ZCLAIM_HEADER                 as projection on ECLAIM.ZCLAIM_HEADER {
-        @Core.Computed CLAIM_ID,
-        *
-    };
+    entity ZCLAIM_HEADER                 as
+        projection on ECLAIM.ZCLAIM_HEADER {
+            @Core.Computed CLAIM_ID,
+            *
+        };
 
     entity ZNUM_RANGE                    as projection on ECLAIM.ZNUM_RANGE;
 
@@ -210,7 +212,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
         user        : String;
     }
 
-    function getUserType()                                                 returns UserInfo;
+    function getUserType()                                                                     returns UserInfo;
 
     action   sendEmail(ApproverName: String,
                        SubmissionDate: String,
@@ -226,7 +228,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
                        EmailBody: String,
                        NextApproverName: String,
                        RejectReason: String,
-                       ApproverComments: String)                           returns Response;
+                       ApproverComments: String)                                               returns Response;
 
     entity ZINSURANCE_PACKAGE            as projection on ECLAIM.ZINSURANCE_PACKAGE;
 
@@ -277,31 +279,44 @@ service eclaim_srv @(requires: 'authenticated-user'){
         REQUEST_SUB_ID : String;
     }
 
-    action   batchUpdatePreApproved(PreApprove: many PreApproveClaims)     returns Response;
+    action   batchUpdatePreApproved(PreApprove: many PreApproveClaims)                         returns Response;
 
-    function updateDisbursementStatus()                                    returns array of Response;
+    function updateDisbursementStatus()                                                        returns array of Response;
 
     entity ZDISBURSEMENT_STATUS          as projection on ECLAIM.ZDISBURSEMENT_STATUS;
 
-    action   batchCreateCourse(course: many ZTRAIN_COURSE_PART)            returns Response;
+    action   batchCreateCourse(course: many ZTRAIN_COURSE_PART)                                returns Response;
 
-    action   batchCreateBudget(budget: many ZBUDGET)                       returns Response;
+
+    type BudgetProcessResult {
+        status          : String;
+        year            : String;
+        internalorder   : String;
+        commitment_item : String;
+        fund_center     : String;
+        materialgroup   : String;
+        currentBudget   : Decimal(15, 2);
+        budgetBalance   : Decimal(15, 2);
+    }
+
+
+    action   batchCreateBudget(budget: many ZBUDGET)                                           returns BudgetProcessResult;
 
     entity ZROLEHIERARCHY                as projection on ECLAIM.ZROLEHIERARCHY;
     entity ZCONSTANTS                    as projection on ECLAIM.ZCONSTANTS;
 
     entity ZCLM_APPR_REQ_STAT            as projection on ECLAIM.ZCLM_APPR_REQ_STAT;
-    action   onFinalApproveInsert(ApproveRequest: many ZCLM_APPR_REQ_STAT) returns Response;
+    action   onFinalApproveInsert(ApproveRequest: many ZCLM_APPR_REQ_STAT)                     returns Response;
 
     type DisbursementUpdateInput {
         REQUEST_ID          : String;
         DISBURSEMENT_STATUS : String(2);
     }
 
-    action batchDisbursementUpdate(disbursement: many DisbursementUpdateInput) returns many ZEMP_CA_PAYMENT;
+    action   batchDisbursementUpdate(disbursement: many DisbursementUpdateInput)               returns many ZEMP_CA_PAYMENT;
 
-    type ApproverDetails{
-        ID         : String;
+    type ApproverDetails {
+        ID                     : String;
         LEVEL                  : Integer;
         APPROVER_ID            : String;
         SUBSTITUTE_APPROVER_ID : String;
@@ -311,9 +326,9 @@ service eclaim_srv @(requires: 'authenticated-user'){
         COMMENT                : String;
     }
 
-    action UpdateApproverDetails(aPayloadToCreateApproverDetailsTable: many ApproverDetails) returns Response;
+    action   UpdateApproverDetails(aPayloadToCreateApproverDetailsTable: many ApproverDetails) returns Response;
 
-    action DeleteApproverDetails(ID: String) returns Response;
+    action   DeleteApproverDetails(ID: String)                                                 returns Response;
 
     type eligibleCheck {
         MOBILE_BILL_ELIGIBLE    : Boolean;

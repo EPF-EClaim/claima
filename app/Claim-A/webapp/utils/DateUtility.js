@@ -1,6 +1,7 @@
 sap.ui.define([
-    "sap/ui/core/format/DateFormat"
-], function (DateFormat) {
+    "sap/ui/core/format/DateFormat",
+	"claima/utils/Constants",
+], function (DateFormat, Constants) {
     "use strict";
 
     return {
@@ -74,29 +75,29 @@ sap.ui.define([
         today: function () {
             return new Date();
         },
-        
+
         /**
          * Get Hana Date format for binding calls, used for passing dates when upserting records
          * @public
          * @param {date} dDateInput - date value to be transformed
          * @return {string} sDateString - readable value when submitting data to backend
          */
-		getHanaDate: function (dDateInput) {
-			if (dDateInput) {
-				var dDate = new Date(dDateInput);
-				var sDateString = dDate.getFullYear() + '-' + ('0' + (dDate.getMonth() + 1)).slice(-2) + '-' + ('0' + dDate.getDate()).slice(-2);
-				return sDateString;
-			} else {
-				return null;
-			}
-		},
+        getHanaDate: function (dDateInput) {
+            if (dDateInput) {
+                var dDate = new Date(dDateInput);
+                var sDateString = dDate.getFullYear() + '-' + ('0' + (dDate.getMonth() + 1)).slice(-2) + '-' + ('0' + dDate.getDate()).slice(-2);
+                return sDateString;
+            } else {
+                return null;
+            }
+        },
 
         /**
          * Merge Date and Time
          */
-        mergeDateTime (oDate, sTime) {
-            const dMergedDate = new Date(oDate.getTime()); 
-            
+        mergeDateTime(oDate, sTime) {
+            const dMergedDate = new Date(oDate.getTime());
+
             if (sTime && typeof sTime === "string") {
                 const aParts = sTime.split(":");
                 if (aParts.length >= 2) {
@@ -108,102 +109,209 @@ sap.ui.define([
             return dMergedDate;
         },
 
-        calculateNumberOfDays: function(oHeader, oItem) {
-			const dHeaderStart = oHeader.tripstartdate ? new Date(oHeader.tripstartdate) : null;
-			const dHeaderEnd = oHeader.tripenddate ? new Date(oHeader.tripenddate) : null;
+        calculateNumberOfDays: function (oHeader, oItem) {
+            const dHeaderStart = oHeader.tripstartdate ? new Date(oHeader.tripstartdate) : null;
+            const dHeaderEnd = oHeader.tripenddate ? new Date(oHeader.tripenddate) : null;
 
-			const dItemStart = oItem.start_date ? new Date(oItem.start_date) : null;
-			const dItemEnd = oItem.end_date ? new Date(oItem.end_date) : null;
+            const dItemStart = oItem.start_date ? new Date(oItem.start_date) : null;
+            const dItemEnd = oItem.end_date ? new Date(oItem.end_date) : null;
 
-			const dFinalStart = dItemStart || dHeaderStart;
-			const dFinalEnd = dItemEnd || dHeaderEnd;
+            const dFinalStart = dItemStart || dHeaderStart;
+            const dFinalEnd = dItemEnd || dHeaderEnd;
 
-			if (!dFinalStart || !dFinalEnd || isNaN(dFinalStart.getTime()) || isNaN(dFinalEnd.getTime())) {
-				return 0;
-			}
+            if (!dFinalStart || !dFinalEnd || isNaN(dFinalStart.getTime()) || isNaN(dFinalEnd.getTime())) {
+                return 0;
+            }
 
-			const iStartMidnight = new Date(dFinalStart).setHours(0, 0, 0, 0);
-			const iEndMidnight = new Date(dFinalEnd).setHours(0, 0, 0, 0);
+            const iStartMidnight = new Date(dFinalStart).setHours(0, 0, 0, 0);
+            const iEndMidnight = new Date(dFinalEnd).setHours(0, 0, 0, 0);
 
-			let iDiffDays = 0;
+            let iDiffDays = 0;
 
-			if (iEndMidnight >= iStartMidnight) {
-				const iMsPerDay = 1000 * 60 * 60 * 24;
-				iDiffDays = Math.floor((iEndMidnight - iStartMidnight) / iMsPerDay) + 1;
-			}
+            if (iEndMidnight >= iStartMidnight) {
+                const iMsPerDay = 1000 * 60 * 60 * 24;
+                iDiffDays = Math.floor((iEndMidnight - iStartMidnight) / iMsPerDay) + 1;
+            }
 
-			return iDiffDays;
-		},
+            return iDiffDays;
+        },
 
         /**
          * Used to return date for Excel download functionality, based on object passed into method
          * @public
-		 * @param {object} oValue object to be converted into date value
-		 * @returns {date} returns date
+         * @param {object} oValue object to be converted into date value
+         * @returns {date} returns date
          */
-		toDate: function (oValue) {
+        toDate: function (oValue) {
 
-			if (!oValue) return null;
+            if (!oValue) return null;
 
-			// ISO 8601 with or without milliseconds
-			if (typeof oValue === "string" && /^\d{4}-\d{2}-\d{2}T/i.test(oValue)) {
-				const oDate = new Date(oValue);
-				if (!isNaN(oDate.getTime())) {
-					return new Date(Date.UTC(oDate.getUTCFullYear(), oDate.getUTCMonth(), oDate.getUTCDate()));
-				}
-				return null;
-			}
+            // ISO 8601 with or without milliseconds
+            if (typeof oValue === "string" && /^\d{4}-\d{2}-\d{2}T/i.test(oValue)) {
+                const oDate = new Date(oValue);
+                if (!isNaN(oDate.getTime())) {
+                    return new Date(Date.UTC(oDate.getUTCFullYear(), oDate.getUTCMonth(), oDate.getUTCDate()));
+                }
+                return null;
+            }
 
-			// YYYY-MM-DD
-			if (typeof oValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(oValue)) {
-				const [sYear, sMonth, sDay] = oValue.split("-").map(Number);
-				return new Date(Date.UTC(sYear, sMonth - 1, sDay));
-			}
+            // YYYY-MM-DD
+            if (typeof oValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(oValue)) {
+                const [sYear, sMonth, sDay] = oValue.split("-").map(Number);
+                return new Date(Date.UTC(sYear, sMonth - 1, sDay));
+            }
 
-			// JS Date
-			if (oValue instanceof Date && !isNaN(oValue.getTime())) {
-				return new Date(Date.UTC(oValue.getFullYear(), oValue.getMonth(), oValue.getDate()));
-			}
+            // JS Date
+            if (oValue instanceof Date && !isNaN(oValue.getTime())) {
+                return new Date(Date.UTC(oValue.getFullYear(), oValue.getMonth(), oValue.getDate()));
+            }
 
-			// SAP Edm.Date { year, month, day }
-			if (typeof oValue === "object" && oValue.year && oValue.month && oValue.day) {
-				return new Date(Date.UTC(oValue.year, oValue.month - 1, oValue.day));
-			}
+            // SAP Edm.Date { year, month, day }
+            if (typeof oValue === "object" && oValue.year && oValue.month && oValue.day) {
+                return new Date(Date.UTC(oValue.year, oValue.month - 1, oValue.day));
+            }
 
-			return null;
-		},
+            return null;
+        },
 
         /**
          * Used to return time for Excel download functionality, based on object passed into method
          * @public
-		 * @param {object} oValue object to be converted into date value
-		 * @returns {date} returns date variable with hours, minutes, seconds populated
+         * @param {object} oValue object to be converted into date value
+         * @returns {date} returns date variable with hours, minutes, seconds populated
          */
-		toTime: function (oValue) {
+        toTime: function (oValue) {
 
-			if (!oValue) return null;
+            if (!oValue) return null;
 
-			// ISO 8601 with or without milliseconds
-			if (typeof oValue === "string" && /^\d{2}:\d{2}:\d{2}Z/i.test(oValue)) {
-				const oDate = new Date(oValue);
-				if (!isNaN(oDate.getTime())) {
-					return new Date(Date.UTC(0, 0, 0, oDate.getUTCHours(), oDate.getUTCMinutes(), oDate.getUTCSeconds()));
-				}
-				return null;
-			}
+            // ISO 8601 with or without milliseconds
+            if (typeof oValue === "string" && /^\d{2}:\d{2}:\d{2}Z/i.test(oValue)) {
+                const oDate = new Date(oValue);
+                if (!isNaN(oDate.getTime())) {
+                    return new Date(Date.UTC(0, 0, 0, oDate.getUTCHours(), oDate.getUTCMinutes(), oDate.getUTCSeconds()));
+                }
+                return null;
+            }
 
-			// HH:MM:SS
-			if (typeof oValue === "string" && /^\d{2}:\d{2}:\d{2}$/.test(oValue)) {
-				const [sHour, sMinute, sSecond] = oValue.split(":").map(Number);
-				return new Date(Date.UTC(0, 0, 0, sHour, sMinute, sSecond));
-			}
+            // HH:MM:SS
+            if (typeof oValue === "string" && /^\d{2}:\d{2}:\d{2}$/.test(oValue)) {
+                const [sHour, sMinute, sSecond] = oValue.split(":").map(Number);
+                return new Date(Date.UTC(0, 0, 0, sHour, sMinute, sSecond));
+            }
 
-			// JS Date
-			if (oValue instanceof Date && !isNaN(oValue.getTime())) {
-				return new Date(Date.UTC(0, 0, 0, oValue.getHours(), oValue.getMinutes(), oValue.getSeconds()));
-			}
+            // JS Date
+            if (oValue instanceof Date && !isNaN(oValue.getTime())) {
+                return new Date(Date.UTC(0, 0, 0, oValue.getHours(), oValue.getMinutes(), oValue.getSeconds()));
+            }
 
-			return null;
-		}
+            return null;
+        },
+
+
+        /**
+         * Used for date validation when submitting a Claim Report.  
+         * This method checks whether the provided date value represents
+         * a future date when compared against the current system date.
+         *
+         * @public
+         * @param {Date} sDate date value to be validated
+         * @returns {boolean} returns true if the given date is greater than today's date;
+         *                    otherwise returns false
+         */
+
+        isFutureDate: function (sDate) {
+            const dDate = new Date(sDate);
+            if (!sDate || isNaN(dDate)) return false;
+
+            return dDate.setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0);
+        },
+
+        /**
+         * Determines the minimum allowable date for specific date fields
+         * based on submission type (REQUEST/CLAIM) & the following parameters.
+         *
+         * @param {string} sFieldName - The field name (e.g., RECEIPT_DATE, BILL_DATE).
+         * @param {string} sId - Submission ID; first 3 chars determine submission type.
+         * @param {string} sType - Claim Type.
+         * @param {string} sItemType - Claim Item Type.
+         * @param {object} oHeader - Header data.
+         * @param {object} oItem - Item data.
+         * @returns {Date|null} Minimum allowed date or null if invalid input.
+         *
+        **/
+        determineMinDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem) {
+            if (!sId || !sType || !sItemType) return null;
+
+            const sSubmissionType = sId.substring(0, 3);
+            var dMinDate = null;
+
+            switch (sFieldName) {
+                case Constants.EntitiesFields.RECEIPT_DATE:
+                    switch (sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            // Specific Claim Type
+                            if (sItemType === Constants.ClaimTypeItem.VISA) {
+                                
+                            } else {
+                                // Other Claim Type
+                                dMinDate = new Date(oHeader.trip_start_date);
+                            }
+                            break;
+                    }
+                    break;
+            }
+
+            return dMinDate;
+        },
+
+        /**
+         * Determines the maximum allowable date for specific date fields
+         * based on submission type (REQUEST/CLAIM) & the following parameters.
+         *
+         * @param {string} sFieldName - The field name (e.g., RECEIPT_DATE, BILL_DATE).
+         * @param {string} sId - Submission ID; first 3 chars determine submission type.
+         * @param {string} sType - Claim Type.
+         * @param {string} sItemType - Claim Item Type.
+         * @param {object} oHeader - Header data.
+         * @param {object} oItem - Item data.
+         * @returns {Date|null} Maximum allowed date or null if invalid input.
+         *
+        **/
+        determineMaxDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem) {
+            if (!sId || !sType || !sItemType) return null;
+
+            const sSubmissionType = sId.substring(0, 3);
+            var dMaxDate = null;
+
+            switch (sFieldName) {
+                case Constants.EntitiesFields.RECEIPT_DATE:
+                    switch (sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            dMaxDate = new Date(oHeader.trip_end_date); // default
+                            break;
+                    }
+                    break;
+
+                case Constants.EntitiesFields.BILL_DATE:
+                    switch (sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            dMaxDate = new Date(oHeader.trip_end_date); // default
+                            break;
+                    }
+                    break;
+            }
+
+            return dMaxDate;
+        }
+
     };
 });

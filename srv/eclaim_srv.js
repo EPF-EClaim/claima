@@ -3,6 +3,7 @@ const { INSERT, UPDATE, UPSERT, SELECT, DELETE, where } = require('@sap/cds/lib/
 const express = require('express');
 const app = express();
 const { Constant } = require("./utils/constant");
+const { results } = require('@sap/cds/lib/utils/cds-utils');
 const EligibleScenarioCheck = require('./utils/EligibilityScenarios/EligibleScenarioCheck')
 
 module.exports = (srv) => {
@@ -119,16 +120,9 @@ module.exports = (srv) => {
         });
 
     srv.on('READ', 'FeatureControl', async (req) => {
-        const { ZEMP_MASTER } = srv.entities;
-        const emailFromToken = req.user?.attr?.email || req.user?.id || "";
-        const email = String(emailFromToken).trim().toLowerCase();
-        const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
-        const user_type = result?.USER_TYPE;
-
+        //crud operation visibility in config table for DTD and JKEW
         let operationHidden = true;
-        if (req.user.is(Constant.Admin.Admin_System)) {
-            operationHidden = true;
-        } else if (req.user.is(Constant.Admin.DTD_Admin)) {
+        if(req.user.is(Constant.Admin.DTD_Admin)) {
             operationHidden = false;
         }
 
@@ -139,15 +133,10 @@ module.exports = (srv) => {
     });
 
     srv.on('READ', 'BudgetControl', async (req) => {
-        const { ZEMP_MASTER } = srv.entities;
-        const emailFromToken = req.user?.attr?.email || req.user?.id || "";
-        const email = String(emailFromToken).trim().toLowerCase();
-        const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
-        const user_type = result?.USER_TYPE;
-
-        // let operationHidden = (user_type === Constant.UserType.GA_ADMIN);
+        //crud operation visibility for Budget table  
+        // should be accessible for edit by DTD and JKEW only - hidden for GA
         let operationHidden = false;
-        if (req.user.is(Constant.Admin.Admin_CC)) {
+        if(req.user.is(Constant.Admin.Admin_CC)){
             operationHidden = true;
         }
         return {
@@ -174,12 +163,16 @@ module.exports = (srv) => {
 
     srv.on('sendEmail', async (req) => {
         try {
-            const ISserivce = await cds.connect.to('IS_Conn');
-            ISserivce.send({
+            const ISservice = await cds.connect.to('IS_Conn');
+
+            const response = await ISservice.send({
                 method: 'POST',
-                path: "/http/EmailNotification_BTP",
-                data: { ...req.data }
+                path: "/http/SendEmailNotification_eClaim",
+                data: req.data
             });
+
+            return response;
+
         } catch (error) {
             req.error(400, `Fail sending email: ${error.message}`);
         }
@@ -208,7 +201,8 @@ module.exports = (srv) => {
 
     srv.on('batchCreateBudget', async (req) => {
         const { ZBUDGET } = srv.entities;
-        let original_budget, virement_in, virement_out, supplement, return_value, total_budget, current_budget, total_budget_balance, consumed;
+        let original_budget, virement_in, virement_out, supplement, return_value, current_budget, consumed;
+        let results = [];
         try {
             const { budget } = req.data;
             if (!budget || budget.length === 0) throw new Error('No Data Sent');
@@ -216,7 +210,7 @@ module.exports = (srv) => {
             const tx = cds.tx(req);
 
             //if record hasnt been created yet, direct insert record into database
-            //else, update the record but exclude the five fields
+            //else, update the record but exclude the commitment, actual, consumed
             for (const row of budget) {
 
                 const existing = await tx.read(ZBUDGET)
@@ -231,6 +225,18 @@ module.exports = (srv) => {
 
                 if (!existing.length) {
                     await tx.run(INSERT.into(ZBUDGET).entries(row));
+
+                    results.push({
+                        status: " record inserted",
+                        year: row.YEAR,
+                        internalorder: row.INTERNAL_ORDER,
+                        commitment_item: row.COMMITMENT_ITEM,
+                        fund_center: row.FUND_CENTER,
+                        materialgroup: row.MATERIAL_GROUP,
+                        currentBudget: row.CURRENT_BUDGET,
+                        budgetBalance: row.BUDGET_BALANCE
+                    });
+
                 } else {
                     const excludeFields = Constant.BudgetUpload.EXCLUDE_FIELDS;
 
@@ -245,8 +251,8 @@ module.exports = (srv) => {
                     current_budget = Number(row.CURRENT_BUDGET) || 0;
                     consumed = Number(row.CONSUMED) || 0;
 
-                    total_budget = original_budget + virement_in + virement_out + supplement + return_value;
-                    total_budget_balance = current_budget + consumed;
+                    var total_budget = original_budget + virement_in + virement_out + supplement + return_value;
+                    var total_budget_balance = current_budget + consumed;
                     updatePayload.CURRENT_BUDGET = total_budget.toFixed(2);
                     updatePayload.BUDGET_BALANCE = total_budget_balance.toFixed(2);
 
@@ -261,9 +267,23 @@ module.exports = (srv) => {
                                 MATERIAL_GROUP: row.MATERIAL_GROUP
                             })
                     );
+                    results.push(
+                        {
+                            status: " record updated",
+                            year: row.YEAR,
+                            internalorder: row.INTERNAL_ORDER,
+                            commitment_item: row.COMMITMENT_ITEM,
+                            fund_center: row.FUND_CENTER,
+                            materialgroup: row.MATERIAL_GROUP,
+                            currentBudget: updatePayload.CURRENT_BUDGET,
+                            budgetBalance: updatePayload.BUDGET_BALANCE
+                        }
+
+                    )
+
                 }
             }
-            return 'Records updated';
+            return { results };
         } catch (error) {
             req.error(400, `Fail creating record: ${error.message}`);
         }
