@@ -1401,7 +1401,7 @@ entity ZCLM_APPR_REQ_STAT : managed {
         CLAIMED    : Boolean        @Common.Label: 'Claimed';
 }
 
-entity ZMOBILE_BILL_EXCEPTION : managed {
+entity ZCLM_MOBILE_BILL_EXCEPTION : managed {
     key EMP_ID        : String(6)      @mandatory  @Common.Label: 'Employee Id';
     key CLAIM_TYPE_ID : String(20)     @mandatory  @Common.Label: 'Claim Type ID';
     key START_DATE    : Date           @mandatory  @Common.Label: 'Start Date';
