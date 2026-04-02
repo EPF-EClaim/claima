@@ -63,7 +63,7 @@ sap.ui.define([
 
 		DateUtility: DateUtility,
 
-		onInit: function () {		
+		onInit: function () {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._fragments = Object.create(null);
 			this._clearExit = false;
