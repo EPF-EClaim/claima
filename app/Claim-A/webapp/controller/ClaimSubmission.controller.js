@@ -2096,7 +2096,7 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
 			// set claim item property model
-			var oClaimItemPropertyModel = {
+			var oClaimItemProperties = {
 				start_date: { is_visible: false },
 				end_date: { is_visible: false },
 				insurance_cert_end_date: { is_visible: false },
@@ -2104,12 +2104,11 @@ sap.ui.define([
 				insurance_package_id: { is_visible: false },
 				insurance_provider_id: { is_visible: false },
 				insurance_provider_name: { is_visible: false },
-				insurance_purchase_date: { is_visible: false },
-				no_of_days: { is_editable: false }
+				insurance_purchase_date: { is_visible: false }
 			};
-			var oModel = new JSONModel(oClaimItemPropertyModel);
+			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
-			this.getView().setModel(oModel, "claimitem_property");
+			this.getView().setModel(oClaimItemPropertyModel, "claimitem_property");
 
 			// change footer buttons
 			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
