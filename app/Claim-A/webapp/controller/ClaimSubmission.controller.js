@@ -2244,9 +2244,8 @@ sap.ui.define([
 
 		/**
         * Set preset values for claim item fields
-		* if claim item is Dobi, pass start/end date value from claim header
-		* if start/end date is not in claim item fields, pass start/end date value from claim header
-		* else if header is empty, pass start/end date value from claim item
+        * Request is made to get values from table ZELIGIBILITY_RULE, based on user role and claim type/claim item given 
+        * if record found, value is retrieved from the table and populated in the claim item model
         * @private
 		* @param {string} sClaimItemField - claim item field to be populated
 		* @param {string} sEligibilityRule - field to retrieve value from db table
