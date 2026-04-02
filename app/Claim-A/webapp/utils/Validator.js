@@ -118,7 +118,7 @@ sap.ui.define(
 				isValid = this._validateRequired(oControl);
 				isValidatedControl = true;
 			}
-			if (
+			if ( isValid &&
 				(i = this._hasType(oControl)) !== -1 &&
 				oControl.getEnabled &&
 				(oControl.getEnabled() === true || oControl.data("validate") === true)
@@ -127,7 +127,7 @@ sap.ui.define(
 				isValid = this._validateConstraint(oControl, i);
 				isValidatedControl = true;
 			}
-			if (
+			if ( isValid &&
 				oControl.getValueState &&
 				oControl.getValueState() === ValueState.Error
 			) {
