@@ -2473,6 +2473,7 @@ sap.ui.define([
 				}
 			}
 
+
 			try {
 				BusyIndicator.show(0);
 				var oModel = this.getOwnerComponent().getModel();
