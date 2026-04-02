@@ -26,8 +26,7 @@ sap.ui.define([
 	"claima/utils/workflowApproval",
 	"claima/utils/DateUtility",
 	"claima/utils/EligibilityCheck",
-	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
-	"claima/utils/Constants",
+	"claima/utils/EligibilityScenarios/EligibleScenarioCheck"
 ], function (
 	Fragment,
 	Item,
@@ -56,8 +55,7 @@ sap.ui.define([
 	workflowApproval,
 	DateUtility,
 	EligibilityCheck,
-	EligibleScenarioCheck,
-	Constants
+	EligibleScenarioCheck
 ) {
 	"use strict";
 
@@ -1481,7 +1479,7 @@ sap.ui.define([
 			// get action
 			switch (oAction) {
 				//// Save Draft
-				case Constants.Claim_Action.DRAFT:
+				case this._oConstant.Claim_Action.DRAFT:
 					// confirm dialog
 					this._newDialog(
 						Utility.getText("dialog_claimsubmission_savedraft"),
@@ -1492,7 +1490,7 @@ sap.ui.define([
 					);
 					break;
 				//// Delete Report
-				case Constants.Claim_Action.DELETE:
+				case this._oConstant.Claim_Action.DELETE:
 					// confirm dialog
 					this._newDialog(
 						Utility.getText("dialog_claimsubmission_deletereport"),
@@ -1503,7 +1501,7 @@ sap.ui.define([
 					);
 					break;
 				//// Submit Report
-				case Constants.Claim_Action.SUBMIT:
+				case this._oConstant.Claim_Action.SUBMIT:
 
 					//Add checker for Trip End date greater than current date;
 					var oInputModel = this.getView().getModel("claimsubmission_input");
@@ -1525,12 +1523,12 @@ sap.ui.define([
 					);
 					break;
 				//// Back
-				case Constants.Claim_Action.BACK:
+				case this._oConstant.Claim_Action.BACK:
 					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 					this.onBack_ClaimSubmission();
 					break;
 				//// Reject
-				case Constants.Claim_Action.REJECT: {
+				case this._oConstant.Claim_Action.REJECT: {
 
 					// Ensure form model
 					let oReject = this.getView().getModel("Reject");
@@ -1561,7 +1559,7 @@ sap.ui.define([
 				}
 
 				//// Push Back
-				case Constants.Claim_Action.PUSHBACK:
+				case this._oConstant.Claim_Action.PUSHBACK:
 
 					{
 						// 1) Ensure Reject model (form data: reason + comment)
@@ -1601,7 +1599,7 @@ sap.ui.define([
 				//// Approve
 
 
-				case Constants.Claim_Action.APPROVE: {
+				case this._oConstant.Claim_Action.APPROVE: {
 					let oReject = this.getView().getModel("Reject");
 					if (!oReject) {
 						oReject = new JSONModel({ approvalComment: "" });
