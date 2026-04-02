@@ -74,9 +74,10 @@
 
 				<!-- Dependent Name -->
 				<Label text="{i18n>label_claimdetails_input_dependent}" />
-				<Input
-					id="input_claimdetails_input_dependent_name"
-					value="{claimitem_input>/claim_item/dependent_name}"
+				<Select
+					id="select_claimdetails_input_dependent_name"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/dependent_name}"
 					visible="false"
 					required="true"
 				/>

@@ -2207,6 +2207,21 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_claim_category", "ZCLAIM_CATEGORY");
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
+			
+			// set dropdown for dependent names
+			this.byId("select_claimdetails_input_dependent_name").bindAggregation("items", {
+				path: "employee>/ZEMP_DEPENDENT",
+				filters: [
+					new Filter('EMP_ID', FilterOperator.EQ ,this._oSessionModel.getProperty("/userId")),
+				],
+				sorter: [
+					new Sorter('DEPENDENT_NO'),
+				],
+				template: new Item({
+					key: "{employee>LEGAL_NAME}",
+					text: "{employee>LEGAL_NAME}"
+				})
+			});
 		},
 
 		_setClaimDetailSelectionField: function (oId, oTable, oField) {
@@ -2217,8 +2232,9 @@ sap.ui.define([
 				this.byId(oId).bindAggregation("items", {
 					path: "employee>/" + oTable,
 					sorter: [
-						new Sorter(oField + '_DESC'),
-						new Sorter(oField + '_ID')
+						new Sorter(oField + '_ID'),
+						new Sorter(oField + '_DESC')
+						
 					],
 					template: new Item({
 						key: "{employee>" + oField + "_ID}",
@@ -2227,7 +2243,6 @@ sap.ui.define([
 				});
 			}
 		},
-
 		onAction_ClaimDetails_Toolbar: function (oAction) {
 			// get action
 			switch (oAction) {
@@ -3958,7 +3973,7 @@ sap.ui.define([
 		_setAllControlsVisible: function (bVisible) {
 			const aControlIds = [
 				"input_claimdetails_input_anggota_name",
-				"input_claimdetails_input_dependent_name",
+				"select_claimdetails_input_dependent_name",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",
@@ -4095,7 +4110,7 @@ sap.ui.define([
 		_setAllControlsEditable: function (bEditable) {
 			const aControlIds = [
 				"input_claimdetails_input_anggota_name",
-				"input_claimdetails_input_dependent_name",
+				"select_claimdetails_input_dependent_name",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",
@@ -4344,7 +4359,7 @@ sap.ui.define([
 
 				const aClaimDetailColumns = [
 					{ label: Utility.getText("label_claimdetails_input_anggota"), property: "anggota_name", field: "input_claimdetails_input_anggota_name", width: 30 },
-					{ label: Utility.getText("label_claimdetails_input_dependent"), property: "dependent_name", field: "input_claimdetails_input_dependent_name", width: 30 },
+					{ label: Utility.getText("label_claimdetails_input_dependent"), property: "dependent_name", field: "select_claimdetails_input_dependent_name", width: 30 },
 					{ label: Utility.getText("label_claimdetails_input_profbodytype"), property: "type_of_professional_body", field: "select_claimdetails_input_type_of_professional_body", type: "descr", width: 40 },
 					{ label: Utility.getText("label_claimdetails_input_policyno"), property: "policy_number", field: "input_claimdetails_input_policy_number", width: 18 },
 					{ label: Utility.getText("label_claimdetails_input_funeraltransport"), property: "funeral_transportation", field: "select_claimdetails_input_funeral_transportation", type: "descr", width: 18 },
