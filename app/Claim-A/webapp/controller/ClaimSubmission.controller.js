@@ -2463,7 +2463,19 @@ sap.ui.define([
 
 			//FUT issue #58
 			//checking for galakan disclaimer if its ticked or not
-						CusomValidator.validate("CLM").bind(this);
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === "TELEFON_B") {
+				if(!oInputModel.getProperty("/claim_item/disclaimer")) {
+					MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+					return;
+				}
+			}
+
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === "GALAKAN") {
+				if(!oInputModel.getProperty("/claim_item/disclaimer_galakan")) {
+					MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+					return;
+				}
+			}
 
 			if (oInputModel.getProperty("/claim_item/disclaimer_galakan") == false || oInputModel.getProperty("/claim_item/disclaimer") == false) {
 				MessageToast.show(Utility.getText("msg_claimdetails_no_check_disclaimer"));
