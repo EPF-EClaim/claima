@@ -315,40 +315,6 @@ service eclaim_srv @(requires: 'authenticated-user'){
 
     action DeleteApproverDetails(ID: String) returns Response;
 
-    // entity ClaimsWorkflowApproval as projection on ZCLAIM_HEADER{
-    //     key CLAIM_ID as ClaimID,
-    //     EMP_ID as ClaimantID,
-    //     COST_CENTER,
-    //     ALTERNATE_COST_CENTER,
-    //     SUBMISSION_TYPE,
-    //     SUBMITTED_DATE,
-    //     CASH_ADVANCE_AMOUNT,
-    //     TOTAL_CLAIM_AMOUNT,
-    //     PREAPPROVED_AMOUNT,
-
-    //     ZCLAIM_ITEM.CLAIM_SUB_ID,
-    //     ZCLAIM_ITEM.AMOUNT,
-    //     ZCLAIM_ITEM.RECEIPT_DATE,
-    //     ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
-
-    //     ZCLAIM_ITEM.ZCLAIM_TYPE_ITEM.RISK,
-
-    //     ZEMP_MASTER.NAME,
-    //     ZEMP_MASTER.EMAIL,
-    //     ZEMP_MASTER.DEP,
-    //     ZEMP_MASTER.ROLE,
-    //     ZEMP_MASTER.CC,
-    //     ZEMP_MASTER.DIRECT_SUPPERIOR,
-    //     RANK: Association to ZROLEHIERARCHY 
-    //                     on RANK.ROLE = ROLE,
-
-    //     ZSUBMISSION_TYPE.SUBMISSION_TYPE_ID,
-    //     ZSUBMISSION_TYPE.SUBMISSION_TYPE_DESC,
-    // };
-
-
-    // action WorkflowApproval(ClaimID: String) returns Response;
-
     type eligibleCheck {
         MOBILE_BILL_ELIGIBLE    : Boolean;
         MOBILE_BILL_ELIG_AMOUNT : Decimal(15, 2);
@@ -356,4 +322,18 @@ service eclaim_srv @(requires: 'authenticated-user'){
 
     function checkEligibleMobileClaim(sEmployeeId: String) returns String; 
 
+    type EligibilityPayload{
+        CheckFields: many EligibilityCheckFields;
+        ClaimType: String;
+        ClaimTypeItem: String;
+        EmpId: String;
+    }
+
+    type EligibilityCheckFields{
+        fieldName: String;
+        value: LargeString @Core.MediaType: 'application/json';
+        result: LargeString @Core.MediaType: 'application/json';
+    }
+
+    action EligibilityCheck(aPayload: many EligibilityPayload) returns many Response;
 };

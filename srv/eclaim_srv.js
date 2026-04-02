@@ -3,6 +3,7 @@ const { INSERT, UPDATE, UPSERT, SELECT, DELETE, where } = require('@sap/cds/lib/
 const express = require('express');
 const app = express();
 const { Constant } = require("./utils/constant");
+const EligibleScenarioCheck = require('./utils/EligibilityScenarios/EligibleScenarioCheck')
 
 module.exports = (srv) => {
 
@@ -125,7 +126,7 @@ module.exports = (srv) => {
         const user_type = result?.USER_TYPE;
 
         let operationHidden = true;
-        if(req.user.is(Constant.Admin.Admin_System)) {
+        if (req.user.is(Constant.Admin.Admin_System)) {
             operationHidden = true;
         } else if (req.user.is(Constant.Admin.DTD_Admin)) {
             operationHidden = false;
@@ -146,7 +147,7 @@ module.exports = (srv) => {
 
         // let operationHidden = (user_type === Constant.UserType.GA_ADMIN);
         let operationHidden = false;
-        if(req.user.is(Constant.Admin.Admin_CC)) {
+        if (req.user.is(Constant.Admin.Admin_CC)) {
             operationHidden = true;
         }
         return {
@@ -171,18 +172,18 @@ module.exports = (srv) => {
         }
     });
 
-        srv.on('sendEmail', async (req) => {
-            try {
-                const ISserivce = await cds.connect.to('IS_Conn');
-                ISserivce.send({
-                    method: 'POST',
-                    path: "/http/EmailNotification_BTP",
-                    data: { ...req.data }
-                });
-            } catch (error) {
-                req.error(400, `Fail sending email: ${error.message}`);
-            }
-        });
+    srv.on('sendEmail', async (req) => {
+        try {
+            const ISserivce = await cds.connect.to('IS_Conn');
+            ISserivce.send({
+                method: 'POST',
+                path: "/http/EmailNotification_BTP",
+                data: { ...req.data }
+            });
+        } catch (error) {
+            req.error(400, `Fail sending email: ${error.message}`);
+        }
+    });
 
     srv.on('updateDisbursementStatus', async (req) => {
         const { ZEMP_CA_PAYMENT } = srv.entities;
@@ -494,7 +495,7 @@ module.exports = (srv) => {
         );
 
         const totalClaimAmount = result.TotalClaimAmount || 0;
-        const finalAmountToReceive = (totalClaimAmount - headerResult.CASH_ADVANCE_AMOUNT) || 0;    
+        const finalAmountToReceive = (totalClaimAmount - headerResult.CASH_ADVANCE_AMOUNT) || 0;
 
         await tx.run(
             UPDATE('ZCLAIM_HEADER')
@@ -590,7 +591,7 @@ module.exports = (srv) => {
     });
 
     srv.on('checkEligibleMobileClaim', async (req) => {
-        const { sEmployeeId } = req.data; 
+        const { sEmployeeId } = req.data;
 
         if (!sEmployeeId) {
             return req.error(400, 'Please provide an Employee ID.');
@@ -599,7 +600,7 @@ module.exports = (srv) => {
         try {
             const employeeRecord = await SELECT.one('MOBILE_BILL_ELIGIBILITY', 'MOBILE_BILL_ELIG_AMOUNT')
                 .from('ZEMP_MASTER')
-                .where({ EEID: sEmployeeId }); 
+                .where({ EEID: sEmployeeId });
 
             if (!employeeRecord) {
                 return req.error(404, `Employee with ID ${sEmployeeId} not found in master data.`);
@@ -679,11 +680,11 @@ module.exports = (srv) => {
     });
 
     /**
-	 * Deletes and re-inserts Approver details based on Claim or Request ID
-	 * @public
+     * Deletes and re-inserts Approver details based on Claim or Request ID
+     * @public
      * @param {Array} aPayloadToCreateApproverDetailsTable - Array of Approver Details;
      * @returns {String} If Success, Results of Deletion and Insert Calls. If fail, Returns error message
-	 */
+     */
     srv.on('UpdateApproverDetails', async (req) => {
         try {
             const { aPayloadToCreateApproverDetailsTable } = req.data;
@@ -740,14 +741,14 @@ module.exports = (srv) => {
     });
 
     /**
-	 * Deletes Approver Details based on Table name and Claim ID / Preapproval ID field
-	 * @public
-	 * @param {String} sTableName - Table name to delete records from;
+     * Deletes Approver Details based on Table name and Claim ID / Preapproval ID field
+     * @public
+     * @param {String} sTableName - Table name to delete records from;
      * @param {String} sKeyName - Claim ID field name;
      * @param {String} sClaimID - Claim ID / Preapproval ID;
      * @param {Array} tx - CDS call;
      * @returns {String} sResult - Result of deletion of records
-	 */
+     */
     async function DeleteApproverDetails(sTableName, sKeyName, sClaimID, tx) {
 
         sResult = await tx.run(
@@ -757,13 +758,13 @@ module.exports = (srv) => {
     };
 
     /**
-	 * Inserts Records into table
-	 * @public
-	 * @param {String} sTableName - Table name for records to be inserted;
+     * Inserts Records into table
+     * @public
+     * @param {String} sTableName - Table name for records to be inserted;
      * @param {Array} aRecordDetails - Array of records to be inserted;
      * @param {Array} tx - CDS call;
      * @returns {String} sResult - Result of Insertion of records
-	 */
+     */
     async function InsertRecords(sTableName, aRecordDetails, tx) {
         sResult = await tx.run(
             INSERT(aRecordDetails).into(sTableName)
@@ -771,12 +772,12 @@ module.exports = (srv) => {
         return sResult;
     };
 
-     /**
-	 * Delete Approver Detail Records From table
-	 * @public
-	 * @param {String} req - Claim ID to be deleted;
-     * @returns {String} sResult - Result of Deletion of records
-	 */
+    /**
+    * Delete Approver Detail Records From table
+    * @public
+    * @param {String} req - Claim ID to be deleted;
+    * @returns {String} sResult - Result of Deletion of records
+    */
     srv.on('DeleteApproverDetails', async (req) => {
         try {
             const { ID } = req.data;
@@ -806,44 +807,38 @@ module.exports = (srv) => {
             req.error(400, `Fail creating record: ${error.message}`, req);
         }
     });
+    /**
+         * Drill down of eligibility scenarios for each claim type after retrieving employee and eligibility rules data
+         * @public
+         * @param {Array} aPayload - Array of Payload data containing ClaimType, ClaimItmType, List Array of fields to be checked;
+         * @returns {Object} Object Payload with results field in CheckFields List Array populated
+         */
+    srv.on('EligibilityCheck', async (req) => {
+        try {
+            const { aPayload } = req.data;
+            if (!aPayload || aPayload.length === 0) {
+                throw new Error('No Data Sent')
+            }
+            const tx = cds.tx(req);
 
-    // srv.on('WorkflowApproval', async (req) => {
-    //     // const {ClaimsWorkflowApproval} = srv.entities;
-    //     const tx = cds.tx(req);
-    //     try {
-    //         const { ClaimID } = req.data;
-    //         // oClaimsHeaderItemClaimantData = await RetrieveClaimsData(ClaimID, tx);
+            // for (let i = 0; i < aPayload.length; i++) {
+            //     for (let index = 0; index < array.length; index++) {
+            //         const element = array[index];
+                    
+            //     }
+            //     aPayload[i].CheckFields[i].value = JSON.parse(aPayload[i].CheckFields[i].value);
+                
+            // }
+            // let sfalse = JSON.stringify(false);  
+            // console.log(aPayload);
+            // return sfalse;
+            result = await EligibleScenarioCheck.onEligibilityCheck(aPayload, tx);
+            console.log(result);
+            return result;
 
-    //         // if (oClaimsData.CASH_ADVANCE_AMOUNT > 0) {
-    //         //     const bClaimCashAdvance = true;
-    //         // }else{
-    //         //     bClaimCashAdvance = false;
-    //         // };
-
-    //         // RetrieveWorkflow(req);
-    //         // RetrieveApprovers(req);
-
-    //         return ClaimID;
-    //     } catch (error) {
-    //         req.error(400, `Fail creating record: ${error.message}`);
-    //     }
-    // });
-
-    // async function RetrieveClaimsData(sClaimID, tx) {
-    //     if (!sClaimID) return;
-    //     const { ClaimsWorkflowApproval } = srv.entities;
-    //     const result = await tx.run(
-    //         SELECT.from(ClaimsWorkflowApproval).where({ClaimID: sClaimID})
-    //     );
-    //     return result;
-    // }
-
-    // async function RetrieveWorkflow(oClaimsData) {
-
-    // };
-
-    // async function RetrieveApprovers(req) {
-
-    // };
+        } catch (error) {
+            req.error(500, `Fail processing records: ${error.message}`, req);
+        }
+    });
 
 }
