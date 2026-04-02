@@ -2153,13 +2153,13 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
 			// set claim item property model
-			var oClaimItemPropertyData = {
+			var oClaimItemPropertyModel = {
 				percentage_compensation: { is_visible: false },
 				actual_amount: { is_visible: false },
 				amount: { is_visible: false },
 				entitled_breakfast: { is_visible: false }
 			};
-			var oModel = new JSONModel(oClaimItemPropertyData);
+			var oModel = new JSONModel(oClaimItemPropertyModel);
 			//// set input
 			this.getView().setModel(oModel, "claimitem_property");
 
