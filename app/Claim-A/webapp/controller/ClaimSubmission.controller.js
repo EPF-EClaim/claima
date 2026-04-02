@@ -2079,58 +2079,7 @@ sap.ui.define([
 			// set percentage (%) compensation based on claim item
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
-				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-				var oInputModel = this.getView().getModel("claimitem_input");
-				const oModel = this.getOwnerComponent().getModel();
-				//// filter by employee role ID or * (all)
-				const oFilterRoleId = new Filter({
-					filters: [
-						new Filter("ROLE_ID", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/role")),
-						new Filter("ROLE_ID", FilterOperator.EQ, '*')
-					],
-					and: false
-				});
-				//// filter by employee role ID or * (all)
-				const oFilterPersonalGrade = new Filter({
-					filters: [
-						new Filter("PERSONAL_GRADE", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/grade")),
-						new Filter("PERSONAL_GRADE", FilterOperator.EQ, '*')
-					],
-					and: false
-				});
-				const oListBinding = oModel.bindList("/ZELIGIBILITY_RULE", null, [
-					new Sorter("ROLE_ID", true),
-					new Sorter("PERSONAL_GRADE", true),
-					new Sorter("POSITION_NO_DESC", true),
-					new Sorter("ROW_COUNT", true),
-				], [
-					new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_id")),
-					new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_item_id")),
-					oFilterRoleId,
-					oFilterPersonalGrade,
-					// ensure status is active
-					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
-					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
-				]);
-
-				try {
-					BusyIndicator.show(0);
-					const aContexts = await oListBinding.requestContexts(0, Infinity);
-
-					if (aContexts.length > 0) {
-						const oData = aContexts[0].getObject();
-						oInputModel.setProperty("/claim_item/percentage_compensation", oData[this._oConstant.EligibilityRule.SUBSIDISED_RATE]);
-					} else {
-						oInputModel.setProperty("/claim_item/percentage_compensation", 0.0);
-						MessageToast.show(Utility.getText("msg_claimdetails_input_percentage_compensation_none"));
-					}
-				} catch (oError) {
-					oInputModel.setProperty("/claim_item/percentage_compensation", 0.0);
-					MessageBox.error(Utility.getText("msg_claimdetails_input_percentage_compensation_err", [oError]));
-				} finally {
-					BusyIndicator.hide();
-				}
+				this._setPresetValues_ClaimItem("percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0)
 			}
 		},
 
@@ -2290,6 +2239,61 @@ sap.ui.define([
 						text: "{employee>" + oField + "_ID} - {employee>" + oField + "_DESC}"
 					})
 				});
+			}
+		},
+
+		_setPresetValues_ClaimItem: async function (sClaimItemField, sEligibilityRule, sDefaultValue) {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			var oInputModel = this.getView().getModel("claimitem_input");
+			const oModel = this.getOwnerComponent().getModel();
+			//// filter by employee role ID or * (all)
+			const oFilterRoleId = new Filter({
+				filters: [
+					new Filter("ROLE_ID", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/role")),
+					new Filter("ROLE_ID", FilterOperator.EQ, '*')
+				],
+				and: false
+			});
+			//// filter by employee role ID or * (all)
+			const oFilterPersonalGrade = new Filter({
+				filters: [
+					new Filter("PERSONAL_GRADE", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/grade")),
+					new Filter("PERSONAL_GRADE", FilterOperator.EQ, '*')
+				],
+				and: false
+			});
+			const oListBinding = oModel.bindList("/ZELIGIBILITY_RULE", null, [
+				new Sorter("ROLE_ID", true),
+				new Sorter("PERSONAL_GRADE", true),
+				new Sorter("POSITION_NO_DESC", true),
+				new Sorter("ROW_COUNT", true),
+			], [
+				new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_id")),
+				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_item_id")),
+				oFilterRoleId,
+				oFilterPersonalGrade,
+				// ensure status is active
+				new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+				new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
+			]);
+
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					oInputModel.setProperty("/claim_item/" + sClaimItemField, oData[sEligibilityRule]);
+				} else {
+					oInputModel.setProperty("/claim_item/" + sClaimItemField, sDefaultValue);
+					MessageToast.show(Utility.getText("msg_claimdetails_input_" + sClaimItemField + "_none"));
+				}
+			} catch (oError) {
+				oInputModel.setProperty("/claim_item/percentage_compensation", 0.0);
+				MessageBox.error(Utility.getText("msg_claimdetails_input_" + sClaimItemField + "_err", [oError]));
+			} finally {
+				BusyIndicator.hide();
 			}
 		},
 
