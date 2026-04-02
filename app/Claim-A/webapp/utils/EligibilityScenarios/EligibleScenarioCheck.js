@@ -19,7 +19,7 @@ sap.ui.define([
             try {
                 await oAction.execute();
 				const oResponse = oAction.getBoundContext().getObject();
-				const oReturnPayload = oResponse.value;
+			    oReturnPayload = oResponse.value;
             } catch (oError) {
                 MessageBox.error(Utility.getText("msg_failed_generic_error", [oError]))
             }
