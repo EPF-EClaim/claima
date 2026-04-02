@@ -7,6 +7,13 @@ const KursusDalam = require('./KursusDalam')
 const KursusLuar = require('./KursusLuar')
 
 module.exports = {
+    /**
+         * Drill down of eligibility scenarios for each claim type after retrieving employee and eligibility rules data
+         * @public
+         * @param {Array} aPayload - Array of Payload data containing ClaimType, ClaimItmType, List Array of fields to be checked;
+         * @param {Array} tx - CDS call
+         * @returns {Object} Object Payload with results field in CheckFields List Array populated
+         */
     onEligibilityCheck: async function (aPayload, tx) {
         const aParticipantList = aPayload.map(d => d.EmpId);
 
@@ -62,7 +69,6 @@ module.exports = {
             aPayload[i] = oReturnPayload; //Update Payload with Result value
         }
 
-        // console.log(aPayload);
         return aPayload;
     }
 

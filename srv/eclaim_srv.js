@@ -122,7 +122,7 @@ module.exports = (srv) => {
     srv.on('READ', 'FeatureControl', async (req) => {
         //crud operation visibility in config table for DTD and JKEW
         let operationHidden = true;
-        if(req.user.is(Constant.Admin.DTD_Admin)) {
+        if (req.user.is(Constant.Admin.DTD_Admin)) {
             operationHidden = false;
         }
 
@@ -136,7 +136,7 @@ module.exports = (srv) => {
         //crud operation visibility for Budget table  
         // should be accessible for edit by DTD and JKEW only - hidden for GA
         let operationHidden = false;
-        if(req.user.is(Constant.Admin.Admin_CC)){
+        if (req.user.is(Constant.Admin.Admin_CC)) {
             operationHidden = true;
         }
         return {
@@ -828,7 +828,7 @@ module.exports = (srv) => {
         }
     });
     /**
-         * Drill down of eligibility scenarios for each claim type after retrieving employee and eligibility rules data
+         * Checking of Eligibility scenarios for each claim type
          * @public
          * @param {Array} aPayload - Array of Payload data containing ClaimType, ClaimItmType, List Array of fields to be checked;
          * @returns {Object} Object Payload with results field in CheckFields List Array populated
@@ -841,19 +841,7 @@ module.exports = (srv) => {
             }
             const tx = cds.tx(req);
 
-            // for (let i = 0; i < aPayload.length; i++) {
-            //     for (let index = 0; index < array.length; index++) {
-            //         const element = array[index];
-                    
-            //     }
-            //     aPayload[i].CheckFields[i].value = JSON.parse(aPayload[i].CheckFields[i].value);
-                
-            // }
-            // let sfalse = JSON.stringify(false);  
-            // console.log(aPayload);
-            // return sfalse;
             result = await EligibleScenarioCheck.onEligibilityCheck(aPayload, tx);
-            console.log(result);
             return result;
 
         } catch (error) {
