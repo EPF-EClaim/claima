@@ -294,6 +294,13 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             dMaxDate = new Date(oHeader.trip_end_date); // default
+
+                             if (sItemType === Constants.ClaimTypeItem.VISA) {
+                                dMaxDate = new Date(oHeader.trip_start_date);
+                                const dPastDate = new Date(dMaxDate);
+                                dPastDate.setDate(dPastDate.getDate() - 90);
+                                dMaxDate = dPastDate;
+                            }
                             break;
                     }
                     break;
