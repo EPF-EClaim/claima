@@ -2770,7 +2770,9 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			//// get header if start/end date is not visible in claim item fields
-			if (!oPropertyModel.getProperty("/start_date/is_visible") || !oPropertyModel.getProperty("/end_date/is_visible")) {
+			if ((!oPropertyModel.getProperty("/start_date/is_visible") || !oPropertyModel.getProperty("/end_date/is_visible")) &&
+				(!oPropertyModel.getProperty("/insurance_cert_start_date/is_visible") || !oPropertyModel.getProperty("/insurance_cert_end_date/is_visible"))
+			) {
 				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 				oHeader = {
 					tripstartdate: oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"),
