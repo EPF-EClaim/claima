@@ -66,6 +66,32 @@
                         </header>
                     </Column>
 
+                    <!-- CLAIM_TYPE -->
+                    <Column>
+                        <header>
+                            <HBox
+                                justifyContent="SpaceBetween"
+                                alignItems="Center"
+                                width="100%"
+                            >
+                                <Text text="{i18n>myrequeststatus_claimtype}" />
+                                <Button
+                                    type="Transparent"
+                                    icon="sap-icon://sort"
+                                    tooltip="{i18n>myrequeststatus_sort_claimtype}"
+                                    press="onSortToggle"
+                                >
+                                    <customData>
+                                        <core:CustomData
+                                            key="path"
+                                            value="CLAIM_TYPE_DESC"
+                                        />
+                                    </customData>
+                                </Button>
+                            </HBox>
+                        </header>
+                    </Column>  
+
                     <!-- OBJECTIVE_PURPOSE -->
                     <Column>
                         <header>
@@ -202,6 +228,7 @@
                     <ColumnListItem type="Active">
                         <cells>
                             <Text text="{request_status>REQUEST_ID}" />
+                            <Text text="{request_status>CLAIM_TYPE_DESC}" />
                             <Text text="{request_status>OBJECTIVE_PURPOSE}" />
                             <Text
                                 text="{

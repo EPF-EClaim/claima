@@ -116,7 +116,7 @@ sap.ui.define([
 
     //Helper for enable/disable cc
     _applyCostCenterAccess: function () {
-      const userCC = this._oSessionModel.getProperty("/costcenters"); 
+      const userCC = this._oSessionModel.getProperty("/costCenters"); 
       const isAdmin = this.isAdminRole(this._oSessionModel.getProperty("/userType"));
       const ccMCB = this.byId("cc");         // MultiComboBox
       const ccText = this.byId("ccText");    // Text input for non-admins
@@ -351,7 +351,7 @@ sap.ui.define([
       this._addOrFilter(a, "GL_ACCOUNT", glKeys);
 
       // Cost Center rules
-      const userCC = this._oSessionModel.getProperty("/costcenters"); 
+      const userCC = this._oSessionModel.getProperty("/costCenters"); 
       const isAdmin = this.isAdminRole(this._oSessionModel.getProperty("/userType"));
 
       if (isAdmin) {

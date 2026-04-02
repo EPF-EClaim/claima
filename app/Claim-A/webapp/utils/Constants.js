@@ -77,7 +77,8 @@ sap.ui.define([
             "TOLL": "TOLL",
             "VISA": "VISA",
             "YURAN": "YURAN",
-            "YURAN_KLJ": "YURAN_KLJ"
+            "YURAN_KLJ": "YURAN_KLJ",
+            "CASH_REPAY": "CASH_REPAY"
         },
         "ClaimTypeItemStatus": {
             "ACTIVE": "ACTIVE",
@@ -193,7 +194,9 @@ sap.ui.define([
             "WORKFLOW_CODE": "WORKFLOW_CODE",
             "WORKFLOW_TYPE": "WORKFLOW_TYPE",
             "YEAR": "YEAR",
-            "SUBMITTED_DATE": "SUBMITTED_DATE"
+            "SUBMITTED_DATE": "SUBMITTED_DATE",
+            "BILL_DATE": "BILL_DATE",
+            "RECEIPT_DATE": "RECEIPT_DATE"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -319,7 +322,8 @@ sap.ui.define([
                 "ZFAMILY_TIMING", "ZTRAVEL_TYPE", "ZTRANSPORT_PASSING", "ZTRANSFER_MODE",
                 "ZSTUDY_LEVELS", "ZPROFESIONAL_BODY", "ZINSURANCE_PACKAGE", "ZINSURANCE_PROVIDER",
                 "ZVEHICLE_CLASS", "ZMOBILE_CATEGORY_PURPOSE", "ZBUDGET", "ZDB_STRUCTURE",
-                "ZDISBURSEMENT_STATUS", "ZCONSTANTS", "ZROLEHIERARCHY", "ZELIGIBILITY_RULE"
+                "ZDISBURSEMENT_STATUS", "ZCONSTANTS", "ZROLEHIERARCHY", "ZELIGIBILITY_RULE",
+                "ZWORKFLOW_STEP", "ZWORKFLOW_RULE"
             ]
     }
 });
