@@ -356,4 +356,10 @@ service eclaim_srv @(requires: 'authenticated-user'){
 
     function checkEligibleMobileClaim(sEmployeeId: String) returns String; 
 
+    type perdiem {
+        amount : Decimal(15, 2);
+    }
+
+    function getAmountEntitlement(location: String, claimtypeid: String, claimtypeitem: String) returns perdiem;
+
 };

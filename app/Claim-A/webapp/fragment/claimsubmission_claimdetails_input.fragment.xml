@@ -7,7 +7,8 @@
 	xmlns:mdc="sap.ui.mdc"
     xmlns:mdcvh="sap.ui.mdc.valuehelp"
     xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content"
-	core:require="{FloatType: 'sap/ui/model/type/Float'}"
+	core:require="{FloatType: 'sap/ui/model/type/Float',
+				   Integer: 'sap/ui/model/type/Integer'}"
 >
 	<VBox class="sapUiSmallMargin">
         <OverflowToolbar height="3rem">
@@ -765,11 +766,7 @@
 					id="input_claimdetails_input_entitled_breakfast"
 					value="{
 						path: 'claimitem_input>/claim_item/entitled_breakfast',
-						type: 'FloatType',
-						formatOptions: {
-							minFractionDigits: 2,
-							maxFractionDigits: 2,
-							preserveDecimals: false
+						type: 'Integer'
 						}
 					}"
 					editable="false"
@@ -782,12 +779,7 @@
 					id="input_claimdetails_input_entitled_lunch"
 					value="{
 						path: 'claimitem_input>/claim_item/entitled_lunch',
-						type: 'FloatType',
-						formatOptions: {
-							minFractionDigits: 2,
-							maxFractionDigits: 2,
-							preserveDecimals: false
-						}
+						type: 'Integer'
 					}"
 					editable="false"
 					visible="false"
@@ -799,12 +791,7 @@
 					id="input_claimdetails_input_entitled_dinner"
 					value="{
 						path: 'claimitem_input>/claim_item/entitled_dinner',
-						type: 'FloatType',
-						formatOptions: {
-							minFractionDigits: 2,
-							maxFractionDigits: 2,
-							preserveDecimals: false
-						}
+						type: 'Integer'
 					}"
 					editable="false"
 					visible="false"

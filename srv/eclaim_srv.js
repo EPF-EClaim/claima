@@ -811,6 +811,42 @@ module.exports = (srv) => {
         }
     });
 
+    srv.on('getAmountEntitlement', async(req) => {
+        const { ZEMP_MASTER, ZPERDIEM_ENT } = srv.entities;
+        const tx = cds.tx(req);
+        const emailFromToken =
+                req.user?.attr?.email ||
+                req.user?.attr?.mail ||
+                req.user?.attr?.user_name ||
+                req.user?.attr?.login_name ||
+                req.user?.id ||
+                "";
+        const today = new Date().toISOString().slice(0, 10);
+
+        let entitlement = null;
+        
+        //get employee personal grade 
+        const email = String(emailFromToken).trim().toLowerCase();
+        const result = await tx.run( 
+            SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email }) 
+        );
+
+        if(result.GRADE){
+            entitlement = await tx.run(SELECT.one.from(ZPERDIEM_ENT).where({ PERSONAL_GRADE: result.GRADE, 
+                                                                      LOCATION: req.data.location, 
+                                                                      CLAIM_TYPE_ID: req.data.claimtypeid,
+                                                                      CLAIM_TYPE_ITEM: req.data.claimtypeitem })
+                                                                      .and('START_DATE <=?', today)
+                                                                      .and('END_DATE >= ?', today)
+    )}
+        
+        if(!entitlement){
+            return null;
+        } else {
+            return entitlement.AMOUNT;
+        }
+    })
+
     // srv.on('WorkflowApproval', async (req) => {
     //     // const {ClaimsWorkflowApproval} = srv.entities;
     //     const tx = cds.tx(req);

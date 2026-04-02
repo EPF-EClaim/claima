@@ -2041,7 +2041,7 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (claimItem) {
 				// Reset Location Type
-	       		oInputModel.setProperty("/claim_item/location_type", "");
+				oInputModel.setProperty("/claim_item/location_type", "");
 
 				// get material code from claim item
 				var materialCode = claimItem.getBindingContext("employee").getObject("MATERIAL_CODE");
@@ -2050,7 +2050,7 @@ sap.ui.define([
 
 			// set app visibility controls
 			await this.getFieldVisibility_ClaimTypeItem();
-			
+
 			// When Location Type is visible but no selection yet, hide From State & To State by default
 			// If show, then State will be Select but Location will be input, which inconsistent from UI
 			if (this.byId("select_claimdetails_input_location_type").getVisible()) {
@@ -2715,13 +2715,13 @@ sap.ui.define([
 			}
 		},
 
-        /**
-         * Determine which method to use when calculating number of days for claim item
+		/**
+		 * Determine which method to use when calculating number of days for claim item
 		 * if claim item is Dobi, pass start/end date value from claim header
 		 * else if header is empty, pass start/end date value from claim item
-         * @private
-         * @return {integer} retrieve number of days value based on start/end date from claim
-         */
+		 * @private
+		 * @return {integer} retrieve number of days value based on start/end date from claim
+		 */
 		_calculateNumberOfDays: function () {
 			var oHeader = {};
 			var oItem = {};
@@ -2838,6 +2838,16 @@ sap.ui.define([
 			if (this.byId("input_claimdetails_input_travel_duration_day").getVisible()) {
 				var travelDays = Math.floor((endDateUnix - startDateUnix) / 86400000); // round down days
 				this.byId("input_claimdetails_input_travel_duration_day").setValue(travelDays);
+				//set initial value for meal entitlement based on traveldays
+				if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
+					this.byId("input_claimdetails_input_entitled_breakfast").setValue(travelDays);
+				}
+				if (this.byId("input_claimdetails_input_entitled_lunch").getVisible()) {
+					this.byId("input_claimdetails_input_entitled_lunch").setValue(travelDays);
+				}
+				if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
+					this.byId("input_claimdetails_input_entitled_dinner").setValue(travelDays);
+				}
 			}
 			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
 				var travelHours = Math.floor((endDateUnix - startDateUnix) / 3600000); // round down hours
@@ -2909,6 +2919,13 @@ sap.ui.define([
 		},
 
 		onChange_ClaimDetails_ProvidedMeals: function () {
+			let nEntBfast, nEntLunch, nEntDinner;
+			//check if there is any input, if yes then recalculate entitled meals 
+			if(this.byId("input_claimdetails_input_provided_breakfast").getValue() != null){
+				nEntBfast = this.byId("input_claimdetails_input_entitled_breakfast").getValue() - this.byId("input_claimdetails_input_provided_breakfast").getValue()
+				this.byId("input_claimdetails_input_entitled_breakfast").setValue(nEntBfast);
+			}
+
 			var provBfast = parseFloat(this.byId("input_claimdetails_input_provided_breakfast"));
 			if (isNaN(provBfast)) { provBfast = 0.0; }
 			var provLunch = parseFloat(this.byId("input_claimdetails_input_provided_lunch"));
@@ -3841,42 +3858,42 @@ sap.ui.define([
 		},
 
 		getFromLocationOfficeByState: function () {
-            var _oSelect = this.byId("select_claimdetails_input_from_location");
-            var _oBinding = _oSelect.getBinding("items");
-            if (!_oBinding) {
-                return;
-            }
+			var _oSelect = this.byId("select_claimdetails_input_from_location");
+			var _oBinding = _oSelect.getBinding("items");
+			if (!_oBinding) {
+				return;
+			}
 
 			var _oInputModel = this.getView().getModel("claimitem_input");
 			if (!_oInputModel) {
 				return;
 			}
 
-            var _aFilters = [
-                new Filter("STATUS", FilterOperator.EQ, this._oConstant.Status.ACTIVE),
+			var _aFilters = [
+				new Filter("STATUS", FilterOperator.EQ, this._oConstant.Status.ACTIVE),
 				new Filter("STATE_ID", FilterOperator.EQ, _oInputModel.getProperty("/claim_item/from_state_id"))
-            ];
-            _oBinding.filter(_aFilters);
-        },
+			];
+			_oBinding.filter(_aFilters);
+		},
 
 		getToLocationOfficeByState: function () {
-            var _oSelect = this.byId("select_claimdetails_input_to_location");
-            var _oBinding = _oSelect.getBinding("items");
-            if (!_oBinding) {
-                return;
-            }
+			var _oSelect = this.byId("select_claimdetails_input_to_location");
+			var _oBinding = _oSelect.getBinding("items");
+			if (!_oBinding) {
+				return;
+			}
 
 			var _oInputModel = this.getView().getModel("claimitem_input");
 			if (!_oInputModel) {
 				return;
 			}
 
-            var _aFilters = [
-                new Filter("STATUS", FilterOperator.EQ, this._oConstant.Status.ACTIVE),
+			var _aFilters = [
+				new Filter("STATUS", FilterOperator.EQ, this._oConstant.Status.ACTIVE),
 				new Filter("STATE_ID", FilterOperator.EQ, _oInputModel.getProperty("/claim_item/to_state_id"))
-            ];
-            _oBinding.filter(_aFilters);
-        },
+			];
+			_oBinding.filter(_aFilters);
+		},
 
 		// App Control Visibility
 		getFieldVisibility_ClaimTypeItem: async function () {
