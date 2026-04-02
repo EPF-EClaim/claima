@@ -2151,7 +2151,7 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
 			// set claim item property model
-			var oClaimItemPropertyData = {
+			var oClaimItemPropertyModel = {
 				percentage_compensation: { is_visible: false },
 				amount: { is_visible: false },
 				vehicle_type: { is_visible: false },
@@ -2159,7 +2159,7 @@ sap.ui.define([
 				rate_per_km: { is_visible: false },
 				toll: { is_visible: false }
 			};
-			var oModel = new JSONModel(oClaimItemPropertyData);
+			var oModel = new JSONModel(oClaimItemPropertyModel);
 			//// set input
 			this.getView().setModel(oModel, "claimitem_property");			
 
