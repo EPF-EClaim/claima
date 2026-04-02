@@ -2235,6 +2235,18 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
 		},
 
+		/**
+        * Set values that will be retrieved for selection dropdown based on claim header
+		* method checks for field to be updated and the associated db table
+		* if found, values from the db table will be populated to the dropdown
+        * @private
+		* @param {string} sId - ID of claim item field to be updated
+		* @param {string} sTable - database table with values to populate to field
+		* @param {boolean} bDisplayId - determines if ID of value is included along with description
+		* @param {string} sField - field of db table to retrieve value (for ID and Desc)
+		* @param {string} sFieldDesc - specific name of description field of db table
+		* @param {array} aFilters - optional, array of filters to check against db table
+        */
 		_setClaimDetailSelectionField: function (sId, sTable, bDisplayId, sField, sFieldDesc, aFilters) {
 			if (this.byId(sId).getVisible()) {
 				if (!sField) {
