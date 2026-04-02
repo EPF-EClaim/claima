@@ -163,7 +163,7 @@ sap.ui.define([
       function () { MessageToast.show(Utility.getText("no_reject_handler")) };
 
     const oDialog = new Dialog({
-      title: "{i18n>sendback_request}",
+      title: "{i18n>pushback_request}",
       contentWidth: "50%",
       content: [oForm],
       beginButton: new Button(oView.createId("reject_placeholder_cancel"), {

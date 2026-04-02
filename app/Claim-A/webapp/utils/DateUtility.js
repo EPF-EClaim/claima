@@ -1,6 +1,7 @@
 sap.ui.define([
-    "sap/ui/core/format/DateFormat"
-], function (DateFormat) {
+    "sap/ui/core/format/DateFormat",
+	"claima/utils/Constants",
+], function (DateFormat, Constants) {
     "use strict";
 
     return {
@@ -223,6 +224,93 @@ sap.ui.define([
             if (!sDate || isNaN(dDate)) return false;
 
             return dDate.setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0);
+        },
+
+        /**
+         * Determines the minimum allowable date for specific date fields
+         * based on submission type (REQUEST/CLAIM) & the following parameters.
+         *
+         * @param {string} sFieldName - The field name (e.g., RECEIPT_DATE, BILL_DATE).
+         * @param {string} sId - Submission ID; first 3 chars determine submission type.
+         * @param {string} sType - Claim Type.
+         * @param {string} sItemType - Claim Item Type.
+         * @param {object} oHeader - Header data.
+         * @param {object} oItem - Item data.
+         * @returns {Date|null} Minimum allowed date or null if invalid input.
+         *
+        **/
+        determineMinDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem) {
+            if (!sId || !sType || !sItemType) return null;
+
+            const sSubmissionType = sId.substring(0, 3);
+            var dMinDate = null;
+
+            switch (sFieldName) {
+                case Constants.EntitiesFields.RECEIPT_DATE:
+                    switch (sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            // Specific Claim Type
+                            if (sItemType === Constants.ClaimTypeItem.VISA) {
+                                
+                            } else {
+                                // Other Claim Type
+                                dMinDate = new Date(oHeader.trip_start_date);
+                            }
+                            break;
+                    }
+                    break;
+            }
+
+            return dMinDate;
+        },
+
+        /**
+         * Determines the maximum allowable date for specific date fields
+         * based on submission type (REQUEST/CLAIM) & the following parameters.
+         *
+         * @param {string} sFieldName - The field name (e.g., RECEIPT_DATE, BILL_DATE).
+         * @param {string} sId - Submission ID; first 3 chars determine submission type.
+         * @param {string} sType - Claim Type.
+         * @param {string} sItemType - Claim Item Type.
+         * @param {object} oHeader - Header data.
+         * @param {object} oItem - Item data.
+         * @returns {Date|null} Maximum allowed date or null if invalid input.
+         *
+        **/
+        determineMaxDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem) {
+            if (!sId || !sType || !sItemType) return null;
+
+            const sSubmissionType = sId.substring(0, 3);
+            var dMaxDate = null;
+
+            switch (sFieldName) {
+                case Constants.EntitiesFields.RECEIPT_DATE:
+                    switch (sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            dMaxDate = new Date(oHeader.trip_end_date); // default
+                            break;
+                    }
+                    break;
+
+                case Constants.EntitiesFields.BILL_DATE:
+                    switch (sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            dMaxDate = new Date(oHeader.trip_end_date); // default
+                            break;
+                    }
+                    break;
+            }
+
+            return dMaxDate;
         }
 
     };

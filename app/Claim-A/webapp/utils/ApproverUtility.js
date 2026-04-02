@@ -312,7 +312,7 @@ sap.ui.define([
         if (sReason) oCtxCurrent.setProperty(Constants.EntitiesFields.REJECT_REASON_ID, sReason);
         oCtxCurrent.setProperty(Constants.EntitiesFields.STATUS, sActionStatus);
 
-        // Sean confirmed that after REJECTED and SEND BACK status, Higher level approvers will have blank status
+        // Sean confirmed that after REJECTED and PUSH BACK status, Higher level approvers will have blank status
       
         //Call Update Status.
         Utility._updateStatus(oModel, sId, sActionStatus)
