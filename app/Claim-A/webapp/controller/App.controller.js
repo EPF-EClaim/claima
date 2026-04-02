@@ -713,7 +713,7 @@ sap.ui.define([
 			// Mobile Eligibility Pre-check
 			var sClaimType = oInputModel.getProperty("/claimtype/type")
 			if (sClaimType === this._oConstant.ClaimType.HANDPHONE) {
-				var bEligible = await EligibilityCheck.onCheckEligibility(this);
+				var bEligible = await EligibilityCheck.onCheckMobileEligibility(this);
 				if (!bEligible) {
 					MessageBox.warning(Utility.getText("warning_msg_mobile_not_eligible"));
 					return;
