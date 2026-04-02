@@ -1649,11 +1649,6 @@ sap.ui.define([
 					return;
 				}
 
-				if (!sComment) {
-					MessageBox.error(Utility.getText("msg_claimapprover_comment"));
-					return;
-				}
-
 				try {
 
 					BusyIndicator.show(0);
