@@ -1053,7 +1053,7 @@ sap.ui.define([
 					"bill_date": null,
 					"claim_category": null,
 					"country": null,
-					"disclaimer": null,
+					"disclaimer": false,
 					"start_date": null,
 					"end_date": null,
 					"start_time": null,
@@ -1101,7 +1101,7 @@ sap.ui.define([
 					"anggota_name": null,
 					"dependent_name": null,
 					"type_of_professional_body": null,
-					"disclaimer_galakan": null,
+					"disclaimer_galakan": false,
 					"mode_of_transfer": null,
 					"transfer_date": null,
 					"no_of_days": null,
@@ -2459,10 +2459,18 @@ sap.ui.define([
 
 			//FUT issue #58
 			//checking for galakan disclaimer if its ticked or not
-			if (!(!!oInputModel.getProperty("/claim_item/disclaimer_galakan")) ||
-    			!(!!oInputModel.getProperty("/claim_item/disclaimer"))) {
-				MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
-				return;
+			if (this.byId("checkbox_claimdetails_input_disclaimer").getVisible()) {
+				if(!oInputModel.getProperty("/claim_item/disclaimer")) {
+					MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+					return;
+				}
+			}
+
+			if (this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()) {
+				if(!oInputModel.getProperty("/claim_item/disclaimer_galakan")) {
+					MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+					return;
+				}
 			}
 
 			try {
