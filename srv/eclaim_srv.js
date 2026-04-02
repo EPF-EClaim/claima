@@ -827,43 +827,5 @@ module.exports = (srv) => {
         }
     });
 
-    // srv.on('WorkflowApproval', async (req) => {
-    //     // const {ClaimsWorkflowApproval} = srv.entities;
-    //     const tx = cds.tx(req);
-    //     try {
-    //         const { ClaimID } = req.data;
-    //         // oClaimsHeaderItemClaimantData = await RetrieveClaimsData(ClaimID, tx);
-
-    //         // if (oClaimsData.CASH_ADVANCE_AMOUNT > 0) {
-    //         //     const bClaimCashAdvance = true;
-    //         // }else{
-    //         //     bClaimCashAdvance = false;
-    //         // };
-
-    //         // RetrieveWorkflow(req);
-    //         // RetrieveApprovers(req);
-
-    //         return ClaimID;
-    //     } catch (error) {
-    //         req.error(400, `Fail creating record: ${error.message}`);
-    //     }
-    // });
-
-    // async function RetrieveClaimsData(sClaimID, tx) {
-    //     if (!sClaimID) return;
-    //     const { ClaimsWorkflowApproval } = srv.entities;
-    //     const result = await tx.run(
-    //         SELECT.from(ClaimsWorkflowApproval).where({ClaimID: sClaimID})
-    //     );
-    //     return result;
-    // }
-
-    // async function RetrieveWorkflow(oClaimsData) {
-
-    // };
-
-    // async function RetrieveApprovers(req) {
-
-    // };
 
 }
