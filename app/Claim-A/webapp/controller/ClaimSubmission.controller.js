@@ -26,7 +26,8 @@ sap.ui.define([
 	"claima/utils/workflowApproval",
 	"claima/utils/DateUtility",
 	"claima/utils/EligibilityCheck",
-	"claima/utils/EligibilityScenarios/EligibleScenarioCheck"
+	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
+	"claima/utils/Constants",
 ], function (
 	Fragment,
 	Item,
@@ -55,7 +56,8 @@ sap.ui.define([
 	workflowApproval,
 	DateUtility,
 	EligibilityCheck,
-	EligibleScenarioCheck
+	EligibleScenarioCheck,
+	Constants
 ) {
 	"use strict";
 
@@ -1479,7 +1481,7 @@ sap.ui.define([
 			// get action
 			switch (oAction) {
 				//// Save Draft
-				case 'Save Draft':
+				case Constants.Claim_Action.DRAFT:
 					// confirm dialog
 					this._newDialog(
 						Utility.getText("dialog_claimsubmission_savedraft"),
@@ -1490,7 +1492,7 @@ sap.ui.define([
 					);
 					break;
 				//// Delete Report
-				case 'Delete Report':
+				case Constants.Claim_Action.DELETE:
 					// confirm dialog
 					this._newDialog(
 						Utility.getText("dialog_claimsubmission_deletereport"),
@@ -1501,7 +1503,7 @@ sap.ui.define([
 					);
 					break;
 				//// Submit Report
-				case 'Submit Report':
+				case Constants.Claim_Action.SUBMIT:
 
 					//Add checker for Trip End date greater than current date;
 					var oInputModel = this.getView().getModel("claimsubmission_input");
@@ -1523,12 +1525,12 @@ sap.ui.define([
 					);
 					break;
 				//// Back
-				case 'Back':
+				case Constants.Claim_Action.BACK:
 					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 					this.onBack_ClaimSubmission();
 					break;
 				//// Reject
-				case 'Reject': {
+				case Constants.Claim_Action.REJECT: {
 
 					// Ensure form model
 					let oReject = this.getView().getModel("Reject");
@@ -1551,13 +1553,15 @@ sap.ui.define([
 					try {
 						RejectDialog.open(this);
 					} catch (e) {
-						MessageBox.error("Failed to open Reject Dialog:\n" + (e?.message || e));
+						MessageBox.error(
+								Utility.getText("msg_claim_rejectdialog_fail", [(e?.message || e)])
+							);
 					}
 					break;
 				}
 
 				//// Push Back
-				case 'Push Back':
+				case Constants.Claim_Action.PUSHBACK:
 
 					{
 						// 1) Ensure Reject model (form data: reason + comment)
@@ -1586,7 +1590,10 @@ sap.ui.define([
 						try {
 							SendBackDialog.open(this);
 						} catch (e) {
-							MessageBox.error("Failed to open Push Back Dialog:\n" + (e?.message || e));
+
+							MessageBox.error(
+								Utility.getText("msg_claim_pushbackdialog_fail", [(e?.message || e)])
+							);
 						}
 					}
 					break;
@@ -1594,7 +1601,7 @@ sap.ui.define([
 				//// Approve
 
 
-				case 'Approve': {
+				case Constants.Claim_Action.APPROVE: {
 					let oReject = this.getView().getModel("Reject");
 					if (!oReject) {
 						oReject = new JSONModel({ approvalComment: "" });
@@ -2041,7 +2048,7 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (claimItem) {
 				// Reset Location Type
-	       		oInputModel.setProperty("/claim_item/location_type", "");
+				oInputModel.setProperty("/claim_item/location_type", "");
 
 				// get material code from claim item
 				var materialCode = claimItem.getBindingContext("employee").getObject("MATERIAL_CODE");
@@ -2050,7 +2057,7 @@ sap.ui.define([
 
 			// set app visibility controls
 			await this.getFieldVisibility_ClaimTypeItem();
-			
+
 			// When Location Type is visible but no selection yet, hide From State & To State by default
 			// If show, then State will be Select but Location will be input, which inconsistent from UI
 			if (this.byId("select_claimdetails_input_location_type").getVisible()) {
@@ -2153,7 +2160,7 @@ sap.ui.define([
 			this.byId("select_claimdetails_input_claimitem").bindAggregation("items", {
 				path: "employee>/ZCLAIM_TYPE_ITEM",
 				filters: [
-					new Filter('CLAIM_TYPE_ID', FilterOperator.EQ,oModel.getProperty("/claim_header/claim_type_id")),
+					new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oModel.getProperty("/claim_header/claim_type_id")),
 					oFilterSubsmissionType,
 					// ensure status is active
 					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
@@ -2451,7 +2458,7 @@ sap.ui.define([
 			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
 			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
 
-			if(dReceiptDate > dTripEndDate){
+			if (dReceiptDate > dTripEndDate) {
 				MessageToast.show(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
 				return;
 			}
@@ -2467,7 +2474,7 @@ sap.ui.define([
 			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
 			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
 
-			if(dReceiptDate > dTripEndDate){
+			if (dReceiptDate > dTripEndDate) {
 				MessageToast.show(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
 				return;
 			}
@@ -2715,13 +2722,13 @@ sap.ui.define([
 			}
 		},
 
-        /**
-         * Determine which method to use when calculating number of days for claim item
+		/**
+		 * Determine which method to use when calculating number of days for claim item
 		 * if claim item is Dobi, pass start/end date value from claim header
 		 * else if header is empty, pass start/end date value from claim item
-         * @private
-         * @return {integer} retrieve number of days value based on start/end date from claim
-         */
+		 * @private
+		 * @return {integer} retrieve number of days value based on start/end date from claim
+		 */
 		_calculateNumberOfDays: function () {
 			var oHeader = {};
 			var oItem = {};
@@ -3841,42 +3848,42 @@ sap.ui.define([
 		},
 
 		getFromLocationOfficeByState: function () {
-            var _oSelect = this.byId("select_claimdetails_input_from_location");
-            var _oBinding = _oSelect.getBinding("items");
-            if (!_oBinding) {
-                return;
-            }
+			var _oSelect = this.byId("select_claimdetails_input_from_location");
+			var _oBinding = _oSelect.getBinding("items");
+			if (!_oBinding) {
+				return;
+			}
 
 			var _oInputModel = this.getView().getModel("claimitem_input");
 			if (!_oInputModel) {
 				return;
 			}
 
-            var _aFilters = [
-                new Filter("STATUS", FilterOperator.EQ, this._oConstant.Status.ACTIVE),
+			var _aFilters = [
+				new Filter("STATUS", FilterOperator.EQ, this._oConstant.Status.ACTIVE),
 				new Filter("STATE_ID", FilterOperator.EQ, _oInputModel.getProperty("/claim_item/from_state_id"))
-            ];
-            _oBinding.filter(_aFilters);
-        },
+			];
+			_oBinding.filter(_aFilters);
+		},
 
 		getToLocationOfficeByState: function () {
-            var _oSelect = this.byId("select_claimdetails_input_to_location");
-            var _oBinding = _oSelect.getBinding("items");
-            if (!_oBinding) {
-                return;
-            }
+			var _oSelect = this.byId("select_claimdetails_input_to_location");
+			var _oBinding = _oSelect.getBinding("items");
+			if (!_oBinding) {
+				return;
+			}
 
 			var _oInputModel = this.getView().getModel("claimitem_input");
 			if (!_oInputModel) {
 				return;
 			}
 
-            var _aFilters = [
-                new Filter("STATUS", FilterOperator.EQ, this._oConstant.Status.ACTIVE),
+			var _aFilters = [
+				new Filter("STATUS", FilterOperator.EQ, this._oConstant.Status.ACTIVE),
 				new Filter("STATE_ID", FilterOperator.EQ, _oInputModel.getProperty("/claim_item/to_state_id"))
-            ];
-            _oBinding.filter(_aFilters);
-        },
+			];
+			_oBinding.filter(_aFilters);
+		},
 
 		// App Control Visibility
 		getFieldVisibility_ClaimTypeItem: async function () {

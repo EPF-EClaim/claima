@@ -28,7 +28,8 @@ sap.ui.define([
 	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
 	"claima/utils/Attachment",
 	"claima/utils/EligibilityCheck",
-	"claima/utils/DateUtility"
+	"claima/utils/DateUtility",
+	"claima/utils/Constants"
 
 ], function (
 	Controller,
@@ -60,7 +61,8 @@ sap.ui.define([
 	EligibleScenarioCheck,
 	Attachment,
 	EligibilityCheck,
-	DateUtility
+	DateUtility,
+	Constants
 ) {
 	"use strict";
 
@@ -2274,8 +2276,7 @@ sap.ui.define([
 					throw new Error(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 				}
 
-				// STAT03 = PUSH BACK
-				const reject_status = "STAT03";
+	
 
 				// 1) Update approval rows + header, build dataset & email payloads
 				const { payloads, dataset, submissionType } =
@@ -2283,7 +2284,7 @@ sap.ui.define([
 						oModelMain,
 						reqId,       // id
 						userId,      // approver user id
-						reject_status,
+						Constants.ClaimStatus.SEND_BACK,
 						reason,
 						comment,
 						oModelView
@@ -2345,14 +2346,14 @@ sap.ui.define([
 				const reqModel = this.getView().getModel("request");
 				const reqId = reqModel?.getProperty("/req_header/reqid")?.trim();
 
-				const reject_status = "STAT04"; // REJECT
+				
 
 				const { payloads, dataset, submissionType } =
 					await ApproverUtility.rejectOrSendBackMultiLevel(
 						oModelMain,
 						reqId,
 						this._oSessionModel.getProperty("/userId"),
-						reject_status,
+						Constants.ClaimStatus.REJECTED,
 						reason,
 						comment,
 						oModelView

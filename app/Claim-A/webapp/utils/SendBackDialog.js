@@ -1,5 +1,3 @@
-
-// claima/utils/SendBackDialog.js
 sap.ui.define([
   "sap/ui/model/json/JSONModel",
   "sap/m/Dialog",
@@ -8,10 +6,12 @@ sap.ui.define([
   "sap/m/Text",
   "sap/m/TextArea",
   "sap/m/Select",
+  "sap/m/MessageToast",
   "sap/ui/core/Item",
   "sap/ui/layout/form/SimpleForm",
   "sap/ui/model/Filter",
-  "sap/ui/model/FilterOperator"
+  "sap/ui/model/FilterOperator",
+  "claima/utils/Utility"
 ], function (
   JSONModel,
   Dialog,
@@ -20,10 +20,12 @@ sap.ui.define([
   Text,
   TextArea,
   Select,
+  MessageToast,
   Item,
   SimpleForm,
   Filter,
-  FilterOperator
+  FilterOperator,
+  Utility
 ) {
   "use strict";
 
@@ -164,7 +166,7 @@ sap.ui.define([
     const submitHandler =
       oController.onSendBack_app ||               // RequestForm
       oController.onSendBack_ClaimSubmission ||   // ClaimSubmission
-      function () { sap.m.MessageToast.show("No Push Back handler implemented."); };
+      function () { MessageToast.show(Utility.getText("msg_myapproval_pushback")) };
 
     const oDialog = new Dialog({
       // Will set dynamically in open()

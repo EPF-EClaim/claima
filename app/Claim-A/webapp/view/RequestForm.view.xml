@@ -103,21 +103,21 @@
             <OverflowToolbar>
                 <ToolbarSpacer/>
                 <!-- View Mode -->
-                <Button id="req_back_scr"       type="Default"      text="Back"                     press=".onBackView"         visible="false" />
+                <Button id="req_back_scr"       type="Default"      text="{i18n>req_view_btn_back}"                     press=".onBackView"         visible="false" />
 
                 <!-- Header Level -->
-                <Button id="req_back"           type="Default"      text="Back"                     press=".onBack"             visible="false" />
-                <Button id="req_delete"         type="Default"      text="Delete Request"           press=".onDeleteRequest"    visible="false" />
-                <Button id="req_submit"         type="Emphasized"   text="Submit Request"           press=".onSubmitRequest"    visible="false" />
+                <Button id="req_back"           type="Default"      text="{i18n>req_view_btn_back}"                     press=".onBack"             visible="false" />
+                <Button id="req_delete"         type="Default"      text="{i18n>req_view_btn_delete}"           press=".onDeleteRequest"    visible="false" />
+                <Button id="req_submit"         type="Emphasized"   text="{i18n>req_view_btn_submit}"           press=".onSubmitRequest"    visible="false" />
 
                 <!-- Item Level --> 
-                <Button id="req_item_cancel"    type="Default"      text="Cancel"                   press=".onCancelItem"       visible="false" />
-                <Button id="req_item_save"      type="Default"      text="Save"                     press=".onSaveItem"         visible="false" />
+                <Button id="req_item_cancel"    type="Default"      text="{i18n>req_view_btn_cancel}"                   press=".onCancelItem"       visible="false" />
+                <Button id="req_item_save"      type="Default"      text="{i18n>req_view_btn_save}"                     press=".onSaveItem"         visible="false" />
 
                 <!-- Approver -->
-                <Button id="req_reject"         type="Default"      text="Reject"                   press=".onRejectRequest"    visible="false" />
-                <Button id="req_send_back"      type="Default"      text="Push Back"                press=".onSendBackRequest"  visible="false" />
-                <Button id="req_approve"        type="Emphasized"   text="Approve"                  press=".onApproveRequest"   visible="false" />
+                <Button id="req_reject"         type="Default"      text="{i18n>req_view_btn_reject}"                   press=".onRejectRequest"    visible="false" />
+                <Button id="req_send_back"      type="Default"      text="{i18n>req_view_btn_pushback}"                press=".onSendBackRequest"  visible="false" />
+                <Button id="req_approve"        type="Emphasized"   text="{i18n>req_view_btn_approve}"                  press=".onApproveRequest"   visible="false" />
             </OverflowToolbar>
         </footer>
     </Page>
