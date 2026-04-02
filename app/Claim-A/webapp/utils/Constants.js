@@ -194,7 +194,9 @@ sap.ui.define([
             "WORKFLOW_CODE": "WORKFLOW_CODE",
             "WORKFLOW_TYPE": "WORKFLOW_TYPE",
             "YEAR": "YEAR",
-            "SUBMITTED_DATE": "SUBMITTED_DATE"
+            "SUBMITTED_DATE": "SUBMITTED_DATE",
+            "BILL_DATE": "BILL_DATE",
+            "RECEIPT_DATE": "RECEIPT_DATE"
         },
         "Operators": {
             "EQUAL": "EQ",
