@@ -2477,11 +2477,11 @@ sap.ui.define([
 			//checking if visa backdated receipt date is over 90 days, if over 90 days a message error box will appear
 			if(oInputModel.getProperty("/claim_item/claim_type_item_id") == this._oConstant.ClaimTypeItem.VISA){
 				var dReceiptDateWithoutFormatting = new Date(oInputModel.getProperty("/claim_item/receipt_date"));
-				var dTtripStartDate = new Date(oInputModel.getProperty("/claim_item/trip_start_date"));
-				var dDateDiff = Math.abs(dTtripStartDate - dReceiptDateWithoutFormatting);
+				var dTtripStartDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"));
+				var dDateDiff = Math.abs(dReceiptDateWithoutFormatting - dTtripStartDate);
 				dDateDiff = Math.trunc(dDateDiff/86400000);
 				
-				if(dDateDiff < 90){
+				if(dDateDiff <= 90){
 					MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date_for_visa"));
 					return;
 				}
