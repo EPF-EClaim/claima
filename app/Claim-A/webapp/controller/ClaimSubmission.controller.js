@@ -9,13 +9,11 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
 	"sap/ui/core/format/DateFormat",
-	"sap/ui/core/ValueState",
 	"sap/m/MessageBox",
 	"sap/m/MessageToast",
 	"sap/m/Dialog",
 	"sap/m/Button",
 	"sap/m/Label",
-	"sap/m/FormattedText",
 	"sap/m/ListMode",
 	"claima/utils/Utility",
 	"claima/utils/Attachment",
@@ -40,13 +38,11 @@ sap.ui.define([
 	FilterOperator,
 	Sorter,
 	DateFormat,
-	ValueState,
 	MessageBox,
 	MessageToast,
 	Dialog,
 	Button,
 	Label,
-	FormattedText,
 	ListMode,
 	Utility,
 	Attachment,
@@ -1519,25 +1515,14 @@ sap.ui.define([
 						return;
 					}
 
-					var sDeclarationHTML =
-						"<ul>" +
-						"<li>" + Utility.getText("msg_claim_decl_item1_en") + "</li>" +
-						"<li>" + Utility.getText("msg_claim_decl_item2_en") + "</li>" +
-						"<li>" + Utility.getText("msg_claim_decl_item3_en") + "</li>" +
-						"<li>" + Utility.getText("msg_claim_decl_item4_en") + "</li>" +
-						"<li>" + Utility.getText("msg_claim_decl_item5_en") + "</li>" +
-						"<li>" + Utility.getText("msg_claim_decl_item6_en") + "</li>" +
-						"</ul>";
-
 					// confirm dialog
-					this._oDeclarationDialog(
+					this._newDialog(
 						Utility.getText("dialog_claimsubmission_submitreport"),
-						sDeclarationHTML,
+						Utility.getText("label_claimsubmission_submitreport"),
 						function () {
 							this._updateClaimSubmission(oAction);
 						}.bind(this)
 					);
-
 					break;
 				//// Back
 				case this._oConstant.Claim_Action.BACK:
@@ -3839,35 +3824,6 @@ sap.ui.define([
 				beginButton: new Button({
 					type: "Emphasized",
 					text: Utility.getText("button_claimsummary_confirm"),
-					press: async function () {
-						this.oDialog.close();
-						await onPress();
-					}.bind(this)
-				}),
-				endButton: new Button({
-					text: Utility.getText("button_claimsummary_cancel"),
-					press: async function () {
-						this.oDialog.close();
-						if (onPressE) {
-							await onPressE();
-						}
-					}.bind(this)
-				})
-			});
-			this.oDialog.open();
-		},
-
-		//Declaration dialog
-		_oDeclarationDialog: function (oTitle, oHTMLContent, onPress, onPressE) {
-			this.oDialog = new Dialog({
-				title: oTitle,
-				type: "Message",
-				state: ValueState.Warning,
-				contentWidth: "500px",
-				content: [new FormattedText({ htmlText: oHTMLContent, wrapping: true })],
-				beginButton: new Button({
-					type: "Emphasized",
-					text: Utility.getText("button_claimsubmission_declaration_confirm"),
 					press: async function () {
 						this.oDialog.close();
 						await onPress();
