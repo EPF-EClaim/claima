@@ -196,7 +196,9 @@
                                                     />
                                                     <Text
                                                         textAlign="End"
-                                                        text="{dashboardModel>TOTAL_CLAIM_AMOUNT}"
+                                                        text="{ path: 'dashboardModel>TOTAL_CLAIM_AMOUNT',
+                                                        type: 'sap.ui.model.type.Float',
+                                                        formatOptions: { minFractionDigits: 2, maxFractionDigits: 2, groupingEnabled: true } }"
                                                     />
                                                     <Text
                                                         text="{dashboardModel>STATUS_DESC}"
@@ -321,7 +323,9 @@
                                                         formatOptions: { pattern: 'dd MMM yyyy'} }"
                                                     />
                                                     <Text
-                                                        text="{dashboardModel>PREAPPROVAL_AMOUNT}"
+                                                        text="{path: 'dashboardModel>PREAPPROVAL_AMOUNT',
+                                                        type: 'sap.ui.model.type.Float',
+                                                        formatOptions: { minFractionDigits: 2, maxFractionDigits: 2, groupingEnabled: true } }"
                                                     />
                                                     <Text
                                                         text="{dashboardModel>STATUS_DESC}"
@@ -449,7 +453,9 @@
                                                     />
                                                     <Text
                                                         textAlign="End"
-                                                        text="{dashboardModel>AMOUNT}"
+                                                        text="{ path: 'dashboardModel>AMOUNT',
+                                                        type: 'sap.ui.model.type.Float',
+                                                        formatOptions: { minFractionDigits: 2, maxFractionDigits: 2, groupingEnabled: true } }"
                                                     />
                                                     <Text
                                                         text="{dashboardModel>STATUS_DESC}"
