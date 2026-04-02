@@ -179,8 +179,9 @@
 						}
 					}"
 					required="true"
-					editable="{= ${claimitem_property>/actual_amount/is_visible} === false &amp;&amp;
-						${claimitem_property>/entitled_breakfast/is_visible} === false
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
+						!${claimitem_property>/entitled_breakfast/is_visible}
 					}"
 					visible="{claimitem_property>/amount/is_visible}"
 				/>
@@ -199,7 +200,9 @@
 							preserveDecimals: false
 						}
 					}"
-					editable="{= ${claimitem_property>/amount/is_visible} === false}"
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						!${claimitem_property>/amount/is_visible}
+					}"
 					visible="{claimitem_property>/percentage_compensation/is_visible}"
 				/>
 

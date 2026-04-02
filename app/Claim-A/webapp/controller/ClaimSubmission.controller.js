@@ -2061,16 +2061,6 @@ sap.ui.define([
 			// set claim detail selection values
 			this._setClaimDetailSelectionMaster();
 
-			// check if provided/entitled meals is visible
-			if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
-				this.byId("input_claimdetails_input_amount").setEditable(false);
-			}
-			else {
-				if (!this.byId("input_claimdetails_input_amount").getEditable()) {
-					this.byId("input_claimdetails_input_amount").setEditable(true);
-				}
-			}
-
 			//set disclaimer field as false if they are visible for validation
 			if (this.byId("checkbox_claimdetails_input_disclaimer").getVisible()) {
 				oInputModel.setProperty("/claim_item/disclaimer", false);
@@ -2153,15 +2143,15 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
 			// set claim item property model
-			var oClaimItemPropertyModel = {
+			var oClaimItemProperties = {
 				percentage_compensation: { is_visible: false },
 				actual_amount: { is_visible: false },
 				amount: { is_visible: false },
 				entitled_breakfast: { is_visible: false }
 			};
-			var oModel = new JSONModel(oClaimItemPropertyModel);
+			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
-			this.getView().setModel(oModel, "claimitem_property");
+			this.getView().setModel(oClaimItemPropertyModel, "claimitem_property");
 
 			// change footer buttons
 			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
@@ -3130,11 +3120,6 @@ sap.ui.define([
 			if (oClaimItemFragment) {
 				// disable item visibility
 				this._setAllControlsVisible(false);
-
-				// check if amount is editable
-				if (!this.byId("input_claimdetails_input_amount").getEditable()) {
-					this.byId("input_claimdetails_input_amount").setEditable(true);
-				}
 
 				// approver view changes
 				if (oClaimSubmissionModel.getProperty("/view_only")) {
