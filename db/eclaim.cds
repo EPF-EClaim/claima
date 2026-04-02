@@ -568,6 +568,8 @@ entity ZCLAIM_ITEM : managed {
                                          on ZPROFESIONAL_BODY.PROFESIONAL_BODY_ID = TYPE_OF_PROFESSIONAL_BODY;
         ZGL_ACCOUNT                : Association to ZGL_ACCOUNT
                                          on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
+        ZCURRENCY                  : Association to ZCURRENCY
+                                         on ZCURRENCY.CURRENCY_ID = CURRENCY_CODE;
 }
 
 entity ZLODGING_CAT : managed {
@@ -845,6 +847,12 @@ entity ZOFFICE_DISTANCE : managed {
         ZOFFICE_LOCATION1: Association to ZOFFICE_LOCATION
                            on ZOFFICE_LOCATION1.LOCATION_ID = TO_LOCATION_ID
                            and ZOFFICE_LOCATION1.STATE_ID = TO_STATE_ID;
+        ZSTATE                     : Association to ZSTATE
+                                         on ZSTATE.STATE_ID   = FROM_STATE_ID;
+        ZTOSTATE                   : Association to ZSTATE
+                                         on ZTOSTATE.STATE_ID   = TO_STATE_ID;
+
+       
 }
 
 entity ZGL_ACCOUNT : managed {
