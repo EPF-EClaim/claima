@@ -268,7 +268,6 @@ sap.ui.define([
                     }
                     break;
             }
-            
             _dMinDate.setHours(0, 0, 0, 0);
             return _dMinDate;
         },
