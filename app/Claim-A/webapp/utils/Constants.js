@@ -18,6 +18,7 @@ sap.ui.define([
             "KURSUS_LUAR_NEGARA": "KURSUS_LUAR_NEGARA",
             "DLM_NEGARA": "DLM_NEGARA",
             "LUAR_NEGARA": "LUAR_NEGARA",
+            "MEDICAL": "MEDICAL",
             "POST_EDUCATION_ASSISTANCE": "PEDU",
             "PELBAGAI": "PELBAGAI",
             "ELAUN_TUKAR": "ELAUN_TUKAR",
