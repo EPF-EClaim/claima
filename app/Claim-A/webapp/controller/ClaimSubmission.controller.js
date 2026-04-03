@@ -75,19 +75,21 @@ sap.ui.define([
 			const oRouter = this.getOwnerComponent().getRouter();
 			oRouter.getRoute("ClaimSubmission").attachPatternMatched((event) => { this._onMatched(event); }, this);
 			oRouter.attachBeforeRouteMatched((event) => { this._beforeRouteMatched(event); }, this);
-			
-			this.getOwnerComponent().setModel(new JSONModel({ fieldControl: { 
-				[this._oConstant.EntitiesFields.RECEIPT_DATE]: {
-					customErrorMessage: "",
-					customMinDateError: "",
-					customMaxDateError: ""
-				},
-				[this._oConstant.EntitiesFields.BILL_DATE]: {
-					customErrorMessage: "",
-					customMinDateError: "",
-					customMaxDateError: ""
+
+			this.getOwnerComponent().setModel(new JSONModel({
+				fieldControl: {
+					[this._oConstant.EntitiesFields.RECEIPT_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+						customMaxDateError: ""
+					},
+					[this._oConstant.EntitiesFields.BILL_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+						customMaxDateError: ""
+					}
 				}
-			} }), "appModel");
+			}), "appModel");
 
 		},
 
@@ -1566,8 +1568,8 @@ sap.ui.define([
 						RejectDialog.open(this);
 					} catch (e) {
 						MessageBox.error(
-								Utility.getText("msg_claim_rejectdialog_fail", [(e?.message || e)])
-							);
+							Utility.getText("msg_claim_rejectdialog_fail", [(e?.message || e)])
+						);
 					}
 					break;
 				}
@@ -2542,12 +2544,12 @@ sap.ui.define([
 					EVENT_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_item/event_end_date")),
 					TRAVEL_DURATION_DAY: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day"))).toFixed(1),
 					TRAVEL_DURATION_HOUR: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))).toFixed(1),
-					PROVIDED_BREAKFAST: oInputModel.getProperty("/claim_item/provided_breakfast"),
-					PROVIDED_LUNCH: oInputModel.getProperty("/claim_item/provided_lunch"),
-					PROVIDED_DINNER: oInputModel.getProperty("/claim_item/provided_dinner"),
-					ENTITLED_BREAKFAST: oInputModel.getProperty("/claim_item/entitled_breakfast"),
-					ENTITLED_LUNCH: oInputModel.getProperty("/claim_item/entitled_lunch"),
-					ENTITLED_DINNER: oInputModel.getProperty("/claim_item/entitled_dinner"),
+					PROVIDED_BREAKFAST: oInputModel.getProperty("/claim_item/provided_breakfast")?.toString(),
+					PROVIDED_LUNCH: oInputModel.getProperty("/claim_item/provided_lunch")?.toString(),
+					PROVIDED_DINNER: oInputModel.getProperty("/claim_item/provided_dinner")?.toString(),
+					ENTITLED_BREAKFAST: oInputModel.getProperty("/claim_item/entitled_breakfast")?.toString(),
+					ENTITLED_LUNCH: oInputModel.getProperty("/claim_item/entitled_lunch")?.toString(),
+					ENTITLED_DINNER: oInputModel.getProperty("/claim_item/entitled_dinner")?.toString(),
 					ANGGOTA_ID: oInputModel.getProperty("/claim_item/anggota_id"),
 					ANGGOTA_NAME: oInputModel.getProperty("/claim_item/anggota_name"),
 					DEPENDENT_NAME: oInputModel.getProperty("/claim_item/dependent_name"),
@@ -2868,119 +2870,9 @@ sap.ui.define([
 				this.byId("input_claimdetails_input_travel_duration_hour").setValue(travelHours);
 			}
 
-			// get details from per diem table
 			BusyIndicator.show(0);
-			var nDay = this.byId("input_claimdetails_input_travel_duration_day").getValue();
-			var nHour = this.byId("input_claimdetails_input_travel_duration_hour").getValue();
-			var sLocation = oInputModel.getProperty("/claim_item/region");
-			var sClaimtype = oInputModel.getProperty("/claim_item/claim_type_id");
-			var sClaimItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
-
-			var nBreakfast = parseInt(this.byId("input_claimdetails_input_provided_breakfast").getValue());
-			var nLunch = parseInt(this.byId("input_claimdetails_input_provided_lunch").getValue());
-			var nDinner = parseInt(this.byId("input_claimdetails_input_provided_dinner").getValue());
-
-			nBreakfast = Number.isNaN(nBreakfast) ? 0 : nBreakfast;
-			nLunch = Number.isNaN(nLunch) ? 0 : nLunch;
-			nDinner = Number.isNaN(nDinner) ? 0 : nDinner;
-
-			const oModel = this.getView().getModel();
-
-			const oContext = oModel.bindContext("/getAmountEntitlement(...)");
-
-			// Set parameters
-			oContext.setParameter("day", nDay);
-			oContext.setParameter("hours", nHour);
-			oContext.setParameter("location", sLocation != null? sLocation: '03');
-			oContext.setParameter("claimtypeid", sClaimtype);
-			oContext.setParameter("claimtypeitem", sClaimItem);
-			oContext.setParameter("breakfast", nBreakfast);
-			oContext.setParameter("lunch", nLunch);
-			oContext.setParameter("dinner", nDinner);
-
-
-			oContext.execute()
-				.then(() => oContext.requestObject())
-				.then(oResult => {
-					if (!oResult) {
-						console.log("No entitlement found");
-						return;
-					}
-					BusyIndicator.hide();
-					if (this.byId("input_claimdetails_input_amount").getVisible()){
-					this.byId("input_claimdetails_input_amount").setValue(oResult.amount);
-					}
-
-					if (this.byId("input_claimdetails_input_dailyallowance").getVisible()){
-					this.byId("input_claimdetails_input_dailyallowance").setValue(oResult.daily_allowance);
-					}
-
-					console.log("Entitlement amount:", oResult.amount);
-					// oInputModel.setProperty("/claim_item/entitled_amount", oResult.amount);
-				})
-				.catch(err => {
-					console.error("Error calling getAmountEntitlement", err);
-				});
-			// const oModel = this.getOwnerComponent().getModel();
-			// const oListBinding = oModel.bindList("/ZPERDIEM_ENT", null, null, [
-			// 	new Filter("PERSONAL_GRADE", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/grade")),
-			// 	new Filter("LOCATION", FilterOperator.EQ, oInputModel.getProperty("/claim_item/region")),
-			// 	new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_id")),
-			// 	new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_item_id")),
-			// 	new Filter("START_DATE", FilterOperator.LE, this._getHanaDate(this.byId(startDate).getValue())),
-			// 	new Filter("END_DATE", FilterOperator.GE, this._getHanaDate(this.byId(endDate).getValue()))
-			// ]);
-
-			// try {
-			// 	const aContexts = await oListBinding.requestContexts(0, 1);
-
-			// 	if (aContexts.length > 0) {
-			// 		// get amount from oData
-			// 		var oData = aContexts[0].getObject();
-			// 		var entBfast = parseFloat(oData.AMOUNT) * 0.2;
-			// 		var entLunch = parseFloat(oData.AMOUNT) * 0.4;
-			// 		var entDinner = parseFloat(oData.AMOUNT) * 0.4;
-			// 		//// modifier based on travel duration (hours)
-			// 		if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
-			// 			if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 24) {
-			// 				// full meal allowance
-			// 				entBfast = entBfast * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
-			// 				entLunch = entLunch * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
-			// 				entDinner = entDinner * this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_day")));
-			// 			}
-			// 			else if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) > 8) {
-			// 				// daily allowance (half of meal allowance)
-			// 				entBfast = entBfast / 2;
-			// 				entLunch = entLunch / 2;
-			// 				entDinner = entDinner / 2;
-			// 			}
-			// 			else { // if (this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/travel_duration_hour"))) < 8)
-			// 				// no meal allowance
-			// 				entBfast = entBfast * 0;
-			// 				entLunch = entLunch * 0;
-			// 				entDinner = entDinner * 0;
-			// 			}
-			// 		}
-
-			// 		// assign entitled meal values
-			// 		if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
-			// 			this.byId("input_claimdetails_input_entitled_breakfast").setValue(entBfast);
-			// 		}
-			// 		if (this.byId("input_claimdetails_input_entitled_lunch").getVisible()) {
-			// 			this.byId("input_claimdetails_input_entitled_lunch").setValue(entLunch);
-			// 		}
-			// 		if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
-			// 			this.byId("input_claimdetails_input_entitled_dinner").setValue(entDinner);
-			// 		}
-			// 		this.onChange_ClaimDetails_ProvidedMeals();
-			// 	} else {
-			// 		MessageToast.show(Utility.getText("msg_claimdetails_input_entmeals"));
-			// 	}
-			// 	BusyIndicator.hide();
-			// } catch (oError) {
-			// 	MessageBox.error(Utility.getText("msg_claimdetails_input_entmeals_err", [oError]));
-			// 	BusyIndicator.hide();
-			// }
+			this._fetchAndApplyEntitlement(oInputModel);
+			BusyIndicator.hide();
 		},
 
 		onChange_ClaimDetails_ProvidedMeals: function () {
@@ -3005,91 +2897,9 @@ sap.ui.define([
 				this.byId("input_claimdetails_input_entitled_dinner").setValue(nEntDinner);
 			}
 
-			var nDay = this.byId("input_claimdetails_input_travel_duration_day").getValue();
-			var nHour = this.byId("input_claimdetails_input_travel_duration_hour").getValue();
-			var sLocation = oInputModel.getProperty("/claim_item/region");
-			var sClaimtype = oInputModel.getProperty("/claim_item/claim_type_id");
-			var sClaimItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
-
-			var nBreakfast = parseInt(this.byId("input_claimdetails_input_provided_breakfast").getValue());
-			var nLunch = parseInt(this.byId("input_claimdetails_input_provided_lunch").getValue());
-			var nDinner = parseInt(this.byId("input_claimdetails_input_provided_dinner").getValue());
-
-			nBreakfast = Number.isNaN(nBreakfast) ? 0 : nBreakfast;
-			nLunch = Number.isNaN(nLunch) ? 0 : nLunch;
-			nDinner = Number.isNaN(nDinner) ? 0 : nDinner;
-
-			const oModel = this.getView().getModel();
-
-			const oContext = oModel.bindContext("/getAmountEntitlement(...)");
-
-			// Set parameters
-			oContext.setParameter("day", nDay);
-			oContext.setParameter("hours", nHour);
-			oContext.setParameter("location", sLocation);
-			oContext.setParameter("claimtypeid", sClaimtype);
-			oContext.setParameter("claimtypeitem", sClaimItem);
-			oContext.setParameter("breakfast", nBreakfast);
-			oContext.setParameter("lunch", nLunch);
-			oContext.setParameter("dinner", nDinner);
-
-
-			oContext.execute()
-				.then(() => oContext.requestObject())
-				.then(oResult => {
-					if (!oResult) {
-						console.log("No entitlement found");
-						return;
-					}
-					this.byId("input_claimdetails_input_amount").setValue(oResult.amount);
-					this.byId("input_claimdetails_input_dailyallowance").setValue(oResult.daily_allowance);
-					console.log("Entitlement amount:", oResult.amount);
-				})
-				.catch(err => {
-					console.error("Error calling getAmountEntitlement", err);
-				});
-			// var provBfast = parseFloat(this.byId("input_claimdetails_input_provided_breakfast"));
-			// if (isNaN(provBfast)) { provBfast = 0.0; }
-			// var provLunch = parseFloat(this.byId("input_claimdetails_input_provided_lunch"));
-			// if (isNaN(provLunch)) { provLunch = 0.0; }
-			// var provDinner = parseFloat(this.byId("input_claimdetails_input_provided_dinner"));
-			// if (isNaN(provDinner)) { provDinner = 0.0; }
-			// var entBfast = parseFloat(this.byId("input_claimdetails_input_entitled_breakfast"));
-			// if (isNaN(entBfast)) { entBfast = 0.0; }
-			// var entLunch = parseFloat(this.byId("input_claimdetails_input_entitled_lunch"));
-			// if (isNaN(entLunch)) { entLunch = 0.0; }
-			// var entDinner = parseFloat(this.byId("input_claimdetails_input_entitled_dinner"));
-			// if (isNaN(entDinner)) { entDinner = 0.0; }
-			// var amount = 0.0;
-
-			// // calculate total amount
-			// if (this.byId("input_claimdetails_input_amount").getVisible()) {
-			// 	this.byId("input_claimdetails_input_amount").setValue(amount);
-			// }
-			// else {
-			// 	return;
-			// }
-			// //// breakfast
-			// if (entBfast > 0.0 && provBfast > entBfast) {
-			// 	this.byId("input_claimdetails_input_amount").setValue(amount + entBfast);
-			// }
-			// else {
-			// 	this.byId("input_claimdetails_input_amount").setValue(amount + provBfast);
-			// }
-			// //// lunch
-			// if (entLunch > 0.0 && provLunch > entLunch) {
-			// 	this.byId("input_claimdetails_input_amount").setValue(amount + entLunch);
-			// }
-			// else {
-			// 	this.byId("input_claimdetails_input_amount").setValue(amount + provLunch);
-			// }
-			// //// dinner
-			// if (entDinner > 0.0 && provDinner > entDinner) {
-			// 	this.byId("input_claimdetails_input_amount").setValue(amount + entDinner);
-			// }
-			// else {
-			// 	this.byId("input_claimdetails_input_amount").setValue(amount + provDinner);
-			// }
+			BusyIndicator.show(0);
+			this._fetchAndApplyEntitlement(oInputModel);
+			BusyIndicator.hide();
 		},
 
 		/* =========================================================
@@ -3613,12 +3423,12 @@ sap.ui.define([
 						EVENT_END_DATE: this._getHanaDate(claim_item.event_end_date),
 						TRAVEL_DURATION_DAY: this._nonNan(parseFloat(claim_item.travel_duration_day)).toFixed(1),
 						TRAVEL_DURATION_HOUR: this._nonNan(parseFloat(claim_item.travel_duration_hour)).toFixed(1),
-						PROVIDED_BREAKFAST: claim_item.provided_breakfast,
-						PROVIDED_LUNCH: claim_item.provided_lunch,
-						PROVIDED_DINNER: claim_item.provided_dinner,
-						ENTITLED_BREAKFAST: claim_item.entitled_breakfast,
-						ENTITLED_LUNCH: claim_item.entitled_lunch,
-						ENTITLED_DINNER: claim_item.entitled_dinner,
+						PROVIDED_BREAKFAST: claim_item.provided_breakfast?.toString(),
+						PROVIDED_LUNCH: claim_item.provided_lunch?.toString(),
+						PROVIDED_DINNER: claim_item.provided_dinner?.toString(),
+						ENTITLED_BREAKFAST: claim_item.entitled_breakfast?.toString(),
+						ENTITLED_LUNCH: claim_item.entitled_lunch?.toString(),
+						ENTITLED_DINNER: claim_item.entitled_dinner?.toString(),
 						ANGGOTA_ID: claim_item.anggota_id,
 						ANGGOTA_NAME: claim_item.anggota_name,
 						DEPENDENT_NAME: claim_item.dependent_name,
@@ -3801,13 +3611,40 @@ sap.ui.define([
 		},
 
 		_getHanaTime: function (iTime) {
-			if (iTime) {
-				var oDate = new Date(iTime);
-				var oTimeString = ('0' + oDate.getHours()).slice(-2) + ':' + ('0' + oDate.getMinutes()).slice(-2) + ':' + ('0' + oDate.getSeconds()).slice(-2);
-				return oTimeString;
-			} else {
-				return null;
+			if (!iTime) return null;
+
+			var sTime = String(iTime).trim();
+
+			// HH:mm:ss format (e.g. "22:52:00")
+			if (/^\d{2}:\d{2}:\d{2}$/.test(sTime)) {
+				return sTime;
 			}
+
+			// HH:mm format (e.g. "22:52")
+			if (/^\d{2}:\d{2}$/.test(sTime)) {
+				return sTime + ":00";
+			}
+
+			// 12-hour format with AM/PM (e.g. "10:52:00 PM" or "10:52 PM")
+			var oTimeMatch = sTime.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)$/i);
+			if (oTimeMatch) {
+				var nHours = parseInt(oTimeMatch[1]);
+				var nMinutes = parseInt(oTimeMatch[2]);
+				var nSeconds = parseInt(oTimeMatch[3] || 0);
+				var sMeridiem = oTimeMatch[4].toUpperCase();
+
+				if (sMeridiem === 'PM' && nHours !== 12) nHours += 12;
+				if (sMeridiem === 'AM' && nHours === 12) nHours = 0;
+
+				return ('0' + nHours).slice(-2) + ':' + ('0' + nMinutes).slice(-2) + ':' + ('0' + nSeconds).slice(-2);
+			}
+
+			// Timestamp fallback
+			var oDate = new Date(iTime);
+			if (!isNaN(oDate.getTime())) {
+				return ('0' + oDate.getHours()).slice(-2) + ':' + ('0' + oDate.getMinutes()).slice(-2) + ':' + ('0' + oDate.getSeconds()).slice(-2);
+			}
+			return null;
 		},
 
 		_nonNan: function (iNumber) {
@@ -4754,6 +4591,53 @@ sap.ui.define([
 				oReq.setProperty("/claim_header_count", 0);
 				return [];
 			}
-		}
+		},
+
+		_fetchAndApplyEntitlement: function (oInputModel) {
+			var nDay = this.byId("input_claimdetails_input_travel_duration_day").getValue();
+			var nHour = this.byId("input_claimdetails_input_travel_duration_hour").getValue();
+			var sLocation = oInputModel.getProperty("/claim_item/region");
+			var sClaimtype = oInputModel.getProperty("/claim_item/claim_type_id");
+			var sClaimItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
+
+			var nBreakfast = parseInt(this.byId("input_claimdetails_input_provided_breakfast").getValue());
+			var nLunch = parseInt(this.byId("input_claimdetails_input_provided_lunch").getValue());
+			var nDinner = parseInt(this.byId("input_claimdetails_input_provided_dinner").getValue());
+
+			nBreakfast = Number.isNaN(nBreakfast) ? 0 : nBreakfast;
+			nLunch = Number.isNaN(nLunch) ? 0 : nLunch;
+			nDinner = Number.isNaN(nDinner) ? 0 : nDinner;
+
+			const oModel = this.getView().getModel();
+			const oContext = oModel.bindContext("/getAmountEntitlement(...)");
+
+			oContext.setParameter("day", nDay);
+			oContext.setParameter("hours", nHour);
+			oContext.setParameter("location", sLocation != null ? sLocation : '03');
+			oContext.setParameter("claimtypeid", sClaimtype);
+			oContext.setParameter("claimtypeitem", sClaimItem);
+			oContext.setParameter("breakfast", nBreakfast);
+			oContext.setParameter("lunch", nLunch);
+			oContext.setParameter("dinner", nDinner);
+
+			return oContext.execute()
+				.then(() => oContext.requestObject())
+				.then(oResult => {
+					if (!oResult) {
+						console.log("No entitlement found");
+						return;
+					}
+
+					if (this.byId("input_claimdetails_input_amount").getVisible()) {
+						this.byId("input_claimdetails_input_amount").setValue(oResult.amount);
+					}
+					if (this.byId("input_claimdetails_input_dailyallowance").getVisible()) {
+						this.byId("input_claimdetails_input_dailyallowance").setValue(oResult.daily_allowance);
+					}
+				})
+				.catch(err => {
+					MessageBox.error(Utility.getText("msg_claimdetails_input_entmeals_err", err));
+				});
+		},
 	});
 });

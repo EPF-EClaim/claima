@@ -827,6 +827,19 @@ module.exports = (srv) => {
         }
     });
 
+    /**
+    * Perdiem calculation for Claim Submission
+    * @public
+    * @param {Integer} day - Travel duration - day;
+    * @param {Decimal} hours - Travel duration - hours;
+    * @param {String}  location - 01-Semenanjung-Sabah/Sarawak, 02, 03-Oversea;
+    * @param {String} claimtypeid - Claim Type ID;
+    * @param {String} claimtypeitem - Claim Type Item ID;
+    * @param {Integer} breakfast - Breakfast provided;
+    * @param {Integer} lunch - Lunch provided;
+    * @param {Integer} dinner - Dinner provided;
+    * @returns {Decimal} perdiem - Entitlement amount, Daily Allowance
+    */
     srv.on('getAmountEntitlement', async (req) => {
         const { ZEMP_MASTER, ZPERDIEM_ENT } = srv.entities;
         const tx = cds.tx(req);
@@ -860,10 +873,23 @@ module.exports = (srv) => {
                 START_DATE: { '<=': today },
                 END_DATE: { '>=': today }
             })
-            )
+            );
+
+            //use the wildcard if no entitlement avavailable - for MAKAN_O
+            if (!entitlement) {
+                entitlement = await tx.run(SELECT.one.from(ZPERDIEM_ENT).where({
+                    PERSONAL_GRADE: '*',
+                    LOCATION: req.data.location,
+                    CLAIM_TYPE_ID: req.data.claimtypeid,
+                    CLAIM_TYPE_ITEM_ID: req.data.claimtypeitem,
+                    START_DATE: { '<=': today },
+                    END_DATE: { '>=': today }
+                })
+                );
+            }
         }
         if (!entitlement) {
-            return { amount: null };
+            return { amount: 0, daily_allowance: 0 };
         } else {
             time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
 
@@ -890,9 +916,10 @@ module.exports = (srv) => {
             dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
 
             total_meal_allowance = meal_allowance != 0 ? (meal_allowance - bfast - lunch - dinner) : 0;
-            return { amount: total_meal_allowance, 
-                     daily_allowance: entitlement.AMOUNT
-             };
+            return {
+                amount: total_meal_allowance,
+                daily_allowance: ( entitlement.AMOUNT / 2 )
+            };
         }
 
     });
