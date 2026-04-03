@@ -2477,7 +2477,7 @@ sap.ui.define([
 			//FUT issue #58
 			//checking for galakan disclaimer if its ticked or not
 			
-			if(!CustomValidator.validate("CLM")){
+			if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)){
                 MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
 				return;
 			}
