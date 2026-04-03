@@ -34,14 +34,14 @@ sap.ui.define([
                     var oInputModel = this._oOwnerComponent.getModel("claimitem_input");
                     
                     
-                    if (oInputModel.getProperty("/claim_item/claim_type_item_id") === "TELEFON_B") {
+                    if (oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.TELEFON_B) {
                         if(!oInputModel.getProperty("/claim_item/disclaimer")) {
                             MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
                             return false;
                         }
                     }
 
-                    if (oInputModel.getProperty("/claim_item/claim_type_item_id") === "GALAKAN") {
+                    if (oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.GALAKAN) {
                         if(!oInputModel.getProperty("/claim_item/disclaimer_galakan")) {
                             return false;
                         }
