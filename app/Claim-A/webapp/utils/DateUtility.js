@@ -313,6 +313,9 @@ sap.ui.define([
                                 const dPastDate = new Date(_dMaxDate);
                                 dPastDate.setDate(dPastDate.getDate() - 90);
                                 _dMaxDate = dPastDate;
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                    _oResourceBundle.getText("msg_claimsubmission_invalid_visa_date"));
+
                             } else {
                                 // Other Claim Type
                                 _dMaxDate = new Date(oHeader.trip_end_date);
