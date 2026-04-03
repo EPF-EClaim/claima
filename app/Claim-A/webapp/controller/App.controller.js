@@ -77,6 +77,10 @@ sap.ui.define([
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
 			
+			// set field property model for App view/fragments
+			this.getView().setModel(new JSONModel({
+				"select_claimprocess_course_code": { "is_visible": false }
+			}), "app_viewfields");
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
@@ -314,10 +318,13 @@ sap.ui.define([
 					},
 					"requestform_amt": null,
 					"req_emailapprove": null,
+					"is_course": false,
+					"course_code": null,
 					"descr": {
 						"type": null,
 						"item": null,
 						"category": null,
+						"course_code": null
 					}
 				},
 				"is_new": false,
@@ -543,6 +550,32 @@ sap.ui.define([
 				if (this.byId("button_claimprocess_startclaim").getEnabled()) {
 					this.byId("button_claimprocess_startclaim").setEnabled(false);
 				}
+
+				// set if claim type is course based on project_claim field
+				const oBindingContext = claimType.getBindingContext("employee");
+				const oProjectClaim = oBindingContext.getObject("PROJECT_CLAIM");
+				//// set property based on boolean value retrieved
+				var oInputModel = this.getView().getModel("claimsubmission_input");
+				oInputModel.setProperty("/claimtype/is_course", oProjectClaim || false);
+				// set filter for course code dropdown
+				if (oInputModel.getProperty("/claimtype/is_course")) {
+					var oSelectCourseCode = this.byId("select_claimprocess_course_code");
+					var oBindingSelectCourseCode = oSelectCourseCode.getBinding("items");
+					var aFilterSelectCourseCode = [
+							// ensure status is active
+							new Filter("PARTICIPANT_ID", FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
+							new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, 'COMPLETE'),
+						];
+					var oFilterClaimStatus = new Filter({
+						filters: [
+							new Filter("CLAIM_STATUS", FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED),
+							new Filter("CLAIM_STATUS", FilterOperator.EQ, this._oConstant.ClaimStatus.PENDING_APPROVAL)
+						],
+						and: false
+					});
+					aFilterSelectCourseCode.push(oFilterClaimStatus);
+					oBindingSelectCourseCode.filter(aFilterSelectCourseCode);
+				}
 			}
 		},
 
@@ -708,6 +741,11 @@ sap.ui.define([
 			}
 			if (this.byId("switch_claimprocess_req_emailapprove").getEnabled()) {
 				oInputModel.setProperty("/claimtype/req_emailapprove", this.byId("switch_claimprocess_req_emailapprove").getState());
+			}
+			//// get course code values
+			if (oInputModel.getProperty("/claimtype/is_course") && oInputModel.getProperty("/claimtype/course_code")) {
+				oInputModel.setProperty("/claim_header/course_code", oInputModel.getProperty("/claimtype/course_code"));
+				oInputModel.setProperty("/claim_header/descr/course_code", oInputModel.getProperty("/claimtype/descr/course_code"));
 			}
 
 			// Mobile Eligibility Pre-check

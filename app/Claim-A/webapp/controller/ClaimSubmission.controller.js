@@ -1002,10 +1002,13 @@ sap.ui.define([
 					},
 					"requestform_amt": null,
 					"req_emailapprove": null,
+					"is_course": false,
+					"course_code": null,
 					"descr": {
 						"type": null,
 						"item": null,
 						"category": null,
+						"course_code": null
 					}
 				},
 				"is_new": false,
