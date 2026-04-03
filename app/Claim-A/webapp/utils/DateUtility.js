@@ -1,6 +1,7 @@
 sap.ui.define([
-    "sap/ui/core/format/DateFormat"
-], function (DateFormat) {
+    "sap/ui/core/format/DateFormat",
+	"claima/utils/Constants",
+], function (DateFormat, Constants) {
     "use strict";
 
     return {
@@ -223,6 +224,112 @@ sap.ui.define([
             if (!sDate || isNaN(dDate)) return false;
 
             return dDate.setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0);
+        },
+
+        /**
+         * Determines the minimum allowable date for specific date fields
+         * based on submission type (REQUEST/CLAIM) & the following parameters.
+         *
+         * @param {string} sFieldName - The field name (e.g., RECEIPT_DATE, BILL_DATE).
+         * @param {string} sId - Submission ID; first 3 chars determine submission type.
+         * @param {string} sType - Claim Type.
+         * @param {string} sItemType - Claim Item Type.
+         * @param {object} oHeader - Header data.
+         * @param {object} oItem - Item data.
+         * @returns {Date|null} Minimum allowed date or null if invalid input.
+         *
+        **/
+        determineMinDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem) {
+            if (!sId || !sType || !sItemType) return null;
+
+            var _oAppModel = this.getOwnerComponent().getModel("appModel");
+            var _oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+
+            const _sSubmissionType = sId.substring(0, 3);
+            var _dMinDate = new Date();
+
+            switch (sFieldName) {
+                case Constants.EntitiesFields.RECEIPT_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            // Specific Claim Type
+                            if (sItemType === Constants.ClaimTypeItem.VISA) {
+                                // VISA related logic 
+                            } else {
+                                // Other Claim Type
+                                _dMinDate = new Date(oHeader.trip_start_date);
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                    _oResourceBundle.getText("error_receiptdate_mindate"));
+                            }
+                            break;
+                    }
+                    break;
+            }
+
+            _dMinDate.setHours(0, 0, 0, 0);
+            return _dMinDate;
+        },
+
+        /**
+         * Determines the maximum allowable date for specific date fields
+         * based on submission type (REQUEST/CLAIM) & the following parameters.
+         *
+         * @param {string} sFieldName - The field name (e.g., RECEIPT_DATE, BILL_DATE).
+         * @param {string} sId - Submission ID; first 3 chars determine submission type.
+         * @param {string} sType - Claim Type.
+         * @param {string} sItemType - Claim Item Type.
+         * @param {object} oHeader - Header data.
+         * @param {object} oItem - Item data.
+         * @returns {Date|null} Maximum allowed date or null if invalid input.
+         *
+        **/
+        determineMaxDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem) {
+            if (!sId || !sType || !sItemType) return null;
+
+            var _oAppModel = this.getOwnerComponent().getModel("appModel");
+            var _oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+
+            const _sSubmissionType = sId.substring(0, 3);
+            var _dMaxDate = new Date();
+
+            switch (sFieldName) {
+                case Constants.EntitiesFields.RECEIPT_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            // Specific Claim Type
+                            if (sItemType === Constants.ClaimTypeItem.VISA) {
+                                // VISA related logic 
+                            } else {
+                                // Other Claim Type
+                                _dMaxDate = new Date(oHeader.trip_end_date);
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                    _oResourceBundle.getText("error_receiptdate_maxdate"));
+                            }
+                            break;
+                    }
+                    break;
+                case Constants.EntitiesFields.BILL_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            _dMaxDate = new Date(oHeader.trip_end_date); // default
+                            _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                _oResourceBundle.getText("error_billdate_maxdate"));
+                            break;
+                    }
+                    break;
+            }
+
+            _dMaxDate.setHours(0, 0, 0, 0);
+            return _dMaxDate;
         }
 
     };
