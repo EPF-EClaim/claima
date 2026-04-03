@@ -257,7 +257,6 @@ sap.ui.define([
                                 
                             } else {
                                 // Other Claim Type
-                                dMinDate = new Date(oHeader.trip_start_date);
                             }
                             break;
                     }
