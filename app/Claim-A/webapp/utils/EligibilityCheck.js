@@ -2,8 +2,13 @@ sap.ui.define([
 	"sap/m/MessageBox",
 	"sap/ui/core/Fragment",
 	"sap/ui/core/ValueState",
-	"claima/utils/Constants"
-], function (MessageBox, Fragment, ValueState, Constants) {
+	"claima/utils/Constants",
+	"claima/utils/Utility"
+], function (MessageBox,
+	Fragment,
+	ValueState,
+	Constants,
+	Utility) {
     "use strict";
 
     return {
@@ -144,7 +149,7 @@ sap.ui.define([
 
 			Object.values(oDBToUIControlMap).forEach(sId => {
 				if (sId === "TABLE_ALLOC_AMOUNT") {
-					this._setTableValueState(null, ValueState.None);
+					this._setTableValueState(oController, null, ValueState.None);
 				} else {
 					const oInputControl = getControl(sId);
 					if (oInputControl?.setValueState) {
@@ -163,7 +168,9 @@ sap.ui.define([
 						return; 
 					}
 					
-					const sErrorMsg = Utility.getText("req_e_validation", [oField.fieldName, sEmpId]);
+					var sErrorField = Constants.ApprovalProcess[oField.fieldName] || oField.fieldName;
+
+					const sErrorMsg = Utility.getText("req_e_validation", [sErrorField, sEmpId]);
 					if (!aErrorMessages.includes(sErrorMsg)) {
 						aErrorMessages.push(sErrorMsg);
 					}
@@ -171,7 +178,7 @@ sap.ui.define([
 					const sMappedId = oDBToUIControlMap[oField.fieldName];
 					
 					if (sMappedId === "TABLE_ALLOC_AMOUNT") {
-						this._setTableValueState(sEmpId, ValueState.Error);
+						this._setTableValueState(oController, sEmpId, ValueState.Error);
 					} else {
 						const oInputControl = getControl(sMappedId);
 						if (oInputControl?.setValueState) {
@@ -194,7 +201,7 @@ sap.ui.define([
 			return bIsEligible;
 		},
 
-		_setTableValueState (sEmpIdToMatch, sValueState) {
+		_setTableValueState (oController, sEmpIdToMatch, sValueState) {
 			const oTable = Fragment.byId("request", "req_participant_table") || oController.byId("req_participant_table");
 			if (!oTable) return;
 
