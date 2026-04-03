@@ -223,11 +223,48 @@
 				<Label text="{i18n>label_claimdetails_input_receiptdate}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_receipt_date"
-					value="{claimitem_input>/claim_item/receipt_date}"
+					value="{
+						path: 'claimitem_input>/claim_item/receipt_date',
+						type: 'sap.ui.model.type.Date',
+						formatOptions:{
+							source:{
+								pattern:'yyyy-MM-dd'
+							},
+							pattern:'dd-MMM-yyyy'
+						}
+					}"
+					showCurrentDateButton="true"
 					visible="false"
-					displayFormat="dd-MMM-yyyy"
 					required="true"
-				/>
+					minDate="{
+						parts: [
+							'constant>/EntitiesFields/RECEIPT_DATE',
+							'claimsubmission_input>/claim_header/claim_id',
+							'claimsubmission_input>/claim_header/claim_type_id',
+							'claimitem_input>/claim_item/claim_type_item_id',
+							'claimsubmission_input>/claim_header',
+							'claimitem_input>/claim_item'
+						],
+						formatter: '.DateUtility.determineMinDate'
+					}"
+					maxDate="{
+						parts: [
+							'constant>/EntitiesFields/RECEIPT_DATE',
+							'claimsubmission_input>/claim_header/claim_id',
+							'claimsubmission_input>/claim_header/claim_type_id',
+							'claimitem_input>/claim_item/claim_type_item_id',
+							'claimsubmission_input>/claim_header',
+							'claimitem_input>/claim_item'
+						],
+						formatter: '.DateUtility.determineMaxDate'
+					}"
+				>
+					<customData>
+						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/RECEIPT_DATE/customErrorMessage}" />
+						<core:CustomData key="customMinDateError" value="{appModel>/fieldControl/RECEIPT_DATE/customMinDateError}" />
+						<core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/RECEIPT_DATE/customMaxDateError}" />						
+					</customData>
+				</DatePicker>
 
 				<!-- Purpose -->
 				<Label text="{i18n>label_claimdetails_input_purpose}" />
@@ -934,10 +971,36 @@
 				<Label text="{i18n>label_claimdetails_input_billdate}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_bill_date"
-					value="{claimitem_input>/claim_item/bill_date}"
+					value="{
+						path: 'claimitem_input>/claim_item/bill_date',
+						type: 'sap.ui.model.type.Date',
+						formatOptions:{
+							source:{
+								pattern:'yyyy-MM-dd'
+							},
+							pattern:'dd-MMM-yyyy'
+						}
+					}"
+					showCurrentDateButton="true"
 					visible="false"
-					displayFormat="dd-MMM-yyyy"
-				/>
+					maxDate="{
+						parts: [
+							'constant>/EntitiesFields/BILL_DATE',
+							'claimsubmission_input>/claim_header/claim_id',
+							'claimsubmission_input>/claim_header/claim_type_id',
+							'claimitem_input>/claim_item/claim_type_item_id',
+							'claimsubmission_input>/claim_header',
+							'claimitem_input>/claim_item'
+						],
+						formatter: '.DateUtility.determineMaxDate'
+					}"
+				>
+     				<customData>
+      					<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/BILL_DATE/customErrorMessage}" />
+      					<core:CustomData key="customMinDateError" value="{appModel>/fieldControl/BILL_DATE/customMinDateError}" />
+						<core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/BILL_DATE/customMaxDateError}" />
+     				</customData>
+    			</DatePicker>
 
 				<!-- Phone No -->
 				<Label text="{i18n>label_claimdetails_input_phoneno}" />
