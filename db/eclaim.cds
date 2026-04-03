@@ -236,8 +236,8 @@ entity ZREQUEST_ITEM : managed {
         ZOFFICE_DISTANCE           : Association to ZOFFICE_DISTANCE
                                          on  ZOFFICE_DISTANCE.FROM_LOCATION_ID = FROM_LOCATION_OFFICE
                                          and ZOFFICE_DISTANCE.FROM_STATE_ID    = FROM_STATE_ID
-                                         and ZOFFICE_DISTANCE.TO_LOCATION_ID = TO_LOCATION_OFFICE
-                                         and ZOFFICE_DISTANCE.TO_STATE_ID = TO_STATE_ID;
+                                         and ZOFFICE_DISTANCE.TO_LOCATION_ID   = TO_LOCATION_OFFICE
+                                         and ZOFFICE_DISTANCE.TO_STATE_ID      = TO_STATE_ID;
         ZRATE_KM                   : Association to ZRATE_KM
                                          on ZRATE_KM.RATE_KM_ID = RATE_PER_KM;
         ZVEHICLE_TYPE              : Association to one ZVEHICLE_TYPE
@@ -292,6 +292,7 @@ entity ZCLAIM_TYPE : managed {
         REQUEST_TYPE     : String     @Common.Label    : 'Request Type';
         IND_OR_GROUP     : String(4)  @Common.Label    : 'Individual/Group';
         PROJECT_CLAIM    : Boolean    @Common.Label    : 'Project Claim';
+        COST_CENTER      : String(9)  @Common.Label    : 'Cost Center';
         ZCLAIM_TYPE_ITEM : Composition of many ZCLAIM_TYPE_ITEM
                                on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID
                                       @assert.integrity: false;
@@ -299,6 +300,8 @@ entity ZCLAIM_TYPE : managed {
                                on ZREQUEST_TYPE.REQUEST_TYPE_ID = REQUEST_TYPE;
         ZINDIV_GROUP     : Association to ZINDIV_GROUP
                                on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
+        ZCOST_CENTER     : Association to ZCOST_CENTER
+                               on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
 
 }
 
@@ -495,6 +498,8 @@ entity ZCLAIM_ITEM : managed {
         TRAVEL_DAYS_ID             : String(2);
         METER_CUBE_ENTITLED        : Decimal(6, 2);
         METER_CUBE_ACTUAL          : Decimal(6, 2);
+        DAILY_ALLOWANCE            : Integer;
+        TIPS                       : Integer;
         ZCLAIM_HEADER              : Association to ZCLAIM_HEADER
                                          on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZCLAIM_CATEGORY            : Association to ZCLAIM_CATEGORY
@@ -525,8 +530,8 @@ entity ZCLAIM_ITEM : managed {
         ZOFFICE_DISTANCE           : Association to ZOFFICE_DISTANCE
                                          on  ZOFFICE_DISTANCE.FROM_LOCATION_ID = FROM_LOCATION_OFFICE
                                          and ZOFFICE_DISTANCE.FROM_STATE_ID    = FROM_STATE_ID
-                                         and ZOFFICE_DISTANCE.TO_LOCATION_ID = TO_LOCATION_OFFICE
-                                         and ZOFFICE_DISTANCE.TO_STATE_ID = TO_STATE_ID;
+                                         and ZOFFICE_DISTANCE.TO_LOCATION_ID   = TO_LOCATION_OFFICE
+                                         and ZOFFICE_DISTANCE.TO_STATE_ID      = TO_STATE_ID;
         ZCOSTCENTER                : Association to ZCOST_CENTER
                                          on ZCOSTCENTER.COST_CENTER_ID = COST_CENTER;
         ZSTATE                     : Association to ZSTATE
@@ -568,6 +573,8 @@ entity ZCLAIM_ITEM : managed {
                                          on ZPROFESIONAL_BODY.PROFESIONAL_BODY_ID = TYPE_OF_PROFESSIONAL_BODY;
         ZGL_ACCOUNT                : Association to ZGL_ACCOUNT
                                          on ZGL_ACCOUNT.GL_ACCOUNT_ID = GL_ACCOUNT;
+        ZCURRENCY                  : Association to ZCURRENCY
+                                         on ZCURRENCY.CURRENCY_ID = CURRENCY_CODE;
 }
 
 entity ZLODGING_CAT : managed {
@@ -604,15 +611,12 @@ entity ZCLAIM_TYPE_ITEM : managed {
         END_DATE             : Date       @Common.Label: 'End Date';
         STATUS               : String(10) @Common.Label: 'Status';
         CATEGORY_ID          : String     @Common.Label: 'Category ID';
-        COST_CENTER          : String     @Common.Label: 'Cost Center';
         MATERIAL_CODE        : String     @Common.Label: 'Material Code';
         RISK                 : String(2)  @Common.Label: 'Risk';
         SUBMISSION_TYPE      : String     @Common.Label: 'Submission Type';
         IND_OR_GROUP         : String(4)  @Common.Label: 'Individual/Group';
         ZCLAIM_CATEGORY      : Association to ZCLAIM_CATEGORY
                                    on ZCLAIM_CATEGORY.CLAIM_CAT_ID = CATEGORY_ID;
-        ZCOST_CENTER         : Association to ZCOST_CENTER
-                                   on ZCOST_CENTER.COST_CENTER_ID = COST_CENTER;
         ZRISK                : Association to ZRISK
                                    on ZRISK.RISK_ID = RISK;
         ZSUBMISSION_TYPE     : Association to ZSUBMISSION_TYPE
@@ -813,38 +817,44 @@ entity ZSUBMISSION_TYPE : managed {
 }
 
 entity ZOFFICE_LOCATION : managed {
-    key LOCATION_ID    : String(10)  @mandatory  @Common.Label: 'Location ID';
-    key STATE_ID       : String(4)   @mandatory  @Common.Label: 'State ID';
-        LOCATION_DESC  : String      @Common.Label: 'Location Description';
-        LOCATION_GROUP : String      @Common.Label: 'Location Group';
-        LEGAL_ENTITY   : String      @Common.Label: 'Legal Entity';
-        START_DATE     : Date        @Common.Label: 'Start Date';
-        END_DATE       : Date        @Common.Label: 'End Date';
-        STATUS         : String(10)  @Common.Label: 'Status';
-        ZOFFICE_DISTANCE : Association to ZOFFICE_DISTANCE
-                           on ZOFFICE_DISTANCE.FROM_LOCATION_ID = LOCATION_ID
-                           and ZOFFICE_DISTANCE.FROM_STATE_ID = STATE_ID;
+    key LOCATION_ID       : String(10)  @mandatory  @Common.Label: 'Location ID';
+    key STATE_ID          : String(4)   @mandatory  @Common.Label: 'State ID';
+        LOCATION_DESC     : String      @Common.Label: 'Location Description';
+        LOCATION_GROUP    : String      @Common.Label: 'Location Group';
+        LEGAL_ENTITY      : String      @Common.Label: 'Legal Entity';
+        START_DATE        : Date        @Common.Label: 'Start Date';
+        END_DATE          : Date        @Common.Label: 'End Date';
+        STATUS            : String(10)  @Common.Label: 'Status';
+        ZOFFICE_DISTANCE  : Association to ZOFFICE_DISTANCE
+                                on  ZOFFICE_DISTANCE.FROM_LOCATION_ID = LOCATION_ID
+                                and ZOFFICE_DISTANCE.FROM_STATE_ID    = STATE_ID;
         ZOFFICE_DISTANCE1 : Association to ZOFFICE_DISTANCE
-                           on ZOFFICE_DISTANCE1.TO_LOCATION_ID = LOCATION_ID
-                           and ZOFFICE_DISTANCE1.TO_STATE_ID = STATE_ID;
+                                on  ZOFFICE_DISTANCE1.TO_LOCATION_ID = LOCATION_ID
+                                and ZOFFICE_DISTANCE1.TO_STATE_ID    = STATE_ID;
 
 }
 
 entity ZOFFICE_DISTANCE : managed {
-    key FROM_STATE_ID    : String(4)   @mandatory  @Common.Label: 'From State ID';
-    key FROM_LOCATION_ID : String(10)  @mandatory  @Common.Label: 'From Location ID';
-    key TO_STATE_ID      : String(4)   @mandatory  @Common.Label: 'To State ID';
-    key TO_LOCATION_ID   : String(10)  @mandatory  @Common.Label: 'To Location ID';
-        MILEAGE          : String      @Common.Label: 'Mileage';
-        START_DATE       : Date        @Common.Label: 'Start Date';
-        END_DATE         : Date        @Common.Label: 'End Date';
-        STATUS           : String(10)  @Common.Label: 'Status';
-        ZOFFICE_LOCATION : Association to ZOFFICE_LOCATION
-                           on ZOFFICE_LOCATION.LOCATION_ID = FROM_LOCATION_ID
-                           and ZOFFICE_LOCATION.STATE_ID = FROM_STATE_ID;
-        ZOFFICE_LOCATION1: Association to ZOFFICE_LOCATION
-                           on ZOFFICE_LOCATION1.LOCATION_ID = TO_LOCATION_ID
-                           and ZOFFICE_LOCATION1.STATE_ID = TO_STATE_ID;
+    key FROM_STATE_ID     : String(4)   @mandatory  @Common.Label: 'From State ID';
+    key FROM_LOCATION_ID  : String(10)  @mandatory  @Common.Label: 'From Location ID';
+    key TO_STATE_ID       : String(4)   @mandatory  @Common.Label: 'To State ID';
+    key TO_LOCATION_ID    : String(10)  @mandatory  @Common.Label: 'To Location ID';
+        MILEAGE           : String      @Common.Label: 'Mileage';
+        START_DATE        : Date        @Common.Label: 'Start Date';
+        END_DATE          : Date        @Common.Label: 'End Date';
+        STATUS            : String(10)  @Common.Label: 'Status';
+        ZOFFICE_LOCATION  : Association to ZOFFICE_LOCATION
+                                on  ZOFFICE_LOCATION.LOCATION_ID = FROM_LOCATION_ID
+                                and ZOFFICE_LOCATION.STATE_ID    = FROM_STATE_ID;
+        ZOFFICE_LOCATION1 : Association to ZOFFICE_LOCATION
+                                on  ZOFFICE_LOCATION1.LOCATION_ID = TO_LOCATION_ID
+                                and ZOFFICE_LOCATION1.STATE_ID    = TO_STATE_ID;
+        ZSTATE            : Association to ZSTATE
+                                on ZSTATE.STATE_ID = FROM_STATE_ID;
+        ZTOSTATE          : Association to ZSTATE
+                                on ZTOSTATE.STATE_ID = TO_STATE_ID;
+
+
 }
 
 entity ZGL_ACCOUNT : managed {
@@ -946,7 +956,7 @@ entity ZPROJECT_HDR : managed {
     key PROJECT_CODE_IO : String    @mandatory  @Common.Label: 'Project Code(IO)';
         PROJECT_DESC    : String    @Common.Label: 'Project Description';
         GL_ACCOUNT      : String(6) @Common.Label: 'GL Account';
-        COST_CENTER     : String    @Common.Label: 'Cost Center';
+        COST_CENTER     : String(9) @Common.Label: 'Cost Center';
         STATUS          : String    @Common.Label: 'Status';
         BUFFER_FIELD1   : String    @Common.Label: 'Buffer Field 1';
         BUFFER_FIELD2   : String    @Common.Label: 'Buffer Field 2';
@@ -1023,8 +1033,8 @@ entity ZREJECT_REASON : managed {
 entity ZWORKFLOW_STEP : managed {
     key WORKFLOW_CODE            : String  @mandatory  @Common.Label: 'Workflow Code';
     key WORKFLOW_TYPE            : String  @mandatory  @Common.Label: 'Workflow Type';
-    key START_DATE               : String  @mandatory  @Common.Label: 'Start Date';
-    key END_DATE                 : String  @mandatory  @Common.Label: 'End Date';
+    key START_DATE               : Date    @mandatory  @Common.Label: 'Start Date';
+    key END_DATE                 : Date    @mandatory  @Common.Label: 'End Date';
         WORKFLOW_NAME            : String;
         WORKFLOW_APPROVAL_LEVELS : Integer;
         REMARK                   : String;
@@ -1035,8 +1045,8 @@ entity ZWORKFLOW_RULE : managed {
     key WORKFLOW_TYPE         : String        @mandatory  @Common.Label: 'Workflow Type';
     key CLAIM_TYPE_ID         : String        @mandatory  @Common.Label: 'Claim Type ID';
     key CLAIM_TYPE_ITEM_ID    : String        @mandatory  @Common.Label: 'Claim Type Item ID';
-    key START_DATE            : String        @mandatory  @Common.Label: 'Start Date';
-    key END_DATE              : String        @mandatory  @Common.Label: 'End Date';
+    key START_DATE            : Date          @mandatory  @Common.Label: 'Start Date';
+    key END_DATE              : Date          @mandatory  @Common.Label: 'End Date';
         RISK_LEVEL            : String(1)     @Common.Label: 'Risk Level';
         THRESHOLD_AMOUNT      : Decimal(7, 2) @Common.Label: 'Threshold Amount';
         THRESHOLD_VALUE       : String(2)     @Common.Label: 'Threshold Value';
@@ -1231,7 +1241,7 @@ entity ZELIGIBILITY_RULE : managed {
         DEPENDENT                 : String         @Common.Label: 'Dependent';
         PERMITTED_DEPENDENT_COUNT : Integer        @Common.Label: 'Permitted for ? Number of dependent';
         CLAIM_YEARS               : Integer        @Common.Label: 'Allowed to claim up to ? Years';
-        SUBSIDIESED_RATE          : Decimal(5, 2)  @Common.Label: 'Subsidiesed Rate';
+        SUBSIDISED_RATE           : Decimal(5, 2)  @Common.Label: 'Subsidised Rate';
         MARITAL_STATUS            : String(2)      @Common.Label: 'Marital Status';
         DEPENDENT_TYPE_ID         : String(2)      @Common.Label: 'Anggota/spouse/anak';
         VEHICLE_OWNERSHIP_ID      : String(2)      @Common.Label: 'Kenderaan Sendiri/Pejabat';
@@ -1258,6 +1268,7 @@ entity ZELIGIBILITY_RULE : managed {
         AGING_NUMBER              : Integer        @Common.Label: 'Aging Number';
         AGING_PERIOD              : String(2)      @Common.Label: 'Period Number';
         STATUS                    : String(10)     @Common.Label: 'Status';
+        JOB_GROUP                 : String(2)      @Common.Label: 'Job Group';
         ZEMP_TYPE                 : Association to ZEMP_TYPE
                                         on ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;
         ZROLE                     : Association to ZROLE
@@ -1296,6 +1307,8 @@ entity ZELIGIBILITY_RULE : managed {
                                         on ZROOM_TYPE.ROOM_TYPE_ID = ROOM_TYPE_ID;
         ZINDIV_GROUP              : Association to ZINDIV_GROUP
                                         on ZINDIV_GROUP.IND_OR_GROUP_ID = IND_OR_GROUP;
+        ZJOB_GROUP                : Association to ZJOB_GROUP
+                                        on ZJOB_GROUP.JOB_GROUP_ID = JOB_GROUP;
 }
 
 entity ZAPPROVER_DETAILS_CLAIMS : managed {
@@ -1386,4 +1399,12 @@ entity ZCLM_APPR_REQ_STAT : managed {
     key REQUEST_ID : String         @mandatory  @Common.Label: 'Request ID';
         AMOUNT     : Decimal(20, 2) @Common.Label: 'Amount';
         CLAIMED    : Boolean        @Common.Label: 'Claimed';
+}
+
+entity ZCLM_TYPE_EXCEPTION_LIST : managed {
+    key EMP_ID        : String(6)      @mandatory  @Common.Label: 'Employee Id';
+    key CLAIM_TYPE_ID : String(20)     @mandatory  @Common.Label: 'Claim Type ID';
+    key START_DATE    : Date           @mandatory  @Common.Label: 'Start Date';
+    key END_DATE      : Date           @mandatory  @Common.Label: 'End Date';
+        AMOUNT        : Decimal(20, 2) @Common.Label: 'Amount';
 }

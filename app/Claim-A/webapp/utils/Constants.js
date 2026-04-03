@@ -93,7 +93,7 @@ sap.ui.define([
             "CANCELLED": "STAT07",
         },
         "Departments": {
-            "FI_DEPT":"0500000000"
+            "FI_DEPT": "0500000000"
         },
         "RequestStatus": {
             "DRAFT": "DRAFT",
@@ -194,7 +194,9 @@ sap.ui.define([
             "WORKFLOW_CODE": "WORKFLOW_CODE",
             "WORKFLOW_TYPE": "WORKFLOW_TYPE",
             "YEAR": "YEAR",
-            "SUBMITTED_DATE": "SUBMITTED_DATE"
+            "SUBMITTED_DATE": "SUBMITTED_DATE",
+            "BILL_DATE": "BILL_DATE",
+            "RECEIPT_DATE": "RECEIPT_DATE"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -260,12 +262,12 @@ sap.ui.define([
             "COST_CENTER": "100000000",
             "GL_ACCOUNT": "214005"
         },
-        "SubmissionType":{
-            "DIRECT_CLAIM"  : "ST0001",
-            "AUTO_APPROVE"  : "ST0002",
-            "PRE_APPROVE"   : "ST0003",
+        "SubmissionType": {
+            "DIRECT_CLAIM": "ST0001",
+            "AUTO_APPROVE": "ST0002",
+            "PRE_APPROVE": "ST0003",
             "CASH_REPAYMENT": "ST0004",
-            "CURR_SUBSIDY"  : "ST0005"
+            "CURR_SUBSIDY": "ST0005"
         },
         "Default": {
             "PROJECT_CODE": "NA"
@@ -284,6 +286,28 @@ sap.ui.define([
             "VIEWAPPR": "view_appr"
         },
         "RequestType": {
+            "TRAVEL": "RT0001",
+            "MOBILE": "RT0002",
+            "EVENTS": "RT0003",
+            "REIMBURSEMENT": "RT0004",
+            "MEDICAL": "RT0005",
+            "PROJECT": "RT0006"
+        },
+        "LocationType": {
+            "OTHER": "1",
+            "KWSP": "2"
+        },
+        "Status": {
+            "ACTIVE": "ACTIVE"
+        },
+        "ClaimFooterMode": {
+            SUMMARY: "SUMMARY",
+            DETAILS: "DETAILS",
+            APPROVER: "APPROVER",
+            VIEW_ONLY: "VIEW_ONLY"
+        },
+        "ConfigAccess":
+            [
             "TRAVEL"        : "RT0001",
             "MOBILE"        : "RT0002",
             "EVENTS"        : "RT0003",
@@ -297,6 +321,16 @@ sap.ui.define([
         },
         "Status" : {
             "ACTIVE" : "ACTIVE"
+        },
+        "Claim_Action" : {
+            "DRAFT" : "Save Draft",
+            "DELETE" : "Delete Report",
+            "SUBMIT" : "Submit Report",
+            "BACK" : "Back",
+            "REJECT" : "Reject",
+            "PUSHBACK" : "Push Back",
+            "APPROVE" : "Approve"
+
         },
         "ConfigAccess": 
              [
