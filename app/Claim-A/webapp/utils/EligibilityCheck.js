@@ -168,7 +168,9 @@ sap.ui.define([
 						return; 
 					}
 					
-					const sErrorMsg = Utility.getText("req_e_validation", [oField.fieldName, sEmpId]);
+					var sErrorField = Constants.ApprovalProcess[oField.fieldName] || oField.fieldName;
+
+					const sErrorMsg = Utility.getText("req_e_validation", [sErrorField, sEmpId]);
 					if (!aErrorMessages.includes(sErrorMsg)) {
 						aErrorMessages.push(sErrorMsg);
 					}
