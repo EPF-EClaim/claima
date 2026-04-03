@@ -5,6 +5,7 @@ sap.ui.define([
 	"sap/ui/core/BusyIndicator",
 	"sap/m/MessageBox",
 	"sap/m/MessageToast",
+	"claima/utils/Utility",
 	"claima/utils/DateUtility"
 ], function (
     Sorter,
@@ -13,6 +14,7 @@ sap.ui.define([
 	BusyIndicator,
     MessageBox,
     MessageToast,
+    Utility,
     DateUtility
 ) {
 	"use strict";
