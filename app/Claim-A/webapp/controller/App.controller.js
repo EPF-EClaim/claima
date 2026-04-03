@@ -61,9 +61,7 @@ sap.ui.define([
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oRouter = this.getOwnerComponent().getRouter();
 			this._oDataModel = this.getOwnerComponent().getModel();
-			this._oViewModel = this.getOwnerComponent().getModel('employee_view');
 			this._oReqModel = this.getOwnerComponent().getModel('request');
-			this._oReqStatusModel = this.getOwnerComponent().getModel("request_status");
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._oRoleModel = this.getOwnerComponent().getModel("roleModel");
 
