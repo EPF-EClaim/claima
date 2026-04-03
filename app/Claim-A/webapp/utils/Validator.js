@@ -116,7 +116,7 @@ sap.ui.define(
 						oControl.getEnabled &&
 						(oControl.getEnabled() === true || oControl.data("validate") === true)
 					)
-					// For class sap.ui.mdc.Field (Value Help) using mode Editable
+					// For fields using class sap.ui.mdc.Field (Value Help), it should call method getEditable
 					||				
 					(	oControl instanceof sap.ui.mdc.Field &&
     				 	oControl.getEditable &&
