@@ -35,10 +35,10 @@ sap.ui.define([
             }
         },
 
-        costCenterDetermination: async function (oController, sClaimTypeId) {
+        costCenterDetermination: async function (sClaimTypeId) {
             
 			try {
-				const oFunction = oController._oDataModel.bindContext("/checkDefaultCostCenter(...)");
+				const oFunction = this._oDataModel.bindContext("/checkDefaultCostCenter(...)");
 				
 				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
 
