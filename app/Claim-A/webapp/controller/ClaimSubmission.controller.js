@@ -3338,6 +3338,12 @@ sap.ui.define([
 					return;
 				}
 
+				//FUT issue 102
+				// solving the issue of having 0 amount claim item when submitting claims
+				if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)){
+					return;
+				}
+
 				if (this._CheckDuplicateClaimItems(aItems)) {
 					MessageBox.error(Utility.getText("msg_duplication_prompt"));
 					BusyIndicator.hide();
