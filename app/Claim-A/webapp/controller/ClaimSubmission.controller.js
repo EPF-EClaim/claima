@@ -27,7 +27,8 @@ sap.ui.define([
 	"claima/utils/workflowApproval",
 	"claima/utils/DateUtility",
 	"claima/utils/EligibilityCheck",
-	"claima/utils/EligibilityScenarios/EligibleScenarioCheck"
+	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
+	"claima/utils/CustomValidator"
 ], function (
 	Fragment,
 	Item,
@@ -57,7 +58,8 @@ sap.ui.define([
 	workflowApproval,
 	DateUtility,
 	EligibilityCheck,
-	EligibleScenarioCheck
+	EligibleScenarioCheck,
+	CustomValidator
 ) {
 	"use strict";
 
@@ -73,6 +75,8 @@ sap.ui.define([
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._openDeclarationDialog = null;
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			
 
 			// declare claim utility
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
@@ -1084,7 +1088,7 @@ sap.ui.define([
 					"bill_date": null,
 					"claim_category": null,
 					"country": null,
-					"disclaimer": null,
+					"disclaimer": false,
 					"start_date": null,
 					"end_date": null,
 					"start_time": null,
@@ -1132,7 +1136,7 @@ sap.ui.define([
 					"anggota_name": null,
 					"dependent_name": null,
 					"type_of_professional_body": null,
-					"disclaimer_galakan": null,
+					"disclaimer_galakan": false,
 					"mode_of_transfer": null,
 					"transfer_date": null,
 					"no_of_days": null,
@@ -2463,7 +2467,7 @@ sap.ui.define([
 			// get input model
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-
+			
 			/* 	4 scenarios for Receipt Date to be populated
 					1. Get Receipt Date based on input
 					2. If Receipt Date is null, get item Bill Date
@@ -2483,18 +2487,19 @@ sap.ui.define([
 			}
 
 			//FUT issue #81
+			//checking if the receipt date is over the trip date, if it is a message error box will appear
 			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
 			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
 
-			if (dReceiptDate > dTripEndDate) {
-				MessageToast.show(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
+			if(dReceiptDate > dTripEndDate){
+				MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
 				return;
 			}
 
 			//FUT issue #58
 			//checking for galakan disclaimer if its ticked or not
-			if (oInputModel.getProperty("/claim_item/disclaimer_galakan") == false || oInputModel.getProperty("/claim_item/disclaimer") == false) {
-				MessageToast.show(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+			
+			if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)){
 				return;
 			}
 
@@ -2502,8 +2507,8 @@ sap.ui.define([
 			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
 			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
 
-			if (dReceiptDate > dTripEndDate) {
-				MessageToast.show(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
+			if(dReceiptDate > dTripEndDate){
+				MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
 				return;
 			}
 			try {
@@ -2587,13 +2592,13 @@ sap.ui.define([
 					MATERIAL_CODE: oInputModel.getProperty("/claim_item/material_code"),
 					VEHICLE_OWNERSHIP_ID: oInputModel.getProperty("/claim_item/vehicle_ownership_id"),
 					ACTUAL_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/actual_amount"))).toFixed(2),
-					ARRIVAL_TIME: this._getHanaTime(oInputModel.getProperty("/claim_item/arrival_time")),
+					ARRIVAL_TIME: oInputModel.getProperty("/claim_item/arrival_time"),
 					CLAIM_TYPE_ID: oInputModel.getProperty("/claim_item/claim_type_id"),
 					COURSE_TITLE: oInputModel.getProperty("/claim_item/course_title"),
 					CURRENCY_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_amount"))).toFixed(2),
 					CURRENCY_CODE: oInputModel.getProperty("/claim_item/currency_code"),
 					CURRENCY_RATE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_item/currency_rate"))).toFixed(2),
-					DEPARTURE_TIME: this._getHanaTime(oInputModel.getProperty("/claim_item/departure_time")),
+					DEPARTURE_TIME: oInputModel.getProperty("/claim_item/departure_time"),
 					DEPENDENT: oInputModel.getProperty("/claim_item/dependent"),
 					DEPENDENT_RELATIONSHIP: oInputModel.getProperty("/claim_item/dependent_relationship"),
 					EMP_ID: this._oSessionModel.getProperty("/userId"),
