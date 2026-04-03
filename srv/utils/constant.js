@@ -91,7 +91,8 @@ const Constant = {
         "PELBAGAI": "PELBAGAI",
         "ELAUN_TUKAR": "ELAUN_TUKAR",
         "ELAUN_PINDAH": "ELAUN_PINDAH",
-        "HANDPHONE": "HANDPHONE"
+        "HANDPHONE": "HANDPHONE",
+        "I-PAD": "I-PAD"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -147,7 +148,8 @@ const Constant = {
         "TOLL": "TOLL",
         "VISA": "VISA",
         "YURAN": "YURAN",
-        "YURAN_KLJ": "YURAN_KLJ"
+        "YURAN_KLJ": "YURAN_KLJ",
+        "I-PAD": "I-PAD"
     },
     EntitiesFields: {
         "APPROVER_ID": "APPROVER_ID",

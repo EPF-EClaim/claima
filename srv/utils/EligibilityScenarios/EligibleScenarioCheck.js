@@ -59,6 +59,10 @@ module.exports = {
                     oReturnPayload = KursusLuar.onEligibleCheck(aPayload[i], aEligibilityRules);
                     break;
 
+                case Constant.ClaimType.I-PAD:
+                    oReturnPayload = I-PAD.onEligibleCheck(aPayload[i], aEligibilityRules);
+                    break;
+
                 // case PELBAGAI: // Pelbagai no requirement checking needed
                 //     break;
 
