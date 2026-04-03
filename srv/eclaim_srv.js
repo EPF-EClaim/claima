@@ -4,6 +4,7 @@ const express = require('express');
 const app = express();
 const { Constant } = require("./utils/constant");
 const { results } = require('@sap/cds/lib/utils/cds-utils');
+const EligibleScenarioCheck = require('./utils/EligibilityScenarios/EligibleScenarioCheck')
 
 module.exports = (srv) => {
 
@@ -121,7 +122,7 @@ module.exports = (srv) => {
     srv.on('READ', 'FeatureControl', async (req) => {
         //crud operation visibility in config table for DTD and JKEW
         let operationHidden = true;
-        if(req.user.is(Constant.Admin.DTD_Admin)) {
+        if (req.user.is(Constant.Admin.DTD_Admin)) {
             operationHidden = false;
         }
 
@@ -135,7 +136,7 @@ module.exports = (srv) => {
         //crud operation visibility for Budget table  
         // should be accessible for edit by DTD and JKEW only - hidden for GA
         let operationHidden = false;
-        if(req.user.is(Constant.Admin.Admin_CC)){
+        if (req.user.is(Constant.Admin.Admin_CC)) {
             operationHidden = true;
         }
         return {
@@ -826,7 +827,27 @@ module.exports = (srv) => {
             req.error(400, `Fail creating record: ${error.message}`, req);
         }
     });
+    /**
+         * Checking of Eligibility scenarios for each claim type
+         * @public
+         * @param {Array} aPayload - Array of Payload data containing ClaimType, ClaimItmType, List Array of fields to be checked;
+         * @returns {Object} Object Payload with results field in CheckFields List Array populated
+         */
+    srv.on('EligibilityCheck', async (req) => {
+        try {
+            const { aPayload } = req.data;
+            if (!aPayload || aPayload.length === 0) {
+                throw new Error('No Data Sent')
+            }
+            const tx = cds.tx(req);
 
+            result = await EligibleScenarioCheck.onEligibilityCheck(aPayload, tx);
+            return result;
+
+        } catch (error) {
+            req.error(500, `Fail processing records: ${error.message}`, req);
+        }
+    });
     /**
     * Perdiem calculation for Claim Submission
     * @public
