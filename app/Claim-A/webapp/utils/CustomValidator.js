@@ -1,6 +1,12 @@
 sap.ui.define([
-    "claima/utils/Constants"
-], function (Constants) {
+    "sap/m/MessageBox",
+    "claima/utils/Constants",
+    "claima/utils/Utility"
+], function (
+    MessageBox,
+    Constants,
+    Utility
+) {
     "use strict";
 
     return {
@@ -8,8 +14,9 @@ sap.ui.define([
 		 * Initialize the Utility 
 		 * @public
 		 */
-        init: function(oOwnerComponent) {
+        init: function(oOwnerComponent,oView) {
             this._oOwnerComponent = oOwnerComponent;
+            this._oView = oView;
 		},
         
         /**
@@ -30,9 +37,25 @@ sap.ui.define([
             switch (sSubmissionType) {
                 case Constants.SubmissionTypePrefix.REQUEST:
                     break;
-                case Constants.SubmissionTypePrefix.CLAIM:
+                case Constants.SubmissionTypePrefix.CLAIM:   
+                    var oInputModel = this._oView.getModel("claimitem_input");
+                    
+                    if (oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.TELEFON_B) {
+                        if(!oInputModel.getProperty("/claim_item/disclaimer")) {
+                            MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+                            return false;
+                        }
+                    }
+
+                    if (oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.GALAKAN) {
+                        if(!oInputModel.getProperty("/claim_item/disclaimer_galakan")) {
+                            MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+                            return false;
+                        }
+                    }
                     break;
             }
+            return true;
         }
     };
 });
