@@ -827,5 +827,13 @@ module.exports = (srv) => {
         }
     });
 
+    srv.on('getEmailReminder', async (req) => {
+        //TRIP_END_DATE 2 months from current date
+        //RT0001 and RT0002 - travel and reimbursement
+        //select pre-approval request for travel/reimbursement where trip end date 2 months from current date
+        const today = new Date().toISOString().slice(0, 10);
+
+        
+    })
 
 }
