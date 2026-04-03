@@ -124,10 +124,16 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
+							maxIntegerDigits: 16,
 							preserveDecimals: false
+						},
+						constraints: {
+							minimum: 0.01
 						}
 					}"
-					visible="false"
+					change="onChange_ClaimDetails_ActualAmount"
+					liveChange="onChange_ClaimDetails_ActualAmount"
+					visible="{claimitem_property>/actual_amount/is_visible}"
 					required="true"
 				/>
 
@@ -165,20 +171,39 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							maxIntegerDigits: 16,
+							preserveDecimals: false,
+							constraints: {
+								minimum: 0.01
+							}
 						}
 					}"
 					required="true"
-					visible="false"
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
+						!${claimitem_property>/entitled_breakfast/is_visible}
+					}"
+					visible="{claimitem_property>/amount/is_visible}"
 				/>
 
 				<!-- % Compensation -->
 				<Label text="{i18n>label_claimdetails_input_compensation}" />
 				<Input
 					id="input_claimdetails_input_percentage_compensation"
-					value="{claimitem_input>/claim_item/percentage_compensation}"
-					type="Number"
-					visible="false"
+					value="{
+						path: 'claimitem_input>/claim_item/percentage_compensation',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 1,
+							maxFractionDigits: 2,
+							maxIntegerDigits: 5,
+							preserveDecimals: false
+						}
+					}"
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						!${claimitem_property>/amount/is_visible}
+					}"
+					visible="{claimitem_property>/percentage_compensation/is_visible}"
 				/>
 
 				<!-- Course Title -->
@@ -810,7 +835,7 @@
 						}
 					}"
 					editable="false"
-					visible="false"
+					visible="{claimitem_property>/entitled_breakfast/is_visible}"
 				/>
 
 				<!-- Entitled Lunch -->

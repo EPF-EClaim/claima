@@ -16,6 +16,7 @@ sap.ui.define([
 	"sap/m/Label",
 	"sap/m/ListMode",
 	"claima/utils/Utility",
+	"claima/utils/ClaimUtility",
 	"claima/utils/Attachment",
 	"claima/utils/budgetCheck",
 	"claima/utils/ApprovalLog",
@@ -45,6 +46,7 @@ sap.ui.define([
 	Label,
 	ListMode,
 	Utility,
+	ClaimUtility,
 	Attachment,
 	budgetCheck,
 	ApprovalLog,
@@ -71,6 +73,9 @@ sap.ui.define([
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._openDeclarationDialog = null;
+
+			// declare claim utility
+			ClaimUtility.init(this.getOwnerComponent(), this.getView());
 
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
@@ -2106,16 +2111,6 @@ sap.ui.define([
 			// set claim detail selection values
 			this._setClaimDetailSelectionMaster();
 
-			// check if provided/entitled meals is visible
-			if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
-				this.byId("input_claimdetails_input_amount").setEditable(false);
-			}
-			else {
-				if (!this.byId("input_claimdetails_input_amount").getEditable()) {
-					this.byId("input_claimdetails_input_amount").setEditable(true);
-				}
-			}
-
 			//set disclaimer field as false if they are visible for validation
 			if (this.byId("checkbox_claimdetails_input_disclaimer").getVisible()) {
 				oInputModel.setProperty("/claim_item/disclaimer", false);
@@ -2128,6 +2123,12 @@ sap.ui.define([
 
 			// calculate number of days
 			oInputModel.setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
+			
+			// set percentage (%) compensation based on claim item
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			if (oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
+				await ClaimUtility.setClaimItemDefaultValues("percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
+			}
 		},
 
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
@@ -2139,6 +2140,17 @@ sap.ui.define([
 			// set claim item model
 			var oInputModel = this._getNewClaimItemModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+
+			// set claim item property model
+			var oClaimItemProperties = {
+				percentage_compensation: { is_visible: false },
+				actual_amount: { is_visible: false },
+				amount: { is_visible: false },
+				entitled_breakfast: { is_visible: false }
+			};
+			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
+			//// set input
+			this.getView().setModel(oClaimItemPropertyModel, "claimitem_property");
 
 			// change footer buttons
 			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
@@ -2320,28 +2332,6 @@ sap.ui.define([
 
 			const oInputAmountField = this.byId("input_claimdetails_input_amount");
 			const oInputActualAmountField = this.byId("input_claimdetails_input_actual_amount");
-
-			// Check for amount field visibility and value
-			if (oInputAmountField && oInputAmountField.getVisible()) {
-				const sInputAmount = oInputAmountField.getValue()?.trim().replace(/[^0-9.-]+/g, "");
-				const fInputAmount = parseFloat(sInputAmount);
-				if (isNaN(fInputAmount) || fInputAmount <= 0) {
-					// stop claim submission if amount is zero or less
-					MessageBox.error(Utility.getText("msg_claiminput_amount_invalid"));
-					return;
-				}
-			}
-
-			// Check for actual amount field visibility and value
-			if (oInputActualAmountField && oInputActualAmountField.getVisible()) {
-				const sInputActualAmount = oInputActualAmountField.getValue()?.trim().replace(/[^0-9.-]+/g, "");
-				const fInputActualAmount = parseFloat(sInputActualAmount);
-				if (isNaN(fInputActualAmount) || fInputActualAmount <= 0) {
-					// stop claim submission if amount is zero or less
-					MessageBox.error(Utility.getText("msg_claiminput_amount_invalid"));
-					return;
-				}
-			}
 
 			// Reuben End Issue 17
 
@@ -2734,6 +2724,22 @@ sap.ui.define([
 			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
+        /**
+		 * On changing value of 'actual amount' field, change value of 'amount' property to percentage of 'actual_amount' property based on subsidised rate
+		 * This applies to claim items that have fields for both 'amount' and 'actual amount'. In this case,
+		 * 'amount' is auto-populated while 'actual amount' comes from user input
+		 * @public
+		 */
+		onChange_ClaimDetails_ActualAmount: function () {
+			// verify if property exists and 'amount' field is visible
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (oPropertyModel.getProperty("/amount/is_visible") && oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
+				// set 'amount' property to % of actual amount based on percentage compensation
+				oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
+			}
+		},
+
 		onChange_ClaimDetails_DateRange: async function (startdate, enddate) {
 			// reset claim detail amounts
 			this._resetPerDiem();
@@ -3113,11 +3119,6 @@ sap.ui.define([
 			if (oClaimItemFragment) {
 				// disable item visibility
 				this._setAllControlsVisible(false);
-
-				// check if amount is editable
-				if (!this.byId("input_claimdetails_input_amount").getEditable()) {
-					this.byId("input_claimdetails_input_amount").setEditable(true);
-				}
 
 				// approver view changes
 				if (oClaimSubmissionModel.getProperty("/view_only")) {
