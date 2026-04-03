@@ -196,9 +196,13 @@ module.exports = {
             case Constant.ClaimTypeItem.PARKING:
             case Constant.ClaimTypeItem.PKN_PANAS:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT);
-                // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
-                // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
-                oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, parseFloat(oRule.ELIGIBLE_AMOUNT));
+                if (!oRule) {
+                    oPayload.CheckFields[iIndex].result = false;
+                } else {
+                    // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
+                    // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
+                    oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, parseFloat(oRule.ELIGIBLE_AMOUNT));
+                }
                 break;
         }
     }
