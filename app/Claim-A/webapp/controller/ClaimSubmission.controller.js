@@ -74,6 +74,9 @@ sap.ui.define([
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._openDeclarationDialog = null;
 
+			// declare claim utility
+			ClaimUtility.init(this.getOwnerComponent(), this.getView());
+
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
 			oRouter.getRoute("ClaimSubmission").attachPatternMatched((event) => { this._onMatched(event); }, this);
@@ -2124,7 +2127,7 @@ sap.ui.define([
 			// set percentage (%) compensation based on claim item
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
-				await ClaimUtility.setClaimItemDefaultValues.bind(this)("percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
+				await ClaimUtility.setClaimItemDefaultValues("percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
 			}
 		},
 
