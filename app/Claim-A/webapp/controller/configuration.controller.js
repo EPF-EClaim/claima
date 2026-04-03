@@ -212,10 +212,10 @@ sap.ui.define([
 
 
             MessageBox.confirm(
-                `Delete selected record(s)?`,
+                Utility.getText("msg_zclaim_delete_record"),
                 {
                     icon: MessageBox.Icon.WARNING,
-                    title: "Delete",
+                    title: Utility.getText("req_b_delete"),
                     actions: [MessageBox.Action.DELETE, MessageBox.Action.CANCEL],
                     emphasizedAction: MessageBox.Action.DELETE,
                     onClose: async (sAction) => {
