@@ -84,8 +84,7 @@ sap.ui.define([
 			
 			// set field property model for App view/fragments
 			this.getView().setModel(new JSONModel({
-				"select_claimprocess_claimtype": { "is_busy": false },
-				"field_claiminput_altcc": { "has_existing_value": false }
+				"select_claimprocess_claimtype": { "is_busy": false }
 			}), "app_viewfields");
 		},
 		onCollapseExpandPress: function () {
@@ -731,7 +730,7 @@ sap.ui.define([
 			//// get claim item category ID
 			oInputModel.setProperty("/claimtype/category", this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("SUBMISSION_TYPE"));
 			//// get cost center from claim type if value exists
-			var sClaimTypeCostCenter = await RequestUtility.costCenterDetermination(oInputModel.getProperty("/claimtype/type"));
+			var sClaimTypeCostCenter = await RequestUtility.determineDefaultCostCenter(oInputModel.getProperty("/claimtype/type"));
 			if (sClaimTypeCostCenter && sClaimTypeCostCenter !== 'null') { // returns value and is not string 'null'
 				oInputModel.setProperty("/claimtype/cost_center", sClaimTypeCostCenter);
 				oInputModel.setProperty("/claimtype/descr/cost_center", await this._bindEclaimDescr("/ZCOST_CENTER", sClaimTypeCostCenter, 'COST_CENTER_ID', 'COST_CENTER_DESC'));
@@ -862,15 +861,10 @@ sap.ui.define([
 			if (oInputModel.getProperty("/claimtype/cost_center")) {
 				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/cost_center"));
 				oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/descr/cost_center"));
-				this.getView().getModel("app_viewfields").setProperty("/field_claiminput_altcc/has_existing_value", true);
 			}
 			else if (oInputModel.getProperty("/claimtype/requestform/alternate_cost_center")) {
 				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/alternate_cost_center"));
 				oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/descr/alternate_cost_center"));
-				this.getView().getModel("app_viewfields").setProperty("/field_claiminput_altcc/has_existing_value", true);
-			}
-			else {
-				this.getView().getModel("app_viewfields").setProperty("/field_claiminput_altcc/has_existing_value", false);
 			}
 			//// initialized amount values
 			oInputModel.setProperty("/claim_header/total_claim_amount", "0.00");
@@ -1542,10 +1536,13 @@ sap.ui.define([
     		var sClaimTypeId = oSelectControl.getSelectedKey();
 			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
 
-			var sDefaultCostCenter = await RequestUtility.costCenterDetermination(sClaimTypeId);
-			if (sDefaultCostCenter) {
+			var sDefaultCostCenter = await RequestUtility.determineDefaultCostCenter(sClaimTypeId);
+			if (sDefaultCostCenter != this._oConstant.Default.NULL) {
 				Fragment.byId("request", "req_acc").setEditMode("ReadOnly");
 				oDialogModel.setProperty("/altcostcenter", sDefaultCostCenter);
+			} else {
+				Fragment.byId("request", "req_acc").setEditMode("Editable");
+				oDialogModel.setProperty("/altcostcenter", "");
 			}
 		},
 

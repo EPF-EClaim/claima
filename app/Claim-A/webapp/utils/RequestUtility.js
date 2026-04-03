@@ -13,7 +13,7 @@ sap.ui.define([
             this._oOwnerComponent = oOwnerComponent;
 		},
 
-        costCenterDetermination: async function (sClaimTypeId) {
+        determineDefaultCostCenter: async function (sClaimTypeId) {
             
 			try {
 				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
@@ -28,7 +28,7 @@ sap.ui.define([
                 return oResult.sCostCenter;
 
 			} catch (oError) {
-				console.error("Failed to check eligibility", oError);
+				return null;
 			}
         }
     };
