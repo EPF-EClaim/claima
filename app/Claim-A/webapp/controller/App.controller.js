@@ -1440,9 +1440,11 @@ sap.ui.define([
 					return;
 				}
 
-				const sAttachment1Binary = await Attachment.getFileAsBinary(oDialogData.doc1);
-				const sAttachment1SFId = await Attachment.postAttachment(oDialogData.doc1.name, sAttachment1Binary, sEmpId);
-				oDialogData.doc1 = `${sAttachment1SFId} - ${oDialogData.doc1.name}`;
+				if (oDialogData.doc1) {
+					const sAttachment1Binary = await Attachment.getFileAsBinary(oDialogData.doc1);
+					const sAttachment1SFId = await Attachment.postAttachment(oDialogData.doc1.name, sAttachment1Binary, sEmpId);
+					oDialogData.doc1 = `${sAttachment1SFId} - ${oDialogData.doc1.name}`;
+				}
 
 				if (oDialogData.doc2) {
 					const sAttachment2Binary = await Attachment.getFileAsBinary(oDialogData.doc2);

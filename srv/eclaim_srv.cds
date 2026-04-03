@@ -339,5 +339,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
     function checkEligibleMobileClaim(sEmployeeId: String)                                     returns String;
 
     function checkDefaultCostCenter(sClaimTypeId: String) returns String;
+    
+    entity ZCLM_TYPE_EXCEPTION_LIST                as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
 };
