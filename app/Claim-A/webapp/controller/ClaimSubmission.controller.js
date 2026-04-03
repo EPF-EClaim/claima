@@ -4629,6 +4629,9 @@ sap.ui.define([
 						MessageToast.show(Utility.getText("msg_claim_no_entitlement"));
 						return;
 					}
+					if(oResult.amount === 0){
+						MessageToast.show(Utility.getText("msg_claim_no_entitlement"));
+					}
 
 					if (this.byId("input_claimdetails_input_dailyallowance").getVisible()) {
 						oInputModel.setProperty("/claim_item/dailyallowance", oResult.daily_allowance);
