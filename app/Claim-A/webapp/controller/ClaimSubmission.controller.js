@@ -2089,6 +2089,7 @@ sap.ui.define([
 			// validate claim item
 			var claimItem = oEvent.getParameters().selectedItem;
 			var oInputModel = this.getView().getModel("claimitem_input");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (claimItem) {
 				// Reset Location Type
 				oInputModel.setProperty("/claim_item/location_type", "");
@@ -2125,7 +2126,6 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
 			
 			// set percentage (%) compensation based on claim item
-			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
 				await ClaimUtility.setClaimItemDefaultValues("percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
 			}
