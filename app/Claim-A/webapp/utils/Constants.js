@@ -77,6 +77,7 @@ sap.ui.define([
             "TELEFON": "TELEFON",
             "TIPS": "TIPS",
             "TOLL": "TOLL",
+            "TRAVEL_INSURANCE": "TRAVEL_INSURANCE",
             "VISA": "VISA",
             "YURAN": "YURAN",
             "YURAN_KLJ": "YURAN_KLJ",
@@ -205,7 +206,10 @@ sap.ui.define([
             "YEAR": "YEAR",
             "SUBMITTED_DATE": "SUBMITTED_DATE",
             "BILL_DATE": "BILL_DATE",
-            "RECEIPT_DATE": "RECEIPT_DATE"
+            "RECEIPT_DATE": "RECEIPT_DATE",
+            "INSURANCE_PURCH_DATE": "INSURANCE_PURCH_DATE",
+            "INSURANCE_CERT_START_DATE": "INSURANCE_CERT_START_DATE",
+            "INSURANCE_CERT_END_DATE": "INSURANCE_CERT_END_DATE",
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -305,6 +309,9 @@ sap.ui.define([
         "LocationType" : {
             "OTHER" : "1",
             "KWSP"  : "2"
+        },
+        "InsuranceProvider" : {
+            "OTHERS" : "4",
         },
         "Status" : {
             "ACTIVE" : "ACTIVE"
