@@ -7,7 +7,7 @@
         id="declarationDialog"
         type="Message"
         state="Warning"
-        title="{i18n>dialog_claimsubmission_submitreport}"
+        title="{i18n>dialog_claimsubmission_declaration}"
         contentWidth="500px">
 
         <Text
