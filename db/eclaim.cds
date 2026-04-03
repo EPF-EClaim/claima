@@ -1241,7 +1241,7 @@ entity ZELIGIBILITY_RULE : managed {
         DEPENDENT                 : String         @Common.Label: 'Dependent';
         PERMITTED_DEPENDENT_COUNT : Integer        @Common.Label: 'Permitted for ? Number of dependent';
         CLAIM_YEARS               : Integer        @Common.Label: 'Allowed to claim up to ? Years';
-        SUBSIDIESED_RATE          : Decimal(5, 2)  @Common.Label: 'Subsidiesed Rate';
+        SUBSIDISED_RATE           : Decimal(5, 2)  @Common.Label: 'Subsidised Rate';
         MARITAL_STATUS            : String(2)      @Common.Label: 'Marital Status';
         DEPENDENT_TYPE_ID         : String(2)      @Common.Label: 'Anggota/spouse/anak';
         VEHICLE_OWNERSHIP_ID      : String(2)      @Common.Label: 'Kenderaan Sendiri/Pejabat';
