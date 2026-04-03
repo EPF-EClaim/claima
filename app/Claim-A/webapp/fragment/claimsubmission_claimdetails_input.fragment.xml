@@ -409,6 +409,7 @@
 						formatter: '.DateUtility.determineMaxDate'
 					}"
 					displayFormat="dd-MMM-yyyy"
+					change="onChange_ClaimDetails_InsuranceCertDate"
 				>
 					<customData>
 						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_CERT_START_DATE/customErrorMessage}" />
@@ -434,6 +435,7 @@
 						formatter: '.DateUtility.determineMinDate'
 					}"
 					displayFormat="dd-MMM-yyyy"
+					change="onChange_ClaimDetails_InsuranceCertDate"
 				>
 					<customData>
 						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_CERT_END_DATE/customErrorMessage}" />

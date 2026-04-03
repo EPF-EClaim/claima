@@ -2107,6 +2107,7 @@ sap.ui.define([
 			// validate claim item
 			var claimItem = oEvent.getParameters().selectedItem;
 			var oInputModel = this.getView().getModel("claimitem_input");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (claimItem) {
 				// Reset Location Type
 				oInputModel.setProperty("/claim_item/location_type", "");
@@ -2148,7 +2149,6 @@ sap.ui.define([
 			}
 			
 			// set rate per km if no vehicle type field found
-			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (oPropertyModel.getProperty("/rate_per_km/is_visible") && !oPropertyModel.getProperty("/vehicle_type/is_visible")) {
 				await ClaimUtility.setClaimItemDefaultValues("descr/rate_per_km", this._oConstant.EligibilityRule.RATE_PER_KM, 0.0);
 				// clear rate per km ID field since formula uses default value
@@ -2836,6 +2836,17 @@ sap.ui.define([
 				// Calculate number of days
 				this.getView().getModel("claimitem_input").setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
 			}
+		},
+
+        /**
+         * On setting insurance cert start/end date, call private method to calculate number of days
+         * @public
+         */
+		onChange_ClaimDetails_InsuranceCertDate: function () {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			oInputModel.refresh(true);
+
+			oInputModel.setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
 		},
 
         /**

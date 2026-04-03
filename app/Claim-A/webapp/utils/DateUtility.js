@@ -282,11 +282,18 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             // set min date based on insurance cert start date
-                            if (oItem["insurance_cert_start_date"]) {
+                            if (oItem["insurance_cert_start_date"] !== null &&
+                                oItem["insurance_cert_start_date"] !== '' &&
+                                !isNaN(new Date(oItem["insurance_cert_start_date"]).getTime())
+                            ) {
                                 _dMinDate = new Date(oItem["insurance_cert_start_date"]);
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
-                                    _oResourceBundle.getText("error_insurance_cert_end_date_mindate"));
                             }
+                            else {
+                                _dMinDate = new Date(null);
+                                oItem["insurance_cert_start_date"] = null;
+                            }
+                            _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                _oResourceBundle.getText("error_insurance_cert_end_date_mindate"));
                             break;
                     }
                     break;
@@ -355,11 +362,18 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             // set max date based on insurance cert end date
-                            if (oItem["insurance_cert_end_date"]) {
+                            if (oItem["insurance_cert_end_date"] !== null &&
+                                oItem["insurance_cert_end_date"] !== '' &&
+                                !isNaN(new Date(oItem["insurance_cert_end_date"]).getTime())
+                            ) {
                                 _dMaxDate = new Date(oItem["insurance_cert_end_date"]);
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
-                                    _oResourceBundle.getText("error_insurance_cert_start_date_maxdate"));
                             }
+                            else {
+                                _dMaxDate = new Date('9999-12-31');
+                                oItem["insurance_cert_end_date"] = null;
+                            }
+                            _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                _oResourceBundle.getText("error_insurance_cert_start_date_maxdate"));
                             break;
                     }
             }
