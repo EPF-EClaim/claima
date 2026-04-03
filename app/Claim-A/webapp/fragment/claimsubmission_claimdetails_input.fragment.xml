@@ -124,10 +124,16 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
+							maxIntegerDigits: 16,
 							preserveDecimals: false
+						},
+						constraints: {
+							minimum: 0.01
 						}
 					}"
-					visible="false"
+					change="onChange_ClaimDetails_ActualAmount"
+					liveChange="onChange_ClaimDetails_ActualAmount"
+					visible="{claimitem_property>/actual_amount/is_visible}"
 					required="true"
 				/>
 
@@ -174,7 +180,9 @@
 					}"
 					required="true"
 					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
-						!${claimitem_property>/rate_per_km/is_visible}
+						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
+						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
+						!${claimitem_property>/entitled_breakfast/is_visible}
 					}"
 					visible="{claimitem_property>/amount/is_visible}"
 				/>
@@ -183,9 +191,20 @@
 				<Label text="{i18n>label_claimdetails_input_compensation}" />
 				<Input
 					id="input_claimdetails_input_percentage_compensation"
-					value="{claimitem_input>/claim_item/percentage_compensation}"
-					type="Number"
-					visible="false"
+					value="{
+						path: 'claimitem_input>/claim_item/percentage_compensation',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 1,
+							maxFractionDigits: 2,
+							maxIntegerDigits: 5,
+							preserveDecimals: false
+						}
+					}"
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						!${claimitem_property>/amount/is_visible}
+					}"
+					visible="{claimitem_property>/percentage_compensation/is_visible}"
 				/>
 
 				<!-- Course Title -->
@@ -698,6 +717,7 @@
 					value="{claimitem_input>/claim_item/departure_time}"
 					visible="false"
 					displayFormat="HH:mm"
+					valueFormat="HH:mm"
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
 					required="true"
 				/>
@@ -729,6 +749,7 @@
 					value="{claimitem_input>/claim_item/arrival_time}"
 					visible="false"
 					displayFormat="HH:mm"
+					valueFormat="HH:mm"
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
 					required="true"
 				/>
@@ -832,7 +853,7 @@
 						}
 					}"
 					editable="false"
-					visible="false"
+					visible="{claimitem_property>/entitled_breakfast/is_visible}"
 				/>
 
 				<!-- Entitled Lunch -->
