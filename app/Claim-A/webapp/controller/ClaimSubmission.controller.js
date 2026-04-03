@@ -2912,19 +2912,19 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			//check if there is any input, if yes then recalculate entitled meals 
 			//breakfast meal entitlement
-			if (this.byId("input_claimdetails_input_provided_breakfast").getValue() != null) {
+			if (oInputModel.getProperty("/claim_item/provided_breakfast") != null) {
 				nEntBfast = oInput.getProperty("/claim_item/travel_duration_day") - oInput.getProperty("/claim_item/provided_breakfast");
 				oInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);
 			}
 
 			//lunch meal entitlement
-			if (this.byId("input_claimdetails_input_provided_lunch").getValue() != null) {
+			if (oInputModel.getProperty("/claim_item/provided_lunch") != null) {
 				nEntLunch = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_lunch");
 				oInputModel.setProperty("/claim_item/entitled_lunch", nEntLunch);
 			}
 
 			//dinner meal entitlement
-			if (this.byId("input_claimdetails_input_provided_dinner").getValue() != null) {
+			if (oInputModel.getProperty("/claim_item/provided_dinner") != null) {
 				nEntDinner = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_dinner");
 				oInputModel.setProperty("/claim_item/entitled_dinner", nEntDinner);
 			}
@@ -4602,11 +4602,6 @@ sap.ui.define([
 			var sLocation = oInputModel.getProperty("/claim_item/region");
 			var sClaimtype = oInputModel.getProperty("/claim_item/claim_type_id");
 			var sClaimItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
-
-			if(this.byId("input_claimdetails_input_currency_rate").getVisible()){
-				oInputModel.getProperty("/claim_item/currency_rate");
-			}
-
 			var nBreakfast = parseInt(oInputModel.getProperty("/claim_item/provided_breakfast"));
 			var nLunch = parseInt(oInputModel.getProperty("/claim_item/provided_lunch"));
 			var nDinner = parseInt(oInputModel.getProperty("/claim_item/provided_dinner"));
@@ -4639,9 +4634,9 @@ sap.ui.define([
 						oInputModel.setProperty("/claim_item/dailyallowance", oResult.daily_allowance);
 						
 						if (this.byId("input_claimdetails_input_currency_rate").getVisible() && 
-							this.byId("input_claimdetails_input_currency_rate").getValue() != null) {
+							oInputModel.getProperty("/claim_item/currency_rate") != null) {
 							oInputModel.setProperty("/claim_item/currency_amount", oResult.amount);
-							var nAmountMYR = this.byId("input_claimdetails_input_currency_rate").getValue() * oResult.amount;
+							var nAmountMYR = oInputModel.getProperty("/claim_item/currency_rate") * oResult.amount;
 							oInputModel.setProperty("/claim_item/amount", nAmountMYR);
 						}
 					}
