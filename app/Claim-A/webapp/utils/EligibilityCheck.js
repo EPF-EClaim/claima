@@ -140,9 +140,9 @@ sap.ui.define([
 					return; 
 				}
 
-				var ErrorField = Constants.ApprovalProcess[oField.fieldName] || oField.fieldName;
+				var sErrorField = Constants.ApprovalProcess[oField.fieldName] || oField.fieldName;
 				
-				const sErrorMsg = (`Validation failed for ${ErrorField}.`);
+				const sErrorMsg = (`Validation failed for ${sErrorField}.`);
 				// const sErrorMsg = (`Validation failed for ${oField.fieldName}.`);
 				aErrorMessages.push(sErrorMsg);
 
