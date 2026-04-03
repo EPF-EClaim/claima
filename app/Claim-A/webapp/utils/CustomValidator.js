@@ -31,7 +31,7 @@ sap.ui.define([
                 case Constants.SubmissionTypePrefix.REQUEST:
                     break;
                 case Constants.SubmissionTypePrefix.CLAIM:   
-                    var oInputModel = this._oOwnerComponent.getModel("claimitem_input");
+                    var oInputModel = this._oOwnerComponent.getView().getModel("claimitem_input");
                     
                     
                     if (oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.TELEFON_B) {
