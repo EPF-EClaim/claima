@@ -2,8 +2,13 @@ sap.ui.define([
 	"sap/m/MessageBox",
 	"sap/ui/core/Fragment",
 	"sap/ui/core/ValueState",
-	"claima/utils/Constants"
-], function (MessageBox, Fragment, ValueState, Constants) {
+	"claima/utils/Constants",
+	"claima/utils/Utility"
+], function (MessageBox,
+	Fragment,
+	ValueState,
+	Constants,
+	Utility) {
     "use strict";
 
     return {
