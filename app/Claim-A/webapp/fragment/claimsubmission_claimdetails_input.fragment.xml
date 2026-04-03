@@ -73,14 +73,24 @@
                     visible="false"
                 />
 
-                <!-- Dependent Name -->
-                <Label text="{i18n>label_claimdetails_input_dependent}" />
-                <Input
-                    id="input_claimdetails_input_dependent_name"
-                    value="{claimitem_input>/claim_item/dependent_name}"
-                    visible="false"
-                    required="true"
-                />
+				<!-- Dependent Name -->
+				<Label text="{i18n>label_claimdetails_input_dependent}" />
+				<Select
+					id="select_claimdetails_input_dependent_name"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/dependent_name}"
+					items="{
+						path:'employee>/ZEMP_DEPENDENT',
+						sorter: { path: 'DEPENDENT_NO', descending: false }
+					}"
+					visible="false"
+					required="true"
+				>
+				<items>
+					<core:Item key="{employee>LEGAL_NAME}" 
+							   text="{employee>LEGAL_NAME}" />
+				</items>
+				</Select>
 
                 <!-- Type of Professional Body -->
                 <Label text="{i18n>label_claimdetails_input_profbodytype}" />
@@ -125,12 +135,18 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
+							maxIntegerDigits: 16,
 							preserveDecimals: false
+						},
+						constraints: {
+							minimum: 0.01
 						}
 					}"
-                    visible="false"
-                    required="true"
-                />
+					change="onChange_ClaimDetails_ActualAmount"
+					liveChange="onChange_ClaimDetails_ActualAmount"
+					visible="{claimitem_property>/actual_amount/is_visible}"
+					required="true"
+				/>
 
                 <!-- Subsidised Amount (MYR) (50% of actual) -->
 				<Label text="{i18n>label_claimdetails_input_amount_subsidised}" />
@@ -166,21 +182,41 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
+							maxIntegerDigits: 16,
+							preserveDecimals: false,
+							constraints: {
+								minimum: 0.01
+							}
+						}
+					}"
+					required="true"
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
+						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
+						!${claimitem_property>/entitled_breakfast/is_visible}
+					}"
+					visible="{claimitem_property>/amount/is_visible}"
+				/>
+
+				<!-- % Compensation -->
+				<Label text="{i18n>label_claimdetails_input_compensation}" />
+				<Input
+					id="input_claimdetails_input_percentage_compensation"
+					value="{
+						path: 'claimitem_input>/claim_item/percentage_compensation',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 1,
+							maxFractionDigits: 2,
+							maxIntegerDigits: 5,
 							preserveDecimals: false
 						}
 					}"
-                    required="true"
-                    visible="false"
-                />
-
-                <!-- % Compensation -->
-                <Label text="{i18n>label_claimdetails_input_compensation}" />
-                <Input
-                    id="input_claimdetails_input_percentage_compensation"
-                    value="{claimitem_input>/claim_item/percentage_compensation}"
-                    type="Number"
-                    visible="false"
-                />
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						!${claimitem_property>/amount/is_visible}
+					}"
+					visible="{claimitem_property>/percentage_compensation/is_visible}"
+				/>
 
                 <!-- Course Title -->
                 <Label text="{i18n>label_claimdetails_input_coursetitle}" />
@@ -354,16 +390,16 @@
                     required="true"
                 />
 
-                <!-- Type of Vehicle -->
-                <Label text="{i18n>label_claimdetails_input_typeofvehicle}" />
-                <Select
-                    id="select_claimdetails_input_vehicle_type"
-                    forceSelection="false"
-                    selectedKey="{claimitem_input>/claim_item/vehicle_type}"
-                    change="onSelect_ClaimDetails_VehicleType"
-                    liveChange="onSelect_ClaimDetails_VehicleType"
-                    visible="false"
-                    required="true"
+				<!-- Type of Vehicle -->
+				<Label text="{i18n>label_claimdetails_input_typeofvehicle}" />
+				<Select
+					id="select_claimdetails_input_vehicle_type"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/vehicle_type}"
+					change="onSelect_ClaimDetails_VehicleType"
+					liveChange="onSelect_ClaimDetails_VehicleType"
+					visible="{claimitem_property>/vehicle_type/is_visible}"
+					required="true"
 				>
 				</Select>
 
@@ -389,20 +425,29 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							maxIntegerDigits: 6,
+							preserveDecimals: false,
+							constraints: {
+								minimum: 0
+							}
 						}
 					}"
-                    visible="false"
-                />
+					change="onChange_ClaimDetails_Kilometer"
+					liveChange="onChange_ClaimDetails_Kilometer"
+					visible="{claimitem_property>/km/is_visible}"
+				/>
 
-                <!-- Rate Per Kilometer -->
-                <Label text="{i18n>label_claimdetails_input_km_rate}" />
-                <Input
-                    id="input_claimdetails_input_rate_per_km"
-                    value="{claimitem_input>/claim_item/rate_per_km}"
-                    editable="false"
-                    visible="false"
-                />
+				<!-- Rate Per Kilometer -->
+				<Label text="{i18n>label_claimdetails_input_km_rate}" />
+				<Input
+					id="input_claimdetails_input_rate_per_km"
+					value="{
+						path: 'claimitem_input>/claim_item/descr/rate_per_km',
+						type: 'FloatType'
+					}"
+					editable="false"
+					visible="{claimitem_property>/rate_per_km/is_visible}"
+				/>
 
                 <!-- Type of Fare -->
                 <Label text="{i18n>label_claimdetails_input_faretype}" />
@@ -452,11 +497,17 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							maxIntegerDigits: 16,
+							preserveDecimals: false,
+							constraints: {
+								minimum: 0
+							}
 						}
 					}"
-                    visible="false"
-                />
+					change="onChange_ClaimDetails_Toll"
+					liveChange="onChange_ClaimDetails_Toll"
+					visible="{claimitem_property>/toll/is_visible}"
+				/>
 
                 <!-- Parking -->
                 <Label text="{i18n>label_claimdetails_input_parking}" />
@@ -674,16 +725,17 @@
                     change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_starttime','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_endtime')"
                 />
 
-                <!-- Departure Time -->
-                <Label text="{i18n>label_claimdetails_input_time_depart}" />
-                <TimePicker
-                    id="timepicker_claimdetails_input_departure_time"
-                    value="{claimitem_input>/claim_item/departure_time}"
-                    visible="false"
-                    displayFormat="HH:mm"
-                    change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
-                    required="true"
-                />
+				<!-- Departure Time -->
+				<Label text="{i18n>label_claimdetails_input_time_depart}" />
+				<TimePicker
+					id="timepicker_claimdetails_input_departure_time"
+					value="{claimitem_input>/claim_item/departure_time}"
+					visible="false"
+					displayFormat="HH:mm"
+					valueFormat="HH:mm"
+					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
+					required="true"
+				/>
 
                 <!-- Trip End Date -->
                 <Label text="{i18n>label_claimdetails_input_trip_enddate}" />
@@ -705,16 +757,17 @@
                     change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_starttime','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_endtime')"
                 />
 
-                <!-- Arrival Time -->
-                <Label text="{i18n>label_claimdetails_input_time_arrive}" />
-                <TimePicker
-                    id="timepicker_claimdetails_input_arrival_time"
-                    value="{claimitem_input>/claim_item/arrival_time}"
-                    visible="false"
-                    displayFormat="HH:mm"
-                    change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
-                    required="true"
-                />
+				<!-- Arrival Time -->
+				<Label text="{i18n>label_claimdetails_input_time_arrive}" />
+				<TimePicker
+					id="timepicker_claimdetails_input_arrival_time"
+					value="{claimitem_input>/claim_item/arrival_time}"
+					visible="false"
+					displayFormat="HH:mm"
+					valueFormat="HH:mm"
+					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
+					required="true"
+				/>
 
                 <!-- Travel Duration (days) -->
                 <Label
@@ -792,9 +845,9 @@
 						path: 'claimitem_input>/claim_item/entitled_breakfast',
 						type: 'Integer'
 					}"
-                    editable="false"
-                    visible="false"
-                />
+					editable="false"
+					visible="{claimitem_property>/entitled_breakfast/is_visible}"
+				/>
 
                 <!-- Entitled Lunch -->
                 <Label text="{i18n>label_claimdetails_input_entitled_lunch}" />
