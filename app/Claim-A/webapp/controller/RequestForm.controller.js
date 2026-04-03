@@ -1312,12 +1312,12 @@ sap.ui.define([
 			}
 
 			// Convert to JS Date
-			const oEventDate = new Date(dTripDate);
-			const oToday = new Date();
-			oToday.setHours(0,0,0,0);
+			const dEventDate = new Date(dTripDate);
+			const dToday = new Date();
+			dToday.setHours(0,0,0,0);
 
 			// ✅ If event date is before today → backdated
-			if (oEventDate < oToday) {
+			if (dEventDate < dToday) {
 
 				// Update model value
 				oRequestModel.setProperty("/req_item/cash_advance", false);
