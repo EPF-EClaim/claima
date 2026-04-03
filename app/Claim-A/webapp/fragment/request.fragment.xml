@@ -179,7 +179,6 @@
 					mimeType="application/pdf,image/png,image/jpeg"
 					placeholder="{i18n>req_attachment_format}"
 					value="{reqDialog>/doc1}"
-					required="true"
 					visible="false" />
 
 			    <Label text="{i18n>req_attach2}" />
