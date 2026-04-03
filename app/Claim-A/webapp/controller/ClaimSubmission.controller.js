@@ -3185,7 +3185,6 @@ sap.ui.define([
 				//FUT issue 102
 				// solving the issue of having 0 amount claim item when submitting claims
 				if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)){
-					MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
 					return;
 				}
 
