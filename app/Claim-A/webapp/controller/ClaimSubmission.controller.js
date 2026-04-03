@@ -3642,43 +3642,6 @@ sap.ui.define([
 			}
 		},
 
-		// _getHanaTime: function (iTime) {
-		// 	if (!iTime) return null;
-
-		// 	var sTime = String(iTime).trim();
-
-		// 	// HH:mm:ss format (e.g. "22:52:00")
-		// 	if (/^\d{2}:\d{2}:\d{2}$/.test(sTime)) {
-		// 		return sTime;
-		// 	}
-
-		// 	// HH:mm format (e.g. "22:52")
-		// 	if (/^\d{2}:\d{2}$/.test(sTime)) {
-		// 		return sTime + ":00";
-		// 	}
-
-		// 	// 12-hour format with AM/PM (e.g. "10:52:00 PM" or "10:52 PM")
-		// 	var oTimeMatch = sTime.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)$/i);
-		// 	if (oTimeMatch) {
-		// 		var nHours = parseInt(oTimeMatch[1]);
-		// 		var nMinutes = parseInt(oTimeMatch[2]);
-		// 		var nSeconds = parseInt(oTimeMatch[3] || 0);
-		// 		var sMeridiem = oTimeMatch[4].toUpperCase();
-
-		// 		if (sMeridiem === 'PM' && nHours !== 12) nHours += 12;
-		// 		if (sMeridiem === 'AM' && nHours === 12) nHours = 0;
-
-		// 		return ('0' + nHours).slice(-2) + ':' + ('0' + nMinutes).slice(-2) + ':' + ('0' + nSeconds).slice(-2);
-		// 	}
-
-		// 	// Timestamp fallback
-		// 	var oDate = new Date(iTime);
-		// 	if (!isNaN(oDate.getTime())) {
-		// 		return ('0' + oDate.getHours()).slice(-2) + ':' + ('0' + oDate.getMinutes()).slice(-2) + ':' + ('0' + oDate.getSeconds()).slice(-2);
-		// 	}
-		// 	return null;
-		// },
-
 		_nonNan: function (iNumber) {
 			if (isNaN(iNumber)) {
 				return 0;
