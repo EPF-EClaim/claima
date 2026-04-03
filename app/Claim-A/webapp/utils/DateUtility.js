@@ -271,14 +271,25 @@ sap.ui.define([
                     }
                     break;
                 case Constants.EntitiesFields.INSURANCE_PURCH_DATE:
-                case Constants.EntitiesFields.INSURANCE_CERT_START_DATE:
-                case Constants.EntitiesFields.INSURANCE_CERT_END_DATE:
                     switch (sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             dMinDate = new Date(oHeader.trip_start_date); // default
+                            break;
+                    }
+                    break;
+                case Constants.EntitiesFields.INSURANCE_CERT_END_DATE:
+                    switch (sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            // set min date based on insurance cert start date
+                            if (oItem["insurance_cert_start_date"]) {
+                                dMinDate = new Date(oItem["insurance_cert_start_date"]);
+                            }
                             break;
                     }
                     break;
@@ -329,8 +340,6 @@ sap.ui.define([
                     }
                     break;
                 case Constants.EntitiesFields.INSURANCE_PURCH_DATE:
-                case Constants.EntitiesFields.INSURANCE_CERT_START_DATE:
-                case Constants.EntitiesFields.INSURANCE_CERT_END_DATE:
                     switch (sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
                             break;
@@ -340,6 +349,18 @@ sap.ui.define([
                             break;
                     }
                     break;
+                case Constants.EntitiesFields.INSURANCE_CERT_START_DATE:
+                    switch (sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            // set max date based on insurance cert end date
+                            if (oItem["insurance_cert_end_date"]) {
+                                dMaxDate = new Date(oItem["insurance_cert_end_date"]);
+                            }
+                            break;
+                    }
             }
 
             return dMaxDate;
