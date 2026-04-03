@@ -258,9 +258,10 @@ sap.ui.define([
                             // Specific Claim Type
                             if (sItemType === Constants.ClaimTypeItem.VISA) {
                                 // VISA related logic 
+                                _dMinDate = null;
                             } else {
                                 // Other Claim Type
-                                _dMinDate = new Date(oHeader.trip_start_date);
+                                _dMinDate = null;
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
                                     _oResourceBundle.getText("error_receiptdate_mindate"));
                             }
@@ -269,7 +270,10 @@ sap.ui.define([
                     break;
             }
 
-            _dMinDate.setHours(0, 0, 0, 0);
+
+            if(_dMinDate != null){
+                _dMinDate.setHours(0, 0, 0, 0);
+            }
             return _dMinDate;
         },
 
