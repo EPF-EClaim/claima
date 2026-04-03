@@ -110,9 +110,19 @@ sap.ui.define(
 
 			if (
 				oControl.getRequired &&
-				oControl.getRequired() === true &&
-				oControl.getEnabled &&
-				(oControl.getEnabled() === true || oControl.data("validate") === true)
+				oControl.getRequired() === true &&	
+				(
+					(
+						oControl.getEnabled &&
+						(oControl.getEnabled() === true || oControl.data("validate") === true)
+					)
+					// For class sap.ui.mdc.Field (Value Help) using mode Editable
+					||				
+					(	oControl instanceof sap.ui.mdc.Field &&
+    				 	oControl.getEditable &&
+					 	(oControl.getEditable() === true || oControl.data("validate") === true)
+					)
+				)
 			) {
 				// Control required
 				isValid = this._validateRequired(oControl);
@@ -207,7 +217,7 @@ sap.ui.define(
 								isValid = true;
 								break;
 							}
-						}
+						} 
 					} catch (ex) {
 						// Validation failed
 					}
