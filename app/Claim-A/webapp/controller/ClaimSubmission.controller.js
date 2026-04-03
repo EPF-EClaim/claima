@@ -2865,56 +2865,22 @@ sap.ui.define([
 		onSelect_ClaimDetails_VehicleType: async function () {
 			if (this.getView().getModel("claimitem_property")?.getProperty("/rate_per_km/is_visible")) {
 				var oInputModel = this.getView().getModel("claimitem_input");
-				const oModel = this.getOwnerComponent().getModel();
-				// filter by vehicle type or * (all)
-				const oFilterVehicleType = new Filter({
-					filters: [
-						new Filter("VEHICLE_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/vehicle_type")),
-						new Filter("VEHICLE_TYPE_ID", FilterOperator.EQ, '*')
-					],
-					and: false
-				});
-				// filter by claim type item or * (all)
-				const oFilterClaimTypeItem = new Filter({
-					filters: [
-						new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_item_id")),
-						new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, '*')
-					],
-					and: false
-				});
-				const oListBinding = oModel.bindList("/ZRATE_KM", null, [
-					new Sorter("CLAIM_TYPE_ITEM_ID", true),
-					new Sorter("VEHICLE_TYPE_ID", true)
-				], [
-					oFilterVehicleType,
-					oFilterClaimTypeItem,
-					// ensure status is active
-					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
-					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
-				]);
-
-				try {
-					BusyIndicator.show(0);
-					const aContexts = await oListBinding.requestContexts(0, Infinity);
-
-					if (aContexts.length > 0) {
-						const oData = aContexts[0].getObject();
-						oInputModel.setProperty("/claim_item/rate_per_km", oData.RATE_KM_ID)
-						oInputModel.setProperty("/claim_item/descr/rate_per_km", oData.RATE)
-					} else {
-						oInputModel.setProperty("/claim_item/rate_per_km", null)
-						oInputModel.setProperty("/claim_item/descr/rate_per_km", 0.0)
-						MessageToast.show(Utility.getText("msg_claimdetails_input_rateperkm_none"));
-					}
-				} catch (oError) {
-					oInputModel.setProperty("/claim_item/rate_per_km", null)
-					oInputModel.setProperty("/claim_item/descr/rate_per_km", 0.0)
-					MessageBox.error(Utility.getText("msg_claimdetails_input_rateperkm_err", [oError]));
-				} finally {
-					this._calculateRatePerKm();
-					BusyIndicator.hide();
+				var aEntityFields = [
+					{ entity_field: "VEHICLE_TYPE_ID", filter_value: oInputModel.getProperty("/claim_item/vehicle_type") },
+					{ entity_field: "CLAIM_TYPE_ITEM_ID", filter_value: oInputModel.getProperty("/claim_item/claim_type_item_id") }
+				]
+				var aRetrievalFields = [ "RATE_KM_ID", "RATE"];
+				var aOutputValues = await ClaimUtility.setClaimItemValueFromSelection.bind(this)(this._oConstant.Entities.ZRATE_KM, aEntityFields, aRetrievalFields);
+				if (aOutputValues.length > 0) {
+					oInputModel.setProperty("/claim_item/rate_per_km", aOutputValues[0]);
+					oInputModel.setProperty("/claim_item/descr/rate_per_km", aOutputValues[1]);
 				}
+				else {
+					oInputModel.setProperty("/claim_item/rate_per_km", null);
+					oInputModel.setProperty("/claim_item/descr/rate_per_km", 0.0);
+                    MessageToast.show(Utility.getText("msg_claimdetails_input_descr/rate_per_km_none"));
+				}
+                this._calculateRatePerKm();
 			}
 		},
 
@@ -2954,15 +2920,11 @@ sap.ui.define([
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (oPropertyModel.getProperty("/km/is_visible") && oPropertyModel.getProperty("/rate_per_km/is_visible")) {
 				// calculate amount with toll
-				if (oPropertyModel.getProperty("/toll/is_visible")) {
-					var fAmount = (parseFloat(oInputModel.getProperty("/claim_item/km")) *
-						parseFloat(oInputModel.getProperty("/claim_item/descr/rate_per_km"))) +
-						parseFloat(oInputModel.getProperty("/claim_item/toll"));
-					oInputModel.setProperty("/claim_item/amount", fAmount)
-				}
-				else {
-					var fAmount = parseFloat(oInputModel.getProperty("/claim_item/km")) * parseFloat(oInputModel.getProperty("/claim_item/descr/rate_per_km"));
-					oInputModel.setProperty("/claim_item/amount", fAmount)
+				var fAmount = parseFloat(oInputModel.getProperty("/claim_item/km")) * parseFloat(oInputModel.getProperty("/claim_item/descr/rate_per_km"));
+				oInputModel.setProperty("/claim_item/amount", fAmount);
+				if (oPropertyModel.getProperty("/toll/is_visible") && parseFloat(oInputModel.getProperty("/claim_item/toll")) > 0) {
+					var fAmount = parseFloat(oInputModel.getProperty("/claim_item/amount")) + parseFloat(oInputModel.getProperty("/claim_item/toll"));
+					oInputModel.setProperty("/claim_item/amount", fAmount);
 				}
 			}
 		},
