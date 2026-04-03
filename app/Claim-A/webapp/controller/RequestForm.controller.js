@@ -1299,6 +1299,40 @@ sap.ui.define([
 		* Participant Value Help 
 		* ======================================================= */
 
+		onCashAdvanceChange: function (oEvent) {
+			const oSwitch = oEvent.getSource();
+
+			// Get model
+			const oModel = this.getView().getModel("request");
+
+			// Read event start date
+			const tripDate = oModel.getProperty("/req_header/tripstartdate");
+
+			if (!tripDate) {
+				return; // no date entered yet
+			}
+
+			// Convert to JS Date
+			const oEventDate = new Date(tripDate);
+			const oToday = new Date();
+			oToday.setHours(0,0,0,0);
+
+			// ✅ If event date is before today → backdated
+			if (oEventDate < oToday) {
+
+				// Force switch OFF
+				oSwitch.setState(false);
+
+				// Update model value too
+				oModel.setProperty("/req_item/cash_advance", false);
+
+				// Show message
+				MessageBox.warning(
+					"Cash advance is not allowed for backdated events."
+				);
+			}
+		},
+
 		onValueHelpRequest(oEvent) {
 			this._oInputSource = oEvent.getSource();
 			if (!this._pEmployeeDialog) {
