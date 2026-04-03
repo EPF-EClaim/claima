@@ -2093,7 +2093,7 @@ sap.ui.define([
 			// set percentage (%) compensation based on claim item
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
-				ClaimUtility.setClaimItemDefaultValues(this, "percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0)
+				ClaimUtility.setClaimItemDefaultValues("percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0).bind(this);
 			}
 		},
 

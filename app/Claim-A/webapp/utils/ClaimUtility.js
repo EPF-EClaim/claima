@@ -28,10 +28,10 @@ sap.ui.define([
 		* @param {string} sEligibilityRule - field to retrieve value from db table
 		* @param {string} sDefaultValue - default value to set if none found
         */
-		setClaimItemDefaultValues: async function (oController, sClaimItemField, sEligibilityRule, sDefaultValue) {
-			var oClaimSubmissionModel = oController.getView().getModel("claimsubmission_input");
-			var oInputModel = oController.getView().getModel("claimitem_input");
-			const oModel = oController.getOwnerComponent().getModel();
+		setClaimItemDefaultValues: async function (sClaimItemField, sEligibilityRule, sDefaultValue) {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			var oInputModel = this.getView().getModel("claimitem_input");
+			const oModel = this.getOwnerComponent().getModel();
 			//// filter by employee role ID or * (all)
 			const oFilterRoleId = new Filter({
 				filters: [
@@ -59,7 +59,7 @@ sap.ui.define([
 				oFilterRoleId,
 				oFilterPersonalGrade,
 				// ensure status is active
-				new Filter("STATUS", FilterOperator.EQ, oController._oConstant.ClaimTypeItemStatus.ACTIVE),
+				new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
 				new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
 				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
 			]);
