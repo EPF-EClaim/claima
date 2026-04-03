@@ -63,15 +63,15 @@ sap.ui.define([
 					break;
 			}
 
-			const aActiveFields = Object.entries(oMapping).reduce((acc, [sKey, sTargetName]) => {
-				const val = oItemData[sKey];
+			const aActiveFields = Object.entries(oMapping).reduce((aCheckField, [sKey, sTargetName]) => {
+				const sVal = oItemData[sKey];
 				
-					acc.push({
+					aCheckField.push({
 						fieldName: sTargetName,
-						value: String(val),
+						value: String(sVal),
 						result: null
 					});
-				return acc;
+				return aCheckField;
 			}, []);
 
 			const aPayload = [];
@@ -142,29 +142,9 @@ sap.ui.define([
 				return oFormElement?.getFields?.()[0] || oFormElement; 
 			};
 
-			const setTableValueState = (sEmpIdToMatch, sValueState) => {
-				const oTable = Fragment.byId("request", "req_participant_table") || oController.byId("req_participant_table");
-				if (!oTable) return;
-
-				oTable.getRows().forEach(oRow => {
-					const oContext = oRow.getBindingContext("request");
-					if (oContext) {
-						const sRowEmpId = oContext.getProperty("PARTICIPANTS_ID");
-						
-						if (!sEmpIdToMatch || sRowEmpId === sEmpIdToMatch) {
-							oRow.getCells().forEach(oCell => {
-								if (oCell.getId().includes("alloc_amount") && oCell.setValueState) {
-									oCell.setValueState(sValueState);
-								}
-							});
-						}
-					}
-				});
-			};
-
 			Object.values(oDBToUIControlMap).forEach(sId => {
 				if (sId === "TABLE_ALLOC_AMOUNT") {
-					setTableValueState(null, ValueState.None);
+					this._setTableValueState(null, ValueState.None);
 				} else {
 					const oInputControl = getControl(sId);
 					if (oInputControl?.setValueState) {
@@ -183,7 +163,7 @@ sap.ui.define([
 						return; 
 					}
 					
-					const sErrorMsg = `Validation failed for ${oField.fieldName} (Employee: ${sEmpId}).`;
+					const sErrorMsg = Utility.getText("req_e_validation", [oField.fieldName, sEmpId]);
 					if (!aErrorMessages.includes(sErrorMsg)) {
 						aErrorMessages.push(sErrorMsg);
 					}
@@ -191,7 +171,7 @@ sap.ui.define([
 					const sMappedId = oDBToUIControlMap[oField.fieldName];
 					
 					if (sMappedId === "TABLE_ALLOC_AMOUNT") {
-						setTableValueState(sEmpId, ValueState.Error);
+						this._setTableValueState(sEmpId, ValueState.Error);
 					} else {
 						const oInputControl = getControl(sMappedId);
 						if (oInputControl?.setValueState) {
@@ -205,13 +185,33 @@ sap.ui.define([
 
 			if (!bIsEligible) {
 				const sFormattedErrors = "• " + aErrorMessages[0];
-				MessageBox.error("You are not eligible for this request. Please review the highlighted items:\n\n" + sFormattedErrors, {
-					title: "Eligibility Check Failed",
-					actions: [sap.m.MessageBox.Action.CLOSE]
+				MessageBox.error(Utility.getText("req_e_validation_msg") + sFormattedErrors, {
+					title: Utility.getText("req_e_validation_title"),
+					actions: [MessageBox.Action.CLOSE]
 				});
 			}
 
 			return bIsEligible;
+		},
+
+		_setTableValueState (sEmpIdToMatch, sValueState) {
+			const oTable = Fragment.byId("request", "req_participant_table") || oController.byId("req_participant_table");
+			if (!oTable) return;
+
+			oTable.getRows().forEach(oRow => {
+				const oContext = oRow.getBindingContext("request");
+				if (oContext) {
+					const sRowEmpId = oContext.getProperty("PARTICIPANTS_ID");
+					
+					if (!sEmpIdToMatch || sRowEmpId === sEmpIdToMatch) {
+						oRow.getCells().forEach(oCell => {
+							if (oCell.getId().includes("alloc_amount") && oCell.setValueState) {
+								oCell.setValueState(sValueState);
+							}
+						});
+					}
+				}
+			});
 		},
 
 		async onCheckMobileEligibility (oController) {
