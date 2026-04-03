@@ -1033,8 +1033,8 @@ entity ZREJECT_REASON : managed {
 entity ZWORKFLOW_STEP : managed {
     key WORKFLOW_CODE            : String  @mandatory  @Common.Label: 'Workflow Code';
     key WORKFLOW_TYPE            : String  @mandatory  @Common.Label: 'Workflow Type';
-    key START_DATE               : String  @mandatory  @Common.Label: 'Start Date';
-    key END_DATE                 : String  @mandatory  @Common.Label: 'End Date';
+    key START_DATE               : Date    @mandatory  @Common.Label: 'Start Date';
+    key END_DATE                 : Date    @mandatory  @Common.Label: 'End Date';
         WORKFLOW_NAME            : String;
         WORKFLOW_APPROVAL_LEVELS : Integer;
         REMARK                   : String;
@@ -1045,8 +1045,8 @@ entity ZWORKFLOW_RULE : managed {
     key WORKFLOW_TYPE         : String        @mandatory  @Common.Label: 'Workflow Type';
     key CLAIM_TYPE_ID         : String        @mandatory  @Common.Label: 'Claim Type ID';
     key CLAIM_TYPE_ITEM_ID    : String        @mandatory  @Common.Label: 'Claim Type Item ID';
-    key START_DATE            : String        @mandatory  @Common.Label: 'Start Date';
-    key END_DATE              : String        @mandatory  @Common.Label: 'End Date';
+    key START_DATE            : Date          @mandatory  @Common.Label: 'Start Date';
+    key END_DATE              : Date          @mandatory  @Common.Label: 'End Date';
         RISK_LEVEL            : String(1)     @Common.Label: 'Risk Level';
         THRESHOLD_AMOUNT      : Decimal(7, 2) @Common.Label: 'Threshold Amount';
         THRESHOLD_VALUE       : String(2)     @Common.Label: 'Threshold Value';
@@ -1401,7 +1401,7 @@ entity ZCLM_APPR_REQ_STAT : managed {
         CLAIMED    : Boolean        @Common.Label: 'Claimed';
 }
 
-entity ZCLM_MOBILE_BILL_EXCEPTION : managed {
+entity ZCLM_TYPE_EXCEPTION_LIST : managed {
     key EMP_ID        : String(6)      @mandatory  @Common.Label: 'Employee Id';
     key CLAIM_TYPE_ID : String(20)     @mandatory  @Common.Label: 'Claim Type ID';
     key START_DATE    : Date           @mandatory  @Common.Label: 'Start Date';
