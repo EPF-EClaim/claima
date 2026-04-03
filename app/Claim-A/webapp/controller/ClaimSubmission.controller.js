@@ -4593,12 +4593,23 @@ sap.ui.define([
 			}
 		},
 
+		onChange_ClaimDetails_CurrencyRate: function() {
+			if (this.byId("input_claimdetails_input_currency_rate").getVisible() && this.byId("input_claimdetails_input_currency_rate").getValue() != "") {
+			var nAmountMYR = ( this.byId("input_claimdetails_input_currency_rate").getValue() * this.byId("input_claimdetails_input_currency_amount").getValue() );
+				this.byId("input_claimdetails_input_amount").setValue(nAmountMYR);
+			}
+		},
+
 		_fetchAndApplyEntitlement: function (oInputModel) {
 			var nDay = this.byId("input_claimdetails_input_travel_duration_day").getValue();
 			var nHour = this.byId("input_claimdetails_input_travel_duration_hour").getValue();
 			var sLocation = oInputModel.getProperty("/claim_item/region");
 			var sClaimtype = oInputModel.getProperty("/claim_item/claim_type_id");
 			var sClaimItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
+
+			if(this.byId("input_claimdetails_input_currency_rate").getVisible()){
+				this.byId("input_claimdetails_input_currency_rate").getValue();
+			}
 
 			var nBreakfast = parseInt(this.byId("input_claimdetails_input_provided_breakfast").getValue());
 			var nLunch = parseInt(this.byId("input_claimdetails_input_provided_lunch").getValue());
@@ -4621,18 +4632,30 @@ sap.ui.define([
 			oContext.setParameter("dinner", nDinner);
 
 			return oContext.execute()
-				.then(() => oContext.requestObject())
+							.then(() => oContext.requestObject())
 				.then(oResult => {
 					if (!oResult) {
 						console.log("No entitlement found");
 						return;
 					}
 
-					if (this.byId("input_claimdetails_input_amount").getVisible()) {
-						this.byId("input_claimdetails_input_amount").setValue(oResult.amount);
-					}
 					if (this.byId("input_claimdetails_input_dailyallowance").getVisible()) {
 						this.byId("input_claimdetails_input_dailyallowance").setValue(oResult.daily_allowance);
+						
+						if (this.byId("input_claimdetails_input_currency_rate").getVisible() && 
+							this.byId("input_claimdetails_input_currency_rate").getValue() != null) {
+							this.byId("input_claimdetails_input_currency_amount").setValue(oResult.amount);
+							var nAmountMYR = this.byId("input_claimdetails_input_currency_rate").getValue() * oResult.amount;
+							this.byId("input_claimdetails_input_amount").setValue(nAmountMYR);
+						}
+					}
+
+					if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
+						this.byId("select_claimdetails_input_currency_code").setValue(oResult.currency_code);
+					} else {
+						if (this.byId("input_claimdetails_input_amount").getVisible()) {
+						this.byId("input_claimdetails_input_amount").setValue(oResult.amount);
+					}
 					}
 				})
 				.catch(err => {

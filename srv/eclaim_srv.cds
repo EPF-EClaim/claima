@@ -340,6 +340,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
     type perdiem {
         amount : Decimal(15, 2);
         daily_allowance: Decimal(15,2);
+        currency_code: String;
     }
 
     function getAmountEntitlement(day:Integer, 
@@ -347,7 +348,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
                                   location: String, 
                                   claimtypeid: String, 
                                   claimtypeitem: String,
-                                  breakfast: Integer, //
+                                  breakfast: Integer, 
                                   lunch: Integer, 
                                   dinner: Integer) returns perdiem;
 

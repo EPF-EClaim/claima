@@ -614,7 +614,7 @@
                 <mdc:Field
                     id="select_claimdetails_input_currency_code"
                     value="{claimitem_input>/claim_item/currency_code}"
-                    editMode="Editable"
+                    editMode="Disabled"
                     display="ValueDescription"
                     visible="false"
                     valueHelp="valuehelp_currency_code"
@@ -634,6 +634,7 @@
 						}
 					}"
                     visible="false"
+                    change="onChange_ClaimDetails_CurrencyRate"
                 />
 
                 <!-- Currency Amount -->
@@ -650,6 +651,7 @@
 						}
 					}"
                     visible="false"
+                    editable="false"
                 />
 
                 <!-- Trip Start Date -->
