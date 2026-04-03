@@ -87,6 +87,17 @@ sap.ui.define([
 					customErrorMessage: "",
 					customMinDateError: "",
 					customMaxDateError: ""
+				},
+				[this._oConstant.EntitiesFields.INSURANCE_PURCH_DATE]: {
+					customErrorMessage: "",
+				},
+				[this._oConstant.EntitiesFields.INSURANCE_CERT_START_DATE]: {
+					customErrorMessage: "",
+					customMaxDateError: ""
+				},
+				[this._oConstant.EntitiesFields.INSURANCE_CERT_END_DATE]: {
+					customErrorMessage: "",
+					customMinDateError: "",
 				}
 			} }), "appModel");
 

@@ -275,16 +275,6 @@ sap.ui.define([
                             break;
                     }
                     break;
-                case Constants.EntitiesFields.INSURANCE_PURCH_DATE:
-                    switch (_sSubmissionType) {
-                        case Constants.SubmissionTypePrefix.REQUEST:
-                            break;
-
-                        case Constants.SubmissionTypePrefix.CLAIM:
-                            _dMinDate = new Date(oHeader.trip_start_date); // default
-                            break;
-                    }
-                    break;
                 case Constants.EntitiesFields.INSURANCE_CERT_END_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
@@ -294,6 +284,8 @@ sap.ui.define([
                             // set min date based on insurance cert start date
                             if (oItem["insurance_cert_start_date"]) {
                                 _dMinDate = new Date(oItem["insurance_cert_start_date"]);
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                    _oResourceBundle.getText("error_insurance_cert_end_date_mindate"));
                             }
                             break;
                     }
@@ -357,16 +349,6 @@ sap.ui.define([
                             break;
                     }
                     break;
-                case Constants.EntitiesFields.INSURANCE_PURCH_DATE:
-                    switch (_sSubmissionType) {
-                        case Constants.SubmissionTypePrefix.REQUEST:
-                            break;
-
-                        case Constants.SubmissionTypePrefix.CLAIM:
-                            _dMaxDate = new Date(oHeader.trip_end_date); // default
-                            break;
-                    }
-                    break;
                 case Constants.EntitiesFields.INSURANCE_CERT_START_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
@@ -376,6 +358,8 @@ sap.ui.define([
                             // set max date based on insurance cert end date
                             if (oItem["insurance_cert_end_date"]) {
                                 _dMaxDate = new Date(oItem["insurance_cert_end_date"]);
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                    _oResourceBundle.getText("error_insurance_cert_start_date_maxdate"));
                             }
                             break;
                     }
