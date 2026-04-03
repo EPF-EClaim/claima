@@ -16,6 +16,7 @@ sap.ui.define([
 	"sap/m/Label",
 	"sap/m/ListMode",
 	"claima/utils/Utility",
+	"claima/utils/ClaimUtility",
 	"claima/utils/Attachment",
 	"claima/utils/budgetCheck",
 	"claima/utils/ApprovalLog",
@@ -45,6 +46,7 @@ sap.ui.define([
 	Label,
 	ListMode,
 	Utility,
+	ClaimUtility,
 	Attachment,
 	budgetCheck,
 	ApprovalLog,
@@ -2101,56 +2103,9 @@ sap.ui.define([
 			// set rate per km if no vehicle type field found
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (oPropertyModel.getProperty("/rate_per_km/is_visible") && !oPropertyModel.getProperty("/vehicle_type/is_visible")) {
-				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-				const oModel = this.getOwnerComponent().getModel();
-				//// filter by employee role ID or * (all)
-				const oFilterRoleId = new Filter({
-					filters: [
-						new Filter("ROLE_ID", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/role")),
-						new Filter("ROLE_ID", FilterOperator.EQ, '*')
-					],
-					and: false
-				});
-				//// filter by employee role ID or * (all)
-				const oFilterPersonalGrade = new Filter({
-					filters: [
-						new Filter("PERSONAL_GRADE", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/grade")),
-						new Filter("PERSONAL_GRADE", FilterOperator.EQ, '*')
-					],
-					and: false
-				});
-				const oListBinding = oModel.bindList("/ZELIGIBILITY_RULE", null, [
-					new Sorter("ROLE_ID", true),
-					new Sorter("POSITION_NO_DESC", true),
-					new Sorter("ROW_COUNT", true),
-				], [
-					new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_id")),
-					new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_item_id")),
-					oFilterRoleId,
-					oFilterPersonalGrade,
-					// ensure status is active
-					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
-					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
-					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
-				]);
-
-				try {
-					BusyIndicator.show(0);
-					const aContexts = await oListBinding.requestContexts(0, Infinity);
-
-					if (aContexts.length > 0) {
-						const oData = aContexts[0].getObject();
-						oInputModel.setProperty("/claim_item/descr/rate_per_km", oData[this._oConstant.EligibilityRule.RATE_PER_KM]);
-					} else {
-						oInputModel.setProperty("/claim_item/descr/rate_per_km", 0.0);
-						MessageToast.show(Utility.getText("msg_claimdetails_input_rateperkm_none"));
-					}
-				} catch (oError) {
-					oInputModel.setProperty("/claim_item/descr/rate_per_km", 0.0);
-					MessageBox.error(Utility.getText("msg_claimdetails_input_rateperkm_err", [oError]));
-				} finally {
-					BusyIndicator.hide();
-				}
+				await ClaimUtility.setClaimItemDefaultValues.bind(this)("descr/rate_per_km", this._oConstant.EligibilityRule.RATE_PER_KM, 0.0);
+				// clear rate per km ID field since formula uses default value
+				oInputModel.setProperty("/rate_per_km", null);
 			}
 		},
 

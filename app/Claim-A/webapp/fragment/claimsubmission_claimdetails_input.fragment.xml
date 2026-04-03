@@ -366,7 +366,7 @@
 					selectedKey="{claimitem_input>/claim_item/vehicle_type}"
 					change="onSelect_ClaimDetails_VehicleType"
 					liveChange="onSelect_ClaimDetails_VehicleType"
-					visible="false"
+					visible="{claimitem_property>/vehicle_type/is_visible}"
 					required="true"
 				>
 				</Select>
