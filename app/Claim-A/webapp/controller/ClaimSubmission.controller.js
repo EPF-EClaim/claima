@@ -2220,7 +2220,7 @@ sap.ui.define([
 			//// Nama Pembekal Insuran
 			this._setClaimDetailSelectionField("select_claimdetails_input_insurance_provider_id", "ZINSURANCE_PROVIDER");
 			//// Insurance Package
-			this._setClaimDetailSelectionField("select_claimdetails_input_insurance_package_id", "ZINSURANCE_PACKAGE", null, null, "ZINSURANCE_PACKAGE_DESC");
+			this._setClaimDetailSelectionField("select_claimdetails_input_insurance_package_id", "ZINSURANCE_PACKAGE", null, "ZINSURANCE_PACKAGE_DESC");
 			//// Type of Vehicle
 			this._setClaimDetailSelectionField("select_claimdetails_input_vehicle_type", "ZVEHICLE_TYPE");
 			//// Vehicle Ownership ID (Sendiri/Penjabat)
@@ -2254,12 +2254,10 @@ sap.ui.define([
         * @private
 		* @param {string} sId - ID of claim item field to be updated
 		* @param {string} sTable - database table with values to populate to field
-		* @param {boolean} bDisplayId - determines if ID of value is included along with description
 		* @param {string} sField - field of db table to retrieve value (for ID and Desc)
 		* @param {string} sFieldDesc - specific name of description field of db table
-		* @param {array} aFilters - optional, array of filters to check against db table
         */
-		_setClaimDetailSelectionField: function (sId, sTable, bDisplayId, sField, sFieldDesc, aFilters) {
+		_setClaimDetailSelectionField: function (sId, sTable, sField, sFieldDesc) {
 			if (this.byId(sId).getVisible()) {
 				if (!sField) {
 					var sField = sTable.slice(1);
@@ -2270,12 +2268,14 @@ sap.ui.define([
 				}
 				// show ID in text
 				var sItemText = "{employee>" + sFieldDesc + "}";
-				if (bDisplayId) {
-					sItemText = "{employee>" + sField + "_ID} - {employee>" + sFieldDesc + "}";
-				}
 				this.byId(sId).bindAggregation("items", {
 					path: "employee>/" + sTable,
-					filters: aFilters,
+					filters: [
+						// ensure status is active
+						new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+						new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+						new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+					],
 					sorter: [
 						new Sorter(sField + '_ID')
 					],
