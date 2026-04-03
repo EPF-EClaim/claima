@@ -283,17 +283,18 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             // set min date based on insurance cert start date
-                            if (sItemType === Constants.ClaimTypeItem.TRAVEL_INSURANCE &&
-                                !!new Date(oItem["insurance_cert_start_date"]).getTime()
-                            ) {
-                                _dMinDate = new Date(oItem["insurance_cert_start_date"]);
+                            if (sItemType === Constants.ClaimTypeItem.TRAVEL_INSURANCE) {
+                                if (!!new Date(oItem["insurance_cert_start_date"]).getTime()) {
+                                    _dMinDate = new Date(oItem["insurance_cert_start_date"]);
+                                }
+                                else {
+                                    _dMinDate = null;
+                                    oItem["insurance_cert_start_date"] = null;
+
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                        _oResourceBundle.getText("error_insurance_cert_end_date_mindate"));
+                                }
                             }
-                            else {
-                                _dMinDate = null;
-                                oItem["insurance_cert_start_date"] = null;
-                            }
-                            _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
-                                _oResourceBundle.getText("error_insurance_cert_end_date_mindate"));
                             break;
                     }
                     break;
@@ -371,17 +372,18 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             // set max date based on insurance cert end date
-                            if (sItemType === Constants.ClaimTypeItem.TRAVEL_INSURANCE &&
-                                !!new Date(oItem["insurance_cert_end_date"]).getTime()
-                            ) {
-                                _dMaxDate = new Date(oItem["insurance_cert_end_date"]);
+                            if (sItemType === Constants.ClaimTypeItem.TRAVEL_INSURANCE) {
+                                if (!!new Date(oItem["insurance_cert_end_date"]).getTime()) {
+                                    _dMaxDate = new Date(oItem["insurance_cert_end_date"]);
+                                }
+                                else {
+                                    _dMaxDate = null;
+                                    oItem["insurance_cert_end_date"] = null;
+
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                        _oResourceBundle.getText("error_insurance_cert_start_date_maxdate"));
+                                }
                             }
-                            else {
-                                _dMaxDate = null;
-                                oItem["insurance_cert_end_date"] = null;
-                            }
-                            _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
-                                _oResourceBundle.getText("error_insurance_cert_start_date_maxdate"));
                             break;
                     }
             }
