@@ -4114,9 +4114,9 @@ annotate service.ZELIGIBILITY_RULE with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : SUBSIDIESED_RATE,
+                Value            : SUBSIDISED_RATE,
                 ![@UI.Importance]: #High,
-                Label            : 'Subsidiesed Rate'
+                Label            : 'Subsidised Rate'
             },
             {
                 $Type            : 'UI.DataField',
@@ -4273,6 +4273,12 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : JOB_GROUP,
+                ![@UI.Importance]: #High,
+                Label            : 'Job Group'
             }
         ]
     }
