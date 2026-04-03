@@ -1323,8 +1323,8 @@ sap.ui.define([
 				oRequestModel.setProperty("/req_item/cash_advance", false);
 
 				// Show message
-				MessageBox.warning(
-					"Cash advance is not allowed for backdated trip start dates."
+				MessageBox.error(
+					Utility.getText("msg_cash_advance_not_allow")
 				);
 			}
 		},
