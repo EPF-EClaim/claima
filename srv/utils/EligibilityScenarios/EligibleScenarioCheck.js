@@ -31,6 +31,7 @@ module.exports = {
 
         let aEmpRoleId = aEmpData.map(d => d.ROLE);
         aEmpRoleId.push(Constant.Wildcard.All);
+        console.log(aEmpRoleId);
 
         // Get Eligibility Rules
         const aEligibilityRules = await tx.run(

@@ -222,31 +222,9 @@ Authorization: Basic alice
                "result": null
             }
             ],
-         "ClaimType": "DLM_NEGARA",
-         "ClaimTypeItem": "TAMBANG",
+         "ClaimType": "I-PAD",
+         "ClaimTypeItem": "I-PAD",
          "EmpId": "USER_003"
-      },
-      {
-         "CheckFields": [
-            {
-               "fieldName": "FARE_TYPE_ID",
-               "value": "01",
-               "result": null
-            },
-            {
-               "fieldName": "ELIGIBLE_AMOUNT",
-               "value": "600",
-               "result": null
-            },
-            {
-               "fieldName": "TRAVEL_HOURS",
-               "value": "8",
-               "result": null
-            }
-            ],
-         "ClaimType": "DLM_NEGARA",
-         "ClaimTypeItem": "TAMBANG",
-         "EmpId": "886687"
       }
      ]
     }
