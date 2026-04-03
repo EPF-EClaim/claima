@@ -4643,6 +4643,7 @@ sap.ui.define([
 
 					if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
 						oInputModel.setProperty("/claim_item/currency_code", oResult.currency_code);
+						oInputModel.setProperty("/claim_item/currency_amount", oResult.amount);
 					} else {
 						if (this.byId("input_claimdetails_input_amount").getVisible()) {
 						oInputModel.setProperty("/claim_item/amount", oResult.amount);
