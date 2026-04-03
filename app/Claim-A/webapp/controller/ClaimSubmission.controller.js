@@ -74,6 +74,9 @@ sap.ui.define([
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._openDeclarationDialog = null;
 
+			// declare claim utility
+			ClaimUtility.init(this.getOwnerComponent(), this.getView());
+
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
 			oRouter.getRoute("ClaimSubmission").attachPatternMatched((event) => { this._onMatched(event); }, this);
@@ -2134,7 +2137,7 @@ sap.ui.define([
 			// set rate per km if no vehicle type field found
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (oPropertyModel.getProperty("/rate_per_km/is_visible") && !oPropertyModel.getProperty("/vehicle_type/is_visible")) {
-				await ClaimUtility.setClaimItemDefaultValues.bind(this)("descr/rate_per_km", this._oConstant.EligibilityRule.RATE_PER_KM, 0.0);
+				await ClaimUtility.setClaimItemDefaultValues("descr/rate_per_km", this._oConstant.EligibilityRule.RATE_PER_KM, 0.0);
 				// clear rate per km ID field since formula uses default value
 				oInputModel.setProperty("/rate_per_km", null);
 			}

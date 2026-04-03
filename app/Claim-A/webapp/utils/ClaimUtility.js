@@ -5,6 +5,7 @@ sap.ui.define([
 	"sap/ui/core/BusyIndicator",
 	"sap/m/MessageBox",
 	"sap/m/MessageToast",
+	"claima/utils/Constants",
 	"claima/utils/Utility",
 	"claima/utils/DateUtility"
 ], function (
@@ -14,12 +15,22 @@ sap.ui.define([
 	BusyIndicator,
     MessageBox,
     MessageToast,
+	Constant,
     Utility,
     DateUtility
 ) {
 	"use strict";
 
     return {
+
+		/**
+         * Initialize the ClaimUtility
+         * @public
+         */
+        init: function(oOwnerComponent, oView) {
+            this._oOwnerComponent = oOwnerComponent;
+            this._oView = oView;
+        },
 
 		/**
         * Set default values for claim item fields
@@ -31,9 +42,9 @@ sap.ui.define([
 		* @param {string} sDefaultValue - default value to set if none found
         */
 		setClaimItemDefaultValues: async function (sClaimItemField, sEligibilityRule, sDefaultValue) {
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			var oInputModel = this.getView().getModel("claimitem_input");
-			const oModel = this.getOwnerComponent().getModel();
+			var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
+			var oInputModel = this._oView.getModel("claimitem_input");
+			const oModel = this._oOwnerComponent.getModel();
 			//// filter by employee role ID or * (all)
 			const oFilterRoleId = new Filter({
 				filters: [
@@ -61,7 +72,7 @@ sap.ui.define([
 				oFilterRoleId,
 				oFilterPersonalGrade,
 				// ensure status is active
-				new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+				new Filter("STATUS", FilterOperator.EQ, Constant.ClaimTypeItemStatus.ACTIVE),
 				new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
 				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
 			]);
@@ -96,8 +107,8 @@ sap.ui.define([
 		* @returns {array} if records found, returns array of values from first selected record; else, returns empty array
         */
 		setClaimItemValueFromSelection: async function (sEntity, aEntityFields, aRetrievalFields) {
-			var oInputModel = this.getView().getModel("claimitem_input");
-			const oModel = this.getOwnerComponent().getModel();
+			var oInputModel = this._oView.getModel("claimitem_input");
+			const oModel = this._oOwnerComponent.getModel();
             // set filters based on given entity fields
             var aSorters = [];
             var aFilters = [];
@@ -115,7 +126,7 @@ sap.ui.define([
             }
 			// ensure status is active
 			aFilters.push(
-				new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+				new Filter("STATUS", FilterOperator.EQ, Constant.ClaimTypeItemStatus.ACTIVE),
 				new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
 				new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today())),
 			);
