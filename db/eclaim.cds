@@ -292,6 +292,7 @@ entity ZCLAIM_TYPE : managed {
         REQUEST_TYPE     : String     @Common.Label    : 'Request Type';
         IND_OR_GROUP     : String(4)  @Common.Label    : 'Individual/Group';
         PROJECT_CLAIM    : Boolean    @Common.Label    : 'Project Claim';
+        COST_CENTER      : String(9)  @Common.Label    : 'Cost Center';
         ZCLAIM_TYPE_ITEM : Composition of many ZCLAIM_TYPE_ITEM
                                on ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ID = CLAIM_TYPE_ID
                                       @assert.integrity: false;

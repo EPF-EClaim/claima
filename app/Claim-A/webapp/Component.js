@@ -9,9 +9,21 @@ sap.ui.define([
     "sap/ui/model/FilterOperator",
     "sap/m/MessageToast",
     "claima/utils/Validator",
-    "claima/utils/CustomValidator"
+    "claima/utils/CustomValidator",
+	"claima/utils/RequestUtility"
 ],
-    (AppComponent, models, HashChanger, Utility, JSONModel, PARequestSharedFunction, Filter, FilterOperator, MessageToast, Validator, CustomValidator) => {
+    (AppComponent,
+	models,
+	HashChanger,
+	Utility,
+	JSONModel,
+	PARequestSharedFunction,
+	Filter,
+	FilterOperator,
+	MessageToast,
+	Validator,
+	CustomValidator,
+	RequestUtility) => {
         "use strict";
 
         return AppComponent.extend("claima.Component", {
@@ -31,6 +43,8 @@ sap.ui.define([
                 Utility.init(this);
                 // Initialize Custom Validator
                 CustomValidator.init(this);
+                // Initialize Request Utility
+                RequestUtility.init(this);
 
                 // set the device model
                 this.setModel(models.createDeviceModel(), "device");
