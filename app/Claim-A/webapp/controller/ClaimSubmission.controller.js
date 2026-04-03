@@ -2862,7 +2862,8 @@ sap.ui.define([
 		},
 
         /**
-         * On selecting vehicle type from dropdown, method determines rate per km based on vehicle type and claim item used
+         * On selecting vehicle type from dropdown, call method to determine rate per km based on vehicle type and claim item used
+		 * rate per KM values will be populated based on output values returned
          * @public
          */
 		onSelect_ClaimDetails_VehicleType: async function () {
