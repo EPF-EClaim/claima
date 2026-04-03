@@ -301,10 +301,10 @@ sap.ui.define([
             "ACTIVE": "ACTIVE"
         },
         "ClaimFooterMode": {
-            SUMMARY: "SUMMARY",
-            DETAILS: "DETAILS",
-            APPROVER: "APPROVER",
-            VIEW_ONLY: "VIEW_ONLY"
+            "SUMMARY": "SUMMARY",
+            "DETAILS": "DETAILS",
+            "APPROVER": "APPROVER",
+            "VIEW_ONLY": "VIEW_ONLY"
         },
         "LocationType" : {
             "OTHER" : "1",

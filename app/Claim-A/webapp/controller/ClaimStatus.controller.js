@@ -25,11 +25,11 @@ sap.ui.define([
 			// Track current sort direction per path: true = DESC, false = ASC
 			this._mSortState = {};
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
-			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
+			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this.getOwnerComponent().getRouter().getRoute("ClaimStatus").attachPatternMatched(this._onMatched, this);
 		},
 
-		_onMatched: async function() {
+		_onMatched: async function () {
 			const _oReq = this.getOwnerComponent().getModel("claim_status2");
 			const _oModel = this.getOwnerComponent().getModel("employee_view");
 
@@ -105,9 +105,15 @@ sap.ui.define([
 					MessageToast.show(Utility.getText("msg_claimstatus_missing"));
 					return;
 				}
-                // Navigate to claim submission ID
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
+				// Navigate to claim submission ID
+				const oRouter = this.getOwnerComponent().getRouter();
+
+				//this.getView().getModel("claimsubmission_input").setProperty("/from_my_approval", false);
+				const oModel = this.getOwnerComponent().getModel("claimsubmission_input");
+				if (oModel) {
+					oModel.setProperty("/from_my_approval", false);
+				}
+				oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
 			} catch (e) {
 				sap.base.Log.error("openItemFromClaimList failed:", e);
 				MessageToast.show(Utility.getText("msg_claimstatus_failed"));

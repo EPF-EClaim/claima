@@ -76,18 +76,18 @@ sap.ui.define([
 			const oRouter = this.getOwnerComponent().getRouter();
 			oRouter.getRoute("ClaimSubmission").attachPatternMatched((event) => { this._onMatched(event); }, this);
 			oRouter.attachBeforeRouteMatched((event) => { this._beforeRouteMatched(event); }, this);
-			
+
 			this.getOwnerComponent().setModel(new JSONModel({ fieldControl: { 
-				[this._oConstant.EntitiesFields.RECEIPT_DATE]: {
-					customErrorMessage: "",
-					customMinDateError: "",
-					customMaxDateError: ""
-				},
-				[this._oConstant.EntitiesFields.BILL_DATE]: {
-					customErrorMessage: "",
-					customMinDateError: "",
-					customMaxDateError: ""
-				}
+					[this._oConstant.EntitiesFields.RECEIPT_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+						customMaxDateError: ""
+					},
+					[this._oConstant.EntitiesFields.BILL_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+						customMaxDateError: ""
+					}
 			} }), "appModel");
 
 		},
@@ -246,7 +246,9 @@ sap.ui.define([
 				this._setEnabledToolbarFooter();
 
 				// disable footer buttons if claim already cancelled
-				this.updateFooterState();
+				Utility.updateFooterState(this, null);
+
+
 
 				// set view-only features
 				if (!oClaimSubmissionModel.getProperty("/view_only")) {
@@ -265,8 +267,7 @@ sap.ui.define([
 				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
 					oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK) {
 					this._setApprovalLog(true);
-					//this._displayFooterButtons("claimsubmission_view");
-					this.updateFooterState(this._oConstant.ClaimFooterMode.VIEW_ONLY);
+					Utility.updateFooterState(this, this._oConstant.ClaimFooterMode.VIEW_ONLY);
 
 					// display approval log data
 					const oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
@@ -290,14 +291,12 @@ sap.ui.define([
 					//// change screen details if approver
 					if (oClaimSubmissionModel.getProperty("/is_approver")) {
 						// update footer buttons
-						//this._displayFooterButtons("claimsubmission_approver");
-						this.updateFooterState(this._oConstant.ClaimFooterMode.APPROVER);
+						Utility.updateFooterState(this, this._oConstant.ClaimFooterMode.APPROVER);
 					}
 				}
 				else {
 					// ensure footer buttons display default 
-					//this._displayFooterButtons("claimsubmission_summary_claimitem");
-					this.updateFooterState(this._oConstant.ClaimFooterMode.SUMMARY);
+					Utility.updateFooterState(this, this._oConstant.ClaimFooterMode.SUMMARY);
 				}
 
 			}
@@ -1563,7 +1562,7 @@ sap.ui.define([
 
 						}.bind(this));
 
-						} else {
+					} else {
 
 						var oText = Fragment.byId("declarationDialogFrag", "declarationText");
 						oText.setText(Utility.getText("msg_claimsubmission_declaration"));
@@ -1601,8 +1600,8 @@ sap.ui.define([
 						RejectDialog.open(this);
 					} catch (e) {
 						MessageBox.error(
-								Utility.getText("msg_claim_rejectdialog_fail", [(e?.message || e)])
-							);
+							Utility.getText("msg_claim_rejectdialog_fail", [(e?.message || e)])
+						);
 					}
 					break;
 				}
@@ -2075,8 +2074,7 @@ sap.ui.define([
 
 			// change footer buttons
 			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
-				//this._displayFooterButtons("claimsubmission_claimdetails_input");
-				this.updateFooterState(this._oConstant.ClaimFooterMode.DETAILS);
+				Utility.updateFooterState(this, this._oConstant.ClaimFooterMode.DETAILS);
 			}
 
 			// update selection fields
@@ -3071,13 +3069,23 @@ sap.ui.define([
 				await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
 					oPage.insertContent(oVBox, 1);
 				});
-				if (!oClaimSubmissionModel.getProperty("/view_only")) {
-					this._setEnabledToolbarFooter();
+				let sFooterMode;
+
+				if (oClaimSubmissionModel.getProperty("/from_my_approval")) {
+					sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
 				}
-				if (!oClaimSubmissionModel.getProperty("/is_approver")) {
-					//this._displayFooterButtons("claimsubmission_summary_claimitem");
-					this.updateFooterState(this._oConstant.ClaimFooterMode.SUMMARY);
+				else if (oClaimSubmissionModel.getProperty("/view_only")) {
+					sFooterMode = this._oConstant.ClaimFooterMode.VIEW_ONLY;
 				}
+				else if (oClaimSubmissionModel.getProperty("/is_approver")) {
+					sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
+				}
+				else {
+					sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
+				}
+				Utility.updateFooterState(this, sFooterMode);
+
+
 				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 
 				// Reload when item cancellation
@@ -3780,7 +3788,7 @@ sap.ui.define([
 			else if (oClaimSubmissionModel.getProperty("/is_approver")) {
 				// update footer buttons
 				//this._displayFooterButtons("claimsubmission_summary_claimitem");
-				this.updateFooterState(this._oConstant.ClaimFooterMode.SUMMARY);
+				Utility.updateFooterState(this, this._oConstant.ClaimFooterMode.SUMMARY);
 
 				// return to approver screen
 				this.getMyApproverPAReq();
@@ -4597,65 +4605,5 @@ sap.ui.define([
 				return [];
 			}
 		},
-
-		//AS - Added to standardize footer button set visibility - 02/04/2026
-		updateFooterState: function (sMode) {
-			const oClaimModel = this.getView().getModel("claimsubmission_input");
-
-			const sStatusId = oClaimModel.getProperty("/claim_header/status_id");
-			const iItemCount = oClaimModel.getProperty("/claim_items_count");
-			const bViewOnly = oClaimModel.getProperty("/view_only");
-			const bIsApprover = oClaimModel.getProperty("/is_approver");
-
-			const oButtons = {
-				oBtnReject: this.byId("button_claimapprover_reject"),
-				oBtnBackToEmp: this.byId("button_claimapprover_backtoemp"),
-				oBtnApprove: this.byId("button_claimapprover_approve"),
-
-				oBtnSaveDraft: this.byId("button_claimsubmission_savedraft"),
-				oBtnDeleteReport: this.byId("button_claimsubmission_deletereport"),
-				oBtnSubmitReport: this.byId("button_claimsubmission_submitreport"),
-				oBtnBack: this.byId("button_claimsubmission_back"),
-
-				oBtnDetailSave: this.byId("button_claimdetails_input_save"),
-				oBtnDetailCancel: this.byId("button_claimdetails_input_cancel")
-			};
-
-			Object.values(oButtons).forEach(oButton => oButton?.setVisible(false));
-			const oModeButtons = {
-				SUMMARY: ["oBtnSaveDraft", "oBtnDeleteReport", "oBtnSubmitReport", "oBtnBack"],
-				DETAILS: ["oBtnDetailSave", "oBtnDetailCancel"],
-				APPROVER: ["oBtnReject", "oBtnBackToEmp", "oBtnApprove", "oBtnBack"],
-				VIEW_ONLY: ["oBtnBack"]
-			};
-
-			const aVisibleKeys = oModeButtons[sMode] || [];
-			aVisibleKeys.forEach(sButtonKey => {
-				oButtons[sButtonKey]?.setVisible(true);
-			});
-
-			const bIsFinalStatus =
-				sStatusId === this._oConstant.ClaimStatus.CANCELLED ||
-				sStatusId === this._oConstant.ClaimStatus.PENDING_APPROVAL ||
-				sStatusId === this._oConstant.ClaimStatus.APPROVED ||
-				sStatusId === this._oConstant.ClaimStatus.COMPLETED_DISBURSEMENT;
-
-			if (bIsFinalStatus) {
-				oButtons.oBtnSaveDraft?.setEnabled(false);
-				oButtons.oBtnDeleteReport?.setEnabled(false);
-				oButtons.oBtnSubmitReport?.setEnabled(false);
-
-			} else {
-				// Editable states
-				oButtons.oBtnSaveDraft?.setEnabled(true);
-				oButtons.oBtnDeleteReport?.setEnabled(true);
-
-				const bAllowSubmit =
-					sStatusId === this._oConstant.ClaimStatus.DRAFT ||
-					sStatusId === this._oConstant.ClaimStatus.SEND_BACK;
-
-				oButtons.oBtnSubmitReport?.setEnabled(bAllowSubmit);
-			}
-		}
 	});
 });
