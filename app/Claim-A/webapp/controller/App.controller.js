@@ -81,11 +81,6 @@ sap.ui.define([
 
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
-			
-			// set field property model for App view/fragments
-			this.getView().setModel(new JSONModel({
-				"select_claimprocess_claimtype": { "is_busy": false }
-			}), "app_viewfields");
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
@@ -435,31 +430,15 @@ sap.ui.define([
 			}
 
 			// set claim items based on selected claim type
-			this.byId("select_claimprocess_claimtype").bindAggregation("items", {
-				path: "employee>/ZCLAIM_TYPE",
-				filters: [
+			var oSelectClaimType = this.byId("select_claimprocess_claimtype");
+			var oBindingSelectClaimType = oSelectClaimType.getBinding("items");
+			var aFilterSelectClaimType = [
 					// ensure status is active
 					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
 					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
 					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
-				],
-				sorter: [
-					new Sorter('CLAIM_TYPE_DESC'),
-					new Sorter('CLAIM_TYPE_ID')
-				],
-				template: new Item({
-					key: "{employee>CLAIM_TYPE_ID}",
-					text: "{employee>CLAIM_TYPE_DESC}"
-				}),
-				events: {
-					dataRequested: function() {
-						this.getView().getModel("app_viewfields").setProperty("/select_claimprocess_claimtype/is_busy", true);
-					}.bind(this),
-					dataReceived: function() {
-						this.getView().getModel("app_viewfields").setProperty("/select_claimprocess_claimtype/is_busy", false);
-					}.bind(this)
-				}
-			});
+				];
+			oBindingSelectClaimType.filter(aFilterSelectClaimType);
 		},
 
 		_getEmpDataDescr: async function (oModel) {
