@@ -14,8 +14,9 @@ sap.ui.define([
 		 * Initialize the Utility 
 		 * @public
 		 */
-        init: function(oOwnerComponent) {
+        init: function(oOwnerComponent,oView) {
             this._oOwnerComponent = oOwnerComponent;
+            this._oView = oView;
 		},
         
         /**
@@ -37,7 +38,7 @@ sap.ui.define([
                 case Constants.SubmissionTypePrefix.REQUEST:
                     break;
                 case Constants.SubmissionTypePrefix.CLAIM:   
-                    var oInputModel = this._oOwnerComponent.getView().getModel("claimitem_input");
+                    var oInputModel = this._oView.getModel("claimitem_input");
                     
                     if (oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.TELEFON_B) {
                         if(!oInputModel.getProperty("/claim_item/disclaimer")) {

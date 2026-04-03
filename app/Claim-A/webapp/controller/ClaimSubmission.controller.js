@@ -73,7 +73,7 @@ sap.ui.define([
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._openDeclarationDialog = null;
-			CustomValidator.init(this);
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
 			
 
 			// URL Access
