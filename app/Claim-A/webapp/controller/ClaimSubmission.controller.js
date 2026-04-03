@@ -76,7 +76,19 @@ sap.ui.define([
 			const oRouter = this.getOwnerComponent().getRouter();
 			oRouter.getRoute("ClaimSubmission").attachPatternMatched((event) => { this._onMatched(event); }, this);
 			oRouter.attachBeforeRouteMatched((event) => { this._beforeRouteMatched(event); }, this);
-
+			
+			this.getOwnerComponent().setModel(new JSONModel({ fieldControl: { 
+				[this._oConstant.EntitiesFields.RECEIPT_DATE]: {
+					customErrorMessage: "",
+					customMinDateError: "",
+					customMaxDateError: ""
+				},
+				[this._oConstant.EntitiesFields.BILL_DATE]: {
+					customErrorMessage: "",
+					customMinDateError: "",
+					customMaxDateError: ""
+				}
+			} }), "appModel");
 
 		},
 
