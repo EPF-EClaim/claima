@@ -1,6 +1,12 @@
 sap.ui.define([
-    "claima/utils/Constants"
-], function (Constants) {
+    "claima/utils/Constants",
+    "sap/m/MessageBox",
+    "claima/utils/Utility"
+], function (
+    Constants,
+    MessageBox,
+    Utility
+) {
     "use strict";
 
     return {
