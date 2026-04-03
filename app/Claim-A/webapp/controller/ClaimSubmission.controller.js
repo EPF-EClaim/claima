@@ -2449,29 +2449,11 @@ sap.ui.define([
 				}
 			}
 
-			//FUT issue #81
-			//checking if the receipt date is over the trip date, if it is a message error box will appear
-			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
-			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
-
-			if (dReceiptDate > dTripEndDate) {
-				MessageToast.show(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
-				return;
-			}
 
 			//FUT issue #58
 			//checking for galakan disclaimer if its ticked or not
 			if (oInputModel.getProperty("/claim_item/disclaimer_galakan") == false || oInputModel.getProperty("/claim_item/disclaimer") == false) {
 				MessageToast.show(Utility.getText("msg_claimdetails_no_check_disclaimer"));
-				return;
-			}
-
-			//FUT issue #81
-			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
-			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
-
-			if (dReceiptDate > dTripEndDate) {
-				MessageToast.show(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
 				return;
 			}
 
