@@ -116,6 +116,13 @@ sap.ui.define([
             "CLAIMTYPE": "Claim",
             "CLAIM_APPROVE": "APPROVE_CLAIM",
             "SET_GROUP": "approvalGroup",
+            "ELIGIBLE_AMOUNT": "Eligible Amount",
+            "TRAVEL_DAYS_ID": "Travel Days",
+            "FARE_TYPE_ID": "Fare Type",
+            "TRANSPORT_CLASS": "Transport Class",
+            "FLIGHT_CLASS_ID": "Flight Class",
+            "ROOM_TYPE_ID": "Room Type",
+            "MOBILE_PHONE_BILL": "Mobile Phone Bill"
         },
         "ApprovalProcessStatus": {
             "STATUS_REJECT": "REJECT",

@@ -139,8 +139,11 @@ sap.ui.define([
 				if (oField.result === true || oField.result === null) {
 					return; 
 				}
+
+				var ErrorField = Constants.ApprovalProcess[oField.fieldName] || oField.fieldName;
 				
-				const sErrorMsg = (`Validation failed for ${oField.fieldName}.`);
+				const sErrorMsg = (`Validation failed for ${ErrorField}.`);
+				// const sErrorMsg = (`Validation failed for ${oField.fieldName}.`);
 				aErrorMessages.push(sErrorMsg);
 
 				const oInputControl = getControl(oDBToUIControlMap[oField.fieldName]);
