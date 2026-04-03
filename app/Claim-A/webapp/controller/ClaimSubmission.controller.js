@@ -2874,7 +2874,7 @@ sap.ui.define([
 					{ entity_field: "CLAIM_TYPE_ITEM_ID", filter_value: oInputModel.getProperty("/claim_item/claim_type_item_id") }
 				]
 				var aRetrievalFields = [ "RATE_KM_ID", "RATE"];
-				var aOutputValues = await ClaimUtility.setClaimItemValueFromSelection.bind(this)(this._oConstant.Entities.ZRATE_KM, aEntityFields, aRetrievalFields);
+				var aOutputValues = await ClaimUtility.setClaimItemValueFromSelection(this._oConstant.Entities.ZRATE_KM, aEntityFields, aRetrievalFields);
 				if (aOutputValues.length > 0) {
 					oInputModel.setProperty("/claim_item/rate_per_km", aOutputValues[0]);
 					oInputModel.setProperty("/claim_item/descr/rate_per_km", aOutputValues[1]);
