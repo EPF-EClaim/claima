@@ -76,19 +76,21 @@ sap.ui.define([
 			const oRouter = this.getOwnerComponent().getRouter();
 			oRouter.getRoute("ClaimSubmission").attachPatternMatched((event) => { this._onMatched(event); }, this);
 			oRouter.attachBeforeRouteMatched((event) => { this._beforeRouteMatched(event); }, this);
-			
-			this.getOwnerComponent().setModel(new JSONModel({ fieldControl: { 
-				[this._oConstant.EntitiesFields.RECEIPT_DATE]: {
-					customErrorMessage: "",
-					customMinDateError: "",
-					customMaxDateError: ""
-				},
-				[this._oConstant.EntitiesFields.BILL_DATE]: {
-					customErrorMessage: "",
-					customMinDateError: "",
-					customMaxDateError: ""
+
+			this.getOwnerComponent().setModel(new JSONModel({
+				fieldControl: {
+					[this._oConstant.EntitiesFields.RECEIPT_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+						customMaxDateError: ""
+					},
+					[this._oConstant.EntitiesFields.BILL_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+						customMaxDateError: ""
+					}
 				}
-			} }), "appModel");
+			}), "appModel");
 
 		},
 
@@ -1559,7 +1561,7 @@ sap.ui.define([
 
 						}.bind(this));
 
-						} else {
+					} else {
 
 						var oText = Fragment.byId("declarationDialogFrag", "declarationText");
 						oText.setText(Utility.getText("msg_claimsubmission_declaration"));
@@ -1597,8 +1599,8 @@ sap.ui.define([
 						RejectDialog.open(this);
 					} catch (e) {
 						MessageBox.error(
-								Utility.getText("msg_claim_rejectdialog_fail", [(e?.message || e)])
-							);
+							Utility.getText("msg_claim_rejectdialog_fail", [(e?.message || e)])
+						);
 					}
 					break;
 				}
@@ -2389,23 +2391,29 @@ sap.ui.define([
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
 
-			//// Added for duplication check;
-			var aExistingItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
-			var oNewItem = oInputModel.getProperty("/claim_item");
+			//Duplication check
 
-			var aTemp = [];
-			if (!oInputModel.getProperty("/is_new")) {
-				aTemp = aExistingItems.filter(it => it.claim_sub_id !== oNewItem.claim_sub_id);
-			} else {
-				aTemp = [...aExistingItems];
-			}
-			aTemp.push(oNewItem);
+			/* 			var aExistingItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
+						var oNewItem = oInputModel.getProperty("/claim_item");
+			
+						var aTemp = [];
+						if (oInputModel.getProperty("/is_new")) {
+							aTemp = [...aExistingItems, oNewItem];
+						} else {
+							aTemp = aExistingItems.filter(it => it.claim_sub_id !== oNewItem.claim_sub_id);
+							aTemp.push(oNewItem);
+						}
+			
+						for (let oItem of aTemp) {
+							try {
+								await Utility.CheckDuplicateClaimItem(this, oItem);
+							} catch (e) {
+								MessageBox.error(e.message);
+								BusyIndicator.hide();
+								return;
+							}
+						} */
 
-			// Check duplicates
-			if (this._CheckDuplicateClaimItems(aTemp)) {
-				MessageBox.error(Utility.getText("msg_duplication_prompt"));
-				return;
-			}
 
 			// update claim item to database
 			var saveSuccess = await this._saveClaimItem();
@@ -2625,6 +2633,26 @@ sap.ui.define([
 					TRAVEL_DAYS_ID: oInputModel.getProperty("/claim_item/travel_days_id"),
 					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id")
 				});
+
+				// ✅ DUPLICATION CHECK HERE — BEFORE saving or creating
+
+				var oNewItem = oInputModel.getProperty("/claim_item");
+
+				var oDuplicatePayload = {
+					receipt_number: oNewItem.receipt_number,
+					receipt_date: this._getHanaDate(oNewItem.receipt_date),
+					claimTypeId: oNewItem.claim_type_id,
+					emp_id: this._oSessionModel.getProperty("/userId"),
+					isNew: oInputModel.getProperty("/is_new")
+				};
+
+				try {
+					await Utility.CheckDuplicateClaimItem(this, oDuplicatePayload);
+				} catch (e) {
+					MessageBox.error(e.message);
+					return false;
+				}
+
 
 				if (oInputModel.getProperty("/is_new")) {
 					// create new item
@@ -3157,6 +3185,7 @@ sap.ui.define([
 				// get input model
 				var oInputModel = this.getView().getModel("claimsubmission_input");
 				var aItems = oInputModel.getProperty("/claim_items") || [];
+				var oItem = oInputModel.getProperty("/claim_items") || [];
 
 				if (oAction !== "Delete Report" && aItems.length === 0) {
 					MessageToast.show(Utility.getText("msg_claimdetails_no_items"));
@@ -3179,11 +3208,6 @@ sap.ui.define([
 					return;
 				}
 
-				if (this._CheckDuplicateClaimItems(aItems)) {
-					MessageBox.error(Utility.getText("msg_duplication_prompt"));
-					BusyIndicator.hide();
-					return;
-				}
 
 				//// update last modified date
 				var lastModifiedDate = this._getJsonDate(new Date());
@@ -3267,6 +3291,24 @@ sap.ui.define([
 					REJECT_REASON_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
 					REJECT_REASON_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time"))
 				});
+
+				// ✅ Duplication Check (Receipt Number + Receipt Date OR Bill No + Bill Date)
+
+				var aItems = oInputModel.getProperty("/claim_items") || [];
+				var aTemp = [...aItems];   // these are the latest values from screen
+
+				// ✅ Loop & check duplicates for each item
+				for (let oCurrentItem of aTemp) {
+					try {
+						await Utility.CheckDuplicateClaimItem(this, oCurrentItem);
+					} catch (e) {
+						MessageBox.error(e.message);
+						BusyIndicator.hide();
+						return; // STOP submission immediately on duplicate
+					}
+				}
+
+
 				//// addon for new claim
 				if (oInputModel.getProperty("/is_new")) {
 					oBody.setProperty("/CLAIM_ID", oInputModel.getProperty("/claim_header/claim_id"));
@@ -3276,6 +3318,9 @@ sap.ui.define([
 				var oListBinding;
 				var claimSaved;
 				var bApproversDetermined = true;
+
+				//Added for duplicated check;
+
 
 				if (oInputModel.getProperty("/is_new")) {
 					oListBinding = oModel.bindList("/ZCLAIM_HEADER");
@@ -3421,14 +3466,27 @@ sap.ui.define([
 			var delItems = [];
 			BusyIndicator.show(0);
 
-
 			var aItems = oInputModel.getProperty("/claim_items") || [];
+			var oItem = oInputModel.getProperty("/claim_items") || [];
 
-			if (this._CheckDuplicateClaimItems(aItems)) {
+			/* if (this._CheckDuplicateClaimItems(aItems)) {
 				MessageBox.error(Utility.getText("msg_duplication_prompt"));
 				BusyIndicator.hide();
 				return;
+			} */
+
+
+			for (let oItem of aItems) {
+				try {
+					await Utility.CheckDuplicateClaimItem(this, oItem);
+				} catch (e) {
+					MessageBox.error(e.message);
+					BusyIndicator.hide();
+					return;   // STOP immediately — duplicate found
+				}
 			}
+
+
 
 
 			// count existing items from database
@@ -3652,39 +3710,41 @@ sap.ui.define([
 
 		//Added for duplication check items via Save Draft and Submit Report btn
 
-		_CheckDuplicateClaimItems: function (aDupCheckItems) {
+		/* 		_CheckDuplicateClaimItems: function (aDupCheckItems) {
+		
+					const aDuplicateSet = new Set();
+		
+					for (let oItem of aDupCheckItems) {
+		
+						const sTypeId = oItem.claim_type_id || "";
+						const sItemId = oItem.claim_type_item_id || "";
+		
+						const sStartDate = DateUtility.formatDate(
+							oItem.start_date,
+							this._oConstant.Date.DATEFORMAT
+						);
+		
+						const sEndDate = DateUtility.formatDate(
+							oItem.end_date,
+							this._oConstant.Date.DATEFORMAT
+						);
+		
+						const sAmount = parseFloat(oItem.amount || 0).toFixed(2);
+		
+						// Build unique key
+						const sKey = `${sTypeId}|${sItemId}|${sStartDate}|${sEndDate}|${sAmount}`;
+		
+						if (aDuplicateSet.has(sKey)) {
+							return true;
+						}
+		
+						aDuplicateSet.add(sKey);
+					}
+		
+					return false;
+				}, */
 
-			const aDuplicateSet = new Set();
 
-			for (let oItem of aDupCheckItems) {
-
-				const sTypeId = oItem.claim_type_id || "";
-				const sItemId = oItem.claim_type_item_id || "";
-
-				const sStartDate = DateUtility.formatDate(
-					oItem.start_date,
-					this._oConstant.Date.DATEFORMAT
-				);
-
-				const sEndDate = DateUtility.formatDate(
-					oItem.end_date,
-					this._oConstant.Date.DATEFORMAT
-				);
-
-				const sAmount = parseFloat(oItem.amount || 0).toFixed(2);
-
-				// Build unique key
-				const sKey = `${sTypeId}|${sItemId}|${sStartDate}|${sEndDate}|${sAmount}`;
-
-				if (aDuplicateSet.has(sKey)) {
-					return true;
-				}
-
-				aDuplicateSet.add(sKey);
-			}
-
-			return false;
-		},
 
 		_getJsonDate: function (iDate) {
 			if (iDate) {
