@@ -282,14 +282,13 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             // set min date based on insurance cert start date
-                            if (oItem["insurance_cert_start_date"] !== null &&
-                                oItem["insurance_cert_start_date"] !== '' &&
-                                !isNaN(new Date(oItem["insurance_cert_start_date"]).getTime())
+                            if (sItemType === Constants.ClaimTypeItem.TRAVEL_INSURANCE &&
+                                !!new Date(oItem["insurance_cert_start_date"]).getTime()
                             ) {
                                 _dMinDate = new Date(oItem["insurance_cert_start_date"]);
                             }
                             else {
-                                _dMinDate = new Date(null);
+                                _dMinDate = null;
                                 oItem["insurance_cert_start_date"] = null;
                             }
                             _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
@@ -298,7 +297,9 @@ sap.ui.define([
                     }
                     break;
             }
-            _dMinDate.setHours(0, 0, 0, 0);
+            if (_dMinDate !== null) {
+                _dMinDate.setHours(0, 0, 0, 0);
+            }
             return _dMinDate;
         },
 
@@ -362,14 +363,13 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             // set max date based on insurance cert end date
-                            if (oItem["insurance_cert_end_date"] !== null &&
-                                oItem["insurance_cert_end_date"] !== '' &&
-                                !isNaN(new Date(oItem["insurance_cert_end_date"]).getTime())
+                            if (sItemType === Constants.ClaimTypeItem.TRAVEL_INSURANCE &&
+                                !!new Date(oItem["insurance_cert_end_date"]).getTime()
                             ) {
                                 _dMaxDate = new Date(oItem["insurance_cert_end_date"]);
                             }
                             else {
-                                _dMaxDate = new Date('9999-12-31');
+                                _dMaxDate = null;
                                 oItem["insurance_cert_end_date"] = null;
                             }
                             _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
@@ -378,7 +378,9 @@ sap.ui.define([
                     }
             }
 
-            _dMaxDate.setHours(0, 0, 0, 0);
+            if (_dMaxDate !== null) {
+                _dMaxDate.setHours(0, 0, 0, 0);
+            }
             return _dMaxDate;
         }
 
