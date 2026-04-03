@@ -342,6 +342,28 @@
 					id="datepicker_claimdetails_input_insurance_purchase_date"
 					value="{claimitem_input>/claim_item/insurance_purchase_date}"
 					visible="{claimitem_property>/insurance_purchase_date/is_visible}"
+					minDate="{
+						parts: [
+							'constant>/EntitiesFields/INSURANCE_PURCH_DATE',
+							'claimsubmission_input>/claim_header/claim_id',
+							'claimsubmission_input>/claim_header/claim_type_id',
+							'claimitem_input>/claim_item/claim_type_item_id',
+							'claimsubmission_input>/claim_header',
+							'claimitem_input>/claim_item'
+						],
+						formatter: '.DateUtility.determineMinDate'
+					}"
+					maxDate="{
+						parts: [
+							'constant>/EntitiesFields/INSURANCE_PURCH_DATE',
+							'claimsubmission_input>/claim_header/claim_id',
+							'claimsubmission_input>/claim_header/claim_type_id',
+							'claimitem_input>/claim_item/claim_type_item_id',
+							'claimsubmission_input>/claim_header',
+							'claimitem_input>/claim_item'
+						],
+						formatter: '.DateUtility.determineMaxDate'
+					}"
 					displayFormat="dd-MMM-yyyy"
 				/>
 
@@ -351,6 +373,17 @@
 					id="datepicker_claimdetails_input_insurance_cert_start_date"
 					value="{claimitem_input>/claim_item/insurance_cert_start_date}"
 					visible="{claimitem_property>/insurance_cert_start_date/is_visible}"
+					minDate="{
+						parts: [
+							'constant>/EntitiesFields/INSURANCE_CERT_START_DATE',
+							'claimsubmission_input>/claim_header/claim_id',
+							'claimsubmission_input>/claim_header/claim_type_id',
+							'claimitem_input>/claim_item/claim_type_item_id',
+							'claimsubmission_input>/claim_header',
+							'claimitem_input>/claim_item'
+						],
+						formatter: '.DateUtility.determineMinDate'
+					}"
 					maxDate="{
 						parts: [
 							'constant>/EntitiesFields/INSURANCE_CERT_START_DATE',
@@ -363,7 +396,6 @@
 						formatter: '.DateUtility.determineMaxDate'
 					}"
 					displayFormat="dd-MMM-yyyy"
-					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_insurance_cert_start_date','datepicker_claimdetails_input_insurance_cert_end_date')"
 				/>
 
 				<!-- Insurance Period of Certificate End Date -->
@@ -381,10 +413,20 @@
 							'claimsubmission_input>/claim_header',
 							'claimitem_input>/claim_item'
 						],
+						formatter: '.DateUtility.determineMinDate'
+					}"
+					maxDate="{
+						parts: [
+							'constant>/EntitiesFields/INSURANCE_CERT_END_DATE',
+							'claimsubmission_input>/claim_header/claim_id',
+							'claimsubmission_input>/claim_header/claim_type_id',
+							'claimitem_input>/claim_item/claim_type_item_id',
+							'claimsubmission_input>/claim_header',
+							'claimitem_input>/claim_item'
+						],
 						formatter: '.DateUtility.determineMaxDate'
 					}"
 					displayFormat="dd-MMM-yyyy"
-					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_insurance_cert_start_date','datepicker_claimdetails_input_insurance_cert_end_date')"
 				/>
 
 				<!-- Mode of Transfer-->

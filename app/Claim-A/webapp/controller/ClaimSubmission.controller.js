@@ -2299,6 +2299,7 @@ sap.ui.define([
 		onSave_ClaimDetails_Input: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("claimitem_input");
+			oInputModel.refresh(true);
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
 			// Validate required fields
