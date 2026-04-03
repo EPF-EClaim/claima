@@ -2913,7 +2913,7 @@ sap.ui.define([
 			//check if there is any input, if yes then recalculate entitled meals 
 			//breakfast meal entitlement
 			if (oInputModel.getProperty("/claim_item/provided_breakfast") != null) {
-				nEntBfast = oInput.getProperty("/claim_item/travel_duration_day") - oInput.getProperty("/claim_item/provided_breakfast");
+				nEntBfast = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_breakfast");
 				oInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);
 			}
 
