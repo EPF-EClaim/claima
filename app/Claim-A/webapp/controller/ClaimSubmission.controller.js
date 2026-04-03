@@ -72,6 +72,7 @@ sap.ui.define([
 			this.currentHash = null;
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
+			this._openDeclarationDialog = null;
 			CustomValidator.init(this);
 			
 
@@ -191,6 +192,17 @@ sap.ui.define([
 			await this._showInitFormFragment();
 			await this._afterLoadFragments();
 		},
+
+		//event handle for confirm and cancel
+		onPressDeclarationConfirm: function () {
+			this._openDeclarationDialog.close();
+			this._updateClaimSubmission(this._pendingAction);
+		},
+
+		onPressDeclarationCancel: function () {
+			this._openDeclarationDialog.close();
+		},
+
 
 		_showInitFormFragment: async function () {
 			var oPage = this.byId("page_claimsubmission");
@@ -1531,14 +1543,33 @@ sap.ui.define([
 						return;
 					}
 
-					// confirm dialog
-					this._newDialog(
-						Utility.getText("dialog_claimsubmission_submitreport"),
-						Utility.getText("label_claimsubmission_submitreport"),
-						function () {
-							this._updateClaimSubmission(oAction);
-						}.bind(this)
-					);
+					this._pendingAction = oAction;
+
+					if (!this._openDeclarationDialog) {
+
+						Fragment.load({
+							name: "claima.fragment.declarationdialog",
+							id: "declarationDialogFrag",
+							controller: this
+						}).then(function (oDeclareDialog) {
+
+							this._openDeclarationDialog = oDeclareDialog;
+							this.getView().addDependent(oDeclareDialog);
+
+							var oText = Fragment.byId("declarationDialogFrag", "declarationText");
+							oText.setText(Utility.getText("msg_claimsubmission_declaration"));
+
+							oDeclareDialog.open();
+
+						}.bind(this));
+
+						} else {
+
+						var oText = Fragment.byId("declarationDialogFrag", "declarationText");
+						oText.setText(Utility.getText("msg_claimsubmission_declaration"));
+
+						this._openDeclarationDialog.open();
+					}
 					break;
 				//// Back
 				case this._oConstant.Claim_Action.BACK:
