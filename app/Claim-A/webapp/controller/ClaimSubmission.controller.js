@@ -2278,7 +2278,6 @@ sap.ui.define([
 					sorter: [
 						new Sorter(oField + '_ID'),
 						new Sorter(oField + '_DESC')
-						
 					],
 					template: new Item({
 						key: "{employee>" + oField + "_ID}",
