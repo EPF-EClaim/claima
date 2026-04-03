@@ -144,7 +144,7 @@ sap.ui.define([
 
 			Object.values(oDBToUIControlMap).forEach(sId => {
 				if (sId === "TABLE_ALLOC_AMOUNT") {
-					this._setTableValueState(null, ValueState.None);
+					this._setTableValueState(oController, null, ValueState.None);
 				} else {
 					const oInputControl = getControl(sId);
 					if (oInputControl?.setValueState) {
@@ -171,7 +171,7 @@ sap.ui.define([
 					const sMappedId = oDBToUIControlMap[oField.fieldName];
 					
 					if (sMappedId === "TABLE_ALLOC_AMOUNT") {
-						this._setTableValueState(sEmpId, ValueState.Error);
+						this._setTableValueState(oController, sEmpId, ValueState.Error);
 					} else {
 						const oInputControl = getControl(sMappedId);
 						if (oInputControl?.setValueState) {
@@ -194,7 +194,7 @@ sap.ui.define([
 			return bIsEligible;
 		},
 
-		_setTableValueState (sEmpIdToMatch, sValueState) {
+		_setTableValueState (oController, sEmpIdToMatch, sValueState) {
 			const oTable = Fragment.byId("request", "req_participant_table") || oController.byId("req_participant_table");
 			if (!oTable) return;
 
