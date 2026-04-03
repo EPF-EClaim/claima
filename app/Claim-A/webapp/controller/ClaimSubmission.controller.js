@@ -26,7 +26,8 @@ sap.ui.define([
 	"claima/utils/workflowApproval",
 	"claima/utils/DateUtility",
 	"claima/utils/EligibilityCheck",
-	"claima/utils/EligibilityScenarios/EligibleScenarioCheck"
+	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
+	"claima/utils/CustomValidator"
 ], function (
 	Fragment,
 	Item,
@@ -55,7 +56,8 @@ sap.ui.define([
 	workflowApproval,
 	DateUtility,
 	EligibilityCheck,
-	EligibleScenarioCheck
+	EligibleScenarioCheck,
+	CustomValidator
 ) {
 	"use strict";
 
@@ -68,6 +70,7 @@ sap.ui.define([
 			this.currentHash = null;
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
+			CustomValidator.init(this);
 
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
@@ -3136,11 +3139,9 @@ sap.ui.define([
 
 				//FUT issue 102
 				// solving the issue of having 0 amount claim item when submitting claims
-				for(var i = 0; i < aItems.length; i++){
-					if(aItems[i].amount == 0){
-						MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
-						return;
-					}
+				if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)){
+					MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
+					return;
 				}
 
 				if (this._CheckDuplicateClaimItems(aItems)) {

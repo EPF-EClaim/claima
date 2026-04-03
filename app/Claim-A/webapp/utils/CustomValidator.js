@@ -31,8 +31,17 @@ sap.ui.define([
                 case Constants.SubmissionTypePrefix.REQUEST:
                     break;
                 case Constants.SubmissionTypePrefix.CLAIM:
+                    var oInputModel = this._oOwnerComponent.getView().getModel("claimsubmission_input");
+				    var aItems = oInputModel.getProperty("/claim_items") || [];
+
+                    for(var i = 0; i < aItems.length; i++){
+                        if(aItems[i].amount == 0){
+                            return false;
+                        }
+                    }
                     break;
             }
+            return true;
         }
     };
 });
