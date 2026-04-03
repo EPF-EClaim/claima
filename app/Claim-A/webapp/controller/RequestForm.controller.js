@@ -1300,7 +1300,6 @@ sap.ui.define([
 		* ======================================================= */
 
 		onCashAdvanceChange: function (oEvent) {
-			// const oSwitch = oEvent.getSource();
 
 			// Get model
 			const oRequestModel = this.getView().getModel("request");
