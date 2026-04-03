@@ -39,7 +39,8 @@ sap.ui.define([
                     break;
                 case Constants.SubmissionTypePrefix.CLAIM:   
                     var oInputModel = this._oView.getModel("claimitem_input");
-                    
+                    var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
+
                     if (oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.TELEFON_B) {
                         if(!oInputModel.getProperty("/claim_item/disclaimer")) {
                             MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
@@ -50,6 +51,14 @@ sap.ui.define([
                     if (oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.GALAKAN) {
                         if(!oInputModel.getProperty("/claim_item/disclaimer_galakan")) {
                             MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+                            return false;
+                        }
+                    }
+                
+                    var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
+                    for(var i = 0; i < aItems.length; i++){
+                        if(aItems[i].amount == 0){
+                            MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
                             return false;
                         }
                     }
