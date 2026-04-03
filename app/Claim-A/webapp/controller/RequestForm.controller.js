@@ -1300,13 +1300,13 @@ sap.ui.define([
 		* ======================================================= */
 
 		onCashAdvanceChange: function (oEvent) {
-			const oSwitch = oEvent.getSource();
+			// const oSwitch = oEvent.getSource();
 
 			// Get model
-			const oModel = this.getView().getModel("request");
+			const oRequestModel = this.getView().getModel("request");
 
 			// Read event start date
-			const tripDate = oModel.getProperty("/req_header/tripstartdate");
+			const tripDate = oRequestModel.getProperty("/req_header/tripstartdate");
 
 			if (!tripDate) {
 				return; // no date entered yet
@@ -1320,15 +1320,12 @@ sap.ui.define([
 			// ✅ If event date is before today → backdated
 			if (oEventDate < oToday) {
 
-				// Force switch OFF
-				oSwitch.setState(false);
-
-				// Update model value too
-				oModel.setProperty("/req_item/cash_advance", false);
+				// Update model value
+				oRequestModel.setProperty("/req_item/cash_advance", false);
 
 				// Show message
 				MessageBox.warning(
-					"Cash advance is not allowed for backdated events."
+					"Cash advance is not allowed for backdated trip start dates."
 				);
 			}
 		},
