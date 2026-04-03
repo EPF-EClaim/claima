@@ -74,12 +74,22 @@
 
 				<!-- Dependent Name -->
 				<Label text="{i18n>label_claimdetails_input_dependent}" />
-				<Input
-					id="input_claimdetails_input_dependent_name"
-					value="{claimitem_input>/claim_item/dependent_name}"
+				<Select
+					id="select_claimdetails_input_dependent_name"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/dependent_name}"
+					items="{
+						path:'employee>/ZEMP_DEPENDENT',
+						sorter: { path: 'DEPENDENT_NO', descending: false }
+					}"
 					visible="false"
 					required="true"
-				/>
+				>
+				<items>
+					<core:Item key="{employee>LEGAL_NAME}" 
+							   text="{employee>LEGAL_NAME}" />
+				</items>
+				</Select>
 
 				<!-- Type of Professional Body -->
 				<Label text="{i18n>label_claimdetails_input_profbodytype}" />
