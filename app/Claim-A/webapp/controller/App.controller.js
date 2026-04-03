@@ -65,6 +65,9 @@ sap.ui.define([
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._oRoleModel = this.getOwnerComponent().getModel("roleModel");
 
+			// declare request utility
+			RequestUtility.init(this.getOwnerComponent());
+
 			// oReportModel
 			var oReportModel = new JSONModel({
 				"purpose": "",
@@ -728,8 +731,8 @@ sap.ui.define([
 			//// get claim item category ID
 			oInputModel.setProperty("/claimtype/category", this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("SUBMISSION_TYPE"));
 			//// get cost center from claim type if value exists
-			var sClaimTypeCostCenter = await RequestUtility.costCenterDetermination(this, oInputModel.getProperty("/claimtype/type"));
-			if (sClaimTypeCostCenter) {
+			var sClaimTypeCostCenter = await RequestUtility.costCenterDetermination(oInputModel.getProperty("/claimtype/type"));
+			if (sClaimTypeCostCenter && sClaimTypeCostCenter !== 'null') { // returns value and is not string 'null'
 				oInputModel.setProperty("/claimtype/cost_center", sClaimTypeCostCenter);
 				oInputModel.setProperty("/claimtype/descr/cost_center", await this._bindEclaimDescr("/ZCOST_CENTER", sClaimTypeCostCenter, 'COST_CENTER_ID', 'COST_CENTER_DESC'));
 			}
@@ -1539,7 +1542,7 @@ sap.ui.define([
     		var sClaimTypeId = oSelectControl.getSelectedKey();
 			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
 
-			var sDefaultCostCenter = await RequestUtility.costCenterDetermination(this, sClaimTypeId);
+			var sDefaultCostCenter = await RequestUtility.costCenterDetermination(sClaimTypeId);
 			if (sDefaultCostCenter) {
 				Fragment.byId("request", "req_acc").setEditMode("ReadOnly");
 				oDialogModel.setProperty("/altcostcenter", sDefaultCostCenter);

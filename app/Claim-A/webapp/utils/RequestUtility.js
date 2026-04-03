@@ -5,14 +5,18 @@ sap.ui.define([
 
     return {
         
+		/**
+         * Initialize the RequestUtility
+         * @public
+         */
         init: function(oOwnerComponent) {
             this._oOwnerComponent = oOwnerComponent;
 		},
 
-        costCenterDetermination: async function (oController, sClaimTypeId) {
+        costCenterDetermination: async function (sClaimTypeId) {
             
 			try {
-				const oFunction = oController._oDataModel.bindContext("/checkDefaultCostCenter(...)");
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
 				
 				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
 
