@@ -242,19 +242,22 @@ sap.ui.define([
         determineMinDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem) {
             if (!sId || !sType || !sItemType) return null;
 
-            const sSubmissionType = sId.substring(0, 3);
-            var dMinDate = null;
+            var _oAppModel = this.getOwnerComponent().getModel("appModel");
+            var _oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+
+            const _sSubmissionType = sId.substring(0, 3);
+            var _dMinDate = new Date();
 
             switch (sFieldName) {
                 case Constants.EntitiesFields.RECEIPT_DATE:
-                    switch (sSubmissionType) {
+                    switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             // Specific Claim Type
                             if (sItemType === Constants.ClaimTypeItem.VISA) {
-                                
+                                // VISA related logic 
                             } else {
                                 // Other Claim Type
                             }
@@ -263,7 +266,8 @@ sap.ui.define([
                     break;
             }
 
-            return dMinDate;
+            _dMinDate.setHours(0, 0, 0, 0);
+            return _dMinDate;
         },
 
         /**
@@ -282,34 +286,47 @@ sap.ui.define([
         determineMaxDate: function (sFieldName, sId, sType, sItemType, oHeader, oItem) {
             if (!sId || !sType || !sItemType) return null;
 
-            const sSubmissionType = sId.substring(0, 3);
-            var dMaxDate = null;
+            var _oAppModel = this.getOwnerComponent().getModel("appModel");
+            var _oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+
+            const _sSubmissionType = sId.substring(0, 3);
+            var _dMaxDate = new Date();
 
             switch (sFieldName) {
                 case Constants.EntitiesFields.RECEIPT_DATE:
-                    switch (sSubmissionType) {
+                    switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            dMaxDate = new Date(oHeader.trip_end_date); // default
+                            // Specific Claim Type
+                            if (sItemType === Constants.ClaimTypeItem.VISA) {
+                                // VISA related logic 
+                            } else {
+                                // Other Claim Type
+                                _dMaxDate = new Date(oHeader.trip_end_date);
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                    _oResourceBundle.getText("error_receiptdate_maxdate"));
+                            }
                             break;
                     }
                     break;
-
                 case Constants.EntitiesFields.BILL_DATE:
-                    switch (sSubmissionType) {
+                    switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            dMaxDate = new Date(oHeader.trip_end_date); // default
+                            _dMaxDate = new Date(oHeader.trip_end_date); // default
+                            _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                _oResourceBundle.getText("error_billdate_maxdate"));
                             break;
                     }
                     break;
             }
 
-            return dMaxDate;
+            _dMaxDate.setHours(0, 0, 0, 0);
+            return _dMaxDate;
         }
 
     };

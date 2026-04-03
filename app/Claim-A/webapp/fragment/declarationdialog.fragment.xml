@@ -1,0 +1,33 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    id="declarationDialogFrag">
+
+    <Dialog
+        id="declarationDialog"
+        type="Message"
+        state="Warning"
+        title="{i18n>dialog_claimsubmission_declaration}"
+        contentWidth="500px">
+
+        <Text
+            id="declarationText"
+            text="{i18n>msg_claimsubmission_declaration}"
+            wrapping="true" />
+
+        <beginButton>
+            <Button
+                type="Emphasized"
+                text="{i18n>button_claimsubmission_declaration_confirm}"
+                press=".onPressDeclarationConfirm" />
+        </beginButton>
+
+        <endButton>
+            <Button
+                text="{i18n>button_claimsummary_cancel}"
+                press=".onPressDeclarationCancel" />
+        </endButton>
+
+    </Dialog>
+
+</core:FragmentDefinition>
