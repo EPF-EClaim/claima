@@ -291,11 +291,10 @@ sap.ui.define([
                                     _dMinDate = null;
                                     oItem["insurance_cert_start_date"] = null;
                                 }
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                    _oResourceBundle.getText("error_insurance_cert_end_date_mindate"));
                             }
-
-                            // set validator error message
-                            _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
-                                _oResourceBundle.getText("error_insurance_cert_end_date_mindate"));
                             break;
                     }
                     break;
@@ -380,12 +379,11 @@ sap.ui.define([
                                 else {
                                     _dMaxDate = null;
                                     oItem["insurance_cert_end_date"] = null;
-                             }
+                                }
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                    _oResourceBundle.getText("error_insurance_cert_start_date_maxdate"));
                             }
-
-                            // set validator error message
-                            _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
-                                _oResourceBundle.getText("error_insurance_cert_start_date_maxdate"));
                             break;
                     }
             }
