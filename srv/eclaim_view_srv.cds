@@ -113,7 +113,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_TYPE.GL_ACCOUNT,
                 CLAIM_TYPE_ITEM_ID,
                 ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_DESC,
-                ZCLAIM_TYPE_ITEM.COST_CENTER,
+                ZCLAIM_TYPE.COST_CENTER,
                 ZCLAIM_TYPE_ITEM.MATERIAL_CODE,
                 NO_OF_DAYS,
                 PURPOSE,

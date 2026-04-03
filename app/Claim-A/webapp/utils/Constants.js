@@ -308,6 +308,32 @@ sap.ui.define([
         },
         "ConfigAccess":
             [
+            "TRAVEL"        : "RT0001",
+            "MOBILE"        : "RT0002",
+            "EVENTS"        : "RT0003",
+            "REIMBURSEMENT" : "RT0004",
+            "MEDICAL"       : "RT0005",
+            "PROJECT"       : "RT0006"
+        },
+        "LocationType" : {
+            "OTHER" : "1",
+            "KWSP"  : "2"
+        },
+        "Status" : {
+            "ACTIVE" : "ACTIVE"
+        },
+        "Claim_Action" : {
+            "DRAFT" : "Save Draft",
+            "DELETE" : "Delete Report",
+            "SUBMIT" : "Submit Report",
+            "BACK" : "Back",
+            "REJECT" : "Reject",
+            "PUSHBACK" : "Push Back",
+            "APPROVE" : "Approve"
+
+        },
+        "ConfigAccess": 
+             [
                 "ZRISK", "ZREQUEST_TYPE", "ZCLAIM_TYPE", "ZNUM_RANGE", "ZCLAIM_CATEGORY",
                 "ZSTATUS", "ZLODGING_CAT", "ZROOM_TYPE", "ZCOUNTRY", "ZAREA",
                 "ZMARITAL_STAT", "ZVEHICLE_TYPE", "ZJOB_GROUP", "ZSTATE", "ZDEPARTMENT",
