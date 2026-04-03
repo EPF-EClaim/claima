@@ -3060,28 +3060,28 @@ sap.ui.define([
 
 		onChange_ClaimDetails_ProvidedMeals: function () {
 			let nEntBfast, nEntLunch, nEntDinner;
-			var oInputModel = this.getView().getModel("claimitem_input");
+			var oClaimItemInput = this.getView().getModel("claimitem_input");
 			//check if there is any input, if yes then recalculate entitled meals 
 			//breakfast meal entitlement
-			if (oInputModel.getProperty("/claim_item/provided_breakfast") != null) {
-				nEntBfast = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_breakfast");
-				oInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);
+			if (oClaimItemInput.getProperty("/claim_item/provided_breakfast") != null) {
+				nEntBfast = oClaimItemInput.getProperty("/claim_item/travel_duration_day") - oClaimItemInput.getProperty("/claim_item/provided_breakfast");
+				oClaimItemInput.setProperty("/claim_item/entitled_breakfast", nEntBfast);
 			}
 
 			//lunch meal entitlement
-			if (oInputModel.getProperty("/claim_item/provided_lunch") != null) {
-				nEntLunch = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_lunch");
-				oInputModel.setProperty("/claim_item/entitled_lunch", nEntLunch);
+			if (oClaimItemInput.getProperty("/claim_item/provided_lunch") != null) {
+				nEntLunch = oClaimItemInput.getProperty("/claim_item/travel_duration_day") - oClaimItemInput.getProperty("/claim_item/provided_lunch");
+				oClaimItemInput.setProperty("/claim_item/entitled_lunch", nEntLunch);
 			}
 
 			//dinner meal entitlement
-			if (oInputModel.getProperty("/claim_item/provided_dinner") != null) {
-				nEntDinner = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_dinner");
-				oInputModel.setProperty("/claim_item/entitled_dinner", nEntDinner);
+			if (oClaimItemInput.getProperty("/claim_item/provided_dinner") != null) {
+				nEntDinner = oClaimItemInput.getProperty("/claim_item/travel_duration_day") - oClaimItemInput.getProperty("/claim_item/provided_dinner");
+				oClaimItemInput.setProperty("/claim_item/entitled_dinner", nEntDinner);
 			}
 
 			BusyIndicator.show(0);
-			this._fetchAndApplyEntitlement(oInputModel);
+			this._fetchAndApplyEntitlement(oClaimItemInput);
 			BusyIndicator.hide();
 		},
 
@@ -4760,15 +4760,15 @@ sap.ui.define([
 			}
 		},
 
-		_fetchAndApplyEntitlement: function (oInputModel) {
-			var nDay = oInputModel.getProperty("/claim_item/travel_duration_day");
-			var nHour = oInputModel.getProperty("/claim_item/travel_duration_hour");
-			var sLocation = oInputModel.getProperty("/claim_item/region");
-			var sClaimtype = oInputModel.getProperty("/claim_item/claim_type_id");
-			var sClaimItem = oInputModel.getProperty("/claim_item/claim_type_item_id");
-			var nBreakfast = parseInt(oInputModel.getProperty("/claim_item/provided_breakfast"));
-			var nLunch = parseInt(oInputModel.getProperty("/claim_item/provided_lunch"));
-			var nDinner = parseInt(oInputModel.getProperty("/claim_item/provided_dinner"));
+		_fetchAndApplyEntitlement: function (oClaimItemInput) {
+			var nDay = oClaimItemInput.getProperty("/claim_item/travel_duration_day");
+			var nHour = oClaimItemInput.getProperty("/claim_item/travel_duration_hour");
+			var sLocation = oClaimItemInput.getProperty("/claim_item/region");
+			var sClaimtype = oClaimItemInput.getProperty("/claim_item/claim_type_id");
+			var sClaimItem = oClaimItemInput.getProperty("/claim_item/claim_type_item_id");
+			var nBreakfast = parseInt(oClaimItemInput.getProperty("/claim_item/provided_breakfast"));
+			var nLunch = parseInt(oClaimItemInput.getProperty("/claim_item/provided_lunch"));
+			var nDinner = parseInt(oClaimItemInput.getProperty("/claim_item/provided_dinner"));
 
 			nBreakfast = Number.isNaN(nBreakfast) ? 0 : nBreakfast;
 			nLunch = Number.isNaN(nLunch) ? 0 : nLunch;
@@ -4798,22 +4798,22 @@ sap.ui.define([
 					}
 
 					if (this.byId("input_claimdetails_input_dailyallowance").getVisible()) {
-						oInputModel.setProperty("/claim_item/dailyallowance", oResult.daily_allowance);
+						oClaimItemInput.setProperty("/claim_item/dailyallowance", oResult.daily_allowance);
 						
 						if (this.byId("input_claimdetails_input_currency_rate").getVisible() && 
-							oInputModel.getProperty("/claim_item/currency_rate") != null) {
-							oInputModel.setProperty("/claim_item/currency_amount", oResult.amount);
-							var nAmountMYR = oInputModel.getProperty("/claim_item/currency_rate") * oResult.amount;
-							oInputModel.setProperty("/claim_item/amount", nAmountMYR);
+							oClaimItemInput.getProperty("/claim_item/currency_rate") != null) {
+							oClaimItemInput.setProperty("/claim_item/currency_amount", oResult.amount);
+							var nAmountMYR = oClaimItemInput.getProperty("/claim_item/currency_rate") * oResult.amount;
+							oClaimItemInput.setProperty("/claim_item/amount", nAmountMYR);
 						}
 					}
 
 					if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
-						oInputModel.setProperty("/claim_item/currency_code", oResult.currency_code);
-						oInputModel.setProperty("/claim_item/currency_amount", oResult.amount);
+						oClaimItemInput.setProperty("/claim_item/currency_code", oResult.currency_code);
+						oClaimItemInput.setProperty("/claim_item/currency_amount", oResult.amount);
 					} else {
 						if (this.byId("input_claimdetails_input_amount").getVisible()) {
-						oInputModel.setProperty("/claim_item/amount", oResult.amount);
+						oClaimItemInput.setProperty("/claim_item/amount", oResult.amount);
 					}
 					}
 				})
