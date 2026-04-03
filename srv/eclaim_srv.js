@@ -890,8 +890,7 @@ module.exports = (srv) => {
                 }
             }
         } catch (err){
-            console.error("getAmountEntitlement failed:", err);
-            req.error(500, "Failed to retrieve entitlement information");
+            req.error(400, "Failed to retrieve entitlement information");
         }
 
         if (!entitlement) {
