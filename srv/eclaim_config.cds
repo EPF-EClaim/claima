@@ -148,6 +148,11 @@ annotate service.ZCLAIM_TYPE with @(
             },
             {
                 $Type: 'UI.DataField',
+                Value: COST_CENTER,
+                Label: 'Cost Center'
+            },
+            {
+                $Type: 'UI.DataField',
                 Value: IND_OR_GROUP,
                 Label: 'Individual/Group'
             },
@@ -336,11 +341,6 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
                 $Type: 'UI.DataField',
                 Value: CATEGORY_ID,
                 Label: 'Category ID'
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: COST_CENTER,
-                Label: 'Cost Center'
             },
             {
                 $Type: 'UI.DataField',
@@ -4114,9 +4114,9 @@ annotate service.ZELIGIBILITY_RULE with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : SUBSIDIESED_RATE,
+                Value            : SUBSIDISED_RATE,
                 ![@UI.Importance]: #High,
-                Label            : 'Subsidiesed Rate'
+                Label            : 'Subsidised Rate'
             },
             {
                 $Type            : 'UI.DataField',
@@ -4273,6 +4273,12 @@ annotate service.ZELIGIBILITY_RULE with @(
                 Value            : STATUS,
                 ![@UI.Importance]: #High,
                 Label            : 'Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : JOB_GROUP,
+                ![@UI.Importance]: #High,
+                Label            : 'Job Group'
             }
         ]
     }
