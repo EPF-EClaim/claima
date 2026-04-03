@@ -2510,7 +2510,6 @@ sap.ui.define([
 			//checking for galakan disclaimer if its ticked or not
 			
 			if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)){
-                MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
 				return;
 			}
 
