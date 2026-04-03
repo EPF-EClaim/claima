@@ -1,6 +1,6 @@
 sap.ui.define([
-    "claima/utils/Constants",
     "sap/m/MessageBox",
+    "claima/utils/Constants",
     "claima/utils/Utility"
 ], function (
     Constants,
@@ -38,7 +38,6 @@ sap.ui.define([
                     break;
                 case Constants.SubmissionTypePrefix.CLAIM:   
                     var oInputModel = this._oOwnerComponent.getView().getModel("claimitem_input");
-                    
                     
                     if (oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.TELEFON_B) {
                         if(!oInputModel.getProperty("/claim_item/disclaimer")) {
