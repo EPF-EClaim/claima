@@ -864,21 +864,10 @@ module.exports = (srv) => {
             SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email })
         );
 
-        if (result.GRADE) {
-            entitlement = await tx.run(SELECT.one.from(ZPERDIEM_ENT).where({
-                PERSONAL_GRADE: result.GRADE,
-                LOCATION: req.data.location,
-                CLAIM_TYPE_ID: req.data.claimtypeid,
-                CLAIM_TYPE_ITEM_ID: req.data.claimtypeitem,
-                START_DATE: { '<=': today },
-                END_DATE: { '>=': today }
-            })
-            );
-
-            //use the wildcard if no entitlement avavailable - for MAKAN_O
-            if (!entitlement) {
+        try {
+            if (result.GRADE) {
                 entitlement = await tx.run(SELECT.one.from(ZPERDIEM_ENT).where({
-                    PERSONAL_GRADE: '*',
+                    PERSONAL_GRADE: result.GRADE,
                     LOCATION: req.data.location,
                     CLAIM_TYPE_ID: req.data.claimtypeid,
                     CLAIM_TYPE_ITEM_ID: req.data.claimtypeitem,
@@ -886,8 +875,25 @@ module.exports = (srv) => {
                     END_DATE: { '>=': today }
                 })
                 );
+
+                //use the wildcard if no entitlement avavailable - for MAKAN_O
+                if (!entitlement) {
+                    entitlement = await tx.run(SELECT.one.from(ZPERDIEM_ENT).where({
+                        PERSONAL_GRADE: '*',
+                        LOCATION: req.data.location,
+                        CLAIM_TYPE_ID: req.data.claimtypeid,
+                        CLAIM_TYPE_ITEM_ID: req.data.claimtypeitem,
+                        START_DATE: { '<=': today },
+                        END_DATE: { '>=': today }
+                    })
+                    );
+                }
             }
+        } catch (err){
+            console.error("getAmountEntitlement failed:", err);
+            req.error(500, "Failed to retrieve entitlement information");
         }
+
         if (!entitlement) {
             return { amount: 0, daily_allowance: 0, currency_code: null };
         } else {
@@ -918,10 +924,11 @@ module.exports = (srv) => {
             total_meal_allowance = meal_allowance != 0 ? (meal_allowance - bfast - lunch - dinner) : 0;
             return {
                 amount: total_meal_allowance,
-                daily_allowance: ( entitlement.AMOUNT / 2 ), 
+                daily_allowance: (entitlement.AMOUNT / 2),
                 currency_code: entitlement.CURRENCY
             };
         }
+
 
     });
 
