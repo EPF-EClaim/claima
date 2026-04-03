@@ -23,7 +23,8 @@ sap.ui.define([
 	"claima/utils/PARequestSharedFunction",
 	"claima/utils/Attachment",
 	"claima/utils/EligibilityCheck",
-	"claima/utils/CustomValidator"
+	"claima/utils/CustomValidator",
+	"claima/utils/RequestUtility"
 ], function (
 	Popover,
 	Button,
@@ -49,7 +50,8 @@ sap.ui.define([
 	PARequestSharedFunction,
 	Attachment,
 	EligibilityCheck,
-	CustomValidator
+	CustomValidator,
+	RequestUtility
 ) {
 	"use strict";
 
@@ -59,11 +61,12 @@ sap.ui.define([
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oRouter = this.getOwnerComponent().getRouter();
 			this._oDataModel = this.getOwnerComponent().getModel();
-			this._oViewModel = this.getOwnerComponent().getModel('employee_view');
 			this._oReqModel = this.getOwnerComponent().getModel('request');
-			this._oReqStatusModel = this.getOwnerComponent().getModel("request_status");
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._oRoleModel = this.getOwnerComponent().getModel("roleModel");
+
+			// declare request utility
+			RequestUtility.init(this.getOwnerComponent());
 
 			// oReportModel
 			var oReportModel = new JSONModel({
@@ -81,8 +84,7 @@ sap.ui.define([
 			
 			// set field property model for App view/fragments
 			this.getView().setModel(new JSONModel({
-				"select_claimprocess_claimtype": { "is_busy": false },
-				"field_claiminput_altcc": { "has_existing_value": false }
+				"select_claimprocess_claimtype": { "is_busy": false }
 			}), "app_viewfields");
 		},
 		onCollapseExpandPress: function () {
@@ -728,8 +730,8 @@ sap.ui.define([
 			//// get claim item category ID
 			oInputModel.setProperty("/claimtype/category", this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("SUBMISSION_TYPE"));
 			//// get cost center from claim type if value exists
-			var sClaimTypeCostCenter = await CustomValidator.costCenterDetermination(this, oInputModel.getProperty("/claimtype/type"));
-			if (sClaimTypeCostCenter) {
+			var sClaimTypeCostCenter = await RequestUtility.determineDefaultCostCenter(oInputModel.getProperty("/claimtype/type"));
+			if (sClaimTypeCostCenter && sClaimTypeCostCenter !== 'null') { // returns value and is not string 'null'
 				oInputModel.setProperty("/claimtype/cost_center", sClaimTypeCostCenter);
 				oInputModel.setProperty("/claimtype/descr/cost_center", await this._bindEclaimDescr("/ZCOST_CENTER", sClaimTypeCostCenter, 'COST_CENTER_ID', 'COST_CENTER_DESC'));
 			}
@@ -755,7 +757,7 @@ sap.ui.define([
 			// Mobile Eligibility Pre-check
 			var sClaimType = oInputModel.getProperty("/claimtype/type")
 			if (sClaimType === this._oConstant.ClaimType.HANDPHONE) {
-				var bEligible = await EligibilityCheck.onCheckEligibility(this);
+				var bEligible = await EligibilityCheck.onCheckMobileEligibility(this);
 				if (!bEligible) {
 					MessageBox.warning(Utility.getText("warning_msg_mobile_not_eligible"));
 					return;
@@ -859,15 +861,10 @@ sap.ui.define([
 			if (oInputModel.getProperty("/claimtype/cost_center")) {
 				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/cost_center"));
 				oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/descr/cost_center"));
-				this.getView().getModel("app_viewfields").setProperty("/field_claiminput_altcc/has_existing_value", true);
 			}
 			else if (oInputModel.getProperty("/claimtype/requestform/alternate_cost_center")) {
 				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/alternate_cost_center"));
 				oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/descr/alternate_cost_center"));
-				this.getView().getModel("app_viewfields").setProperty("/field_claiminput_altcc/has_existing_value", true);
-			}
-			else {
-				this.getView().getModel("app_viewfields").setProperty("/field_claiminput_altcc/has_existing_value", false);
 			}
 			//// initialized amount values
 			oInputModel.setProperty("/claim_header/total_claim_amount", "0.00");
@@ -1539,10 +1536,13 @@ sap.ui.define([
     		var sClaimTypeId = oSelectControl.getSelectedKey();
 			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
 
-			var sDefaultCostCenter = await CustomValidator.costCenterDetermination(this, sClaimTypeId);
-			if (sDefaultCostCenter) {
+			var sDefaultCostCenter = await RequestUtility.determineDefaultCostCenter(sClaimTypeId);
+			if (sDefaultCostCenter != this._oConstant.Default.NULL) {
 				Fragment.byId("request", "req_acc").setEditMode("ReadOnly");
 				oDialogModel.setProperty("/altcostcenter", sDefaultCostCenter);
+			} else {
+				Fragment.byId("request", "req_acc").setEditMode("Editable");
+				oDialogModel.setProperty("/altcostcenter", "");
 			}
 		},
 

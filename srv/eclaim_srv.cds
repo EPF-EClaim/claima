@@ -90,6 +90,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
                 END_DATE,
                 START_DATE,
                 STATUS,
+                COST_CENTER,
                 ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM as Items
         };
 
@@ -335,8 +336,22 @@ service eclaim_srv @(requires: 'authenticated-user'){
         MOBILE_BILL_ELIG_AMOUNT : Decimal(15, 2);
     }
 
-    function checkEligibleMobileClaim(sEmployeeId: String)                                     returns String;
+    function checkEligibleMobileClaim(sEmployeeId: String) returns String; 
 
+    type EligibilityPayload{
+        CheckFields: many EligibilityCheckFields;
+        ClaimType: String;
+        ClaimTypeItem: String;
+        EmpId: String;
+    }
+
+    type EligibilityCheckFields{
+        fieldName: String;
+        value: LargeString @Core.MediaType: 'application/json';
+        result: LargeString @Core.MediaType: 'application/json';
+    }
+
+    action EligibilityCheck(aPayload: many EligibilityPayload) returns many Response;
     entity ZCLM_TYPE_EXCEPTION_LIST                as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
     function checkDefaultCostCenter(sClaimTypeId: String) returns String;

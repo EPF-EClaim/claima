@@ -117,7 +117,9 @@
                         additionalValue="{claimsubmission_input>/claim_header/descr/alternate_cost_center}"
                         editMode="Editable"
                         display="ValueDescription"
-                        visible="{= !${app_viewfields>/field_claiminput_altcc/has_existing_value} }"
+                        visible="{= ${claimsubmission_input>/claimtype/cost_center} === null &amp;&amp;
+                            ${claimsubmission_input>/claimtype/requestform/alternate_cost_center} === null
+                        }"
                         valueHelp="valuehelp_claiminput_altcc"
                     />
                     
@@ -126,9 +128,13 @@
                     <Input
                         id="input_claiminput_altcc"
                         value="{claimsubmission_input>/claim_header/alternate_cost_center} ({claimsubmission_input>/claim_header/descr/alternate_cost_center})"
-                        enabled="{= ${app_viewfields>/field_claiminput_altcc/has_existing_value} }"
+                        enabled="{= ${claimsubmission_input>/claimtype/cost_center} !== null ||
+                            ${claimsubmission_input>/claimtype/requestform/alternate_cost_center} !== null
+                        }"
                         editable="false"
-                        visible="{= ${app_viewfields>/field_claiminput_altcc/has_existing_value} }"
+                        visible="{= ${claimsubmission_input>/claimtype/cost_center} !== null ||
+                            ${claimsubmission_input>/claimtype/requestform/alternate_cost_center} !== null
+                        }"
                     />
                     
                     <!-- Attachment Email Approval -->

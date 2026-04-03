@@ -1,6 +1,12 @@
 sap.ui.define([
-    "claima/utils/Constants"
-], function (Constants) {
+    "sap/m/MessageBox",
+    "claima/utils/Constants",
+    "claima/utils/Utility"
+], function (
+    MessageBox,
+    Constants,
+    Utility
+) {
     "use strict";
 
     return {
@@ -8,8 +14,9 @@ sap.ui.define([
 		 * Initialize the Utility 
 		 * @public
 		 */
-        init: function(oOwnerComponent) {
+        init: function(oOwnerComponent,oView) {
             this._oOwnerComponent = oOwnerComponent;
+            this._oView = oView;
 		},
         
         /**
@@ -30,28 +37,34 @@ sap.ui.define([
             switch (sSubmissionType) {
                 case Constants.SubmissionTypePrefix.REQUEST:
                     break;
-                case Constants.SubmissionTypePrefix.CLAIM:
+                case Constants.SubmissionTypePrefix.CLAIM:   
+                    var oInputModel = this._oView.getModel("claimitem_input");
+                    var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
+
+                    if (oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.TELEFON_B) {
+                        if(!oInputModel.getProperty("/claim_item/disclaimer")) {
+                            MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+                            return false;
+                        }
+                    }
+
+                    if (oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.GALAKAN) {
+                        if(!oInputModel.getProperty("/claim_item/disclaimer_galakan")) {
+                            MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+                            return false;
+                        }
+                    }
+                
+                    var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
+                    for(var i = 0; i < aItems.length; i++){
+                        if(aItems[i].amount == 0){
+                            MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
+                            return false;
+                        }
+                    }
                     break;
             }
-        },
-
-        costCenterDetermination: async function (oController, sClaimTypeId) {
-            
-			try {
-				const oFunction = oController._oDataModel.bindContext("/checkDefaultCostCenter(...)");
-				
-				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
-
-				await oFunction.execute();
-
-				const oContext = oFunction.getBoundContext();
-				const oResult = oContext.getObject();
-
-                return oResult.sCostCenter;
-
-			} catch (oError) {
-				console.error("Failed to check eligibility", oError);
-			}
+            return true;
         }
     };
 });

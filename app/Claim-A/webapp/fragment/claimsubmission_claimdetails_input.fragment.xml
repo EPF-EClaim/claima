@@ -74,12 +74,22 @@
 
 				<!-- Dependent Name -->
 				<Label text="{i18n>label_claimdetails_input_dependent}" />
-				<Input
-					id="input_claimdetails_input_dependent_name"
-					value="{claimitem_input>/claim_item/dependent_name}"
+				<Select
+					id="select_claimdetails_input_dependent_name"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/dependent_name}"
+					items="{
+						path:'employee>/ZEMP_DEPENDENT',
+						sorter: { path: 'DEPENDENT_NO', descending: false }
+					}"
 					visible="false"
 					required="true"
-				/>
+				>
+				<items>
+					<core:Item key="{employee>LEGAL_NAME}" 
+							   text="{employee>LEGAL_NAME}" />
+				</items>
+				</Select>
 
 				<!-- Type of Professional Body -->
 				<Label text="{i18n>label_claimdetails_input_profbodytype}" />
@@ -124,10 +134,16 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
+							maxIntegerDigits: 16,
 							preserveDecimals: false
+						},
+						constraints: {
+							minimum: 0.01
 						}
 					}"
-					visible="false"
+					change="onChange_ClaimDetails_ActualAmount"
+					liveChange="onChange_ClaimDetails_ActualAmount"
+					visible="{claimitem_property>/actual_amount/is_visible}"
 					required="true"
 				/>
 
@@ -165,20 +181,40 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							maxIntegerDigits: 16,
+							preserveDecimals: false,
+							constraints: {
+								minimum: 0.01
+							}
 						}
 					}"
 					required="true"
-					visible="false"
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
+						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
+						!${claimitem_property>/entitled_breakfast/is_visible}
+					}"
+					visible="{claimitem_property>/amount/is_visible}"
 				/>
 
 				<!-- % Compensation -->
 				<Label text="{i18n>label_claimdetails_input_compensation}" />
 				<Input
 					id="input_claimdetails_input_percentage_compensation"
-					value="{claimitem_input>/claim_item/percentage_compensation}"
-					type="Number"
-					visible="false"
+					value="{
+						path: 'claimitem_input>/claim_item/percentage_compensation',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 1,
+							maxFractionDigits: 2,
+							maxIntegerDigits: 5,
+							preserveDecimals: false
+						}
+					}"
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						!${claimitem_property>/amount/is_visible}
+					}"
+					visible="{claimitem_property>/percentage_compensation/is_visible}"
 				/>
 
 				<!-- Course Title -->
@@ -273,7 +309,7 @@
 				<DatePicker
 					id="datepicker_claimdetails_input_startdate"
 					value="{claimitem_input>/claim_item/start_date}"
-					visible="false"
+					visible="{claimitem_property>/start_date/is_visible}"
 					displayFormat="dd-MMM-yyyy"
 					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_startdate','datepicker_claimdetails_input_enddate')"
 					required="true"
@@ -294,7 +330,7 @@
 				<DatePicker
 					id="datepicker_claimdetails_input_enddate"
 					value="{claimitem_input>/claim_item/end_date}"
-					visible="false"
+					visible="{claimitem_property>/end_date/is_visible}"
 					displayFormat="dd-MMM-yyyy"
 					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_startdate','datepicker_claimdetails_input_enddate')"
 					required="true"
@@ -309,6 +345,101 @@
 					displayFormat="HH:mm"
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
 				/>
+
+				<!-- Nama Pembekal Insuran -->
+				<Label text="{i18n>label_claimdetails_input_insurance_provider_id}" />
+				<Select
+					id="select_claimdetails_input_insurance_provider_id"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/insurance_provider_id}"
+					change="onSelect_ClaimDetails_InsuranceProvider"
+					liveChange="onSelect_ClaimDetails_InsuranceProvider"
+					visible="{claimitem_property>/insurance_provider_id/is_visible}"
+				>
+				</Select>
+
+				<!-- Nama Pembekal Insuran (Long Text) -->
+				<Label text="{i18n>label_claimdetails_input_insurance_provider_name}" />
+				<Input
+					id="input_claimdetails_input_insurance_provider_name"
+					value="{claimitem_input>/claim_item/insurance_provider_name}"
+					visible="{= ${claimitem_input>/claim_item/insurance_provider_id} === ${constant>/InsuranceProvider/OTHERS}}"
+				/>
+
+				<!-- Insurance Package -->
+				<Label text="{i18n>label_claimdetails_input_insurance_package_id}" />
+				<Select
+					id="select_claimdetails_input_insurance_package_id"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/insurance_package_id}"
+					change="onSelect_ClaimDetails_InsurancePackage"
+					liveChange="onSelect_ClaimDetails_InsurancePackage"
+					visible="{claimitem_property>/insurance_package_id/is_visible}"
+				>
+				</Select>
+
+				<!-- Date of Purchase of Insurance -->
+				<Label text="{i18n>label_claimdetails_input_insurance_purchase_date}" />
+				<DatePicker
+					id="datepicker_claimdetails_input_insurance_purchase_date"
+					value="{claimitem_input>/claim_item/insurance_purchase_date}"
+					visible="{claimitem_property>/insurance_purchase_date/is_visible}"
+					displayFormat="dd-MMM-yyyy"
+				>
+					<customData>
+						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_PURCH_DATE/customErrorMessage}" />
+					</customData>
+				</DatePicker>
+
+				<!-- Insurance Period of Certificate Start Date -->
+				<Label text="{i18n>label_claimdetails_input_insurance_cert_start_date}" />
+				<DatePicker
+					id="datepicker_claimdetails_input_insurance_cert_start_date"
+					value="{claimitem_input>/claim_item/insurance_cert_start_date}"
+					visible="{claimitem_property>/insurance_cert_start_date/is_visible}"
+					maxDate="{
+						parts: [
+							'constant>/EntitiesFields/INSURANCE_CERT_START_DATE',
+							'claimsubmission_input>/claim_header/claim_id',
+							'claimsubmission_input>/claim_header/claim_type_id',
+							'claimitem_input>/claim_item/claim_type_item_id',
+							'claimsubmission_input>/claim_header',
+							'claimitem_input>/claim_item'
+						],
+						formatter: '.DateUtility.determineMaxDate'
+					}"
+					displayFormat="dd-MMM-yyyy"
+				>
+					<customData>
+						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_CERT_START_DATE/customErrorMessage}" />
+						<core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/INSURANCE_CERT_START_DATE/customMaxDateError}" />						
+					</customData>
+				</DatePicker>
+
+				<!-- Insurance Period of Certificate End Date -->
+				<Label text="{i18n>label_claimdetails_input_insurance_cert_end_date}" />
+				<DatePicker
+					id="datepicker_claimdetails_input_insurance_cert_end_date"
+					value="{claimitem_input>/claim_item/insurance_cert_end_date}"
+					visible="{claimitem_property>/insurance_cert_end_date/is_visible}"
+					minDate="{
+						parts: [
+							'constant>/EntitiesFields/INSURANCE_CERT_END_DATE',
+							'claimsubmission_input>/claim_header/claim_id',
+							'claimsubmission_input>/claim_header/claim_type_id',
+							'claimitem_input>/claim_item/claim_type_item_id',
+							'claimsubmission_input>/claim_header',
+							'claimitem_input>/claim_item'
+						],
+						formatter: '.DateUtility.determineMinDate'
+					}"
+					displayFormat="dd-MMM-yyyy"
+				>
+					<customData>
+						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_CERT_END_DATE/customErrorMessage}" />
+						<core:CustomData key="customMinDateError" value="{appModel>/fieldControl/INSURANCE_CERT_END_DATE/customMinDateError}" />						
+					</customData>
+				</DatePicker>
 
 				<!-- Mode of Transfer-->
 				<Label text="{i18n>req_i_transfer_mode}" />
@@ -347,7 +478,7 @@
 					value="{claimitem_input>/claim_item/no_of_days}"
 					type="Number"
 					visible="false"
-					enabled="false"
+					editable="false"
 					required="true"
 				/>
 
@@ -359,7 +490,7 @@
 					selectedKey="{claimitem_input>/claim_item/vehicle_type}"
 					change="onSelect_ClaimDetails_VehicleType"
 					liveChange="onSelect_ClaimDetails_VehicleType"
-					visible="false"
+					visible="{claimitem_property>/vehicle_type/is_visible}"
 					required="true"
 				>
 				</Select>
@@ -386,19 +517,28 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							maxIntegerDigits: 6,
+							preserveDecimals: false,
+							constraints: {
+								minimum: 0
+							}
 						}
 					}"
-					visible="false"
+					change="onChange_ClaimDetails_Kilometer"
+					liveChange="onChange_ClaimDetails_Kilometer"
+					visible="{claimitem_property>/km/is_visible}"
 				/>
 
 				<!-- Rate Per Kilometer -->
 				<Label text="{i18n>label_claimdetails_input_km_rate}" />
 				<Input
 					id="input_claimdetails_input_rate_per_km"
-					value="{claimitem_input>/claim_item/rate_per_km}"
+					value="{
+						path: 'claimitem_input>/claim_item/descr/rate_per_km',
+						type: 'FloatType'
+					}"
 					editable="false"
-					visible="false"
+					visible="{claimitem_property>/rate_per_km/is_visible}"
 				/>
 
 				<!-- Type of Fare -->
@@ -449,10 +589,16 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							maxIntegerDigits: 16,
+							preserveDecimals: false,
+							constraints: {
+								minimum: 0
+							}
 						}
 					}"
-					visible="false"
+					change="onChange_ClaimDetails_Toll"
+					liveChange="onChange_ClaimDetails_Toll"
+					visible="{claimitem_property>/toll/is_visible}"
 				/>
 
 				<!-- Parking -->
@@ -676,6 +822,7 @@
 					value="{claimitem_input>/claim_item/departure_time}"
 					visible="false"
 					displayFormat="HH:mm"
+					valueFormat="HH:mm"
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
 					required="true"
 				/>
@@ -707,6 +854,7 @@
 					value="{claimitem_input>/claim_item/arrival_time}"
 					visible="false"
 					displayFormat="HH:mm"
+					valueFormat="HH:mm"
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
 					required="true"
 				/>
@@ -810,7 +958,7 @@
 						}
 					}"
 					editable="false"
-					visible="false"
+					visible="{claimitem_property>/entitled_breakfast/is_visible}"
 				/>
 
 				<!-- Entitled Lunch -->
