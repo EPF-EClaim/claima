@@ -180,6 +180,7 @@
 					}"
 					required="true"
 					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
 						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
 						!${claimitem_property>/entitled_breakfast/is_visible}
 					}"
@@ -384,7 +385,7 @@
 					selectedKey="{claimitem_input>/claim_item/vehicle_type}"
 					change="onSelect_ClaimDetails_VehicleType"
 					liveChange="onSelect_ClaimDetails_VehicleType"
-					visible="false"
+					visible="{claimitem_property>/vehicle_type/is_visible}"
 					required="true"
 				>
 				</Select>
@@ -411,19 +412,28 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							maxIntegerDigits: 6,
+							preserveDecimals: false,
+							constraints: {
+								minimum: 0
+							}
 						}
 					}"
-					visible="false"
+					change="onChange_ClaimDetails_Kilometer"
+					liveChange="onChange_ClaimDetails_Kilometer"
+					visible="{claimitem_property>/km/is_visible}"
 				/>
 
 				<!-- Rate Per Kilometer -->
 				<Label text="{i18n>label_claimdetails_input_km_rate}" />
 				<Input
 					id="input_claimdetails_input_rate_per_km"
-					value="{claimitem_input>/claim_item/rate_per_km}"
+					value="{
+						path: 'claimitem_input>/claim_item/descr/rate_per_km',
+						type: 'FloatType'
+					}"
 					editable="false"
-					visible="false"
+					visible="{claimitem_property>/rate_per_km/is_visible}"
 				/>
 
 				<!-- Type of Fare -->
@@ -474,10 +484,16 @@
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							maxIntegerDigits: 16,
+							preserveDecimals: false,
+							constraints: {
+								minimum: 0
+							}
 						}
 					}"
-					visible="false"
+					change="onChange_ClaimDetails_Toll"
+					liveChange="onChange_ClaimDetails_Toll"
+					visible="{claimitem_property>/toll/is_visible}"
 				/>
 
 				<!-- Parking -->

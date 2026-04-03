@@ -81,6 +81,9 @@ sap.ui.define([
 			// declare claim utility
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
 
+			// declare claim utility
+			ClaimUtility.init(this.getOwnerComponent(), this.getView());
+
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
 			oRouter.getRoute("ClaimSubmission").attachPatternMatched((event) => { this._onMatched(event); }, this);
@@ -2127,11 +2130,18 @@ sap.ui.define([
 
 			// calculate number of days
 			oInputModel.setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
-			
+
 			// set percentage (%) compensation based on claim item
-			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
 				await ClaimUtility.setClaimItemDefaultValues("percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
+			}
+			
+			// set rate per km if no vehicle type field found
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			if (oPropertyModel.getProperty("/rate_per_km/is_visible") && !oPropertyModel.getProperty("/vehicle_type/is_visible")) {
+				await ClaimUtility.setClaimItemDefaultValues("descr/rate_per_km", this._oConstant.EligibilityRule.RATE_PER_KM, 0.0);
+				// clear rate per km ID field since formula uses default value
+				oInputModel.setProperty("/rate_per_km", null);
 			}
 		},
 
@@ -2150,11 +2160,15 @@ sap.ui.define([
 				percentage_compensation: { is_visible: false },
 				actual_amount: { is_visible: false },
 				amount: { is_visible: false },
+				vehicle_type: { is_visible: false },
+				km: { is_visible: false },
+				rate_per_km: { is_visible: false },
+				toll: { is_visible: false },
 				entitled_breakfast: { is_visible: false }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
-			this.getView().setModel(oClaimItemPropertyModel, "claimitem_property");
+			this.getView().setModel(oClaimItemPropertyModel, "claimitem_property");			
 
 			// change footer buttons
 			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
@@ -2844,6 +2858,78 @@ sap.ui.define([
 			}
 			if (this.byId("input_claimdetails_input_entitled_dinner").getVisible()) {
 				this.byId("input_claimdetails_input_entitled_dinner").setValue("");
+			}
+		},
+
+        /**
+         * On selecting vehicle type from dropdown, call method to determine rate per km based on vehicle type and claim item used
+		 * rate per KM values will be populated based on output values returned
+         * @public
+         */
+		onSelect_ClaimDetails_VehicleType: async function () {
+			if (this.getView().getModel("claimitem_property")?.getProperty("/rate_per_km/is_visible")) {
+				var oInputModel = this.getView().getModel("claimitem_input");
+				var aEntityFields = [
+					{ entity_field: "VEHICLE_TYPE_ID", filter_value: oInputModel.getProperty("/claim_item/vehicle_type") },
+					{ entity_field: "CLAIM_TYPE_ITEM_ID", filter_value: oInputModel.getProperty("/claim_item/claim_type_item_id") }
+				]
+				var aRetrievalFields = [ "RATE_KM_ID", "RATE"];
+				var aOutputValues = await ClaimUtility.setClaimItemValueFromSelection(this._oConstant.Entities.ZRATE_KM, aEntityFields, aRetrievalFields);
+				if (aOutputValues.length > 0) {
+					oInputModel.setProperty("/claim_item/rate_per_km", aOutputValues[0]);
+					oInputModel.setProperty("/claim_item/descr/rate_per_km", aOutputValues[1]);
+				}
+				else {
+					oInputModel.setProperty("/claim_item/rate_per_km", null);
+					oInputModel.setProperty("/claim_item/descr/rate_per_km", 0.0);
+                    MessageToast.show(Utility.getText("msg_claimdetails_input_descr/rate_per_km_none"));
+				}
+                this._calculateRatePerKm();
+			}
+		},
+
+        /**
+         * On changing kilometer field, method checks if rate per km field exists to calculate amount
+         * @public
+         */
+		onChange_ClaimDetails_Kilometer: function () {
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			// calculate amount if rate per km exists 
+			if (oPropertyModel.getProperty("/rate_per_km/is_visible")) {
+				this._calculateRatePerKm();
+			}
+		},
+
+        /**
+         * On changing toll field, method checks if km and rate per km fields exist to calculate amount
+         * @public
+         */
+		onChange_ClaimDetails_Toll: function () {
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			// calculate amount if km and rate per km exists 
+			if (oPropertyModel.getProperty("/km/is_visible") && oPropertyModel.getProperty("/rate_per_km/is_visible")) {
+				this._calculateRatePerKm();
+			}
+		},
+
+        /**
+         * If rate per km (and toll) fields are available, auto-populate amount value
+         * Formulas:
+		 * with toll - ((km * rate_per_km) + toll)
+		 * without toll - (km * rate_per_km)
+         * @private
+         */
+		_calculateRatePerKm: function () {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			if (oPropertyModel.getProperty("/km/is_visible") && oPropertyModel.getProperty("/rate_per_km/is_visible")) {
+				// calculate amount with toll
+				var fAmount = parseFloat(oInputModel.getProperty("/claim_item/km")) * parseFloat(oInputModel.getProperty("/claim_item/descr/rate_per_km"));
+				oInputModel.setProperty("/claim_item/amount", fAmount);
+				if (oPropertyModel.getProperty("/toll/is_visible") && parseFloat(oInputModel.getProperty("/claim_item/toll")) > 0) {
+					var fAmount = parseFloat(oInputModel.getProperty("/claim_item/amount")) + parseFloat(oInputModel.getProperty("/claim_item/toll"));
+					oInputModel.setProperty("/claim_item/amount", fAmount);
+				}
 			}
 		},
 
