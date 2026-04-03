@@ -266,9 +266,10 @@ sap.ui.define([
                             // Specific Claim Type
                             if (sItemType === Constants.ClaimTypeItem.VISA) {
                                 // VISA related logic 
+                                _dMinDate = null;
                             } else {
                                 // Other Claim Type
-                                _dMinDate = new Date(oHeader.trip_start_date);
+                                _dMinDate = null;
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
                                     _oResourceBundle.getText("error_receiptdate_mindate"));
                             }
@@ -335,6 +336,13 @@ sap.ui.define([
                             // Specific Claim Type
                             if (sItemType === Constants.ClaimTypeItem.VISA) {
                                 // VISA related logic 
+                                _dMaxDate = new Date(oHeader.trip_start_date);
+                                const dPastDate = new Date(_dMaxDate);
+                                dPastDate.setDate(dPastDate.getDate() - 90);
+                                _dMaxDate = dPastDate;
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                    _oResourceBundle.getText("msg_claimsubmission_invalid_visa_date"));
+
                             } else {
                                 // Other Claim Type
                                 _dMaxDate = new Date(oHeader.trip_end_date);
