@@ -88,21 +88,30 @@ sap.ui.define([
 			const oRouter = this.getOwnerComponent().getRouter();
 			oRouter.getRoute("ClaimSubmission").attachPatternMatched((event) => { this._onMatched(event); }, this);
 			oRouter.attachBeforeRouteMatched((event) => { this._beforeRouteMatched(event); }, this);
-
-			this.getOwnerComponent().setModel(new JSONModel({
-				fieldControl: {
-					[this._oConstant.EntitiesFields.RECEIPT_DATE]: {
-						customErrorMessage: "",
-						customMinDateError: "",
-						customMaxDateError: ""
-					},
-					[this._oConstant.EntitiesFields.BILL_DATE]: {
-						customErrorMessage: "",
-						customMinDateError: "",
-						customMaxDateError: ""
-					}
+			
+			this.getOwnerComponent().setModel(new JSONModel({ fieldControl: { 
+				[this._oConstant.EntitiesFields.RECEIPT_DATE]: {
+					customErrorMessage: "",
+					customMinDateError: "",
+					customMaxDateError: ""
+				},
+				[this._oConstant.EntitiesFields.BILL_DATE]: {
+					customErrorMessage: "",
+					customMinDateError: "",
+					customMaxDateError: ""
+				},
+				[this._oConstant.EntitiesFields.INSURANCE_PURCH_DATE]: {
+					customErrorMessage: "",
+				},
+				[this._oConstant.EntitiesFields.INSURANCE_CERT_START_DATE]: {
+					customErrorMessage: "",
+					customMaxDateError: ""
+				},
+				[this._oConstant.EntitiesFields.INSURANCE_CERT_END_DATE]: {
+					customErrorMessage: "",
+					customMinDateError: "",
 				}
-			}), "appModel");
+			} }), "appModel");
 
 		},
 
@@ -2159,18 +2168,26 @@ sap.ui.define([
 
 			// set claim item property model
 			var oClaimItemProperties = {
-				percentage_compensation: { is_visible: false },
 				actual_amount: { is_visible: false },
 				amount: { is_visible: false },
+				percentage_compensation: { is_visible: false },
+				start_date: { is_visible: false },
+				end_date: { is_visible: false },
 				vehicle_type: { is_visible: false },
 				km: { is_visible: false },
 				rate_per_km: { is_visible: false },
 				toll: { is_visible: false },
-				entitled_breakfast: { is_visible: false }
+				entitled_breakfast: { is_visible: false },
+				insurance_provider_id: { is_visible: false },
+				insurance_provider_name: { is_visible: false },
+				insurance_package_id: { is_visible: false },
+				insurance_purchase_date: { is_visible: false },
+				insurance_cert_start_date: { is_visible: false },
+				insurance_cert_end_date: { is_visible: false }
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
-			this.getView().setModel(oClaimItemPropertyModel, "claimitem_property");			
+			this.getView().setModel(oClaimItemPropertyModel, "claimitem_property");
 
 			// change footer buttons
 			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
@@ -2265,6 +2282,10 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_funeral_transportation", "ZTRANSPORT_PASSING");
 			//// Level of Studies
 			this._setClaimDetailSelectionField("select_claimdetails_input_study_levels_id", "ZSTUDY_LEVELS");
+			//// Nama Pembekal Insuran
+			this._setClaimDetailSelectionField("select_claimdetails_input_insurance_provider_id", "ZINSURANCE_PROVIDER");
+			//// Insurance Package
+			this._setClaimDetailSelectionField("select_claimdetails_input_insurance_package_id", "ZINSURANCE_PACKAGE", null, "ZINSURANCE_PACKAGE_DESC");
 			//// Type of Vehicle
 			this._setClaimDetailSelectionField("select_claimdetails_input_vehicle_type", "ZVEHICLE_TYPE");
 			//// Vehicle Ownership ID (Sendiri/Penjabat)
@@ -2300,20 +2321,41 @@ sap.ui.define([
 			
 		},
 
-		_setClaimDetailSelectionField: function (oId, oTable, oField) {
-			if (this.byId(oId).getVisible()) {
-				if (!oField) {
-					var oField = oTable.slice(1);
+		/**
+        * Set values that will be retrieved for selection dropdown based on claim header
+		* method checks for field to be updated and the associated db table
+		* if found, values from the db table will be populated to the dropdown
+        * @private
+		* @param {string} sId - ID of claim item field to be updated
+		* @param {string} sTable - database table with values to populate to field
+		* @param {string} sField - field of db table to retrieve value (for ID and Desc)
+		* @param {string} sFieldDesc - specific name of description field of db table
+        */
+		_setClaimDetailSelectionField: function (sId, sTable, sField, sFieldDesc) {
+			if (this.byId(sId).getVisible()) {
+				if (!sField) {
+					var sField = sTable.slice(1);
 				}
-				this.byId(oId).bindAggregation("items", {
-					path: "employee>/" + oTable,
+				// determine description field
+				if (!sFieldDesc) {
+					var sFieldDesc = sField + '_DESC';
+				}
+				// show ID in text
+				var sItemText = "{employee>" + sFieldDesc + "}";
+				this.byId(sId).bindAggregation("items", {
+					path: "employee>/" + sTable,
+					filters: [
+						// ensure status is active
+						new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+						new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+						new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+					],
 					sorter: [
-						new Sorter(oField + '_ID'),
-						new Sorter(oField + '_DESC')
+						new Sorter(sField + '_ID')
 					],
 					template: new Item({
-						key: "{employee>" + oField + "_ID}",
-						text: "{employee>" + oField + "_ID} - {employee>" + oField + "_DESC}"
+						key: "{employee>" + sField + "_ID}",
+						text: sItemText
 					})
 				});
 			}
@@ -2342,6 +2384,7 @@ sap.ui.define([
 		onSave_ClaimDetails_Input: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("claimitem_input");
+			oInputModel.refresh(true);
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
 			// Validate required fields
@@ -2795,9 +2838,9 @@ sap.ui.define([
 			}
 		},
 
-		/**
-		 * Determine which method to use when calculating number of days for claim item
-		 * if claim item is Dobi, pass start/end date value from claim header
+        /**
+         * Determine which method to use when calculating number of days for claim item
+		 * if start/end date is not in claim item fields, pass start/end date value from claim header
 		 * else if header is empty, pass start/end date value from claim item
 		 * @private
 		 * @return {integer} retrieve number of days value based on start/end date from claim
@@ -2806,8 +2849,11 @@ sap.ui.define([
 			var oHeader = {};
 			var oItem = {};
 			var oInputModel = this.getView().getModel("claimitem_input");
-			//// get header if claim type item is DOBI
-			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.DOBI) {
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			//// get header if start/end date is not visible in claim item fields
+			if ((!oPropertyModel.getProperty("/start_date/is_visible") || !oPropertyModel.getProperty("/end_date/is_visible")) &&
+				(!oPropertyModel.getProperty("/insurance_cert_start_date/is_visible") || !oPropertyModel.getProperty("/insurance_cert_end_date/is_visible"))
+			) {
 				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 				oHeader = {
 					tripstartdate: oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"),
@@ -4058,6 +4104,12 @@ sap.ui.define([
 				"timepicker_claimdetails_input_starttime",
 				"datepicker_claimdetails_input_enddate",
 				"timepicker_claimdetails_input_endtime",
+				"select_claimdetails_input_insurance_provider_id",
+				"input_claimdetails_input_insurance_provider_name",
+				"select_claimdetails_input_insurance_package_id",
+				"datepicker_claimdetails_input_insurance_purchase_date",
+				"datepicker_claimdetails_input_insurance_cert_start_date",
+				"datepicker_claimdetails_input_insurance_cert_end_date",
 				"input_claimdetails_input_no_of_days",
 				"select_claimdetails_input_vehicle_type",
 				"select_claimdetails_input_vehicle_ownership_id",
@@ -4194,6 +4246,12 @@ sap.ui.define([
 				"timepicker_claimdetails_input_starttime",
 				"datepicker_claimdetails_input_enddate",
 				"timepicker_claimdetails_input_endtime",
+				"select_claimdetails_input_insurance_provider_id",
+				"input_claimdetails_input_insurance_provider_name",
+				"select_claimdetails_input_insurance_package_id",
+				"datepicker_claimdetails_input_insurance_purchase_date",
+				"datepicker_claimdetails_input_insurance_cert_start_date",
+				"datepicker_claimdetails_input_insurance_cert_end_date",
 				"input_claimdetails_input_no_of_days",
 				"select_claimdetails_input_vehicle_type",
 				"select_claimdetails_input_vehicle_ownership_id",
