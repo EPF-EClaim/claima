@@ -1268,7 +1268,7 @@ entity ZELIGIBILITY_RULE : managed {
         AGING_NUMBER              : Integer        @Common.Label: 'Aging Number';
         AGING_PERIOD              : String(2)      @Common.Label: 'Period Number';
         STATUS                    : String(10)     @Common.Label: 'Status';
-        JOB_GROUP                 : String(2)      @Common.Label: 'Job Group';
+        JOB_GROUP                 : String(8)      @Common.Label: 'Job Group';
         ZEMP_TYPE                 : Association to ZEMP_TYPE
                                         on ZEMP_TYPE.EMP_TYPE_ID = EMPLOYEE_TYPE;
         ZROLE                     : Association to ZROLE
