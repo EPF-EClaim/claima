@@ -5,6 +5,7 @@ const DalamNegara = require('./DalamNegara')
 const LuarNegara = require('./LuarNegara')
 const KursusDalam = require('./KursusDalam')
 const KursusLuar = require('./KursusLuar')
+const IPAD = require('./IPAD')
 
 module.exports = {
     /**
@@ -28,10 +29,14 @@ module.exports = {
         let aPersonalGrade = aEmpData.map(d => d.GRADE);
         aPersonalGrade.push(Constant.Wildcard.All);
 
+        let aEmpRoleId = aEmpData.map(d => d.ROLE);
+        aEmpRoleId.push(Constant.Wildcard.All);
+
         // Get Eligibility Rules
         const aEligibilityRules = await tx.run(
             SELECT.from(Constant.Entities.ZELIGIBILITY_RULE).where({
                 PERSONAL_GRADE: { in: aPersonalGrade },
+                ROLE_ID: { in: aEmpRoleId },
                 CLAIM_TYPE_ID: aPayload[0].ClaimType,
                 CLAIM_TYPE_ITEM_ID: aPayload[0].ClaimTypeItem
             })
@@ -59,8 +64,8 @@ module.exports = {
                     oReturnPayload = KursusLuar.onEligibleCheck(aPayload[i], aEligibilityRules);
                     break;
 
-                case Constant.ClaimType.I-PAD:
-                    oReturnPayload = I-PAD.onEligibleCheck(aPayload[i], aEligibilityRules);
+                case Constant.ClaimType.I_PAD:
+                    oReturnPayload = IPAD.onEligibleCheck(aPayload[i], aEligibilityRules);
                     break;
 
                 // case PELBAGAI: // Pelbagai no requirement checking needed

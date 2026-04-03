@@ -69,7 +69,7 @@ const Constant = {
         "ELAUN_TUKAR": "ELAUN_TUKAR",
         "ELAUN_PINDAH": "ELAUN_PINDAH",
         "HANDPHONE": "HANDPHONE",
-        "I-PAD": "I-PAD"
+        "I_PAD": "I-PAD"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -126,7 +126,7 @@ const Constant = {
         "VISA": "VISA",
         "YURAN": "YURAN",
         "YURAN_KLJ": "YURAN_KLJ",
-        "I-PAD": "I-PAD"
+        "I_PAD": "I-PAD"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
@@ -134,7 +134,8 @@ const Constant = {
         "TRAVEL_DAYS_ID": "TRAVEL_DAYS_ID",
         "ELIGIBLE_AMOUNT": "ELIGIBLE_AMOUNT",
         "ROOM_TYPE_ID": "ROOM_TYPE_ID",
-        "FARE_TYPE_ID": "FARE_TYPE_ID"
+        "FARE_TYPE_ID": "FARE_TYPE_ID",
+        "ROLE": "ROLE"
     },
     Wildcard:{
         "All": "*"
