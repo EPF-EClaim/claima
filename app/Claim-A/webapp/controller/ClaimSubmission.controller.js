@@ -2107,6 +2107,7 @@ sap.ui.define([
 			// validate claim item
 			var claimItem = oEvent.getParameters().selectedItem;
 			var oInputModel = this.getView().getModel("claimitem_input");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (claimItem) {
 				// Reset Location Type
 				oInputModel.setProperty("/claim_item/location_type", "");
