@@ -4589,7 +4589,7 @@ sap.ui.define([
 		},
 
 		onChange_ClaimDetails_CurrencyRate: function() {
-			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var oInputModel = this.getView().getModel("claimitem_input");
 			if (this.byId("input_claimdetails_input_currency_rate").getVisible() && this.byId("input_claimdetails_input_currency_rate").getValue() != "") {
 			var nAmountMYR = ( oInputModel.getProperty("/claim_item/currency_rate") * oInputModel.getProperty("/claim_item/currency_amount") );
 				oInputModel.setProperty("/claim_item/amount", nAmountMYR);
