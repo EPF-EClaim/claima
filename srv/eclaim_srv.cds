@@ -351,4 +351,6 @@ service eclaim_srv @(requires: 'authenticated-user'){
     }
 
     action EligibilityCheck(aPayload: many EligibilityPayload) returns many Response;
+    entity ZCLM_TYPE_EXCEPTION_LIST                as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
+
 };
