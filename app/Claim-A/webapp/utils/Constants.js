@@ -77,10 +77,13 @@ sap.ui.define([
             "TELEFON": "TELEFON",
             "TIPS": "TIPS",
             "TOLL": "TOLL",
+            "TRAVEL_INSURANCE": "TRAVEL_INSURANCE",
             "VISA": "VISA",
             "YURAN": "YURAN",
             "YURAN_KLJ": "YURAN_KLJ",
-            "CASH_REPAY": "CASH_REPAY"
+            "CASH_REPAY": "CASH_REPAY",
+            "GALAKAN" : "GALAKAN",
+            "TELEFON_B" : "TELEFON_B"
         },
         "ClaimTypeItemStatus": {
             "ACTIVE": "ACTIVE",
@@ -95,7 +98,8 @@ sap.ui.define([
             "CANCELLED": "STAT07",
         },
         "EligibilityRule": {
-            "SUBSIDISED_RATE": "SUBSIDISED_RATE",
+            "RATE_PER_KM": "RATE",
+            "SUBSIDISED_RATE": "SUBSIDISED_RATE"
         },
         "Departments": {
             "FI_DEPT":"0500000000"
@@ -154,6 +158,7 @@ sap.ui.define([
             "ZEMP_MASTER": "/ZEMP_MASTER",
             "ZEMP_REQUEST_BUDGET_CHECK": "/ZEMP_REQUEST_BUDGET_CHECK",
             "ZEMP_SUBSTITUTION_RULE": "/ZEMP_SUBSTITUTION_RULE",
+            "ZRATE_KM": "/ZRATE_KM",
             "ZREQUEST_HEADER": "/ZREQUEST_HEADER",
             "ZREQUEST_ITEM": "/ZREQUEST_ITEM",
             "ZREQUEST_TYPE": "/ZREQUEST_TYPE",
@@ -201,7 +206,10 @@ sap.ui.define([
             "YEAR": "YEAR",
             "SUBMITTED_DATE": "SUBMITTED_DATE",
             "BILL_DATE": "BILL_DATE",
-            "RECEIPT_DATE": "RECEIPT_DATE"
+            "RECEIPT_DATE": "RECEIPT_DATE",
+            "INSURANCE_PURCH_DATE": "INSURANCE_PURCH_DATE",
+            "INSURANCE_CERT_START_DATE": "INSURANCE_CERT_START_DATE",
+            "INSURANCE_CERT_END_DATE": "INSURANCE_CERT_END_DATE",
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -301,6 +309,9 @@ sap.ui.define([
         "LocationType" : {
             "OTHER" : "1",
             "KWSP"  : "2"
+        },
+        "InsuranceProvider" : {
+            "OTHERS" : "4",
         },
         "Status" : {
             "ACTIVE" : "ACTIVE"
