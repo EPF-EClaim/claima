@@ -1305,14 +1305,14 @@ sap.ui.define([
 			const oRequestModel = this.getView().getModel("request");
 
 			// Read event start date
-			const dtripDate = oRequestModel.getProperty("/req_header/tripstartdate");
+			const dTripDate = oRequestModel.getProperty("/req_header/tripstartdate");
 
-			if (!dtripDate) {
+			if (!dTripDate) {
 				return; // no date entered yet
 			}
 
 			// Convert to JS Date
-			const oEventDate = new Date(dtripDate);
+			const oEventDate = new Date(dTripDate);
 			const oToday = new Date();
 			oToday.setHours(0,0,0,0);
 
