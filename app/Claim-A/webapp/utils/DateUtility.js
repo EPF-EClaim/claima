@@ -260,6 +260,9 @@ sap.ui.define([
                                 // VISA related logic 
                             } else {
                                 // Other Claim Type
+                                _dMinDate = null;
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                    _oResourceBundle.getText("error_receiptdate_mindate"));
                             }
                             break;
                     }
