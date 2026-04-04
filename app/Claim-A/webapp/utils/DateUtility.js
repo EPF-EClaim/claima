@@ -1,6 +1,6 @@
 sap.ui.define([
     "sap/ui/core/format/DateFormat",
-	"claima/utils/Constants",
+    "claima/utils/Constants",
 ], function (DateFormat, Constants) {
     "use strict";
 
@@ -283,18 +283,23 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             // set min date based on insurance cert start date
-                            if (oItem["insurance_cert_start_date"]) {
-                                _dMinDate = new Date(oItem["insurance_cert_start_date"]);
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                            if (sItemType === Constants.ClaimTypeItem.TRAVEL_INSURANCE) {
+                                if (!!new Date(oItem["insurance_cert_start_date"]).getTime()) {
+                                    _dMinDate = new Date(oItem["insurance_cert_start_date"]);
+                                }
+                                else {
+                                    _dMinDate = null;
+                                    oItem["insurance_cert_start_date"] = null;
+                                }
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
                                     _oResourceBundle.getText("error_insurance_cert_end_date_mindate"));
                             }
                             break;
                     }
                     break;
             }
-
-
-            if(_dMinDate != null){
+            if (_dMinDate !== null) {
                 _dMinDate.setHours(0, 0, 0, 0);
             }
             return _dMinDate;
@@ -342,7 +347,7 @@ sap.ui.define([
                             } else {
                                 // Other Claim Type
                                 _dMaxDate = new Date(oHeader.trip_end_date);
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("error_receiptdate_maxdate"));
                             }
                             break;
@@ -355,7 +360,7 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             _dMaxDate = new Date(oHeader.trip_end_date); // default
-                            _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                            _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                 _oResourceBundle.getText("error_billdate_maxdate"));
                             break;
                     }
@@ -367,8 +372,15 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             // set max date based on insurance cert end date
-                            if (oItem["insurance_cert_end_date"]) {
-                                _dMaxDate = new Date(oItem["insurance_cert_end_date"]);
+                            if (sItemType === Constants.ClaimTypeItem.TRAVEL_INSURANCE) {
+                                if (!!new Date(oItem["insurance_cert_end_date"]).getTime()) {
+                                    _dMaxDate = new Date(oItem["insurance_cert_end_date"]);
+                                }
+                                else {
+                                    _dMaxDate = null;
+                                    oItem["insurance_cert_end_date"] = null;
+                                }
+                                // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
                                     _oResourceBundle.getText("error_insurance_cert_start_date_maxdate"));
                             }
@@ -376,8 +388,60 @@ sap.ui.define([
                     }
             }
 
-            _dMaxDate.setHours(0, 0, 0, 0);
+            if (_dMaxDate !== null) {
+                _dMaxDate.setHours(0, 0, 0, 0);
+            }
             return _dMaxDate;
+        },
+
+        /**
+        * Convert various time formats to HANA-compatible HH:mm:ss
+        * @public
+        * @param {string|number|Date} iTime - time input
+        * @returns {string|null} HH:mm:ss or null if invalid
+        */
+        getHanaTime: function (iTime) {
+            if (!iTime) return null;
+
+            var sTime = String(iTime).trim();
+
+            // HH:mm:ss (e.g. "22:52:00")
+            if (/^\d{2}:\d{2}:\d{2}$/.test(sTime)) {
+                return sTime;
+            }
+
+            // HH:mm (e.g. "22:52")
+            if (/^\d{2}:\d{2}$/.test(sTime)) {
+                return sTime + ":00";
+            }
+
+            // 12-hour format (e.g. "10:52 PM" or "10:52:00 PM")
+            var oTimeMatch = sTime.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)$/i);
+            if (oTimeMatch) {
+                var nHours = parseInt(oTimeMatch[1], 10);
+                var nMinutes = parseInt(oTimeMatch[2], 10);
+                var nSeconds = parseInt(oTimeMatch[3] || 0, 10);
+                var sMeridiem = oTimeMatch[4].toUpperCase();
+
+                if (sMeridiem === "PM" && nHours !== 12) {
+                    nHours += 12;
+                }
+                if (sMeridiem === "AM" && nHours === 12) {
+                    nHours = 0;
+                }
+
+                return this.pad(nHours) + ":" + this.pad(nMinutes) + ":" + this.pad(nSeconds);
+            }
+
+            // Timestamp / Date fallback
+            var oDate = new Date(iTime);
+            if (!isNaN(oDate.getTime())) {
+                return this.pad(oDate.getHours()) + ":"
+                    + this.pad(oDate.getMinutes()) + ":"
+                    + this.pad(oDate.getSeconds());
+            }
+
+            return null;
         }
 
     };

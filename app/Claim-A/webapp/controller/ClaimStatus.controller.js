@@ -7,7 +7,8 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"claima/utils/Utility",
 	"sap/suite/ui/commons/BusinessCard",
-	"sap/m/BusyIndicator"
+	"sap/m/BusyIndicator",
+	"sap/m/SelectDialog"
 ], function (Controller,
 	JSONModel,
 	MessageToast,
@@ -16,7 +17,8 @@ sap.ui.define([
 	Sorter,
 	Utility,
 	BusinessCard,
-	BusyIndicator) {
+	BusyIndicator,
+	SelectDialog) {
 	"use strict";
 
 	return Controller.extend("claima.controller.ClaimStatus", {
@@ -25,11 +27,11 @@ sap.ui.define([
 			// Track current sort direction per path: true = DESC, false = ASC
 			this._mSortState = {};
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
-			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
+			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this.getOwnerComponent().getRouter().getRoute("ClaimStatus").attachPatternMatched(this._onMatched, this);
 		},
 
-		_onMatched: async function() {
+		_onMatched: async function () {
 			const _oReq = this.getOwnerComponent().getModel("claim_status2");
 			const _oModel = this.getOwnerComponent().getModel("employee_view");
 
@@ -105,9 +107,9 @@ sap.ui.define([
 					MessageToast.show(Utility.getText("msg_claimstatus_missing"));
 					return;
 				}
-                // Navigate to claim submission ID
-                const oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
+				// Navigate to claim submission ID
+				const oRouter = this.getOwnerComponent().getRouter();
+				oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
 			} catch (e) {
 				sap.base.Log.error("openItemFromClaimList failed:", e);
 				MessageToast.show(Utility.getText("msg_claimstatus_failed"));
@@ -145,20 +147,6 @@ sap.ui.define([
 			oEvent.getSource().setIcon(this._mSortState[sPath] ? "sap-icon://sort-descending" : "sap-icon://sort-ascending");
 		},
 
-		onResetSort: function () {
-			var oTable = this.byId("tb_myexpenserepo");
-			var oBinding = oTable && oTable.getBinding("items");
-			if (oBinding) {
-				oBinding.sort(null); // clears sorters; backend reload without $orderby
-			}
-
-			// Clear sort state memory
-			this._mSortState = {};
-
-			// Reset header icons back to neutral
-			this._resetSortIcons(oTable);
-		},
-
 		/** Reset all sort button icons inside a table to neutral "sort" */
 		_resetSortIcons: function (oTable) {
 			if (!oTable) { return; }
@@ -176,6 +164,51 @@ sap.ui.define([
 					});
 				}
 			});
-		}
+		},
+
+		onOpenFilterDialog: function () {
+			Utility.openClaimTypeFilterDialog(
+				this,
+				'claim_status2',
+				'/claim_header_list'
+			);
+		},
+
+		onFilterSearch: function (oEvent) {
+			var sValue = oEvent.getParameter("value");
+			var oFilter = new Filter("title", FilterOperator.Contains, sValue);
+			oEvent.getParameter("itemsBinding").filter([oFilter]);
+		},
+
+		onFilterCancel: function () {
+			if (this._oFilterDialog) this._oFilterDialog.close();
+		},
+
+		onFilterConfirm: function (oEvent) {
+			Utility.confirmClaimTypeFilter(
+				this,
+				'claim_status2',
+				'/claim_header_list',
+				'/claim_header_count',
+				oEvent
+			);
+		},
+
+		onResetSort: function () {
+			this._mSortState = {};
+			var oTable = this.byId("tb_myexpenserepo"); 
+			this._resetSortIcons(oTable);
+			var oBinding = oTable?.getBinding("items");
+			if (oBinding) oBinding.sort(null);
+
+			this._aActiveClaimTypeFilters = [];
+			var oModel = this.getView().getModel('claim_status2');
+			var sFullListPath = '/claim_header_list_full'; 
+			var aFullList = oModel.getProperty(sFullListPath);
+			if (aFullList) {
+				oModel.setProperty('/claim_header_list', aFullList); 
+				oModel.setProperty('/claim_header_count', aFullList.length); 
+			}
+		},
 	});
 });
