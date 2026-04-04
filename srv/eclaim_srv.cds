@@ -335,8 +335,48 @@ service eclaim_srv @(requires: 'authenticated-user'){
         MOBILE_BILL_ELIG_AMOUNT : Decimal(15, 2);
     }
 
-    function checkEligibleMobileClaim(sEmployeeId: String)                                     returns String;
+    function checkEligibleMobileClaim(sEmployeeId: String) returns String; 
+
+    type EligibilityPayload{
+        CheckFields: many EligibilityCheckFields;
+        ClaimType: String;
+        ClaimTypeItem: String;
+        EmpId: String;
+    }
+
+    type EligibilityCheckFields{
+        fieldName: String;
+        value: LargeString @Core.MediaType: 'application/json';
+        result: LargeString @Core.MediaType: 'application/json';
+    }
+
+    action EligibilityCheck(aPayload: many EligibilityPayload) returns many Response;
+    type perdiem {
+        amount : Decimal(15, 2);
+        daily_allowance: Decimal(15,2);
+        currency_code: String;
+    }
+
+    function getAmountEntitlement(day:Integer, 
+                                  hours: Decimal(5, 1), 
+                                  location: String, 
+                                  claimtypeid: String, 
+                                  claimtypeitem: String,
+                                  breakfast: Integer, 
+                                  lunch: Integer, 
+                                  dinner: Integer) returns perdiem;
 
     entity ZCLM_TYPE_EXCEPTION_LIST                as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
+
+    type reminders {
+        empName     : String;
+        empEmail    : String; 
+        ccEmail     : String;
+        tripEndDate : String;
+        scenario    : String; 
+        milestone   : String;
+    }
+    
+    function getEmailReminder() returns array of reminders;
 
 };
