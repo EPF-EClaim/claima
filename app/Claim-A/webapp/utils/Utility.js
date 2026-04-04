@@ -117,7 +117,8 @@ sap.ui.define([
                     oDialogModel.setProperty("/altcostcenter_desc", sCostCenterDesc);
                 } else {
                     Fragment.byId("request", "req_acc").setEditMode("Editable");
-                    oDialogModel.setProperty("/altcostcenter", "");
+                    oDialogModel.setProperty("/altcostcenter", null);
+                    oDialogModel.setProperty("/altcostcenter_desc", null);
                 }
 
 			} catch (oError) {
