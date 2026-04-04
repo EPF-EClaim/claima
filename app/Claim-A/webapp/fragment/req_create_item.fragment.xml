@@ -885,7 +885,7 @@
                                             id="i_cash_adv" >
                                     <form:fields>
                                         <Switch state="{request>/req_item/cash_advance}" customTextOn="Yes" customTextOff="No"
-                                                enabled="{= ${request>/view} !== 'view' }">
+                                                enabled="{= ${request>/view} !== 'view' }" change=".onCashAdvanceChange">
                                             <layoutData>
                                                 <FlexItemData growFactor="1" />
                                             </layoutData>
