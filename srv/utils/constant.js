@@ -136,6 +136,26 @@ const Constant = {
     },
     Wildcard:{
         "All": "*"
+    }, 
+    Role: {
+        "CEO": "CEO", 
+        "CEO_FI": "CEO_FI", 
+        "HOD": "HOD"
+    }, 
+    Status: {
+        DRAFT : "STAT01", 
+        APPROVED : "STAT05"
+    },
+    ReminderScenario: {
+        NO_CASH_ADVANCE: "1",
+        WITH_CASH_ADVANCE: "2"
+    }, 
+    RequestType: {
+        Travel : "RT0001", 
+        Reimbursement : "RT0004"
+    }, 
+    ReminderMilestone: {
+        AgingMilestone: { 1: '1', 30: '30', 60: '60', 85: '85' }
     }
 
 };

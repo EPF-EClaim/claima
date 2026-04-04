@@ -152,6 +152,42 @@ sap.ui.define([
             } finally {
                 BusyIndicator.hide();
             }
+		}, 
+
+		/**
+		 * Fetch entitlement amount from the backend function
+		 * @public
+		 * @param {sap.ui.model.json.JSONModel} oClaimItemInputModel Claim item input
+		 */
+		fetchAndApplyEntitlement: function (oClaimItemInputModel) {
+			var nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
+			var nHour = oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour");
+			var sLocation = oClaimItemInputModel.getProperty("/claim_item/region");
+			var sClaimtype = oClaimItemInputModel.getProperty("/claim_item/claim_type_id");
+			var sClaimItem = oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id");
+			var nBreakfast = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_breakfast"));
+			var nLunch = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_lunch"));
+			var nDinner = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_dinner"));
+
+			nBreakfast = Number.isNaN(nBreakfast) ? 0 : nBreakfast;
+			nLunch = Number.isNaN(nLunch) ? 0 : nLunch;
+			nDinner = Number.isNaN(nDinner) ? 0 : nDinner;
+
+			const oModel = this._oView.getModel();
+			const oContext = oModel.bindContext("/getAmountEntitlement(...)");
+
+			oContext.setParameter("day", nDay);
+			oContext.setParameter("hours", nHour);
+			oContext.setParameter("location", sLocation != null ? sLocation : '03');
+			oContext.setParameter("claimtypeid", sClaimtype);
+			oContext.setParameter("claimtypeitem", sClaimItem);
+			oContext.setParameter("breakfast", nBreakfast);
+			oContext.setParameter("lunch", nLunch);
+			oContext.setParameter("dinner", nDinner);
+
+			return oContext.execute()
+							.then(() => oContext.requestObject());
+
 		}
     }
 });
