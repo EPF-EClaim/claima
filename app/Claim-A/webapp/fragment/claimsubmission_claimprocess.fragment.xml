@@ -36,10 +36,7 @@
                             sorter: [
                                 { path: 'CLAIM_TYPE_DESC' },
                                 { path: 'CLAIM_TYPE_ID' }
-                            ],
-                            parameters: {
-                                select: 'PROJECT_CLAIM'
-                            }
+                            ]
                         }"
                         change="onSelect_ClaimProcess_ClaimType"
                         liveChange="onSelect_ClaimProcess_ClaimType"
@@ -111,11 +108,11 @@
                                 { path: 'SESSION_NUMBER' }
                             ]
                         }"
-                        visible="= ${claimsubmission_input>/claimtype/is_course}"
+                        visible="{= ${claimsubmission_input>/claimtype/is_course}}"
                         change="onSelect_ClaimProcess_CourseCode"
                         liveChange="onSelect_ClaimProcess_CourseCode"
                     >
-                        <core:Item key="{employee>COURSE_ID}" text="{employee>COURSE_ID} - {employee>COURSE_DESC} ({employee>SESSION_NUMBER})" />
+                        <core:Item key="{employee>COURSE_ID}" text="{employee>COURSE_ID} - {employee>COURSE_DESC}" />
                     </Select>
                 </f:content>
             </f:SimpleForm>

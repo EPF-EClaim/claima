@@ -76,11 +76,6 @@ sap.ui.define([
 
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
-			
-			// set field property model for App view/fragments
-			this.getView().setModel(new JSONModel({
-				"select_claimprocess_course_code": { "is_visible": false }
-			}), "app_viewfields");
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
@@ -551,29 +546,36 @@ sap.ui.define([
 					this.byId("button_claimprocess_startclaim").setEnabled(false);
 				}
 
-				// set if claim type is course based on project_claim field
-				const oBindingContext = claimType.getBindingContext("employee");
-				const oProjectClaim = oBindingContext.getObject("PROJECT_CLAIM");
-				//// set property based on boolean value retrieved
+				// set if claim type is course based on boolean value retrieved
 				var oInputModel = this.getView().getModel("claimsubmission_input");
-				oInputModel.setProperty("/claimtype/is_course", oProjectClaim || false);
+				oInputModel.setProperty("/claimtype/is_course", Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type")));
 				// set filter for course code dropdown
 				if (oInputModel.getProperty("/claimtype/is_course")) {
 					var oSelectCourseCode = this.byId("select_claimprocess_course_code");
 					var oBindingSelectCourseCode = oSelectCourseCode.getBinding("items");
+					// attach event to remove duplicate records
+					oBindingSelectCourseCode.attachEvent("dataReceived", function() {
+						var aItems = oSelectCourseCode.getItems();
+						var aUniqueKeys = [];
+
+						for ( var iItem = 0; iItem < aItems.length; iItem++) {
+							var sKey = aItems[iItem].getBindingContext("employee").getObject("COURSE_ID");
+							if (aUniqueKeys.indexOf(sKey) > -1) {
+								oSelectCourseCode.removeItem(aItems[iItem]); // Remove if key already exists
+							} else {
+								aUniqueKeys.push(sKey);
+							}
+						}
+					});
+
 					var aFilterSelectCourseCode = [
 							// ensure status is active
 							new Filter("PARTICIPANT_ID", FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
-							new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, 'COMPLETE'),
+							new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
+							new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true),
+							new Filter("CLAIM_STATUS", FilterOperator.NE, this._oConstant.ClaimStatus.APPROVED),
+							new Filter("CLAIM_STATUS", FilterOperator.NE, this._oConstant.ClaimStatus.PENDING_APPROVAL)
 						];
-					var oFilterClaimStatus = new Filter({
-						filters: [
-							new Filter("CLAIM_STATUS", FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED),
-							new Filter("CLAIM_STATUS", FilterOperator.EQ, this._oConstant.ClaimStatus.PENDING_APPROVAL)
-						],
-						and: false
-					});
-					aFilterSelectCourseCode.push(oFilterClaimStatus);
 					oBindingSelectCourseCode.filter(aFilterSelectCourseCode);
 				}
 			}
@@ -705,6 +707,19 @@ sap.ui.define([
 					}
 					break;
 			}
+		},
+
+		/**
+        * On selecting course code from claim process, set description in claim submission model
+        * @public
+		* @param {string} sEntity - name of table to check from database
+		* @param {array} aEntityFields - array of entity fields and values to filter by
+		* @param {array} aRetrievalFields - array of entity fields to retrieve values from
+		* @returns {array} if records found, returns array of values from first selected record; else, returns empty array
+        */
+		onSelect_ClaimProcess_CourseCode: function (oEvent) {
+			// set description
+			this.getView().getModel("claimsubmission_input").setProperty("/claimtype/descr/course_code", oEvent.getParameters().selectedItem.getBindingContext("employee").getObject("COURSE_DESC"));
 		},
 
 		onPreApproval_ClaimProcess: function () {
