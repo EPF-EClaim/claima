@@ -2973,6 +2973,26 @@ sap.ui.define([
 		},
 
         /**
+         * start/end date, run related methods on setting start/end date
+         * @public
+         */
+		onChange_ClaimDetails_StartEndDate: function () {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			oInputModel.refresh(true);
+
+			// reset per diem amounts
+			this._resetPerDiem();
+
+			// Calculate number of days
+			this.getView().getModel("claimitem_input").setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
+
+			// calculate per diem details
+			if (this.getView().getModel("claimitem_property").getProperty("/entitled_breakfast/is_visible")) {
+				this._calculatePerDiem();
+			}
+		},
+
+        /**
          * On setting insurance cert start/end date, call private method to calculate number of days
          * @public
          */

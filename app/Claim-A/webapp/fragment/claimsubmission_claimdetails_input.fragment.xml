@@ -311,10 +311,26 @@
 					id="datepicker_claimdetails_input_startdate"
 					value="{claimitem_input>/claim_item/start_date}"
 					visible="{claimitem_property>/start_date/is_visible}"
+					maxDate="{
+						parts: [
+							'constant>/EntitiesFields/START_DATE',
+							'claimsubmission_input>/claim_header/claim_id',
+							'claimsubmission_input>/claim_header/claim_type_id',
+							'claimitem_input>/claim_item/claim_type_item_id',
+							'claimsubmission_input>/claim_header',
+							'claimitem_input>/claim_item'
+						],
+						formatter: '.DateUtility.determineMaxDate'
+					}"
 					displayFormat="dd-MMM-yyyy"
-					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_startdate','datepicker_claimdetails_input_enddate')"
+					change="onChange_ClaimDetails_StartEndDate"
 					required="true"
-				/>
+				>
+					<customData>
+						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/START_DATE/customErrorMessage}" />
+						<core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/START_DATE/customMaxDateError}" />						
+					</customData>
+				</DatePicker>
 
                 <!-- Start Time -->
                 <Label text="{i18n>label_claimdetails_input_starttime}" />
@@ -333,10 +349,26 @@
 					id="datepicker_claimdetails_input_enddate"
 					value="{claimitem_input>/claim_item/end_date}"
 					visible="{claimitem_property>/end_date/is_visible}"
+					minDate="{
+						parts: [
+							'constant>/EntitiesFields/END_DATE',
+							'claimsubmission_input>/claim_header/claim_id',
+							'claimsubmission_input>/claim_header/claim_type_id',
+							'claimitem_input>/claim_item/claim_type_item_id',
+							'claimsubmission_input>/claim_header',
+							'claimitem_input>/claim_item'
+						],
+						formatter: '.DateUtility.determineMinDate'
+					}"
 					displayFormat="dd-MMM-yyyy"
-					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_startdate','datepicker_claimdetails_input_enddate')"
+					change="onChange_ClaimDetails_StartEndDate"
 					required="true"
-				/>
+				>
+					<customData>
+						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/END_DATE/customErrorMessage}" />
+						<core:CustomData key="customMinDateError" value="{appModel>/fieldControl/END_DATE/customMinDateError}" />						
+					</customData>
+				</DatePicker>
 
 				<!-- End Time -->
 				<Label text="{i18n>label_claimdetails_input_endtime}" />

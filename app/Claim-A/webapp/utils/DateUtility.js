@@ -276,6 +276,30 @@ sap.ui.define([
                             break;
                     }
                     break;
+                case Constants.EntitiesFields.END_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            // set min date based on start date
+                            if (Object.values(Constants.ClaimTypeKursus).includes(sItemType)) {
+                                if (!!new Date(oItem["start_date"]).getTime()) {
+                                    _dMinDate = new Date(oItem["start_date"]);
+                                    // minus 1 day for course code claims
+                                    _dMinDate.setDate(_dMinDate.getDate() - 1);
+                                }
+                                else {
+                                    _dMinDate = null;
+                                    oItem["start_date"] = null;
+                                }
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                    _oResourceBundle.getText("error_end_date_mindate"));
+                                break;
+                            }
+                    }
+                    break;
                 case Constants.EntitiesFields.INSURANCE_CERT_END_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
@@ -365,6 +389,28 @@ sap.ui.define([
                             break;
                     }
                     break;
+                case Constants.EntitiesFields.START_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            // set max date based on end date
+                            if (Object.values(Constants.ClaimTypeKursus).includes(sItemType)) {
+                                if (!!new Date(oItem["end_date"]).getTime()) {
+                                    _dMaxDate = new Date(oItem["end_date"]);
+                                    // add 1 day for course code claims
+                                    _dMaxDate.setDate(_dMaxDate.getDate() + 1);
+                                }
+                                else {
+                                    _dMaxDate = null;
+                                    oItem["end_date"] = null;
+                                }
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                    _oResourceBundle.getText("error_start_date_maxdate"));
+                            }
+                            break;
                 case Constants.EntitiesFields.INSURANCE_CERT_START_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
