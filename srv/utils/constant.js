@@ -55,6 +55,12 @@ const Constant = {
         "REQUEST": "ZAPPROVER_DETAILS_PREAPPROVAL",
         "CLAIM_ID": "CLAIM_ID",
         "PREAPPROVAL_ID": "PREAPPROVAL_ID"
+    }, 
+
+    Role: {
+        "CEO": "CEO", 
+        "CEO_FI": "CEO_FI", 
+        "HOD": "HOD"
     }
 
 };
