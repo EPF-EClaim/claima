@@ -5,6 +5,7 @@ const app = express();
 const { Constant } = require("./utils/constant");
 const { results } = require('@sap/cds/lib/utils/cds-utils');
 const EligibleScenarioCheck = require('./utils/EligibilityScenarios/EligibleScenarioCheck')
+const  EmailReminder = require('./utils/EmailReminder');
 
 module.exports = (srv) => {
 
@@ -952,5 +953,91 @@ module.exports = (srv) => {
 
     });
 
+    /**
+    * Function for aging calculation for pre-approval travel/reimbursement
+    * Checks approved pre-approval requests against aging milestones and
+    * returns a list of reminders for claimants who have not submitted their claim
+    * @public
+    * @returns {Array} aResult - Array of reminder objects
+    */
+    srv.on('getEmailReminder', async (req) => {
+        //TRIP_END_DATE 2 months from current date
+        //RT0001 and RT0002 - travel and reimbursement
+        //select pre-approval request for travel/reimbursement where trip end date 2 months from current date
+        const today = new Date();
+        const baseline = new Date();
+
+        baseline.setMonth(baseline.getMonth() - 2);
+
+        const sTodayDate = today.toISOString().slice(0, 10);
+        const sBaselineDate = baseline.toISOString().slice(0, 10);
+        const { ZREQUEST_HEADER, ZCLAIM_HEADER, ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS } = srv.entities;
+        const tx = cds.tx(req);
+
+        let aResult = [];
+
+        //get pre-approval records 2 months from current date
+        const preapproval = await tx.run(
+            SELECT.from(ZREQUEST_HEADER).where({
+                REQUEST_TYPE_ID: {
+                    in: [Constant.RequestType.Travel,
+                    Constant.RequestType.Reimbursement]
+                },
+                STATUS: Constant.Status.APPROVED,  //Approved
+            }).and(
+                `TRIP_END_DATE > '${sBaselineDate}' AND TRIP_END_DATE <= '${sTodayDate}'`)
+        );
+
+        for (var oRequest of preapproval) {
+            try {
+                let sAgingDay = null;
+                let sScenario = null;
+                let sClaimStatus = null;
+                let sName = null;
+                let sEmail = null;
+                let sCCEmail = null;
+
+                if (parseFloat(oRequest.CASH_ADVANCE) === 0) {
+                    //Scenario 1
+                    //candidates for email aging -  T+1,T+30, T+60, T+85
+                    sScenario = Constant.ReminderScenario.NO_CASH_ADVANCE;
+                    sAgingDay = EmailReminder.getNoCashAdvanceAgingDay(oRequest.TRIP_END_DATE, sTodayDate);
+                } else if (parseFloat(oRequest.CASH_ADVANCE) > 0 && oRequest.REQUEST_TYPE_ID === Constant.RequestType.Travel) {
+                    //Scenario 2
+                    //candidates for email aging -  Trip end date+1, 11th-15th following month, 16 following month
+                    sScenario = Constant.ReminderScenario.WITH_CASH_ADVANCE;
+                    sAgingDay = EmailReminder.getCashAdvanceAgingDay(oRequest.TRIP_END_DATE, sTodayDate);
+                }
+
+                if (sAgingDay != null) {
+                    sClaimStatus = await EmailReminder.getClaimStatus(ZCLAIM_HEADER, tx, oRequest.REQUEST_ID);  //return true or false
+                    if (sClaimStatus) {
+                        ({ sName, sEmail, sCCEmail } = await EmailReminder.getClaimantDetails(ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS, tx, oRequest.EMP_ID, sScenario));
+                    }
+
+                    aResult.push({
+                        empName: sName,
+                        empEmail: sEmail,
+                        ccEmail: sCCEmail,
+                        tripEndDate: new Date(oRequest.TRIP_END_DATE).toISOString().slice(0, 10),
+                        scenario: sScenario,
+                        milestone: sAgingDay
+                    })
+                }
+            } catch (error) {
+                console.log(`Error processing request ${oRequest.REQUEST_ID}:`, error.message);
+                req.info(`Error processing request ${oRequest.REQUEST_ID}:`, error.message);
+                continue;
+            }
+        }
+
+
+        if (aResult.length === 0) {
+            req.info('No reminders available');
+            return [];
+        }
+
+        return aResult;
+    });
 
 }
