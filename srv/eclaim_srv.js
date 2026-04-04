@@ -5,6 +5,7 @@ const app = express();
 const { Constant } = require("./utils/constant");
 const { results } = require('@sap/cds/lib/utils/cds-utils');
 const EligibleScenarioCheck = require('./utils/EligibilityScenarios/EligibleScenarioCheck')
+const  EmailReminder = require('./utils/EmailReminder');
 
 module.exports = (srv) => {
 
@@ -838,6 +839,196 @@ module.exports = (srv) => {
         } catch (error) {
             req.error(500, `Fail processing records: ${error.message}`, req);
         }
+    });
+    /**
+    * Perdiem calculation for Claim Submission
+    * @public
+    * @param {Integer} day - Travel duration - day;
+    * @param {Decimal} hours - Travel duration - hours;
+    * @param {String}  location - 01-Semenanjung-Sabah/Sarawak, 02, 03-Oversea;
+    * @param {String} claimtypeid - Claim Type ID;
+    * @param {String} claimtypeitem - Claim Type Item ID;
+    * @param {Integer} breakfast - Breakfast provided;
+    * @param {Integer} lunch - Lunch provided;
+    * @param {Integer} dinner - Dinner provided;
+    * @returns {Decimal} perdiem - Entitlement amount, Daily Allowance
+    */
+    srv.on('getAmountEntitlement', async (req) => {
+        const { ZEMP_MASTER, ZPERDIEM_ENT } = srv.entities;
+        const tx = cds.tx(req);
+        const emailFromToken =
+            req.user?.attr?.email ||
+            req.user?.attr?.mail ||
+            req.user?.attr?.user_name ||
+            req.user?.attr?.login_name ||
+            req.user?.id ||
+            "";
+        const today = new Date().toISOString().slice(0, 10);
+
+        let entitlement = null;
+        let meal_allowance = 0;
+        let daily_allowance = 0;
+        let time_difference = 0;
+        let bfast, lunch, dinner, total_meal_allowance = 0;
+
+        //get employee personal grade 
+        const email = String(emailFromToken).trim().toLowerCase();
+        const result = await tx.run(
+            SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email })
+        );
+
+        try {
+            if (result.GRADE) {
+                entitlement = await tx.run(SELECT.one.from(ZPERDIEM_ENT).where({
+                    PERSONAL_GRADE: result.GRADE,
+                    LOCATION: req.data.location,
+                    CLAIM_TYPE_ID: req.data.claimtypeid,
+                    CLAIM_TYPE_ITEM_ID: req.data.claimtypeitem,
+                    START_DATE: { '<=': today },
+                    END_DATE: { '>=': today }
+                })
+                );
+
+                //use the wildcard if no entitlement avavailable - for MAKAN_O
+                if (!entitlement) {
+                    entitlement = await tx.run(SELECT.one.from(ZPERDIEM_ENT).where({
+                        PERSONAL_GRADE: '*',
+                        LOCATION: req.data.location,
+                        CLAIM_TYPE_ID: req.data.claimtypeid,
+                        CLAIM_TYPE_ITEM_ID: req.data.claimtypeitem,
+                        START_DATE: { '<=': today },
+                        END_DATE: { '>=': today }
+                    })
+                    );
+                }
+            }
+        } catch (err){
+            req.error(400, "Failed to retrieve entitlement information");
+        }
+
+        if (!entitlement) {
+            return { amount: 0, daily_allowance: 0, currency_code: null };
+        } else {
+            time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
+
+            //checking on the daily and meal allowance entitlement
+            if (req.data.day === 0 && req.data.hours < 8.0) {
+                //no entitlement
+                meal_allowance = 0;
+            } else if (req.data.day === 0 && req.data.hours >= 8.0 && req.data.hours < 24.0) {
+                //entitle for daily allowance
+                meal_allowance = entitlement.AMOUNT / 2;
+            }
+            else if (req.data.day > 0) {
+                meal_allowance = req.data.day * entitlement.AMOUNT;
+                if (time_difference >= 8.0 && time_difference < 24.0) {
+                    daily_allowance = entitlement.AMOUNT / 2;
+                }
+                meal_allowance += daily_allowance;
+            }
+
+            //deduction of meal allowance
+            //20% from breakfast, 40% from lunch, 40% from dinner 
+            bfast = req.data.breakfast != 0 ? (0.2 * entitlement.AMOUNT) * req.data.breakfast : 0;
+            lunch = req.data.lunch != 0 ? (0.4 * entitlement.AMOUNT) * req.data.lunch : 0;
+            dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
+
+            total_meal_allowance = meal_allowance != 0 ? (meal_allowance - bfast - lunch - dinner) : 0;
+            return {
+                amount: total_meal_allowance,
+                daily_allowance: (entitlement.AMOUNT / 2),
+                currency_code: entitlement.CURRENCY
+            };
+        }
+
+
+    });
+
+    /**
+    * Function for aging calculation for pre-approval travel/reimbursement
+    * Checks approved pre-approval requests against aging milestones and
+    * returns a list of reminders for claimants who have not submitted their claim
+    * @public
+    * @returns {Array} aResult - Array of reminder objects
+    */
+    srv.on('getEmailReminder', async (req) => {
+        //TRIP_END_DATE 2 months from current date
+        //RT0001 and RT0002 - travel and reimbursement
+        //select pre-approval request for travel/reimbursement where trip end date 2 months from current date
+        const today = new Date();
+        const baseline = new Date();
+
+        baseline.setMonth(baseline.getMonth() - 2);
+
+        const sTodayDate = today.toISOString().slice(0, 10);
+        const sBaselineDate = baseline.toISOString().slice(0, 10);
+        const { ZREQUEST_HEADER, ZCLAIM_HEADER, ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS } = srv.entities;
+        const tx = cds.tx(req);
+
+        let aResult = [];
+
+        //get pre-approval records 2 months from current date
+        const preapproval = await tx.run(
+            SELECT.from(ZREQUEST_HEADER).where({
+                REQUEST_TYPE_ID: {
+                    in: [Constant.RequestType.Travel,
+                    Constant.RequestType.Reimbursement]
+                },
+                STATUS: Constant.Status.APPROVED,  //Approved
+            }).and(
+                `TRIP_END_DATE > '${sBaselineDate}' AND TRIP_END_DATE <= '${sTodayDate}'`)
+        );
+
+        for (var oRequest of preapproval) {
+            try {
+                let sAgingDay = null;
+                let sScenario = null;
+                let sClaimStatus = null;
+                let sName = null;
+                let sEmail = null;
+                let sCCEmail = null;
+
+                if (parseFloat(oRequest.CASH_ADVANCE) === 0) {
+                    //Scenario 1
+                    //candidates for email aging -  T+1,T+30, T+60, T+85
+                    sScenario = Constant.ReminderScenario.NO_CASH_ADVANCE;
+                    sAgingDay = EmailReminder.getNoCashAdvanceAgingDay(oRequest.TRIP_END_DATE, sTodayDate);
+                } else if (parseFloat(oRequest.CASH_ADVANCE) > 0 && oRequest.REQUEST_TYPE_ID === Constant.RequestType.Travel) {
+                    //Scenario 2
+                    //candidates for email aging -  Trip end date+1, 11th-15th following month, 16 following month
+                    sScenario = Constant.ReminderScenario.WITH_CASH_ADVANCE;
+                    sAgingDay = EmailReminder.getCashAdvanceAgingDay(oRequest.TRIP_END_DATE, sTodayDate);
+                }
+
+                if (sAgingDay != null) {
+                    sClaimStatus = await EmailReminder.getClaimStatus(ZCLAIM_HEADER, tx, oRequest.REQUEST_ID);  //return true or false
+                    if (sClaimStatus) {
+                        ({ sName, sEmail, sCCEmail } = await EmailReminder.getClaimantDetails(ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS, tx, oRequest.EMP_ID, sScenario));
+                    }
+
+                    aResult.push({
+                        empName: sName,
+                        empEmail: sEmail,
+                        ccEmail: sCCEmail,
+                        tripEndDate: new Date(oRequest.TRIP_END_DATE).toISOString().slice(0, 10),
+                        scenario: sScenario,
+                        milestone: sAgingDay
+                    })
+                }
+            } catch (error) {
+                console.log(`Error processing request ${oRequest.REQUEST_ID}:`, error.message);
+                req.info(`Error processing request ${oRequest.REQUEST_ID}:`, error.message);
+                continue;
+            }
+        }
+
+
+        if (aResult.length === 0) {
+            req.info('No reminders available');
+            return [];
+        }
+
+        return aResult;
     });
 
     srv.on('checkDefaultCostCenter', async (req) => {
