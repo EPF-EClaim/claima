@@ -351,6 +351,21 @@ service eclaim_srv @(requires: 'authenticated-user'){
     }
 
     action EligibilityCheck(aPayload: many EligibilityPayload) returns many Response;
+    type perdiem {
+        amount : Decimal(15, 2);
+        daily_allowance: Decimal(15,2);
+        currency_code: String;
+    }
+
+    function getAmountEntitlement(day:Integer, 
+                                  hours: Decimal(5, 1), 
+                                  location: String, 
+                                  claimtypeid: String, 
+                                  claimtypeitem: String,
+                                  breakfast: Integer, 
+                                  lunch: Integer, 
+                                  dinner: Integer) returns perdiem;
+
     entity ZCLM_TYPE_EXCEPTION_LIST                as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
 };
