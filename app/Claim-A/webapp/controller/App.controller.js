@@ -57,6 +57,8 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.App", {
 
+		Utility: Utility,
+
 		onInit: async function () {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oRouter = this.getOwnerComponent().getRouter();
@@ -730,7 +732,7 @@ sap.ui.define([
 			//// get claim item category ID
 			oInputModel.setProperty("/claimtype/category", this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("SUBMISSION_TYPE"));
 			//// get cost center from claim type if value exists
-			var sClaimTypeCostCenter = await RequestUtility.determineDefaultCostCenter(oInputModel.getProperty("/claimtype/type"));
+			var sClaimTypeCostCenter = await Utility.determineDefaultCostCenter(oInputModel.getProperty("/claimtype/type"));
 			if (sClaimTypeCostCenter && sClaimTypeCostCenter !== 'null') { // returns value and is not string 'null'
 				oInputModel.setProperty("/claimtype/cost_center", sClaimTypeCostCenter);
 				oInputModel.setProperty("/claimtype/descr/cost_center", await this._bindEclaimDescr("/ZCOST_CENTER", sClaimTypeCostCenter, 'COST_CENTER_ID', 'COST_CENTER_DESC'));
@@ -1405,7 +1407,7 @@ sap.ui.define([
 
 				this.getView().addDependent(this.oDialogFragment);
 
-				var oRequestDialogModel = new JSONModel({ reqid: "", grptype: "IND" });
+				var oRequestDialogModel = new JSONModel({ reqid: "", grptype: "IND", altcostcenter: "" });
 				this.oDialogFragment.setModel(oRequestDialogModel, "reqDialog");
 
 				this.oDialogFragment.attachAfterClose(() => {
@@ -1417,6 +1419,7 @@ sap.ui.define([
 			this.oDialogFragment.addStyleClass('requestDialog');
 			this.oDialogFragment.open();
 			this._applyReqTypeFilters(this._oSessionModel.getProperty("/userType"));
+			this._openAndPreload(this.oDialogFragment);
 		},
 
 		onClickCreateRequest: async function () {
@@ -1529,21 +1532,6 @@ sap.ui.define([
 			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
 			const oDialogData = oDialogModel.getData();
 			oDialogData.doc2 = oEvent.getParameters("files").files[0];
-		},
-
-		async onDefaultCostCenterDetermination(oEvent) {
-			var oSelectControl = oEvent.getSource();
-    		var sClaimTypeId = oSelectControl.getSelectedKey();
-			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
-
-			var sDefaultCostCenter = await RequestUtility.determineDefaultCostCenter(sClaimTypeId);
-			if (sDefaultCostCenter != this._oConstant.Default.NULL) {
-				Fragment.byId("request", "req_acc").setEditMode("ReadOnly");
-				oDialogModel.setProperty("/altcostcenter", sDefaultCostCenter);
-			} else {
-				Fragment.byId("request", "req_acc").setEditMode("Editable");
-				oDialogModel.setProperty("/altcostcenter", "");
-			}
 		},
 
 		// get backend data
@@ -1779,6 +1767,15 @@ sap.ui.define([
 				}
 				BusyIndicator.hide();
 			}
+		},
+
+		_openAndPreload: function(oDialog) {
+
+			var oListBinding = this._oDataModel.bindList("/ZCOST_CENTER", null, null, null, {
+				$select: "COST_CENTER_DESC,COST_CENTER_ID"
+			});
+
+			oListBinding.requestContexts(0, 5).then(function(aContexts) {});
 		},
 
 		_setAllHeaderControlsVisible: function (bVisible) {

@@ -3,8 +3,9 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
-	"claima/utils/Constants"
-], function (Filter, FilterOperator, Sorter, Constants) {
+	"claima/utils/Constants",
+    "sap/ui/core/Fragment"
+], function (Filter, FilterOperator, Sorter, Constants, Fragment) {
     "use strict";
 
     return {
@@ -90,6 +91,57 @@ sap.ui.define([
 
             await oModel.submitBatch("$auto");
         },
+
+        async onDefaultCostCenterDetermination(oEvent) {
+			var oSelectControl = oEvent.getSource();
+    		var sClaimTypeId = oSelectControl.getSelectedKey();
+			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
+
+            try {
+				const oFunction = this._oDataModel.bindContext("/checkDefaultCostCenter(...)");
+				
+				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				const oResult = oContext.getObject();
+
+                var sCostCenter = oResult.sCostCenter;
+                var sCostCenterDesc = oResult.sCostCenterDesc;
+
+                if (sCostCenter != Constants.Default.NULL) {
+                    Fragment.byId("request", "req_acc").setEditMode("ReadOnly");
+                    oDialogModel.setProperty("/altcostcenter", sCostCenter);
+                    oDialogModel.setProperty("/altcostcenter_desc", sCostCenterDesc);
+                } else {
+                    Fragment.byId("request", "req_acc").setEditMode("Editable");
+                    oDialogModel.setProperty("/altcostcenter", "");
+                }
+
+			} catch (oError) {
+				return null;
+			}
+		},
+
+        determineDefaultCostCenter: async function (sClaimTypeId) {
+            try {
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
+				
+				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				const oResult = oContext.getObject();
+
+                return oResult.sCostCenter
+
+			} catch (oError) {
+				return null;
+			}
+			
+        }
 
     };
 });
