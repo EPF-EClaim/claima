@@ -17,7 +17,7 @@ sap.ui.define([
 	Sorter,
 	Utility,
 	BusinessCard,
-	BusyIndicator, 
+	BusyIndicator,
 	SelectDialog) {
 	"use strict";
 
@@ -147,20 +147,6 @@ sap.ui.define([
 			oEvent.getSource().setIcon(this._mSortState[sPath] ? "sap-icon://sort-descending" : "sap-icon://sort-ascending");
 		},
 
-		onResetSort: function () {
-			var oTable = this.byId("tb_myexpenserepo");
-			var oBinding = oTable && oTable.getBinding("items");
-			if (oBinding) {
-				oBinding.sort(null); // clears sorters; backend reload without $orderby
-			}
-
-			// Clear sort state memory
-			this._mSortState = {};
-
-			// Reset header icons back to neutral
-			this._resetSortIcons(oTable);
-		},
-
 		/** Reset all sort button icons inside a table to neutral "sort" */
 		_resetSortIcons: function (oTable) {
 			if (!oTable) { return; }
@@ -181,58 +167,48 @@ sap.ui.define([
 		},
 
 		onOpenFilterDialog: function () {
-			var oModel = this.getView().getModel("claim_status2");
-			var aList = oModel.getProperty("/claim_header_list") || [];
-			var aTypes = [...new Set(aList.map(item => item.CLAIM_TYPE_DESC).filter(Boolean))];
+			Utility.openClaimTypeFilterDialog(
+				this,
+				'claim_status2',
+				'/claim_header_list'
+			);
+		},
 
-			var aItems = aTypes.map(sType => new sap.m.StandardListItem({ title: sType }));
+		onFilterSearch: function (oEvent) {
+			var sValue = oEvent.getParameter("value");
+			var oFilter = new Filter("title", FilterOperator.Contains, sValue);
+			oEvent.getParameter("itemsBinding").filter([oFilter]);
+		},
 
-			if (!this._oFilterDialog) {
-				this._oFilterDialog = new SelectDialog({
-					title: Utility.getText("myclaimstatus_filter"),
-					multiSelect: true,
-					confirm: this.onFilterConfirm.bind(this),
-					cancel: function () { this._oFilterDialog.close(); }.bind(this),
-					search: function (oEvent) {
-						var sValue = oEvent.getParameter("value");
-						var oFilter = new Filter("title", FilterOperator.Contains, sValue);
-						oEvent.getParameter("itemsBinding").filter([oFilter]);
-					}
-				});
-				this.getView().addDependent(this._oFilterDialog);
-			}
-
-			this._oFilterDialog.destroyItems();
-			aItems.forEach(item => this._oFilterDialog.addItem(item));
-
-			var aSelectedTypes = this._aActiveClaimTypeFilters || [];
-			this._oFilterDialog.getItems().forEach(oItem => {
-				if (aSelectedTypes.includes(oItem.getTitle())) {
-					oItem.setSelected(true);
-				}
-			});
-
-			this._oFilterDialog.open();
+		onFilterCancel: function () {
+			if (this._oFilterDialog) this._oFilterDialog.close();
 		},
 
 		onFilterConfirm: function (oEvent) {
-			var aSelectedItems = oEvent.getParameter("selectedItems");
-			var aSelectedTypes = aSelectedItems.map(item => item.getTitle());
-			this._aActiveClaimTypeFilters = aSelectedTypes;
+			Utility.confirmClaimTypeFilter(
+				this,
+				'claim_status2',
+				'/claim_header_list',
+				'/claim_header_count',
+				oEvent
+			);
+		},
 
-			var oModel = this.getView().getModel("claim_status2");
-			var aFullList = oModel.getProperty("/claim_header_list_full") || oModel.getProperty("/claim_header_list") || [];
+		onResetSort: function () {
+			this._mSortState = {};
+			var oTable = this.byId("tb_myexpenserepo"); 
+			this._resetSortIcons(oTable);
+			var oBinding = oTable?.getBinding("items");
+			if (oBinding) oBinding.sort(null);
 
-			if (!oModel.getProperty("/claim_header_list_full")) {
-				oModel.setProperty("/claim_header_list_full", [...aFullList]);
+			this._aActiveClaimTypeFilters = [];
+			var oModel = this.getView().getModel('claim_status2');
+			var sFullListPath = '/claim_header_list_full'; 
+			var aFullList = oModel.getProperty(sFullListPath);
+			if (aFullList) {
+				oModel.setProperty('/claim_header_list', aFullList); 
+				oModel.setProperty('/claim_header_count', aFullList.length); 
 			}
-
-			var aFiltered = aSelectedTypes.length
-				? aFullList.filter(item => aSelectedTypes.includes(item.CLAIM_TYPE_DESC))
-				: aFullList;
-
-			oModel.setProperty("/claim_header_list", aFiltered);
-			oModel.setProperty("/claim_header_count", aFiltered.length);
 		},
 	});
 });

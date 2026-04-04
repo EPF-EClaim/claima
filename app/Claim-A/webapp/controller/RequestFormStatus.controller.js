@@ -169,58 +169,31 @@ sap.ui.define([
 		},
 
 		onOpenFilterDialog: function () {
-			var oModel = this.getView().getModel("request_status");
-			var aList = oModel.getProperty("/req_header_list") || [];
+			Utility.openClaimTypeFilterDialog(
+				this,
+				'request_status',
+				'/req_header_list'
+			);
+		},
 
-			var aTypes = [...new Set(aList.map(item => item.CLAIM_TYPE_DESC).filter(Boolean))];
-			var aItems = aTypes.map(sType => new StandardListItem({ title: sType }));
+		onFilterSearch: function (oEvent) {
+			var sValue = oEvent.getParameter("value");
+			var oFilter = new Filter("title", FilterOperator.Contains, sValue);
+			oEvent.getParameter("itemsBinding").filter([oFilter]);
+		},
 
-			if (!this._oFilterDialog) {
-				this._oFilterDialog = new SelectDialog({
-					title: Utility.getText("myclaimstatus_filter"),
-					multiSelect: true,
-					confirm: this.onFilterConfirm.bind(this),
-					cancel: function () { this._oFilterDialog.close(); }.bind(this),
-					search: function (oEvent) {
-						var sValue = oEvent.getParameter("value");
-						var oFilter = new Filter("title", FilterOperator.Contains, sValue);
-						oEvent.getParameter("itemsBinding").filter([oFilter]);
-					}
-				});
-				this.getView().addDependent(this._oFilterDialog);
-			}
-
-			this._oFilterDialog.destroyItems();
-			aItems.forEach(item => this._oFilterDialog.addItem(item));
-
-			var aSelectedTypes = this._aActiveClaimTypeFilters || [];
-			this._oFilterDialog.getItems().forEach(oItem => {
-				if (aSelectedTypes.includes(oItem.getTitle())) {
-					oItem.setSelected(true);
-				}
-			});
-
-			this._oFilterDialog.open();
+		onFilterCancel: function () {
+			if (this._oFilterDialog) this._oFilterDialog.close();
 		},
 
 		onFilterConfirm: function (oEvent) {
-			var aSelectedItems = oEvent.getParameter("selectedItems");
-			var aSelectedTypes = aSelectedItems.map(item => item.getTitle());
-			this._aActiveClaimTypeFilters = aSelectedTypes;
-
-			var oModel = this.getView().getModel("request_status");
-			var aFullList = oModel.getProperty("/req_header_list_full") || oModel.getProperty("/req_header_list") || [];
-
-			if (!oModel.getProperty("/req_header_list_full")) {
-				oModel.setProperty("/req_header_list_full", [...aFullList]);
-			}
-
-			var aFiltered = aSelectedTypes.length
-				? aFullList.filter(item => aSelectedTypes.includes(item.CLAIM_TYPE_DESC))
-				: aFullList;
-
-			oModel.setProperty("/req_header_list", aFiltered);
-			oModel.setProperty("/req_header_count", aFiltered.length);
-		}
+			Utility.confirmClaimTypeFilter(
+				this,
+				'request_status',
+				'/req_header_list',
+				'/req_header_count',
+				oEvent
+			);
+		},
 	});
 });
