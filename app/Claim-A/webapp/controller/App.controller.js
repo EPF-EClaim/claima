@@ -712,10 +712,6 @@ sap.ui.define([
 		/**
         * On selecting course code from claim process, set description in claim submission model
         * @public
-		* @param {string} sEntity - name of table to check from database
-		* @param {array} aEntityFields - array of entity fields and values to filter by
-		* @param {array} aRetrievalFields - array of entity fields to retrieve values from
-		* @returns {array} if records found, returns array of values from first selected record; else, returns empty array
         */
 		onSelect_ClaimProcess_CourseCode: function (oEvent) {
 			// set description
