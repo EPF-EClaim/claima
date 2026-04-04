@@ -32,7 +32,7 @@ module.exports = (srv) => {
         }));
       const oResponse = await ISservice.send({
         method: 'POST',
-        path: "/http/ApprovedClaims",  
+        path: "/http/ApprovedClaim",  
         data: { 
           ZEMP_CLAIMS_DETAILS: sData
         }

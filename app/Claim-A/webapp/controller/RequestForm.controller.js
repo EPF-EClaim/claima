@@ -28,7 +28,8 @@ sap.ui.define([
 	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
 	"claima/utils/Attachment",
 	"claima/utils/EligibilityCheck",
-	"claima/utils/DateUtility"
+	"claima/utils/DateUtility",
+	"claima/utils/Constants"
 
 ], function (
 	Controller,
@@ -60,7 +61,8 @@ sap.ui.define([
 	EligibleScenarioCheck,
 	Attachment,
 	EligibilityCheck,
-	DateUtility
+	DateUtility,
+	Constants
 ) {
 	"use strict";
 
@@ -1040,8 +1042,8 @@ sap.ui.define([
 			}
 
 			// Eligibility Checking
-			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
-			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, oPayload);
+			var aPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
+			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, aPayload);
 			var	bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.REQUEST);
 
 			if (!bCanProceed) return;
@@ -1325,6 +1327,36 @@ sap.ui.define([
 		/* =========================================================
 		* Participant Value Help 
 		* ======================================================= */
+
+		onCashAdvanceChange: function (oEvent) {
+
+			// Get model
+			const oRequestModel = this.getView().getModel("request");
+
+			// Read event start date
+			const dTripDate = oRequestModel.getProperty("/req_header/tripstartdate");
+
+			if (!dTripDate) {
+				return; // no date entered yet
+			}
+
+			// Convert to JS Date
+			const dEventDate = new Date(dTripDate);
+			const dToday = new Date();
+			dToday.setHours(0,0,0,0);
+
+			// ✅ If event date is before today → backdated
+			if (dEventDate < dToday) {
+
+				// Update model value
+				oRequestModel.setProperty("/req_item/cash_advance", false);
+
+				// Show message
+				MessageBox.error(
+					Utility.getText("msg_cash_advance_not_allow")
+				);
+			}
+		},
 
 		onValueHelpRequest(oEvent) {
 			this._oInputSource = oEvent.getSource();
@@ -2273,7 +2305,7 @@ sap.ui.define([
 		},
 
 		/**
-		 * Submit handler for Send Back (STAT03) - PRE-APPROVAL REQUEST
+		 * Submit handler for Push Back (STAT03) - PRE-APPROVAL REQUEST
 		 * Called by SendBackDialog endButton (see dialog's robust handler binding).
 		 */
 		onSendBack_app: async function () {
@@ -2284,7 +2316,7 @@ sap.ui.define([
 			const comment = oReject?.getProperty("/approvalComment")?.trim();
 
 			// Client-side validation (dialog also disables button, but keep server-safe checks)
-			if (!reason) { MessageBox.error(Utility.getText("req_d_e_approval_send_back_reason")); return; }
+			if (!reason) { MessageBox.error(Utility.getText("req_d_e_approval_push_back_reason")); return; }
 			if (!comment) { MessageBox.error(Utility.getText("req_d_e_approval_comment_empty")); return; }
 
 			try {
@@ -2303,8 +2335,7 @@ sap.ui.define([
 					throw new Error(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 				}
 
-				// STAT03 = SEND BACK
-				const reject_status = "STAT03";
+	
 
 				// 1) Update approval rows + header, build dataset & email payloads
 				const { payloads, dataset, submissionType } =
@@ -2312,13 +2343,13 @@ sap.ui.define([
 						oModelMain,
 						reqId,       // id
 						userId,      // approver user id
-						reject_status,
+						Constants.ClaimStatus.SEND_BACK,
 						reason,
 						comment,
 						oModelView
 					);
 
-				// 2) Budget release (if your finance process requires release on send back)
+				// 2) Budget release (if your finance process requires release on push back)
 				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
 				await budgetCheck.budgetProcessing(
 					oModelMain,
@@ -2351,7 +2382,7 @@ sap.ui.define([
 				}, 400);
 
 			} catch (e) {
-				MessageBox.error(e.message || Utility.getText("req_d_e_send_back_failed"));
+				MessageBox.error(e.message || Utility.getText("req_d_e_push_back_failed"));
 			} finally {
 				BusyIndicator.hide();
 			}
@@ -2374,14 +2405,14 @@ sap.ui.define([
 				const reqModel = this.getView().getModel("request");
 				const reqId = reqModel?.getProperty("/req_header/reqid")?.trim();
 
-				const reject_status = "STAT04"; // REJECT
+				
 
 				const { payloads, dataset, submissionType } =
 					await ApproverUtility.rejectOrSendBackMultiLevel(
 						oModelMain,
 						reqId,
 						this._oSessionModel.getProperty("/userId"),
-						reject_status,
+						Constants.ClaimStatus.REJECTED,
 						reason,
 						comment,
 						oModelView

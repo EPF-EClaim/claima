@@ -1,35 +1,30 @@
-sap.ui.define([
-    "./ComparisonOperators",
-    "claima/utils/Constants"
-], function (ComparisonOperators, Constants) {
-    "use strict";
-
-    return {
-        /**
+const { Constant } = require("../constant");
+const ComparisonOperators = require('../ComparisonOperators')
+module.exports = {
+    /**
 		 * main function for eligibility check - to find the matching eligibility rule and call validateClaimItem function to validate against the rule
 		 * @public
 		 * @param {Object} oPayload - payload contains user input passed from frontend
          * @param {Array} aRules - list of eligibility rule from backend
          * @returns {Object} oPayload - return original payload but with result field filled
 		 */
-        onEligibleCheck(oPayload, aRules) {
-
+        onEligibleCheck: function(oPayload, aRules) {
             var oRule, aFilteredRules;
 
             // to extract the key values from oPayload
             var aPayload = this._parsePayload(oPayload);
 
             //to find the matching eligibility rule for FLIGHT & TAMBANG as these 2 may return more than 1 eligible rule value
-            if (oPayload.ClaimTypeItem === Constants.ClaimTypeItem.FLIGHT_L) {
+            if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.FLIGHT_L) {
                 aFilteredRules = aRules.filter(function (rule) {
-                    return rule.FLIGHT_CLASS_ID === aPayload.sFlightClassId;//[Constants.EntitiesFields.FLIGHT_CLASS_ID];
+                    return rule.FLIGHT_CLASS_ID === aPayload.sFlightClassId;//[Constant.EntitiesFields.FLIGHT_CLASS_ID];
                 })
 
                 oRule = aFilteredRules[0];
             }
-            else if (oPayload.ClaimTypeItem === Constants.ClaimTypeItem.TAMBANG) {
+            else if (oPayload.ClaimTypeItem === Constant.ClaimTypeItem.TAMBANG) {
                 aFilteredRules = aRules.filter(function (rule) {
-                    return rule.TRANSPORT_CLASS === aPayload.sFareTypeId;//[Constants.EntitiesFields.FARE_TYPE_ID];
+                    return rule.TRANSPORT_CLASS === aPayload.sFareTypeId;//[Constant.EntitiesFields.FARE_TYPE_ID];
                 })
 
                 oRule = aFilteredRules[0];
@@ -50,17 +45,28 @@ sap.ui.define([
 		 * @param {Object} oPayload - payload contains user input passed from frontend
          * @returns {Object} aPayload - return key user input value in the form of object based on selected claim type item
 		 */
-        _parsePayload(oPayload) {
+        _parsePayload: function(oPayload) {
             var sTravelDaysId, sFlightClassId, sFareTypeId;
 
             for (let i = 0; i < oPayload.CheckFields.length; i++) {
-                if (oPayload.CheckFields[i].fieldName === Constants.EntitiesFields.TRAVEL_DAYS_ID) {
-                    sTravelDaysId = oPayload.CheckFields[i].value;
-                } else if (oPayload.CheckFields[i].fieldName === Constants.EntitiesFields.FLIGHT_CLASS_ID) {
-                    sFlightClassId = oPayload.CheckFields[i].value;
-                } else if (oPayload.CheckFields[i].fieldName === Constants.EntitiesFields.FARE_TYPE_ID) {
-                    sFareTypeId = oPayload.CheckFields[i].value;
+                //Convert the Payload values
+                try {
+                    oPayload.CheckFields[i].value = JSON.parse(oPayload.CheckFields[i].value);
+                } catch (error) {
+                    // no handler, remain as string
                 }
+
+                switch (oPayload.CheckFields[i].fieldName) {
+                case Constant.EntitiesFields.TRAVEL_DAYS_ID:
+                    sTravelDaysId = oPayload.CheckFields[i].value;
+                    break;
+                case Constant.EntitiesFields.FLIGHT_CLASS_ID:
+                    sFlightClassId = oPayload.CheckFields[i].value;
+                    break;
+                case Constant.EntitiesFields.FARE_TYPE_ID:
+                    sFareTypeId = oPayload.CheckFields[i].value;
+                    break;
+            }
             }
 
             return { sTravelDaysId, sFlightClassId, sFareTypeId };
@@ -73,13 +79,13 @@ sap.ui.define([
          * @param {Object} oRule - matched eligibility rule from aRules
          * @param {Object} oPayload - original payload from user input
 		 */
-        _validateClaimItem(aPayload, oRule, oPayload) {
+        _validateClaimItem: function(aPayload, oRule, oPayload) {
             var iIndex;
 
             switch (oPayload.ClaimTypeItem) {
                 // DOBI - return true if user's traveling days >= eligible min days
-                case Constants.ClaimTypeItem.DOBI:
-                    iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constants.EntitiesFields.TRAVEL_DAYS_ID);
+                case Constant.ClaimTypeItem.DOBI:
+                    iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.TRAVEL_DAYS_ID);
                     
                     if (!oRule) {
                         oPayload.CheckFields[iIndex].result = false;
@@ -94,8 +100,8 @@ sap.ui.define([
                     break;
                 
                 // FLIGHT - return true if selected flight class matches user's personal grade
-                case Constants.ClaimTypeItem.FLIGHT_L:
-                    iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constants.EntitiesFields.FLIGHT_CLASS_ID);
+                case Constant.ClaimTypeItem.FLIGHT_L:
+                    iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.FLIGHT_CLASS_ID);
 
                     // if no rule matches the selected flight class, return false
                     if (!oRule) {
@@ -110,9 +116,9 @@ sap.ui.define([
                     break;
                 
                 // HOTEL & LODGING - return true if claim amount is less than eligible amount * travel days
-                case Constants.ClaimTypeItem.HOTEL_L:
-                case Constants.ClaimTypeItem.LODGING_L:
-                    iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constants.EntitiesFields.ELIGIBLE_AMOUNT);
+                case Constant.ClaimTypeItem.HOTEL_L:
+                case Constant.ClaimTypeItem.LODGING_L:
+                    iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.ELIGIBLE_AMOUNT);
 
                     if (!oRule) {
                         oPayload.CheckFields[iIndex].result = false;
@@ -127,9 +133,9 @@ sap.ui.define([
                     break;
                 
                 // TAMBANG - return true if selected transport class matches user's personal grade
-                case Constants.ClaimTypeItem.TAMBANG:
+                case Constant.ClaimTypeItem.TAMBANG:
                     iIndex = oPayload.CheckFields.findIndex((field) =>
-                        field.fieldName === Constants.EntitiesFields.FARE_TYPE_ID);
+                        field.fieldName === Constant.EntitiesFields.FARE_TYPE_ID);
 
                     // if no rule matches the selected transport class, return false
                     if (!oRule) {
@@ -143,5 +149,4 @@ sap.ui.define([
                     break;  
             }
         }
-    };
-});
+};

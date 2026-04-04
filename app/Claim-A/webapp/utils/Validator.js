@@ -110,15 +110,25 @@ sap.ui.define(
 
 			if (
 				oControl.getRequired &&
-				oControl.getRequired() === true &&
-				oControl.getEnabled &&
-				(oControl.getEnabled() === true || oControl.data("validate") === true)
+				oControl.getRequired() === true &&	
+				(
+					(
+						oControl.getEnabled &&
+						(oControl.getEnabled() === true || oControl.data("validate") === true)
+					)
+					// For fields using class sap.ui.mdc.Field (Value Help), it should call method getEditable
+					||				
+					(	oControl instanceof sap.ui.mdc.Field &&
+    				 	oControl.getEditable &&
+					 	(oControl.getEditable() === true || oControl.data("validate") === true)
+					)
+				)
 			) {
 				// Control required
 				isValid = this._validateRequired(oControl);
 				isValidatedControl = true;
 			}
-			if (
+			if ( isValid &&
 				(i = this._hasType(oControl)) !== -1 &&
 				oControl.getEnabled &&
 				(oControl.getEnabled() === true || oControl.data("validate") === true)
@@ -127,7 +137,7 @@ sap.ui.define(
 				isValid = this._validateConstraint(oControl, i);
 				isValidatedControl = true;
 			}
-			if (
+			if ( isValid &&
 				oControl.getValueState &&
 				oControl.getValueState() === ValueState.Error
 			) {
@@ -207,7 +217,7 @@ sap.ui.define(
 								isValid = true;
 								break;
 							}
-						}
+						} 
 					} catch (ex) {
 						// Validation failed
 					}
@@ -234,6 +244,9 @@ sap.ui.define(
 
 			if (editable) {
 				try {
+					var sCustomErrorMessage = oControl.data("customErrorMessage");
+					var sCustomMinDateError = oControl.data("customMinDateError");
+					var sCustomMaxDateError = oControl.data("customMaxDateError");
 					// try validating the bound value
 					var oControlBinding = oControl.getBinding(
 						this._aValidateProperties[i]
@@ -251,6 +264,20 @@ sap.ui.define(
 						.getType()
 						.parseValue(oExternalValue, oControlBinding.sInternalType);
 					oControlBinding.getType().validateValue(oInternalValue);
+					if (oControl instanceof sap.m.DatePicker && oControl.getMinDate()) {
+						if (oControl.getMinDate() && new Date(oControl.getValue()) < oControl.getMinDate()) {
+							isValid = false;
+							this._setValueState(oControl, ValueState.Error, sCustomMinDateError || "Date is not valid.");
+							return; 
+						}
+					}
+					if (oControl instanceof sap.m.DatePicker && oControl.getMaxDate()) {
+						if (oControl.getMaxDate() && new Date(oControl.getValue()) > oControl.getMaxDate()) {
+							isValid = false;
+							this._setValueState(oControl, ValueState.Error, sCustomMaxDateError || "Date is not valid.");
+							return; 
+						}
+					}
 					oControl.setValueState(ValueState.None);
 				} catch (ex) {
 					// catch any validation errors
