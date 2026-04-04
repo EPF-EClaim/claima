@@ -3,6 +3,8 @@ const { INSERT, UPDATE, UPSERT, SELECT, DELETE, where } = require('@sap/cds/lib/
 const express = require('express');
 const app = express();
 const { Constant } = require("./utils/constant");
+const { results } = require('@sap/cds/lib/utils/cds-utils');
+const EligibleScenarioCheck = require('./utils/EligibilityScenarios/EligibleScenarioCheck')
 
 module.exports = (srv) => {
 
@@ -118,16 +120,9 @@ module.exports = (srv) => {
         });
 
     srv.on('READ', 'FeatureControl', async (req) => {
-        const { ZEMP_MASTER } = srv.entities;
-        const emailFromToken = req.user?.attr?.email || req.user?.id || "";
-        const email = String(emailFromToken).trim().toLowerCase();
-        const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
-        const user_type = result?.USER_TYPE;
-
+        //crud operation visibility in config table for DTD and JKEW
         let operationHidden = true;
-        if (req.user.is(Constant.Admin.Admin_System)) {
-            operationHidden = true;
-        } else if (req.user.is(Constant.Admin.DTD_Admin)) {
+        if (req.user.is(Constant.Admin.DTD_Admin)) {
             operationHidden = false;
         }
 
@@ -138,13 +133,8 @@ module.exports = (srv) => {
     });
 
     srv.on('READ', 'BudgetControl', async (req) => {
-        const { ZEMP_MASTER } = srv.entities;
-        const emailFromToken = req.user?.attr?.email || req.user?.id || "";
-        const email = String(emailFromToken).trim().toLowerCase();
-        const result = await SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email });
-        const user_type = result?.USER_TYPE;
-
-        // let operationHidden = (user_type === Constant.UserType.GA_ADMIN);
+        //crud operation visibility for Budget table  
+        // should be accessible for edit by DTD and JKEW only - hidden for GA
         let operationHidden = false;
         if (req.user.is(Constant.Admin.Admin_CC)) {
             operationHidden = true;
@@ -211,7 +201,8 @@ module.exports = (srv) => {
 
     srv.on('batchCreateBudget', async (req) => {
         const { ZBUDGET } = srv.entities;
-        let original_budget, virement_in, virement_out, supplement, return_value, total_budget, current_budget, total_budget_balance, consumed;
+        let original_budget, virement_in, virement_out, supplement, return_value, current_budget, consumed;
+        let results = [];
         try {
             const { budget } = req.data;
             if (!budget || budget.length === 0) throw new Error('No Data Sent');
@@ -219,7 +210,7 @@ module.exports = (srv) => {
             const tx = cds.tx(req);
 
             //if record hasnt been created yet, direct insert record into database
-            //else, update the record but exclude the five fields
+            //else, update the record but exclude the commitment, actual, consumed
             for (const row of budget) {
 
                 const existing = await tx.read(ZBUDGET)
@@ -234,6 +225,18 @@ module.exports = (srv) => {
 
                 if (!existing.length) {
                     await tx.run(INSERT.into(ZBUDGET).entries(row));
+
+                    results.push({
+                        status: " record inserted",
+                        year: row.YEAR,
+                        internalorder: row.INTERNAL_ORDER,
+                        commitment_item: row.COMMITMENT_ITEM,
+                        fund_center: row.FUND_CENTER,
+                        materialgroup: row.MATERIAL_GROUP,
+                        currentBudget: row.CURRENT_BUDGET,
+                        budgetBalance: row.BUDGET_BALANCE
+                    });
+
                 } else {
                     const excludeFields = Constant.BudgetUpload.EXCLUDE_FIELDS;
 
@@ -248,8 +251,8 @@ module.exports = (srv) => {
                     current_budget = Number(row.CURRENT_BUDGET) || 0;
                     consumed = Number(row.CONSUMED) || 0;
 
-                    total_budget = original_budget + virement_in + virement_out + supplement + return_value;
-                    total_budget_balance = current_budget + consumed;
+                    var total_budget = original_budget + virement_in + virement_out + supplement + return_value;
+                    var total_budget_balance = current_budget + consumed;
                     updatePayload.CURRENT_BUDGET = total_budget.toFixed(2);
                     updatePayload.BUDGET_BALANCE = total_budget_balance.toFixed(2);
 
@@ -264,9 +267,23 @@ module.exports = (srv) => {
                                 MATERIAL_GROUP: row.MATERIAL_GROUP
                             })
                     );
+                    results.push(
+                        {
+                            status: " record updated",
+                            year: row.YEAR,
+                            internalorder: row.INTERNAL_ORDER,
+                            commitment_item: row.COMMITMENT_ITEM,
+                            fund_center: row.FUND_CENTER,
+                            materialgroup: row.MATERIAL_GROUP,
+                            currentBudget: updatePayload.CURRENT_BUDGET,
+                            budgetBalance: updatePayload.BUDGET_BALANCE
+                        }
+
+                    )
+
                 }
             }
-            return 'Records updated';
+            return { results };
         } catch (error) {
             req.error(400, `Fail creating record: ${error.message}`);
         }
@@ -810,44 +827,130 @@ module.exports = (srv) => {
             req.error(400, `Fail creating record: ${error.message}`, req);
         }
     });
+    /**
+         * Checking of Eligibility scenarios for each claim type
+         * @public
+         * @param {Array} aPayload - Array of Payload data containing ClaimType, ClaimItmType, List Array of fields to be checked;
+         * @returns {Object} Object Payload with results field in CheckFields List Array populated
+         */
+    srv.on('EligibilityCheck', async (req) => {
+        try {
+            const { aPayload } = req.data;
+            if (!aPayload || aPayload.length === 0) {
+                throw new Error('No Data Sent')
+            }
+            const tx = cds.tx(req);
 
-    // srv.on('WorkflowApproval', async (req) => {
-    //     // const {ClaimsWorkflowApproval} = srv.entities;
-    //     const tx = cds.tx(req);
-    //     try {
-    //         const { ClaimID } = req.data;
-    //         // oClaimsHeaderItemClaimantData = await RetrieveClaimsData(ClaimID, tx);
+            result = await EligibleScenarioCheck.onEligibilityCheck(aPayload, tx);
+            return result;
 
-    //         // if (oClaimsData.CASH_ADVANCE_AMOUNT > 0) {
-    //         //     const bClaimCashAdvance = true;
-    //         // }else{
-    //         //     bClaimCashAdvance = false;
-    //         // };
+        } catch (error) {
+            req.error(500, `Fail processing records: ${error.message}`, req);
+        }
+    });
+    /**
+    * Perdiem calculation for Claim Submission
+    * @public
+    * @param {Integer} day - Travel duration - day;
+    * @param {Decimal} hours - Travel duration - hours;
+    * @param {String}  location - 01-Semenanjung-Sabah/Sarawak, 02, 03-Oversea;
+    * @param {String} claimtypeid - Claim Type ID;
+    * @param {String} claimtypeitem - Claim Type Item ID;
+    * @param {Integer} breakfast - Breakfast provided;
+    * @param {Integer} lunch - Lunch provided;
+    * @param {Integer} dinner - Dinner provided;
+    * @returns {Decimal} perdiem - Entitlement amount, Daily Allowance
+    */
+    srv.on('getAmountEntitlement', async (req) => {
+        const { ZEMP_MASTER, ZPERDIEM_ENT } = srv.entities;
+        const tx = cds.tx(req);
+        const emailFromToken =
+            req.user?.attr?.email ||
+            req.user?.attr?.mail ||
+            req.user?.attr?.user_name ||
+            req.user?.attr?.login_name ||
+            req.user?.id ||
+            "";
+        const today = new Date().toISOString().slice(0, 10);
 
-    //         // RetrieveWorkflow(req);
-    //         // RetrieveApprovers(req);
+        let entitlement = null;
+        let meal_allowance = 0;
+        let daily_allowance = 0;
+        let time_difference = 0;
+        let bfast, lunch, dinner, total_meal_allowance = 0;
 
-    //         return ClaimID;
-    //     } catch (error) {
-    //         req.error(400, `Fail creating record: ${error.message}`);
-    //     }
-    // });
+        //get employee personal grade 
+        const email = String(emailFromToken).trim().toLowerCase();
+        const result = await tx.run(
+            SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email })
+        );
 
-    // async function RetrieveClaimsData(sClaimID, tx) {
-    //     if (!sClaimID) return;
-    //     const { ClaimsWorkflowApproval } = srv.entities;
-    //     const result = await tx.run(
-    //         SELECT.from(ClaimsWorkflowApproval).where({ClaimID: sClaimID})
-    //     );
-    //     return result;
-    // }
+        try {
+            if (result.GRADE) {
+                entitlement = await tx.run(SELECT.one.from(ZPERDIEM_ENT).where({
+                    PERSONAL_GRADE: result.GRADE,
+                    LOCATION: req.data.location,
+                    CLAIM_TYPE_ID: req.data.claimtypeid,
+                    CLAIM_TYPE_ITEM_ID: req.data.claimtypeitem,
+                    START_DATE: { '<=': today },
+                    END_DATE: { '>=': today }
+                })
+                );
 
-    // async function RetrieveWorkflow(oClaimsData) {
+                //use the wildcard if no entitlement avavailable - for MAKAN_O
+                if (!entitlement) {
+                    entitlement = await tx.run(SELECT.one.from(ZPERDIEM_ENT).where({
+                        PERSONAL_GRADE: '*',
+                        LOCATION: req.data.location,
+                        CLAIM_TYPE_ID: req.data.claimtypeid,
+                        CLAIM_TYPE_ITEM_ID: req.data.claimtypeitem,
+                        START_DATE: { '<=': today },
+                        END_DATE: { '>=': today }
+                    })
+                    );
+                }
+            }
+        } catch (err){
+            req.error(400, "Failed to retrieve entitlement information");
+        }
 
-    // };
+        if (!entitlement) {
+            return { amount: 0, daily_allowance: 0, currency_code: null };
+        } else {
+            time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
 
-    // async function RetrieveApprovers(req) {
+            //checking on the daily and meal allowance entitlement
+            if (req.data.day === 0 && req.data.hours < 8.0) {
+                //no entitlement
+                meal_allowance = 0;
+            } else if (req.data.day === 0 && req.data.hours >= 8.0 && req.data.hours < 24.0) {
+                //entitle for daily allowance
+                meal_allowance = entitlement.AMOUNT / 2;
+            }
+            else if (req.data.day > 0) {
+                meal_allowance = req.data.day * entitlement.AMOUNT;
+                if (time_difference >= 8.0 && time_difference < 24.0) {
+                    daily_allowance = entitlement.AMOUNT / 2;
+                }
+                meal_allowance += daily_allowance;
+            }
 
-    // };
+            //deduction of meal allowance
+            //20% from breakfast, 40% from lunch, 40% from dinner 
+            bfast = req.data.breakfast != 0 ? (0.2 * entitlement.AMOUNT) * req.data.breakfast : 0;
+            lunch = req.data.lunch != 0 ? (0.4 * entitlement.AMOUNT) * req.data.lunch : 0;
+            dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
+
+            total_meal_allowance = meal_allowance != 0 ? (meal_allowance - bfast - lunch - dinner) : 0;
+            return {
+                amount: total_meal_allowance,
+                daily_allowance: (entitlement.AMOUNT / 2),
+                currency_code: entitlement.CURRENCY
+            };
+        }
+
+
+    });
+
 
 }
