@@ -197,3 +197,56 @@ GET http://localhost:4004/odata/v4/EmployeeSrv/getEmailReminder()
 #    {
 #     "ID": "REQ26000000022"
 #    }
+
+POST    http://localhost:4004/odata/v4/EmployeeSrv/EligibilityCheck
+Content-Type: application/json
+Authorization: Basic alice
+ 
+    {
+     "aPayload": [
+       {
+         "CheckFields": [
+            {
+               "fieldName": "FARE_TYPE_ID",
+               "value": "03",
+               "result": null
+            },
+            {
+               "fieldName": "ELIGIBLE_AMOUNT",
+               "value": "800",
+               "result": null
+            },
+            {
+               "fieldName": "TRAVEL_HOURS",
+               "value": "1",
+               "result": null
+            }
+            ],
+         "ClaimType": "DLM_NEGARA",
+         "ClaimTypeItem": "TAMBANG",
+         "EmpId": "USER_003"
+      },
+      {
+         "CheckFields": [
+            {
+               "fieldName": "FARE_TYPE_ID",
+               "value": "01",
+               "result": null
+            },
+            {
+               "fieldName": "ELIGIBLE_AMOUNT",
+               "value": "600",
+               "result": null
+            },
+            {
+               "fieldName": "TRAVEL_HOURS",
+               "value": "8",
+               "result": null
+            }
+            ],
+         "ClaimType": "DLM_NEGARA",
+         "ClaimTypeItem": "TAMBANG",
+         "EmpId": "886687"
+      }
+     ]
+    }
