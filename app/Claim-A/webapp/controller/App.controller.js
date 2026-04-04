@@ -713,7 +713,7 @@ sap.ui.define([
 			// Mobile Eligibility Pre-check
 			var sClaimType = oInputModel.getProperty("/claimtype/type")
 			if (sClaimType === this._oConstant.ClaimType.HANDPHONE) {
-				var bEligible = await EligibilityCheck.onCheckEligibility(this);
+				var bEligible = await EligibilityCheck.onCheckMobileEligibility(this);
 				if (!bEligible) {
 					MessageBox.warning(Utility.getText("warning_msg_mobile_not_eligible"));
 					return;
@@ -1403,9 +1403,11 @@ sap.ui.define([
 					return;
 				}
 
-				const sAttachment1Binary = await Attachment.getFileAsBinary(oDialogData.doc1);
-				const sAttachment1SFId = await Attachment.postAttachment(oDialogData.doc1.name, sAttachment1Binary, sEmpId);
-				oDialogData.doc1 = `${sAttachment1SFId} - ${oDialogData.doc1.name}`;
+				if (oDialogData.doc1) {
+					const sAttachment1Binary = await Attachment.getFileAsBinary(oDialogData.doc1);
+					const sAttachment1SFId = await Attachment.postAttachment(oDialogData.doc1.name, sAttachment1Binary, sEmpId);
+					oDialogData.doc1 = `${sAttachment1SFId} - ${oDialogData.doc1.name}`;
+				}
 
 				if (oDialogData.doc2) {
 					const sAttachment2Binary = await Attachment.getFileAsBinary(oDialogData.doc2);
