@@ -827,13 +827,152 @@ module.exports = (srv) => {
         }
     });
 
+    /**
+    * Function for aging calculation for pre-approval travel/reimbursement
+    * will send the payload to IS for email reminder notification
+    * @public
+    * @param {String} req - Claim ID to be deleted;
+    * @returns {String} sResult - Result of Deletion of records
+    */
     srv.on('getEmailReminder', async (req) => {
         //TRIP_END_DATE 2 months from current date
         //RT0001 and RT0002 - travel and reimbursement
         //select pre-approval request for travel/reimbursement where trip end date 2 months from current date
-        const today = new Date().toISOString().slice(0, 10);
 
-        
-    })
+        const today = new Date();
+        const baseline = new Date();
+
+        baseline.setMonth(baseline.getMonth() - 2);
+        baseline.setDate(1);
+
+        const sTodayDate = today.toISOString().slice(0, 10);
+        const sBaselineDate = baseline.toISOString().slice(0, 10);
+        const { ZREQUEST_HEADER, ZCLAIM_HEADER, ZEMP_MASTER } = srv.entities;
+        const tx = cds.tx(req);
+
+        let result;
+
+        //get pre-approval records 2 months from current date
+        const preapproval = await tx.run(
+            SELECT.from(ZREQUEST_HEADER).where({
+                REQUEST_TYPE: { in: ['RT0001', 'RT0002'] },
+                STATUS: 'STAT05',  //Approved
+                TRIP_END_DATE: {
+                    '>': dBaselineDate,
+                    '<=': dTodayDate
+                }
+            })
+        );
+
+        for (var oRequest of preapproval) {
+            let milestone = null;
+            if (oRequest.CASH_ADVANCE === 0) {
+                //Scenario 1
+                //candidates for email aging -  T+1,T+30, T+60, T+85
+
+            } else if (oRequest.CASH_ADVANCE > 0 && oRequest.REQUEST_TYPE === 'RT0001') {
+                //Scenario 2
+                //candidates for email aging -  T+1, 11th-15th following month, 16 following month
+
+            }
+        }
+
+
+    });
+
+    async function getFirstScenario(sTripEndDate, sTodayDate) {
+        const aMilestones = [1, 30, 60, 85];
+
+        for (const milestone of aMilestones) {
+            const reminder = new Date(tripEnd);
+            reminder.setDate(reminder.getDate() + d);
+
+            if (reminder.toISOString().slice(0, 10) === todayStr) {
+                return String(d);
+            }
+        }
+
+        return null;
+    };
+
+    async function getSecondScenario(sTripEndDate, sTodayDate) {
+        const aMilestones = [1, 11, 12, 13, 14, 15, 16];
+
+        for (const milestone of aMilestones) {
+            const reminder = new Date(tripEnd);
+            reminder.setDate(reminder.getDate() + d);
+
+            if (reminder.toISOString().slice(0, 10) === todayStr) {
+                return String(d);
+            }
+        }
+
+        return null;
+    };
+
+    async function getclaimStatus(ZCLAIM_HEADER, tx, PREAPPROVAL_ID) {
+        //get claim - if available, check on the status STAT01 - DRAFT (not submitted)
+        //if no record found, means no claim has been created yet - need to send email reminder
+        const claim = await tx.run(
+            SELECT.one.from(ZCLAIM_HEADER).where({ REQUEST_ID: PREAPPROVAL_ID})
+        );
+
+        let bSendEmail = false;
+        if (claim?.STATUS_ID === 'STAT01' || !claim) {
+            bSendEmail = true;
+        }
+
+        return bSendEmail;
+    };
+
+    async function getClaimantDetails(ZEMP_MASTER, tx, sEmpID, nScenario) {
+        let sName, sEmail, sCCEmail, sDirectSuperiorID;
+        let iDepth = 20;
+        const claimantDetails = await tx.run(
+            SELECT.one.from(ZEMP_MASTER).where(
+                { EMP_ID: sEmpID}
+            )
+        );
+
+        if (claimantDetails) {
+            sName = claimantDetails?.NAME;
+            sEmail = claimantDetails?.EMAIL;
+
+            if (nScenario === 2) {
+                //get CC email HOD and above
+                sDirectSuperiorID = claimantDetails?.DIRECT_SUPPERIOR;
+
+                while (iDepth != 0){
+                   iDepth--; 
+
+                   if (!sDirectSuperiorID) {
+                        break;
+                   }
+
+                   const oSuperior = await tx.run(
+                    SELECT.one.from(ZEMP_MASTER).where({
+                        EMP_ID: sDirectSuperiorID
+                    })
+                   );
+
+                   if (!oSuperior) {
+                    break;
+                   }
+
+                   const aRank = ['HOD', 'CXO', 'CEO'];
+                   if (aRank.includes(oSuperior.ROLE)) {
+                        sCCEmail = oSuperior.EMAIL;
+                        break;
+                   }
+
+                   sDirectSuperiorID = oSuperior.DIRECT_SUPPERIOR;
+                }
+
+            }
+
+             
+        }
+    }
+
 
 }
