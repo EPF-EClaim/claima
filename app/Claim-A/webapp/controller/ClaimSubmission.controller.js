@@ -3252,6 +3252,10 @@ sap.ui.define([
 			this._updateEntitlementAmount(oClaimItemInputModel);
 		},
 
+		/**
+        * On selecting location type, reset kilometer value if KWSP Office is selected
+        * @public
+        */
 		onSelect_ClaimDetails_LocationType: function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
@@ -3259,6 +3263,13 @@ sap.ui.define([
 			}
 		},
 
+		/**
+        * On selecting office location, set the respective state value if empty and retrieve mileage based on backend table
+		* once mileage is retrieved, amount is calculated based on kilometer * rate per km
+        * @public
+		* @param {object} oEvent - the event call passed into param
+		* @param {string} sLocationTypeOffice - determines whether office location is to or from
+        */
 		onSelect_ClaimDetails_LocationTypeOffice: async function (oEvent, sLocationTypeOffice) {
 			var oInputModel = this.getView().getModel("claimitem_input");
 
