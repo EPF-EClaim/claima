@@ -964,16 +964,14 @@ module.exports = (srv) => {
         //TRIP_END_DATE 2 months from current date
         //RT0001 and RT0002 - travel and reimbursement
         //select pre-approval request for travel/reimbursement where trip end date 2 months from current date
-
         const today = new Date();
         const baseline = new Date();
 
         baseline.setMonth(baseline.getMonth() - 2);
-        // baseline.setDate(1);
 
         const sTodayDate = today.toISOString().slice(0, 10);
         const sBaselineDate = baseline.toISOString().slice(0, 10);
-        const { ZREQUEST_HEADER, ZCLAIM_HEADER, ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANT } = srv.entities;
+        const { ZREQUEST_HEADER, ZCLAIM_HEADER, ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS } = srv.entities;
         const tx = cds.tx(req);
 
         let aResult = [];
@@ -981,49 +979,61 @@ module.exports = (srv) => {
         //get pre-approval records 2 months from current date
         const preapproval = await tx.run(
             SELECT.from(ZREQUEST_HEADER).where({
-                REQUEST_TYPE_ID: { in: ['RT0001', 'RT0004'] },
-                STATUS: 'STAT05',  //Approved
+                REQUEST_TYPE_ID: {
+                    in: [Constant.RequestType.RT0001,
+                    Constant.RequestType.RT0004]
+                },
+                STATUS: Constant.Status.STAT05,  //Approved
             }).and(
                 `TRIP_END_DATE > '${sBaselineDate}' AND TRIP_END_DATE <= '${sTodayDate}'`)
         );
 
         for (var oRequest of preapproval) {
-            let sMilestone = null;
-            let sScenario = null;
-            let sClaimStatus = null;
-            let sName, sEmail, sCCEmail = null;
+            try {
+                let sAgingDay = null;
+                let sScenario = null;
+                let sClaimStatus = null;
+                let sName = null;
+                let sEmail = null;
+                let sCCEmail = null;
 
-            if (parseFloat(oRequest.CASH_ADVANCE ) === 0) {
-                //Scenario 1
-                //candidates for email aging -  T+1,T+30, T+60, T+85
-                sScenario = '1';
-                sMilestone = EmailReminder.getFirstScenario(oRequest.TRIP_END_DATE, sTodayDate);
-            } else if (parseFloat(oRequest.CASH_ADVANCE) > 0 && oRequest.REQUEST_TYPE_ID === 'RT0001') {
-                //Scenario 2
-                //candidates for email aging -  Trip end date+1, 11th-15th following month, 16 following month
-                sScenario = '2';
-                sMilestone = EmailReminder.getSecondScenario(oRequest.TRIP_END_DATE, sTodayDate);
-            }
+                if (parseFloat(oRequest.CASH_ADVANCE) === 0) {
+                    //Scenario 1
+                    //candidates for email aging -  T+1,T+30, T+60, T+85
+                    sScenario = Constant.ReminderScenario[1];
+                    sAgingDay = EmailReminder.getFirstScenario(oRequest.TRIP_END_DATE, sTodayDate);
+                } else if (parseFloat(oRequest.CASH_ADVANCE) > 0 && oRequest.REQUEST_TYPE_ID === Constant.RequestType.RT0001) {
+                    //Scenario 2
+                    //candidates for email aging -  Trip end date+1, 11th-15th following month, 16 following month
+                    sScenario = Constant.ReminderScenario[2];
+                    sAgingDay = EmailReminder.getSecondScenario(oRequest.TRIP_END_DATE, sTodayDate);
+                }
 
-            if (sMilestone != null) {
+                if (sAgingDay != null) {
                     sClaimStatus = await EmailReminder.getClaimStatus(ZCLAIM_HEADER, tx, oRequest.REQUEST_ID);  //return true or false
-                    if (sClaimStatus === true) {
-                        ({ sName, sEmail, sCCEmail } = await EmailReminder.getClaimantDetails(ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANT, tx, oRequest.EMP_ID, sScenario));
+                    if (sClaimStatus) {
+                        ({ sName, sEmail, sCCEmail } = await EmailReminder.getClaimantDetails(ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS, tx, oRequest.EMP_ID, sScenario));
                     }
 
                     aResult.push({
-                        empName     : sName,
-                        empEmail    : sEmail,
-                        ccEmail     : sCCEmail,
-                        tripEndDate : new Date(oRequest.TRIP_END_DATE).toISOString().slice(0, 10), 
-                        scenario    : sScenario,
-                        milestone   : sMilestone
+                        empName: sName,
+                        empEmail: sEmail,
+                        ccEmail: sCCEmail,
+                        tripEndDate: new Date(oRequest.TRIP_END_DATE).toISOString().slice(0, 10),
+                        scenario: sScenario,
+                        milestone: sAgingDay
                     })
                 }
+            } catch (error) {
+                console.log(`Error processing request ${oRequest.REQUEST_ID}:`, error.message);
+                req.info(`Error processing request ${oRequest.REQUEST_ID}:`, error.message);
+                continue;
+            }
         }
 
+
         if (aResult.length === 0) {
-            req.info('No records available');
+            req.info('No reminders available');
             return [];
         }
 

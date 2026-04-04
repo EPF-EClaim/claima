@@ -137,11 +137,25 @@ const Constant = {
     Wildcard:{
         "All": "*"
     }, 
-
     Role: {
         "CEO": "CEO", 
         "CEO_FI": "CEO_FI", 
         "HOD": "HOD"
+    }, 
+    Status: {
+        "STAT01": "STAT01", 
+        "STAT05": "STAT05"
+    },
+    ReminderScenario: {
+        "1": "1",
+        "2": "2"
+    }, 
+    RequestType: {
+        "RT0001": "RT0001", 
+        "RT0004": "RT0004"
+    }, 
+    ReminderMilestone: {
+        SCENARIO1: { 1: '1', 30: '30', 60: '60', 85: '85' }
     }
 
 };
