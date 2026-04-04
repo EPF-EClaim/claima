@@ -143,19 +143,19 @@ const Constant = {
         "HOD": "HOD"
     }, 
     Status: {
-        "STAT01": "STAT01", 
-        "STAT05": "STAT05"
+        DRAFT : "STAT01", 
+        APPROVED : "STAT05"
     },
     ReminderScenario: {
-        "1": "1",
-        "2": "2"
+        NO_CASH_ADVANCE: "1",
+        WITH_CASH_ADVANCE: "2"
     }, 
     RequestType: {
-        "RT0001": "RT0001", 
-        "RT0004": "RT0004"
+        Travel : "RT0001", 
+        Reimbursement : "RT0004"
     }, 
     ReminderMilestone: {
-        SCENARIO1: { 1: '1', 30: '30', 60: '60', 85: '85' }
+        AgingMilestone: { 1: '1', 30: '30', 60: '60', 85: '85' }
     }
 
 };

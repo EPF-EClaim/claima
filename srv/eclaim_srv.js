@@ -980,10 +980,10 @@ module.exports = (srv) => {
         const preapproval = await tx.run(
             SELECT.from(ZREQUEST_HEADER).where({
                 REQUEST_TYPE_ID: {
-                    in: [Constant.RequestType.RT0001,
-                    Constant.RequestType.RT0004]
+                    in: [Constant.RequestType.Travel,
+                    Constant.RequestType.Reimbursement]
                 },
-                STATUS: Constant.Status.STAT05,  //Approved
+                STATUS: Constant.Status.APPROVED,  //Approved
             }).and(
                 `TRIP_END_DATE > '${sBaselineDate}' AND TRIP_END_DATE <= '${sTodayDate}'`)
         );
@@ -1000,13 +1000,13 @@ module.exports = (srv) => {
                 if (parseFloat(oRequest.CASH_ADVANCE) === 0) {
                     //Scenario 1
                     //candidates for email aging -  T+1,T+30, T+60, T+85
-                    sScenario = Constant.ReminderScenario[1];
-                    sAgingDay = EmailReminder.getFirstScenario(oRequest.TRIP_END_DATE, sTodayDate);
-                } else if (parseFloat(oRequest.CASH_ADVANCE) > 0 && oRequest.REQUEST_TYPE_ID === Constant.RequestType.RT0001) {
+                    sScenario = Constant.ReminderScenario.NO_CASH_ADVANCE;
+                    sAgingDay = EmailReminder.getNoCashAdvanceAgingDay(oRequest.TRIP_END_DATE, sTodayDate);
+                } else if (parseFloat(oRequest.CASH_ADVANCE) > 0 && oRequest.REQUEST_TYPE_ID === Constant.RequestType.Travel) {
                     //Scenario 2
                     //candidates for email aging -  Trip end date+1, 11th-15th following month, 16 following month
-                    sScenario = Constant.ReminderScenario[2];
-                    sAgingDay = EmailReminder.getSecondScenario(oRequest.TRIP_END_DATE, sTodayDate);
+                    sScenario = Constant.ReminderScenario.WITH_CASH_ADVANCE;
+                    sAgingDay = EmailReminder.getCashAdvanceAgingDay(oRequest.TRIP_END_DATE, sTodayDate);
                 }
 
                 if (sAgingDay != null) {

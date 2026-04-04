@@ -1,12 +1,12 @@
 const { Constant } = require("./constant");
 module.exports = {
 
-    getFirstScenario: function (sTripEndDate, sTodayDate) {
+    getNoCashAdvanceAgingDay: function (sTripEndDate, sTodayDate) {
         const nDifference = this.getDateDifference(sTripEndDate, sTodayDate);
-        return Constant.ReminderMilestone.SCENARIO1[nDifference] || null;
+        return Constant.ReminderMilestone.AgingMilestone[nDifference] || null;
     },
 
-    getSecondScenario: function (sTripEndDate, sTodayDate) {
+    getCashAdvanceAgingDay: function (sTripEndDate, sTodayDate) {
         const tripEndDate = new Date(sTripEndDate);
         const today = new Date(sTodayDate);
         const nDifference = this.getDateDifference(sTripEndDate, sTodayDate);
@@ -40,7 +40,7 @@ module.exports = {
         const claim = await tx.run(
             SELECT.one.from(ZCLAIM_HEADER).where({ REQUEST_ID: sPreapprovalID })
         );
-        return claim?.STATUS_ID === Constant.Status.STAT01 || !claim;
+        return claim?.STATUS_ID === Constant.Status.DRAFT || !claim;
     },
 
     getClaimantDetails: async function (ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS, tx, sEmpID, nScenario) {
@@ -58,7 +58,7 @@ module.exports = {
         sName = claimantDetails.NAME;
         sEmail = claimantDetails.EMAIL;
 
-        if (nScenario === Constant.ReminderScenario[2]) {
+        if (nScenario === Constant.ReminderScenario.WITH_CASH_ADVANCE) {
 
             // check if claimant is CEO - if yes, CCEmail should goes to CEO_FI
             if (claimantDetails.ROLE === Constant.Role.CEO) {
@@ -124,8 +124,6 @@ module.exports = {
                 }
             }
         }
-
-
         return { sName, sEmail, sCCEmail };
     },
 
