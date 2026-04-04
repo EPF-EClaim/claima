@@ -531,6 +531,9 @@
 					}"
 					change="onChange_ClaimDetails_Kilometer"
 					liveChange="onChange_ClaimDetails_Kilometer"
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						${claimitem_input>/claim_item/location_type} !== ${constant>/LocationType/KWSP}
+					}"
 					visible="{claimitem_property>/km/is_visible}"
 				/>
 
@@ -620,6 +623,8 @@
                     id="select_claimdetails_input_location_type"
                     forceSelection="false"
                     selectedKey="{claimitem_input>/claim_item/location_type}"
+                    change="onSelect_ClaimDetails_LocationType"
+                    liveChange="onSelect_ClaimDetails_LocationType"
                     visible="false"
                     required="true"
 				>
@@ -657,13 +662,16 @@
                     id="select_claimdetails_input_from_location"
                     forceSelection="false"
                     selectedKey="{claimitem_input>/claim_item/from_location_office}"
+                    change="onSelect_ClaimDetails_LocationTypeOffice($event, ${constant>/LocationTypeOffice/FROM})"
+                    liveChange="onSelect_ClaimDetails_LocationTypeOffice($event, ${constant>/LocationTypeOffice/FROM})"
                     visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
                     editable="{= !${claimsubmission_input>/view_only} }"
                     required="true"
                     items="{path: 'employee>/ZOFFICE_LOCATION',
                             sorter: { path: 'LOCATION_ID', descending: false },
                             filters: [
-                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }],
+                            parameters: { select: 'STATE_ID' }}">
                     <items>
                         <core:Item key="{employee>LOCATION_ID}" 
                         		   text="{employee>LOCATION_DESC}" />
@@ -702,13 +710,16 @@
                     id="select_claimdetails_input_to_location"
                     forceSelection="false"
                     selectedKey="{claimitem_input>/claim_item/to_location_office}"
+                    change="onSelect_ClaimDetails_LocationTypeOffice($event, ${constant>/LocationTypeOffice/TO})"
+                    liveChange="onSelect_ClaimDetails_LocationTypeOffice($event, ${constant>/LocationTypeOffice/TO})"
                     visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
                     editable="{= !${claimsubmission_input>/view_only} }"
                     required="true"
                     items="{path: 'employee>/ZOFFICE_LOCATION',
                             sorter: { path: 'LOCATION_ID', descending: false },
                             filters: [
-                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
+                            	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }],
+                            parameters: { select: 'STATE_ID' }}">
                     <items>
                         <core:Item key="{employee>LOCATION_ID}" 
                         		   text="{employee>LOCATION_DESC}" />

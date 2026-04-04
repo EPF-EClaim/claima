@@ -3252,6 +3252,49 @@ sap.ui.define([
 			this._updateEntitlementAmount(oClaimItemInputModel);
 		},
 
+		onSelect_ClaimDetails_LocationType: function () {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
+				oInputModel.setProperty("/claim_item/km", null);
+			}
+		},
+
+		onSelect_ClaimDetails_LocationTypeOffice: async function (oEvent, sLocationTypeOffice) {
+			var oInputModel = this.getView().getModel("claimitem_input");
+
+			// set state field value if empty or not same Id
+			var oSelectedItem = oEvent.getParameters().selectedItem;
+			if (oSelectedItem) {
+				const oBindingContext = oSelectedItem.getBindingContext("employee");
+				const oStateId = oBindingContext.getObject("STATE_ID");
+				if (oInputModel.getProperty("/claim_item/" + sLocationTypeOffice + "_state_id") !== oStateId) {
+					// set if claim type is course based on project_claim field
+					oInputModel.setProperty("/claim_item/" + sLocationTypeOffice + "_state_id", oStateId);
+				}
+			}
+
+			if ((oInputModel.getProperty("/claim_item/from_state_id") && oInputModel.getProperty("/claim_item/from_location_office")) &&
+				(oInputModel.getProperty("/claim_item/to_state_id") && oInputModel.getProperty("/claim_item/to_location_office"))
+			) {
+				var aEntityFields = [
+					{ entity_field: "FROM_STATE_ID", filter_value: oInputModel.getProperty("/claim_item/from_state_id") },
+					{ entity_field: "FROM_LOCATION_ID", filter_value: oInputModel.getProperty("/claim_item/from_location_office") },
+					{ entity_field: "TO_STATE_ID", filter_value: oInputModel.getProperty("/claim_item/to_state_id") },
+					{ entity_field: "TO_LOCATION_ID", filter_value: oInputModel.getProperty("/claim_item/to_location_office") }
+				]
+				var aRetrievalFields = [ "MILEAGE"];
+				var aOutputValues = await ClaimUtility.setClaimItemValueFromSelection(this._oConstant.Entities.ZOFFICE_DISTANCE, aEntityFields, aRetrievalFields);
+				if (aOutputValues.length > 0) {
+					oInputModel.setProperty("/claim_item/km", aOutputValues[0]);
+				}
+				else {
+					oInputModel.setProperty("/claim_item/km", null);
+                    MessageToast.show(Utility.getText("msg_claimdetails_input_km_location_office_none"));
+				}
+                this._calculateRatePerKm();
+			}
+		},
+
 		/* =========================================================
 		 * Mileage dialog (Fragment) — use a dedicated controller - For Google Maps
 		 * ========================================================= */

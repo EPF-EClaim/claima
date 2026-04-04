@@ -172,6 +172,7 @@ sap.ui.define([
             "ZEMP_MASTER": "/ZEMP_MASTER",
             "ZEMP_REQUEST_BUDGET_CHECK": "/ZEMP_REQUEST_BUDGET_CHECK",
             "ZEMP_SUBSTITUTION_RULE": "/ZEMP_SUBSTITUTION_RULE",
+            "ZOFFICE_DISTANCE": "/ZOFFICE_DISTANCE",
             "ZRATE_KM": "/ZRATE_KM",
             "ZREQUEST_HEADER": "/ZREQUEST_HEADER",
             "ZREQUEST_ITEM": "/ZREQUEST_ITEM",
@@ -323,6 +324,10 @@ sap.ui.define([
         "LocationType" : {
             "OTHER" : "1",
             "KWSP"  : "2"
+        },
+        "LocationTypeOffice" : {
+            "FROM" : "from",
+            "TO"  : "to"
         },
         "InsuranceProvider" : {
             "OTHERS" : "4",
