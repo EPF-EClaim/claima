@@ -1231,7 +1231,8 @@ sap.ui.define([
 						"vehicle_class_id": null,
 						"attachment_file_1": null,
 						"attachment_file_2": null,
-					}
+					},
+					"eligible_amount": null
 				},
 				"attachments": {
 					"attachment1": {
@@ -2280,9 +2281,10 @@ sap.ui.define([
 			}
 
 			// calculate number of days
-			oInputModel.setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
+			if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
+				this._calculateNumberOfDays();
+			}
 
-			var oPropertyModel = this.getView().getModel("claimitem_property");
 			// set percentage (%) compensation based on claim item
 			if (oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
 				await ClaimUtility.setClaimItemDefaultValues("percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
@@ -2293,6 +2295,12 @@ sap.ui.define([
 				await ClaimUtility.setClaimItemDefaultValues("descr/rate_per_km", this._oConstant.EligibilityRule.RATE_PER_KM, 0.0);
 				// clear rate per km ID field since formula uses default value
 				oInputModel.setProperty("/rate_per_km", null);
+			}
+
+			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
+			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
+				await ClaimUtility.setClaimItemDefaultValues("eligible_amount", this._oConstant.EligibilityRule.ELIGIBLE_AMOUNT, 0.00);
+				this._calculateLodgingEligibleAmount();
 			}
 		},
 
@@ -2313,6 +2321,7 @@ sap.ui.define([
 				percentage_compensation: { is_visible: false },
 				start_date: { is_visible: false },
 				end_date: { is_visible: false },
+				no_of_days: { is_visible: false },
 				vehicle_type: { is_visible: false },
 				km: { is_visible: false },
 				rate_per_km: { is_visible: false },
@@ -2965,7 +2974,7 @@ sap.ui.define([
 					await this._calculatePerDiem();
 				}
 				// Calculate number of days
-				this.getView().getModel("claimitem_input").setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
+				this._calculateNumberOfDays();
 			}
 		},
 
@@ -2977,7 +2986,7 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			oInputModel.refresh(true);
 
-			oInputModel.setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
+			this._calculateNumberOfDays();
 		},
 
         /**
@@ -2985,7 +2994,6 @@ sap.ui.define([
 		 * if start/end date is not in claim item fields, pass start/end date value from claim header
 		 * else if header is empty, pass start/end date value from claim item
 		 * @private
-		 * @return {integer} retrieve number of days value based on start/end date from claim
 		 */
 		_calculateNumberOfDays: function () {
 			var oHeader = {};
@@ -3006,7 +3014,28 @@ sap.ui.define([
 			if (Object.keys(oHeader).length === 0) {
 				oItem = oInputModel.getProperty("/claim_item") || {};
 			}
-			return DateUtility.calculateNumberOfDays(oHeader, oItem);
+			oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(oHeader, oItem));
+
+			// if claim type item is lodging, calculate amount based on eligible amount and number of days
+			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
+				this._calculateLodgingEligibleAmount();
+			}
+		},
+
+        /**
+         * Auto-populate Amount field based on eligible employee amount
+		 * if number of days field is visible, calculate amount based on eligible amount * number of days 
+		 * @private
+		 */
+		_calculateLodgingEligibleAmount: async function () {
+			// multiply number of days to eligible amount
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (this.getView().getModel("claimitem_property").getProperty("/no_of_days/is_visible")) {
+				oInputModel.setProperty("/claim_item/amount", oInputModel.getProperty("/claim_item/eligible_amount") * oInputModel.getProperty("/claim_item/no_of_days"));
+			}
+			else {
+				oInputModel.setProperty("/claim_item/amount", oInputModel.getProperty("/claim_item/eligible_amount"));
+			}
 		},
 
 		onChange_ClaimDetails_TimeRange: async function (startdate, starttime, enddate, endtime) {

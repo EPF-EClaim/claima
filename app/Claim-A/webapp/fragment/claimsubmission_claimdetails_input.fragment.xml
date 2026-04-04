@@ -191,6 +191,7 @@
 					}"
 					required="true"
 					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						!Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) &amp;&amp;
 						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
 						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
 						!${claimitem_property>/entitled_breakfast/is_visible}
@@ -481,7 +482,7 @@
 					id="input_claimdetails_input_no_of_days"
 					value="{claimitem_input>/claim_item/no_of_days}"
 					type="Number"
-					visible="false"
+					visible="{claimitem_property>/no_of_days/is_visible}"
 					editable="false"
 					required="true"
 				/>

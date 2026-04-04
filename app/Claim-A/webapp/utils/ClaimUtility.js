@@ -62,8 +62,8 @@ sap.ui.define([
 				and: false
 			});
 			const oListBinding = oModel.bindList("/ZELIGIBILITY_RULE", null, [
-				new Sorter("ROLE_ID", true),
 				new Sorter("PERSONAL_GRADE", true),
+				new Sorter("ROLE_ID", true),
 				new Sorter("POSITION_NO_DESC", true),
 				new Sorter("ROW_COUNT", true),
 			], [

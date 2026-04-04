@@ -86,6 +86,11 @@ sap.ui.define([
             "GALAKAN" : "GALAKAN",
             "TELEFON_B" : "TELEFON_B"
         },
+        "ClaimTypeItemLodging": {
+            "LOD_TUKAR": "LOD_TUKAR",
+            "LODG_O": "LODG_O",
+            "LODGING_L": "LODGING_L"
+        },
         "ClaimTypeItemStatus": {
             "ACTIVE": "ACTIVE",
         },
@@ -99,6 +104,7 @@ sap.ui.define([
             "CANCELLED": "STAT07",
         },
         "EligibilityRule": {
+            "ELIGIBLE_AMOUNT": "ELIGIBLE_AMOUNT",
             "RATE_PER_KM": "RATE",
             "SUBSIDISED_RATE": "SUBSIDISED_RATE"
         },
