@@ -3,6 +3,8 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
+    "sap/ui/model/json/JSONModel",
+    "sap/ui/core/Fragment",
 	"claima/utils/Constants"
 ], function (Filter, FilterOperator, Sorter, Constants) {
     "use strict";
@@ -64,7 +66,7 @@ sap.ui.define([
         },
 
         async _updateSubmittedDate(oModel, sID) {
-            let sSubmission_type = sID.substring(0,3);
+            let sSubmission_type = sID.substring(0, 3);
             
             let sHeaderTablePath = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.Entities.ZREQUEST_HEADER : Constants.Entities.ZCLAIM_HEADER;
             let sField = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.EntitiesFields.REQUESTID : Constants.EntitiesFields.CLAIMID; 
