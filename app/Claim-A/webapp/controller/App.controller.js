@@ -757,6 +757,12 @@ sap.ui.define([
 			if (oInputModel.getProperty("/claimtype/is_course") && oInputModel.getProperty("/claimtype/course_code")) {
 				oInputModel.setProperty("/claim_header/course_code", oInputModel.getProperty("/claimtype/course_code"));
 				oInputModel.setProperty("/claim_header/descr/course_code", oInputModel.getProperty("/claimtype/descr/course_code"));
+				// retrieve start/end dates based on course code
+				var oCourseCodeDates = await DateUtility.getCourseCodeStartEndDate(oInputModel.getProperty("/claim_header/course_code"), oInputModel.getProperty("/emp_master/eeid"));
+				if (oCourseCodeDates) {
+					oInputModel.setProperty("/claim_header/trip_start_date", oCourseCodeDates.start_date);
+					oInputModel.setProperty("/claim_header/trip_end_date", oCourseCodeDates.end_date);
+				}
 			}
 
 			// Mobile Eligibility Pre-check
