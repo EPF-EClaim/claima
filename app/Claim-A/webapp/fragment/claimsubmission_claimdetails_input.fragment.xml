@@ -1,15 +1,16 @@
 <core:FragmentDefinition
-	xmlns="sap.m"
-	xmlns:l="sap.ui.layout"
-	xmlns:f="sap.ui.layout.form"
-	xmlns:core="sap.ui.core"
-	xmlns:u="sap.ui.unified"
-	xmlns:mdc="sap.ui.mdc"
+    xmlns="sap.m"
+    xmlns:l="sap.ui.layout"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:u="sap.ui.unified"
+    xmlns:mdc="sap.ui.mdc"
     xmlns:mdcvh="sap.ui.mdc.valuehelp"
     xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content"
-	core:require="{FloatType: 'sap/ui/model/type/Float'}"
+    core:require="{FloatType: 'sap/ui/model/type/Float',
+				   Integer: 'sap/ui/model/type/Integer'}"
 >
-	<VBox class="sapUiSmallMargin">
+    <VBox class="sapUiSmallMargin">
         <OverflowToolbar height="3rem">
             <!-- Claim Header -->
             <Title
@@ -28,122 +29,138 @@
                 visible="false"
             />
         </OverflowToolbar>
-		<f:SimpleForm
-			editable="false"
-			layout="ColumnLayout"
-			labelSpanXL="5"
-			labelSpanL="5"
-			labelSpanM="5"
-			labelSpanS="10"
-			adjustLabelSpan="true"
-			emptySpanXL="1"
-			emptySpanL="1"
-			emptySpanM="1"
-			emptySpanS="0"
-			columnsM="2"
-			columnsL="2"
-			columnsXL="2"
+        <f:SimpleForm
+            editable="false"
+            layout="ColumnLayout"
+            labelSpanXL="5"
+            labelSpanL="5"
+            labelSpanM="5"
+            labelSpanS="10"
+            adjustLabelSpan="true"
+            emptySpanXL="1"
+            emptySpanL="1"
+            emptySpanM="1"
+            emptySpanS="0"
+            columnsM="2"
+            columnsL="2"
+            columnsXL="2"
 			singleContainerFullSize="false" >
-			<f:content>
-				<!-- Claim Type -->
-				<Label text="{i18n>label_claimdetails_input_claimtype}" />
-				<Text
-					id="text_claimdetails_input_claimtype"
-					text="{claimitem_input>/claim_item/descr/claim_type_id}"
-				/>
+            <f:content>
+                <!-- Claim Type -->
+                <Label text="{i18n>label_claimdetails_input_claimtype}" />
+                <Text
+                    id="text_claimdetails_input_claimtype"
+                    text="{claimitem_input>/claim_item/descr/claim_type_id}"
+                />
 
-				<!-- Claim Item -->
-				<Label text="{i18n>label_claimdetails_input_claimitem}" />
-				<Select
-					id="select_claimdetails_input_claimitem"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/claim_type_item_id}"
-					change="onSelect_ClaimDetails_ClaimItem"
-					liveChange="onSelect_ClaimDetails_ClaimItem"
-					required="true"
+                <!-- Claim Item -->
+                <Label text="{i18n>label_claimdetails_input_claimitem}" />
+                <Select
+                    id="select_claimdetails_input_claimitem"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/claim_type_item_id}"
+                    change="onSelect_ClaimDetails_ClaimItem"
+                    liveChange="onSelect_ClaimDetails_ClaimItem"
+                    required="true"
 				>
 				</Select>
 
-				<!-- Anggota Name -->
-				<Label text="{i18n>label_claimdetails_input_anggota}" />
-				<Input
-					id="input_claimdetails_input_anggota_name"
-					value="{claimitem_input>/claim_item/anggota_name}"
-					visible="false"
-				/>
+                <!-- Anggota Name -->
+                <Label text="{i18n>label_claimdetails_input_anggota}" />
+                <Input
+                    id="input_claimdetails_input_anggota_name"
+                    value="{claimitem_input>/claim_item/anggota_name}"
+                    visible="false"
+                />
 
 				<!-- Dependent Name -->
 				<Label text="{i18n>label_claimdetails_input_dependent}" />
-				<Input
-					id="input_claimdetails_input_dependent_name"
-					value="{claimitem_input>/claim_item/dependent_name}"
-					visible="false"
-					required="true"
-				/>
-
-				<!-- Type of Professional Body -->
-				<Label text="{i18n>label_claimdetails_input_profbodytype}" />
 				<Select
-					id="select_claimdetails_input_type_of_professional_body"
+					id="select_claimdetails_input_dependent_name"
 					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/type_of_professional_body}"
-					change="onSelect_ClaimDetails_ProfBodyType"
-					liveChange="onSelect_ClaimDetails_ProfBodyType"
+					selectedKey="{claimitem_input>/claim_item/dependent_name}"
+					items="{
+						path:'employee>/ZEMP_DEPENDENT',
+						sorter: { path: 'DEPENDENT_NO', descending: false }
+					}"
 					visible="false"
 					required="true"
 				>
+				<items>
+					<core:Item key="{employee>LEGAL_NAME}" 
+							   text="{employee>LEGAL_NAME}" />
+				</items>
 				</Select>
 
-				<!-- Policy Number -->
-				<Label text="{i18n>label_claimdetails_input_policyno}" />
-				<Input
-					id="input_claimdetails_input_policy_number"
-					value="{claimitem_input>/claim_item/policy_number}"
-					visible="false"
-				/>
+                <!-- Type of Professional Body -->
+                <Label text="{i18n>label_claimdetails_input_profbodytype}" />
+                <Select
+                    id="select_claimdetails_input_type_of_professional_body"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/type_of_professional_body}"
+                    change="onSelect_ClaimDetails_ProfBodyType"
+                    liveChange="onSelect_ClaimDetails_ProfBodyType"
+                    visible="false"
+                    required="true"
+				>
+				</Select>
 
-				<!-- Funeral Transportation (Dalam Stesen/Luar Stesen/Flight) -->
+                <!-- Policy Number -->
+                <Label text="{i18n>label_claimdetails_input_policyno}" />
+                <Input
+                    id="input_claimdetails_input_policy_number"
+                    value="{claimitem_input>/claim_item/policy_number}"
+                    visible="false"
+                />
+
+                <!-- Funeral Transportation (Dalam Stesen/Luar Stesen/Flight) -->
 				<Label text="{i18n>label_claimdetails_input_funeraltransport}" />
-				<Select
-					id="select_claimdetails_input_funeral_transportation"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/funeral_transportation}"
-					change="onSelect_ClaimDetails_FuneralTransport"
-					liveChange="onSelect_ClaimDetails_FuneralTransport"
-					visible="false"
+                <Select
+                    id="select_claimdetails_input_funeral_transportation"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/funeral_transportation}"
+                    change="onSelect_ClaimDetails_FuneralTransport"
+                    liveChange="onSelect_ClaimDetails_FuneralTransport"
+                    visible="false"
 				>
 				</Select>
 
-				<!-- Actual Amount (MYR) -->
-				<Label text="{i18n>label_claimdetails_input_amount_actual}" />
-				<Input
-					id="input_claimdetails_input_actual_amount"
-					value="{
+                <!-- Actual Amount (MYR) -->
+                <Label text="{i18n>label_claimdetails_input_amount_actual}" />
+                <Input
+                    id="input_claimdetails_input_actual_amount"
+                    value="{
 						path: 'claimitem_input>/claim_item/actual_amount',
 						type: 'FloatType',
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
+							maxIntegerDigits: 16,
 							preserveDecimals: false
+						},
+						constraints: {
+							minimum: 0.01
 						}
 					}"
-					visible="false"
+					change="onChange_ClaimDetails_ActualAmount"
+					liveChange="onChange_ClaimDetails_ActualAmount"
+					visible="{claimitem_property>/actual_amount/is_visible}"
 					required="true"
 				/>
 
-				<!-- Subsidised Amount (MYR) (50% of actual) -->
+                <!-- Subsidised Amount (MYR) (50% of actual) -->
 				<Label text="{i18n>label_claimdetails_input_amount_subsidised}" />
-				<Input
-					id="input_claimdetails_input_subsidised_amount"
-					editable="false"
-					visible="false"
-				/>
+                <Input
+                    id="input_claimdetails_input_subsidised_amount"
+                    editable="false"
+                    visible="false"
+                />
 
-				<!-- Request Approved Amount (MYR) -->
+                <!-- Request Approved Amount (MYR) -->
 				<Label text="{i18n>label_claimdetails_input_amount_reqapproved}" />
-				<Input
-					id="input_claimdetails_input_request_approval_amount"
-					value="{
+                <Input
+                    id="input_claimdetails_input_request_approval_amount"
+                    value="{
 						path: 'claimitem_input>/claim_item/request_approval_amount',
 						type: 'FloatType',
 						formatOptions: {
@@ -152,71 +169,91 @@
 							preserveDecimals: false
 						}
 					}"
-					visible="false"
-				/>
+                    visible="false"
+                />
 
-				<!-- Amount (MYR) -->
-				<Label text="{i18n>label_claimdetails_input_amount}" />
-				<Input
-					id="input_claimdetails_input_amount"
-					value="{
+                <!-- Amount (MYR) -->
+                <Label text="{i18n>label_claimdetails_input_amount}" />
+                <Input
+                    id="input_claimdetails_input_amount"
+                    value="{
 						path: 'claimitem_input>/claim_item/amount',
 						type: 'FloatType',
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							maxIntegerDigits: 16,
+							preserveDecimals: false,
+							constraints: {
+								minimum: 0.01
+							}
 						}
 					}"
 					required="true"
-					visible="false"
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
+						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
+						!${claimitem_property>/entitled_breakfast/is_visible}
+					}"
+					visible="{claimitem_property>/amount/is_visible}"
 				/>
 
 				<!-- % Compensation -->
 				<Label text="{i18n>label_claimdetails_input_compensation}" />
 				<Input
 					id="input_claimdetails_input_percentage_compensation"
-					value="{claimitem_input>/claim_item/percentage_compensation}"
-					type="Number"
-					visible="false"
+					value="{
+						path: 'claimitem_input>/claim_item/percentage_compensation',
+						type: 'FloatType',
+						formatOptions: {
+							minFractionDigits: 1,
+							maxFractionDigits: 2,
+							maxIntegerDigits: 5,
+							preserveDecimals: false
+						}
+					}"
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						!${claimitem_property>/amount/is_visible}
+					}"
+					visible="{claimitem_property>/percentage_compensation/is_visible}"
 				/>
 
-				<!-- Course Title -->
-				<Label text="{i18n>label_claimdetails_input_coursetitle}" />
-				<Input
-					id="input_claimdetails_input_course_title"
-					value="{claimitem_input>/claim_item/course_title}"
-					visible="false"
-					required="true"
-				/>
+                <!-- Course Title -->
+                <Label text="{i18n>label_claimdetails_input_coursetitle}" />
+                <Input
+                    id="input_claimdetails_input_course_title"
+                    value="{claimitem_input>/claim_item/course_title}"
+                    visible="false"
+                    required="true"
+                />
 
-				<!-- Level of Studies -->
-				<Label text="{i18n>label_claimdetails_input_levelstudies}" />
-				<Select
-					id="select_claimdetails_input_study_levels_id"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/study_levels_id}"
-					change="onSelect_ClaimDetails_LevelStudies"
-					liveChange="onSelect_ClaimDetails_LevelStudies"
-					visible="false"
-					required="true"
+                <!-- Level of Studies -->
+                <Label text="{i18n>label_claimdetails_input_levelstudies}" />
+                <Select
+                    id="select_claimdetails_input_study_levels_id"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/study_levels_id}"
+                    change="onSelect_ClaimDetails_LevelStudies"
+                    liveChange="onSelect_ClaimDetails_LevelStudies"
+                    visible="false"
+                    required="true"
 				>
 				</Select>
 
-				<!-- Receipt Number -->
-				<Label text="{i18n>label_claimdetails_input_receiptno}" />
-				<Input
-					id="input_claimdetails_input_receipt_number"
-					value="{claimitem_input>/claim_item/receipt_number}"
-					visible="false"
-					required="true"
-				/>
+                <!-- Receipt Number -->
+                <Label text="{i18n>label_claimdetails_input_receiptno}" />
+                <Input
+                    id="input_claimdetails_input_receipt_number"
+                    value="{claimitem_input>/claim_item/receipt_number}"
+                    visible="false"
+                    required="true"
+                />
 
-				<!-- Receipt Date -->
-				<Label text="{i18n>label_claimdetails_input_receiptdate}" />
-				<DatePicker
-					id="datepicker_claimdetails_input_receipt_date"
-					value="{
+                <!-- Receipt Date -->
+                <Label text="{i18n>label_claimdetails_input_receiptdate}" />
+                <DatePicker
+                    id="datepicker_claimdetails_input_receipt_date"
+                    value="{
 						path: 'claimitem_input>/claim_item/receipt_date',
 						type: 'sap.ui.model.type.Date',
 						formatOptions:{
@@ -226,10 +263,10 @@
 							pattern:'dd-MMM-yyyy'
 						}
 					}"
-					showCurrentDateButton="true"
-					visible="false"
-					required="true"
-					minDate="{
+                    showCurrentDateButton="true"
+                    visible="false"
+                    required="true"
+                    minDate="{
 						parts: [
 							'constant>/EntitiesFields/RECEIPT_DATE',
 							'claimsubmission_input>/claim_header/claim_id',
@@ -240,7 +277,7 @@
 						],
 						formatter: '.DateUtility.determineMinDate'
 					}"
-					maxDate="{
+                    maxDate="{
 						parts: [
 							'constant>/EntitiesFields/RECEIPT_DATE',
 							'claimsubmission_input>/claim_header/claim_id',
@@ -251,50 +288,51 @@
 						],
 						formatter: '.DateUtility.determineMaxDate'
 					}"
-				>
-					<customData>
+                >
+                    <customData>
 						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/RECEIPT_DATE/customErrorMessage}" />
 						<core:CustomData key="customMinDateError" value="{appModel>/fieldControl/RECEIPT_DATE/customMinDateError}" />
 						<core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/RECEIPT_DATE/customMaxDateError}" />						
-					</customData>
-				</DatePicker>
+                    </customData>
+                </DatePicker>
 
-				<!-- Purpose -->
-				<Label text="{i18n>label_claimdetails_input_purpose}" />
-				<Input
-					id="input_claimdetails_input_purpose"
-					value="{claimitem_input>/claim_item/purpose}"
-					visible="false"
-					required="true"
-				/>
+                <!-- Purpose -->
+                <Label text="{i18n>label_claimdetails_input_purpose}" />
+                <Input
+                    id="input_claimdetails_input_purpose"
+                    value="{claimitem_input>/claim_item/purpose}"
+                    visible="false"
+                    required="true"
+                />
 
 				<!-- Start Date -->
 				<Label text="{i18n>label_claimdetails_input_startdate}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_startdate"
 					value="{claimitem_input>/claim_item/start_date}"
-					visible="false"
+					visible="{claimitem_property>/start_date/is_visible}"
 					displayFormat="dd-MMM-yyyy"
 					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_startdate','datepicker_claimdetails_input_enddate')"
 					required="true"
 				/>
 
-				<!-- Start Time -->
-				<Label text="{i18n>label_claimdetails_input_starttime}" />
-				<TimePicker
-					id="timepicker_claimdetails_input_starttime"
-					value="{claimitem_input>/claim_item/start_time}"
-					visible="false"
-					displayFormat="HH:mm"
-					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
-				/>
+                <!-- Start Time -->
+                <Label text="{i18n>label_claimdetails_input_starttime}" />
+                <TimePicker
+                    id="timepicker_claimdetails_input_starttime"
+                    value="{claimitem_input>/claim_item/start_time}"
+                    visible="false"
+                    displayFormat="HH:mm"
+					valueFormat="HH:mm:ss"
+                    change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
+                />
 
 				<!-- End Date -->
 				<Label text="{i18n>label_claimdetails_input_enddate}" />
 				<DatePicker
 					id="datepicker_claimdetails_input_enddate"
 					value="{claimitem_input>/claim_item/end_date}"
-					visible="false"
+					visible="{claimitem_property>/end_date/is_visible}"
 					displayFormat="dd-MMM-yyyy"
 					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_startdate','datepicker_claimdetails_input_enddate')"
 					required="true"
@@ -310,34 +348,131 @@
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
 				/>
 
-				<!-- Mode of Transfer-->
-				<Label text="{i18n>req_i_transfer_mode}" />
-				<Select 
-					id="input_claimdetails_mode_of_transfer"
-					selectedKey="{claimitem_input>/claim_item/mode_of_transfer}"
+				<!-- Nama Pembekal Insuran -->
+				<Label text="{i18n>label_claimdetails_input_insurance_provider_id}" />
+				<Select
+					id="select_claimdetails_input_insurance_provider_id"
 					forceSelection="false"
-					enabled="false"
-					visible="false"
-					items="{path: 'employee>/ZTRANSFER_MODE',
+					selectedKey="{claimitem_input>/claim_item/insurance_provider_id}"
+					change="onSelect_ClaimDetails_InsuranceProvider"
+					liveChange="onSelect_ClaimDetails_InsuranceProvider"
+					visible="{claimitem_property>/insurance_provider_id/is_visible}"
+				>
+				</Select>
+
+				<!-- Nama Pembekal Insuran (Long Text) -->
+				<Label text="{i18n>label_claimdetails_input_insurance_provider_name}" />
+				<Input
+					id="input_claimdetails_input_insurance_provider_name"
+					value="{claimitem_input>/claim_item/insurance_provider_name}"
+					visible="{= ${claimitem_input>/claim_item/insurance_provider_id} === ${constant>/InsuranceProvider/OTHERS}}"
+				/>
+
+				<!-- Insurance Package -->
+				<Label text="{i18n>label_claimdetails_input_insurance_package_id}" />
+				<Select
+					id="select_claimdetails_input_insurance_package_id"
+					forceSelection="false"
+					selectedKey="{claimitem_input>/claim_item/insurance_package_id}"
+					change="onSelect_ClaimDetails_InsurancePackage"
+					liveChange="onSelect_ClaimDetails_InsurancePackage"
+					visible="{claimitem_property>/insurance_package_id/is_visible}"
+				>
+				</Select>
+
+				<!-- Date of Purchase of Insurance -->
+				<Label text="{i18n>label_claimdetails_input_insurance_purchase_date}" />
+				<DatePicker
+					id="datepicker_claimdetails_input_insurance_purchase_date"
+					value="{claimitem_input>/claim_item/insurance_purchase_date}"
+					visible="{claimitem_property>/insurance_purchase_date/is_visible}"
+					displayFormat="dd-MMM-yyyy"
+				>
+					<customData>
+						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_PURCH_DATE/customErrorMessage}" />
+					</customData>
+				</DatePicker>
+
+				<!-- Insurance Period of Certificate Start Date -->
+				<Label text="{i18n>label_claimdetails_input_insurance_cert_start_date}" />
+				<DatePicker
+					id="datepicker_claimdetails_input_insurance_cert_start_date"
+					value="{claimitem_input>/claim_item/insurance_cert_start_date}"
+					visible="{claimitem_property>/insurance_cert_start_date/is_visible}"
+					maxDate="{
+						parts: [
+							'constant>/EntitiesFields/INSURANCE_CERT_START_DATE',
+							'claimsubmission_input>/claim_header/claim_id',
+							'claimsubmission_input>/claim_header/claim_type_id',
+							'claimitem_input>/claim_item/claim_type_item_id',
+							'claimsubmission_input>/claim_header',
+							'claimitem_input>/claim_item'
+						],
+						formatter: '.DateUtility.determineMaxDate'
+					}"
+					displayFormat="dd-MMM-yyyy"
+					change="onChange_ClaimDetails_InsuranceCertDate"
+				>
+					<customData>
+						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_CERT_START_DATE/customErrorMessage}" />
+						<core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/INSURANCE_CERT_START_DATE/customMaxDateError}" />						
+					</customData>
+				</DatePicker>
+
+				<!-- Insurance Period of Certificate End Date -->
+				<Label text="{i18n>label_claimdetails_input_insurance_cert_end_date}" />
+				<DatePicker
+					id="datepicker_claimdetails_input_insurance_cert_end_date"
+					value="{claimitem_input>/claim_item/insurance_cert_end_date}"
+					visible="{claimitem_property>/insurance_cert_end_date/is_visible}"
+					minDate="{
+						parts: [
+							'constant>/EntitiesFields/INSURANCE_CERT_END_DATE',
+							'claimsubmission_input>/claim_header/claim_id',
+							'claimsubmission_input>/claim_header/claim_type_id',
+							'claimitem_input>/claim_item/claim_type_item_id',
+							'claimsubmission_input>/claim_header',
+							'claimitem_input>/claim_item'
+						],
+						formatter: '.DateUtility.determineMinDate'
+					}"
+					displayFormat="dd-MMM-yyyy"
+					change="onChange_ClaimDetails_InsuranceCertDate"
+				>
+					<customData>
+						<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/INSURANCE_CERT_END_DATE/customErrorMessage}" />
+						<core:CustomData key="customMinDateError" value="{appModel>/fieldControl/INSURANCE_CERT_END_DATE/customMinDateError}" />						
+					</customData>
+				</DatePicker>
+
+                <!-- Mode of Transfer-->
+                <Label text="{i18n>req_i_transfer_mode}" />
+                <Select
+                    id="input_claimdetails_mode_of_transfer"
+                    selectedKey="{claimitem_input>/claim_item/mode_of_transfer}"
+                    forceSelection="false"
+                    enabled="false"
+                    visible="false"
+                    items="{path: 'employee>/ZTRANSFER_MODE',
 							sorter: { path: 'TRANSFER_MODE_ID', descending: false },
 							filters: [
 								{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
-					<items>
+                    <items>
 						<core:Item key="{employee>TRANSFER_MODE_ID}" 
 								text="{employee>TRANSFER_MODE_DESC}" />
-					</items>
-				</Select>
+                    </items>
+                </Select>
 
 				<Label text="{i18n>req_i_tarikh_pindah}"
                                             id="i_tarikh_pindah"/>
-				<DatePicker
-					id="input_claimdetails_transfer_date"
-					displayFormat="dd MMM yyyy"
-					valueFormat="yyyy-MM-dd"
-					placeholder="eg: 01 Jan 1990"
-					value="{claimitem_input>/claim_item/transfer_date}"
-					textAlign="Begin"
-					visible="false"
+                <DatePicker
+                    id="input_claimdetails_transfer_date"
+                    displayFormat="dd MMM yyyy"
+                    valueFormat="yyyy-MM-dd"
+                    placeholder="eg: 01 Jan 1990"
+                    value="{claimitem_input>/claim_item/transfer_date}"
+                    textAlign="Begin"
+                    visible="false"
 					enabled="false"/>
 
 				<!-- Number of Days -->
@@ -347,7 +482,7 @@
 					value="{claimitem_input>/claim_item/no_of_days}"
 					type="Number"
 					visible="false"
-					enabled="false"
+					editable="false"
 					required="true"
 				/>
 
@@ -359,129 +494,144 @@
 					selectedKey="{claimitem_input>/claim_item/vehicle_type}"
 					change="onSelect_ClaimDetails_VehicleType"
 					liveChange="onSelect_ClaimDetails_VehicleType"
-					visible="false"
+					visible="{claimitem_property>/vehicle_type/is_visible}"
 					required="true"
 				>
 				</Select>
 
-				<!-- Vehicle Ownership ID (Sendiri/Penjabat) -->
+                <!-- Vehicle Ownership ID (Sendiri/Penjabat) -->
 				<Label text="{i18n>label_claimdetails_input_vehicleownership}" />
-				<Select
-					id="select_claimdetails_input_vehicle_ownership_id"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/vehicle_ownership_id}"
-					change="onSelect_ClaimDetails_VehicleOwnership"
-					liveChange="onSelect_ClaimDetails_VehicleOwnership"
-					visible="false"
+                <Select
+                    id="select_claimdetails_input_vehicle_ownership_id"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/vehicle_ownership_id}"
+                    change="onSelect_ClaimDetails_VehicleOwnership"
+                    liveChange="onSelect_ClaimDetails_VehicleOwnership"
+                    visible="false"
 				>
 				</Select>
 
-				<!-- Kilometer -->
-				<Label text="{i18n>label_claimdetails_input_km}" />
-				<Input
-					id="input_claimdetails_input_km"
-					value="{
+                <!-- Kilometer -->
+                <Label text="{i18n>label_claimdetails_input_km}" />
+                <Input
+                    id="input_claimdetails_input_km"
+                    value="{
 						path: 'claimitem_input>/claim_item/km',
 						type: 'FloatType',
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							maxIntegerDigits: 6,
+							preserveDecimals: false,
+							constraints: {
+								minimum: 0
+							}
 						}
 					}"
-					visible="false"
+					change="onChange_ClaimDetails_Kilometer"
+					liveChange="onChange_ClaimDetails_Kilometer"
+					visible="{claimitem_property>/km/is_visible}"
 				/>
 
 				<!-- Rate Per Kilometer -->
 				<Label text="{i18n>label_claimdetails_input_km_rate}" />
 				<Input
 					id="input_claimdetails_input_rate_per_km"
-					value="{claimitem_input>/claim_item/rate_per_km}"
+					value="{
+						path: 'claimitem_input>/claim_item/descr/rate_per_km',
+						type: 'FloatType'
+					}"
 					editable="false"
-					visible="false"
+					visible="{claimitem_property>/rate_per_km/is_visible}"
 				/>
 
-				<!-- Type of Fare -->
-				<Label text="{i18n>label_claimdetails_input_faretype}" />
-				<Select
-					id="select_claimdetails_input_fare_type_id"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/fare_type_id}"
-					change="onSelect_ClaimDetails_FareType"
-					liveChange="onSelect_ClaimDetails_FareType"
-					visible="false"
-					required="true"
+                <!-- Type of Fare -->
+                <Label text="{i18n>label_claimdetails_input_faretype}" />
+                <Select
+                    id="select_claimdetails_input_fare_type_id"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/fare_type_id}"
+                    change="onSelect_ClaimDetails_FareType"
+                    liveChange="onSelect_ClaimDetails_FareType"
+                    visible="false"
+                    required="true"
 				>
 				</Select>
 
-				<!-- Vehicle Class -->
-				<Label text="{i18n>label_claimdetails_input_vehicleclass}" />
-				<Select
-					id="select_claimdetails_input_vehicle_class_id"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/vehicle_class_id}"
-					change="onSelect_ClaimDetails_VehicleClass"
-					liveChange="onSelect_ClaimDetails_VehicleClass"
-					visible="false"
+                <!-- Vehicle Class -->
+                <Label text="{i18n>label_claimdetails_input_vehicleclass}" />
+                <Select
+                    id="select_claimdetails_input_vehicle_class_id"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/vehicle_class_id}"
+                    change="onSelect_ClaimDetails_VehicleClass"
+                    liveChange="onSelect_ClaimDetails_VehicleClass"
+                    visible="false"
 				>
 				</Select>
 
-				<!-- Flight Class -->
-				<Label text="{i18n>label_claimdetails_input_flightclass}" />
-				<Select
-					id="select_claimdetails_input_flight_class"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/flight_class}"
-					change="onSelect_ClaimDetails_FlightClass"
-					liveChange="onSelect_ClaimDetails_FlightClass"
-					visible="false"
-					required="true"
+                <!-- Flight Class -->
+                <Label text="{i18n>label_claimdetails_input_flightclass}" />
+                <Select
+                    id="select_claimdetails_input_flight_class"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/flight_class}"
+                    change="onSelect_ClaimDetails_FlightClass"
+                    liveChange="onSelect_ClaimDetails_FlightClass"
+                    visible="false"
+                    required="true"
 				>
 				</Select>
 
-				<!-- Toll -->
-				<Label text="{i18n>label_claimdetails_input_toll}" />
-				<Input
-					id="input_claimdetails_input_toll"
-					value="{
+                <!-- Toll -->
+                <Label text="{i18n>label_claimdetails_input_toll}" />
+                <Input
+                    id="input_claimdetails_input_toll"
+                    value="{
 						path: 'claimitem_input>/claim_item/toll',
 						type: 'FloatType',
 						formatOptions: {
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
-							preserveDecimals: false
+							maxIntegerDigits: 16,
+							preserveDecimals: false,
+							constraints: {
+								minimum: 0
+							}
 						}
 					}"
-					visible="false"
+					change="onChange_ClaimDetails_Toll"
+					liveChange="onChange_ClaimDetails_Toll"
+					visible="{claimitem_property>/toll/is_visible}"
 				/>
 
-				<!-- Parking -->
-				<Label text="{i18n>label_claimdetails_input_parking}" />
-				<CheckBox
-					id="checkbox_claimdetails_input_parking"
-					visible="false"
-					wrapping="true"
-				/>
+                <!-- Parking -->
+                <Label text="{i18n>label_claimdetails_input_parking}" />
+                <CheckBox
+                    id="checkbox_claimdetails_input_parking"
+                    visible="false"
+                    wrapping="true"
+                />
 
-				<!-- Location Type -->
-				<Label text="{i18n>label_claimdetails_input_locationtype}" />
-				<Select
-					id="select_claimdetails_input_location_type"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/location_type}"
-					visible="false"
-					required="true"
+                <!-- Location Type -->
+                <Label text="{i18n>label_claimdetails_input_locationtype}" />
+                <Select
+                    id="select_claimdetails_input_location_type"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/location_type}"
+                    visible="false"
+                    required="true"
 				>
 				</Select>
 
-				<!-- From State -->
-				<Label text="{i18n>label_claimdetails_input_state_from}" />
-				<Select
-					id="select_claimdetails_input_from_state_id"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/from_state_id}"
-					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
-					items="{path: 'employee>/ZSTATE',
+                <!-- From State -->
+                <Label text="{i18n>label_claimdetails_input_state_from}" />
+                <Select
+                    id="select_claimdetails_input_from_state_id"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/from_state_id}"
+                    visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
+                    items="{path: 'employee>/ZSTATE',
                             sorter: { path: 'STATE_ID', descending: false },
                             filters: [
                             	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
@@ -490,26 +640,26 @@
                         <core:Item key="{employee>STATE_ID}" 
                         		   text="{employee>STATE_DESC}" />
                     </items>
-				</Select>
+                </Select>
 
-				<!-- From Location -->
-				<Label text="{i18n>label_claimdetails_input_location_from}" />
-				<Input
-					id="input_claimdetails_input_from_location"
-					value="{claimitem_input>/claim_item/from_location}"
-					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER}}"
-					required="true"
-				/>
-				<!-- From Location Office -->
-				<Label text="{i18n>req_i_from_location_office}" />	
-				<Select
-					id="select_claimdetails_input_from_location"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/from_location_office}"
-					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
-					editable="{= !${claimsubmission_input>/view_only} }"
-					required="true"
-					items="{path: 'employee>/ZOFFICE_LOCATION',
+                <!-- From Location -->
+                <Label text="{i18n>label_claimdetails_input_location_from}" />
+                <Input
+                    id="input_claimdetails_input_from_location"
+                    value="{claimitem_input>/claim_item/from_location}"
+                    visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER}}"
+                    required="true"
+                />
+                <!-- From Location Office -->
+                <Label text="{i18n>req_i_from_location_office}" />
+                <Select
+                    id="select_claimdetails_input_from_location"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/from_location_office}"
+                    visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
+                    editable="{= !${claimsubmission_input>/view_only} }"
+                    required="true"
+                    items="{path: 'employee>/ZOFFICE_LOCATION',
                             sorter: { path: 'LOCATION_ID', descending: false },
                             filters: [
                             	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
@@ -517,16 +667,16 @@
                         <core:Item key="{employee>LOCATION_ID}" 
                         		   text="{employee>LOCATION_DESC}" />
                     </items>
-				</Select>
+                </Select>
 
-				<!-- To State -->
-				<Label text="{i18n>label_claimdetails_input_state_to}" />
-				<Select
-					id="select_claimdetails_input_to_state_id"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/to_state_id}"
-					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
-					items="{path: 'employee>/ZSTATE',
+                <!-- To State -->
+                <Label text="{i18n>label_claimdetails_input_state_to}" />
+                <Select
+                    id="select_claimdetails_input_to_state_id"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/to_state_id}"
+                    visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
+                    items="{path: 'employee>/ZSTATE',
                             sorter: { path: 'STATE_ID', descending: false },
                             filters: [
                             	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
@@ -535,26 +685,26 @@
                         <core:Item key="{employee>STATE_ID}" 
                         		   text="{employee>STATE_DESC}" />
                     </items>
-				</Select>
+                </Select>
 
-				<!-- To Location -->
-				<Label text="{i18n>label_claimdetails_input_location_to}" />
-				<Input
-					id="input_claimdetails_input_to_location"
-					value="{claimitem_input>/claim_item/to_location}"
-					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER}}"
-					required="true"
-				/>
-				<!-- To Location Office -->
-				<Label text="{i18n>req_i_to_location_office}" />
-				<Select
-					id="select_claimdetails_input_to_location"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/to_location_office}"
-					visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
-					editable="{= !${claimsubmission_input>/view_only} }"
-					required="true"
-					items="{path: 'employee>/ZOFFICE_LOCATION',
+                <!-- To Location -->
+                <Label text="{i18n>label_claimdetails_input_location_to}" />
+                <Input
+                    id="input_claimdetails_input_to_location"
+                    value="{claimitem_input>/claim_item/to_location}"
+                    visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/OTHER}}"
+                    required="true"
+                />
+                <!-- To Location Office -->
+                <Label text="{i18n>req_i_to_location_office}" />
+                <Select
+                    id="select_claimdetails_input_to_location"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/to_location_office}"
+                    visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
+                    editable="{= !${claimsubmission_input>/view_only} }"
+                    required="true"
+                    items="{path: 'employee>/ZOFFICE_LOCATION',
                             sorter: { path: 'LOCATION_ID', descending: false },
                             filters: [
                             	{ path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}">
@@ -562,66 +712,66 @@
                         <core:Item key="{employee>LOCATION_ID}" 
                         		   text="{employee>LOCATION_DESC}" />
                     </items>
-				</Select>
+                </Select>
 
-				<!-- Room Type -->
-				<Label text="{i18n>label_claimdetails_input_roomtype}" />
-				<Select
-					id="select_claimdetails_input_room_type"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/room_type}"
-					change="onSelect_ClaimDetails_RoomType"
-					liveChange="onSelect_ClaimDetails_RoomType"
-					visible="false"
-					required="true"
+                <!-- Room Type -->
+                <Label text="{i18n>label_claimdetails_input_roomtype}" />
+                <Select
+                    id="select_claimdetails_input_room_type"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/room_type}"
+                    change="onSelect_ClaimDetails_RoomType"
+                    liveChange="onSelect_ClaimDetails_RoomType"
+                    visible="false"
+                    required="true"
 				>
 				</Select>
 
-				<!-- Country -->
-				<Label text="{i18n>label_claimdetails_input_country}" />
-				<mdc:Field
-					id="select_claimdetails_input_country"
-					value="{claimitem_input>/claim_item/country}"
-					editMode="Editable"
-					display="ValueDescription"
-					visible="false"
-					required="true"
-					valueHelp="valuehelp_country"
-				/>
+                <!-- Country -->
+                <Label text="{i18n>label_claimdetails_input_country}" />
+                <mdc:Field
+                    id="select_claimdetails_input_country"
+                    value="{claimitem_input>/claim_item/country}"
+                    editMode="Editable"
+                    display="ValueDescription"
+                    visible="false"
+                    required="true"
+                    valueHelp="valuehelp_country"
+                />
 
-				<!-- Location -->
-				<Label text="{i18n>label_claimdetails_input_location}" />
-				<Input
-					id="input_claimdetails_input_location"
-					value="{claimitem_input>/claim_item/location}"
-					visible="false"
-					required="true"
-				/>
+                <!-- Location -->
+                <Label text="{i18n>label_claimdetails_input_location}" />
+                <Input
+                    id="input_claimdetails_input_location"
+                    value="{claimitem_input>/claim_item/location}"
+                    visible="false"
+                    required="true"
+                />
 
-				<!-- Need Foreign Currency? -->
+                <!-- Need Foreign Currency? -->
 				<Label text="{i18n>label_claimdetails_input_needforeigncurrency}" />
-				<CheckBox
-					id="checkbox_claimdetails_input_needforeigncurrency"
-					visible="false"
-					wrapping="true"
-				/>
+                <CheckBox
+                    id="checkbox_claimdetails_input_needforeigncurrency"
+                    visible="false"
+                    wrapping="true"
+                />
 
-				<!-- Currency Code -->
-				<Label text="{i18n>label_claimdetails_input_currencycode}" />
-				<mdc:Field
-					id="select_claimdetails_input_currency_code"
-					value="{claimitem_input>/claim_item/currency_code}"
-					editMode="Editable"
-					display="ValueDescription"
-					visible="false"
-					valueHelp="valuehelp_currency_code"
-				/>
+                <!-- Currency Code -->
+                <Label text="{i18n>label_claimdetails_input_currencycode}" />
+                <mdc:Field
+                    id="select_claimdetails_input_currency_code"
+                    value="{claimitem_input>/claim_item/currency_code}"
+                    editMode="Disabled"
+                    display="ValueDescription"
+                    visible="false"
+                    valueHelp="valuehelp_currency_code"
+                />
 
-				<!-- Currency Rate -->
-				<Label text="{i18n>label_claimdetails_input_currencyrate}" />
-				<Input
-					id="input_claimdetails_input_currency_rate"
-					value="{
+                <!-- Currency Rate -->
+                <Label text="{i18n>label_claimdetails_input_currencyrate}" />
+                <Input
+                    id="input_claimdetails_input_currency_rate"
+                    value="{
 						path: 'claimitem_input>/claim_item/currency_rate',
 						type: 'FloatType',
 						formatOptions: {
@@ -630,14 +780,15 @@
 							preserveDecimals: false
 						}
 					}"
-					visible="false"
-				/>
+                    visible="false"
+                    change="onChange_ClaimDetails_CurrencyRate"
+                />
 
-				<!-- Currency Amount -->
-				<Label text="{i18n>label_claimdetails_input_currencyamt}" />
-				<Input
-					id="input_claimdetails_input_currency_amount"
-					value="{
+                <!-- Currency Amount -->
+                <Label text="{i18n>label_claimdetails_input_currencyamt}" />
+                <Input
+                    id="input_claimdetails_input_currency_amount"
+                    value="{
 						path: 'claimitem_input>/claim_item/currency_amount',
 						type: 'FloatType',
 						formatOptions: {
@@ -646,28 +797,29 @@
 							preserveDecimals: false
 						}
 					}"
-					visible="false"
-				/>
+                    visible="false"
+                    editable="false"
+                />
 
-				<!-- Trip Start Date -->
-				<Label text="{i18n>label_claimdetails_input_trip_startdate}" />
-				<DatePicker
-					id="datepicker_claimdetails_input_trip_start_date"
-					value="{claimitem_input>/claim_item/trip_start_date}"
-					visible="false"
-					displayFormat="dd-MMM-yyyy"
-					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_trip_start_date','datepicker_claimdetails_input_trip_end_date')"
-				/>
+                <!-- Trip Start Date -->
+                <Label text="{i18n>label_claimdetails_input_trip_startdate}" />
+                <DatePicker
+                    id="datepicker_claimdetails_input_trip_start_date"
+                    value="{claimitem_input>/claim_item/trip_start_date}"
+                    visible="false"
+                    displayFormat="dd-MMM-yyyy"
+                    change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_trip_start_date','datepicker_claimdetails_input_trip_end_date')"
+                />
 
-				<!-- Trip Start Time -->
-				<Label text="{i18n>label_claimdetails_input_trip_starttime}" />
-				<TimePicker
-					id="timepicker_claimdetails_input_trip_starttime"
-					value="{claimitem_input>/claim_item/trip_start_time}"
-					visible="false"
-					displayFormat="HH:mm"
-					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_starttime','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_endtime')"
-				/>
+                <!-- Trip Start Time -->
+                <Label text="{i18n>label_claimdetails_input_trip_starttime}" />
+                <TimePicker
+                    id="timepicker_claimdetails_input_trip_starttime"
+                    value="{claimitem_input>/claim_item/trip_start_time}"
+                    visible="false"
+                    displayFormat="HH:mm"
+                    change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_starttime','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_endtime')"
+                />
 
 				<!-- Departure Time -->
 				<Label text="{i18n>label_claimdetails_input_time_depart}" />
@@ -676,29 +828,30 @@
 					value="{claimitem_input>/claim_item/departure_time}"
 					visible="false"
 					displayFormat="HH:mm"
+					valueFormat="HH:mm"
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
 					required="true"
 				/>
 
-				<!-- Trip End Date -->
-				<Label text="{i18n>label_claimdetails_input_trip_enddate}" />
-				<DatePicker
-					id="datepicker_claimdetails_input_trip_end_date"
-					value="{claimitem_input>/claim_item/trip_end_date}"
-					visible="false"
-					displayFormat="dd-MMM-yyyy"
-					change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_trip_start_date','datepicker_claimdetails_input_trip_end_date')"
-				/>
+                <!-- Trip End Date -->
+                <Label text="{i18n>label_claimdetails_input_trip_enddate}" />
+                <DatePicker
+                    id="datepicker_claimdetails_input_trip_end_date"
+                    value="{claimitem_input>/claim_item/trip_end_date}"
+                    visible="false"
+                    displayFormat="dd-MMM-yyyy"
+                    change="onChange_ClaimDetails_DateRange('datepicker_claimdetails_input_trip_start_date','datepicker_claimdetails_input_trip_end_date')"
+                />
 
-				<!-- Trip End Time -->
-				<Label text="{i18n>label_claimdetails_input_trip_endtime}" />
-				<TimePicker
-					id="timepicker_claimdetails_input_trip_endtime"
-					value="{claimitem_input>/claim_item/trip_end_time}"
-					visible="false"
-					displayFormat="HH:mm"
-					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_starttime','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_endtime')"
-				/>
+                <!-- Trip End Time -->
+                <Label text="{i18n>label_claimdetails_input_trip_endtime}" />
+                <TimePicker
+                    id="timepicker_claimdetails_input_trip_endtime"
+                    value="{claimitem_input>/claim_item/trip_end_time}"
+                    visible="false"
+                    displayFormat="HH:mm"
+                    change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_starttime','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_endtime')"
+                />
 
 				<!-- Arrival Time -->
 				<Label text="{i18n>label_claimdetails_input_time_arrive}" />
@@ -707,249 +860,218 @@
 					value="{claimitem_input>/claim_item/arrival_time}"
 					visible="false"
 					displayFormat="HH:mm"
+					valueFormat="HH:mm"
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
 					required="true"
 				/>
 
-				<!-- Travel Duration (days) -->
-				<Label text="{i18n>label_claimdetails_input_travel_duration_day}" />
-				<Input
-					id="input_claimdetails_input_travel_duration_day"
-					value="{
+                <!-- Travel Duration (days) -->
+                <Label
+                    text="{i18n>label_claimdetails_input_travel_duration_day}"
+                />
+                <Input
+                    id="input_claimdetails_input_travel_duration_day"
+                    value="{
 						path: 'claimitem_input>/claim_item/travel_duration_day',
-						type: 'FloatType',
-						formatOptions: {
-							minFractionDigits: 1,
-							maxFractionDigits: 1,
-							preserveDecimals: false
-						}
+						type: 'Integer'
 					}"
-					editable="false"
-					visible="false"
-				/>
+                    editable="false"
+                    visible="false"
+                />
 
-				<!-- Travel Duration (hours) -->
-				<Label text="{i18n>label_claimdetails_input_travel_duration_hour}" />
-				<Input
-					id="input_claimdetails_input_travel_duration_hour"
-					value="{
+                <!-- Travel Duration (hours) -->
+                <Label
+                    text="{i18n>label_claimdetails_input_travel_duration_hour}"
+                />
+                <Input
+                    id="input_claimdetails_input_travel_duration_hour"
+                    value="{
 						path: 'claimitem_input>/claim_item/travel_duration_hour',
-						type: 'FloatType',
-						formatOptions: {
-							minFractionDigits: 1,
-							maxFractionDigits: 1,
-							preserveDecimals: false
-						}
+						type: 'Integer'
 					}"
-					editable="false"
-					visible="false"
-				/>
+                    editable="false"
+                    visible="false"
+                />
 
-				<!-- Provided Breakfast -->
-				<Label text="{i18n>label_claimdetails_input_provided_breakfast}" />
-				<Input
-					id="input_claimdetails_input_provided_breakfast"
-					value="{
+                <!-- Provided Breakfast -->
+                <Label
+                    text="{i18n>label_claimdetails_input_provided_breakfast}"
+                />
+                <Input
+                    id="input_claimdetails_input_provided_breakfast"
+                    value="{
 						path: 'claimitem_input>/claim_item/provided_breakfast',
-						type: 'FloatType',
-						formatOptions: {
-							minFractionDigits: 2,
-							maxFractionDigits: 2,
-							preserveDecimals: false
-						}
+						type: 'Integer'
 					}"
-					visible="false"
-					change="onChange_ClaimDetails_ProvidedMeals"
-				/>
+                    visible="false"
+                    change="onChange_ClaimDetails_ProvidedMeals"
+                />
 
-				<!-- Provided Lunch -->
-				<Label text="{i18n>label_claimdetails_input_provided_lunch}" />
-				<Input
-					id="input_claimdetails_input_provided_lunch"
-					value="{
+                <!-- Provided Lunch -->
+                <Label text="{i18n>label_claimdetails_input_provided_lunch}" />
+                <Input
+                    id="input_claimdetails_input_provided_lunch"
+                    value="{
 						path: 'claimitem_input>/claim_item/provided_lunch',
-						type: 'FloatType',
-						formatOptions: {
-							minFractionDigits: 2,
-							maxFractionDigits: 2,
-							preserveDecimals: false
-						}
+						type: 'Integer'
 					}"
-					visible="false"
-					change="onChange_ClaimDetails_ProvidedMeals"
-				/>
+                    visible="false"
+                    change="onChange_ClaimDetails_ProvidedMeals"
+                />
 
-				<!-- Provided Dinner -->
-				<Label text="{i18n>label_claimdetails_input_provided_dinner}" />
-				<Input
-					id="input_claimdetails_input_provided_dinner"
-					value="{
+                <!-- Provided Dinner -->
+                <Label text="{i18n>label_claimdetails_input_provided_dinner}" />
+                <Input
+                    id="input_claimdetails_input_provided_dinner"
+                    value="{
 						path: 'claimitem_input>/claim_item/provided_dinner',
-						type: 'FloatType',
-						formatOptions: {
-							minFractionDigits: 2,
-							maxFractionDigits: 2,
-							preserveDecimals: false
-						}
+						type: 'Integer'
 					}"
-					visible="false"
-					change="onChange_ClaimDetails_ProvidedMeals"
-				/>
+                    visible="false"
+                    change="onChange_ClaimDetails_ProvidedMeals"
+                />
 
-				<!-- Entitled Breakfast -->
-				<Label text="{i18n>label_claimdetails_input_entitled_breakfast}" />
-				<Input
-					id="input_claimdetails_input_entitled_breakfast"
-					value="{
+                <!-- Entitled Breakfast -->
+                <Label
+                    text="{i18n>label_claimdetails_input_entitled_breakfast}"
+                />
+                <Input
+                    id="input_claimdetails_input_entitled_breakfast"
+                    value="{
 						path: 'claimitem_input>/claim_item/entitled_breakfast',
-						type: 'FloatType',
-						formatOptions: {
-							minFractionDigits: 2,
-							maxFractionDigits: 2,
-							preserveDecimals: false
-						}
+						type: 'Integer'
 					}"
 					editable="false"
-					visible="false"
+					visible="{claimitem_property>/entitled_breakfast/is_visible}"
 				/>
 
-				<!-- Entitled Lunch -->
-				<Label text="{i18n>label_claimdetails_input_entitled_lunch}" />
-				<Input
-					id="input_claimdetails_input_entitled_lunch"
-					value="{
+                <!-- Entitled Lunch -->
+                <Label text="{i18n>label_claimdetails_input_entitled_lunch}" />
+                <Input
+                    id="input_claimdetails_input_entitled_lunch"
+                    value="{
 						path: 'claimitem_input>/claim_item/entitled_lunch',
-						type: 'FloatType',
-						formatOptions: {
-							minFractionDigits: 2,
-							maxFractionDigits: 2,
-							preserveDecimals: false
-						}
+						type: 'Integer'
 					}"
-					editable="false"
-					visible="false"
-				/>
+                    editable="false"
+                    visible="false"
+                />
 
-				<!-- Entitled Dinner -->
-				<Label text="{i18n>label_claimdetails_input_entitled_dinner}" />
-				<Input
-					id="input_claimdetails_input_entitled_dinner"
-					value="{
+                <!-- Entitled Dinner -->
+                <Label text="{i18n>label_claimdetails_input_entitled_dinner}" />
+                <Input
+                    id="input_claimdetails_input_entitled_dinner"
+                    value="{
 						path: 'claimitem_input>/claim_item/entitled_dinner',
-						type: 'FloatType',
-						formatOptions: {
-							minFractionDigits: 2,
-							maxFractionDigits: 2,
-							preserveDecimals: false
-						}
+						type: 'Integer'
 					}"
-					editable="false"
-					visible="false"
-				/>
+                    editable="false"
+                    visible="false"
+                />
 
-				<!-- Lodging Address -->
-				<Label text="{i18n>label_claimdetails_input_lodging_address}" />
-				<Input
-					id="input_claimdetails_input_lodging_address"
-					value="{claimitem_input>/claim_item/lodging_address}"
-					visible="false"
-					required="true"
-				/>
+                <!-- Lodging Address -->
+                <Label text="{i18n>label_claimdetails_input_lodging_address}" />
+                <Input
+                    id="input_claimdetails_input_lodging_address"
+                    value="{claimitem_input>/claim_item/lodging_address}"
+                    visible="false"
+                    required="true"
+                />
 
-				<!-- Region (Semenanjung/Sabah/Sarawak) -->
-				<Label text="{i18n>label_claimdetails_input_region}" />
-				<Select
-					id="select_claimdetails_input_region"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/region}"
-					change="onSelect_ClaimDetails_Region"
-					liveChange="onSelect_ClaimDetails_Region"
-					visible="false"
-					required="true"
+                <!-- Region (Semenanjung/Sabah/Sarawak) -->
+                <Label text="{i18n>label_claimdetails_input_region}" />
+                <Select
+                    id="select_claimdetails_input_region"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/region}"
+                    change="onSelect_ClaimDetails_Region"
+                    liveChange="onSelect_ClaimDetails_Region"
+                    visible="false"
+                    required="true"
 				>
 				</Select>
 
-				<!-- Area (Negara/Wilayah) -->
-				<Label text="{i18n>label_claimdetails_input_area}" />
-				<Select
-					id="select_claimdetails_input_area"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/area}"
-					change="onSelect_ClaimDetails_Area"
-					liveChange="onSelect_ClaimDetails_Area"
-					visible="false"
-					required="true"
+                <!-- Area (Negara/Wilayah) -->
+                <Label text="{i18n>label_claimdetails_input_area}" />
+                <Select
+                    id="select_claimdetails_input_area"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/area}"
+                    change="onSelect_ClaimDetails_Area"
+                    liveChange="onSelect_ClaimDetails_Area"
+                    visible="false"
+                    required="true"
 				>
 				</Select>
 
-				<!-- Lodging Category -->
+                <!-- Lodging Category -->
 				<Label text="{i18n>label_claimdetails_input_lodging_category}" />
-				<Select
-					id="select_claimdetails_input_lodging_category"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/lodging_category}"
-					change="onSelect_ClaimDetails_LodgingCategory"
-					liveChange="onSelect_ClaimDetails_LodgingCategory"
-					visible="false"
-					required="true"
+                <Select
+                    id="select_claimdetails_input_lodging_category"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/lodging_category}"
+                    change="onSelect_ClaimDetails_LodgingCategory"
+                    liveChange="onSelect_ClaimDetails_LodgingCategory"
+                    visible="false"
+                    required="true"
 				>
 				</Select>
 
-				<!-- Number of Family Members -->
-				<Label text="{i18n>label_claimdetails_input_familyno}" />
-				<Input
-					id="input_claimdetails_input_no_of_family_member"
-					value="{claimitem_input>/claim_item/no_of_family_member}"
-					type="Number"
-					visible="false"
-					required="true"
-				/>
+                <!-- Number of Family Members -->
+                <Label text="{i18n>label_claimdetails_input_familyno}" />
+                <Input
+                    id="input_claimdetails_input_no_of_family_member"
+                    value="{claimitem_input>/claim_item/no_of_family_member}"
+                    type="Number"
+                    visible="false"
+                    required="true"
+                />
 
-				<!-- Category/Purpose -->
-				<Label text="{i18n>label_claimdetails_input_cat_purpose}" />
-				<Select
-					id="select_claimdetails_input_claim_category"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/claim_category}"
-					change="onSelect_ClaimDetails_CatPurpose"
-					liveChange="onSelect_ClaimDetails_CatPurpose"
-					visible="false"
+                <!-- Category/Purpose -->
+                <Label text="{i18n>label_claimdetails_input_cat_purpose}" />
+                <Select
+                    id="select_claimdetails_input_claim_category"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/claim_category}"
+                    change="onSelect_ClaimDetails_CatPurpose"
+                    liveChange="onSelect_ClaimDetails_CatPurpose"
+                    visible="false"
 				>
 				</Select>
 
-				<!-- Category/Purpose (Mobile) -->
-				<Label text="{i18n>label_claimdetails_input_cat_purpose}" />
-				<Select
-					id="select_claimdetails_input_mobile_category_purpose_id"
-					forceSelection="false"
-					selectedKey="{claimitem_input>/claim_item/mobile_category_purpose_id}"
-					change="onSelect_ClaimDetails_CatPurposeMobile"
-					liveChange="onSelect_ClaimDetails_CatPurposeMobile"
-					visible="false"
+                <!-- Category/Purpose (Mobile) -->
+                <Label text="{i18n>label_claimdetails_input_cat_purpose}" />
+                <Select
+                    id="select_claimdetails_input_mobile_category_purpose_id"
+                    forceSelection="false"
+                    selectedKey="{claimitem_input>/claim_item/mobile_category_purpose_id}"
+                    change="onSelect_ClaimDetails_CatPurposeMobile"
+                    liveChange="onSelect_ClaimDetails_CatPurposeMobile"
+                    visible="false"
 				>
 				</Select>
 
-				<!-- Bill No -->
-				<Label text="{i18n>label_claimdetails_input_billno}" />
-				<Input
-					id="input_claimdetails_input_bill_no"
-					value="{claimitem_input>/claim_item/bill_no}"
-					visible="false"
-				/>
+                <!-- Bill No -->
+                <Label text="{i18n>label_claimdetails_input_billno}" />
+                <Input
+                    id="input_claimdetails_input_bill_no"
+                    value="{claimitem_input>/claim_item/bill_no}"
+                    visible="false"
+                />
 
-				<!-- Account No -->
-				<Label text="{i18n>label_claimdetails_input_accountno}" />
-				<Input
-					id="input_claimdetails_input_account_no"
-					value="{claimitem_input>/claim_item/account_no}"
-					visible="false"
-				/>
+                <!-- Account No -->
+                <Label text="{i18n>label_claimdetails_input_accountno}" />
+                <Input
+                    id="input_claimdetails_input_account_no"
+                    value="{claimitem_input>/claim_item/account_no}"
+                    visible="false"
+                />
 
-				<!-- Bill Date -->
-				<Label text="{i18n>label_claimdetails_input_billdate}" />
-				<DatePicker
-					id="datepicker_claimdetails_input_bill_date"
-					value="{
+                <!-- Bill Date -->
+                <Label text="{i18n>label_claimdetails_input_billdate}" />
+                <DatePicker
+                    id="datepicker_claimdetails_input_bill_date"
+                    value="{
 						path: 'claimitem_input>/claim_item/bill_date',
 						type: 'sap.ui.model.type.Date',
 						formatOptions:{
@@ -959,9 +1081,9 @@
 							pattern:'dd-MMM-yyyy'
 						}
 					}"
-					showCurrentDateButton="true"
-					visible="false"
-					maxDate="{
+                    showCurrentDateButton="true"
+                    visible="false"
+                    maxDate="{
 						parts: [
 							'constant>/EntitiesFields/BILL_DATE',
 							'claimsubmission_input>/claim_header/claim_id',
@@ -972,109 +1094,129 @@
 						],
 						formatter: '.DateUtility.determineMaxDate'
 					}"
-				>
-     				<customData>
+                >
+                    <customData>
       					<core:CustomData key="customErrorMessage" value="{appModel>/fieldControl/BILL_DATE/customErrorMessage}" />
       					<core:CustomData key="customMinDateError" value="{appModel>/fieldControl/BILL_DATE/customMinDateError}" />
 						<core:CustomData key="customMaxDateError" value="{appModel>/fieldControl/BILL_DATE/customMaxDateError}" />
-     				</customData>
-    			</DatePicker>
+                    </customData>
+                </DatePicker>
 
-				<!-- Phone No -->
-				<Label text="{i18n>label_claimdetails_input_phoneno}" />
-				<Input
-					id="input_claimdetails_input_phone_no"
-					value="{claimitem_input>/claim_item/phone_no}"
-					visible="false"
-					required="true"
-				/>
+                <!-- Phone No -->
+                <Label text="{i18n>label_claimdetails_input_phoneno}" />
+                <Input
+                    id="input_claimdetails_input_phone_no"
+                    value="{claimitem_input>/claim_item/phone_no}"
+                    visible="false"
+                    required="true"
+                />
 
-				<!-- Disclaimer -->
-				<Label text="{i18n>label_claimdetails_input_disclaimer}" required="true"/>
-				<CheckBox
-					id="checkbox_claimdetails_input_disclaimer"
-					text="{i18n>checkbox_claimdetails_input_disclaimer}"
-					visible="false"
-					wrapping="true"
-					selected="{claimitem_input>/claim_item/disclaimer}"
-				/>
+                <!-- Disclaimer -->
+                <Label
+                    text="{i18n>label_claimdetails_input_disclaimer}"
+                    required="true"
+                />
+                <CheckBox
+                    id="checkbox_claimdetails_input_disclaimer"
+                    text="{i18n>checkbox_claimdetails_input_disclaimer}"
+                    visible="false"
+                    wrapping="true"
+                    selected="{claimitem_input>/claim_item/disclaimer}"
+                />
 
-				<!-- Disclaimer (Galakan) -->
+                <!-- Disclaimer (Galakan) -->
 				<Label text="{i18n>label_claimdetails_input_disclaimer}" required="true" />
-				<CheckBox
-					id="checkbox_claimdetails_input_disclaimer_galakan"
-					text="{i18n>checkbox_claimdetails_input_disclaimer_galakan}"
-					visible="false"
-					wrapping="true"
-					selected="{claimitem_input>/claim_item/disclaimer_galakan}"	
-				/>
+                <CheckBox
+                    id="checkbox_claimdetails_input_disclaimer_galakan"
+                    text="{i18n>checkbox_claimdetails_input_disclaimer_galakan}"
+                    visible="false"
+                    wrapping="true"
+                    selected="{claimitem_input>/claim_item/disclaimer_galakan}"
+                />
 
-				<!-- Remarks -->
-				<Label text="{i18n>label_claimdetails_input_remarks}" />
-				<Input
-					id="input_claimdetails_input_remarks"
-					value="{claimitem_input>/claim_item/remark}"
-					visible="false"
-				/>
+                <!-- Remarks -->
+                <Label text="{i18n>label_claimdetails_input_remarks}" />
+                <Input
+                    id="input_claimdetails_input_remarks"
+                    value="{claimitem_input>/claim_item/remark}"
+                    visible="false"
+                />
 
-				<!-- Attachment 1 -->
-				<Label text="{i18n>label_claimdetails_input_attachment_file_1}" />
-				<u:FileUploader
-					id="fileuploader_claimdetails_input_attachment_file_1"
-					name="fileUploaderClaimDetailsInputAttachment1"
-					placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
-					uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
-					change="onChange_ClaimDetails_Input_Attachment($event ,'1')"
-					uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
-					maximumFileSize='5.0'
-					fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
-					mimeType="application/pdf,image/png,image/jpeg"
-					typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
-					multiple="false"
-					style="Emphasized"
-					visible="false"
-					required="{= ${claimitem_input>/claim_item/attachment_file_1} === null }"
+                <!-- Daily Allowance -->
+                <Label text="{i18n>label_claimdetails_input_dailyallowance}" />
+                <Input
+                    id="input_claimdetails_input_dailyallowance"
+                    value="{ path: 'claimitem_input>/claim_item/dailyallowance',
+							 type: 'FloatType',
+							 formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
+						}"
+                    visible="false"
+                    editable="false"
+                />
+
+                <!-- Attachment 1 -->
+                <Label
+                    text="{i18n>label_claimdetails_input_attachment_file_1}"
+                />
+                <u:FileUploader
+                    id="fileuploader_claimdetails_input_attachment_file_1"
+                    name="fileUploaderClaimDetailsInputAttachment1"
+                    placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
+                    uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
+                    change="onChange_ClaimDetails_Input_Attachment($event ,'1')"
+                    uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
+                    maximumFileSize='5.0'
+                    fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
+                    mimeType="application/pdf,image/png,image/jpeg"
+                    typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
+                    multiple="false"
+                    style="Emphasized"
+                    visible="false"
+                    required="{= ${claimitem_input>/claim_item/attachment_file_1} === null }"
 				>
 				</u:FileUploader>
-				<Label id="label_claimdetails_input_attachment_file_1" />
-				<Link
-					id="link_claimdetails_input_attachment_file_1" 
-					press="onView_Claim_Attachment('child','1')"
-					text="{claimitem_input>/claim_item/attachment_file_1}"
-					visible="{= ${claimitem_input>/claim_item/attachment_file_1} !== null }"
-				/>
+                <Label id="label_claimdetails_input_attachment_file_1" />
+                <Link
+                    id="link_claimdetails_input_attachment_file_1"
+                    press="onView_Claim_Attachment('child','1')"
+                    text="{claimitem_input>/claim_item/attachment_file_1}"
+                    visible="{= ${claimitem_input>/claim_item/attachment_file_1} !== null }"
+                />
 
-				<!-- Attachment 2 -->
+                <!-- Attachment 2 -->
 				<Label text="{i18n>label_claimdetails_input_attachment_file_2}" />
-				<u:FileUploader
-					id="fileuploader_claimdetails_input_attachment_file_2"
-					name="fileUploaderClaimDetailsInputAttachment2"
-					placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
-					uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
-					change="onChange_ClaimDetails_Input_Attachment($event ,'2')"
-					uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
-					maximumFileSize='5.0'
-					fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
-					mimeType="application/pdf,image/png,image/jpeg"
-					typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
-					multiple="false"
-					style="Emphasized"
-					visible="false"
-				>
-				</u:FileUploader>
-				<Label id="label_claimdetails_input_attachment_file_2" />
-				<Link
-					id="link_claimdetails_input_attachment_file_2" 
-					press="onView_Claim_Attachment('child','2')"
-					text="{claimitem_input>/claim_item/attachment_file_2}"
-					visible="{= ${claimitem_input>/claim_item/attachment_file_2} !== null }"
-				/>
-			</f:content>
-			<f:dependents>
-				<!-- Value Help for Country -->
-				<mdc:ValueHelp
-					id="valuehelp_country"
-					delegate='{
+                <u:FileUploader
+                    id="fileuploader_claimdetails_input_attachment_file_2"
+                    name="fileUploaderClaimDetailsInputAttachment2"
+                    placeholder="{i18n>text_claimdetails_input_attachment_filetypes}"
+                    uploadUrl="SuccessFactors_API/odata/v2/cust_EPF_CLAIM_ATTACHMENTS"
+                    change="onChange_ClaimDetails_Input_Attachment($event ,'2')"
+                    uploadComplete="onUploadComplete_ClaimDetails_Input_Attachment"
+                    maximumFileSize='5.0'
+                    fileSizeExceed="onFileSizeExceed_ClaimDetails_Input_Attachment"
+                    mimeType="application/pdf,image/png,image/jpeg"
+                    typeMissmatch="onTypeMissmatch_ClaimDetails_Input_Attachment"
+                    multiple="false"
+                    style="Emphasized"
+                    visible="false"
+                />
+                <Label id="label_claimdetails_input_attachment_file_2" />
+                <Link
+                    id="link_claimdetails_input_attachment_file_2"
+                    press="onView_Claim_Attachment('child','2')"
+                    text="{claimitem_input>/claim_item/attachment_file_2}"
+                    visible="{= ${claimitem_input>/claim_item/attachment_file_2} !== null }"
+                />
+            </f:content>
+            <f:dependents>
+                <!-- Value Help for Country -->
+                <mdc:ValueHelp
+                    id="valuehelp_country"
+                    delegate='{
 						"name": "claima/utils/ValueHelpDelegate_Common",
 						"payload": {
 							"modelName": "employee",
@@ -1086,44 +1228,44 @@
 							"openOnClick": true
 						}
 					}'
-				>
-					<!-- Typeahead (Popover) -->
-					<mdc:typeahead>
-						<mdcvh:Popover id="valuehelp_country_pop">
-							<mdcvhcnt:MTable
-								id="valuehelp_country_pop_MTable"
-								keyPath="COUNTRY_ID"
-								descriptionPath="COUNTRY_DESC"
-								caseSensitive="false"
-								useAsValueHelp="true"
-							>
-								<!-- Table content created dynamically by delegate -->
-							</mdcvhcnt:MTable>
-						</mdcvh:Popover>
-					</mdc:typeahead>
+                >
+                    <!-- Typeahead (Popover) -->
+                    <mdc:typeahead>
+                        <mdcvh:Popover id="valuehelp_country_pop">
+                            <mdcvhcnt:MTable
+                                id="valuehelp_country_pop_MTable"
+                                keyPath="COUNTRY_ID"
+                                descriptionPath="COUNTRY_DESC"
+                                caseSensitive="false"
+                                useAsValueHelp="true"
+                            >
+                                <!-- Table content created dynamically by delegate -->
+                            </mdcvhcnt:MTable>
+                        </mdcvh:Popover>
+                    </mdc:typeahead>
 
-					<!-- Dialog Mode -->
-					<mdc:dialog>
-						<mdcvh:Dialog
-							id="valuehelp_country_dialog"
-							title="{i18n>valuehelpcountryid}"
-						>
-							<mdcvhcnt:MTable
-								id="valuehelp_country_dialog_MTable"
-								keyPath="COUNTRY_ID"
-								descriptionPath="COUNTRY_DESC"
-								caseSensitive="false"
-							>
-								<!-- Table content created dynamically by delegate -->
-							</mdcvhcnt:MTable>
-						</mdcvh:Dialog>
-					</mdc:dialog>
-				</mdc:ValueHelp>
+                    <!-- Dialog Mode -->
+                    <mdc:dialog>
+                        <mdcvh:Dialog
+                            id="valuehelp_country_dialog"
+                            title="{i18n>valuehelpcountryid}"
+                        >
+                            <mdcvhcnt:MTable
+                                id="valuehelp_country_dialog_MTable"
+                                keyPath="COUNTRY_ID"
+                                descriptionPath="COUNTRY_DESC"
+                                caseSensitive="false"
+                            >
+                                <!-- Table content created dynamically by delegate -->
+                            </mdcvhcnt:MTable>
+                        </mdcvh:Dialog>
+                    </mdc:dialog>
+                </mdc:ValueHelp>
 
-				<!-- Value Help for Currency Code -->
-				<mdc:ValueHelp
-					id="valuehelp_currency_code"
-					delegate='{
+                <!-- Value Help for Currency Code -->
+                <mdc:ValueHelp
+                    id="valuehelp_currency_code"
+                    delegate='{
 						"name": "claima/utils/ValueHelpDelegate_Common",
 						"payload": {
 							"modelName": "employee",
@@ -1135,40 +1277,40 @@
 							"openOnClick": true
 						}
 					}'
-				>
-					<!-- Typeahead (Popover) -->
-					<mdc:typeahead>
-						<mdcvh:Popover id="valuehelp_currency_code_pop">
-							<mdcvhcnt:MTable
-								id="valuehelp_currency_code_pop_MTable"
-								keyPath="CURRENCY_ID"
-								descriptionPath="CURRENCY_DESC"
-								caseSensitive="false"
-								useAsValueHelp="true"
-							>
-								<!-- Table content created dynamically by delegate -->
-							</mdcvhcnt:MTable>
-						</mdcvh:Popover>
-					</mdc:typeahead>
+                >
+                    <!-- Typeahead (Popover) -->
+                    <mdc:typeahead>
+                        <mdcvh:Popover id="valuehelp_currency_code_pop">
+                            <mdcvhcnt:MTable
+                                id="valuehelp_currency_code_pop_MTable"
+                                keyPath="CURRENCY_ID"
+                                descriptionPath="CURRENCY_DESC"
+                                caseSensitive="false"
+                                useAsValueHelp="true"
+                            >
+                                <!-- Table content created dynamically by delegate -->
+                            </mdcvhcnt:MTable>
+                        </mdcvh:Popover>
+                    </mdc:typeahead>
 
-					<!-- Dialog Mode -->
-					<mdc:dialog>
-						<mdcvh:Dialog
-							id="valuehelp_currency_code_dialog"
-							title="{i18n>valuehelpcurrencycode}"
-						>
-							<mdcvhcnt:MTable
-								id="valuehelp_currency_code_dialog_MTable"
-								keyPath="CURRENCY_ID"
-								descriptionPath="CURRENCY_DESC"
-								caseSensitive="false"
-							>
-								<!-- Table content created dynamically by delegate -->
-							</mdcvhcnt:MTable>
-						</mdcvh:Dialog>
-					</mdc:dialog>
-				</mdc:ValueHelp>
-			</f:dependents>
-		</f:SimpleForm>
-	</VBox>
+                    <!-- Dialog Mode -->
+                    <mdc:dialog>
+                        <mdcvh:Dialog
+                            id="valuehelp_currency_code_dialog"
+                            title="{i18n>valuehelpcurrencycode}"
+                        >
+                            <mdcvhcnt:MTable
+                                id="valuehelp_currency_code_dialog_MTable"
+                                keyPath="CURRENCY_ID"
+                                descriptionPath="CURRENCY_DESC"
+                                caseSensitive="false"
+                            >
+                                <!-- Table content created dynamically by delegate -->
+                            </mdcvhcnt:MTable>
+                        </mdcvh:Dialog>
+                    </mdc:dialog>
+                </mdc:ValueHelp>
+            </f:dependents>
+        </f:SimpleForm>
+    </VBox>
 </core:FragmentDefinition>
