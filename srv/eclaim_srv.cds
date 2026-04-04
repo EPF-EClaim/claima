@@ -368,4 +368,15 @@ service eclaim_srv @(requires: 'authenticated-user'){
 
     entity ZCLM_TYPE_EXCEPTION_LIST                as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
+    type reminders {
+        empName     : String;
+        empEmail    : String; 
+        ccEmail     : String;
+        tripEndDate : String;
+        scenario    : String; 
+        milestone   : String;
+    }
+    
+    function getEmailReminder() returns array of reminders;
+
 };
