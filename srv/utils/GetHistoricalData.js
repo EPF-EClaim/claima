@@ -1,7 +1,6 @@
 const cds = require('@sap/cds');
 const { SELECT, where } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("./constant");
-const { _parsePayload } = require('./EligibilityScenarios/DalamNegara');
 
 module.exports = {
     /**
@@ -18,7 +17,7 @@ module.exports = {
             let sHeaderField = "";
             let aHeaders = [];
             let aStatus = [];
-
+            
             // Get Item Data
             // Check if any Claim item is within frequency
             const aItemData = await tx.run(
@@ -51,11 +50,9 @@ module.exports = {
                     .from(sHeaderTable).where(aHeaderCondition)
             );
             
-            if (!!aHeaderData) {
-                return 0;
-            } else {
-                return aHeaderData[0].count;
-            }
+            if (!!aHeaderData) return aHeaderData[0].count;
+            return 0;
+
         } catch (error) {
             return 0;
         }
@@ -76,11 +73,8 @@ module.exports = {
             const aItemData = await tx.run(
                 SELECT`count(*)`.from(sItemTable).where(aItemcondition)
             );
-            if (!!aItemData) {
-                return 0;
-            } else {
-                return aItemData[0].count;
-            }
+            if (!!aItemData) return aItemData[0].count;
+            return 0;
         } catch (error) {
             return 0;
         }
