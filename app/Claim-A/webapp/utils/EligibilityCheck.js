@@ -88,7 +88,7 @@ sap.ui.define([
 					var aNewActiveFields = aActiveFields.map(field => {
 						var oNewField = { ...field }; 
 						
-						if (oNewField.fieldName === "ELIGIBLE_AMOUNT") {
+						if (oNewField.fieldName === "ELIGIBLE_AMOUNT" && sSubmissionType === Constants.SubmissionType.REQUEST) {
 							oNewField.value = String(row.ALLOCATED_AMOUNT);
 						}
 						

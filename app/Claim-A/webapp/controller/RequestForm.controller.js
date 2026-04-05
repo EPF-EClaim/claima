@@ -1302,6 +1302,7 @@ sap.ui.define([
 				return;
 			}
 			
+			CustomValidator.init(this.getOwnerComponent(), this.getView())
 			if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.REQUEST)){
 				return;
 			}

@@ -113,7 +113,7 @@ sap.ui.define([
             "SUBSIDISED_RATE": "SUBSIDISED_RATE"
         },
         "Departments": {
-            "FI_DEPT":"0500000000"
+            "FI_DEPT": "0500000000"
         },
         "RequestStatus": {
             "DRAFT": "DRAFT",
@@ -299,12 +299,12 @@ sap.ui.define([
             "COST_CENTER": "100000000",
             "GL_ACCOUNT": "214005"
         },
-        "SubmissionType":{
-            "DIRECT_CLAIM"  : "ST0001",
-            "AUTO_APPROVE"  : "ST0002",
-            "PRE_APPROVE"   : "ST0003",
+        "SubmissionType": {
+            "DIRECT_CLAIM": "ST0001",
+            "AUTO_APPROVE": "ST0002",
+            "PRE_APPROVE": "ST0003",
             "CASH_REPAYMENT": "ST0004",
-            "CURR_SUBSIDY"  : "ST0005"
+            "CURR_SUBSIDY": "ST0005"
         },
         "Default": {
             "PROJECT_CODE": "NA",
@@ -325,12 +325,18 @@ sap.ui.define([
             "APPROVE": "APPROVE",
         },
         "RequestType": {
-            "TRAVEL"        : "RT0001",
-            "MOBILE"        : "RT0002",
-            "EVENTS"        : "RT0003",
-            "REIMBURSEMENT" : "RT0004",
-            "MEDICAL"       : "RT0005",
-            "PROJECT"       : "RT0006"
+            "TRAVEL": "RT0001",
+            "MOBILE": "RT0002",
+            "EVENTS": "RT0003",
+            "REIMBURSEMENT": "RT0004",
+            "MEDICAL": "RT0005",
+            "PROJECT": "RT0006"
+        },
+        "ClaimFooterMode": {
+            "SUMMARY": "SUMMARY",
+            "DETAILS": "DETAILS",
+            "APPROVER": "APPROVER",
+            "VIEW_ONLY": "VIEW_ONLY"
         },
         "LocationType" : {
             "OTHER" : "1",
