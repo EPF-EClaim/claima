@@ -29,8 +29,8 @@ sap.ui.define([
 	"claima/utils/Attachment",
 	"claima/utils/EligibilityCheck",
 	"claima/utils/DateUtility",
-	"claima/utils/Constants"
-
+	"claima/utils/Constants",
+	"claima/utils/CustomValidator"
 ], function (
 	Controller,
 	coreLibrary,
@@ -62,7 +62,8 @@ sap.ui.define([
 	Attachment,
 	EligibilityCheck,
 	DateUtility,
-	Constants
+	Constants,
+	CustomValidator
 ) {
 	"use strict";
 
@@ -86,6 +87,8 @@ sap.ui.define([
 			this._oViewModel 		= this.getOwnerComponent().getModel("employee_view");
 			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
 			this._oFragments 		= Object.create(null);
+
+			CustomValidator.init(this.getOwnerComponent(), this.getView())
 
 			// URL Access
 			this._oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
@@ -1299,20 +1302,8 @@ sap.ui.define([
 				return;
 			}
 			
-			const sRestrictedType = this._oConstant.ClaimTypeItem.TELEFON_B; 
-			const fMaxLimit = 100.00;
-			const fMinLimit = 0.00;
-
-			if (sClaimTypeItem === sRestrictedType && fEnteredAmount > fMaxLimit && fEnteredAmount > fMinLimit) {
-				MessageBox.error(`The maximum amount allowed per person is ${fMaxLimit.toFixed(2)}.`);
-				
-				this._oReqModel.setProperty(sPath + "/ALLOCATED_AMOUNT", fEnteredAmount.toFixed(2));
-				
-				oInput.setValueState(ValueState.Error);
-			} else {
-				if (oInput.setValueState) {
-					oInput.setValueState(ValueState.None);
-				}
+			if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.REQUEST)){
+				return;
 			}
 
 			const aParticipantList = this._oReqModel.getProperty("/participant");
