@@ -967,7 +967,7 @@ module.exports = (srv) => {
         const today = new Date();
         const baseline = new Date();
 
-        baseline.setMonth(baseline.getMonth() - 2);
+        baseline.setMonth(baseline.getMonth() - 3);
 
         const sTodayDate = today.toISOString().slice(0, 10);
         const sBaselineDate = baseline.toISOString().slice(0, 10);
@@ -976,7 +976,7 @@ module.exports = (srv) => {
 
         let aResult = [];
 
-        //get pre-approval records 2 months from current date
+        //get pre-approval records 3 months from current date
         const preapproval = await tx.run(
             SELECT.from(ZREQUEST_HEADER).where({
                 REQUEST_TYPE_ID: {
@@ -985,7 +985,8 @@ module.exports = (srv) => {
                 },
                 STATUS: Constant.Status.APPROVED,  //Approved
             }).and(
-                `TRIP_END_DATE > '${sBaselineDate}' AND TRIP_END_DATE <= '${sTodayDate}'`)
+                `TRIP_END_DATE > '${sBaselineDate}' AND 
+                TRIP_END_DATE <= '${sTodayDate}'`)
         );
 
         for (var oRequest of preapproval) {
