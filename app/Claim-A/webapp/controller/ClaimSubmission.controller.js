@@ -2355,7 +2355,14 @@ sap.ui.define([
 				if (this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()) {
 					oInputModel.setProperty("/claim_item/disclaimer_galakan", true)
 				}
-
+				//changes here
+				if(oInputModel.getProperty("/claim_item/anggota_id") != null){
+					oInputModel.setProperty("/claim_item/representative_selection", 1);
+					this.byId("field_claimdetails_input_anggota_name").setVisible(true);
+				}else if(oInputModel.getProperty("/claim_item/dependent_name") != null){
+					oInputModel.setProperty("/claim_item/representative_selection", 2);
+					this.byId("field_claimdetails_input_dependent_name").setVisible(true);
+				}
 
 			}
 			this._setClaimDetailSelection(oClaimSubmissionModel);
@@ -2457,12 +2464,12 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
 			
 			// set dropdown for dependent names
-			var oSelect = this.byId("select_claimdetails_input_dependent_name");
-			var oBinding = oSelect.getBinding("items");
-			var aFilters = [
-				new Filter('EMP_ID', FilterOperator.EQ ,this._oSessionModel.getProperty("/userId"))
-			]
-			oBinding.filter(aFilters)
+			// var oSelect = this.byId("select_claimdetails_input_dependent_name");
+			// var oBinding = oSelect.getBinding("items");
+			// var aFilters = [
+			// 	new Filter('EMP_ID', FilterOperator.EQ ,this._oSessionModel.getProperty("/userId"))
+			// ]
+			// oBinding.filter(aFilters)
 			
 		},
 
@@ -4262,7 +4269,7 @@ sap.ui.define([
 			const aControlIds = [
 				"select_claimdetails_input_depedent_or_anggota",
 				"field_claimdetails_input_anggota_name",
-				"select_claimdetails_input_dependent_name",
+				"field_claimdetails_input_dependent_name",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",
@@ -4406,7 +4413,7 @@ sap.ui.define([
 			const aControlIds = [
 				"select_claimdetails_input_depedent_or_anggota",
 				"field_claimdetails_input_anggota_name",
-				"select_claimdetails_input_dependent_name",
+				"field_claimdetails_input_dependent_name",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",
@@ -4668,9 +4675,9 @@ sap.ui.define([
 
 			if(iRepresentativeSelected == 1){
 				this.byId("field_claimdetails_input_anggota_name").setVisible(true);
-				this.byId("select_claimdetails_input_dependent_name").setVisible(false)
+				this.byId("field_claimdetails_input_dependent_name").setVisible(false)
 			}else{
-				this.byId("select_claimdetails_input_dependent_name").setVisible(true);
+				this.byId("field_claimdetails_input_dependent_name").setVisible(true);
 				this.byId("field_claimdetails_input_anggota_name").setVisible(false);
 
 			}
