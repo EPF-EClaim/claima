@@ -239,6 +239,8 @@ sap.ui.define([
 				}
 
 				this.oDialog_ClaimProcess.open();
+			}catch{
+				MessageBox.error(Utility.getText("msg_nav_error_fragment", [oName]));
 			}finally{
 				BusyIndicator.hide();
 				this._reset_ClaimProcess();
