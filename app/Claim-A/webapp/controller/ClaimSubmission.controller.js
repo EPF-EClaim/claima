@@ -26,7 +26,8 @@ sap.ui.define([
 	"claima/utils/workflowApproval",
 	"claima/utils/DateUtility",
 	"claima/utils/EligibilityCheck",
-	"claima/utils/EligibilityScenarios/EligibleScenarioCheck"
+	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
+	"claima/utils/CustomDuplicationCheck"
 ], function (
 	Fragment,
 	Item,
@@ -55,7 +56,9 @@ sap.ui.define([
 	workflowApproval,
 	DateUtility,
 	EligibilityCheck,
-	EligibleScenarioCheck
+	EligibleScenarioCheck,
+	CustomDuplicationCheck
+	
 ) {
 	"use strict";
 
@@ -1433,6 +1436,12 @@ sap.ui.define([
 				oInputModel.setProperty(addrIndex + "/trip_end_date", null);
 				oInputModel.setProperty(addrIndex + "/event_start_date", null);
 				oInputModel.setProperty(addrIndex + "/event_end_date", null);
+				/// Added to enable duplication check;
+				oInputModel.setProperty(addrIndex + "/receipt_number", null);
+				oInputModel.setProperty(addrIndex + "/receipt_date", null);
+				oInputModel.setProperty(addrIndex + "/bill_no", null);
+				oInputModel.setProperty(addrIndex + "/bill_date", null);
+
 
 				// calculate new total
 				const nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
@@ -1536,10 +1545,10 @@ sap.ui.define([
 					var sTripEndDate = oInputModel.getProperty("/claim_header/trip_end_date");
 
 
-					if (DateUtility.isFutureDate(sTripEndDate)) {
-						MessageBox.error(Utility.getText("msg_claimsubmit_datecheck"));
-						return;
-					}
+					/* 					if (DateUtility.isFutureDate(sTripEndDate)) {
+											MessageBox.error(Utility.getText("msg_claimsubmit_datecheck"));
+											return;
+										} */
 
 					this._pendingAction = oAction;
 
@@ -2634,20 +2643,23 @@ sap.ui.define([
 					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id")
 				});
 
-				// ✅ DUPLICATION CHECK HERE — BEFORE saving or creating
+				//DUPLICATION CHECK HERE — BEFORE saving or creating
 
 				var oNewItem = oInputModel.getProperty("/claim_item");
 
 				var oDuplicatePayload = {
 					receipt_number: oNewItem.receipt_number,
 					receipt_date: this._getHanaDate(oNewItem.receipt_date),
-					claimTypeId: oNewItem.claim_type_id,
+					bill_no: oNewItem.bill_no,
+					bill_date: this._getHanaDate(oNewItem.bill_date),
+					claim_type_id: oNewItem.claim_type_id,
+					claim_sub_id: oNewItem.claim_sub_id,
 					emp_id: this._oSessionModel.getProperty("/userId"),
 					isNew: oInputModel.getProperty("/is_new")
 				};
 
 				try {
-					await Utility.CheckDuplicateClaimItem(this, oDuplicatePayload);
+					await CustomDuplicationCheck.CheckDuplicateClaimItem(this, oDuplicatePayload, oModel);
 				} catch (e) {
 					MessageBox.error(e.message);
 					return false;
@@ -3292,23 +3304,6 @@ sap.ui.define([
 					REJECT_REASON_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time"))
 				});
 
-				// ✅ Duplication Check (Receipt Number + Receipt Date OR Bill No + Bill Date)
-
-				var aItems = oInputModel.getProperty("/claim_items") || [];
-				var aTemp = [...aItems];   // these are the latest values from screen
-
-				// ✅ Loop & check duplicates for each item
-				for (let oCurrentItem of aTemp) {
-					try {
-						await Utility.CheckDuplicateClaimItem(this, oCurrentItem);
-					} catch (e) {
-						MessageBox.error(e.message);
-						BusyIndicator.hide();
-						return; // STOP submission immediately on duplicate
-					}
-				}
-
-
 				//// addon for new claim
 				if (oInputModel.getProperty("/is_new")) {
 					oBody.setProperty("/CLAIM_ID", oInputModel.getProperty("/claim_header/claim_id"));
@@ -3318,9 +3313,6 @@ sap.ui.define([
 				var oListBinding;
 				var claimSaved;
 				var bApproversDetermined = true;
-
-				//Added for duplicated check;
-
 
 				if (oInputModel.getProperty("/is_new")) {
 					oListBinding = oModel.bindList("/ZCLAIM_HEADER");
@@ -3478,7 +3470,7 @@ sap.ui.define([
 
 			for (let oItem of aItems) {
 				try {
-					await Utility.CheckDuplicateClaimItem(this, oItem);
+					await CustomDuplicationCheck.CheckDuplicateClaimItem(this, oItem);
 				} catch (e) {
 					MessageBox.error(e.message);
 					BusyIndicator.hide();

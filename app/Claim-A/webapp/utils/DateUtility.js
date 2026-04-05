@@ -1,6 +1,6 @@
 sap.ui.define([
     "sap/ui/core/format/DateFormat",
-	"claima/utils/Constants",
+    "claima/utils/Constants",
 ], function (DateFormat, Constants) {
     "use strict";
 
@@ -261,7 +261,7 @@ sap.ui.define([
                             } else {
                                 // Other Claim Type
                                 _dMinDate = new Date(oHeader.trip_start_date);
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                     _oResourceBundle.getText("error_receiptdate_mindate"));
                             }
                             break;
@@ -308,7 +308,7 @@ sap.ui.define([
                             } else {
                                 // Other Claim Type
                                 _dMaxDate = new Date(oHeader.trip_end_date);
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("error_receiptdate_maxdate"));
                             }
                             break;
@@ -321,7 +321,7 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             _dMaxDate = new Date(oHeader.trip_end_date); // default
-                            _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                            _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                 _oResourceBundle.getText("error_billdate_maxdate"));
                             break;
                     }
@@ -330,7 +330,57 @@ sap.ui.define([
 
             _dMaxDate.setHours(0, 0, 0, 0);
             return _dMaxDate;
-        }
+        },
+
+
+        /**
+         * Checks whether a date value is valid.
+         * @param {string|Date} vDate input date
+         * @returns {boolean} true if valid date
+         */
+        isValidDate: function (vDate) {
+            const oDate = new Date(vDate);
+            return vDate && !isNaN(oDate.getTime());
+        },
+
+        /**
+         * Returns a 2-year window (Previous Year → Current Year)
+         * based on the supplied date.
+         * @param {string|Date} vDate input date
+         * @returns {{start: string, end: string}} date range in YYYY-MM-DD format
+         */
+        getTwoYearWindow: function (vDate) {
+            const oDate = new Date(vDate);
+            if (isNaN(oDate)) return null;
+
+            const iYear = oDate.getFullYear();
+
+            return {
+                start: `${iYear - 1}-01-01`,
+                end: `${iYear}-12-31`
+            };
+        },
+
+        /**
+         * Normalizes any valid date into YYYY-MM-DD format
+         * @param {string|Date} vDate input date
+         * @returns {string|null} formatted date or null
+         */
+        normalizeDate: function (vDate) {
+            if (!vDate) return null;
+
+            const oDate = new Date(vDate);
+            if (isNaN(oDate)) return null;
+
+            const sYear = oDate.getFullYear();
+            const sMonth = this.pad(oDate.getMonth() + 1);
+            const sDay = this.pad(oDate.getDate());
+
+            return `${sYear}-${sMonth}-${sDay}`;
+        },
+
+
+
 
     };
 });
