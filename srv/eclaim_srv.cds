@@ -342,6 +342,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
         ClaimType: String;
         ClaimTypeItem: String;
         EmpId: String;
+        ClaimID: String;
     }
 
     type EligibilityCheckFields{

@@ -1,6 +1,7 @@
 const cds = require('@sap/cds');
 const { SELECT, where } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("./constant");
+const { _parsePayload } = require('./EligibilityScenarios/DalamNegara');
 
 module.exports = {
      /**
@@ -12,7 +13,7 @@ module.exports = {
          * @param {Object} tx - CDS Transaction
          * @returns {Array} Array of data selected from header table that are Approved or Pending Approval
          */
-    getHistoricalData: async function (sHeaderTable, sItemTable, aItemcondition, tx) {
+    getHistoricalData: async function (ClaimID, sHeaderTable, sItemTable, aItemcondition, tx) {
         let sHeaderField = "";
         let aHeaders = [];
         let aStatus = [];
@@ -32,10 +33,13 @@ module.exports = {
             aHeaders = aItemData.map(d => d.REQUEST_ID);
             sHeaderField = Constant.EntitiesFields.REQUEST_ID;
         }
+        // Also check if there is any other items with same period within current claim that is in draft 
+        aHeaders.push(ClaimID);
         
         // Map Claim Status for Approved and Pending Approval
         aStatus.push(Constant.Status.APPROVED);
         aStatus.push(Constant.Status.PENDING_APPROVAL);
+        aStatus.push(Constant.Status.DRAFT);
 
         // Check if items within frequency are either Approved or Pending Approval
         const aHeaderCondition = {
@@ -45,8 +49,10 @@ module.exports = {
 
         // Get Header Data
         const aHeaderData = await tx.run(
-            SELECT.from(sHeaderTable).where(aHeaderCondition)
-        )
-        return aHeaderData;
+            SELECT`count(*)`
+            .from(sHeaderTable).where(aHeaderCondition)
+        );
+        console.log(aHeaderData, aHeaders);
+        return aHeaderData[0].count;
     }
 };

@@ -13,10 +13,10 @@ module.exports = {
     onEligibleCheck: async function (oPayload, aRules, tx) {
         var oRule = aRules[0];
 
-        var aHistoricalData = await this._getHistoricalData(oPayload, oRule, tx);
+        var iHistoricalData = await this._getHistoricalData(oPayload, oRule, tx);
 
-        // return aHistoricalData;
-        this._validateClaimItem(oRule, oPayload, aHistoricalData);
+        // return iHistoricalData;
+        this._validateClaimItem(oRule, oPayload, iHistoricalData);
         return oPayload;
     },
 
@@ -58,7 +58,7 @@ module.exports = {
             [Constant.EntitiesFields.RECEIPT_DATE]: { LIKE: sDate }
         };
 
-        return aHistoricalData = await GetHistoricalData.getHistoricalData(Constant.Entities.ZCLAIM_HEADER,
+        return iHistoricalData = await GetHistoricalData.getHistoricalData(oPayload.ClaimID, Constant.Entities.ZCLAIM_HEADER,
             Constant.Entities.ZCLAIM_ITEM,
             aItemcondition,
             tx);
@@ -71,7 +71,7 @@ module.exports = {
     * @param {Object} oRule - matched eligibility rule from aRules
     * @param {Object} oPayload - original payload from user input
     */
-    _validateClaimItem: function (oRule, oPayload, oHistoricalData) {
+    _validateClaimItem: function (oRule, oPayload, iHistoricalData) {
         var iIndex;
 
         switch (oPayload.ClaimTypeItem) {
@@ -80,7 +80,9 @@ module.exports = {
             case Constant.ClaimTypeItem.I_PAD:
                 // I-PAD - return true if there is no historical claims within same Year/Month based on frequency and period
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
-                if (oHistoricalData.length < oRule.FREQUENCY) {
+                // Frequency + 1 to accomodate checking for current claim id that is in draft
+                var iFrequency = oRule.FREQUENCY + 1;
+                if (iHistoricalData < iFrequency) {
                     oPayload.CheckFields[iIndex].result = true;
                 } else {
                     oPayload.CheckFields[iIndex].result = false;
