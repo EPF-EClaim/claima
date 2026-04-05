@@ -28,6 +28,7 @@ const Constant = {
         CLAIM: "NR02"
     },
     DisbursementStatus: {
+        TO_BE_DISBURSED: "01",
         BYPASS: "02",
         DISBURSED: "03"
     },
