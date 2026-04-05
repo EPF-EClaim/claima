@@ -1042,8 +1042,8 @@ sap.ui.define([
 			}
 
 			// Eligibility Checking
-			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
-			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, oPayload);
+			var aPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
+			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, aPayload);
 			var	bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.REQUEST);
 
 			if (!bCanProceed) return;
@@ -1298,6 +1298,36 @@ sap.ui.define([
 		/* =========================================================
 		* Participant Value Help 
 		* ======================================================= */
+
+		onCashAdvanceChange: function (oEvent) {
+
+			// Get model
+			const oRequestModel = this.getView().getModel("request");
+
+			// Read event start date
+			const dTripDate = oRequestModel.getProperty("/req_header/tripstartdate");
+
+			if (!dTripDate) {
+				return; // no date entered yet
+			}
+
+			// Convert to JS Date
+			const dEventDate = new Date(dTripDate);
+			const dToday = new Date();
+			dToday.setHours(0,0,0,0);
+
+			// ✅ If event date is before today → backdated
+			if (dEventDate < dToday) {
+
+				// Update model value
+				oRequestModel.setProperty("/req_item/cash_advance", false);
+
+				// Show message
+				MessageBox.error(
+					Utility.getText("msg_cash_advance_not_allow")
+				);
+			}
+		},
 
 		onValueHelpRequest(oEvent) {
 			this._oInputSource = oEvent.getSource();

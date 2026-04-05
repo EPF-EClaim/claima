@@ -51,7 +51,7 @@
                                     <form:fields>
                                         <Text 
                                             id="i_claim_type"
-                                            text="{request>/req_header/claimtype}"  />
+                                            text="{request>/req_header/claimtypedesc}"  />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -872,20 +872,24 @@
                                 <!-- Cash Advance -->
                                 <form:FormElement label="{i18n>req_i_cashadv}"
                                             visible="{= ${request>/req_header/grptype} === ${constant>/GroupType/INDIVIDUAL} &amp;&amp; 
-                                                      ( ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L}     || 
-                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_L}      || 
-                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER}    || 
-                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LODGING_L}    ||
-                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_L}      ||
-                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_O}     ||
-                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_O}      ||
-                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O}      ||
-                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LODG_O} )
+                                                        ( ${request>/req_header/claimtype} === ${constant>/ClaimType/KURSUS_DLM_NEGARA} || 
+                                                        ${request>/req_header/claimtype} === ${constant>/ClaimType/KURSUS_LUAR_NEGARA} ||
+                                                        ${request>/req_header/claimtype} === ${constant>/ClaimType/DLM_NEGARA} ||
+                                                        ${request>/req_header/claimtype} === ${constant>/ClaimType/TRLUAR_NEGARAAVEL} ) &amp;&amp;
+                                                        ( ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L}   || 
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_L}    || 
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER}  || 
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LODGING_L}  ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_L}    ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_O}   ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_O}    ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MAKAN_O}    ||
+                                                        ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/LODG_O} ) 
                                                     }"
                                             id="i_cash_adv" >
                                     <form:fields>
                                         <Switch state="{request>/req_item/cash_advance}" customTextOn="Yes" customTextOff="No"
-                                                enabled="{= ${request>/view} !== 'view' }">
+                                                enabled="{= ${request>/view} !== 'view' }" change=".onCashAdvanceChange">
                                             <layoutData>
                                                 <FlexItemData growFactor="1" />
                                             </layoutData>
