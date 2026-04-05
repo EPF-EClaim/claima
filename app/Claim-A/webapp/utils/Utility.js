@@ -159,13 +159,7 @@ sap.ui.define([
          * @returns {void} - No return value.
          */
 
-
-        updateFooterState: function ({
-            oView,
-            oClaimModel,
-            oConstants,
-            sMode
-        }) {
+        updateFooterState: function (oView, oClaimModel, oConstants, sMode) {
             if (!oView || !oClaimModel || !oConstants) return;
 
             const sStatusId = oClaimModel.getProperty("/claim_header/status_id");
