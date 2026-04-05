@@ -1097,7 +1097,6 @@ sap.ui.define([
 			// Claim Item Model
 			var oClaimItemModel = new JSONModel({
 				"is_new": false,
-				"dependent_or_anggota": null,
 				"screen_array": [],
 				"claim_item": {
 					"claim_id": null,
@@ -1747,7 +1746,7 @@ sap.ui.define([
 				{ label: Utility.getText("label_claimdetails_input_claimitem"), property: "claim_type_item_id", type: "descr", width: 30 },
 			];
 			const aItemsColumnsAdditional = [
-				{ label: Utility.getText("label_claimdetails_input_depedent_or_anggota"), property: "dependent_or_anggota", field: "select_claimdetails_input_depedent_or_anggota", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_depedent_or_anggota"), property: "representative_selection", field: "select_claimdetails_input_depedent_or_anggota", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_anggota"), property: "anggota_name", field: "field_claimdetails_input_anggota_name", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_dependent"), property: "dependent_name", field: "input_claimdetails_input_dependent_name", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_profbodytype"), property: "type_of_professional_body", field: "select_claimdetails_input_type_of_professional_body", type: "descr", width: 40 },
