@@ -835,15 +835,15 @@
 
 				<!-- Departure Time -->
 				<Label text="{i18n>label_claimdetails_input_time_depart}" />
-				<TimePicker
+                <DateTimePicker
+                    required="true" 
 					id="timepicker_claimdetails_input_departure_time"
 					value="{claimitem_input>/claim_item/departure_time}"
-					visible="false"
-					displayFormat="HH:mm"
-					valueFormat="HH:mm"
-					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
-					required="true"
-				/>
+                    displayFormat="dd MMM yyyy HH:mm"
+                    valueFormat="dd MMM yyyy HH:mm"
+                    textAlign="Begin"
+                    visible="false"
+					change="onChange_ClaimDetails_FlightTimeRange"/>
 
                 <!-- Trip End Date -->
                 <Label text="{i18n>label_claimdetails_input_trip_enddate}" />
@@ -867,15 +867,15 @@
 
 				<!-- Arrival Time -->
 				<Label text="{i18n>label_claimdetails_input_time_arrive}" />
-				<TimePicker
+                <DateTimePicker
+                    required="true" 
 					id="timepicker_claimdetails_input_arrival_time"
 					value="{claimitem_input>/claim_item/arrival_time}"
-					visible="false"
-					displayFormat="HH:mm"
-					valueFormat="HH:mm"
-					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_departure_time','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_arrival_time')"
-					required="true"
-				/>
+                    displayFormat="dd MMM yyyy HH:mm"
+                    valueFormat="dd MMM yyyy HH:mm"
+                    textAlign="Begin"
+                    visible="false"
+					change="onChange_ClaimDetails_FlightTimeRange"/>
 
                 <!-- Travel Duration (days) -->
                 <Label

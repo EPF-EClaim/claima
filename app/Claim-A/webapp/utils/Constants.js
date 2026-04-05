@@ -307,7 +307,8 @@ sap.ui.define([
             "CURR_SUBSIDY"  : "ST0005"
         },
         "Default": {
-            "PROJECT_CODE": "NA"
+            "PROJECT_CODE": "NA",
+            "NULL": "null"
         },
         "BudgetCheckAction": {
             "SUBMIT": "SUBMIT",

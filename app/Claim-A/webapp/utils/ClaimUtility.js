@@ -188,6 +188,25 @@ sap.ui.define([
 			return oContext.execute()
 							.then(() => oContext.requestObject());
 
-		}
+		},
+
+		determineDefaultCostCenter: async function (sClaimTypeId) {
+            try {
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
+				
+				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				const oResult = oContext.getObject();
+
+                return oResult.sCostCenter
+
+			} catch (oError) {
+				return null;
+			}
+			
+        },
     }
 });
