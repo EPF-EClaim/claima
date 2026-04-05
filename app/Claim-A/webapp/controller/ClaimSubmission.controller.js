@@ -2355,13 +2355,12 @@ sap.ui.define([
 				if (this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()) {
 					oInputModel.setProperty("/claim_item/disclaimer_galakan", true)
 				}
+
 				//changes here
 				if(oInputModel.getProperty("/claim_item/anggota_id") != null){
-					oInputModel.setProperty("/claim_item/representative_selection", 1);
-					this.byId("field_claimdetails_input_anggota_name").setVisible(true);
+					oInputModel.setProperty("/claim_item/representative_selection", '1');
 				}else if(oInputModel.getProperty("/claim_item/dependent_name") != null){
-					oInputModel.setProperty("/claim_item/representative_selection", 2);
-					this.byId("field_claimdetails_input_dependent_name").setVisible(true);
+					oInputModel.setProperty("/claim_item/representative_selection", '2');
 				}
 
 			}
@@ -4659,21 +4658,6 @@ sap.ui.define([
                 Utility.getText("msg_claimdetails_input_entmeals_err", [err])
             );
         }).finally(() => BusyIndicator.hide());
-		},
-
-		onSelect_ClaimDetails_Dependent_Or_Anggota: function(){
-			var oInputModel = this.getView().getModel("claimitem_input");
-			var iRepresentativeSelected = oInputModel.getProperty("/claim_item/representative_selection");
-
-			if(iRepresentativeSelected == 1){
-				this.byId("field_claimdetails_input_anggota_name").setVisible(true);
-				this.byId("field_claimdetails_input_dependent_name").setVisible(false)
-			}else{
-				this.byId("field_claimdetails_input_dependent_name").setVisible(true);
-				this.byId("field_claimdetails_input_anggota_name").setVisible(false);
-
-			}
 		}
-
 	});
 });

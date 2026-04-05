@@ -71,8 +71,6 @@
                     id="select_claimdetails_input_depedent_or_anggota"
                     forceSelection="false"
                     selectedKey="{claimitem_input>/claim_item/representative_selection}"
-                    change="onSelect_ClaimDetails_Dependent_Or_Anggota"
-                    liveChange="onSelect_ClaimDetails_Dependent_Or_Anggota"
                     required="true"
                     items="{
 						path:'employee>/ZEMP_DEPENDENT_TYPE',
@@ -94,7 +92,7 @@
                         additionalValue="{claimitem_input>/claim_item/anggota_name}"
                         editMode="Editable"
                         display="ValueDescription"
-                        visible="false"
+                        visible="{= ${claimitem_input>/claim_item/representative_selection} === '1'}"
                         valueHelp="valuehelp_claimdetails_input_anggota_name"
                         required="true"
                 />
@@ -106,7 +104,7 @@
                         value="{claimitem_input>/claim_item/dependent_name}"
                         editMode="Editable"
                         display="ValueDescription"
-                        visible="false"
+                        visible="{= ${claimitem_input>/claim_item/representative_selection} === '2'}"
                         valueHelp="valuehelp_claimdetails_input_dependent_name"
                         required="true"
                 />
