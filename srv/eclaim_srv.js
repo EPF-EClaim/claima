@@ -290,10 +290,6 @@ module.exports = (srv) => {
         }
     });
 
-    /* ======================================================================================================================================= */
-    /* Below are Jefry's functions with the help of Ain. Don't slot your function in between tq. You are making my life harder. Appreciate it. */
-    /* ======================================================================================================================================= */
-
     srv.on('budgetchecking', async (req) => {
         const { ZBUDGET } = srv.entities;
         const { budget } = req.data;
@@ -639,10 +635,6 @@ module.exports = (srv) => {
         }
     });
 
-    /* ======================================================================================================================================= */
-    /* Above are Jefry's functions with the help of Ain. Don't slot your function in between tq. You are making my life harder. Appreciate it. */
-    /* ======================================================================================================================================= */
-
     srv.on('onFinalApproveInsert', async (req) => {
         const { ZCLM_APPR_REQ_STAT } = srv.entities;
         try {
@@ -841,8 +833,7 @@ module.exports = (srv) => {
                 throw new Error('No Data Sent')
             }
             const tx = cds.tx(req);
-
-            result = await EligibleScenarioCheck.onEligibilityCheck(aPayload, tx);
+             result = await EligibleScenarioCheck.onEligibilityCheck(aPayload, tx);
             return result;
 
         } catch (error) {
@@ -1041,6 +1032,40 @@ module.exports = (srv) => {
         return aResult;
     });
 
+    srv.on('checkDefaultCostCenter', async (req) => {
+        const { sClaimTypeId } = req.data;
+
+        if (!sClaimTypeId) {
+            return req.error(400, 'Please provide an Employee ID.');
+        }
+
+        try {
+            const oClaimTypeRecord = await SELECT.one('COST_CENTER')
+                .from('ZCLAIM_TYPE')
+                .where({ CLAIM_TYPE_ID: sClaimTypeId });
+
+            if (!oClaimTypeRecord) {
+                return req.error(404, `Claim Type ${oClaimTypeRecord} not found.`);
+            }
+            
+            const sCostCenterId = oClaimTypeRecord.COST_CENTER || "";
+
+            const oCostCenterRecord = await SELECT.one('COST_CENTER_DESC')
+                .from('ZCOST_CENTER')
+                .where({ COST_CENTER_ID: sCostCenterId });
+
+            const sCostCenterDesc = oCostCenterRecord ? oCostCenterRecord.COST_CENTER_DESC : '';
+
+            return {
+                sCostCenter: String(sCostCenterId) || "",
+                sCostCenterDesc: String(sCostCenterDesc) || ""
+            }
+
+        } catch (error) {
+            return req.error(500, 'An error occurred while checking claim type table.');
+        }
+    });
+           
     srv.after('UPDATE', 'ZREQUEST_HEADER', async (data, req) => {
         
         const sStatus = data.STATUS || req.data.STATUS;
