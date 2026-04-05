@@ -117,18 +117,24 @@
                         additionalValue="{claimsubmission_input>/claim_header/descr/alternate_cost_center}"
                         editMode="Editable"
                         display="ValueDescription"
-                        visible="true"
+                        visible="{= ${claimsubmission_input>/claimtype/cost_center} === null &amp;&amp;
+                            ${claimsubmission_input>/claimtype/requestform/alternate_cost_center} === null
+                        }"
                         valueHelp="valuehelp_claiminput_altcc"
                     />
                     
-                    <!-- Alternate Cost Center (Pre-Approval) -->
+                    <!-- Alternate Cost Center (Claim Type/Pre-Approval) -->
                     <Label text="{i18n>label_claiminput_altcc}" />
                     <Input
                         id="input_claiminput_altcc"
                         value="{claimsubmission_input>/claim_header/alternate_cost_center} ({claimsubmission_input>/claim_header/descr/alternate_cost_center})"
-                        enabled="false"
+                        enabled="{= ${claimsubmission_input>/claimtype/cost_center} !== null ||
+                            ${claimsubmission_input>/claimtype/requestform/alternate_cost_center} !== null
+                        }"
                         editable="false"
-                        visible="false"
+                        visible="{= ${claimsubmission_input>/claimtype/cost_center} !== null ||
+                            ${claimsubmission_input>/claimtype/requestform/alternate_cost_center} !== null
+                        }"
                     />
                     
                     <!-- Attachment Email Approval -->

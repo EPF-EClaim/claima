@@ -291,7 +291,8 @@ sap.ui.define([
             "CURR_SUBSIDY"  : "ST0005"
         },
         "Default": {
-            "PROJECT_CODE": "NA"
+            "PROJECT_CODE": "NA",
+            "NULL": "null"
         },
         "BudgetCheckAction": {
             "SUBMIT": "SUBMIT",
@@ -304,7 +305,8 @@ sap.ui.define([
             "EDIT": "i_edit",
             "LIST": "list",
             "CREATE": "create",
-            "VIEWAPPR": "view_appr"
+            "VIEWAPPR": "view_appr",
+            "APPROVE": "APPROVE",
         },
         "RequestType": {
             "TRAVEL"        : "RT0001",
