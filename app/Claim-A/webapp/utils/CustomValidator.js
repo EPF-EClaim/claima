@@ -36,6 +36,28 @@ sap.ui.define([
             // Scenario-based checking (Only limited to certain submission type)
             switch (sSubmissionType) {
                 case Constants.SubmissionTypePrefix.REQUEST:
+
+                    var oReqModel = this._oOwnerComponent.getModel("request");
+                    var sClaimTypeItem = oReqModel.getProperty("/req_item/claim_type_item_id");
+
+                    // HANDPHONE | TELEFON_B
+                    if (sClaimTypeItem === Constants.ClaimTypeItem.TELEFON_B) {
+                        
+                        var aParticipants = oReqModel.getProperty("/participant") || [];
+                        var fMaxLimit = 100.00;
+
+                        for (var p = 0; p < aParticipants.length; p++) {
+                            var fEnteredAmount = parseFloat(aParticipants[p].ALLOCATED_AMOUNT || 0);
+
+                            if (fEnteredAmount > fMaxLimit) {
+                                MessageBox.error(Utility.getText("req_d_e_capped_amount", [fMaxLimit.toFixed(2)]));
+                                return false; 
+                            } else if (fEnteredAmount < 0.00) {
+                                MessageBox.error(Utility.getText("req_d_e_neg_amount"));
+                                return false; 
+                            }
+                        }
+                    }
                     break;
                 case Constants.SubmissionTypePrefix.CLAIM:   
                     var oInputModel = this._oView.getModel("claimitem_input");
