@@ -40,13 +40,12 @@ sap.ui.define([
 
             const oStatus = new Filter({
 				filters: [
-					new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimStatus.PENDING_APPROVAL),
-					new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimStatus.SEND_BACK)
+					new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimStatus.PENDING_APPROVAL)
 				],
 				and: false // OR condition between the two
 			});
 
-			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING_APPROVAL' OR 'SEND_BACK'
+			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING_APPROVAL'
 			const oCombined = new Filter({
 				filters: [oApproverOrSub, oStatus],
 				and: true // AND between groups
