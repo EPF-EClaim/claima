@@ -1,8 +1,30 @@
 sap.ui.define([
     "sap/ui/core/mvc/ControllerExtension",
+    "sap/ui/core/ListItem",
     "sap/m/DatePicker",
+    "sap/m/MessageBox",
+    "sap/m/MessageToast",
+    "sap/m/VBox",
+    "sap/m/Select",
+    "sap/m/Label",
+    "sap/m/Input",
+    "sap/m/Dialog",
+    "sap/m/Button",
+    "claima/utils/Utility", 
+    "claima/utils/Validator"
 ], function (ControllerExtension,
-    DatePicker) {
+    ListItem,
+    DatePicker,
+    MessageBox,
+    MessageToast,
+    VBox,
+    Select,
+    Label,
+    Input,
+    Dialog,
+    Button,
+    Utility,
+    Validator) {
     'use strict';
 
     const allowedOnZemp = new Set([
@@ -14,7 +36,7 @@ sap.ui.define([
         "MEDICAL_INSURANCE_ENTITLEMENT",
         "POST_EDU_ASSISTANT_CLAIM_DATE",
         "POST_EDU_ASSISTANT_ENTITLE_AMOUNT",
-        "MEDICAL_INSURANCE" 
+        "MEDICAL_INSURANCE"
     ]);
 
     const sDisabledField = "RANGE_ID";
@@ -43,51 +65,51 @@ sap.ui.define([
         if (!start || !end) return true;
 
         if (end < start) {
-            sap.m.MessageToast.show("End date cannot be earlier than start date");
+            MessageToast.show(Utility.getText("endBeforeStart"));
             return false;
         }
 
         return true;
     }
     const _validateInputs = function (oVBox, oDataType, isZempMaster) {
-    let bValid = true;
-    const oInputs = oVBox.getItems();
+        let bValid = true;
+        const oInputs = oVBox.getItems();
 
-    for (let i = 1; i < oInputs.length; i += 2) {
-        const oControl = oInputs[i];
-        const sFieldName = oControl.getName();
+        for (let i = 1; i < oInputs.length; i += 2) {
+            const oControl = oInputs[i];
+            const sFieldName = oControl.getName();
 
-        if (isZempMaster && !allowedOnZemp.has(sFieldName)) continue;
-        if (oControl.isA("sap.m.Select")) continue;
+            if (isZempMaster && !allowedOnZemp.has(sFieldName)) continue;
+            if (oControl.isA("sap.m.Select")) continue;
 
-        const sValue = oControl.getValue();
-        const oMeta = oDataType?.[sFieldName];
-        const bRequired = oMeta?.$Nullable === false;
-        const nMaxLength = oMeta?.$MaxLength;
+            const sValue = oControl.getValue();
+            const oMeta = oDataType?.[sFieldName];
+            const bRequired = oMeta?.$Nullable === false;
+            const nMaxLength = oMeta?.$MaxLength;
 
-        const bIsNumeric = oMeta?.$Type === "Edm.Decimal" ||
-                           oMeta?.$Type === "Edm.Int32"   ||
-                           oMeta?.$Type === "Edm.Int64"   ||
-                           oMeta?.$Type === "Edm.Double";
+            const bIsNumeric = oMeta?.$Type === "Edm.Decimal" ||
+                oMeta?.$Type === "Edm.Int32" ||
+                oMeta?.$Type === "Edm.Int64" ||
+                oMeta?.$Type === "Edm.Double";
 
-        if (bRequired && (!sValue || sValue.trim() === '')) {
-            oControl.setValueState("Error");
-            oControl.setValueStateText("This field is required");
-            bValid = false;
-        } else if (nMaxLength && sValue && sValue.length > nMaxLength) {
-            oControl.setValueState("Error");
-            oControl.setValueStateText(`Maximum ${nMaxLength} characters allowed`);
-            bValid = false;
-        } else if (bIsNumeric && sValue && isNaN(Number(sValue))) {
-            oControl.setValueState("Error");
-            oControl.setValueStateText("Please enter a valid number");
-            bValid = false;
-        } else {
-            oControl.setValueState("None");
+            if (bRequired && (!sValue || sValue.trim() === '')) {
+                oControl.setValueState("Error");
+                oControl.setValueStateText(Utility.getText("msg_requiredfield"));
+                bValid = false;
+            } else if (nMaxLength && sValue && sValue.length > nMaxLength) {
+                oControl.setValueState("Error");
+                oControl.setValueStateText(`Maximum ${nMaxLength} characters allowed`);
+                bValid = false;
+            } else if (bIsNumeric && sValue && isNaN(Number(sValue))) {
+                oControl.setValueState("Error");
+                oControl.setValueStateText(Utility.getText("msg_valid_number"));
+                bValid = false;
+            } else {
+                oControl.setValueState("None");
+            }
         }
+        return bValid;
     }
-    return bValid;
-}
 
     const _getDetails = function (oView, aSelectedContexts) {
         const oSelectedContext = aSelectedContexts[0];
@@ -102,7 +124,7 @@ sap.ui.define([
 
         const isZempMaster = sPath?.startsWith("/ZEMP_MASTER") || sPath === "/ZEMP_DEPENDENT";
 
-        const oVBox = new sap.m.VBox({
+        const oVBox = new VBox({
             width: "70%",
             fitContainer: true,
         });
@@ -114,7 +136,7 @@ sap.ui.define([
             const fieldType = oFieldMeta?.$Type;
             const sDisable = isZempMaster && !allowedOnZemp.has(fieldName);
 
-            oVBox.addItem(new sap.m.Label({
+            oVBox.addItem(new Label({
                 text: item.Label,
                 width: "100%",
                 labelFor: fieldName,
@@ -129,30 +151,30 @@ sap.ui.define([
                     width: "130%",
                     displayFormat: "dd MMM yyyy",
                     valueFormat: "yyyy-MM-dd",
-                    enabled: `${sPath}` === '/ZEMP_MASTER' ? false : true 
+                    enabled: `${sPath}` === '/ZEMP_MASTER' ? false : true
                 }) :
                 fieldType?.includes('Edm.Boolean') ?
-                    new sap.m.Select({
+                    new Select({
                         name: fieldName,
                         width: "130%",
                         forceSelection: false,
                         selectedKey: oData[fieldName] || null,
                         items: [
-                            new sap.ui.core.ListItem({
+                            new ListItem({
                                 key: null,
                                 text: "None"
                             }),
-                            new sap.ui.core.ListItem({
+                            new ListItem({
                                 key: false,
                                 text: "No"
                             }),
-                            new sap.ui.core.ListItem({
+                            new ListItem({
                                 key: true,
                                 text: "Yes"
                             })
                         ]
                     }) :
-                    new sap.m.Input({
+                    new Input({
                         value: oData[fieldName]?.toString() || "",
                         name: fieldName,
                         width: "130%",
@@ -173,21 +195,27 @@ sap.ui.define([
          */
 
         onclickcopy: function (oContext, aSelectedContexts) {
+            if (aSelectedContexts.length !== 1) {
+                MessageBox.warning(Utility.getText("msg_select_one"));
+                return;
+            }
             const oNewEntry = {};
             const oView = this.getRouting().getView();
             const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType } = _getDetails(oView, aSelectedContexts);
+            const oValidator = new Validator();
 
-            const oDialog = new sap.m.Dialog({
-                title: `Copy Record`,
+            const oDialog = new Dialog({
+                title: Utility.getText("title_copy_record"),
                 contentWidth: "15%",
                 horizontalScrolling: false,
-                beginButton: new sap.m.Button({
-                    text: "Copy",
+                beginButton: new Button({
+                    text: Utility.getText("copy"),
                     press: function () {
                         var oInputs = oVBox.getItems();
 
-                         if (!_validateInputs(oVBox, oDataType, false)) {
-                            sap.m.MessageToast.show("Please fix the highlighted fields");
+                        // if (!_validateInputs(oVBox, oDataType, false))
+                            if (!oValidator.validate(oVBox)) {
+                            MessageToast.show(Utility.getText("msg_fix_input"));
                             return;
                         }
 
@@ -219,8 +247,8 @@ sap.ui.define([
                         oListBinding.refresh(true);
                     }.bind(this)
                 }),
-                endButton: new sap.m.Button({
-                    text: "Cancel",
+                endButton: new Button({
+                    text: Utility.getText("req_b_cancel"),
                     press: function () { oDialog.close(); }
                 }),
                 afterClose: function () { oDialog.destroy(); }
@@ -231,6 +259,10 @@ sap.ui.define([
         },
 
         onClickEdit: function (oContext, aSelectedContexts) {
+            if (aSelectedContexts.length !== 1) {
+                MessageBox.warning(Utility.getText("msg_select_one"));
+                return;
+            }
             const oView = this.getRouting().getView();
             const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType, isZempMaster } = _getDetails(oView, aSelectedContexts);
 
@@ -245,19 +277,19 @@ sap.ui.define([
                 }
             }
 
-            const oDialog = new sap.m.Dialog({
-                title: `Edit Record`,
+            const oDialog = new Dialog({
+                title: Utility.getText("title_edit_record"),
                 contentWidth: "15%",
                 horizontalScrolling: false,
-                beginButton: new sap.m.Button({
-                    text: "Edit",
+                beginButton: new Button({
+                    text: Utility.getText("req_b_edit"),
                     press: async function () {
                         var oInputs = oVBox.getItems();
                         const oEdited = {};
                         const oOld = oSelectedContext.getObject();
 
-                         if (!_validateInputs(oVBox, oDataType, false)) {
-                            sap.m.MessageToast.show("Please fix the highlighted fields");
+                        if (!_validateInputs(oVBox, oDataType, false)) {
+                            MessageToast.show(Utility.getText("msg_fix_input"));
                             return;
                         }
 
@@ -299,7 +331,7 @@ sap.ui.define([
                             for (const field in oEdited) {
                                 oSelectedContext.setProperty(field, oEdited[field]);
                             }
-                            sap.m.MessageToast.show("Record updated");
+                            MessageToast.show(Utility.getText("msg_record_updated"));
                             oDialog.close();
                             return;
                         }
@@ -311,16 +343,16 @@ sap.ui.define([
                             const oCreateCtx = oListBinding.create(oNewEntity);
                             await oCreateCtx.created();
                             await oSelectedContext.delete();
-                            sap.m.MessageToast.show("Record updated");
+                            MessageToast.show(Utility.getText("msg_record_updated"));
                             oModel.refresh();
                             oDialog.close();
                         } catch (e) {
-                            sap.m.MessageBox.error("Failed to change key: " + (e?.message || e));
+                            MessageBox.error(Utility.getText("msg_failed_key") + (e?.message || e));
                         }
                     }.bind(this)
                 }),
-                endButton: new sap.m.Button({
-                    text: "Cancel",
+                endButton: new Button({
+                    text: Utility.getText("button_claimprocess_cancel"),
                     press: function () { oDialog.close(); }
                 }),
                 afterClose: function () { oDialog.destroy(); }
