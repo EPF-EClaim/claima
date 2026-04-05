@@ -50,12 +50,7 @@ module.exports = {
                 SELECT`count(*)`
                     .from(sHeaderTable).where(aHeaderCondition)
             );
-            // console.log(aHeaderData);
-            if (!aHeaderData) {
-                return 0;
-            } else {
-                return aHeaderData[0].count;
-            }
+            if (!!aHeaderData) return 0;
         } catch (error) {
             return 0;
         }
@@ -75,13 +70,8 @@ module.exports = {
             // Check if any Claim item is within frequency
             const aItemData = await tx.run(
                 SELECT`count(*)`.from(sItemTable).where(aItemcondition)
-            )
-            // console.log(aItemData);
-            if (!aItemData) {
-                return 0;
-            } else {
-                return aItemData[0].count;
-            }
+            );
+            if (!!aItemData) return 0;
         } catch (error) {
             return 0;
         }
