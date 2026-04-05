@@ -3,8 +3,16 @@ const { SELECT, where } = require('@sap/cds/lib/ql/cds-ql');
 const { Constant } = require("./constant");
 
 module.exports = {
+     /**
+         * Drill down of eligibility scenarios for each claim type after retrieving employee and eligibility rules data
+         * @public
+         * @param {String} sHeaderTable - Header Table Name
+         * @param {String} sItemTable - Item Table Name
+         * @param {Array} aItemcondition - Item Selection Where Conditions
+         * @param {Object} tx - CDS Transaction
+         * @returns {Array} Array of data selected from header table that are Approved or Pending Approval
+         */
     getHistoricalData: async function (sHeaderTable, sItemTable, aItemcondition, tx) {
-        let sDate = "";
         let sHeaderField = "";
         let aHeaders = [];
         let aStatus = [];
@@ -39,15 +47,6 @@ module.exports = {
         const aHeaderData = await tx.run(
             SELECT.from(sHeaderTable).where(aHeaderCondition)
         )
-
-        console.log(aItemData);
-        console.log(aHeaderData);
         return aHeaderData;
-
-        // const aTableData = await tx.run(
-        //     SELECT.from(sTableName).where(aCondition)
-        // );
-
-        // return aTableData;
     }
 };

@@ -7,40 +7,41 @@ module.exports = {
          * @public
          * @param {Object} oPayload - payload contains user input passed from frontend
          * @param {Array} aRules - list of eligibility rule from backend
+         * @param {Object} tx - CDS Transaction
          * @returns {Object} oPayload - return original payload but with result field filled
          */
     onEligibleCheck: async function (oPayload, aRules, tx) {
-        let sDate = null;
         var oRule = aRules[0];
 
+        var aHistoricalData = await this._getHistoricalData(oPayload, oRule, tx);
+
+        // return aHistoricalData;
+        this._validateClaimItem(oRule, oPayload, aHistoricalData);
+        return oPayload;
+    },
+
+    /**
+         * Get Historical Claims Data by building querying conditions and using GetHistoricalData for data retrieval
+         * @public
+         * @param {Object} oPayload - payload contains user input passed from frontend
+         * @param {Object} oRule - Eligibility rule from backend
+         * @param {Object} tx - CDS Transaction
+         * @returns {Object} oPayload - return original payload but with result field filled
+         */
+    _getHistoricalData: async function (oPayload, oRule, tx) {
+        let sDate = null;
         // get Historical Claims Data
         // find field for date
         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
-        sMonth = oPayload.CheckFields[iIndex].value.substring(6, 8);
-        sYear = oPayload.CheckFields[iIndex].value.substring(0, 4);
-
-        if (oRule.FREQUENCY > 1) {
-            iFrequency = oRule.FREQUENCY - 1;
-        } else {
-            // If frequency is 1, only check within same Year/Month. Do not need to do subtraction
-            iFrequency = 0;
-        }
+        sMonth = parseInt(oPayload.CheckFields[iIndex].value.substring(6, 8));
+        sYear = parseInt(oPayload.CheckFields[iIndex].value.substring(0, 4));
 
         switch (oRule.PERIOD) {
             case Constant.FrequencyPeriod.MONTH:
-                sMonth = parseInt(sMonth) - iFrequency;
+                // need to search as "##"
                 if (sMonth < 10) {
                     sMonth = Constant.Wildcard.ZERO + sMonth;
                 }
-                break;
-
-            case Constant.FrequencyPeriod.YEAR:
-                sYear = parseInt(sYear) - iFrequency;
-                break;
-
-            case Constant.FrequencyPeriod.THREE_YEARS:
-                iFrequency = 2;
-                sYear = sYear - iFrequency;
                 break;
 
             default:
@@ -57,14 +58,10 @@ module.exports = {
             [Constant.EntitiesFields.RECEIPT_DATE]: { LIKE: sDate }
         };
 
-        const aHistoricalData = await GetHistoricalData.getHistoricalData(Constant.Entities.ZCLAIM_HEADER,
+        return aHistoricalData = await GetHistoricalData.getHistoricalData(Constant.Entities.ZCLAIM_HEADER,
             Constant.Entities.ZCLAIM_ITEM,
             aItemcondition,
             tx);
-
-        // return aHistoricalData;
-        this._validateClaimItem(oRule, oPayload, aHistoricalData);
-        return oPayload;
     },
 
     /**
@@ -79,14 +76,14 @@ module.exports = {
 
         switch (oPayload.ClaimTypeItem) {
 
-            
+
             case Constant.ClaimTypeItem.I_PAD:
                 // I-PAD - return true if there is no historical claims within same Year/Month based on frequency and period
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
-                if (oHistoricalData.length > 0) {
-                    oPayload.CheckFields[iIndex].result = false;
-                } else {
+                if (oHistoricalData.length < oRule.FREQUENCY) {
                     oPayload.CheckFields[iIndex].result = true;
+                } else {
+                    oPayload.CheckFields[iIndex].result = false;
                 }
 
                 iIndex = null;
