@@ -92,58 +92,6 @@ sap.ui.define([
 
             await oModel.submitBatch("$auto");
         },
-
-        async onDefaultCostCenterDetermination(oEvent) {
-			var oSelectControl = oEvent.getSource();
-    		var sClaimTypeId = oSelectControl.getSelectedKey();
-			const oDialogModel = this.oDialogFragment.getModel("reqDialog");
-
-            try {
-				const oFunction = this._oDataModel.bindContext("/checkDefaultCostCenter(...)");
-				
-				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
-
-				await oFunction.execute();
-
-				const oContext = oFunction.getBoundContext();
-				const oResult = oContext.getObject();
-
-                var sCostCenter = oResult.sCostCenter;
-                var sCostCenterDesc = oResult.sCostCenterDesc;
-
-                if (sCostCenter != Constants.Default.NULL) {
-                    Fragment.byId("request", "req_acc").setEditMode("ReadOnly");
-                    oDialogModel.setProperty("/altcostcenter", sCostCenter);
-                    oDialogModel.setProperty("/altcostcenter_desc", sCostCenterDesc);
-                } else {
-                    Fragment.byId("request", "req_acc").setEditMode("Editable");
-                    oDialogModel.setProperty("/altcostcenter", null);
-                    oDialogModel.setProperty("/altcostcenter_desc", null);
-                }
-
-			} catch (oError) {
-				return null;
-			}
-		},
-
-        determineDefaultCostCenter: async function (sClaimTypeId) {
-            try {
-				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
-				
-				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
-
-				await oFunction.execute();
-
-				const oContext = oFunction.getBoundContext();
-				const oResult = oContext.getObject();
-
-                return oResult.sCostCenter
-
-			} catch (oError) {
-				return null;
-			}
-			
-        },
         
         openClaimTypeFilterDialog: async function (oController, sModelName, sListPath) {
             var oModel = oController.getView().getModel(sModelName);

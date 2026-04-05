@@ -24,7 +24,8 @@ sap.ui.define([
 	"claima/utils/Attachment",
 	"claima/utils/EligibilityCheck",
 	"claima/utils/CustomValidator",
-	"claima/utils/RequestUtility"
+	"claima/utils/RequestUtility",
+	"claima/utils/ClaimUtility"
 ], function (
 	Popover,
 	Button,
@@ -51,13 +52,14 @@ sap.ui.define([
 	Attachment,
 	EligibilityCheck,
 	CustomValidator,
-	RequestUtility
+	RequestUtility,
+	ClaimUtility
 ) {
 	"use strict";
 
 	return Controller.extend("claima.controller.App", {
 
-		Utility: Utility,
+		RequestUtility: RequestUtility,
 
 		onInit: async function () {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
@@ -69,6 +71,8 @@ sap.ui.define([
 
 			// declare request utility
 			RequestUtility.init(this.getOwnerComponent());
+			// declare claim utility
+			ClaimUtility.init(this.getOwnerComponent(), this.getView());
 
 			// oReportModel
 			var oReportModel = new JSONModel({
@@ -711,7 +715,7 @@ sap.ui.define([
 			//// get claim item category ID
 			oInputModel.setProperty("/claimtype/category", this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("SUBMISSION_TYPE"));
 			//// get cost center from claim type if value exists
-			var sClaimTypeCostCenter = await Utility.determineDefaultCostCenter(oInputModel.getProperty("/claimtype/type"));
+			var sClaimTypeCostCenter = await ClaimUtility.determineDefaultCostCenter(oInputModel.getProperty("/claimtype/type"));
 			if (sClaimTypeCostCenter && sClaimTypeCostCenter !== 'null') { // returns value and is not string 'null'
 				oInputModel.setProperty("/claimtype/cost_center", sClaimTypeCostCenter);
 				oInputModel.setProperty("/claimtype/descr/cost_center", await this._bindEclaimDescr("/ZCOST_CENTER", sClaimTypeCostCenter, 'COST_CENTER_ID', 'COST_CENTER_DESC'));
