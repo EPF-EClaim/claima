@@ -63,6 +63,9 @@ sap.ui.define([
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._oRoleModel = this.getOwnerComponent().getModel("roleModel");
 
+			// declare date utility
+			DateUtility.init(this.getOwnerComponent());
+
 			// oReportModel
 			var oReportModel = new JSONModel({
 				"purpose": "",
@@ -753,17 +756,6 @@ sap.ui.define([
 			if (this.byId("switch_claimprocess_req_emailapprove").getEnabled()) {
 				oInputModel.setProperty("/claimtype/req_emailapprove", this.byId("switch_claimprocess_req_emailapprove").getState());
 			}
-			//// get course code values
-			if (oInputModel.getProperty("/claimtype/is_course") && oInputModel.getProperty("/claimtype/course_code")) {
-				oInputModel.setProperty("/claim_header/course_code", oInputModel.getProperty("/claimtype/course_code"));
-				oInputModel.setProperty("/claim_header/descr/course_code", oInputModel.getProperty("/claimtype/descr/course_code"));
-				// retrieve start/end dates based on course code
-				var oCourseCodeDates = await DateUtility.getCourseCodeStartEndDate(oInputModel.getProperty("/claim_header/course_code"), oInputModel.getProperty("/emp_master/eeid"));
-				if (oCourseCodeDates) {
-					oInputModel.setProperty("/claim_header/trip_start_date", oCourseCodeDates.start_date);
-					oInputModel.setProperty("/claim_header/trip_end_date", oCourseCodeDates.end_date);
-				}
-			}
 
 			// Mobile Eligibility Pre-check
 			var sClaimType = oInputModel.getProperty("/claimtype/type")
@@ -848,7 +840,7 @@ sap.ui.define([
 		//// end Functions - Claim Process
 
 		//// Functions - Claim Input
-		_onInit_ClaimInput: function () {
+		_onInit_ClaimInput: async function () {
 			// reset claim input data if exists
 			this._reset_ClaimInput();
 
@@ -870,6 +862,17 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/alternate_cost_center"));
 			oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/descr/alternate_cost_center"));
 			oInputModel.setProperty("/claim_header/cash_advance_amount", oInputModel.getProperty("/claimtype/requestform/cash_advance"));
+			//// course code values
+			if (oInputModel.getProperty("/claimtype/is_course") && oInputModel.getProperty("/claimtype/course_code")) {
+				oInputModel.setProperty("/claim_header/course_code", oInputModel.getProperty("/claimtype/course_code"));
+				oInputModel.setProperty("/claim_header/descr/course_code", oInputModel.getProperty("/claimtype/descr/course_code"));
+				// retrieve start/end dates based on course code
+				var oCourseCodeDates = await DateUtility.getCourseCodeStartEndDate(oInputModel.getProperty("/claim_header/course_code"), oInputModel.getProperty("/emp_master/eeid"));
+				if (oCourseCodeDates) {
+					oInputModel.setProperty("/claim_header/trip_start_date", oCourseCodeDates.start_date);
+					oInputModel.setProperty("/claim_header/trip_end_date", oCourseCodeDates.end_date);
+				}
+			}
 			//// initialized amount values
 			oInputModel.setProperty("/claim_header/total_claim_amount", "0.00");
 			oInputModel.setProperty("/claim_header/final_amount_to_receive", "0.00");
@@ -907,12 +910,6 @@ sap.ui.define([
 						break;
 					default:
 						//// disable editing if dates already set from request
-						if (oInputModel.getProperty("/claimtype/requestform/trip_start_date")) {
-							this.byId("datepicker_claiminput_tripstartdate").setEditable(false);
-						}
-						if (oInputModel.getProperty("/claimtype/requestform/trip_end_date")) {
-							this.byId("datepicker_claiminput_tripenddate").setEditable(false);
-						}
 						if (oInputModel.getProperty("/claimtype/requestform/event_start_date")) {
 							this.byId("datepicker_claiminput_eventstartdate").setEditable(false);
 						}
@@ -1248,14 +1245,8 @@ sap.ui.define([
 			if (this.byId("datepicker_claiminput_tripstartdate").getValue()) {
 				this.byId("datepicker_claiminput_tripstartdate").setValue(null);
 			}
-			if (!this.byId("datepicker_claiminput_tripstartdate").getEditable()) {
-				this.byId("datepicker_claiminput_tripstartdate").setEditable(true);
-			}
 			if (this.byId("datepicker_claiminput_tripenddate").getValue()) {
 				this.byId("datepicker_claiminput_tripenddate").setValue(null);
-			}
-			if (!this.byId("datepicker_claiminput_tripenddate").getEditable()) {
-				this.byId("datepicker_claiminput_tripenddate").setEditable(true);
 			}
 			//// event dates
 			if (this.byId("datepicker_claiminput_eventstartdate").getValue()) {

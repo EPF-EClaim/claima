@@ -5,7 +5,6 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	"sap/ui/core/BusyIndicator",
 	"sap/m/MessageBox",
-	"sap/m/MessageToast",
 	"claima/utils/Constants",
 	"claima/utils/Utility"
 ], function (
@@ -21,6 +20,14 @@ sap.ui.define([
     "use strict";
 
     return {
+
+		/**
+         * Initialize the DateUtility
+         * @public
+         */
+        init: function(oOwnerComponent) {
+            this._oOwnerComponent = oOwnerComponent;
+        },
 
         /**
          * Pad numbers with leading zeros
@@ -519,7 +526,7 @@ sap.ui.define([
 		* @returns {array} oReturnDates - if records found, return total start and end date
         */
 		getCourseCodeStartEndDate: async function (sCourseCode, sParticipantId) {
-			const oModel = this.getOwnerComponent().getModel();
+			const oModel = this._oOwnerComponent.getModel();
 			const oListBinding = oModel.bindList(Constants.Entities.ZTRAIN_COURSE_PART, null, [
                 new Sorter("COURSE_ID"),
                 new Sorter("SESSION_NUMBER"),
@@ -544,10 +551,10 @@ sap.ui.define([
                     }
                     for ( var iContext = 0; iContext < aContexts.length; iContext++) {
                         var oData = aContexts[iContext].getObject();
-                        if (!!oReturnDates.start_date || oData["START_DATE"] < oReturnDates.start_date) {
+                        if (!oReturnDates.start_date || new Date(oData["START_DATE"]) < new Date(oReturnDates.start_date)) {
                             oReturnDates.start_date = oData["START_DATE"];
                         }
-                        if (!!oReturnDates.end_date || oData["END_DATE"] > oReturnDates.end_date) {
+                        if (!oReturnDates.end_date || new Date(oData["END_DATE"]) > new Date(oReturnDates.end_date)) {
                             oReturnDates.end_date = oData["END_DATE"];
                         }
                     }
