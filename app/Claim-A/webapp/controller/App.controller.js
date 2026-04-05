@@ -73,6 +73,8 @@ sap.ui.define([
 			RequestUtility.init(this.getOwnerComponent());
 			// declare claim utility
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
+			// declare date utility
+			DateUtility.init(this.getOwnerComponent());
 
 			// oReportModel
 			var oReportModel = new JSONModel({
@@ -325,11 +327,14 @@ sap.ui.define([
 					},
 					"requestform_amt": null,
 					"req_emailapprove": null,
+					"is_course": false,
+					"course_code": null,
 					"descr": {
 						"type": null,
 						"item": null,
 						"category": null,
 						"cost_center": null,
+						"course_code": null
 					}
 				},
 				"is_new": false,
@@ -566,6 +571,39 @@ sap.ui.define([
 				if (this.byId("button_claimprocess_startclaim").getEnabled()) {
 					this.byId("button_claimprocess_startclaim").setEnabled(false);
 				}
+
+				// set if claim type is course based on boolean value retrieved
+				var oInputModel = this.getView().getModel("claimsubmission_input");
+				oInputModel.setProperty("/claimtype/is_course", Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type")));
+				// set filter for course code dropdown
+				if (oInputModel.getProperty("/claimtype/is_course")) {
+					var oSelectCourseCode = this.byId("select_claimprocess_course_code");
+					var oBindingSelectCourseCode = oSelectCourseCode.getBinding("items");
+					// attach event to remove duplicate records
+					oBindingSelectCourseCode.attachEvent("dataReceived", function() {
+						var aItems = oSelectCourseCode.getItems();
+						var aUniqueKeys = [];
+
+						for ( var iItem = 0; iItem < aItems.length; iItem++) {
+							var sKey = aItems[iItem].getBindingContext("employee").getObject("COURSE_ID");
+							if (aUniqueKeys.indexOf(sKey) > -1) {
+								oSelectCourseCode.removeItem(aItems[iItem]); // Remove if key already exists
+							} else {
+								aUniqueKeys.push(sKey);
+							}
+						}
+					});
+
+					var aFilterSelectCourseCode = [
+							// ensure status is active
+							new Filter("PARTICIPANT_ID", FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
+							new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
+							new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true),
+							new Filter("CLAIM_STATUS", FilterOperator.NE, this._oConstant.ClaimStatus.APPROVED),
+							new Filter("CLAIM_STATUS", FilterOperator.NE, this._oConstant.ClaimStatus.PENDING_APPROVAL)
+						];
+					oBindingSelectCourseCode.filter(aFilterSelectCourseCode);
+				}
 			}
 		},
 
@@ -697,6 +735,15 @@ sap.ui.define([
 			}
 		},
 
+		/**
+        * On selecting course code from claim process, set description in claim submission model
+        * @public
+        */
+		onSelect_ClaimProcess_CourseCode: function (oEvent) {
+			// set description
+			this.getView().getModel("claimsubmission_input").setProperty("/claimtype/descr/course_code", oEvent.getParameters().selectedItem.getBindingContext("employee").getObject("COURSE_DESC"));
+		},
+
 		onPreApproval_ClaimProcess: function () {
 			// reset Claim Process dialog before closing
 			this._reset_ClaimProcess();
@@ -822,7 +869,7 @@ sap.ui.define([
 		//// end Functions - Claim Process
 
 		//// Functions - Claim Input
-		_onInit_ClaimInput: function () {
+		_onInit_ClaimInput: async function () {
 			// reset claim input data if exists
 			this._reset_ClaimInput();
 
@@ -850,6 +897,17 @@ sap.ui.define([
 			else if (oInputModel.getProperty("/claimtype/requestform/alternate_cost_center")) {
 				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/alternate_cost_center"));
 				oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/descr/alternate_cost_center"));
+			}
+			//// course code values
+			if (oInputModel.getProperty("/claimtype/is_course") && oInputModel.getProperty("/claimtype/course_code")) {
+				oInputModel.setProperty("/claim_header/course_code", oInputModel.getProperty("/claimtype/course_code"));
+				oInputModel.setProperty("/claim_header/descr/course_code", oInputModel.getProperty("/claimtype/descr/course_code"));
+				// retrieve start/end dates based on course code
+				var oCourseCodeDates = await DateUtility.getCourseCodeStartEndDate(oInputModel.getProperty("/claim_header/course_code"), oInputModel.getProperty("/emp_master/eeid"));
+				if (oCourseCodeDates) {
+					oInputModel.setProperty("/claim_header/trip_start_date", oCourseCodeDates.start_date);
+					oInputModel.setProperty("/claim_header/trip_end_date", oCourseCodeDates.end_date);
+				}
 			}
 			//// initialized amount values
 			oInputModel.setProperty("/claim_header/total_claim_amount", "0.00");
@@ -888,12 +946,6 @@ sap.ui.define([
 						break;
 					default:
 						//// disable editing if dates already set from request
-						if (oInputModel.getProperty("/claimtype/requestform/trip_start_date")) {
-							this.byId("datepicker_claiminput_tripstartdate").setEditable(false);
-						}
-						if (oInputModel.getProperty("/claimtype/requestform/trip_end_date")) {
-							this.byId("datepicker_claiminput_tripenddate").setEditable(false);
-						}
 						if (oInputModel.getProperty("/claimtype/requestform/event_start_date")) {
 							this.byId("datepicker_claiminput_eventstartdate").setEditable(false);
 						}
@@ -1222,14 +1274,8 @@ sap.ui.define([
 			if (this.byId("datepicker_claiminput_tripstartdate").getValue()) {
 				this.byId("datepicker_claiminput_tripstartdate").setValue(null);
 			}
-			if (!this.byId("datepicker_claiminput_tripstartdate").getEditable()) {
-				this.byId("datepicker_claiminput_tripstartdate").setEditable(true);
-			}
 			if (this.byId("datepicker_claiminput_tripenddate").getValue()) {
 				this.byId("datepicker_claiminput_tripenddate").setValue(null);
-			}
-			if (!this.byId("datepicker_claiminput_tripenddate").getEditable()) {
-				this.byId("datepicker_claiminput_tripenddate").setEditable(true);
 			}
 			//// event dates
 			if (this.byId("datepicker_claiminput_eventstartdate").getValue()) {

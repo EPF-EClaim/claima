@@ -84,9 +84,6 @@ sap.ui.define([
 			// declare claim utility
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
 
-			// declare claim utility
-			ClaimUtility.init(this.getOwnerComponent(), this.getView());
-
 			// declare excel export utility
 			ExcelExport.init(this.getOwnerComponent(), this.getView(), window.XLSX);
 
@@ -668,7 +665,7 @@ sap.ui.define([
 				approver4: null,
 				approver5: null,
 				last_send_back_date: null,
-				course_code: null,
+				course_code: o.COURSE_CODE,
 				project_code: null,
 				cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
 				preapproved_amount: o.PREAPPROVED_AMOUNT,
@@ -686,7 +683,7 @@ sap.ui.define([
 					claim_type_id: o.CLAIM_TYPE_DESC,
 					housing_loan_scheme: null,
 					lender_name: null,
-					course_code: null,
+					course_code: o.COURSE_CODE_DESC,
 					project_code: null,
 					attachment_email_approver: null,
 				}
@@ -1004,11 +1001,14 @@ sap.ui.define([
 					},
 					"requestform_amt": null,
 					"req_emailapprove": null,
+					"is_course": false,
+					"course_code": null,
 					"descr": {
 						"type": null,
 						"item": null,
 						"category": null,
 						"cost_center": null,
+						"course_code": null
 					}
 				},
 				"is_new": false,
@@ -2969,6 +2969,26 @@ sap.ui.define([
 				}
 				// Calculate number of days
 				this.getView().getModel("claimitem_input").setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
+			}
+		},
+
+        /**
+         * start/end date, run related methods on setting start/end date
+         * @public
+         */
+		onChange_ClaimDetails_StartEndDate: function () {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			oInputModel.refresh(true);
+
+			// reset per diem amounts
+			this._resetPerDiem();
+
+			// Calculate number of days
+			this.getView().getModel("claimitem_input").setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
+
+			// calculate per diem details
+			if (this.getView().getModel("claimitem_property").getProperty("/entitled_breakfast/is_visible")) {
+				this._calculatePerDiem();
 			}
 		},
 

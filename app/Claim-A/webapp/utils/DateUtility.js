@@ -1,10 +1,33 @@
 sap.ui.define([
     "sap/ui/core/format/DateFormat",
-    "claima/utils/Constants",
-], function (DateFormat, Constants) {
+	"sap/ui/model/Sorter",
+	"sap/ui/model/Filter",
+	"sap/ui/model/FilterOperator",
+	"sap/ui/core/BusyIndicator",
+	"sap/m/MessageBox",
+	"claima/utils/Constants",
+	"claima/utils/Utility"
+], function (
+    DateFormat,
+    Sorter,
+	Filter,
+	FilterOperator,
+	BusyIndicator,
+    MessageBox,
+	Constants,
+    Utility
+) {
     "use strict";
 
     return {
+
+		/**
+         * Initialize the DateUtility
+         * @public
+         */
+        init: function(oOwnerComponent) {
+            this._oOwnerComponent = oOwnerComponent;
+        },
 
         /**
          * Pad numbers with leading zeros
@@ -276,6 +299,30 @@ sap.ui.define([
                             break;
                     }
                     break;
+                case Constants.EntitiesFields.END_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            // set min date based on start date
+                            if (Object.values(Constants.ClaimTypeKursus).includes(sType)) {
+                                if (!!new Date(oItem["start_date"]).getTime()) {
+                                    _dMinDate = new Date(oItem["start_date"]);
+                                    // minus 1 day for course code claims
+                                    _dMinDate.setDate(_dMinDate.getDate() - 1);
+                                }
+                                else {
+                                    _dMinDate = null;
+                                    oItem["start_date"] = null;
+                                }
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                    _oResourceBundle.getText("error_end_date_mindate"));
+                                break;
+                            }
+                    }
+                    break;
                 case Constants.EntitiesFields.INSURANCE_CERT_END_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
@@ -365,6 +412,30 @@ sap.ui.define([
                             break;
                     }
                     break;
+                case Constants.EntitiesFields.START_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            // set max date based on end date
+                            if (Object.values(Constants.ClaimTypeKursus).includes(sType)) {
+                                if (!!new Date(oItem["end_date"]).getTime()) {
+                                    _dMaxDate = new Date(oItem["end_date"]);
+                                    // add 1 day for course code claims
+                                    _dMaxDate.setDate(_dMaxDate.getDate() + 1);
+                                }
+                                else {
+                                    _dMaxDate = null;
+                                    oItem["end_date"] = null;
+                                }
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                    _oResourceBundle.getText("error_start_date_maxdate"));
+                            }
+                            break;
+                    }
+                    break;
                 case Constants.EntitiesFields.INSURANCE_CERT_START_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
@@ -386,6 +457,7 @@ sap.ui.define([
                             }
                             break;
                     }
+                    break;
             }
 
             if (_dMaxDate !== null) {
@@ -442,7 +514,61 @@ sap.ui.define([
             }
 
             return null;
-        }
+        },
+
+		/**
+        * Retrieve start end dates for course code from db table, based on selected course code ID and user ID
+        * Method retrieves db table to be checked with fields and values to be filtered against
+        * if records found, first record is retrieved from the table and returns values from the record
+        * @public
+		* @param {string} sCourseCode - course code ID to check from database
+		* @param {string} sParticipantId - participant ID to check from database
+		* @returns {array} oReturnDates - if records found, return total start and end date
+        */
+		getCourseCodeStartEndDate: async function (sCourseCode, sParticipantId) {
+			const oModel = this._oOwnerComponent.getModel();
+			const oListBinding = oModel.bindList(Constants.Entities.ZTRAIN_COURSE_PART, null, [
+                new Sorter("COURSE_ID"),
+                new Sorter("SESSION_NUMBER"),
+            ], [
+                // ensure status is active
+                new Filter("COURSE_ID", FilterOperator.EQ, sCourseCode),
+                new Filter("PARTICIPANT_ID", FilterOperator.EQ, sParticipantId),
+                new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, Constants.CourseSessionStatus.ACTIVE),
+                new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true),
+                new Filter("CLAIM_STATUS", FilterOperator.NE, Constants.ClaimStatus.APPROVED),
+                new Filter("CLAIM_STATUS", FilterOperator.NE, Constants.ClaimStatus.PENDING_APPROVAL)
+            ]);
+
+            try {
+                BusyIndicator.show(0);
+                const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+                if (aContexts.length > 0) {
+                    var oReturnDates = {
+                        start_date: null,
+                        end_date: null,
+                    }
+                    for ( var iContext = 0; iContext < aContexts.length; iContext++) {
+                        var oData = aContexts[iContext].getObject();
+                        if (!oReturnDates.start_date || new Date(oData["START_DATE"]) < new Date(oReturnDates.start_date)) {
+                            oReturnDates.start_date = oData["START_DATE"];
+                        }
+                        if (!oReturnDates.end_date || new Date(oData["END_DATE"]) > new Date(oReturnDates.end_date)) {
+                            oReturnDates.end_date = oData["END_DATE"];
+                        }
+                    }
+                    return oReturnDates;
+                } else {
+                    return null;
+                }
+            } catch (oError) {
+                MessageBox.error(Utility.getText("msg_claimdetails_input_err", [oError]));
+                return [];
+            } finally {
+                BusyIndicator.hide();
+            }
+		}, 
 
     };
 });

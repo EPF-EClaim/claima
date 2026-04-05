@@ -93,6 +93,27 @@
                             <FlexItemData growFactor="1" />
                         </layoutData>
                     </Switch>
+
+                    <!-- Select Course Code -->
+                    <Label text="{i18n>label_claimprocess_coursecode}" />
+                    <Select
+                        id="select_claimprocess_course_code"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claimtype/course_code}"
+                        items="{
+                            path: 'employee>/ZTRAIN_COURSE_PART',
+                            sorter: [
+                                { path: 'COURSE_ID' },
+                                { path: 'COURSE_DESC' },
+                                { path: 'SESSION_NUMBER' }
+                            ]
+                        }"
+                        visible="{= ${claimsubmission_input>/claimtype/is_course}}"
+                        change="onSelect_ClaimProcess_CourseCode"
+                        liveChange="onSelect_ClaimProcess_CourseCode"
+                    >
+                        <core:Item key="{employee>COURSE_ID}" text="{employee>COURSE_ID} {employee>COURSE_DESC}" />
+                    </Select>
                 </f:content>
             </f:SimpleForm>
      
