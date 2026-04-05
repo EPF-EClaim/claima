@@ -5,7 +5,7 @@ const app = express();
 const { Constant } = require("./utils/constant");
 const { results } = require('@sap/cds/lib/utils/cds-utils');
 const EligibleScenarioCheck = require('./utils/EligibilityScenarios/EligibleScenarioCheck')
-const  EmailReminder = require('./utils/EmailReminder');
+const EmailReminder = require('./utils/EmailReminder');
 
 module.exports = (srv) => {
 
@@ -289,10 +289,6 @@ module.exports = (srv) => {
             req.error(400, `Fail creating record: ${error.message}`);
         }
     });
-
-    /* ======================================================================================================================================= */
-    /* Below are Jefry's functions with the help of Ain. Don't slot your function in between tq. You are making my life harder. Appreciate it. */
-    /* ======================================================================================================================================= */
 
     srv.on('budgetchecking', async (req) => {
         const { ZBUDGET } = srv.entities;
@@ -639,10 +635,6 @@ module.exports = (srv) => {
         }
     });
 
-    /* ======================================================================================================================================= */
-    /* Above are Jefry's functions with the help of Ain. Don't slot your function in between tq. You are making my life harder. Appreciate it. */
-    /* ======================================================================================================================================= */
-
     srv.on('onFinalApproveInsert', async (req) => {
         const { ZCLM_APPR_REQ_STAT } = srv.entities;
         try {
@@ -828,6 +820,69 @@ module.exports = (srv) => {
             req.error(400, `Fail creating record: ${error.message}`, req);
         }
     });
+
+    /**
+         * Checking of Claim Types eligible to user
+         * @public
+         * @param {String} ID - User employee ID to be checked against;
+         * @returns {Array} Array of all claim types and claim item types available for user
+         */
+    srv.on('CheckUserClaimTypes', async (req) => {
+        try {
+            const { sEmpId } = req.data;
+            if (!!sEmpId) {
+                throw new Error('No Data Sent')
+            }
+            const tx = cds.tx(req);
+            // Get Employee Data
+            const aEmpData = await tx.run(
+                SELECT.from(Constant.Entities.ZEMP_MASTER).where({ EEID: sEmpId })
+            )
+
+            // Get employee grade
+            let aPersonalGrade = aEmpData.map(d => d.GRADE);
+            aPersonalGrade.push(Constant.Wildcard.All);
+
+            let aEmpRoleId = aEmpData.map(d => d.ROLE);
+            aEmpRoleId.push(Constant.Wildcard.All);
+
+            // Get Eligibility Rules
+            const aEligibilityRules = await tx.run(
+                SELECT.distinct
+                    .from(Constant.Entities.ZELIGIBILITY_RULE)
+                    .columns(Constant.EntitiesFields.CLAIM_TYPE_ID,
+                        Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID)
+                    .where({
+                        PERSONAL_GRADE: { in: aPersonalGrade },
+                        ROLE_ID: { in: aEmpRoleId }
+                    })
+                    .orderBy(Constant.EntitiesFields.CLAIM_TYPE_ID)
+            );
+
+            const aAllEligibleClaims = [];
+
+            for (const row of aEligibilityRules) {
+                let group = aAllEligibleClaims.find(g => g.claimTypeId === row.CLAIM_TYPE_ID);
+
+                if (!group) {
+                    group = {
+                        claimTypeId: row.CLAIM_TYPE_ID,
+                        items: []
+                    };
+                    aAllEligibleClaims.push(group);
+                }
+
+                group.items.push({
+                    claimTypeItemId: row.CLAIM_TYPE_ITEM_ID
+                });
+            }
+            return aAllEligibleClaims;
+
+        } catch (error) {
+            req.error(500, `Fail processing records: ${error.message}`, req);
+        }
+    });
+
     /**
          * Checking of Eligibility scenarios for each claim type
          * @public
@@ -841,7 +896,6 @@ module.exports = (srv) => {
                 throw new Error('No Data Sent')
             }
             const tx = cds.tx(req);
-
             result = await EligibleScenarioCheck.onEligibilityCheck(aPayload, tx);
             return result;
 
@@ -911,7 +965,7 @@ module.exports = (srv) => {
                     );
                 }
             }
-        } catch (err){
+        } catch (err) {
             req.error(400, "Failed to retrieve entitlement information");
         }
 
@@ -1041,12 +1095,46 @@ module.exports = (srv) => {
         return aResult;
     });
 
+    srv.on('checkDefaultCostCenter', async (req) => {
+        const { sClaimTypeId } = req.data;
+
+        if (!sClaimTypeId) {
+            return req.error(400, 'Please provide an Employee ID.');
+        }
+
+        try {
+            const oClaimTypeRecord = await SELECT.one('COST_CENTER')
+                .from('ZCLAIM_TYPE')
+                .where({ CLAIM_TYPE_ID: sClaimTypeId });
+
+            if (!oClaimTypeRecord) {
+                return req.error(404, `Claim Type ${oClaimTypeRecord} not found.`);
+            }
+
+            const sCostCenterId = oClaimTypeRecord.COST_CENTER || "";
+
+            const oCostCenterRecord = await SELECT.one('COST_CENTER_DESC')
+                .from('ZCOST_CENTER')
+                .where({ COST_CENTER_ID: sCostCenterId });
+
+            const sCostCenterDesc = oCostCenterRecord ? oCostCenterRecord.COST_CENTER_DESC : '';
+
+            return {
+                sCostCenter: String(sCostCenterId) || "",
+                sCostCenterDesc: String(sCostCenterDesc) || ""
+            }
+
+        } catch (error) {
+            return req.error(500, 'An error occurred while checking claim type table.');
+        }
+    });
+
     srv.after('UPDATE', 'ZREQUEST_HEADER', async (data, req) => {
-        
+
         const sStatus = data.STATUS || req.data.STATUS;
-        
+
         if (sStatus === Constant.Status.APPROVED) {
-            
+
             const sRequestId = data.REQUEST_ID || req.data.REQUEST_ID;
 
             if (!sRequestId) return;
@@ -1055,13 +1143,13 @@ module.exports = (srv) => {
                 try {
 
                     const oCashAdvanceItem = await tx.run(
-                        SELECT.one.from('ZREQUEST_ITEM').where({ 
-                            REQUEST_ID: sRequestId, 
-                            CASH_ADVANCE: true 
+                        SELECT.one.from('ZREQUEST_ITEM').where({
+                            REQUEST_ID: sRequestId,
+                            CASH_ADVANCE: true
                         })
                     );
 
-                    if (!oCashAdvanceItem) return; 
+                    if (!oCashAdvanceItem) return;
 
                     const oRequestRecord = await tx.run(
                         SELECT.one.from('ZREQUEST_HEADER').where({ REQUEST_ID: sRequestId })
@@ -1073,13 +1161,13 @@ module.exports = (srv) => {
                     const sTripStartDate = oRequestRecord.TRIP_START_DATE;
 
                     const oExistingCashAdvRecords = await tx.run(
-                        SELECT.one.from('ZEMP_CA_PAYMENT').where({ 
-                            REQUEST_ID: sRequestId, 
-                            EMP_ID: sEmpId 
+                        SELECT.one.from('ZEMP_CA_PAYMENT').where({
+                            REQUEST_ID: sRequestId,
+                            EMP_ID: sEmpId
                         })
                     );
 
-                    if (oExistingCashAdvRecords) return; 
+                    if (oExistingCashAdvRecords) return;
 
                     let dDate = new Date(sTripStartDate);
                     dDate.setDate(dDate.getDate() - 14);
