@@ -330,7 +330,6 @@ sap.ui.define([
 					}
 					//// change screen details if approver
 					if (oClaimSubmissionModel.getProperty("/is_approver")) {
-						// update footer buttons
 						Utility.updateFooterState(
 							this,
 							oClaimSubmissionModel,
@@ -341,8 +340,7 @@ sap.ui.define([
 
 					}
 				}
-				else {
-					// ensure footer buttons display default 				
+				else {			
 					Utility.updateFooterState(
 						this,
 						oClaimSubmissionModel,
@@ -4070,9 +4068,6 @@ sap.ui.define([
 				return;
 			}
 			else if (oClaimSubmissionModel.getProperty("/is_approver")) {
-				// update footer buttons
-				//this._displayFooterButtons("claimsubmission_summary_claimitem");
-				//Utility.updateFooterState(this, this._oConstant.ClaimFooterMode.SUMMARY);
 				Utility.updateFooterState(
 					this,
 					oClaimSubmissionModel,
