@@ -12,7 +12,7 @@ sap.ui.define([
          * Initialize the Utility 
          * @public
          */
-        init: function(oOwnerComponent) {
+        init: function (oOwnerComponent) {
             this._oOwnerComponent = oOwnerComponent;
         },
 
@@ -21,7 +21,7 @@ sap.ui.define([
         * ======================================================= */
 
         async _updateStatus(oModel, sID, sStatus) {
-            let sSubmission_type = sID.substring(0,3);
+            let sSubmission_type = sID.substring(0, 3);
 
             let sHeaderTablePath = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.Entities.ZREQUEST_HEADER : Constants.Entities.ZCLAIM_HEADER;
             let sField = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.EntitiesFields.REQUESTID : Constants.EntitiesFields.CLAIMID;
@@ -30,7 +30,7 @@ sap.ui.define([
             // REQ uses STATUS field while CLM uses STATUS_ID field
             let sStatusField = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.EntitiesFields.STATUS : Constants.EntitiesFields.CLAIM_STATUS;
 
-            const oListBinding = oModel.bindList(sHeaderTablePath, null,null,
+            const oListBinding = oModel.bindList(sHeaderTablePath, null, null,
                 [
                     // new sap.ui.model.Filter({ path: "EMP_ID", operator: sap.ui.model.FilterOperator.EQ, value1: empId }),
                     new Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: sID })
@@ -64,12 +64,12 @@ sap.ui.define([
         },
 
         async _updateSubmittedDate(oModel, sID) {
-            let sSubmission_type = sID.substring(0,3);
+            let sSubmission_type = sID.substring(0, 3);
 
             let sHeaderTablePath = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.Entities.ZREQUEST_HEADER : Constants.Entities.ZCLAIM_HEADER;
             let sField = sSubmission_type === Constants.WorkflowType.REQUEST ? Constants.EntitiesFields.REQUESTID : Constants.EntitiesFields.CLAIMID;
 
-            const oListBinding = oModel.bindList(sHeaderTablePath, null,null,
+            const oListBinding = oModel.bindList(sHeaderTablePath, null, null,
                 [
                     new Filter({ path: sField, operator: sap.ui.model.FilterOperator.EQ, value1: sID })
                 ],
@@ -91,24 +91,28 @@ sap.ui.define([
             await oModel.submitBatch("$auto");
         },
 
-        updateFooterState: function (oController, sMode) {
-            const oView = oController.getView();
-            const oClaimModel = oView.getModel("claimsubmission_input");
-            const Constants = oController._oConstant; // or inject as param
+        updateFooterState: function ({
+            oView,
+            oClaimModel,
+            oConstants,
+            sMode
+        }) {
+            if (!oView || !oClaimModel || !oConstants) return;
 
             const sStatusId = oClaimModel.getProperty("/claim_header/status_id");
+
             const oButtons = {
-                oBtnReject: oController.byId("button_claimapprover_reject"),
-                oBtnBackToEmp: oController.byId("button_claimapprover_pushback"),
-                oBtnApprove: oController.byId("button_claimapprover_approve"),
+                oBtnReject: oView.byId("button_claimapprover_reject"),
+                oBtnBackToEmp: oView.byId("button_claimapprover_pushback"),
+                oBtnApprove: oView.byId("button_claimapprover_approve"),
 
-                oBtnSaveDraft: oController.byId("button_claimsubmission_savedraft"),
-                oBtnDeleteReport: oController.byId("button_claimsubmission_deletereport"),
-                oBtnSubmitReport: oController.byId("button_claimsubmission_submitreport"),
-                oBtnBack: oController.byId("button_claimsubmission_back"),
+                oBtnSaveDraft: oView.byId("button_claimsubmission_savedraft"),
+                oBtnDeleteReport: oView.byId("button_claimsubmission_deletereport"),
+                oBtnSubmitReport: oView.byId("button_claimsubmission_submitreport"),
+                oBtnBack: oView.byId("button_claimsubmission_back"),
 
-                oBtnDetailSave: oController.byId("button_claimdetails_input_save"),
-                oBtnDetailCancel: oController.byId("button_claimdetails_input_cancel")
+                oBtnDetailSave: oView.byId("button_claimdetails_input_save"),
+                oBtnDetailCancel: oView.byId("button_claimdetails_input_cancel")
             };
 
             Object.values(oButtons).forEach(oButton => oButton?.setVisible(false));
@@ -126,13 +130,13 @@ sap.ui.define([
             });
 
             const bIsFinalStatus =
-                sStatusId === Constants.ClaimStatus.CANCELLED ||
-                sStatusId === Constants.ClaimStatus.PENDING_APPROVAL ||
-                sStatusId === Constants.ClaimStatus.APPROVED ||
-                sStatusId === Constants.ClaimStatus.COMPLETED_DISBURSEMENT;
+                sStatusId === oConstants.ClaimStatus.CANCELLED ||
+                sStatusId === oConstants.ClaimStatus.PENDING_APPROVAL ||
+                sStatusId === oConstants.ClaimStatus.APPROVED ||
+                sStatusId === oConstants.ClaimStatus.COMPLETED_DISBURSEMENT;
 
             if (bIsFinalStatus) {
-                if (sMode === "APPROVER" && sStatusId === Constants.ClaimStatus.APPROVED) {
+                if (sMode === "APPROVER" && sStatusId === oConstants.ClaimStatus.APPROVED) {
                     oButtons.oBtnReject?.setVisible(false);
                     oButtons.oBtnBackToEmp?.setVisible(false);
                     oButtons.oBtnApprove?.setVisible(false);
@@ -141,13 +145,15 @@ sap.ui.define([
                 oButtons.oBtnSaveDraft?.setEnabled(false);
                 oButtons.oBtnDeleteReport?.setEnabled(false);
                 oButtons.oBtnSubmitReport?.setEnabled(false);
+
             } else {
+
                 oButtons.oBtnSaveDraft?.setEnabled(true);
                 oButtons.oBtnDeleteReport?.setEnabled(true);
 
                 const bAllowSubmit =
-                    sStatusId === Constants.ClaimStatus.DRAFT ||
-                    sStatusId === Constants.ClaimStatus.SEND_BACK;
+                    sStatusId === oConstants.ClaimStatus.DRAFT ||
+                    sStatusId === oConstants.ClaimStatus.SEND_BACK;
 
                 oButtons.oBtnSubmitReport?.setEnabled(bAllowSubmit);
             }
