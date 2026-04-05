@@ -3288,12 +3288,12 @@ sap.ui.define([
 				(oInputModel.getProperty("/claim_item/to_state_id") && oInputModel.getProperty("/claim_item/to_location_office"))
 			) {
 				var aEntityFields = [
-					{ entity_field: "FROM_STATE_ID", filter_value: oInputModel.getProperty("/claim_item/from_state_id") },
-					{ entity_field: "FROM_LOCATION_ID", filter_value: oInputModel.getProperty("/claim_item/from_location_office") },
-					{ entity_field: "TO_STATE_ID", filter_value: oInputModel.getProperty("/claim_item/to_state_id") },
-					{ entity_field: "TO_LOCATION_ID", filter_value: oInputModel.getProperty("/claim_item/to_location_office") }
+					{ entity_field: this._oConstant.EntitiesFields.FROM_STATE_ID, filter_value: oInputModel.getProperty("/claim_item/from_state_id") },
+					{ entity_field: this._oConstant.EntitiesFields.FROM_LOCATION_ID, filter_value: oInputModel.getProperty("/claim_item/from_location_office") },
+					{ entity_field: this._oConstant.EntitiesFields.TO_STATE_ID, filter_value: oInputModel.getProperty("/claim_item/to_state_id") },
+					{ entity_field: this._oConstant.EntitiesFields.TO_LOCATION_ID, filter_value: oInputModel.getProperty("/claim_item/to_location_office") }
 				]
-				var aRetrievalFields = [ "MILEAGE"];
+				var aRetrievalFields = [ this._oConstant.OfficeDistance.MILEAGE ];
 				var aOutputValues = await ClaimUtility.setClaimItemValueFromSelection(this._oConstant.Entities.ZOFFICE_DISTANCE, aEntityFields, aRetrievalFields);
 				if (aOutputValues.length > 0) {
 					oInputModel.setProperty("/claim_item/km", aOutputValues[0]);

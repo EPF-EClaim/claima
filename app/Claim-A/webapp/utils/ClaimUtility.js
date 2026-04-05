@@ -48,24 +48,24 @@ sap.ui.define([
 			//// filter by employee role ID or * (all)
 			const oFilterRoleId = new Filter({
 				filters: [
-					new Filter("ROLE_ID", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/role")),
-					new Filter("ROLE_ID", FilterOperator.EQ, '*')
+					new Filter(Constant.EligibilityRule.ROLE_ID, FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/role")),
+					new Filter(Constant.EligibilityRule.ROLE_ID, FilterOperator.EQ, '*')
 				],
 				and: false
 			});
 			//// filter by employee role ID or * (all)
 			const oFilterPersonalGrade = new Filter({
 				filters: [
-					new Filter("PERSONAL_GRADE", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/grade")),
-					new Filter("PERSONAL_GRADE", FilterOperator.EQ, '*')
+					new Filter(Constant.EligibilityRule.PERSONAL_GRADE, FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/grade")),
+					new Filter(Constant.EligibilityRule.PERSONAL_GRADE, FilterOperator.EQ, '*')
 				],
 				and: false
 			});
-			const oListBinding = oModel.bindList("/ZELIGIBILITY_RULE", null, [
-				new Sorter("PERSONAL_GRADE", true),
-				new Sorter("ROLE_ID", true),
-				new Sorter("POSITION_NO_DESC", true),
-				new Sorter("ROW_COUNT", true),
+			const oListBinding = oModel.bindList(Constant.Entities.ZELIGIBILITY_RULE, null, [
+				new Sorter(Constant.EligibilityRule.PERSONAL_GRADE, true),
+				new Sorter(Constant.EligibilityRule.ROLE_ID, true),
+				new Sorter(Constant.EligibilityRule.POSITION_NO_DESC, true),
+				new Sorter(Constant.EligibilityRule.ROW_COUNT, true),
 			], [
 				new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_id")),
 				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_item_id")),
