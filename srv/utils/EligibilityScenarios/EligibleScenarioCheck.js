@@ -5,14 +5,15 @@ const DalamNegara = require('./DalamNegara')
 const LuarNegara = require('./LuarNegara')
 const KursusDalam = require('./KursusDalam')
 const KursusLuar = require('./KursusLuar')
+const IPAD = require('./IPAD');
 
 module.exports = {
     /**
          * Drill down of eligibility scenarios for each claim type after retrieving employee and eligibility rules data
          * @public
          * @param {Array} aPayload - Array of Payload data containing ClaimType, ClaimItmType, List Array of fields to be checked;
-         * @param {Array} tx - CDS call
-         * @returns {Object} Object Payload with results field in CheckFields List Array populated
+         * @param {Object} tx - CDS Transaction
+         * @returns {Array} Arrays of Object Payload with results field in CheckFields List Array populated
          */
     onEligibilityCheck: async function (aPayload, tx) {
         const aParticipantList = aPayload.map(d => d.EmpId);
@@ -28,10 +29,14 @@ module.exports = {
         let aPersonalGrade = aEmpData.map(d => d.GRADE);
         aPersonalGrade.push(Constant.Wildcard.All);
 
+        let aEmpRoleId = aEmpData.map(d => d.ROLE);
+        aEmpRoleId.push(Constant.Wildcard.All);
+
         // Get Eligibility Rules
         const aEligibilityRules = await tx.run(
             SELECT.from(Constant.Entities.ZELIGIBILITY_RULE).where({
                 PERSONAL_GRADE: { in: aPersonalGrade },
+                ROLE_ID: { in: aEmpRoleId },
                 CLAIM_TYPE_ID: aPayload[0].ClaimType,
                 CLAIM_TYPE_ITEM_ID: aPayload[0].ClaimTypeItem
             })
@@ -57,6 +62,10 @@ module.exports = {
 
                 case Constant.ClaimType.KURSUS_LUAR_NEGARA:
                     oReturnPayload = KursusLuar.onEligibleCheck(aPayload[i], aEligibilityRules);
+                    break;
+
+                case Constant.ClaimType.I_PAD:
+                    oReturnPayload = await IPAD.onEligibleCheck(aPayload[i], aEligibilityRules, tx);
                     break;
 
                 // case PELBAGAI: // Pelbagai no requirement checking needed
