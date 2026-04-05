@@ -2237,7 +2237,7 @@ sap.ui.define([
 
 			// calculate number of days
 			if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
-				oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, this.getView().getModel("claimsubmission_input").getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+				oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
 				this.onChange_ClaimDetails_NumberOfDays();
 			}
 
@@ -2938,9 +2938,11 @@ sap.ui.define([
 					await this._calculatePerDiem();
 				}
 				// Calculate number of days
-				if (this.getView().getModel("claimitem_property").getProperty("/no_of_days/is_visible")) {
-					var oInputModel = this.getView().getModel("claimitem_input");
-					oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, this.getView().getModel("claimsubmission_input").getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+				var oInputModel = this.getView().getModel("claimitem_input");
+				var oPropertyModel = this.getView().getModel("claimitem_property");
+				if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
+					oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
 					this.onChange_ClaimDetails_NumberOfDays();
 				}
 			}
@@ -2951,11 +2953,12 @@ sap.ui.define([
          * @public
          */
 		onChange_ClaimDetails_InsuranceCertDate: function () {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			oInputModel.refresh(true);
 
 			// update number of days
-			oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, this.getView().getModel("claimsubmission_input").getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+			oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
 			this.onChange_ClaimDetails_NumberOfDays();
 		},
 
