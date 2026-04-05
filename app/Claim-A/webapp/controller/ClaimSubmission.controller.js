@@ -2700,6 +2700,7 @@ sap.ui.define([
 			//FUT issue #58
 			//checking for galakan disclaimer if its ticked or not
 			
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
 			if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)){
 				return;
 			}
@@ -3436,6 +3437,7 @@ sap.ui.define([
 
 				//FUT issue 102
 				// solving the issue of having 0 amount claim item when submitting claims
+				CustomValidator.init(this.getOwnerComponent(), this.getView());
 				if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)){
 					return;
 				}
