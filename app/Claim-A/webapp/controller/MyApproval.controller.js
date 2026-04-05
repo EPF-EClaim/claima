@@ -35,20 +35,19 @@ sap.ui.define([
 					new Filter(this._oConstant.EntitiesFields.APPROVER_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
 					new Filter(this._oConstant.EntitiesFields.SUBAPPROVER_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId"))
 				],
-				and: false // OR condition between the two
+				and: false
 			});
 
             const oStatus = new Filter({
 				filters: [
 					new Filter(this._oConstant.EntitiesFields.STATUS, FilterOperator.EQ, this._oConstant.ClaimStatus.PENDING_APPROVAL)
 				],
-				and: false // OR condition between the two
+				and: false
 			});
 
-			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING_APPROVAL'
 			const oCombined = new Filter({
 				filters: [oApproverOrSub, oStatus],
-				and: true // AND between groups
+				and: true
 			});
 
 			const oListBinding = this._oEmployeeViewModel.bindList("/ZEMP_APPROVER_REQUEST_DETAILS", undefined,
@@ -88,21 +87,20 @@ sap.ui.define([
 					new Filter(this._oConstant.EntitiesFields.APPROVER_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
 					new Filter(this._oConstant.EntitiesFields.SUBAPPROVER_ID, FilterOperator.EQ, this._oSessionModel.getProperty("/userId"))
 				],
-				and: false // OR condition between the two
+				and: false
 			});
 
 			const oStatusPending = new Filter(
 				"STATUS",
 				FilterOperator.EQ,
-				this._oConstant.ClaimStatus.PENDING_APPROVAL // use the exact code/value your backend expects
+				this._oConstant.ClaimStatus.PENDING_APPROVAL 
 			);
-			// (APPROVER = id OR SUBSTITUTE_APPROVER = id) AND STATUS = 'PENDING APPROVAL'
 			const oCombined = new Filter({
 				filters: [oApproverOrSub, oStatusPending],
-				and: true // AND between groups
+				and: true 
 			});
 			const oListBinding = this._oEmployeeViewModel.bindList("/ZEMP_APPROVER_CLAIM_DETAILS", undefined,
-				[new Sorter("STATUS", true)], // desc by STATUS
+				[new Sorter("STATUS", true)], 
 				[oCombined],
 
 				{

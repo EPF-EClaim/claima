@@ -126,7 +126,6 @@ sap.ui.define([
             "CLAIMTYPE": "Claim",
             "CLAIM_APPROVE": "APPROVE_CLAIM",
             "SET_GROUP": "approvalGroup",
-            "APPROVE_MODE": "APPROVE",
             "ELIGIBLE_AMOUNT": "Eligible Amount",
             "TRAVEL_DAYS_ID": "Travel Days",
             "FARE_TYPE_ID": "Fare Type",
@@ -305,7 +304,8 @@ sap.ui.define([
             "EDIT": "i_edit",
             "LIST": "list",
             "CREATE": "create",
-            "VIEWAPPR": "view_appr"
+            "VIEWAPPR": "view_appr",
+            "APPROVE": "APPROVE",
         },
         "RequestType": {
             "TRAVEL"        : "RT0001",

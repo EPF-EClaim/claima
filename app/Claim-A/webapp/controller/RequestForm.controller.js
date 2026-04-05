@@ -2236,7 +2236,7 @@ sap.ui.define([
 			const oModelMain = this._oDataModel;
 			const oModelView = this._oViewModel;
 
-			if (sMode === this._oConstant.ApprovalProcess.APPROVE_MODE) {
+			if (sMode === this._oConstant.PARMode.APPROVE) {
 
 				try {
 
