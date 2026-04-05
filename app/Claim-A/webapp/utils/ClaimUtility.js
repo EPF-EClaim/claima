@@ -28,8 +28,8 @@ sap.ui.define([
          * @public
          */
         init: function(oOwnerComponent, oView) {
-            this._oOwnerComponent = oOwnerComponent;
-            this._oView = oView;
+			this._oOwnerComponent = oOwnerComponent;
+			this._oView = oView;
         },
 
 		/**
@@ -37,13 +37,13 @@ sap.ui.define([
         * Request is made to get values from table ZELIGIBILITY_RULE, based on user role and claim type/claim item given 
         * if record found, value is retrieved from the table and populated in the claim item model
         * @public
+		* @param {object} oClaimSubmissionModel - claim submission to be passed into param
+		* @param {object} oInputModel - claim item model to be passed into param
 		* @param {string} sClaimItemField - claim item field to be populated
 		* @param {string} sEligibilityRule - field to retrieve value from db table
 		* @param {string} sDefaultValue - default value to set if none found
         */
-		setClaimItemDefaultValues: async function (sClaimItemField, sEligibilityRule, sDefaultValue) {
-			var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
-			var oInputModel = this._oView.getModel("claimitem_input");
+		setClaimItemDefaultValues: async function (oClaimSubmissionModel, oInputModel, sClaimItemField, sEligibilityRule, sDefaultValue) {
 			const oModel = this._oOwnerComponent.getModel();
 			//// filter by employee role ID or * (all)
 			const oFilterRoleId = new Filter({
@@ -107,7 +107,6 @@ sap.ui.define([
 		* @returns {array} if records found, returns array of values from first selected record; else, returns empty array
         */
 		setClaimItemValueFromSelection: async function (sEntity, aEntityFields, aRetrievalFields) {
-			var oInputModel = this._oView.getModel("claimitem_input");
 			const oModel = this._oOwnerComponent.getModel();
             // set filters based on given entity fields
             var aSorters = [];
