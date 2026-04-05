@@ -2282,7 +2282,7 @@ sap.ui.define([
 
 			// calculate number of days
 			if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
-				this._calculateNumberOfDays();
+				this._determineNumberOfDaysLogic();
 			}
 
 			// set percentage (%) compensation based on claim item
@@ -2974,7 +2974,7 @@ sap.ui.define([
 					await this._calculatePerDiem();
 				}
 				// Calculate number of days
-				this._calculateNumberOfDays();
+				this._determineNumberOfDaysLogic();
 			}
 		},
 
@@ -2986,16 +2986,16 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			oInputModel.refresh(true);
 
-			this._calculateNumberOfDays();
+			this._determineNumberOfDaysLogic();
 		},
 
         /**
          * Determine which method to use when calculating number of days for claim item
-		 * if start/end date is not in claim item fields, pass start/end date value from claim header
-		 * else if header is empty, pass start/end date value from claim item
+		 * if start/end date is not visible in claim item fields, pass start/end date value from claim header to DateUtility function
+		 * else if header is empty, pass start/end date value from claim item to DateUtility function
 		 * @private
 		 */
-		_calculateNumberOfDays: function () {
+		_determineNumberOfDaysLogic: function () {
 			var oHeader = {};
 			var oItem = {};
 			var oInputModel = this.getView().getModel("claimitem_input");
