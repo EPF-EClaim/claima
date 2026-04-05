@@ -34,7 +34,7 @@ sap.ui.define([
                 var sCostCenter = oResult.sCostCenter;
                 var sCostCenterDesc = oResult.sCostCenterDesc;
 
-                if (sCostCenter != Constants.Default.NULL) {
+                if (sCostCenter) {
                     Fragment.byId("request", "req_acc").setEditMode("ReadOnly");
                     oDialogModel.setProperty("/altcostcenter", sCostCenter);
                     oDialogModel.setProperty("/altcostcenter_desc", sCostCenterDesc);

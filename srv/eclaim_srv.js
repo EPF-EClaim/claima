@@ -1048,7 +1048,7 @@ module.exports = (srv) => {
                 return req.error(404, `Claim Type ${oClaimTypeRecord} not found.`);
             }
             
-            const sCostCenterId = oClaimTypeRecord.COST_CENTER;
+            const sCostCenterId = oClaimTypeRecord.COST_CENTER || "";
 
             const oCostCenterRecord = await SELECT.one('COST_CENTER_DESC')
                 .from('ZCOST_CENTER')
@@ -1057,8 +1057,8 @@ module.exports = (srv) => {
             const sCostCenterDesc = oCostCenterRecord ? oCostCenterRecord.COST_CENTER_DESC : '';
 
             return {
-                sCostCenter: String(sCostCenterId),
-                sCostCenterDesc: String(sCostCenterDesc)
+                sCostCenter: String(sCostCenterId) || "",
+                sCostCenterDesc: String(sCostCenterDesc) || ""
             }
 
         } catch (error) {
