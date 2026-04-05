@@ -1,14 +1,30 @@
 sap.ui.define([
     "sap/ui/core/mvc/ControllerExtension",
+    "sap/ui/core/ListItem",
     "sap/m/DatePicker",
     "sap/m/MessageBox",
     "sap/m/MessageToast",
-    "claima/utils/Utility"
+    "sap/m/VBox",
+    "sap/m/Select",
+    "sap/m/Label",
+    "sap/m/Input",
+    "sap/m/Dialog",
+    "sap/m/Button",
+    "claima/utils/Utility", 
+    "claima/utils/Validator"
 ], function (ControllerExtension,
+    ListItem,
     DatePicker,
     MessageBox,
     MessageToast,
-    Utility) {
+    VBox,
+    Select,
+    Label,
+    Input,
+    Dialog,
+    Button,
+    Utility,
+    Validator) {
     'use strict';
 
     const allowedOnZemp = new Set([
@@ -108,7 +124,7 @@ sap.ui.define([
 
         const isZempMaster = sPath?.startsWith("/ZEMP_MASTER") || sPath === "/ZEMP_DEPENDENT";
 
-        const oVBox = new sap.m.VBox({
+        const oVBox = new VBox({
             width: "70%",
             fitContainer: true,
         });
@@ -120,7 +136,7 @@ sap.ui.define([
             const fieldType = oFieldMeta?.$Type;
             const sDisable = isZempMaster && !allowedOnZemp.has(fieldName);
 
-            oVBox.addItem(new sap.m.Label({
+            oVBox.addItem(new Label({
                 text: item.Label,
                 width: "100%",
                 labelFor: fieldName,
@@ -138,27 +154,27 @@ sap.ui.define([
                     enabled: `${sPath}` === '/ZEMP_MASTER' ? false : true
                 }) :
                 fieldType?.includes('Edm.Boolean') ?
-                    new sap.m.Select({
+                    new Select({
                         name: fieldName,
                         width: "130%",
                         forceSelection: false,
                         selectedKey: oData[fieldName] || null,
                         items: [
-                            new sap.ui.core.ListItem({
+                            new ListItem({
                                 key: null,
                                 text: "None"
                             }),
-                            new sap.ui.core.ListItem({
+                            new ListItem({
                                 key: false,
                                 text: "No"
                             }),
-                            new sap.ui.core.ListItem({
+                            new ListItem({
                                 key: true,
                                 text: "Yes"
                             })
                         ]
                     }) :
-                    new sap.m.Input({
+                    new Input({
                         value: oData[fieldName]?.toString() || "",
                         name: fieldName,
                         width: "130%",
@@ -186,17 +202,19 @@ sap.ui.define([
             const oNewEntry = {};
             const oView = this.getRouting().getView();
             const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType } = _getDetails(oView, aSelectedContexts);
+            const oValidator = new Validator();
 
-            const oDialog = new sap.m.Dialog({
-                title: `Copy Record`,
+            const oDialog = new Dialog({
+                title: Utility.getText("title_copy_record"),
                 contentWidth: "15%",
                 horizontalScrolling: false,
-                beginButton: new sap.m.Button({
-                    text: "Copy",
+                beginButton: new Button({
+                    text: Utility.getText("copy"),
                     press: function () {
                         var oInputs = oVBox.getItems();
 
-                        if (!_validateInputs(oVBox, oDataType, false)) {
+                        // if (!_validateInputs(oVBox, oDataType, false))
+                            if (!oValidator.validate(oVBox)) {
                             MessageToast.show(Utility.getText("msg_fix_input"));
                             return;
                         }
@@ -229,8 +247,8 @@ sap.ui.define([
                         oListBinding.refresh(true);
                     }.bind(this)
                 }),
-                endButton: new sap.m.Button({
-                    text: "Cancel",
+                endButton: new Button({
+                    text: Utility.getText("req_b_cancel"),
                     press: function () { oDialog.close(); }
                 }),
                 afterClose: function () { oDialog.destroy(); }
@@ -259,12 +277,12 @@ sap.ui.define([
                 }
             }
 
-            const oDialog = new sap.m.Dialog({
-                title: `Edit Record`,
+            const oDialog = new Dialog({
+                title: Utility.getText("title_edit_record"),
                 contentWidth: "15%",
                 horizontalScrolling: false,
-                beginButton: new sap.m.Button({
-                    text: "Edit",
+                beginButton: new Button({
+                    text: Utility.getText("req_b_edit"),
                     press: async function () {
                         var oInputs = oVBox.getItems();
                         const oEdited = {};
@@ -313,7 +331,7 @@ sap.ui.define([
                             for (const field in oEdited) {
                                 oSelectedContext.setProperty(field, oEdited[field]);
                             }
-                            sap.m.MessageToast.show("Record updated");
+                            MessageToast.show(Utility.getText("msg_record_updated"));
                             oDialog.close();
                             return;
                         }
@@ -325,16 +343,16 @@ sap.ui.define([
                             const oCreateCtx = oListBinding.create(oNewEntity);
                             await oCreateCtx.created();
                             await oSelectedContext.delete();
-                            sap.m.MessageToast.show("Record updated");
+                            MessageToast.show(Utility.getText("msg_record_updated"));
                             oModel.refresh();
                             oDialog.close();
                         } catch (e) {
-                            sap.m.MessageBox.error("Failed to change key: " + (e?.message || e));
+                            MessageBox.error(Utility.getText("msg_failed_key") + (e?.message || e));
                         }
                     }.bind(this)
                 }),
-                endButton: new sap.m.Button({
-                    text: "Cancel",
+                endButton: new Button({
+                    text: Utility.getText("button_claimprocess_cancel"),
                     press: function () { oDialog.close(); }
                 }),
                 afterClose: function () { oDialog.destroy(); }
