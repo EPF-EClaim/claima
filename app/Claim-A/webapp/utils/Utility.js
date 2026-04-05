@@ -92,7 +92,7 @@ sap.ui.define([
 
             await oModel.submitBatch("$auto");
         },
-
+        
         openClaimTypeFilterDialog: async function (oController, sModelName, sListPath) {
             var oModel = oController.getView().getModel(sModelName);
             var aList = oModel.getProperty(sListPath) || [];

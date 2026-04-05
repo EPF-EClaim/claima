@@ -290,10 +290,6 @@ module.exports = (srv) => {
         }
     });
 
-    /* ======================================================================================================================================= */
-    /* Below are Jefry's functions with the help of Ain. Don't slot your function in between tq. You are making my life harder. Appreciate it. */
-    /* ======================================================================================================================================= */
-
     srv.on('budgetchecking', async (req) => {
         const { ZBUDGET } = srv.entities;
         const { budget } = req.data;
@@ -639,10 +635,6 @@ module.exports = (srv) => {
         }
     });
 
-    /* ======================================================================================================================================= */
-    /* Above are Jefry's functions with the help of Ain. Don't slot your function in between tq. You are making my life harder. Appreciate it. */
-    /* ======================================================================================================================================= */
-
     srv.on('onFinalApproveInsert', async (req) => {
         const { ZCLM_APPR_REQ_STAT } = srv.entities;
         try {
@@ -841,8 +833,7 @@ module.exports = (srv) => {
                 throw new Error('No Data Sent')
             }
             const tx = cds.tx(req);
-
-            result = await EligibleScenarioCheck.onEligibilityCheck(aPayload, tx);
+             result = await EligibleScenarioCheck.onEligibilityCheck(aPayload, tx);
             return result;
 
         } catch (error) {
@@ -967,7 +958,7 @@ module.exports = (srv) => {
         const today = new Date();
         const baseline = new Date();
 
-        baseline.setMonth(baseline.getMonth() - 2);
+        baseline.setMonth(baseline.getMonth() - 3);
 
         const sTodayDate = today.toISOString().slice(0, 10);
         const sBaselineDate = baseline.toISOString().slice(0, 10);
@@ -976,7 +967,7 @@ module.exports = (srv) => {
 
         let aResult = [];
 
-        //get pre-approval records 2 months from current date
+        //get pre-approval records 3 months from current date
         const preapproval = await tx.run(
             SELECT.from(ZREQUEST_HEADER).where({
                 REQUEST_TYPE_ID: {
@@ -985,7 +976,8 @@ module.exports = (srv) => {
                 },
                 STATUS: Constant.Status.APPROVED,  //Approved
             }).and(
-                `TRIP_END_DATE > '${sBaselineDate}' AND TRIP_END_DATE <= '${sTodayDate}'`)
+                `TRIP_END_DATE > '${sBaselineDate}' AND 
+                TRIP_END_DATE <= '${sTodayDate}'`)
         );
 
         for (var oRequest of preapproval) {
@@ -1038,6 +1030,100 @@ module.exports = (srv) => {
         }
 
         return aResult;
+    });
+
+    srv.on('checkDefaultCostCenter', async (req) => {
+        const { sClaimTypeId } = req.data;
+
+        if (!sClaimTypeId) {
+            return req.error(400, 'Please provide an Employee ID.');
+        }
+
+        try {
+            const oClaimTypeRecord = await SELECT.one('COST_CENTER')
+                .from('ZCLAIM_TYPE')
+                .where({ CLAIM_TYPE_ID: sClaimTypeId });
+
+            if (!oClaimTypeRecord) {
+                return req.error(404, `Claim Type ${oClaimTypeRecord} not found.`);
+            }
+            
+            const sCostCenterId = oClaimTypeRecord.COST_CENTER || "";
+
+            const oCostCenterRecord = await SELECT.one('COST_CENTER_DESC')
+                .from('ZCOST_CENTER')
+                .where({ COST_CENTER_ID: sCostCenterId });
+
+            const sCostCenterDesc = oCostCenterRecord ? oCostCenterRecord.COST_CENTER_DESC : '';
+
+            return {
+                sCostCenter: String(sCostCenterId) || "",
+                sCostCenterDesc: String(sCostCenterDesc) || ""
+            }
+
+        } catch (error) {
+            return req.error(500, 'An error occurred while checking claim type table.');
+        }
+    });
+           
+    srv.after('UPDATE', 'ZREQUEST_HEADER', async (data, req) => {
+        
+        const sStatus = data.STATUS || req.data.STATUS;
+        
+        if (sStatus === Constant.Status.APPROVED) {
+            
+            const sRequestId = data.REQUEST_ID || req.data.REQUEST_ID;
+
+            if (!sRequestId) return;
+
+            cds.spawn({ user: req.user }, async (tx) => {
+                try {
+
+                    const oCashAdvanceItem = await tx.run(
+                        SELECT.one.from('ZREQUEST_ITEM').where({ 
+                            REQUEST_ID: sRequestId, 
+                            CASH_ADVANCE: true 
+                        })
+                    );
+
+                    if (!oCashAdvanceItem) return; 
+
+                    const oRequestRecord = await tx.run(
+                        SELECT.one.from('ZREQUEST_HEADER').where({ REQUEST_ID: sRequestId })
+                    );
+
+                    if (!oRequestRecord) return;
+
+                    const sEmpId = oRequestRecord.EMP_ID;
+                    const sTripStartDate = oRequestRecord.TRIP_START_DATE;
+
+                    const oExistingCashAdvRecords = await tx.run(
+                        SELECT.one.from('ZEMP_CA_PAYMENT').where({ 
+                            REQUEST_ID: sRequestId, 
+                            EMP_ID: sEmpId 
+                        })
+                    );
+
+                    if (oExistingCashAdvRecords) return; 
+
+                    let dDate = new Date(sTripStartDate);
+                    dDate.setDate(dDate.getDate() - 14);
+                    const sDisbursementDate = dDate.toISOString().split('T')[0];
+
+                    await tx.run(
+                        INSERT.into('ZEMP_CA_PAYMENT').entries({
+                            REQUEST_ID: sRequestId,
+                            EMP_ID: sEmpId,
+                            DISBURSEMENT_DATE: sDisbursementDate,
+                            DISBURSEMENT_STATUS: Constant.DisbursementStatus.TO_BE_DISBURSED
+                        })
+                    );
+
+                } catch (error) {
+                    req.error(400, `Fail inserting records for Cash Advance Table: ${error.message}`);
+                }
+            });
+        }
     });
 
 }
