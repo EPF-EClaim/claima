@@ -77,8 +77,9 @@ sap.ui.define([
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._openDeclarationDialog = null;
+
+			// decalre custom validator
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			
 
 			// declare claim utility
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
@@ -3042,6 +3043,38 @@ sap.ui.define([
 			}
 		},
 
+		onChange_ClaimDetails_FlightTimeRange: async function () {
+    		this._resetPerDiem();
+
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var vDepartureVal = oInputModel.getProperty("/claim_item/departure_time");
+			var vArrivalVal = oInputModel.getProperty("/claim_item/arrival_time");
+
+			if (!vDepartureVal || !vArrivalVal) {
+				return;
+			}
+
+			var oDepartureDate = new Date(vDepartureVal);
+			var oArrivalDate = new Date(vArrivalVal);
+
+			if (isNaN(oDepartureDate.getTime()) || isNaN(oArrivalDate.getTime())) {
+				return;
+			}
+
+			var iDiffMilliseconds = oArrivalDate.getTime() - oDepartureDate.getTime();
+
+			if (iDiffMilliseconds < 0) {
+				return;
+			}
+
+			var iDiffHours = iDiffMilliseconds / (1000 * 60 * 60);
+
+			if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
+				// Consider passing iDiffHours into this method if the calculation relies on it
+				await this._calculatePerDiem(); 
+			}
+		},
+
 		_resetPerDiem: function () {
 			// reset claim detail amounts
 			if (this.byId("input_claimdetails_input_travel_duration_day").getVisible()) {
@@ -4581,7 +4614,7 @@ sap.ui.define([
 		 */
 		onChange_ClaimDetails_CurrencyRate: function() {
 			var oInputModel = this.getView().getModel("claimitem_input");
-			if (this.byId("input_claimdetails_input_currency_rate").getVisible() && this.byId("input_claimdetails_input_currency_rate").getValue() != "") {
+			if (this.byId("input_claimdetails_input_currency_rate").getVisible() && !!oInputModel.getProperty("/claim_item/currency_rate")) {
 			var nAmountMYR = ( oInputModel.getProperty("/claim_item/currency_rate") * oInputModel.getProperty("/claim_item/currency_amount") );
 				oInputModel.setProperty("/claim_item/amount", nAmountMYR);
 			}
@@ -4611,6 +4644,10 @@ sap.ui.define([
             if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
                 oClaimItemInputModel.setProperty("/claim_item/currency_code", oResult.currency_code);
                 oClaimItemInputModel.setProperty("/claim_item/currency_amount", oResult.amount);
+				if (this.byId("input_claimdetails_input_currency_rate").getVisible() && !!oClaimItemInputModel.getProperty("/claim_item/currency_rate")) {
+					var nAmountMYR = ( oClaimItemInputModel.getProperty("/claim_item/currency_rate") * oClaimItemInputModel.getProperty("/claim_item/currency_amount") );
+					oClaimItemInputModel.setProperty("/claim_item/amount", nAmountMYR);
+				}
             } else if (this.byId("input_claimdetails_input_amount").getVisible()) {
                 oClaimItemInputModel.setProperty("/claim_item/amount", oResult.amount);
             }
