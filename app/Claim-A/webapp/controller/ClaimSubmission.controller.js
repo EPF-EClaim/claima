@@ -2463,14 +2463,6 @@ sap.ui.define([
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
 			
-			// set dropdown for dependent names
-			// var oSelect = this.byId("select_claimdetails_input_dependent_name");
-			// var oBinding = oSelect.getBinding("items");
-			// var aFilters = [
-			// 	new Filter('EMP_ID', FilterOperator.EQ ,this._oSessionModel.getProperty("/userId"))
-			// ]
-			// oBinding.filter(aFilters)
-			
 		},
 
 		/**
