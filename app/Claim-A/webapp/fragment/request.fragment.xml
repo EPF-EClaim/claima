@@ -52,6 +52,7 @@
 						id="req_claimtype" 
 						required="true" 
 						forceSelection="false"
+						change=".RequestUtility.determineDefaultCostCenter"
 						items="{path: 'claim_type_list>/types',
 								sorter: { path: 'CLAIM_TYPE_ID', descending: false }}">
 					<items>
@@ -166,6 +167,7 @@
 				<mdc:Field
                         id="req_acc"
                         value="{reqDialog>/altcostcenter}"
+						additionalValue="{reqDialog>/altcostcenter_desc}"
                         editMode="Editable"
                         display="ValueDescription"
                         visible="false"
@@ -210,21 +212,6 @@
 					<items>
 						<core:Item key="{employee>PROJECT_CODE_IO}" 
 								text="{employee>PROJECT_CODE_IO} :: {employee>PROJECT_DESC}" />
-					</items>
-				</Select>
-
-				<Label text="{i18n>req_course}" />
-				<Select 
-					id="req_course"
-					selectedKey="{reqDialog>/coursecode}" 
-					required="true" 
-					forceSelection="false"
-					visible="false"
-					items="{path: 'employee>/ZTRAIN_COURSE_PART',
-							sorter: { path: 'COURSE_ID', descending: false }}">
-					<items>
-						<core:Item key="{employee>COURSE_ID}" 
-								text="{employee>COURSE_ID} :: {employee>PROJECT_DESC}" />
 					</items>
 				</Select>
 								
