@@ -1041,4 +1041,64 @@ module.exports = (srv) => {
         return aResult;
     });
 
+    srv.after('UPDATE', 'ZREQUEST_HEADER', async (data, req) => {
+        
+        const sStatus = data.STATUS || req.data.STATUS;
+        
+        if (sStatus === Constant.Status.APPROVED) {
+            
+            const sRequestId = data.REQUEST_ID || req.data.REQUEST_ID;
+
+            if (!sRequestId) return;
+
+            cds.spawn({ user: req.user }, async (tx) => {
+                try {
+
+                    const oCashAdvanceItem = await tx.run(
+                        SELECT.one.from('ZREQUEST_ITEM').where({ 
+                            REQUEST_ID: sRequestId, 
+                            CASH_ADVANCE: true 
+                        })
+                    );
+
+                    if (!oCashAdvanceItem) return; 
+
+                    const oRequestRecord = await tx.run(
+                        SELECT.one.from('ZREQUEST_HEADER').where({ REQUEST_ID: sRequestId })
+                    );
+
+                    if (!oRequestRecord) return;
+
+                    const sEmpId = oRequestRecord.EMP_ID;
+                    const sTripStartDate = oRequestRecord.TRIP_START_DATE;
+
+                    const oExistingCashAdvRecords = await tx.run(
+                        SELECT.one.from('ZEMP_CA_PAYMENT').where({ 
+                            REQUEST_ID: sRequestId, 
+                            EMP_ID: sEmpId 
+                        })
+                    );
+
+                    if (oExistingCashAdvRecords) return; 
+
+                    let dDate = new Date(sTripStartDate);
+                    dDate.setDate(dDate.getDate() - 14);
+                    const sDisbursementDate = dDate.toISOString().split('T')[0];
+
+                    await tx.run(
+                        INSERT.into('ZEMP_CA_PAYMENT').entries({
+                            REQUEST_ID: sRequestId,
+                            EMP_ID: sEmpId,
+                            DISBURSEMENT_DATE: sDisbursementDate,
+                            DISBURSEMENT_STATUS: Constant.DisbursementStatus.TO_BE_DISBURSED
+                        })
+                    );
+
+                } catch (error) {
+                    req.error(400, `Fail inserting records for Cash Advance Table: ${error.message}`);
+                }
+            });
+        }
+    });
+
 }
