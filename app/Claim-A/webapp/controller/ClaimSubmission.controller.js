@@ -278,7 +278,7 @@ sap.ui.define([
 
 				// disable footer buttons if claim already cancelled
 				Utility.updateFooterState(
-					this,
+					this.getView(),
 					oClaimSubmissionModel,
 					this._oConstant,
 					null
@@ -302,7 +302,7 @@ sap.ui.define([
 					oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK) {
 					this._setApprovalLog(true);
 					Utility.updateFooterState(
-						this,
+						this.getView(),
 						oClaimSubmissionModel,
 						this._oConstant,
 						this._oConstant.ClaimFooterMode.VIEW_ONLY
@@ -331,7 +331,7 @@ sap.ui.define([
 					//// change screen details if approver
 					if (oClaimSubmissionModel.getProperty("/is_approver")) {
 						Utility.updateFooterState(
-							this,
+							this.getView(),
 							oClaimSubmissionModel,
 							this._oConstant,
 							this._oConstant.ClaimFooterMode.APPROVER
@@ -342,7 +342,7 @@ sap.ui.define([
 				}
 				else {			
 					Utility.updateFooterState(
-						this,
+						this.getView(),
 						oClaimSubmissionModel,
 						this._oConstant,
 						this._oConstant.ClaimFooterMode.SUMMARY
@@ -4069,7 +4069,7 @@ sap.ui.define([
 			}
 			else if (oClaimSubmissionModel.getProperty("/is_approver")) {
 				Utility.updateFooterState(
-					this,
+					this.getView(),
 					oClaimSubmissionModel,
 					this._oConstant,
 					this._oConstant.ClaimFooterMode.SUMMARY
