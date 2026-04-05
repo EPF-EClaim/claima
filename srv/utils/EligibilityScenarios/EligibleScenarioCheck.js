@@ -5,7 +5,7 @@ const DalamNegara = require('./DalamNegara')
 const LuarNegara = require('./LuarNegara')
 const KursusDalam = require('./KursusDalam')
 const KursusLuar = require('./KursusLuar')
-const IPAD = require('./IPAD')
+const IPAD = require('./IPAD');
 
 module.exports = {
     /**
@@ -31,7 +31,6 @@ module.exports = {
 
         let aEmpRoleId = aEmpData.map(d => d.ROLE);
         aEmpRoleId.push(Constant.Wildcard.All);
-        console.log(aEmpRoleId);
 
         // Get Eligibility Rules
         const aEligibilityRules = await tx.run(
@@ -66,7 +65,7 @@ module.exports = {
                     break;
 
                 case Constant.ClaimType.I_PAD:
-                    oReturnPayload = IPAD.onEligibleCheck(aPayload[i], aEligibilityRules);
+                    oReturnPayload = await IPAD.onEligibleCheck(aPayload[i], aEligibilityRules, tx);
                     break;
 
                 // case PELBAGAI: // Pelbagai no requirement checking needed

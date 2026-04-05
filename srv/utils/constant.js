@@ -58,7 +58,11 @@ const Constant = {
     },
     Entities: {
         "ZEMP_MASTER": "ZEMP_MASTER",
-        "ZELIGIBILITY_RULE": "ZELIGIBILITY_RULE"
+        "ZELIGIBILITY_RULE": "ZELIGIBILITY_RULE",
+        "ZCLAIM_HEADER": "ZCLAIM_HEADER",
+        "ZCLAIM_ITEM": "ZCLAIM_ITEM",
+        "ZREQUEST_HEADER": "ZREQUEST_HEADER",
+        "ZREQUEST_ITEM": "ZREQUEST_ITEM"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -135,10 +139,21 @@ const Constant = {
         "ELIGIBLE_AMOUNT": "ELIGIBLE_AMOUNT",
         "ROOM_TYPE_ID": "ROOM_TYPE_ID",
         "FARE_TYPE_ID": "FARE_TYPE_ID",
-        "ROLE": "ROLE"
+        "ROLE": "ROLE",
+        "CLAIMID": "CLAIM_ID",
+        "CLAIM_STATUS": "STATUS_ID",
+        "CLAIM_TYPE_ID": "CLAIM_TYPE_ID",
+        "CLAIM_TYPE_ITEM_ID": "CLAIM_TYPE_ITEM_ID",
+        "EEID": "EEID",
+        "EMP_ID": "EMP_ID",
+        "BILL_DATE": "BILL_DATE",
+        "RECEIPT_DATE": "RECEIPT_DATE"
     },
-    Wildcard:{
-        "All": "*"
+    Wildcard: {
+        "All": "*",
+        "LIKE_PATTERN": "%",
+        "DASH": "-",
+        "ZERO": "0"
     }, 
     Role: {
         "CEO": "CEO", 
@@ -147,7 +162,12 @@ const Constant = {
     }, 
     Status: {
         DRAFT : "STAT01", 
-        APPROVED : "STAT05"
+        PENDING_APPROVAL: "STAT02",
+        SEND_BACK: "STAT03",
+        REJECTED: "STAT04",
+        APPROVED : "STAT05",
+        COMPLETED_DISBURSEMENT: "STAT06",
+        CANCELLED: "STAT07"
     },
     ReminderScenario: {
         NO_CASH_ADVANCE: "1",
@@ -159,6 +179,11 @@ const Constant = {
     }, 
     ReminderMilestone: {
         AgingMilestone: { 1: '1', 30: '30', 60: '60', 85: '85' }
+    },
+    FrequencyPeriod: {
+        "MONTH": "Month",
+        "YEAR": "Year",
+        "THREE_YEARS": "3 years"
     }
 
 };

@@ -19,8 +19,8 @@
 # }
 
 
-GET http://localhost:4004/odata/v4/EmployeeSrv/getEmailReminder()
-Authorization: Basic alice
+# GET http://localhost:4004/odata/v4/EmployeeSrv/getEmailReminder()
+# Authorization: Basic alice
 
 
 
@@ -209,8 +209,8 @@ Authorization: Basic alice
        {
          "CheckFields": [
             {
-               "fieldName": "FARE_TYPE_ID",
-               "value": "03",
+               "fieldName": "RECEIPT_DATE",
+               "value": "2026-05-05",
                "result": null
             },
             {
