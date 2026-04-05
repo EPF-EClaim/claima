@@ -14,9 +14,10 @@ module.exports = {
         var oRule = aRules[0];
 
         var iHistoricalData = await this._getHistoricalData(oPayload, oRule, tx);
+        var iCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oPayload.RecordId, oRule, tx);
 
-        // return iHistoricalData;
-        this._validateClaimItem(oRule, oPayload, iHistoricalData);
+        console.log(iHistoricalData + iCurrentRecordItemData);
+        this._validateClaimItem(oRule, oPayload, iHistoricalData + iCurrentRecordItemData);
         return oPayload;
     },
 
@@ -49,7 +50,6 @@ module.exports = {
         }
         sDate = sYear + Constant.Wildcard.DASH + sMonth + Constant.Wildcard.DASH;
         sDate = sDate + Constant.Wildcard.LIKE_PATTERN;
-        console.log(sYear, sMonth, sDate);
 
         const aItemcondition = {
             [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
@@ -58,20 +58,71 @@ module.exports = {
             [Constant.EntitiesFields.RECEIPT_DATE]: { LIKE: sDate }
         };
 
-        return iHistoricalData = await GetHistoricalData.getHistoricalData(oPayload.ClaimID, Constant.Entities.ZCLAIM_HEADER,
+        return iHistoricalData = await GetHistoricalData.getHistoricalData(Constant.Entities.ZCLAIM_HEADER,
             Constant.Entities.ZCLAIM_ITEM,
             aItemcondition,
             tx);
     },
 
     /**
+         * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
+         * @public
+         * @param {Object} oPayload - payload contains user input passed from frontend
+         * @param {Object} oRule - Eligibility rule from backend
+         * @param {Object} tx - CDS Transaction
+         * @returns {Object} oPayload - return original payload but with result field filled
+         */
+    _getCurrentRecordItemData: async function (oPayload, RecordId, oRule, tx) {
+        let sDate = null;
+        // get Historical Claims Data
+        // find field for date
+        iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
+        sMonth = parseInt(oPayload.CheckFields[iIndex].value.substring(6, 8));
+        sYear = parseInt(oPayload.CheckFields[iIndex].value.substring(0, 4));
+
+        switch (oRule.PERIOD) {
+            case Constant.FrequencyPeriod.MONTH:
+                // need to search as "##"
+                if (sMonth < 10) {
+                    sMonth = Constant.Wildcard.ZERO + sMonth;
+                }
+                break;
+
+            default:
+                break;
+        }
+        sDate = sYear + Constant.Wildcard.DASH + sMonth + Constant.Wildcard.DASH;
+        sDate = sDate + Constant.Wildcard.LIKE_PATTERN;
+
+        //Map Headers
+        // Map ClaimID or RequestID based on which HeaderTable to use
+        if (oPayload.RecordId.substring(0,3) == Constant.WorkflowType.CLAIM) {
+            sHeaderField = Constant.EntitiesFields.CLAIMID;
+        } else {
+            sHeaderField = Constant.EntitiesFields.REQUESTID;
+        }
+
+        const aCurrentItemcondition = {
+            [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
+            [sHeaderField]: oPayload.RecordId,
+            [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
+            [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
+            [Constant.EntitiesFields.RECEIPT_DATE]: { LIKE: sDate }
+        };
+
+        return iCurrentData = await GetHistoricalData.getCurrentItemData(Constant.Entities.ZCLAIM_ITEM,
+            aCurrentItemcondition,
+            tx);
+    },
+
+    /**
     * Validates claim item against eligibility rule
     * @private
-    * @param {Array} aPayload - flat parsed payload from _parsePayload
     * @param {Object} oRule - matched eligibility rule from aRules
     * @param {Object} oPayload - original payload from user input
+    * @param {iFrequencyCount} - Date frequency count
     */
-    _validateClaimItem: function (oRule, oPayload, iHistoricalData) {
+    _validateClaimItem: function (oRule, oPayload, iFrequencyCount) {
         var iIndex;
 
         switch (oPayload.ClaimTypeItem) {
@@ -82,7 +133,7 @@ module.exports = {
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
                 // Frequency + 1 to accomodate checking for current claim id that is in draft
                 var iFrequency = oRule.FREQUENCY + 1;
-                if (iHistoricalData < iFrequency) {
+                if (iFrequencyCount < iFrequency) {
                     oPayload.CheckFields[iIndex].result = true;
                 } else {
                     oPayload.CheckFields[iIndex].result = false;
