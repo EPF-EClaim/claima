@@ -77,8 +77,9 @@ sap.ui.define([
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._openDeclarationDialog = null;
+
+			// decalre custom validator
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			
 
 			// declare claim utility
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
@@ -3040,28 +3041,34 @@ sap.ui.define([
 			}
 		},
 
-		onChange_ClaimDetails_FlightTimeRange: async function (departure_time, arrival_time) {
-			this._resetPerDiem();
+		onChange_ClaimDetails_FlightTimeRange: async function () {
+    		this._resetPerDiem();
 
-			var oDepartureControl = this.byId(departure_time);
-			var oArrivalControl = this.byId(arrival_time);
-			if (!oDepartureControl || !oArrivalControl) {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var vDepartureVal = oInputModel.getProperty("/claim_item/departure_time");
+			var vArrivalVal = oInputModel.getProperty("/claim_item/arrival_time");
+
+			if (!vDepartureVal || !vArrivalVal) {
 				return;
 			}
 
-			var oDepartureDate = oDepartureControl.getDateValue();
-			var oArrivalDate = oArrivalControl.getDateValue();
-			if (!oDepartureDate || !oArrivalDate) {
+			var oDepartureDate = new Date(vDepartureVal);
+			var oArrivalDate = new Date(vArrivalVal);
+
+			if (isNaN(oDepartureDate.getTime()) || isNaN(oArrivalDate.getTime())) {
 				return;
 			}
 
 			var iDiffMilliseconds = oArrivalDate.getTime() - oDepartureDate.getTime();
+
 			if (iDiffMilliseconds < 0) {
 				return;
 			}
 
 			var iDiffHours = iDiffMilliseconds / (1000 * 60 * 60);
+
 			if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
+				// Consider passing iDiffHours into this method if the calculation relies on it
 				await this._calculatePerDiem(); 
 			}
 		},
