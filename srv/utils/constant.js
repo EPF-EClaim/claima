@@ -186,6 +186,10 @@ const Constant = {
         "MONTH": "Month",
         "YEAR": "Year",
         "THREE_YEARS": "3 years"
+    },
+    ComparisonOperators:{
+        "LesserEquals": "<=",
+        "GreaterEquals": ">="
     }
 
 };

@@ -383,4 +383,5 @@ service eclaim_srv @(requires: 'authenticated-user'){
     
     function getEmailReminder() returns array of reminders;
 
+    action CheckUserClaimTypes(ID: String) returns many Response;
 };
