@@ -50,7 +50,12 @@ module.exports = {
                 SELECT`count(*)`
                     .from(sHeaderTable).where(aHeaderCondition)
             );
-            if (!!aHeaderData) return 0;
+            
+            if (!!aHeaderData) {
+                return 0;
+            } else {
+                return aHeaderData[0].count;
+            }
         } catch (error) {
             return 0;
         }
@@ -71,7 +76,11 @@ module.exports = {
             const aItemData = await tx.run(
                 SELECT`count(*)`.from(sItemTable).where(aItemcondition)
             );
-            if (!!aItemData) return 0;
+            if (!!aItemData) {
+                return 0;
+            } else {
+                return aItemData[0].count;
+            }
         } catch (error) {
             return 0;
         }
