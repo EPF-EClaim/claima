@@ -989,6 +989,7 @@ sap.ui.define([
 					"item": null,
 					"category": null,
 					"cost_center": null,
+					"representative_selection": null,
 					"requestform": {
 						"request_id": null,
 						"objective_purpose": null,
@@ -1096,6 +1097,7 @@ sap.ui.define([
 			// Claim Item Model
 			var oClaimItemModel = new JSONModel({
 				"is_new": false,
+				"dependent_or_anggota": null,
 				"screen_array": [],
 				"claim_item": {
 					"claim_id": null,
@@ -1745,7 +1747,8 @@ sap.ui.define([
 				{ label: Utility.getText("label_claimdetails_input_claimitem"), property: "claim_type_item_id", type: "descr", width: 30 },
 			];
 			const aItemsColumnsAdditional = [
-				{ label: Utility.getText("label_claimdetails_input_anggota"), property: "anggota_name", field: "input_claimdetails_input_anggota_name", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_depedent_or_anggota"), property: "dependent_or_anggota", field: "select_claimdetails_input_depedent_or_anggota", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_anggota"), property: "anggota_name", field: "field_claimdetails_input_anggota_name", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_dependent"), property: "dependent_name", field: "input_claimdetails_input_dependent_name", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_profbodytype"), property: "type_of_professional_body", field: "select_claimdetails_input_type_of_professional_body", type: "descr", width: 40 },
 				{ label: Utility.getText("label_claimdetails_input_policyno"), property: "policy_number", field: "input_claimdetails_input_policy_number", width: 18 },
@@ -2552,11 +2555,11 @@ sap.ui.define([
 
 
 			// Eligibility Checking
-			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM);
-			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, oPayload);
-			var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
+			// var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM);
+			// var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, oPayload);
+			// var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
 
-			if (!bCanProceed) return;
+			// if (!bCanProceed) return;
 
 			// upload Attachment 1
 			const bUploadAttachment1 = await this._handleAttachmentUpload(
@@ -4258,7 +4261,8 @@ sap.ui.define([
 
 		_setAllControlsVisible: function (bVisible) {
 			const aControlIds = [
-				"input_claimdetails_input_anggota_name",
+				"select_claimdetails_input_depedent_or_anggota",
+				"field_claimdetails_input_anggota_name",
 				"select_claimdetails_input_dependent_name",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
@@ -4401,7 +4405,8 @@ sap.ui.define([
 
 		_setAllControlsEditable: function (bEditable) {
 			const aControlIds = [
-				"input_claimdetails_input_anggota_name",
+				"select_claimdetails_input_depedent_or_anggota",
+				"field_claimdetails_input_anggota_name",
 				"select_claimdetails_input_dependent_name",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
@@ -4656,6 +4661,20 @@ sap.ui.define([
                 Utility.getText("msg_claimdetails_input_entmeals_err", [err])
             );
         }).finally(() => BusyIndicator.hide());
+		},
+
+		onSelect_ClaimDetails_Dependent_Or_Anggota: function(){
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var iRepresentativeSelected = oInputModel.getProperty("/claim_item/representative_selection");
+
+			if(iRepresentativeSelected == 1){
+				this.byId("field_claimdetails_input_anggota_name").setVisible(true);
+				this.byId("select_claimdetails_input_dependent_name").setVisible(false)
+			}else{
+				this.byId("select_claimdetails_input_dependent_name").setVisible(true);
+				this.byId("field_claimdetails_input_anggota_name").setVisible(false);
+
+			}
 		}
 
 	});
