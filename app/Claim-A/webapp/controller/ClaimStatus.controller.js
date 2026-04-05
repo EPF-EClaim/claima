@@ -110,14 +110,12 @@ sap.ui.define([
 				// Navigate to claim submission ID
 				const oRouter = this.getOwnerComponent().getRouter();
 
-				//this.getView().getModel("claimsubmission_input").setProperty("/from_my_approval", false);
-				const oModel = this.getOwnerComponent().getModel("claimsubmission_input");
-				if (oModel) {
-					oModel.setProperty("/from_my_approval", false);
+				const oClaimSubmissionInputModel = this.getOwnerComponent().getModel("claimsubmission_input");
+				if (oClaimSubmissionInputModel) {
+					oClaimSubmissionInputModel.setProperty("/from_my_approval", false);
 				}
 				oRouter.navTo("ClaimSubmission", { claim_id: encodeURIComponent(String(sClaimId)) });
 			} catch (e) {
-				sap.base.Log.error("openItemFromClaimList failed:", e);
 				MessageToast.show(Utility.getText("msg_claimstatus_failed"));
 			} finally {
 				this.getView().setBusy(false);

@@ -275,7 +275,6 @@ sap.ui.define([
 				this._setEnabledToolbarFooter();
 
 				// disable footer buttons if claim already cancelled
-
 				Utility.updateFooterState({
 					oView: this.getView(),
 					oClaimModel: oClaimSubmissionModel,

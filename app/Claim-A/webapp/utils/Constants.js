@@ -315,13 +315,6 @@ sap.ui.define([
             "MEDICAL": "RT0005",
             "PROJECT": "RT0006"
         },
-        "LocationType": {
-            "OTHER": "1",
-            "KWSP": "2"
-        },
-        "Status": {
-            "ACTIVE": "ACTIVE"
-        },
         "ClaimFooterMode": {
             "SUMMARY": "SUMMARY",
             "DETAILS": "DETAILS",
