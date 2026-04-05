@@ -29,8 +29,8 @@ sap.ui.define([
 	"claima/utils/Attachment",
 	"claima/utils/EligibilityCheck",
 	"claima/utils/DateUtility",
-	"claima/utils/Constants"
-
+	"claima/utils/Constants",
+	"claima/utils/CustomValidator"
 ], function (
 	Controller,
 	coreLibrary,
@@ -62,7 +62,8 @@ sap.ui.define([
 	Attachment,
 	EligibilityCheck,
 	DateUtility,
-	Constants
+	Constants,
+	CustomValidator
 ) {
 	"use strict";
 
@@ -86,6 +87,8 @@ sap.ui.define([
 			this._oViewModel 		= this.getOwnerComponent().getModel("employee_view");
 			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
 			this._oFragments 		= Object.create(null);
+
+			CustomValidator.init(this.getOwnerComponent(), this.getView())
 
 			// URL Access
 			this._oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
@@ -1284,10 +1287,27 @@ sap.ui.define([
 			}
 		},
 
-		populateEstimatedAmount(oEvent) {
+		populateEstimatedAmount: function(oEvent) {
+			const oInput = oEvent.getSource();
+			
+			const oContext = oInput.getBindingContext("request");
+			const sPath = oContext.getPath(); 
+			
+			let fEnteredAmount = parseFloat(oInput.getValue() || 0);
+
+			const sClaimTypeItem = this._oReqModel.getProperty("/req_item/claim_type_item_id");
+
+			if (!sClaimTypeItem) {
+				MessageBox.error(Utility.getText("req_d_e_select_claim_type_item"));
+				return;
+			}
+			
+			if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.REQUEST)){
+				return;
+			}
+
 			const aParticipantList = this._oReqModel.getProperty("/participant");
 
-			// Use let OR use reduce directly
 			const fEstAmount = aParticipantList.reduce((sum, row) => {
 				return sum + parseFloat(row.ALLOCATED_AMOUNT || 0);
 			}, 0);
