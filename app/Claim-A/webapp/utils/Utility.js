@@ -222,7 +222,15 @@ sap.ui.define([
             }
         },
 
-        //START TDL #6.1 meter cube for Pengangkutan Laut
+        /**
+         * Fetch records from an OData entity with optional filters.
+         *
+         * @public
+         * @param {string} sPath - OData entity path (e.g. "/ZEMP_MASTER")
+         * @param {array} aFields - Fields to filter by
+         * @param {array} aValues - Values for each filter field
+         * @returns {array} List of matching records; empty array if none found
+         */
         getMeterCubeCalc: async function (sPath, aFields = [], aValues = []) {
             const oModel = this._oOwnerComponent.getModel();
             const aFilters = aFields.map((sField, iIndex) =>
@@ -238,8 +246,5 @@ sap.ui.define([
             const aContexts = await oListBinding.requestContexts();
             return aContexts.map(oCtx => oCtx.getObject());
         }
-        //END TDL #6.1 meter cube for Pengangkutan Laut
-
-
     };
 });
