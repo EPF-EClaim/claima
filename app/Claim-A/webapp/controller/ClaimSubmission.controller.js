@@ -182,8 +182,6 @@ sap.ui.define([
 					MessageBox.error(Utility.getText("msg_claimsubmission_missing", [sClaimId]))
 					this._onNavBack();
 				}
-				// check for additional values to be populated
-				await this._loadClaimAdditionalData();
 			}
 			else if (oClaimSubmissionModel.getProperty("/claim_header/claim_id") !== sClaimId) {
 				await this._loadClaimById(String(sClaimId));
@@ -192,8 +190,6 @@ sap.ui.define([
 					MessageBox.error(Utility.getText("msg_claimsubmission_missing", [sClaimId]))
 					this._onNavBack();
 				}
-				// check for additional values to be populated
-				await this._loadClaimAdditionalData();
 			}
 			// set view-only
 			// TODO: Revisit to make sure the claim is reloaded everytime
@@ -1279,20 +1275,6 @@ sap.ui.define([
 			//// set input
 			this.getView().setModel(oClaimItemModel, modelName);
 			return this.getView().getModel(modelName);
-		},
-
-		/**
-        * Check for additional values to be populated into claim submission model
-        * @public
-		* @param {object} oClaimSubmissionModel - claim submission model passed into param
-        */
-		_loadClaimAdditionalData: async function () {
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			if (oClaimSubmissionModel) {
-				if (Object.values(this._oConstant.ClaimTypeKursus).includes(oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"))) {
-					await ClaimUtility.getClaimCourseCode(oClaimSubmissionModel);
-				}
-			}
 		},
 
 		onView_Claim_Attachment: function (oLevel, iFieldNumber) {
@@ -3485,8 +3467,6 @@ sap.ui.define([
 
 				// Reload when item cancellation
 				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
-				//// check for additional values to be populated
-				await this._loadClaimAdditionalData();
 			}
 		},
 

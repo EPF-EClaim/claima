@@ -396,8 +396,6 @@ sap.ui.define([
 
                 // Load claim header + items and populate claimsubmission_input model
                 await this._loadClaimById(String(sClaimId));
-				//// check for additional values to be populated
-				await this._loadClaimAdditionalData();
 
                 // Navigate to claim submission ID
                 const oRouter = this.getOwnerComponent().getRouter();
@@ -437,52 +435,52 @@ sap.ui.define([
         _mapClaimHeaderToForm(o) {
             return {
                 claim_id: o.CLAIM_ID,
-				emp_id: o.EMP_ID,
-				purpose: o.PURPOSE,
-				trip_start_date: o.TRIP_START_DATE,
-				trip_end_date: o.TRIP_END_DATE,
-				event_start_date: o.EVENT_START_DATE,
-				event_end_date: o.EVENT_END_DATE,
-				submission_type: o.SUBMISSION_TYPE,
-				comment: o.COMMENT,
-				alternate_cost_center: o.ALTERNATE_COST_CENTER,
-				cost_center: o.COST_CENTER,
-				request_id: o.REQUEST_ID,
-				attachment_email_approver: o.ATTACHMENT_EMAIL_APPROVER,
-				status_id: o.STATUS_ID,
-				claim_type_id: o.CLAIM_TYPE_ID,
-				total_claim_amount: o.TOTAL_CLAIM_AMOUNT,
-				final_amount_to_receive: o.FINAL_AMOUNT_TO_RECEIVE,
-				last_modified_date: o.LAST_MODIFIED_DATE,
-				submitted_date: o.SUBMITTED_DATE,
-				last_approved_date: o.LAST_APPROVED_DATE,
-				last_approved_time: o.LAST_APPROVED_TIME,
-				payment_date: o.PAYMENT_DATE,
-				location: o.LOCATION,
-				spouse_office_address: o.SPOUSE_OFFICE_ADDRESS,
-				house_completion_date: o.HOUSE_COMPLETION_DATE,
-				move_in_date: o.MOVE_IN_DATE,
-				housing_loan_scheme: o.HOUSING_LOAN_SCHEME,
-				lender_name: o.LENDER_NAME,
-				specify_details: o.SPECIFY_DETAILS,
-				new_house_address: o.NEW_HOUSE_ADDRESS,
-				dist_old_house_to_office_km: o.DIST_OLD_HOUSE_TO_OFFICE_KM,
-				dist_old_house_to_new_house_km: o.DIST_OLD_HOUSE_TO_NEW_HOUSE_KM,
-				approver1: null,
-				approver2: null,
-				approver3: null,
-				approver4: null,
-				approver5: null,
-				last_send_back_date: null,
-				course_code: o.COURSE_CODE,
-				project_code: null,
-				cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
-				preapproved_amount: o.PREAPPROVED_AMOUNT,
-				reject_reason_id: null,
-				send_back_reason_id: null,
-				last_send_back_time: null,
-				reject_reason_date: null,
-				reject_reason_time: null,
+                emp_id: o.EMP_ID,
+                purpose: o.PURPOSE,
+                trip_start_date: o.TRIP_START_DATE,
+                trip_end_date: o.TRIP_END_DATE,
+                event_start_date: o.EVENT_START_DATE,
+                event_end_date: o.EVENT_END_DATE,
+                submission_type: o.SUBMISSION_TYPE,
+                comment: o.COMMENT,
+                alternate_cost_center: o.ALTERNATE_COST_CENTER,
+                cost_center: o.COST_CENTER,
+                request_id: o.REQUEST_ID,
+                attachment_email_approver: o.ATTACHMENT_EMAIL_APPROVER,
+                status_id: o.STATUS_ID,
+                claim_type_id: o.CLAIM_TYPE_ID,
+                total_claim_amount: o.TOTAL_CLAIM_AMOUNT,
+                final_amount_to_receive: o.FINAL_AMOUNT_TO_RECEIVE,
+                last_modified_date: o.LAST_MODIFIED_DATE,
+                submitted_date: o.SUBMITTED_DATE,
+                last_approved_date: o.LAST_APPROVED_DATE,
+                last_approved_time: o.LAST_APPROVED_TIME,
+                payment_date: o.PAYMENT_DATE,
+                location: o.LOCATION,
+                spouse_office_address: o.SPOUSE_OFFICE_ADDRESS,
+                house_completion_date: o.HOUSE_COMPLETION_DATE,
+                move_in_date: o.MOVE_IN_DATE,
+                housing_loan_scheme: o.HOUSING_LOAN_SCHEME,
+                lender_name: o.LENDER_NAME,
+                specify_details: o.SPECIFY_DETAILS,
+                new_house_address: o.NEW_HOUSE_ADDRESS,
+                dist_old_house_to_office_km: o.DIST_OLD_HOUSE_TO_OFFICE_KM,
+                dist_old_house_to_new_house_km: o.DIST_OLD_HOUSE_TO_NEW_HOUSE_KM,
+                approver1: null,
+                approver2: null,
+                approver3: null,
+                approver4: null,
+                approver5: null,
+                last_send_back_date: null,
+                course_code: o.COURSE_CODE,
+                project_code: null,
+                cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
+                preapproved_amount: o.PREAPPROVED_AMOUNT,
+                reject_reason_id: null,
+                send_back_reason_id: null,
+                last_send_back_time: null,
+                reject_reason_date: null,
+                reject_reason_time: null,
                 descr: {
                     submission_type: null,
                     alternate_cost_center: o.ALT_COST_CENTER_DESC,
@@ -949,20 +947,6 @@ sap.ui.define([
                 return null; // Return null so the app doesn't crash
             }
         },
-
-		/**
-        * Check for additional values to be populated into claim submission model
-        * @public
-		* @param {object} oClaimSubmissionModel - claim submission model passed into param
-        */
-		_loadClaimAdditionalData: async function () {
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-            if (oClaimSubmissionModel) {
-                if (Object.values(this._oConstant.ClaimTypeKursus).includes(oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"))) {
-                    await ClaimUtility.getClaimCourseCode(oClaimSubmissionModel);
-                }
-            }
-		},
 
     });
 });
