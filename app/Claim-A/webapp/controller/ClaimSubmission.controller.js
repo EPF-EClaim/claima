@@ -1014,6 +1014,7 @@ sap.ui.define([
 					"item": null,
 					"category": null,
 					"cost_center": null,
+					"dependent_type": null,
 					"requestform": {
 						"request_id": null,
 						"objective_purpose": null,
@@ -1771,8 +1772,9 @@ sap.ui.define([
 				{ label: Utility.getText("label_claimdetails_input_claimitem"), property: "claim_type_item_id", type: "descr", width: 30 },
 			];
 			const aItemsColumnsAdditional = [
-				{ label: Utility.getText("label_claimdetails_input_anggota"), property: "anggota_name", field: "input_claimdetails_input_anggota_name", width: 30 },
-				{ label: Utility.getText("label_claimdetails_input_dependent"), property: "dependent_name", field: "input_claimdetails_input_dependent_name", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_depedent_or_anggota"), property: "dependent_type", field: "select_claimdetails_input_depedent_or_anggota", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_anggota"), property: "anggota_name", field: "field_claimdetails_input_anggota_name", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_dependent"), property: "dependent_name", field: "field_claimdetails_input_dependent_name", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_profbodytype"), property: "type_of_professional_body", field: "select_claimdetails_input_type_of_professional_body", type: "descr", width: 40 },
 				{ label: Utility.getText("label_claimdetails_input_policyno"), property: "policy_number", field: "input_claimdetails_input_policy_number", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_funeraltransport"), property: "funeral_transportation", field: "select_claimdetails_input_funeral_transportation", type: "descr", width: 18 },
@@ -2382,6 +2384,12 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/disclaimer_galakan", true)
 				}
 
+				//changes here
+				if(!!oInputModel.getProperty("/claim_item/anggota_id")){
+					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
+				}else if(!!oInputModel.getProperty("/claim_item/dependent_name")){
+					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.DEPENDENT);
+				}
 
 			}
 			this._setClaimDetailSelection(oClaimSubmissionModel);
@@ -2481,15 +2489,7 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_claim_category", "ZCLAIM_CATEGORY");
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
-
-			// set dropdown for dependent names
-			var oSelect = this.byId("select_claimdetails_input_dependent_name");
-			var oBinding = oSelect.getBinding("items");
-			var aFilters = [
-				new Filter('EMP_ID', FilterOperator.EQ, this._oSessionModel.getProperty("/userId"))
-			]
-			oBinding.filter(aFilters)
-
+			
 		},
 
 		/**
@@ -4367,8 +4367,9 @@ sap.ui.define([
 
 		_setAllControlsVisible: function (bVisible) {
 			const aControlIds = [
-				"input_claimdetails_input_anggota_name",
-				"select_claimdetails_input_dependent_name",
+				"select_claimdetails_input_depedent_or_anggota",
+				"field_claimdetails_input_anggota_name",
+				"field_claimdetails_input_dependent_name",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",
@@ -4510,8 +4511,9 @@ sap.ui.define([
 
 		_setAllControlsEditable: function (bEditable) {
 			const aControlIds = [
-				"input_claimdetails_input_anggota_name",
-				"select_claimdetails_input_dependent_name",
+				"select_claimdetails_input_depedent_or_anggota",
+				"field_claimdetails_input_anggota_name",
+				"field_claimdetails_input_dependent_name",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",
@@ -4766,6 +4768,5 @@ sap.ui.define([
 				);
 			}).finally(() => BusyIndicator.hide());
 		}
-
 	});
 });
