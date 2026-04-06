@@ -29,6 +29,8 @@ sap.ui.define([
 		/* =========================================================
 		* Lifecycle
 		* ======================================================= */
+
+		formatter: DateUtility,
 		onInit() {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oRouter = this.getOwnerComponent().getRouter();
@@ -65,20 +67,16 @@ sap.ui.define([
 
 			try {
 				const oContext = await oListBinding.requestContexts(0, Infinity);
-				const oContextItems = oContext.map((ctx) => {
-							const oCtxObj = ctx.getObject();
-							oCtxObj.modifiedAt = DateUtility.convertUTCToLocal(oCtxObj.modifiedAt);
-							return oCtxObj;
-						});
+				const oContextItems = oContext.map((ctx) => ctx.getObject());
 
-				a.forEach((it) => {
+				oContextItems.forEach((it) => {
 					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
 				});
 
 				oReqStatusModel.setProperty("/req_header_list", oContextItems);
 				oReqStatusModel.setProperty("/req_header_count", oContextItems.length);
 
-				return a;
+				return oContextItems;
 			} catch (err) {
 				console.error("OData bindList failed:", err);
 				oReqStatusModel.setProperty("/req_header_list", []);

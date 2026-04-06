@@ -125,7 +125,11 @@
                                     <Table
                                         id="claimtable"
                                         items="{
-                                            path: 'dashboardModel>/claims'
+                                            path: 'dashboardModel>/claims',
+                                            sorter: {
+                                                path: 'modifiedAt',
+                                                descending: true
+                                            }
                                         }"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
@@ -200,7 +204,10 @@
                                                         text="{dashboardModel>STATUS_DESC}"
                                                     />
                                                     <Text
-                                                        text="{dashboardModel>modifiedAt}"
+                                                        text="{ 
+                                                                path: 'dashboardModel>modifiedAt',
+                                                                formatter: '.formatter.convertUTCToLocal' 
+                                                            }"
                                                     />
                                                 </cells>
                                             </ColumnListItem>
@@ -250,7 +257,11 @@
                                 >
                                     <Table
                                         items="{
-                                            path: 'dashboardModel>/requests'
+                                            path: 'dashboardModel>/requests',
+                                            sorter: {
+                                                path: 'modifiedAt',
+                                                descending: true
+                                            }
                                         }"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
@@ -323,7 +334,10 @@
                                                         text="{dashboardModel>STATUS_DESC}"
                                                     />
                                                     <Text
-                                                        text="{dashboardModel>modifiedAt}"
+                                                        text="{ 
+                                                                path: 'dashboardModel>modifiedAt',
+                                                                formatter: '.formatter.convertUTCToLocal' 
+                                                            }"
                                                     />
                                                 </cells>
                                             </ColumnListItem>
@@ -373,7 +387,11 @@
                                 >
                                     <Table
                                         items="{
-                                            path: 'dashboardModel>/approvals'
+                                            path: 'dashboardModel>/approvals',
+                                            sorter: {
+                                                path: 'modifiedAt',
+                                                descending: true
+                                            }
                                         }"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
@@ -449,7 +467,10 @@
                                                         text="{dashboardModel>STATUS_DESC}"
                                                     />
                                                     <Text
-                                                        text="{dashboardModel>modifiedAt}"
+                                                        text="{ 
+                                                                path: 'dashboardModel>modifiedAt',
+                                                                formatter: '.formatter.convertUTCToLocal' 
+                                                            }"
                                                     />
                                                 </cells>
                                             </ColumnListItem>

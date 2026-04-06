@@ -13,6 +13,8 @@ sap.ui.define([
 	"use strict";
 
 	return Controller.extend("claima.controller.Dashboard", {
+
+		formatter: DateUtility,
 		onInit: function () {
 			this._oRouter = this.getOwnerComponent().getRouter();
 			this._oDashboardModel = new JSONModel({
@@ -21,7 +23,7 @@ sap.ui.define([
 				approvals: []
 			});
 			this.getView().setModel(this._oDashboardModel, "dashboardModel");
-
+		
 			this._oRouter.getRoute("Dashboard").attachPatternMatched(this._onMatched, this);
 		},
 
@@ -38,11 +40,7 @@ sap.ui.define([
 				new Sorter("modifiedAt", true)
 			]).requestContexts(0, Infinity)
 				.then(aContexts => {
-					this._oDashboardModel.setProperty("/claims", aContexts.map(c => {			
-						const oCtxObj = c.getObject();
-						oCtxObj.modifiedAt = DateUtility.convertUTCToLocal(oCtxObj.modifiedAt);
-						return oCtxObj;
-					}));
+					this._oDashboardModel.setProperty("/claims", aContexts.map(c => c.getObject()));
 				})
 				.catch(err => console.log("claims error:", err));
 
@@ -50,23 +48,13 @@ sap.ui.define([
 				new Sorter("modifiedAt", true)
 			]).requestContexts(0, Infinity)
 				.then(aContexts => {
-					this._oDashboardModel.setProperty("/requests", aContexts.map(c => {
-						const oCtxObj = c.getObject();
-						oCtxObj.modifiedAt = DateUtility.convertUTCToLocal(oCtxObj.modifiedAt);
-						return oCtxObj;
-					}));
+					this._oDashboardModel.setProperty("/requests", aContexts.map(c => c.getObject()));
 				})
 				.catch(err => console.log("requests error:", err));
 
-			_oEmployeeViewModel.bindList("/ZEMP_APPROVER_DETAILS", null, [
-				new Sorter("modifiedAt", true)
-			]).requestContexts(0, Infinity)
+			_oEmployeeViewModel.bindList("/ZEMP_APPROVER_DETAILS").requestContexts(0, Infinity)
 				.then(aContexts => {
-					this._oDashboardModel.setProperty("/approvals", aContexts.map(c => {
-						const oCtxObj = c.getObject();
-						oCtxObj.modifiedAt = DateUtility.convertUTCToLocal(oCtxObj.modifiedAt);
-						return oCtxObj;
-					}));
+					this._oDashboardModel.setProperty("/approvals", aContexts.map(c => c.getObject()));
 				})
 				.catch(err => {
 					console.log("approvals not available for this role");

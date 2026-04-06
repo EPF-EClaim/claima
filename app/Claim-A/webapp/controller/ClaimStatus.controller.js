@@ -25,6 +25,7 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.ClaimStatus", {
 
+		formatter: DateUtility,
 		onInit: function () {
 			// Track current sort direction per path: true = DESC, false = ASC
 			this._mSortState = {};
@@ -49,11 +50,7 @@ sap.ui.define([
 			);
 			try {
 				const oContext = await oListBinding.requestContexts(0, Infinity);
-				const oContextItems = aCtx.map((ctx) => {
-							const oCtxObj = ctx.getObject();
-							oCtxObj.modifiedAt = DateUtility.convertUTCToLocal(oCtxObj.modifiedAt);
-							return oCtxObj;
-						});
+				const oContextItems = oContext.map((ctx) => ctx.getObject());
 
 				_oReq.setProperty("/claim_header_list", oContextItems);
 				_oReq.setProperty("/claim_header_count", oContextItems.length);

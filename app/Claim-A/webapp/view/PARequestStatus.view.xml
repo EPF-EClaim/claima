@@ -36,7 +36,6 @@
                             icon="sap-icon://refresh"
                             press="onResetSort"
                         />
-                        <Button type="Transparent" icon="sap-icon://action-settings" tooltip="Filter" press="onOpenFilterDialog"/>
                     </Toolbar>
                 </headerToolbar>
 
@@ -246,7 +245,11 @@
                                 }"
                             />
                             <Text text="{request_status>STATUS_DESC}" />
-                            <Text text="{request_status>modifiedAt}" />
+                            <Text text="{ 
+                                        path: 'request_status>modifiedAt',
+                                        formatter: '.formatter.convertUTCToLocal' 
+                                    }"
+                            />
                         </cells>
                     </ColumnListItem>
                 </items>
