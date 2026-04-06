@@ -284,7 +284,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.GRADE,
                 ZEMP_MASTER.JOB_GROUP,
                 createdBy,
-                modifiedAt
+                modifiedAt,
+                COURSE_CODE,
+                ZTRAIN_COURSE_PART.COURSE_DESC as COURSE_CODE_DESC
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW          as
@@ -405,7 +407,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 DEPENDENT_RELATIONSHIP,
                 POLICY_NUMBER,
                 INSURANCE_PROVIDER_ID,
-                ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_DESC
+                ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_DESC,
+                ZCLAIM_HEADER.COURSE_CODE,
+                ZCLAIM_HEADER.ZTRAIN_COURSE_PART.COURSE_DESC as COURSE_CODE_DESC,
+                ZCLAIM_HEADER.ZTRAIN_COURSE_PART.SESSION_NUMBER as SESSION_NUMBER
         };
 
     entity ZEMP_REQUEST_STATUS           as
