@@ -2251,7 +2251,7 @@ sap.ui.define([
 			}
 
 			//START TDL #6.1 meter cube for Pengangkutan Laut
-			const sKey = claimItem?.getKey?.();
+			const sKey = oInputModel.getProperty("/claim_item/claim_type_item_id");
 			if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
 
 				//entitled meter cube
@@ -2267,7 +2267,6 @@ sap.ui.define([
 
 				oPropertyModel.setProperty("/amount/is_visible", true);
 				oPropertyModel.setProperty("/amount/is_editable", false);
-
 
 				await ClaimUtility.onSelect_ClaimDetails_MeterCube(
 					sKey,
