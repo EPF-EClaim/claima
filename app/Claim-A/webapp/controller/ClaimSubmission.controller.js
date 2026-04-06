@@ -64,7 +64,7 @@ sap.ui.define([
 	EligibleScenarioCheck,
 	CustomValidator,
 	CustomDuplicationCheck
-	
+
 ) {
 	"use strict";
 
@@ -340,7 +340,7 @@ sap.ui.define([
 
 					}
 				}
-				else {			
+				else {
 					Utility.updateFooterState(
 						this.getView(),
 						oClaimSubmissionModel,
@@ -1336,6 +1336,7 @@ sap.ui.define([
 				var oInputModel = this.getView().getModel("claimitem_input");
 
 				oInputModel.setProperty("/is_new", true);
+				oInputModel.setProperty("/claim_item/is_new", true);
 				//// get claim type from claim header
 				oInputModel.setProperty("/claim_item/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
 				//// get GL account
@@ -1480,7 +1481,7 @@ sap.ui.define([
 
 				// reset values
 				//// amount
-				oInputModel.setProperty(addrIndex + "/amount", 0);
+				//oInputModel.setProperty(addrIndex + "/amount", 0);
 				//// start/end dates
 				oInputModel.setProperty(addrIndex + "/start_date", null);
 				oInputModel.setProperty(addrIndex + "/end_date", null);
@@ -1489,10 +1490,10 @@ sap.ui.define([
 				oInputModel.setProperty(addrIndex + "/event_start_date", null);
 				oInputModel.setProperty(addrIndex + "/event_end_date", null);
 				/// Added to enable duplication check;
-				oInputModel.setProperty(addrIndex + "/receipt_number", null);
-				oInputModel.setProperty(addrIndex + "/receipt_date", null);
-				oInputModel.setProperty(addrIndex + "/bill_no", null);
-				oInputModel.setProperty(addrIndex + "/bill_date", null);
+				//oInputModel.setProperty(addrIndex + "/receipt_number", null);
+				//oInputModel.setProperty(addrIndex + "/receipt_date", null);
+				//oInputModel.setProperty(addrIndex + "/bill_no", null);
+				//oInputModel.setProperty(addrIndex + "/bill_date", null);
 
 
 				// calculate new total
@@ -1501,14 +1502,14 @@ sap.ui.define([
 			}
 
 			// update to database
-			var updateSuccess = await this._updateClaimItems();
-			if (!updateSuccess) {
-				// recover previous claim item list
-				oInputModel.setProperty("/claim_items", tempItems.claim_items);
-				oInputModel.setProperty("/claim_items_count", tempItems.claim_items.length);
-				oInputModel.setProperty("/claim_header/total_claim_amount", tempItems.total_claim_amount);
-			}
-
+			/* 			var updateSuccess = await this._updateClaimItems();
+						if (!updateSuccess) {
+							// recover previous claim item list
+							oInputModel.setProperty("/claim_items", tempItems.claim_items);
+							oInputModel.setProperty("/claim_items_count", tempItems.claim_items.length);
+							oInputModel.setProperty("/claim_header/total_claim_amount", tempItems.total_claim_amount);
+						} */
+			oInputModel.setProperty(addrIndex + "/is_new", true);
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 			BusyIndicator.hide();
@@ -1597,10 +1598,10 @@ sap.ui.define([
 					var sTripEndDate = oInputModel.getProperty("/claim_header/trip_end_date");
 
 
-					/* 					if (DateUtility.isFutureDate(sTripEndDate)) {
-											MessageBox.error(Utility.getText("msg_claimsubmit_datecheck"));
-											return;
-										} */
+					if (DateUtility.isFutureDate(sTripEndDate)) {
+						MessageBox.error(Utility.getText("msg_claimsubmit_datecheck"));
+						return;
+					}
 
 					this._pendingAction = oAction;
 
@@ -2683,9 +2684,9 @@ sap.ui.define([
 
 			//FUT issue #58
 			//checking for galakan disclaimer if its ticked or not
-			
+
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)){
+			if (!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
 				return;
 			}
 
@@ -2809,28 +2810,30 @@ sap.ui.define([
 
 				//DUPLICATION CHECK HERE — BEFORE saving or creating
 
-				var oNewItem = oInputModel.getProperty("/claim_item");
+				/* 				var oNewItem = oInputModel.getProperty("/claim_item");
+				
+								var oDuplicatePayload = {
+									receipt_number: oNewItem.receipt_number,
+									receipt_date: this._getHanaDate(oNewItem.receipt_date),
+									bill_no: oNewItem.bill_no,
+									bill_date: this._getHanaDate(oNewItem.bill_date),
+									claim_type_id: oNewItem.claim_type_id,
+									claim_sub_id: oNewItem.claim_sub_id,
+									emp_id: this._oSessionModel.getProperty("/userId"),
+									isNew: oInputModel.getProperty("/is_new")
+								};
+				
+								try {
+									await CustomDuplicationCheck.CheckDuplicateClaimItem(this, oDuplicatePayload, oModel);
+								} catch (e) {
+									MessageBox.error(e.message);
+									return false;
+								} */
 
-				var oDuplicatePayload = {
-					receipt_number: oNewItem.receipt_number,
-					receipt_date: this._getHanaDate(oNewItem.receipt_date),
-					bill_no: oNewItem.bill_no,
-					bill_date: this._getHanaDate(oNewItem.bill_date),
-					claim_type_id: oNewItem.claim_type_id,
-					claim_sub_id: oNewItem.claim_sub_id,
-					emp_id: this._oSessionModel.getProperty("/userId"),
-					isNew: oInputModel.getProperty("/is_new")
-				};
 
-				try {
-					await CustomDuplicationCheck.CheckDuplicateClaimItem(this, oDuplicatePayload, oModel);
-				} catch (e) {
-					MessageBox.error(e.message);
-					return false;
-				}
+				//if (oInputModel.getProperty("/is_new")) {
 
-
-				if (oInputModel.getProperty("/is_new")) {
+				if (oInputModel.getProperty("/claim_item/is_new")) {
 					// create new item
 					oListBinding = oModel.bindList("/ZCLAIM_ITEM");
 					var oContext = oListBinding.create(oBody.getData());
@@ -3000,10 +3003,10 @@ sap.ui.define([
 			this.onChange_ClaimDetails_NumberOfDays();
 		},
 
-        /**
-         * On changing number of days field, method checks for lodging claim type item to calculate eligible amount
-         * @public
-         */
+		/**
+		 * On changing number of days field, method checks for lodging claim type item to calculate eligible amount
+		 * @public
+		 */
 		onChange_ClaimDetails_NumberOfDays: function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
 			// if claim type item is lodging, calculate amount based on eligible amount and number of days
@@ -3012,8 +3015,8 @@ sap.ui.define([
 			}
 		},
 
-        /**
-         * Auto-populate Amount field based on eligible employee amount
+		/**
+		 * Auto-populate Amount field based on eligible employee amount
 		 * if number of days field is visible, calculate amount based on eligible amount * number of days 
 		 * @private
 		 */
@@ -3275,9 +3278,9 @@ sap.ui.define([
 		},
 
 		/**
-        * On selecting location type, reset kilometer value if KWSP Office is selected
-        * @public
-        */
+		* On selecting location type, reset kilometer value if KWSP Office is selected
+		* @public
+		*/
 		onSelect_ClaimDetails_LocationType: function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
@@ -3286,12 +3289,12 @@ sap.ui.define([
 		},
 
 		/**
-        * On selecting office location, set the respective state value if empty and retrieve mileage based on backend table
+		* On selecting office location, set the respective state value if empty and retrieve mileage based on backend table
 		* once mileage is retrieved, amount is calculated based on kilometer * rate per km
-        * @public
+		* @public
 		* @param {object} oEvent - the event call passed into param
 		* @param {string} sLocationTypeOffice - determines whether office location is to or from
-        */
+		*/
 		onSelect_ClaimDetails_LocationTypeOffice: async function (oEvent, sLocationTypeOffice) {
 			var oInputModel = this.getView().getModel("claimitem_input");
 
@@ -3315,16 +3318,16 @@ sap.ui.define([
 					{ entity_field: this._oConstant.EntitiesFields.TO_STATE_ID, filter_value: oInputModel.getProperty("/claim_item/to_state_id") },
 					{ entity_field: this._oConstant.EntitiesFields.TO_LOCATION_ID, filter_value: oInputModel.getProperty("/claim_item/to_location_office") }
 				]
-				var aRetrievalFields = [ this._oConstant.OfficeDistance.MILEAGE ];
+				var aRetrievalFields = [this._oConstant.OfficeDistance.MILEAGE];
 				var aOutputValues = await ClaimUtility.setClaimItemValueFromSelection(this._oConstant.Entities.ZOFFICE_DISTANCE, aEntityFields, aRetrievalFields);
 				if (aOutputValues.length > 0) {
 					oInputModel.setProperty("/claim_item/km", aOutputValues[0]);
 				}
 				else {
 					oInputModel.setProperty("/claim_item/km", null);
-                    MessageToast.show(Utility.getText("msg_claimdetails_input_km_location_office_none"));
+					MessageToast.show(Utility.getText("msg_claimdetails_input_km_location_office_none"));
 				}
-                this._calculateRatePerKm();
+				this._calculateRatePerKm();
 			}
 		},
 
@@ -3508,6 +3511,10 @@ sap.ui.define([
 					return;
 				}
 
+				// Duplication check skip Delete 
+				if (oAction !== "Delete Report" && oAction !== this._oConstant.Claim_Action.DELETE) {
+					await CustomDuplicationCheck.CheckAllItems(this);
+				}
 
 				// Cash Advance Repayment Validation checking
 				if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
@@ -3515,17 +3522,10 @@ sap.ui.define([
 					BusyIndicator.hide();
 					return;
 				}
-
 				//FUT issue 102
 				// solving the issue of having 0 amount claim item when submitting claims
 				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)){
-					return;
-				}
-
-				if (this._CheckDuplicateClaimItems(aItems)) {
-					MessageBox.error(Utility.getText("msg_duplication_prompt"));
-					BusyIndicator.hide();
+				if (!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
 					return;
 				}
 
@@ -3629,6 +3629,7 @@ sap.ui.define([
 						switch (oAction) {
 							case 'Save Draft':
 								MessageToast.show(Utility.getText("msg_claimsubmission_created"));
+								await this._saveDraftItems();
 								break;
 							case 'Submit Report':
 								// move approver determination function before claim is saved
@@ -3679,6 +3680,7 @@ sap.ui.define([
 					switch (oAction) {
 						case 'Save Draft':
 							var oMsg = Utility.getText("msg_claimsubmission_changed");
+							await this._saveDraftItems();
 							break;
 						case 'Delete Report':
 							oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.CANCELLED);
@@ -3769,22 +3771,17 @@ sap.ui.define([
 			var aItems = oInputModel.getProperty("/claim_items") || [];
 			var oItem = oInputModel.getProperty("/claim_items") || [];
 
-			/* if (this._CheckDuplicateClaimItems(aItems)) {
-				MessageBox.error(Utility.getText("msg_duplication_prompt"));
-				BusyIndicator.hide();
-				return;
-			} */
 
-
-			for (let oItem of aItems) {
-				try {
-					await CustomDuplicationCheck.CheckDuplicateClaimItem(this, oItem);
-				} catch (e) {
-					MessageBox.error(e.message);
-					BusyIndicator.hide();
-					return;   // STOP immediately — duplicate found
-				}
-			}
+			/* 
+						for (let oItem of aItems) {
+							try {
+								await CustomDuplicationCheck.CheckDuplicateClaimItem(this, oItem);
+							} catch (e) {
+								MessageBox.error(e.message);
+								BusyIndicator.hide();
+								return;   // STOP immediately — duplicate found
+							}
+						} */
 
 
 
@@ -4759,7 +4756,41 @@ sap.ui.define([
 					Utility.getText("msg_claimdetails_input_entmeals_err", [err])
 				);
 			}).finally(() => BusyIndicator.hide());
-		}
+		},
 
+		_saveDraftItems: async function () {
+			const oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			const aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
+			const oInputItemModel = this.getView().getModel("claimitem_input");
+
+			for (let item of aItems) {
+
+				if (item.is_new === true) {
+
+					// ✅ Initialize structure inside claimitem_input model
+					oInputItemModel.setProperty("/claim_item", {});
+
+					// ✅ Set item data
+					oInputItemModel.setProperty("/claim_item", item);
+
+					// ✅ Ensure claim_id exists
+					oInputItemModel.setProperty("/claim_item/claim_id",
+						oClaimSubmissionModel.getProperty("/claim_header/claim_id")
+					);
+
+					// ✅ Mark as new so _saveClaimItem() chooses CREATE
+					oInputItemModel.setProperty("/claim_item/is_new", true);
+
+					// ✅ Save item to backend
+					await this._saveClaimItem();
+
+					// ✅ Mark as saved
+					item.is_new = false;
+				}
+			}
+
+			// ✅ update model after saving
+			oClaimSubmissionModel.setProperty("/claim_items", aItems);
+		},
 	});
 });
