@@ -596,7 +596,7 @@ sap.ui.define([
                 }
             } catch (oError) {
                 MessageBox.error(Utility.getText("msg_claimdetails_input_err", [oError]));
-                return [];
+                return null;
             } finally {
                 BusyIndicator.hide();
             }
