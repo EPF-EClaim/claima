@@ -104,7 +104,7 @@
                             path: 'employee>/ZCLM_COURSE_VIEW',
                             sorter: [
                                 { path: 'COURSE_ID' },
-                                { path: 'COURSE_DESC' },
+                                { path: 'COURSE_DESC' }
                             ]
                         }"
                         visible="{= Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) }"
