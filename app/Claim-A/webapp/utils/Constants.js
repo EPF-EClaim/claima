@@ -218,6 +218,8 @@ sap.ui.define([
             "INSURANCE_PURCH_DATE": "INSURANCE_PURCH_DATE",
             "INSURANCE_CERT_START_DATE": "INSURANCE_CERT_START_DATE",
             "INSURANCE_CERT_END_DATE": "INSURANCE_CERT_END_DATE",
+            "ANGGOTA" : "1",
+            "DEPENDENT": "2"
         },
         "Operators": {
             "EQUAL": "EQ",

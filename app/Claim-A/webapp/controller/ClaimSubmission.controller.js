@@ -2318,10 +2318,10 @@ sap.ui.define([
 				}
 
 				//changes here
-				if(oInputModel.getProperty("/claim_item/anggota_id") != null){
-					oInputModel.setProperty("/claim_item/representative_selection", '1');
-				}else if(oInputModel.getProperty("/claim_item/dependent_name") != null){
-					oInputModel.setProperty("/claim_item/representative_selection", '2');
+				if(!(!!oInputModel.getProperty("/claim_item/anggota_id"))){
+					oInputModel.setProperty("/claim_item/representative_selection", this._oConstant.EntitiesFields.ANGGOTA);
+				}else if(!(!!oInputModel.getProperty("/claim_item/dependent_name"))){
+					oInputModel.setProperty("/claim_item/representative_selection", this._oConstant.EntitiesFields.DEPENDENT);
 				}
 
 			}
