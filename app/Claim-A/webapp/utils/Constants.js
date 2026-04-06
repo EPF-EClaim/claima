@@ -326,6 +326,19 @@ sap.ui.define([
             "OTHER" : "1",
             "KWSP"  : "2"
         },
+        "RelationshipType" :{
+            "SPOUSE": "01"
+        },
+        "MaritalStatus": {
+            "MARRIED": "M",
+            "SINGLE": "S"
+        }, 
+        "MeterCubeId": {
+            "EMPLOYEE": "01",
+            "SINGLE": "02",
+            "SPOUSE": "03",
+            "MARRIED": "06"
+        },
         "InsuranceProvider" : {
             "OTHERS" : "4",
         },

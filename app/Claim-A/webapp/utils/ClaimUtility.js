@@ -208,5 +208,90 @@ sap.ui.define([
 			}
 			
         },
+
+		//START TDL #6.1 meter cube for Pengangkutan Laut
+        //meter cube calc if user select Pengangkutan Laut
+        onSelect_ClaimDetails_MeterCube: async function (sKey,oInputModel,oPropertyModel,oSessionModel) {
+            if (sKey !== Constant.ClaimTypeItem.LAUT) {
+                return;
+            }
+            if (!oSessionModel) {
+                return;
+            }
+            const sEmpId = oSessionModel.getProperty("/userId");
+            if (!sEmpId) {
+                return;
+            }
+            const oMar = Constant.MaritalStatus;
+            const oCube = Constant.MeterCubeId;
+            const oRel = Constant.RelationshipType;
+            const aMaster = await Utility.getMeterCubeCalc("/ZEMP_MASTER", ["EEID"], [sEmpId]);
+            const sMarital = aMaster?.[0]?.MARITAL;
+            const aDep = await Utility.getMeterCubeCalc(
+                "/ZEMP_DEPENDENT",
+                ["EMP_ID", "RELATIONSHIP"],
+                [sEmpId, oRel.SPOUSE]
+            );
+            const bHasSpouse = aDep.length > 0;
+            const aMeter = await Utility.getMeterCubeCalc("/ZMETER_CUBE");
+            const fnGetCube = (sId) =>
+                aMeter.find(oRow => oRow.METER_CUBE_ID === sId)?.METER_CUBE ?? 0;
+            const aParts = [
+                fnGetCube(oCube.EMPLOYEE),
+                sMarital === oMar.SINGLE ? fnGetCube(oCube.SINGLE) : 0,
+                sMarital === oMar.MARRIED ? fnGetCube(oCube.MARRIED) : 0,
+                bHasSpouse ? fnGetCube(oCube.SPOUSE) : 0
+            ];
+            const fTotal = aParts.reduce((sum, val) => sum + Number(val), 0);
+            //final value
+            oInputModel.setProperty("/claim_item/meter_cube_entitled", fTotal.toFixed(2));
+            oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
+            oPropertyModel.setProperty("/meter_cube_entitled/is_visible", true);
+        },
+        
+		/**
+		 * Calculate amount for Pengangkutan Laut based on:
+		 * - actual meter cube
+		 * - meter cube entitled
+		 * - actual amount
+		 * Formula:
+		 *   If actualMC > entitledMC:
+		 *       amount = (actualAmount / actualMC) * entitledMC
+		 *   else:
+		 *       amount = actualAmount
+		 */
+		calculatePengangkutanLautAmount: function (oInputModel) {
+
+			const sActualMC = oInputModel.getProperty("/claim_item/meter_cube_actual");
+			const sActualAmount = oInputModel.getProperty("/claim_item/actual_amount");
+
+			if (sActualMC === "" || sActualMC === null ||
+				sActualAmount === "" || sActualAmount === null) {
+				oInputModel.setProperty("/claim_item/amount", null);
+				return;
+			}
+
+			const nActualMeterCube = Number(sActualMC);
+			const nEntitledMeterCube = Number(oInputModel.getProperty("/claim_item/meter_cube_entitled"));
+
+			const nActualAmount = Number(sActualAmount.toString().replace(/,/g, ""));
+
+			if (isNaN(nActualMeterCube) || isNaN(nEntitledMeterCube) || isNaN(nActualAmount)) {
+				oInputModel.setProperty("/claim_item/amount", null);
+				return;
+			}
+
+			let nFinalAmount = 0;
+
+			if (nActualMeterCube > nEntitledMeterCube) {
+				nFinalAmount = (nActualAmount / nActualMeterCube) * nEntitledMeterCube;
+			} else {
+				nFinalAmount = nActualAmount;
+			}
+
+			oInputModel.setProperty("/claim_item/amount", nFinalAmount.toFixed(2));
+		},
+		//END TDL #6.1 meter cube for Pengangkutan Laut
+
     }
 });

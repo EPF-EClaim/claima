@@ -90,6 +90,9 @@ sap.ui.define([
 			// declare excel export utility
 			ExcelExport.init(this.getOwnerComponent(), this.getView(), window.XLSX);
 
+			//declare utility
+			Utility.init(this.getOwnerComponent());
+
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
 			oRouter.getRoute("ClaimSubmission").attachPatternMatched((event) => { this._onMatched(event); }, this);
@@ -2236,6 +2239,56 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/disclaimer_galakan", false);
 			}
 
+			//START TDL #6.1 meter cube for Pengangkutan Laut
+			const sKey = claimItem?.getKey?.();
+            if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
+
+			//entitled meter cube
+            oPropertyModel.setProperty("/meter_cube_entitled/is_visible", true);
+            oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
+
+			//actual meter cube
+			oPropertyModel.setProperty("/meter_cube_actual/is_visible", true);
+    		oPropertyModel.setProperty("/meter_cube_actual/is_editable", true);
+
+ 			oPropertyModel.setProperty("/actual_amount/is_visible", true);
+    		oPropertyModel.setProperty("/actual_amount/is_editable", true);
+
+			oPropertyModel.setProperty("/amount/is_visible", true);
+			oPropertyModel.setProperty("/amount/is_editable", false);
+
+
+			await ClaimUtility.onSelect_ClaimDetails_MeterCube(
+					sKey,
+					oInputModel,
+					oPropertyModel,
+					this.getOwnerComponent().getModel("session")
+				);
+
+			setTimeout(() => {
+				ClaimUtility.calculatePengangkutanLautAmount(oInputModel);
+			}, 50);
+
+			ClaimUtility.calculatePengangkutanLautAmount(oInputModel);
+            } 
+			
+			else {
+			//entitled meter cube
+            oPropertyModel.setProperty("/meter_cube_entitled/is_visible", false);
+            oInputModel.setProperty("/claim_item/meter_cube_entitled", null);
+
+			//actual meter cube
+			oPropertyModel.setProperty("/meter_cube_actual/is_visible", false);
+    		oInputModel.setProperty("/claim_item/meter_cube_actual", null);
+
+			oPropertyModel.setProperty("/actual_amount/is_visible", false);
+    		oInputModel.setProperty("/claim_item/actual_amount", null);
+
+			oPropertyModel.setProperty("/amount/is_visible", false);
+			oInputModel.setProperty("/claim_item/amount", null);
+        }
+        	//END TDL #6.1 meter cube for Pengangkutan Laut
+
 			// calculate number of days
 			oInputModel.setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
 
@@ -2251,6 +2304,11 @@ sap.ui.define([
 				// clear rate per km ID field since formula uses default value
 				oInputModel.setProperty("/rate_per_km", null);
 			}
+		},
+
+		onChange_ClaimDetails_ActualMeterCube: function () {
+			const oInputModel = this.getView().getModel("claimitem_input");
+			ClaimUtility.calculatePengangkutanLautAmount(oInputModel);
 		},
 
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
@@ -2280,7 +2338,9 @@ sap.ui.define([
 				insurance_package_id: { is_visible: false },
 				insurance_purchase_date: { is_visible: false },
 				insurance_cert_start_date: { is_visible: false },
-				insurance_cert_end_date: { is_visible: false }
+				insurance_cert_end_date: { is_visible: false },
+				meter_cube_entitled: {is_visible: false},
+				meter_cube_actual: {is_visible:false, is_editable: true},
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -2906,6 +2966,8 @@ sap.ui.define([
 				// set 'amount' property to % of actual amount based on percentage compensation
 				oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
 			}
+
+			 ClaimUtility.calculatePengangkutanLautAmount(oInputModel);
 		},
 
 		onChange_ClaimDetails_DateRange: async function (startdate, enddate) {
