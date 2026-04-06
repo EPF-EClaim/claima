@@ -317,6 +317,38 @@ sap.ui.define([
                             break;
                     }
                     break;
+                case Constants.EntitiesFields.START_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            // set min date based on move-in date
+                            if (sType === Constants.ClaimTypeItem.MKN_LOAN) {
+                                _dMinDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : null;
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                    _oResourceBundle.getText("error_start_date_moveindate_mindate"));
+                                break;
+                            }
+                    }
+                    break;
+                case Constants.EntitiesFields.END_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            // set min date based on move-in date
+                            if (sType === Constants.ClaimTypeItem.MKN_LOAN) {
+                                _dMinDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oItem["start_date"] ? new Date(oItem["start_date"]) : null;
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                    _oResourceBundle.getText("error_end_date_moveindate_mindate"));
+                                break;
+                            }
+                    }
+                    break;
                 case Constants.EntitiesFields.INSURANCE_CERT_END_DATE:
                     switch (_sSubmissionType) {
                         case Constants.SubmissionTypePrefix.REQUEST:
@@ -412,6 +444,48 @@ sap.ui.define([
                             _dMaxDate = new Date(oHeader.trip_end_date); // default
                             _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                 _oResourceBundle.getText("error_billdate_maxdate"));
+                            break;
+                    }
+                    break;
+                case Constants.EntitiesFields.START_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            // set max date based on move-in date + 1 day
+                            if (sType === Constants.ClaimTypeItem.MKN_LOAN) {
+                                _dMaxDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oItem["end_date"] ? new Date(oHeader["max_date"]) : null;
+                                // add 1 day for elaun perpindahan makan
+                                if (_dMaxDate) {
+                                    _dMaxDate.setDate(_dMaxDate.getDate() + 1);
+                                }
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                    _oResourceBundle.getText("error_start_date_moveindate_maxdate"));
+                                break;
+                            }
+                            break;
+                    }
+                    break;
+                case Constants.EntitiesFields.END_DATE:
+                    switch (_sSubmissionType) {
+                        case Constants.SubmissionTypePrefix.REQUEST:
+                            break;
+
+                        case Constants.SubmissionTypePrefix.CLAIM:
+                            // set max date based on move-in date + 1 day
+                            if (sType === Constants.ClaimTypeItem.MKN_LOAN) {
+                                _dMaxDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : null;
+                                // add 1 day for elaun perpindahan makan
+                                if (_dMaxDate) {
+                                    _dMaxDate.setDate(_dMaxDate.getDate() + 1);
+                                }
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                    _oResourceBundle.getText("error_end_date_moveindate_maxdate"));
+                                break;
+                            }
                             break;
                     }
                     break;

@@ -2217,16 +2217,27 @@ sap.ui.define([
 				return;
 			}
 
-			// prevent selecting elaun pengangkutan if employee is not permanent
-			if ((oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT) &&
-				(oClaimSubmissionModel.getProperty("/emp_master/employee_type") !== this._oConstant.EmployeeType.PERMANENT)
-			) {
-				// reset claim item selection
-				oInputModel.setProperty("/claim_item/claim_type_item_id", null);
-				oEvent.getSource().setSelectedItem(null);
-				// popup error message
-				MessageBox.error(Utility.getText("msg_claimdetails_input_pengangkutan_permanent"));
-				return;
+			// elaun pengangkutan validation checking
+			if ((oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT)) {
+				// don't allow claim if employee is not permanent
+				if ((oClaimSubmissionModel.getProperty("/emp_master/employee_type") !== this._oConstant.EmployeeType.PERMANENT)) {
+					// reset claim item selection
+					oInputModel.setProperty("/claim_item/claim_type_item_id", null);
+					oEvent.getSource().setSelectedItem(null);
+					// popup error message
+					MessageBox.error(Utility.getText("msg_claimdetails_input_pengangkutan_permanent"));
+					return;
+				}
+				// don't allow claim elaun pengangkutan more than once
+				var bHasPreviousElaun = await ClaimUtility.getPreviousElaunPengangkutan(oClaimSubmissionModel.getProperty("/emp_master/eeid"));
+				if (bHasPreviousElaun) {
+					// reset claim item selection
+					oInputModel.setProperty("/claim_item/claim_type_item_id", null);
+					oEvent.getSource().setSelectedItem(null);
+					// popup error message
+					MessageBox.error(Utility.getText("msg_claimdetails_input_pengangkutan_repeat"));
+					return;
+				}
 			}
 
 			// set app visibility controls
@@ -2977,6 +2988,28 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
 					this.onChange_ClaimDetails_NumberOfDays();
 				}
+			}
+		},
+
+        /**
+         * run related methods on setting start/end date
+         * @public
+         */
+		onChange_ClaimDetails_StartEndDate: async function () {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			oInputModel.refresh(true);
+
+			// reset per diem amounts
+			this._resetPerDiem();
+
+			// Calculate number of days
+			oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+
+			// calculate per diem details
+			if (oPropertyModel.getProperty("/entitled_breakfast/is_visible")) {
+				await this._calculatePerDiem();
 			}
 		},
 
