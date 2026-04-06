@@ -52,6 +52,14 @@
                         visible="false"
                     />
 
+                    <!-- Course Code -->
+                    <Label text="{i18n>label_claiminput_course_code}" />
+                    <Text
+                        id="text_claiminput_course_code"
+                        text="{claimsubmission_input>/claim_header/course_code} - {claimsubmission_input>/claim_header/descr/course_code}"
+                        visible="{= ${claimsubmission_input>/claim_header/course_code} !== null}"
+                    />
+
                     <!-- Pre-Approval Request -->
                     <Label text="{i18n>label_claiminput_preapprovalreq}" />
                     <Text
@@ -73,6 +81,8 @@
                     <DatePicker
                         id="datepicker_claiminput_tripstartdate"
                         value="{claimsubmission_input>/claim_header/trip_start_date}"
+                        editable="{= !${claimsubmission_input>/claimtype/requestform/trip_start_date} &amp;&amp;
+                            !Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claim_header/claim_type_id}) }"
                         required="true"
                         displayFormat="dd-MMM-yyyy"
                         />
@@ -82,6 +92,8 @@
                     <DatePicker
                         id="datepicker_claiminput_tripenddate"
                         value="{claimsubmission_input>/claim_header/trip_end_date}"
+                        editable="{= !${claimsubmission_input>/claimtype/requestform/trip_end_date} &amp;&amp;
+                            !Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claim_header/claim_type_id}) }"
                         required="true"
                         displayFormat="dd-MMM-yyyy"
                         />
