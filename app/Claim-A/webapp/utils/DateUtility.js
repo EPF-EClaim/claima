@@ -302,11 +302,11 @@ sap.ui.define([
                             }
                             else if (sItemType === Constants.ClaimTypeItem.E_PENGAKUT) {
                                 // elaun pengangkutan related logic
-                                _dMinDate = new Date(oHeader.trip_start_date);
+                                _dMinDate = new Date(oHeader.move_in_date);
                                 _dMinDate.setMonth(_dMinDate.getMonth() - 6);
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
-                                    _oResourceBundle.getText("error_receipt_date_pengangkutan_mindate"));
+                                    _oResourceBundle.getText("error_receiptdate_pengangkutan_mindate"));
                             }
                             else {
                                 // Other Claim Type
@@ -385,7 +385,16 @@ sap.ui.define([
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
                                     _oResourceBundle.getText("msg_claimsubmission_invalid_visa_date"));
 
-                            } else {
+                            }
+                            else if (sItemType === Constants.ClaimTypeItem.E_PENGAKUT) {
+                                // elaun pengangkutan related logic
+                                _dMaxDate = new Date(oHeader.move_in_date);
+                                _dMaxDate.setMonth(_dMaxDate.getMonth() + 6);
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                    _oResourceBundle.getText("error_receiptdate_pengangkutan_maxdate"));
+                            }
+                            else {
                                 // Other Claim Type
                                 _dMaxDate = new Date(oHeader.trip_end_date);
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
