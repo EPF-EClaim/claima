@@ -726,7 +726,7 @@ sap.ui.define([
         */
 		onSelect_ClaimProcess_CourseCode: function (oEvent) {
 			// set description
-			this.getView().getModel("claimsubmission_input").setProperty("/claimtype/descr/course_code", oEvent.getParameters().selectedItem.getBindingContext("employee").getObject("COURSE_DESC"));
+			this.getView().getModel("claimsubmission_input").setProperty("/claimtype/descr/course_code", oEvent.getParameters().selectedItem.getBindingContext("employee_view").getObject("COURSE_DESC"));
 		},
 
 		onPreApproval_ClaimProcess: function () {

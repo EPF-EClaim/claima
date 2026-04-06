@@ -2972,7 +2972,7 @@ sap.ui.define([
 			oInputModel.refresh(true);
 
 			// Calculate number of days
-			if (oPropertyModel.getProperty("/entitled_breakfast/is_visible")) {
+			if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
 				oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
 			}
 

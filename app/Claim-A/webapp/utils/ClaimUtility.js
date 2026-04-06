@@ -89,17 +89,17 @@ sap.ui.define([
 		*/
 		getCourseCodeStartEndDate: async function (sCourseCode, sParticipantId) {
 			const oModel = this._oOwnerComponent.getModel();
-			const oListBinding = oModel.bindList(Constants.Entities.ZTRAIN_COURSE_PART, null, [
+			const oListBinding = oModel.bindList(Constant.Entities.ZTRAIN_COURSE_PART, null, [
 				new Sorter("COURSE_ID"),
 				new Sorter("SESSION_NUMBER"),
 			], [
 				// ensure status is active
 				new Filter("COURSE_ID", FilterOperator.EQ, sCourseCode),
 				new Filter("PARTICIPANT_ID", FilterOperator.EQ, sParticipantId),
-				new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, Constants.CourseSessionStatus.ACTIVE),
+				new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, Constant.CourseSessionStatus.ACTIVE),
 				new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true),
-				new Filter("CLAIM_STATUS", FilterOperator.NE, Constants.ClaimStatus.APPROVED),
-				new Filter("CLAIM_STATUS", FilterOperator.NE, Constants.ClaimStatus.PENDING_APPROVAL)
+				new Filter("CLAIM_STATUS", FilterOperator.NE, Constant.ClaimStatus.APPROVED),
+				new Filter("CLAIM_STATUS", FilterOperator.NE, Constant.ClaimStatus.PENDING_APPROVAL)
 			]);
 
 			try {

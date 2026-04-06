@@ -101,7 +101,7 @@
                         forceSelection="false"
                         selectedKey="{claimsubmission_input>/claimtype/course_code}"
                         items="{
-                            path: 'employee_view>/ZCLM_COURSE_VIEW',
+                            path: 'employee_view>/ZCLM_COURSE_VIEW_VH',
                             sorter: [
                                 { path: 'COURSE_ID' },
                                 { path: 'COURSE_DESC' }
@@ -111,7 +111,7 @@
                         change="onSelect_ClaimProcess_CourseCode"
                         liveChange="onSelect_ClaimProcess_CourseCode"
                     >
-                        <core:Item key="{employee>COURSE_ID}" text="{employee>COURSE_ID} - {employee>COURSE_DESC}" />
+                        <core:Item key="{employee_view>COURSE_ID}" text="{employee_view>COURSE_ID} - {employee_view>COURSE_DESC}" />
                     </Select>
                 </f:content>
             </f:SimpleForm>
