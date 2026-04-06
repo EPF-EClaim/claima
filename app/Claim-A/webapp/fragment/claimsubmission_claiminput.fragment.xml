@@ -102,6 +102,16 @@
                         displayFormat="dd-MMM-yyyy"
                         />
 
+                    <!-- Move-In Date -->
+                    <Label text="{i18n>label_claiminput_move_in_date}" />
+                    <DatePicker
+                        id="datepicker_claiminput_move_in_date"
+                        value="{claimsubmission_input>/claim_header/move_in_date}"
+                        visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
+                        required="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
+                        displayFormat="dd-MMM-yyyy"
+                    />
+
                     <!-- Location -->
                     <Label text="{i18n>label_claiminput_location}" />
                     <Input
