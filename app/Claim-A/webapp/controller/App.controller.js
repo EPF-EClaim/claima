@@ -787,6 +787,7 @@ sap.ui.define([
 			}
 
 			//check if the same Request ID has been submitted for claim submission
+			if (this.byId("select_claimprocess_requestform").getVisible() && !!oInputModel.getProperty("/claimtype/requestform/request_id")) {
 			var sRequestID = oInputModel.getProperty("/claimtype/requestform/request_id");
 			
 			try {
@@ -811,6 +812,7 @@ sap.ui.define([
 			} catch (err) {
     			MessageToast.show(Utility.getText("msg_error_gettingpar_status"));
 			}
+		}
 
 			await this._proceedClaim();
 		},
