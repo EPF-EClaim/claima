@@ -331,11 +331,13 @@ sap.ui.define([
 					},
 					"requestform_amt": null,
 					"req_emailapprove": null,
+					"course_code": null,
 					"descr": {
 						"type": null,
 						"item": null,
 						"category": null,
 						"cost_center": null,
+						"course_code": null
 					}
 				},
 				"is_new": false,
@@ -572,6 +574,21 @@ sap.ui.define([
 				if (this.byId("button_claimprocess_startclaim").getEnabled()) {
 					this.byId("button_claimprocess_startclaim").setEnabled(false);
 				}
+
+				// set if claim type is course based on boolean value retrieved
+				var oInputModel = this.getView().getModel("claimsubmission_input");
+				// set filter for course code dropdown
+				if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type"))) {
+					var oSelectCourseCode = this.byId("select_claimprocess_course_code");
+					var oBindingSelectCourseCode = oSelectCourseCode.getBinding("items");
+					var aFilterSelectCourseCode = [
+							// ensure status is active
+							new Filter("PARTICIPANT_ID", FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
+							new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
+							new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true)
+						];
+					oBindingSelectCourseCode.filter(aFilterSelectCourseCode);
+				}
 			}
 		},
 
@@ -703,6 +720,15 @@ sap.ui.define([
 			}
 		},
 
+		/**
+        * On selecting course code from claim process, set description in claim submission model
+        * @public
+        */
+		onSelect_ClaimProcess_CourseCode: function (oEvent) {
+			// set description
+			this.getView().getModel("claimsubmission_input").setProperty("/claimtype/descr/course_code", oEvent.getParameters().selectedItem.getBindingContext("employee_view").getObject("COURSE_DESC"));
+		},
+
 		onPreApproval_ClaimProcess: function () {
 			// reset Claim Process dialog before closing
 			this._reset_ClaimProcess();
@@ -745,6 +771,11 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/req_emailapprove", this.byId("switch_claimprocess_req_emailapprove").getState());
 			}
 
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			if (!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
+				return;
+			}
+
 			// Mobile Eligibility Pre-check
 			var sClaimType = oInputModel.getProperty("/claimtype/type")
 			if (sClaimType === this._oConstant.ClaimType.HANDPHONE) {
@@ -756,6 +787,7 @@ sap.ui.define([
 			}
 
 			//check if the same Request ID has been submitted for claim submission
+			if (this.byId("select_claimprocess_requestform").getVisible() && !!oInputModel.getProperty("/claimtype/requestform/request_id")) {
 			var sRequestID = oInputModel.getProperty("/claimtype/requestform/request_id");
 			
 			try {
@@ -780,6 +812,7 @@ sap.ui.define([
 			} catch (err) {
     			MessageToast.show(Utility.getText("msg_error_gettingpar_status"));
 			}
+		}
 
 			await this._proceedClaim();
 		},
@@ -840,7 +873,7 @@ sap.ui.define([
 		//// end Functions - Claim Process
 
 		//// Functions - Claim Input
-		_onInit_ClaimInput: function () {
+		_onInit_ClaimInput: async function () {
 			// reset claim input data if exists
 			this._reset_ClaimInput();
 
@@ -868,6 +901,19 @@ sap.ui.define([
 			else if (oInputModel.getProperty("/claimtype/requestform/alternate_cost_center")) {
 				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/alternate_cost_center"));
 				oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/descr/alternate_cost_center"));
+			}
+			//// course code values
+			if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type")) &&
+				oInputModel.getProperty("/claimtype/course_code")
+			) {
+				oInputModel.setProperty("/claim_header/course_code", oInputModel.getProperty("/claimtype/course_code"));
+				oInputModel.setProperty("/claim_header/descr/course_code", oInputModel.getProperty("/claimtype/descr/course_code"));
+				// retrieve start/end dates based on course code
+				var oCourseCodeDates = await ClaimUtility.getCourseCodeStartEndDate(oInputModel.getProperty("/claim_header/course_code"), oInputModel.getProperty("/emp_master/eeid"));
+				if (oCourseCodeDates) {
+					oInputModel.setProperty("/claim_header/trip_start_date", oCourseCodeDates.start_date);
+					oInputModel.setProperty("/claim_header/trip_end_date", oCourseCodeDates.end_date);
+				}
 			}
 			//// initialized amount values
 			oInputModel.setProperty("/claim_header/total_claim_amount", "0.00");
@@ -906,12 +952,6 @@ sap.ui.define([
 						break;
 					default:
 						//// disable editing if dates already set from request
-						if (oInputModel.getProperty("/claimtype/requestform/trip_start_date")) {
-							this.byId("datepicker_claiminput_tripstartdate").setEditable(false);
-						}
-						if (oInputModel.getProperty("/claimtype/requestform/trip_end_date")) {
-							this.byId("datepicker_claiminput_tripenddate").setEditable(false);
-						}
 						if (oInputModel.getProperty("/claimtype/requestform/event_start_date")) {
 							this.byId("datepicker_claiminput_eventstartdate").setEditable(false);
 						}
@@ -1240,14 +1280,8 @@ sap.ui.define([
 			if (this.byId("datepicker_claiminput_tripstartdate").getValue()) {
 				this.byId("datepicker_claiminput_tripstartdate").setValue(null);
 			}
-			if (!this.byId("datepicker_claiminput_tripstartdate").getEditable()) {
-				this.byId("datepicker_claiminput_tripstartdate").setEditable(true);
-			}
 			if (this.byId("datepicker_claiminput_tripenddate").getValue()) {
 				this.byId("datepicker_claiminput_tripenddate").setValue(null);
-			}
-			if (!this.byId("datepicker_claiminput_tripenddate").getEditable()) {
-				this.byId("datepicker_claiminput_tripenddate").setEditable(true);
 			}
 			//// event dates
 			if (this.byId("datepicker_claiminput_eventstartdate").getValue()) {

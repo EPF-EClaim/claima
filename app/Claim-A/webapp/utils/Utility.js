@@ -247,4 +247,4 @@ sap.ui.define([
             return aContexts.map(oCtx => oCtx.getObject());
         }
     };
-});
+    });

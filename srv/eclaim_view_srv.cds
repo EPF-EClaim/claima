@@ -23,7 +23,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
     }
 
 
-    entity ZEMP_REQUEST_VIEW             as
+    entity ZEMP_REQUEST_VIEW              as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
                 EMP_ID,
@@ -114,7 +114,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         };
 
 
-    entity ZEMP_REQUEST_ITEM_VIEW        as
+    entity ZEMP_REQUEST_ITEM_VIEW         as
         projection on ECLAIM.ZREQUEST_ITEM {
             key REQUEST_ID,
             key REQUEST_SUB_ID,
@@ -188,7 +188,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_REQUEST_PART_VIEW        as
+    entity ZEMP_REQUEST_PART_VIEW         as
         projection on ECLAIM.ZREQ_ITEM_PART {
             key REQUEST_ID,
             key REQUEST_SUB_ID,
@@ -258,14 +258,14 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 modifiedAt
         };
 
-    entity ZEMP_CLAIM_HEADER_VIEW        as
+    entity ZEMP_CLAIM_HEADER_VIEW         as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
                 EMP_ID,
                 COST_CENTER,
                 COSTCENTER.COST_CENTER_DESC,
                 ALTERNATE_COST_CENTER,
-                ZCOST_CENTER.COST_CENTER_DESC as ALT_COST_CENTER_DESC,
+                ZCOST_CENTER.COST_CENTER_DESC  as ALT_COST_CENTER_DESC,
                 CLAIM_TYPE_ID,
                 ZCLAIM_TYPE.CLAIM_TYPE_DESC,
                 STATUS_ID,
@@ -309,7 +309,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZTRAIN_COURSE_PART.COURSE_DESC as COURSE_CODE_DESC
         };
 
-    entity ZEMP_CLAIM_ITEM_VIEW          as
+    entity ZEMP_CLAIM_ITEM_VIEW           as
         projection on ECLAIM.ZCLAIM_ITEM {
             key CLAIM_ID,
             key CLAIM_SUB_ID,
@@ -429,13 +429,21 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 INSURANCE_PROVIDER_ID,
                 ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_DESC,
                 ZCLAIM_HEADER.COURSE_CODE,
-                ZCLAIM_HEADER.ZTRAIN_COURSE_PART.COURSE_DESC as COURSE_CODE_DESC,
+                ZCLAIM_HEADER.ZTRAIN_COURSE_PART.COURSE_DESC    as COURSE_CODE_DESC,
                 ZCLAIM_HEADER.ZTRAIN_COURSE_PART.SESSION_NUMBER as SESSION_NUMBER,
+                INSURANCE_PROVIDER_NAME,
+                INSURANCE_PACKAGE_ID,
+                ZINSURANCE_PACKAGE.ZINSURANCE_PACKAGE_DESC,
+                INSURANCE_PURCHASE_DATE,
+                INSURANCE_CERT_START_DATE,
+                INSURANCE_CERT_END_DATE,
+                TRAVEL_DAYS_ID,
+                ZTRAVEL_DAYS.TRAVEL_DAYS_DESC,
+                METER_CUBE_ENTITLED,
                 METER_CUBE_ACTUAL,
-                METER_CUBE_ENTITLED
         };
 
-    entity ZEMP_REQUEST_STATUS           as
+    entity ZEMP_REQUEST_STATUS            as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
                 OBJECTIVE_PURPOSE,
@@ -451,7 +459,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_CLAIM_STATUS_HEADER      as
+    entity ZEMP_CLAIM_STATUS_HEADER       as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
                 STATUS_ID,
@@ -460,7 +468,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_CLAIM_STATUS_ITEM        as
+    entity ZEMP_CLAIM_STATUS_ITEM         as
         projection on ECLAIM.ZCLAIM_ITEM {
             key CLAIM_ID,
             key CLAIM_SUB_ID,
@@ -563,15 +571,15 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 COST_CENTER,
                 COSTCENTER.COST_CENTER_DESC,
                 ALTERNATE_COST_CENTER,
-                ZCOST_CENTER.COST_CENTER_DESC   as ALT_COST_CENTER_DESC,
+                ZCOST_CENTER.COST_CENTER_DESC                                as ALT_COST_CENTER_DESC,
                 TOTAL_CLAIM_AMOUNT,
                 CASH_ADVANCE_AMOUNT,
                 FINAL_AMOUNT_TO_RECEIVE,
                 PURPOSE,
                 LOCATION,
                 CLAIM_TYPE_ID,
-                TRIP_START_DATE                 as TRIP_START_DATE_HEADER,
-                TRIP_END_DATE                   as TRIP_END_DATE_HEADER,
+                TRIP_START_DATE                                              as TRIP_START_DATE_HEADER,
+                TRIP_END_DATE                                                as TRIP_END_DATE_HEADER,
                 ZCLAIM_TYPE.CLAIM_TYPE_DESC,
                 ZCLAIM_ITEM.CLAIM_TYPE_ITEM_ID,
                 ZCLAIM_ITEM.ZCLAIM_TYPE_ITEM.CLAIM_TYPE_ITEM_DESC,
@@ -580,7 +588,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.TRIP_START_TIME,
                 ZCLAIM_ITEM.TRIP_END_DATE,
                 ZCLAIM_ITEM.TRIP_END_TIME,
-                ZCLAIM_ITEM.LOCATION            as LOCATION_ITEM,
+                ZCLAIM_ITEM.LOCATION                                         as LOCATION_ITEM,
                 ZCLAIM_ITEM.PERCENTAGE_COMPENSATION,
                 ZCLAIM_ITEM.ACCOUNT_NO,
                 ZCLAIM_ITEM.AMOUNT,
@@ -595,7 +603,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.ZFLIGHT_CLASS.FLIGHT_CLASS_DESC,
                 ZCLAIM_ITEM.FROM_LOCATION,
                 ZCLAIM_ITEM.FROM_LOCATION_OFFICE,
-                ZCLAIM_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION.LOCATION_DESC as FROM_LOCATION_DESC,
+                ZCLAIM_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION.LOCATION_DESC  as FROM_LOCATION_DESC,
                 ZCLAIM_ITEM.KM,
                 ZCLAIM_ITEM.LOCATION_TYPE,
                 ZCLAIM_ITEM.ZLOC_TYPE.LOC_TYPE_DESC,
@@ -640,9 +648,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.ANGGOTA_NAME,
                 ZCLAIM_ITEM.DEPENDENT_NAME,
                 ZCLAIM_ITEM.FROM_STATE_ID,
-                ZCLAIM_ITEM.ZSTATE.STATE_DESC   as FROM_STATE_DESC,
+                ZCLAIM_ITEM.ZSTATE.STATE_DESC                                as FROM_STATE_DESC,
                 ZCLAIM_ITEM.TO_STATE_ID,
-                ZCLAIM_ITEM.ZTOSTATE.STATE_DESC as TO_STATE_DESC,
+                ZCLAIM_ITEM.ZTOSTATE.STATE_DESC                              as TO_STATE_DESC,
                 ZCLAIM_ITEM.GL_ACCOUNT,
                 ZCLAIM_ITEM.MATERIAL_CODE,
                 ZREQUEST_HEADER.REQUEST_ID,
@@ -791,7 +799,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 COST_CENTER,
                 ZCOST_CENTER.COST_CENTER_DESC,
                 ALTERNATE_COST_CENTER,
-                COSTCENTER.COST_CENTER_DESC as ALT_COST_CENTER_DESC,
+                COSTCENTER.COST_CENTER_DESC                                    as ALT_COST_CENTER_DESC,
                 TOTAL_AMOUNT,
                 CASH_ADVANCE,
                 OBJECTIVE_PURPOSE,
@@ -809,7 +817,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.EST_AMOUNT,
                 ZREQUEST_ITEM.EST_NO_PARTICIPANT,
                 REQUEST_DATE,
-                ZREQUEST_ITEM.CASH_ADVANCE  as CASH_ADV_YES_NO,
+                ZREQUEST_ITEM.CASH_ADVANCE                                     as CASH_ADV_YES_NO,
                 ZREQUEST_ITEM.START_DATE,
                 ZREQUEST_ITEM.END_DATE,
                 ZREQUEST_ITEM.REMARK,
@@ -843,9 +851,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 LAST_SEND_BACK_DATE,
                 SUBMITTED_DATE,
                 LAST_APPROVED_DATE,
-                CASH_ADVANCE_DATE           as PAYMENT_DATE,
-                CLAIM_TYPE_ID               as CLAIM_TYPE_HEADER,
-                ZCLAIM_TYPE.CLAIM_TYPE_DESC as CLAIM_TYPE_DESC_HEADER,
+                CASH_ADVANCE_DATE                                              as PAYMENT_DATE,
+                CLAIM_TYPE_ID                                                  as CLAIM_TYPE_HEADER,
+                ZCLAIM_TYPE.CLAIM_TYPE_DESC                                    as CLAIM_TYPE_DESC_HEADER,
                 createdBy,
                 ZREQUEST_ITEM.COURSE_TITLE,
                 ZREQUEST_ITEM.KILOMETER,
@@ -858,12 +866,12 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.COUNTRY,
                 ZREQUEST_ITEM.ZCOUNTRY.COUNTRY_DESC,
                 ZREQUEST_ITEM.FROM_STATE_ID,
-                ZREQUEST_ITEM.ZSTATE.STATE_DESC   as FROM_STATE_DESC,
+                ZREQUEST_ITEM.ZSTATE.STATE_DESC                                as FROM_STATE_DESC,
                 ZREQUEST_ITEM.TO_STATE_ID,
-                ZREQUEST_ITEM.ZTOSTATE.STATE_DESC as TO_STATE_DESC,
+                ZREQUEST_ITEM.ZTOSTATE.STATE_DESC                              as TO_STATE_DESC,
                 ZREQUEST_ITEM.FROM_LOCATION,
                 ZREQUEST_ITEM.FROM_LOCATION_OFFICE,
-                ZREQUEST_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION.LOCATION_DESC as FROM_LOCATION_DESC,
+                ZREQUEST_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION.LOCATION_DESC  as FROM_LOCATION_DESC,
                 ZREQUEST_ITEM.TO_LOCATION,
                 ZREQUEST_ITEM.TO_LOCATION_OFFICE,
                 ZREQUEST_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION1.LOCATION_DESC as TO_LOCATION_DESC,
@@ -895,7 +903,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.PURPOSE,
         };
 
-    entity ZEMP_APPROVER_REQUEST_DETAILS as
+    entity ZEMP_APPROVER_REQUEST_DETAILS  as
         projection on ECLAIM.ZAPPROVER_DETAILS_PREAPPROVAL {
             key PREAPPROVAL_ID,
             key LEVEL,
@@ -921,7 +929,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 modifiedAt
         };
 
-    entity ZEMP_APPROVER_CLAIM_DETAILS   as
+    entity ZEMP_APPROVER_CLAIM_DETAILS    as
         projection on ECLAIM.ZAPPROVER_DETAILS_CLAIMS {
             key CLAIM_ID,
             key LEVEL,
@@ -948,7 +956,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 modifiedAt
         };
 
-    entity ZEMP_CLAIM_DETAILS            as
+    entity ZEMP_CLAIM_DETAILS             as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
             key ZCLAIM_ITEM.CLAIM_SUB_ID,
@@ -963,7 +971,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.MATERIAL_CODE
         };
 
-    entity ZEMP_PREAPPROVAL_DETAILS      as
+    entity ZEMP_PREAPPROVAL_DETAILS       as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
             key ZREQUEST_ITEM.REQUEST_SUB_ID,
@@ -979,7 +987,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
 
     @cds.redirection.target
-    entity ZEMP_CLAIM_BUDGET_CHECK       as
+    entity ZEMP_CLAIM_BUDGET_CHECK        as
         projection on ECLAIM.ZCLAIM_HEADER {
             key CLAIM_ID,
             key ZCLAIM_ITEM.CLAIM_SUB_ID,
@@ -992,7 +1000,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy
         };
 
-    entity ZEMP_REQUEST_BUDGET_CHECK     as
+    entity ZEMP_REQUEST_BUDGET_CHECK      as
         projection on ECLAIM.ZREQUEST_HEADER {
             key REQUEST_ID,
             key ZREQUEST_ITEM.REQUEST_SUB_ID,
@@ -1021,7 +1029,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                     ZEMP_MASTER_APPROVER.EMAIL         as APPROVER_EMAIL,
                     ZREQUEST_HEADER.REQUEST_DATE       as REQUEST_DATE,
                     ZREQUEST_HEADER.PREAPPROVAL_AMOUNT as AMOUNT,
-                    ZREQUEST_HEADER.CASH_ADVANCE        as TOTAL_AMOUNT,
+                    ZREQUEST_HEADER.CASH_ADVANCE       as TOTAL_AMOUNT,
                     modifiedAt
             }
             where
@@ -1060,7 +1068,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 VALUE
         };
 
-    entity ZCLM_APPR_REQ_STAT_VIEW       as
+    entity ZCLM_APPR_REQ_STAT_VIEW        as
         projection on ECLAIM.ZCLM_APPR_REQ_STAT {
             key EMP_ID,
             key REQUEST_ID,
@@ -1070,19 +1078,20 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                                       on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID
         };
 
-    entity ZEMP_SUBSTITUTION_RULE as projection on ECLAIM.ZSUBSTITUTION_RULES;
+    entity ZEMP_SUBSTITUTION_RULE         as projection on ECLAIM.ZSUBSTITUTION_RULES;
 
-    entity ZCLM_OFFICE_LOCATION_SELECTION       as 
+    entity ZCLM_OFFICE_LOCATION_SELECTION as
         select from ECLAIM.ZOFFICE_DISTANCE {
             key FROM_STATE_ID,
-            ZSTATE.STATE_DESC as FROM_STATE_DESC,
+                ZSTATE.STATE_DESC               as FROM_STATE_DESC,
             key FROM_LOCATION_ID,
-            ZOFFICE_LOCATION.LOCATION_DESC as FROM_LOCATION_DESC,
+                ZOFFICE_LOCATION.LOCATION_DESC  as FROM_LOCATION_DESC,
             key TO_STATE_ID,
-            ZTOSTATE.STATE_DESC as TO_STATE_DESC,
+                ZTOSTATE.STATE_DESC             as TO_STATE_DESC,
             key TO_LOCATION_ID,
-            ZOFFICE_LOCATION1.LOCATION_DESC as TO_LOCATION_DESC,
-        } group by
+                ZOFFICE_LOCATION1.LOCATION_DESC as TO_LOCATION_DESC,
+        }
+        group by
             FROM_STATE_ID,
             ZSTATE.STATE_DESC,
             FROM_LOCATION_ID,
@@ -1092,19 +1101,36 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             TO_LOCATION_ID,
             ZOFFICE_LOCATION1.LOCATION_DESC;
 
-     entity ZCLM_TO_STATE_SELECTION       as 
+    entity ZCLM_TO_STATE_SELECTION        as
         select from ECLAIM.ZOFFICE_DISTANCE {
             key FROM_STATE_ID,
-            ZSTATE.STATE_DESC as FROM_STATE_DESC,
+                ZSTATE.STATE_DESC              as FROM_STATE_DESC,
             key FROM_LOCATION_ID,
-            ZOFFICE_LOCATION.LOCATION_DESC as FROM_LOCATION_DESC,
+                ZOFFICE_LOCATION.LOCATION_DESC as FROM_LOCATION_DESC,
             key TO_STATE_ID,
-            ZTOSTATE.STATE_DESC as TO_STATE_DESC,
-        } group by
+                ZTOSTATE.STATE_DESC            as TO_STATE_DESC,
+        }
+        group by
             FROM_STATE_ID,
             ZSTATE.STATE_DESC,
             FROM_LOCATION_ID,
             ZOFFICE_LOCATION.LOCATION_DESC,
             TO_STATE_ID,
             ZTOSTATE.STATE_DESC;
+
+
+    entity ZCLM_COURSE_VIEW_VH               as projection on ECLAIM.ZTRAIN_COURSE_PART {
+            key COURSE_ID,
+            key PARTICIPANT_ID,
+                COURSE_DESC,
+                COURSE_SESSION_STAT,
+                ATTENDENCE_STATUS
+        }
+        group by
+            COURSE_ID,
+            PARTICIPANT_ID,
+            COURSE_DESC,
+            COURSE_SESSION_STAT,
+            ATTENDENCE_STATUS
+        
 };
