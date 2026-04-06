@@ -3282,6 +3282,7 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
 				oInputModel.setProperty("/claim_item/km", null);
+				this.onChange_ClaimDetails_Kilometer();
 			}
 		},
 
