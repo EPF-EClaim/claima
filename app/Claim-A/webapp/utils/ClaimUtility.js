@@ -27,7 +27,7 @@ sap.ui.define([
 		 * Initialize the ClaimUtility
 		 * @public
 		 */
-		init: function(oOwnerComponent, oView) {
+		init: function (oOwnerComponent, oView) {
 			this._oOwnerComponent = oOwnerComponent;
 			this._oView = oView;
 		},
@@ -216,7 +216,7 @@ sap.ui.define([
 					}
 					return aReturnFields;
 				} else {
-					return[];
+					return [];
 				}
 			} catch (oError) {
 				MessageBox.error(Utility.getText("msg_claimdetails_input_err", [oError]));
@@ -258,14 +258,14 @@ sap.ui.define([
 			oContext.setParameter("dinner", nDinner);
 
 			return oContext.execute()
-							.then(() => oContext.requestObject());
+				.then(() => oContext.requestObject());
 
 		},
 
 		determineDefaultCostCenter: async function (sClaimTypeId) {
 			try {
 				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
-				
+
 				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
 
 				await oFunction.execute();
@@ -278,7 +278,101 @@ sap.ui.define([
 			} catch (oError) {
 				return null;
 			}
-			
 		},
+
+		/**
+		 * Calculate entitled meter cube value for Pengangkutan Laut claim type.
+		 * Method retrieves employee master data, marital status, dependent (spouse) data,
+		 * and meter cube configuration table to determine the total entitled meter cube
+		 * based on predefined rules.
+		 *
+		 * Entitlement is derived from these components:
+		 * - Base employee meter cube
+		 * - Additional meter cube based on marital status (single/married)
+		 * - Additional meter cube if employee has a spouse
+		 *
+		 * @public
+		 * @param {string} sKey - Selected claim type key
+		 * @param {object} oInputModel - Model storing claim item input values
+		 * @param {object} oPropertyModel - Model controlling visibility/editability of UI fields
+		 * @param {object} oSessionModel - Model containing user session information
+		 * @returns {void} Does not return a value; updates claim item model properties directly
+		 */
+		onSelect_ClaimDetails_MeterCube: async function (sKey, oInputModel, oPropertyModel, oSessionModel) {
+
+			const sEmpId = oSessionModel?.getProperty("/userId");
+			if (sKey !== Constant.ClaimTypeItem.LAUT || !sEmpId) {
+				return;
+			}
+			const oMar = Constant.MaritalStatus;
+			const oCube = Constant.MeterCubeId;
+			const oRel = Constant.RelationshipType;
+			const aMaster = await Utility.getMeterCubeCalc("/ZEMP_MASTER", ["EEID"], [sEmpId]);
+			const sMarital = aMaster?.[0]?.MARITAL;
+			const aDep = await Utility.getMeterCubeCalc(
+				"/ZEMP_DEPENDENT",
+				["EMP_ID", "RELATIONSHIP"],
+				[sEmpId, oRel.SPOUSE]
+			);
+			const bHasSpouse = aDep.length > 0;
+			const aMeter = await Utility.getMeterCubeCalc("/ZMETER_CUBE");
+			const fnGetCube = (sId) =>
+				aMeter.find(oRow => oRow.METER_CUBE_ID === sId)?.METER_CUBE ?? 0;
+			const aParts = [
+				fnGetCube(oCube.EMPLOYEE),
+				sMarital === oMar.SINGLE ? fnGetCube(oCube.SINGLE) : 0,
+				sMarital === oMar.MARRIED ? fnGetCube(oCube.MARRIED) : 0,
+				bHasSpouse ? fnGetCube(oCube.SPOUSE) : 0
+			];
+			const fTotal = aParts.reduce((sum, val) => sum + Number(val), 0);
+			//final value
+			oInputModel.setProperty("/claim_item/meter_cube_entitled", fTotal.toFixed(2));
+			oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
+			oPropertyModel.setProperty("/meter_cube_entitled/is_visible", true);
+		},
+
+		/**
+		 * Calculate claim amount for Pengangkutan Laut based on actual meter cube,
+		 * entitled meter cube, and actual amount entered by user.
+		 *
+		 * Method reads relevant values from the input model, validates them,
+		 * and applies the entitlement formula to derive the final payable amount.
+		 *
+		 * @public
+		 * @param {object} oInputModel - JSON model containing claim item input values
+		 * @returns {void} Updates "/claim_item/amount" in the model; no return value
+		 */
+		calculatePengangkutanLautAmount: function (oInputModel) {
+
+			const sActualMC = oInputModel.getProperty("/claim_item/meter_cube_actual");
+			const sActualAmount = oInputModel.getProperty("/claim_item/actual_amount");
+
+			if (sActualMC === "" || sActualMC === null ||
+				sActualAmount === "" || sActualAmount === null) {
+				oInputModel.setProperty("/claim_item/amount", null);
+				return;
+			}
+
+			const nActualMeterCube = Number(sActualMC);
+			const nEntitledMeterCube = Number(oInputModel.getProperty("/claim_item/meter_cube_entitled"));
+
+			const nActualAmount = Number(sActualAmount.toString().replace(/,/g, ""));
+
+			if (isNaN(nActualMeterCube) || isNaN(nEntitledMeterCube) || isNaN(nActualAmount)) {
+				oInputModel.setProperty("/claim_item/amount", null);
+				return;
+			}
+
+			let nFinalAmount = 0;
+
+			if (nActualMeterCube > nEntitledMeterCube) {
+				nFinalAmount = (nActualAmount / nActualMeterCube) * nEntitledMeterCube;
+			} else {
+				nFinalAmount = nActualAmount;
+			}
+
+			oInputModel.setProperty("/claim_item/amount", nFinalAmount.toFixed(2));
+		},
+
 	}
 });

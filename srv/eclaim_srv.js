@@ -1074,7 +1074,7 @@ module.exports = (srv) => {
                 if (sAgingDay != null) {
                     sClaimStatus = await EmailReminder.getClaimStatus(ZCLAIM_HEADER, tx, oRequest.REQUEST_ID);  //return true or false
                     if (sClaimStatus) {
-                        ({ sName, sEmail, sCCEmail } = await EmailReminder.getClaimantDetails(ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS, tx, oRequest.EMP_ID, sScenario));
+                        ({ sName, sEmail, sCCEmail } = await EmailReminder.getClaimantDetails(ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS, tx, oRequest.EMP_ID, sScenario, sAgingDay));
                     }
 
                     aResult.push({
