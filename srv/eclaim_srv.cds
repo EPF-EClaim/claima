@@ -384,4 +384,10 @@ service eclaim_srv @(requires: 'authenticated-user'){
     function getEmailReminder() returns array of reminders;
 
     action CheckUserClaimTypes(ID: String) returns many Response;
+
+    type PreApprovalUsageCheck {
+        isUsed: Boolean
+    }
+
+    function checkPreApprovalUsage(requestID: String) returns PreApprovalUsageCheck;
 };
