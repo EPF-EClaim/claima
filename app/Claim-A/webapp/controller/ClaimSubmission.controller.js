@@ -2842,31 +2842,6 @@ sap.ui.define([
 					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id")
 				});
 
-				//DUPLICATION CHECK HERE — BEFORE saving or creating
-
-				/* 				var oNewItem = oInputModel.getProperty("/claim_item");
-				
-								var oDuplicatePayload = {
-									receipt_number: oNewItem.receipt_number,
-									receipt_date: this._getHanaDate(oNewItem.receipt_date),
-									bill_no: oNewItem.bill_no,
-									bill_date: this._getHanaDate(oNewItem.bill_date),
-									claim_type_id: oNewItem.claim_type_id,
-									claim_sub_id: oNewItem.claim_sub_id,
-									emp_id: this._oSessionModel.getProperty("/userId"),
-									isNew: oInputModel.getProperty("/is_new")
-								};
-				
-								try {
-									await CustomDuplicationCheck.CheckDuplicateClaimItem(this, oDuplicatePayload, oModel);
-								} catch (e) {
-									MessageBox.error(e.message);
-									return false;
-								} */
-
-
-				//if (oInputModel.getProperty("/is_new")) {
-
 				if (oInputModel.getProperty("/claim_item/is_new")) {
 					// create new item
 					oListBinding = oModel.bindList("/ZCLAIM_ITEM");
@@ -3565,12 +3540,6 @@ sap.ui.define([
 					return;
 				}
 
-				if (this._CheckDuplicateClaimItems(aItems)) {
-					MessageBox.error(Utility.getText("msg_duplication_prompt"));
-					BusyIndicator.hide();
-					return;
-				}
-
 				//// update last modified date
 				var lastModifiedDate = this._getJsonDate(new Date());
 				oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
@@ -3814,20 +3783,6 @@ sap.ui.define([
 			var oItem = oInputModel.getProperty("/claim_items") || [];
 
 
-			/* 
-						for (let oItem of aItems) {
-							try {
-								await CustomDuplicationCheck.CheckDuplicateClaimItem(this, oItem);
-							} catch (e) {
-								MessageBox.error(e.message);
-								BusyIndicator.hide();
-								return;   // STOP immediately — duplicate found
-							}
-						} */
-
-
-
-
 			// count existing items from database
 			try {
 				var oModel = this.getOwnerComponent().getModel();
@@ -4046,44 +4001,6 @@ sap.ui.define([
 			BusyIndicator.hide();
 			return true;
 		},
-
-		//Added for duplication check items via Save Draft and Submit Report btn
-
-		/* 		_CheckDuplicateClaimItems: function (aDupCheckItems) {
-		
-					const aDuplicateSet = new Set();
-		
-					for (let oItem of aDupCheckItems) {
-		
-						const sTypeId = oItem.claim_type_id || "";
-						const sItemId = oItem.claim_type_item_id || "";
-		
-						const sStartDate = DateUtility.formatDate(
-							oItem.start_date,
-							this._oConstant.Date.DATEFORMAT
-						);
-		
-						const sEndDate = DateUtility.formatDate(
-							oItem.end_date,
-							this._oConstant.Date.DATEFORMAT
-						);
-		
-						const sAmount = parseFloat(oItem.amount || 0).toFixed(2);
-		
-						// Build unique key
-						const sKey = `${sTypeId}|${sItemId}|${sStartDate}|${sEndDate}|${sAmount}`;
-		
-						if (aDuplicateSet.has(sKey)) {
-							return true;
-						}
-		
-						aDuplicateSet.add(sKey);
-					}
-		
-					return false;
-				}, */
-
-
 
 		_getJsonDate: function (iDate) {
 			if (iDate) {
