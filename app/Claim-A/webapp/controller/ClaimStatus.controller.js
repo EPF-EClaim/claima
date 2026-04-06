@@ -48,15 +48,15 @@ sap.ui.define([
 				}
 			);
 			try {
-				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				const a = aCtx.map((ctx) => {
+				const oContext = await oListBinding.requestContexts(0, Infinity);
+				const oContextItems = aCtx.map((ctx) => {
 							const oCtxObj = ctx.getObject();
 							oCtxObj.modifiedAt = DateUtility.convertUTCToLocal(oCtxObj.modifiedAt);
 							return oCtxObj;
 						});
 
-				_oReq.setProperty("/claim_header_list", a);
-				_oReq.setProperty("/claim_header_count", a.length);
+				_oReq.setProperty("/claim_header_list", oContextItems);
+				_oReq.setProperty("/claim_header_count", oContextItems.length);
 			} catch (err) {
 				console.error("OData bindList failed:", err);
 				_oReq.setProperty("/claim_header_list", []);

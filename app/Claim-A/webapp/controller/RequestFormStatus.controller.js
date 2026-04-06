@@ -64,8 +64,8 @@ sap.ui.define([
 			);
 
 			try {
-				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				const a = aCtx.map((ctx) => {
+				const oContext = await oListBinding.requestContexts(0, Infinity);
+				const oContextItems = oContext.map((ctx) => {
 							const oCtxObj = ctx.getObject();
 							oCtxObj.modifiedAt = DateUtility.convertUTCToLocal(oCtxObj.modifiedAt);
 							return oCtxObj;
@@ -75,8 +75,8 @@ sap.ui.define([
 					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
 				});
 
-				oReqStatusModel.setProperty("/req_header_list", a);
-				oReqStatusModel.setProperty("/req_header_count", a.length);
+				oReqStatusModel.setProperty("/req_header_list", oContextItems);
+				oReqStatusModel.setProperty("/req_header_count", oContextItems.length);
 
 				return a;
 			} catch (err) {
