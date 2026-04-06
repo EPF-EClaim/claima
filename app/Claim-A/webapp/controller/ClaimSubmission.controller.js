@@ -2327,9 +2327,9 @@ sap.ui.define([
 
 				//changes here
 				if(!!oInputModel.getProperty("/claim_item/anggota_id")){
-					oInputModel.setProperty("/claim_item/representative_selection", this._oConstant.EntitiesFields.ANGGOTA);
+					oInputModel.setProperty("/claim_item/representative_selection", this._oConstant.Representative_Selection.ANGGOTA);
 				}else if(!!oInputModel.getProperty("/claim_item/dependent_name")){
-					oInputModel.setProperty("/claim_item/representative_selection", this._oConstant.EntitiesFields.DEPENDENT);
+					oInputModel.setProperty("/claim_item/representative_selection", this._oConstant.Representative_Selection.DEPENDENT);
 				}
 
 			}

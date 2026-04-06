@@ -92,7 +92,7 @@
                         additionalValue="{claimitem_input>/claim_item/anggota_name}"
                         editMode="Editable"
                         display="ValueDescription"
-                        visible="{= ${claimitem_input>/claim_item/representative_selection} === ${constant>/EntitiesFields/ANGGOTA}}"
+                        visible="{= ${claimitem_input>/claim_item/representative_selection} === ${constant>/Representative_Selection/ANGGOTA}}"
                         valueHelp="valuehelp_claimdetails_input_anggota_name"
                         required="true"
                 />
@@ -104,7 +104,7 @@
                         value="{claimitem_input>/claim_item/dependent_name}"
                         editMode="Editable"
                         display="ValueDescription"
-                        visible="{= ${claimitem_input>/claim_item/representative_selection} === ${constant>/EntitiesFields/DEPENDENT}}"
+                        visible="{= ${claimitem_input>/claim_item/representative_selection} === ${constant>/Representative_Selection/DEPENDENT}}"
                         valueHelp="valuehelp_claimdetails_input_dependent_name"
                         required="true"
                 />
@@ -1363,16 +1363,18 @@
             <!-- Anggota Name -->
                 <mdc:ValueHelp
                         id="valuehelp_claimdetails_input_anggota_name"
-                        delegate='\{
-                            "name": "claima/utils/ValueHelpDelegate_anggota",
-                            "payload": \{
+                        delegate='{
+                            "name": "claima/utils/ValueHelpDelegate_Common",
+                            "payload": {
+                                "modelName": "employee",
+                                "entitySet": "employee>/ZEMP_MASTER",
+                                "keyField": "EEID",
+                                "descriptionField": "NAME",
+                                "columns": ["{i18n>valuehelp_claiminput_altcc_col_id}","{i18n>valuehelp_claiminput_anggota_col_name}"],
                                 "searchKeys": ["EEID", "NAME"],
-                                "columns": [
-                                    "\{i18n>valuehelp_claiminput_altcc_col_id\}",
-                                    "\{i18n>valuehelp_claiminput_anggota_col_name\}"
-                                ]
-                            \}
-                        \}'
+                                "openOnClick": true
+                            }
+                        }'
                     >
                         <mdc:typeahead>
                             <mdcvh:Popover id="valuehelp_claimdetails_input_anggota_name_pop">
@@ -1405,21 +1407,26 @@
             <!-- Dependent Name -->
                 <mdc:ValueHelp
                         id="valuehelp_claimdetails_input_dependent_name"
-                        delegate='\{
-                            "name": "claima/utils/ValueHelpDelegate_dependent",
-                            "payload": \{
+                        delegate='{
+                            "name": "claima/utils/ValueHelpDelegate_Common",
+                            "payload": {
+                                "modelName": "employee",
+                                "entitySet": "employee>/ZEMP_DEPENDENT",
+                                "keyField": "DEPENDENT_NO",
+                                "descriptionField": "LEGAL_NAME",
+                                "columns": ["{i18n>valuehelp_claiminput_altcc_col_id}","{i18n>valuehelp_claiminput_dependent_col_name}"],
                                 "searchKeys": ["LEGAL_NAME"],
-                                "columns": [
-                                    "\{i18n>valuehelp_claiminput_altcc_col_id\}",
-                                    "\{i18n>valuehelp_claiminput_dependent_col_name\}"
+                                "openOnClick": true,
+                                "filters": [
+                                    {path: "EMP_ID", operator: "EQ", value1: "/userId", model: "session"}
                                 ]
-                            \}
-                        \}'
+                            }
+                        }'
                     >
                         <mdc:typeahead>
                             <mdcvh:Popover id="valuehelp_claimdetails_input_dependent_name_pop">
                                 <mdcvhcnt:MTable id="valuehelp_claimdetails_input_dependent_name_pop_MTable"
-                                    keyPath="LEGAL_NAME"
+                                    keyPath="DEPENDENT_NO"
                                     descriptionPath="LEGAL_NAME"
                                     caseSensitive="false"
                                     useAsValueHelp="false">
@@ -1434,7 +1441,7 @@
                             >
                                 <mdcvhcnt:MTable
                                     id="valuehelp_claimdetails_input_dependent_name_dialog_MTable"
-                                    keyPath="LEGAL_NAME"
+                                    keyPath="DEPENDENT_NO"
                                     descriptionPath="LEGAL_NAME"
                                     caseSensitive="false">
                                     <!-- create table via delegate-->

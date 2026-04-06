@@ -233,9 +233,7 @@ sap.ui.define([
             "FROM_STATE_ID": "FROM_STATE_ID",
             "FROM_LOCATION_ID": "FROM_LOCATION_ID",
             "TO_STATE_ID": "TO_STATE_ID",
-            "TO_LOCATION_ID": "TO_LOCATION_ID",
-            "ANGGOTA" : "1",
-            "DEPENDENT": "2"
+            "TO_LOCATION_ID": "TO_LOCATION_ID"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -366,6 +364,10 @@ sap.ui.define([
             "PUSHBACK" : "Push Back",
             "APPROVE" : "Approve"
 
+        },
+        "Representative_Selection": {
+            "ANGGOTA" : "1",
+            "DEPENDENT": "2"
         },
         "ConfigAccess": 
              [
