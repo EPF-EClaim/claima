@@ -2097,7 +2097,7 @@ sap.ui.define([
 					});
 					const _oHeader = this._oReqModel.getProperty("/req_header") || {};
 					const _oItem = this._oReqModel.getProperty("/req_item") || {};
-					var iDiffDays = DateUtility.calculateNumberOfDays(_oHeader, _oItem);
+					var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.REQUEST, _oHeader, _oItem);
 					this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
 				}
 
