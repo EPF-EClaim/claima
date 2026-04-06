@@ -1011,7 +1011,7 @@ sap.ui.define([
 					"item": null,
 					"category": null,
 					"cost_center": null,
-					"representative_selection": null,
+					"dependent_type": null,
 					"requestform": {
 						"request_id": null,
 						"objective_purpose": null,
@@ -1769,7 +1769,7 @@ sap.ui.define([
 				{ label: Utility.getText("label_claimdetails_input_claimitem"), property: "claim_type_item_id", type: "descr", width: 30 },
 			];
 			const aItemsColumnsAdditional = [
-				{ label: Utility.getText("label_claimdetails_input_depedent_or_anggota"), property: "representative_selection", field: "select_claimdetails_input_depedent_or_anggota", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_depedent_or_anggota"), property: "dependent_type", field: "select_claimdetails_input_depedent_or_anggota", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_anggota"), property: "anggota_name", field: "field_claimdetails_input_anggota_name", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_dependent"), property: "dependent_name", field: "field_claimdetails_input_dependent_name", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_profbodytype"), property: "type_of_professional_body", field: "select_claimdetails_input_type_of_professional_body", type: "descr", width: 40 },
@@ -2327,9 +2327,9 @@ sap.ui.define([
 
 				//changes here
 				if(!!oInputModel.getProperty("/claim_item/anggota_id")){
-					oInputModel.setProperty("/claim_item/representative_selection", this._oConstant.Representative_Selection.ANGGOTA);
+					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
 				}else if(!!oInputModel.getProperty("/claim_item/dependent_name")){
-					oInputModel.setProperty("/claim_item/representative_selection", this._oConstant.Representative_Selection.DEPENDENT);
+					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.DEPENDENT);
 				}
 
 			}

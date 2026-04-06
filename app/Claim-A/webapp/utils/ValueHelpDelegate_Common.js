@@ -143,12 +143,8 @@ sap.ui.define([
                     const sModelName = filter.model;
                     sValue = oValueHelp.getModel(sModelName)?.getProperty(filter.value1);
                }
-
-                if(sValue === undefined || sValue === null || sValue === ""){
-                    return null;
-                }
-
-                return new Filter({
+                
+                return !sValue ? null : new Filter({
                     path: filter.path,
                     operator: FilterOperator[filter.operator] || filter.operator,
                     value1: sValue

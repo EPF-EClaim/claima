@@ -365,7 +365,7 @@ sap.ui.define([
             "APPROVE" : "Approve"
 
         },
-        "Representative_Selection": {
+        "DependentType": {
             "ANGGOTA" : "1",
             "DEPENDENT": "2"
         },

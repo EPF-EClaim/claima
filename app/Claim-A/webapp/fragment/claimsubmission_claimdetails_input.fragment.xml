@@ -92,7 +92,7 @@
                         additionalValue="{claimitem_input>/claim_item/anggota_name}"
                         editMode="Editable"
                         display="ValueDescription"
-                        visible="{= ${claimitem_input>/claim_item/representative_selection} === ${constant>/Representative_Selection/ANGGOTA}}"
+                        visible="{= ${claimitem_input>/claim_item/representative_selection} === ${constant>/DependentType/ANGGOTA}}"
                         valueHelp="valuehelp_claimdetails_input_anggota_name"
                         required="true"
                 />
@@ -104,7 +104,7 @@
                         value="{claimitem_input>/claim_item/dependent_name}"
                         editMode="Editable"
                         display="ValueDescription"
-                        visible="{= ${claimitem_input>/claim_item/representative_selection} === ${constant>/Representative_Selection/DEPENDENT}}"
+                        visible="{= ${claimitem_input>/claim_item/representative_selection} === ${constant>/DependentType/DEPENDENT}}"
                         valueHelp="valuehelp_claimdetails_input_dependent_name"
                         required="true"
                 />
@@ -1426,8 +1426,7 @@
                         <mdc:typeahead>
                             <mdcvh:Popover id="valuehelp_claimdetails_input_dependent_name_pop">
                                 <mdcvhcnt:MTable id="valuehelp_claimdetails_input_dependent_name_pop_MTable"
-                                    keyPath="DEPENDENT_NO"
-                                    descriptionPath="LEGAL_NAME"
+                                    keyPath="LEGAL_NAME"
                                     caseSensitive="false"
                                     useAsValueHelp="false">
                                     <!-- create table via delegate-->
@@ -1441,8 +1440,7 @@
                             >
                                 <mdcvhcnt:MTable
                                     id="valuehelp_claimdetails_input_dependent_name_dialog_MTable"
-                                    keyPath="DEPENDENT_NO"
-                                    descriptionPath="LEGAL_NAME"
+                                    keyPath="LEGAL_NAME"
                                     caseSensitive="false">
                                     <!-- create table via delegate-->
                                 </mdcvhcnt:MTable>
