@@ -2222,29 +2222,6 @@ sap.ui.define([
 				return;
 			}
 
-			// elaun pengangkutan validation checking
-			if ((oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT)) {
-				// don't allow claim if employee is not permanent
-				if ((oClaimSubmissionModel.getProperty("/emp_master/employee_type") !== this._oConstant.EmployeeType.PERMANENT)) {
-					// reset claim item selection
-					oInputModel.setProperty("/claim_item/claim_type_item_id", null);
-					oEvent.getSource().setSelectedItem(null);
-					// popup error message
-					MessageBox.error(Utility.getText("msg_claimdetails_input_pengangkutan_permanent"));
-					return;
-				}
-				// don't allow claim elaun pengangkutan more than once
-				var bHasPreviousElaun = await ClaimUtility.getPreviousElaunPengangkutan(oClaimSubmissionModel.getProperty("/emp_master/eeid"));
-				if (bHasPreviousElaun) {
-					// reset claim item selection
-					oInputModel.setProperty("/claim_item/claim_type_item_id", null);
-					oEvent.getSource().setSelectedItem(null);
-					// popup error message
-					MessageBox.error(Utility.getText("msg_claimdetails_input_pengangkutan_repeat"));
-					return;
-				}
-			}
-
 			// set app visibility controls
 			await this.getFieldVisibility_ClaimTypeItem();
 
