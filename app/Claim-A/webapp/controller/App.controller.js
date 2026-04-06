@@ -22,7 +22,10 @@ sap.ui.define([
 	"claima/utils/DateUtility",
 	"claima/utils/PARequestSharedFunction",
 	"claima/utils/Attachment",
-	"claima/utils/EligibilityCheck"
+	"claima/utils/EligibilityCheck",
+	"claima/utils/CustomValidator",
+	"claima/utils/RequestUtility",
+	"claima/utils/ClaimUtility"
 ], function (
 	Popover,
 	Button,
@@ -47,21 +50,29 @@ sap.ui.define([
 	DateUtility,
 	PARequestSharedFunction,
 	Attachment,
-	EligibilityCheck
+	EligibilityCheck,
+	CustomValidator,
+	RequestUtility,
+	ClaimUtility
 ) {
 	"use strict";
 
 	return Controller.extend("claima.controller.App", {
 
+		RequestUtility: RequestUtility,
+
 		onInit: async function () {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oRouter = this.getOwnerComponent().getRouter();
 			this._oDataModel = this.getOwnerComponent().getModel();
-			this._oViewModel = this.getOwnerComponent().getModel('employee_view');
 			this._oReqModel = this.getOwnerComponent().getModel('request');
-			this._oReqStatusModel = this.getOwnerComponent().getModel("request_status");
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._oRoleModel = this.getOwnerComponent().getModel("roleModel");
+
+			// declare request utility
+			RequestUtility.init(this.getOwnerComponent());
+			// declare claim utility
+			ClaimUtility.init(this.getOwnerComponent(), this.getView());
 
 			// oReportModel
 			var oReportModel = new JSONModel({
@@ -76,7 +87,6 @@ sap.ui.define([
 
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
-			
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
@@ -217,19 +227,25 @@ sap.ui.define([
 		// Functions - Claim Submission
 		onNav_ClaimSubmission: async function () {
 			BusyIndicator.show();
-			// load Claim Process dialog
-			var oName = "claima.fragment.claimsubmission_claimprocess"
-			this.oDialog_ClaimProcess ??= await this.loadFragment({
-				name: oName,
-			});
-			if (this.oDialog_ClaimProcess) {
-				this._onInit_ClaimProcess();
+
+			try{
+				const oName = "claima.fragment.claimsubmission_claimprocess";
+				
+				this.oDialog_ClaimProcess ??= await this.loadFragment({
+					name: oName
+				})
+				if(!this.getView().getModel("claimsubmission_input")){
+					await this._onInit_ClaimProcess();
+				}
+
 				this.oDialog_ClaimProcess.open();
+			}catch{
+				MessageBox.error(Utility.getText("msg_nav_error_fragment", [oName]));
+			}finally{
+				BusyIndicator.hide();
+				this._reset_ClaimProcess();
 			}
-			else {
-				MessageToast.show(Utility.getText("msg_nav_error_fragment", [oName]));
-			}
-			BusyIndicator.hide();
+			
 		},
 
 		_getNewEmployeeModel: function (modelName) {
@@ -298,6 +314,7 @@ sap.ui.define([
 					"type": null,
 					"item": null,
 					"category": null,
+					"cost_center": null,
 					"requestform": {
 						"request_id": null,
 						"objective_purpose": null,
@@ -318,6 +335,7 @@ sap.ui.define([
 						"type": null,
 						"item": null,
 						"category": null,
+						"cost_center": null,
 					}
 				},
 				"is_new": false,
@@ -422,6 +440,17 @@ sap.ui.define([
 				oInputModel.setProperty("/emp_master", oEmpData);
 				await this._getEmpDataDescr(oInputModel);
 			}
+
+			// set claim items based on selected claim type
+			var oSelectClaimType = this.byId("select_claimprocess_claimtype");
+			var oBindingSelectClaimType = oSelectClaimType.getBinding("items");
+			var aFilterSelectClaimType = [
+					// ensure status is active
+					new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
+					new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
+					new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
+				];
+			oBindingSelectClaimType.filter(aFilterSelectClaimType);
 		},
 
 		_getEmpDataDescr: async function (oModel) {
@@ -691,6 +720,12 @@ sap.ui.define([
 			oInputModel.setProperty("/claimtype/descr/item", this.byId("select_claimprocess_claimitem")._getSelectedItemText());
 			//// get claim item category ID
 			oInputModel.setProperty("/claimtype/category", this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("SUBMISSION_TYPE"));
+			//// get cost center from claim type if value exists
+			var sClaimTypeCostCenter = await ClaimUtility.determineDefaultCostCenter(oInputModel.getProperty("/claimtype/type"));
+			if (sClaimTypeCostCenter && sClaimTypeCostCenter !== 'null') { // returns value and is not string 'null'
+				oInputModel.setProperty("/claimtype/cost_center", sClaimTypeCostCenter);
+				oInputModel.setProperty("/claimtype/descr/cost_center", await this._bindEclaimDescr("/ZCOST_CENTER", sClaimTypeCostCenter, 'COST_CENTER_ID', 'COST_CENTER_DESC'));
+			}
 			//// get request form values
 			if (this.byId("select_claimprocess_requestform").getSelectedItem() && !this.byId("switch_claimprocess_req_emailapprove").getState()) {
 				var oRequestForm = this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee");
@@ -812,9 +847,16 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/trip_end_date", oInputModel.getProperty("/claimtype/requestform/trip_end_date"));
 			oInputModel.setProperty("/claim_header/event_start_date", oInputModel.getProperty("/claimtype/requestform/event_start_date"));
 			oInputModel.setProperty("/claim_header/event_end_date", oInputModel.getProperty("/claimtype/requestform/event_end_date"));
-			oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/alternate_cost_center"));
-			oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/descr/alternate_cost_center"));
 			oInputModel.setProperty("/claim_header/cash_advance_amount", oInputModel.getProperty("/claimtype/requestform/cash_advance"));
+			//// set alternate cost center based on claim type / pre-approval
+			if (oInputModel.getProperty("/claimtype/cost_center")) {
+				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/cost_center"));
+				oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/descr/cost_center"));
+			}
+			else if (oInputModel.getProperty("/claimtype/requestform/alternate_cost_center")) {
+				oInputModel.setProperty("/claim_header/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/alternate_cost_center"));
+				oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/descr/alternate_cost_center"));
+			}
 			//// initialized amount values
 			oInputModel.setProperty("/claim_header/total_claim_amount", "0.00");
 			oInputModel.setProperty("/claim_header/final_amount_to_receive", "0.00");
@@ -863,13 +905,6 @@ sap.ui.define([
 						}
 						if (oInputModel.getProperty("/claimtype/requestform/event_end_date")) {
 							this.byId("datepicker_claiminput_eventenddate").setEditable(false);
-						}
-						//// disable editing alternate cost center if already set from request
-						if (oInputModel.getProperty("/claimtype/requestform/alternate_cost_center")) {
-							this.byId("field_claiminput_altcc").setVisible(false);
-
-							this.byId("input_claiminput_altcc").setEnabled(true);
-							this.byId("input_claiminput_altcc").setVisible(true);
 						}
 						break;
 				}
@@ -1219,18 +1254,6 @@ sap.ui.define([
 			if (this.byId("input_claiminput_location").getValue()) {
 				this.byId("input_claiminput_location").setValue(null);
 			}
-			//// alternate cost center
-			if (!this.byId("field_claiminput_altcc").getVisible()) {
-				this.byId("field_claiminput_altcc").setVisible(true);
-			}
-			if (this.byId("field_claiminput_altcc").getValue()) {
-				this.byId("field_claiminput_altcc").setValue(null);
-			}
-			if (this.byId("input_claiminput_altcc").getEnabled()) {
-				this.byId("input_claiminput_altcc").setEnabled(false);
-				this.byId("input_claiminput_altcc").setEditable(false);
-				this.byId("input_claiminput_altcc").setVisible(false);
-			}
 			//// attachment email approval
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
 				this.byId("fileuploader_claiminput_attachment").clear();
@@ -1373,7 +1396,7 @@ sap.ui.define([
 
 				this.getView().addDependent(this.oDialogFragment);
 
-				var oRequestDialogModel = new JSONModel({ reqid: "", grptype: "IND" });
+				var oRequestDialogModel = new JSONModel({ reqid: "", grptype: "IND", altcostcenter: "" });
 				this.oDialogFragment.setModel(oRequestDialogModel, "reqDialog");
 
 				this.oDialogFragment.attachAfterClose(() => {
@@ -1385,6 +1408,7 @@ sap.ui.define([
 			this.oDialogFragment.addStyleClass('requestDialog');
 			this.oDialogFragment.open();
 			this._applyReqTypeFilters(this._oSessionModel.getProperty("/userType"));
+			this._openAndPreload(this.oDialogFragment);
 		},
 
 		onClickCreateRequest: async function () {
@@ -1396,7 +1420,7 @@ sap.ui.define([
 			try {
 
 				// validate mandatory fields
-				if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
+				if (!this.getOwnerComponent().getValidator().validate(this.oDialogFragment)) {
 					MessageBox.error(Utility.getText("req_d_w_mandatory_field"), {
 						closeOnBrowserNavigation: false
 					});
@@ -1732,6 +1756,15 @@ sap.ui.define([
 				}
 				BusyIndicator.hide();
 			}
+		},
+
+		_openAndPreload: function(oDialog) {
+
+			var oListBinding = this._oDataModel.bindList("/ZCOST_CENTER", null, null, null, {
+				$select: "COST_CENTER_DESC,COST_CENTER_ID"
+			});
+
+			oListBinding.requestContexts(0, 5).then(function(aContexts) {});
 		},
 
 		_setAllHeaderControlsVisible: function (bVisible) {

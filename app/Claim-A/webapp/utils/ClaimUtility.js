@@ -28,8 +28,8 @@ sap.ui.define([
          * @public
          */
         init: function(oOwnerComponent, oView) {
-            this._oOwnerComponent = oOwnerComponent;
-            this._oView = oView;
+			this._oOwnerComponent = oOwnerComponent;
+			this._oView = oView;
         },
 
 		/**
@@ -37,35 +37,35 @@ sap.ui.define([
         * Request is made to get values from table ZELIGIBILITY_RULE, based on user role and claim type/claim item given 
         * if record found, value is retrieved from the table and populated in the claim item model
         * @public
+		* @param {object} oClaimSubmissionModel - claim submission to be passed into param
+		* @param {object} oInputModel - claim item model to be passed into param
 		* @param {string} sClaimItemField - claim item field to be populated
 		* @param {string} sEligibilityRule - field to retrieve value from db table
 		* @param {string} sDefaultValue - default value to set if none found
         */
-		setClaimItemDefaultValues: async function (sClaimItemField, sEligibilityRule, sDefaultValue) {
-			var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
-			var oInputModel = this._oView.getModel("claimitem_input");
+		setClaimItemDefaultValues: async function (oClaimSubmissionModel, oInputModel, sClaimItemField, sEligibilityRule, sDefaultValue) {
 			const oModel = this._oOwnerComponent.getModel();
 			//// filter by employee role ID or * (all)
 			const oFilterRoleId = new Filter({
 				filters: [
-					new Filter("ROLE_ID", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/role")),
-					new Filter("ROLE_ID", FilterOperator.EQ, '*')
+					new Filter(Constant.EligibilityRule.ROLE_ID, FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/role")),
+					new Filter(Constant.EligibilityRule.ROLE_ID, FilterOperator.EQ, '*')
 				],
 				and: false
 			});
 			//// filter by employee role ID or * (all)
 			const oFilterPersonalGrade = new Filter({
 				filters: [
-					new Filter("PERSONAL_GRADE", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/grade")),
-					new Filter("PERSONAL_GRADE", FilterOperator.EQ, '*')
+					new Filter(Constant.EligibilityRule.PERSONAL_GRADE, FilterOperator.EQ, oClaimSubmissionModel.getProperty("/emp_master/grade")),
+					new Filter(Constant.EligibilityRule.PERSONAL_GRADE, FilterOperator.EQ, '*')
 				],
 				and: false
 			});
-			const oListBinding = oModel.bindList("/ZELIGIBILITY_RULE", null, [
-				new Sorter("ROLE_ID", true),
-				new Sorter("PERSONAL_GRADE", true),
-				new Sorter("POSITION_NO_DESC", true),
-				new Sorter("ROW_COUNT", true),
+			const oListBinding = oModel.bindList(Constant.Entities.ZELIGIBILITY_RULE, null, [
+				new Sorter(Constant.EligibilityRule.PERSONAL_GRADE, true),
+				new Sorter(Constant.EligibilityRule.ROLE_ID, true),
+				new Sorter(Constant.EligibilityRule.POSITION_NO_DESC, true),
+				new Sorter(Constant.EligibilityRule.ROW_COUNT, true),
 			], [
 				new Filter("CLAIM_TYPE_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_id")),
 				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, oInputModel.getProperty("/claim_item/claim_type_item_id")),
@@ -107,7 +107,6 @@ sap.ui.define([
 		* @returns {array} if records found, returns array of values from first selected record; else, returns empty array
         */
 		setClaimItemValueFromSelection: async function (sEntity, aEntityFields, aRetrievalFields) {
-			var oInputModel = this._oView.getModel("claimitem_input");
 			const oModel = this._oOwnerComponent.getModel();
             // set filters based on given entity fields
             var aSorters = [];
@@ -188,6 +187,25 @@ sap.ui.define([
 			return oContext.execute()
 							.then(() => oContext.requestObject());
 
-		}
+		},
+
+		determineDefaultCostCenter: async function (sClaimTypeId) {
+            try {
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
+				
+				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				const oResult = oContext.getObject();
+
+                return oResult.sCostCenter
+
+			} catch (oError) {
+				return null;
+			}
+			
+        },
     }
 });

@@ -86,6 +86,11 @@ sap.ui.define([
             "GALAKAN" : "GALAKAN",
             "TELEFON_B" : "TELEFON_B"
         },
+        "ClaimTypeItemLodging": {
+            "LOD_TUKAR": "LOD_TUKAR",
+            "LODG_O": "LODG_O",
+            "LODGING_L": "LODGING_L"
+        },
         "ClaimTypeItemStatus": {
             "ACTIVE": "ACTIVE",
         },
@@ -99,11 +104,16 @@ sap.ui.define([
             "CANCELLED": "STAT07",
         },
         "EligibilityRule": {
+            "ROLE_ID": "ROLE_ID",
+            "PERSONAL_GRADE": "PERSONAL_GRADE",
+            "POSITION_NO_DESC": "POSITION_NO_DESC",
+            "ROW_COUNT": "ROW_COUNT",
+            "ELIGIBLE_AMOUNT": "ELIGIBLE_AMOUNT",
             "RATE_PER_KM": "RATE",
             "SUBSIDISED_RATE": "SUBSIDISED_RATE"
         },
         "Departments": {
-            "FI_DEPT":"0500000000"
+            "FI_DEPT": "0500000000"
         },
         "RequestStatus": {
             "DRAFT": "DRAFT",
@@ -159,6 +169,7 @@ sap.ui.define([
             "ZCLAIM_HEADER": "/ZCLAIM_HEADER",
             "ZCLAIM_ITEM": "/ZCLAIM_ITEM",
             "ZCLAIM_TYPE_ITEM": "/ZCLAIM_TYPE_ITEM",
+            "ZELIGIBILITY_RULE": "/ZELIGIBILITY_RULE",
             "ZEMP_APPROVER_REQUEST_DETAILS": "/ZEMP_APPROVER_REQUEST_DETAILS",
             "ZEMP_APPROVER_CLAIM_DETAILS": "/ZEMP_APPROVER_CLAIM_DETAILS",
             "ZEMP_CLAIM_BUDGET_CHECK": "/ZEMP_CLAIM_BUDGET_CHECK",
@@ -166,6 +177,7 @@ sap.ui.define([
             "ZEMP_MASTER": "/ZEMP_MASTER",
             "ZEMP_REQUEST_BUDGET_CHECK": "/ZEMP_REQUEST_BUDGET_CHECK",
             "ZEMP_SUBSTITUTION_RULE": "/ZEMP_SUBSTITUTION_RULE",
+            "ZOFFICE_DISTANCE": "/ZOFFICE_DISTANCE",
             "ZRATE_KM": "/ZRATE_KM",
             "ZREQUEST_HEADER": "/ZREQUEST_HEADER",
             "ZREQUEST_ITEM": "/ZREQUEST_ITEM",
@@ -218,6 +230,10 @@ sap.ui.define([
             "INSURANCE_PURCH_DATE": "INSURANCE_PURCH_DATE",
             "INSURANCE_CERT_START_DATE": "INSURANCE_CERT_START_DATE",
             "INSURANCE_CERT_END_DATE": "INSURANCE_CERT_END_DATE",
+            "FROM_STATE_ID": "FROM_STATE_ID",
+            "FROM_LOCATION_ID": "FROM_LOCATION_ID",
+            "TO_STATE_ID": "TO_STATE_ID",
+            "TO_LOCATION_ID": "TO_LOCATION_ID",
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -283,15 +299,16 @@ sap.ui.define([
             "COST_CENTER": "100000000",
             "GL_ACCOUNT": "214005"
         },
-        "SubmissionType":{
-            "DIRECT_CLAIM"  : "ST0001",
-            "AUTO_APPROVE"  : "ST0002",
-            "PRE_APPROVE"   : "ST0003",
+        "SubmissionType": {
+            "DIRECT_CLAIM": "ST0001",
+            "AUTO_APPROVE": "ST0002",
+            "PRE_APPROVE": "ST0003",
             "CASH_REPAYMENT": "ST0004",
-            "CURR_SUBSIDY"  : "ST0005"
+            "CURR_SUBSIDY": "ST0005"
         },
         "Default": {
-            "PROJECT_CODE": "NA"
+            "PROJECT_CODE": "NA",
+            "NULL": "null"
         },
         "BudgetCheckAction": {
             "SUBMIT": "SUBMIT",
@@ -304,19 +321,33 @@ sap.ui.define([
             "EDIT": "i_edit",
             "LIST": "list",
             "CREATE": "create",
-            "VIEWAPPR": "view_appr"
+            "VIEWAPPR": "view_appr",
+            "APPROVE": "APPROVE",
         },
         "RequestType": {
-            "TRAVEL"        : "RT0001",
-            "MOBILE"        : "RT0002",
-            "EVENTS"        : "RT0003",
-            "REIMBURSEMENT" : "RT0004",
-            "MEDICAL"       : "RT0005",
-            "PROJECT"       : "RT0006"
+            "TRAVEL": "RT0001",
+            "MOBILE": "RT0002",
+            "EVENTS": "RT0003",
+            "REIMBURSEMENT": "RT0004",
+            "MEDICAL": "RT0005",
+            "PROJECT": "RT0006"
+        },
+        "ClaimFooterMode": {
+            "SUMMARY": "SUMMARY",
+            "DETAILS": "DETAILS",
+            "APPROVER": "APPROVER",
+            "VIEW_ONLY": "VIEW_ONLY"
         },
         "LocationType" : {
             "OTHER" : "1",
             "KWSP"  : "2"
+        },
+        "LocationTypeOffice" : {
+            "FROM" : "from",
+            "TO"  : "to"
+        },
+        "OfficeDistance" : {
+            "MILEAGE" : "MILEAGE"
         },
         "InsuranceProvider" : {
             "OTHERS" : "4",
