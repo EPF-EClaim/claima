@@ -2285,9 +2285,10 @@ sap.ui.define([
 				oPropertyModel.setProperty("/actual_amount/is_visible", false);
 				oInputModel.setProperty("/claim_item/actual_amount", null);
 
-				oPropertyModel.setProperty("/amount/is_visible", false);
-				oInputModel.setProperty("/claim_item/amount", null);
-			}
+				oPropertyModel.setProperty("/amount/is_visible", true);
+				oPropertyModel.setProperty("/amount/is_editable", true);
+	        }
+
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
 			// calculate number of days
