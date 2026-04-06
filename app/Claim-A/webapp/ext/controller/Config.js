@@ -11,7 +11,8 @@ sap.ui.define([
     "sap/m/Dialog",
     "sap/m/Button",
     "claima/utils/Utility", 
-    "claima/utils/Validator"
+    "claima/utils/Validator",
+    "sap/ui/core/ValueState"
 ], function (ControllerExtension,
     ListItem,
     DatePicker,
@@ -24,7 +25,8 @@ sap.ui.define([
     Dialog,
     Button,
     Utility,
-    Validator) {
+    Validator, 
+    ValueState) {
     'use strict';
 
     const allowedOnZemp = new Set([
@@ -74,6 +76,7 @@ sap.ui.define([
     const _validateInputs = function (oVBox, oDataType, isZempMaster) {
         let bValid = true;
         const oInputs = oVBox.getItems();
+        const oValidator = new Validator();
 
         for (let i = 1; i < oInputs.length; i += 2) {
             const oControl = oInputs[i];
@@ -91,21 +94,35 @@ sap.ui.define([
                 oMeta?.$Type === "Edm.Int32" ||
                 oMeta?.$Type === "Edm.Int64" ||
                 oMeta?.$Type === "Edm.Double";
+            
+            oControl.setValueState("None");
+            oControl.setValueStateText("");
 
             if (bRequired && (!sValue || sValue.trim() === '')) {
-                oControl.setValueState("Error");
-                oControl.setValueStateText(Utility.getText("msg_requiredfield"));
+                oValidator._setValueState(oControl, 
+                                          ValueState.Error,
+                                          Utility.getText("msg_requiredfield"));
+                oValidator._addMessage(oControl, Utility.getText("msg_requiredfield"));                
                 bValid = false;
-            } else if (nMaxLength && sValue && sValue.length > nMaxLength) {
-                oControl.setValueState("Error");
-                oControl.setValueStateText(`Maximum ${nMaxLength} characters allowed`);
+                continue;
+            } 
+            if (nMaxLength && sValue && sValue.length > nMaxLength) {
+                oValidator._setValueState(oControl, 
+                                          ValueState.Error, 
+                                          Utility.getText("msg_max_length", [nMaxLength]));
                 bValid = false;
-            } else if (bIsNumeric && sValue && isNaN(Number(sValue))) {
-                oControl.setValueState("Error");
-                oControl.setValueStateText(Utility.getText("msg_valid_number"));
+                continue;
+            } 
+            if (bIsNumeric && sValue && isNaN(Number(sValue))) {
+                oValidator._setValueState(oControl, 
+                                          ValueState.Error, 
+                                          Utility.getText("msg_valid_number"));
                 bValid = false;
-            } else {
-                oControl.setValueState("None");
+                continue;
+            }
+            oValidator._validate(oControl);
+            if (oControl.getValueState() === ValueState.Error) {
+                bValid = false;
             }
         }
         return bValid;
@@ -162,15 +179,15 @@ sap.ui.define([
                         items: [
                             new ListItem({
                                 key: null,
-                                text: "None"
+                                text: Utility.getText("none")
                             }),
                             new ListItem({
                                 key: false,
-                                text: "No"
+                                text: Utility.getText("no")
                             }),
                             new ListItem({
                                 key: true,
-                                text: "Yes"
+                                text: Utility.getText("yes")
                             })
                         ]
                     }) :
@@ -202,7 +219,6 @@ sap.ui.define([
             const oNewEntry = {};
             const oView = this.getRouting().getView();
             const { oVBox, sPath, oModel, oSelectedContext, oKeys, oDataType } = _getDetails(oView, aSelectedContexts);
-            const oValidator = new Validator();
 
             const oDialog = new Dialog({
                 title: Utility.getText("title_copy_record"),
@@ -213,8 +229,7 @@ sap.ui.define([
                     press: function () {
                         var oInputs = oVBox.getItems();
 
-                        // if (!_validateInputs(oVBox, oDataType, false))
-                            if (!oValidator.validate(oVBox)) {
+                        if (!_validateInputs(oVBox, oDataType, false)) {
                             MessageToast.show(Utility.getText("msg_fix_input"));
                             return;
                         }
