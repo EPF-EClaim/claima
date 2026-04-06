@@ -142,6 +142,31 @@
 				>
 				</Select>
 
+                <!-- Actual Meter Cube -->
+                <Label text="{i18n>label_claimdetails_input_actual_meter_cube}"
+                    visible="{claimitem_property>/meter_cube_actual/is_visible}" />
+                <Input
+                    id="input_claimdetails_meter_cube_actual"
+                    value="{
+                        path: 'claimitem_input>/claim_item/meter_cube_actual',
+                        type: 'FloatType',
+                        formatOptions: {
+                            minFractionDigits: 2,
+                            maxFractionDigits: 2,
+                            maxIntegerDigits: 16,
+                            preserveDecimals: false
+                        },
+                        constraints: {
+                            minimum: 0.01
+                        }
+                    }"
+                    editable="{claimitem_property>/meter_cube_actual/is_editable}"
+                    visible="{claimitem_property>/meter_cube_actual/is_visible}"
+                    required="true"
+                    liveChange="onChange_ClaimDetails_ActualMeterCube"
+                    change="onChange_ClaimDetails_ActualMeterCube"
+                />
+
                 <!-- Actual Amount (MYR) -->
                 <Label text="{i18n>label_claimdetails_input_amount_actual}" />
                 <Input
@@ -206,6 +231,16 @@
 					visible="{= Object.values(${constant>/ClaimTypeItemLodging}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
                 />
 
+                <!-- Meter Cube Entitled -->
+                <Label text="{i18n>label_claimdetails_input_entitled_meter_cube}"
+                    visible="{claimitem_property>/meter_cube_entitled/is_visible}" />
+                <Input
+                    id="input_claimdetails_meter_cube"
+                    value="{claimitem_input>/claim_item/meter_cube_entitled}"
+                    editable="{claimitem_property>/meter_cube_entitled/is_editable}"
+                    visible="{claimitem_property>/meter_cube_entitled/is_visible}"
+                />
+                                
                 <!-- Amount (MYR) -->
                 <Label text="{i18n>label_claimdetails_input_amount}" />
                 <Input
