@@ -583,28 +583,11 @@ sap.ui.define([
 				if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type"))) {
 					var oSelectCourseCode = this.byId("select_claimprocess_course_code");
 					var oBindingSelectCourseCode = oSelectCourseCode.getBinding("items");
-					// attach event to remove duplicate records
-					oBindingSelectCourseCode.attachEvent("dataReceived", function() {
-						var aItems = oSelectCourseCode.getItems();
-						var aUniqueKeys = [];
-
-						for ( var iItem = 0; iItem < aItems.length; iItem++) {
-							var sKey = aItems[iItem].getBindingContext("employee").getObject("COURSE_ID");
-							if (aUniqueKeys.indexOf(sKey) > -1) {
-								oSelectCourseCode.removeItem(aItems[iItem]); // Remove if key already exists
-							} else {
-								aUniqueKeys.push(sKey);
-							}
-						}
-					});
-
 					var aFilterSelectCourseCode = [
 							// ensure status is active
 							new Filter("PARTICIPANT_ID", FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
 							new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
-							new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true),
-							new Filter("CLAIM_STATUS", FilterOperator.NE, this._oConstant.ClaimStatus.APPROVED),
-							new Filter("CLAIM_STATUS", FilterOperator.NE, this._oConstant.ClaimStatus.PENDING_APPROVAL)
+							new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true)
 						];
 					oBindingSelectCourseCode.filter(aFilterSelectCourseCode);
 				}
@@ -796,6 +779,15 @@ sap.ui.define([
 				var bEligible = await EligibilityCheck.onCheckMobileEligibility(this);
 				if (!bEligible) {
 					MessageBox.warning(Utility.getText("warning_msg_mobile_not_eligible"));
+					return;
+				}
+			}
+
+			// Course Code Pre-check
+			if (Object.values(this._oConstant.ClaimTypeKursus).includes(sClaimType)) {
+				var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(oInputModel.getProperty("/claimtype/course_code"), oInputModel.getProperty("/emp_master/eeid"));
+				if (bCourseAlreadyApproved) {
+					MessageBox.warning(Utility.getText("warning_msg_course_already_approved", [oInputModel.getProperty("/claimtype/course_code"), oInputModel.getProperty("/claimtype/descr/course_code")]));
 					return;
 				}
 			}

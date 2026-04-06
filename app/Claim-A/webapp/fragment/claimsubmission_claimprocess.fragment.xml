@@ -101,11 +101,10 @@
                         forceSelection="false"
                         selectedKey="{claimsubmission_input>/claimtype/course_code}"
                         items="{
-                            path: 'employee>/ZTRAIN_COURSE_PART',
+                            path: 'employee>/ZCLM_COURSE_VIEW',
                             sorter: [
                                 { path: 'COURSE_ID' },
                                 { path: 'COURSE_DESC' },
-                                { path: 'SESSION_NUMBER' }
                             ]
                         }"
                         visible="{= Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) }"

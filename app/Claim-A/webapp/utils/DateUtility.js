@@ -555,7 +555,7 @@ sap.ui.define([
         * @public
 		* @param {string} sCourseCode - course code ID to check from database
 		* @param {string} sParticipantId - participant ID to check from database
-		* @returns {array} oReturnDates - if records found, return total start and end date
+		* @returns {object} oReturnDates - if records found, return total start and end date
         */
 		getCourseCodeStartEndDate: async function (sCourseCode, sParticipantId) {
 			const oModel = this._oOwnerComponent.getModel();

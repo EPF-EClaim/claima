@@ -33,6 +33,52 @@ sap.ui.define([
 		},
 
 		/**
+        * Checks if course has already used by user for a previously approved claim
+        * @public
+		* @param {string} sCourseCode - course code ID to check from database
+		* @param {string} sParticipantId - participant ID to check from database
+		* @returns {boolean} if records found, return true; else return false
+        */
+		checkExistingCourseCode: async function (sCourseCode, sParticipantId) {
+			const oModel = this._oOwnerComponent.getModel();
+			// filter by claim status (approved, pending approval)
+			const oFilterRoleId = new Filter({
+				filters: [
+					new Filter("CLAIM_STATUS", FilterOperator.EQ, Constant.ClaimStatus.APPROVED),
+					new Filter("CLAIM_STATUS", FilterOperator.EQ, Constant.ClaimStatus.PENDING_APPROVAL)
+				],
+				and: false
+			});
+			const oListBinding = oModel.bindList(Constant.Entities.ZTRAIN_COURSE_PART, null, [
+                new Sorter("COURSE_ID"),
+                new Sorter("SESSION_NUMBER"),
+            ], [
+                // ensure status is active
+                new Filter("COURSE_ID", FilterOperator.EQ, sCourseCode),
+                new Filter("PARTICIPANT_ID", FilterOperator.EQ, sParticipantId),
+                new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, Constant.CourseSessionStatus.ACTIVE),
+                new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true),
+				oFilterRoleId
+            ]);
+
+            try {
+                BusyIndicator.show(0);
+                const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+                if (aContexts.length > 0) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (oError) {
+                MessageBox.error(Utility.getText("error_msg_course_code_err", [oError]));
+                return false;
+            } finally {
+                BusyIndicator.hide();
+            }
+		},
+
+		/**
 		* Set default values for claim item fields
 		* Request is made to get values from table ZELIGIBILITY_RULE, based on user role and claim type/claim item given 
 		* if record found, value is retrieved from the table and populated in the claim item model
