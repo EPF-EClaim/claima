@@ -62,29 +62,38 @@ sap.ui.define([
                 case Constants.SubmissionTypePrefix.CLAIM:   
                     var oInputModel = this._oView.getModel("claimitem_input");
                     var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
+                    
+                    if (!!oInputModel?.getProperty("/claim_item/claim_type_item_id")) {
+                        switch (oInputModel.getProperty("/claim_item/claim_type_item_id")) {
+                            case Constants.ClaimTypeItem.TELEFON_B:
+                                if(!oInputModel.getProperty("/claim_item/disclaimer")) {
+                                    MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+                                    return false;
+                                }
+                                break;
+                            
+                            case Constants.ClaimTypeItem.GALAKAN:
+                                if(!oInputModel.getProperty("/claim_item/disclaimer_galakan")) {
+                                    MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+                                    return false;
+                                }
+                                break;
 
-                    if (oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.TELEFON_B) {
-                        if(!oInputModel.getProperty("/claim_item/disclaimer")) {
-                            MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
-                            return false;
+                            default:
+                                break;
                         }
                     }
 
-                    if (oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.GALAKAN) {
-                        if(!oInputModel.getProperty("/claim_item/disclaimer_galakan")) {
-                            MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
-                            return false;
+                    if (!!oClaimSubmissionModel?.getProperty("/claim_items")) {
+                        var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
+                        for(var i = 0; i < aItems.length; i++){
+                            if(aItems[i].amount == 0){
+                                MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
+                                return false;
+                            }
                         }
+                        break;
                     }
-                
-                    var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
-                    for(var i = 0; i < aItems.length; i++){
-                        if(aItems[i].amount == 0){
-                            MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
-                            return false;
-                        }
-                    }
-                    break;
             }
             return true;
         }
