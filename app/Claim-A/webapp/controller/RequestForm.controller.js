@@ -29,8 +29,8 @@ sap.ui.define([
 	"claima/utils/Attachment",
 	"claima/utils/EligibilityCheck",
 	"claima/utils/DateUtility",
-	"claima/utils/Constants"
-
+	"claima/utils/Constants",
+	"claima/utils/RequestUtility"
 ], function (
 	Controller,
 	coreLibrary,
@@ -62,7 +62,8 @@ sap.ui.define([
 	Attachment,
 	EligibilityCheck,
 	DateUtility,
-	Constants
+	Constants,
+	RequestUtility
 ) {
 	"use strict";
 
@@ -71,6 +72,7 @@ sap.ui.define([
 	const ButtonType = mLibrary.ButtonType;
 
 	return Controller.extend("claima.controller.RequestForm", {
+		RequestUtility: RequestUtility,
 
 		/* =========================================================
 		* Lifecycle
@@ -80,12 +82,13 @@ sap.ui.define([
 			this._oRouter 			= this.getOwnerComponent().getRouter();
 			this._oConstant 		= this.getOwnerComponent().getModel("constant").getData();
 			this._oReqModel 		= this.getOwnerComponent().getModel("request");
-			this._oReqStatusModel	= this.getOwnerComponent().getModel("request_status");
 			this._oApprovalLogModel	= this.getOwnerComponent().getModel('approval_log')
 			this._oDataModel 		= this.getOwnerComponent().getModel();
 			this._oViewModel 		= this.getOwnerComponent().getModel("employee_view");
 			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
 			this._oFragments 		= Object.create(null);
+
+			RequestUtility.init(this.getOwnerComponent(), this.getView());
 
 			// URL Access
 			this._oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
@@ -1284,17 +1287,6 @@ sap.ui.define([
 			}
 		},
 
-		populateEstimatedAmount(oEvent) {
-			const aParticipantList = this._oReqModel.getProperty("/participant");
-
-			// Use let OR use reduce directly
-			const fEstAmount = aParticipantList.reduce((sum, row) => {
-				return sum + parseFloat(row.ALLOCATED_AMOUNT || 0);
-			}, 0);
-
-			this._oReqModel.setProperty("/req_item/est_amount", fEstAmount.toFixed(2));
-		},
-
 		/* =========================================================
 		* Participant Value Help 
 		* ======================================================= */
@@ -2010,7 +2002,7 @@ sap.ui.define([
 		async getRatePerKM () {
 			var sVehicleType = this._oReqModel.getProperty("/req_item/type_of_vehicle");
 			const oListBinding = this._oDataModel.bindList("/ZRATE_KM", null, null, [
-				new sap.ui.model.Filter("VEHICLE_TYPE_ID", "EQ", sVehicleType)
+				new Filter("VEHICLE_TYPE_ID", FilterOperator.EQ, sVehicleType)
 			]);
 
 			try {
@@ -2019,6 +2011,7 @@ sap.ui.define([
 				if (aContexts.length > 0) {
 					const oData = aContexts[0].getObject();
 					this._oReqModel.setProperty("/req_item/rate_per_kilometer", oData.RATE);
+					RequestUtility.determineOfficeMileage();
 				}
 			} catch (oError) {
 				console.error("Error fetching Rate Per KM detail", oError);
@@ -2124,7 +2117,8 @@ sap.ui.define([
 				"i_marriage_cat",
 				"i_cube_eligible",
 				"i_departure_time",
-				"i_arrival_time"
+				"i_arrival_time",
+				"i_lodging_cat"
 			];
 
 			aControlIds.forEach(id => {

@@ -205,6 +205,12 @@ entity ZREQUEST_ITEM : managed {
         METER_CUBE_ACTUAL          : Decimal(6, 2);
         FARE_TYPE_ID               : String(2);
         VEHICLE_CLASS_ID           : String(2);
+        TRIP_START_DATE            :Date;
+        TRIP_END_DATE              :Date;
+        TRIP_START_TIME            :Time;
+        TRIP_END_TIME              :Time;
+        TRAVEL_DURATION_DAY        : Decimal(3, 1);
+        TRAVEL_DURATION_HOUR       : Decimal(4, 1);
         ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
                                          on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT               : Association to one ZMARITAL_CAT
@@ -1402,6 +1408,7 @@ entity ZCLM_APPR_REQ_STAT : managed {
 }
 
 entity ZCLM_TYPE_EXCEPTION_LIST : managed {
+
     key EMP_ID        : String(6)      @mandatory  @Common.Label: 'Employee Id';
     key CLAIM_TYPE_ID : String(20)     @mandatory  @Common.Label: 'Claim Type ID';
     key START_DATE    : Date           @mandatory  @Common.Label: 'Start Date';

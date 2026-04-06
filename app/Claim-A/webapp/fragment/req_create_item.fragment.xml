@@ -501,19 +501,31 @@
                                     </form:fields>
                                 </form:FormElement>
 
-                                <!-- Kilometer (NOT USED FOR NOW)-->
+                                <!-- Kilometer -->
                                 <form:FormElement label="{i18n>req_i_kilometer}"
                                             visible="false"
                                             id="i_kilometer" >
                                     <form:fields>
                                         <Input 
+                                            textAlign="Begin" 
                                             required="true" 
-                                            value="{request>/req_item/kilometer}"
-                                            type="Number" />
+                                            value="{
+                                                path: 'request>/req_item/kilometer',
+                                                type: 'sap.ui.model.type.Float',
+                                                formatOptions: {
+                                                    minFractionDigits: 2,
+                                                    maxFractionDigits: 2
+                                                },
+                                                formatter: '.RequestUtility.populateAllocatedAmount'
+                                            }" 
+                                            enabled="{= ${request>/view} !== 'view' &amp;&amp; 
+                                                        ${request>/req_item/location_type} !== ${constant>/LocationType/KWSP} &amp;&amp;
+                                                        !!${request>/req_item/type_of_vehicle}}">
+                                        </Input>
                                     </form:fields>
                                 </form:FormElement>
 
-                                <!-- Rate Per Kilometer (NOT USED FOR NOW)-->
+                                <!-- Rate Per Kilometer -->
                                 <form:FormElement label="{i18n>req_i_rate_pkm}"
                                             visible="false"
                                             id="i_rate_per_kilometer" >
@@ -633,11 +645,12 @@
                                             selectedKey="{request>/req_item/from_location_office}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' &amp;&amp; 
+                                                        !!${request>/req_item/from_state} }"
                                             items="{
                                                     path: 'employee>/ZOFFICE_LOCATION',
-                                                    sorter: { path: 'LOCATION_ID', descending: false }
-                                            }" >
+                                                    sorter: { path: 'LOCATION_ID', descending: false }}"
+                                            change=".RequestUtility.onFilterToState" >
                                             <items>
                                                 <core:Item key="{employee>LOCATION_ID}" 
                                                         text="{employee>LOCATION_DESC}" />
@@ -652,18 +665,18 @@
                                             id="i_to_state" >
                                     <form:fields>
                                         <Select 
+                                            id="item_to_state"
                                             selectedKey="{request>/req_item/to_state}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            items="{path: 'employee>/ZSTATE',
-                                                    sorter: { path: 'STATE_ID', descending: false },
-                                                    filters: [
-                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
-                                            change=".getToLocationByState" >
+                                            enabled="{= ${request>/view} !== 'view' &amp;&amp; 
+                                                        !!${request>/req_item/from_location_office} }"
+                                            items="{path: 'employee_view>/ZCLM_TO_STATE_SELECTION',
+                                                    sorter: { path: 'TO_STATE_ID', descending: false }}"
+                                            change=".RequestUtility.onFilterToOffice" >
                                             <items>
-                                                <core:Item key="{employee>STATE_ID}" 
-                                                        text="{employee>STATE_DESC}" />
+                                                <core:Item key="{employee_view>TO_STATE_ID}" 
+                                                        text="{employee_view>TO_STATE_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
@@ -692,12 +705,14 @@
                                             selectedKey="{request>/req_item/to_location_office}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            items="{path: 'employee>/ZOFFICE_LOCATION',
-                                                    sorter: { path: 'LOCATION_ID', descending: false }}" >
+                                            enabled="{= ${request>/view} !== 'view' &amp;&amp; 
+                                                        !!${request>/req_item/to_state} }"
+                                            items="{path: 'employee_view>/ZCLM_OFFICE_LOCATION_SELECTION',
+                                                    sorter: { path: 'TO_LOCATION_ID', descending: false }}"
+                                            change=".RequestUtility.determineOfficeMileage" >
                                             <items>
-                                                <core:Item key="{employee>LOCATION_ID}" 
-                                                        text="{employee>LOCATION_DESC}" />
+                                                <core:Item key="{employee_view>TO_LOCATION_ID}" 
+                                                        text="{employee_view>TO_LOCATION_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
@@ -961,10 +976,10 @@
                                         formatOptions: {
                                             minFractionDigits: 2,
                                             maxFractionDigits: 2
-                                        }
+                                        },
+                                        formatter: '.RequestUtility.populateEstimatedAmount'
                                     }" 
-                                    change="populateEstimatedAmount"
-                                    enabled="{= ${request>/view} !== 'view'}">
+                                    enabled="{= ${request>/view} !== 'view' &amp;&amp; ${request>/req_item/location_type} !== ${constant>/LocationType/KWSP}}">
                                 </Input>
                             </table:template>
                         </table:Column>

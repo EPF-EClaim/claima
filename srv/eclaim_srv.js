@@ -1126,4 +1126,31 @@ module.exports = (srv) => {
         }
     });
 
+    srv.on('getOfficeDistance', async (req) => {
+        const { 
+            sFromState,
+            sFromOffice,
+            sToState,
+            sToOffice
+        } = req.data;
+
+        try {
+            const oRoute = await SELECT.one.from('ZOFFICE_DISTANCE').where({
+                FROM_STATE_ID: sFromState,
+                FROM_LOCATION_ID: sFromOffice,
+                TO_STATE_ID: sToState,
+                TO_LOCATION_ID: sToOffice
+            });
+            
+            if (oRoute) {
+                return oRoute.MILEAGE; 
+            } 
+            
+            return req.error(404, 'No distance record found for the selected route.');
+
+        } catch (error) {
+            return req.error(500, `Failed to retrieve mileage: ${error.message}`);
+        }
+    });
+
 }
