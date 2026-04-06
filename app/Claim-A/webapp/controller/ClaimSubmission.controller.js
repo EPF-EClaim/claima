@@ -2267,7 +2267,12 @@ sap.ui.define([
 			if (oPropertyModel.getProperty("/rate_per_km/is_visible") && !oPropertyModel.getProperty("/vehicle_type/is_visible")) {
 				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "descr/rate_per_km", this._oConstant.EligibilityRule.RATE_PER_KM, 0.0);
 				// clear rate per km ID field since formula uses default value
-				oInputModel.setProperty("/rate_per_km", null);
+				oInputModel.setProperty("/claim_item/rate_per_km", null);
+			}
+
+			// set number of family members based on claim item
+			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
+				oInputModel.setProperty("/claim_item/no_of_family_member", await ClaimUtility.getNumberOfFamilyMembers(oClaimSubmissionModel.getProperty("/claim_header/emp_id")));
 			}
 
 			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
@@ -2309,6 +2314,7 @@ sap.ui.define([
 				rate_per_km: { is_visible: false },
 				toll: { is_visible: false },
 				entitled_breakfast: { is_visible: false },
+				no_of_family_member: { is_visible: false },
 				insurance_provider_id: { is_visible: false },
 				insurance_provider_name: { is_visible: false },
 				insurance_package_id: { is_visible: false },
@@ -4724,6 +4730,13 @@ sap.ui.define([
 					}
 				} else if (this.byId("input_claimdetails_input_amount").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/amount", oResult.amount);
+				}
+
+				// additional amount based on number of family members
+				var oPropertyModel = this.getView().getModel("claimitem_property");
+				if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
+					var fAmount = oClaimItemInputModel.getProperty("/claim_item/amount");
+					oClaimItemInputModel.setProperty("/claim_item/amount", fAmount + (fAmount * parseInt(oClaimItemInputModel.getProperty("/claim_item/no_of_family_member"))));
 				}
 			}).catch(err => {
 				MessageBox.error(

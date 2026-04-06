@@ -1055,7 +1055,8 @@
                     id="input_claimdetails_input_no_of_family_member"
                     value="{claimitem_input>/claim_item/no_of_family_member}"
                     type="Number"
-                    visible="false"
+					visible="{claimitem_property>/no_of_family_member/is_visible}"
+                    editable="false"
                     required="true"
                 />
 

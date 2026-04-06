@@ -9,40 +9,40 @@ sap.ui.define([
 	"claima/utils/Utility",
 	"claima/utils/DateUtility"
 ], function (
-    Sorter,
+	Sorter,
 	Filter,
 	FilterOperator,
 	BusyIndicator,
-    MessageBox,
-    MessageToast,
+	MessageBox,
+	MessageToast,
 	Constant,
-    Utility,
-    DateUtility
+	Utility,
+	DateUtility
 ) {
 	"use strict";
 
-    return {
+	return {
 
 		/**
-         * Initialize the ClaimUtility
-         * @public
-         */
-        init: function(oOwnerComponent, oView) {
+		 * Initialize the ClaimUtility
+		 * @public
+		 */
+		init: function(oOwnerComponent, oView) {
 			this._oOwnerComponent = oOwnerComponent;
 			this._oView = oView;
-        },
+		},
 
 		/**
-        * Set default values for claim item fields
-        * Request is made to get values from table ZELIGIBILITY_RULE, based on user role and claim type/claim item given 
-        * if record found, value is retrieved from the table and populated in the claim item model
-        * @public
+		* Set default values for claim item fields
+		* Request is made to get values from table ZELIGIBILITY_RULE, based on user role and claim type/claim item given 
+		* if record found, value is retrieved from the table and populated in the claim item model
+		* @public
 		* @param {object} oClaimSubmissionModel - claim submission to be passed into param
 		* @param {object} oInputModel - claim item model to be passed into param
 		* @param {string} sClaimItemField - claim item field to be populated
 		* @param {string} sEligibilityRule - field to retrieve value from db table
 		* @param {string} sDefaultValue - default value to set if none found
-        */
+		*/
 		setClaimItemDefaultValues: async function (oClaimSubmissionModel, oInputModel, sClaimItemField, sEligibilityRule, sDefaultValue) {
 			const oModel = this._oOwnerComponent.getModel();
 			//// filter by employee role ID or * (all)
@@ -97,32 +97,61 @@ sap.ui.define([
 		},
 
 		/**
-        * Retrieve backend data from db table based on selected claim item value
-        * Method retrieves db table to be checked with fields and values to be filtered against
-        * if records found, first record is retrieved from the table and returns values from the record
-        * @public
+		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
+		* Method retrieves db table to be checked with fields and values to be filtered against
+		* if records found, first record is retrieved from the table and returns values from the record
+		* @public
+		* @param {string} sEmpId - employee ID to retrieve dependents for
+		* @returns {array} if records found, return total number of dependents for employee
+		*/
+		getNumberOfFamilyMembers: async function (sEmpId) {
+			const oModel = this._oOwnerComponent.getModel();
+			const oListBinding = oModel.bindList(Constant.Entities.ZEMP_DEPENDENT, null, [
+				new Sorter("DEPENDENT_NO")
+			], [
+				new Filter("EMP_ID", FilterOperator.EQ, sEmpId)
+			]);
+
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+				return aContexts.length;
+			} catch (oError) {
+				MessageBox.error(Utility.getText("msg_claimdetails_input_no_of_family_member_err", [oError]));
+				return 0;
+			} finally {
+				BusyIndicator.hide();
+			}
+		},
+
+		/**
+		* Retrieve backend data from db table based on selected claim item value
+		* Method retrieves db table to be checked with fields and values to be filtered against
+		* if records found, first record is retrieved from the table and returns values from the record
+		* @public
 		* @param {string} sEntity - name of table to check from database
 		* @param {array} aEntityFields - array of entity fields and values to filter by
 		* @param {array} aRetrievalFields - array of entity fields to retrieve values from
 		* @returns {array} if records found, returns array of values from first selected record; else, returns empty array
-        */
+		*/
 		setClaimItemValueFromSelection: async function (sEntity, aEntityFields, aRetrievalFields) {
 			const oModel = this._oOwnerComponent.getModel();
-            // set filters based on given entity fields
-            var aSorters = [];
-            var aFilters = [];
-            for (var iEntityField = 0; iEntityField < aEntityFields.length; iEntityField++) {
-                //// filter entity field to be checked by selection input or * (all)
-                var oFilterEntityField = new Filter({
-                    filters: [
-                        new Filter(aEntityFields[iEntityField].entity_field, FilterOperator.EQ, aEntityFields[iEntityField].filter_value),
-                        new Filter(aEntityFields[iEntityField].entity_field, FilterOperator.EQ, '*')
-                    ],
-                    and: false
-                });
-                aFilters.push(oFilterEntityField);
-                aSorters.push(new Sorter(aEntityFields[iEntityField].entity_field, true));
-            }
+			// set filters based on given entity fields
+			var aSorters = [];
+			var aFilters = [];
+			for (var iEntityField = 0; iEntityField < aEntityFields.length; iEntityField++) {
+				//// filter entity field to be checked by selection input or * (all)
+				var oFilterEntityField = new Filter({
+					filters: [
+						new Filter(aEntityFields[iEntityField].entity_field, FilterOperator.EQ, aEntityFields[iEntityField].filter_value),
+						new Filter(aEntityFields[iEntityField].entity_field, FilterOperator.EQ, '*')
+					],
+					and: false
+				});
+				aFilters.push(oFilterEntityField);
+				aSorters.push(new Sorter(aEntityFields[iEntityField].entity_field, true));
+			}
 			// ensure status is active
 			aFilters.push(
 				new Filter("STATUS", FilterOperator.EQ, Constant.ClaimTypeItemStatus.ACTIVE),
@@ -131,26 +160,26 @@ sap.ui.define([
 			);
 			const oListBinding = oModel.bindList(sEntity, null, aSorters, aFilters);
 
-            try {
-                BusyIndicator.show(0);
-                const aContexts = await oListBinding.requestContexts(0, Infinity);
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
 
-                if (aContexts.length > 0) {
-                    const oData = aContexts[0].getObject();
-                    var aReturnFields = [];
-                    for (var iRetrievalField = 0; iRetrievalField < aRetrievalFields.length; iRetrievalField++) {
-                        aReturnFields.push(oData[aRetrievalFields[iRetrievalField]]);
-                    }
-                    return aReturnFields;
-                } else {
-                    return[];
-                }
-            } catch (oError) {
-                MessageBox.error(Utility.getText("msg_claimdetails_input_err", [oError]));
-                return [];
-            } finally {
-                BusyIndicator.hide();
-            }
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					var aReturnFields = [];
+					for (var iRetrievalField = 0; iRetrievalField < aRetrievalFields.length; iRetrievalField++) {
+						aReturnFields.push(oData[aRetrievalFields[iRetrievalField]]);
+					}
+					return aReturnFields;
+				} else {
+					return[];
+				}
+			} catch (oError) {
+				MessageBox.error(Utility.getText("msg_claimdetails_input_err", [oError]));
+				return [];
+			} finally {
+				BusyIndicator.hide();
+			}
 		}, 
 
 		/**
@@ -190,7 +219,7 @@ sap.ui.define([
 		},
 
 		determineDefaultCostCenter: async function (sClaimTypeId) {
-            try {
+			try {
 				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
 				
 				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
@@ -200,12 +229,12 @@ sap.ui.define([
 				const oContext = oFunction.getBoundContext();
 				const oResult = oContext.getObject();
 
-                return oResult.sCostCenter
+				return oResult.sCostCenter
 
 			} catch (oError) {
 				return null;
 			}
 			
-        },
-    }
+		},
+	}
 });
