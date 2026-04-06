@@ -211,16 +211,11 @@ sap.ui.define([
 		//START TDL #6.1 meter cube for Pengangkutan Laut
         //meter cube calc if user select Pengangkutan Laut
         onSelect_ClaimDetails_MeterCube: async function (sKey,oInputModel,oPropertyModel,oSessionModel) {
-            if (sKey !== Constant.ClaimTypeItem.LAUT) {
-                return;
-            }
-            if (!oSessionModel) {
-                return;
-            }
-            const sEmpId = oSessionModel.getProperty("/userId");
-            if (!sEmpId) {
-                return;
-            }
+			
+           const sEmpId = oSessionModel?.getProperty("/userId");
+			if (sKey !== Constant.ClaimTypeItem.LAUT || !sEmpId) {
+				return;
+			}
             const oMar = Constant.MaritalStatus;
             const oCube = Constant.MeterCubeId;
             const oRel = Constant.RelationshipType;

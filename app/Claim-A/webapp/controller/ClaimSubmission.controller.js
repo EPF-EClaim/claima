@@ -2314,8 +2314,7 @@ sap.ui.define([
 		},
 
 		onChange_ClaimDetails_ActualMeterCube: function () {
-			const oInputModel = this.getView().getModel("claimitem_input");
-			ClaimUtility.calculatePengangkutanLautAmount(oInputModel);
+    		ClaimUtility.calculatePengangkutanLautAmount(this.getView().getModel("claimitem_input"));
 		},
 
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
