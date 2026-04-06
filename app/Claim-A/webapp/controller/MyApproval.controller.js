@@ -5,7 +5,7 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/ui/model/Sorter",
-    "claima/utils/Utility",
+    "claima/utils/Utility"
 ], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, Sorter, Utility) {
     "use strict";
 
