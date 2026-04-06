@@ -299,7 +299,16 @@ sap.ui.define([
                             if (sItemType === Constants.ClaimTypeItem.VISA) {
                                 // VISA related logic 
                                 _dMinDate = null;
-                            } else {
+                            }
+                            else if (sItemType === Constants.ClaimTypeItem.E_PENGAKUT) {
+                                // elaun pengangkutan related logic
+                                _dMinDate = new Date(oHeader.trip_start_date);
+                                _dMinDate.setMonth(_dMinDate.getMonth() - 6);
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                    _oResourceBundle.getText("error_receipt_date_pengangkutan_mindate"));
+                            }
+                            else {
                                 // Other Claim Type
                                 _dMinDate = null;
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 

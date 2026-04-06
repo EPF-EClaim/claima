@@ -2212,6 +2212,23 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/material_code", materialCode);
 			}
 
+			// prevent processing if claim type item is empty
+			if (!oInputModel.getProperty("/claim_item/claim_type_item_id")) {
+				return;
+			}
+
+			// prevent selecting elaun pengangkutan if employee is not permanent
+			if ((oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT) &&
+				(oClaimSubmissionModel.getProperty("/emp_master/employee_type") !== this._oConstant.EmployeeType.PERMANENT)
+			) {
+				// reset claim item selection
+				oInputModel.setProperty("/claim_item/claim_type_item_id", null);
+				oEvent.getSource().setSelectedItem(null);
+				// popup error message
+				MessageBox.error(Utility.getText("msg_claimdetails_input_pengangkutan_permanent"));
+				return;
+			}
+
 			// set app visibility controls
 			await this.getFieldVisibility_ClaimTypeItem();
 
@@ -2257,6 +2274,15 @@ sap.ui.define([
 			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
 				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "eligible_amount", this._oConstant.EligibilityRule.ELIGIBLE_AMOUNT, 0.00);
 				this._calculateLodgingEligibleAmount();
+			}
+
+			// if claim type item is elaun pengangkutan, retrieve eligible amount
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT) {
+				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "amount", this._oConstant.EligibilityRule.ELIGIBLE_AMOUNT, 0.00);
+				// reduce claimable amount by 50% if employee is single
+				if (oClaimSubmissionModel.getProperty("/emp_master/marital") === this._oConstant.MaritalStatus.SINGLE) {
+					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/amount")) * 0.5);
+				}
 			}
 		},
 

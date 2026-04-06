@@ -263,6 +263,21 @@ sap.ui.define([
             "FI_SETTLEMENT_B": "FI_SETTLEMENT_B",
             "HOD_JKEW": "HOD_JKEW"
         },
+        "EmployeeType": {
+            "PERMANENT": "A",
+            "CONTRACTOR": "B",
+            "PROTEGE": "C",
+            "INTERN": "D",
+            "RETIREE": "E",
+            "CONTRACTOR2": "F"
+        },
+        "MaritalStatus": {
+            "WIDOWED": "W",
+            "SINGLE": "S",
+            "MARRIED": "M",
+            "ENGAGED": "E",
+            "DIVORCED": "D"
+        },
         "Configuration": {
             "ZEMP_MASTER": "ZEMP_MASTER",
             "ZEMP_MASTER_DTD": "ZEMP_MASTER_DTD",
