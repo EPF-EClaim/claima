@@ -1196,4 +1196,30 @@ module.exports = (srv) => {
         }
     });
 
+    /**
+    * Function to check if Pre-approval request has been used for claim submission
+    * Show warning if Pre-approval request has been used, exclude REJECT & CANCEL status
+    * returns a boolean true/false
+    * @public
+    * @param {String} requestId - Pre-Approval Request ID
+    * @returns {Boolean} PreApprovalUsageCheck - isUsed
+    */
+    srv.on('checkPreApprovalUsage', async(req) => {
+        const { ZCLAIM_HEADER } = srv.entities;
+        const tx = cds.tx(req);
+
+        const claim = await tx.run(
+            SELECT.one.from(ZCLAIM_HEADER).where({
+                REQUEST_ID: req.data.requestID, 
+                STATUS_ID: { 'not in': [Constant.Status.REJECTED, Constant.Status.CANCELLED] }
+            })
+        );
+
+        if (claim) {
+            return { isUsed: true }
+        } else {
+            return { isUsed: false }
+        }
+    });
+
 }

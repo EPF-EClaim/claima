@@ -2246,7 +2246,7 @@ sap.ui.define([
 			}
 
 			//START TDL #6.1 meter cube for Pengangkutan Laut
-			const sKey = claimItem?.getKey?.();
+			const sKey = oInputModel.getProperty("/claim_item/claim_type_item_id");
 			if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
 
 				//entitled meter cube
@@ -2262,7 +2262,6 @@ sap.ui.define([
 
 				oPropertyModel.setProperty("/amount/is_visible", true);
 				oPropertyModel.setProperty("/amount/is_editable", false);
-
 
 				await ClaimUtility.onSelect_ClaimDetails_MeterCube(
 					sKey,
@@ -2290,9 +2289,10 @@ sap.ui.define([
 				oPropertyModel.setProperty("/actual_amount/is_visible", false);
 				oInputModel.setProperty("/claim_item/actual_amount", null);
 
-				oPropertyModel.setProperty("/amount/is_visible", false);
-				oInputModel.setProperty("/claim_item/amount", null);
-			}
+				oPropertyModel.setProperty("/amount/is_visible", true);
+				oPropertyModel.setProperty("/amount/is_editable", true);
+	        }
+
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
 			// calculate number of days

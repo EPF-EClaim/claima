@@ -237,7 +237,7 @@
                 <Input
                     id="input_claimdetails_meter_cube"
                     value="{claimitem_input>/claim_item/meter_cube_entitled}"
-                    editable="{claimitem_property>/meter_cube_entitled/is_editable}"
+                    editable="false"
                     visible="{claimitem_property>/meter_cube_entitled/is_visible}"
                 />
                                 
