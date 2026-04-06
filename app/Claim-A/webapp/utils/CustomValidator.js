@@ -1,11 +1,13 @@
 sap.ui.define([
     "sap/m/MessageBox",
     "claima/utils/Constants",
-    "claima/utils/Utility"
+    "claima/utils/Utility",
+    "claima/utils/ClaimUtility"
 ], function (
     MessageBox,
     Constants,
-    Utility
+    Utility,
+    ClaimUtility
 ) {
     "use strict";
 
@@ -28,7 +30,7 @@ sap.ui.define([
          * further processing.
          * @public
          */
-        validate: function (sSubmissionType) {
+        validate: async function (sSubmissionType) {
             // Common validations (Applicable for both scenarios)
 
             // Type and Item Type checking (Applicable for both scenarios)
@@ -60,8 +62,8 @@ sap.ui.define([
                     }
                     break;
                 case Constants.SubmissionTypePrefix.CLAIM:   
-                    var oInputModel = this._oView.getModel("claimitem_input");
                     var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
+                    var oInputModel = this._oView.getModel("claimitem_input");
                     
                     if (!!oInputModel?.getProperty("/claim_item/claim_type_item_id")) {
                         switch (oInputModel.getProperty("/claim_item/claim_type_item_id")) {
@@ -81,6 +83,17 @@ sap.ui.define([
 
                             default:
                                 break;
+                        }
+                    }
+
+                    if (!!oClaimSubmissionModel) {
+                        // course code pre-check
+                        if (Object.values(Constants.ClaimTypeKursus).includes(oClaimSubmissionModel.getProperty("/claimtype/type"))) {
+                            var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(oClaimSubmissionModel.getProperty("/claimtype/course_code"), oClaimSubmissionModel.getProperty("/emp_master/eeid"));
+                            if (bCourseAlreadyApproved) {
+                                MessageBox.error(Utility.getText("error_msg_course_already_approved", [oClaimSubmissionModel.getProperty("/claimtype/course_code"), oClaimSubmissionModel.getProperty("/claimtype/descr/course_code")]));
+                                return false;
+                            }
                         }
                     }
 

@@ -696,7 +696,7 @@ sap.ui.define([
 				approver4: null,
 				approver5: null,
 				last_send_back_date: null,
-				course_code: null,
+				course_code: o.COURSE_CODE,
 				project_code: null,
 				cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
 				preapproved_amount: o.PREAPPROVED_AMOUNT,
@@ -714,7 +714,7 @@ sap.ui.define([
 					claim_type_id: o.CLAIM_TYPE_DESC,
 					housing_loan_scheme: null,
 					lender_name: null,
-					course_code: null,
+					course_code: o.COURSE_CODE_DESC,
 					project_code: null,
 					attachment_email_approver: null,
 				}
@@ -998,11 +998,13 @@ sap.ui.define([
 					},
 					"requestform_amt": null,
 					"req_emailapprove": null,
+					"course_code": null,
 					"descr": {
 						"type": null,
 						"item": null,
 						"category": null,
 						"cost_center": null,
+						"course_code": null
 					}
 				},
 				"is_new": false,
@@ -2970,7 +2972,7 @@ sap.ui.define([
 			oInputModel.refresh(true);
 
 			// Calculate number of days
-			if (oPropertyModel.getProperty("/entitled_breakfast/is_visible")) {
+			if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
 				oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
 			}
 
@@ -3479,7 +3481,7 @@ sap.ui.define([
 				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 
 				// Reload when item cancellation
-				this._loadClaimById(String(oClaimSubmissionModel.getProperty("/claim_header/claim_id")));
+				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
 			}
 		},
 
