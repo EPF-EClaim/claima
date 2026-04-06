@@ -229,19 +229,25 @@ sap.ui.define([
 		// Functions - Claim Submission
 		onNav_ClaimSubmission: async function () {
 			BusyIndicator.show();
-			// load Claim Process dialog
-			var oName = "claima.fragment.claimsubmission_claimprocess"
-			this.oDialog_ClaimProcess ??= await this.loadFragment({
-				name: oName,
-			});
-			if (this.oDialog_ClaimProcess) {
-				this._onInit_ClaimProcess();
+
+			try{
+				const oName = "claima.fragment.claimsubmission_claimprocess";
+				
+				this.oDialog_ClaimProcess ??= await this.loadFragment({
+					name: oName
+				})
+				if(!this.getView().getModel("claimsubmission_input")){
+					await this._onInit_ClaimProcess();
+				}
+
 				this.oDialog_ClaimProcess.open();
+			}catch{
+				MessageBox.error(Utility.getText("msg_nav_error_fragment", [oName]));
+			}finally{
+				BusyIndicator.hide();
+				this._reset_ClaimProcess();
 			}
-			else {
-				MessageToast.show(Utility.getText("msg_nav_error_fragment", [oName]));
-			}
-			BusyIndicator.hide();
+			
 		},
 
 		_getNewEmployeeModel: function (modelName) {
