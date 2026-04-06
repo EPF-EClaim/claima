@@ -2346,7 +2346,7 @@ sap.ui.define([
 				insurance_purchase_date: { is_visible: false },
 				insurance_cert_start_date: { is_visible: false },
 				insurance_cert_end_date: { is_visible: false },
-				meter_cube_entitled: { is_visible: false, is_editable: false },
+				meter_cube_entitled: { is_visible: false },
 				meter_cube_actual: { is_visible: false, is_editable: true },
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
