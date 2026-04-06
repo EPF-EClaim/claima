@@ -132,14 +132,46 @@ sap.ui.define([
             return dMergedDate;
         },
 
-        calculateNumberOfDays: function (oHeader, oItem) {
-            const dHeaderStart = oHeader.tripstartdate ? new Date(oHeader.tripstartdate) : null;
-            const dHeaderEnd = oHeader.tripenddate ? new Date(oHeader.tripenddate) : null;
+        /**
+         * Calculate number of days between given date range based on claim type item
+         * @public
+         * @param {string} sSubmissionType - whether data is processed based on claim or request submission type
+         * @param {object} oHeader - header data retrieved
+         * @param {object} oItem - item data retrieved
+         * @return {integer} iDiffDays - difference in days between start/end date; if invalid, return 0
+         */
+        calculateNumberOfDays: function (sSubmissionType, oHeader, oItem) {
+            // determine header start/end based on submission type
+            switch (sSubmissionType) {
+                case Constants.SubmissionTypePrefix.REQUEST:
+                    var dHeaderStart = oHeader.tripstartdate ? new Date(oHeader.tripstartdate) : null;
+                    var dHeaderEnd = oHeader.tripenddate ? new Date(oHeader.tripenddate) : null;
+                    break;
+                case Constants.SubmissionTypePrefix.CLAIM:
+                    // populate header values based on claim tyoe item
+                    switch (oItem.claim_type_item_id) {
+                        case Constants.ClaimTypeItem.DOBI:
+                            dHeaderStart = oHeader.trip_start_date ? new Date(oHeader.trip_start_date) : null;
+                            dHeaderEnd = oHeader.trip_end_date ? new Date(oHeader.trip_end_date) : null;
+                            break;
+                        default:
+                            // no using header field for non-DOBI claim type items
+                            dHeaderStart = null;
+                            dHeaderEnd = null;
+                            break;
+                    }
+                    break;
+            }
 
             switch (oItem.claim_type_item_id) {
+                case Constants.ClaimTypeItem.DOBI:
+                    // no using item fields for DOBI claim type items
+                    var dItemStart = null;
+                    var dItemEnd = null;
+                    break;
                 case Constants.ClaimTypeItem.TRAVEL_INSURANCE:
-                    var dItemStart = oItem.insurance_cert_start_date ? new Date(oItem.insurance_cert_start_date) : null;
-                    var dItemEnd = oItem.insurance_cert_end_date ? new Date(oItem.insurance_cert_end_date) : null;
+                    dItemStart = oItem.insurance_cert_start_date ? new Date(oItem.insurance_cert_start_date) : null;
+                    dItemEnd = oItem.insurance_cert_end_date ? new Date(oItem.insurance_cert_end_date) : null;
                     break;
                 default:
                     dItemStart = oItem.start_date ? new Date(oItem.start_date) : null;

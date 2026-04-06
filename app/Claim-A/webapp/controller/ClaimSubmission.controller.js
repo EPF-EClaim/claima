@@ -1263,7 +1263,8 @@ sap.ui.define([
 						"vehicle_class_id": null,
 						"attachment_file_1": null,
 						"attachment_file_2": null,
-					}
+					},
+					"eligible_amount": null
 				},
 				"attachments": {
 					"attachment1": {
@@ -2220,6 +2221,7 @@ sap.ui.define([
 		onSelect_ClaimDetails_ClaimItem: async function (oEvent) {
 			// validate claim item
 			var claimItem = oEvent.getParameters().selectedItem;
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (claimItem) {
@@ -2255,19 +2257,27 @@ sap.ui.define([
 			}
 
 			// calculate number of days
-			oInputModel.setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
+			if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
+				oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+				this.onChange_ClaimDetails_NumberOfDays();
+			}
 
-			var oPropertyModel = this.getView().getModel("claimitem_property");
 			// set percentage (%) compensation based on claim item
 			if (oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
-				await ClaimUtility.setClaimItemDefaultValues("percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
+				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
 			}
 
 			// set rate per km if no vehicle type field found
 			if (oPropertyModel.getProperty("/rate_per_km/is_visible") && !oPropertyModel.getProperty("/vehicle_type/is_visible")) {
-				await ClaimUtility.setClaimItemDefaultValues("descr/rate_per_km", this._oConstant.EligibilityRule.RATE_PER_KM, 0.0);
+				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "descr/rate_per_km", this._oConstant.EligibilityRule.RATE_PER_KM, 0.0);
 				// clear rate per km ID field since formula uses default value
 				oInputModel.setProperty("/rate_per_km", null);
+			}
+
+			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
+			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
+				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "eligible_amount", this._oConstant.EligibilityRule.ELIGIBLE_AMOUNT, 0.00);
+				this._calculateLodgingEligibleAmount();
 			}
 		},
 
@@ -2288,6 +2298,7 @@ sap.ui.define([
 				percentage_compensation: { is_visible: false },
 				start_date: { is_visible: false },
 				end_date: { is_visible: false },
+				no_of_days: { is_visible: false },
 				vehicle_type: { is_visible: false },
 				km: { is_visible: false },
 				rate_per_km: { is_visible: false },
@@ -2948,7 +2959,13 @@ sap.ui.define([
 					await this._calculatePerDiem();
 				}
 				// Calculate number of days
-				this.getView().getModel("claimitem_input").setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
+				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+				var oInputModel = this.getView().getModel("claimitem_input");
+				var oPropertyModel = this.getView().getModel("claimitem_property");
+				if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
+					oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+					this.onChange_ClaimDetails_NumberOfDays();
+				}
 			}
 		},
 
@@ -2977,39 +2994,41 @@ sap.ui.define([
          * @public
          */
 		onChange_ClaimDetails_InsuranceCertDate: function () {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			oInputModel.refresh(true);
 
-			oInputModel.setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
+			// update number of days
+			oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+			this.onChange_ClaimDetails_NumberOfDays();
 		},
 
-		/**
-		 * Determine which method to use when calculating number of days for claim item
-		 * if start/end date is not in claim item fields, pass start/end date value from claim header
-		 * else if header is empty, pass start/end date value from claim item
-		 * @private
-		 * @return {integer} retrieve number of days value based on start/end date from claim
-		 */
-		_calculateNumberOfDays: function () {
-			var oHeader = {};
-			var oItem = {};
+        /**
+         * On changing number of days field, method checks for lodging claim type item to calculate eligible amount
+         * @public
+         */
+		onChange_ClaimDetails_NumberOfDays: function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
-			var oPropertyModel = this.getView().getModel("claimitem_property");
-			//// get header if start/end date is not visible in claim item fields
-			if ((!oPropertyModel.getProperty("/start_date/is_visible") || !oPropertyModel.getProperty("/end_date/is_visible")) &&
-				(!oPropertyModel.getProperty("/insurance_cert_start_date/is_visible") || !oPropertyModel.getProperty("/insurance_cert_end_date/is_visible"))
-			) {
-				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-				oHeader = {
-					tripstartdate: oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"),
-					tripenddate: oClaimSubmissionModel.getProperty("/claim_header/trip_end_date"),
-				};
+			// if claim type item is lodging, calculate amount based on eligible amount and number of days
+			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
+				this._calculateLodgingEligibleAmount();
 			}
-			//// get item if header is not populated
-			if (Object.keys(oHeader).length === 0) {
-				oItem = oInputModel.getProperty("/claim_item") || {};
+		},
+
+        /**
+         * Auto-populate Amount field based on eligible employee amount
+		 * if number of days field is visible, calculate amount based on eligible amount * number of days 
+		 * @private
+		 */
+		_calculateLodgingEligibleAmount: async function () {
+			// multiply number of days to eligible amount
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (this.getView().getModel("claimitem_property").getProperty("/no_of_days/is_visible")) {
+				oInputModel.setProperty("/claim_item/amount", oInputModel.getProperty("/claim_item/eligible_amount") * oInputModel.getProperty("/claim_item/no_of_days"));
 			}
-			return DateUtility.calculateNumberOfDays(oHeader, oItem);
+			else {
+				oInputModel.setProperty("/claim_item/amount", oInputModel.getProperty("/claim_item/eligible_amount"));
+			}
 		},
 
 		onChange_ClaimDetails_TimeRange: async function (startdate, starttime, enddate, endtime) {
@@ -3256,6 +3275,60 @@ sap.ui.define([
 			}
 
 			this._updateEntitlementAmount(oClaimItemInputModel);
+		},
+
+		/**
+        * On selecting location type, reset kilometer value if KWSP Office is selected
+        * @public
+        */
+		onSelect_ClaimDetails_LocationType: function () {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
+				oInputModel.setProperty("/claim_item/km", null);
+			}
+		},
+
+		/**
+        * On selecting office location, set the respective state value if empty and retrieve mileage based on backend table
+		* once mileage is retrieved, amount is calculated based on kilometer * rate per km
+        * @public
+		* @param {object} oEvent - the event call passed into param
+		* @param {string} sLocationTypeOffice - determines whether office location is to or from
+        */
+		onSelect_ClaimDetails_LocationTypeOffice: async function (oEvent, sLocationTypeOffice) {
+			var oInputModel = this.getView().getModel("claimitem_input");
+
+			// set state field value if empty or not same Id
+			var oSelectedItem = oEvent.getParameters().selectedItem;
+			if (oSelectedItem) {
+				const oBindingContext = oSelectedItem.getBindingContext("employee");
+				const oStateId = oBindingContext.getObject("STATE_ID");
+				if (oInputModel.getProperty("/claim_item/" + sLocationTypeOffice + "_state_id") !== oStateId) {
+					// set if claim type is course based on project_claim field
+					oInputModel.setProperty("/claim_item/" + sLocationTypeOffice + "_state_id", oStateId);
+				}
+			}
+
+			if ((oInputModel.getProperty("/claim_item/from_state_id") && oInputModel.getProperty("/claim_item/from_location_office")) &&
+				(oInputModel.getProperty("/claim_item/to_state_id") && oInputModel.getProperty("/claim_item/to_location_office"))
+			) {
+				var aEntityFields = [
+					{ entity_field: this._oConstant.EntitiesFields.FROM_STATE_ID, filter_value: oInputModel.getProperty("/claim_item/from_state_id") },
+					{ entity_field: this._oConstant.EntitiesFields.FROM_LOCATION_ID, filter_value: oInputModel.getProperty("/claim_item/from_location_office") },
+					{ entity_field: this._oConstant.EntitiesFields.TO_STATE_ID, filter_value: oInputModel.getProperty("/claim_item/to_state_id") },
+					{ entity_field: this._oConstant.EntitiesFields.TO_LOCATION_ID, filter_value: oInputModel.getProperty("/claim_item/to_location_office") }
+				]
+				var aRetrievalFields = [ this._oConstant.OfficeDistance.MILEAGE ];
+				var aOutputValues = await ClaimUtility.setClaimItemValueFromSelection(this._oConstant.Entities.ZOFFICE_DISTANCE, aEntityFields, aRetrievalFields);
+				if (aOutputValues.length > 0) {
+					oInputModel.setProperty("/claim_item/km", aOutputValues[0]);
+				}
+				else {
+					oInputModel.setProperty("/claim_item/km", null);
+                    MessageToast.show(Utility.getText("msg_claimdetails_input_km_location_office_none"));
+				}
+                this._calculateRatePerKm();
+			}
 		},
 
 		/* =========================================================

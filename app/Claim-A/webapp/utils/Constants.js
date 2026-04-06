@@ -90,6 +90,11 @@ sap.ui.define([
             "GALAKAN" : "GALAKAN",
             "TELEFON_B" : "TELEFON_B"
         },
+        "ClaimTypeItemLodging": {
+            "LOD_TUKAR": "LOD_TUKAR",
+            "LODG_O": "LODG_O",
+            "LODGING_L": "LODGING_L"
+        },
         "ClaimTypeItemStatus": {
             "ACTIVE": "ACTIVE",
         },
@@ -103,6 +108,11 @@ sap.ui.define([
             "CANCELLED": "STAT07",
         },
         "EligibilityRule": {
+            "ROLE_ID": "ROLE_ID",
+            "PERSONAL_GRADE": "PERSONAL_GRADE",
+            "POSITION_NO_DESC": "POSITION_NO_DESC",
+            "ROW_COUNT": "ROW_COUNT",
+            "ELIGIBLE_AMOUNT": "ELIGIBLE_AMOUNT",
             "RATE_PER_KM": "RATE",
             "SUBSIDISED_RATE": "SUBSIDISED_RATE"
         },
@@ -163,6 +173,7 @@ sap.ui.define([
             "ZCLAIM_HEADER": "/ZCLAIM_HEADER",
             "ZCLAIM_ITEM": "/ZCLAIM_ITEM",
             "ZCLAIM_TYPE_ITEM": "/ZCLAIM_TYPE_ITEM",
+            "ZELIGIBILITY_RULE": "/ZELIGIBILITY_RULE",
             "ZEMP_APPROVER_REQUEST_DETAILS": "/ZEMP_APPROVER_REQUEST_DETAILS",
             "ZEMP_APPROVER_CLAIM_DETAILS": "/ZEMP_APPROVER_CLAIM_DETAILS",
             "ZEMP_CLAIM_BUDGET_CHECK": "/ZEMP_CLAIM_BUDGET_CHECK",
@@ -170,6 +181,7 @@ sap.ui.define([
             "ZEMP_MASTER": "/ZEMP_MASTER",
             "ZEMP_REQUEST_BUDGET_CHECK": "/ZEMP_REQUEST_BUDGET_CHECK",
             "ZEMP_SUBSTITUTION_RULE": "/ZEMP_SUBSTITUTION_RULE",
+            "ZOFFICE_DISTANCE": "/ZOFFICE_DISTANCE",
             "ZRATE_KM": "/ZRATE_KM",
             "ZREQUEST_HEADER": "/ZREQUEST_HEADER",
             "ZREQUEST_ITEM": "/ZREQUEST_ITEM",
@@ -225,6 +237,10 @@ sap.ui.define([
             "INSURANCE_PURCH_DATE": "INSURANCE_PURCH_DATE",
             "INSURANCE_CERT_START_DATE": "INSURANCE_CERT_START_DATE",
             "INSURANCE_CERT_END_DATE": "INSURANCE_CERT_END_DATE",
+            "FROM_STATE_ID": "FROM_STATE_ID",
+            "FROM_LOCATION_ID": "FROM_LOCATION_ID",
+            "TO_STATE_ID": "TO_STATE_ID",
+            "TO_LOCATION_ID": "TO_LOCATION_ID",
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -332,6 +348,13 @@ sap.ui.define([
         "LocationType" : {
             "OTHER" : "1",
             "KWSP"  : "2"
+        },
+        "LocationTypeOffice" : {
+            "FROM" : "from",
+            "TO"  : "to"
+        },
+        "OfficeDistance" : {
+            "MILEAGE" : "MILEAGE"
         },
         "InsuranceProvider" : {
             "OTHERS" : "4",
