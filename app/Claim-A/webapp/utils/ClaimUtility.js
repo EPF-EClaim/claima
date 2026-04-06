@@ -33,12 +33,12 @@ sap.ui.define([
 		},
 
 		/**
-        * Checks if course has already used by user for a previously approved claim
-        * @public
+		* Checks if course has already used by user for a previously approved claim
+		* @public
 		* @param {string} sCourseCode - course code ID to check from database
 		* @param {string} sParticipantId - participant ID to check from database
 		* @returns {boolean} if records found, return true; else return false
-        */
+		*/
 		checkExistingCourseCode: async function (sCourseCode, sParticipantId) {
 			const oModel = this._oOwnerComponent.getModel();
 			// filter by claim status (approved, pending approval)
@@ -50,33 +50,87 @@ sap.ui.define([
 				and: false
 			});
 			const oListBinding = oModel.bindList(Constant.Entities.ZTRAIN_COURSE_PART, null, [
-                new Sorter("COURSE_ID"),
-                new Sorter("SESSION_NUMBER"),
-            ], [
-                // ensure status is active
-                new Filter("COURSE_ID", FilterOperator.EQ, sCourseCode),
-                new Filter("PARTICIPANT_ID", FilterOperator.EQ, sParticipantId),
-                new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, Constant.CourseSessionStatus.ACTIVE),
-                new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true),
+				new Sorter("COURSE_ID"),
+				new Sorter("SESSION_NUMBER"),
+			], [
+				// ensure status is active
+				new Filter("COURSE_ID", FilterOperator.EQ, sCourseCode),
+				new Filter("PARTICIPANT_ID", FilterOperator.EQ, sParticipantId),
+				new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, Constant.CourseSessionStatus.ACTIVE),
+				new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true),
 				oFilterRoleId
-            ]);
+			]);
 
-            try {
-                BusyIndicator.show(0);
-                const aContexts = await oListBinding.requestContexts(0, Infinity);
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
 
-                if (aContexts.length > 0) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } catch (oError) {
-                MessageBox.error(Utility.getText("error_msg_course_code_err", [oError]));
-                return false;
-            } finally {
-                BusyIndicator.hide();
-            }
+				if (aContexts.length > 0) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (oError) {
+				MessageBox.error(Utility.getText("error_msg_course_code_err", [oError]));
+				return false;
+			} finally {
+				BusyIndicator.hide();
+			}
 		},
+
+		/**
+		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
+		* Method retrieves db table to be checked with fields and values to be filtered against
+		* if records found, first record is retrieved from the table and returns values from the record
+		* @public
+		* @param {string} sCourseCode - course code ID to check from database
+		* @param {string} sParticipantId - participant ID to check from database
+		* @returns {object} oReturnDates - if records found, return total start and end date
+		*/
+		getCourseCodeStartEndDate: async function (sCourseCode, sParticipantId) {
+			const oModel = this._oOwnerComponent.getModel();
+			const oListBinding = oModel.bindList(Constants.Entities.ZTRAIN_COURSE_PART, null, [
+				new Sorter("COURSE_ID"),
+				new Sorter("SESSION_NUMBER"),
+			], [
+				// ensure status is active
+				new Filter("COURSE_ID", FilterOperator.EQ, sCourseCode),
+				new Filter("PARTICIPANT_ID", FilterOperator.EQ, sParticipantId),
+				new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, Constants.CourseSessionStatus.ACTIVE),
+				new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true),
+				new Filter("CLAIM_STATUS", FilterOperator.NE, Constants.ClaimStatus.APPROVED),
+				new Filter("CLAIM_STATUS", FilterOperator.NE, Constants.ClaimStatus.PENDING_APPROVAL)
+			]);
+
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+				if (aContexts.length > 0) {
+					var oReturnDates = {
+						start_date: null,
+						end_date: null,
+					}
+					for ( var iContext = 0; iContext < aContexts.length; iContext++) {
+						var oData = aContexts[iContext].getObject();
+						if (!oReturnDates.start_date || new Date(oData["START_DATE"]) < new Date(oReturnDates.start_date)) {
+							oReturnDates.start_date = oData["START_DATE"];
+						}
+						if (!oReturnDates.end_date || new Date(oData["END_DATE"]) > new Date(oReturnDates.end_date)) {
+							oReturnDates.end_date = oData["END_DATE"];
+						}
+					}
+					return oReturnDates;
+				} else {
+					return null;
+				}
+			} catch (oError) {
+				MessageBox.error(Utility.getText("msg_claimdetails_input_err", [oError]));
+				return null;
+			} finally {
+				BusyIndicator.hide();
+			}
+		}, 
 
 		/**
 		* Set default values for claim item fields
