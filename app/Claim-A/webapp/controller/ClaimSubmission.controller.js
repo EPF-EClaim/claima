@@ -888,41 +888,6 @@ sap.ui.define([
 				}
 			}
 		},
-
-		/* _setClaimItemTableToolbar: function (oBool) {
-			var oPage = this.byId("page_claimsubmission");
-			if (oBool) {
-				// table changes
-				if (this.byId("button_claimsummary_edit")) {
-					//// hide buttons
-					if (!this.byId("button_claimsummary_createclaim").getVisible()) { this.byId("button_claimsummary_createclaim").setVisible(true); }
-					if (!this.byId("button_claimsummary_edit").getVisible()) { this.byId("button_claimsummary_edit").setVisible(true); }
-					if (!this.byId("button_claimsummary_duplicate").getVisible()) { this.byId("button_claimsummary_duplicate").setVisible(true); }
-					if (!this.byId("button_claimsummary_delete").getVisible()) { this.byId("button_claimsummary_delete").setVisible(true); }
-				}
-
-				// table properties
-				if (this.byId("table_claimsummary_claimitem")) {
-					this.byId("table_claimsummary_claimitem").setMode(ListMode.MultiSelect);
-				}
-			}
-			else {
-				// table changes
-				if (this.byId("button_claimsummary_edit")) {
-					//// hide buttons
-					if (this.byId("button_claimsummary_createclaim").getVisible()) { this.byId("button_claimsummary_createclaim").setVisible(false); }
-					if (this.byId("button_claimsummary_edit").getVisible()) { this.byId("button_claimsummary_edit").setVisible(false); }
-					if (this.byId("button_claimsummary_duplicate").getVisible()) { this.byId("button_claimsummary_duplicate").setVisible(false); }
-					if (this.byId("button_claimsummary_delete").getVisible()) { this.byId("button_claimsummary_delete").setVisible(false); }
-				}
-
-				// table properties
-				if (this.byId("table_claimsummary_claimitem")) {
-					this.byId("table_claimsummary_claimitem").setMode(ListMode.SingleSelectMaster);
-				}
-			}
-		}, */
-
 		_setClaimItemTableToolbar: function (bViewCheck) {
 
 
@@ -1483,36 +1448,10 @@ sap.ui.define([
 				);
 				oInputModel.setProperty("/claim_items_count", oInputModel.getProperty("/claim_items").length);
 
-				// reset values
-				//// amount
-				//oInputModel.setProperty(addrIndex + "/amount", 0);
-				//// start/end dates
-				oInputModel.setProperty(addrIndex + "/start_date", null);
-				oInputModel.setProperty(addrIndex + "/end_date", null);
-				oInputModel.setProperty(addrIndex + "/trip_start_date", null);
-				oInputModel.setProperty(addrIndex + "/trip_end_date", null);
-				oInputModel.setProperty(addrIndex + "/event_start_date", null);
-				oInputModel.setProperty(addrIndex + "/event_end_date", null);
-				/// Added to enable duplication check;
-				//oInputModel.setProperty(addrIndex + "/receipt_number", null);
-				//oInputModel.setProperty(addrIndex + "/receipt_date", null);
-				//oInputModel.setProperty(addrIndex + "/bill_no", null);
-				//oInputModel.setProperty(addrIndex + "/bill_date", null);
-
-
 				// calculate new total
 				const nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
 				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 			}
-
-			// update to database
-			/* 			var updateSuccess = await this._updateClaimItems();
-						if (!updateSuccess) {
-							// recover previous claim item list
-							oInputModel.setProperty("/claim_items", tempItems.claim_items);
-							oInputModel.setProperty("/claim_items_count", tempItems.claim_items.length);
-							oInputModel.setProperty("/claim_header/total_claim_amount", tempItems.total_claim_amount);
-						} */
 			oInputModel.setProperty(addrIndex + "/is_new", true);
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
