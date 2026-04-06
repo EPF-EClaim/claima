@@ -787,7 +787,7 @@ sap.ui.define([
 			if (Object.values(this._oConstant.ClaimTypeKursus).includes(sClaimType)) {
 				var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(oInputModel.getProperty("/claimtype/course_code"), oInputModel.getProperty("/emp_master/eeid"));
 				if (bCourseAlreadyApproved) {
-					MessageBox.warning(Utility.getText("warning_msg_course_already_approved", [oInputModel.getProperty("/claimtype/course_code"), oInputModel.getProperty("/claimtype/descr/course_code")]));
+					MessageBox.error(Utility.getText("error_msg_course_already_approved", [oInputModel.getProperty("/claimtype/course_code"), oInputModel.getProperty("/claimtype/descr/course_code")]));
 					return;
 				}
 			}
