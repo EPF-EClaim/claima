@@ -135,6 +135,26 @@ sap.ui.define([
 
         const oPayload = oValueHelp.getPayload();
 
+        if(oPayload.filters?.length){
+            const aPayloadFilter =  oPayload.filters.map(filter => {
+               let sValue = filter.value1;
+
+               if(typeof filter.value1 === "string" && filter.value1.startsWith("/")){
+                    const sModelName = filter.model;
+                    sValue = oValueHelp.getModel(sModelName)?.getProperty(filter.value1);
+               }
+                
+                return !sValue ? null : new Filter({
+                    path: filter.path,
+                    operator: FilterOperator[filter.operator] || filter.operator,
+                    value1: sValue
+                });
+            })
+            if(aPayloadFilter.length){
+                oBindingInfo.filters.push(...aPayloadFilter)
+            }
+        }
+
         if (oPayload.searchKeys) {
             const aFilters = oPayload.searchKeys.map(key => new Filter({
                 path: key,
