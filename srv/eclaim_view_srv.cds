@@ -304,7 +304,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.GRADE,
                 ZEMP_MASTER.JOB_GROUP,
                 createdBy,
-                modifiedAt
+                modifiedAt,
+                COURSE_CODE,
+                ZTRAIN_COURSE_PART.COURSE_DESC as COURSE_CODE_DESC
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW          as
@@ -425,7 +427,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 DEPENDENT_RELATIONSHIP,
                 POLICY_NUMBER,
                 INSURANCE_PROVIDER_ID,
-                ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_DESC
+                ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_DESC,
+                ZCLAIM_HEADER.COURSE_CODE,
+                ZCLAIM_HEADER.ZTRAIN_COURSE_PART.COURSE_DESC as COURSE_CODE_DESC,
+                ZCLAIM_HEADER.ZTRAIN_COURSE_PART.SESSION_NUMBER as SESSION_NUMBER
         };
 
     entity ZEMP_REQUEST_STATUS           as
@@ -1065,8 +1070,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
 
     entity ZEMP_SUBSTITUTION_RULE as projection on ECLAIM.ZSUBSTITUTION_RULES;
 
-     entity ZCLM_OFFICE_LOCATION_SELECTION       as
-        projection on ECLAIM.ZOFFICE_DISTANCE {
+    entity ZCLM_OFFICE_LOCATION_SELECTION       as 
+        select from ECLAIM.ZOFFICE_DISTANCE {
             key FROM_STATE_ID,
             ZSTATE.STATE_DESC as FROM_STATE_DESC,
             key FROM_LOCATION_ID,
@@ -1075,5 +1080,29 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             ZTOSTATE.STATE_DESC as TO_STATE_DESC,
             key TO_LOCATION_ID,
             ZOFFICE_LOCATION1.LOCATION_DESC as TO_LOCATION_DESC,
-        };
+        } group by
+            FROM_STATE_ID,
+            ZSTATE.STATE_DESC,
+            FROM_LOCATION_ID,
+            ZOFFICE_LOCATION.LOCATION_DESC,
+            TO_STATE_ID,
+            ZTOSTATE.STATE_DESC,
+            TO_LOCATION_ID,
+            ZOFFICE_LOCATION1.LOCATION_DESC;
+
+     entity ZCLM_TO_STATE_SELECTION       as 
+        select from ECLAIM.ZOFFICE_DISTANCE {
+            key FROM_STATE_ID,
+            ZSTATE.STATE_DESC as FROM_STATE_DESC,
+            key FROM_LOCATION_ID,
+            ZOFFICE_LOCATION.LOCATION_DESC as FROM_LOCATION_DESC,
+            key TO_STATE_ID,
+            ZTOSTATE.STATE_DESC as TO_STATE_DESC,
+        } group by
+            FROM_STATE_ID,
+            ZSTATE.STATE_DESC,
+            FROM_LOCATION_ID,
+            ZOFFICE_LOCATION.LOCATION_DESC,
+            TO_STATE_ID,
+            ZTOSTATE.STATE_DESC;
 };
