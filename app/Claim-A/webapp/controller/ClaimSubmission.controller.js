@@ -3062,14 +3062,16 @@ sap.ui.define([
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			oInputModel.refresh(true);
 
-			// reset per diem amounts
-			this._resetPerDiem();
-
 			// Calculate number of days
-			oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+			if (oPropertyModel.getProperty("/entitled_breakfast/is_visible")) {
+				oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+			}
 
 			// calculate per diem details
 			if (oPropertyModel.getProperty("/entitled_breakfast/is_visible")) {
+				// reset per diem amounts
+				this._resetPerDiem();
+
 				await this._calculatePerDiem();
 			}
 		},
