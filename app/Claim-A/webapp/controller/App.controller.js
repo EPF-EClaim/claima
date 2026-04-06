@@ -771,21 +771,17 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/req_emailapprove", this.byId("switch_claimprocess_req_emailapprove").getState());
 			}
 
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			if (!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
+				return;
+			}
+
 			// Mobile Eligibility Pre-check
 			var sClaimType = oInputModel.getProperty("/claimtype/type")
 			if (sClaimType === this._oConstant.ClaimType.HANDPHONE) {
 				var bEligible = await EligibilityCheck.onCheckMobileEligibility(this);
 				if (!bEligible) {
 					MessageBox.warning(Utility.getText("warning_msg_mobile_not_eligible"));
-					return;
-				}
-			}
-
-			// Course Code Pre-check
-			if (Object.values(this._oConstant.ClaimTypeKursus).includes(sClaimType)) {
-				var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(oInputModel.getProperty("/claimtype/course_code"), oInputModel.getProperty("/emp_master/eeid"));
-				if (bCourseAlreadyApproved) {
-					MessageBox.error(Utility.getText("error_msg_course_already_approved", [oInputModel.getProperty("/claimtype/course_code"), oInputModel.getProperty("/claimtype/descr/course_code")]));
 					return;
 				}
 			}
