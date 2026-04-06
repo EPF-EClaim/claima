@@ -240,7 +240,7 @@ sap.ui.define([
             "FROM_STATE_ID": "FROM_STATE_ID",
             "FROM_LOCATION_ID": "FROM_LOCATION_ID",
             "TO_STATE_ID": "TO_STATE_ID",
-            "TO_LOCATION_ID": "TO_LOCATION_ID",
+            "TO_LOCATION_ID": "TO_LOCATION_ID"
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -356,6 +356,19 @@ sap.ui.define([
         "OfficeDistance" : {
             "MILEAGE" : "MILEAGE"
         },
+        "RelationshipType" :{
+            "SPOUSE": "01"
+        },
+        "MaritalStatus": {
+            "MARRIED": "M",
+            "SINGLE": "S"
+        }, 
+        "MeterCubeId": {
+            "EMPLOYEE": "01",
+            "SINGLE": "02",
+            "SPOUSE": "03",
+            "MARRIED": "06"
+        },
         "InsuranceProvider" : {
             "OTHERS" : "4",
         },
@@ -374,6 +387,10 @@ sap.ui.define([
             "PUSHBACK" : "Push Back",
             "APPROVE" : "Approve"
 
+        },
+        "DependentType": {
+            "ANGGOTA" : "1",
+            "DEPENDENT": "2"
         },
         "ConfigAccess": 
              [

@@ -43,7 +43,7 @@ module.exports = {
         return claim?.STATUS_ID === Constant.Status.DRAFT || !claim;
     },
 
-    getClaimantDetails: async function (ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS, tx, sEmpID, nScenario) {
+    getClaimantDetails: async function (ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS, tx, sEmpID, nScenario, sAgingDay) {
         let sName, sEmail, sDirectSuperiorID;
         let sCCEmail = null;
         let iDepth = 20;
@@ -58,7 +58,7 @@ module.exports = {
         sName = claimantDetails.NAME;
         sEmail = claimantDetails.EMAIL;
 
-        if (nScenario === Constant.ReminderScenario.WITH_CASH_ADVANCE) {
+        if (nScenario === Constant.ReminderScenario.WITH_CASH_ADVANCE && sAgingDay === '16') {
 
             // check if claimant is CEO - if yes, CCEmail should goes to CEO_FI
             if (claimantDetails.ROLE === Constant.Role.CEO) {
