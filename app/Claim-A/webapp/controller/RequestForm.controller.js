@@ -361,8 +361,8 @@ sap.ui.define([
 									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
 									bApproversDetermined = await workflowApproval.onPARApproverDetermination(this, oModel, sCurrentReqId, oEmployeeViewModel);
 									if(bApproversDetermined){
-										await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
-										await Utility._updateSubmittedDate(this._oDataModel, sReqId);
+										await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
+										await Utility._updateSubmittedDate(this._oDataModel, sCurrentReqId);
 										this._oReqModel.setProperty("/view", 'view');
 										
 										// this._oReqModel.setProperty("/req_header/reqstatus", this._oConstant.ClaimStatus.PENDING_APPROVAL)
