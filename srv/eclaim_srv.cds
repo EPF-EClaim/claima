@@ -343,6 +343,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
         ClaimType: String;
         ClaimTypeItem: String;
         EmpId: String;
+        RecordId: String;
     }
 
     type EligibilityCheckFields{
@@ -389,4 +390,5 @@ service eclaim_srv @(requires: 'authenticated-user'){
         sToOffice: String,
     ) returns String;
 
+    action CheckUserClaimTypes(ID: String) returns many Response;
 };

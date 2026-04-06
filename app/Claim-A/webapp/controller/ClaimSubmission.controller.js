@@ -84,40 +84,42 @@ sap.ui.define([
 			// declare claim utility
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
 
-			// declare claim utility
-			ClaimUtility.init(this.getOwnerComponent(), this.getView());
-
 			// declare excel export utility
 			ExcelExport.init(this.getOwnerComponent(), this.getView(), window.XLSX);
+
+			//declare utility
+			Utility.init(this.getOwnerComponent());
 
 			// URL Access
 			const oRouter = this.getOwnerComponent().getRouter();
 			oRouter.getRoute("ClaimSubmission").attachPatternMatched((event) => { this._onMatched(event); }, this);
 			oRouter.attachBeforeRouteMatched((event) => { this._beforeRouteMatched(event); }, this);
-			
-			this.getOwnerComponent().setModel(new JSONModel({ fieldControl: { 
-				[this._oConstant.EntitiesFields.RECEIPT_DATE]: {
-					customErrorMessage: "",
-					customMinDateError: "",
-					customMaxDateError: ""
-				},
-				[this._oConstant.EntitiesFields.BILL_DATE]: {
-					customErrorMessage: "",
-					customMinDateError: "",
-					customMaxDateError: ""
-				},
-				[this._oConstant.EntitiesFields.INSURANCE_PURCH_DATE]: {
-					customErrorMessage: "",
-				},
-				[this._oConstant.EntitiesFields.INSURANCE_CERT_START_DATE]: {
-					customErrorMessage: "",
-					customMaxDateError: ""
-				},
-				[this._oConstant.EntitiesFields.INSURANCE_CERT_END_DATE]: {
-					customErrorMessage: "",
-					customMinDateError: "",
+
+			this.getOwnerComponent().setModel(new JSONModel({
+				fieldControl: {
+					[this._oConstant.EntitiesFields.RECEIPT_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+						customMaxDateError: ""
+					},
+					[this._oConstant.EntitiesFields.BILL_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+						customMaxDateError: ""
+					},
+					[this._oConstant.EntitiesFields.INSURANCE_PURCH_DATE]: {
+						customErrorMessage: "",
+					},
+					[this._oConstant.EntitiesFields.INSURANCE_CERT_START_DATE]: {
+						customErrorMessage: "",
+						customMaxDateError: ""
+					},
+					[this._oConstant.EntitiesFields.INSURANCE_CERT_END_DATE]: {
+						customErrorMessage: "",
+						customMinDateError: "",
+					}
 				}
-			} }), "appModel");
+			}), "appModel");
 
 		},
 
@@ -275,7 +277,12 @@ sap.ui.define([
 				this._setEnabledToolbarFooter();
 
 				// disable footer buttons if claim already cancelled
-				this._disableFooterButtons();
+				Utility.updateFooterState(
+					this.getView(),
+					oClaimSubmissionModel,
+					this._oConstant,
+					null
+				);
 
 				// set view-only features
 				if (!oClaimSubmissionModel.getProperty("/view_only")) {
@@ -294,6 +301,13 @@ sap.ui.define([
 				if (oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
 					oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK) {
 					this._setApprovalLog(true);
+					Utility.updateFooterState(
+						this.getView(),
+						oClaimSubmissionModel,
+						this._oConstant,
+						this._oConstant.ClaimFooterMode.VIEW_ONLY
+					);
+
 
 					// display approval log data
 					const oApprovalLogModel = this.getOwnerComponent().getModel('approval_log');
@@ -316,13 +330,24 @@ sap.ui.define([
 					}
 					//// change screen details if approver
 					if (oClaimSubmissionModel.getProperty("/is_approver")) {
-						// update footer buttons
-						this._displayFooterButtons("claimsubmission_approver");
+						Utility.updateFooterState(
+							this.getView(),
+							oClaimSubmissionModel,
+							this._oConstant,
+							this._oConstant.ClaimFooterMode.APPROVER
+						);
+
+
 					}
 				}
 				else {
-					// ensure footer buttons display default 
-					this._displayFooterButtons("claimsubmission_summary_claimitem");
+					Utility.updateFooterState(
+						this.getView(),
+						oClaimSubmissionModel,
+						this._oConstant,
+						this._oConstant.ClaimFooterMode.SUMMARY
+					);
+
 				}
 
 			}
@@ -989,6 +1014,7 @@ sap.ui.define([
 					"item": null,
 					"category": null,
 					"cost_center": null,
+					"dependent_type": null,
 					"requestform": {
 						"request_id": null,
 						"objective_purpose": null,
@@ -1234,7 +1260,8 @@ sap.ui.define([
 						"vehicle_class_id": null,
 						"attachment_file_1": null,
 						"attachment_file_2": null,
-					}
+					},
+					"eligible_amount": null
 				},
 				"attachments": {
 					"attachment1": {
@@ -1590,7 +1617,7 @@ sap.ui.define([
 
 						}.bind(this));
 
-						} else {
+					} else {
 
 						var oText = Fragment.byId("declarationDialogFrag", "declarationText");
 						oText.setText(Utility.getText("msg_claimsubmission_declaration"));
@@ -1745,8 +1772,9 @@ sap.ui.define([
 				{ label: Utility.getText("label_claimdetails_input_claimitem"), property: "claim_type_item_id", type: "descr", width: 30 },
 			];
 			const aItemsColumnsAdditional = [
-				{ label: Utility.getText("label_claimdetails_input_anggota"), property: "anggota_name", field: "input_claimdetails_input_anggota_name", width: 30 },
-				{ label: Utility.getText("label_claimdetails_input_dependent"), property: "dependent_name", field: "input_claimdetails_input_dependent_name", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_depedent_or_anggota"), property: "dependent_type", field: "select_claimdetails_input_depedent_or_anggota", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_anggota"), property: "anggota_name", field: "field_claimdetails_input_anggota_name", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_dependent"), property: "dependent_name", field: "field_claimdetails_input_dependent_name", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_profbodytype"), property: "type_of_professional_body", field: "select_claimdetails_input_type_of_professional_body", type: "descr", width: 40 },
 				{ label: Utility.getText("label_claimdetails_input_policyno"), property: "policy_number", field: "input_claimdetails_input_policy_number", width: 18 },
 				{ label: Utility.getText("label_claimdetails_input_funeraltransport"), property: "funeral_transportation", field: "select_claimdetails_input_funeral_transportation", type: "descr", width: 18 },
@@ -2111,63 +2139,6 @@ sap.ui.define([
 			SendBackDialog.open(this);
 		},
 
-		_displayFooterButtons: function (oId) {
-			var button = [
-				"button_claimapprover_reject",
-				"button_claimapprover_pushback",
-				"button_claimapprover_approve",
-
-				"button_claimsubmission_savedraft",
-				"button_claimsubmission_deletereport",
-				"button_claimsubmission_submitreport",
-
-				"button_claimsubmission_back",
-
-				"button_claimdetails_input_save",
-				"button_claimdetails_input_cancel",
-			];
-			var button_claimsummary = [
-				"button_claimsubmission_savedraft",
-				"button_claimsubmission_deletereport",
-				"button_claimsubmission_submitreport",
-				"button_claimsubmission_back"
-			];
-			var button_claimdetails = [
-				"button_claimdetails_input_save",
-				"button_claimdetails_input_cancel",
-			];
-			var button_approver = [
-				"button_claimapprover_reject",
-				"button_claimapprover_pushback",
-				"button_claimapprover_approve",
-				"button_claimsubmission_back"
-			];
-
-			// select visible buttons based on visible fragment
-			var button_set;
-			switch (oId) {
-				case "claimsubmission_summary_claimitem":
-					button_set = button_claimsummary;
-					break;
-				case "claimsubmission_claimdetails_input":
-					button_set = button_claimdetails;
-					break;
-				case "claimsubmission_approver":
-					button_set = button_approver;
-					break;
-			}
-
-			var i = 0;
-			for (i; i < button.length; i++) {
-				var btnid = button[i];
-				if (button_set.includes(btnid)) {
-					this.getView().byId(btnid).setVisible(true);
-				} else {
-					this.getView().byId(btnid).setVisible(false);
-				}
-			}
-
-		},
 
 		_setEnabledToolbarFooter: function () {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
@@ -2209,20 +2180,6 @@ sap.ui.define([
 			}
 		},
 
-		_disableFooterButtons: function () {
-			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			if (oClaimSubmissionModel.getProperty("/claim_header/status_id") === this._oConstant.ClaimStatus.CANCELLED || oClaimSubmissionModel.getProperty("/claim_header/status_id") === this._oConstant.ClaimStatus.PENDING_APPROVAL) {
-				this.byId("button_claimsubmission_savedraft").setEnabled(false);
-				this.byId("button_claimsubmission_deletereport").setEnabled(false);
-				this.byId("button_claimsubmission_submitreport").setEnabled(false);
-			}
-			else {
-				this.byId("button_claimsubmission_savedraft").setEnabled(true);
-				this.byId("button_claimsubmission_deletereport").setEnabled(true);
-				this.byId("button_claimsubmission_submitreport").setEnabled(true);
-			}
-		},
-
 		_getGLAccount: async function (oModel, claim_type) {
 
 			const oListBinding = oModel.bindList("/ZCLAIM_TYPE", null, null, [
@@ -2248,6 +2205,7 @@ sap.ui.define([
 		onSelect_ClaimDetails_ClaimItem: async function (oEvent) {
 			// validate claim item
 			var claimItem = oEvent.getParameters().selectedItem;
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			if (claimItem) {
@@ -2282,21 +2240,83 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/disclaimer_galakan", false);
 			}
 
-			// calculate number of days
-			oInputModel.setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
+			//START TDL #6.1 meter cube for Pengangkutan Laut
+			const sKey = claimItem?.getKey?.();
+			if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
 
-			var oPropertyModel = this.getView().getModel("claimitem_property");
+				//entitled meter cube
+				oPropertyModel.setProperty("/meter_cube_entitled/is_visible", true);
+				oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
+
+				//actual meter cube
+				oPropertyModel.setProperty("/meter_cube_actual/is_visible", true);
+				oPropertyModel.setProperty("/meter_cube_actual/is_editable", true);
+
+				oPropertyModel.setProperty("/actual_amount/is_visible", true);
+				oPropertyModel.setProperty("/actual_amount/is_editable", true);
+
+				oPropertyModel.setProperty("/amount/is_visible", true);
+				oPropertyModel.setProperty("/amount/is_editable", false);
+
+
+				await ClaimUtility.onSelect_ClaimDetails_MeterCube(
+					sKey,
+					oInputModel,
+					oPropertyModel,
+					this.getOwnerComponent().getModel("session")
+				);
+
+				setTimeout(() => {
+					ClaimUtility.calculatePengangkutanLautAmount(oInputModel);
+				}, 50);
+
+				ClaimUtility.calculatePengangkutanLautAmount(oInputModel);
+			}
+
+			else {
+				//entitled meter cube
+				oPropertyModel.setProperty("/meter_cube_entitled/is_visible", false);
+				oInputModel.setProperty("/claim_item/meter_cube_entitled", null);
+
+				//actual meter cube
+				oPropertyModel.setProperty("/meter_cube_actual/is_visible", false);
+				oInputModel.setProperty("/claim_item/meter_cube_actual", null);
+
+				oPropertyModel.setProperty("/actual_amount/is_visible", false);
+				oInputModel.setProperty("/claim_item/actual_amount", null);
+
+				oPropertyModel.setProperty("/amount/is_visible", false);
+				oInputModel.setProperty("/claim_item/amount", null);
+			}
+			//END TDL #6.1 meter cube for Pengangkutan Laut
+
+			// calculate number of days
+			if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
+				oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+				this.onChange_ClaimDetails_NumberOfDays();
+			}
+
 			// set percentage (%) compensation based on claim item
 			if (oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
-				await ClaimUtility.setClaimItemDefaultValues("percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
+				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "percentage_compensation", this._oConstant.EligibilityRule.SUBSIDISED_RATE, 0.0);
 			}
-			
+
 			// set rate per km if no vehicle type field found
 			if (oPropertyModel.getProperty("/rate_per_km/is_visible") && !oPropertyModel.getProperty("/vehicle_type/is_visible")) {
-				await ClaimUtility.setClaimItemDefaultValues("descr/rate_per_km", this._oConstant.EligibilityRule.RATE_PER_KM, 0.0);
+				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "descr/rate_per_km", this._oConstant.EligibilityRule.RATE_PER_KM, 0.0);
 				// clear rate per km ID field since formula uses default value
 				oInputModel.setProperty("/rate_per_km", null);
 			}
+
+			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
+			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
+				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "eligible_amount", this._oConstant.EligibilityRule.ELIGIBLE_AMOUNT, 0.00);
+				this._calculateLodgingEligibleAmount();
+			}
+		},
+
+		onChange_ClaimDetails_ActualMeterCube: function () {
+			ClaimUtility.calculatePengangkutanLautAmount(this.getView().getModel("claimitem_input"));
 		},
 
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
@@ -2316,6 +2336,7 @@ sap.ui.define([
 				percentage_compensation: { is_visible: false },
 				start_date: { is_visible: false },
 				end_date: { is_visible: false },
+				no_of_days: { is_visible: false },
 				vehicle_type: { is_visible: false },
 				km: { is_visible: false },
 				rate_per_km: { is_visible: false },
@@ -2326,7 +2347,9 @@ sap.ui.define([
 				insurance_package_id: { is_visible: false },
 				insurance_purchase_date: { is_visible: false },
 				insurance_cert_start_date: { is_visible: false },
-				insurance_cert_end_date: { is_visible: false }
+				insurance_cert_end_date: { is_visible: false },
+				meter_cube_entitled: { is_visible: false },
+				meter_cube_actual: { is_visible: false, is_editable: true },
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -2334,7 +2357,14 @@ sap.ui.define([
 
 			// change footer buttons
 			if (!oClaimSubmissionModel.getProperty("/view_only") && !oClaimSubmissionModel.getProperty("/is_approver")) {
-				this._displayFooterButtons("claimsubmission_claimdetails_input");
+
+				Utility.updateFooterState(
+					this.getView(),
+					oClaimSubmissionModel,
+					this._oConstant,
+					this._oConstant.ClaimFooterMode.DETAILS
+				);
+
 			}
 
 			// update selection fields
@@ -2354,6 +2384,12 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/disclaimer_galakan", true)
 				}
 
+				//changes here
+				if(!!oInputModel.getProperty("/claim_item/anggota_id")){
+					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
+				}else if(!!oInputModel.getProperty("/claim_item/dependent_name")){
+					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.DEPENDENT);
+				}
 
 			}
 			this._setClaimDetailSelection(oClaimSubmissionModel);
@@ -2454,26 +2490,18 @@ sap.ui.define([
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
 			
-			// set dropdown for dependent names
-			var oSelect = this.byId("select_claimdetails_input_dependent_name");
-			var oBinding = oSelect.getBinding("items");
-			var aFilters = [
-				new Filter('EMP_ID', FilterOperator.EQ ,this._oSessionModel.getProperty("/userId"))
-			]
-			oBinding.filter(aFilters)
-			
 		},
 
 		/**
-        * Set values that will be retrieved for selection dropdown based on claim header
+		* Set values that will be retrieved for selection dropdown based on claim header
 		* method checks for field to be updated and the associated db table
 		* if found, values from the db table will be populated to the dropdown
-        * @private
+		* @private
 		* @param {string} sId - ID of claim item field to be updated
 		* @param {string} sTable - database table with values to populate to field
 		* @param {string} sField - field of db table to retrieve value (for ID and Desc)
 		* @param {string} sFieldDesc - specific name of description field of db table
-        */
+		*/
 		_setClaimDetailSelectionField: function (sId, sTable, sField, sFieldDesc) {
 			if (this.byId(sId).getVisible()) {
 				if (!sField) {
@@ -2677,7 +2705,7 @@ sap.ui.define([
 			// get input model
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-			
+
 			/* 	4 scenarios for Receipt Date to be populated
 					1. Get Receipt Date based on input
 					2. If Receipt Date is null, get item Bill Date
@@ -2699,8 +2727,9 @@ sap.ui.define([
 
 			//FUT issue #58
 			//checking for galakan disclaimer if its ticked or not
-			
-			if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)){
+
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			if (!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
 				return;
 			}
 
@@ -2708,7 +2737,7 @@ sap.ui.define([
 			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
 			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
 
-			if(dReceiptDate > dTripEndDate){
+			if (dReceiptDate > dTripEndDate) {
 				MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
 				return;
 			}
@@ -2930,7 +2959,7 @@ sap.ui.define([
 			MessageBox.error(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
 		},
 
-        /**
+		/**
 		 * On changing value of 'actual amount' field, change value of 'amount' property to percentage of 'actual_amount' property based on subsidised rate
 		 * This applies to claim items that have fields for both 'amount' and 'actual amount'. In this case,
 		 * 'amount' is auto-populated while 'actual amount' comes from user input
@@ -2944,6 +2973,8 @@ sap.ui.define([
 				// set 'amount' property to % of actual amount based on percentage compensation
 				oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
 			}
+
+			ClaimUtility.calculatePengangkutanLautAmount(oInputModel);
 		},
 
 		onChange_ClaimDetails_DateRange: async function (startdate, enddate) {
@@ -2968,48 +2999,56 @@ sap.ui.define([
 					await this._calculatePerDiem();
 				}
 				// Calculate number of days
-				this.getView().getModel("claimitem_input").setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
+				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+				var oInputModel = this.getView().getModel("claimitem_input");
+				var oPropertyModel = this.getView().getModel("claimitem_property");
+				if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
+					oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+					this.onChange_ClaimDetails_NumberOfDays();
+				}
 			}
 		},
 
-        /**
-         * On setting insurance cert start/end date, call private method to calculate number of days
-         * @public
-         */
+		/**
+		 * On setting insurance cert start/end date, call private method to calculate number of days
+		 * @public
+		 */
 		onChange_ClaimDetails_InsuranceCertDate: function () {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			oInputModel.refresh(true);
 
-			oInputModel.setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
+			// update number of days
+			oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+			this.onChange_ClaimDetails_NumberOfDays();
 		},
 
-        /**
-         * Determine which method to use when calculating number of days for claim item
-		 * if start/end date is not in claim item fields, pass start/end date value from claim header
-		 * else if header is empty, pass start/end date value from claim item
-		 * @private
-		 * @return {integer} retrieve number of days value based on start/end date from claim
+		/**
+		 * On changing number of days field, method checks for lodging claim type item to calculate eligible amount
+		 * @public
 		 */
-		_calculateNumberOfDays: function () {
-			var oHeader = {};
-			var oItem = {};
+		onChange_ClaimDetails_NumberOfDays: function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
-			var oPropertyModel = this.getView().getModel("claimitem_property");
-			//// get header if start/end date is not visible in claim item fields
-			if ((!oPropertyModel.getProperty("/start_date/is_visible") || !oPropertyModel.getProperty("/end_date/is_visible")) &&
-				(!oPropertyModel.getProperty("/insurance_cert_start_date/is_visible") || !oPropertyModel.getProperty("/insurance_cert_end_date/is_visible"))
-			) {
-				var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-				oHeader = {
-					tripstartdate: oClaimSubmissionModel.getProperty("/claim_header/trip_start_date"),
-					tripenddate: oClaimSubmissionModel.getProperty("/claim_header/trip_end_date"),
-				};
+			// if claim type item is lodging, calculate amount based on eligible amount and number of days
+			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
+				this._calculateLodgingEligibleAmount();
 			}
-			//// get item if header is not populated
-			if (Object.keys(oHeader).length === 0) {
-				oItem = oInputModel.getProperty("/claim_item") || {};
+		},
+
+		/**
+		 * Auto-populate Amount field based on eligible employee amount
+		 * if number of days field is visible, calculate amount based on eligible amount * number of days 
+		 * @private
+		 */
+		_calculateLodgingEligibleAmount: async function () {
+			// multiply number of days to eligible amount
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (this.getView().getModel("claimitem_property").getProperty("/no_of_days/is_visible")) {
+				oInputModel.setProperty("/claim_item/amount", oInputModel.getProperty("/claim_item/eligible_amount") * oInputModel.getProperty("/claim_item/no_of_days"));
 			}
-			return DateUtility.calculateNumberOfDays(oHeader, oItem);
+			else {
+				oInputModel.setProperty("/claim_item/amount", oInputModel.getProperty("/claim_item/eligible_amount"));
+			}
 		},
 
 		onChange_ClaimDetails_TimeRange: async function (startdate, starttime, enddate, endtime) {
@@ -3044,7 +3083,7 @@ sap.ui.define([
 		},
 
 		onChange_ClaimDetails_FlightTimeRange: async function () {
-    		this._resetPerDiem();
+			this._resetPerDiem();
 
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var vDepartureVal = oInputModel.getProperty("/claim_item/departure_time");
@@ -3071,7 +3110,7 @@ sap.ui.define([
 
 			if (this.byId("input_claimdetails_input_entitled_breakfast").getVisible()) {
 				// Consider passing iDiffHours into this method if the calculation relies on it
-				await this._calculatePerDiem(); 
+				await this._calculatePerDiem();
 			}
 		},
 
@@ -3094,11 +3133,11 @@ sap.ui.define([
 			}
 		},
 
-        /**
-         * On selecting vehicle type from dropdown, call method to determine rate per km based on vehicle type and claim item used
+		/**
+		 * On selecting vehicle type from dropdown, call method to determine rate per km based on vehicle type and claim item used
 		 * rate per KM values will be populated based on output values returned
-         * @public
-         */
+		 * @public
+		 */
 		onSelect_ClaimDetails_VehicleType: async function () {
 			if (this.getView().getModel("claimitem_property")?.getProperty("/rate_per_km/is_visible")) {
 				var oInputModel = this.getView().getModel("claimitem_input");
@@ -3106,7 +3145,7 @@ sap.ui.define([
 					{ entity_field: "VEHICLE_TYPE_ID", filter_value: oInputModel.getProperty("/claim_item/vehicle_type") },
 					{ entity_field: "CLAIM_TYPE_ITEM_ID", filter_value: oInputModel.getProperty("/claim_item/claim_type_item_id") }
 				]
-				var aRetrievalFields = [ "RATE_KM_ID", "RATE"];
+				var aRetrievalFields = ["RATE_KM_ID", "RATE"];
 				var aOutputValues = await ClaimUtility.setClaimItemValueFromSelection(this._oConstant.Entities.ZRATE_KM, aEntityFields, aRetrievalFields);
 				if (aOutputValues.length > 0) {
 					oInputModel.setProperty("/claim_item/rate_per_km", aOutputValues[0]);
@@ -3115,16 +3154,16 @@ sap.ui.define([
 				else {
 					oInputModel.setProperty("/claim_item/rate_per_km", null);
 					oInputModel.setProperty("/claim_item/descr/rate_per_km", 0.0);
-                    MessageToast.show(Utility.getText("msg_claimdetails_input_descr/rate_per_km_none"));
+					MessageToast.show(Utility.getText("msg_claimdetails_input_descr/rate_per_km_none"));
 				}
-                this._calculateRatePerKm();
+				this._calculateRatePerKm();
 			}
 		},
 
-        /**
-         * On changing kilometer field, method checks if rate per km field exists to calculate amount
-         * @public
-         */
+		/**
+		 * On changing kilometer field, method checks if rate per km field exists to calculate amount
+		 * @public
+		 */
 		onChange_ClaimDetails_Kilometer: function () {
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			// calculate amount if rate per km exists 
@@ -3133,10 +3172,10 @@ sap.ui.define([
 			}
 		},
 
-        /**
-         * On changing toll field, method checks if km and rate per km fields exist to calculate amount
-         * @public
-         */
+		/**
+		 * On changing toll field, method checks if km and rate per km fields exist to calculate amount
+		 * @public
+		 */
 		onChange_ClaimDetails_Toll: function () {
 			var oPropertyModel = this.getView().getModel("claimitem_property");
 			// calculate amount if km and rate per km exists 
@@ -3145,13 +3184,13 @@ sap.ui.define([
 			}
 		},
 
-        /**
-         * If rate per km (and toll) fields are available, auto-populate amount value
-         * Formulas:
+		/**
+		 * If rate per km (and toll) fields are available, auto-populate amount value
+		 * Formulas:
 		 * with toll - ((km * rate_per_km) + toll)
 		 * without toll - (km * rate_per_km)
-         * @private
-         */
+		 * @private
+		 */
 		_calculateRatePerKm: function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oPropertyModel = this.getView().getModel("claimitem_property");
@@ -3256,6 +3295,60 @@ sap.ui.define([
 			}
 
 			this._updateEntitlementAmount(oClaimItemInputModel);
+		},
+
+		/**
+		* On selecting location type, reset kilometer value if KWSP Office is selected
+		* @public
+		*/
+		onSelect_ClaimDetails_LocationType: function () {
+			var oInputModel = this.getView().getModel("claimitem_input");
+			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
+				oInputModel.setProperty("/claim_item/km", null);
+			}
+		},
+
+		/**
+		* On selecting office location, set the respective state value if empty and retrieve mileage based on backend table
+		* once mileage is retrieved, amount is calculated based on kilometer * rate per km
+		* @public
+		* @param {object} oEvent - the event call passed into param
+		* @param {string} sLocationTypeOffice - determines whether office location is to or from
+		*/
+		onSelect_ClaimDetails_LocationTypeOffice: async function (oEvent, sLocationTypeOffice) {
+			var oInputModel = this.getView().getModel("claimitem_input");
+
+			// set state field value if empty or not same Id
+			var oSelectedItem = oEvent.getParameters().selectedItem;
+			if (oSelectedItem) {
+				const oBindingContext = oSelectedItem.getBindingContext("employee");
+				const oStateId = oBindingContext.getObject("STATE_ID");
+				if (oInputModel.getProperty("/claim_item/" + sLocationTypeOffice + "_state_id") !== oStateId) {
+					// set if claim type is course based on project_claim field
+					oInputModel.setProperty("/claim_item/" + sLocationTypeOffice + "_state_id", oStateId);
+				}
+			}
+
+			if ((oInputModel.getProperty("/claim_item/from_state_id") && oInputModel.getProperty("/claim_item/from_location_office")) &&
+				(oInputModel.getProperty("/claim_item/to_state_id") && oInputModel.getProperty("/claim_item/to_location_office"))
+			) {
+				var aEntityFields = [
+					{ entity_field: this._oConstant.EntitiesFields.FROM_STATE_ID, filter_value: oInputModel.getProperty("/claim_item/from_state_id") },
+					{ entity_field: this._oConstant.EntitiesFields.FROM_LOCATION_ID, filter_value: oInputModel.getProperty("/claim_item/from_location_office") },
+					{ entity_field: this._oConstant.EntitiesFields.TO_STATE_ID, filter_value: oInputModel.getProperty("/claim_item/to_state_id") },
+					{ entity_field: this._oConstant.EntitiesFields.TO_LOCATION_ID, filter_value: oInputModel.getProperty("/claim_item/to_location_office") }
+				]
+				var aRetrievalFields = [this._oConstant.OfficeDistance.MILEAGE];
+				var aOutputValues = await ClaimUtility.setClaimItemValueFromSelection(this._oConstant.Entities.ZOFFICE_DISTANCE, aEntityFields, aRetrievalFields);
+				if (aOutputValues.length > 0) {
+					oInputModel.setProperty("/claim_item/km", aOutputValues[0]);
+				}
+				else {
+					oInputModel.setProperty("/claim_item/km", null);
+					MessageToast.show(Utility.getText("msg_claimdetails_input_km_location_office_none"));
+				}
+				this._calculateRatePerKm();
+			}
 		},
 
 		/* =========================================================
@@ -3392,12 +3485,23 @@ sap.ui.define([
 				await this._getFormFragment("claimsubmission_summary_claimitem", true).then(function (oVBox) {
 					oPage.insertContent(oVBox, 1);
 				});
-				if (!oClaimSubmissionModel.getProperty("/view_only")) {
-					this._setEnabledToolbarFooter();
+				let sFooterMode;
+
+				if (oClaimSubmissionModel.getProperty("/from_my_approval")) {
+					sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
 				}
-				if (!oClaimSubmissionModel.getProperty("/is_approver")) {
-					this._displayFooterButtons("claimsubmission_summary_claimitem");
+				else if (oClaimSubmissionModel.getProperty("/view_only")) {
+					sFooterMode = this._oConstant.ClaimFooterMode.VIEW_ONLY;
 				}
+				else if (oClaimSubmissionModel.getProperty("/is_approver")) {
+					sFooterMode = this._oConstant.ClaimFooterMode.APPROVER;
+				}
+				else {
+					sFooterMode = this._oConstant.ClaimFooterMode.SUMMARY;
+				}
+
+				Utility.updateFooterState(this.getView(), oClaimSubmissionModel, this._oConstant, sFooterMode);
+
 				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 
 				// Reload when item cancellation
@@ -3436,7 +3540,8 @@ sap.ui.define([
 
 				//FUT issue 102
 				// solving the issue of having 0 amount claim item when submitting claims
-				if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)){
+				CustomValidator.init(this.getOwnerComponent(), this.getView());
+				if (!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
 					return;
 				}
 
@@ -4094,8 +4199,12 @@ sap.ui.define([
 				return;
 			}
 			else if (oClaimSubmissionModel.getProperty("/is_approver")) {
-				// update footer buttons
-				this._displayFooterButtons("claimsubmission_summary_claimitem");
+				Utility.updateFooterState(
+					this.getView(),
+					oClaimSubmissionModel,
+					this._oConstant,
+					this._oConstant.ClaimFooterMode.SUMMARY
+				);
 
 				// return to approver screen
 				this.getMyApproverPAReq();
@@ -4258,8 +4367,9 @@ sap.ui.define([
 
 		_setAllControlsVisible: function (bVisible) {
 			const aControlIds = [
-				"input_claimdetails_input_anggota_name",
-				"select_claimdetails_input_dependent_name",
+				"select_claimdetails_input_depedent_or_anggota",
+				"field_claimdetails_input_anggota_name",
+				"field_claimdetails_input_dependent_name",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",
@@ -4401,8 +4511,9 @@ sap.ui.define([
 
 		_setAllControlsEditable: function (bEditable) {
 			const aControlIds = [
-				"input_claimdetails_input_anggota_name",
-				"select_claimdetails_input_dependent_name",
+				"select_claimdetails_input_depedent_or_anggota",
+				"field_claimdetails_input_anggota_name",
+				"field_claimdetails_input_dependent_name",
 				"select_claimdetails_input_type_of_professional_body",
 				"input_claimdetails_input_policy_number",
 				"select_claimdetails_input_funeral_transportation",
@@ -4612,10 +4723,10 @@ sap.ui.define([
 		 * Recalculates claim amount based on currency rate and currency amount
 		 * @public
 		 */
-		onChange_ClaimDetails_CurrencyRate: function() {
+		onChange_ClaimDetails_CurrencyRate: function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (this.byId("input_claimdetails_input_currency_rate").getVisible() && !!oInputModel.getProperty("/claim_item/currency_rate")) {
-			var nAmountMYR = ( oInputModel.getProperty("/claim_item/currency_rate") * oInputModel.getProperty("/claim_item/currency_amount") );
+				var nAmountMYR = (oInputModel.getProperty("/claim_item/currency_rate") * oInputModel.getProperty("/claim_item/currency_amount"));
 				oInputModel.setProperty("/claim_item/amount", nAmountMYR);
 			}
 		},
@@ -4626,37 +4737,36 @@ sap.ui.define([
 		 * @param {sap.ui.model.json.JSONModel} oClaimInputModel name of the resource
 		 */
 		_updateEntitlementAmount: function (oClaimItemInputModel) {
-    		BusyIndicator.show(0);
+			BusyIndicator.show(0);
 
-    		return ClaimUtility.fetchAndApplyEntitlement(oClaimItemInputModel).then(oResult => {
-            if (!oResult || oResult.amount === 0) {
-                MessageToast.show(Utility.getText("msg_claim_no_entitlement"));
-                return;
-            }
-
-            if (this.byId("input_claimdetails_input_dailyallowance").getVisible()) {
-                oClaimItemInputModel.setProperty(
-                    "/claim_item/dailyallowance",
-                    oResult.daily_allowance
-                );
-            }
-
-            if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
-                oClaimItemInputModel.setProperty("/claim_item/currency_code", oResult.currency_code);
-                oClaimItemInputModel.setProperty("/claim_item/currency_amount", oResult.amount);
-				if (this.byId("input_claimdetails_input_currency_rate").getVisible() && !!oClaimItemInputModel.getProperty("/claim_item/currency_rate")) {
-					var nAmountMYR = ( oClaimItemInputModel.getProperty("/claim_item/currency_rate") * oClaimItemInputModel.getProperty("/claim_item/currency_amount") );
-					oClaimItemInputModel.setProperty("/claim_item/amount", nAmountMYR);
+			return ClaimUtility.fetchAndApplyEntitlement(oClaimItemInputModel).then(oResult => {
+				if (!oResult || oResult.amount === 0) {
+					MessageToast.show(Utility.getText("msg_claim_no_entitlement"));
+					return;
 				}
-            } else if (this.byId("input_claimdetails_input_amount").getVisible()) {
-                oClaimItemInputModel.setProperty("/claim_item/amount", oResult.amount);
-            }
-        }).catch(err => {
-            MessageBox.error(
-                Utility.getText("msg_claimdetails_input_entmeals_err", [err])
-            );
-        }).finally(() => BusyIndicator.hide());
-		}
 
+				if (this.byId("input_claimdetails_input_dailyallowance").getVisible()) {
+					oClaimItemInputModel.setProperty(
+						"/claim_item/dailyallowance",
+						oResult.daily_allowance
+					);
+				}
+
+				if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
+					oClaimItemInputModel.setProperty("/claim_item/currency_code", oResult.currency_code);
+					oClaimItemInputModel.setProperty("/claim_item/currency_amount", oResult.amount);
+					if (this.byId("input_claimdetails_input_currency_rate").getVisible() && !!oClaimItemInputModel.getProperty("/claim_item/currency_rate")) {
+						var nAmountMYR = (oClaimItemInputModel.getProperty("/claim_item/currency_rate") * oClaimItemInputModel.getProperty("/claim_item/currency_amount"));
+						oClaimItemInputModel.setProperty("/claim_item/amount", nAmountMYR);
+					}
+				} else if (this.byId("input_claimdetails_input_amount").getVisible()) {
+					oClaimItemInputModel.setProperty("/claim_item/amount", oResult.amount);
+				}
+			}).catch(err => {
+				MessageBox.error(
+					Utility.getText("msg_claimdetails_input_entmeals_err", [err])
+				);
+			}).finally(() => BusyIndicator.hide());
+		}
 	});
 });
