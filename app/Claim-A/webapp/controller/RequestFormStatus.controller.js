@@ -3,13 +3,15 @@ sap.ui.define([
 	"sap/m/MessageToast",
 	"sap/ui/core/BusyIndicator",
 	"claima/utils/PARequestSharedFunction",
-	"sap/ui/model/Sorter"
+	"sap/ui/model/Sorter",
+	"claima/utils/DateUtility"
 ], function (
-	Controller, 
+	Controller,
 	MessageToast,
-	BusyIndicator, 
-	PARequestSharedFunction, 
-	Sorter) {
+	BusyIndicator,
+	PARequestSharedFunction,
+	Sorter,
+	DateUtility) {
 	"use strict";
 
 	return Controller.extend("claima.controller.RequestFormStatus", {
@@ -53,7 +55,11 @@ sap.ui.define([
 
 			try {
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				const a = aCtx.map((ctx) => ctx.getObject());
+				const a = aCtx.map((ctx) => {
+							const oCtxObj = ctx.getObject();
+							oCtxObj.modifiedAt = DateUtility.convertUTCToLocal(oCtxObj.modifiedAt);
+							return oCtxObj;
+						});
 
 				a.forEach((it) => {
 					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;

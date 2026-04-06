@@ -7,7 +7,8 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"claima/utils/Utility",
 	"sap/suite/ui/commons/BusinessCard",
-	"sap/m/BusyIndicator"
+	"sap/m/BusyIndicator",
+	"claima/utils/DateUtility"
 ], function (Controller,
 	JSONModel,
 	MessageToast,
@@ -16,7 +17,8 @@ sap.ui.define([
 	Sorter,
 	Utility,
 	BusinessCard,
-	BusyIndicator) {
+	BusyIndicator,
+	DateUtility) {
 	"use strict";
 
 	return Controller.extend("claima.controller.ClaimStatus", {
@@ -45,7 +47,11 @@ sap.ui.define([
 			);
 			try {
 				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				const a = aCtx.map((ctx) => ctx.getObject());
+				const a = aCtx.map((ctx) => {
+							const oCtxObj = ctx.getObject();
+							oCtxObj.modifiedAt = DateUtility.convertUTCToLocal(oCtxObj.modifiedAt);
+							return oCtxObj;
+						});
 
 				_oReq.setProperty("/claim_header_list", a);
 				_oReq.setProperty("/claim_header_count", a.length);

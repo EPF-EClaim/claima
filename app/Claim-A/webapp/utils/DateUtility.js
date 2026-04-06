@@ -46,6 +46,15 @@ sap.ui.define([
         },
 
         /**
+         * Convert to local datetime
+         */
+        convertUTCToLocal: function(dUTCDate) {
+            const dDateLocal = new Date(dUTCDate);
+
+            return dUTCDate ? dDateLocal.toLocaleString() : dUTCDate;  //converts UTC → local timezone
+        },
+
+        /**
          * Format date into Timestamp(9) format: YYYY-MM-DD HH:MM:SS.FFFFFF
          */
         formatTimestamp9: function (vDate, oOptions = { utc: true }) {

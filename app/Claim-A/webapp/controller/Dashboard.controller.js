@@ -7,8 +7,9 @@ sap.ui.define([
 	"claima/utils/Request",
 	"claima/utils/MyApproval",
 	"claima/utils/Constants",
-	"sap/ui/core/BusyIndicator"
-], (Controller, JSONModel, Sorter, Utility, MessageBox, Request, MyApproval, Constants, BusyIndicator) => {
+	"sap/ui/core/BusyIndicator",
+	"claima/utils/DateUtility"
+], (Controller, JSONModel, Sorter, Utility, MessageBox, Request, MyApproval, Constants, BusyIndicator, DateUtility) => {
 	"use strict";
 
 	return Controller.extend("claima.controller.Dashboard", {
@@ -37,7 +38,11 @@ sap.ui.define([
 				new Sorter("modifiedAt", true)
 			]).requestContexts(0, Infinity)
 				.then(aContexts => {
-					this._oDashboardModel.setProperty("/claims", aContexts.map(c => c.getObject()));
+					this._oDashboardModel.setProperty("/claims", aContexts.map(c => {			
+						const oCtxObj = c.getObject();
+						oCtxObj.modifiedAt = DateUtility.convertUTCToLocal(oCtxObj.modifiedAt);
+						return oCtxObj;
+					}));
 				})
 				.catch(err => console.log("claims error:", err));
 
@@ -45,13 +50,23 @@ sap.ui.define([
 				new Sorter("modifiedAt", true)
 			]).requestContexts(0, Infinity)
 				.then(aContexts => {
-					this._oDashboardModel.setProperty("/requests", aContexts.map(c => c.getObject()));
+					this._oDashboardModel.setProperty("/requests", aContexts.map(c => {
+						const oCtxObj = c.getObject();
+						oCtxObj.modifiedAt = DateUtility.convertUTCToLocal(oCtxObj.modifiedAt);
+						return oCtxObj;
+					}));
 				})
 				.catch(err => console.log("requests error:", err));
 
-			_oEmployeeViewModel.bindList("/ZEMP_APPROVER_DETAILS").requestContexts(0, Infinity)
+			_oEmployeeViewModel.bindList("/ZEMP_APPROVER_DETAILS", null, [
+				new Sorter("modifiedAt", true)
+			]).requestContexts(0, Infinity)
 				.then(aContexts => {
-					this._oDashboardModel.setProperty("/approvals", aContexts.map(c => c.getObject()));
+					this._oDashboardModel.setProperty("/approvals", aContexts.map(c => {
+						const oCtxObj = c.getObject();
+						oCtxObj.modifiedAt = DateUtility.convertUTCToLocal(oCtxObj.modifiedAt);
+						return oCtxObj;
+					}));
 				})
 				.catch(err => {
 					console.log("approvals not available for this role");

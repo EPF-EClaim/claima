@@ -125,11 +125,7 @@
                                     <Table
                                         id="claimtable"
                                         items="{
-                                            path: 'dashboardModel>/claims',
-                                            sorter: {
-                                                path: 'modifiedAt',
-                                                descending: true
-                                            }
+                                            path: 'dashboardModel>/claims'
                                         }"
                                         sticky="HeaderToolbar,ColumnHeaders"
                                         noDataText="No data available"
@@ -254,11 +250,7 @@
                                 >
                                     <Table
                                         items="{
-                                            path: 'dashboardModel>/requests',
-                                            sorter: {
-                                                path: 'modifiedAt',
-                                                descending: true
-                                            }
+                                            path: 'dashboardModel>/requests'
                                         }"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
@@ -381,11 +373,7 @@
                                 >
                                     <Table
                                         items="{
-                                            path: 'dashboardModel>/approvals',
-                                            sorter: {
-                                                path: 'modifiedAt',
-                                                descending: true
-                                            }
+                                            path: 'dashboardModel>/approvals'
                                         }"
                                         growing="true"
                                         sticky="HeaderToolbar,ColumnHeaders"
