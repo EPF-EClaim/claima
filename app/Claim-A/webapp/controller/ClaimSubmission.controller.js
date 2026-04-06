@@ -1030,7 +1030,6 @@ sap.ui.define([
 					},
 					"requestform_amt": null,
 					"req_emailapprove": null,
-					"is_kursus_claimtype": false,
 					"course_code": null,
 					"descr": {
 						"type": null,
