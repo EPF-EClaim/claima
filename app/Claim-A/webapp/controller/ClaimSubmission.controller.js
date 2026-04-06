@@ -2974,6 +2974,7 @@ sap.ui.define([
 			// Calculate number of days
 			if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
 				oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+				this.onChange_ClaimDetails_NumberOfDays();
 			}
 
 			// calculate per diem details
