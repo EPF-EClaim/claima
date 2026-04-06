@@ -97,9 +97,6 @@
                         <Column>
                             <Text text="{i18n>glacct}" />
                         </Column>
-                         <Column>
-                            <Text text="{i18n>req_cc}" />
-                        </Column>
                         <Column>
                             <Text text="{i18n>req_rtype}" />
                         </Column>
@@ -131,8 +128,6 @@
                                 <Text text="{CLAIM_TYPE_DESC}" />
 
                                 <Text text="{GL_ACCOUNT}" />
-
-                                <Text text="{COST_CENTER}" />
 
                                 <Text text="{REQUEST_TYPE}" />
 

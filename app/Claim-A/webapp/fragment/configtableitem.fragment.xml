@@ -101,6 +101,9 @@
                         <Text text="{i18n>categoryid}" />
                     </Column>
                     <Column>
+                        <Text text="{i18n>req_cc}" />
+                    </Column>
+                    <Column>
                         <Text text="{i18n>materialcode}" />
                     </Column>
                     <Column>
@@ -126,6 +129,7 @@
                             <Text text="{CLAIM_TYPE_ITEM_ID}" />
                             <Text text="{CLAIM_TYPE_ITEM_DESC}" />
                             <Text text="{CATEGORY_ID}" />
+                            <Text text="{COST_CENTER}" />
                             <Text text="{MATERIAL_CODE}" />
                             <Text text="{RISK}" />
                             <Text text="{SUBMISSION_TYPE}" />
