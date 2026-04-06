@@ -1001,7 +1001,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             FROM_LOCATION_ID,
             ZOFFICE_LOCATION.LOCATION_DESC,
             TO_STATE_ID,
-            ZSTATE.STATE_DESC,
+            ZTOSTATE.STATE_DESC,
             TO_LOCATION_ID,
             ZOFFICE_LOCATION1.LOCATION_DESC;
 };
