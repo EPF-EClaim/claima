@@ -207,5 +207,18 @@ sap.ui.define([
 			}
 			
         },
+
+		/**
+		 * Check if PAR has been reused for claim submission 
+		 * @public
+		 * @param {String} sRequestID - Pre-approval request ID
+		 * @returns {Boolean} bIsUsed - show if warning should be sent
+		 */
+		checkReusedPAR: async function(sRequestID) {
+			const oModel = this._oView.getModel();
+			const oContext = oModel.bindContext("/checkPreApprovalUsage(...)");
+			oContext.setParameter("requestID", sRequestID);
+			return oContext.execute().then(() => oContext.requestObject());
+		}
     }
 });
