@@ -2954,19 +2954,21 @@ sap.ui.define([
          * start/end date, run related methods on setting start/end date
          * @public
          */
-		onChange_ClaimDetails_StartEndDate: function () {
+		onChange_ClaimDetails_StartEndDate: async function () {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
 			oInputModel.refresh(true);
 
 			// reset per diem amounts
 			this._resetPerDiem();
 
 			// Calculate number of days
-			this.getView().getModel("claimitem_input").setProperty("/claim_item/no_of_days", this._calculateNumberOfDays());
+			oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
 
 			// calculate per diem details
-			if (this.getView().getModel("claimitem_property").getProperty("/entitled_breakfast/is_visible")) {
-				this._calculatePerDiem();
+			if (oPropertyModel.getProperty("/entitled_breakfast/is_visible")) {
+				await this._calculatePerDiem();
 			}
 		},
 
