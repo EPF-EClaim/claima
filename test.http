@@ -18,7 +18,9 @@
 #     ]
 # }
 
-# GET http://localhost:4004/odata/v4/EmployeeSrv/ZBUDGET
+
+# GET http://localhost:4004/odata/v4/EmployeeSrv/getEmailReminder()
+# Authorization: Basic alice
 
 
 
@@ -207,8 +209,8 @@ Authorization: Basic alice
        {
          "CheckFields": [
             {
-               "fieldName": "FARE_TYPE_ID",
-               "value": "03",
+               "fieldName": "RECEIPT_DATE",
+               "value": "2026-03-05",
                "result": null
             },
             {
@@ -222,31 +224,10 @@ Authorization: Basic alice
                "result": null
             }
             ],
-         "ClaimType": "DLM_NEGARA",
-         "ClaimTypeItem": "TAMBANG",
-         "EmpId": "USER_003"
-      },
-      {
-         "CheckFields": [
-            {
-               "fieldName": "FARE_TYPE_ID",
-               "value": "01",
-               "result": null
-            },
-            {
-               "fieldName": "ELIGIBLE_AMOUNT",
-               "value": "600",
-               "result": null
-            },
-            {
-               "fieldName": "TRAVEL_HOURS",
-               "value": "8",
-               "result": null
-            }
-            ],
-         "ClaimType": "DLM_NEGARA",
-         "ClaimTypeItem": "TAMBANG",
-         "EmpId": "886687"
+         "ClaimType": "I-PAD",
+         "ClaimTypeItem": "I-PAD",
+         "EmpId": "USER_003",
+         "RecordId": "CLM26000000401"
       }
      ]
     }

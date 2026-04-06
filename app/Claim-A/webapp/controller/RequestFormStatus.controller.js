@@ -1,17 +1,27 @@
 sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/m/MessageToast",
+	"sap/m/StandardListItem",
+	"sap/m/SelectDialog",
 	"sap/ui/core/BusyIndicator",
 	"claima/utils/PARequestSharedFunction",
+	"claima/utils/Utility",
 	"sap/ui/model/Sorter",
+	"sap/ui/model/Filter",
+	"sap/ui/model/FilterOperator",
 	"claima/utils/DateUtility"
 ], function (
 	Controller,
 	MessageToast,
+	StandardListItem,
+	SelectDialog,
 	BusyIndicator,
 	PARequestSharedFunction,
+	Utility,
 	Sorter,
-	DateUtility) {
+	Filter,
+	FilterOperator,
+	DateUtility ) {
 	"use strict";
 
 	return Controller.extend("claima.controller.RequestFormStatus", {
@@ -20,15 +30,15 @@ sap.ui.define([
 		* Lifecycle
 		* ======================================================= */
 		onInit() {
-			this._oConstant 		= this.getOwnerComponent().getModel("constant").getData();
-			this._oRouter 			= this.getOwnerComponent().getRouter();
-			this._oDataModel		= this.getOwnerComponent().getModel();
-			this._oViewModel 		= this.getOwnerComponent().getModel('employee_view');
-			this._oReqModel			= this.getOwnerComponent().getModel('request');
-			this._oReqStatusModel 	= this.getOwnerComponent().getModel("request_status");
+			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
+			this._oRouter = this.getOwnerComponent().getRouter();
+			this._oDataModel = this.getOwnerComponent().getModel();
+			this._oViewModel = this.getOwnerComponent().getModel('employee_view');
+			this._oReqModel = this.getOwnerComponent().getModel('request');
+			this._oReqStatusModel = this.getOwnerComponent().getModel("request_status");
 
 			this._oRouter.getRoute("RequestFormStatus").attachPatternMatched(this._onMatched, this);
-			
+
 			this._mSortState = {};
 		},
 
@@ -41,7 +51,7 @@ sap.ui.define([
 		* Main Logic
 		* ======================================================= */
 
-		async getPARHeaderList (oReqStatusModel, oViewModel) {
+		async getPARHeaderList(oReqStatusModel, oViewModel) {
 
 			const oListBinding = oViewModel.bindList("/ZEMP_REQUEST_EE_VIEW", undefined,
 				[new Sorter("modifiedAt", true)], null,
@@ -76,7 +86,7 @@ sap.ui.define([
 				return [];
 			}
 		},
-		
+
 		async openItemFromList(oEvent) {
 			try {
 				BusyIndicator.show(0);
@@ -98,8 +108,8 @@ sap.ui.define([
 
 				const oSelectedRequest = oCtx.getObject();
 				const sReqId = oSelectedRequest.REQUEST_ID;
-				
-				this._oRouter.navTo("RequestForm", {request_id: encodeURIComponent(sReqId)});
+
+				this._oRouter.navTo("RequestForm", { request_id: encodeURIComponent(sReqId) });
 			} catch (e) {
 				jQuery.sap.log.error("openItemFromList failed: " + e);
 				MessageToast.show("Failed to open the selected item.");
@@ -162,13 +172,34 @@ sap.ui.define([
 					});
 				}
 			});
-		}
+		},
 
+		onOpenFilterDialog: function () {
+			Utility.openClaimTypeFilterDialog(
+				this,
+				'request_status',
+				'/req_header_list'
+			);
+		},
 
+		onFilterSearch: function (oEvent) {
+			var sValue = oEvent.getParameter("value");
+			var oFilter = new Filter("title", FilterOperator.Contains, sValue);
+			oEvent.getParameter("itemsBinding").filter([oFilter]);
+		},
 
+		onFilterCancel: function () {
+			if (this._oFilterDialog) this._oFilterDialog.close();
+		},
 
-
-
-
+		onFilterConfirm: function (oEvent) {
+			Utility.confirmClaimTypeFilter(
+				this,
+				'request_status',
+				'/req_header_list',
+				'/req_header_count',
+				oEvent
+			);
+		},
 	});
 });

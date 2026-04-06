@@ -90,6 +90,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
                 END_DATE,
                 START_DATE,
                 STATUS,
+                COST_CENTER,
                 ZCLAIM_TYPE.ZCLAIM_TYPE_ITEM as Items
         };
 
@@ -342,6 +343,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
         ClaimType: String;
         ClaimTypeItem: String;
         EmpId: String;
+        RecordId: String;
     }
 
     type EligibilityCheckFields{
@@ -351,6 +353,35 @@ service eclaim_srv @(requires: 'authenticated-user'){
     }
 
     action EligibilityCheck(aPayload: many EligibilityPayload) returns many Response;
+    type perdiem {
+        amount : Decimal(15, 2);
+        daily_allowance: Decimal(15,2);
+        currency_code: String;
+    }
+
+    function getAmountEntitlement(day:Integer, 
+                                  hours: Decimal(5, 1), 
+                                  location: String, 
+                                  claimtypeid: String, 
+                                  claimtypeitem: String,
+                                  breakfast: Integer, 
+                                  lunch: Integer, 
+                                  dinner: Integer) returns perdiem;
+
     entity ZCLM_TYPE_EXCEPTION_LIST                as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
+    function checkDefaultCostCenter(sClaimTypeId: String) returns String;
+    
+    type reminders {
+        empName     : String;
+        empEmail    : String; 
+        ccEmail     : String;
+        tripEndDate : String;
+        scenario    : String; 
+        milestone   : String;
+    }
+    
+    function getEmailReminder() returns array of reminders;
+
+    action CheckUserClaimTypes(ID: String) returns many Response;
 };

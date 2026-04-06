@@ -2,8 +2,13 @@ sap.ui.define([
 	"sap/m/MessageBox",
 	"sap/ui/core/Fragment",
 	"sap/ui/core/ValueState",
-	"claima/utils/Constants"
-], function (MessageBox, Fragment, ValueState, Constants) {
+	"claima/utils/Constants",
+	"claima/utils/Utility"
+], function (MessageBox,
+	Fragment,
+	ValueState,
+	Constants,
+	Utility) {
     "use strict";
 
     return {
@@ -19,6 +24,7 @@ sap.ui.define([
 				case Constants.SubmissionTypePrefix.REQUEST:
 					var oItemData		= oController._oReqModel.getProperty('/req_item');
 					var aItemPartData	= oController._oReqModel.getProperty('/participant');
+					var sRecordId		= oController._oReqModel.getProperty('/req_header/reqid');
 					var sClaimType		= oController._oReqModel.getProperty('/req_header/claimtype');
 					var sClaimTypeItem	= oItemData.claim_type_item_id;
 
@@ -44,6 +50,7 @@ sap.ui.define([
 					const oItemModel 	= oController.getView().getModel("claimitem_input");
 					var aItemPartData	= [{PARTICIPANTS_ID: sEmpId}];
 					var oItemData		= oItemModel.getProperty('/claim_item');
+					var sRecordId		= oHeaderModel.getProperty("/claim_header/claim_id");
 					var sClaimType		= oHeaderModel.getProperty('/claim_header/claim_type_id');
 					var sClaimTypeItem	= oItemData.claim_type_item_id;
 
@@ -55,7 +62,8 @@ sap.ui.define([
 						"vehicle_class_id"      		: "TRANSPORT_CLASS",
 						"flight_class"          		: "FLIGHT_CLASS_ID",
 						"room_type"          			: "ROOM_TYPE_ID",
-						"mobile_category_purpose_id"	: "MOBILE_PHONE_BILL"
+						"mobile_category_purpose_id"	: "MOBILE_PHONE_BILL",
+						"receipt_date"					: "RECEIPT_DATE"
 					};
 					break;
 			
@@ -80,7 +88,7 @@ sap.ui.define([
 					var aNewActiveFields = aActiveFields.map(field => {
 						var oNewField = { ...field }; 
 						
-						if (oNewField.fieldName === "ELIGIBLE_AMOUNT") {
+						if (oNewField.fieldName === "ELIGIBLE_AMOUNT" && sSubmissionType === Constants.SubmissionType.REQUEST) {
 							oNewField.value = String(row.ALLOCATED_AMOUNT);
 						}
 						
@@ -90,6 +98,7 @@ sap.ui.define([
 					// Push the payload using the NEW array, not the shared one
 					aPayload.push({
 						EmpId: row.PARTICIPANTS_ID,
+						RecordId: sRecordId,
 						ClaimType: sClaimType,
 						ClaimTypeItem: sClaimTypeItem,
 						CheckFields: aNewActiveFields 
@@ -126,7 +135,8 @@ sap.ui.define([
 						"TRANSPORT_CLASS":      "select_claimdetails_input_vehicle_class_id",
 						"FLIGHT_CLASS_ID":      "select_claimdetails_input_flight_class",
 						"ROOM_TYPE_ID":         "select_claimdetails_input_room_type",
-						"MOBILE_PHONE_BILL":    "select_claimdetails_input_mobile_category_purpose_id"
+						"MOBILE_PHONE_BILL":    "select_claimdetails_input_mobile_category_purpose_id",
+						"RECEIPT_DATE": 		"datepicker_claimdetails_input_receipt_date"
 					};
 					break;
 			
@@ -144,7 +154,7 @@ sap.ui.define([
 
 			Object.values(oDBToUIControlMap).forEach(sId => {
 				if (sId === "TABLE_ALLOC_AMOUNT") {
-					this._setTableValueState(null, ValueState.None);
+					this._setTableValueState(oController, null, ValueState.None);
 				} else {
 					const oInputControl = getControl(sId);
 					if (oInputControl?.setValueState) {
@@ -163,7 +173,9 @@ sap.ui.define([
 						return; 
 					}
 					
-					const sErrorMsg = Utility.getText("req_e_validation", [oField.fieldName, sEmpId]);
+					var sErrorField = Constants.ApprovalProcess[oField.fieldName] || oField.fieldName;
+
+					const sErrorMsg = Utility.getText("req_e_validation", [sErrorField, sEmpId]);
 					if (!aErrorMessages.includes(sErrorMsg)) {
 						aErrorMessages.push(sErrorMsg);
 					}
@@ -171,7 +183,7 @@ sap.ui.define([
 					const sMappedId = oDBToUIControlMap[oField.fieldName];
 					
 					if (sMappedId === "TABLE_ALLOC_AMOUNT") {
-						this._setTableValueState(sEmpId, ValueState.Error);
+						this._setTableValueState(oController, sEmpId, ValueState.Error);
 					} else {
 						const oInputControl = getControl(sMappedId);
 						if (oInputControl?.setValueState) {
@@ -194,7 +206,7 @@ sap.ui.define([
 			return bIsEligible;
 		},
 
-		_setTableValueState (sEmpIdToMatch, sValueState) {
+		_setTableValueState (oController, sEmpIdToMatch, sValueState) {
 			const oTable = Fragment.byId("request", "req_participant_table") || oController.byId("req_participant_table");
 			if (!oTable) return;
 
