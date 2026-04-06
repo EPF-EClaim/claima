@@ -5,7 +5,7 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/ui/model/Sorter",
-    "claima/utils/Utility"
+    "claima/utils/Utility",
 ], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, Sorter, Utility) {
     "use strict";
 
@@ -396,6 +396,8 @@ sap.ui.define([
 
                 // Load claim header + items and populate claimsubmission_input model
                 await this._loadClaimById(String(sClaimId));
+				//// check for additional values to be populated
+				await this._loadClaimAdditionalData();
 
                 // Navigate to claim submission ID
                 const oRouter = this.getOwnerComponent().getRouter();
@@ -947,6 +949,20 @@ sap.ui.define([
                 return null; // Return null so the app doesn't crash
             }
         },
+
+		/**
+        * Check for additional values to be populated into claim submission model
+        * @public
+		* @param {object} oClaimSubmissionModel - claim submission model passed into param
+        */
+		_loadClaimAdditionalData: async function () {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+            if (oClaimSubmissionModel) {
+                if (Object.values(this._oConstant.ClaimTypeKursus).includes(oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"))) {
+                    await ClaimUtility.getClaimCourseCode(oClaimSubmissionModel);
+                }
+            }
+		},
 
     });
 });

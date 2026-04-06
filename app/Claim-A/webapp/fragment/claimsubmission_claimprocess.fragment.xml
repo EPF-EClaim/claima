@@ -112,7 +112,7 @@
                         change="onSelect_ClaimProcess_CourseCode"
                         liveChange="onSelect_ClaimProcess_CourseCode"
                     >
-                        <core:Item key="{employee>COURSE_ID}" text="{employee>COURSE_ID} {employee>COURSE_DESC}" />
+                        <core:Item key="{employee>COURSE_ID}" text="{employee>COURSE_ID} - {employee>COURSE_DESC}" />
                     </Select>
                 </f:content>
             </f:SimpleForm>

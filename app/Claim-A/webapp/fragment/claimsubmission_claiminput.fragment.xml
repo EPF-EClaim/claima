@@ -56,7 +56,7 @@
                     <Label text="{i18n>label_claiminput_course_code}" />
                     <Text
                         id="text_claiminput_course_code"
-                        text="{claimsubmission_input>/claim_header/course_code} {claimsubmission_input>/claim_header/descr/course_code}"
+                        text="{claimsubmission_input>/claim_header/course_code} - {claimsubmission_input>/claim_header/descr/course_code}"
                         visible="{= ${claimsubmission_input>/claim_header/course_code} !== null}"
                     />
 

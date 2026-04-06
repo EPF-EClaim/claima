@@ -33,6 +33,37 @@ sap.ui.define([
         },
 
 		/**
+        * Retrieve course code fields based on claim ID
+        * @public
+		* @param {object} oClaimSubmissionModel - claim submission model passed into param
+        */
+		getClaimCourseCode: async function (oClaimSubmissionModel) {
+			const oModel = this._oOwnerComponent.getModel();
+			const oListBinding = oModel.bindList(Constant.Entities.ZCLAIM_HEADER, null, null, [
+				new Filter("CLAIM_ID", FilterOperator.EQ, oClaimSubmissionModel.getProperty("/claim_header/claim_id")),
+			], {
+				$expand: { "ZTRAIN_COURSE_PART": { $select: "COURSE_DESC" } }
+			});
+
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, 1);
+
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					if (oData["COURSE_CODE"]) {
+						oClaimSubmissionModel.setProperty("/claim_header/course_code", oData["COURSE_CODE"]);
+						oClaimSubmissionModel.setProperty("/claim_header/descr/course_code", oData["ZTRAIN_COURSE_PART"]["COURSE_DESC"]);
+					}
+				}
+			} catch (oError) {
+				MessageBox.error(Utility.getText("msg_claimsubmission_coursecode_err", [oError]));
+			} finally {
+				BusyIndicator.hide();
+			}
+		},
+
+		/**
         * Set default values for claim item fields
         * Request is made to get values from table ZELIGIBILITY_RULE, based on user role and claim type/claim item given 
         * if record found, value is retrieved from the table and populated in the claim item model
