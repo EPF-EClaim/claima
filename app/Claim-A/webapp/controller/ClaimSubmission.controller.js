@@ -3446,9 +3446,8 @@ sap.ui.define([
 				// get input model
 				var oInputModel = this.getView().getModel("claimsubmission_input");
 				var aItems = oInputModel.getProperty("/claim_items") || [];
-				var oItem = oInputModel.getProperty("/claim_items") || [];
 
-				if (oAction !== "Delete Report" && aItems.length === 0) {
+				if (oAction !== this._oConstant.Claim_Action.DELETE && aItems.length === 0) {
 					MessageToast.show(Utility.getText("msg_claimdetails_no_items"));
 					BusyIndicator.hide();
 					return;
@@ -3462,7 +3461,7 @@ sap.ui.define([
 				}
 
 				// Duplication check skip Delete 
-				if (oAction !== "Delete Report" && oAction !== this._oConstant.Claim_Action.DELETE) {
+				if (oAction !== this._oConstant.Claim_Action.DELETE) {
 					await CustomDuplicationCheck.CheckAllItems(this);
 				}
 
@@ -3484,7 +3483,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 
 				//assign submitted date for submit oAction
-				if (oAction == "Submit Report") {
+				if (oAction == this._oConstant.Claim_Action.SUBMIT) {
 					var submittedDate = this._getJsonDate(new Date());
 					oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
 				}

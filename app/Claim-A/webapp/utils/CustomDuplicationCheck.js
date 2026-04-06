@@ -90,7 +90,7 @@ sap.ui.define([
 
             if (!DateUtility.isValidDate(sRawDate)) return false;
 
-            const oWindow = DateUtility.getTwoYearWindow(sRawDate);
+            const oWindow = DateUtility.getPrevYearToYearEnd(sRawDate);
             const sStartDate = oWindow.start;
             const sEndDate = oWindow.end;
 
