@@ -2571,31 +2571,6 @@ sap.ui.define([
 			}
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
-
-			//Duplication check
-
-			/* 			var aExistingItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
-						var oNewItem = oInputModel.getProperty("/claim_item");
-			
-						var aTemp = [];
-						if (oInputModel.getProperty("/is_new")) {
-							aTemp = [...aExistingItems, oNewItem];
-						} else {
-							aTemp = aExistingItems.filter(it => it.claim_sub_id !== oNewItem.claim_sub_id);
-							aTemp.push(oNewItem);
-						}
-			
-						for (let oItem of aTemp) {
-							try {
-								await Utility.CheckDuplicateClaimItem(this, oItem);
-							} catch (e) {
-								MessageBox.error(e.message);
-								BusyIndicator.hide();
-								return;
-							}
-						} */
-
-
 			// update claim item to database
 			var saveSuccess = await this._saveClaimItem();
 
@@ -4767,29 +4742,16 @@ sap.ui.define([
 
 				if (item.is_new === true) {
 
-					// ✅ Initialize structure inside claimitem_input model
 					oInputItemModel.setProperty("/claim_item", {});
-
-					// ✅ Set item data
 					oInputItemModel.setProperty("/claim_item", item);
-
-					// ✅ Ensure claim_id exists
 					oInputItemModel.setProperty("/claim_item/claim_id",
 						oClaimSubmissionModel.getProperty("/claim_header/claim_id")
 					);
-
-					// ✅ Mark as new so _saveClaimItem() chooses CREATE
 					oInputItemModel.setProperty("/claim_item/is_new", true);
-
-					// ✅ Save item to backend
 					await this._saveClaimItem();
-
-					// ✅ Mark as saved
 					item.is_new = false;
 				}
 			}
-
-			// ✅ update model after saving
 			oClaimSubmissionModel.setProperty("/claim_items", aItems);
 		},
 	});
