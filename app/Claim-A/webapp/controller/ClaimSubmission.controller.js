@@ -2297,7 +2297,7 @@ sap.ui.define([
 
 				oPropertyModel.setProperty("/amount/is_visible", true);
 				oPropertyModel.setProperty("/amount/is_editable", true);
-	        }
+			}
 
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
@@ -2396,9 +2396,9 @@ sap.ui.define([
 				}
 
 				//changes here
-				if(!!oInputModel.getProperty("/claim_item/anggota_id")){
+				if (!!oInputModel.getProperty("/claim_item/anggota_id")) {
 					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
-				}else if(!!oInputModel.getProperty("/claim_item/dependent_name")){
+				} else if (!!oInputModel.getProperty("/claim_item/dependent_name")) {
 					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.DEPENDENT);
 				}
 
@@ -2500,7 +2500,7 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_claim_category", "ZCLAIM_CATEGORY");
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
-			
+
 		},
 
 		/**
@@ -4718,6 +4718,28 @@ sap.ui.define([
 					Utility.getText("msg_claimdetails_input_entmeals_err", [err])
 				);
 			}).finally(() => BusyIndicator.hide());
-		}
+		},
+
+		_saveDraftItems: async function () {
+			const oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			const aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
+			const oInputItemModel = this.getView().getModel("claimitem_input");
+
+			for (let item of aItems) {
+
+				if (item.is_new === true) {
+					oInputItemModel.setProperty("/claim_item", {});
+					oInputItemModel.setProperty("/claim_item", item);
+					oInputItemModel.setProperty("/claim_item/claim_id",
+						oClaimSubmissionModel.getProperty("/claim_header/claim_id")
+					);
+					oInputItemModel.setProperty("/claim_item/is_new", true);
+					await this._saveClaimItem();
+					item.is_new = false;
+				}
+			}
+			oClaimSubmissionModel.setProperty("/claim_items", aItems);
+		},
+
 	});
 });
