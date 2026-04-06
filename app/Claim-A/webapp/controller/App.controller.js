@@ -73,8 +73,6 @@ sap.ui.define([
 			RequestUtility.init(this.getOwnerComponent());
 			// declare claim utility
 			ClaimUtility.init(this.getOwnerComponent(), this.getView());
-			// declare date utility
-			DateUtility.init(this.getOwnerComponent());
 
 			// oReportModel
 			var oReportModel = new JSONModel({

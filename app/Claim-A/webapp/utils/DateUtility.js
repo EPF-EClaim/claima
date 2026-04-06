@@ -21,14 +21,6 @@ sap.ui.define([
 
     return {
 
-		/**
-         * Initialize the DateUtility
-         * @public
-         */
-        init: function(oOwnerComponent) {
-            this._oOwnerComponent = oOwnerComponent;
-        },
-
         /**
          * Pad numbers with leading zeros
          */
