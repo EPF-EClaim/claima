@@ -311,7 +311,7 @@ sap.ui.define([
                             else {
                                 // Other Claim Type
                                 _dMinDate = null;
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                     _oResourceBundle.getText("error_receiptdate_mindate"));
                             }
                             break;
@@ -365,7 +365,7 @@ sap.ui.define([
                                     oItem["insurance_cert_start_date"] = null;
                                 }
                                 // set validator error message
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                     _oResourceBundle.getText("error_insurance_cert_end_date_mindate"));
                             }
                             break;
@@ -414,7 +414,7 @@ sap.ui.define([
                                 const dPastDate = new Date(_dMaxDate);
                                 dPastDate.setDate(dPastDate.getDate() - 90);
                                 _dMaxDate = dPastDate;
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("msg_claimsubmission_invalid_visa_date"));
 
                             }
@@ -505,7 +505,7 @@ sap.ui.define([
                                     oItem["insurance_cert_end_date"] = null;
                                 }
                                 // set validator error message
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("error_insurance_cert_start_date_maxdate"));
                             }
                             break;
@@ -566,7 +566,63 @@ sap.ui.define([
             }
 
             return null;
-        }
+        },
+
+
+        /**
+         * Checks whether a date value is valid.
+         * @param {string|Date} vDate input date
+         * @returns {boolean} true if valid date
+         */
+        isValidDate: function (vDate) {
+            const oDate = new Date(vDate);
+            return vDate && !isNaN(oDate.getTime());
+        },
+
+        /**
+         * Returns a 2-year window (Previous Year → Current Year)
+         * based on the supplied date.
+         * @param {string|Date} vDate input date
+         * @returns {{start: string, end: string}} date range in YYYY-MM-DD format
+         */
+        getPrevYearToYearEnd: function (vDate) {
+            const oDate = new Date(vDate);
+            if (isNaN(oDate)) return null;
+
+            const iYear = oDate.getFullYear();
+
+            return {
+                start: `${iYear - 1}-01-01`,
+                end: `${iYear}-12-31`
+            };
+        },
+
+        /**
+  * Converts a date into a specified format.
+  * @public
+  * @param {string|Date} vDate the input date
+  * @param {string} sFormat output format (e.g. "YYYY-MM-DD", "DD/MM/YYYY")
+  * @returns {string|null} formatted date or null if invalid
+  */
+        formatDateDynamic: function (vDate, sFormat = "YYYY-MM-DD") {
+            if (!vDate) return null;
+
+            const oDate = new Date(vDate);
+            if (isNaN(oDate)) return null;
+
+            const sYear = oDate.getFullYear().toString();
+            const sMonth = this.pad(oDate.getMonth() + 1);
+            const sDay = this.pad(oDate.getDate());
+
+
+            return sFormat
+                .replace("YYYY", sYear)
+                .replace("MM", sMonth)
+                .replace("DD", sDay);
+        },
+
+
+
 
     };
 });

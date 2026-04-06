@@ -29,7 +29,8 @@ sap.ui.define([
 	"claima/utils/ExcelExport",
 	"claima/utils/EligibilityCheck",
 	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
-	"claima/utils/CustomValidator"
+	"claima/utils/CustomValidator",
+	"claima/utils/CustomDuplicationCheck"
 ], function (
 	Fragment,
 	Item,
@@ -61,7 +62,9 @@ sap.ui.define([
 	ExcelExport,
 	EligibilityCheck,
 	EligibleScenarioCheck,
-	CustomValidator
+	CustomValidator,
+	CustomDuplicationCheck
+
 ) {
 	"use strict";
 
@@ -885,41 +888,6 @@ sap.ui.define([
 				}
 			}
 		},
-
-		/* _setClaimItemTableToolbar: function (oBool) {
-			var oPage = this.byId("page_claimsubmission");
-			if (oBool) {
-				// table changes
-				if (this.byId("button_claimsummary_edit")) {
-					//// hide buttons
-					if (!this.byId("button_claimsummary_createclaim").getVisible()) { this.byId("button_claimsummary_createclaim").setVisible(true); }
-					if (!this.byId("button_claimsummary_edit").getVisible()) { this.byId("button_claimsummary_edit").setVisible(true); }
-					if (!this.byId("button_claimsummary_duplicate").getVisible()) { this.byId("button_claimsummary_duplicate").setVisible(true); }
-					if (!this.byId("button_claimsummary_delete").getVisible()) { this.byId("button_claimsummary_delete").setVisible(true); }
-				}
-
-				// table properties
-				if (this.byId("table_claimsummary_claimitem")) {
-					this.byId("table_claimsummary_claimitem").setMode(ListMode.MultiSelect);
-				}
-			}
-			else {
-				// table changes
-				if (this.byId("button_claimsummary_edit")) {
-					//// hide buttons
-					if (this.byId("button_claimsummary_createclaim").getVisible()) { this.byId("button_claimsummary_createclaim").setVisible(false); }
-					if (this.byId("button_claimsummary_edit").getVisible()) { this.byId("button_claimsummary_edit").setVisible(false); }
-					if (this.byId("button_claimsummary_duplicate").getVisible()) { this.byId("button_claimsummary_duplicate").setVisible(false); }
-					if (this.byId("button_claimsummary_delete").getVisible()) { this.byId("button_claimsummary_delete").setVisible(false); }
-				}
-
-				// table properties
-				if (this.byId("table_claimsummary_claimitem")) {
-					this.byId("table_claimsummary_claimitem").setMode(ListMode.SingleSelectMaster);
-				}
-			}
-		}, */
-
 		_setClaimItemTableToolbar: function (bViewCheck) {
 
 
@@ -1337,6 +1305,7 @@ sap.ui.define([
 				var oInputModel = this.getView().getModel("claimitem_input");
 
 				oInputModel.setProperty("/is_new", true);
+				oInputModel.setProperty("/claim_item/is_new", true);
 				//// get claim type from claim header
 				oInputModel.setProperty("/claim_item/claim_type_id", oClaimSubmissionModel.getProperty("/claim_header/claim_type_id"));
 				//// get GL account
@@ -1479,31 +1448,11 @@ sap.ui.define([
 				);
 				oInputModel.setProperty("/claim_items_count", oInputModel.getProperty("/claim_items").length);
 
-				// reset values
-				//// amount
-				oInputModel.setProperty(addrIndex + "/amount", 0);
-				//// start/end dates
-				oInputModel.setProperty(addrIndex + "/start_date", null);
-				oInputModel.setProperty(addrIndex + "/end_date", null);
-				oInputModel.setProperty(addrIndex + "/trip_start_date", null);
-				oInputModel.setProperty(addrIndex + "/trip_end_date", null);
-				oInputModel.setProperty(addrIndex + "/event_start_date", null);
-				oInputModel.setProperty(addrIndex + "/event_end_date", null);
-
 				// calculate new total
 				const nTotal = oInputModel.getProperty("/claim_items").reduce((s, it) => s + (Number(it.amount) || 0), 0);
 				oInputModel.setProperty("/claim_header/total_claim_amount", nTotal);
 			}
-
-			// update to database
-			var updateSuccess = await this._updateClaimItems();
-			if (!updateSuccess) {
-				// recover previous claim item list
-				oInputModel.setProperty("/claim_items", tempItems.claim_items);
-				oInputModel.setProperty("/claim_items_count", tempItems.claim_items.length);
-				oInputModel.setProperty("/claim_header/total_claim_amount", tempItems.total_claim_amount);
-			}
-
+			oInputModel.setProperty(addrIndex + "/is_new", true);
 			// refresh table
 			this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 			BusyIndicator.hide();
@@ -2291,7 +2240,7 @@ sap.ui.define([
 
 				oPropertyModel.setProperty("/amount/is_visible", true);
 				oPropertyModel.setProperty("/amount/is_editable", true);
-	        }
+			}
 
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
@@ -2405,9 +2354,9 @@ sap.ui.define([
 				}
 
 				//changes here
-				if(!!oInputModel.getProperty("/claim_item/anggota_id")){
+				if (!!oInputModel.getProperty("/claim_item/anggota_id")) {
 					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
-				}else if(!!oInputModel.getProperty("/claim_item/dependent_name")){
+				} else if (!!oInputModel.getProperty("/claim_item/dependent_name")) {
 					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.DEPENDENT);
 				}
 
@@ -2509,7 +2458,7 @@ sap.ui.define([
 			this._setClaimDetailSelectionField("select_claimdetails_input_claim_category", "ZCLAIM_CATEGORY");
 			//// Category/Purpose (Mobile)
 			this._setClaimDetailSelectionField("select_claimdetails_input_mobile_category_purpose_id", "ZMOBILE_CATEGORY_PURPOSE");
-			
+
 		},
 
 		/**
@@ -2640,25 +2589,6 @@ sap.ui.define([
 			}
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
-
-			//// Added for duplication check;
-			var aExistingItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
-			var oNewItem = oInputModel.getProperty("/claim_item");
-
-			var aTemp = [];
-			if (!oInputModel.getProperty("/is_new")) {
-				aTemp = aExistingItems.filter(it => it.claim_sub_id !== oNewItem.claim_sub_id);
-			} else {
-				aTemp = [...aExistingItems];
-			}
-			aTemp.push(oNewItem);
-
-			// Check duplicates
-			if (this._CheckDuplicateClaimItems(aTemp)) {
-				MessageBox.error(Utility.getText("msg_duplication_prompt"));
-				return;
-			}
-
 			// update claim item to database
 			var saveSuccess = await this._saveClaimItem();
 
@@ -2871,7 +2801,7 @@ sap.ui.define([
 					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id")
 				});
 
-				if (oInputModel.getProperty("/is_new")) {
+				if (oInputModel.getProperty("/claim_item/is_new")) {
 					// create new item
 					oListBinding = oModel.bindList("/ZCLAIM_ITEM");
 					var oContext = oListBinding.create(oBody.getData());
@@ -3561,7 +3491,7 @@ sap.ui.define([
 				var oInputModel = this.getView().getModel("claimsubmission_input");
 				var aItems = oInputModel.getProperty("/claim_items") || [];
 
-				if (oAction !== "Delete Report" && aItems.length === 0) {
+				if (oAction !== this._oConstant.Claim_Action.DELETE && aItems.length === 0) {
 					MessageToast.show(Utility.getText("msg_claimdetails_no_items"));
 					BusyIndicator.hide();
 					return;
@@ -3574,6 +3504,10 @@ sap.ui.define([
 					return;
 				}
 
+				// Duplication check skip Delete 
+				if (oAction !== this._oConstant.Claim_Action.DELETE) {
+					await CustomDuplicationCheck.CheckAllItems(this);
+				}
 
 				// Cash Advance Repayment Validation checking
 				if (oInputModel.getProperty("/claim_header/final_amount_to_receive") < 0) {
@@ -3581,17 +3515,10 @@ sap.ui.define([
 					BusyIndicator.hide();
 					return;
 				}
-
 				//FUT issue 102
 				// solving the issue of having 0 amount claim item when submitting claims
 				CustomValidator.init(this.getOwnerComponent(), this.getView());
 				if (!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
-					return;
-				}
-
-				if (this._CheckDuplicateClaimItems(aItems)) {
-					MessageBox.error(Utility.getText("msg_duplication_prompt"));
-					BusyIndicator.hide();
 					return;
 				}
 
@@ -3600,7 +3527,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/last_modified_date", lastModifiedDate);
 
 				//assign submitted date for submit oAction
-				if (oAction == "Submit Report") {
+				if (oAction == this._oConstant.Claim_Action.SUBMIT) {
 					var submittedDate = this._getJsonDate(new Date());
 					oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
 				}
@@ -3677,6 +3604,7 @@ sap.ui.define([
 					REJECT_REASON_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
 					REJECT_REASON_TIME: DateUtility.getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time"))
 				});
+
 				//// addon for new claim
 				if (oInputModel.getProperty("/is_new")) {
 					oBody.setProperty("/CLAIM_ID", oInputModel.getProperty("/claim_header/claim_id"));
@@ -3694,6 +3622,7 @@ sap.ui.define([
 						switch (oAction) {
 							case 'Save Draft':
 								MessageToast.show(Utility.getText("msg_claimsubmission_created"));
+								await this._saveDraftItems();
 								break;
 							case 'Submit Report':
 								// move approver determination function before claim is saved
@@ -3744,6 +3673,7 @@ sap.ui.define([
 					switch (oAction) {
 						case 'Save Draft':
 							var oMsg = Utility.getText("msg_claimsubmission_changed");
+							await this._saveDraftItems();
 							break;
 						case 'Delete Report':
 							oCtx.setProperty("STATUS_ID", this._oConstant.ClaimStatus.CANCELLED);
@@ -3831,14 +3761,8 @@ sap.ui.define([
 			var delItems = [];
 			BusyIndicator.show(0);
 
-
 			var aItems = oInputModel.getProperty("/claim_items") || [];
-
-			if (this._CheckDuplicateClaimItems(aItems)) {
-				MessageBox.error(Utility.getText("msg_duplication_prompt"));
-				BusyIndicator.hide();
-				return;
-			}
+			var oItem = oInputModel.getProperty("/claim_items") || [];
 
 
 			// count existing items from database
@@ -4058,42 +3982,6 @@ sap.ui.define([
 			})
 			BusyIndicator.hide();
 			return true;
-		},
-
-		//Added for duplication check items via Save Draft and Submit Report btn
-
-		_CheckDuplicateClaimItems: function (aDupCheckItems) {
-
-			const aDuplicateSet = new Set();
-
-			for (let oItem of aDupCheckItems) {
-
-				const sTypeId = oItem.claim_type_id || "";
-				const sItemId = oItem.claim_type_item_id || "";
-
-				const sStartDate = DateUtility.formatDate(
-					oItem.start_date,
-					this._oConstant.Date.DATEFORMAT
-				);
-
-				const sEndDate = DateUtility.formatDate(
-					oItem.end_date,
-					this._oConstant.Date.DATEFORMAT
-				);
-
-				const sAmount = parseFloat(oItem.amount || 0).toFixed(2);
-
-				// Build unique key
-				const sKey = `${sTypeId}|${sItemId}|${sStartDate}|${sEndDate}|${sAmount}`;
-
-				if (aDuplicateSet.has(sKey)) {
-					return true;
-				}
-
-				aDuplicateSet.add(sKey);
-			}
-
-			return false;
 		},
 
 		_getJsonDate: function (iDate) {
@@ -4818,6 +4706,28 @@ sap.ui.define([
 					Utility.getText("msg_claimdetails_input_entmeals_err", [err])
 				);
 			}).finally(() => BusyIndicator.hide());
-		}
+		},
+
+		_saveDraftItems: async function () {
+			const oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			const aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
+			const oInputItemModel = this.getView().getModel("claimitem_input");
+
+			for (let item of aItems) {
+
+				if (item.is_new === true) {
+					oInputItemModel.setProperty("/claim_item", {});
+					oInputItemModel.setProperty("/claim_item", item);
+					oInputItemModel.setProperty("/claim_item/claim_id",
+						oClaimSubmissionModel.getProperty("/claim_header/claim_id")
+					);
+					oInputItemModel.setProperty("/claim_item/is_new", true);
+					await this._saveClaimItem();
+					item.is_new = false;
+				}
+			}
+			oClaimSubmissionModel.setProperty("/claim_items", aItems);
+		},
+
 	});
 });
