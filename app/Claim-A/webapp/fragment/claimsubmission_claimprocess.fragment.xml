@@ -108,7 +108,7 @@
                                 { path: 'SESSION_NUMBER' }
                             ]
                         }"
-                        visible="{= ${claimsubmission_input>/claimtype/is_course}}"
+                        visible="{= ${claimsubmission_input>/claimtype/is_kursus_claimtype}}"
                         change="onSelect_ClaimProcess_CourseCode"
                         liveChange="onSelect_ClaimProcess_CourseCode"
                     >

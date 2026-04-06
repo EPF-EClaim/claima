@@ -333,7 +333,7 @@ sap.ui.define([
 					},
 					"requestform_amt": null,
 					"req_emailapprove": null,
-					"is_course": false,
+					"is_kursus_claimtype": false,
 					"course_code": null,
 					"descr": {
 						"type": null,
@@ -580,9 +580,9 @@ sap.ui.define([
 
 				// set if claim type is course based on boolean value retrieved
 				var oInputModel = this.getView().getModel("claimsubmission_input");
-				oInputModel.setProperty("/claimtype/is_course", Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type")));
+				oInputModel.setProperty("/claimtype/is_kursus_claimtype", Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type")));
 				// set filter for course code dropdown
-				if (oInputModel.getProperty("/claimtype/is_course")) {
+				if (oInputModel.getProperty("/claimtype/is_kursus_claimtype")) {
 					var oSelectCourseCode = this.byId("select_claimprocess_course_code");
 					var oBindingSelectCourseCode = oSelectCourseCode.getBinding("items");
 					// attach event to remove duplicate records
@@ -905,7 +905,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_header/descr/alternate_cost_center", oInputModel.getProperty("/claimtype/requestform/descr/alternate_cost_center"));
 			}
 			//// course code values
-			if (oInputModel.getProperty("/claimtype/is_course") && oInputModel.getProperty("/claimtype/course_code")) {
+			if (oInputModel.getProperty("/claimtype/is_kursus_claimtype") && oInputModel.getProperty("/claimtype/course_code")) {
 				oInputModel.setProperty("/claim_header/course_code", oInputModel.getProperty("/claimtype/course_code"));
 				oInputModel.setProperty("/claim_header/descr/course_code", oInputModel.getProperty("/claimtype/descr/course_code"));
 				// retrieve start/end dates based on course code
