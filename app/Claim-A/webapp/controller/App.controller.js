@@ -755,21 +755,33 @@ sap.ui.define([
 				}
 			}
 
-			// close Claim Process dialog
-			this.oDialog_ClaimProcess.close();
+			//check if the same Request ID has been submitted for claim submission
+			var sRequestID = oInputModel.getProperty("/claimtype/requestform/request_id");
+			
+			try {
+    			const oResult = await ClaimUtility.checkReusedPAR(sRequestID);
+    			if (oResult?.isUsed) {
+        			MessageBox.warning(Utility.getText("msg_claim_submitted"), 
+				{
+					actions: [
+						Utility.getText("button_acknowledge"), 
+						MessageBox.Action.CANCEL
+					], 
+					emphasizedAction:
+					Utility.getText("button_acknowledge"),
+					onClose: async function (sAction) {
+						if (sAction === Utility.getText("button_acknowledge")) {
+							await this._proceedClaim();
+						}
+					}.bind(this)
+				});
+				return;
+				}
+			} catch (err) {
+    			MessageToast.show(Utility.getText("msg_error_gettingpar_status"));
+			}
 
-			// load Claim Input dialog
-			var oName = "claima.fragment.claimsubmission_claiminput";
-			this.oDialog_ClaimInput ??= await this.loadFragment({
-				name: oName,
-			});
-			if (this.oDialog_ClaimInput) {
-				this._onInit_ClaimInput();
-				this.oDialog_ClaimInput.open();
-			}
-			else {
-				MessageToast.show(Utility.getText("msg_nav_error_fragment", [oName]));
-			}
+			await this._proceedClaim();
 		},
 
 		onCancel_ClaimProcess: function () {
@@ -1933,7 +1945,27 @@ sap.ui.define([
 			} else {
 				this._oAvatarPopover.openBy(oAvatar);
 			}
-		}
+		}, 
+
+		_proceedClaim: async function () {
+    		// close Claim Process dialog
+    		this.oDialog_ClaimProcess.close();
+
+    		// load Claim Input dialog
+    		const oName = "claima.fragment.claimsubmission_claiminput";
+    		this.oDialog_ClaimInput ??= await this.loadFragment({
+        	name: oName
+    		});
+
+    		if (this.oDialog_ClaimInput) {
+        		this._onInit_ClaimInput();
+        		this.oDialog_ClaimInput.open();
+    		} else {
+        		MessageToast.show(
+            		Utility.getText("msg_nav_error_fragment", [oName])
+        	);
+    		}
+		},
 
 	});
 });

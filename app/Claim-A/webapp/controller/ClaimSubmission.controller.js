@@ -2217,6 +2217,11 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/material_code", materialCode);
 			}
 
+			// prevent processing if claim type item is empty
+			if (!oInputModel.getProperty("/claim_item/claim_type_item_id")) {
+				return;
+			}
+
 			// set app visibility controls
 			await this.getFieldVisibility_ClaimTypeItem();
 
@@ -2241,7 +2246,7 @@ sap.ui.define([
 			}
 
 			//START TDL #6.1 meter cube for Pengangkutan Laut
-			const sKey = claimItem?.getKey?.();
+			const sKey = oInputModel.getProperty("/claim_item/claim_type_item_id");
 			if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
 
 				//entitled meter cube
@@ -2257,7 +2262,6 @@ sap.ui.define([
 
 				oPropertyModel.setProperty("/amount/is_visible", true);
 				oPropertyModel.setProperty("/amount/is_editable", false);
-
 
 				await ClaimUtility.onSelect_ClaimDetails_MeterCube(
 					sKey,
@@ -2285,9 +2289,10 @@ sap.ui.define([
 				oPropertyModel.setProperty("/actual_amount/is_visible", false);
 				oInputModel.setProperty("/claim_item/actual_amount", null);
 
-				oPropertyModel.setProperty("/amount/is_visible", false);
-				oInputModel.setProperty("/claim_item/amount", null);
-			}
+				oPropertyModel.setProperty("/amount/is_visible", true);
+				oPropertyModel.setProperty("/amount/is_editable", true);
+	        }
+
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
 			// calculate number of days
@@ -2305,13 +2310,27 @@ sap.ui.define([
 			if (oPropertyModel.getProperty("/rate_per_km/is_visible") && !oPropertyModel.getProperty("/vehicle_type/is_visible")) {
 				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "descr/rate_per_km", this._oConstant.EligibilityRule.RATE_PER_KM, 0.0);
 				// clear rate per km ID field since formula uses default value
-				oInputModel.setProperty("/rate_per_km", null);
+				oInputModel.setProperty("/claim_item/rate_per_km", null);
+			}
+
+			// set number of family members based on claim item
+			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
+				oInputModel.setProperty("/claim_item/no_of_family_member", await ClaimUtility.getNumberOfFamilyMembers(oClaimSubmissionModel.getProperty("/claim_header/emp_id")));
 			}
 
 			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
 			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
 				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "eligible_amount", this._oConstant.EligibilityRule.ELIGIBLE_AMOUNT, 0.00);
 				this._calculateLodgingEligibleAmount();
+			}
+
+			// if claim type item is elaun pengangkutan, retrieve eligible amount
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT) {
+				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "amount", this._oConstant.EligibilityRule.ELIGIBLE_AMOUNT, 0.00);
+				// reduce claimable amount by 50% if employee is single
+				if (oClaimSubmissionModel.getProperty("/emp_master/marital") === this._oConstant.MaritalStatus.SINGLE) {
+					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/amount")) * 0.5);
+				}
 			}
 		},
 
@@ -2342,6 +2361,7 @@ sap.ui.define([
 				rate_per_km: { is_visible: false },
 				toll: { is_visible: false },
 				entitled_breakfast: { is_visible: false },
+				no_of_family_member: { is_visible: false },
 				insurance_provider_id: { is_visible: false },
 				insurance_provider_name: { is_visible: false },
 				insurance_package_id: { is_visible: false },
@@ -3006,6 +3026,30 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
 					this.onChange_ClaimDetails_NumberOfDays();
 				}
+			}
+		},
+
+        /**
+         * run related methods on setting start/end date
+         * @public
+         */
+		onChange_ClaimDetails_StartEndDate: async function () {
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+			var oInputModel = this.getView().getModel("claimitem_input");
+			var oPropertyModel = this.getView().getModel("claimitem_property");
+			oInputModel.refresh(true);
+
+			// Calculate number of days
+			if (oPropertyModel.getProperty("/entitled_breakfast/is_visible")) {
+				oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+			}
+
+			// calculate per diem details
+			if (oPropertyModel.getProperty("/entitled_breakfast/is_visible")) {
+				// reset per diem amounts
+				this._resetPerDiem();
+
+				await this._calculatePerDiem();
 			}
 		},
 
@@ -4761,6 +4805,13 @@ sap.ui.define([
 					}
 				} else if (this.byId("input_claimdetails_input_amount").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/amount", oResult.amount);
+				}
+
+				// additional amount based on number of family members
+				var oPropertyModel = this.getView().getModel("claimitem_property");
+				if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
+					var fAmount = oClaimItemInputModel.getProperty("/claim_item/amount");
+					oClaimItemInputModel.setProperty("/claim_item/amount", fAmount + (fAmount * parseInt(oClaimItemInputModel.getProperty("/claim_item/no_of_family_member"))));
 				}
 			}).catch(err => {
 				MessageBox.error(

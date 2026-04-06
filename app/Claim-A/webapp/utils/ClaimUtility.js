@@ -97,6 +97,79 @@ sap.ui.define([
 		},
 
 		/**
+		* Check if current user ID has previously approved claim with elaun pengangkutan claim item
+		* Method retrieves db table to be checked with fields and values to be filtered against
+		* if records found and have been approved, return true; else, return false
+		* @public
+		* @param {string} sEmpId - employee ID to retrieve dependents for
+		* @returns {boolean} if records found, return true; else, return false
+		*/
+		getPreviousElaunPengangkutan: async function (sEmpId) {
+			const oModel = this._oOwnerComponent.getModel();
+			const oListBinding = oModel.bindList(Constant.Entities.ZCLAIM_ITEM, null, [
+				new Sorter("CLAIM_ID")
+			], [
+				new Filter("EMP_ID", FilterOperator.EQ, sEmpId),
+				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, Constant.ClaimTypeItem.E_PENGAKUT)
+			], {
+				$expand: { "ZCLAIM_HEADER": { $select: "STATUS_ID" } }
+			});
+
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+				if (aContexts.length > 0) {
+					for ( var iContext = 0; iContext < aContexts.length; iContext++ ) {
+						var oData = aContexts[iContext].getObject();
+						if (oData["ZCLAIM_HEADER"]["STATUS_ID"] === Constant.ClaimStatus.APPROVED ||
+							oData["ZCLAIM_HEADER"]["STATUS_ID"] === Constant.ClaimStatus.PENDING_APPROVAL
+						) {
+							// if approved claim header found, return true
+							return true;
+						}
+					}
+					// if exit for loop, no approved claim header found with elaun pengangkutan
+				}
+				return false;
+			} catch (oError) {
+				MessageBox.error(Utility.getText("msg_claimdetails_input_pengangkutan_err", [oError]));
+				return false;
+			} finally {
+				BusyIndicator.hide();
+			}
+		},
+
+		/**
+		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
+		* Method retrieves db table to be checked with fields and values to be filtered against
+		* if records found, first record is retrieved from the table and returns values from the record
+		* @public
+		* @param {string} sEmpId - employee ID to retrieve dependents for
+		* @returns {integer} if records found, return total number of dependents for employee
+		*/
+		getNumberOfFamilyMembers: async function (sEmpId) {
+			const oModel = this._oOwnerComponent.getModel();
+			const oListBinding = oModel.bindList(Constant.Entities.ZEMP_DEPENDENT, null, [
+				new Sorter("DEPENDENT_NO")
+			], [
+				new Filter("EMP_ID", FilterOperator.EQ, sEmpId)
+			]);
+
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+				return aContexts.length;
+			} catch (oError) {
+				MessageBox.error(Utility.getText("msg_claimdetails_input_no_of_family_member_err", [oError]));
+				return 0;
+			} finally {
+				BusyIndicator.hide();
+			}
+		},
+
+		/**
 		* Retrieve backend data from db table based on selected claim item value
 		* Method retrieves db table to be checked with fields and values to be filtered against
 		* if records found, first record is retrieved from the table and returns values from the record
@@ -151,7 +224,7 @@ sap.ui.define([
 			} finally {
 				BusyIndicator.hide();
 			}
-		},
+		}, 
 
 		/**
 		 * Fetch entitlement amount from the backend function
@@ -301,5 +374,18 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_item/amount", nFinalAmount.toFixed(2));
 		},
 
+
+		/**
+		 * Check if PAR has been reused for claim submission 
+		 * @public
+		 * @param {String} sRequestID - Pre-approval request ID
+		 * @returns {Boolean} bIsUsed - show if warning should be sent
+		 */
+		checkReusedPAR: async function(sRequestID) {
+			const oModel = this._oView.getModel();
+			const oContext = oModel.bindContext("/checkPreApprovalUsage(...)");
+			oContext.setParameter("requestID", sRequestID);
+			return oContext.execute().then(() => oContext.requestObject());
+		}
 	}
 });
