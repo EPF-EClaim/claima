@@ -18,6 +18,8 @@ sap.ui.define([
             "KURSUS_LUAR_NEGARA": "KURSUS_LUAR_NEGARA",
             "DLM_NEGARA": "DLM_NEGARA",
             "LUAR_NEGARA": "LUAR_NEGARA",
+            "MEDICAL": "MEDICAL",
+            "POST_EDUCATION_ASSISTANCE": "PEDU",
             "PELBAGAI": "PELBAGAI",
             "ELAUN_TUKAR": "ELAUN_TUKAR",
             "ELAUN_PINDAH": "ELAUN_PINDAH",
@@ -58,6 +60,7 @@ sap.ui.define([
             "ONLINE_CRT": "ONLINE_CRT",
             "ONLINE_L": "ONLINE_L",
             "PARKING": "PARKING",
+            "POST_EDUCATION_ASSISTANCE": "PEDU",
             "PELANGGAN": "PELANGGAN",
             "PELBAGAI": "PELBAGAI",
             "PEM_PINDAH": "PEM_PINDAH",
@@ -75,10 +78,18 @@ sap.ui.define([
             "TELEFON": "TELEFON",
             "TIPS": "TIPS",
             "TOLL": "TOLL",
+            "TRAVEL_INSURANCE": "TRAVEL_INSURANCE",
             "VISA": "VISA",
             "YURAN": "YURAN",
             "YURAN_KLJ": "YURAN_KLJ",
-            "CASH_REPAY": "CASH_REPAY"
+            "CASH_REPAY": "CASH_REPAY",
+            "GALAKAN" : "GALAKAN",
+            "TELEFON_B" : "TELEFON_B"
+        },
+        "ClaimTypeItemLodging": {
+            "LOD_TUKAR": "LOD_TUKAR",
+            "LODG_O": "LODG_O",
+            "LODGING_L": "LODGING_L"
         },
         "ClaimTypeItemStatus": {
             "ACTIVE": "ACTIVE",
@@ -92,8 +103,17 @@ sap.ui.define([
             "COMPLETED_DISBURSEMENT": "STAT06",
             "CANCELLED": "STAT07",
         },
+        "EligibilityRule": {
+            "ROLE_ID": "ROLE_ID",
+            "PERSONAL_GRADE": "PERSONAL_GRADE",
+            "POSITION_NO_DESC": "POSITION_NO_DESC",
+            "ROW_COUNT": "ROW_COUNT",
+            "ELIGIBLE_AMOUNT": "ELIGIBLE_AMOUNT",
+            "RATE_PER_KM": "RATE",
+            "SUBSIDISED_RATE": "SUBSIDISED_RATE"
+        },
         "Departments": {
-            "FI_DEPT":"0500000000"
+            "FI_DEPT": "0500000000"
         },
         "RequestStatus": {
             "DRAFT": "DRAFT",
@@ -116,6 +136,13 @@ sap.ui.define([
             "CLAIMTYPE": "Claim",
             "CLAIM_APPROVE": "APPROVE_CLAIM",
             "SET_GROUP": "approvalGroup",
+            "ELIGIBLE_AMOUNT": "Eligible Amount",
+            "TRAVEL_DAYS_ID": "Travel Days",
+            "FARE_TYPE_ID": "Fare Type",
+            "TRANSPORT_CLASS": "Transport Class",
+            "FLIGHT_CLASS_ID": "Flight Class",
+            "ROOM_TYPE_ID": "Room Type",
+            "MOBILE_PHONE_BILL": "Mobile Phone Bill"
         },
         "ApprovalProcessStatus": {
             "STATUS_REJECT": "REJECT",
@@ -142,6 +169,7 @@ sap.ui.define([
             "ZCLAIM_HEADER": "/ZCLAIM_HEADER",
             "ZCLAIM_ITEM": "/ZCLAIM_ITEM",
             "ZCLAIM_TYPE_ITEM": "/ZCLAIM_TYPE_ITEM",
+            "ZELIGIBILITY_RULE": "/ZELIGIBILITY_RULE",
             "ZEMP_APPROVER_REQUEST_DETAILS": "/ZEMP_APPROVER_REQUEST_DETAILS",
             "ZEMP_APPROVER_CLAIM_DETAILS": "/ZEMP_APPROVER_CLAIM_DETAILS",
             "ZEMP_CLAIM_BUDGET_CHECK": "/ZEMP_CLAIM_BUDGET_CHECK",
@@ -149,6 +177,8 @@ sap.ui.define([
             "ZEMP_MASTER": "/ZEMP_MASTER",
             "ZEMP_REQUEST_BUDGET_CHECK": "/ZEMP_REQUEST_BUDGET_CHECK",
             "ZEMP_SUBSTITUTION_RULE": "/ZEMP_SUBSTITUTION_RULE",
+            "ZOFFICE_DISTANCE": "/ZOFFICE_DISTANCE",
+            "ZRATE_KM": "/ZRATE_KM",
             "ZREQUEST_HEADER": "/ZREQUEST_HEADER",
             "ZREQUEST_ITEM": "/ZREQUEST_ITEM",
             "ZREQUEST_TYPE": "/ZREQUEST_TYPE",
@@ -196,7 +226,14 @@ sap.ui.define([
             "YEAR": "YEAR",
             "SUBMITTED_DATE": "SUBMITTED_DATE",
             "BILL_DATE": "BILL_DATE",
-            "RECEIPT_DATE": "RECEIPT_DATE"
+            "RECEIPT_DATE": "RECEIPT_DATE",
+            "INSURANCE_PURCH_DATE": "INSURANCE_PURCH_DATE",
+            "INSURANCE_CERT_START_DATE": "INSURANCE_CERT_START_DATE",
+            "INSURANCE_CERT_END_DATE": "INSURANCE_CERT_END_DATE",
+            "FROM_STATE_ID": "FROM_STATE_ID",
+            "FROM_LOCATION_ID": "FROM_LOCATION_ID",
+            "TO_STATE_ID": "TO_STATE_ID",
+            "TO_LOCATION_ID": "TO_LOCATION_ID",
         },
         "Operators": {
             "EQUAL": "EQ",
@@ -262,15 +299,16 @@ sap.ui.define([
             "COST_CENTER": "100000000",
             "GL_ACCOUNT": "214005"
         },
-        "SubmissionType":{
-            "DIRECT_CLAIM"  : "ST0001",
-            "AUTO_APPROVE"  : "ST0002",
-            "PRE_APPROVE"   : "ST0003",
+        "SubmissionType": {
+            "DIRECT_CLAIM": "ST0001",
+            "AUTO_APPROVE": "ST0002",
+            "PRE_APPROVE": "ST0003",
             "CASH_REPAYMENT": "ST0004",
-            "CURR_SUBSIDY"  : "ST0005"
+            "CURR_SUBSIDY": "ST0005"
         },
         "Default": {
-            "PROJECT_CODE": "NA"
+            "PROJECT_CODE": "NA",
+            "NULL": "null"
         },
         "BudgetCheckAction": {
             "SUBMIT": "SUBMIT",
@@ -283,19 +321,36 @@ sap.ui.define([
             "EDIT": "i_edit",
             "LIST": "list",
             "CREATE": "create",
-            "VIEWAPPR": "view_appr"
+            "VIEWAPPR": "view_appr",
+            "APPROVE": "APPROVE",
         },
         "RequestType": {
-            "TRAVEL"        : "RT0001",
-            "MOBILE"        : "RT0002",
-            "EVENTS"        : "RT0003",
-            "REIMBURSEMENT" : "RT0004",
-            "MEDICAL"       : "RT0005",
-            "PROJECT"       : "RT0006"
+            "TRAVEL": "RT0001",
+            "MOBILE": "RT0002",
+            "EVENTS": "RT0003",
+            "REIMBURSEMENT": "RT0004",
+            "MEDICAL": "RT0005",
+            "PROJECT": "RT0006"
+        },
+        "ClaimFooterMode": {
+            "SUMMARY": "SUMMARY",
+            "DETAILS": "DETAILS",
+            "APPROVER": "APPROVER",
+            "VIEW_ONLY": "VIEW_ONLY"
         },
         "LocationType" : {
             "OTHER" : "1",
             "KWSP"  : "2"
+        },
+        "LocationTypeOffice" : {
+            "FROM" : "from",
+            "TO"  : "to"
+        },
+        "OfficeDistance" : {
+            "MILEAGE" : "MILEAGE"
+        },
+        "InsuranceProvider" : {
+            "OTHERS" : "4",
         },
         "Status" : {
             "ACTIVE" : "ACTIVE"

@@ -29,8 +29,8 @@ sap.ui.define([
 	"claima/utils/Attachment",
 	"claima/utils/EligibilityCheck",
 	"claima/utils/DateUtility",
-	"claima/utils/Constants"
-
+	"claima/utils/Constants",
+	"claima/utils/CustomValidator"
 ], function (
 	Controller,
 	coreLibrary,
@@ -62,7 +62,8 @@ sap.ui.define([
 	Attachment,
 	EligibilityCheck,
 	DateUtility,
-	Constants
+	Constants,
+	CustomValidator
 ) {
 	"use strict";
 
@@ -86,6 +87,8 @@ sap.ui.define([
 			this._oViewModel 		= this.getOwnerComponent().getModel("employee_view");
 			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
 			this._oFragments 		= Object.create(null);
+
+			CustomValidator.init(this.getOwnerComponent(), this.getView())
 
 			// URL Access
 			this._oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
@@ -1042,8 +1045,8 @@ sap.ui.define([
 			}
 
 			// Eligibility Checking
-			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
-			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, oPayload);
+			var aPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.REQUEST);
+			var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oDataModel, aPayload);
 			var	bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.REQUEST);
 
 			if (!bCanProceed) return;
@@ -1284,10 +1287,28 @@ sap.ui.define([
 			}
 		},
 
-		populateEstimatedAmount(oEvent) {
+		populateEstimatedAmount: function(oEvent) {
+			const oInput = oEvent.getSource();
+			
+			const oContext = oInput.getBindingContext("request");
+			const sPath = oContext.getPath(); 
+			
+			let fEnteredAmount = parseFloat(oInput.getValue() || 0);
+
+			const sClaimTypeItem = this._oReqModel.getProperty("/req_item/claim_type_item_id");
+
+			if (!sClaimTypeItem) {
+				MessageBox.error(Utility.getText("req_d_e_select_claim_type_item"));
+				return;
+			}
+			
+			CustomValidator.init(this.getOwnerComponent(), this.getView())
+			if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.REQUEST)){
+				return;
+			}
+
 			const aParticipantList = this._oReqModel.getProperty("/participant");
 
-			// Use let OR use reduce directly
 			const fEstAmount = aParticipantList.reduce((sum, row) => {
 				return sum + parseFloat(row.ALLOCATED_AMOUNT || 0);
 			}, 0);
@@ -1298,6 +1319,36 @@ sap.ui.define([
 		/* =========================================================
 		* Participant Value Help 
 		* ======================================================= */
+
+		onCashAdvanceChange: function (oEvent) {
+
+			// Get model
+			const oRequestModel = this.getView().getModel("request");
+
+			// Read event start date
+			const dTripDate = oRequestModel.getProperty("/req_header/tripstartdate");
+
+			if (!dTripDate) {
+				return; // no date entered yet
+			}
+
+			// Convert to JS Date
+			const dEventDate = new Date(dTripDate);
+			const dToday = new Date();
+			dToday.setHours(0,0,0,0);
+
+			// ✅ If event date is before today → backdated
+			if (dEventDate < dToday) {
+
+				// Update model value
+				oRequestModel.setProperty("/req_item/cash_advance", false);
+
+				// Show message
+				MessageBox.error(
+					Utility.getText("msg_cash_advance_not_allow")
+				);
+			}
+		},
 
 		onValueHelpRequest(oEvent) {
 			this._oInputSource = oEvent.getSource();
@@ -2046,7 +2097,7 @@ sap.ui.define([
 					});
 					const _oHeader = this._oReqModel.getProperty("/req_header") || {};
 					const _oItem = this._oReqModel.getProperty("/req_item") || {};
-					var iDiffDays = DateUtility.calculateNumberOfDays(_oHeader, _oItem);
+					var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.REQUEST, _oHeader, _oItem);
 					this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
 				}
 
@@ -2197,38 +2248,32 @@ sap.ui.define([
 		onClickCreate_app: async function () {
 			// Minimal validation for reject flow (reason + comment)
 			const oReject = this.getView().getModel("Reject");
-			const mode = oReject?.getProperty("/mode"); // "REJECT" here
-			//const reason = oReject?.getProperty("/rejectReasonKey");
-			const comment = oReject?.getProperty("/approvalComment")?.trim();
-			const userId = this._oSessionModel.getProperty("/userId");
-			const requestModel = this.getView().getModel("request");
-			const reqId = requestModel?.getProperty("/req_header/reqid")?.trim();
+			const sMode = oReject?.getProperty("/mode"); // "REJECT" here
+			const sComment = oReject?.getProperty("/approvalComment")?.trim();
+			const sUserId = this._oSessionModel.getProperty("/userId");
+			const oRequestModel = this.getView().getModel("request");
+			const sReqId = oRequestModel?.getProperty("/req_header/reqid")?.trim();
 
-			const id = reqId;
-			const userID = userId;
-			const oModel = this._oDataModel;
-			const oModel2 = this._oViewModel;
+			const oModelMain = this._oDataModel;
+			const oModelView = this._oViewModel;
 
-			if (mode === "APPROVE") {
-				if (!comment) {
-					MessageBox.error(Utility.getText("req_d_e_approval_comment"));
-					return;
-				}
+			if (sMode === this._oConstant.PARMode.APPROVE) {
+
 				try {
 
 					// 1. Approve + get payloads from util
 					const { payloads } = await ApproverUtility.approveMultiLevel(
-						oModel,
-						id,
-						userID,
-						comment,
-						oModel2,
+						oModelMain,
+						sReqId,
+						sUserId,
+						sComment,
+						oModelView,
 						this
 					);
 
 					// 2. Send emails (1 or 2 depending on next approver / sub approver)
-					for (const p of payloads) {
-						await workflowApproval.onSendEmailApprover(oModel, p);
+					for (const aPayloadEmail of payloads) {
+						await workflowApproval.onSendEmailApprover(oModelMain, aPayloadEmail);
 					}
 
 					// 3. Close dialog
@@ -2253,12 +2298,12 @@ sap.ui.define([
 			const oReject = this.getView().getModel("Reject");
 
 			// Read inputs
-			const reason = oReject?.getProperty("/sendBackReasonKey");
-			const comment = oReject?.getProperty("/approvalComment")?.trim();
+			const sReason = oReject?.getProperty("/sendBackReasonKey");
+			const sComment = oReject?.getProperty("/approvalComment")?.trim();
 
 			// Client-side validation (dialog also disables button, but keep server-safe checks)
-			if (!reason) { MessageBox.error(Utility.getText("req_d_e_approval_push_back_reason")); return; }
-			if (!comment) { MessageBox.error(Utility.getText("req_d_e_approval_comment_empty")); return; }
+			if (!sReason) { MessageBox.error(Utility.getText("req_d_e_approval_push_back_reason")); return; }
+			if (!sComment) { MessageBox.error(Utility.getText("req_d_e_approval_comment_empty")); return; }
 
 			try {
 				BusyIndicator.show(0);
@@ -2268,11 +2313,11 @@ sap.ui.define([
 				const oModelView = this._oViewModel;// OData views
 
 				// Who & what
-				const userId = this._oSessionModel.getProperty("/userId");
-				const requestModel = this.getOwnerComponent().getModel("request");
-				const reqId = requestModel?.getProperty("/req_header/reqid")?.trim();
+				const sUserId = this._oSessionModel.getProperty("/userId");
+				const oRequestModel = this.getOwnerComponent().getModel("request");
+				const sReqId = oRequestModel?.getProperty("/req_header/reqid")?.trim();
 
-				if (!userId || !reqId) {
+				if (!sUserId || !sReqId) {
 					throw new Error(Utility.getText("req_tm_w_emp_id_req_id_not_found"));
 				}
 
@@ -2282,11 +2327,11 @@ sap.ui.define([
 				const { payloads, dataset, submissionType } =
 					await ApproverUtility.rejectOrSendBackMultiLevel(
 						oModelMain,
-						reqId,       // id
-						userId,      // approver user id
+						sReqId,       // id
+						sUserId,      // approver user id
 						Constants.ClaimStatus.SEND_BACK,
-						reason,
-						comment,
+						sReason,
+						sComment,
 						oModelView
 					);
 
@@ -2299,7 +2344,7 @@ sap.ui.define([
 					"release"
 				);
 				*/
-				const sSubmissionType2 = reqId.substring(0, 3);
+				const sSubmissionType2 = sReqId.substring(0, 3);
 				try{
 					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
 				}catch (oError){
@@ -2331,11 +2376,11 @@ sap.ui.define([
 
 		onReject_app: async function () {
 			const oReject = this.getView().getModel("Reject");
-			const reason = oReject?.getProperty("/rejectReasonKey");
-			const comment = oReject?.getProperty("/approvalComment")?.trim();
+			const sReason = oReject?.getProperty("/rejectReasonKey");
+			const sComment = oReject?.getProperty("/approvalComment")?.trim();
 
-			if (!reason) { MessageBox.error(Utility.getText("req_d_e_approval_reject_reason")); return; }
-			if (!comment) { MessageBox.error(Utility.getText("req_d_e_approval_comment")); return; }
+			if (!sReason) { MessageBox.error(Utility.getText("req_d_e_approval_reject_reason")); return; }
+			if (!sComment) { MessageBox.error(Utility.getText("req_d_e_approval_comment")); return; }
 
 			try {
 				BusyIndicator.show(0);
@@ -2344,18 +2389,18 @@ sap.ui.define([
 				const oModelView = this._oViewModel;
 
 				const reqModel = this.getView().getModel("request");
-				const reqId = reqModel?.getProperty("/req_header/reqid")?.trim();
+				const sReqId = reqModel?.getProperty("/req_header/reqid")?.trim();
 
 				
 
 				const { payloads, dataset, submissionType } =
 					await ApproverUtility.rejectOrSendBackMultiLevel(
 						oModelMain,
-						reqId,
+						sReqId,
 						this._oSessionModel.getProperty("/userId"),
 						Constants.ClaimStatus.REJECTED,
-						reason,
-						comment,
+						sReason,
+						sComment,
 						oModelView
 					);
 
@@ -2363,7 +2408,7 @@ sap.ui.define([
 				/** Commenting budgetProcessing as it will be replaced by backend function from Jefry 
 				await budgetCheck.budgetProcessing(oModelMain, dataset, submissionType, "release");
 				*/
-				const sSubmissionType2 = reqId.substring(0, 3);
+				const sSubmissionType2 = sReqId.substring(0, 3);
 				try{
 					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
 				}catch (oError){

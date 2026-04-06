@@ -2,8 +2,13 @@ sap.ui.define([
 	"sap/m/MessageBox",
 	"sap/ui/core/Fragment",
 	"sap/ui/core/ValueState",
-	"claima/utils/Constants"
-], function (MessageBox, Fragment, ValueState, Constants) {
+	"claima/utils/Constants",
+	"claima/utils/Utility"
+], function (MessageBox,
+	Fragment,
+	ValueState,
+	Constants,
+	Utility) {
     "use strict";
 
     return {
@@ -13,11 +18,13 @@ sap.ui.define([
 		* ======================================================= */
 
 		generateEligibilityCheckPayload (oController, sSubmissionType) {
-			var sEmpId			= oController._oSessionModel.getProperty("/userId")
+		// 	var sEmpId			= oController._oSessionModel.getProperty("/userId")
 
 			switch (sSubmissionType) {
 				case Constants.SubmissionTypePrefix.REQUEST:
 					var oItemData		= oController._oReqModel.getProperty('/req_item');
+					var aItemPartData	= oController._oReqModel.getProperty('/participant');
+					var sRecordId		= oController._oReqModel.getProperty('/req_header/reqid');
 					var sClaimType		= oController._oReqModel.getProperty('/req_header/claimtype');
 					var sClaimTypeItem	= oItemData.claim_type_item_id;
 
@@ -38,9 +45,12 @@ sap.ui.define([
 					break;
 
 				case Constants.SubmissionTypePrefix.CLAIM:
+					var sEmpId			= oController._oSessionModel.getProperty("/userId")
 					const oHeaderModel 	= oController.getView().getModel("claimsubmission_input");
 					const oItemModel 	= oController.getView().getModel("claimitem_input");
+					var aItemPartData	= [{PARTICIPANTS_ID: sEmpId}];
 					var oItemData		= oItemModel.getProperty('/claim_item');
+					var sRecordId		= oHeaderModel.getProperty("/claim_header/claim_id");
 					var sClaimType		= oHeaderModel.getProperty('/claim_header/claim_type_id');
 					var sClaimTypeItem	= oItemData.claim_type_item_id;
 
@@ -52,7 +62,8 @@ sap.ui.define([
 						"vehicle_class_id"      		: "TRANSPORT_CLASS",
 						"flight_class"          		: "FLIGHT_CLASS_ID",
 						"room_type"          			: "ROOM_TYPE_ID",
-						"mobile_category_purpose_id"	: "MOBILE_PHONE_BILL"
+						"mobile_category_purpose_id"	: "MOBILE_PHONE_BILL",
+						"receipt_date"					: "RECEIPT_DATE"
 					};
 					break;
 			
@@ -60,38 +71,52 @@ sap.ui.define([
 					break;
 			}
 
-			const aActiveFields = Object.entries(oMapping).reduce((acc, [sKey, sTargetName]) => {
-				const val = oItemData[sKey];
+			const aActiveFields = Object.entries(oMapping).reduce((aCheckField, [sKey, sTargetName]) => {
+				const sVal = oItemData[sKey];
 				
-				// const bIsValid = val !== null && val !== undefined;
-
-				// if (bIsValid) {
-					acc.push({
+					aCheckField.push({
 						fieldName: sTargetName,
-						value: val,
+						value: String(sVal),
 						result: null
 					});
-				// }
-				return acc;
+				return aCheckField;
 			}, []);
 
-			const oPayload = {
-				EmpId: sEmpId,
-				ClaimType: sClaimType,
-				ClaimTypeItem: sClaimTypeItem,
-				CheckFields: aActiveFields
-			};
+			const aPayload = [];
+			aItemPartData.forEach((row) => {
+				if (row.PARTICIPANTS_ID) {
+					var aNewActiveFields = aActiveFields.map(field => {
+						var oNewField = { ...field }; 
+						
+						if (oNewField.fieldName === "ELIGIBLE_AMOUNT" && sSubmissionType === Constants.SubmissionType.REQUEST) {
+							oNewField.value = String(row.ALLOCATED_AMOUNT);
+						}
+						
+						return oNewField;
+					});
 
-			return oPayload;
+					// Push the payload using the NEW array, not the shared one
+					aPayload.push({
+						EmpId: row.PARTICIPANTS_ID,
+						RecordId: sRecordId,
+						ClaimType: sClaimType,
+						ClaimTypeItem: sClaimTypeItem,
+						CheckFields: aNewActiveFields 
+					});
+				}
+			});
+
+			return aPayload;
 		},
 		
-		eligibilityHandling: function(oController, oPayload, sSubmissionType) {
+		eligibilityHandling: function(oController, aPayload, sSubmissionType) {
+			let oDBToUIControlMap = {};
 
 			switch (sSubmissionType) {
 				case Constants.SubmissionTypePrefix.REQUEST:
-					var oDBToUIControlMap = {
+					oDBToUIControlMap = {
 						"VEHICLE_OWNERSHIP_ID": "i_vehicle_ownership",
-						"ELIGIBLE_AMOUNT":      "i_amount",
+						"ELIGIBLE_AMOUNT":      "TABLE_ALLOC_AMOUNT", // <-- Special flag for table handling
 						"MOBILE_PHONE_BILL":    "i_category_purpose",
 						"REGION_ID":            "i_sss",
 						"RATE":                 "i_rate_per_kilometer",
@@ -102,15 +127,16 @@ sap.ui.define([
 					};
 					break;
 
-				case Constants.SubmissionTypePrefix.CLAIM:		// working on this one
-					var oDBToUIControlMap = {
-						"ELIGIBLE_AMOUNT": 		"input_claimdetails_input_amount",
-						"TRAVEL_DAYS_ID": 		"input_claimdetails_input_no_of_days",
-						"FARE_TYPE_ID": 		"select_claimdetails_input_fare_type_id",
-						"TRANSPORT_CLASS": 		"select_claimdetails_input_vehicle_class_id",
-						"FLIGHT_CLASS_ID": 		"select_claimdetails_input_flight_class",
-						"ROOM_TYPE_ID": 		"select_claimdetails_input_room_type",
-						"MOBILE_PHONE_BILL": 	"select_claimdetails_input_mobile_category_purpose_id"
+				case Constants.SubmissionTypePrefix.CLAIM:
+					oDBToUIControlMap = {
+						"ELIGIBLE_AMOUNT":      "input_claimdetails_input_amount",
+						"TRAVEL_DAYS_ID":       "input_claimdetails_input_no_of_days",
+						"FARE_TYPE_ID":         "select_claimdetails_input_fare_type_id",
+						"TRANSPORT_CLASS":      "select_claimdetails_input_vehicle_class_id",
+						"FLIGHT_CLASS_ID":      "select_claimdetails_input_flight_class",
+						"ROOM_TYPE_ID":         "select_claimdetails_input_room_type",
+						"MOBILE_PHONE_BILL":    "select_claimdetails_input_mobile_category_purpose_id",
+						"RECEIPT_DATE": 		"datepicker_claimdetails_input_receipt_date"
 					};
 					break;
 			
@@ -118,45 +144,61 @@ sap.ui.define([
 					break;
 			}
 
-			const aCheckFields = oPayload.CheckFields || [];
 			const aErrorMessages = []; 
 
 			const getControl = (sId) => {
-				if (!sId) return null;
+				if (!sId || sId === "TABLE_ALLOC_AMOUNT") return null;
 				const oFormElement = Fragment.byId("request", sId) || oController.byId(sId);
-				return oFormElement?.getFields?.()[0]; 
+				return oFormElement?.getFields?.()[0] || oFormElement; 
 			};
 
 			Object.values(oDBToUIControlMap).forEach(sId => {
-				const oInputControl = getControl(sId);
-				if (oInputControl?.setValueState) {
-					oInputControl.setValueState(ValueState.None);
-					oInputControl.setValueStateText("");
+				if (sId === "TABLE_ALLOC_AMOUNT") {
+					this._setTableValueState(oController, null, ValueState.None);
+				} else {
+					const oInputControl = getControl(sId);
+					if (oInputControl?.setValueState) {
+						oInputControl.setValueState(ValueState.None);
+						oInputControl.setValueStateText("");
+					}
 				}
 			});
 
-			aCheckFields.forEach((oField) => {
-				if (oField.result === true || oField.result === null) {
-					return; 
-				}
-				
-				const sErrorMsg = (`Validation failed for ${oField.fieldName}.`);
-				aErrorMessages.push(sErrorMsg);
+			aPayload.forEach((oSinglePayload) => {
+				const aCheckFields = oSinglePayload.CheckFields || [];
+				const sEmpId = oSinglePayload.EmpId;
 
-				const oInputControl = getControl(oDBToUIControlMap[oField.fieldName]);
-				if (oInputControl?.setValueState) {
-					oInputControl.setValueState(ValueState.Error);
-					// oInputControl.setValueStateText(sErrorMsg);
-				}
+				aCheckFields.forEach((oField) => {
+					if (oField.result === true || oField.result === null) {
+						return; 
+					}
+					
+					var sErrorField = Constants.ApprovalProcess[oField.fieldName] || oField.fieldName;
+
+					const sErrorMsg = Utility.getText("req_e_validation", [sErrorField, sEmpId]);
+					if (!aErrorMessages.includes(sErrorMsg)) {
+						aErrorMessages.push(sErrorMsg);
+					}
+
+					const sMappedId = oDBToUIControlMap[oField.fieldName];
+					
+					if (sMappedId === "TABLE_ALLOC_AMOUNT") {
+						this._setTableValueState(oController, sEmpId, ValueState.Error);
+					} else {
+						const oInputControl = getControl(sMappedId);
+						if (oInputControl?.setValueState) {
+							oInputControl.setValueState(ValueState.Error);
+						}
+					}
+				});
 			});
 
 			const bIsEligible = aErrorMessages.length === 0;
 
 			if (!bIsEligible) {
-				// const sFormattedErrors = "• " + aErrorMessages.join("\n• ");
 				const sFormattedErrors = "• " + aErrorMessages[0];
-				MessageBox.error("You are not eligible for this request. Please review the highlighted items:\n\n" + sFormattedErrors, {
-					title: "Eligibility Check Failed",
+				MessageBox.error(Utility.getText("req_e_validation_msg") + sFormattedErrors, {
+					title: Utility.getText("req_e_validation_title"),
 					actions: [MessageBox.Action.CLOSE]
 				});
 			}
@@ -164,7 +206,27 @@ sap.ui.define([
 			return bIsEligible;
 		},
 
-		async onCheckEligibility (oController) {
+		_setTableValueState (oController, sEmpIdToMatch, sValueState) {
+			const oTable = Fragment.byId("request", "req_participant_table") || oController.byId("req_participant_table");
+			if (!oTable) return;
+
+			oTable.getRows().forEach(oRow => {
+				const oContext = oRow.getBindingContext("request");
+				if (oContext) {
+					const sRowEmpId = oContext.getProperty("PARTICIPANTS_ID");
+					
+					if (!sEmpIdToMatch || sRowEmpId === sEmpIdToMatch) {
+						oRow.getCells().forEach(oCell => {
+							if (oCell.getId().includes("alloc_amount") && oCell.setValueState) {
+								oCell.setValueState(sValueState);
+							}
+						});
+					}
+				}
+			});
+		},
+
+		async onCheckMobileEligibility (oController) {
 			const sEmployeeId = oController._oSessionModel.getProperty("/userId");
 
 			try {

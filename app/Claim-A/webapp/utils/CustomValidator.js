@@ -1,6 +1,12 @@
 sap.ui.define([
-    "claima/utils/Constants"
-], function (Constants) {
+    "sap/m/MessageBox",
+    "claima/utils/Constants",
+    "claima/utils/Utility"
+], function (
+    MessageBox,
+    Constants,
+    Utility
+) {
     "use strict";
 
     return {
@@ -8,8 +14,9 @@ sap.ui.define([
 		 * Initialize the Utility 
 		 * @public
 		 */
-        init: function(oOwnerComponent) {
+        init: function(oOwnerComponent,oView) {
             this._oOwnerComponent = oOwnerComponent;
+            this._oView = oView;
 		},
         
         /**
@@ -29,10 +36,57 @@ sap.ui.define([
             // Scenario-based checking (Only limited to certain submission type)
             switch (sSubmissionType) {
                 case Constants.SubmissionTypePrefix.REQUEST:
+
+                    var oReqModel = this._oOwnerComponent.getModel("request");
+                    var sClaimTypeItem = oReqModel.getProperty("/req_item/claim_type_item_id");
+
+                    // HANDPHONE | TELEFON_B
+                    if (sClaimTypeItem === Constants.ClaimTypeItem.TELEFON_B) {
+                        
+                        var aParticipants = oReqModel.getProperty("/participant") || [];
+                        var fMaxLimit = 100.00;
+
+                        for (var p = 0; p < aParticipants.length; p++) {
+                            var fEnteredAmount = parseFloat(aParticipants[p].ALLOCATED_AMOUNT || 0);
+
+                            if (fEnteredAmount > fMaxLimit) {
+                                MessageBox.error(Utility.getText("req_d_e_capped_amount", [fMaxLimit.toFixed(2)]));
+                                return false; 
+                            } else if (fEnteredAmount < 0.00) {
+                                MessageBox.error(Utility.getText("req_d_e_neg_amount"));
+                                return false; 
+                            }
+                        }
+                    }
                     break;
-                case Constants.SubmissionTypePrefix.CLAIM:
+                case Constants.SubmissionTypePrefix.CLAIM:   
+                    var oInputModel = this._oView.getModel("claimitem_input");
+                    var oClaimSubmissionModel = this._oView.getModel("claimsubmission_input");
+
+                    if (oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.TELEFON_B) {
+                        if(!oInputModel.getProperty("/claim_item/disclaimer")) {
+                            MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+                            return false;
+                        }
+                    }
+
+                    if (oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.GALAKAN) {
+                        if(!oInputModel.getProperty("/claim_item/disclaimer_galakan")) {
+                            MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
+                            return false;
+                        }
+                    }
+                
+                    var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
+                    for(var i = 0; i < aItems.length; i++){
+                        if(aItems[i].amount == 0){
+                            MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
+                            return false;
+                        }
+                    }
                     break;
             }
+            return true;
         }
     };
 });

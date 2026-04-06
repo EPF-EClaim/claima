@@ -284,7 +284,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZEMP_MASTER.GRADE,
                 ZEMP_MASTER.JOB_GROUP,
                 createdBy,
-                modifiedAt
+                modifiedAt,
+                COURSE_CODE,
+                ZTRAIN_COURSE_PART.COURSE_DESC as COURSE_CODE_DESC
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW          as
@@ -405,7 +407,10 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 DEPENDENT_RELATIONSHIP,
                 POLICY_NUMBER,
                 INSURANCE_PROVIDER_ID,
-                ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_DESC
+                ZINSURANCE_PROVIDER.INSURANCE_PROVIDER_DESC,
+                ZCLAIM_HEADER.COURSE_CODE,
+                ZCLAIM_HEADER.ZTRAIN_COURSE_PART.COURSE_DESC as COURSE_CODE_DESC,
+                ZCLAIM_HEADER.ZTRAIN_COURSE_PART.SESSION_NUMBER as SESSION_NUMBER
         };
 
     entity ZEMP_REQUEST_STATUS           as
@@ -542,6 +547,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.ZFLIGHT_CLASS.FLIGHT_CLASS_DESC,
                 ZCLAIM_ITEM.FROM_LOCATION,
                 ZCLAIM_ITEM.FROM_LOCATION_OFFICE,
+                ZCLAIM_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION.LOCATION_DESC as FROM_LOCATION_DESC,
                 ZCLAIM_ITEM.KM,
                 ZCLAIM_ITEM.LOCATION_TYPE,
                 ZCLAIM_ITEM.ZLOC_TYPE.LOC_TYPE_DESC,
@@ -566,6 +572,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZCLAIM_ITEM.START_TIME,
                 ZCLAIM_ITEM.TO_LOCATION,
                 ZCLAIM_ITEM.TO_LOCATION_OFFICE,
+                ZCLAIM_ITEM.ZOFFICE_DISTANCE.ZOFFICE_LOCATION1.LOCATION_DESC as TO_LOCATION_DESC,
                 ZCLAIM_ITEM.TOLL,
                 ZCLAIM_ITEM.TOTAL_EXP_AMOUNT,
                 ZCLAIM_ITEM.VEHICLE_TYPE,

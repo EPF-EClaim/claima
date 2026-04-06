@@ -3,8 +3,10 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/ui/model/Sorter",
+    "sap/ui/model/json/JSONModel",
+    "sap/ui/core/Fragment",
     "claima/utils/Constants"
-], function (Filter, FilterOperator, Sorter, Constants) {
+], function (Filter, FilterOperator, Sorter, JSONModel, Fragment, Constants) {
     "use strict";
 
     return {
@@ -90,6 +92,135 @@ sap.ui.define([
 
             await oModel.submitBatch("$auto");
         },
+
+        openClaimTypeFilterDialog: async function (oController, sModelName, sListPath) {
+            var oModel = oController.getView().getModel(sModelName);
+            var aList = oModel.getProperty(sListPath) || [];
+            var aTypes = [...new Set(aList.map(item => item.CLAIM_TYPE_DESC).filter(Boolean))];
+
+            if (!oController._oFilterDialog) {
+                oController._oFilterDialog = await Fragment.load({
+                    id: oController.getView().getId(),
+                    name: 'claima.fragment.claimtypefilterdialog',
+                    controller: oController
+                });
+                oController.getView().addDependent(oController._oFilterDialog);
+
+                var oFilterModel = new JSONModel({ items: [] });
+                oController._oFilterDialog.setModel(oFilterModel, 'filterModel');
+            }
+
+            oController._oFilterDialog.getModel('filterModel').setProperty('/items',
+                aTypes.map(sType => ({ title: sType }))
+            );
+
+            var aSelectedTypes = oController._aActiveClaimTypeFilters || [];
+            oController._oFilterDialog.getItems().forEach(oItem => {
+                if (aSelectedTypes.includes(oItem.getTitle())) {
+                    oItem.setSelected(true);
+                }
+            });
+
+            oController._oFilterDialog.open();
+        },
+
+        confirmClaimTypeFilter: function (oController, sModelName, sListPath, sCountPath, oEvent) {
+            var aSelectedItems = oEvent.getParameter("selectedItems");
+            var aSelectedTypes = aSelectedItems.map(item => item.getTitle());
+            oController._aActiveClaimTypeFilters = aSelectedTypes;
+
+            var oModel = oController.getView().getModel(sModelName);
+            var sFullListPath = sListPath + '_full';
+
+            if (!oModel.getProperty(sFullListPath)) {
+                oModel.setProperty(sFullListPath, [...oModel.getProperty(sListPath)]);
+            }
+
+            var aFullList = oModel.getProperty(sFullListPath);
+
+            var aFiltered = aSelectedTypes.length
+                ? aFullList.filter(item => aSelectedTypes.includes(item.CLAIM_TYPE_DESC))
+                : aFullList;
+
+            oModel.setProperty(sListPath, aFiltered);
+            oModel.setProperty(sCountPath, aFiltered.length);
+        },
+
+
+
+        /**
+         * @public
+         * Updates footer buttons based on view mode and claim status.
+         *
+         * @param {sap.ui.core.mvc.View} oView - The view containing footer buttons.
+         * @param {sap.ui.model.Model} oClaimModel - Model providing claim status data.
+         * @param {object} oConstants - Constants for claim statuses and footer modes.
+         * @param {string} sMode - Footer mode (SUMMARY, DETAILS, APPROVER, VIEW_ONLY).
+         * @returns {void} - No return value.
+         */
+
+        updateFooterState: function (oView, oClaimModel, oConstants, sMode) {
+            if (!oView || !oClaimModel || !oConstants) return;
+
+            const sStatusId = oClaimModel.getProperty("/claim_header/status_id");
+
+            const oButtons = {
+                oBtnReject: oView.byId("button_claimapprover_reject"),
+                oBtnSendBack: oView.byId("button_claimapprover_pushback"),
+                oBtnApprove: oView.byId("button_claimapprover_approve"),
+
+                oBtnSaveDraft: oView.byId("button_claimsubmission_savedraft"),
+                oBtnDelete: oView.byId("button_claimsubmission_deletereport"),
+                oBtnSubmit: oView.byId("button_claimsubmission_submitreport"),
+                oBtnBack: oView.byId("button_claimsubmission_back"),
+
+                oBtnDetailSave: oView.byId("button_claimdetails_input_save"),
+                oBtnCancel: oView.byId("button_claimdetails_input_cancel")
+            };
+
+            Object.values(oButtons).forEach(oButton => oButton?.setVisible(false));
+
+            const oModeButtons = {
+                SUMMARY: ["oBtnSaveDraft", "oBtnDelete", "oBtnSubmit", "oBtnBack"],
+                DETAILS: ["oBtnDetailSave", "oBtnCancel"],
+                APPROVER: ["oBtnReject", "oBtnSendBack", "oBtnApprove", "oBtnBack"],
+                VIEW_ONLY: ["oBtnBack"]
+            };
+
+            const aVisibleKeys = oModeButtons[sMode] || [];
+            aVisibleKeys.forEach(sButtonKey => {
+                oButtons[sButtonKey]?.setVisible(true);
+            });
+
+            const bIsFinalStatus =
+                sStatusId === oConstants.ClaimStatus.CANCELLED ||
+                sStatusId === oConstants.ClaimStatus.PENDING_APPROVAL ||
+                sStatusId === oConstants.ClaimStatus.APPROVED ||
+                sStatusId === oConstants.ClaimStatus.COMPLETED_DISBURSEMENT;
+
+            if (bIsFinalStatus) {
+                if (sMode === oConstants.ClaimFooterMode.APPROVER && sStatusId === oConstants.ClaimStatus.APPROVED) {
+                    oButtons.oBtnReject?.setVisible(false);
+                    oButtons.oBtnSendBack?.setVisible(false);
+                    oButtons.oBtnApprove?.setVisible(false);
+                }
+
+                oButtons.oBtnSaveDraft?.setEnabled(false);
+                oButtons.oBtnDelete?.setEnabled(false);
+                oButtons.oBtnSubmit?.setEnabled(false);
+
+            } else {
+
+                oButtons.oBtnSaveDraft?.setEnabled(true);
+                oButtons.oBtnDelete?.setEnabled(true);
+
+                const bAllowSubmit =
+                    sStatusId === oConstants.ClaimStatus.DRAFT ||
+                    sStatusId === oConstants.ClaimStatus.SEND_BACK;
+
+                oButtons.oBtnSubmit?.setEnabled(bAllowSubmit);
+            }
+        }
 
     };
     });
