@@ -434,7 +434,7 @@ sap.ui.define([
             var _oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 
             const _sSubmissionType = sId.substring(0, 3);
-            var _dMaxDate = new Date();
+            var _dMaxDate = null;
 
             switch (sFieldName) {
                 case Constants.EntitiesFields.RECEIPT_DATE:
