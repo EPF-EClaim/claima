@@ -2425,7 +2425,7 @@ sap.ui.define([
 		},
 
 		/* =========================================================
-		* Approver Functions (Aiman)
+		* xml onchange event trigger
 		* ======================================================= */
 
 		onInputAllocatedAmount: function () {
