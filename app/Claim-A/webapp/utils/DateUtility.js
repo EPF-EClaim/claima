@@ -521,7 +521,7 @@ sap.ui.define([
                                     _oResourceBundle.getText("error_start_date_moveindate_maxdate"));
                                 break;
                             } else {
-                                _dMaxDate = new Date(oItem["end_date"]);
+                                _dMaxDate = !!oItem["end_date"] ? new Date(oItem["end_date"]) : null;
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
                                     _oResourceBundle.getText("error_start_date_maxdate"));
