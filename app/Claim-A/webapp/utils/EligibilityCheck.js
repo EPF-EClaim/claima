@@ -25,6 +25,7 @@ sap.ui.define([
 					var oItemData		= oController._oReqModel.getProperty('/req_item');
 					var aItemPartData	= oController._oReqModel.getProperty('/participant');
 					var sRecordId		= oController._oReqModel.getProperty('/req_header/reqid');
+					var sRecordSubId	= oController._oReqModel.getProperty('/req_item/req_subid');
 					var sClaimType		= oController._oReqModel.getProperty('/req_header/claimtype');
 					var sClaimTypeItem	= oItemData.claim_type_item_id;
 
@@ -51,6 +52,7 @@ sap.ui.define([
 					var aItemPartData	= [{PARTICIPANTS_ID: sEmpId}];
 					var oItemData		= oItemModel.getProperty('/claim_item');
 					var sRecordId		= oHeaderModel.getProperty("/claim_header/claim_id");
+					var sRecordSubId	= oHeaderModel.getProperty('/claim_item/claim_sub_id');
 					var sClaimType		= oHeaderModel.getProperty('/claim_header/claim_type_id');
 					var sClaimTypeItem	= oItemData.claim_type_item_id;
 
@@ -99,6 +101,7 @@ sap.ui.define([
 					aPayload.push({
 						EmpId: row.PARTICIPANTS_ID,
 						RecordId: sRecordId,
+						RecordSubId: sRecordSubId,
 						ClaimType: sClaimType,
 						ClaimTypeItem: sClaimTypeItem,
 						CheckFields: aNewActiveFields 
