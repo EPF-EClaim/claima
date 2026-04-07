@@ -421,6 +421,7 @@ sap.ui.define([
                     break;
             }
             if (_dMinDate !== null) {
+                _dMinDate = new Date(_dMinDate);
                 _dMinDate.setHours(0, 0, 0, 0);
             }
             return _dMinDate;
@@ -570,6 +571,7 @@ sap.ui.define([
             }
 
             if (_dMaxDate !== null) {
+                _dMaxDate = new Date(_dMaxDate);
                 _dMaxDate.setHours(0, 0, 0, 0);
             }
             return _dMaxDate;
