@@ -211,6 +211,10 @@ entity ZREQUEST_ITEM : managed {
         TRIP_END_TIME              : Time;
         TRAVEL_DURATION_DAY        : Decimal(3, 1);
         TRAVEL_DURATION_HOUR       : Decimal(4, 1);
+        ENTITLED_BREAKFAST         : Integer;
+        ENTITLED_LUNCH             : Integer;
+        ENTITLED_DINNER            : Integer;
+        DAILY_ALLOWANCE            : Integer;
         ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
                                          on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT               : Association to one ZMARITAL_CAT
@@ -368,6 +372,7 @@ entity ZCLAIM_HEADER : managed {
         APPROVER3                      : String(6);
         APPROVER4                      : String(6);
         APPROVER5                      : String(6);
+        SESSION_NUMBER                 : String(15);
         ZCLAIM_ITEM                    : Composition of many ZCLAIM_ITEM
                                              on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
         ZEMP_MASTER                    : Association to one ZEMP_MASTER
