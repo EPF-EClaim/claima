@@ -14,7 +14,7 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.Dashboard", {
 
-		formatter: DateUtility,
+		DateUtility: DateUtility,
 		onInit: function () {
 			this._oRouter = this.getOwnerComponent().getRouter();
 			this._oDashboardModel = new JSONModel({

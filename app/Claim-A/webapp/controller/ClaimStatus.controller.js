@@ -25,7 +25,7 @@ sap.ui.define([
 
 	return Controller.extend("claima.controller.ClaimStatus", {
 
-		formatter: DateUtility,
+		DateUtility: DateUtility,
 		onInit: function () {
 			// Track current sort direction per path: true = DESC, false = ASC
 			this._mSortState = {};

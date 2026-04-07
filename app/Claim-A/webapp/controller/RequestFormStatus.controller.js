@@ -30,7 +30,7 @@ sap.ui.define([
 		* Lifecycle
 		* ======================================================= */
 
-		formatter: DateUtility,
+		DateUtility: DateUtility,
 		onInit() {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oRouter = this.getOwnerComponent().getRouter();

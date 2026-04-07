@@ -158,7 +158,7 @@
                             <Text text="{claim_status2>STATUS_DESC}" />
                             <Text text="{ 
                                         path: 'claim_status2>modifiedAt',
-                                        formatter: '.formatter.convertUTCToLocal' 
+                                        formatter: '.DateUtility.convertUTCToLocal' 
                                     }"
                             />
                            

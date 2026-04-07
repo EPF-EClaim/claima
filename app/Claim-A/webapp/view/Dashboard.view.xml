@@ -206,7 +206,7 @@
                                                     <Text
                                                         text="{ 
                                                                 path: 'dashboardModel>modifiedAt',
-                                                                formatter: '.formatter.convertUTCToLocal' 
+                                                                formatter: '.DateUtility.convertUTCToLocal' 
                                                             }"
                                                     />
                                                 </cells>
@@ -336,7 +336,7 @@
                                                     <Text
                                                         text="{ 
                                                                 path: 'dashboardModel>modifiedAt',
-                                                                formatter: '.formatter.convertUTCToLocal' 
+                                                                formatter: '.DateUtility.convertUTCToLocal' 
                                                             }"
                                                     />
                                                 </cells>
@@ -469,7 +469,7 @@
                                                     <Text
                                                         text="{ 
                                                                 path: 'dashboardModel>modifiedAt',
-                                                                formatter: '.formatter.convertUTCToLocal' 
+                                                                formatter: '.DateUtility.convertUTCToLocal' 
                                                             }"
                                                     />
                                                 </cells>

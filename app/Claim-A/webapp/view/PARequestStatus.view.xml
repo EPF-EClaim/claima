@@ -248,7 +248,7 @@
                             <Text text="{request_status>STATUS_DESC}" />
                             <Text text="{ 
                                         path: 'request_status>modifiedAt',
-                                        formatter: '.formatter.convertUTCToLocal' 
+                                        formatter: '.DateUtility.convertUTCToLocal' 
                                     }"
                             />
                         </cells>
