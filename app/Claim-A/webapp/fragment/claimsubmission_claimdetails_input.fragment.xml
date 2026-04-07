@@ -30,6 +30,7 @@
             />
         </OverflowToolbar>
         <f:SimpleForm
+            id="idClaimSubmissionDetailInput"
             editable="false"
             layout="ColumnLayout"
             labelSpanXL="5"

@@ -2533,7 +2533,7 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
 			// Validate required fields
-			if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
+			if (!this.getOwnerComponent().getValidator().validate(this.byId('idClaimSubmissionDetailInput'))) {
 				MessageBox.error(Utility.getText("msg_claiminput_required"), {
 					closeOnBrowserNavigation: false
 				});
