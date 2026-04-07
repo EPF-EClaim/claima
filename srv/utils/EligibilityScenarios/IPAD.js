@@ -1,6 +1,7 @@
 const { Constant } = require("../constant");
 const ComparisonOperators = require('../ComparisonOperators')
-const GetHistoricalData = require('../GetHistoricalData')
+const GetHistoricalData = require('../GetHistoricalData');
+const BuildSelectWhereConditions = require("../BuildSelectWhereConditions");
 module.exports = {
     /**
          * main function for eligibility check - to find the matching eligibility rule and call validateClaimItem function to validate against the rule
@@ -14,7 +15,7 @@ module.exports = {
         var oRule = aRules[0];
         var iHistoricalData = await this._getHistoricalData(oPayload, oRule, tx);
         var iCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oRule, tx);
-
+        return iCurrentRecordItemData;
         // console.log(iHistoricalData, iCurrentRecordItemData);
         this._validateClaimItem(oRule, oPayload, iHistoricalData + iCurrentRecordItemData);
         return oPayload;
@@ -93,42 +94,64 @@ module.exports = {
         // get Historical Claims Data
         // find field for date
         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
-        sMonth = parseInt(oPayload.CheckFields[iIndex].value.substring(6, 8));
-        sYear = parseInt(oPayload.CheckFields[iIndex].value.substring(0, 4));
+        // sMonth = parseInt(oPayload.CheckFields[iIndex].value.substring(6, 8));
+        // sYear = parseInt(oPayload.CheckFields[iIndex].value.substring(0, 4));
 
-        switch (oRule.PERIOD) {
-            case Constant.FrequencyPeriod.MONTH:
-                // need to search as "##"
-                if (sMonth < 10) {
-                    sMonth = Constant.Wildcard.ZERO + sMonth;
-                }
-                break;
+        // switch (oRule.PERIOD) {
+        //     case Constant.FrequencyPeriod.MONTH:
+        //         // need to search as "##"
+        //         if (sMonth < 10) {
+        //             sMonth = Constant.Wildcard.ZERO + sMonth;
+        //         }
+        //         break;
 
-            default:
-                break;
-        }
-        sDate = sYear + Constant.Wildcard.DASH + sMonth + Constant.Wildcard.DASH;
-        sDate = sDate + Constant.Wildcard.LIKE_PATTERN;
+        //     default:
+        //         break;
+        // }
+        // sDate = sYear + Constant.Wildcard.DASH + sMonth + Constant.Wildcard.DASH;
+        // sDate = sDate + Constant.Wildcard.LIKE_PATTERN;
 
-        //Map Headers
-        // Map ClaimID or RequestID based on which HeaderTable to use
-        if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
-            sHeaderField = Constant.EntitiesFields.CLAIMID;
-        } else {
-            sHeaderField = Constant.EntitiesFields.REQUESTID;
-        }
+        // //Map Headers
+        // // Map ClaimID or RequestID based on which HeaderTable to use
+        // if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
+        //     sHeaderField = Constant.EntitiesFields.CLAIMID;
+        // } else {
+        //     sHeaderField = Constant.EntitiesFields.REQUESTID;
+        // }
+
+        // const aCurrentItemcondition = {
+        //     [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
+        //     [sHeaderField]: oPayload.RecordId,
+        //     [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
+        //     [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
+        //     [Constant.EntitiesFields.RECEIPT_DATE]: { LIKE: sDate }
+        // };
+
+        // return iCurrentData = await GetHistoricalData.getCurrentItemData(Constant.Entities.ZCLAIM_ITEM,
+        //     aCurrentItemcondition,
+        //     tx);
+
+        const sYearMonth = oPayload.CheckFields[iIndex].value.substring(0, 7);
+        // Derive first and last day of the month
+        const [year, month] = sYearMonth.split('-').map(Number);
+        const dDateFrom = `${sYearMonth}-01`;
+        const dDateTo = new Date(year, month, 0)  // last day of month
+            .toISOString().split('T')[0]; // 'YYYY-MM-DD'
 
         const aCurrentItemcondition = {
             [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
-            [sHeaderField]: oPayload.RecordId,
             [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
             [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
-            [Constant.EntitiesFields.RECEIPT_DATE]: { LIKE: sDate }
+            [Constant.EntitiesFields.RECEIPT_DATE]: { between: [dDateFrom, dDateTo] }
         };
 
-        return iCurrentData = await GetHistoricalData.getCurrentItemData(Constant.Entities.ZCLAIM_ITEM,
-            aCurrentItemcondition,
-            tx);
+        const sConditions = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
+
+        const aItemData = await tx.run(
+            SELECT.from(Constant.Entities.ZCLAIM_ITEM).where(`${sConditions}`)
+        );
+        console.log(aItemData.length);
+        return aItemData;
     },
 
     /**

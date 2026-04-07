@@ -196,7 +196,11 @@ const Constant = {
     },
     ComparisonOperators:{
         "LesserEquals": "<=",
-        "GreaterEquals": ">="
+        "GreaterEquals": ">=",
+        "Equals": "="
+    },
+    WhereCondition: {
+        "AND": "AND"
     }
 
 };
