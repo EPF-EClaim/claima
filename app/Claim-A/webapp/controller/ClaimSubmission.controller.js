@@ -325,7 +325,10 @@ sap.ui.define([
 					if (oApprovalLogFragment && iApproverCount > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
 						var sUserId = this._oSessionModel.getProperty("/userId");
 						if (sUserId) {
-							let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) => oApproval.APPROVER_ID === sUserId);
+							let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) =>
+								oApproval.APPROVER_ID === sUserId ||
+								oApproval.SUBSTITUTE_APPROVER_ID === sUserId
+							);
 							if (iItemIndex !== -1) {
 								oClaimSubmissionModel.setProperty("/is_approver", true);
 							}
@@ -2959,10 +2962,10 @@ sap.ui.define([
 			}
 		},
 
-        /**
-         * run related methods on setting start/end date
-         * @public
-         */
+		/**
+		 * run related methods on setting start/end date
+		 * @public
+		 */
 		onChange_ClaimDetails_StartEndDate: async function () {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
