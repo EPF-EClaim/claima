@@ -86,7 +86,7 @@
                 id="claimitemTable"
                 width="90%"
                 items="{path: 'Items',sorter : { path : 'modifiedAt', descending: false }}"
-                mode="SingleSelectLeft"
+                mode="MultiSelect"
                 selectionChange="onSelectionChange"
                 includeItemInSelection="true"
             >
@@ -99,6 +99,9 @@
                     </Column>
                     <Column>
                         <Text text="{i18n>categoryid}" />
+                    </Column>
+                    <Column>
+                        <Text text="{i18n>req_cc}" />
                     </Column>
                     <Column>
                         <Text text="{i18n>materialcode}" />
@@ -126,6 +129,7 @@
                             <Text text="{CLAIM_TYPE_ITEM_ID}" />
                             <Text text="{CLAIM_TYPE_ITEM_DESC}" />
                             <Text text="{CATEGORY_ID}" />
+                            <Text text="{COST_CENTER}" />
                             <Text text="{MATERIAL_CODE}" />
                             <Text text="{RISK}" />
                             <Text text="{SUBMISSION_TYPE}" />

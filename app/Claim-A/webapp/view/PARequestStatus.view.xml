@@ -246,7 +246,11 @@
                                 }"
                             />
                             <Text text="{request_status>STATUS_DESC}" />
-                            <Text text="{request_status>modifiedAt}" />
+                            <Text text="{ 
+                                        path: 'request_status>modifiedAt',
+                                        formatter: '.DateUtility.convertUTCToLocal' 
+                                    }"
+                            />
                         </cells>
                     </ColumnListItem>
                 </items>

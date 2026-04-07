@@ -1034,13 +1034,12 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             ZTOSTATE.STATE_DESC;
 
 
-    entity ZCLM_COURSE_VIEW               as
-        select from ECLAIM.ZTRAIN_COURSE_PART {
+    entity ZCLM_COURSE_VIEW_VH               as projection on ECLAIM.ZTRAIN_COURSE_PART {
             key COURSE_ID,
-                PARTICIPANT_ID,
+            key PARTICIPANT_ID,
                 COURSE_DESC,
                 COURSE_SESSION_STAT,
-                ATTENDENCE_STATUS,
+                ATTENDENCE_STATUS
         }
         group by
             COURSE_ID,
