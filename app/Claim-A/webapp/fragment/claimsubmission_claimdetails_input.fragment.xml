@@ -252,11 +252,9 @@
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
 							maxIntegerDigits: 16,
-							preserveDecimals: false,
-							constraints: {
-								minimum: 0.01
-							}
-						}
+							preserveDecimals: false
+                        },
+                        constraints: { minimum: 0.01 }
 					}"
 					required="true"
 					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
@@ -651,11 +649,9 @@
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
 							maxIntegerDigits: 6,
-							preserveDecimals: false,
-							constraints: {
-								minimum: 0
-							}
-						}
+							preserveDecimals: false
+                        },
+                        constraints: { minimum: 0.01 }
 					}"
 					change="onChange_ClaimDetails_Kilometer"
 					liveChange="onChange_ClaimDetails_Kilometer"
@@ -726,11 +722,9 @@
 							minFractionDigits: 2,
 							maxFractionDigits: 2,
 							maxIntegerDigits: 16,
-							preserveDecimals: false,
-							constraints: {
-								minimum: 0
-							}
-						}
+							preserveDecimals: false
+                        },
+                        constraints: { minimum: 0.00 }
 					}"
 					change="onChange_ClaimDetails_Toll"
 					liveChange="onChange_ClaimDetails_Toll"
