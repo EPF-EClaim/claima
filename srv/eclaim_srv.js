@@ -212,8 +212,9 @@ module.exports = (srv) => {
 
             //if record hasnt been created yet, direct insert record into database
             //else, update the record but exclude the commitment, actual, consumed
+            //IS to exclude current budget, commitment, actual, consumed and budget balance from payload
             for (const row of budget) {
-
+            
                 const existing = await tx.read(ZBUDGET)
                     .where({
                         YEAR: row.YEAR,
@@ -237,7 +238,6 @@ module.exports = (srv) => {
                         currentBudget: row.CURRENT_BUDGET,
                         budgetBalance: row.BUDGET_BALANCE
                     });
-
                 } else {
                     const excludeFields = Constant.BudgetUpload.EXCLUDE_FIELDS;
 
@@ -249,8 +249,9 @@ module.exports = (srv) => {
                     virement_out = Number(row.VIREMENT_OUT) || 0;
                     supplement = Number(row.SUPPLEMENT) || 0;
                     return_value = Number(row.RETURN) || 0;
-                    current_budget = Number(row.CURRENT_BUDGET) || 0;
-                    consumed = Number(row.CONSUMED) || 0;
+
+                    current_budget = Number(existing[0].CURRENT_BUDGET);
+                    consumed = Number(existing[0].CONSUMED);
 
                     var total_budget = original_budget + virement_in + virement_out + supplement + return_value;
                     var total_budget_balance = current_budget + consumed;
@@ -1196,6 +1197,33 @@ module.exports = (srv) => {
         }
     });
 
+    srv.on('getOfficeDistance', async (req) => {
+        const { 
+            sFromState,
+            sFromOffice,
+            sToState,
+            sToOffice
+        } = req.data;
+
+        try {
+            const oRoute = await SELECT.one.from('ZOFFICE_DISTANCE').where({
+                FROM_STATE_ID: sFromState,
+                FROM_LOCATION_ID: sFromOffice,
+                TO_STATE_ID: sToState,
+                TO_LOCATION_ID: sToOffice
+            });
+            
+            if (oRoute) {
+                return oRoute.MILEAGE; 
+            } 
+            
+            return req.error(404, 'No distance record found for the selected route.');
+
+        } catch (error) {
+            return req.error(500, `Failed to retrieve mileage: ${error.message}`);
+        }
+    });
+    
     /**
     * Function to check if Pre-approval request has been used for claim submission
     * Show warning if Pre-approval request has been used, exclude REJECT & CANCEL status
