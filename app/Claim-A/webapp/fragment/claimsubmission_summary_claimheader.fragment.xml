@@ -103,7 +103,11 @@
                     text="{i18n>label_claimsummary_claimheader_tripstartdate}"
                     required="true"
                     tooltip="{i18n>valuehelp_claiminput_tripdate}"
+                    required="true"
+                    tooltip="{i18n>valuehelp_claiminput_tripdate}"
                 />
+                
+                <DatePicker
                 
                 <DatePicker
                     id="text_claimsummary_claimheader_tripstartdate"
@@ -120,7 +124,10 @@
                     text="{i18n>label_claimsummary_claimheader_tripenddate}"
                     required="true"
                     tooltip="{i18n>valuehelp_claiminput_tripdate}"
+                    required="true"
+                    tooltip="{i18n>valuehelp_claiminput_tripdate}"
                 />
+                <DatePicker
                 <DatePicker
                     id="text_claimsummary_claimheader_tripenddate"
                     editable="{claimSubmissionHeaderEditableModel>/endTrip}"
@@ -135,7 +142,9 @@
                 <Label
                     text="{i18n>label_claimsummary_claimheader_eventstartdate}"
                     tooltip="{i18n>valuehelp_claiminput_eventdate}"
+                    tooltip="{i18n>valuehelp_claiminput_eventdate}"
                 />
+                <DatePicker
                 <DatePicker
                     id="text_claimsummary_claimheader_eventstartdate"
                     editable="{claimSubmissionHeaderEditableModel>/startEvent}"
@@ -150,7 +159,9 @@
                 <Label
                     text="{i18n>label_claimsummary_claimheader_eventenddate}"
                     tooltip="{i18n>valuehelp_claiminput_eventdate}"
+                    tooltip="{i18n>valuehelp_claiminput_eventdate}"
                 />
+                <DatePicker
                 <DatePicker
                     id="text_claimsummary_claimheader_eventenddate"
                     editable="{claimSubmissionHeaderEditableModel>/endEvent}"
@@ -207,6 +218,7 @@
                 <!-- Comment -->
                 <Label text="{i18n>label_claimsummary_claimheader_comment}" />
                 <Input
+                <Input
                     id="text_claimsummary_claimheader_comment"
                     editable="{claimSubmissionHeaderEditableModel>/comment}"
                     value="{claimsubmission_input>/claim_header/comment}"
@@ -214,6 +226,7 @@
 
                 <!-- Location -->
                 <Label text="{i18n>label_claimsummary_claimheader_location}" />
+                <Input
                 <Input
                     id="text_claimsummary_claimheader_location"
                     editable="{claimSubmissionHeaderEditableModel>/location}"

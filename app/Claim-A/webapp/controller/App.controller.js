@@ -906,7 +906,7 @@ sap.ui.define([
 				});
 				return;
 			}
-
+			
 			// validate attachment
 			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
 				BusyIndicator.show(0);
