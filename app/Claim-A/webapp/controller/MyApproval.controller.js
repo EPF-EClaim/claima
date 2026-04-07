@@ -472,7 +472,7 @@ sap.ui.define([
                 approver4: null,
                 approver5: null,
                 last_send_back_date: null,
-                course_code: null,
+                course_code: o.COURSE_CODE,
                 project_code: null,
                 cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
                 preapproved_amount: o.PREAPPROVED_AMOUNT,
@@ -490,7 +490,7 @@ sap.ui.define([
                     claim_type_id: o.CLAIM_TYPE_DESC,
                     housing_loan_scheme: null,
                     lender_name: null,
-                    course_code: null,
+                    course_code: o.COURSE_CODE_DESC,
                     project_code: null,
                     attachment_email_approver: null,
                 }

@@ -25,6 +25,10 @@ sap.ui.define([
             "ELAUN_PINDAH": "ELAUN_PINDAH",
             "HANDPHONE": "HANDPHONE"
         },
+        "ClaimTypeKursus": {
+            "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
+            "KURSUS_LUAR_NEGARA": "KURSUS_LUAR_NEGARA"
+        },
         "ClaimTypeItem": {
             "BAGAI": "BAGAI",
             "BYR_YURAN": "BYR_YURAN",
@@ -174,6 +178,7 @@ sap.ui.define([
             "ZEMP_APPROVER_CLAIM_DETAILS": "/ZEMP_APPROVER_CLAIM_DETAILS",
             "ZEMP_CLAIM_BUDGET_CHECK": "/ZEMP_CLAIM_BUDGET_CHECK",
             "ZEMP_CLAIM_DETAILS": "/ZEMP_CLAIM_DETAILS",
+            "ZEMP_DEPENDENT": "/ZEMP_DEPENDENT",
             "ZEMP_MASTER": "/ZEMP_MASTER",
             "ZEMP_REQUEST_BUDGET_CHECK": "/ZEMP_REQUEST_BUDGET_CHECK",
             "ZEMP_SUBSTITUTION_RULE": "/ZEMP_SUBSTITUTION_RULE",
@@ -186,6 +191,7 @@ sap.ui.define([
             "ZCLAIM_HEADER": "/ZCLAIM_HEADER",
             "ZSUBMISSION_TYPE": "/ZSUBMISSION_TYPE",
             "ZSUBSTITUTION_RULES": "/ZSUBSTITUTION_RULES",
+            "ZTRAIN_COURSE_PART": "/ZTRAIN_COURSE_PART",
             "ZWORKFLOW_RULE": "/ZWORKFLOW_RULE",
             "ZWORKFLOW_STEP": "/ZWORKFLOW_STEP",
             "ZREJECT_REASON": "/ZREJECT_REASON"
@@ -227,6 +233,9 @@ sap.ui.define([
             "SUBMITTED_DATE": "SUBMITTED_DATE",
             "BILL_DATE": "BILL_DATE",
             "RECEIPT_DATE": "RECEIPT_DATE",
+            "START_DATE": "START_DATE",
+            "END_DATE": "END_DATE",
+            "MOVE_IN_DATE": "MOVE_IN_DATE",
             "INSURANCE_PURCH_DATE": "INSURANCE_PURCH_DATE",
             "INSURANCE_CERT_START_DATE": "INSURANCE_CERT_START_DATE",
             "INSURANCE_CERT_END_DATE": "INSURANCE_CERT_END_DATE",
@@ -262,6 +271,14 @@ sap.ui.define([
             "FI_SETTLEMENT_A": "FI_SETTLEMENT_A",
             "FI_SETTLEMENT_B": "FI_SETTLEMENT_B",
             "HOD_JKEW": "HOD_JKEW"
+        },
+        "EmployeeType": {
+            "PERMANENT": "A",
+            "CONTRACTOR": "B",
+            "PROTEGE": "C",
+            "INTERN": "D",
+            "RETIREE": "E",
+            "CONTRACTOR2": "F"
         },
         "Configuration": {
             "ZEMP_MASTER": "ZEMP_MASTER",
@@ -353,9 +370,12 @@ sap.ui.define([
             "SPOUSE": "01"
         },
         "MaritalStatus": {
+            "WIDOWED": "W",
+            "SINGLE": "S",
             "MARRIED": "M",
-            "SINGLE": "S"
-        }, 
+            "ENGAGED": "E",
+            "DIVORCED": "D"
+        },
         "MeterCubeId": {
             "EMPLOYEE": "01",
             "SINGLE": "02",
@@ -367,6 +387,9 @@ sap.ui.define([
         },
         "Status" : {
             "ACTIVE" : "ACTIVE"
+        },
+        "CourseSessionStatus" : {
+            "ACTIVE" : "1"
         },
         "Claim_Action" : {
             "DRAFT" : "Save Draft",
