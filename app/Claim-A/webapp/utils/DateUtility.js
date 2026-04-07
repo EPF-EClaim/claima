@@ -61,6 +61,13 @@ sap.ui.define([
         },
 
         /**
+         * Convert to local datetime
+         */
+        convertUTCToLocal: function(dUTCDate) {
+            return !!dUTCDate ? new Date(dUTCDate).toLocaleString() : dUTCDate;  //converts UTC → local timezone
+        },
+
+        /**
          * Format date into Timestamp(9) format: YYYY-MM-DD HH:MM:SS.FFFFFF
          */
         formatTimestamp9: function (vDate, oOptions = { utc: true }) {
@@ -409,6 +416,7 @@ sap.ui.define([
                     break;
             }
             if (_dMinDate !== null) {
+                _dMinDate = new Date(_dMinDate);
                 _dMinDate.setHours(0, 0, 0, 0);
             }
             return _dMinDate;
@@ -434,7 +442,7 @@ sap.ui.define([
             var _oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 
             const _sSubmissionType = sId.substring(0, 3);
-            var _dMaxDate = new Date();
+            var _dMaxDate = null;
 
             switch (sFieldName) {
                 case Constants.EntitiesFields.RECEIPT_DATE:
@@ -569,6 +577,7 @@ sap.ui.define([
             }
 
             if (_dMaxDate !== null) {
+                _dMaxDate = new Date(_dMaxDate);
                 _dMaxDate.setHours(0, 0, 0, 0);
             }
             return _dMaxDate;
