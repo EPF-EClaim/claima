@@ -2546,6 +2546,28 @@ sap.ui.define([
 			const oInputAmountField = this.byId("input_claimdetails_input_amount");
 			const oInputActualAmountField = this.byId("input_claimdetails_input_actual_amount");
 
+			// Check for amount field visibility and value
+			if (oInputAmountField && oInputAmountField.getVisible()) {
+				const sInputAmount = oInputAmountField.getValue()?.trim().replace(/[^0-9.-]+/g, "");
+				const fInputAmount = parseFloat(sInputAmount);
+				if (isNaN(fInputAmount) || fInputAmount <= 0) {
+					// stop claim submission if amount is zero or less
+					MessageBox.error(Utility.getText("msg_claiminput_amount_invalid"));
+					return;
+				}
+			}
+
+			// Check for actual amount field visibility and value
+			if (oInputActualAmountField && oInputActualAmountField.getVisible()) {
+				const sInputActualAmount = oInputActualAmountField.getValue()?.trim().replace(/[^0-9.-]+/g, "");
+				const fInputActualAmount = parseFloat(sInputActualAmount);
+				if (isNaN(fInputActualAmount) || fInputActualAmount <= 0) {
+					// stop claim submission if amount is zero or less
+					MessageBox.error(Utility.getText("msg_claiminput_amount_invalid"));
+					return;
+				}
+			}
+
 			// Reuben End Issue 17
 
 
