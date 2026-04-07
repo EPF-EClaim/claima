@@ -4691,6 +4691,8 @@ sap.ui.define([
 				if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/currency_code", oResult.currency_code);
 					oClaimItemInputModel.setProperty("/claim_item/currency_amount", oResult.amount);
+					//initialize amount(MYR)
+					oClaimItemInputModel.setProperty("/claim_item/amount", 0);
 					if (this.byId("input_claimdetails_input_currency_rate").getVisible() && !!oClaimItemInputModel.getProperty("/claim_item/currency_rate")) {
 						var nAmountMYR = (oClaimItemInputModel.getProperty("/claim_item/currency_rate") * oClaimItemInputModel.getProperty("/claim_item/currency_amount"));
 						oClaimItemInputModel.setProperty("/claim_item/amount", nAmountMYR);
