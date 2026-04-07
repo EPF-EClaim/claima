@@ -30,7 +30,8 @@ sap.ui.define([
          * further processing.
          * @public
          */
-        validate: function (sSubmissionType) {
+        validate: async function (sSubmissionType) {
+            var bCanProceed = true;
             // Common validations (Applicable for both scenarios)
 
             // Type and Item Type checking (Applicable for both scenarios)
@@ -53,10 +54,10 @@ sap.ui.define([
 
                             if (fEnteredAmount > fMaxLimit) {
                                 MessageBox.error(Utility.getText("req_d_e_capped_amount", [fMaxLimit.toFixed(2)]));
-                                return false; 
+                                bCanProceed = false; 
                             } else if (fEnteredAmount < 0.00) {
                                 MessageBox.error(Utility.getText("req_d_e_neg_amount"));
-                                return false; 
+                                bCanProceed = false; 
                             }
                         }
                     }
@@ -70,14 +71,14 @@ sap.ui.define([
                             case Constants.ClaimTypeItem.TELEFON_B:
                                 if(!oInputModel.getProperty("/claim_item/disclaimer")) {
                                     MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
-                                    return false;
+                                    bCanProceed = false;
                                 }
                                 break;
                             
                             case Constants.ClaimTypeItem.GALAKAN:
                                 if(!oInputModel.getProperty("/claim_item/disclaimer_galakan")) {
                                     MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
-                                    return false;
+                                    bCanProceed = false;
                                 }
                                 break;
 
@@ -91,13 +92,14 @@ sap.ui.define([
                         for(var i = 0; i < aItems.length; i++){
                             if(aItems[i].amount == 0){
                                 MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
-                                return false;
+                                bCanProceed = false;
+                                break;
                             }
                         }
-                        break;
                     }
+                break;
             }
-            return true;
+            return bCanProceed;
         }
     };
 });
