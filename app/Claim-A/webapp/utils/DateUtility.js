@@ -308,7 +308,7 @@ sap.ui.define([
             var _oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 
             const _sSubmissionType = sId.substring(0, 3);
-            var _dMinDate = null;
+            var _dMinDate = new Date();
 
             switch (sFieldName) {
                 case Constants.EntitiesFields.RECEIPT_DATE:
@@ -325,7 +325,6 @@ sap.ui.define([
                             else if (sItemType === Constants.ClaimTypeItem.E_PENGAKUT) {
                                 // elaun pengangkutan related logic
                                 _dMinDate = new Date(oHeader.move_in_date);
-                                _dMinDate.setMonth(_dMinDate.getMonth() - 6);
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
                                     _oResourceBundle.getText("error_receiptdate_pengangkutan_mindate"));
@@ -333,8 +332,6 @@ sap.ui.define([
                             else {
                                 // Other Claim Type
                                 _dMinDate = null;
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
-                                    _oResourceBundle.getText("error_receiptdate_mindate"));
                             }
                             break;
                     }
@@ -345,14 +342,25 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            // set min date based on move-in date
-                            if (sType === Constants.ClaimTypeItem.MKN_LOAN) {
-                                _dMinDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : null;
+                            if (Object.values(Constants.ClaimTypeKursus).includes(sType)) {
+                                _dMinDate = new Date(oHeader.trip_start_date);
+                                // minus 1 day for course code claims
+                                _dMinDate.setDate(_dMinDate.getDate() - 1);
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                    _oResourceBundle.getText("error_start_date_kursus_mindate"));
+                            } else if (sItemType === Constants.ClaimTypeItem.MKN_LOAN) {
+                                // set min date based on move-in date
+                                _dMinDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oItem["start_date"] ? new Date(oItem["start_date"]) : null;
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
                                     _oResourceBundle.getText("error_start_date_moveindate_mindate"));
-                                break;
                             }
+                            else {
+                                // Other Claim Type
+                                _dMinDate = null;
+                            }
+                            break;
                     }
                     break;
                 case Constants.EntitiesFields.END_DATE:
@@ -361,35 +369,42 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            // set min date based on start date
                             if (Object.values(Constants.ClaimTypeKursus).includes(sType)) {
                                 if (!!new Date(oItem["start_date"]).getTime()) {
                                     _dMinDate = new Date(oItem["start_date"]);
+                                }
+                                else {
+                                    _dMinDate = new Date(oHeader.trip_start_date);
                                     // minus 1 day for course code claims
                                     _dMinDate.setDate(_dMinDate.getDate() - 1);
                                 }
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                    _oResourceBundle.getText("error_end_date_kursus_mindate"));
+                            } else if (sItemType === Constants.ClaimTypeItem.MKN_LOAN) {
+                                if (!!new Date(oItem["start_date"]).getTime()) {
+                                    _dMinDate = new Date(oItem["start_date"]);
+                                }
+                                else {
+                                    // set min date based on move-in date
+                                    _dMinDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oItem["start_date"] ? new Date(oItem["start_date"]) : null;
+                                }
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                    _oResourceBundle.getText("error_end_date_moveindate_mindate"));
+                            }
+                            else {
+                                if (!!new Date(oItem["start_date"]).getTime()) {
+                                    _dMinDate = new Date(oItem["start_date"]);
+                                }
                                 else {
                                     _dMinDate = null;
-                                    oItem["start_date"] = null;
                                 }
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
                                     _oResourceBundle.getText("error_end_date_mindate"));
-                            // set min date based on move-in date
-                            } else if (sType === Constants.ClaimTypeItem.MKN_LOAN) {
-                                _dMinDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oItem["start_date"] ? new Date(oItem["start_date"]) : null;
-                                // set validator error message
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
-                                    _oResourceBundle.getText("error_end_date_moveindate_mindate"));
-                                break;
                             }
-                            else {
-                                _dMinDate = oItem["start_date"];
-                                // set validator error message
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
-                                    _oResourceBundle.getText("error_end_date_mindate"));
-                                break;
-                            }
+                            break;
                     }
                     break;
                 case Constants.EntitiesFields.INSURANCE_CERT_END_DATE:
@@ -442,7 +457,7 @@ sap.ui.define([
             var _oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 
             const _sSubmissionType = sId.substring(0, 3);
-            var _dMaxDate = null;
+            var _dMaxDate = new Date();
 
             switch (sFieldName) {
                 case Constants.EntitiesFields.RECEIPT_DATE:
@@ -501,32 +516,41 @@ sap.ui.define([
                             if (Object.values(Constants.ClaimTypeKursus).includes(sType)) {
                                 if (!!new Date(oItem["end_date"]).getTime()) {
                                     _dMaxDate = new Date(oItem["end_date"]);
+                                }
+                                else {
+                                    _dMaxDate = new Date(oHeader.trip_end_date);
                                     // add 1 day for course code claims
                                     _dMaxDate.setDate(_dMaxDate.getDate() + 1);
                                 }
-                                else {
-                                    _dMaxDate = null;
-                                    oItem["end_date"] = null;
-                                }
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
-                                    _oResourceBundle.getText("error_start_date_maxdate"));
-                            } else if (sType === Constants.ClaimTypeItem.MKN_LOAN) {
-                                _dMaxDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oItem["end_date"] ? new Date(oHeader["max_date"]) : null;
-                                // add 1 day for elaun perpindahan makan
-                                if (_dMaxDate) {
-                                    _dMaxDate.setDate(_dMaxDate.getDate() + 1);
+                                    _oResourceBundle.getText("error_start_date_kursus_maxdate"));
+                            }
+                            else if (sItemType === Constants.ClaimTypeItem.MKN_LOAN) {
+                                if (!!new Date(oItem["end_date"]).getTime()) {
+                                    _dMaxDate = new Date(oItem["end_date"]);
+                                }
+                                else {
+                                    _dMaxDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oItem["end_date"] ? new Date(oHeader["max_date"]) : null;
+                                    // add 1 day for elaun perpindahan makan
+                                    if (_dMaxDate) {
+                                        _dMaxDate.setDate(_dMaxDate.getDate() + 1);
+                                    }
                                 }
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
                                     _oResourceBundle.getText("error_start_date_moveindate_maxdate"));
-                                break;
-                            } else {
-                                _dMaxDate = oItem["end_date"];
+                            }
+                            else {
+                                if (!!new Date(oItem["end_date"]).getTime()) {
+                                    _dMaxDate = new Date(oItem["end_date"]);
+                                }
+                                else {
+                                    _dMaxDate = null;
+                                }
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
                                     _oResourceBundle.getText("error_start_date_maxdate"));
-                                break;
                             }
                             break;
                     }
@@ -537,9 +561,17 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            // set max date based on move-in date + 1 day
-                            if (sType === Constants.ClaimTypeItem.MKN_LOAN) {
-                                _dMaxDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : null;
+                            if (Object.values(Constants.ClaimTypeKursus).includes(sType)) {
+                                _dMaxDate = new Date(oHeader.trip_end_date);
+                                // add 1 day for course code claims
+                                _dMaxDate.setDate(_dMaxDate.getDate() + 1);
+                                // set validator error message
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                    _oResourceBundle.getText("error_end_date_kursus_maxdate"));
+                            }
+                            else if (sItemType === Constants.ClaimTypeItem.MKN_LOAN) {
+                                // set max date based on move-in date + 1 day
+                                _dMaxDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oItem["end_date"] ? new Date(oHeader["max_date"]) : null;
                                 // add 1 day for elaun perpindahan makan
                                 if (_dMaxDate) {
                                     _dMaxDate.setDate(_dMaxDate.getDate() + 1);
@@ -547,9 +579,12 @@ sap.ui.define([
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
                                     _oResourceBundle.getText("error_end_date_moveindate_maxdate"));
-                                break;
                             }
-                            break;
+                            else {
+                                // Other Claim Type
+                                _dMaxDate = null;
+                            }
+                           break;
                     }
                     break;
                 case Constants.EntitiesFields.INSURANCE_CERT_START_DATE:
