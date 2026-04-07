@@ -105,10 +105,20 @@ sap.ui.define([
                                 return false;
                             }
                         }
-                        break;
                     }
+
+                    
             }
             return true;
-        }
+        },
+
+        _onReceiptCheck: function(){
+			return new Promise(function(resolve){
+				MessageBox.warning(Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"), {
+					actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
+					onClose: resolve
+				});
+			});
+		}
     };
 });

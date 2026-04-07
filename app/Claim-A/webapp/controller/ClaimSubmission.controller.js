@@ -2676,6 +2676,13 @@ sap.ui.define([
 				}
 			}
 
+			if(oInputModel.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel.getProperty("/claim_header/trip_start_date") ){
+				const oResult = await CustomValidator._onReceiptCheck();
+
+				if(oResult != MessageBox.Action.OK){
+					return false;
+				}
+			}
 
 			//FUT issue #58
 			//checking for galakan disclaimer if its ticked or not
@@ -2683,7 +2690,7 @@ sap.ui.define([
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 			if (!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
 				return;
-			}
+			}	
 
 			//FUT issue #81
 			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
@@ -4732,6 +4739,5 @@ sap.ui.define([
 			}
 			oClaimSubmissionModel.setProperty("/claim_items", aItems);
 		},
-
 	});
 });
