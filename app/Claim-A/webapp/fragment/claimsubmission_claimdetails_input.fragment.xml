@@ -491,6 +491,9 @@
 					id="input_claimdetails_input_insurance_provider_name"
 					value="{claimitem_input>/claim_item/insurance_provider_name}"
 					visible="{= ${claimitem_input>/claim_item/insurance_provider_id} === ${constant>/InsuranceProvider/OTHERS}}"
+					editable="{= !${claimsubmission_input>/view_only} &amp;&amp;
+						${claimitem_input>/claim_item/insurance_provider_id} === ${constant>/InsuranceProvider/OTHERS}
+					}"
 				/>
 
 				<!-- Insurance Package -->
