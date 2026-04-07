@@ -384,7 +384,7 @@ sap.ui.define([
                                 break;
                             }
                             else {
-                                _dMinDate = oItem["start_date"];
+                                _dMinDate = !!oItem["start_date"] ? new Date(oItem["start_date"]) : null;
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
                                     _oResourceBundle.getText("error_end_date_mindate"));
@@ -415,7 +415,7 @@ sap.ui.define([
                     }
                     break;
             }
-            if (_dMinDate !== null) {
+            if (!!_dMinDate?.getTime) {
                 _dMinDate.setHours(0, 0, 0, 0);
             }
             return _dMinDate;
@@ -521,7 +521,7 @@ sap.ui.define([
                                     _oResourceBundle.getText("error_start_date_moveindate_maxdate"));
                                 break;
                             } else {
-                                _dMaxDate = oItem["end_date"];
+                                _dMaxDate = new Date(oItem["end_date"]);
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
                                     _oResourceBundle.getText("error_start_date_maxdate"));
@@ -574,8 +574,7 @@ sap.ui.define([
                     }
                     break;
             }
-
-            if (_dMaxDate !== null) {
+            if (!!_dMaxDate?.getTime) {
                 _dMaxDate.setHours(0, 0, 0, 0);
             }
             return _dMaxDate;
