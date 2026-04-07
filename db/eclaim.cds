@@ -205,12 +205,16 @@ entity ZREQUEST_ITEM : managed {
         METER_CUBE_ACTUAL          : Decimal(6, 2);
         FARE_TYPE_ID               : String(2);
         VEHICLE_CLASS_ID           : String(2);
-        TRIP_START_DATE            :Date;
-        TRIP_END_DATE              :Date;
-        TRIP_START_TIME            :Time;
-        TRIP_END_TIME              :Time;
+        TRIP_START_DATE            : Date;
+        TRIP_END_DATE              : Date;
+        TRIP_START_TIME            : Time;
+        TRIP_END_TIME              : Time;
         TRAVEL_DURATION_DAY        : Decimal(3, 1);
         TRAVEL_DURATION_HOUR       : Decimal(4, 1);
+        ENTITLED_BREAKFAST         : Integer;
+        ENTITLED_LUNCH             : Integer;
+        ENTITLED_DINNER            : Integer;
+        DAILY_ALLOWANCE            : Integer;
         ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
                                          on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT               : Association to one ZMARITAL_CAT
@@ -368,6 +372,7 @@ entity ZCLAIM_HEADER : managed {
         APPROVER3                      : String(6);
         APPROVER4                      : String(6);
         APPROVER5                      : String(6);
+        SESSION_NUMBER                 : String(15);
         ZCLAIM_ITEM                    : Composition of many ZCLAIM_ITEM
                                              on ZCLAIM_ITEM.CLAIM_ID = CLAIM_ID;
         ZEMP_MASTER                    : Association to one ZEMP_MASTER
@@ -391,7 +396,7 @@ entity ZCLAIM_HEADER : managed {
         ZTRAIN_COURSE_PART             : Association to ZTRAIN_COURSE_PART
                                              on  ZTRAIN_COURSE_PART.PARTICIPANT_ID = EMP_ID
                                              and ZTRAIN_COURSE_PART.COURSE_ID      = COURSE_CODE
-                                             and ZTRAIN_COURSE_PART.CLAIM_ID       = CLAIM_ID;
+                                             and ZTRAIN_COURSE_PART.SESSION_NUMBER = SESSION_NUMBER;
         ZREJECT_REASON                 : Association to ZREJECT_REASON
                                              on ZREJECT_REASON.REASON_ID = REJECT_REASON_ID;
         ZSENDBACK_REASON               : Association to ZREJECT_REASON
@@ -897,12 +902,6 @@ entity ZTRAIN_COURSE_PART : managed {
     key PARTICIPANT_ID      : String      @mandatory  @Common.Label: 'Participants';
     key START_DATE          : Date        @mandatory  @Common.Label: 'Start Date';
     key END_DATE            : Date        @mandatory  @Common.Label: 'End Date';
-        CLAIM_STATUS        : String      @Common.Label: 'Claim Status';
-        CLAIM_ID            : String      @Common.Label: 'Claim ID';
-        ZSTATUS             : Association to ZSTATUS
-                                  on ZSTATUS.STATUS_ID = CLAIM_STATUS;
-        ZCLAIM_HEADER       : Association to ZCLAIM_HEADER
-                                  on ZCLAIM_HEADER.CLAIM_ID = CLAIM_ID;
         ZEMP_MASTER         : Association to ZEMP_MASTER
                                   on ZEMP_MASTER.EEID = PARTICIPANT_ID
 }
@@ -1213,6 +1212,7 @@ entity ZMETER_CUBE : managed {
     key METER_CUBE_ID     : String(2)     @mandatory  @Common.Label: 'Meter Cube ID';
         MARITAL_STATUS    : String        @Common.Label: 'Marital Status';
         DEPENDENT_TYPE_ID : String        @Common.Label: 'Dependent Type ID';
+        AGE_CONDITION     : String(1)     @Common.Label: 'Age Condition';
         AGE               : Integer       @Common.Label: 'Age';
         METER_CUBE        : Decimal(5, 2) @Common.Label: 'Meter Cube';
         START_DATE        : Date          @Common.Label: 'Start Date';

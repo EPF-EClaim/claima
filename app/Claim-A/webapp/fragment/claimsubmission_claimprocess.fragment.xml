@@ -113,6 +113,26 @@
                     >
                         <core:Item key="{employee_view>COURSE_ID}" text="{employee_view>COURSE_ID} - {employee_view>COURSE_DESC}" />
                     </Select>
+
+                    <!-- Select Session Number -->
+                    <Label text="{i18n>label_claimprocess_session_number}" />
+                    <Select
+                        id="select_claimprocess_session_number"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claimtype/course_code/session_number}"
+                        items="{
+                            path: 'employee>/ZTRAIN_COURSE_PART',
+                            sorter: [{ path: 'SESSION_NUMBER' }],
+                            parameters: { select: 'START_DATE,END_DATE' }
+                        }"
+                        visible="{= Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) &amp;&amp;
+                            ${claimsubmission_input>/claimtype/course_code/course_id} !== null
+                        }"
+                        change="onSelect_ClaimProcess_SessionNumber"
+                        liveChange="onSelect_ClaimProcess_SessionNumber"
+                    >
+                        <core:Item key="{employee>SESSION_NUMBER}" text="{employee>SESSION_NUMBER}" />
+                    </Select>
                 </f:content>
             </f:SimpleForm>
      

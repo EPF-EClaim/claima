@@ -77,6 +77,14 @@
                     visible="{= !!${claimsubmission_input>/claim_header/course_code} }"
                 />
 
+                <!-- Session Number -->
+                <Label text="{i18n>label_claimsummary_claimheader_session_number}" />
+                <Text
+                    id="text_claimsummary_claimheader_session_number"
+                    text="{claimsubmission_input>/claim_header/session_number}"
+                    visible="{= !!${claimsubmission_input>/claim_header/session_number} }"
+                />
+
                 <!-- Trip Start Date -->
                 <Label
                     text="{i18n>label_claimsummary_claimheader_tripstartdate}"

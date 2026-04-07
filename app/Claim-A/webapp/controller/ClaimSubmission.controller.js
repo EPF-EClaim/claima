@@ -614,22 +614,6 @@ sap.ui.define([
 					await this._getEmpDataDescr(oClaimSubmissionModel);
 				}
 
-				// set course code values + start/end dates if claim type is kursus
-				if (Object.values(this._oConstant.ClaimTypeKursus).includes(oClaimSubmissionModel.getProperty("/claim_header/claim_type_id")) && oClaimSubmissionModel.getProperty("/claim_header/course_code")) {
-					var oCourseCodeValues = await ClaimUtility.getCourseCodeValues(oClaimSubmissionModel.getProperty("/claim_header/course_code"), oClaimSubmissionModel.getProperty("/claim_header/emp_id"));
-					if (oCourseCodeValues) {
-						// course code values
-						oClaimSubmissionModel.setProperty("/claimtype/course_code/course_id", oClaimSubmissionModel.getProperty("/claim_header/course_code"));
-						oClaimSubmissionModel.setProperty("/claimtype/course_code/course_desc", oClaimSubmissionModel.getProperty("/claim_header/descr/course_code"));
-						oClaimSubmissionModel.setProperty("/claimtype/course_code/session_number", oCourseCodeValues.session_number);
-						oClaimSubmissionModel.setProperty("/claimtype/course_code/course_session_stat", oCourseCodeValues.course_session_stat);
-						oClaimSubmissionModel.setProperty("/claimtype/course_code/attendence_status", oCourseCodeValues.attendence_status);
-						oClaimSubmissionModel.setProperty("/claimtype/course_code/participant_id", oCourseCodeValues.participant_id);
-						oClaimSubmissionModel.setProperty("/claimtype/course_code/session_start_date", oCourseCodeValues.session_start_date);
-						oClaimSubmissionModel.setProperty("/claimtype/course_code/session_end_date", oCourseCodeValues.session_end_date);
-					}
-				}
-
 				return { header: oHeaderRaw, items: aItems };
 			} catch (err) {
 				console.error("Failed to load claim header/items:", err);
@@ -716,6 +700,7 @@ sap.ui.define([
 				approver5: null,
 				last_send_back_date: null,
 				course_code: o.COURSE_CODE,
+				session_number: o.SESSION_NUMBER,
 				project_code: null,
 				cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
 				preapproved_amount: o.PREAPPROVED_AMOUNT,
@@ -1021,11 +1006,8 @@ sap.ui.define([
 						"course_id": null,
 						"course_desc": null,
 						"session_number": null,
-						"course_session_stat": null,
-						"attendence_status": null,
-						"participant_id": null,
-						"session_start_date": null,
-						"session_end_date": null,
+						"start_date": null,
+						"end_date": null
 					},
 					"descr": {
 						"type": null,
@@ -1077,6 +1059,7 @@ sap.ui.define([
 					"approver5": null,
 					"last_send_back_date": null,
 					"course_code": null,
+					"session_number": null,
 					"project_code": null,
 					"cash_advance_amount": null,
 					"preapproved_amount": null,
@@ -2708,7 +2691,7 @@ sap.ui.define([
 			//checking for galakan disclaimer if its ticked or not
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
+			if (!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
 				return;
 			}
 
@@ -3549,7 +3532,7 @@ sap.ui.define([
 				//FUT issue 102
 				// solving the issue of having 0 amount claim item when submitting claims
 				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
+				if (!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
 					return;
 				}
 
@@ -3626,6 +3609,7 @@ sap.ui.define([
 					APPROVER5: oInputModel.getProperty("/claim_header/approver5"),
 					LAST_SEND_BACK_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_send_back_date")),
 					COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
+					SESSION_NUMBER: oInputModel.getProperty("/claim_header/session_number"),
 					PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
 					CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
 					PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2),
@@ -3673,11 +3657,6 @@ sap.ui.define([
 								throw new Error("Invalid action selected: " + oAction);
 						}
 						await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
-
-						// If course claim, update claim ID to course table
-						if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claim_header/claim_type_id"))) {
-							await ClaimUtility.updateCourseClaim(oInputModel);
-						}
 
 						MessageToast.show(oMsg);
 						this._onNavBack();
@@ -3768,11 +3747,6 @@ sap.ui.define([
 							oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.CANCELLED);
 							oInputModel.setProperty("/claim_header/descr/status_id", "CANCELLED");
 
-							// If course claim, update claim ID to course table
-							if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claim_header/claim_type_id"))) {
-								await ClaimUtility.updateCourseClaim(oInputModel);
-							}
-
 							this.onBack_ClaimSubmission();
 							break;
 						case 'Submit Report':
@@ -3783,11 +3757,6 @@ sap.ui.define([
 								oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
 							}
 							
-							// If course claim, update claim ID to course table
-							if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claim_header/claim_type_id"))) {
-								await ClaimUtility.updateCourseClaim(oInputModel);
-							}
-
 							this.onBack_ClaimSubmission();
 							break;
 						default:

@@ -60,6 +60,14 @@
                         visible="{= ${claimsubmission_input>/claim_header/course_code} !== null}"
                     />
 
+                    <!-- Session Number -->
+                    <Label text="{i18n>label_claiminput_session_number}" />
+                    <Text
+                        id="text_claiminput_session_number"
+                        text="{claimsubmission_input>/claim_header/session_number}"
+                        visible="{= ${claimsubmission_input>/claim_header/session_number} !== null}"
+                    />
+
                     <!-- Pre-Approval Request -->
                     <Label text="{i18n>label_claiminput_preapprovalreq}" />
                     <Text

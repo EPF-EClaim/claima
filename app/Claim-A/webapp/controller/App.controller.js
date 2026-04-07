@@ -335,11 +335,8 @@ sap.ui.define([
 						"course_id": null,
 						"course_desc": null,
 						"session_number": null,
-						"course_session_stat": null,
-						"attendence_status": null,
-						"participant_id": null,
-						"session_start_date": null,
-						"session_end_date": null,
+						"start_date": null,
+						"end_date": null
 					},
 					"descr": {
 						"type": null,
@@ -391,6 +388,7 @@ sap.ui.define([
 					"approver5": null,
 					"last_send_back_date": null,
 					"course_code": null,
+					"session_number": null,
 					"project_code": null,
 					"cash_advance_amount": null,
 					"preapproved_amount": null,
@@ -735,6 +733,32 @@ sap.ui.define([
 		onSelect_ClaimProcess_CourseCode: function (oEvent) {
 			// set description
 			this.getView().getModel("claimsubmission_input").setProperty("/claimtype/course_code/course_desc", oEvent.getParameters().selectedItem.getBindingContext("employee_view").getObject("COURSE_DESC"));
+
+			// set filter for session number dropdown
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type")) &&
+				oInputModel.getProperty("/claimtype/course_code/course_id")) {
+				var oSelectSessionNumber = this.byId("select_claimprocess_session_number");
+				var oBindingSelectSessionNumber = oSelectSessionNumber.getBinding("items");
+				var aFilterSelectSessionNumber = [
+						// ensure status is active
+						new Filter("COURSE_ID", FilterOperator.EQ, oInputModel.getProperty("/claimtype/course_code/course_id")),
+						new Filter("PARTICIPANT_ID", FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
+						new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
+						new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true)
+					];
+				oBindingSelectSessionNumber.filter(aFilterSelectSessionNumber);
+			}
+		},
+
+		/**
+        * On selecting session number from claim process, set start/end date in claim submission model
+        * @public
+        */
+		onSelect_ClaimProcess_SessionNumber: function (oEvent) {
+			// set description
+			this.getView().getModel("claimsubmission_input").setProperty("/claimtype/course_code/start_date", oEvent.getParameters().selectedItem.getBindingContext("employee").getObject("START_DATE"));
+			this.getView().getModel("claimsubmission_input").setProperty("/claimtype/course_code/end_date", oEvent.getParameters().selectedItem.getBindingContext("employee").getObject("END_DATE"));
 		},
 
 		onPreApproval_ClaimProcess: function () {
@@ -780,7 +804,7 @@ sap.ui.define([
 			}
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
+			if (!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
 				return;
 			}
 
@@ -916,25 +940,14 @@ sap.ui.define([
 				oInputModel.getProperty("/claimtype/course_code/course_id")
 			) {
 				oInputModel.setProperty("/claim_header/course_code", oInputModel.getProperty("/claimtype/course_code/course_id"));
+				oInputModel.setProperty("/claim_header/session_number", oInputModel.getProperty("/claimtype/course_code/session_number"));
+				oInputModel.setProperty("/claim_header/trip_start_date", oInputModel.getProperty("/claimtype/course_code/start_date"));
+				oInputModel.setProperty("/claim_header/trip_end_date", oInputModel.getProperty("/claimtype/course_code/end_date"));
 				oInputModel.setProperty("/claim_header/descr/course_code", oInputModel.getProperty("/claimtype/course_code/course_desc"));
-				// retrieve course code values + start/end dates based on course code
-				var oCourseCodeValues = await ClaimUtility.getCourseCodeValues(oInputModel.getProperty("/claim_header/course_code"), oInputModel.getProperty("/emp_master/eeid"));
-				if (oCourseCodeValues) {
-					// course code values
-					oInputModel.setProperty("/claimtype/course_code/session_number", oCourseCodeValues.session_number);
-					oInputModel.setProperty("/claimtype/course_code/course_session_stat", oCourseCodeValues.course_session_stat);
-					oInputModel.setProperty("/claimtype/course_code/attendence_status", oCourseCodeValues.attendence_status);
-					oInputModel.setProperty("/claimtype/course_code/participant_id", oCourseCodeValues.participant_id);
-					oInputModel.setProperty("/claimtype/course_code/session_start_date", oCourseCodeValues.session_start_date);
-					oInputModel.setProperty("/claimtype/course_code/session_end_date", oCourseCodeValues.session_end_date);
-
-					// claim header values
-					oInputModel.setProperty("/claim_header/trip_start_date", oCourseCodeValues.course_start_date);
-					oInputModel.setProperty("/claim_header/trip_end_date", oCourseCodeValues.course_end_date);
-				}
 			}
 			else {
 				oInputModel.setProperty("/claim_header/course_code", null);
+				oInputModel.setProperty("/claim_header/session_number", null);
 				oInputModel.setProperty("/claim_header/descr/course_code", null);
 			}
 			//// initialized amount values
@@ -1157,6 +1170,7 @@ sap.ui.define([
 				APPROVER5: oInputModel.getProperty("/claim_header/approver5"),
 				LAST_SEND_BACK_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_send_back_date")),
 				COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
+				SESSION_NUMBER: oInputModel.getProperty("/claim_header/session_number"),
 				PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
 				CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
 				PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2),
@@ -1212,11 +1226,6 @@ sap.ui.define([
 							oInputModel.getProperty("/claim_header/claim_id"),
 							oInputModel.getProperty("/claim_header/attachment_email_approver")
 						)
-
-						// If course claim, update claim ID to course table
-						if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claim_header/claim_type_id"))) {
-							await ClaimUtility.updateCourseClaim(oInputModel);
-						}
 
 						if (claimSaved) {
 							MessageToast.show(Utility.getText("msg_claimsubmission_created", [oInputModel.getProperty("/claim_header/claim_id")]));

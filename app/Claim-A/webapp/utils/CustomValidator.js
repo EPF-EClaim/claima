@@ -30,7 +30,7 @@ sap.ui.define([
          * further processing.
          * @public
          */
-        validate: async function (sSubmissionType) {
+        validate: function (sSubmissionType) {
             // Common validations (Applicable for both scenarios)
 
             // Type and Item Type checking (Applicable for both scenarios)
@@ -83,17 +83,6 @@ sap.ui.define([
 
                             default:
                                 break;
-                        }
-                    }
-
-                    if (!!oClaimSubmissionModel) {
-                        // course code pre-check
-                        if (Object.values(Constants.ClaimTypeKursus).includes(oClaimSubmissionModel.getProperty("/claimtype/type"))) {
-                            var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id"), oClaimSubmissionModel.getProperty("/emp_master/eeid"));
-                            if (bCourseAlreadyApproved) {
-                                MessageBox.error(Utility.getText("error_msg_course_already_approved", [oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id"), oClaimSubmissionModel.getProperty("/claimtype/course_code/course_desc")]));
-                                return false;
-                            }
                         }
                     }
 
