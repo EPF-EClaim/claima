@@ -11,14 +11,15 @@ sap.ui.define([
 	FilterOperator) {
     "use strict";
 
-    var RequestUtility =  {
+    return {
         
 		/**
          * Initialize the RequestUtility
          * @public
          */
-        init: function(oOwnerComponent) {
+        init: function(oOwnerComponent, oView) {
             this._oOwnerComponent = oOwnerComponent;
+            this._oView = oView;
 		},
 
         determineDefaultCostCenter: async function (oEvent) {
@@ -81,44 +82,12 @@ sap.ui.define([
 
                 oReqModel.setProperty("/req_item/kilometer", fMileage);
 
-                RequestUtility.populateAllocatedAmount();
+                this.populateAllocatedAmount();
 
             } catch (error) {
                 return parseFloat(0).toFixed(2);
             }
         },
-
-        onFilterToState: function (oEvent) {
-            const oReqItem  = this._oReqModel.getProperty("/req_item");
-            
-            var sFromState  = oReqItem.from_state;
-            var sFromOffice = oReqItem.from_location_office;
-
-			const oSelect   = this.byId("item_to_state");
-			const oBinding  = oSelect.getBinding("items");
-			const aFilters  = oSelect ? [
-                                new Filter("FROM_STATE_ID", FilterOperator.EQ, sFromState),
-                                new Filter("FROM_LOCATION_ID", FilterOperator.EQ, sFromOffice)
-                            ]: [];
-			oBinding.filter(aFilters);
-		},
-
-        onFilterToOffice: function (oEvent) {
-            const oReqItem  = this._oReqModel.getProperty("/req_item");
-            
-            var sFromState  = oReqItem.from_state;
-            var sFromOffice = oReqItem.from_location_office;
-            var sToState    = oReqItem.to_state;
-
-			const oSelect   = this.byId("item_to_location_office");
-			const oBinding  = oSelect.getBinding("items");
-			const aFilters  = oSelect ? [
-                                new Filter("FROM_STATE_ID", FilterOperator.EQ, sFromState),
-                                new Filter("FROM_LOCATION_ID", FilterOperator.EQ, sFromOffice),
-                                new Filter("TO_STATE_ID", FilterOperator.EQ, sToState)
-                            ]: [];
-			oBinding.filter(aFilters);
-		},
 
         populateAllocatedAmount: function () {
             const oReqModel = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
@@ -126,7 +95,7 @@ sap.ui.define([
             const aReqPart  = oReqModel.getProperty("/participant");
 
             // calculate kilometer amount 
-            var calculatedAllocAmount = RequestUtility._calculateAllocatedAmountForKilometer(oReqItem);
+            var calculatedAllocAmount = this._calculateAllocatedAmountForKilometer(oReqItem);
 
             // populate allocated amount
             if (calculatedAllocAmount) {
@@ -140,7 +109,7 @@ sap.ui.define([
             }
 
             // populate estimated amount
-            var fEstAmount = RequestUtility._calculateEstimatedAmount(oReqItem, aReqPart);
+            var fEstAmount = this._calculateEstimatedAmount(oReqItem, aReqPart);
             oReqModel.setProperty("/req_item/est_amount", fEstAmount.toFixed(2));
         },
 
@@ -166,6 +135,4 @@ sap.ui.define([
 		},
         
     };
-
-    return RequestUtility;
 });

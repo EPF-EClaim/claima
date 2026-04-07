@@ -520,7 +520,7 @@
                                                     minimum: 0
                                                 }
                                             }" 
-                                            change=".RequestUtility.populateAllocatedAmount"
+                                            change=".onInputAllocatedAmount"
                                             enabled="{= ${request>/view} !== 'view' &amp;&amp; 
                                                         ${request>/req_item/location_type} !== ${constant>/LocationType/KWSP} &amp;&amp;
                                                         !!${request>/req_item/type_of_vehicle}}">
@@ -563,7 +563,7 @@
                                                     minimum: 0
                                                 }
                                             }" 
-                                            change=".RequestUtility.populateAllocatedAmount"
+                                            change=".onInputAllocatedAmount"
                                             enabled="{= ${request>/view} !== 'view' }">
                                         </Input>
                                     </form:fields>
@@ -666,7 +666,7 @@
                                             items="{
                                                     path: 'employee>/ZOFFICE_LOCATION',
                                                     sorter: { path: 'LOCATION_ID', descending: false }}"
-                                            change=".RequestUtility.onFilterToState" >
+                                            change=".onFilterToState" >
                                             <items>
                                                 <core:Item key="{employee>LOCATION_ID}" 
                                                         text="{employee>LOCATION_DESC}" />
@@ -689,7 +689,7 @@
                                                         !!${request>/req_item/from_location_office} }"
                                             items="{path: 'employee_view>/ZCLM_TO_STATE_SELECTION',
                                                     sorter: { path: 'TO_STATE_ID', descending: false }}"
-                                            change=".RequestUtility.onFilterToOffice" >
+                                            change=".onFilterToOffice" >
                                             <items>
                                                 <core:Item key="{employee_view>TO_STATE_ID}" 
                                                         text="{employee_view>TO_STATE_DESC}" />
@@ -725,7 +725,7 @@
                                                         !!${request>/req_item/to_state} }"
                                             items="{path: 'employee_view>/ZCLM_OFFICE_LOCATION_SELECTION',
                                                     sorter: { path: 'TO_LOCATION_ID', descending: false }}"
-                                            change=".RequestUtility.determineOfficeMileage" >
+                                            change=".onSelectToOffice" >
                                             <items>
                                                 <core:Item key="{employee_view>TO_LOCATION_ID}" 
                                                         text="{employee_view>TO_LOCATION_DESC}" />
@@ -1002,7 +1002,7 @@
                                             minimum: 0
                                         }
                                     }" 
-                                    change=".RequestUtility.populateAllocatedAmount"
+                                    change=".onInputAllocatedAmount"
                                     enabled="{= ${request>/view} !== 'view' &amp;&amp; 
                                                 ( ${request>/req_item/location_type} !== ${constant>/LocationType/KWSP} || 
                                                 ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/KILOMETER} ) &amp;&amp;

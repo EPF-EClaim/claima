@@ -74,7 +74,6 @@ sap.ui.define([
 	const ButtonType = mLibrary.ButtonType;
 
 	return Controller.extend("claima.controller.RequestForm", {
-		RequestUtility: RequestUtility,
 
 		/* =========================================================
 		* Lifecycle
@@ -2017,6 +2016,7 @@ sap.ui.define([
 				if (aContexts.length > 0) {
 					const oData = aContexts[0].getObject();
 					this._oReqModel.setProperty("/req_item/rate_per_kilometer", oData.RATE);
+                	RequestUtility.populateAllocatedAmount();
 					RequestUtility.determineOfficeMileage();
 				}
 			} catch (oError) {
@@ -2423,5 +2423,49 @@ sap.ui.define([
 				SendBackDialog.destroy(this);
 			} catch (e) { }
 		},
+
+		/* =========================================================
+		* Approver Functions (Aiman)
+		* ======================================================= */
+
+		onInputAllocatedAmount: function () {
+			RequestUtility.populateAllocatedAmount();
+		},
+
+		onFilterToState: function () {
+            const oReqItem  = this._oReqModel.getProperty("/req_item");
+            
+            var sFromState  = oReqItem.from_state;
+            var sFromOffice = oReqItem.from_location_office;
+
+			const oSelect   = this.byId("item_to_state");
+			const oBinding  = oSelect.getBinding("items");
+			const aFilters  = oSelect ? [
+                                new Filter("FROM_STATE_ID", FilterOperator.EQ, sFromState),
+                                new Filter("FROM_LOCATION_ID", FilterOperator.EQ, sFromOffice)
+                            ]: [];
+			oBinding.filter(aFilters);
+		},
+
+        onFilterToOffice: function () {
+            const oReqItem  = this._oReqModel.getProperty("/req_item");
+            
+            var sFromState  = oReqItem.from_state;
+            var sFromOffice = oReqItem.from_location_office;
+            var sToState    = oReqItem.to_state;
+
+			const oSelect   = this.byId("item_to_location_office");
+			const oBinding  = oSelect.getBinding("items");
+			const aFilters  = oSelect ? [
+                                new Filter("FROM_STATE_ID", FilterOperator.EQ, sFromState),
+                                new Filter("FROM_LOCATION_ID", FilterOperator.EQ, sFromOffice),
+                                new Filter("TO_STATE_ID", FilterOperator.EQ, sToState)
+                            ]: [];
+			oBinding.filter(aFilters);
+		},
+
+		onSelectToOffice: function () {
+			RequestUtility.determineOfficeMileage();
+		}
 	});
 });
