@@ -1392,6 +1392,9 @@ sap.ui.define([
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", oEmpData.EEID || oEmpData.ID);
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", oEmpData.NAME);
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_COST_CENTER", oEmpData.CC);
+				if (this._calculatedAllocAmount) {
+					this._oReqModel.setProperty(sRowPath + "/ALLOCATED_AMOUNT", this._calculatedAllocAmount);
+				}
 			} else {
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", "");
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", "");
