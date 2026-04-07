@@ -890,7 +890,7 @@
                                                         ( ${request>/req_header/claimtype} === ${constant>/ClaimType/KURSUS_DLM_NEGARA} || 
                                                         ${request>/req_header/claimtype} === ${constant>/ClaimType/KURSUS_LUAR_NEGARA} ||
                                                         ${request>/req_header/claimtype} === ${constant>/ClaimType/DLM_NEGARA} ||
-                                                        ${request>/req_header/claimtype} === ${constant>/ClaimType/TRLUAR_NEGARAAVEL} ) &amp;&amp;
+                                                        ${request>/req_header/claimtype} === ${constant>/ClaimType/LUAR_NEGARA} ) &amp;&amp;
                                                         ( ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L}   || 
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_L}    || 
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER}  || 

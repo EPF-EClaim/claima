@@ -391,4 +391,10 @@ service eclaim_srv @(requires: 'authenticated-user'){
     ) returns String;
 
     action CheckUserClaimTypes(ID: String) returns many Response;
+
+    type PreApprovalUsageCheck {
+        isUsed: Boolean
+    }
+
+    function checkPreApprovalUsage(requestID: String) returns PreApprovalUsageCheck;
 };

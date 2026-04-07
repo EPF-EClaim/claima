@@ -156,7 +156,11 @@
                                     formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 }
                                 }" />
                             <Text text="{claim_status2>STATUS_DESC}" />
-                            <Text text="{claim_status2>modifiedAt}" />
+                            <Text text="{ 
+                                        path: 'claim_status2>modifiedAt',
+                                        formatter: '.DateUtility.convertUTCToLocal' 
+                                    }"
+                            />
                            
                         </cells>
                     </ColumnListItem>

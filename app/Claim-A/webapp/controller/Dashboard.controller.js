@@ -7,11 +7,14 @@ sap.ui.define([
 	"claima/utils/Request",
 	"claima/utils/MyApproval",
 	"claima/utils/Constants",
-	"sap/ui/core/BusyIndicator"
-], (Controller, JSONModel, Sorter, Utility, MessageBox, Request, MyApproval, Constants, BusyIndicator) => {
+	"sap/ui/core/BusyIndicator",
+	"claima/utils/DateUtility"
+], (Controller, JSONModel, Sorter, Utility, MessageBox, Request, MyApproval, Constants, BusyIndicator, DateUtility) => {
 	"use strict";
 
 	return Controller.extend("claima.controller.Dashboard", {
+
+		DateUtility: DateUtility,
 		onInit: function () {
 			this._oRouter = this.getOwnerComponent().getRouter();
 			this._oDashboardModel = new JSONModel({
@@ -20,7 +23,7 @@ sap.ui.define([
 				approvals: []
 			});
 			this.getView().setModel(this._oDashboardModel, "dashboardModel");
-
+		
 			this._oRouter.getRoute("Dashboard").attachPatternMatched(this._onMatched, this);
 		},
 

@@ -40,6 +40,7 @@
                                 </headerToolbar>
 
                                 <columns>
+                                    <Column><Text text="{i18n>requestid}" /></Column>
                                     <Column><Text text="{i18n>requestPurpose}" /></Column>
                                     <Column><Text text="{i18n>employee_name}" /></Column>
                                     <Column><Text text="{i18n>reqDate}" /></Column>
@@ -50,6 +51,7 @@
                                 <items>
                                     <ColumnListItem type="Active">
                                         <cells>
+                                            <Text text="{request_status>PREAPPROVAL_ID}" />
                                             <Text text="{request_status>OBJECTIVE_PURPOSE}" />
                                             <Text text="{request_status>EMPLOYEE_NAME}" />
                                             <Text text="{
@@ -99,6 +101,7 @@
                                 </headerToolbar>
 
                                 <columns>
+                                    <Column><Text text="{i18n>claim_id}" /></Column>
                                     <Column><Text text="{i18n>claimPurpose}" /></Column>
                                     <Column><Text text="{i18n>employee_name}" /></Column>
                                     <Column><Text text="{i18n>claimDate}" /></Column>
@@ -109,6 +112,7 @@
                                 <items>
                                     <ColumnListItem type="Active">
                                         <cells>
+                                            <Text text="{claim_status>CLAIM_ID}" />
                                             <Text text="{claim_status>PURPOSE}" />
                                             <Text text="{claim_status>EMPLOYEE_NAME}" />
                                             <Text text="{
