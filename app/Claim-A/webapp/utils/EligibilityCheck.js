@@ -18,8 +18,6 @@ sap.ui.define([
 		* ======================================================= */
 
 		generateEligibilityCheckPayload(oController, sSubmissionType) {
-			// 	var sEmpId			= oController._oSessionModel.getProperty("/userId")
-
 			switch (sSubmissionType) {
 				case Constants.SubmissionTypePrefix.REQUEST:
 					var oItemData = oController._oReqModel.getProperty('/req_item');
