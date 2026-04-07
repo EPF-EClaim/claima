@@ -325,7 +325,10 @@ sap.ui.define([
 					if (oApprovalLogFragment && iApproverCount > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
 						var sUserId = this._oSessionModel.getProperty("/userId");
 						if (sUserId) {
-							let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) => oApproval.APPROVER_ID === sUserId);
+							let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) =>
+								oApproval.APPROVER_ID === sUserId ||
+								oApproval.SUBSTITUTE_APPROVER_ID === sUserId
+							);
 							if (iItemIndex !== -1) {
 								oClaimSubmissionModel.setProperty("/is_approver", true);
 							}
@@ -2985,10 +2988,10 @@ sap.ui.define([
 			}
 		},
 
-        /**
-         * run related methods on setting start/end date
-         * @public
-         */
+		/**
+		 * run related methods on setting start/end date
+		 * @public
+		 */
 		onChange_ClaimDetails_StartEndDate: async function () {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
@@ -4366,7 +4369,6 @@ sap.ui.define([
 				"datepicker_claimdetails_input_enddate",
 				"timepicker_claimdetails_input_endtime",
 				"select_claimdetails_input_insurance_provider_id",
-				"input_claimdetails_input_insurance_provider_name",
 				"select_claimdetails_input_insurance_package_id",
 				"datepicker_claimdetails_input_insurance_purchase_date",
 				"datepicker_claimdetails_input_insurance_cert_start_date",
@@ -4509,7 +4511,6 @@ sap.ui.define([
 				"datepicker_claimdetails_input_enddate",
 				"timepicker_claimdetails_input_endtime",
 				"select_claimdetails_input_insurance_provider_id",
-				"input_claimdetails_input_insurance_provider_name",
 				"select_claimdetails_input_insurance_package_id",
 				"datepicker_claimdetails_input_insurance_purchase_date",
 				"datepicker_claimdetails_input_insurance_cert_start_date",
