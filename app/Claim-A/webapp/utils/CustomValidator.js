@@ -86,6 +86,15 @@ sap.ui.define([
                         }
                     }
 
+                    if(oInputModel.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel.getProperty("/claim_header/trip_start_date") ){
+                    	const bProceed = await this.onDateValidation();
+
+                        if (!bProceed) {
+                            return false;
+                        }
+                    }
+                    
+
                     if (!!oClaimSubmissionModel) {
                         // course code pre-check
                         if (Object.values(Constants.ClaimTypeKursus).includes(oClaimSubmissionModel.getProperty("/claimtype/type"))) {
@@ -119,6 +128,29 @@ sap.ui.define([
 					onClose: resolve
 				});
 			});
-		}
+		},
+
+        
+        onDateValidation: function() {
+                return new Promise((oResolve) => {
+                    MessageBox.warning(
+                        Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"),
+                        {
+                            actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
+                            emphasizedAction: MessageBox.Action.OK,
+
+                            onClose: function (sAction) {
+                                if (sAction === MessageBox.Action.OK) {
+                                    oResolve(true);    
+                                } else {
+                                    oResolve(false); 
+                                }
+                            }
+                        }
+                    );
+                });
+            return Promise.resolve(true);
+        }
+ 
     };
 });
