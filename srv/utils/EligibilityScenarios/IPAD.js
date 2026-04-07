@@ -145,9 +145,7 @@ module.exports = {
             case Constant.ClaimTypeItem.I_PAD:
                 // I-PAD - return true if there is no historical claims within same Year/Month based on frequency and period
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
-                // Frequency + 1 to accomodate checking for current claim id that is in draft
-                var iFrequency = oRule.FREQUENCY + 1;
-                if (iFrequencyCount < iFrequency) {
+                if (iFrequencyCount < oRule.FREQUENCY) {
                     oPayload.CheckFields[iIndex].result = true;
                 } else {
                     oPayload.CheckFields[iIndex].result = false;
