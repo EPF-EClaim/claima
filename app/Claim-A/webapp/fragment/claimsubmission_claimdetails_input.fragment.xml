@@ -920,6 +920,7 @@
 					}"
                     visible="false"
                     change="onChange_ClaimDetails_CurrencyRate"
+                    required="true"
                 />
 
                 <!-- Currency Amount -->
