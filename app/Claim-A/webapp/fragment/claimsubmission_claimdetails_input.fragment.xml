@@ -70,7 +70,7 @@
                 <Select
                     id="select_claimdetails_input_depedent_or_anggota"
                     forceSelection="false"
-                    selectedKey="{claimitem_input>/claim_item/representative_selection}"
+                    selectedKey="{claimitem_input>/claim_item/dependent_type}"
                     required="true"
                     items="{
 						path:'employee>/ZEMP_DEPENDENT_TYPE',
@@ -92,7 +92,7 @@
                         additionalValue="{claimitem_input>/claim_item/anggota_name}"
                         editMode="Editable"
                         display="ValueDescription"
-                        visible="{= ${claimitem_input>/claim_item/representative_selection} === ${constant>/DependentType/ANGGOTA}}"
+                        visible="{= ${claimitem_input>/claim_item/dependent_type} === ${constant>/DependentType/ANGGOTA}}"
                         valueHelp="valuehelp_claimdetails_input_anggota_name"
                         required="true"
                 />
@@ -104,7 +104,7 @@
                         value="{claimitem_input>/claim_item/dependent_name}"
                         editMode="Editable"
                         display="ValueDescription"
-                        visible="{= ${claimitem_input>/claim_item/representative_selection} === ${constant>/DependentType/DEPENDENT}}"
+                        visible="{= ${claimitem_input>/claim_item/dependent_type} === ${constant>/DependentType/DEPENDENT}}"
                         valueHelp="valuehelp_claimdetails_input_dependent_name"
                         required="true"
                 />
