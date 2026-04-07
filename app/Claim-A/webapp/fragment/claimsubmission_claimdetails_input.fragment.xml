@@ -423,6 +423,7 @@
                     displayFormat="HH:mm"
 					valueFormat="HH:mm:ss"
                     change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
+                    required="true"
                 />
 
 				<!-- End Date -->
@@ -472,6 +473,7 @@
 					visible="false"
 					displayFormat="HH:mm"
 					change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_startdate','timepicker_claimdetails_input_starttime','datepicker_claimdetails_input_enddate','timepicker_claimdetails_input_endtime')"
+                    required="true"
 				/>
 
 				<!-- Nama Pembekal Insuran -->
@@ -990,6 +992,7 @@
                     visible="false"
                     displayFormat="HH:mm"
                     change="onChange_ClaimDetails_TimeRange('datepicker_claimdetails_input_trip_start_date','timepicker_claimdetails_input_trip_starttime','datepicker_claimdetails_input_trip_end_date','timepicker_claimdetails_input_trip_endtime')"
+                    
                 />
 
 				<!-- Arrival Time -->
