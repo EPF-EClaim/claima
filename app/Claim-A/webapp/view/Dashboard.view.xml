@@ -204,7 +204,10 @@
                                                         text="{dashboardModel>STATUS_DESC}"
                                                     />
                                                     <Text
-                                                        text="{dashboardModel>modifiedAt}"
+                                                        text="{ 
+                                                                path: 'dashboardModel>modifiedAt',
+                                                                formatter: '.DateUtility.convertUTCToLocal' 
+                                                            }"
                                                     />
                                                 </cells>
                                             </ColumnListItem>
@@ -331,7 +334,10 @@
                                                         text="{dashboardModel>STATUS_DESC}"
                                                     />
                                                     <Text
-                                                        text="{dashboardModel>modifiedAt}"
+                                                        text="{ 
+                                                                path: 'dashboardModel>modifiedAt',
+                                                                formatter: '.DateUtility.convertUTCToLocal' 
+                                                            }"
                                                     />
                                                 </cells>
                                             </ColumnListItem>
@@ -461,7 +467,10 @@
                                                         text="{dashboardModel>STATUS_DESC}"
                                                     />
                                                     <Text
-                                                        text="{dashboardModel>modifiedAt}"
+                                                        text="{ 
+                                                                path: 'dashboardModel>modifiedAt',
+                                                                formatter: '.DateUtility.convertUTCToLocal' 
+                                                            }"
                                                     />
                                                 </cells>
                                             </ColumnListItem>
