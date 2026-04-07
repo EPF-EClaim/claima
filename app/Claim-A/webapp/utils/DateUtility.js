@@ -403,9 +403,6 @@ sap.ui.define([
                             // set min date based on insurance cert start date
                             if (sItemType === Constants.ClaimTypeItem.TRAVEL_INSURANCE) {
                                 _dMinDate = !!new Date(oItem["insurance_cert_start_date"]).getTime() ? new Date(oItem["insurance_cert_start_date"]) : null;
-                                if (!_dMinDate) {
-                                    oItem["insurance_cert_start_date"] = null;
-                                }
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                     _oResourceBundle.getText("error_insurance_cert_end_date_mindate"));
@@ -571,9 +568,6 @@ sap.ui.define([
                             // set max date based on insurance cert end date
                             if (sItemType === Constants.ClaimTypeItem.TRAVEL_INSURANCE) {
                                 _dMaxDate = !!new Date(oItem["insurance_cert_end_date"]).getTime() ? new Date(oItem["insurance_cert_end_date"]) : null;
-                                if (!_dMaxDate) {
-                                    oItem["insurance_cert_end_date"] = null;
-                                }
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("error_insurance_cert_start_date_maxdate"));
