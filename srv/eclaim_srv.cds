@@ -383,6 +383,13 @@ service eclaim_srv @(requires: 'authenticated-user'){
     
     function getEmailReminder() returns array of reminders;
 
+    function getOfficeDistance(
+        sFromState: String,
+        sFromOffice: String,
+        sToState: String,
+        sToOffice: String,
+    ) returns String;
+
     action CheckUserClaimTypes(ID: String) returns many Response;
 
     type PreApprovalUsageCheck {
