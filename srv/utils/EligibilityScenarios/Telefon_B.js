@@ -1,0 +1,277 @@
+const { Constant } = require("../constant");
+const ComparisonOperators = require("../ComparisonOperators");
+const GetHistoricalData = require("../GetHistoricalData");
+module.exports = {
+  /**
+   * main function for eligibility check - to find the matching eligibility rule and call validateClaimItem function to validate against the rule
+   * @public
+   * @param {Object} oPayload - payload contains user input passed from frontend
+   * @param {Array} aRules - list of eligibility rule from backend
+   * @param {Object} tx - CDS Transaction
+   * @returns {Object} oPayload - return original payload but with result field filled
+   */
+  onEligibleCheck: async function (oPayload, oEmp, aRules, tx) {
+    var oRule = [];
+    //if there is value in aRules table, search for Role
+    if (!!aRules) {
+      iIndex = aRules((field) => field.ROLE_ID == oEmp.ROLE);
+      if (!!!aRules[iIndex]) {
+        iIndex = oPayload.CheckFields.findIndex(
+          (field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE,
+        );
+      } else {
+      }
+    } else {
+      // If No data from Rules Table, refer to Exception list table
+      const sExceptionTable = Constant.Entities.ZCLM_TYPE_EXCEPTION_LIST;
+      const aExceptionCondition = {
+        [Constant.EntitiesFields.CLAIM_TYPE_ID]:
+          Constant.ClaimTypeItem.TELEFON_B,
+        [Constant.EntitiesFields.CLAIM_STATUS]: { in: aStatus },
+      };
+      // Get Exception List Data
+      const aExceptionData = await tx.run(
+        SELECT`count(*)`.from(sExceptionTable).where(aExceptionCondition),
+      );
+    }
+
+    var iHistoricalData = await this._getHistoricalData(oPayload, oRule, tx);
+    var iCurrentRecordItemData = await this._getCurrentRecordItemData(
+      oPayload,
+      oRule,
+      tx,
+    );
+
+    // console.log(iHistoricalData, iCurrentRecordItemData);
+    this._validateClaimItem(
+      oRule,
+      oPayload,
+      iHistoricalData + iCurrentRecordItemData,
+    );
+    return oPayload;
+  },
+
+  /**
+   * Get Historical Claims Data by building querying conditions and using GetHistoricalData for data retrieval
+   * @public
+   * @param {Object} oPayload - payload contains user input passed from frontend
+   * @param {Object} oRule - Eligibility rule from backend
+   * @param {Object} tx - CDS Transaction
+   * @returns {Object} oPayload - return original payload but with result field filled
+   */
+  _getHistoricalData: async function (oPayload, oRule, tx) {
+    let sDate = null;
+    // get Historical Claims Data
+    // find field for date
+    iIndex = oPayload.CheckFields.findIndex(
+      (field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE,
+    );
+    // const sYearMonth = oPayload.CheckFields[iIndex].value.substring(0, 7);
+    // Derive first and last day of the month
+    // const [year, month] = sYearMonth.split('-').map(Number);
+    // const dDateFrom = `${sYearMonth}-01`;
+    // const dDateTo = new Date(year, month, 0)  // last day of month
+    //     .toISOString().split('T')[0]; // 'YYYY-MM-DD'
+
+    // const nDateFrom = new Date(dDateFrom);
+    // const nDateTo = new Date(dDateTo)
+    // console.log(nDateFrom, nDateTo);
+
+    sMonth = parseInt(oPayload.CheckFields[iIndex].value.substring(6, 8));
+    sYear = parseInt(oPayload.CheckFields[iIndex].value.substring(0, 4));
+
+    switch (oRule.PERIOD) {
+      case Constant.FrequencyPeriod.MONTH:
+        // need to search as "##"
+        if (sMonth < 10) {
+          sMonth = Constant.Wildcard.ZERO + sMonth;
+        }
+        break;
+
+      default:
+        break;
+    }
+    sDate = sYear + Constant.Wildcard.DASH + sMonth + Constant.Wildcard.DASH;
+    sDate = sDate + Constant.Wildcard.LIKE_PATTERN;
+
+    const aItemcondition = {
+      [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
+      [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
+      [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
+      [Constant.EntitiesFields.RECEIPT_DATE]: { LIKE: sDate },
+      // [Constant.EntitiesFields.RECEIPT_DATE]: {
+      //     [Constant.ComparisonOperators.GreaterEquals]: nDateFrom,
+      //     [Constant.ComparisonOperators.LesserEquals]: nDateTo
+      // }
+    };
+    // console.log(aItemcondition);
+    const iHistoricalData = await GetHistoricalData.getHistoricalData(
+      Constant.Entities.ZCLAIM_HEADER,
+      Constant.Entities.ZCLAIM_ITEM,
+      aItemcondition,
+      tx,
+    );
+
+    return iHistoricalData;
+  },
+
+  /**
+   * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
+   * @public
+   * @param {Object} oPayload - payload contains user input passed from frontend
+   * @param {Object} oRule - Eligibility rule from backend
+   * @param {Object} tx - CDS Transaction
+   * @returns {Object} oPayload - return original payload but with result field filled
+   */
+  _getCurrentRecordItemData: async function (oPayload, oRule, tx) {
+    let sDate = null;
+    // get Historical Claims Data
+    // find field for date
+    iIndex = oPayload.CheckFields.findIndex(
+      (field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE,
+    );
+    // sMonth = parseInt(oPayload.CheckFields[iIndex].value.substring(6, 8));
+    // sYear = parseInt(oPayload.CheckFields[iIndex].value.substring(0, 4));
+
+    // switch (oRule.PERIOD) {
+    //   case Constant.FrequencyPeriod.MONTH:
+    //     // need to search as "##"
+    //     if (sMonth < 10) {
+    //       sMonth = Constant.Wildcard.ZERO + sMonth;
+    //     }
+    //     break;
+
+    //   default:
+    //     break;
+    // }
+    // sDate = sYear + Constant.Wildcard.DASH + sMonth + Constant.Wildcard.DASH;
+    // sDate = sDate + Constant.Wildcard.LIKE_PATTERN;
+
+    // //Map Headers
+    // // Map ClaimID or RequestID based on which HeaderTable to use
+    // if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
+    //   sHeaderField = Constant.EntitiesFields.CLAIMID;
+    // } else {
+    //   sHeaderField = Constant.EntitiesFields.REQUESTID;
+    // }
+
+    // const aCurrentItemcondition = {
+    //   [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
+    //   [sHeaderField]: oPayload.RecordId,
+    //   [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
+    //   [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
+    //   [Constant.EntitiesFields.RECEIPT_DATE]: { LIKE: sDate },
+    // };
+
+    // return (iCurrentData = await GetHistoricalData.getCurrentItemData(
+    //   Constant.Entities.ZCLAIM_ITEM,
+    //   aCurrentItemcondition,
+    //   tx,
+    // ));
+
+    const sYearMonth = oPayload.CheckFields[iIndex].value.substring(0, 7);
+        // Derive first and last day of the month
+        const [year, month] = sYearMonth.split('-').map(Number);
+        const dDateFrom = `${sYearMonth}-01`;
+        const dDateTo = new Date(year, month, 0)  // last day of month
+            .toISOString().split('T')[0]; // 'YYYY-MM-DD'
+
+        // const sDateFrom = toString(dDateFrom);
+        // const sDateTo = toString(dDateTo);
+
+        // const nDateFrom = new Date(sDateFrom).toLocaleDateString('en-CA'); 
+        // const nDateTo = new Date(sDateTo).toLocaleDateString('en-CA');
+
+        // console.log(nDateFrom, nDateTo);
+
+        // Get Item Data
+        // Check if any Claim item is within frequency
+        // const aItemData = await tx.run(
+        //     SELECT.from(Constant.Entities.ZCLAIM_ITEM).where`
+        //         EMP_ID = ${oPayload.EmpId}
+        //         AND
+        //         CLAIM_TYPE_ID = ${oPayload.ClaimType}
+        //         AND 
+        //         RECEIPT_DATE >= ${nDateFrom}
+        //         AND
+        //         RECEIPT_DATE <= ${nDateTo}
+        //             `);
+        let aItemcondition = "";
+        const aCurrentItemcondition = {
+            [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
+            [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
+            [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
+            [Constant.EntitiesFields.RECEIPT_DATE]: { "between": [dDateFrom, dDateTo] }
+        };
+
+        const conditions = [];
+        const values = [];
+
+        for (const [field, value] of Object.entries(aCurrentItemcondition)) {
+
+            // Handle BETWEEN
+            if (value && value.between) {
+                conditions.push(`${field} >= ? AND ${field} <= ?`);
+                values.push(value.between[0], value.between[1]);
+                continue;
+            }
+
+            // Normal equality
+            conditions.push(`${field} = ?`);
+            values.push(value);
+        }
+
+        const whereClause = conditions.join(' AND ');
+
+        console.log(aCurrentItemcondition, aItemcondition);
+        const aItemData = await tx.run(
+            SELECT.from(Constant.Entities.ZCLAIM_ITEM).where(`${whereClause}`, values)
+        );
+
+        return aItemData;
+  },
+
+  /**
+   * Validates claim item against eligibility rule
+   * @private
+   * @param {Object} oRule - matched eligibility rule from aRules
+   * @param {Object} oPayload - original payload from user input
+   * @param {iFrequencyCount} - Date frequency count
+   */
+  _validateClaimItem: function (oRule, oPayload, iFrequencyCount) {
+    var iIndex;
+
+    switch (oPayload.ClaimTypeItem) {
+      case Constant.ClaimTypeItem.TELEFON_B:
+        // I-PAD - return true if there is no historical claims within same Year/Month based on frequency and period
+        iIndex = oPayload.CheckFields.findIndex(
+          (field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE,
+        );
+        // Frequency + 1 to accomodate checking for current claim id that is in draft
+        var iFrequency = oRule.FREQUENCY + 1;
+        if (iFrequencyCount < iFrequency) {
+          oPayload.CheckFields[iIndex].result = true;
+        } else {
+          oPayload.CheckFields[iIndex].result = false;
+        }
+
+        iIndex = null;
+        // I-PAD - return true if claim amount is less than eligible amount
+        iIndex = oPayload.CheckFields.findIndex(
+          (field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT,
+        );
+        if (!oRule) {
+          oPayload.CheckFields[iIndex].result = false;
+        } else {
+          // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
+          // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
+          oPayload.CheckFields[iIndex].result =
+            ComparisonOperators.LesserEquals(
+              oPayload.CheckFields[iIndex].value,
+              parseFloat(oRule.ELIGIBLE_AMOUNT),
+            );
+        }
+        break;
+    }
+  },
+};
