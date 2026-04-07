@@ -1031,7 +1031,7 @@ sap.ui.define([
 				"input_claiminput_purpose",
 				"datepicker_claiminput_tripstartdate",
 				"datepicker_claiminput_tripenddate",
-				"input_claiminput_comment",
+
 			];
 			//// add attachment field if using email approval
 			if (this.byId("fileuploader_claiminput_attachment").getRequired()) {
