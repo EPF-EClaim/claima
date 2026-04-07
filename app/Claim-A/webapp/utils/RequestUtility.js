@@ -10,7 +10,7 @@ sap.ui.define([
 	FilterOperator) {
     "use strict";
 
-    return {
+    var RequestUtility =  {
         
 		/**
          * Initialize the RequestUtility
@@ -80,7 +80,7 @@ sap.ui.define([
 
                 oReqModel.setProperty("/req_item/kilometer", fMileage);
 
-                this.populateAllocatedAmount();
+                RequestUtility.populateAllocatedAmount();
 
             } catch (error) {
                 return parseFloat(0).toFixed(2);
@@ -124,13 +124,14 @@ sap.ui.define([
             const oReqItem  = oReqModel.getProperty("/req_item");
             const oReqPart  = oReqModel.getProperty("/participant");
 
-            var fKilometer  = parseFloat(oReqItem.kilometer);
-            var fRatePerKm  = parseFloat(oReqItem.rate_per_kilometer);
+            var fKilometer  = parseFloat(oReqItem.kilometer).toFixed(2) || 0;
+            var fRatePerKm  = parseFloat(oReqItem.rate_per_kilometer).toFixed(2) || 0;
+            var fToll       = parseFloat(oReqItem.toll_amt).toFixed(2) || 0;
 
-            if (!fKilometer || !fRatePerKm) return;
+            if (!fKilometer || !fRatePerKm) return fKilometer;
 
             // globalize this amount 
-            this._calculatedAllocAmount = fKilometer * fRatePerKm;
+            this._calculatedAllocAmount = ( parseFloat(fKilometer) * parseFloat(fRatePerKm) ) + parseFloat(fToll);
 
             oReqPart.forEach((row, index) => {
                 if (row.PARTICIPANTS_ID) {
@@ -140,7 +141,7 @@ sap.ui.define([
                 }
             });
 
-            return parseFloat(this._calculatedAllocAmount).toFixed(2);
+            return fKilometer;
 
         },
 
@@ -157,4 +158,6 @@ sap.ui.define([
 		},
         
     };
+
+    return RequestUtility;
 });

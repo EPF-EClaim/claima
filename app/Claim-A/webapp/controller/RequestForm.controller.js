@@ -471,7 +471,9 @@ sap.ui.define([
 
 			oReqData.req_item = {
 				est_amount: 0,
+				kilometer: 0,
 				rate_per_kilometer: 0,
+				toll_amt: 0,
 				cash_advance: false
 			};
 
