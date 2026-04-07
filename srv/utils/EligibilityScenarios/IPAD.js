@@ -15,7 +15,6 @@ module.exports = {
         var iHistoricalData = await this._getHistoricalData(oPayload, oRule, tx);
         var iCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oRule, tx);
 
-        // console.log(iHistoricalData, iCurrentRecordItemData);
         this._validateClaimItem(oRule, oPayload, iHistoricalData + iCurrentRecordItemData);
         return oPayload;
     },
@@ -35,17 +34,6 @@ module.exports = {
         // get Historical Claims Data
         // find field for date
         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
-        // const sYearMonth = oPayload.CheckFields[iIndex].value.substring(0, 7);
-        // Derive first and last day of the month
-        // const [year, month] = sYearMonth.split('-').map(Number);
-        // const dDateFrom = `${sYearMonth}-01`;
-        // const dDateTo = new Date(year, month, 0)  // last day of month
-        //     .toISOString().split('T')[0]; // 'YYYY-MM-DD'
-
-        // const nDateFrom = new Date(dDateFrom); 
-        // const nDateTo = new Date(dDateTo)   
-        // console.log(nDateFrom, nDateTo);
-
         sMonth = parseInt(oPayload.CheckFields[iIndex].value.substring(6, 8));
         sYear = parseInt(oPayload.CheckFields[iIndex].value.substring(0, 4));
 
@@ -77,12 +65,7 @@ module.exports = {
             [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
             [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
             [Constant.EntitiesFields.RECEIPT_DATE]: { LIKE: sDate }
-            // [Constant.EntitiesFields.RECEIPT_DATE]: {
-            //     [Constant.ComparisonOperators.GreaterEquals]: nDateFrom,
-            //     [Constant.ComparisonOperators.LesserEquals]: nDateTo
-            // }
         };
-        // console.log(aItemcondition);
         const iHistoricalData = await GetHistoricalData.getHistoricalData(sHeaderTable,
             sItemTable,
             aItemcondition,

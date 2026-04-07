@@ -49,8 +49,6 @@ module.exports = {
                 SELECT`count(*)`
                     .from(sHeaderTable).where(aHeaderCondition)
             );
-            console.log("aHeaderData:");
-            console.log(aHeaderData);
             if (!!aHeaderData) return aHeaderData[0].count;
             return 0;
 
@@ -74,8 +72,6 @@ module.exports = {
             const aItemData = await tx.run(
                 SELECT`count(*)`.from(sItemTable).where(aItemcondition)
             );
-            console.log("aItemData:");
-            console.log(aItemData);
             if (!!aItemData) return aItemData[0].count;
             return 0;
         } catch (error) {
