@@ -212,8 +212,9 @@ module.exports = (srv) => {
 
             //if record hasnt been created yet, direct insert record into database
             //else, update the record but exclude the commitment, actual, consumed
+            //IS to exclude current budget, commitment, actual, consumed and budget balance from payload
             for (const row of budget) {
-
+            
                 const existing = await tx.read(ZBUDGET)
                     .where({
                         YEAR: row.YEAR,
@@ -237,7 +238,6 @@ module.exports = (srv) => {
                         currentBudget: row.CURRENT_BUDGET,
                         budgetBalance: row.BUDGET_BALANCE
                     });
-
                 } else {
                     const excludeFields = Constant.BudgetUpload.EXCLUDE_FIELDS;
 
@@ -249,8 +249,9 @@ module.exports = (srv) => {
                     virement_out = Number(row.VIREMENT_OUT) || 0;
                     supplement = Number(row.SUPPLEMENT) || 0;
                     return_value = Number(row.RETURN) || 0;
-                    current_budget = Number(row.CURRENT_BUDGET) || 0;
-                    consumed = Number(row.CONSUMED) || 0;
+
+                    current_budget = Number(existing[0].CURRENT_BUDGET);
+                    consumed = Number(existing[0].CONSUMED);
 
                     var total_budget = original_budget + virement_in + virement_out + supplement + return_value;
                     var total_budget_balance = current_budget + consumed;
@@ -991,10 +992,17 @@ module.exports = (srv) => {
             }
 
             //deduction of meal allowance
-            //20% from breakfast, 40% from lunch, 40% from dinner 
-            bfast = req.data.breakfast != 0 ? (0.2 * entitlement.AMOUNT) * req.data.breakfast : 0;
-            lunch = req.data.lunch != 0 ? (0.4 * entitlement.AMOUNT) * req.data.lunch : 0;
-            dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
+            //// no deduction for elaun makan perpindahan
+            if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN) {
+                bfast = req.data.breakfast != 0 ? entitlement.AMOUNT * req.data.breakfast : 0;
+                lunch = req.data.lunch != 0 ? entitlement.AMOUNT * req.data.lunch : 0;
+                dinner = req.data.dinner != 0 ? entitlement.AMOUNT * req.data.dinner : 0;
+            } else {
+                //20% from breakfast, 40% from lunch, 40% from dinner 
+                bfast = req.data.breakfast != 0 ? (0.2 * entitlement.AMOUNT) * req.data.breakfast : 0;
+                lunch = req.data.lunch != 0 ? (0.4 * entitlement.AMOUNT) * req.data.lunch : 0;
+                dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
+            }
 
             total_meal_allowance = meal_allowance != 0 ? (meal_allowance - bfast - lunch - dinner) : 0;
             return {
@@ -1067,7 +1075,7 @@ module.exports = (srv) => {
                 if (sAgingDay != null) {
                     sClaimStatus = await EmailReminder.getClaimStatus(ZCLAIM_HEADER, tx, oRequest.REQUEST_ID);  //return true or false
                     if (sClaimStatus) {
-                        ({ sName, sEmail, sCCEmail } = await EmailReminder.getClaimantDetails(ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS, tx, oRequest.EMP_ID, sScenario));
+                        ({ sName, sEmail, sCCEmail } = await EmailReminder.getClaimantDetails(ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS, tx, oRequest.EMP_ID, sScenario, sAgingDay));
                     }
 
                     aResult.push({
@@ -1186,6 +1194,59 @@ module.exports = (srv) => {
                     req.error(400, `Fail inserting records for Cash Advance Table: ${error.message}`);
                 }
             });
+        }
+    });
+
+    srv.on('getOfficeDistance', async (req) => {
+        const { 
+            sFromState,
+            sFromOffice,
+            sToState,
+            sToOffice
+        } = req.data;
+
+        try {
+            const oRoute = await SELECT.one.from('ZOFFICE_DISTANCE').where({
+                FROM_STATE_ID: sFromState,
+                FROM_LOCATION_ID: sFromOffice,
+                TO_STATE_ID: sToState,
+                TO_LOCATION_ID: sToOffice
+            });
+            
+            if (oRoute) {
+                return oRoute.MILEAGE; 
+            } 
+            
+            return req.error(404, 'No distance record found for the selected route.');
+
+        } catch (error) {
+            return req.error(500, `Failed to retrieve mileage: ${error.message}`);
+        }
+    });
+    
+    /**
+    * Function to check if Pre-approval request has been used for claim submission
+    * Show warning if Pre-approval request has been used, exclude REJECT & CANCEL status
+    * returns a boolean true/false
+    * @public
+    * @param {String} requestId - Pre-Approval Request ID
+    * @returns {Boolean} PreApprovalUsageCheck - isUsed
+    */
+    srv.on('checkPreApprovalUsage', async(req) => {
+        const { ZCLAIM_HEADER } = srv.entities;
+        const tx = cds.tx(req);
+
+        const claim = await tx.run(
+            SELECT.one.from(ZCLAIM_HEADER).where({
+                REQUEST_ID: req.data.requestID, 
+                STATUS_ID: { 'not in': [Constant.Status.REJECTED, Constant.Status.CANCELLED] }
+            })
+        );
+
+        if (claim) {
+            return { isUsed: true }
+        } else {
+            return { isUsed: false }
         }
     });
 

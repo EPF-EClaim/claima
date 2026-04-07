@@ -501,19 +501,34 @@
                                     </form:fields>
                                 </form:FormElement>
 
-                                <!-- Kilometer (NOT USED FOR NOW)-->
+                                <!-- Kilometer -->
                                 <form:FormElement label="{i18n>req_i_kilometer}"
                                             visible="false"
                                             id="i_kilometer" >
                                     <form:fields>
                                         <Input 
+                                            textAlign="Begin" 
                                             required="true" 
-                                            value="{request>/req_item/kilometer}"
-                                            type="Number" />
+                                            value="{
+                                                path: 'request>/req_item/kilometer',
+                                                type: 'sap.ui.model.type.Float',
+                                                formatOptions: {
+                                                    minFractionDigits: 2,
+                                                    maxFractionDigits: 2
+                                                },
+                                                constraints: {
+                                                    minimum: 0
+                                                }
+                                            }" 
+                                            change=".onInputAllocatedAmount"
+                                            enabled="{= ${request>/view} !== 'view' &amp;&amp; 
+                                                        ${request>/req_item/location_type} !== ${constant>/LocationType/KWSP} &amp;&amp;
+                                                        !!${request>/req_item/type_of_vehicle}}">
+                                        </Input>
                                     </form:fields>
                                 </form:FormElement>
 
-                                <!-- Rate Per Kilometer (NOT USED FOR NOW)-->
+                                <!-- Rate Per Kilometer -->
                                 <form:FormElement label="{i18n>req_i_rate_pkm}"
                                             visible="false"
                                             id="i_rate_per_kilometer" >
@@ -534,11 +549,23 @@
                                             visible="false"
                                             id="i_toll"  >
                                     <form:fields>
-                                        <m:Input 
-                                            type="Number" 
+                                        <Input 
                                             textAlign="Begin" 
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/toll_amt}"/>
+                                            required="true" 
+                                            value="{
+                                                path: 'request>/req_item/toll_amt',
+                                                type: 'sap.ui.model.type.Float',
+                                                formatOptions: {
+                                                    minFractionDigits: 2,
+                                                    maxFractionDigits: 2
+                                                },
+                                                constraints: {
+                                                    minimum: 0
+                                                }
+                                            }" 
+                                            change=".onInputAllocatedAmount"
+                                            enabled="{= ${request>/view} !== 'view' }">
+                                        </Input>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -570,6 +597,7 @@
                                             id="i_location_type" >
                                     <form:fields>
                                         <Select 
+                                            id="item_location_type"
                                             selectedKey="{request>/req_item/location_type}" 
                                             required="true" 
                                             forceSelection="false"
@@ -633,11 +661,12 @@
                                             selectedKey="{request>/req_item/from_location_office}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
+                                            enabled="{= ${request>/view} !== 'view' &amp;&amp; 
+                                                        !!${request>/req_item/from_state} }"
                                             items="{
                                                     path: 'employee>/ZOFFICE_LOCATION',
-                                                    sorter: { path: 'LOCATION_ID', descending: false }
-                                            }" >
+                                                    sorter: { path: 'LOCATION_ID', descending: false }}"
+                                            change=".onFilterToState" >
                                             <items>
                                                 <core:Item key="{employee>LOCATION_ID}" 
                                                         text="{employee>LOCATION_DESC}" />
@@ -652,18 +681,18 @@
                                             id="i_to_state" >
                                     <form:fields>
                                         <Select 
+                                            id="item_to_state"
                                             selectedKey="{request>/req_item/to_state}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            items="{path: 'employee>/ZSTATE',
-                                                    sorter: { path: 'STATE_ID', descending: false },
-                                                    filters: [
-                                                        { path: 'STATUS', operator: 'EQ', value1: 'ACTIVE' }]}"
-                                            change=".getToLocationByState" >
+                                            enabled="{= ${request>/view} !== 'view' &amp;&amp; 
+                                                        !!${request>/req_item/from_location_office} }"
+                                            items="{path: 'employee_view>/ZCLM_TO_STATE_SELECTION',
+                                                    sorter: { path: 'TO_STATE_ID', descending: false }}"
+                                            change=".onFilterToOffice" >
                                             <items>
-                                                <core:Item key="{employee>STATE_ID}" 
-                                                        text="{employee>STATE_DESC}" />
+                                                <core:Item key="{employee_view>TO_STATE_ID}" 
+                                                        text="{employee_view>TO_STATE_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
@@ -692,12 +721,14 @@
                                             selectedKey="{request>/req_item/to_location_office}" 
                                             required="true" 
                                             forceSelection="false"
-                                            enabled="{= ${request>/view} !== 'view' }"
-                                            items="{path: 'employee>/ZOFFICE_LOCATION',
-                                                    sorter: { path: 'LOCATION_ID', descending: false }}" >
+                                            enabled="{= ${request>/view} !== 'view' &amp;&amp; 
+                                                        !!${request>/req_item/to_state} }"
+                                            items="{path: 'employee_view>/ZCLM_OFFICE_LOCATION_SELECTION',
+                                                    sorter: { path: 'TO_LOCATION_ID', descending: false }}"
+                                            change=".onSelectToOffice" >
                                             <items>
-                                                <core:Item key="{employee>LOCATION_ID}" 
-                                                        text="{employee>LOCATION_DESC}" />
+                                                <core:Item key="{employee_view>TO_LOCATION_ID}" 
+                                                        text="{employee_view>TO_LOCATION_DESC}" />
                                             </items>
                                         </Select>
                                     </form:fields>
@@ -861,11 +892,16 @@
                                             id="i_no_of_participant" >
                                     <form:fields>
                                         <m:Input 
-                                            type="Number" 
                                             textAlign="Begin" 
                                             required="true"
                                             enabled="{= ${request>/view} !== 'view' }"
-                                            value="{request>/req_item/est_no_participant}"/>
+                                            value="{
+                                                path: 'request>/req_item/est_no_participant',
+                                                type: 'sap.ui.model.type.Integer',
+                                                constraints: {
+                                                    minimum: 1
+                                                }
+                                            }" />
                                     </form:fields>
                                 </form:FormElement>
 
@@ -875,7 +911,7 @@
                                                         ( ${request>/req_header/claimtype} === ${constant>/ClaimType/KURSUS_DLM_NEGARA} || 
                                                         ${request>/req_header/claimtype} === ${constant>/ClaimType/KURSUS_LUAR_NEGARA} ||
                                                         ${request>/req_header/claimtype} === ${constant>/ClaimType/DLM_NEGARA} ||
-                                                        ${request>/req_header/claimtype} === ${constant>/ClaimType/TRLUAR_NEGARAAVEL} ) &amp;&amp;
+                                                        ${request>/req_header/claimtype} === ${constant>/ClaimType/LUAR_NEGARA} ) &amp;&amp;
                                                         ( ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/FLIGHT_L}   || 
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/HOTEL_L}    || 
                                                         ${request>/req_item/claim_type_item_id} === ${constant>/ClaimTypeItem/KILOMETER}  || 
@@ -961,10 +997,16 @@
                                         formatOptions: {
                                             minFractionDigits: 2,
                                             maxFractionDigits: 2
+                                        },
+                                        constraints: {
+                                            minimum: 0
                                         }
                                     }" 
-                                    change="populateEstimatedAmount"
-                                    enabled="{= ${request>/view} !== 'view'}">
+                                    change=".onInputAllocatedAmount"
+                                    enabled="{= ${request>/view} !== 'view' &amp;&amp; 
+                                                ( ${request>/req_item/location_type} !== ${constant>/LocationType/KWSP} || 
+                                                ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/KILOMETER} ) &amp;&amp;
+                                                !${request>/req_item/kilometer} }">
                                 </Input>
                             </table:template>
                         </table:Column>

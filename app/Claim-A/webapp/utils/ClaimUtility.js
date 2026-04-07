@@ -9,40 +9,140 @@ sap.ui.define([
 	"claima/utils/Utility",
 	"claima/utils/DateUtility"
 ], function (
-    Sorter,
+	Sorter,
 	Filter,
 	FilterOperator,
 	BusyIndicator,
-    MessageBox,
-    MessageToast,
+	MessageBox,
+	MessageToast,
 	Constant,
-    Utility,
-    DateUtility
+	Utility,
+	DateUtility
 ) {
 	"use strict";
 
-    return {
+	return {
 
 		/**
-         * Initialize the ClaimUtility
-         * @public
-         */
-        init: function(oOwnerComponent, oView) {
+		 * Initialize the ClaimUtility
+		 * @public
+		 */
+		init: function (oOwnerComponent, oView) {
 			this._oOwnerComponent = oOwnerComponent;
 			this._oView = oView;
-        },
+		},
 
 		/**
-        * Set default values for claim item fields
-        * Request is made to get values from table ZELIGIBILITY_RULE, based on user role and claim type/claim item given 
-        * if record found, value is retrieved from the table and populated in the claim item model
-        * @public
+		* Checks if course has already used by user for a previously approved claim
+		* @public
+		* @param {string} sCourseCode - course code ID to check from database
+		* @param {string} sParticipantId - participant ID to check from database
+		* @returns {boolean} if records found, return true; else return false
+		*/
+		checkExistingCourseCode: async function (sCourseCode, sParticipantId) {
+			const oModel = this._oOwnerComponent.getModel();
+			// filter by claim status (approved, pending approval)
+			const oFilterRoleId = new Filter({
+				filters: [
+					new Filter("CLAIM_STATUS", FilterOperator.EQ, Constant.ClaimStatus.APPROVED),
+					new Filter("CLAIM_STATUS", FilterOperator.EQ, Constant.ClaimStatus.PENDING_APPROVAL)
+				],
+				and: false
+			});
+			const oListBinding = oModel.bindList(Constant.Entities.ZTRAIN_COURSE_PART, null, [
+				new Sorter("COURSE_ID"),
+				new Sorter("SESSION_NUMBER"),
+			], [
+				// ensure status is active
+				new Filter("COURSE_ID", FilterOperator.EQ, sCourseCode),
+				new Filter("PARTICIPANT_ID", FilterOperator.EQ, sParticipantId),
+				new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, Constant.CourseSessionStatus.ACTIVE),
+				new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true),
+				oFilterRoleId
+			]);
+
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+				if (aContexts.length > 0) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (oError) {
+				MessageBox.error(Utility.getText("error_msg_course_code_err", [oError]));
+				return false;
+			} finally {
+				BusyIndicator.hide();
+			}
+		},
+
+		/**
+		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
+		* Method retrieves db table to be checked with fields and values to be filtered against
+		* if records found, first record is retrieved from the table and returns values from the record
+		* @public
+		* @param {string} sCourseCode - course code ID to check from database
+		* @param {string} sParticipantId - participant ID to check from database
+		* @returns {object} oReturnDates - if records found, return total start and end date
+		*/
+		getCourseCodeStartEndDate: async function (sCourseCode, sParticipantId) {
+			const oModel = this._oOwnerComponent.getModel();
+			const oListBinding = oModel.bindList(Constant.Entities.ZTRAIN_COURSE_PART, null, [
+				new Sorter("COURSE_ID"),
+				new Sorter("SESSION_NUMBER"),
+			], [
+				// ensure status is active
+				new Filter("COURSE_ID", FilterOperator.EQ, sCourseCode),
+				new Filter("PARTICIPANT_ID", FilterOperator.EQ, sParticipantId),
+				new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, Constant.CourseSessionStatus.ACTIVE),
+				new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true),
+				new Filter("CLAIM_STATUS", FilterOperator.NE, Constant.ClaimStatus.APPROVED),
+				new Filter("CLAIM_STATUS", FilterOperator.NE, Constant.ClaimStatus.PENDING_APPROVAL)
+			]);
+
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+				if (aContexts.length > 0) {
+					var oReturnDates = {
+						start_date: null,
+						end_date: null,
+					}
+					for ( var iContext = 0; iContext < aContexts.length; iContext++) {
+						var oData = aContexts[iContext].getObject();
+						if (!oReturnDates.start_date || new Date(oData["START_DATE"]) < new Date(oReturnDates.start_date)) {
+							oReturnDates.start_date = oData["START_DATE"];
+						}
+						if (!oReturnDates.end_date || new Date(oData["END_DATE"]) > new Date(oReturnDates.end_date)) {
+							oReturnDates.end_date = oData["END_DATE"];
+						}
+					}
+					return oReturnDates;
+				} else {
+					return null;
+				}
+			} catch (oError) {
+				MessageBox.error(Utility.getText("msg_claimdetails_input_err", [oError]));
+				return null;
+			} finally {
+				BusyIndicator.hide();
+			}
+		}, 
+
+		/**
+		* Set default values for claim item fields
+		* Request is made to get values from table ZELIGIBILITY_RULE, based on user role and claim type/claim item given 
+		* if record found, value is retrieved from the table and populated in the claim item model
+		* @public
 		* @param {object} oClaimSubmissionModel - claim submission to be passed into param
 		* @param {object} oInputModel - claim item model to be passed into param
 		* @param {string} sClaimItemField - claim item field to be populated
 		* @param {string} sEligibilityRule - field to retrieve value from db table
 		* @param {string} sDefaultValue - default value to set if none found
-        */
+		*/
 		setClaimItemDefaultValues: async function (oClaimSubmissionModel, oInputModel, sClaimItemField, sEligibilityRule, sDefaultValue) {
 			const oModel = this._oOwnerComponent.getModel();
 			//// filter by employee role ID or * (all)
@@ -97,32 +197,105 @@ sap.ui.define([
 		},
 
 		/**
-        * Retrieve backend data from db table based on selected claim item value
-        * Method retrieves db table to be checked with fields and values to be filtered against
-        * if records found, first record is retrieved from the table and returns values from the record
-        * @public
+		* Check if current user ID has previously approved claim with elaun pengangkutan claim item
+		* Method retrieves db table to be checked with fields and values to be filtered against
+		* if records found and have been approved, return true; else, return false
+		* @public
+		* @param {string} sEmpId - employee ID to retrieve dependents for
+		* @returns {boolean} if records found, return true; else, return false
+		*/
+		getPreviousElaunPengangkutan: async function (sEmpId) {
+			const oModel = this._oOwnerComponent.getModel();
+			const oListBinding = oModel.bindList(Constant.Entities.ZCLAIM_ITEM, null, [
+				new Sorter("CLAIM_ID")
+			], [
+				new Filter("EMP_ID", FilterOperator.EQ, sEmpId),
+				new Filter("CLAIM_TYPE_ITEM_ID", FilterOperator.EQ, Constant.ClaimTypeItem.E_PENGAKUT)
+			], {
+				$expand: { "ZCLAIM_HEADER": { $select: "STATUS_ID" } }
+			});
+
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+				if (aContexts.length > 0) {
+					for ( var iContext = 0; iContext < aContexts.length; iContext++ ) {
+						var oData = aContexts[iContext].getObject();
+						if (oData["ZCLAIM_HEADER"]["STATUS_ID"] === Constant.ClaimStatus.APPROVED ||
+							oData["ZCLAIM_HEADER"]["STATUS_ID"] === Constant.ClaimStatus.PENDING_APPROVAL
+						) {
+							// if approved claim header found, return true
+							return true;
+						}
+					}
+					// if exit for loop, no approved claim header found with elaun pengangkutan
+				}
+				return false;
+			} catch (oError) {
+				MessageBox.error(Utility.getText("msg_claimdetails_input_pengangkutan_err", [oError]));
+				return false;
+			} finally {
+				BusyIndicator.hide();
+			}
+		},
+
+		/**
+		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
+		* Method retrieves db table to be checked with fields and values to be filtered against
+		* if records found, first record is retrieved from the table and returns values from the record
+		* @public
+		* @param {string} sEmpId - employee ID to retrieve dependents for
+		* @returns {integer} if records found, return total number of dependents for employee
+		*/
+		getNumberOfFamilyMembers: async function (sEmpId) {
+			const oModel = this._oOwnerComponent.getModel();
+			const oListBinding = oModel.bindList(Constant.Entities.ZEMP_DEPENDENT, null, [
+				new Sorter("DEPENDENT_NO")
+			], [
+				new Filter("EMP_ID", FilterOperator.EQ, sEmpId)
+			]);
+
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+				return aContexts.length;
+			} catch (oError) {
+				MessageBox.error(Utility.getText("msg_claimdetails_input_no_of_family_member_err", [oError]));
+				return 0;
+			} finally {
+				BusyIndicator.hide();
+			}
+		},
+
+		/**
+		* Retrieve backend data from db table based on selected claim item value
+		* Method retrieves db table to be checked with fields and values to be filtered against
+		* if records found, first record is retrieved from the table and returns values from the record
+		* @public
 		* @param {string} sEntity - name of table to check from database
 		* @param {array} aEntityFields - array of entity fields and values to filter by
 		* @param {array} aRetrievalFields - array of entity fields to retrieve values from
 		* @returns {array} if records found, returns array of values from first selected record; else, returns empty array
-        */
+		*/
 		setClaimItemValueFromSelection: async function (sEntity, aEntityFields, aRetrievalFields) {
 			const oModel = this._oOwnerComponent.getModel();
-            // set filters based on given entity fields
-            var aSorters = [];
-            var aFilters = [];
-            for (var iEntityField = 0; iEntityField < aEntityFields.length; iEntityField++) {
-                //// filter entity field to be checked by selection input or * (all)
-                var oFilterEntityField = new Filter({
-                    filters: [
-                        new Filter(aEntityFields[iEntityField].entity_field, FilterOperator.EQ, aEntityFields[iEntityField].filter_value),
-                        new Filter(aEntityFields[iEntityField].entity_field, FilterOperator.EQ, '*')
-                    ],
-                    and: false
-                });
-                aFilters.push(oFilterEntityField);
-                aSorters.push(new Sorter(aEntityFields[iEntityField].entity_field, true));
-            }
+			// set filters based on given entity fields
+			var aSorters = [];
+			var aFilters = [];
+			for (var iEntityField = 0; iEntityField < aEntityFields.length; iEntityField++) {
+				//// filter entity field to be checked by selection input or * (all)
+				var oFilterEntityField = new Filter({
+					filters: [
+						new Filter(aEntityFields[iEntityField].entity_field, FilterOperator.EQ, aEntityFields[iEntityField].filter_value),
+						new Filter(aEntityFields[iEntityField].entity_field, FilterOperator.EQ, '*')
+					],
+					and: false
+				});
+				aFilters.push(oFilterEntityField);
+				aSorters.push(new Sorter(aEntityFields[iEntityField].entity_field, true));
+			}
 			// ensure status is active
 			aFilters.push(
 				new Filter("STATUS", FilterOperator.EQ, Constant.ClaimTypeItemStatus.ACTIVE),
@@ -131,26 +304,26 @@ sap.ui.define([
 			);
 			const oListBinding = oModel.bindList(sEntity, null, aSorters, aFilters);
 
-            try {
-                BusyIndicator.show(0);
-                const aContexts = await oListBinding.requestContexts(0, Infinity);
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
 
-                if (aContexts.length > 0) {
-                    const oData = aContexts[0].getObject();
-                    var aReturnFields = [];
-                    for (var iRetrievalField = 0; iRetrievalField < aRetrievalFields.length; iRetrievalField++) {
-                        aReturnFields.push(oData[aRetrievalFields[iRetrievalField]]);
-                    }
-                    return aReturnFields;
-                } else {
-                    return[];
-                }
-            } catch (oError) {
-                MessageBox.error(Utility.getText("msg_claimdetails_input_err", [oError]));
-                return [];
-            } finally {
-                BusyIndicator.hide();
-            }
+				if (aContexts.length > 0) {
+					const oData = aContexts[0].getObject();
+					var aReturnFields = [];
+					for (var iRetrievalField = 0; iRetrievalField < aRetrievalFields.length; iRetrievalField++) {
+						aReturnFields.push(oData[aRetrievalFields[iRetrievalField]]);
+					}
+					return aReturnFields;
+				} else {
+					return [];
+				}
+			} catch (oError) {
+				MessageBox.error(Utility.getText("msg_claimdetails_input_err", [oError]));
+				return [];
+			} finally {
+				BusyIndicator.hide();
+			}
 		}, 
 
 		/**
@@ -185,14 +358,14 @@ sap.ui.define([
 			oContext.setParameter("dinner", nDinner);
 
 			return oContext.execute()
-							.then(() => oContext.requestObject());
+				.then(() => oContext.requestObject());
 
 		},
 
 		determineDefaultCostCenter: async function (sClaimTypeId) {
-            try {
+			try {
 				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkDefaultCostCenter(...)");
-				
+
 				oFunction.setParameter("sClaimTypeId", sClaimTypeId);
 
 				await oFunction.execute();
@@ -200,12 +373,119 @@ sap.ui.define([
 				const oContext = oFunction.getBoundContext();
 				const oResult = oContext.getObject();
 
-                return oResult.sCostCenter
+				return oResult.sCostCenter
 
 			} catch (oError) {
 				return null;
 			}
-			
-        },
-    }
+		},
+
+		/**
+		 * Calculate entitled meter cube value for Pengangkutan Laut claim type.
+		 * Method retrieves employee master data, marital status, dependent (spouse) data,
+		 * and meter cube configuration table to determine the total entitled meter cube
+		 * based on predefined rules.
+		 *
+		 * Entitlement is derived from these components:
+		 * - Base employee meter cube
+		 * - Additional meter cube based on marital status (single/married)
+		 * - Additional meter cube if employee has a spouse
+		 *
+		 * @public
+		 * @param {string} sKey - Selected claim type key
+		 * @param {object} oInputModel - Model storing claim item input values
+		 * @param {object} oPropertyModel - Model controlling visibility/editability of UI fields
+		 * @param {object} oSessionModel - Model containing user session information
+		 * @returns {void} Does not return a value; updates claim item model properties directly
+		 */
+		onSelect_ClaimDetails_MeterCube: async function (sKey, oInputModel, oPropertyModel, oSessionModel) {
+
+			const sEmpId = oSessionModel?.getProperty("/userId");
+			if (sKey !== Constant.ClaimTypeItem.LAUT || !sEmpId) {
+				return;
+			}
+			const oMar = Constant.MaritalStatus;
+			const oCube = Constant.MeterCubeId;
+			const oRel = Constant.RelationshipType;
+			const aMaster = await Utility.getMeterCubeCalc("/ZEMP_MASTER", ["EEID"], [sEmpId]);
+			const sMarital = aMaster?.[0]?.MARITAL;
+			const aDep = await Utility.getMeterCubeCalc(
+				"/ZEMP_DEPENDENT",
+				["EMP_ID", "RELATIONSHIP"],
+				[sEmpId, oRel.SPOUSE]
+			);
+			const bHasSpouse = aDep.length > 0;
+			const aMeter = await Utility.getMeterCubeCalc("/ZMETER_CUBE");
+			const fnGetCube = (sId) =>
+				aMeter.find(oRow => oRow.METER_CUBE_ID === sId)?.METER_CUBE ?? 0;
+			const aParts = [
+				fnGetCube(oCube.EMPLOYEE),
+				sMarital === oMar.SINGLE ? fnGetCube(oCube.SINGLE) : 0,
+				sMarital === oMar.MARRIED ? fnGetCube(oCube.MARRIED) : 0,
+				bHasSpouse ? fnGetCube(oCube.SPOUSE) : 0
+			];
+			const fTotal = aParts.reduce((sum, val) => sum + Number(val), 0);
+			//final value
+			oInputModel.setProperty("/claim_item/meter_cube_entitled", fTotal.toFixed(2));
+			oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
+			oPropertyModel.setProperty("/meter_cube_entitled/is_visible", true);
+		},
+
+		/**
+		 * Calculate claim amount for Pengangkutan Laut based on actual meter cube,
+		 * entitled meter cube, and actual amount entered by user.
+		 *
+		 * Method reads relevant values from the input model, validates them,
+		 * and applies the entitlement formula to derive the final payable amount.
+		 *
+		 * @public
+		 * @param {object} oInputModel - JSON model containing claim item input values
+		 * @returns {void} Updates "/claim_item/amount" in the model; no return value
+		 */
+		calculatePengangkutanLautAmount: function (oInputModel) {
+
+			const sActualMC = oInputModel.getProperty("/claim_item/meter_cube_actual");
+			const sActualAmount = oInputModel.getProperty("/claim_item/actual_amount");
+
+			if (sActualMC === "" || sActualMC === null ||
+				sActualAmount === "" || sActualAmount === null) {
+				oInputModel.setProperty("/claim_item/amount", null);
+				return;
+			}
+
+			const nActualMeterCube = Number(sActualMC);
+			const nEntitledMeterCube = Number(oInputModel.getProperty("/claim_item/meter_cube_entitled"));
+
+			const nActualAmount = Number(sActualAmount.toString().replace(/,/g, ""));
+
+			if (isNaN(nActualMeterCube) || isNaN(nEntitledMeterCube) || isNaN(nActualAmount)) {
+				oInputModel.setProperty("/claim_item/amount", null);
+				return;
+			}
+
+			let nFinalAmount = 0;
+
+			if (nActualMeterCube > nEntitledMeterCube) {
+				nFinalAmount = (nActualAmount / nActualMeterCube) * nEntitledMeterCube;
+			} else {
+				nFinalAmount = nActualAmount;
+			}
+
+			oInputModel.setProperty("/claim_item/amount", nFinalAmount.toFixed(2));
+		},
+
+
+		/**
+		 * Check if PAR has been reused for claim submission 
+		 * @public
+		 * @param {String} sRequestID - Pre-approval request ID
+		 * @returns {Boolean} bIsUsed - show if warning should be sent
+		 */
+		checkReusedPAR: async function(sRequestID) {
+			const oModel = this._oView.getModel();
+			const oContext = oModel.bindContext("/checkPreApprovalUsage(...)");
+			oContext.setParameter("requestID", sRequestID);
+			return oContext.execute().then(() => oContext.requestObject());
+		}
+	}
 });

@@ -83,7 +83,7 @@
                     id="claimTable"
                     width="90%"
                     items="{ path: '/ZCLAIM_TYPE',sorter : { path : 'modifiedAt' }}"
-                    mode="SingleSelectLeft"
+                    mode="MultiSelect"
                     selectionChange="onSelectionChange"
                     includeItemInSelection="true"
                 >

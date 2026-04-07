@@ -8,7 +8,8 @@ sap.ui.define([
 	"claima/utils/Utility",
 	"sap/ui/model/Sorter",
 	"sap/ui/model/Filter",
-	"sap/ui/model/FilterOperator"
+	"sap/ui/model/FilterOperator",
+	"claima/utils/DateUtility"
 ], function (
 	Controller,
 	MessageToast,
@@ -19,7 +20,8 @@ sap.ui.define([
 	Utility,
 	Sorter,
 	Filter,
-	FilterOperator) {
+	FilterOperator,
+	DateUtility ) {
 	"use strict";
 
 	return Controller.extend("claima.controller.RequestFormStatus", {
@@ -27,6 +29,8 @@ sap.ui.define([
 		/* =========================================================
 		* Lifecycle
 		* ======================================================= */
+
+		DateUtility: DateUtility,
 		onInit() {
 			this._oConstant = this.getOwnerComponent().getModel("constant").getData();
 			this._oRouter = this.getOwnerComponent().getRouter();
@@ -62,17 +66,17 @@ sap.ui.define([
 			);
 
 			try {
-				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				const a = aCtx.map((ctx) => ctx.getObject());
+				const oContext = await oListBinding.requestContexts(0, Infinity);
+				const oContextItems = oContext.map((ctx) => ctx.getObject());
 
-				a.forEach((it) => {
+				oContextItems.forEach((it) => {
 					if (it.PREAPPROVAL_AMOUNT == null) it.PREAPPROVAL_AMOUNT = 0.0;
 				});
 
-				oReqStatusModel.setProperty("/req_header_list", a);
-				oReqStatusModel.setProperty("/req_header_count", a.length);
+				oReqStatusModel.setProperty("/req_header_list", oContextItems);
+				oReqStatusModel.setProperty("/req_header_count", oContextItems.length);
 
-				return a;
+				return oContextItems;
 			} catch (err) {
 				console.error("OData bindList failed:", err);
 				oReqStatusModel.setProperty("/req_header_list", []);

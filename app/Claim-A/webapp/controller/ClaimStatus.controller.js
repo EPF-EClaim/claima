@@ -8,7 +8,8 @@ sap.ui.define([
 	"claima/utils/Utility",
 	"sap/suite/ui/commons/BusinessCard",
 	"sap/m/BusyIndicator",
-	"sap/m/SelectDialog"
+	"sap/m/SelectDialog",
+	"claima/utils/DateUtility"
 ], function (Controller,
 	JSONModel,
 	MessageToast,
@@ -18,11 +19,13 @@ sap.ui.define([
 	Utility,
 	BusinessCard,
 	BusyIndicator,
-	SelectDialog) {
+	SelectDialog,
+	DateUtility) {
 	"use strict";
 
 	return Controller.extend("claima.controller.ClaimStatus", {
 
+		DateUtility: DateUtility,
 		onInit: function () {
 			// Track current sort direction per path: true = DESC, false = ASC
 			this._mSortState = {};
@@ -46,11 +49,11 @@ sap.ui.define([
 				}
 			);
 			try {
-				const aCtx = await oListBinding.requestContexts(0, Infinity);
-				const a = aCtx.map((ctx) => ctx.getObject());
+				const oContext = await oListBinding.requestContexts(0, Infinity);
+				const oContextItems = oContext.map((ctx) => ctx.getObject());
 
-				_oReq.setProperty("/claim_header_list", a);
-				_oReq.setProperty("/claim_header_count", a.length);
+				_oReq.setProperty("/claim_header_list", oContextItems);
+				_oReq.setProperty("/claim_header_count", oContextItems.length);
 			} catch (err) {
 				console.error("OData bindList failed:", err);
 				_oReq.setProperty("/claim_header_list", []);

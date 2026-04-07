@@ -15,8 +15,7 @@ module.exports = {
         var oRule = aRules[0];
         var iHistoricalData = await this._getHistoricalData(oPayload, oRule, tx);
         var iCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oRule, tx);
-        return iCurrentRecordItemData;
-        // console.log(iHistoricalData, iCurrentRecordItemData);
+
         this._validateClaimItem(oRule, oPayload, iHistoricalData + iCurrentRecordItemData);
         return oPayload;
     },
@@ -31,20 +30,11 @@ module.exports = {
          */
     _getHistoricalData: async function (oPayload, oRule, tx) {
         let sDate = null;
+        var sHeaderTable = "";
+        var sItemTable = "";
         // get Historical Claims Data
         // find field for date
         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
-        // const sYearMonth = oPayload.CheckFields[iIndex].value.substring(0, 7);
-        // Derive first and last day of the month
-        // const [year, month] = sYearMonth.split('-').map(Number);
-        // const dDateFrom = `${sYearMonth}-01`;
-        // const dDateTo = new Date(year, month, 0)  // last day of month
-        //     .toISOString().split('T')[0]; // 'YYYY-MM-DD'
-
-        // const nDateFrom = new Date(dDateFrom); 
-        // const nDateTo = new Date(dDateTo)   
-        // console.log(nDateFrom, nDateTo);
-
         sMonth = parseInt(oPayload.CheckFields[iIndex].value.substring(6, 8));
         sYear = parseInt(oPayload.CheckFields[iIndex].value.substring(0, 4));
 
@@ -62,19 +52,23 @@ module.exports = {
         sDate = sYear + Constant.Wildcard.DASH + sMonth + Constant.Wildcard.DASH;
         sDate = sDate + Constant.Wildcard.LIKE_PATTERN;
 
+        // Map ClaimID or RequestID based on which HeaderTable to use
+        if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
+            sHeaderTable = Constant.Entities.ZCLAIM_HEADER;
+            sItemTable = Constant.Entities.ZCLAIM_ITEM;
+        } else {
+            sHeaderTable = Constant.Entities.ZREQUEST_HEADER
+            sItemTable = Constant.Entities.ZREQUEST_ITEM;
+        }
+
         const aItemcondition = {
             [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
             [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
             [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
             [Constant.EntitiesFields.RECEIPT_DATE]: { LIKE: sDate }
-            // [Constant.EntitiesFields.RECEIPT_DATE]: {
-            //     [Constant.ComparisonOperators.GreaterEquals]: nDateFrom,
-            //     [Constant.ComparisonOperators.LesserEquals]: nDateTo
-            // }
         };
-        // console.log(aItemcondition);
-        const iHistoricalData = await GetHistoricalData.getHistoricalData(Constant.Entities.ZCLAIM_HEADER,
-            Constant.Entities.ZCLAIM_ITEM,
+        const iHistoricalData = await GetHistoricalData.getHistoricalData(sHeaderTable,
+            sItemTable,
             aItemcondition,
             tx);
 
@@ -91,6 +85,9 @@ module.exports = {
          */
     _getCurrentRecordItemData: async function (oPayload, oRule, tx) {
         let sDate = null;
+        var sHeaderField = "";
+        var sItemField = "";
+        var sItemTable = "";
         // get Historical Claims Data
         // find field for date
         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
@@ -111,47 +108,30 @@ module.exports = {
         // sDate = sYear + Constant.Wildcard.DASH + sMonth + Constant.Wildcard.DASH;
         // sDate = sDate + Constant.Wildcard.LIKE_PATTERN;
 
-        // //Map Headers
-        // // Map ClaimID or RequestID based on which HeaderTable to use
-        // if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
-        //     sHeaderField = Constant.EntitiesFields.CLAIMID;
-        // } else {
-        //     sHeaderField = Constant.EntitiesFields.REQUESTID;
-        // }
-
-        // const aCurrentItemcondition = {
-        //     [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
-        //     [sHeaderField]: oPayload.RecordId,
-        //     [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
-        //     [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
-        //     [Constant.EntitiesFields.RECEIPT_DATE]: { LIKE: sDate }
-        // };
-
-        // return iCurrentData = await GetHistoricalData.getCurrentItemData(Constant.Entities.ZCLAIM_ITEM,
-        //     aCurrentItemcondition,
-        //     tx);
-
-        const sYearMonth = oPayload.CheckFields[iIndex].value.substring(0, 7);
-        // Derive first and last day of the month
-        const [year, month] = sYearMonth.split('-').map(Number);
-        const dDateFrom = `${sYearMonth}-01`;
-        const dDateTo = new Date(year, month, 0)  // last day of month
-            .toISOString().split('T')[0]; // 'YYYY-MM-DD'
+        //Map Headers
+        // Map ClaimID or RequestID based on which HeaderTable to use
+        if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
+            sHeaderField = Constant.EntitiesFields.CLAIMID;
+            sItemField = Constant.EntitiesFields.CLAIM_SUB_ID;
+            sItemTable = Constant.Entities.ZCLAIM_ITEM;
+        } else {
+            sHeaderField = Constant.EntitiesFields.REQUESTID;
+            sItemField = Constant.EntitiesFields.REQUEST_SUB_ID;
+            sItemTable = Constant.Entities.ZREQUEST_ITEM;
+        }
 
         const aCurrentItemcondition = {
             [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
+            [sHeaderField]: oPayload.RecordId,
+            [sItemField]: { '!=': oPayload.RecordSubId },
             [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
             [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
             [Constant.EntitiesFields.RECEIPT_DATE]: { between: [dDateFrom, dDateTo] }
         };
 
-        const sConditions = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
-
-        const aItemData = await tx.run(
-            SELECT.from(Constant.Entities.ZCLAIM_ITEM).where(`${sConditions}`)
-        );
-        console.log(aItemData.length);
-        return aItemData;
+        return iCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
+            aCurrentItemcondition,
+            tx);
     },
 
     /**
@@ -168,9 +148,7 @@ module.exports = {
             case Constant.ClaimTypeItem.I_PAD:
                 // I-PAD - return true if there is no historical claims within same Year/Month based on frequency and period
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
-                // Frequency + 1 to accomodate checking for current claim id that is in draft
-                var iFrequency = oRule.FREQUENCY + 1;
-                if (iFrequencyCount < iFrequency) {
+                if (iFrequencyCount < oRule.FREQUENCY) {
                     oPayload.CheckFields[iIndex].result = true;
                 } else {
                     oPayload.CheckFields[iIndex].result = false;

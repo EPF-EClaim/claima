@@ -30,6 +30,7 @@ sap.ui.define([
 	"claima/utils/EligibilityCheck",
 	"claima/utils/DateUtility",
 	"claima/utils/Constants",
+	"claima/utils/RequestUtility",
 	"claima/utils/CustomValidator"
 ], function (
 	Controller,
@@ -63,6 +64,7 @@ sap.ui.define([
 	EligibilityCheck,
 	DateUtility,
 	Constants,
+	RequestUtility,
 	CustomValidator
 ) {
 	"use strict";
@@ -81,14 +83,14 @@ sap.ui.define([
 			this._oRouter 			= this.getOwnerComponent().getRouter();
 			this._oConstant 		= this.getOwnerComponent().getModel("constant").getData();
 			this._oReqModel 		= this.getOwnerComponent().getModel("request");
-			this._oReqStatusModel	= this.getOwnerComponent().getModel("request_status");
 			this._oApprovalLogModel	= this.getOwnerComponent().getModel('approval_log')
 			this._oDataModel 		= this.getOwnerComponent().getModel();
 			this._oViewModel 		= this.getOwnerComponent().getModel("employee_view");
 			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
 			this._oFragments 		= Object.create(null);
 
-			CustomValidator.init(this.getOwnerComponent(), this.getView())
+			RequestUtility.init(this.getOwnerComponent(), this.getView());
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
 
 			// URL Access
 			this._oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
@@ -361,8 +363,8 @@ sap.ui.define([
 									const sCurrentReqId = String(this._oReqModel.getProperty("/req_header/reqid") || "").trim();
 									bApproversDetermined = await workflowApproval.onPARApproverDetermination(this, oModel, sCurrentReqId, oEmployeeViewModel);
 									if(bApproversDetermined){
-										await Utility._updateStatus(this._oDataModel, sReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
-										await Utility._updateSubmittedDate(this._oDataModel, sReqId);
+										await Utility._updateStatus(this._oDataModel, sCurrentReqId, this._oConstant.ClaimStatus.PENDING_APPROVAL);
+										await Utility._updateSubmittedDate(this._oDataModel, sCurrentReqId);
 										this._oReqModel.setProperty("/view", 'view');
 										
 										// this._oReqModel.setProperty("/req_header/reqstatus", this._oConstant.ClaimStatus.PENDING_APPROVAL)
@@ -468,7 +470,9 @@ sap.ui.define([
 
 			oReqData.req_item = {
 				est_amount: 0,
+				kilometer: 0,
 				rate_per_kilometer: 0,
+				toll_amt: 0,
 				cash_advance: false
 			};
 
@@ -554,7 +558,7 @@ sap.ui.define([
 				fare_type				: oReqItem.FARE_TYPE_ID || "",
 				vehicle_class			: oReqItem.VEHICLE_CLASS || "",
 				kilometer				: oReqItem.KILOMETER || 0,
-				rate_per_kilometer		: oReqItem.RATE_PER_KM || 0,
+				rate_per_kilometer		: oReqItem.RATE || 0,
 				toll_amt				: oReqItem.TOLL || 0,
 				flight_class			: oReqItem.FLIGHT_CLASS || "",
 				location_type			: oReqItem.LOCATION_TYPE || "",
@@ -1126,7 +1130,7 @@ sap.ui.define([
 					EST_NO_PARTICIPANT:           parseInt(oReqItem.est_no_participant, 10) || 1,
 					EST_AMOUNT:                   parseFloat(oReqItem.est_amount || 0),
 					KILOMETER:                    parseFloat(oReqItem.kilometer || 0),
-					RATE_PER_KM:                  oReqItem.rate_per_kilometer || null,
+					RATE_PER_KM:                  oReqItem.rate_per_kilometer_id || null,
 					TOLL:                         parseFloat(oReqItem.toll_amt || 0),
 					METER_CUBE_ENTITLED:          parseFloat(oReqItem.cube_eligible || 0),
 					METER_CUBE_ACTUAL:            parseFloat(oReqItem.meter_cube_actual || 0),
@@ -1287,35 +1291,6 @@ sap.ui.define([
 			}
 		},
 
-		populateEstimatedAmount: function(oEvent) {
-			const oInput = oEvent.getSource();
-			
-			const oContext = oInput.getBindingContext("request");
-			const sPath = oContext.getPath(); 
-			
-			let fEnteredAmount = parseFloat(oInput.getValue() || 0);
-
-			const sClaimTypeItem = this._oReqModel.getProperty("/req_item/claim_type_item_id");
-
-			if (!sClaimTypeItem) {
-				MessageBox.error(Utility.getText("req_d_e_select_claim_type_item"));
-				return;
-			}
-			
-			CustomValidator.init(this.getOwnerComponent(), this.getView())
-			if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.REQUEST)){
-				return;
-			}
-
-			const aParticipantList = this._oReqModel.getProperty("/participant");
-
-			const fEstAmount = aParticipantList.reduce((sum, row) => {
-				return sum + parseFloat(row.ALLOCATED_AMOUNT || 0);
-			}, 0);
-
-			this._oReqModel.setProperty("/req_item/est_amount", fEstAmount.toFixed(2));
-		},
-
 		/* =========================================================
 		* Participant Value Help 
 		* ======================================================= */
@@ -1416,6 +1391,7 @@ sap.ui.define([
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", oEmpData.EEID || oEmpData.ID);
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", oEmpData.NAME);
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_COST_CENTER", oEmpData.CC);
+				RequestUtility.populateAllocatedAmount();	// populate allocated amount if applicable
 			} else {
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", "");
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", "");
@@ -2031,7 +2007,7 @@ sap.ui.define([
 		async getRatePerKM () {
 			var sVehicleType = this._oReqModel.getProperty("/req_item/type_of_vehicle");
 			const oListBinding = this._oDataModel.bindList("/ZRATE_KM", null, null, [
-				new sap.ui.model.Filter("VEHICLE_TYPE_ID", "EQ", sVehicleType)
+				new Filter("VEHICLE_TYPE_ID", FilterOperator.EQ, sVehicleType)
 			]);
 
 			try {
@@ -2040,6 +2016,9 @@ sap.ui.define([
 				if (aContexts.length > 0) {
 					const oData = aContexts[0].getObject();
 					this._oReqModel.setProperty("/req_item/rate_per_kilometer", oData.RATE);
+					this._oReqModel.setProperty("/req_item/rate_per_kilometer_id", oData.RATE_KM_ID);
+                	RequestUtility.populateAllocatedAmount();
+					RequestUtility.determineOfficeMileage();
 				}
 			} catch (oError) {
 				console.error("Error fetching Rate Per KM detail", oError);
@@ -2059,6 +2038,12 @@ sap.ui.define([
 			if (!sClaimTypeItem) {
 				console.warn("No claim type item found yet.");
 				return;
+			}
+
+			const oLocationTypeSelect = this.byId("item_location_type");
+			if (oLocationTypeSelect) {
+				oLocationTypeSelect.setForceSelection(false);
+				oLocationTypeSelect.setSelectedKey("");
 			}
 
 			BusyIndicator.show(0);
@@ -2145,7 +2130,8 @@ sap.ui.define([
 				"i_marriage_cat",
 				"i_cube_eligible",
 				"i_departure_time",
-				"i_arrival_time"
+				"i_arrival_time",
+				"i_lodging_cat"
 			];
 
 			aControlIds.forEach(id => {
@@ -2438,5 +2424,49 @@ sap.ui.define([
 				SendBackDialog.destroy(this);
 			} catch (e) { }
 		},
+
+		/* =========================================================
+		* xml onchange event trigger
+		* ======================================================= */
+
+		onInputAllocatedAmount: function () {
+			RequestUtility.populateAllocatedAmount();
+		},
+
+		onFilterToState: function () {
+            const oReqItem  = this._oReqModel.getProperty("/req_item");
+            
+            var sFromState  = oReqItem.from_state;
+            var sFromOffice = oReqItem.from_location_office;
+
+			const oSelect   = this.byId("item_to_state");
+			const oBinding  = oSelect.getBinding("items");
+			const aFilters  = oSelect ? [
+                                new Filter("FROM_STATE_ID", FilterOperator.EQ, sFromState),
+                                new Filter("FROM_LOCATION_ID", FilterOperator.EQ, sFromOffice)
+                            ]: [];
+			oBinding.filter(aFilters);
+		},
+
+        onFilterToOffice: function () {
+            const oReqItem  = this._oReqModel.getProperty("/req_item");
+            
+            var sFromState  = oReqItem.from_state;
+            var sFromOffice = oReqItem.from_location_office;
+            var sToState    = oReqItem.to_state;
+
+			const oSelect   = this.byId("item_to_location_office");
+			const oBinding  = oSelect.getBinding("items");
+			const aFilters  = oSelect ? [
+                                new Filter("FROM_STATE_ID", FilterOperator.EQ, sFromState),
+                                new Filter("FROM_LOCATION_ID", FilterOperator.EQ, sFromOffice),
+                                new Filter("TO_STATE_ID", FilterOperator.EQ, sToState)
+                            ]: [];
+			oBinding.filter(aFilters);
+		},
+
+		onSelectToOffice: function () {
+			RequestUtility.determineOfficeMileage();
+		}
 	});
 });
