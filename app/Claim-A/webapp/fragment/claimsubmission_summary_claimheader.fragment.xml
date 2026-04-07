@@ -73,7 +73,7 @@
                 <Label text="{i18n>label_claimsummary_claimheader_course_code}" />
                 <Text
                     id="text_claimsummary_claimheader_course_code"
-                    text="{claimsubmission_input>/claim_header/course_code}"
+                    text="{claimsubmission_input>/claim_header/course_code} - {claimsubmission_input>/claim_header/descr/course_code}"
                     visible="{= !!${claimsubmission_input>/claim_header/course_code} }"
                 />
 

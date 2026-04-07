@@ -2,6 +2,7 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
+	"sap/ui/model/json/JSONModel",
 	"sap/ui/core/BusyIndicator",
 	"sap/m/MessageBox",
 	"sap/m/MessageToast",
@@ -12,6 +13,7 @@ sap.ui.define([
 	Sorter,
 	Filter,
 	FilterOperator,
+	JSONModel,
 	BusyIndicator,
 	MessageBox,
 	MessageToast,
@@ -79,15 +81,15 @@ sap.ui.define([
 		},
 
 		/**
-		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
+		* Retrieve values for course code as well as start end dates from db table, based on selected course code ID and user ID
 		* Method retrieves db table to be checked with fields and values to be filtered against
 		* if records found, first record is retrieved from the table and returns values from the record
 		* @public
 		* @param {string} sCourseCode - course code ID to check from database
 		* @param {string} sParticipantId - participant ID to check from database
-		* @returns {object} oReturnDates - if records found, return total start and end date
+		* @returns {object} oReturnValues - if records found, return course code values including total start and end date
 		*/
-		getCourseCodeStartEndDate: async function (sCourseCode, sParticipantId) {
+		getCourseCodeValues: async function (sCourseCode, sParticipantId) {
 			const oModel = this._oOwnerComponent.getModel();
 			const oListBinding = oModel.bindList(Constant.Entities.ZTRAIN_COURSE_PART, null, [
 				new Sorter("COURSE_ID"),
@@ -107,20 +109,37 @@ sap.ui.define([
 				const aContexts = await oListBinding.requestContexts(0, Infinity);
 
 				if (aContexts.length > 0) {
-					var oReturnDates = {
-						start_date: null,
-						end_date: null,
+					var oReturnValues = {
+						session_number: null,
+						course_session_stat: null,
+						attendence_status: null,
+						participant_id: null,
+						session_start_date: null,
+						session_end_date: null,
+						// course date - used for claim duration
+						course_start_date: null,
+						course_end_date: null,
 					}
+					// populate course session details
+					var oData = aContexts[0].getObject();
+					oReturnValues.session_number = oData["SESSION_NUMBER"];
+					oReturnValues.course_session_stat = oData["COURSE_SESSION_STAT"];
+					oReturnValues.attendence_status = oData["ATTENDENCE_STATUS"];
+					oReturnValues.participant_id = oData["PARTICIPANT_ID"];
+					oReturnValues.session_start_date = oData["START_DATE"];
+					oReturnValues.session_end_date = oData["END_DATE"];
+
+					// populate course start/end dates
 					for ( var iContext = 0; iContext < aContexts.length; iContext++) {
-						var oData = aContexts[iContext].getObject();
-						if (!oReturnDates.start_date || new Date(oData["START_DATE"]) < new Date(oReturnDates.start_date)) {
-							oReturnDates.start_date = oData["START_DATE"];
+						oData = aContexts[iContext].getObject();
+						if (!oReturnValues.course_start_date || new Date(oData["START_DATE"]) < new Date(oReturnValues.course_start_date)) {
+							oReturnValues.course_start_date = oData["START_DATE"];
 						}
-						if (!oReturnDates.end_date || new Date(oData["END_DATE"]) > new Date(oReturnDates.end_date)) {
-							oReturnDates.end_date = oData["END_DATE"];
+						if (!oReturnValues.course_end_date || new Date(oData["END_DATE"]) > new Date(oReturnValues.course_end_date)) {
+							oReturnValues.course_end_date = oData["END_DATE"];
 						}
 					}
-					return oReturnDates;
+					return oReturnValues;
 				} else {
 					return null;
 				}
@@ -131,6 +150,60 @@ sap.ui.define([
 				BusyIndicator.hide();
 			}
 		}, 
+
+		/**
+		* Updates selected course with claim ID used
+		* Method retrieves db table to be checked with fields and values to be filtered against
+		* if records found, first record is retrieved from the table and returns values from the record
+		* @public
+		* @param {object} oClaimSubmissionModel - claim submission model with claim and course code details
+		*/
+		updateCourseClaim: async function (oClaimSubmissionModel) {
+			var oModel = this._oOwnerComponent.getModel();
+			var oListBinding = null;
+
+			// set body for update
+			var oBody = new JSONModel({
+				COURSE_ID: oClaimSubmissionModel.getProperty("/claim_header/course_code"),
+				COURSE_DESC: oClaimSubmissionModel.getProperty("/claim_header/descr/course_code"),
+				SESSION_NUMBER: oClaimSubmissionModel.getProperty("/claimtype/course_code/session_number"),
+				COURSE_SESSION_STAT: oClaimSubmissionModel.getProperty("/claimtype/course_code/course_session_stat"),
+				ATTENDENCE_STATUS: oClaimSubmissionModel.getProperty("/claimtype/course_code/attendence_status"),
+				PARTICIPANT_ID: oClaimSubmissionModel.getProperty("/claim_header/emp_id"),
+				START_DATE: oClaimSubmissionModel.getProperty("/claimtype/course_code/session_start_date"),
+				END_DATE: oClaimSubmissionModel.getProperty("/claimtype/course_code/session_end_date"),
+				CLAIM_STATUS: oClaimSubmissionModel.getProperty("/claim_header/status_id"),
+				CLAIM_ID: oClaimSubmissionModel.getProperty("/claim_header/claim_id"),
+			});
+			try {
+				oListBinding = oModel.bindList(Constant.Entities.ZTRAIN_COURSE_PART, null, null, [
+						new Filter({ path: "COURSE_ID", operator: FilterOperator.EQ, value1: oBody.getProperty("/COURSE_ID") }),
+						new Filter({ path: "SESSION_NUMBER", operator: FilterOperator.EQ, value1: oBody.getProperty("/SESSION_NUMBER") }),
+						new Filter({ path: "PARTICIPANT_ID", operator: FilterOperator.EQ, value1: oBody.getProperty("/PARTICIPANT_ID") }),
+					], {
+						$$ownRequest: true,
+						$$groupId: "$auto",
+						$$updateGroupId: "$auto"
+					}
+				);
+
+				var aCtx = await oListBinding.requestContexts(0, 1);
+				var oCtx = aCtx[0];
+
+				if (!oCtx) {
+					MessageBox.warning(Utility.getText("error_msg_course_code_none"));
+				}
+				else {
+					for (const [key, value] of Object.entries(oBody.getData())) {
+						oCtx.setProperty(key, value);
+					}
+
+					await oModel.submitBatch("$auto");
+				}
+			} catch (oError) {
+				MessageBox.error(Utility.getText("error_msg_course_code_err", [oError]));
+			}			
+		},
 
 		/**
 		* Set default values for claim item fields

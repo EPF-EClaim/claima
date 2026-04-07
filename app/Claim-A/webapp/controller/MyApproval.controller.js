@@ -751,6 +751,22 @@ sap.ui.define([
                     await this._getEmpDataDescr(oClaimInputModel);
                 }
 
+				// set course code values + start/end dates if claim type is kursus
+				if (Object.values(this._oConstant.ClaimTypeKursus).includes(oClaimInputModel.getProperty("/claim_header/claim_type_id")) && oClaimInputModel.getProperty("/claim_header/course_code")) {
+					var oCourseCodeValues = await ClaimUtility.getCourseCodeValues(oClaimInputModel.getProperty("/claim_header/course_code"), oClaimInputModel.getProperty("/claim_header/emp_id"));
+					if (oCourseCodeValues) {
+						// course code values
+						oClaimInputModel.setProperty("/claimtype/course_code/course_id", oClaimInputModel.getProperty("/claim_header/course_code"));
+						oClaimInputModel.setProperty("/claimtype/course_code/course_desc", oClaimInputModel.getProperty("/claim_header/descr/course_code"));
+						oClaimInputModel.setProperty("/claimtype/course_code/session_number", oCourseCodeValues.session_number);
+						oClaimInputModel.setProperty("/claimtype/course_code/course_session_stat", oCourseCodeValues.course_session_stat);
+						oClaimInputModel.setProperty("/claimtype/course_code/attendence_status", oCourseCodeValues.attendence_status);
+						oClaimInputModel.setProperty("/claimtype/course_code/participant_id", oCourseCodeValues.participant_id);
+						oClaimInputModel.setProperty("/claimtype/course_code/session_start_date", oCourseCodeValues.session_start_date);
+						oClaimInputModel.setProperty("/claimtype/course_code/session_end_date", oCourseCodeValues.session_end_date);
+					}
+				}
+
                 return { header: oHeaderRaw, items: aItems };
             } catch (err) {
                 console.error("Failed to load claim header/items:", err);

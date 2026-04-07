@@ -99,9 +99,9 @@
                     <Select
                         id="select_claimprocess_course_code"
                         forceSelection="false"
-                        selectedKey="{claimsubmission_input>/claimtype/course_code}"
+                        selectedKey="{claimsubmission_input>/claimtype/course_code/course_id}"
                         items="{
-                            path: 'employee_view>/ZCLM_COURSE_VIEW_VH',
+                            path: 'employee_view>/ZCLM_COURSE_VIEW',
                             sorter: [
                                 { path: 'COURSE_ID' },
                                 { path: 'COURSE_DESC' }
