@@ -1212,12 +1212,15 @@ entity ZMETER_CUBE : managed {
     key METER_CUBE_ID     : String(2)     @mandatory  @Common.Label: 'Meter Cube ID';
         MARITAL_STATUS    : String        @Common.Label: 'Marital Status';
         DEPENDENT_TYPE_ID : String        @Common.Label: 'Dependent Type ID';
-        AGE_CONDITION     : String(1)     @Common.Label: 'Age Condition';
+        AGE_CONDITION     : String(3)     @Common.Label: 'Age Condition';
         AGE               : Integer       @Common.Label: 'Age';
         METER_CUBE        : Decimal(5, 2) @Common.Label: 'Meter Cube';
         START_DATE        : Date          @Common.Label: 'Start Date';
         END_DATE          : Date          @Common.Label: 'End Date';
         STATUS            : String(10)    @Common.Label: 'Status';
+        ZEMP_RELATIONSHIP : Association to one ZEMP_RELATIONSHIP
+                           on ZEMP_RELATIONSHIP.RELATIONSHIP_TYPE_ID = DEPENDENT_TYPE_ID;
+                           
 }
 
 entity ZTRAVEL_DAYS : managed {
