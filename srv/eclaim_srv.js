@@ -991,10 +991,17 @@ module.exports = (srv) => {
             }
 
             //deduction of meal allowance
-            //20% from breakfast, 40% from lunch, 40% from dinner 
-            bfast = req.data.breakfast != 0 ? (0.2 * entitlement.AMOUNT) * req.data.breakfast : 0;
-            lunch = req.data.lunch != 0 ? (0.4 * entitlement.AMOUNT) * req.data.lunch : 0;
-            dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
+            //// no deduction for elaun makan perpindahan
+            if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN) {
+                bfast = req.data.breakfast != 0 ? entitlement.AMOUNT * req.data.breakfast : 0;
+                lunch = req.data.lunch != 0 ? entitlement.AMOUNT * req.data.lunch : 0;
+                dinner = req.data.dinner != 0 ? entitlement.AMOUNT * req.data.dinner : 0;
+            } else {
+                //20% from breakfast, 40% from lunch, 40% from dinner 
+                bfast = req.data.breakfast != 0 ? (0.2 * entitlement.AMOUNT) * req.data.breakfast : 0;
+                lunch = req.data.lunch != 0 ? (0.4 * entitlement.AMOUNT) * req.data.lunch : 0;
+                dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
+            }
 
             total_meal_allowance = meal_allowance != 0 ? (meal_allowance - bfast - lunch - dinner) : 0;
             return {
@@ -1067,7 +1074,7 @@ module.exports = (srv) => {
                 if (sAgingDay != null) {
                     sClaimStatus = await EmailReminder.getClaimStatus(ZCLAIM_HEADER, tx, oRequest.REQUEST_ID);  //return true or false
                     if (sClaimStatus) {
-                        ({ sName, sEmail, sCCEmail } = await EmailReminder.getClaimantDetails(ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS, tx, oRequest.EMP_ID, sScenario));
+                        ({ sName, sEmail, sCCEmail } = await EmailReminder.getClaimantDetails(ZEMP_MASTER, ZROLEHIERARCHY, ZCONSTANTS, tx, oRequest.EMP_ID, sScenario, sAgingDay));
                     }
 
                     aResult.push({
@@ -1186,6 +1193,32 @@ module.exports = (srv) => {
                     req.error(400, `Fail inserting records for Cash Advance Table: ${error.message}`);
                 }
             });
+        }
+    });
+
+    /**
+    * Function to check if Pre-approval request has been used for claim submission
+    * Show warning if Pre-approval request has been used, exclude REJECT & CANCEL status
+    * returns a boolean true/false
+    * @public
+    * @param {String} requestId - Pre-Approval Request ID
+    * @returns {Boolean} PreApprovalUsageCheck - isUsed
+    */
+    srv.on('checkPreApprovalUsage', async(req) => {
+        const { ZCLAIM_HEADER } = srv.entities;
+        const tx = cds.tx(req);
+
+        const claim = await tx.run(
+            SELECT.one.from(ZCLAIM_HEADER).where({
+                REQUEST_ID: req.data.requestID, 
+                STATUS_ID: { 'not in': [Constant.Status.REJECTED, Constant.Status.CANCELLED] }
+            })
+        );
+
+        if (claim) {
+            return { isUsed: true }
+        } else {
+            return { isUsed: false }
         }
     });
 
