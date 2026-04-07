@@ -36,6 +36,7 @@
                             icon="sap-icon://refresh"
                             press="onResetSort"
                         />
+                        <Button type="Transparent" icon="sap-icon://action-settings" tooltip="Filter" press="onOpenFilterDialog"/>
                     </Toolbar>
                 </headerToolbar>
 
