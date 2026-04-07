@@ -86,7 +86,7 @@
                 id="claimitemTable"
                 width="90%"
                 items="{path: 'Items',sorter : { path : 'modifiedAt', descending: false }}"
-                mode="SingleSelectLeft"
+                mode="MultiSelect"
                 selectionChange="onSelectionChange"
                 includeItemInSelection="true"
             >

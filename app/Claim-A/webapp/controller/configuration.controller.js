@@ -199,34 +199,58 @@ sap.ui.define([
             const sSource = oEvent.getSource().getId(),
                 sTableId = sSource?.includes("Header") ? "claimTable" : "ClaimItems--claimitemTable",
                 oTable = this.byId(sTableId),
-                oContext = oTable.getSelectedItem().getBindingContext(),
-                oObject = oContext.getObject();
+                aSelectedItems = oTable.getSelectedItems();
 
-            var sObjectId = sSource?.includes("Header") ? oObject.CLAIM_TYPE_ID : oObject.CLAIM_TYPE_ITEM_ID;
+            if (!aSelectedItems.length) {
+                MessageToast.show(Utility.getText("msg_select_at_least_one"));
+                return;
+            }
 
-            MessageBox.confirm(`Delete object ${sObjectId}?`, {
-                icon: MessageBox.Icon.WARNING,
-                title: "Delete",
-                actions: [MessageBox.Action.DELETE, MessageBox.Action.CANCEL],
-                emphasizedAction: MessageBox.Action.DELETE,
-                onClose: async (sAction) => {
-                    if (sAction !== MessageBox.Action.DELETE) return;
-                    try {
-                        oContext.delete();
-                        MessageToast.show(Utility.getText("msg_object_deleted"));
-                        this.getView().getModel("view").setData({
-                            hasSelection: false
-                        });
-                    } catch (e) {
-                        MessageBox.error(e?.message || Utility.getText("msg_delete_fail"));
+            const aContexts = aSelectedItems.map(item =>
+                item.getBindingContext()
+            );
+
+
+            MessageBox.confirm(
+                Utility.getText("msg_zclaim_delete_record"),
+                {
+                    icon: MessageBox.Icon.WARNING,
+                    title: Utility.getText("req_b_delete"),
+                    actions: [MessageBox.Action.DELETE, MessageBox.Action.CANCEL],
+                    emphasizedAction: MessageBox.Action.DELETE,
+                    onClose: async (sAction) => {
+                        if (sAction !== MessageBox.Action.DELETE) return;
+
+                        try {
+                            await Promise.all(
+                                aContexts.map(oContext => oContext.delete())
+                            );
+
+                            MessageToast.show(
+                                Utility.getText("msg_object_deleted")
+                            );
+
+                            oTable.removeSelections(true);
+
+                            this.getView()
+                                .getModel("view")
+                                .setProperty("/hasSelection", false);
+
+                        } catch (e) {
+                            MessageBox.error(
+                                e?.message || Utility.getText("msg_delete_fail")
+                            );
+                        }
                     }
                 }
-            })
+            );
         },
 
         onCopy: function (oEvent) {
             const oNewEntry = {};
-            var { oVBox, sPath, oSelected, oModel } = this._getDetails(oEvent);
+            const oDetails = this._getDetails(oEvent);
+            if (!oDetails) return;
+            var { oVBox, sPath, oSelected, oModel } = oDetails; 
 
             const oEntityType = oModel.getMetaModel().getContext(sPath).getObject();
             const sEntityType = oEntityType.$Type;
@@ -276,7 +300,7 @@ sap.ui.define([
                         }
                     }.bind(this)
                 }),
-                endButton: new sap.m.Button({
+                endButton: new Button({
                     text: "Cancel",
                     press: function () { oDialog.close(); }
                 }),
@@ -287,20 +311,28 @@ sap.ui.define([
         },
 
         onEdit: function (oEvent) {
-            const { oVBox, sPath, oSelected, oModel } = this._getDetails(oEvent);
+            const oDetails = this._getDetails(oEvent);
+            if (!oDetails) return;
+            const { oVBox, sPath, oSelected, oModel } = oDetails;
             const oContext = oSelected.getBindingContext();
 
             const oEntityType = oModel.getMetaModel().getContext(sPath).getObject();
             const sEntityType = oEntityType.$Type;
             const oDataType = oModel.getMetaModel().getContext(`/${sEntityType}`).getObject();
+            const aKeyFields = oDataType.$Key || [];
+            const oOriginalData = { ...oContext.getObject() };
+
+            const oNewData = { ...oOriginalData };
+            let bKeyChanged = false;
+
 
             const oDialog = new Dialog({
                 title: `Edit Record`,
                 contentWidth: "15%",
                 horizontalScrolling: false,
-                beginButton: new sap.m.Button({
+                beginButton: new Button({
                     text: "Edit",
-                    press: function () {
+                    press: async function () {
                         let dStart = null;
                         let dEnd = null;
                         var oInputs = oVBox.getItems();
@@ -314,29 +346,51 @@ sap.ui.define([
                             const oControl = oInputs[i];
                             const sFieldName = oControl.getName();
                             const sValue = oControl.getValue() === '' ? null : oControl.getValue();
+                            oNewData[sFieldName] = sValue;
 
                             if (sFieldName === 'START_DATE') dStart = new Date(sValue);
                             if (sFieldName === 'END_DATE') dEnd = new Date(sValue);
+
+                            if (
+                                aKeyFields.includes(sFieldName) &&
+                                oOriginalData[sFieldName] !== sValue
+                            ) {
+                                bKeyChanged = true;
+                            }
                         }
 
                         if (dEnd < dStart) {
                             MessageToast.show(Utility.getText("endBeforeStart"));
                         } else {
-                            for (let i = 1; i < oInputs.length; i += 2) {
-                                const oControl = oInputs[i];
+                            if (bKeyChanged) {
+                                let oListBinding;
 
-                                var sFieldName = oControl.getName();
-                                var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+                                if (sPath.includes('Items')) {
+                                    const oHeaderContext = this._oItemsFragment?.getBindingContext();
+                                    oListBinding = oModel.bindList("Items", oHeaderContext);
+                                } else {
+                                    oListBinding = oModel.bindList(sPath);
+                                }
+                                await oListBinding.create(oNewData);
+                                await oContext.delete();
 
-                                oContext.setProperty(sFieldName, sNewInput);
+                            } else {
+                                for (let i = 1; i < oInputs.length; i += 2) {
+                                    const oControl = oInputs[i];
+
+                                    var sFieldName = oControl.getName();
+                                    var sNewInput = oControl.getValue() === '' ? null : oControl.getValue();
+
+                                    oContext.setProperty(sFieldName, sNewInput);
+                                }
                             }
-                            MessageToast.show(Utility.getText("msg_record_created"));
+                            MessageToast.show(Utility.getText("msg_record_updated"));
                             oModel.refresh();
                             oDialog.close();
                         }
                     }.bind(this)
                 }),
-                endButton: new sap.m.Button({
+                endButton: new Button({
                     text: "Cancel",
                     press: function () { oDialog.close(); }
                 }),
@@ -379,9 +433,20 @@ sap.ui.define([
                     oData = {},
                     oSelected = null;
             } else {
-                oSelected = oTable.getSelectedItem();
-                sPath = oSelected.getBindingContext().getBinding().sPath === 'Items' ? '/ZCLAIM_TYPE/Items' : oSelected.getBindingContext().getBinding().sPath;
-                oData = oSelected.getBindingContext().getObject();
+                const aSelectedItems = oTable.getSelectedItems();
+
+                if (aSelectedItems.length !== 1) {
+                    MessageBox.warning(Utility.getText("msg_select_one"));
+                    return null;
+                }
+                oSelected = aSelectedItems[0];
+                const oContext = oSelected.getBindingContext();
+
+                sPath = oContext.getBinding().sPath === "Items"
+                    ? "/ZCLAIM_TYPE/Items"
+                    : oContext.getBinding().sPath;
+
+                oData = oContext.getObject();
             }
 
             const oEntityType = oModel.getMetaModel().getContext(sPath).getObject(),
