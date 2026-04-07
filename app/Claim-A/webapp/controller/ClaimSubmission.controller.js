@@ -699,7 +699,7 @@ sap.ui.define([
 				approver4: null,
 				approver5: null,
 				last_send_back_date: null,
-				course_code: null,
+				course_code: o.COURSE_CODE,
 				project_code: null,
 				cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
 				preapproved_amount: o.PREAPPROVED_AMOUNT,
@@ -717,7 +717,7 @@ sap.ui.define([
 					claim_type_id: o.CLAIM_TYPE_DESC,
 					housing_loan_scheme: null,
 					lender_name: null,
-					course_code: null,
+					course_code: o.COURSE_CODE_DESC,
 					project_code: null,
 					attachment_email_approver: null,
 				}
@@ -1001,11 +1001,13 @@ sap.ui.define([
 					},
 					"requestform_amt": null,
 					"req_emailapprove": null,
+					"course_code": null,
 					"descr": {
 						"type": null,
 						"item": null,
 						"category": null,
 						"cost_center": null,
+						"course_code": null
 					}
 				},
 				"is_new": false,
@@ -2973,8 +2975,9 @@ sap.ui.define([
 			oInputModel.refresh(true);
 
 			// Calculate number of days
-			if (oPropertyModel.getProperty("/entitled_breakfast/is_visible")) {
+			if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
 				oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+				this.onChange_ClaimDetails_NumberOfDays();
 			}
 
 			// calculate per diem details
@@ -3282,6 +3285,7 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
 				oInputModel.setProperty("/claim_item/km", null);
+				this.onChange_ClaimDetails_Kilometer();
 			}
 		},
 
@@ -3482,7 +3486,7 @@ sap.ui.define([
 				this.byId("table_claimsummary_claimitem").getBinding("items").refresh();
 
 				// Reload when item cancellation
-				this._loadClaimById(String(oClaimSubmissionModel.getProperty("/claim_header/claim_id")));
+				await this._loadClaimById(oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
 			}
 		},
 
@@ -4690,6 +4694,8 @@ sap.ui.define([
 				if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/currency_code", oResult.currency_code);
 					oClaimItemInputModel.setProperty("/claim_item/currency_amount", oResult.amount);
+					//initialize amount(MYR)
+					oClaimItemInputModel.setProperty("/claim_item/amount", 0);
 					if (this.byId("input_claimdetails_input_currency_rate").getVisible() && !!oClaimItemInputModel.getProperty("/claim_item/currency_rate")) {
 						var nAmountMYR = (oClaimItemInputModel.getProperty("/claim_item/currency_rate") * oClaimItemInputModel.getProperty("/claim_item/currency_amount"));
 						oClaimItemInputModel.setProperty("/claim_item/amount", nAmountMYR);
