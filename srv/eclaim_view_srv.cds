@@ -286,7 +286,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy,
                 modifiedAt,
                 COURSE_CODE,
-                ZTRAIN_COURSE_PART.COURSE_DESC as COURSE_CODE_DESC
+                ZTRAIN_COURSE_PART.COURSE_DESC as COURSE_CODE_DESC,
+                SESSION_NUMBER
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW           as
@@ -1034,7 +1035,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             ZTOSTATE.STATE_DESC;
 
 
-    entity ZCLM_COURSE_VIEW_VH               as projection on ECLAIM.ZTRAIN_COURSE_PART {
+    entity ZCLM_COURSE_VIEW  as projection on ECLAIM.ZTRAIN_COURSE_PART {
             key COURSE_ID,
             key PARTICIPANT_ID,
                 COURSE_DESC,
