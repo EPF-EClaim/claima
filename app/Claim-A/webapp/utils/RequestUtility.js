@@ -2,7 +2,8 @@ sap.ui.define([
     "claima/utils/Constants",
     "sap/ui/core/Fragment",
 	"sap/ui/model/Filter",
-	"sap/ui/model/FilterOperator"
+	"sap/ui/model/FilterOperator",
+	"claima/utils/Utility"
 ], function (
     Constants,
 	Fragment,
@@ -122,39 +123,46 @@ sap.ui.define([
         populateAllocatedAmount: function () {
             const oReqModel = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
             const oReqItem  = oReqModel.getProperty("/req_item");
-            const oReqPart  = oReqModel.getProperty("/participant");
+            const aReqPart  = oReqModel.getProperty("/participant");
 
-            var fKilometer  = parseFloat(oReqItem.kilometer).toFixed(2) || 0;
-            var fRatePerKm  = parseFloat(oReqItem.rate_per_kilometer).toFixed(2) || 0;
-            var fToll       = parseFloat(oReqItem.toll_amt).toFixed(2) || 0;
+            // calculate kilometer amount 
+            var calculatedAllocAmount = RequestUtility._calculateAllocatedAmountForKilometer(oReqItem);
 
-            if (!fKilometer || !fRatePerKm) return fKilometer;
+            // populate allocated amount
+            if (calculatedAllocAmount) {
+                aReqPart.forEach((row, index) => {
+                    if (row.PARTICIPANTS_ID) {
+                        oReqModel.setProperty(`/participant/${index}/ALLOCATED_AMOUNT`,
+                            parseFloat(calculatedAllocAmount).toFixed(2)
+                        );
+                    }
+                });
+            }
 
-            // globalize this amount 
-            this._calculatedAllocAmount = ( parseFloat(fKilometer) * parseFloat(fRatePerKm) ) + parseFloat(fToll);
-
-            oReqPart.forEach((row, index) => {
-                if (row.PARTICIPANTS_ID) {
-                    oReqModel.setProperty(`/participant/${index}/ALLOCATED_AMOUNT`,
-                        parseFloat(this._calculatedAllocAmount).toFixed(2)
-                    );
-                }
-            });
-
-            return fKilometer;
-
+            // populate estimated amount
+            var fEstAmount = RequestUtility._calculateEstimatedAmount(oReqItem, aReqPart);
+            oReqModel.setProperty("/req_item/est_amount", fEstAmount.toFixed(2));
         },
 
-		populateEstimatedAmount(fAllocatedAmount) {
-			const aParticipantList = this._oReqModel.getProperty("/participant");
+        _calculateAllocatedAmountForKilometer: function (oReqItem) {
+            var fKilometer  = parseFloat(oReqItem.kilometer).toFixed(2) || 0;
+            var fRatePerKm  = parseFloat(oReqItem.rate_per_kilometer).toFixed(2) || 0;
 
-			// Use let OR use reduce directly
-			const fEstAmount = aParticipantList.reduce((sum, row) => {
+            if (!fKilometer || !fRatePerKm) return;
+
+            return parseFloat(fKilometer) * parseFloat(fRatePerKm);
+        },
+
+		_calculateEstimatedAmount(oReqItem, aParticipantList) {
+
+			const fTotalSum = aParticipantList.reduce((sum, row) => {
 				return sum + parseFloat(row.ALLOCATED_AMOUNT || 0);
 			}, 0);
 
-			this._oReqModel.setProperty("/req_item/est_amount", fEstAmount.toFixed(2));
-            return fAllocatedAmount;
+            // add up toll amount
+            if (oReqItem.toll_amt) return parseFloat(fTotalSum) + parseFloat(oReqItem.toll_amt);
+
+			return fTotalSum;
 		},
         
     };

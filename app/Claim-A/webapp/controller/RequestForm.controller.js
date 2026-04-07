@@ -1392,9 +1392,7 @@ sap.ui.define([
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", oEmpData.EEID || oEmpData.ID);
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", oEmpData.NAME);
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_COST_CENTER", oEmpData.CC);
-				if (this._calculatedAllocAmount) {
-					this._oReqModel.setProperty(sRowPath + "/ALLOCATED_AMOUNT", this._calculatedAllocAmount);
-				}
+				RequestUtility.populateAllocatedAmount();	// populate allocated amount if applicable
 			} else {
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", "");
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", "");
@@ -2039,6 +2037,12 @@ sap.ui.define([
 			if (!sClaimTypeItem) {
 				console.warn("No claim type item found yet.");
 				return;
+			}
+
+			const oLocationTypeSelect = this.byId("item_location_type");
+			if (oLocationTypeSelect) {
+				oLocationTypeSelect.setForceSelection(false);
+				oLocationTypeSelect.setSelectedKey("");
 			}
 
 			BusyIndicator.show(0);
