@@ -124,7 +124,7 @@ sap.ui.define([
 		* @param {Object} oController - Object Model from Controller;
 		* @param {String} aPayload - the generated payload from the EligibleScenarioCheck
 		* @param {String} sSubmissionType - Submission Type of the request E.g Claim or Request
-		* @returns {Object} Object Payload with results field in CheckFields List Array populated
+		* @returns {Boolean} Boolean to determine if there is an error with the checking
 		*/
 		eligibilityHandling: function (oController, aPayload, sSubmissionType) {
 			let oDBToUIControlMap = {};
