@@ -1132,7 +1132,7 @@ sap.ui.define([
 
 			// set body for update
 			var oBody = new JSONModel({
-				EMP_ID: oInputModel.getProperty("/claim_header/emp_id"),
+				EMP_ID: this._oSessionModel.getProperty("/userId"),
 				PURPOSE: oInputModel.getProperty("/claim_header/purpose"),
 				TRIP_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")),
 				TRIP_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")),
