@@ -5,7 +5,7 @@ sap.ui.define([
 	"sap/ui/core/BusyIndicator",
 	"sap/ui/core/routing/History",
 	"sap/ui/model/json/JSONModel",
-	"sap/ui/model/Filter",
+		"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
 	"sap/ui/core/format/DateFormat",
@@ -712,6 +712,7 @@ sap.ui.define([
 				approver5: null,
 				last_send_back_date: null,
 				course_code: o.COURSE_CODE,
+				session_number: o.SESSION_NUMBER,
 				project_code: null,
 				cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
 				preapproved_amount: o.PREAPPROVED_AMOUNT,
@@ -1013,13 +1014,18 @@ sap.ui.define([
 					},
 					"requestform_amt": null,
 					"req_emailapprove": null,
-					"course_code": null,
+					"course_code": {
+						"course_id": null,
+						"course_desc": null,
+						"session_number": null,
+						"start_date": null,
+						"end_date": null
+					},
 					"descr": {
 						"type": null,
 						"item": null,
 						"category": null,
-						"cost_center": null,
-						"course_code": null
+						"cost_center": null
 					}
 				},
 				"is_new": false,
@@ -1065,6 +1071,7 @@ sap.ui.define([
 					"approver5": null,
 					"last_send_back_date": null,
 					"course_code": null,
+					"session_number": null,
 					"project_code": null,
 					"cash_advance_amount": null,
 					"preapproved_amount": null,
@@ -2237,8 +2244,29 @@ sap.ui.define([
 			}
 			//START TDL #6.1 meter cube for Pengangkutan Laut
 			const sKey = oInputModel.getProperty("/claim_item/claim_type_item_id");
-			if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
 
+			//Set Kilometer (KM) field as required only for DARAT and KILOMETER claim items.
+			const bKmRequired = [
+			this._oConstant.ClaimTypeItem.DARAT,
+			this._oConstant.ClaimTypeItem.KILOMETER
+			].includes(sKey);
+			oPropertyModel.setProperty("/km/is_required", bKmRequired);
+			//Display Marriage Category field only for DARAT (land transport) claim items
+			if (sKey === this._oConstant.ClaimTypeItem.DARAT) {
+				oPropertyModel.setProperty("/marriage_category/is_visible", true);
+			} else {
+				oPropertyModel.setProperty("/marriage_category/is_visible", false);
+				oInputModel.setProperty("/claim_item/marriage_category", null);
+			}
+			//Require "To State" selection only for Flight Wilayah Asal claim item.
+			if (sKey === this._oConstant.ClaimTypeItem.FLIGHT_WIL) {
+				oPropertyModel.setProperty("/to_state_id/is_required", true);
+			} else {
+				oPropertyModel.setProperty("/to_state_id/is_required", false);
+				oInputModel.setProperty("/claim_item/to_state_id", null);
+			}
+
+			if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
 				//entitled meter cube
 				oPropertyModel.setProperty("/meter_cube_entitled/is_visible", true);
 				oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
@@ -2360,6 +2388,8 @@ sap.ui.define([
 				insurance_cert_end_date: { is_visible: false },
 				meter_cube_entitled: { is_visible: false },
 				meter_cube_actual: { is_visible: false, is_editable: true },
+				marriage_category: { is_visible: false },
+				to_state_id:{is_required: false}
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -2690,6 +2720,12 @@ sap.ui.define([
 			// get input model
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+	
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+			if (!bCanProceed) {
+				return;
+			}
 
 			/* 	4 scenarios for Receipt Date to be populated
 					1. Get Receipt Date based on input
@@ -2708,21 +2744,7 @@ sap.ui.define([
 					}
 				}
 			}
-			
-			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
-			if (!bCanProceed) {
-				return;
-			}
 
-			//FUT issue #81
-			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
-			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
-
-			if (dReceiptDate > dTripEndDate) {
-				MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
-				return;
-			}
 			try {
 				BusyIndicator.show(0);
 				var oModel = this.getOwnerComponent().getModel();
@@ -3531,6 +3553,21 @@ sap.ui.define([
 					return;
 				}
 
+				// check if selected course code/session number has already been approved for user before pushing changes 
+				if (Object.values(Constants.ClaimTypeKursus).includes(oInputModel.getProperty("/claim_header/claim_type_id")) && oAction !== this._oConstant.Claim_Action.DELETE) {
+					var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(
+							oInputModel.getProperty("/claim_header/course_code"),
+							oInputModel.getProperty("/claim_header/session_number"),
+							this._oSessionModel.getProperty("/userId"));
+					if (bCourseAlreadyApproved) {
+						MessageBox.error(Utility.getText("error_msg_course_already_approved", [
+								oInputModel.getProperty("/claim_header/course_code"),
+								oInputModel.getProperty("/claim_header/descr/course_code")]));
+						BusyIndicator.hide();
+						return;
+					}
+				}
+				
 				// Total Claim Amount Validation checking
 				if (aItems.length > 0 && (isNaN(oInputModel.getProperty("/claim_header/total_claim_amount")) || oInputModel.getProperty("/claim_header/total_claim_amount") <= 0)) {
 					MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount"));
@@ -3552,7 +3589,7 @@ sap.ui.define([
 				//FUT issue 102
 				// solving the issue of having 0 amount claim item when submitting claims
 				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				if (!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
+				if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
 					return;
 				}
 
@@ -3629,6 +3666,7 @@ sap.ui.define([
 					APPROVER5: oInputModel.getProperty("/claim_header/approver5"),
 					LAST_SEND_BACK_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_send_back_date")),
 					COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
+					SESSION_NUMBER: oInputModel.getProperty("/claim_header/session_number"),
 					PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
 					CASH_ADVANCE_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/cash_advance_amount"))).toFixed(2),
 					PREAPPROVED_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/preapproved_amount"))).toFixed(2),
@@ -3676,6 +3714,7 @@ sap.ui.define([
 								throw new Error("Invalid action selected: " + oAction);
 						}
 						await this._updateCurrentReportNumber("NR02", oInputModel.getProperty("/reportnumber/current"));
+
 						MessageToast.show(oMsg);
 						this._onNavBack();
 					}).catch(err => {
@@ -3764,6 +3803,7 @@ sap.ui.define([
 						case 'Delete Report':
 							oInputModel.setProperty("/claim_header/status_id", this._oConstant.ClaimStatus.CANCELLED);
 							oInputModel.setProperty("/claim_header/descr/status_id", "CANCELLED");
+
 							this.onBack_ClaimSubmission();
 							break;
 						case 'Submit Report':
@@ -3773,6 +3813,7 @@ sap.ui.define([
 								var submittedDate = this._getJsonDate(new Date());
 								oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
 							}
+							
 							this.onBack_ClaimSubmission();
 							break;
 						default:
