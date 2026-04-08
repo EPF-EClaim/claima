@@ -206,7 +206,6 @@ sap.ui.define([
 
 			var sReqStatus = this._oReqModel.getProperty("/req_header/reqstatus");
 			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT && sReqStatus !== this._oConstant.RequestStatus.CANCELLED;
-			this.setHeaderUnEditable();
 			if (bApproval) {
 				var aApprover = await ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId);
 				for (const row of aApprover) {
@@ -223,9 +222,12 @@ sap.ui.define([
 				await this._replaceContentAt(oPage, 2, oApproval);
 			} else {
 				PARequestSharedFunction.getCurrentState(this);
+			}
+			
+			this.setHeaderUnEditable();
+			if (sReqStatus == this._oConstant.RequestStatus.DRAFT || sReqStatus == this._oConstant.RequestStatus.SEND_BACK) {
 				this.setHeaderEditable();
 			}
-
 			PARequestSharedFunction.determineFooterButton(this);
 		},
 
