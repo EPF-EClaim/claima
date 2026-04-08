@@ -741,7 +741,7 @@ sap.ui.define([
 
 		onPreApproval_ClaimProcess: function () {
 			this.oDialog_ClaimProcess.close();
-
+y
 			// load Pre-Approval Request dialog 
 			this.onClickMyRequest();
 		},
