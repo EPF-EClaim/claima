@@ -87,6 +87,12 @@ sap.ui.define([
 
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
+
+			// Claim Process viewfields
+			this._oClaimProcessProperties = {
+				"req_emailapproval": { "is_state_active": false }
+			}			
+			this.getView().setModel(new JSONModel(this._oClaimProcessProperties), "claimprocess_properties");
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
@@ -234,16 +240,13 @@ sap.ui.define([
 				this.oDialog_ClaimProcess ??= await this.loadFragment({
 					name: oName
 				})
-				if(!this.getView().getModel("claimsubmission_input")){
-					await this._onInit_ClaimProcess();
-				}
 
+				await this._onInit_ClaimProcess();
 				this.oDialog_ClaimProcess.open();
 			}catch{
 				MessageBox.error(Utility.getText("msg_nav_error_fragment", [oName]));
 			}finally{
 				BusyIndicator.hide();
-				this._reset_ClaimProcess();
 			}
 			
 		},
@@ -429,8 +432,9 @@ sap.ui.define([
 
 		//// Functions - Claim Process
 		_onInit_ClaimProcess: async function () {
-			// reset claim process data
-			this._reset_ClaimProcess();
+			// claim process view properties model check
+			var oClaimProcessPropertiesModel = this.getView().getModel("claimprocess_properties");
+			oClaimProcessPropertiesModel?.setData(JSON.parse(JSON.stringify(this._oClaimProcessProperties)));
 
 			// set new claim submission model;
 			var oInputModel = this._getNewClaimSubmissionModel("claimsubmission_input");
@@ -534,55 +538,24 @@ sap.ui.define([
 
 		onSelect_ClaimProcess_ClaimType: function (oEvent) {
 			// validate claim type
-			var claimType = oEvent.getParameters().selectedItem;
-			if (claimType) {
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var oClaimType = oEvent? oEvent.getParameters().selectedItem : null;
+			if (oClaimType) {
+				// get claim type description
+				oInputModel.setProperty("/claimtype/descr/type", oClaimType.getBindingContext("employee").getObject("CLAIM_TYPE_DESC"));
+
 				// set claim items based on selected claim type
-				this.byId("select_claimprocess_claimitem").bindAggregation("items", {
-					path: "employee>/ZCLAIM_TYPE_ITEM",
-					filters: [
-						new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, claimType.getKey()),
+				var oSelectClaimItems = this.byId("select_claimprocess_claimitem");
+				var oBindingSelectClaimItems = oSelectClaimItems.getBinding("items");
+				var aFilterSelectClaimItems = [
+						new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oClaimType.getKey()),
 						// ensure status is active
 						new Filter("STATUS", FilterOperator.EQ, this._oConstant.ClaimTypeItemStatus.ACTIVE),
 						new Filter("START_DATE", FilterOperator.LE, DateUtility.getHanaDate(DateUtility.today())),
 						new Filter("END_DATE", FilterOperator.GE, DateUtility.getHanaDate(DateUtility.today()))
-					],
-					sorter: [
-						new Sorter('CLAIM_TYPE_ITEM_DESC'),
-						new Sorter('CLAIM_TYPE_ITEM_ID')
-					],
-					parameters: {
-						$expand: {
-							"ZSUBMISSION_TYPE": {
-								$select: "SUBMISSION_TYPE_DESC"
-							}
-						},
-						$select: "SUBMISSION_TYPE"
-					},
-					template: new Item({
-						key: "{employee>CLAIM_TYPE_ITEM_ID}",
-						text: "{employee>CLAIM_TYPE_ITEM_DESC}"
-					})
-				});
-				this.byId("select_claimprocess_claimitem").setEditable(true);
-				this.byId("select_claimprocess_claimitem").setSelectedItem(null);
+					];
+				oBindingSelectClaimItems.filter(aFilterSelectClaimItems);
 
-				// clear claim item category if new claim type selected
-				if (this.byId("input_claimprocess_category").getValue().length > 0) {
-					this.byId("input_claimprocess_category").setValue(null);
-				}
-
-				// reset request form
-				if (this.byId("select_claimprocess_requestform").getEnabled()) {
-					this._reset_ClaimProcess_RequestForm();
-				}
-
-				// disable 'Start Claim' button if new claim type selected 
-				if (this.byId("button_claimprocess_startclaim").getEnabled()) {
-					this.byId("button_claimprocess_startclaim").setEnabled(false);
-				}
-
-				// set if claim type is course based on boolean value retrieved
-				var oInputModel = this.getView().getModel("claimsubmission_input");
 				// set filter for course code dropdown
 				if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type"))) {
 					var oSelectCourseCode = this.byId("select_claimprocess_course_code");
@@ -595,134 +568,97 @@ sap.ui.define([
 						];
 					oBindingSelectCourseCode.filter(aFilterSelectCourseCode);
 				}
+			} else {
+				// reset claim type description
+				oInputModel.setProperty("/claimtype/descr/type", null);
+			}
+			// reset claim item
+			if (oInputModel.getProperty("/claimtype/item") !== null) {
+				oInputModel.setProperty("/claimtype/item", null);
+				this.onSelect_ClaimProcess_ClaimItem();
+			}
+			// reset course code
+			if (oInputModel.getProperty("/claimtype/course_code/course_id") !== null) {
+				oInputModel.setProperty("/claimtype/course_code/course_id", null);
+				this.onSelect_ClaimProcess_CourseCode();
 			}
 		},
 
 		onSelect_ClaimProcess_ClaimItem: function (oEvent) {
 			// validate claim item
-			var claimItem = oEvent.getParameters().selectedItem;
-			if (claimItem) {
-				// get category values from claim item
-				var categoryId = claimItem.getBindingContext("employee").getObject("SUBMISSION_TYPE");
-				var claimCategoryDesc = claimItem.getBindingContext("employee").getObject("ZSUBMISSION_TYPE/SUBMISSION_TYPE_DESC");
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var oClaimItem = oEvent? oEvent.getParameters().selectedItem : null;
+			if (oClaimItem) {
+				// populate claim item values
+				oInputModel.setProperty("/claimtype/descr/item", oClaimItem.getBindingContext("employee").getObject("CLAIM_TYPE_ITEM_DESC"));
+				oInputModel.setProperty("/claimtype/category", oClaimItem.getBindingContext("employee").getObject("SUBMISSION_TYPE"));
+				oInputModel.setProperty("/claimtype/descr/category", oClaimItem.getBindingContext("employee").getObject("ZSUBMISSION_TYPE/SUBMISSION_TYPE_DESC"));
+				this._onSelect_ClaimProcess_Category();
 
-				// show claim item category in category input
-				this.byId("input_claimprocess_category").setValue(claimCategoryDesc);
-				var oInputModel = this.getView().getModel("claimsubmission_input");
-
-				// enable 'Request Form' selection
-				if (categoryId === this._oConstant.SubmissionType.PRE_APPROVE ||
-					categoryId === this._oConstant.SubmissionType.CASH_REPAYMENT ||
-					categoryId === this._oConstant.SubmissionType.CURR_SUBSIDY
-				) {
-					if (!this.byId("select_claimprocess_requestform").getVisible()) {
-						this.byId("select_claimprocess_requestform").bindAggregation("items", {
-							path: "employee>/ZREQUEST_HEADER",
-							filters: [
-								new Filter('EMP_ID', FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
-								new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oInputModel.getProperty("/claimtype/type")),
-								new Filter('STATUS', FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED),
-							],
-							parameters: {
-								$expand: {
-									"ZCOST_CENTER": { $select: "COST_CENTER_DESC" },
-									"COSTCENTER": { $select: "COST_CENTER_DESC" },
-								},
-								$select: "PREAPPROVAL_AMOUNT,EVENT_START_DATE,EVENT_END_DATE,COST_CENTER,ALTERNATE_COST_CENTER,CASH_ADVANCE"
-							},
-							template: new Item({
-								key: "{employee>REQUEST_ID}",
-								text: "{employee>REQUEST_ID} {employee>OBJECTIVE_PURPOSE} ({employee>TRIP_START_DATE} – {employee>TRIP_END_DATE})"
-							})
-						});
-						this.byId("select_claimprocess_requestform").setEnabled(true);
-						this.byId("select_claimprocess_requestform").setVisible(true);
-						this.byId("select_claimprocess_requestform").setEditable(true);
-						this.byId("select_claimprocess_requestform").setSelectedItem(null);
-
-						// enable 'Use email approval?' switch
-						if (!this.byId("switch_claimprocess_req_emailapprove").getEnabled()) {
-							// check if function is within grace period
-							var currentDateUnix = new Date().valueOf();
-							var endGraceDateUnix = new Date('2026-10-01').valueOf();
-							if (currentDateUnix < endGraceDateUnix) {
-								// current date within grace period
-								this.byId("switch_claimprocess_req_emailapprove").setEnabled(true);
-								this.byId("switch_claimprocess_req_emailapprove").setVisible(true);
-							}
-						}
-
-						// enable 'Create Pre-Approval Request' button
-						this.byId("button_claimprocess_preapproval").setEnabled(true);
-						this.byId("button_claimprocess_preapproval").setVisible(true);
-
-						// disable 'Start Claim' button if active
-						if (this.byId("button_claimprocess_startclaim").getEnabled()) {
-							this.byId("button_claimprocess_startclaim").setEnabled(false);
-						}
-					}
+				// set Request Form selection based on selected claim type item
+				if (Object.values(this._oConstant.SubmissionTypePAR).includes(oInputModel.getProperty("/claimtype/category"))) {
+					// filter
+					var oSelectRequestForm = this.byId("select_claimprocess_requestform");
+					var oBindingSelectRequestForm = oSelectRequestForm.getBinding("items");
+					var aFilterSelectRequestForm = [
+							new Filter('EMP_ID', FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
+							new Filter('CLAIM_TYPE_ID', FilterOperator.EQ, oInputModel.getProperty("/claimtype/type")),
+							new Filter('STATUS', FilterOperator.EQ, this._oConstant.ClaimStatus.APPROVED),
+						];
+					oBindingSelectRequestForm.filter(aFilterSelectRequestForm);
 				}
-				else {
-					// disable request form field
-					if (this.byId("select_claimprocess_requestform").getVisible()) {
-						this.byId("select_claimprocess_requestform").setEnabled(false);
-						this.byId("select_claimprocess_requestform").setVisible(false);
-						this.byId("select_claimprocess_requestform").setEditable(false);
-						this.byId("select_claimprocess_requestform").setSelectedItem(null);
-					}
-
-					// disable 'Use email approval?' switch
-					if (this.byId("switch_claimprocess_req_emailapprove").getEnabled()) {
-						this.byId("switch_claimprocess_req_emailapprove").setEnabled(false);
-						this.byId("switch_claimprocess_req_emailapprove").setVisible(false);
-					}
-
-					// disable 'Create Pre-Approval Request' button
-					if (this.byId("button_claimprocess_preapproval").getEnabled()) {
-						this.byId("button_claimprocess_preapproval").setEnabled(false);
-						this.byId("button_claimprocess_preapproval").setVisible(false);
-					}
-
-					// enable 'Start Claim' button
-					if (!this.byId("button_claimprocess_startclaim").getEnabled()) {
-						this.byId("button_claimprocess_startclaim").setEnabled(true);
-					}
-				}
+			}
+			else {
+				// reset claim item values
+				oInputModel.setProperty("/claimtype/descr/item", null);
+				oInputModel.setProperty("/claimtype/category", null);
+				oInputModel.setProperty("/claimtype/descr/category", null);
+				this._onSelect_ClaimProcess_Category();
+			}
+			// reset request form
+			if (oInputModel.getProperty("/claimtype/requestform/request_id") !== null) {
+				oInputModel.setProperty("/claimtype/requestform/request_id", null);
+				this.onSelect_ClaimProcess_RequestForm();
 			}
 		},
 
-		onSelect_ClaimProcess_RequestForm: function () {
-			// enable 'Start Claim' button if not already enabled
-			if (!this.byId("button_claimprocess_startclaim").getEnabled() && this.byId("select_claimprocess_requestform").getSelectedItem()) {
-				this.byId("button_claimprocess_startclaim").setEnabled(true);
+		_onSelect_ClaimProcess_Category: function() {
+			// reset email approval
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var oClaimProcessPropertiesModel = this.getView().getModel("claimprocess_properties");
+			if (oClaimProcessPropertiesModel.getProperty("/req_emailapproval/is_state_active") &&
+				!Object.values(this._oConstant.SubmissionTypePAR).includes(oInputModel.getProperty("/claimtype/category"))) {
+				oClaimProcessPropertiesModel.setProperty("/req_emailapproval/is_state_active", false);
 			}
 		},
 
-		onSwitch_ClaimProcess_Req_EmailApprove: function (oEvent) {
-			var oState = oEvent.getSource().getState();
-			switch (oState) {
-				case true:
-					// disable request form field
-					if (this.byId("select_claimprocess_requestform").getEnabled()) {
-						this.byId("select_claimprocess_requestform").setEnabled(false);
-					}
-
-					// enable 'Start Claim' button if not already enabled
-					if (!this.byId("button_claimprocess_startclaim").getEnabled()) {
-						this.byId("button_claimprocess_startclaim").setEnabled(true);
-					}
-					break;
-				case false:
-					// enable request form field
-					if (!this.byId("select_claimprocess_requestform").getEnabled()) {
-						this.byId("select_claimprocess_requestform").setEnabled(true);
-					}
-
-					// disable 'Start Claim' button if request form has no value
-					if (this.byId("button_claimprocess_startclaim").getEnabled() && !this.byId("select_claimprocess_requestform").getSelectedItem()) {
-						this.byId("button_claimprocess_startclaim").setEnabled(false);
-					}
-					break;
+		onSelect_ClaimProcess_RequestForm: function (oEvent) {
+			// validate claim item
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var oRequestForm = oEvent? oEvent.getParameters().selectedItem : null;
+			if (oRequestForm) {
+				// populate request form values
+				oInputModel.setProperty("/claimtype/requestform/objective_purpose", oRequestForm.getBindingContext("employee").getObject("OBJECTIVE_PURPOSE"));
+				oInputModel.setProperty("/claimtype/requestform/trip_start_date", oRequestForm.getBindingContext("employee").getObject("TRIP_START_DATE"));
+				oInputModel.setProperty("/claimtype/requestform/trip_end_date", oRequestForm.getBindingContext("employee").getObject("TRIP_END_DATE"));
+				oInputModel.setProperty("/claimtype/requestform/event_start_date", oRequestForm.getBindingContext("employee").getObject("EVENT_START_DATE"));
+				oInputModel.setProperty("/claimtype/requestform/event_end_date", oRequestForm.getBindingContext("employee").getObject("EVENT_END_DATE"));
+				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("ALTERNATE_COST_CENTER"));
+				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", oRequestForm.getBindingContext("employee").getObject("PREAPPROVAL_AMOUNT"));
+				oInputModel.setProperty("/claimtype/requestform/cash_advance", oRequestForm.getBindingContext("employee").getObject("CASH_ADVANCE"));
+				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", oRequestForm.getBindingContext("employee").getObject("COSTCENTER/COST_CENTER_DESC"));
+			}
+			else {
+				// reset request form values
+				oInputModel.setProperty("/claimtype/requestform/objective_purpose", null);
+				oInputModel.setProperty("/claimtype/requestform/trip_start_date", null);
+				oInputModel.setProperty("/claimtype/requestform/trip_end_date", null);
+				oInputModel.setProperty("/claimtype/requestform/event_start_date", null);
+				oInputModel.setProperty("/claimtype/requestform/event_end_date", null);
+				oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", null);
+				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", null);
+				oInputModel.setProperty("/claimtype/requestform/cash_advance", null);
+				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", null);
 			}
 		},
 
@@ -731,23 +667,35 @@ sap.ui.define([
         * @public
         */
 		onSelect_ClaimProcess_CourseCode: function (oEvent) {
-			// set description
-			this.getView().getModel("claimsubmission_input").setProperty("/claimtype/course_code/course_desc", oEvent.getParameters().selectedItem.getBindingContext("employee_view").getObject("COURSE_DESC"));
-
-			// set filter for session number dropdown
+			// validate claim item
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type")) &&
-				oInputModel.getProperty("/claimtype/course_code/course_id")) {
-				var oSelectSessionNumber = this.byId("select_claimprocess_session_number");
-				var oBindingSelectSessionNumber = oSelectSessionNumber.getBinding("items");
-				var aFilterSelectSessionNumber = [
-						// ensure status is active
-						new Filter("COURSE_ID", FilterOperator.EQ, oInputModel.getProperty("/claimtype/course_code/course_id")),
-						new Filter("PARTICIPANT_ID", FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
-						new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
-						new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true)
-					];
-				oBindingSelectSessionNumber.filter(aFilterSelectSessionNumber);
+			var oCourseCode = oEvent? oEvent.getParameters().selectedItem : null;
+			if (oCourseCode) {
+				// set course code description
+				oInputModel.setProperty("/claimtype/course_code/course_desc", oCourseCode.getBindingContext("employee_view").getObject("COURSE_DESC"));
+
+				// set Session Number selection based on selected course code
+				if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claimtype/type"))) {
+					var oSelectSessionNumber = this.byId("select_claimprocess_session_number");
+					var oBindingSelectSessionNumber = oSelectSessionNumber.getBinding("items");
+					var aFilterSelectSessionNumber = [
+							// ensure status is active
+							new Filter("COURSE_ID", FilterOperator.EQ, oInputModel.getProperty("/claimtype/course_code/course_id")),
+							new Filter("PARTICIPANT_ID", FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
+							new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
+							new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true)
+						];
+					oBindingSelectSessionNumber.filter(aFilterSelectSessionNumber);
+				}
+			}
+			else {
+				// reset claim item values
+				oInputModel.setProperty("/claimtype/course_code/course_desc", null);
+			}
+			// reset session number
+			if (oInputModel.getProperty("/claimtype/course_code/session_number") !== null) {
+				oInputModel.setProperty("/claimtype/course_code/session_number", null);
+				this.onSelect_ClaimProcess_SessionNumber();
 			}
 		},
 
@@ -756,14 +704,20 @@ sap.ui.define([
         * @public
         */
 		onSelect_ClaimProcess_SessionNumber: function (oEvent) {
-			// set description
-			this.getView().getModel("claimsubmission_input").setProperty("/claimtype/course_code/start_date", oEvent.getParameters().selectedItem.getBindingContext("employee").getObject("START_DATE"));
-			this.getView().getModel("claimsubmission_input").setProperty("/claimtype/course_code/end_date", oEvent.getParameters().selectedItem.getBindingContext("employee").getObject("END_DATE"));
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var oSessionNumber = oEvent? oEvent.getParameters().selectedItem : null;
+			if (oSessionNumber) {
+				// set start/end dates
+				oInputModel.setProperty("/claimtype/course_code/start_date", oSessionNumber.getBindingContext("employee").getObject("START_DATE"));
+				oInputModel.setProperty("/claimtype/course_code/end_date", oSessionNumber.getBindingContext("employee").getObject("END_DATE"));
+			}
+			else {
+				oInputModel.setProperty("/claimtype/course_code/start_date", null);
+				oInputModel.setProperty("/claimtype/course_code/end_date", null);
+			}
 		},
 
 		onPreApproval_ClaimProcess: function () {
-			// reset Claim Process dialog before closing
-			this._reset_ClaimProcess();
 			this.oDialog_ClaimProcess.close();
 
 			// load Pre-Approval Request dialog 
@@ -773,35 +727,6 @@ sap.ui.define([
 		onStartClaim_ClaimProcess: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			//// get claim type/item description
-			oInputModel.setProperty("/claimtype/descr/type", this.byId("select_claimprocess_claimtype")._getSelectedItemText());
-			oInputModel.setProperty("/claimtype/descr/item", this.byId("select_claimprocess_claimitem")._getSelectedItemText());
-			//// get claim item category ID
-			oInputModel.setProperty("/claimtype/category", this.byId("select_claimprocess_claimitem").getSelectedItem().getBindingContext("employee").getObject("SUBMISSION_TYPE"));
-			//// get cost center from claim type if value exists
-			var sClaimTypeCostCenter = await ClaimUtility.determineDefaultCostCenter(oInputModel.getProperty("/claimtype/type"));
-			if (sClaimTypeCostCenter && sClaimTypeCostCenter !== 'null') { // returns value and is not string 'null'
-				oInputModel.setProperty("/claimtype/cost_center", sClaimTypeCostCenter);
-				oInputModel.setProperty("/claimtype/descr/cost_center", await this._bindEclaimDescr("/ZCOST_CENTER", sClaimTypeCostCenter, 'COST_CENTER_ID', 'COST_CENTER_DESC'));
-			}
-			//// get request form values
-			if (this.byId("select_claimprocess_requestform").getSelectedItem() && !this.byId("switch_claimprocess_req_emailapprove").getState()) {
-				var oRequestForm = this.byId("select_claimprocess_requestform").getSelectedItem().getBindingContext("employee");
-				if (oRequestForm) {
-					oInputModel.setProperty("/claimtype/requestform/objective_purpose", oRequestForm.getObject("OBJECTIVE_PURPOSE"));
-					oInputModel.setProperty("/claimtype/requestform/preapproval_amount", oRequestForm.getObject("PREAPPROVAL_AMOUNT"));
-					oInputModel.setProperty("/claimtype/requestform/trip_start_date", this._getJsonDate(oRequestForm.getObject("TRIP_START_DATE")));
-					oInputModel.setProperty("/claimtype/requestform/trip_end_date", this._getJsonDate(oRequestForm.getObject("TRIP_END_DATE")));
-					oInputModel.setProperty("/claimtype/requestform/event_start_date", this._getJsonDate(oRequestForm.getObject("EVENT_START_DATE")));
-					oInputModel.setProperty("/claimtype/requestform/event_end_date", this._getJsonDate(oRequestForm.getObject("EVENT_END_DATE")));
-					oInputModel.setProperty("/claimtype/requestform/alternate_cost_center", oRequestForm.getObject("ALTERNATE_COST_CENTER"));
-					oInputModel.setProperty("/claimtype/requestform/cash_advance", oRequestForm.getObject("CASH_ADVANCE"));
-					oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", oRequestForm.getObject("COSTCENTER/COST_CENTER_DESC"));
-				}
-			}
-			if (this.byId("switch_claimprocess_req_emailapprove").getEnabled()) {
-				oInputModel.setProperty("/claimtype/req_emailapprove", this.byId("switch_claimprocess_req_emailapprove").getState());
-			}
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
@@ -850,65 +775,13 @@ sap.ui.define([
 		},
 
 		onCancel_ClaimProcess: function () {
-			this._reset_ClaimProcess();
 			this.oDialog_ClaimProcess.close();
 		},
 
-		_reset_ClaimProcess: function () {
-			// reset claim type select
-			if (this.byId("select_claimprocess_claimtype").getSelectedItem()) {
-				this.byId("select_claimprocess_claimtype").setSelectedItem(null);
-			}
-
-			// reset claim item select
-			if (this.byId("select_claimprocess_claimitem").getEditable()) {
-				this.byId("select_claimprocess_claimitem").unbindAggregation("items");
-				this.byId("select_claimprocess_claimitem").setSelectedItem(null);
-				this.byId("select_claimprocess_claimitem").setEditable(false);
-			}
-
-			// reset claim item category
-			if (this.byId("input_claimprocess_category").getValue().length > 0) {
-				this.byId("input_claimprocess_category").setValue(null);
-			}
-
-			// reset request form
-			if (this.byId("select_claimprocess_requestform").getVisible()) {
-				this._reset_ClaimProcess_RequestForm();
-			}
-
-			// disable 'Start Claim' button
-			if (this.byId("button_claimprocess_startclaim").getEnabled()) {
-				this.byId("button_claimprocess_startclaim").setEnabled(false);
-			}
-		},
-
-		_reset_ClaimProcess_RequestForm: function () {
-			// disable request form select
-			this.byId("select_claimprocess_requestform").unbindAggregation("items");
-			this.byId("select_claimprocess_requestform").setEnabled(false);
-			this.byId("select_claimprocess_requestform").setVisible(false);
-			this.byId("select_claimprocess_requestform").setEditable(false);
-			this.byId("select_claimprocess_requestform").setSelectedItem(null);
-
-			// disable 'Use email approval?' switch
-			if (this.byId("switch_claimprocess_req_emailapprove").getEnabled()) {
-				this.byId("switch_claimprocess_req_emailapprove").setEnabled(false);
-				this.byId("switch_claimprocess_req_emailapprove").setVisible(false);
-				this.byId("switch_claimprocess_req_emailapprove").setState(false);
-			}
-
-			// disable 'Create Pre-Approval Request' button
-			this.byId("button_claimprocess_preapproval").setEnabled(false);
-			this.byId("button_claimprocess_preapproval").setVisible(false);
-		},
 		//// end Functions - Claim Process
 
 		//// Functions - Claim Input
 		_onInit_ClaimInput: async function () {
-			// reset claim input data if exists
-			this._reset_ClaimInput();
-
 			// set data for claim header
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var lastModifiedDate = this._getJsonDate(new Date());
@@ -941,9 +814,15 @@ sap.ui.define([
 			) {
 				oInputModel.setProperty("/claim_header/course_code", oInputModel.getProperty("/claimtype/course_code/course_id"));
 				oInputModel.setProperty("/claim_header/session_number", oInputModel.getProperty("/claimtype/course_code/session_number"));
-				oInputModel.setProperty("/claim_header/trip_start_date", oInputModel.getProperty("/claimtype/course_code/start_date"));
-				oInputModel.setProperty("/claim_header/trip_end_date", oInputModel.getProperty("/claimtype/course_code/end_date"));
 				oInputModel.setProperty("/claim_header/descr/course_code", oInputModel.getProperty("/claimtype/course_code/course_desc"));
+
+				// check if trip dates already auto-populated from pre-approval request, else populate with course code dates
+				if (!oInputModel.getProperty("/claim_header/trip_start_date")) {
+					oInputModel.setProperty("/claim_header/trip_start_date", oInputModel.getProperty("/claimtype/course_code/start_date"));
+				}
+				if (!oInputModel.getProperty("/claim_header/trip_end_date")) {
+					oInputModel.setProperty("/claim_header/trip_end_date", oInputModel.getProperty("/claimtype/course_code/end_date"));
+				}
 			}
 			else {
 				oInputModel.setProperty("/claim_header/course_code", null);
@@ -967,35 +846,7 @@ sap.ui.define([
 
 			// pre-approval request values
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			if (oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.PRE_APPROVE ||
-				oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CASH_REPAYMENT ||
-				oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CURR_SUBSIDY
-			) {
-				// make Pre-Approval Request, Approve Amount visible
-				this.byId("text_claiminput_preapprovalreq").setVisible(true);
-				this.byId("text_claiminput_amtapproved").setVisible(true);
-				switch (oInputModel.getProperty("/claimtype/req_emailapprove")) {
-					case true:
-						// set text for using email approval
-						oInputModel.setProperty("/claim_header/request_id", "");
-						oInputModel.setProperty("/claim_header/descr/request_id", Utility.getText("text_claiminput_preapprovalreq_email"));
-
-						// require attachment email approval
-						this.byId("fileuploader_claiminput_attachment").setEnabled(true);
-						this.byId("fileuploader_claiminput_attachment").setVisible(true);
-						this.byId("fileuploader_claiminput_attachment").setRequired(true);
-						break;
-					default:
-						//// disable editing if dates already set from request
-						if (oInputModel.getProperty("/claimtype/requestform/event_start_date")) {
-							this.byId("datepicker_claiminput_eventstartdate").setEditable(false);
-						}
-						if (oInputModel.getProperty("/claimtype/requestform/event_end_date")) {
-							this.byId("datepicker_claiminput_eventenddate").setEditable(false);
-						}
-						break;
-				}
-			} else {
+			if (!Object.values(this._oConstant.SubmissionTypePAR).includes(oInputModel.getProperty("/claimtype/category"))) {
 				this.byId("fileuploader_claiminput_attachment").setEnabled(false);
 				this.byId("fileuploader_claiminput_attachment").setVisible(false);
 			}
@@ -1302,60 +1153,9 @@ sap.ui.define([
 		},
 
 		onCancel_ClaimInput: function () {
-			this._reset_ClaimInput();
 			this.oDialog_ClaimInput.close();
 		},
 
-		_reset_ClaimInput: function () {
-			// reset input fields
-			//// report purpose
-			if (this.byId("input_claiminput_purpose").getValue()) {
-				this.byId("input_claiminput_purpose").setValue(null);
-			}
-			//// trip dates
-			if (this.byId("datepicker_claiminput_tripstartdate").getValue()) {
-				this.byId("datepicker_claiminput_tripstartdate").setValue(null);
-			}
-			if (this.byId("datepicker_claiminput_tripenddate").getValue()) {
-				this.byId("datepicker_claiminput_tripenddate").setValue(null);
-			}
-			//// event dates
-			if (this.byId("datepicker_claiminput_eventstartdate").getValue()) {
-				this.byId("datepicker_claiminput_eventstartdate").setValue(null);
-			}
-			if (!this.byId("datepicker_claiminput_eventstartdate").getEditable()) {
-				this.byId("datepicker_claiminput_eventstartdate").setEditable(true);
-			}
-			if (this.byId("datepicker_claiminput_eventenddate").getValue()) {
-				this.byId("datepicker_claiminput_eventenddate").setValue(null);
-			}
-			if (!this.byId("datepicker_claiminput_eventenddate").getEditable()) {
-				this.byId("datepicker_claiminput_eventenddate").setEditable(true);
-			}
-			//// location
-			if (this.byId("input_claiminput_location").getValue()) {
-				this.byId("input_claiminput_location").setValue(null);
-			}
-			//// attachment email approval
-			if (this.byId("fileuploader_claiminput_attachment").getValue()) {
-				this.byId("fileuploader_claiminput_attachment").clear();
-			}
-			if (this.byId("fileuploader_claiminput_attachment").getRequired()) {
-				this.byId("fileuploader_claiminput_attachment").setRequired(false);
-			}
-			//// comment
-			if (this.byId("input_claiminput_comment").getValue()) {
-				this.byId("input_claiminput_comment").setValue(null);
-			}
-
-			// rehide pre-approval display fields
-			if (this.byId("text_claiminput_preapprovalreq").getVisible()) {
-				this.byId("text_claiminput_preapprovalreq").setVisible(false);
-			}
-			if (this.byId("text_claiminput_amtapproved").getVisible()) {
-				this.byId("text_claiminput_amtapproved").setVisible(false);
-			}
-		},
 		//// end Functions - Claim Input
 		// end Functions - Claim Submission
 

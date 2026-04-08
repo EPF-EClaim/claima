@@ -74,7 +74,8 @@
                     <Text
                         id="text_claiminput_preapprovalreq"
                         text="{claimsubmission_input>/claim_header/request_id} {claimsubmission_input>/claim_header/descr/request_id}"
-                        visible="false"
+                        visible="{= ${claimsubmission_input>/claimtype/requestform/request_id} !== null &amp;&amp;
+                                !${claimprocess_properties>/req_emailapproval/is_state_active} }"
                     />
 
                     <!-- Pre-Approved Amount (MYR) -->
@@ -82,7 +83,8 @@
                     <Text
                         id="text_claiminput_amtapproved"
                         text="{claimsubmission_input>/claim_header/preapproved_amount}"
-                        visible="false"
+                        visible="{= ${claimsubmission_input>/claimtype/requestform/preapproval_amount} !== null &amp;&amp;
+                                !${claimprocess_properties>/req_emailapproval/is_state_active} }"
                     />
 
                     <!-- Trip Start Date -->
@@ -90,8 +92,12 @@
                     <DatePicker
                         id="datepicker_claiminput_tripstartdate"
                         value="{claimsubmission_input>/claim_header/trip_start_date}"
-                        editable="{= !${claimsubmission_input>/claimtype/requestform/trip_start_date} &amp;&amp;
-                            !Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claim_header/claim_type_id}) }"
+                        editable="{= !Object.values(${constant>/SubmissionTypePAR}).includes(${claimsubmission_input>/claim_header/submission_type}) ||
+                                
+                                ( ${claimprocess_properties>/req_emailapproval/is_state_active} &amp;&amp;
+                                    ( !Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) ||
+                                        ${claimsubmission_input>/claimtype/course_code/start_date} === null ))
+                        }"
                         required="true"
                         displayFormat="dd-MMM-yyyy"
                         />
@@ -101,8 +107,12 @@
                     <DatePicker
                         id="datepicker_claiminput_tripenddate"
                         value="{claimsubmission_input>/claim_header/trip_end_date}"
-                        editable="{= !${claimsubmission_input>/claimtype/requestform/trip_end_date} &amp;&amp;
-                            !Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claim_header/claim_type_id}) }"
+                        editable="{= !Object.values(${constant>/SubmissionTypePAR}).includes(${claimsubmission_input>/claim_header/submission_type}) ||
+
+                                ( ${claimprocess_properties>/req_emailapproval/is_state_active} &amp;&amp;
+                                    ( !Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) ||
+                                        ${claimsubmission_input>/claimtype/course_code/end_date} === null ))
+                        }"
                         required="true"
                         displayFormat="dd-MMM-yyyy"
                         />
@@ -112,6 +122,8 @@
                     <DatePicker
                         id="datepicker_claiminput_eventstartdate"
                         value="{claimsubmission_input>/claim_header/event_start_date}"
+                        editable="{= !Object.values(${constant>/SubmissionTypePAR}).includes(${claimsubmission_input>/claim_header/submission_type}) ||
+                                ${claimprocess_properties>/req_emailapproval/is_state_active} }"
                         displayFormat="dd-MMM-yyyy"
                         />
 
@@ -120,6 +132,8 @@
                     <DatePicker
                         id="datepicker_claiminput_eventenddate"
                         value="{claimsubmission_input>/claim_header/event_end_date}"
+                        editable="{= !Object.values(${constant>/SubmissionTypePAR}).includes(${claimsubmission_input>/claim_header/submission_type}) ||
+                                ${claimprocess_properties>/req_emailapproval/is_state_active} }"
                         displayFormat="dd-MMM-yyyy"
                         />
 
@@ -149,7 +163,9 @@
                         editMode="Editable"
                         display="ValueDescription"
                         visible="{= ${claimsubmission_input>/claimtype/cost_center} === null &amp;&amp;
-                            ${claimsubmission_input>/claimtype/requestform/alternate_cost_center} === null
+
+                            (${claimsubmission_input>/claimtype/requestform/alternate_cost_center} === null ||
+                                ${claimprocess_properties>/req_emailapproval/is_state_active})
                         }"
                         valueHelp="valuehelp_claiminput_altcc"
                     />
@@ -159,12 +175,11 @@
                     <Input
                         id="input_claiminput_altcc"
                         value="{claimsubmission_input>/claim_header/alternate_cost_center} ({claimsubmission_input>/claim_header/descr/alternate_cost_center})"
-                        enabled="{= ${claimsubmission_input>/claimtype/cost_center} !== null ||
-                            ${claimsubmission_input>/claimtype/requestform/alternate_cost_center} !== null
-                        }"
                         editable="false"
                         visible="{= ${claimsubmission_input>/claimtype/cost_center} !== null ||
-                            ${claimsubmission_input>/claimtype/requestform/alternate_cost_center} !== null
+
+                            (${claimsubmission_input>/claimtype/requestform/alternate_cost_center} !== null &amp;&amp;
+                                !${claimprocess_properties>/req_emailapproval/is_state_active})
                         }"
                     />
                     

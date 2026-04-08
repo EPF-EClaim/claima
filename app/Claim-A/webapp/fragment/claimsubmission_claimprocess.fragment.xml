@@ -50,10 +50,22 @@
                         id="select_claimprocess_claimitem"
                         forceSelection="false"
                         selectedKey="{claimsubmission_input>/claimtype/item}"
-                        editable="false"
+                        items="{
+                            path: 'employee>/ZCLAIM_TYPE_ITEM',
+                            sorter: [
+                                { path: 'CLAIM_TYPE_ITEM_DESC' },
+                                { path: 'CLAIM_TYPE_ITEM_ID' }
+                            ],
+                            parameters: {
+                                $expand: 'ZSUBMISSION_TYPE',
+                                $select: 'SUBMISSION_TYPE,ZSUBMISSION_TYPE/SUBMISSION_TYPE_DESC'
+                            }
+                        }"
+                        editable="{= ${claimsubmission_input>/claimtype/type} !== null }"
                         change="onSelect_ClaimProcess_ClaimItem"
                         liveChange="onSelect_ClaimProcess_ClaimItem"
                     >
+                        <core:Item key="{employee>CLAIM_TYPE_ITEM_ID}" text="{employee>CLAIM_TYPE_ITEM_DESC}" />
                     </Select>
 
                     <!-- Category -->
@@ -63,36 +75,6 @@
                         value="{claimsubmission_input>/claimtype/descr/category}"
                         editable="false"
                     />
-
-                    <!-- Select Request Form (Pre-Approval) -->
-                    <Label text="{i18n>label_claimprocess_requestform}" />
-                    <Select
-                        id="select_claimprocess_requestform"
-                        forceSelection="false"
-                        selectedKey="{claimsubmission_input>/claimtype/requestform/request_id}"
-                        enabled="false"
-                        editable="false"
-                        visible="false"
-                        change="onSelect_ClaimProcess_RequestForm"
-                        liveChange="onSelect_ClaimProcess_RequestForm"
-                    >
-                    </Select>
-
-                    <!-- Email Approval -->
-                    <Label text="{i18n>label_claimprocess_req_emailapprove}" />
-                    <Switch
-                        id="switch_claimprocess_req_emailapprove"
-                        state="false"
-                        customTextOn="{i18n>switch_claimprocess_req_emailapprove_yes}"
-                        customTextOff="{i18n>switch_claimprocess_req_emailapprove_no}"
-                        enabled="false"
-                        visible="false"
-                        change="onSwitch_ClaimProcess_Req_EmailApprove"
-                    >
-                        <layoutData>
-                            <FlexItemData growFactor="1" />
-                        </layoutData>
-                    </Switch>
 
                     <!-- Select Course Code -->
                     <Label text="{i18n>label_claimprocess_coursecode}" />
@@ -107,7 +89,9 @@
                                 { path: 'COURSE_DESC' }
                             ]
                         }"
-                        visible="{= Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) }"
+                        visible="{= Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) &amp;&amp;
+                            ${claimsubmission_input>/claimtype/item} !== null
+                        }"
                         change="onSelect_ClaimProcess_CourseCode"
                         liveChange="onSelect_ClaimProcess_CourseCode"
                     >
@@ -123,16 +107,55 @@
                         items="{
                             path: 'employee>/ZTRAIN_COURSE_PART',
                             sorter: [{ path: 'SESSION_NUMBER' }],
-                            parameters: { select: 'START_DATE,END_DATE' }
+                            parameters: { $select: 'START_DATE,END_DATE' }
+                        }"
+                        editable="{= ${claimsubmission_input>/claimtype/course_code/course_id} !== null
                         }"
                         visible="{= Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) &amp;&amp;
-                            ${claimsubmission_input>/claimtype/course_code/course_id} !== null
+                            ${claimsubmission_input>/claimtype/item} !== null
                         }"
                         change="onSelect_ClaimProcess_SessionNumber"
                         liveChange="onSelect_ClaimProcess_SessionNumber"
                     >
                         <core:Item key="{employee>SESSION_NUMBER}" text="{employee>SESSION_NUMBER}" />
                     </Select>
+
+                    <!-- Select Request Form (Pre-Approval) -->
+                    <Label text="{i18n>label_claimprocess_requestform}" />
+                    <Select
+                        id="select_claimprocess_requestform"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claimtype/requestform/request_id}"
+                        items="{
+                            path: 'employee>/ZREQUEST_HEADER',
+                            sorter: [{ path: 'REQUEST_ID' }],
+                            parameters: {
+                                $expand: 'COSTCENTER',
+                                $select: 'EVENT_START_DATE,EVENT_END_DATE,ALTERNATE_COST_CENTER,PREAPPROVAL_AMOUNT,CASH_ADVANCE,COSTCENTER/COST_CENTER_DESC'
+                            }
+                        }"
+                        editable="{= !${claimprocess_properties>/req_emailapproval/is_state_active} }"
+                        visible="{= Object.values(${constant>/SubmissionTypePAR}).includes(${claimsubmission_input>/claimtype/category}) }"
+                        change="onSelect_ClaimProcess_RequestForm"
+                        liveChange="onSelect_ClaimProcess_RequestForm"
+                    >
+                        <core:Item key="{employee>REQUEST_ID}" text="{employee>REQUEST_ID} {employee>OBJECTIVE_PURPOSE} ({employee>TRIP_START_DATE} – {employee>TRIP_END_DATE})" />
+                    </Select>
+
+                    <!-- Email Approval -->
+                    <Label text="{i18n>label_claimprocess_req_emailapprove}" />
+                    <Switch
+                        id="switch_claimprocess_req_emailapprove"
+                        state="{claimprocess_properties>/req_emailapproval/is_state_active}"
+                        customTextOn="{i18n>switch_claimprocess_req_emailapprove_yes}"
+                        customTextOff="{i18n>switch_claimprocess_req_emailapprove_no}"
+                        visible="{= Object.values(${constant>/SubmissionTypePAR}).includes(${claimsubmission_input>/claimtype/category}) }"
+                        change="onSwitch_ClaimProcess_Req_EmailApprove"
+                    >
+                        <layoutData>
+                            <FlexItemData growFactor="1" />
+                        </layoutData>
+                    </Switch>
                 </f:content>
             </f:SimpleForm>
      
@@ -142,8 +165,7 @@
                 id="button_claimprocess_preapproval"
                 press="onPreApproval_ClaimProcess"
                 text="{i18n>button_claimprocess_preapproval}"
-                enabled="false"
-                visible="false"
+                enabled="{= Object.values(${constant>/SubmissionTypePAR}).includes(${claimsubmission_input>/claimtype/category}) }"
             />
 
             <!-- Start Claim -->
@@ -151,7 +173,16 @@
                 id="button_claimprocess_startclaim"
                 press="onStartClaim_ClaimProcess"
                 text="{i18n>button_claimprocess_startclaim}"
-                enabled="false"
+                enabled="{= ${claimsubmission_input>/claimtype/type} !== null &amp;&amp;
+                            ${claimsubmission_input>/claimtype/item} !== null &amp;&amp;
+
+                    ( !Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) ||
+                        ( ${claimsubmission_input>/claimtype/course_code/course_id} !== null &amp;&amp; ${claimsubmission_input>/claimtype/course_code/session_number} !== null )) &amp;&amp;
+                        
+                    ( !Object.values(${constant>/SubmissionTypePAR}).includes(${claimsubmission_input>/claimtype/category}) ||
+                        ${claimprocess_properties>/req_emailapproval/is_state_active} ||
+                            ${claimsubmission_input>/claimtype/requestform/request_id} !== null)
+                }"
             />
 
             <!-- Cancel -->
