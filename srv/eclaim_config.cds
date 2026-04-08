@@ -359,7 +359,7 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
             },
             {
                 $Type: 'UI.DataField',
-                Value: IND_OR_GROUP,
+                Value: INDIVIDUAL_GROUP,
                 Label: 'Individual/Group'
             },
             {

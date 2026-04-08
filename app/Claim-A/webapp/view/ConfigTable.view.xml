@@ -351,7 +351,7 @@
                             />
                              <ViewSettingsItem
                                 text="{i18n>claim_grp}"
-                                key="INDIVIDUAL/GROUP"
+                                key="IND_OR_GROUP"
                             />
                              <ViewSettingsItem
                                 text="{i18n>claim_freq}"
@@ -447,7 +447,7 @@
                             </ViewSettingsCustomItem>
                              <ViewSettingsCustomItem
                                 text="{i18n>claim_grp}"
-                                key="INDIVIDUAL/GROUP"
+                                key="IND_OR_GROUP"
                             >
                                 <customControl>
                                     <Input

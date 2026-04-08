@@ -141,7 +141,7 @@
                             <Text text="{MATERIAL_CODE}" />
                             <Text text="{RISK}" />
                             <Text text="{SUBMISSION_TYPE}" />
-                            <Text text="{INDIVIDUAL/GROUP}" />
+                            <Text text="{IND_OR_GROUP}" />
                             <Text text="{FREQUENCY}" />
                             <Text text="{PERIOD}" />
                             <Text text="{PERIOD_UNIT}" />
