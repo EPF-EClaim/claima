@@ -100,6 +100,7 @@ module.exports = {
     iIndex = oPayload.CheckFields.findIndex(
       (field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE,
     );
+    if (iIndex == -1) return;
     aDateToFrom = BuildSelectWhereConditions.getDateMonthRange(oPayload.CheckFields[iIndex].value);
     const dDateFrom = aDateToFrom.dDateFrom;
     const dDateTo = aDateToFrom.dDateTo;
@@ -137,7 +138,7 @@ module.exports = {
     iIndex = oPayload.CheckFields.findIndex(
       (field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE,
     );
-
+    if (iIndex == -1) return;
     aDateToFrom = BuildSelectWhereConditions.getDateMonthRange(oPayload.CheckFields[iIndex].value);
 
     const dDateFrom = aDateToFrom.dDateFrom;
@@ -172,13 +173,13 @@ module.exports = {
       tx);
   },
 
- /**
-   * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
-   * @public
-   * @param {Object} oPayload - payload contains user input passed from frontend
-   * @param {Object} tx - CDS Transaction
-   * @returns {Object} aExceptionData - return Exception table data
-   */
+  /**
+    * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
+    * @public
+    * @param {Object} oPayload - payload contains user input passed from frontend
+    * @param {Object} tx - CDS Transaction
+    * @returns {Object} aExceptionData - return Exception table data
+    */
   _getExceptionData: async function (oPayload, tx) {
     // If No data from Rules Table, refer to Exception list table
     const sExceptionTable = Constant.Entities.ZCLM_TYPE_EXCEPTION_LIST;
@@ -186,6 +187,7 @@ module.exports = {
     iIndex = oPayload.CheckFields.findIndex(
       (field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE,
     );
+    if (iIndex == -1) return;
     aDateToFrom = BuildSelectWhereConditions.getDateMonthRange(oPayload.CheckFields[iIndex].value);
 
     const dDateFrom = aDateToFrom.dDateFrom;
@@ -220,6 +222,7 @@ module.exports = {
         iIndex = oPayload.CheckFields.findIndex(
           (field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE,
         );
+        if (iIndex == -1) return;
         if (iFrequencyCount < oRule.FREQUENCY) {
           oPayload.CheckFields[iIndex].result = true;
         } else {
@@ -231,6 +234,7 @@ module.exports = {
         iIndex = oPayload.CheckFields.findIndex(
           (field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT,
         );
+        if (iIndex == -1) return;
         if (!oRule) {
           oPayload.CheckFields[iIndex].result = false;
         } else {
@@ -240,10 +244,10 @@ module.exports = {
             oPayload.CheckFields[iIndex].result = true;
           } else {
             oPayload.CheckFields[iIndex].result =
-            ComparisonOperators.LesserEquals(
-              oPayload.CheckFields[iIndex].value,
-              parseFloat(oRule.ELIGIBLE_AMOUNT),
-            );
+              ComparisonOperators.LesserEquals(
+                oPayload.CheckFields[iIndex].value,
+                parseFloat(oRule.ELIGIBLE_AMOUNT),
+              );
           }
         }
         break;

@@ -67,7 +67,6 @@ module.exports = {
         `${sEligibilityCondition}`
       ),
     );
-    // return aEligibilityRules;
 
     let oReturnPayload = [];
 

@@ -33,6 +33,7 @@ module.exports = {
         // get Historical Claims Data
         // find field for date
         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
+        if (iIndex == -1) return;
         const aDateToFrom = BuildSelectWhereConditions.getDateMonthRange(oPayload.CheckFields[iIndex].value);
         const dDateFrom = aDateToFrom.dDateFrom;
         const dDateTo = aDateToFrom.dDateTo;
@@ -75,6 +76,7 @@ module.exports = {
         // get Historical Claims Data
         // find field for date
         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
+        if (iIndex == -1) return;
         // Derive first and last day of the month
         const aDateToFrom = BuildSelectWhereConditions.getDateMonthRange(oPayload.CheckFields[iIndex].value);
         const dDateFrom = aDateToFrom.dDateFrom;
@@ -121,6 +123,7 @@ module.exports = {
             case Constant.ClaimTypeItem.I_PAD:
                 // I-PAD - return true if there is no historical claims within same Year/Month based on frequency and period
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
+                if (iIndex == -1) return;
                 if (iFrequencyCount < oRule.FREQUENCY) {
                     oPayload.CheckFields[iIndex].result = true;
                 } else {
@@ -130,6 +133,7 @@ module.exports = {
                 iIndex = null;
                 // I-PAD - return true if claim amount is less than eligible amount
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT);
+                if (iIndex == -1) return;
                 if (!oRule) {
                     oPayload.CheckFields[iIndex].result = false;
                 } else {
