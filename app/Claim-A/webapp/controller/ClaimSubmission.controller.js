@@ -80,6 +80,8 @@ sap.ui.define([
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._openDeclarationDialog = null;
+			this._openDisclaimerGalakanDialog = null;
+
 
 			// decalre custom validator
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
@@ -231,6 +233,16 @@ sap.ui.define([
 
 		onPressDeclarationCancel: function () {
 			this._openDeclarationDialog.close();
+		},
+
+		//event handle for confirm and cancel
+		onPressdisclaimerGalakanConfirm: function () {
+			this._openDisclaimerGalakanDialog.close();
+			ApproveDialog.open(this);
+		},
+
+		onPressdisclaimerGalakanCancel: function () {
+			this._openDisclaimerGalakanDialog.close();
 		},
 
 
@@ -1554,7 +1566,6 @@ sap.ui.define([
 					this._pendingAction = oAction;
 
 					if (!this._openDeclarationDialog) {
-
 						Fragment.load({
 							name: "claima.fragment.declarationdialog",
 							id: "declarationDialogFrag",
@@ -1657,6 +1668,7 @@ sap.ui.define([
 
 
 				case this._oConstant.Claim_Action.APPROVE: {
+
 					let oReject = this.getView().getModel("Reject");
 					if (!oReject) {
 						oReject = new JSONModel({ approvalComment: "" });
@@ -1669,8 +1681,38 @@ sap.ui.define([
 						oType = new JSONModel({ mode: "" });
 						this.getView().setModel(oType, "Type");
 					}
-					oType.setProperty("/mode", "APPROVE_CLAIM");
+					oType.setProperty("/mode", this._oConstant.ApprovalProcess.CLAIM_APPROVE);
 
+					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+					if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimTypeItem.GALAKAN) {
+
+						if (!this._openDisclaimerGalakanDialog) {
+
+							Fragment.load({
+								name: "claima.fragment.disclaimergalakan",
+								id: "disclaimergalakanDialogFrag",
+								controller: this
+							}).then(function (oDisclaimerGalakanDialog) {
+
+								this._openDisclaimerGalakanDialog = oDisclaimerGalakanDialog;
+								this.getView().addDependent(oDisclaimerGalakanDialog);
+
+								var oText = Fragment.byId("disclaimergalakanDialogFrag", "disclaimergalakanText");
+								oText.setText(Utility.getText("checkbox_claimdetails_input_disclaimer_galakan"));
+
+								oDisclaimerGalakanDialog.open();
+
+							}.bind(this));
+
+						} else {
+
+							var oText = Fragment.byId("disclaimergalakanDialogFrag", "disclaimergalakanText");
+							oText.setText(Utility.getText("checkbox_claimdetails_input_disclaimer_galakan"));
+
+							this._openDisclaimerGalakanDialog.open();
+						}
+						return;
+					}
 					ApproveDialog.open(this);
 				}
 					break;
@@ -2193,16 +2235,31 @@ sap.ui.define([
 			if (this.byId("checkbox_claimdetails_input_disclaimer").getVisible()) {
 				oInputModel.setProperty("/claim_item/disclaimer", false);
 			}
-
-			if (this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()) {
-				//remove to string when db is updated
-				oInputModel.setProperty("/claim_item/disclaimer_galakan", false);
-			}
-
 			//START TDL #6.1 meter cube for Pengangkutan Laut
 			const sKey = oInputModel.getProperty("/claim_item/claim_type_item_id");
-			if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
 
+			//Set Kilometer (KM) field as required only for DARAT and KILOMETER claim items.
+			const bKmRequired = [
+			this._oConstant.ClaimTypeItem.DARAT,
+			this._oConstant.ClaimTypeItem.KILOMETER
+			].includes(sKey);
+			oPropertyModel.setProperty("/km/is_required", bKmRequired);
+			//Display Marriage Category field only for DARAT (land transport) claim items
+			if (sKey === this._oConstant.ClaimTypeItem.DARAT) {
+				oPropertyModel.setProperty("/marriage_category/is_visible", true);
+			} else {
+				oPropertyModel.setProperty("/marriage_category/is_visible", false);
+				oInputModel.setProperty("/claim_item/marriage_category", null);
+			}
+			//Require "To State" selection only for Flight Wilayah Asal claim item.
+			if (sKey === this._oConstant.ClaimTypeItem.FLIGHT_WIL) {
+				oPropertyModel.setProperty("/to_state_id/is_required", true);
+			} else {
+				oPropertyModel.setProperty("/to_state_id/is_required", false);
+				oInputModel.setProperty("/claim_item/to_state_id", null);
+			}
+
+			if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
 				//entitled meter cube
 				oPropertyModel.setProperty("/meter_cube_entitled/is_visible", true);
 				oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
@@ -2324,6 +2381,8 @@ sap.ui.define([
 				insurance_cert_end_date: { is_visible: false },
 				meter_cube_entitled: { is_visible: false },
 				meter_cube_actual: { is_visible: false, is_editable: true },
+				marriage_category: { is_visible: false },
+				to_state_id:{is_required: false}
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -2353,11 +2412,6 @@ sap.ui.define([
 				if (this.byId("checkbox_claimdetails_input_disclaimer").getVisible()) {
 					oInputModel.setProperty("/claim_item/disclaimer", true)
 				}
-
-				if (this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()) {
-					oInputModel.setProperty("/claim_item/disclaimer_galakan", true)
-				}
-
 				//changes here
 				if (!!oInputModel.getProperty("/claim_item/anggota_id")) {
 					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
@@ -4367,7 +4421,6 @@ sap.ui.define([
 				"datepicker_claimdetails_input_bill_date",
 				"input_claimdetails_input_phone_no",
 				"checkbox_claimdetails_input_disclaimer",
-				"checkbox_claimdetails_input_disclaimer_galakan",
 				"input_claimdetails_input_remarks",
 				"fileuploader_claimdetails_input_attachment1",
 				"fileuploader_claimdetails_input_attachment2",
@@ -4503,7 +4556,6 @@ sap.ui.define([
 				"datepicker_claimdetails_input_bill_date",
 				"input_claimdetails_input_phone_no",
 				"checkbox_claimdetails_input_disclaimer",
-				"checkbox_claimdetails_input_disclaimer_galakan",
 				"input_claimdetails_input_remarks",
 				"fileuploader_claimdetails_input_attachment_file_1",
 				"fileuploader_claimdetails_input_attachment_file_2",
