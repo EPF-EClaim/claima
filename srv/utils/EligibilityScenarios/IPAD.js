@@ -53,9 +53,10 @@ module.exports = {
             [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
             [Constant.EntitiesFields.RECEIPT_DATE]: { between: [dDateFrom, dDateTo] }
         };
+        const sItemcondition = BuildSelectWhereConditions.buildWhereCondition(aItemcondition);
         const iHistoricalData = await GetHistoricalData.getHistoricalData(sHeaderTable,
             sItemTable,
-            aItemcondition,
+            sItemcondition,
             tx);
 
         return iHistoricalData;

@@ -44,11 +44,10 @@ module.exports = {
                 [Constant.EntitiesFields.CLAIM_STATUS]: { in: aStatus }
             };
 
-            const sHeaderCondition = BuildSelectWhereConditions.buildWhereCondition(aHeaderCondition);
             // Get Header Data
             const aHeaderData = await tx.run(
                 SELECT`count(*)`
-                    .from(sHeaderTable).where(`${sHeaderCondition}`)
+                    .from(sHeaderTable).where(aHeaderCondition)
             );
             if (!!aHeaderData) return aHeaderData[0].count;
             return 0;
