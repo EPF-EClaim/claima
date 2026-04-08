@@ -74,18 +74,28 @@ sap.ui.define([
                                 }
                                 break;
                             
-                            case Constants.ClaimTypeItem.GALAKAN:
-                                if(!oInputModel.getProperty("/claim_item/disclaimer_galakan")) {
-                                    MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
-                                    return false;
-                                }
-                                break;
 
                             default:
                                 break;
                         }
                     }
 
+                    if(oInputModel?.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel?.getProperty("/claim_header/trip_start_date") ){
+                    	const bProceed = await this.onShowConfirmation(Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"));
+
+                        if (!bProceed) {
+                            return false;
+                        }
+                    }
+
+                    var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
+                    var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
+
+                    if (dReceiptDate > dTripEndDate) {
+                        MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
+                        return;
+                    }
+                    
                     if (!!oClaimSubmissionModel) {
                         // course code pre-check
                         if (Object.values(Constants.ClaimTypeKursus).includes(oClaimSubmissionModel.getProperty("/claimtype/type"))) {
@@ -105,10 +115,32 @@ sap.ui.define([
                                 return false;
                             }
                         }
-                        break;
                     }
+
+                    
             }
             return true;
+        },        
+        onShowConfirmation: function(sPromptMessage) {
+                return new Promise((oResolve) => {
+                    MessageBox.warning(
+                        sPromptMessage,
+                        {
+                            actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
+                            emphasizedAction: MessageBox.Action.OK,
+
+                            onClose: function (sAction) {
+                                if (sAction === MessageBox.Action.OK) {
+                                    oResolve(true);    
+                                } else {
+                                    oResolve(false); 
+                                }
+                            }
+                        }
+                    );
+                });
+            return Promise.resolve(true);
         }
+ 
     };
 });
