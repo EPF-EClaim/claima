@@ -87,14 +87,13 @@ sap.ui.define([
                     }
 
                     if(oInputModel.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel.getProperty("/claim_header/trip_start_date") ){
-                    	const bProceed = await this.onDateValidation();
+                    	const bProceed = await this.onReceiptDateValidation();
 
                         if (!bProceed) {
                             return false;
                         }
                     }
                     
-
                     if (!!oClaimSubmissionModel) {
                         // course code pre-check
                         if (Object.values(Constants.ClaimTypeKursus).includes(oClaimSubmissionModel.getProperty("/claimtype/type"))) {
@@ -119,19 +118,8 @@ sap.ui.define([
                     
             }
             return true;
-        },
-
-        _onReceiptCheck: function(){
-			return new Promise(function(resolve){
-				MessageBox.warning(Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"), {
-					actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
-					onClose: resolve
-				});
-			});
-		},
-
-        
-        onDateValidation: function() {
+        },        
+        onReceiptDateValidation: function() {
                 return new Promise((oResolve) => {
                     MessageBox.warning(
                         Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"),
