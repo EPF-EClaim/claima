@@ -544,6 +544,10 @@ sap.ui.define([
                 { label: Utility.getText("materialcode"), property: "MATERIAL_CODE", type: EdmType.String },
                 { label: Utility.getText("claim_risk"), property: "RISK", type: EdmType.String },
                 { label: Utility.getText("claim_subtyp"), property: "SUBMISSION_TYPE", type: EdmType.String },
+                { label: Utility.getText("claim_grp"), property: "INDIVIDUAL/GROUP", type: EdmType.String },
+                { label: Utility.getText("claim_freq"), property: "FREQUENCY", type: EdmType.Integer },
+                { label: Utility.getText("claim_period"), property: "PERIOD", type: EdmType.Integer },
+                { label: Utility.getText("claim_period_unit"), property: "PERIOD UNIT", type: EdmType.String },
                 { label: Utility.getText("claim_startdate"), property: "START_DATE", type: EdmType.Date },
                 { label: Utility.getText("claim_enddate"), property: "END_DATE", type: EdmType.Date },
                 { label: Utility.getText("claim_status"), property: "STATUS", type: EdmType.String }
@@ -553,7 +557,7 @@ sap.ui.define([
                 { label: Utility.getText("glacct"), property: "GL_ACCOUNT", type: EdmType.String },
                 { label: Utility.getText("claimcc"), property: "COST_CENTER", type: EdmType.String },
                 { label: Utility.getText("req_rtype"), property: "REQUEST_TYPE", type: EdmType.String },
-                { label: Utility.getText("claim_grp"), property: "IND_OR_GROUP", type: EdmType.String },
+                { label: Utility.getText("claim_grp"), property: "INDIVIDUAL/GROUP", type: EdmType.String },
                 { label: Utility.getText("claim_projectclaim"), property: "PROJECT_CLAIM", type: EdmType.String },
                 { label: Utility.getText("claim_startdate"), property: "START_DATE", type: EdmType.Date },
                 { label: Utility.getText("claim_enddate"), property: "END_DATE", type: EdmType.Date },
@@ -599,6 +603,8 @@ sap.ui.define([
                 { id: "filterRequestType", property: "REQUEST_TYPE" },
                 { id: "filterIndOrGroup", property: "IND_OR_GROUP" },
                 { id: "filterProjectClaim", property: "PROJECT_CLAIM" },
+                { id: "filterStartDate", property: "START DATE" },
+                { id: "filterEndDate", property: "END DATE" },
                 { id: "filterStatus", property: "STATUS" }
             ];
 
@@ -608,9 +614,14 @@ sap.ui.define([
                 { id: "filterCategoryId", property: "CATEGORY_ID" },
                 { id: "filterMaterialCode", property: "MATERIAL_CODE" },
                 { id: "filterRisk", property: "RISK" },
+                { id: "filterSubmittedType", property: "SUBMISSION_TYPE" },
+                { id: "filterClaimGrp", property: "INDIVIDUAL/GROUP" },
+                { id: "filterClaimFreq", property: "FREQUENCY" },
+                { id: "filterClaimPeriod", property: "PERIOD" },
+                { id: "filterClaimPeriodUnit", property: "PERIOD UNIT" },          
                 { id: "filterItemStartDate", property: "START_DATE" },
                 { id: "filterItemEndDate", property: "END_DATE" },
-                { id: "filterItemStatus", property: "STATUS" }
+                { id: "filterItemStatus", property: "STATUS" },
             ];
 
             var aMainFilters = oBinding.sPath === "Items" ? aItemFilters : aHeaderFilter;

@@ -356,6 +356,26 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
                 $Type: 'UI.DataField',
                 Value: SUBMISSION_TYPE,
                 Label: 'Submission Type'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: IND_OR_GROUP,
+                Label: 'Individual/Group'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: FREQUENCY,
+                Label: 'Frequency'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: PERIOD,
+                Label: 'Period'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: PERIOD_UNIT,
+                Label: 'Period Unit'
             }
         ]
     }
