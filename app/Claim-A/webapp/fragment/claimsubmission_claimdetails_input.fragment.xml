@@ -1111,6 +1111,17 @@
                     visible="false"
                 />
 
+                <!-- Daily Allowance -->
+                <Label text="{i18n>label_claimdetails_input_dailyallowance}" />
+                <Input
+                    id="input_claimdetails_input_dailyallowance"
+                    value="{ path: 'claimitem_input>/claim_item/dailyallowance',
+							 type: 'Integer' 
+						}"
+                    visible="false"
+                    editable="false"
+                />
+
                 <!-- Lodging Address -->
                 <Label text="{i18n>label_claimdetails_input_lodging_address}" />
                 <Input
@@ -1283,22 +1294,6 @@
                     id="input_claimdetails_input_remarks"
                     value="{claimitem_input>/claim_item/remark}"
                     visible="false"
-                />
-
-                <!-- Daily Allowance -->
-                <Label text="{i18n>label_claimdetails_input_dailyallowance}" />
-                <Input
-                    id="input_claimdetails_input_dailyallowance"
-                    value="{ path: 'claimitem_input>/claim_item/dailyallowance',
-							 type: 'FloatType',
-							 formatOptions: {
-							minFractionDigits: 2,
-							maxFractionDigits: 2,
-							preserveDecimals: false
-						}
-						}"
-                    visible="false"
-                    editable="false"
                 />
 
                 <!-- Attachment 1 -->

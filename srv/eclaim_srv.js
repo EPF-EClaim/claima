@@ -934,6 +934,7 @@ module.exports = (srv) => {
         let daily_allowance = 0;
         let time_difference = 0;
         let bfast, lunch, dinner, total_meal_allowance = 0;
+        let allowance = 0;
 
         //get employee personal grade 
         const email = String(emailFromToken).trim().toLowerCase();
@@ -987,6 +988,7 @@ module.exports = (srv) => {
                 meal_allowance = req.data.day * entitlement.AMOUNT;
                 if (time_difference >= 8.0 && time_difference < 24.0) {
                     daily_allowance = entitlement.AMOUNT / 2;
+                    allowance = 1;
                 }
                 meal_allowance += daily_allowance;
             }
@@ -1007,7 +1009,7 @@ module.exports = (srv) => {
             total_meal_allowance = meal_allowance != 0 ? (meal_allowance - bfast - lunch - dinner) : 0;
             return {
                 amount: total_meal_allowance,
-                daily_allowance: (entitlement.AMOUNT / 2),
+                daily_allowance: allowance,
                 currency_code: entitlement.CURRENCY
             };
         }

@@ -3255,19 +3255,37 @@ sap.ui.define([
 			//breakfast meal entitlement
 			if (oClaimItemInputModel.getProperty("/claim_item/provided_breakfast") != null) {
 				nEntBfast = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day") - oClaimItemInputModel.getProperty("/claim_item/provided_breakfast");
-				oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);
+				if (nEntBfast < 0 ) {
+					this._displaywarning(nEntBfast);
+					oClaimItemInputModel.setProperty("/claim_item/provided_breakfast", 0);
+				} else {
+					oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);
+				}
+				
 			}
 
 			//lunch meal entitlement
 			if (oClaimItemInputModel.getProperty("/claim_item/provided_lunch") != null) {
 				nEntLunch = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day") - oClaimItemInputModel.getProperty("/claim_item/provided_lunch");
-				oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nEntLunch);
+				if (nEntLunch < 0) {
+					this._displaywarning(nEntLunch);
+					oClaimItemInputModel.setProperty("/claim_item/provided_lunch", 0);
+				} else {
+					oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nEntLunch);
+				}
+				
 			}
 
 			//dinner meal entitlement
 			if (oClaimItemInputModel.getProperty("/claim_item/provided_dinner") != null) {
 				nEntDinner = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day") - oClaimItemInputModel.getProperty("/claim_item/provided_dinner");
-				oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nEntDinner);
+				if (nEntDinner < 0) { 
+					this._displaywarning(nEntDinner);
+					oClaimItemInputModel.setProperty("/claim_item/provided_dinner", 0);
+				} else {
+					oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nEntDinner);
+				}
+					
 			}
 
 			this._updateEntitlementAmount(oClaimItemInputModel);
@@ -3862,6 +3880,7 @@ sap.ui.define([
 						ENTITLED_BREAKFAST: claim_item.entitled_breakfast?.toString(),
 						ENTITLED_LUNCH: claim_item.entitled_lunch?.toString(),
 						ENTITLED_DINNER: claim_item.entitled_dinner?.toString(),
+						DAILY_ALLOWANCE: claim_item.dailyallowance?.toString(),
 						ANGGOTA_ID: claim_item.anggota_id,
 						ANGGOTA_NAME: claim_item.anggota_name,
 						DEPENDENT_NAME: claim_item.dependent_name,
@@ -4731,5 +4750,20 @@ sap.ui.define([
 			}
 			oClaimSubmissionModel.setProperty("/claim_items", aItems);
 		},
+
+		_displaywarning: async function(iDayDifference) {
+			if (iDayDifference < 0){
+        		MessageBox.warning(Utility.getText("msg_provided_meal_exceed"),
+            	{
+                	title: Utility.getText("msg_invalid_input"),
+                	actions: [MessageBox.Action.OK],
+                	emphasizedAction: MessageBox.Action.OK,
+            	}
+       		 );
+    	    	return true;
+    		}
+    		return false;
+		}
+		
 	});
 });
