@@ -1,0 +1,33 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    id="declarationgalakanDialogFrag">
+
+    <Dialog
+        id="declarationgalakanDialog"
+        type="Message"
+        state="Warning"
+        title="Declaration"
+        contentWidth="500px">
+
+        <Text
+            id="declarationgalakanText"
+            text="{i18n>checkbox_claimdetails_input_disclaimer_galakan}"
+            wrapping="true" />
+
+        <beginButton>
+            <Button
+                type="Emphasized"
+                text="{i18n>button_claimsubmission_declarationagalakan_confirm}"
+                press=".onPressDeclarationGalakanConfirm" />
+        </beginButton>
+
+        <endButton>
+            <Button
+                text="{i18n>button_claimsummary_cancel}"
+                press=".onPressDeclarationGalakanCancel" />
+        </endButton>
+
+    </Dialog>
+
+</core:FragmentDefinition>

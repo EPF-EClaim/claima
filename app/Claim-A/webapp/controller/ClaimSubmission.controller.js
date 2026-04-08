@@ -80,6 +80,8 @@ sap.ui.define([
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._openDeclarationDialog = null;
+			this._openDeclarationGalakanDialog = null;
+
 
 			// decalre custom validator
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
@@ -231,6 +233,16 @@ sap.ui.define([
 
 		onPressDeclarationCancel: function () {
 			this._openDeclarationDialog.close();
+		},
+
+		//event handle for confirm and cancel
+		onPressDeclarationGalakanConfirm: function () {
+			this._openDeclarationGalakanDialog.close();
+			ApproveDialog.open(this);
+		},
+
+		onPressDeclarationGalakanCancel: function () {
+			this._openDeclarationGalakanDialog.close();
 		},
 
 
@@ -1554,7 +1566,6 @@ sap.ui.define([
 					this._pendingAction = oAction;
 
 					if (!this._openDeclarationDialog) {
-
 						Fragment.load({
 							name: "claima.fragment.declarationdialog",
 							id: "declarationDialogFrag",
@@ -1657,6 +1668,7 @@ sap.ui.define([
 
 
 				case this._oConstant.Claim_Action.APPROVE: {
+
 					let oReject = this.getView().getModel("Reject");
 					if (!oReject) {
 						oReject = new JSONModel({ approvalComment: "" });
@@ -1669,8 +1681,38 @@ sap.ui.define([
 						oType = new JSONModel({ mode: "" });
 						this.getView().setModel(oType, "Type");
 					}
-					oType.setProperty("/mode", "APPROVE_CLAIM");
+					oType.setProperty("/mode", this._oConstant.ApprovalProcess.CLAIM_APPROVE);
 
+					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+					if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimTypeItem.GALAKAN) {
+
+						if (!this._openDeclarationGalakanDialog) {
+
+							Fragment.load({
+								name: "claima.fragment.declaregalakan",
+								id: "declarationgalakanDialogFrag",
+								controller: this
+							}).then(function (oDeclareGalakanDialog) {
+
+								this._openDeclarationGalakanDialog = oDeclareGalakanDialog;
+								this.getView().addDependent(oDeclareGalakanDialog);
+
+								var oText = Fragment.byId("declarationgalakanDialogFrag", "declarationgalakanText");
+								oText.setText(Utility.getText("checkbox_claimdetails_input_disclaimer_galakan"));
+
+								oDeclareGalakanDialog.open();
+
+							}.bind(this));
+
+						} else {
+
+							var oText = Fragment.byId("declarationgalakanDialogFrag", "declarationgalakanText");
+							oText.setText(Utility.getText("checkbox_claimdetails_input_disclaimer_galakan"));
+
+							this._openDeclarationGalakanDialog.open();
+						}
+						return;
+					}
 					ApproveDialog.open(this);
 				}
 					break;
@@ -2193,12 +2235,6 @@ sap.ui.define([
 			if (this.byId("checkbox_claimdetails_input_disclaimer").getVisible()) {
 				oInputModel.setProperty("/claim_item/disclaimer", false);
 			}
-
-			if (this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()) {
-				//remove to string when db is updated
-				oInputModel.setProperty("/claim_item/disclaimer_galakan", false);
-			}
-
 			//START TDL #6.1 meter cube for Pengangkutan Laut
 			const sKey = oInputModel.getProperty("/claim_item/claim_type_item_id");
 			if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
@@ -2353,11 +2389,6 @@ sap.ui.define([
 				if (this.byId("checkbox_claimdetails_input_disclaimer").getVisible()) {
 					oInputModel.setProperty("/claim_item/disclaimer", true)
 				}
-
-				if (this.byId("checkbox_claimdetails_input_disclaimer_galakan").getVisible()) {
-					oInputModel.setProperty("/claim_item/disclaimer_galakan", true)
-				}
-
 				//changes here
 				if (!!oInputModel.getProperty("/claim_item/anggota_id")) {
 					oInputModel.setProperty("/claim_item/dependent_type", this._oConstant.DependentType.ANGGOTA);
@@ -4378,7 +4409,6 @@ sap.ui.define([
 				"datepicker_claimdetails_input_bill_date",
 				"input_claimdetails_input_phone_no",
 				"checkbox_claimdetails_input_disclaimer",
-				"checkbox_claimdetails_input_disclaimer_galakan",
 				"input_claimdetails_input_remarks",
 				"fileuploader_claimdetails_input_attachment1",
 				"fileuploader_claimdetails_input_attachment2",
@@ -4514,7 +4544,6 @@ sap.ui.define([
 				"datepicker_claimdetails_input_bill_date",
 				"input_claimdetails_input_phone_no",
 				"checkbox_claimdetails_input_disclaimer",
-				"checkbox_claimdetails_input_disclaimer_galakan",
 				"input_claimdetails_input_remarks",
 				"fileuploader_claimdetails_input_attachment_file_1",
 				"fileuploader_claimdetails_input_attachment_file_2",
