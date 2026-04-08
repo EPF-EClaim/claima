@@ -31,6 +31,7 @@ sap.ui.define([
          * @public
          */
         validate: async function (sSubmissionType) {
+            var bCanProceed = true;
             // Common validations (Applicable for both scenarios)
 
             // Type and Item Type checking (Applicable for both scenarios)
@@ -53,10 +54,10 @@ sap.ui.define([
 
                             if (fEnteredAmount > fMaxLimit) {
                                 MessageBox.error(Utility.getText("req_d_e_capped_amount", [fMaxLimit.toFixed(2)]));
-                                return false; 
+                                bCanProceed = false; 
                             } else if (fEnteredAmount < 0.00) {
                                 MessageBox.error(Utility.getText("req_d_e_neg_amount"));
-                                return false; 
+                                bCanProceed = false; 
                             }
                         }
                     }
@@ -70,7 +71,7 @@ sap.ui.define([
                             case Constants.ClaimTypeItem.TELEFON_B:
                                 if(!oInputModel.getProperty("/claim_item/disclaimer")) {
                                     MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
-                                    return false;
+                                    bCanProceed = false;
                                 }
                                 break;
                             
@@ -81,45 +82,51 @@ sap.ui.define([
                     }
 
                     if(oInputModel?.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel?.getProperty("/claim_header/trip_start_date") ){
-                    	const bProceed = await this.onShowConfirmation(Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"));
-
-                        if (!bProceed) {
-                            return false;
+                    	const bConfirm = await this.onShowConfirmation(Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"));
+                        if (!bConfirm) {
+                            bCanProceed = false;
                         }
                     }
 
-                    var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
-                    var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
+                    if(!!oInputModel?.getProperty("/claim_item/receipt_date") && !!oClaimSubmissionModel?.getProperty("/claim_header/trip_end_date")) {
+                        var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
+                        var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
 
-                    if (dReceiptDate > dTripEndDate) {
-                        MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
-                        return;
+                        if (dReceiptDate > dTripEndDate) {
+                            MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
+                            bCanProceed = false;
+                        }
                     }
                     
                     if (!!oClaimSubmissionModel) {
                         // course code pre-check
-                        if (Object.values(Constants.ClaimTypeKursus).includes(oClaimSubmissionModel.getProperty("/claimtype/type"))) {
-                            var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(oClaimSubmissionModel.getProperty("/claimtype/course_code"), oClaimSubmissionModel.getProperty("/emp_master/eeid"));
+                        var sClaimType = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") || oClaimSubmissionModel.getProperty("/claimtype/type");
+                        var sCourseCode = oClaimSubmissionModel.getProperty("/claim_header/course_code") || oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id");
+                        var sCourseCodeDesc = oClaimSubmissionModel.getProperty("/claim_header/descr/course_code") || oClaimSubmissionModel.getProperty("/claimtype/course_code/course_desc");
+                        var sSessionNumber = oClaimSubmissionModel.getProperty("/claim_header/session_number") || oClaimSubmissionModel.getProperty("/claimtype/course_code/session_number");
+                        if (Object.values(Constants.ClaimTypeKursus).includes(sClaimType)) {
+                            var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(sCourseCode, sSessionNumber, this._oOwnerComponent.getModel("session").getProperty("/userId"));
                             if (bCourseAlreadyApproved) {
-                                MessageBox.error(Utility.getText("error_msg_course_already_approved", [oClaimSubmissionModel.getProperty("/claimtype/course_code"), oClaimSubmissionModel.getProperty("/claimtype/descr/course_code")]));
-                                return false;
+                                MessageBox.error(Utility.getText("error_msg_course_already_approved", [sCourseCode, sCourseCodeDesc]));
+                                bCanProceed = false;
                             }
                         }
                     }
-
+                    
                     if (!!oClaimSubmissionModel?.getProperty("/claim_items")) {
                         var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
                         for(var i = 0; i < aItems.length; i++){
                             if(aItems[i].amount == 0){
                                 MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount_in_claim_item"));
-                                return false;
+                                bCanProceed = false;
+                                break;
                             }
                         }
                     }
 
                     
             }
-            return true;
+            return bCanProceed;
         },        
         onShowConfirmation: function(sPromptMessage) {
                 return new Promise((oResolve) => {
