@@ -15,7 +15,6 @@ module.exports = {
         var oRule = aRules[0];
         var iHistoricalData = await this._getHistoricalData(oPayload, oRule, tx);
         var iCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oRule, tx);
-        console.log(iHistoricalData);
         this._validateClaimItem(oRule, oPayload, iHistoricalData + iCurrentRecordItemData);
         return oPayload;
     },

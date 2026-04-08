@@ -61,7 +61,7 @@ module.exports = {
       };
     }
     const sEligibilityCondition = BuildSelectWhereConditions.buildWhereCondition(aEligibilityCondition);
-       console.log(sEligibilityCondition);
+
     // Get Eligibility Rules
     const aEligibilityRules = await tx.run(
       SELECT.from(Constant.Entities.ZELIGIBILITY_RULE).where(
