@@ -911,8 +911,18 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.EST_AMOUNT,
                 ZREQUEST_ITEM.COST_CENTER,
                 ZREQUEST_ITEM.GL_ACCOUNT,
-                TRIP_START_DATE
-        };
+                TRIP_START_DATE,
+                STATUS,
+                ZSTATUS.STATUS_DESC,
+                ZREQUEST_ITEM.SEND_TO_SF,
+        }
+
+        where
+                   ZSTATUS.STATUS_DESC      =  'APPROVED'
+            and (
+                   ZREQUEST_ITEM.SEND_TO_SF =  'FALSE'
+                or ZREQUEST_ITEM.SEND_TO_SF is null
+            );
 
 
     @cds.redirection.target
@@ -1035,7 +1045,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             ZTOSTATE.STATE_DESC;
 
 
-    entity ZCLM_COURSE_VIEW  as projection on ECLAIM.ZTRAIN_COURSE_PART {
+    entity ZCLM_COURSE_VIEW               as
+        projection on ECLAIM.ZTRAIN_COURSE_PART {
             key COURSE_ID,
             key PARTICIPANT_ID,
                 COURSE_DESC,
@@ -1048,5 +1059,4 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             COURSE_DESC,
             COURSE_SESSION_STAT,
             ATTENDENCE_STATUS
-        
-};
+}
