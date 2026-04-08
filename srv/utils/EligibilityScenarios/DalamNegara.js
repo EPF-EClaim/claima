@@ -137,6 +137,8 @@ module.exports = {
                     iIndex = oPayload.CheckFields.findIndex((field) =>
                         field.fieldName === Constant.EntitiesFields.FARE_TYPE_ID);
 
+                    if (iIndex == -1) return;
+
                     // if no rule matches the selected transport class, return false
                     if (!oRule) {
                         oPayload.CheckFields[iIndex].result = false;

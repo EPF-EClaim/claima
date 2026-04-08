@@ -398,4 +398,11 @@ service eclaim_srv @(requires: 'authenticated-user'){
     }
 
     function checkPreApprovalUsage(requestID: String) returns PreApprovalUsageCheck;
+
+    type ParticipantKey {
+        REQUEST_ID: String;
+        REQUEST_SUB_ID: String;
+        PARTICIPANTS_ID: String;
+    }
+    action deleteParticipants(participants: array of ParticipantKey) returns Boolean;
 };
