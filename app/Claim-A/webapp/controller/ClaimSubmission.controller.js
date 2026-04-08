@@ -3507,6 +3507,21 @@ sap.ui.define([
 					return;
 				}
 
+				// check if selected course code/session number has already been approved for user before pushing changes 
+				if (Object.values(Constants.ClaimTypeKursus).includes(oInputModel.getProperty("/claim_header/claim_type_id")) && oAction !== this._oConstant.Claim_Action.DELETE) {
+					var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(
+							oInputModel.getProperty("/claim_header/course_code"),
+							oInputModel.getProperty("/claim_header/session_number"),
+							this._oSessionModel.getProperty("/userId"));
+					if (bCourseAlreadyApproved) {
+						MessageBox.error(Utility.getText("error_msg_course_already_approved", [
+								oInputModel.getProperty("/claim_header/course_code"),
+								oInputModel.getProperty("/claim_header/descr/course_code")]));
+						BusyIndicator.hide();
+						return;
+					}
+				}
+				
 				// Total Claim Amount Validation checking
 				if (aItems.length > 0 && (isNaN(oInputModel.getProperty("/claim_header/total_claim_amount")) || oInputModel.getProperty("/claim_header/total_claim_amount") <= 0)) {
 					MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount"));
