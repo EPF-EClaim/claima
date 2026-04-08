@@ -49,7 +49,6 @@ module.exports = {
                 SELECT`count(*)`
                     .from(sHeaderTable).where(aHeaderCondition)
             );
-            
             if (!!aHeaderData) return aHeaderData[0].count;
             return 0;
 

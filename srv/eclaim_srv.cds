@@ -344,6 +344,7 @@ service eclaim_srv @(requires: 'authenticated-user'){
         ClaimTypeItem: String;
         EmpId: String;
         RecordId: String;
+        RecordSubId: String;
     }
 
     type EligibilityCheckFields{
@@ -383,6 +384,13 @@ service eclaim_srv @(requires: 'authenticated-user'){
     
     function getEmailReminder() returns array of reminders;
 
+    function getOfficeDistance(
+        sFromState: String,
+        sFromOffice: String,
+        sToState: String,
+        sToOffice: String,
+    ) returns String;
+
     action CheckUserClaimTypes(ID: String) returns many Response;
 
     type PreApprovalUsageCheck {
@@ -390,4 +398,11 @@ service eclaim_srv @(requires: 'authenticated-user'){
     }
 
     function checkPreApprovalUsage(requestID: String) returns PreApprovalUsageCheck;
+
+    type ParticipantKey {
+        REQUEST_ID: String;
+        REQUEST_SUB_ID: String;
+        PARTICIPANTS_ID: String;
+    }
+    action deleteParticipants(participants: array of ParticipantKey) returns Boolean;
 };
