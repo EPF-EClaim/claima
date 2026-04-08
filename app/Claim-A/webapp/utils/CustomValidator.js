@@ -94,7 +94,6 @@ sap.ui.define([
                         }
                     }
 
-                    //FUT issue #81
                     var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
                     var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
 
