@@ -30,6 +30,7 @@ sap.ui.define([
 	"claima/utils/EligibilityCheck",
 	"claima/utils/DateUtility",
 	"claima/utils/Constants",
+	"claima/utils/RequestUtility",
 	"claima/utils/CustomValidator"
 ], function (
 	Controller,
@@ -63,6 +64,7 @@ sap.ui.define([
 	EligibilityCheck,
 	DateUtility,
 	Constants,
+	RequestUtility,
 	CustomValidator
 ) {
 	"use strict";
@@ -81,14 +83,14 @@ sap.ui.define([
 			this._oRouter 			= this.getOwnerComponent().getRouter();
 			this._oConstant 		= this.getOwnerComponent().getModel("constant").getData();
 			this._oReqModel 		= this.getOwnerComponent().getModel("request");
-			this._oReqStatusModel	= this.getOwnerComponent().getModel("request_status");
 			this._oApprovalLogModel	= this.getOwnerComponent().getModel('approval_log')
 			this._oDataModel 		= this.getOwnerComponent().getModel();
 			this._oViewModel 		= this.getOwnerComponent().getModel("employee_view");
 			this._oSessionModel 	= this.getOwnerComponent().getModel("session");
 			this._oFragments 		= Object.create(null);
 
-			CustomValidator.init(this.getOwnerComponent(), this.getView())
+			RequestUtility.init(this.getOwnerComponent(), this.getView());
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
 
 			// URL Access
 			this._oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
@@ -468,7 +470,9 @@ sap.ui.define([
 
 			oReqData.req_item = {
 				est_amount: 0,
+				kilometer: 0,
 				rate_per_kilometer: 0,
+				toll_amt: 0,
 				cash_advance: false
 			};
 
@@ -554,7 +558,7 @@ sap.ui.define([
 				fare_type				: oReqItem.FARE_TYPE_ID || "",
 				vehicle_class			: oReqItem.VEHICLE_CLASS || "",
 				kilometer				: oReqItem.KILOMETER || 0,
-				rate_per_kilometer		: oReqItem.RATE_PER_KM || 0,
+				rate_per_kilometer		: oReqItem.RATE || 0,
 				toll_amt				: oReqItem.TOLL || 0,
 				flight_class			: oReqItem.FLIGHT_CLASS || "",
 				location_type			: oReqItem.LOCATION_TYPE || "",
@@ -858,6 +862,7 @@ sap.ui.define([
 			const oTable = this.byId("req_participant_table");
 			let aRows = this._oReqModel.getProperty("/participant") || [];
 
+			// --- 1. Identify which row(s) to delete ---
 			let idxFromAction = null;
 			const oRow = oEvent.getParameter && oEvent.getParameter("row");
 			const visIdx = oEvent.getParameter && oEvent.getParameter("rowIndex");
@@ -870,15 +875,14 @@ sap.ui.define([
 			};
 
 			if (oRow) {
-				const oCtx = oRow.getBindingContext("request");
-				idxFromAction = extractIndexFromCtxPath(oCtx);
+				idxFromAction = extractIndexFromCtxPath(oRow.getBindingContext("request"));
 			} else if (Number.isInteger(visIdx)) {
-				const oCtx = oTable.getContextByIndex(visIdx);
-				idxFromAction = extractIndexFromCtxPath(oCtx);
+				idxFromAction = extractIndexFromCtxPath(oTable.getContextByIndex(visIdx));
 			}
 
 			let aToDelete = [];
 			const aSel = oTable.getSelectedIndices() || [];
+			
 			if (aSel.length > 0) {
 				aToDelete = aSel.map((v) => extractIndexFromCtxPath(oTable.getContextByIndex(v)))
 					.filter((x) => x !== null);
@@ -891,87 +895,58 @@ sap.ui.define([
 				return;
 			}
 
-			aToDelete = Array.from(new Set(aToDelete)).sort((a, b) => b - a);
+			aToDelete = Array.from(new Set(aToDelete));
 
-			const sGroupId = "delParticipants";
+			let aBackendPayload = [];
+			let aIndicesToRemove = []; 
 
-			const toNumberIfNumeric = (v) => /^\d+$/.test(String(v)) ? Number(v) : String(v);
+			aToDelete.forEach(i => {
+				const rowData = aRows[i] || {};
+				const sPID = String(rowData.PARTICIPANTS_ID ?? rowData.PARTICIPANT_ID ?? "").trim();
+				const sReqId = String(rowData.REQUEST_ID ?? this._oReqModel.getProperty("/req_header/reqid") ?? "").trim();
+				const sReqSubId = String(rowData.REQUEST_SUB_ID ?? this._oReqModel.getProperty("/req_item/req_subid") ?? "").trim();
 
-			const aSuccessIdx = [];
-			let errorMsg = "";
-
-			BusyIndicator.show(0);
-			try {
-				const deletePromises = [];
-
-				for (const i of aToDelete) {
-					if (i < 0 || i >= aRows.length) continue;
-
-					const oRow = aRows[i] || {};
-					const sPID = String(oRow.PARTICIPANTS_ID ?? oRow.PARTICIPANT_ID ?? "").trim();
-					const sReqId = String(oRow.REQUEST_ID ?? this._oReqModel.getProperty("/req_header/reqid") ?? "").trim();
-					const sReqSubId = String(oRow.REQUEST_SUB_ID ?? this._oReqModel.getProperty("/req_item/req_subid") ?? "").trim();
-
-					const hasKeys = !!(sReqId && sReqSubId && sPID);
-
-					if (!hasKeys) {
-						aSuccessIdx.push(i);
-						continue;
-					}
-
-					const vReq = toNumberIfNumeric(sReqId);
-					const vSub = toNumberIfNumeric(sReqSubId);
-					const vPid = toNumberIfNumeric(sPID);
-
-					const oListBinding = this._oDataModel.bindList(
-						"/ZREQ_ITEM_PART",
-						null,
-						null,
-						[
-							new Filter({ path: "REQUEST_ID", operator: FilterOperator.EQ, value1: vReq }),
-							new Filter({ path: "REQUEST_SUB_ID", operator: FilterOperator.EQ, value1: vSub }),
-							new Filter({ path: "PARTICIPANTS_ID", operator: FilterOperator.EQ, value1: vPid })
-						],
-						{
-							$$ownRequest: true,
-							$$groupId: sGroupId,
-							$$updateGroupId: sGroupId,
-							$count: false,
-							$select: "REQUEST_ID,REQUEST_SUB_ID,PARTICIPANTS_ID"
-						}
-					);
-
-					const pDel = oListBinding.requestContexts(0, 1)
-						.then((aCtx) => {
-							const oCtx = aCtx[0];
-							if (!oCtx) {
-								aSuccessIdx.push(i);
-								return;
-							}
-							return oCtx.delete(sGroupId).then(() => {
-								aSuccessIdx.push(i);
-							});
-						})
-						.catch((e) => {
-							errorMsg = errorMsg || (e && e.message) || Utility.getText("req_tm_w_delete_participant");
-						});
-
-					deletePromises.push(pDel);
+				if (sPID && sReqId && sReqSubId) {
+					aBackendPayload.push({
+						REQUEST_ID: sReqId,
+						REQUEST_SUB_ID: sReqSubId,
+						PARTICIPANTS_ID: sPID,
+						_localIndex: i 
+					});
+				} else {
+					aIndicesToRemove.push(i);
 				}
+			});
 
-				await Promise.allSettled(deletePromises);
+			if (aBackendPayload.length > 0) {
+				BusyIndicator.show(0);
+				try {
+					const aCleanPayload = aBackendPayload.map(item => {
+						return {
+							REQUEST_ID: item.REQUEST_ID,
+							REQUEST_SUB_ID: item.REQUEST_SUB_ID,
+							PARTICIPANTS_ID: item.PARTICIPANTS_ID
+						};
+					});
 
-				if (deletePromises.length > 0) {
-					await this._oDataModel.submitBatch(sGroupId);
+					const oAction = this._oDataModel.bindContext("/deleteParticipants(...)");
+					oAction.setParameter("participants", aCleanPayload);
+					
+					await oAction.execute();
+
+					aBackendPayload.forEach(item => aIndicesToRemove.push(item._localIndex));
+					
+				} catch (error) {
+					MessageBox.error(Utility.getText("req_d_e_delete_participant"));
+					BusyIndicator.hide();
+					return; 
+				} finally {
+					BusyIndicator.hide();
 				}
-			} catch {
-				MessageBox.error(Utility.getText("req_d_e_delete_participant"));
-			} finally {
-				BusyIndicator.hide();
 			}
 
-			if (aSuccessIdx.length > 0) {
-				aSuccessIdx.sort((a, b) => b - a).forEach((i) => {
+			if (aIndicesToRemove.length > 0) {
+				aIndicesToRemove.sort((a, b) => b - a).forEach((i) => {
 					if (i >= 0 && i < aRows.length) aRows.splice(i, 1);
 				});
 
@@ -983,11 +958,12 @@ sap.ui.define([
 
 				this._oReqModel.setProperty("/participant", aRows);
 				oTable.clearSelection();
-				MessageToast.show(Utility.getText("req_tm_s_delete_participant", [aSuccessIdx.length]));
-			}
+				
+				MessageToast.show(Utility.getText("req_tm_s_delete_participant", [aIndicesToRemove.length]));
 
-			if (errorMsg) {
-				MessageBox.error(errorMsg);
+				if (typeof RequestUtility !== "undefined" && RequestUtility.populateAllocatedAmount) {
+					RequestUtility.populateAllocatedAmount();
+				}
 			}
 		},
 
@@ -1126,7 +1102,7 @@ sap.ui.define([
 					EST_NO_PARTICIPANT:           parseInt(oReqItem.est_no_participant, 10) || 1,
 					EST_AMOUNT:                   parseFloat(oReqItem.est_amount || 0),
 					KILOMETER:                    parseFloat(oReqItem.kilometer || 0),
-					RATE_PER_KM:                  oReqItem.rate_per_kilometer || null,
+					RATE_PER_KM:                  oReqItem.rate_per_kilometer_id || null,
 					TOLL:                         parseFloat(oReqItem.toll_amt || 0),
 					METER_CUBE_ENTITLED:          parseFloat(oReqItem.cube_eligible || 0),
 					METER_CUBE_ACTUAL:            parseFloat(oReqItem.meter_cube_actual || 0),
@@ -1287,35 +1263,6 @@ sap.ui.define([
 			}
 		},
 
-		populateEstimatedAmount: function(oEvent) {
-			const oInput = oEvent.getSource();
-			
-			const oContext = oInput.getBindingContext("request");
-			const sPath = oContext.getPath(); 
-			
-			let fEnteredAmount = parseFloat(oInput.getValue() || 0);
-
-			const sClaimTypeItem = this._oReqModel.getProperty("/req_item/claim_type_item_id");
-
-			if (!sClaimTypeItem) {
-				MessageBox.error(Utility.getText("req_d_e_select_claim_type_item"));
-				return;
-			}
-			
-			CustomValidator.init(this.getOwnerComponent(), this.getView())
-			if(!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.REQUEST)){
-				return;
-			}
-
-			const aParticipantList = this._oReqModel.getProperty("/participant");
-
-			const fEstAmount = aParticipantList.reduce((sum, row) => {
-				return sum + parseFloat(row.ALLOCATED_AMOUNT || 0);
-			}, 0);
-
-			this._oReqModel.setProperty("/req_item/est_amount", fEstAmount.toFixed(2));
-		},
-
 		/* =========================================================
 		* Participant Value Help 
 		* ======================================================= */
@@ -1416,6 +1363,7 @@ sap.ui.define([
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", oEmpData.EEID || oEmpData.ID);
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", oEmpData.NAME);
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_COST_CENTER", oEmpData.CC);
+				RequestUtility.populateAllocatedAmount();	// populate allocated amount if applicable
 			} else {
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", "");
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", "");
@@ -2031,7 +1979,7 @@ sap.ui.define([
 		async getRatePerKM () {
 			var sVehicleType = this._oReqModel.getProperty("/req_item/type_of_vehicle");
 			const oListBinding = this._oDataModel.bindList("/ZRATE_KM", null, null, [
-				new sap.ui.model.Filter("VEHICLE_TYPE_ID", "EQ", sVehicleType)
+				new Filter("VEHICLE_TYPE_ID", FilterOperator.EQ, sVehicleType)
 			]);
 
 			try {
@@ -2040,6 +1988,9 @@ sap.ui.define([
 				if (aContexts.length > 0) {
 					const oData = aContexts[0].getObject();
 					this._oReqModel.setProperty("/req_item/rate_per_kilometer", oData.RATE);
+					this._oReqModel.setProperty("/req_item/rate_per_kilometer_id", oData.RATE_KM_ID);
+                	RequestUtility.populateAllocatedAmount();
+					RequestUtility.determineOfficeMileage();
 				}
 			} catch (oError) {
 				console.error("Error fetching Rate Per KM detail", oError);
@@ -2059,6 +2010,12 @@ sap.ui.define([
 			if (!sClaimTypeItem) {
 				console.warn("No claim type item found yet.");
 				return;
+			}
+
+			const oLocationTypeSelect = this.byId("item_location_type");
+			if (oLocationTypeSelect) {
+				oLocationTypeSelect.setForceSelection(false);
+				oLocationTypeSelect.setSelectedKey("");
 			}
 
 			BusyIndicator.show(0);
@@ -2145,7 +2102,8 @@ sap.ui.define([
 				"i_marriage_cat",
 				"i_cube_eligible",
 				"i_departure_time",
-				"i_arrival_time"
+				"i_arrival_time",
+				"i_lodging_cat"
 			];
 
 			aControlIds.forEach(id => {
@@ -2438,5 +2396,49 @@ sap.ui.define([
 				SendBackDialog.destroy(this);
 			} catch (e) { }
 		},
+
+		/* =========================================================
+		* xml onchange event trigger
+		* ======================================================= */
+
+		onInputAllocatedAmount: function () {
+			RequestUtility.populateAllocatedAmount();
+		},
+
+		onFilterToState: function () {
+            const oReqItem  = this._oReqModel.getProperty("/req_item");
+            
+            var sFromState  = oReqItem.from_state;
+            var sFromOffice = oReqItem.from_location_office;
+
+			const oSelect   = this.byId("item_to_state");
+			const oBinding  = oSelect.getBinding("items");
+			const aFilters  = oSelect ? [
+                                new Filter("FROM_STATE_ID", FilterOperator.EQ, sFromState),
+                                new Filter("FROM_LOCATION_ID", FilterOperator.EQ, sFromOffice)
+                            ]: [];
+			oBinding.filter(aFilters);
+		},
+
+        onFilterToOffice: function () {
+            const oReqItem  = this._oReqModel.getProperty("/req_item");
+            
+            var sFromState  = oReqItem.from_state;
+            var sFromOffice = oReqItem.from_location_office;
+            var sToState    = oReqItem.to_state;
+
+			const oSelect   = this.byId("item_to_location_office");
+			const oBinding  = oSelect.getBinding("items");
+			const aFilters  = oSelect ? [
+                                new Filter("FROM_STATE_ID", FilterOperator.EQ, sFromState),
+                                new Filter("FROM_LOCATION_ID", FilterOperator.EQ, sFromOffice),
+                                new Filter("TO_STATE_ID", FilterOperator.EQ, sToState)
+                            ]: [];
+			oBinding.filter(aFilters);
+		},
+
+		onSelectToOffice: function () {
+			RequestUtility.determineOfficeMileage();
+		}
 	});
 });
