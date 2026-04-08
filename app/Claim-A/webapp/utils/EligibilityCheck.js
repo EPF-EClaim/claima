@@ -17,7 +17,7 @@ sap.ui.define([
 		* Eligibility Checking Function
 		* ======================================================= */
 
-		generateEligibilityCheckPayload(oController, sSubmissionType) {
+		generateEligibilityCheckPayload(oController, sSubmissionType, oClaimItemPayload) {
 			switch (sSubmissionType) {
 				case Constants.SubmissionTypePrefix.REQUEST:
 					var oItemData = oController._oReqModel.getProperty('/req_item');
@@ -44,15 +44,15 @@ sap.ui.define([
 					break;
 
 				case Constants.SubmissionTypePrefix.CLAIM:
-					var sEmpId = oController._oSessionModel.getProperty("/userId")
+					var sEmpId = oController._oSessionModel.getProperty("/userId");
 					const oHeaderModel = oController.getView().getModel("claimsubmission_input");
 					const oItemModel = oController.getView().getModel("claimitem_input");
 					var aItemPartData = [{ PARTICIPANTS_ID: sEmpId }];
-					var oItemData = oItemModel.getProperty('/claim_item');
-					var sRecordId = oHeaderModel.getProperty("/claim_header/claim_id");
+					var oItemData = oItemModel?.getProperty('/claim_item') || oClaimItemPayload;
+					var sRecordId = oHeaderModel?.getProperty("/claim_header/claim_id");
 					var sRecordSubId = oItemData?.claim_sub_id;
-					var sClaimType = oHeaderModel.getProperty('/claim_header/claim_type_id');
-					var sClaimTypeItem = oItemData.claim_type_item_id;
+					var sClaimType = oHeaderModel?.getProperty('/claim_header/claim_type_id');
+					var sClaimTypeItem = oItemData?.claim_type_item_id;
 
 					var oMapping = {
 						// field                		: db technical name

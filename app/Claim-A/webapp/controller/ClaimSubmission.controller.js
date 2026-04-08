@@ -1445,6 +1445,14 @@ sap.ui.define([
 			let iItemIndex = oInputModel.getProperty("/claim_items").findIndex((claim_item) => claim_item.claim_sub_id === itemSubId);
 			if (iItemIndex !== -1) {
 				var oObject = oInputModel.getProperty("/claim_items/" + iItemIndex);
+
+				oObject.claim_sub_id = null;
+				// Eligibility Checking
+				var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, oObject);
+				var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, oPayload);
+				var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
+				if (!bCanProceed)return; 
+
 				oInputModel.setProperty("/claim_items", oInputModel.getProperty("/claim_items").concat(structuredClone(oObject)));
 				var addrIndex = "/claim_items/" + (oInputModel.getProperty("/claim_items").length - 1);
 				oInputModel.setProperty(
@@ -2550,7 +2558,13 @@ sap.ui.define([
 
 			// Reuben End Issue 17
 
-
+			// get claim item sub ID
+			if (oInputModel.getProperty("/is_new")) {
+				oInputModel.setProperty("/claim_item/claim_id", oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
+				var claimSubId = oClaimSubmissionModel.getProperty("/claim_items").length + 1;
+				var totalClaimSubId = (oInputModel.getProperty("/claim_item/claim_id") ?? "") + ('' + '00' + claimSubId).slice(-3);
+				oInputModel.setProperty("/claim_item/claim_sub_id", totalClaimSubId);
+			}
 
 			// Eligibility Checking
 			var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM);
@@ -2584,13 +2598,7 @@ sap.ui.define([
 				}
 			}
 
-			// get claim item sub ID
-			if (oInputModel.getProperty("/is_new")) {
-				oInputModel.setProperty("/claim_item/claim_id", oClaimSubmissionModel.getProperty("/claim_header/claim_id"));
-				var claimSubId = oClaimSubmissionModel.getProperty("/claim_items").length + 1;
-				var totalClaimSubId = (oInputModel.getProperty("/claim_item/claim_id") ?? "") + ('' + '00' + claimSubId).slice(-3);
-				oInputModel.setProperty("/claim_item/claim_sub_id", totalClaimSubId);
-			}
+			
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
 			// update claim item to database
@@ -2677,6 +2685,7 @@ sap.ui.define([
 					}
 				}
 			}
+			
 
 
 			//FUT issue #58
@@ -3631,6 +3640,18 @@ sap.ui.define([
 								await this._saveDraftItems();
 								break;
 							case 'Submit Report':
+								//eligibility checking
+								var aAllClaimItems = oInputModel.getProperty("/claim_items");
+								var aAllEligibilityGeneratedPayload = [];
+								for(var i = 0; i < aAllClaimItems.length; i++){
+									var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, aAllClaimItems[i]);
+									aAllEligibilityGeneratedPayload.push(oPayload[0]);
+								}
+								
+								var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, aAllEligibilityGeneratedPayload);
+								var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
+								if (!bCanProceed)return; 
+
 								// move approver determination function before claim is saved
 								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
 								// else, do not send message claim submission pending
@@ -3704,7 +3725,18 @@ sap.ui.define([
 								MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oHandlingResult.aClaimTypeItem));
 								return;
 							}
-							else {
+							else {					
+								//eligibility checking
+								var aAllClaimItems = oInputModel.getProperty("/claim_items");
+								var aAllEligibilityGeneratedPayload = [];
+								for(var i = 0; i < aAllClaimItems.length; i++){
+									var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, aAllClaimItems[i]);
+									aAllEligibilityGeneratedPayload.push(oPayload[0]);
+								}
+								
+								var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, aAllEligibilityGeneratedPayload);
+								var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
+								if (!bCanProceed)return; 
 
 								// move approver determination function before claim is saved
 								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
