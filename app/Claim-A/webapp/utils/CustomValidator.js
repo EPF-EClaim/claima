@@ -97,11 +97,15 @@ sap.ui.define([
                     
                     if (!!oClaimSubmissionModel) {
                         // course code pre-check
-                        if (Object.values(Constants.ClaimTypeKursus).includes(oClaimSubmissionModel.getProperty("/claimtype/type"))) {
-                            var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id"), oClaimSubmissionModel.getProperty("/claimtype/course_code/session_number"), oClaimSubmissionModel.getProperty("/emp_master/eeid"));
+                        var sClaimType = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") || oClaimSubmissionModel.getProperty("/claimtype/type");
+                        var sCourseCode = oClaimSubmissionModel.getProperty("/claim_header/course_code") || oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id");
+                        var sCourseCodeDesc = oClaimSubmissionModel.getProperty("/claim_header/descr/course_code") || oClaimSubmissionModel.getProperty("/claimtype/course_code/course_desc");
+                        var sSessionNumber = oClaimSubmissionModel.getProperty("/claim_header/session_number") || oClaimSubmissionModel.getProperty("/claimtype/course_code/session_number");
+                        if (Object.values(Constants.ClaimTypeKursus).includes(sClaimType)) {
+                            var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(sCourseCode, sSessionNumber, this._oOwnerComponent.getModel("session").getProperty("/userId"));
                             if (bCourseAlreadyApproved) {
-                                MessageBox.error(Utility.getText("error_msg_course_already_approved", [oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id"), oClaimSubmissionModel.getProperty("/claimtype/course_code/course_desc")]));
-                                return false;
+                                MessageBox.error(Utility.getText("error_msg_course_already_approved", [sCourseCode, sCourseCodeDesc]));
+                                bCanProceed = false;
                             }
                         }
                     }
