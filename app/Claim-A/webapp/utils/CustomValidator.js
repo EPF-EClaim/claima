@@ -82,19 +82,20 @@ sap.ui.define([
                     }
 
                     if(oInputModel?.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel?.getProperty("/claim_header/trip_start_date") ){
-                    	const bProceed = await this.onShowConfirmation(Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"));
-
-                        if (!bProceed) {
-                            return false;
+                    	const bConfirm = await this.onShowConfirmation(Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"));
+                        if (!bConfirm) {
+                            bCanProceed = false;
                         }
                     }
 
-                    var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
-                    var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
+                    if(!!oInputModel?.getProperty("/claim_item/receipt_date") && !!oClaimSubmissionModel?.getProperty("/claim_header/trip_end_date")) {
+                        var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
+                        var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
 
-                    if (dReceiptDate > dTripEndDate) {
-                        MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
-                        return;
+                        if (dReceiptDate > dTripEndDate) {
+                            MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
+                            bCanProceed = false;
+                        }
                     }
                     
                     if (!!oClaimSubmissionModel) {
@@ -125,7 +126,7 @@ sap.ui.define([
 
                     
             }
-            return true;
+            return bCanProceed;
         },        
         onShowConfirmation: function(sPromptMessage) {
                 return new Promise((oResolve) => {
