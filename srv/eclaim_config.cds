@@ -359,7 +359,7 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
             },
             {
                 $Type: 'UI.DataField',
-                Value: INDIVIDUAL_GROUP,
+                Value: IND_OR_GROUP,
                 Label: 'Individual/Group'
             },
             {
@@ -4274,7 +4274,7 @@ annotate service.ZELIGIBILITY_RULE with @(
                 $Type            : 'UI.DataField',
                 Value            : IND_OR_GROUP,
                 ![@UI.Importance]: #High,
-                Label            : 'Individual or Group'
+                Label            : 'Individual/Group'
             },
             {
                 $Type            : 'UI.DataField',
