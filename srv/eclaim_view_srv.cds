@@ -185,7 +185,17 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 EMP_ID,
                 FROM_LOCATION_OFFICE,
                 TO_LOCATION_OFFICE,
-                createdBy
+                createdBy,
+                TRIP_START_DATE,
+                TRIP_END_DATE,
+                TRIP_START_TIME,
+                TRIP_END_TIME,
+                TRAVEL_DURATION_DAY,
+                TRAVEL_DURATION_HOUR,
+                ENTITLED_BREAKFAST,
+                ENTITLED_LUNCH,
+                ENTITLED_DINNER,
+                DAILY_ALLOWANCE 
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as
