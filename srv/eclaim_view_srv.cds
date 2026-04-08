@@ -913,7 +913,9 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.GL_ACCOUNT,
                 TRIP_START_DATE,
                 STATUS,
-                ZSTATUS.STATUS_DESC,
+                //Previously, the view returned records across all statuses, including those already sent to SF.
+                // With the addition of these fields, the view now filters only approved records that have not yet been sent to SF.
+                ZSTATUS.STATUS_DESC,    
                 ZREQUEST_ITEM.SEND_TO_SF,
         }
 
