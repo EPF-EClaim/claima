@@ -2713,6 +2713,12 @@ sap.ui.define([
 			// get input model
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+	
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+			if (!bCanProceed) {
+				return;
+			}
 
 			/* 	4 scenarios for Receipt Date to be populated
 					1. Get Receipt Date based on input
@@ -2731,21 +2737,7 @@ sap.ui.define([
 					}
 				}
 			}
-			
-			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
-			if (!bCanProceed) {
-				return;
-			}
 
-			//FUT issue #81
-			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
-			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
-
-			if (dReceiptDate > dTripEndDate) {
-				MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
-				return;
-			}
 			try {
 				BusyIndicator.show(0);
 				var oModel = this.getOwnerComponent().getModel();
