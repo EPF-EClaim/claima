@@ -80,7 +80,7 @@ sap.ui.define([
 			this._oModel = this.getOwnerComponent().getModel();
 			this._oSessionModel = this.getOwnerComponent().getModel("session");
 			this._openDeclarationDialog = null;
-			this._openDeclarationGalakanDialog = null;
+			this._openDisclaimerGalakanDialog = null;
 
 
 			// decalre custom validator
@@ -236,13 +236,13 @@ sap.ui.define([
 		},
 
 		//event handle for confirm and cancel
-		onPressDeclarationGalakanConfirm: function () {
-			this._openDeclarationGalakanDialog.close();
+		onPressdisclaimerGalakanConfirm: function () {
+			this._openDisclaimerGalakanDialog.close();
 			ApproveDialog.open(this);
 		},
 
-		onPressDeclarationGalakanCancel: function () {
-			this._openDeclarationGalakanDialog.close();
+		onPressdisclaimerGalakanCancel: function () {
+			this._openDisclaimerGalakanDialog.close();
 		},
 
 
@@ -1686,30 +1686,30 @@ sap.ui.define([
 					var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 					if (oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") === this._oConstant.ClaimTypeItem.GALAKAN) {
 
-						if (!this._openDeclarationGalakanDialog) {
+						if (!this._openDisclaimerGalakanDialog) {
 
 							Fragment.load({
-								name: "claima.fragment.declaregalakan",
-								id: "declarationgalakanDialogFrag",
+								name: "claima.fragment.disclaimergalakan",
+								id: "disclaimergalakanDialogFrag",
 								controller: this
-							}).then(function (oDeclareGalakanDialog) {
+							}).then(function (oDisclaimerGalakanDialog) {
 
-								this._openDeclarationGalakanDialog = oDeclareGalakanDialog;
-								this.getView().addDependent(oDeclareGalakanDialog);
+								this._openDisclaimerGalakanDialog = oDisclaimerGalakanDialog;
+								this.getView().addDependent(oDisclaimerGalakanDialog);
 
-								var oText = Fragment.byId("declarationgalakanDialogFrag", "declarationgalakanText");
+								var oText = Fragment.byId("disclaimergalakanDialogFrag", "disclaimergalakanText");
 								oText.setText(Utility.getText("checkbox_claimdetails_input_disclaimer_galakan"));
 
-								oDeclareGalakanDialog.open();
+								oDisclaimerGalakanDialog.open();
 
 							}.bind(this));
 
 						} else {
 
-							var oText = Fragment.byId("declarationgalakanDialogFrag", "declarationgalakanText");
+							var oText = Fragment.byId("disclaimergalakanDialogFrag", "disclaimergalakanText");
 							oText.setText(Utility.getText("checkbox_claimdetails_input_disclaimer_galakan"));
 
-							this._openDeclarationGalakanDialog.open();
+							this._openDisclaimerGalakanDialog.open();
 						}
 						return;
 					}

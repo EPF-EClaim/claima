@@ -1,17 +1,17 @@
 <core:FragmentDefinition
     xmlns="sap.m"
     xmlns:core="sap.ui.core"
-    id="declarationgalakanDialogFrag">
+    id="disclaimergalakanDialogFrag">
 
     <Dialog
-        id="declarationgalakanDialog"
+        id="disclaimergalakanDialog"
         type="Message"
         state="Warning"
-        title="Declaration"
+        title="{i18n>claim_approval_disclaimer_title}"
         contentWidth="500px">
 
         <Text
-            id="declarationgalakanText"
+            id="disclaimergalakanText"
             text="{i18n>checkbox_claimdetails_input_disclaimer_galakan}"
             wrapping="true" />
 
@@ -19,13 +19,13 @@
             <Button
                 type="Emphasized"
                 text="{i18n>button_claimsubmission_declarationagalakan_confirm}"
-                press=".onPressDeclarationGalakanConfirm" />
+                press=".onPressdisclaimerGalakanConfirm" />
         </beginButton>
 
         <endButton>
             <Button
                 text="{i18n>button_claimsummary_cancel}"
-                press=".onPressDeclarationGalakanCancel" />
+                press=".onPressdisclaimerGalakanCancel" />
         </endButton>
 
     </Dialog>
