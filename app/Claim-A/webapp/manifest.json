@@ -3317,7 +3317,7 @@
                                         "disableCopyToClipboard": true,
                                         "creationMode": {
                                             "name": "CreationDialog",
-                                            "creationFields": "METER_CUBE_ID,MARITAL_STATUS,DEPENDENT_TYPE_ID,AGE,METER_CUBE,START_DATE,END_DATE,STATUS"
+                                            "creationFields": "METER_CUBE_ID,MARITAL_STATUS,DEPENDENT_TYPE_ID,AGE_CONDITION,AGE,METER_CUBE,START_DATE,END_DATE,STATUS"
                                         }
                                     },
                                     "actions": {
