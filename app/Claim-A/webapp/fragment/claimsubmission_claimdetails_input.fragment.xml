@@ -143,6 +143,28 @@
 				>
 				</Select>
 
+                <!-- Marriage Category -->
+                <Label
+                    text="{i18n>label_claimdetails_input_marriagecategory}"
+                    visible="{claimitem_property>/marriage_category/is_visible}" />
+
+                <Select
+                    id="select_claimdetails__input_marriagecategory"
+                    selectedKey="{claimitem_input>/claim_item/marriage_category}"
+                    forceSelection="false"
+                    visible="{claimitem_property>/marriage_category/is_visible}"
+                    required="true"
+                    items="{
+                        path: 'employee>/ZMARITAL_CAT',
+                        sorter: { path: 'MARRIAGE_CATEGORY_ID', descending: false }
+                    }">
+                    <items>
+                        <core:Item
+                            key="{employee>MARRIAGE_CATEGORY_ID}"
+                            text="{employee>MARRIAGE_CATEGORY_DESC}" />
+                    </items>
+                </Select>
+
                 <!-- Actual Meter Cube -->
                 <Label text="{i18n>label_claimdetails_input_actual_meter_cube}"
                     visible="{claimitem_property>/meter_cube_actual/is_visible}" />
@@ -645,7 +667,9 @@
 				</Select>
 
                 <!-- Kilometer -->
-                <Label text="{i18n>label_claimdetails_input_km}" />
+                <Label text="{i18n>label_claimdetails_input_km}" 
+                  required="{claimitem_property>/km/is_required}"
+                  labelFor="input_claimdetails_input_km"/>
                 <Input
                     id="input_claimdetails_input_km"
                     value="{
@@ -807,11 +831,13 @@
                 </Select>
 
                 <!-- To State -->
-                <Label text="{i18n>label_claimdetails_input_state_to}" />
+                <Label text="{i18n>label_claimdetails_input_state_to}" 
+                required="{claimitem_property>/to_state_id/is_required}" />
                 <Select
                     id="select_claimdetails_input_to_state_id"
                     forceSelection="false"
                     selectedKey="{claimitem_input>/claim_item/to_state_id}"
+                    required="{claimitem_property>/to_state_id/is_required}"
                     visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
                     items="{path: 'employee>/ZSTATE',
                             sorter: { path: 'STATE_ID', descending: false },
@@ -1283,15 +1309,6 @@
                     selected="{claimitem_input>/claim_item/disclaimer}"
                 />
 
-                <!-- Disclaimer (Galakan) -->
-				<Label text="{i18n>label_claimdetails_input_disclaimer}" required="true" />
-                <CheckBox
-                    id="checkbox_claimdetails_input_disclaimer_galakan"
-                    text="{i18n>checkbox_claimdetails_input_disclaimer_galakan}"
-                    visible="false"
-                    wrapping="true"
-                    selected="{claimitem_input>/claim_item/disclaimer_galakan}"
-                />
 
                 <!-- Remarks -->
                 <Label text="{i18n>label_claimdetails_input_remarks}" />
