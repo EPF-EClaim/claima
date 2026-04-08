@@ -2208,18 +2208,13 @@ sap.ui.define([
 			this._oConstant.ClaimTypeItem.KILOMETER
 			].includes(sKey);
 			oPropertyModel.setProperty("/km/is_required", bKmRequired);
-
 			//Display Marriage Category field only for DARAT (land transport) claim items
 			if (sKey === this._oConstant.ClaimTypeItem.DARAT) {
-				
 				oPropertyModel.setProperty("/marriage_category/is_visible", true);
 			} else {
-				
 				oPropertyModel.setProperty("/marriage_category/is_visible", false);
-
 				oInputModel.setProperty("/claim_item/marriage_category", null);
 			}
-
 			//Require "To State" selection only for Flight Wilayah Asal claim item.
 			if (sKey === this._oConstant.ClaimTypeItem.FLIGTH_WIL) {
 				oPropertyModel.setProperty("/to_state_id/is_required", true);
