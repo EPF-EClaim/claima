@@ -1198,6 +1198,8 @@ sap.ui.define([
 					"study_levels_id": null,
 					"travel_days_id": null,
 					"vehicle_class_id": null,
+					"dailyallowance": null,
+					"maxdaysclaim": null,
 					"descr": {
 						"claim_type_item_id": null,
 						"claim_category": null,
@@ -2162,6 +2164,10 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oPropertyModel = this.getView().getModel("claimitem_property");
+
+			// reset existing input 
+			this._resetClaimItemInputs(oInputModel);
+
 			if (claimItem) {
 				// Reset Location Type
 				oInputModel.setProperty("/claim_item/location_type", "");
@@ -2268,8 +2274,10 @@ sap.ui.define([
 			}
 
 			// set number of family members based on claim item
+			// no of family member + 1 for the claimant itself
 			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
-				oInputModel.setProperty("/claim_item/no_of_family_member", await ClaimUtility.getNumberOfFamilyMembers(oClaimSubmissionModel.getProperty("/claim_header/emp_id")));
+				var nDependent = await ClaimUtility.getNumberOfFamilyMembers(oClaimSubmissionModel.getProperty("/claim_header/emp_id")) + 1;
+				oInputModel.setProperty("/claim_item/no_of_family_member", nDependent);
 			}
 
 			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
@@ -2286,6 +2294,16 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/amount")) * 0.5);
 				}
 			}
+
+			// elaun pindah - PEM_PINDAH
+			if (sKey === this._oConstant.ClaimTypeItem.PEM_PINDAH) {
+				oPropertyModel.setProperty("/actual_amount/is_visible", true);
+				oPropertyModel.setProperty("/actual_amount/is_editable", true);
+
+				oPropertyModel.setProperty("/amount/is_visible", true);
+				oPropertyModel.setProperty("/amount/is_editable", false);
+			}
+
 		},
 
 		onChange_ClaimDetails_ActualMeterCube: function () {
@@ -2919,11 +2937,27 @@ sap.ui.define([
 		 * 'amount' is auto-populated while 'actual amount' comes from user input
 		 * @public
 		 */
-		onChange_ClaimDetails_ActualAmount: function () {
+		onChange_ClaimDetails_ActualAmount: async function () {
 			// verify if property exists and 'amount' field is visible
 			var oPropertyModel = this.getView().getModel("claimitem_property");
+			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (oPropertyModel.getProperty("/amount/is_visible") && oPropertyModel.getProperty("/percentage_compensation/is_visible")) {
+				//fetch eligible amount and return the amount
+				if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.PEM_PINDAH) {
+					await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "eligible_amount", this._oConstant.EligibilityRule.ELIGIBLE_AMOUNT, 0.0);
+
+					//calculate based on subsidized amount and eligible amount
+					var nTotalAmt = oInputModel.getProperty("/claim_item/actual_amount") * (oInputModel.getProperty("/claim_item/percentage_compensation") / 100 );
+					var nEligibleAmt = oInputModel.getProperty("/claim_item/eligible_amount");
+
+					if (nTotalAmt < nEligibleAmt) {
+						oInputModel.setProperty("/claim_item/amount", nTotalAmt);
+					} else {
+						oInputModel.setProperty("/claim_item/amount", nEligibleAmt);
+					}
+
+				}
 				// set 'amount' property to % of actual amount based on percentage compensation
 				oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
 			}
@@ -2979,8 +3013,16 @@ sap.ui.define([
 				this.onChange_ClaimDetails_NumberOfDays();
 			}
 
+			// Maximum no of days
+			if (this.byId("input_claimdetails_input_maxdaysclaim").getVisible()) {
+				var nDay = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item"));
+				oInputModel.setProperty("/claim_item/maxdaysclaim", nDay > 2? 2: nDay);
+				this.onChange_ClaimDetails_NumberOfDays();
+			}
+
 			// calculate per diem details
-			if (oPropertyModel.getProperty("/entitled_breakfast/is_visible")) {
+			if (oPropertyModel.getProperty("/entitled_breakfast/is_visible") ||
+				(oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_LOAN))  {
 				// reset per diem amounts
 				this._resetPerDiem();
 
@@ -4678,6 +4720,7 @@ sap.ui.define([
 			return ClaimUtility.fetchAndApplyEntitlement(oClaimItemInputModel).then(oResult => {
 				if (!oResult || oResult.amount === 0) {
 					MessageToast.show(Utility.getText("msg_claim_no_entitlement"));
+					oClaimItemInputModel.setProperty("/claim_item/amount", 0);
 					return;
 				}
 
@@ -4734,6 +4777,31 @@ sap.ui.define([
 			}
 			oClaimSubmissionModel.setProperty("/claim_items", aItems);
 		},
+
+		_resetClaimItemInputs: async function (oInputModel) {
+			
+	// 	const oClaimItem = oInputModel.getProperty("/claim_item");
+
+    // 	if (!oClaimItem) {
+    //     	return;
+    // 	}
+		
+	
+	// Object.keys(oClaimItem).forEach((sKey) => {
+    //     if (sKey === "claim_type_item_id") {
+    //         return;
+    //     }
+
+    //     if (sKey === "descr") {
+    //         return;
+    //     }
+
+    //     oInputModel.setProperty(`/claim_item/${sKey}`, null);
+	// })
+
+		oInputModel.setProperty("/claim_item/currency_amount", null);
+		oInputModel.setProperty("/claim_item/amount", null);
+		}
 
 	});
 });

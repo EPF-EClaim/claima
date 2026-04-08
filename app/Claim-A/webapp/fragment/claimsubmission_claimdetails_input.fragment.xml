@@ -263,7 +263,8 @@
                         ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp;
 						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
 						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
-						!${claimitem_property>/entitled_breakfast/is_visible}
+						!${claimitem_property>/entitled_breakfast/is_visible} &amp;&amp;
+                        ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MKN_LOAN}
 					}"
 					visible="{claimitem_property>/amount/is_visible}"
 				/>
@@ -619,6 +620,19 @@
 					required="true"
 				/>
 
+                <!-- Maximum Number of Days -->
+                <Label text="{i18n>label_claimdetails_input_maxdays}" />
+				<Input
+					id="input_claimdetails_input_maxdaysclaim"
+					value="{claimitem_input>/claim_item/maxdaysclaim}"
+					type="Number"
+					change="onChange_ClaimDetails_MaxDaysClaim"
+					liveChange="onChange_ClaimDetails_MaxDaysClaim"
+					visible="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MKN_LOAN} }"
+					editable="false"
+					
+				/>
+
 				<!-- Type of Vehicle -->
 				<Label text="{i18n>label_claimdetails_input_typeofvehicle}" />
 				<Select
@@ -908,7 +922,7 @@
                 />
 
                 <!-- Currency Rate -->
-                <Label text="{i18n>label_claimdetails_input_currencyrate}" />
+                <Label text="{i18n>label_claimdetails_input_currencyrate}"  />
                 <Input
                     id="input_claimdetails_input_currency_rate"
                     value="{
@@ -1111,6 +1125,23 @@
                     visible="false"
                 />
 
+                 <!-- Daily Allowance -->
+                <Label text="{i18n>label_claimdetails_input_dailyallowance}" />
+                <Input
+                    id="input_claimdetails_input_dailyallowance"
+                    value="{ path: 'claimitem_input>/claim_item/dailyallowance',
+							 type: 'FloatType',
+							 formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
+						}"
+                    visible="false"
+                    editable="false"
+                />
+
+
                 <!-- Lodging Address -->
                 <Label text="{i18n>label_claimdetails_input_lodging_address}" />
                 <Input
@@ -1283,22 +1314,6 @@
                     id="input_claimdetails_input_remarks"
                     value="{claimitem_input>/claim_item/remark}"
                     visible="false"
-                />
-
-                <!-- Daily Allowance -->
-                <Label text="{i18n>label_claimdetails_input_dailyallowance}" />
-                <Input
-                    id="input_claimdetails_input_dailyallowance"
-                    value="{ path: 'claimitem_input>/claim_item/dailyallowance',
-							 type: 'FloatType',
-							 formatOptions: {
-							minFractionDigits: 2,
-							maxFractionDigits: 2,
-							preserveDecimals: false
-						}
-						}"
-                    visible="false"
-                    editable="false"
                 />
 
                 <!-- Attachment 1 -->

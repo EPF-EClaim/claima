@@ -934,6 +934,7 @@ module.exports = (srv) => {
         let daily_allowance = 0;
         let time_difference = 0;
         let bfast, lunch, dinner, total_meal_allowance = 0;
+        var total_amt_dp = 0;
 
         //get employee personal grade 
         const email = String(emailFromToken).trim().toLowerCase();
@@ -973,6 +974,11 @@ module.exports = (srv) => {
         if (!entitlement) {
             return { amount: 0, daily_allowance: 0, currency_code: null };
         } else {
+            //calculation for MKN_LOAN based on dependent
+            if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN){
+                total_amt_dp = (entitlement.AMOUNT * req.data.dependent * req.data.day); 
+                return { amount: total_amt_dp };
+            } else {
             time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
 
             //checking on the daily and meal allowance entitlement
@@ -1010,9 +1016,8 @@ module.exports = (srv) => {
                 daily_allowance: (entitlement.AMOUNT / 2),
                 currency_code: entitlement.CURRENCY
             };
+          }
         }
-
-
     });
 
     /**

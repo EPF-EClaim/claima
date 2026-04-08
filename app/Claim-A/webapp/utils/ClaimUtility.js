@@ -332,7 +332,14 @@ sap.ui.define([
 		 * @param {sap.ui.model.json.JSONModel} oClaimItemInputModel Claim item input
 		 */
 		fetchAndApplyEntitlement: function (oClaimItemInputModel) {
-			var nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
+			var nDay, nDependent;
+			if ((oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_LOAN)) {
+				nDay = oClaimItemInputModel.getProperty("/claim_item/maxdaysclaim") > 2? 2: oClaimItemInputModel.getProperty("/claim_item/maxdaysclaim");
+				nDependent = oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
+			} else {
+				nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
+				nDependent = 0;
+			}
 			var nHour = oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour");
 			var sLocation = oClaimItemInputModel.getProperty("/claim_item/region");
 			var sClaimtype = oClaimItemInputModel.getProperty("/claim_item/claim_type_id");
@@ -356,6 +363,7 @@ sap.ui.define([
 			oContext.setParameter("breakfast", nBreakfast);
 			oContext.setParameter("lunch", nLunch);
 			oContext.setParameter("dinner", nDinner);
+			oContext.setParameter("dependent", nDependent);
 
 			return oContext.execute()
 				.then(() => oContext.requestObject());

@@ -114,7 +114,8 @@ sap.ui.define([
             "ROW_COUNT": "ROW_COUNT",
             "ELIGIBLE_AMOUNT": "ELIGIBLE_AMOUNT",
             "RATE_PER_KM": "RATE",
-            "SUBSIDISED_RATE": "SUBSIDISED_RATE"
+            "SUBSIDISED_RATE": "SUBSIDISED_RATE", 
+            "ELIGIBLE_AMOUNT": "ELIGIBLE_AMOUNT"
         },
         "Departments": {
             "FI_DEPT": "0500000000"
