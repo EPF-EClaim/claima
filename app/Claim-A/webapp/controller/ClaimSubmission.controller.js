@@ -2216,7 +2216,7 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/marriage_category", null);
 			}
 			//Require "To State" selection only for Flight Wilayah Asal claim item.
-			if (sKey === this._oConstant.ClaimTypeItem.FLIGTH_WIL) {
+			if (sKey === this._oConstant.ClaimTypeItem.FLIGHT_WIL) {
 				oPropertyModel.setProperty("/to_state_id/is_required", true);
 			} else {
 				oPropertyModel.setProperty("/to_state_id/is_required", false);
