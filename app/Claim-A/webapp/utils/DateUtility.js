@@ -352,7 +352,7 @@ sap.ui.define([
                                     _oResourceBundle.getText("error_start_date_kursus_mindate"));
                             } else if (sItemType === Constants.ClaimTypeItem.MKN_LOAN) {
                                 // set min date based on move-in date
-                                _dMinDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oItem["start_date"] ? new Date(oItem["start_date"]) : null;
+                                _dMinDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : new Date(oHeader["trip_start_date"]);
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
                                     _oResourceBundle.getText("error_start_date_moveindate_mindate"));
@@ -384,11 +384,13 @@ sap.ui.define([
                                 }
                                 else {
                                     // set min date based on move-in date
-                                    _dMinDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oItem["start_date"] ? new Date(oItem["start_date"]) : new Date(oHeader["trip_start_date"]);
-                                    const dPastDate = new Date(_dMinDate);
-                                    dPastDate.setDate(dPastDate.getDate() - 90);
-                                    _dMinDate = dPastDate;
-                                    oItem["start_date"] = null;
+                                    _dMinDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oItem["start_date"] ? new Date(oItem["start_date"]) : null;
+                                    if (!_dMinDate) {
+                                        _dMinDate = new Date(oHeader["trip_start_date"]);
+                                        const dPastDate = new Date(_dMinDate);
+                                        dPastDate.setDate(dPastDate.getDate() - 90);
+                                        _dMinDate = dPastDate;
+                                    }
                                 }
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
@@ -518,7 +520,7 @@ sap.ui.define([
                                     _dMaxDate = new Date(oItem["end_date"]);
                                 }
                                 else {
-                                    _dMaxDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oItem["end_date"] ? new Date(oHeader["max_date"]) : null;
+                                    _dMaxDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oHeader["trip_end_date"] ? new Date(oHeader["trip_end_date"]) : null;
                                     // add 1 day for elaun perpindahan makan
                                     if (_dMaxDate) {
                                         _dMaxDate.setDate(_dMaxDate.getDate() + 1);
@@ -553,7 +555,7 @@ sap.ui.define([
                             }
                             else if (sItemType === Constants.ClaimTypeItem.MKN_LOAN) {
                                 // set max date based on move-in date + 1 day
-                                _dMaxDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oItem["end_date"] ? new Date(oHeader["max_date"]) : null;
+                                _dMaxDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oHeader["trip_end_date"] ? new Date(oHeader["trip_end_date"]) : null;
                                 // add 1 day for elaun perpindahan makan
                                 if (_dMaxDate) {
                                     _dMaxDate.setDate(_dMaxDate.getDate() + 1);
@@ -573,7 +575,7 @@ sap.ui.define([
                         case Constants.SubmissionTypePrefix.CLAIM:
                             // set max date based on insurance cert end date
                             if (sItemType === Constants.ClaimTypeItem.TRAVEL_INSURANCE) {
-                                _dMaxDate = !!new Date(oItem["insurance_cert_end_date"]).getTime() ? new Date(oItem["insurance_cert_end_date"]) : new Date(oHeader.trip_end_date);
+                                _dMaxDate = !!new Date(oItem["insurance_cert_end_date"]).getTime() ? new Date(oItem["insurance_cert_end_date"]) : new Date(oHeader["trip_end_date"]);
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("error_insurance_cert_start_date_maxdate"));
