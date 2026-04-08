@@ -2211,6 +2211,10 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oPropertyModel = this.getView().getModel("claimitem_property");
+
+			// reset existing input 
+			await this._resetClaimItemInputs(oInputModel);
+
 			if (claimItem) {
 				// Reset Location Type
 				oInputModel.setProperty("/claim_item/location_type", "");
@@ -4801,5 +4805,21 @@ sap.ui.define([
 			}
 			oClaimSubmissionModel.setProperty("/claim_items", aItems);
 		},
+
+		_resetClaimItemInputs: async function (oInputModel) {
+			Object.keys(oInputModel.getData().claim_item).forEach((sKey) => {
+				if (sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ID || 
+					sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ITEM_ID || 
+					sKey === this._oConstant.ExcludeField.CLAIM_ID || 
+					sKey === this._oConstant.ExcludeField.DESCR  || 
+					sKey ===  this._oConstant.ExcludeField.GL_ACCOUNT || 
+					sKey === this._oConstant.ExcludeField.COST_CENTER){
+					return;
+				}
+				oInputModel.setProperty(`/claim_item/${sKey}`, null);
+			})
+
+		}
+
 	});
 });
