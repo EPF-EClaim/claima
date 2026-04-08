@@ -3572,9 +3572,7 @@ sap.ui.define([
 							oInputModel.getProperty("/claim_header/session_number"),
 							this._oSessionModel.getProperty("/userId"));
 					if (bCourseAlreadyApproved) {
-						MessageBox.error(Utility.getText("error_msg_course_already_approved", [
-								oInputModel.getProperty("/claim_header/course_code"),
-								oInputModel.getProperty("/claim_header/descr/course_code")]));
+						MessageBox.error(Utility.getText("error_msg_course_already_approved"));
 						BusyIndicator.hide();
 						return;
 					}

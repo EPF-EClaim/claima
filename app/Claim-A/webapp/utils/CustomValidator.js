@@ -107,7 +107,7 @@ sap.ui.define([
                         if (Object.values(Constants.ClaimTypeKursus).includes(sClaimType)) {
                             var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(sCourseCode, sSessionNumber, this._oOwnerComponent.getModel("session").getProperty("/userId"));
                             if (bCourseAlreadyApproved) {
-                                MessageBox.error(Utility.getText("error_msg_course_already_approved", [sCourseCode, sCourseCodeDesc]));
+                                MessageBox.error(Utility.getText("error_msg_course_already_approved"));
                                 bCanProceed = false;
                             }
                         }

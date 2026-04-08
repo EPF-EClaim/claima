@@ -354,15 +354,16 @@ sap.ui.define([
                                 // Elaun Makan (Perpindahan) - minimum date = move-in date
                                 // if move-in date not found, use 90 days before header start date
                                 _dMinDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : null;
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                    _oResourceBundle.getText("error_start_date_mknloan_mindate"));
                                 if (_dMinDate === null) {
                                     _dMinDate = new Date(oHeader["trip_start_date"]);
                                     const dPastDate = new Date(_dMinDate);
                                     dPastDate.setDate(dPastDate.getDate() - 90);
                                     _dMinDate = dPastDate;
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                        _oResourceBundle.getText("error_start_date_mknloan_header_mindate"));
                                 }
-                                // set validator error message
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
-                                    _oResourceBundle.getText("error_start_date_moveindate_mindate"));
                             }
                             break;
                     }
@@ -378,33 +379,37 @@ sap.ui.define([
                                 // if item start date not set, use 1 day before header start date
                                 if (!!new Date(oItem["start_date"]).getTime()) {
                                     _dMinDate = new Date(oItem["start_date"]);
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                        _oResourceBundle.getText("error_end_date_kursus_item_mindate"));
                                 }
                                 else {
                                     _dMinDate = new Date(oHeader.trip_start_date);
                                     _dMinDate.setDate(_dMinDate.getDate() - 1);
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                        _oResourceBundle.getText("error_end_date_kursus_mindate"));
                                 }
-                                // set validator error message
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
-                                    _oResourceBundle.getText("error_end_date_kursus_mindate"));
                             } else if (sItemType === Constants.ClaimTypeItem.MKN_LOAN) {
                                 // Elaun Makan (Perpindahan) - minimum date = item start date
                                 // if item start date not set, use move-in date
                                 // if move-in date not found, use 90 days before header start date
                                 if (!!new Date(oItem["start_date"]).getTime()) {
                                     _dMinDate = new Date(oItem["start_date"]);
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                        _oResourceBundle.getText("error_end_date_mknloan_item_mindate"));
                                 }
                                 else {
                                     _dMinDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : null;
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                        _oResourceBundle.getText("error_end_date_mknloan_mindate"));
                                     if (_dMinDate === null) {
                                         _dMinDate = new Date(oHeader["trip_start_date"]);
                                         const dPastDate = new Date(_dMinDate);
                                         dPastDate.setDate(dPastDate.getDate() - 90);
                                         _dMinDate = dPastDate;
+                                        _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
+                                            _oResourceBundle.getText("error_end_date_mknloan_header_mindate"));
                                     }
                                 }
-                                // set validator error message
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
-                                    _oResourceBundle.getText("error_end_date_moveindate_mindate"));
                             }
                             else {
                                 // Other Claim Type - minimum date = item start date
@@ -428,16 +433,17 @@ sap.ui.define([
                                 // if start date not set, set 90 days before header start date
                                 if (!!new Date(oItem["insurance_cert_start_date"]).getTime()) {
                                     _dMinDate = new Date(oItem["insurance_cert_start_date"]);
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                        _oResourceBundle.getText("error_insurance_cert_end_date_mindate"));
                                 }
                                 else {
                                     _dMinDate = new Date(oHeader.trip_start_date);
                                     const dPastDate = new Date(_dMinDate);
                                     dPastDate.setDate(dPastDate.getDate() - 90);
                                     _dMinDate = dPastDate;
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                        _oResourceBundle.getText("error_insurance_cert_end_date_header_mindate"));
                                 }
-                                // set validator error message
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
-                                    _oResourceBundle.getText("error_insurance_cert_end_date_mindate"));
                             }
                             break;
                     }
@@ -542,7 +548,7 @@ sap.ui.define([
                                 }
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
-                                    _oResourceBundle.getText("error_start_date_moveindate_maxdate"));
+                                    _oResourceBundle.getText("error_start_date_mknloan_maxdate"));
                             }
                             else {
                                 // Other Claim Type - maximum date = item end date
@@ -575,13 +581,14 @@ sap.ui.define([
                                 if (oHeader["move_in_date"]) {
                                     _dMaxDate = new Date(oHeader["move_in_date"]);
                                     _dMaxDate.setDate(_dMaxDate.getDate() + 1);
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                        _oResourceBundle.getText("error_end_date_mknloan_maxdate"));
                                 }
                                 else {
                                     _dMaxDate = new Date(oHeader["trip_end_date"]);
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
+                                        _oResourceBundle.getText("error_end_date_mknloan_header_maxdate"));
                                 }
-                                // set validator error message
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError", 
-                                    _oResourceBundle.getText("error_end_date_moveindate_maxdate"));
                             }
                            break;
                     }
@@ -595,10 +602,16 @@ sap.ui.define([
                             // Travel Insurance - maximum date = insurance certificate end date
                             // if end date not set, use header end date
                             if (sItemType === Constants.ClaimTypeItem.TRAVEL_INSURANCE) {
-                                _dMaxDate = !!new Date(oItem["insurance_cert_end_date"]).getTime() ? new Date(oItem["insurance_cert_end_date"]) : new Date(oHeader["trip_end_date"]);
-                                // set validator error message
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
-                                    _oResourceBundle.getText("error_insurance_cert_start_date_maxdate"));
+                                if (!!new Date(oItem["insurance_cert_end_date"]).getTime()) {
+                                    _dMaxDate = new Date(oItem["insurance_cert_end_date"]);
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                        _oResourceBundle.getText("error_insurance_cert_start_date_maxdate"));
+                                }
+                                else {
+                                    _dMaxDate = new Date(oHeader["trip_end_date"]);
+                                    _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
+                                        _oResourceBundle.getText("error_insurance_cert_start_date_header_maxdate"));
+                                }
                             }
                             break;
                     }
