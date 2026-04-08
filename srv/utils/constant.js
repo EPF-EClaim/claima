@@ -63,7 +63,8 @@ const Constant = {
         "ZCLAIM_HEADER": "ZCLAIM_HEADER",
         "ZCLAIM_ITEM": "ZCLAIM_ITEM",
         "ZREQUEST_HEADER": "ZREQUEST_HEADER",
-        "ZREQUEST_ITEM": "ZREQUEST_ITEM"
+        "ZREQUEST_ITEM": "ZREQUEST_ITEM",
+        "ZCLM_TYPE_EXCEPTION_LIST": "ZCLM_TYPE_EXCEPTION_LIST"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -74,7 +75,8 @@ const Constant = {
         "ELAUN_TUKAR": "ELAUN_TUKAR",
         "ELAUN_PINDAH": "ELAUN_PINDAH",
         "HANDPHONE": "HANDPHONE",
-        "I_PAD": "I-PAD"
+        "I_PAD": "I-PAD",
+        "HANDPHONE": "HANDPHONE"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -131,7 +133,8 @@ const Constant = {
         "VISA": "VISA",
         "YURAN": "YURAN",
         "YURAN_KLJ": "YURAN_KLJ",
-        "I_PAD": "I-PAD"
+        "I_PAD": "I-PAD",
+        "TELEFON_B": "TELEFON_B"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
@@ -150,14 +153,20 @@ const Constant = {
         "CLAIM_TYPE_ITEM_ID": "CLAIM_TYPE_ITEM_ID",
         "EEID": "EEID",
         "EMP_ID": "EMP_ID",
+        "ROLE_ID": "ROLE_ID",
         "BILL_DATE": "BILL_DATE",
-        "RECEIPT_DATE": "RECEIPT_DATE"
+        "RECEIPT_DATE": "RECEIPT_DATE",
+        "JOB_GROUP": "JOB_GROUP",
+        "PERSONAL_GRADE": "PERSONAL_GRADE",
+        "START_DATE": "START_DATE",
+        "END_DATE": "END_DATE"
     },
     Wildcard: {
         "All": "*",
         "LIKE_PATTERN": "%",
         "DASH": "-",
-        "ZERO": "0"
+        "ZERO": "0",
+        "NA": "NA"
     }, 
     Role: {
         "CEO": "CEO", 
@@ -191,8 +200,16 @@ const Constant = {
     },
     ComparisonOperators:{
         "LesserEquals": "<=",
-        "GreaterEquals": ">="
-    }
+        "GreaterEquals": ">=",
+        "Equals": "=",
+        "NotEquals": "!="
+    },
+    WhereCondition: {
+        "AND": "AND",
+        "IN": "IN"
+    },
+
+    UnlimitedAmount: -1
 
 };
 

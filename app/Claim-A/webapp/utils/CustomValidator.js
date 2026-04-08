@@ -74,12 +74,6 @@ sap.ui.define([
                                 }
                                 break;
                             
-                            case Constants.ClaimTypeItem.GALAKAN:
-                                if(!oInputModel.getProperty("/claim_item/disclaimer_galakan")) {
-                                    MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
-                                    return false;
-                                }
-                                break;
 
                             default:
                                 break;
@@ -92,6 +86,14 @@ sap.ui.define([
                         if (!bProceed) {
                             return false;
                         }
+                    }
+
+                    var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
+                    var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
+
+                    if (dReceiptDate > dTripEndDate) {
+                        MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
+                        return;
                     }
                     
                     if (!!oClaimSubmissionModel) {

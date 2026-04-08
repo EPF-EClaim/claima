@@ -88,6 +88,8 @@ module.exports = {
             case Constant.ClaimTypeItem.DOBI:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.TRAVEL_DAYS_ID);
 
+                if (iIndex == -1) return;
+
                 if (!oRule) {
                     oPayload.CheckFields[iIndex].result = false;
                 }
@@ -103,6 +105,8 @@ module.exports = {
             // FLIGHT - return true if selected flight class matches user's personal grade
             case Constant.ClaimTypeItem.FLIGHT_L:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.FLIGHT_CLASS_ID);
+
+                if (iIndex == -1) return;
 
                 // if no rule matches the selected flight class, return false
                 if (!oRule) {
@@ -121,15 +125,21 @@ module.exports = {
             case Constant.ClaimTypeItem.LODGING_L:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.ELIGIBLE_AMOUNT);
 
+                if (iIndex == -1) return;
+
                 if (!oRule) {
                     oPayload.CheckFields[iIndex].result = false;
                 }
                 // calculate max claim amount allowed
                 else {
-                    oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
-                        parseFloat(oPayload.CheckFields[iIndex].value),
-                        parseFloat(oRule.ELIGIBLE_AMOUNT) * parseFloat(aPayload.sTravelDaysId)
-                    );
+                    if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
+                        oPayload.CheckFields[iIndex].result = true;
+                    } else {
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
+                            parseFloat(oPayload.CheckFields[iIndex].value),
+                            parseFloat(oRule.ELIGIBLE_AMOUNT) * parseFloat(aPayload.sTravelDaysId)
+                        );
+                    }
                 }
                 break;
 
