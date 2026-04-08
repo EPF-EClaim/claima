@@ -1208,11 +1208,15 @@ entity ZMETER_CUBE : managed {
     key METER_CUBE_ID     : String(2)     @mandatory  @Common.Label: 'Meter Cube ID';
         MARITAL_STATUS    : String        @Common.Label: 'Marital Status';
         DEPENDENT_TYPE_ID : String        @Common.Label: 'Dependent Type ID';
+        AGE_CONDITION     : String(3)     @Common.Label: 'Age Condition';
         AGE               : Integer       @Common.Label: 'Age';
         METER_CUBE        : Decimal(5, 2) @Common.Label: 'Meter Cube';
         START_DATE        : Date          @Common.Label: 'Start Date';
         END_DATE          : Date          @Common.Label: 'End Date';
         STATUS            : String(10)    @Common.Label: 'Status';
+        ZEMP_RELATIONSHIP : Association to one ZEMP_RELATIONSHIP
+                                on ZEMP_RELATIONSHIP.RELATIONSHIP_TYPE_ID = DEPENDENT_TYPE_ID;
+
 }
 
 entity ZTRAVEL_DAYS : managed {
@@ -1404,9 +1408,9 @@ entity ZCLM_APPR_REQ_STAT : managed {
 
 entity ZCLM_TYPE_EXCEPTION_LIST : managed {
 
-    key EMP_ID        : String(6)      @mandatory  @Common.Label: 'Employee Id';
-    key CLAIM_TYPE_ID : String(20)     @mandatory  @Common.Label: 'Claim Type ID';
-    key START_DATE    : Date           @mandatory  @Common.Label: 'Start Date';
-    key END_DATE      : Date           @mandatory  @Common.Label: 'End Date';
-        AMOUNT        : Decimal(20, 2) @Common.Label: 'Amount';
+    key EMP_ID          : String(6)      @mandatory  @Common.Label: 'Employee Id';
+    key CLAIM_TYPE_ID   : String(20)     @mandatory  @Common.Label: 'Claim Type ID';
+    key START_DATE      : Date           @mandatory  @Common.Label: 'Start Date';
+    key END_DATE        : Date           @mandatory  @Common.Label: 'End Date';
+        ELIGIBLE_AMOUNT : Decimal(20, 2) @Common.Label: 'Eligible Amount';
 }

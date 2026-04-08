@@ -2684,13 +2684,10 @@ sap.ui.define([
 					}
 				}
 			}
-
-
-			//FUT issue #58
-			//checking for galakan disclaimer if its ticked or not
-
+			
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+			if (!bCanProceed) {
 				return;
 			}
 
@@ -4745,6 +4742,5 @@ sap.ui.define([
 			}
 			oClaimSubmissionModel.setProperty("/claim_items", aItems);
 		},
-
 	});
 });
