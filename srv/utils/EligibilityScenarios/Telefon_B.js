@@ -13,11 +13,13 @@ module.exports = {
    */
   onEligibleCheck: async function (oPayload, oEmp, aRules, tx) {
     var oRule = [];
-    var oExceptionData = [];
-    var aFilteredRules;
+    try {
+      oRule = await this._SequenceCheck(oPayload, oEmp, aRules);
+    } catch (error) {
+      throw new Error('Error during Eligiblity / Exception Rule checking');
+    }
 
-    oRule = await this._SequenceCheck(oPayload, oEmp, aRules);
-
+    // return oRule;
     var iHistoricalData = await this._getHistoricalData(oPayload, oRule, tx);
     var iCurrentRecordItemData = await this._getCurrentRecordItemData(
       oPayload,
@@ -39,7 +41,7 @@ module.exports = {
     if (!!aRules) {
       // Check for employee Role
       aFilteredRules = aRules.filter(function (rule) {
-        return rule.ROLE === oEmp.ROLE;
+        return rule.ROLE_ID === oEmp.ROLE;
       })
 
       if (!(!!aFilteredRules[0])) {
@@ -181,9 +183,10 @@ module.exports = {
     };
     const sExceptionConditions = BuildSelectWhereConditions.buildWhereCondition(aExceptionCondition);
     // Get Exception List Data
-    return aExceptionData = await tx.run(
+    const aExceptionData = await tx.run(
       SELECT.from(sExceptionTable).where(`${sExceptionConditions}`)
     );
+    return aExceptionData;
   },
 
   /**
@@ -220,11 +223,15 @@ module.exports = {
         } else {
           // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
           // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
-          oPayload.CheckFields[iIndex].result =
+          if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
+            oPayload.CheckFields[iIndex].result = true;
+          } else {
+            oPayload.CheckFields[iIndex].result =
             ComparisonOperators.LesserEquals(
               oPayload.CheckFields[iIndex].value,
               parseFloat(oRule.ELIGIBLE_AMOUNT),
             );
+          }
         }
         break;
     }

@@ -224,9 +224,9 @@ Authorization: Basic alice
                "result": null
             }
             ],
-         "ClaimType": "I-PAD",
-         "ClaimTypeItem": "I-PAD",
-         "EmpId": "912384",
+         "ClaimType": "HANDPHONE",
+         "ClaimTypeItem": "TELEFON_B",
+         "EmpId": "USER_003",
          "RecordId": "CLM26000000675",
          "RecordSubId": "CLM26000000675004"
       }

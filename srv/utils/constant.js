@@ -207,7 +207,9 @@ const Constant = {
     WhereCondition: {
         "AND": "AND",
         "IN": "IN"
-    }
+    },
+
+    UnlimitedAmount: -1
 
 };
 
