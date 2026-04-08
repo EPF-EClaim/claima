@@ -2006,7 +2006,7 @@ sap.ui.define([
 				*/
 				const sSubmissionType2 = sClaimId.substring(0, 3);
 				try {
-					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
+					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, this._oConstant.BudgetCheckAction.REJECT);
 				} catch (oError) {
 
 				}
@@ -2087,7 +2087,7 @@ sap.ui.define([
 
 				const sSubmissionType2 = sClaimId.substring(0, 3);
 				try {
-					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, Constants.BudgetCheckAction.REJECT);
+					const aResult = await budgetCheck.backendBudgetChecking(this, sSubmissionType2, this._oConstant.BudgetCheckAction.REJECT);
 				} catch (oError) {
 
 				}
