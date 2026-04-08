@@ -92,7 +92,9 @@
                     <DatePicker
                         id="datepicker_claiminput_tripstartdate"
                         value="{claimsubmission_input>/claim_header/trip_start_date}"
-                        editable="{= !Object.values(${constant>/SubmissionTypePAR}).includes(${claimsubmission_input>/claim_header/submission_type}) ||
+                        editable="{= ( ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/PRE_APPROVE} &amp;&amp;
+                                    ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;
+                                    ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CURR_SUBSIDY} ) ||
                                 
                                 ( ${claimprocess_properties>/req_emailapproval/is_state_active} &amp;&amp;
                                     ( !Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) ||
@@ -107,7 +109,9 @@
                     <DatePicker
                         id="datepicker_claiminput_tripenddate"
                         value="{claimsubmission_input>/claim_header/trip_end_date}"
-                        editable="{= !Object.values(${constant>/SubmissionTypePAR}).includes(${claimsubmission_input>/claim_header/submission_type}) ||
+                        editable="{= ( ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/PRE_APPROVE} &amp;&amp;
+                                        ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;
+                                        ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CURR_SUBSIDY} ) ||
 
                                 ( ${claimprocess_properties>/req_emailapproval/is_state_active} &amp;&amp;
                                     ( !Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) ||
@@ -122,7 +126,9 @@
                     <DatePicker
                         id="datepicker_claiminput_eventstartdate"
                         value="{claimsubmission_input>/claim_header/event_start_date}"
-                        editable="{= !Object.values(${constant>/SubmissionTypePAR}).includes(${claimsubmission_input>/claim_header/submission_type}) ||
+                        editable="{= ( ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/PRE_APPROVE} &amp;&amp;
+                                        ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;
+                                        ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CURR_SUBSIDY} ) ||
                                 ${claimprocess_properties>/req_emailapproval/is_state_active} }"
                         displayFormat="dd-MMM-yyyy"
                         />
@@ -132,7 +138,9 @@
                     <DatePicker
                         id="datepicker_claiminput_eventenddate"
                         value="{claimsubmission_input>/claim_header/event_end_date}"
-                        editable="{= !Object.values(${constant>/SubmissionTypePAR}).includes(${claimsubmission_input>/claim_header/submission_type}) ||
+                        editable="{= ( ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/PRE_APPROVE} &amp;&amp;
+                                        ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;
+                                        ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CURR_SUBSIDY} ) ||
                                 ${claimprocess_properties>/req_emailapproval/is_state_active} }"
                         displayFormat="dd-MMM-yyyy"
                         />
@@ -198,6 +206,14 @@
                         typeMissmatch="onTypeMissmatch_ClaimInput_Attachment"
                         multiple="false"
                         style="Emphasized"
+                        visible="{= ( ${claimsubmission_input>/claim_header/submission_type} === ${constant>/SubmissionType/PRE_APPROVE} ||
+                                        ${claimsubmission_input>/claim_header/submission_type} === ${constant>/SubmissionType/CASH_REPAYMENT} ||
+                                        ${claimsubmission_input>/claim_header/submission_type} === ${constant>/SubmissionType/CURR_SUBSIDY} ) }"
+                        required="{= ( ${claimsubmission_input>/claim_header/submission_type} === ${constant>/SubmissionType/PRE_APPROVE} ||
+                                        ${claimsubmission_input>/claim_header/submission_type} === ${constant>/SubmissionType/CASH_REPAYMENT} ||
+                                        ${claimsubmission_input>/claim_header/submission_type} === ${constant>/SubmissionType/CURR_SUBSIDY} ) &amp;&amp;
+                                        
+                                        ${claimprocess_properties>/req_emailapproval/is_state_active} }"
                     >
                     </u:FileUploader>
 

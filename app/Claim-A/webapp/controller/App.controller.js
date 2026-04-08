@@ -596,7 +596,10 @@ sap.ui.define([
 				this._onSelect_ClaimProcess_Category();
 
 				// set Request Form selection based on selected claim type item
-				if (Object.values(this._oConstant.SubmissionTypePAR).includes(oInputModel.getProperty("/claimtype/category"))) {
+				if (oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.PRE_APPROVE ||
+					oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CASH_REPAYMENT ||
+					oInputModel.getProperty("/claimtype/category") === this._oConstant.SubmissionType.CURR_SUBSIDY
+				) {
 					// filter
 					var oSelectRequestForm = this.byId("select_claimprocess_requestform");
 					var oBindingSelectRequestForm = oSelectRequestForm.getBinding("items");
@@ -627,7 +630,9 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 			var oClaimProcessPropertiesModel = this.getView().getModel("claimprocess_properties");
 			if (oClaimProcessPropertiesModel.getProperty("/req_emailapproval/is_state_active") &&
-				!Object.values(this._oConstant.SubmissionTypePAR).includes(oInputModel.getProperty("/claimtype/category"))) {
+				oInputModel.getProperty("/claimtype/category") !== this._oConstant.SubmissionType.PRE_APPROVE &&
+				oInputModel.getProperty("/claimtype/category") !== this._oConstant.SubmissionType.CASH_REPAYMENT &&
+				oInputModel.getProperty("/claimtype/category") !== this._oConstant.SubmissionType.CURR_SUBSIDY) {
 				oClaimProcessPropertiesModel.setProperty("/req_emailapproval/is_state_active", false);
 			}
 		},
@@ -659,6 +664,22 @@ sap.ui.define([
 				oInputModel.setProperty("/claimtype/requestform/preapproval_amount", null);
 				oInputModel.setProperty("/claimtype/requestform/cash_advance", null);
 				oInputModel.setProperty("/claimtype/requestform/descr/alternate_cost_center", null);
+			}
+		},
+
+		/**
+        * On enabling Email Approval, reset values for request form
+        * @public
+        */
+		onSwitch_ClaimProcess_Req_EmailApprove: function (oEvent) {
+			var oInputModel = this.getView().getModel("claimsubmission_input");
+			var oClaimItemPropertyModel = this.getView().getModel("claimprocess_properties");
+			if (oClaimItemPropertyModel.getProperty("/req_emailapproval/is_state_active")) {
+				// reset request form
+				if (oInputModel.getProperty("/claimtype/requestform/request_id") !== null) {
+					oInputModel.setProperty("/claimtype/requestform/request_id", null);
+					this.onSelect_ClaimProcess_RequestForm();
+				}
 			}
 		},
 
@@ -843,13 +864,6 @@ sap.ui.define([
 			oInputModel.setProperty("/claim_header/descr/submission_type", oInputModel.getProperty("/claimtype/descr/category"));
 			oInputModel.setProperty("/claim_header/descr/cost_center", oInputModel.getProperty("/emp_master/descr/cc"));
 			oInputModel.setProperty("/claim_header/descr/request_id", oInputModel.getProperty("/claimtype/requestform/objective_purpose"));
-
-			// pre-approval request values
-			var oInputModel = this.getView().getModel("claimsubmission_input");
-			if (!Object.values(this._oConstant.SubmissionTypePAR).includes(oInputModel.getProperty("/claimtype/category"))) {
-				this.byId("fileuploader_claiminput_attachment").setEnabled(false);
-				this.byId("fileuploader_claiminput_attachment").setVisible(false);
-			}
 		},
 
 		_getJsonDate: function (date) {

@@ -323,15 +323,6 @@ sap.ui.define([
             "CASH_REPAYMENT": "ST0004",
             "CURR_SUBSIDY": "ST0005"
         },
-        "SubmissionTypeDirect": {
-            "DIRECT_CLAIM": "ST0001",
-            "AUTO_APPROVE": "ST0002"
-        },
-        "SubmissionTypePAR": {
-            "PRE_APPROVE": "ST0003",
-            "CASH_REPAYMENT": "ST0004",
-            "CURR_SUBSIDY": "ST0005"
-        },
         "Default": {
             "PROJECT_CODE": "NA",
             "NULL": "null"
