@@ -17,6 +17,14 @@ sap.ui.define([
 		* Eligibility Checking Function
 		* ======================================================= */
 
+		/**
+		* Generate the payload needed for eligibility check
+		* @public
+		* @param {Object} oController - Object Model from Controller;
+		* @param {String} sSubmissionType - Submission Type of the request E.g Claim or Request
+		* @param {String} oClaimItemPayload - The claim item that the user wishes to duplicate in the claim submission
+		* @returns {Object} Object Payload with results field in CheckFields List Array populated
+		*/
 		generateEligibilityCheckPayload(oController, sSubmissionType, oClaimItemPayload) {
 			switch (sSubmissionType) {
 				case Constants.SubmissionTypePrefix.REQUEST:
@@ -110,6 +118,14 @@ sap.ui.define([
 			return aPayload;
 		},
 
+		/**
+		* Validation for eligibility
+		* @public
+		* @param {Object} oController - Object Model from Controller;
+		* @param {String} aPayload - the generated payload from the EligibleScenarioCheck
+		* @param {String} sSubmissionType - Submission Type of the request E.g Claim or Request
+		* @returns {Object} Object Payload with results field in CheckFields List Array populated
+		*/
 		eligibilityHandling: function (oController, aPayload, sSubmissionType) {
 			let oDBToUIControlMap = {};
 
