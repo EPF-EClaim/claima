@@ -318,16 +318,21 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             // Specific Claim Type
-                            if (sItemType === Constants.ClaimTypeItem.VISA) {
-                                // VISA related logic 
-                                _dMinDate = null;
-                            }
-                            else if (sItemType === Constants.ClaimTypeItem.E_PENGAKUT) {
+                            if (sItemType === Constants.ClaimTypeItem.E_PENGAKUT) {
                                 // elaun pengangkutan related logic
                                 _dMinDate = new Date(oHeader.move_in_date);
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
                                     _oResourceBundle.getText("error_receiptdate_pengangkutan_mindate"));
+                            }
+                            else {
+                                // Other Claim Type
+                                _dMinDate = new Date(oHeader.trip_start_date);
+                                const dPastDate = new Date(_dMinDate);
+                                dPastDate.setDate(dPastDate.getDate() - 90);
+                                _dMinDate = dPastDate;
+                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
+                                    _oResourceBundle.getText("error_receiptdate_mindate"));
                             }
                             break;
                     }
@@ -379,7 +384,11 @@ sap.ui.define([
                                 }
                                 else {
                                     // set min date based on move-in date
-                                    _dMinDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oItem["start_date"] ? new Date(oItem["start_date"]) : null;
+                                    _dMinDate = oHeader["move_in_date"] ? new Date(oHeader["move_in_date"]) : oItem["start_date"] ? new Date(oItem["start_date"]) : new Date(oHeader["trip_start_date"]);
+                                    const dPastDate = new Date(_dMinDate);
+                                    dPastDate.setDate(dPastDate.getDate() - 90);
+                                    _dMinDate = dPastDate;
+                                    oItem["start_date"] = null;
                                 }
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError", 
@@ -402,7 +411,15 @@ sap.ui.define([
                         case Constants.SubmissionTypePrefix.CLAIM:
                             // set min date based on insurance cert start date
                             if (sItemType === Constants.ClaimTypeItem.TRAVEL_INSURANCE) {
-                                _dMinDate = !!new Date(oItem["insurance_cert_start_date"]).getTime() ? new Date(oItem["insurance_cert_start_date"]) : null;
+                                if (!!new Date(oItem["insurance_cert_start_date"]).getTime()) {
+                                    _dMinDate = new Date(oItem["insurance_cert_start_date"]);
+                                }
+                                else {
+                                    _dMinDate = new Date(oHeader.trip_start_date);
+                                    const dPastDate = new Date(_dMinDate);
+                                    dPastDate.setDate(dPastDate.getDate() - 90);
+                                    _dMinDate = dPastDate;
+                                }
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                     _oResourceBundle.getText("error_insurance_cert_end_date_mindate"));
@@ -447,18 +464,7 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            // Specific Claim Type
-                            if (sItemType === Constants.ClaimTypeItem.VISA) {
-                                // VISA related logic 
-                                _dMaxDate = new Date(oHeader.trip_start_date);
-                                const dPastDate = new Date(_dMaxDate);
-                                dPastDate.setDate(dPastDate.getDate() - 90);
-                                _dMaxDate = dPastDate;
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
-                                    _oResourceBundle.getText("msg_claimsubmission_invalid_visa_date"));
-
-                            }
-                            else if (sItemType === Constants.ClaimTypeItem.E_PENGAKUT) {
+                           if (sItemType === Constants.ClaimTypeItem.E_PENGAKUT) {
                                 // elaun pengangkutan related logic
                                 _dMaxDate = new Date(oHeader.move_in_date);
                                 _dMaxDate.setMonth(_dMaxDate.getMonth() + 6);
@@ -567,7 +573,7 @@ sap.ui.define([
                         case Constants.SubmissionTypePrefix.CLAIM:
                             // set max date based on insurance cert end date
                             if (sItemType === Constants.ClaimTypeItem.TRAVEL_INSURANCE) {
-                                _dMaxDate = !!new Date(oItem["insurance_cert_end_date"]).getTime() ? new Date(oItem["insurance_cert_end_date"]) : null;
+                                _dMaxDate = !!new Date(oItem["insurance_cert_end_date"]).getTime() ? new Date(oItem["insurance_cert_end_date"]) : new Date(oHeader.trip_end_date);
                                 // set validator error message
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
                                     _oResourceBundle.getText("error_insurance_cert_start_date_maxdate"));
