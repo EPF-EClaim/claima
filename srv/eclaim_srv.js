@@ -1250,4 +1250,34 @@ module.exports = (srv) => {
         }
     });
 
+    srv.on('deleteParticipants', async (req) => {
+        const { participants } = req.data;
+
+        if (!participants || participants.length === 0) {
+            return true;
+        }
+
+        try {
+            const tx = cds.tx(req);
+
+            const aDeletePromises = participants.map(p => 
+                tx.run(
+                    DELETE.from('ZREQ_ITEM_PART').where({
+                        REQUEST_ID: p.REQUEST_ID,
+                        REQUEST_SUB_ID: p.REQUEST_SUB_ID,
+                        PARTICIPANTS_ID: p.PARTICIPANTS_ID
+                    })
+                )
+            );
+
+            await Promise.all(aDeletePromises);
+
+            return true;
+
+        } catch (error) {
+            console.error("Mass delete failed:", error);
+            return req.error(500, `Failed to delete participants: ${error.message}`);
+        }
+    });
+
 }
