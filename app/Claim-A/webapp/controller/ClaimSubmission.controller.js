@@ -325,7 +325,10 @@ sap.ui.define([
 					if (oApprovalLogFragment && iApproverCount > 0 && !oClaimSubmissionModel.getProperty("/is_approver")) {
 						var sUserId = this._oSessionModel.getProperty("/userId");
 						if (sUserId) {
-							let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) => oApproval.APPROVER_ID === sUserId);
+							let iItemIndex = oApprovalLogModel.getProperty("/approval").findIndex((oApproval) =>
+								oApproval.APPROVER_ID === sUserId ||
+								oApproval.SUBSTITUTE_APPROVER_ID === sUserId
+							);
 							if (iItemIndex !== -1) {
 								oClaimSubmissionModel.setProperty("/is_approver", true);
 							}
@@ -2526,11 +2529,10 @@ sap.ui.define([
 		onSave_ClaimDetails_Input: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("claimitem_input");
-			oInputModel.refresh(true);
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
 			// Validate required fields
-			if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
+			if (!this.getOwnerComponent().getValidator().validate(this.byId('idClaimSubmissionDetailInput'))) {
 				MessageBox.error(Utility.getText("msg_claiminput_required"), {
 					closeOnBrowserNavigation: false
 				});
@@ -2675,13 +2677,10 @@ sap.ui.define([
 					}
 				}
 			}
-
-
-			//FUT issue #58
-			//checking for galakan disclaimer if its ticked or not
-
+			
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			if (!CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM)) {
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+			if (!bCanProceed) {
 				return;
 			}
 
@@ -2961,10 +2960,10 @@ sap.ui.define([
 			}
 		},
 
-        /**
-         * run related methods on setting start/end date
-         * @public
-         */
+		/**
+		 * run related methods on setting start/end date
+		 * @public
+		 */
 		onChange_ClaimDetails_StartEndDate: async function () {
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
@@ -2974,6 +2973,7 @@ sap.ui.define([
 			// Calculate number of days
 			if (oPropertyModel.getProperty("/no_of_days/is_visible")) {
 				oInputModel.setProperty("/claim_item/no_of_days", DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.CLAIM, oClaimSubmissionModel.getProperty("/claim_header"), oInputModel.getProperty("/claim_item")));
+				this.onChange_ClaimDetails_NumberOfDays();
 			}
 
 			// calculate per diem details
@@ -3281,6 +3281,7 @@ sap.ui.define([
 			var oInputModel = this.getView().getModel("claimitem_input");
 			if (oInputModel.getProperty("/claim_item/location_type") === this._oConstant.LocationType.KWSP) {
 				oInputModel.setProperty("/claim_item/km", null);
+				this.onChange_ClaimDetails_Kilometer();
 			}
 		},
 
@@ -4322,7 +4323,6 @@ sap.ui.define([
 				"datepicker_claimdetails_input_enddate",
 				"timepicker_claimdetails_input_endtime",
 				"select_claimdetails_input_insurance_provider_id",
-				"input_claimdetails_input_insurance_provider_name",
 				"select_claimdetails_input_insurance_package_id",
 				"datepicker_claimdetails_input_insurance_purchase_date",
 				"datepicker_claimdetails_input_insurance_cert_start_date",
@@ -4465,7 +4465,6 @@ sap.ui.define([
 				"datepicker_claimdetails_input_enddate",
 				"timepicker_claimdetails_input_endtime",
 				"select_claimdetails_input_insurance_provider_id",
-				"input_claimdetails_input_insurance_provider_name",
 				"select_claimdetails_input_insurance_package_id",
 				"datepicker_claimdetails_input_insurance_purchase_date",
 				"datepicker_claimdetails_input_insurance_cert_start_date",
@@ -4689,6 +4688,8 @@ sap.ui.define([
 				if (this.byId("select_claimdetails_input_currency_code").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/currency_code", oResult.currency_code);
 					oClaimItemInputModel.setProperty("/claim_item/currency_amount", oResult.amount);
+					//initialize amount(MYR)
+					oClaimItemInputModel.setProperty("/claim_item/amount", 0);
 					if (this.byId("input_claimdetails_input_currency_rate").getVisible() && !!oClaimItemInputModel.getProperty("/claim_item/currency_rate")) {
 						var nAmountMYR = (oClaimItemInputModel.getProperty("/claim_item/currency_rate") * oClaimItemInputModel.getProperty("/claim_item/currency_amount"));
 						oClaimItemInputModel.setProperty("/claim_item/amount", nAmountMYR);
@@ -4730,6 +4731,5 @@ sap.ui.define([
 			}
 			oClaimSubmissionModel.setProperty("/claim_items", aItems);
 		},
-
 	});
 });

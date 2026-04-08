@@ -318,11 +318,7 @@ sap.ui.define([
 
                         case Constants.SubmissionTypePrefix.CLAIM:
                             // Specific Claim Type
-                            if (sItemType === Constants.ClaimTypeItem.VISA) {
-                                // VISA related logic 
-                                _dMinDate = null;
-                            }
-                            else if (sItemType === Constants.ClaimTypeItem.E_PENGAKUT) {
+                            if (sItemType === Constants.ClaimTypeItem.E_PENGAKUT) {
                                 // elaun pengangkutan related logic
                                 _dMinDate = new Date(oHeader.move_in_date);
                                 _dMinDate.setMonth(_dMinDate.getMonth() - 6);
@@ -332,7 +328,10 @@ sap.ui.define([
                             }
                             else {
                                 // Other Claim Type
-                                _dMinDate = null;
+                                _dMinDate = new Date(oHeader.trip_start_date);
+                                const dPastDate = new Date(_dMinDate);
+                                dPastDate.setDate(dPastDate.getDate() - 90);
+                                _dMinDate = dPastDate;
                                 _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMinDateError",
                                     _oResourceBundle.getText("error_receiptdate_mindate"));
                             }
@@ -369,7 +368,10 @@ sap.ui.define([
                                     _dMinDate.setDate(_dMinDate.getDate() - 1);
                                 }
                                 else {
-                                    _dMinDate = null;
+                                    _dMinDate = new Date(oHeader.trip_start_date);
+                                    const dPastDate = new Date(_dMinDate);
+                                    dPastDate.setDate(dPastDate.getDate() - 90);
+                                    _dMinDate = dPastDate;
                                     oItem["start_date"] = null;
                                 }
                                 // set validator error message
@@ -404,7 +406,10 @@ sap.ui.define([
                                     _dMinDate = new Date(oItem["insurance_cert_start_date"]);
                                 }
                                 else {
-                                    _dMinDate = null;
+                                    _dMinDate = new Date(oHeader.trip_start_date);
+                                    const dPastDate = new Date(_dMinDate);
+                                    dPastDate.setDate(dPastDate.getDate() - 90);
+                                    _dMinDate = dPastDate;
                                     oItem["insurance_cert_start_date"] = null;
                                 }
                                 // set validator error message
@@ -416,6 +421,7 @@ sap.ui.define([
                     break;
             }
             if (_dMinDate !== null) {
+                _dMinDate = new Date(_dMinDate);
                 _dMinDate.setHours(0, 0, 0, 0);
             }
             return _dMinDate;
@@ -441,7 +447,7 @@ sap.ui.define([
             var _oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 
             const _sSubmissionType = sId.substring(0, 3);
-            var _dMaxDate = new Date();
+            var _dMaxDate = null;
 
             switch (sFieldName) {
                 case Constants.EntitiesFields.RECEIPT_DATE:
@@ -450,18 +456,7 @@ sap.ui.define([
                             break;
 
                         case Constants.SubmissionTypePrefix.CLAIM:
-                            // Specific Claim Type
-                            if (sItemType === Constants.ClaimTypeItem.VISA) {
-                                // VISA related logic 
-                                _dMaxDate = new Date(oHeader.trip_start_date);
-                                const dPastDate = new Date(_dMaxDate);
-                                dPastDate.setDate(dPastDate.getDate() - 90);
-                                _dMaxDate = dPastDate;
-                                _oAppModel.setProperty("/fieldControl/" + sFieldName + "/customMaxDateError",
-                                    _oResourceBundle.getText("msg_claimsubmission_invalid_visa_date"));
-
-                            }
-                            else if (sItemType === Constants.ClaimTypeItem.E_PENGAKUT) {
+                           if (sItemType === Constants.ClaimTypeItem.E_PENGAKUT) {
                                 // elaun pengangkutan related logic
                                 _dMaxDate = new Date(oHeader.move_in_date);
                                 _dMaxDate.setMonth(_dMaxDate.getMonth() + 6);
@@ -504,7 +499,7 @@ sap.ui.define([
                                     _dMaxDate.setDate(_dMaxDate.getDate() + 1);
                                 }
                                 else {
-                                    _dMaxDate = null;
+                                    _dMaxDate = new Date(oHeader.trip_end_date);
                                     oItem["end_date"] = null;
                                 }
                                 // set validator error message
@@ -563,7 +558,7 @@ sap.ui.define([
                                     _dMaxDate = new Date(oItem["insurance_cert_end_date"]);
                                 }
                                 else {
-                                    _dMaxDate = null;
+                                    _dMaxDate = new Date(oHeader.trip_end_date);
                                     oItem["insurance_cert_end_date"] = null;
                                 }
                                 // set validator error message
@@ -576,6 +571,7 @@ sap.ui.define([
             }
 
             if (_dMaxDate !== null) {
+                _dMaxDate = new Date(_dMaxDate);
                 _dMaxDate.setHours(0, 0, 0, 0);
             }
             return _dMaxDate;
