@@ -41,7 +41,7 @@ sap.ui.define([
             "EXT_ENGAGE": "EXT_ENGAGE",
             "FLIGHT_L": "FLIGHT_L",
             "FLIGHT_O": "FLIGHT_O",
-            "FLIGHT_WIL": "FLIGHT_WIL",
+            "FLIGTH_WIL": "FLIGTH_WIL",
             "HOTEL_L": "HOTEL_L",
             "HOTEL_O": "HOTEL_O",
             "Jamuan Ringan Program Outreach": "Jamuan Ringan Program Outreach",

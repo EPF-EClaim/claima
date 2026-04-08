@@ -2201,8 +2201,34 @@ sap.ui.define([
 
 			//START TDL #6.1 meter cube for Pengangkutan Laut
 			const sKey = oInputModel.getProperty("/claim_item/claim_type_item_id");
-			if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
 
+			//Set Kilometer (KM) field as required only for DARAT and KILOMETER claim items.
+			const bKmRequired = [
+			this._oConstant.ClaimTypeItem.DARAT,
+			this._oConstant.ClaimTypeItem.KILOMETER
+			].includes(sKey);
+			oPropertyModel.setProperty("/km/is_required", bKmRequired);
+
+			//Display Marriage Category field only for DARAT (land transport) claim items
+			if (sKey === this._oConstant.ClaimTypeItem.DARAT) {
+				
+				oPropertyModel.setProperty("/marriage_category/is_visible", true);
+			} else {
+				
+				oPropertyModel.setProperty("/marriage_category/is_visible", false);
+
+				oInputModel.setProperty("/claim_item/marriage_category", null);
+			}
+
+			//Require "To State" selection only for Flight Wilayah Asal claim item.
+			if (sKey === this._oConstant.ClaimTypeItem.FLIGTH_WIL) {
+				oPropertyModel.setProperty("/to_state_id/is_required", true);
+			} else {
+				oPropertyModel.setProperty("/to_state_id/is_required", false);
+				oInputModel.setProperty("/claim_item/to_state_id", null);
+			}
+
+			if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
 				//entitled meter cube
 				oPropertyModel.setProperty("/meter_cube_entitled/is_visible", true);
 				oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
@@ -2324,6 +2350,8 @@ sap.ui.define([
 				insurance_cert_end_date: { is_visible: false },
 				meter_cube_entitled: { is_visible: false },
 				meter_cube_actual: { is_visible: false, is_editable: true },
+				marriage_category: { is_visible: false },
+				to_state_id:{is_required: false}
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
