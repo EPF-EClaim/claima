@@ -1,6 +1,7 @@
 const { Constant } = require("../constant");
 const ComparisonOperators = require("../ComparisonOperators");
 const GetHistoricalData = require("../GetHistoricalData");
+const BuildSelectWhereConditions = require("../BuildSelectWhereConditions");
 module.exports = {
   /**
    * main function for eligibility check - to find the matching eligibility rule and call validateClaimItem function to validate against the rule
@@ -12,28 +13,10 @@ module.exports = {
    */
   onEligibleCheck: async function (oPayload, oEmp, aRules, tx) {
     var oRule = [];
-    //if there is value in aRules table, search for Role
-    if (!!aRules) {
-      iIndex = aRules((field) => field.ROLE_ID == oEmp.ROLE);
-      if (!!!aRules[iIndex]) {
-        iIndex = oPayload.CheckFields.findIndex(
-          (field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE,
-        );
-      } else {
-      }
-    } else {
-      // If No data from Rules Table, refer to Exception list table
-      const sExceptionTable = Constant.Entities.ZCLM_TYPE_EXCEPTION_LIST;
-      const aExceptionCondition = {
-        [Constant.EntitiesFields.CLAIM_TYPE_ID]:
-          Constant.ClaimTypeItem.TELEFON_B,
-        [Constant.EntitiesFields.CLAIM_STATUS]: { in: aStatus },
-      };
-      // Get Exception List Data
-      const aExceptionData = await tx.run(
-        SELECT`count(*)`.from(sExceptionTable).where(aExceptionCondition),
-      );
-    }
+    var oExceptionData = [];
+    var aFilteredRules;
+
+    oRule = await this._SequenceCheck(oPayload, oEmp, aRules);
 
     var iHistoricalData = await this._getHistoricalData(oPayload, oRule, tx);
     var iCurrentRecordItemData = await this._getCurrentRecordItemData(
@@ -51,6 +34,47 @@ module.exports = {
     return oPayload;
   },
 
+  _SequenceCheck: async function (oPayload, oEmp, aRules, tx) {
+    //Check if there is value in aRules table
+    if (!!aRules) {
+      // Check for employee Role
+      aFilteredRules = aRules.filter(function (rule) {
+        return rule.ROLE === oEmp.ROLE;
+      })
+
+      if (!(!!aFilteredRules[0])) {
+        // Check for employee Job Group
+        aFilteredRules = aRules.filter(function (rule) {
+          return rule.JOB_GROUP === oEmp.JOB_GROUP;
+        })
+
+        if (!(!!aFilteredRules[0])) {
+          // Check for Employee Grade
+          aFilteredRules = aRules.filter(function (rule) {
+            return rule.PERSONAL_GRADE === oEmp.GRADE;
+          })
+
+          if (!(!!aFilteredRules[0])) {
+            // Check Exception list
+            oExceptionData = await this._getExceptionData(oPayload, oRule, tx);
+            oRule = oExceptionData;
+          } else {
+            oRule = aFilteredRules[0];
+          }
+        } else {
+          oRule = aFilteredRules[0];
+        }
+      } else {
+        oRule = aFilteredRules[0];
+      }
+    } else {
+      //if no Eligibility table data, check exception list
+      oExceptionData = await this._getExceptionData(oPayload, oRule, tx);
+      oRule = oExceptionData;
+    }
+    return oRule;
+  },
+
   /**
    * Get Historical Claims Data by building querying conditions and using GetHistoricalData for data retrieval
    * @public
@@ -60,59 +84,32 @@ module.exports = {
    * @returns {Object} oPayload - return original payload but with result field filled
    */
   _getHistoricalData: async function (oPayload, oRule, tx) {
-    let sDate = null;
+    let aDateToFrom = [];
     // get Historical Claims Data
     // find field for date
     iIndex = oPayload.CheckFields.findIndex(
       (field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE,
     );
-    // const sYearMonth = oPayload.CheckFields[iIndex].value.substring(0, 7);
-    // Derive first and last day of the month
-    // const [year, month] = sYearMonth.split('-').map(Number);
-    // const dDateFrom = `${sYearMonth}-01`;
-    // const dDateTo = new Date(year, month, 0)  // last day of month
-    //     .toISOString().split('T')[0]; // 'YYYY-MM-DD'
-
-    // const nDateFrom = new Date(dDateFrom);
-    // const nDateTo = new Date(dDateTo)
-    // console.log(nDateFrom, nDateTo);
-
-    sMonth = parseInt(oPayload.CheckFields[iIndex].value.substring(6, 8));
-    sYear = parseInt(oPayload.CheckFields[iIndex].value.substring(0, 4));
-
-    switch (oRule.PERIOD) {
-      case Constant.FrequencyPeriod.MONTH:
-        // need to search as "##"
-        if (sMonth < 10) {
-          sMonth = Constant.Wildcard.ZERO + sMonth;
-        }
-        break;
-
-      default:
-        break;
-    }
-    sDate = sYear + Constant.Wildcard.DASH + sMonth + Constant.Wildcard.DASH;
-    sDate = sDate + Constant.Wildcard.LIKE_PATTERN;
+    aDateToFrom = BuildSelectWhereConditions.getDateMonthRange(oPayload.CheckFields[iIndex].value);
+    const dDateFrom = aDateToFrom.dDateFrom;
+    const dDateTo = aDateToFrom.dDateTo;
 
     const aItemcondition = {
       [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
       [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
       [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
-      [Constant.EntitiesFields.RECEIPT_DATE]: { LIKE: sDate },
-      // [Constant.EntitiesFields.RECEIPT_DATE]: {
-      //     [Constant.ComparisonOperators.GreaterEquals]: nDateFrom,
-      //     [Constant.ComparisonOperators.LesserEquals]: nDateTo
-      // }
+      [Constant.EntitiesFields.RECEIPT_DATE]: { between: [dDateFrom, dDateTo] }
     };
-    // console.log(aItemcondition);
-    const iHistoricalData = await GetHistoricalData.getHistoricalData(
+
+    //Stringify Where Conditions
+    const sConditions = BuildSelectWhereConditions.buildWhereCondition(aItemcondition);
+    // Get Current Claims Item count with same Frequency Period
+    return iHistoricalData = await GetHistoricalData.getHistoricalData(
       Constant.Entities.ZCLAIM_HEADER,
       Constant.Entities.ZCLAIM_ITEM,
-      aItemcondition,
+      sConditions,
       tx,
     );
-
-    return iHistoricalData;
   },
 
   /**
@@ -124,111 +121,69 @@ module.exports = {
    * @returns {Object} oPayload - return original payload but with result field filled
    */
   _getCurrentRecordItemData: async function (oPayload, oRule, tx) {
-    let sDate = null;
+    let aDateToFrom = [];
     // get Historical Claims Data
     // find field for date
     iIndex = oPayload.CheckFields.findIndex(
       (field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE,
     );
-    // sMonth = parseInt(oPayload.CheckFields[iIndex].value.substring(6, 8));
-    // sYear = parseInt(oPayload.CheckFields[iIndex].value.substring(0, 4));
 
-    // switch (oRule.PERIOD) {
-    //   case Constant.FrequencyPeriod.MONTH:
-    //     // need to search as "##"
-    //     if (sMonth < 10) {
-    //       sMonth = Constant.Wildcard.ZERO + sMonth;
-    //     }
-    //     break;
+    aDateToFrom = BuildSelectWhereConditions.getDateMonthRange(oPayload.CheckFields[iIndex].value);
 
-    //   default:
-    //     break;
-    // }
-    // sDate = sYear + Constant.Wildcard.DASH + sMonth + Constant.Wildcard.DASH;
-    // sDate = sDate + Constant.Wildcard.LIKE_PATTERN;
+    const dDateFrom = aDateToFrom.dDateFrom;
+    const dDateTo = aDateToFrom.dDateTo;
 
-    // //Map Headers
-    // // Map ClaimID or RequestID based on which HeaderTable to use
-    // if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
-    //   sHeaderField = Constant.EntitiesFields.CLAIMID;
-    // } else {
-    //   sHeaderField = Constant.EntitiesFields.REQUESTID;
-    // }
+    //Map Headers
+    // Map ClaimID or RequestID based on which HeaderTable to use
+    if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
+      sHeaderField = Constant.EntitiesFields.CLAIMID;
+      sItemField = Constant.EntitiesFields.CLAIM_SUB_ID;
+      sItemTable = Constant.Entities.ZCLAIM_ITEM;
+    } else {
+      sHeaderField = Constant.EntitiesFields.REQUESTID;
+      sItemField = Constant.EntitiesFields.REQUEST_SUB_ID;
+      sItemTable = Constant.Entities.ZREQUEST_ITEM;
+    }
 
-    // const aCurrentItemcondition = {
-    //   [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
-    //   [sHeaderField]: oPayload.RecordId,
-    //   [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
-    //   [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
-    //   [Constant.EntitiesFields.RECEIPT_DATE]: { LIKE: sDate },
-    // };
+    const aCurrentItemcondition = {
+      [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
+      [sHeaderField]: oPayload.RecordId,
+      [sItemField]: { [Constant.ComparisonOperators.NotEquals]: oPayload.RecordSubId },
+      [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
+      [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
+      [Constant.EntitiesFields.RECEIPT_DATE]: { between: [dDateFrom, dDateTo] }
+    };
 
-    // return (iCurrentData = await GetHistoricalData.getCurrentItemData(
-    //   Constant.Entities.ZCLAIM_ITEM,
-    //   aCurrentItemcondition,
-    //   tx,
-    // ));
+    //Stringify Where Conditions
+    const sConditions = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
+    // Get Current Claims Item count with same Frequency Period
+    return iCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
+      sConditions,
+      tx);
+  },
 
-    const sYearMonth = oPayload.CheckFields[iIndex].value.substring(0, 7);
-        // Derive first and last day of the month
-        const [year, month] = sYearMonth.split('-').map(Number);
-        const dDateFrom = `${sYearMonth}-01`;
-        const dDateTo = new Date(year, month, 0)  // last day of month
-            .toISOString().split('T')[0]; // 'YYYY-MM-DD'
+  _getExceptionData: async function (oPayload, tx) {
+    // If No data from Rules Table, refer to Exception list table
+    const sExceptionTable = Constant.Entities.ZCLM_TYPE_EXCEPTION_LIST;
 
-        // const sDateFrom = toString(dDateFrom);
-        // const sDateTo = toString(dDateTo);
+    iIndex = oPayload.CheckFields.findIndex(
+      (field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE,
+    );
+    aDateToFrom = BuildSelectWhereConditions.getDateMonthRange(oPayload.CheckFields[iIndex].value);
 
-        // const nDateFrom = new Date(sDateFrom).toLocaleDateString('en-CA'); 
-        // const nDateTo = new Date(sDateTo).toLocaleDateString('en-CA');
-
-        // console.log(nDateFrom, nDateTo);
-
-        // Get Item Data
-        // Check if any Claim item is within frequency
-        // const aItemData = await tx.run(
-        //     SELECT.from(Constant.Entities.ZCLAIM_ITEM).where`
-        //         EMP_ID = ${oPayload.EmpId}
-        //         AND
-        //         CLAIM_TYPE_ID = ${oPayload.ClaimType}
-        //         AND 
-        //         RECEIPT_DATE >= ${nDateFrom}
-        //         AND
-        //         RECEIPT_DATE <= ${nDateTo}
-        //             `);
-        let aItemcondition = "";
-        const aCurrentItemcondition = {
-            [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
-            [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
-            [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
-            [Constant.EntitiesFields.RECEIPT_DATE]: { "between": [dDateFrom, dDateTo] }
-        };
-
-        const conditions = [];
-        const values = [];
-
-        for (const [field, value] of Object.entries(aCurrentItemcondition)) {
-
-            // Handle BETWEEN
-            if (value && value.between) {
-                conditions.push(`${field} >= ? AND ${field} <= ?`);
-                values.push(value.between[0], value.between[1]);
-                continue;
-            }
-
-            // Normal equality
-            conditions.push(`${field} = ?`);
-            values.push(value);
-        }
-
-        const whereClause = conditions.join(' AND ');
-
-        console.log(aCurrentItemcondition, aItemcondition);
-        const aItemData = await tx.run(
-            SELECT.from(Constant.Entities.ZCLAIM_ITEM).where(`${whereClause}`, values)
-        );
-
-        return aItemData;
+    const dDateFrom = aDateToFrom.dDateFrom;
+    const dDateTo = aDateToFrom.dDateTo;
+    const aExceptionCondition = {
+      [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
+      [Constant.EntitiesFields.CLAIM_TYPE_ID]: Constant.ClaimType.HANDPHONE,
+      [Constant.EntitiesFields.START_DATE]: { [Constant.ComparisonOperators.LesserEquals]: dDateFrom },
+      [Constant.EntitiesFields.START_DATE]: { [Constant.ComparisonOperators.GreaterEquals]: dDateTo }
+    };
+    const sExceptionConditions = BuildSelectWhereConditions.buildWhereCondition(aExceptionCondition);
+    // Get Exception List Data
+    return aExceptionData = await tx.run(
+      SELECT.from(sExceptionTable).where(`${sExceptionConditions}`)
+    );
   },
 
   /**

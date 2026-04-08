@@ -12,7 +12,7 @@ module.exports = {
         * @param {Object} tx - CDS Transaction
         * @returns {Integer} Array of data selected from header table that are Approved or Pending Approval
         */
-    getHistoricalData: async function (sHeaderTable, sItemTable, aItemcondition, tx) {
+    getHistoricalData: async function (sHeaderTable, sItemTable, sItemcondition, tx) {
         try {
             let sHeaderField = "";
             let aHeaders = [];
@@ -21,7 +21,7 @@ module.exports = {
             // Get Item Data
             // Check if any Claim item is within frequency
             const aItemData = await tx.run(
-                SELECT.from(sItemTable).where(aItemcondition)
+                SELECT.from(sItemTable).where(`${sItemcondition}`)
             )
 
             //Map Headers
@@ -44,10 +44,11 @@ module.exports = {
                 [Constant.EntitiesFields.CLAIM_STATUS]: { in: aStatus }
             };
 
+            const sHeaderCondition = BuildSelectWhereConditions.buildWhereCondition(aHeaderCondition);
             // Get Header Data
             const aHeaderData = await tx.run(
                 SELECT`count(*)`
-                    .from(sHeaderTable).where(aHeaderCondition)
+                    .from(sHeaderTable).where(`${sHeaderCondition}`)
             );
             if (!!aHeaderData) return aHeaderData[0].count;
             return 0;
@@ -65,12 +66,12 @@ module.exports = {
         * @param {Object} tx - CDS Transaction
         * @returns {Integer} Count of data within item table
         */
-    getCurrentItemData: async function (sItemTable, aItemcondition, tx) {
+    getCurrentItemData: async function (sItemTable, sItemcondition, tx) {
         try {
             // Get Item Data
             // Check if any Claim item is within frequency
             const aItemData = await tx.run(
-                SELECT`count(*)`.from(sItemTable).where(aItemcondition)
+                SELECT`count(*)`.from(sItemTable).where(`${sItemcondition}`)
             );
             if (!!aItemData) return aItemData[0].count;
             return 0;

@@ -157,7 +157,9 @@ const Constant = {
         "BILL_DATE": "BILL_DATE",
         "RECEIPT_DATE": "RECEIPT_DATE",
         "JOB_GROUP": "JOB_GROUP",
-        "PERSONAL_GRADE": "PERSONAL_GRADE"
+        "PERSONAL_GRADE": "PERSONAL_GRADE",
+        "START_DATE": "START_DATE",
+        "END_DATE": "END_DATE"
     },
     Wildcard: {
         "All": "*",
@@ -199,10 +201,12 @@ const Constant = {
     ComparisonOperators:{
         "LesserEquals": "<=",
         "GreaterEquals": ">=",
-        "Equals": "="
+        "Equals": "=",
+        "NotEquals": "!="
     },
     WhereCondition: {
-        "AND": "AND"
+        "AND": "AND",
+        "IN": "IN"
     }
 
 };

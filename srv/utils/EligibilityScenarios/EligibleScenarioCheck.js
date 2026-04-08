@@ -1,5 +1,6 @@
 const cds = require("@sap/cds");
 const { SELECT, where } = require("@sap/cds/lib/ql/cds-ql");
+const BuildSelectWhereConditions = require("../BuildSelectWhereConditions");
 const { Constant } = require("../constant");
 const DalamNegara = require("./DalamNegara");
 const LuarNegara = require("./LuarNegara");
@@ -40,16 +41,6 @@ module.exports = {
     aEmpRoleId.push(Constant.Wildcard.All);
     aEmpRoleId.push(Constant.Wildcard.NA);
 
-    // // Get Eligibility Rules
-    // const aEligibilityRules = await tx.run(
-    //     SELECT.from(Constant.Entities.ZELIGIBILITY_RULE).where({
-    //         PERSONAL_GRADE: { in: aPersonalGrade },
-    //         ROLE_ID: { in: aEmpRoleId },
-    //         CLAIM_TYPE_ID: aPayload[0].ClaimType,
-    //         CLAIM_TYPE_ITEM_ID: aPayload[0].ClaimTypeItem
-    //     })
-    // )
-
     // Build Eligibility Select Where Conditions
     let aEligibilityCondition = {
       [Constant.EntitiesFields.PERSONAL_GRADE]: { in: aPersonalGrade },
@@ -69,13 +60,14 @@ module.exports = {
         in: aEmpJobGrp,
       };
     }
-
+    const sEligibilityCondition = BuildSelectWhereConditions.buildWhereCondition(aEligibilityCondition);
     // Get Eligibility Rules
     const aEligibilityRules = await tx.run(
       SELECT.from(Constant.Entities.ZELIGIBILITY_RULE).where(
-        aEligibilityCondition
+        `${sEligibilityCondition}`
       ),
     );
+    // return aEligibilityRules;
 
     let oReturnPayload = [];
 
