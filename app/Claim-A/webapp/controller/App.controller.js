@@ -733,7 +733,7 @@ sap.ui.define([
 			// reset Claim Process dialog before closing
 			this._reset_ClaimProcess();
 			this.oDialog_ClaimProcess.close();
-
+y
 			// load Pre-Approval Request dialog 
 			this.onClickMyRequest();
 		},

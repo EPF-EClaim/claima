@@ -3,6 +3,9 @@
     xmlns:l="sap.ui.layout"
     xmlns:f="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
+    xmlns:mdc="sap.ui.mdc"
+    xmlns:mdcvh="sap.ui.mdc.valuehelp"
+    xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content"
 	core:require="{FloatType: 'sap/ui/model/type/Float'}"
 >
     <VBox 
@@ -199,10 +202,16 @@
 
                 <!-- Alternate Cost Center -->
                 <Label text="{i18n>label_claimsummary_claimheader_altcc}" />
-                <Input
-                    id="text_claimsummary_claimheader_altcc"
-                    editable="{editable>/altCostCenter}"
-                    value="{claimsubmission_input>/claim_header/alternate_cost_center} {claimsubmission_input>/claim_header/descr/alternate_cost_center}"
+                <mdc:Field
+                        id="text_claimsummary_claimheader_altcc"
+                        value="{claimsubmission_input>/claim_header/alternate_cost_center}"
+                        additionalValue="{claimsubmission_input>/claim_header/descr/alternate_cost_center}"
+                        editMode="{= ${editable>/altCostCenter} ? 'Editable' : 'Display' }"
+                        display="ValueDescription"
+                        visible="{= ${claimsubmission_input>/claimtype/cost_center} === null &amp;&amp;
+                            ${claimsubmission_input>/claimtype/requestform/alternate_cost_center} === null
+                        }"
+                        valueHelp="valuehelp_claiminput_altcc"
                 />
 
                 <!-- Claim Status -->
@@ -282,6 +291,47 @@
                     textAlign="End"
                 />
             </f:content>
+            <f:dependents>
+                    <mdc:ValueHelp
+                        id="valuehelp_claiminput_altcc"
+                        delegate='\{
+                            "name": "claima/utils/ValueHelpDelegate_altcc",
+                            "payload": \{
+                                "searchKeys": ["COST_CENTER_ID", "COST_CENTER_DESC"],
+                                "columns": [
+                                    "\{i18n>valuehelp_claiminput_altcc_col_id\}",
+                                    "\{i18n>valuehelp_claiminput_altcc_col_name\}"
+                                ]
+                            \}
+                        \}'
+                    >
+                        <mdc:typeahead>
+                            <mdcvh:Popover id="valuehelp_claiminput_altcc_pop">
+                                <mdcvhcnt:MTable id="valuehelp_claiminput_altcc_pop_MTable"
+                                    keyPath="COST_CENTER_ID"
+                                    descriptionPath="COST_CENTER_DESC"
+                                    caseSensitive="false"
+                                    useAsValueHelp="false">
+                                    <!-- create table via delegate-->
+                                </mdcvhcnt:MTable>
+                            </mdcvh:Popover>
+                        </mdc:typeahead>
+                        <mdc:dialog>
+                            <mdcvh:Dialog
+                                id="valuehelp_claiminput_altcc_dialog"
+                                title="{i18n>valuehelp_claiminput_altcc}"
+                            >
+                                <mdcvhcnt:MTable
+                                    id="valuehelp_claiminput_altcc_dialog_MTable"
+                                    keyPath="COST_CENTER_ID"
+                                    descriptionPath="COST_CENTER_DESC"
+                                    caseSensitive="false">
+                                    <!-- create table via delegate-->
+                                </mdcvhcnt:MTable>
+                            </mdcvh:Dialog>
+                        </mdc:dialog>
+                    </mdc:ValueHelp>
+                </f:dependents>
         </f:SimpleForm>
     </VBox>
 </core:FragmentDefinition>
