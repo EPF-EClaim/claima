@@ -3626,12 +3626,6 @@ annotate service.ZMETER_CUBE with @(
             },
             {
                 $Type            : 'UI.DataField',
-                Value            : AGE_CONDITION,
-                ![@UI.Importance]: #High,
-                Label            : 'Age Condition'
-            },
-            {
-                $Type            : 'UI.DataField',
                 Value            : AGE,
                 ![@UI.Importance]: #High,
                 Label            : 'Age'

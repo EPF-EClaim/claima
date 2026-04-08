@@ -87,6 +87,17 @@ sap.ui.define([
                         }
                     }
 
+                    if (!!oClaimSubmissionModel) {
+                        // course code pre-check
+                        if (Object.values(Constants.ClaimTypeKursus).includes(oClaimSubmissionModel.getProperty("/claimtype/type"))) {
+                            var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(oClaimSubmissionModel.getProperty("/claimtype/course_code/course_id"), oClaimSubmissionModel.getProperty("/claimtype/course_code/session_number"), oClaimSubmissionModel.getProperty("/emp_master/eeid"));
+                            if (bCourseAlreadyApproved) {
+                                MessageBox.error(Utility.getText("error_msg_course_already_approved", [oClaimSubmissionModel.getProperty("/claimtype/course_code"), oClaimSubmissionModel.getProperty("/claimtype/descr/course_code")]));
+                                return false;
+                            }
+                        }
+                    }
+                    
                     if (!!oClaimSubmissionModel?.getProperty("/claim_items")) {
                         var aItems = oClaimSubmissionModel.getProperty("/claim_items") || [];
                         for(var i = 0; i < aItems.length; i++){

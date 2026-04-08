@@ -35,6 +35,49 @@ sap.ui.define([
 		},
 
 		/**
+		* Checks if course has already used by user for a previously approved claim
+		* @public
+		* @param {string} sCourseCode - course code ID to check from database
+		* @param {string} sSessionNumber - session number ID to check from database
+		* @param {string} sParticipantId - participant ID to check from database
+		* @returns {boolean} if records found, return true; else return false
+		*/
+		checkExistingCourseCode: async function (sCourseCode, sSessionNumber, sParticipantId) {
+			const oModel = this._oOwnerComponent.getModel();
+			// filter by claim status (approved, pending approval)
+			const oFilterRoleId = new Filter({
+				filters: [
+					new Filter("STATUS_ID", FilterOperator.EQ, Constant.ClaimStatus.APPROVED),
+					new Filter("STATUS_ID", FilterOperator.EQ, Constant.ClaimStatus.PENDING_APPROVAL)
+				],
+				and: false
+			});
+			const oListBinding = oModel.bindList(Constant.Entities.ZCLAIM_HEADER, null, null, [
+				// check if claim exists with following 
+				new Filter("COURSE_CODE", FilterOperator.EQ, sCourseCode),
+				new Filter("SESSION_NUMBER", FilterOperator.EQ, sSessionNumber),
+				new Filter("EMP_ID", FilterOperator.EQ, sParticipantId),
+				oFilterRoleId
+			]);
+
+			try {
+				BusyIndicator.show(0);
+				const aContexts = await oListBinding.requestContexts(0, Infinity);
+
+				if (aContexts.length > 0) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (oError) {
+				MessageBox.error(Utility.getText("error_msg_course_code_err", [oError]));
+				return false;
+			} finally {
+				BusyIndicator.hide();
+			}
+		},
+
+		/**
 		* Set default values for claim item fields
 		* Request is made to get values from table ZELIGIBILITY_RULE, based on user role and claim type/claim item given 
 		* if record found, value is retrieved from the table and populated in the claim item model
