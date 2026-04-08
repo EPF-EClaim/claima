@@ -2244,8 +2244,29 @@ sap.ui.define([
 			}
 			//START TDL #6.1 meter cube for Pengangkutan Laut
 			const sKey = oInputModel.getProperty("/claim_item/claim_type_item_id");
-			if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
 
+			//Set Kilometer (KM) field as required only for DARAT and KILOMETER claim items.
+			const bKmRequired = [
+			this._oConstant.ClaimTypeItem.DARAT,
+			this._oConstant.ClaimTypeItem.KILOMETER
+			].includes(sKey);
+			oPropertyModel.setProperty("/km/is_required", bKmRequired);
+			//Display Marriage Category field only for DARAT (land transport) claim items
+			if (sKey === this._oConstant.ClaimTypeItem.DARAT) {
+				oPropertyModel.setProperty("/marriage_category/is_visible", true);
+			} else {
+				oPropertyModel.setProperty("/marriage_category/is_visible", false);
+				oInputModel.setProperty("/claim_item/marriage_category", null);
+			}
+			//Require "To State" selection only for Flight Wilayah Asal claim item.
+			if (sKey === this._oConstant.ClaimTypeItem.FLIGHT_WIL) {
+				oPropertyModel.setProperty("/to_state_id/is_required", true);
+			} else {
+				oPropertyModel.setProperty("/to_state_id/is_required", false);
+				oInputModel.setProperty("/claim_item/to_state_id", null);
+			}
+
+			if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
 				//entitled meter cube
 				oPropertyModel.setProperty("/meter_cube_entitled/is_visible", true);
 				oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
@@ -2367,6 +2388,8 @@ sap.ui.define([
 				insurance_cert_end_date: { is_visible: false },
 				meter_cube_entitled: { is_visible: false },
 				meter_cube_actual: { is_visible: false, is_editable: true },
+				marriage_category: { is_visible: false },
+				to_state_id:{is_required: false}
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -2697,6 +2720,12 @@ sap.ui.define([
 			// get input model
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
+	
+			CustomValidator.init(this.getOwnerComponent(), this.getView());
+			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
+			if (!bCanProceed) {
+				return;
+			}
 
 			/* 	4 scenarios for Receipt Date to be populated
 					1. Get Receipt Date based on input
@@ -2715,21 +2744,7 @@ sap.ui.define([
 					}
 				}
 			}
-			
-			CustomValidator.init(this.getOwnerComponent(), this.getView());
-			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
-			if (!bCanProceed) {
-				return;
-			}
 
-			//FUT issue #81
-			var dTripEndDate = new Date(oClaimSubmissionModel.getProperty("/claim_header/trip_end_date")).toLocaleDateString('en-CA');
-			var dReceiptDate = new Date(oInputModel.getProperty("/claim_item/receipt_date")).toLocaleDateString('en-CA');
-
-			if (dReceiptDate > dTripEndDate) {
-				MessageBox.error(Utility.getText("msg_claimsubmission_invalid_receipt_date"));
-				return;
-			}
 			try {
 				BusyIndicator.show(0);
 				var oModel = this.getOwnerComponent().getModel();
