@@ -75,12 +75,6 @@ sap.ui.define([
                                 }
                                 break;
                             
-                            case Constants.ClaimTypeItem.GALAKAN:
-                                if(!oInputModel.getProperty("/claim_item/disclaimer_galakan")) {
-                                    MessageBox.error(Utility.getText("msg_claimdetails_no_check_disclaimer"));
-                                    bCanProceed = false;
-                                }
-                                break;
 
                             default:
                                 break;
