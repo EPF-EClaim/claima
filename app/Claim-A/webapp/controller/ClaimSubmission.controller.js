@@ -220,11 +220,11 @@ sap.ui.define([
 				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
 			) {
 				oClaimSubmissionModel.setProperty("/view_only", true);
-				this.setheaderUnEditable();
+				this.setHeaderUnEditable();
 			}
 			else {
 				oClaimSubmissionModel.setProperty("/view_only", false);
-				this.setHeaderEditable();
+				await this.setHeaderEditable();
 			}
 
 			// load form fragments
@@ -242,7 +242,7 @@ sap.ui.define([
 		},
 
 		//set editable header fields
-		setHeaderEditable: function () {
+		setHeaderEditable: async function () {
 			const oClaimModel = this.getView().getModel("claimsubmission_input");
 			var oEditableFields = this.getView().getModel("editable");
 
@@ -254,14 +254,15 @@ sap.ui.define([
 				oEditableFields.setProperty("/startTrip", true);
 				oEditableFields.setProperty("/endTrip", true);
 			}
-			if (!oClaimModel.getProperty("/claim_header/cost_center")){
+			const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oClaimModel.getProperty("/claim_header/claim_type_id"))
+			if ( !sDefaultCostCenter ){
 				oEditableFields.setProperty("/altCostCenter", true);
 			}
 			oEditableFields.setProperty("/saveHeader", true);
 		},
 
 		//set all fields uneditable
-		setheaderUnEditable: function () {
+		setHeaderUnEditable: function () {
 			var oEditableFields = this.getView().getModel("editable");
 
 			oEditableFields.setProperty("/startEvent", false);
