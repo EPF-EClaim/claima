@@ -862,6 +862,7 @@ sap.ui.define([
 			const oTable = this.byId("req_participant_table");
 			let aRows = this._oReqModel.getProperty("/participant") || [];
 
+			// --- 1. Identify which row(s) to delete ---
 			let idxFromAction = null;
 			const oRow = oEvent.getParameter && oEvent.getParameter("row");
 			const visIdx = oEvent.getParameter && oEvent.getParameter("rowIndex");
@@ -874,15 +875,14 @@ sap.ui.define([
 			};
 
 			if (oRow) {
-				const oCtx = oRow.getBindingContext("request");
-				idxFromAction = extractIndexFromCtxPath(oCtx);
+				idxFromAction = extractIndexFromCtxPath(oRow.getBindingContext("request"));
 			} else if (Number.isInteger(visIdx)) {
-				const oCtx = oTable.getContextByIndex(visIdx);
-				idxFromAction = extractIndexFromCtxPath(oCtx);
+				idxFromAction = extractIndexFromCtxPath(oTable.getContextByIndex(visIdx));
 			}
 
 			let aToDelete = [];
 			const aSel = oTable.getSelectedIndices() || [];
+			
 			if (aSel.length > 0) {
 				aToDelete = aSel.map((v) => extractIndexFromCtxPath(oTable.getContextByIndex(v)))
 					.filter((x) => x !== null);
@@ -895,87 +895,58 @@ sap.ui.define([
 				return;
 			}
 
-			aToDelete = Array.from(new Set(aToDelete)).sort((a, b) => b - a);
+			aToDelete = Array.from(new Set(aToDelete));
 
-			const sGroupId = "delParticipants";
+			let aBackendPayload = [];
+			let aIndicesToRemove = []; 
 
-			const toNumberIfNumeric = (v) => /^\d+$/.test(String(v)) ? Number(v) : String(v);
+			aToDelete.forEach(i => {
+				const rowData = aRows[i] || {};
+				const sPID = String(rowData.PARTICIPANTS_ID ?? rowData.PARTICIPANT_ID ?? "").trim();
+				const sReqId = String(rowData.REQUEST_ID ?? this._oReqModel.getProperty("/req_header/reqid") ?? "").trim();
+				const sReqSubId = String(rowData.REQUEST_SUB_ID ?? this._oReqModel.getProperty("/req_item/req_subid") ?? "").trim();
 
-			const aSuccessIdx = [];
-			let errorMsg = "";
-
-			BusyIndicator.show(0);
-			try {
-				const deletePromises = [];
-
-				for (const i of aToDelete) {
-					if (i < 0 || i >= aRows.length) continue;
-
-					const oRow = aRows[i] || {};
-					const sPID = String(oRow.PARTICIPANTS_ID ?? oRow.PARTICIPANT_ID ?? "").trim();
-					const sReqId = String(oRow.REQUEST_ID ?? this._oReqModel.getProperty("/req_header/reqid") ?? "").trim();
-					const sReqSubId = String(oRow.REQUEST_SUB_ID ?? this._oReqModel.getProperty("/req_item/req_subid") ?? "").trim();
-
-					const hasKeys = !!(sReqId && sReqSubId && sPID);
-
-					if (!hasKeys) {
-						aSuccessIdx.push(i);
-						continue;
-					}
-
-					const vReq = toNumberIfNumeric(sReqId);
-					const vSub = toNumberIfNumeric(sReqSubId);
-					const vPid = toNumberIfNumeric(sPID);
-
-					const oListBinding = this._oDataModel.bindList(
-						"/ZREQ_ITEM_PART",
-						null,
-						null,
-						[
-							new Filter({ path: "REQUEST_ID", operator: FilterOperator.EQ, value1: vReq }),
-							new Filter({ path: "REQUEST_SUB_ID", operator: FilterOperator.EQ, value1: vSub }),
-							new Filter({ path: "PARTICIPANTS_ID", operator: FilterOperator.EQ, value1: vPid })
-						],
-						{
-							$$ownRequest: true,
-							$$groupId: sGroupId,
-							$$updateGroupId: sGroupId,
-							$count: false,
-							$select: "REQUEST_ID,REQUEST_SUB_ID,PARTICIPANTS_ID"
-						}
-					);
-
-					const pDel = oListBinding.requestContexts(0, 1)
-						.then((aCtx) => {
-							const oCtx = aCtx[0];
-							if (!oCtx) {
-								aSuccessIdx.push(i);
-								return;
-							}
-							return oCtx.delete(sGroupId).then(() => {
-								aSuccessIdx.push(i);
-							});
-						})
-						.catch((e) => {
-							errorMsg = errorMsg || (e && e.message) || Utility.getText("req_tm_w_delete_participant");
-						});
-
-					deletePromises.push(pDel);
+				if (sPID && sReqId && sReqSubId) {
+					aBackendPayload.push({
+						REQUEST_ID: sReqId,
+						REQUEST_SUB_ID: sReqSubId,
+						PARTICIPANTS_ID: sPID,
+						_localIndex: i 
+					});
+				} else {
+					aIndicesToRemove.push(i);
 				}
+			});
 
-				await Promise.allSettled(deletePromises);
+			if (aBackendPayload.length > 0) {
+				BusyIndicator.show(0);
+				try {
+					const aCleanPayload = aBackendPayload.map(item => {
+						return {
+							REQUEST_ID: item.REQUEST_ID,
+							REQUEST_SUB_ID: item.REQUEST_SUB_ID,
+							PARTICIPANTS_ID: item.PARTICIPANTS_ID
+						};
+					});
 
-				if (deletePromises.length > 0) {
-					await this._oDataModel.submitBatch(sGroupId);
+					const oAction = this._oDataModel.bindContext("/deleteParticipants(...)");
+					oAction.setParameter("participants", aCleanPayload);
+					
+					await oAction.execute();
+
+					aBackendPayload.forEach(item => aIndicesToRemove.push(item._localIndex));
+					
+				} catch (error) {
+					MessageBox.error(Utility.getText("req_d_e_delete_participant"));
+					BusyIndicator.hide();
+					return; 
+				} finally {
+					BusyIndicator.hide();
 				}
-			} catch {
-				MessageBox.error(Utility.getText("req_d_e_delete_participant"));
-			} finally {
-				BusyIndicator.hide();
 			}
 
-			if (aSuccessIdx.length > 0) {
-				aSuccessIdx.sort((a, b) => b - a).forEach((i) => {
+			if (aIndicesToRemove.length > 0) {
+				aIndicesToRemove.sort((a, b) => b - a).forEach((i) => {
 					if (i >= 0 && i < aRows.length) aRows.splice(i, 1);
 				});
 
@@ -987,11 +958,12 @@ sap.ui.define([
 
 				this._oReqModel.setProperty("/participant", aRows);
 				oTable.clearSelection();
-				MessageToast.show(Utility.getText("req_tm_s_delete_participant", [aSuccessIdx.length]));
-			}
+				
+				MessageToast.show(Utility.getText("req_tm_s_delete_participant", [aIndicesToRemove.length]));
 
-			if (errorMsg) {
-				MessageBox.error(errorMsg);
+				if (typeof RequestUtility !== "undefined" && RequestUtility.populateAllocatedAmount) {
+					RequestUtility.populateAllocatedAmount();
+				}
 			}
 		},
 
