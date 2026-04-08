@@ -48,7 +48,7 @@ module.exports = {
       [Constant.EntitiesFields.CLAIM_TYPE_ID]: aPayload[0].ClaimType,
       [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: aPayload[0].ClaimTypeItem,
     };
-
+ 
     // Claim Type that requires additional Job Group filtering
     if (
       aPayload[0].ClaimType == Constant.ClaimType.HANDPHONE &&
@@ -61,6 +61,7 @@ module.exports = {
       };
     }
     const sEligibilityCondition = BuildSelectWhereConditions.buildWhereCondition(aEligibilityCondition);
+       console.log(sEligibilityCondition);
     // Get Eligibility Rules
     const aEligibilityRules = await tx.run(
       SELECT.from(Constant.Entities.ZELIGIBILITY_RULE).where(
