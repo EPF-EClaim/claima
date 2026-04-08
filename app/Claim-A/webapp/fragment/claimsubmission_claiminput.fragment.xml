@@ -75,7 +75,7 @@
                         id="text_claiminput_preapprovalreq"
                         text="{claimsubmission_input>/claim_header/request_id} {claimsubmission_input>/claim_header/descr/request_id}"
                         visible="{= ${claimsubmission_input>/claimtype/requestform/request_id} !== null &amp;&amp;
-                                !${claimprocess_properties>/req_emailapproval/is_state_active} }"
+                                !${claimsubmission_input>/req_emailapprove} }"
                     />
 
                     <!-- Pre-Approved Amount (MYR) -->
@@ -84,7 +84,7 @@
                         id="text_claiminput_amtapproved"
                         text="{claimsubmission_input>/claim_header/preapproved_amount}"
                         visible="{= ${claimsubmission_input>/claimtype/requestform/preapproval_amount} !== null &amp;&amp;
-                                !${claimprocess_properties>/req_emailapproval/is_state_active} }"
+                                !${claimsubmission_input>/req_emailapprove} }"
                     />
 
                     <!-- Trip Start Date -->
@@ -96,7 +96,7 @@
                                     ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;
                                     ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CURR_SUBSIDY} ) ||
                                 
-                                ( ${claimprocess_properties>/req_emailapproval/is_state_active} &amp;&amp;
+                                ( ${claimsubmission_input>/req_emailapprove} &amp;&amp;
                                     ( !Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) ||
                                         ${claimsubmission_input>/claimtype/course_code/start_date} === null ))
                         }"
@@ -113,7 +113,7 @@
                                         ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;
                                         ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CURR_SUBSIDY} ) ||
 
-                                ( ${claimprocess_properties>/req_emailapproval/is_state_active} &amp;&amp;
+                                ( ${claimsubmission_input>/req_emailapprove} &amp;&amp;
                                     ( !Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) ||
                                         ${claimsubmission_input>/claimtype/course_code/end_date} === null ))
                         }"
@@ -129,7 +129,7 @@
                         editable="{= ( ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/PRE_APPROVE} &amp;&amp;
                                         ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;
                                         ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CURR_SUBSIDY} ) ||
-                                ${claimprocess_properties>/req_emailapproval/is_state_active} }"
+                                ${claimsubmission_input>/req_emailapprove} }"
                         displayFormat="dd-MMM-yyyy"
                         />
 
@@ -141,7 +141,7 @@
                         editable="{= ( ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/PRE_APPROVE} &amp;&amp;
                                         ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;
                                         ${claimsubmission_input>/claim_header/submission_type} !== ${constant>/SubmissionType/CURR_SUBSIDY} ) ||
-                                ${claimprocess_properties>/req_emailapproval/is_state_active} }"
+                                ${claimsubmission_input>/req_emailapprove} }"
                         displayFormat="dd-MMM-yyyy"
                         />
 
@@ -173,7 +173,7 @@
                         visible="{= ${claimsubmission_input>/claimtype/cost_center} === null &amp;&amp;
 
                             (${claimsubmission_input>/claimtype/requestform/alternate_cost_center} === null ||
-                                ${claimprocess_properties>/req_emailapproval/is_state_active})
+                                ${claimsubmission_input>/req_emailapprove})
                         }"
                         valueHelp="valuehelp_claiminput_altcc"
                     />
@@ -187,7 +187,7 @@
                         visible="{= ${claimsubmission_input>/claimtype/cost_center} !== null ||
 
                             (${claimsubmission_input>/claimtype/requestform/alternate_cost_center} !== null &amp;&amp;
-                                !${claimprocess_properties>/req_emailapproval/is_state_active})
+                                !${claimsubmission_input>/req_emailapprove})
                         }"
                     />
                     
@@ -213,7 +213,7 @@
                                         ${claimsubmission_input>/claim_header/submission_type} === ${constant>/SubmissionType/CASH_REPAYMENT} ||
                                         ${claimsubmission_input>/claim_header/submission_type} === ${constant>/SubmissionType/CURR_SUBSIDY} ) &amp;&amp;
                                         
-                                        ${claimprocess_properties>/req_emailapproval/is_state_active} }"
+                                        ${claimsubmission_input>/req_emailapprove} }"
                     >
                     </u:FileUploader>
 

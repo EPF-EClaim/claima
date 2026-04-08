@@ -87,12 +87,6 @@ sap.ui.define([
 
 			const oItemsModel = new JSONModel({ results: [] });
 			this.getView().setModel(oItemsModel, "items");
-
-			// Claim Process viewfields
-			this._oClaimProcessProperties = {
-				"req_emailapproval": { "is_state_active": false }
-			}			
-			this.getView().setModel(new JSONModel(this._oClaimProcessProperties), "claimprocess_properties");
 		},
 		onCollapseExpandPress: function () {
 			var oModel = this.getView().getModel();
@@ -432,10 +426,6 @@ sap.ui.define([
 
 		//// Functions - Claim Process
 		_onInit_ClaimProcess: async function () {
-			// claim process view properties model check
-			var oClaimProcessPropertiesModel = this.getView().getModel("claimprocess_properties");
-			oClaimProcessPropertiesModel?.setData(JSON.parse(JSON.stringify(this._oClaimProcessProperties)));
-
 			// set new claim submission model;
 			var oInputModel = this._getNewClaimSubmissionModel("claimsubmission_input");
 			//// set employee data
@@ -628,12 +618,11 @@ sap.ui.define([
 		_onSelect_ClaimProcess_Category: function() {
 			// reset email approval
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			var oClaimProcessPropertiesModel = this.getView().getModel("claimprocess_properties");
-			if (oClaimProcessPropertiesModel.getProperty("/req_emailapproval/is_state_active") &&
+			if (oInputModel.getProperty("/req_emailapprove") &&
 				oInputModel.getProperty("/claimtype/category") !== this._oConstant.SubmissionType.PRE_APPROVE &&
 				oInputModel.getProperty("/claimtype/category") !== this._oConstant.SubmissionType.CASH_REPAYMENT &&
 				oInputModel.getProperty("/claimtype/category") !== this._oConstant.SubmissionType.CURR_SUBSIDY) {
-				oClaimProcessPropertiesModel.setProperty("/req_emailapproval/is_state_active", false);
+				oInputModel.setProperty("/req_emailapprove", false);
 			}
 		},
 
@@ -673,8 +662,7 @@ sap.ui.define([
         */
 		onSwitch_ClaimProcess_Req_EmailApprove: function (oEvent) {
 			var oInputModel = this.getView().getModel("claimsubmission_input");
-			var oClaimItemPropertyModel = this.getView().getModel("claimprocess_properties");
-			if (oClaimItemPropertyModel.getProperty("/req_emailapproval/is_state_active")) {
+			if (oInputModel.getProperty("/req_emailapprove")) {
 				// reset request form
 				if (oInputModel.getProperty("/claimtype/requestform/request_id") !== null) {
 					oInputModel.setProperty("/claimtype/requestform/request_id", null);
@@ -748,6 +736,11 @@ sap.ui.define([
 		onStartClaim_ClaimProcess: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("claimsubmission_input");
+
+			// default undefined switch to false
+			if (oInputModel.getProperty("/req_emailapprove") === undefined) {
+				oInputModel.setProperty("/req_emailapprove", false);
+			}
 
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 			if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {

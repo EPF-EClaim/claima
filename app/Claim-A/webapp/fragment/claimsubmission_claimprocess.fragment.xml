@@ -134,7 +134,7 @@
                                 $select: 'EVENT_START_DATE,EVENT_END_DATE,ALTERNATE_COST_CENTER,PREAPPROVAL_AMOUNT,CASH_ADVANCE,COSTCENTER/COST_CENTER_DESC'
                             }
                         }"
-                        editable="{= !${claimprocess_properties>/req_emailapproval/is_state_active} }"
+                        editable="{= !${claimsubmission_input>/req_emailapprove} }"
                         visible="{= ( ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/PRE_APPROVE} ||
                                         ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CASH_REPAYMENT} ||
                                         ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CURR_SUBSIDY} ) }"
@@ -148,7 +148,7 @@
                     <Label text="{i18n>label_claimprocess_req_emailapprove}" />
                     <Switch
                         id="switch_claimprocess_req_emailapprove"
-                        state="{claimprocess_properties>/req_emailapproval/is_state_active}"
+                        state="{claimsubmission_input>/req_emailapprove}"
                         customTextOn="{i18n>switch_claimprocess_req_emailapprove_yes}"
                         customTextOff="{i18n>switch_claimprocess_req_emailapprove_no}"
                         visible="{= ( ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/PRE_APPROVE} ||
@@ -188,7 +188,7 @@
                     ( ( ${claimsubmission_input>/claimtype/category} !== ${constant>/SubmissionType/PRE_APPROVE} &amp;&amp;
                         ${claimsubmission_input>/claimtype/category} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;
                         ${claimsubmission_input>/claimtype/category} !== ${constant>/SubmissionType/CURR_SUBSIDY} ) ||
-                            ${claimprocess_properties>/req_emailapproval/is_state_active} ||
+                            ${claimsubmission_input>/req_emailapprove} ||
                                 ${claimsubmission_input>/claimtype/requestform/request_id} !== null)
                 }"
             />
