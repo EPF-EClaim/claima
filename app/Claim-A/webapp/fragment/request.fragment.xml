@@ -76,7 +76,9 @@
 					</items>
 				</Select>
 
-			    <Label text="{i18n>req_tripstartdate}"/>
+			    <Label text="{i18n>req_tripstartdate}"
+					   tooltip="{i18n>valuehelp_reqinput_tripdate}"			
+				/>
 				<DatePicker
                     id="req_tripstartdate"
                     displayFormat="dd MMM yyyy"  
@@ -88,7 +90,9 @@
 								${reqDialog>/reqtype} === 'RT0004' }"
 					visible="false"/>
 
-				<Label text="{i18n>req_tripenddate}" />
+				<Label text="{i18n>req_tripenddate}" 
+					   tooltip="{i18n>valuehelp_reqinput_tripdate}"
+				/>
 				<DatePicker
                     id="req_tripenddate"
                     displayFormat="dd MMM yyyy"  
@@ -100,7 +104,9 @@
 								${reqDialog>/reqtype} === 'RT0004' }"
 					visible="false"/>
 
-				<Label text="{i18n>req_eventstartdate}"/>
+				<Label text="{i18n>req_eventstartdate}"
+				 	   tooltip="{i18n>valuehelp_reqinput_eventdate}"
+				/>
 				<DatePicker
                     id="req_eventstartdate"
                     displayFormat="dd MMM yyyy"  
@@ -112,7 +118,9 @@
 								${reqDialog>/reqtype} === 'RT0003' }"
 					visible="false"/>
 
-				<Label text="{i18n>req_eventenddate}" />
+				<Label text="{i18n>req_eventenddate}" 
+					   tooltip="{i18n>valuehelp_reqinput_eventdate}"	
+				/>
 				<DatePicker
                     id="req_eventenddate"
                     displayFormat="dd MMM yyyy"  
@@ -151,6 +159,7 @@
 			    <Input 
 					id="req_location"
 					textAlign="Begin"
+					placeholder="{i18n>placeholder_reqinput_location}"
 					value="{reqDialog>/location}"
 					required="{= ${reqDialog>/reqtype} === 'RT0001' || 
 								${reqDialog>/reqtype} === 'RT0003' }"
@@ -196,7 +205,6 @@
 			    <TextArea
 					id="req_comment"
 					textAlign="Begin"
-					required="true"
 					value="{reqDialog>/comment}"
 					visible="false" />
 
