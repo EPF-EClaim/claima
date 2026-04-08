@@ -562,7 +562,7 @@ sap.ui.define([
 					var oBindingSelectCourseCode = oSelectCourseCode.getBinding("items");
 					var aFilterSelectCourseCode = [
 							// ensure status is active
-							new Filter("PARTICIPANT_ID", FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
+							new Filter("PARTICIPANT_ID", FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
 							new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
 							new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true)
 						];
@@ -681,7 +681,7 @@ sap.ui.define([
 					var aFilterSelectSessionNumber = [
 							// ensure status is active
 							new Filter("COURSE_ID", FilterOperator.EQ, oInputModel.getProperty("/claimtype/course_code/course_id")),
-							new Filter("PARTICIPANT_ID", FilterOperator.EQ, oInputModel.getProperty("/emp_master/eeid")),
+							new Filter("PARTICIPANT_ID", FilterOperator.EQ, this._oSessionModel.getProperty("/userId")),
 							new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, this._oConstant.CourseSessionStatus.ACTIVE),
 							new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true)
 						];
