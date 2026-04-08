@@ -8,7 +8,7 @@ module.exports = {
         * @public
         * @param {String} sHeaderTable - Header Table Name
         * @param {String} sItemTable - Item Table Name
-        * @param {Array} aItemcondition - Item Selection Where Conditions
+        * @param {String} sItemcondition - Item Selection Where Conditions
         * @param {Object} tx - CDS Transaction
         * @returns {Integer} Array of data selected from header table that are Approved or Pending Approval
         */
@@ -62,7 +62,7 @@ module.exports = {
         * Drill down of eligibility scenarios for each claim type after retrieving employee and eligibility rules data
         * @public
         * @param {String} sItemTable - Item Table Name
-        * @param {Array} aItemcondition - Item Selection Where Conditions
+        * @param {String} sItemcondition - Item Selection Where Conditions
         * @param {Object} tx - CDS Transaction
         * @returns {Integer} Count of data within item table
         */

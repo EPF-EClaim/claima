@@ -7,6 +7,7 @@ module.exports = {
    * main function for eligibility check - to find the matching eligibility rule and call validateClaimItem function to validate against the rule
    * @public
    * @param {Object} oPayload - payload contains user input passed from frontend
+   * @param {Object} oEmp - Employee Data
    * @param {Array} aRules - list of eligibility rule from backend
    * @param {Object} tx - CDS Transaction
    * @returns {Object} oPayload - return original payload but with result field filled
@@ -27,7 +28,6 @@ module.exports = {
       tx,
     );
 
-    // console.log(iHistoricalData, iCurrentRecordItemData);
     this._validateClaimItem(
       oRule,
       oPayload,
@@ -35,7 +35,15 @@ module.exports = {
     );
     return oPayload;
   },
-
+  /**
+   * main function for eligibility check - to find the matching eligibility rule and call validateClaimItem function to validate against the rule
+   * @public
+   * @param {Object} oPayload - payload contains user input passed from frontend
+   * @param {Object} oEmp - Employee Data
+   * @param {Array} aRules - list of eligibility rule from backend
+   * @param {Object} tx - CDS Transaction
+   * @returns {Object} oPayload - return original payload but with result field filled
+   */
   _SequenceCheck: async function (oPayload, oEmp, aRules, tx) {
     //Check if there is value in aRules table
     if (!!aRules) {
@@ -83,7 +91,7 @@ module.exports = {
    * @param {Object} oPayload - payload contains user input passed from frontend
    * @param {Object} oRule - Eligibility rule from backend
    * @param {Object} tx - CDS Transaction
-   * @returns {Object} oPayload - return original payload but with result field filled
+   * @returns {Object} iHistoricalData - return Claim / Request Header count
    */
   _getHistoricalData: async function (oPayload, oRule, tx) {
     let aDateToFrom = [];
@@ -120,7 +128,7 @@ module.exports = {
    * @param {Object} oPayload - payload contains user input passed from frontend
    * @param {Object} oRule - Eligibility rule from backend
    * @param {Object} tx - CDS Transaction
-   * @returns {Object} oPayload - return original payload but with result field filled
+   * @returns {Object} iCurrentData - return Current Claim / Request item count
    */
   _getCurrentRecordItemData: async function (oPayload, oRule, tx) {
     let aDateToFrom = [];
@@ -164,6 +172,13 @@ module.exports = {
       tx);
   },
 
+ /**
+   * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
+   * @public
+   * @param {Object} oPayload - payload contains user input passed from frontend
+   * @param {Object} tx - CDS Transaction
+   * @returns {Object} aExceptionData - return Exception table data
+   */
   _getExceptionData: async function (oPayload, tx) {
     // If No data from Rules Table, refer to Exception list table
     const sExceptionTable = Constant.Entities.ZCLM_TYPE_EXCEPTION_LIST;
@@ -194,7 +209,7 @@ module.exports = {
    * @private
    * @param {Object} oRule - matched eligibility rule from aRules
    * @param {Object} oPayload - original payload from user input
-   * @param {iFrequencyCount} - Date frequency count
+   * @param {Integer} iFrequencyCount - Date frequency count
    */
   _validateClaimItem: function (oRule, oPayload, iFrequencyCount) {
     var iIndex;
@@ -205,9 +220,7 @@ module.exports = {
         iIndex = oPayload.CheckFields.findIndex(
           (field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE,
         );
-        // Frequency + 1 to accomodate checking for current claim id that is in draft
-        var iFrequency = oRule.FREQUENCY + 1;
-        if (iFrequencyCount < iFrequency) {
+        if (iFrequencyCount < oRule.FREQUENCY) {
           oPayload.CheckFields[iIndex].result = true;
         } else {
           oPayload.CheckFields[iIndex].result = false;

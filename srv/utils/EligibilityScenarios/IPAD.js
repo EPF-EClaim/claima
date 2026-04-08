@@ -101,7 +101,7 @@ module.exports = {
             [Constant.EntitiesFields.RECEIPT_DATE]: { between: [dDateFrom, dDateTo] }
         };
         const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
-        
+
         return iCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
             sCurrentItemcondition,
             tx);
@@ -112,7 +112,7 @@ module.exports = {
     * @private
     * @param {Object} oRule - matched eligibility rule from aRules
     * @param {Object} oPayload - original payload from user input
-    * @param {iFrequencyCount} - Date frequency count
+    * @param {Integer} iFrequencyCount - Date frequency count
     */
     _validateClaimItem: function (oRule, oPayload, iFrequencyCount) {
         var iIndex;
@@ -135,9 +135,13 @@ module.exports = {
                 } else {
                     // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
                     // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
-                    oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
-                        oPayload.CheckFields[iIndex].value,
-                        parseFloat(oRule.ELIGIBLE_AMOUNT));
+                    if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
+                        oPayload.CheckFields[iIndex].result = true;
+                    } else {
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
+                            oPayload.CheckFields[iIndex].value,
+                            parseFloat(oRule.ELIGIBLE_AMOUNT));
+                    }
                 }
                 break;
         }

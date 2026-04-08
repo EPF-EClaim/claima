@@ -55,9 +55,14 @@ module.exports = {
         }
         return sConditions;
     },
-
-    getDateMonthRange: function (dDate) {
-        const sYearMonth = dDate.substring(0, 7);
+ /**
+   * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
+   * @public
+   * @param {String} sDate - Input Date
+   * @returns {Object} Contains both Date from and Date to Ranges
+   */
+    getDateMonthRange: function (sDate) {
+        const sYearMonth = sDate.substring(0, 7);
         // Derive first and last day of the month
         const [year, month] = sYearMonth.split('-').map(Number);
         const dDateFrom = `${sYearMonth}-01`;
