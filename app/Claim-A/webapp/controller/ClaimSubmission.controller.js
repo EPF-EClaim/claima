@@ -2162,6 +2162,10 @@ sap.ui.define([
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oPropertyModel = this.getView().getModel("claimitem_property");
+
+			// reset existing input 
+			this._resetClaimItemInputs(oInputModel);
+
 			if (claimItem) {
 				// Reset Location Type
 				oInputModel.setProperty("/claim_item/location_type", "");
@@ -4734,6 +4738,53 @@ sap.ui.define([
 			}
 			oClaimSubmissionModel.setProperty("/claim_items", aItems);
 		},
+
+		_resetClaimItemInputs: async function (oInputModel) {
+			
+			oInputModel.setProperty("/claim_item/dependent_type", null);
+			oInputModel.setProperty("/claim_item/anggota_name", null);
+			oInputModel.setProperty("/claim_item/meter_cube_actual", null);
+			oInputModel.setProperty("/claim_item/currency_amount", null);
+			oInputModel.setProperty("/claim_item/amount", null);
+			oInputModel.setProperty("/claim_item/actual_amount", null);
+			oInputModel.setProperty("/claim_item/request_approval_amount", null);
+			oInputModel.setProperty("/claim_item/eligible_amount", null);
+			oInputModel.setProperty("/claim_item/meter_cube_entitled", null);
+			oInputModel.setProperty("/claim_item/receipt_number", null);
+			oInputModel.setProperty("/claim_item/no_of_days", null);
+			oInputModel.setProperty("/claim_item/km", null);
+			oInputModel.setProperty("/claim_item/descr/rate_per_km", null);
+			oInputModel.setProperty("/claim_item/toll", null);
+			oInputModel.setProperty("/claim_item/currency_code", null);
+			oInputModel.setProperty("/claim_item/currency_amount", null);
+			oInputModel.setProperty("/claim_item/provided_breakfast", null);
+			oInputModel.setProperty("/claim_item/provided_lunch", null);
+			oInputModel.setProperty("/claim_item/provided_dinner", null);
+			oInputModel.setProperty("/claim_item/entitled_breakfast", null);
+			oInputModel.setProperty("/claim_item/entitled_lunch", null);
+			oInputModel.setProperty("/claim_item/entitled_dinner", null);
+			oInputModel.setProperty("/claim_item/dailyallowance", null);
+			oInputModel.setProperty("/claim_item/region", null);
+			oInputModel.setProperty("/claim_item/area", null);
+			oInputModel.setProperty("/claim_item/lodging_category", null);
+			oInputModel.setProperty("/claim_item/start_date", null);
+			oInputModel.setProperty("/claim_item/start_time", null);
+			oInputModel.setProperty("/claim_item/end_date", null);
+			oInputModel.setProperty("/claim_item/end_time", null);
+			oInputModel.setProperty("/claim_item/insurance_provider_id", null);
+			oInputModel.setProperty("/claim_item/insurance_provider_name", null);
+			oInputModel.setProperty("/claim_item/location_type", null);
+			oInputModel.setProperty("/claim_item/receipt_date", null);
+			oInputModel.setProperty("/claim_item/receipt_number", null);
+			oInputModel.setProperty("/claim_item/eligible_amount", null);
+			oInputModel.setProperty("/claim_item/meter_cube_actual", null);
+			oInputModel.setProperty("/claim_item/funeral_transportation", null);
+			oInputModel.setProperty("/claim_item/bill_date", null);
+			oInputModel.setProperty("/claim_item/policy_number", null);
+			oInputModel.setProperty("/claim_item/account_no", null);
+			oInputModel.setProperty("/claim_item/bill_no", null);
+			oInputModel.setProperty("/claim_item/mobile_category_purpose_id", null);
+		}
 
 	});
 });
