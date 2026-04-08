@@ -276,7 +276,7 @@ sap.ui.define([
 		 * @public
 		 * @param {sap.ui.model.json.JSONModel} oClaimItemInputModel Claim item input
 		 */
-		fetchAndApplyEntitlement: function (oClaimItemInputModel, sEEID) {
+		fetchAndApplyEntitlement: function (oClaimItemInputModel) {
 			var nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
 			var nHour = oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour");
 			var sLocation = oClaimItemInputModel.getProperty("/claim_item/region");
@@ -286,12 +286,15 @@ sap.ui.define([
 			var nLunch = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_lunch"));
 			var nDinner = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_dinner"));
 			
+			var oSessionModel = this.getView().getModel("session");
+    		var sEEID = oSessionModel.getProperty("/userId");
+
 
 			nBreakfast = Number.isNaN(nBreakfast) ? 0 : nBreakfast;
 			nLunch = Number.isNaN(nLunch) ? 0 : nLunch;
 			nDinner = Number.isNaN(nDinner) ? 0 : nDinner;
 
-			const oModel = this._oView.getModel();
+			const oModel = this.getView().getModel();
 			const oContext = oModel.bindContext("/getAmountEntitlement(...)");
 
 			oContext.setParameter("day", nDay);
