@@ -86,8 +86,8 @@ sap.ui.define([
                         }
                     }
 
-                    if(oInputModel.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel.getProperty("/claim_header/trip_start_date") ){
-                    	const bProceed = await this.onReceiptDateValidation();
+                    if(oInputModel?.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel?.getProperty("/claim_header/trip_start_date") ){
+                    	const bProceed = await this.onShowConfirmation(Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"));
 
                         if (!bProceed) {
                             return false;
@@ -119,10 +119,10 @@ sap.ui.define([
             }
             return true;
         },        
-        onReceiptDateValidation: function() {
+        onShowConfirmation: function(sPromptMessage) {
                 return new Promise((oResolve) => {
                     MessageBox.warning(
-                        Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"),
+                        sPromptMessage,
                         {
                             actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
                             emphasizedAction: MessageBox.Action.OK,
