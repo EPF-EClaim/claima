@@ -205,16 +205,17 @@ entity ZREQUEST_ITEM : managed {
         METER_CUBE_ACTUAL          : Decimal(6, 2);
         FARE_TYPE_ID               : String(2);
         VEHICLE_CLASS_ID           : String(2);
-        TRIP_START_DATE            :Date;
-        TRIP_END_DATE              :Date;
-        TRIP_START_TIME            :Time;
-        TRIP_END_TIME              :Time;
+        TRIP_START_DATE            : Date;
+        TRIP_END_DATE              : Date;
+        TRIP_START_TIME            : Time;
+        TRIP_END_TIME              : Time;
         TRAVEL_DURATION_DAY        : Decimal(3, 1);
         TRAVEL_DURATION_HOUR       : Decimal(4, 1);
         ENTITLED_BREAKFAST         : Integer;
         ENTITLED_LUNCH             : Integer;
         ENTITLED_DINNER            : Integer;
-        DAILY_ALLOWANCE            : Integer;        ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
+        DAILY_ALLOWANCE            : Integer;
+        ZREQUEST_HEADER            : Association to one ZREQUEST_HEADER
                                          on ZREQUEST_HEADER.REQUEST_ID = REQUEST_ID;
         ZMARITAL_CAT               : Association to one ZMARITAL_CAT
                                          on ZMARITAL_CAT.MARRIAGE_CATEGORY_ID = MARRIAGE_CATEGORY;
