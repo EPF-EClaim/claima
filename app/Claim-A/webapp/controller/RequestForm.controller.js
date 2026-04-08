@@ -18,6 +18,7 @@ sap.ui.define([
     "sap/ui/model/Sorter",
     "claima/utils/ApprovalLog",
     "claima/utils/ApproveDialog",
+	"claima/utils/ClaimUtility",
     "claima/utils/ApproverUtility",
     "claima/utils/Attachment",
     "claima/utils/budgetCheck",
@@ -65,6 +66,7 @@ sap.ui.define([
     RequestUtility,
     SendBackDialog,
     Utility,
+	ClaimUtility,
     workflowApproval,
 ) {
 	"use strict";
@@ -94,6 +96,17 @@ sap.ui.define([
 
 			// URL Access
 			this._oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
+
+			var oHeaderEditable = new JSONModel({
+				"startTrip": false,
+				"endTrip": false,
+				"startEvent": false,
+				"endEvent": false,
+				"location": false,
+				"comment": false,
+				"altCostCenter": false,
+			});
+			this.getView().setModel(oHeaderEditable, "editable");
 		},
 
 		/* =========================================================
@@ -193,6 +206,7 @@ sap.ui.define([
 
 			var sReqStatus = this._oReqModel.getProperty("/req_header/reqstatus");
 			var bApproval = sReqStatus !== this._oConstant.RequestStatus.DRAFT && sReqStatus !== this._oConstant.RequestStatus.CANCELLED;
+			this.setHeaderUnEditable();
 			if (bApproval) {
 				var aApprover = await ApprovalLog.getApproverList(this._oApprovalLogModel, this._oViewModel, sReqId);
 				for (const row of aApprover) {
@@ -209,6 +223,7 @@ sap.ui.define([
 				await this._replaceContentAt(oPage, 2, oApproval);
 			} else {
 				PARequestSharedFunction.getCurrentState(this);
+				this.setHeaderEditable();
 			}
 
 			PARequestSharedFunction.determineFooterButton(this);
@@ -446,6 +461,10 @@ sap.ui.define([
 			PARequestSharedFunction._getItemList(this, sReqId);
 			this._showItemList(sReqId);
 			this._resetReqItemInputs();
+		},
+
+		onSaveHeaderPress: async function () {
+			await Common.saveHeader(Constants.SubmissionTypePrefix.REQUESTHEADER);
 		},
 
 		/* =========================================================
