@@ -922,7 +922,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
         where
                    ZSTATUS.STATUS_ID        =  'STAT05'
             and (
-                   ZREQUEST_ITEM.SEND_TO_SF =  'FALSE'
+                   ZREQUEST_ITEM.SEND_TO_SF =  FALSE
                 or ZREQUEST_ITEM.SEND_TO_SF is null
             );
 
