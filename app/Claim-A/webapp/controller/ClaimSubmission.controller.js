@@ -2286,6 +2286,12 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/amount")) * 0.5);
 				}
 			}
+
+			if (this.byId("input_claimdetails_input_provided_breakfast").getVisible()){
+				oInputModel.setProperty("/claim_item/provided_breakfast", 0);
+				oInputModel.setProperty("/claim_item/provided_lunch", 0);
+				oInputModel.setProperty("/claim_item/provided_dinner", 0);
+			}
 		},
 
 		onChange_ClaimDetails_ActualMeterCube: function () {
