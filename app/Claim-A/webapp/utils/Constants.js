@@ -431,7 +431,8 @@ sap.ui.define([
             "CLAIM_ID": "claim_id", 
             "DESCR": "descr", 
             "GL_ACCOUNT": "gl_account", 
-            "COST_CENTER": "cost_center"
+            "COST_CENTER": "cost_center",
+            "IS_NEW": "is_new",
         }
     }
 });

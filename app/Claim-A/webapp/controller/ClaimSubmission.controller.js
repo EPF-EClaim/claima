@@ -4813,7 +4813,9 @@ sap.ui.define([
 					sKey === this._oConstant.ExcludeField.CLAIM_ID || 
 					sKey === this._oConstant.ExcludeField.DESCR  || 
 					sKey ===  this._oConstant.ExcludeField.GL_ACCOUNT || 
-					sKey === this._oConstant.ExcludeField.COST_CENTER){
+					sKey === this._oConstant.ExcludeField.COST_CENTER ||
+					sKey === this._oConstant.ExcludeField.IS_NEW
+				){
 					return;
 				}
 				oInputModel.setProperty(`/claim_item/${sKey}`, null);
