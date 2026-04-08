@@ -4723,8 +4723,10 @@ sap.ui.define([
 		 */
 		_updateEntitlementAmount: function (oClaimItemInputModel) {
 			BusyIndicator.show(0);
+			var oSessionModel = this.getView().getModel("session");
+			var sEEID = oSessionModel.getProperty("/userId");
 
-			return ClaimUtility.fetchAndApplyEntitlement(oClaimItemInputModel).then(oResult => {
+			return ClaimUtility.fetchAndApplyEntitlement(oClaimItemInputModel, sEEID).then(oResult => {
 				if (!oResult || oResult.amount === 0) {
 					MessageToast.show(Utility.getText("msg_claim_no_entitlement"));
 					return;
