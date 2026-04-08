@@ -13,6 +13,7 @@
 
             <!-- Form Layout -->
             <f:SimpleForm
+                id="idClaimSubmissionHeaderInput"
                 editable="true"
                 layout="ResponsiveGridLayout"
                 labelSpanXL="4"

@@ -2536,11 +2536,10 @@ sap.ui.define([
 		onSave_ClaimDetails_Input: async function () {
 			// validate input data
 			var oInputModel = this.getView().getModel("claimitem_input");
-			oInputModel.refresh(true);
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 
 			// Validate required fields
-			if (!this.getOwnerComponent().getValidator().validate(this.getView())) {
+			if (!this.getOwnerComponent().getValidator().validate(this.byId('idClaimSubmissionDetailInput'))) {
 				MessageBox.error(Utility.getText("msg_claiminput_required"), {
 					closeOnBrowserNavigation: false
 				});

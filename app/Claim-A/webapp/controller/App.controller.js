@@ -1054,8 +1054,8 @@ sap.ui.define([
 			// validate input data
 			var oInputModel = this.getView().getModel("claimsubmission_input");
 
-			if (!this.getOwnerComponent().getValidator().validate(this.oDialog_ClaimProcess)) {
-				MessageToast.show(Utility.getText("msg_claiminput_required"), {
+			if (!this.getOwnerComponent().getValidator().validate(this.byId("idClaimSubmissionHeaderInput"))) {
+				MessageBox.error(Utility.getText("msg_claiminput_required"), {
 					closeOnBrowserNavigation: false
 				});
 				return;
