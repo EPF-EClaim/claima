@@ -2354,13 +2354,10 @@ sap.ui.define([
 				this._calculateLodgingEligibleAmount();
 			}
 
-			// if claim type item is elaun pengangkutan, retrieve eligible amount
+			// if claim type item is elaun pengangkutan, populate approved amount with eligible value
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.E_PENGAKUT) {
-				await ClaimUtility.setClaimItemDefaultValues(oClaimSubmissionModel, oInputModel, "amount", this._oConstant.EligibilityRule.ELIGIBLE_AMOUNT, 0.00);
-				// reduce claimable amount by 50% if employee is single
-				if (oClaimSubmissionModel.getProperty("/emp_master/marital") === this._oConstant.MaritalStatus.SINGLE) {
-					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/amount")) * 0.5);
-				}
+				var dAmount = await ClaimUtility.fetchAmountElaunPengangkutan(oClaimSubmissionModel.getProperty("/emp_master/marital"), oClaimSubmissionModel.getProperty("/emp_master/employee_type")) || 0.00;
+				oInputModel.setProperty("/claim_item/amount", dAmount);
 			}
 		},
 

@@ -1187,6 +1187,51 @@ module.exports = (srv) => {
         }
     });
 
+    /**
+     * Get eligible amount for employee on Elaun Pengangkutan, based on Marital Status and Employee Type
+     * @public
+     * @param {String} sMaritalStatus - Marital status retrieved from employee data
+     * @param {String} sEmployeeType - Employee type retrieved from employee data
+     * @return {Decimal} - return eligible amount retrieved from table
+     */
+    srv.on('getEligibleAmountEPengakut', async (req) => {
+        const { sMaritalStatus, sEmployeeType } = req.data;
+
+        try {
+            const sTodayDate = today.toISOString().slice(0, 10);
+            const aMaritalStatusValues = [sMaritalStatus, Constant.Wildcard.All];
+            const aEmployeeTypeValues = [sEmployeeType, Constant.Wildcard.All];
+            const oEligibilityRule = await SELECT.one
+                .from(Constant.Entities.ZELIGIBILITY_RULE)
+                .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
+                .where({
+                    // claim type + claim type item
+                    CLAIM_TYPE_ID: Constant.ClaimType.ELAUN_PINDAH,
+                    CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.E_PENGAKUT,
+                    // status check
+                    STATUS: Constant.ClaimTypeItemStatus.ACTIVE,
+                    START_DATE: { '<=': sTodayDate },
+                    END_DATE: { '>=': sTodayDate },
+                    // values to filter
+                    MARITAL_STATUS: { 'in': aMaritalStatusValues },
+                    EMPLOYEE_TYPE: { 'in': aEmployeeTypeValues },
+                 })
+                .orderBy([
+                    { ref: [Constant.EntitiesFields.MARITAL_STATUS], sort: 'desc' },
+                    { ref: [Constant.EntitiesFields.EMPLOYEE_TYPE], sort: 'desc' }
+                ]);
+
+            if (!oEligibilityRule) {
+                return req.error(404, `Eligible amount not found for given employee.`);
+            }
+
+            return oEligibilityRule.ELIGIBLE_AMOUNT || 0.00;
+
+        } catch (error) {
+            return req.error(500, 'An error occurred while checking Eligibility Rule table.');
+        }
+    });
+
     srv.on('getOfficeDistance', async (req) => {
         const { 
             sFromState,

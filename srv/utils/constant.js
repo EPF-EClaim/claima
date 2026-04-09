@@ -157,6 +157,8 @@ const Constant = {
         "BILL_DATE": "BILL_DATE",
         "RECEIPT_DATE": "RECEIPT_DATE",
         "JOB_GROUP": "JOB_GROUP",
+        "MARITAL_STATUS": "MARITAL_STATUS",
+        "EMPLOYEE_TYPE": "EMPLOYEE_TYPE",
         "PERSONAL_GRADE": "PERSONAL_GRADE",
         "START_DATE": "START_DATE",
         "END_DATE": "END_DATE"
@@ -181,6 +183,9 @@ const Constant = {
         APPROVED : "STAT05",
         COMPLETED_DISBURSEMENT: "STAT06",
         CANCELLED: "STAT07"
+    },
+    ClaimTypeItemStatus: {
+        ACTIVE: "ACTIVE"
     },
     ReminderScenario: {
         NO_CASH_ADVANCE: "1",

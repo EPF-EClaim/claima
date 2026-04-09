@@ -331,6 +331,31 @@ sap.ui.define([
 		},
 
 		/**
+		 * Retrieve approved amount for employee on Elaun Pengangkutan, based on Marital Status and Employee Type
+		 * @public
+		 * @param {String} sMaritalStatus - Marital status retrieved from employee data
+		 * @param {String} sEmployeeType - Employee type retrieved from employee data
+		 * @return {Decimal} - return eligible amount retrieved from table
+		 */
+		fetchAmountElaunPengangkutan: async function (sMaritalStatus, sEmployeeType) {
+			try {
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/getEligibleAmountEPengakut(...)");
+
+				oFunction.setParameter("sMaritalStatus", sMaritalStatus);
+				oFunction.setParameter("sEmployeeType", sEmployeeType);
+
+				await oFunction.execute();
+
+				const oResult = oFunction.getBoundContext();
+
+				return oResult;
+
+			} catch (oError) {
+				return null;
+			}
+		},
+
+		/**
 		 * Calculate entitled meter cube value for Pengangkutan Laut claim type.
 		 * Method retrieves employee master data, marital status, dependent (spouse) data,
 		 * and meter cube configuration table to determine the total entitled meter cube
