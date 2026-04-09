@@ -88,12 +88,19 @@ sap.ui.define([
             "YURAN_KLJ": "YURAN_KLJ",
             "CASH_REPAY": "CASH_REPAY",
             "GALAKAN" : "GALAKAN",
-            "TELEFON_B" : "TELEFON_B"
+            "TELEFON_B" : "TELEFON_B",
+            "ELEKTRIK" : "ELEKTRIK",
+            "BIL_AIR" : "BIL_AIR"
         },
         "ClaimTypeItemLodging": {
             "LOD_TUKAR": "LOD_TUKAR",
             "LODG_O": "LODG_O",
             "LODGING_L": "LODGING_L"
+        },
+        "ClaimTypeItemMakan": {
+            "MAKAN_O": "MAKAN_O",
+            "MAKAN_L": "MAKAN_L",
+            "MKN_LOAN": "MKN_LOAN"
         },
         "ClaimTypeItemStatus": {
             "ACTIVE": "ACTIVE",
@@ -366,21 +373,12 @@ sap.ui.define([
         "OfficeDistance" : {
             "MILEAGE" : "MILEAGE"
         },
-        "RelationshipType" :{
-            "SPOUSE": "01"
-        },
-        "MaritalStatus": {
+          "MaritalStatus": {
             "WIDOWED": "W",
             "SINGLE": "S",
             "MARRIED": "M",
             "SEPARATED": "E",
             "DIVORCED": "D"
-        },
-        "MeterCubeId": {
-            "EMPLOYEE": "01",
-            "SINGLE": "02",
-            "SPOUSE": "03",
-            "MARRIED": "06"
         },
         "InsuranceProvider" : {
             "OTHERS" : "4",
