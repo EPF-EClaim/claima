@@ -936,6 +936,7 @@
                                             textAlign="Begin"
                                             valueFormat="HH:mm:ss"
                                             displayFormat="HH:mm"
+                                            required="true"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             change=".onInputAllocatedAmount"/>
                                     </form:fields>
@@ -952,6 +953,7 @@
                                             textAlign="Begin"
                                             valueFormat="HH:mm:ss"
                                             displayFormat="HH:mm"
+                                            required="true"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             change=".onInputAllocatedAmount"/>
                                     </form:fields>
