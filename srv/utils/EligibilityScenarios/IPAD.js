@@ -1,6 +1,7 @@
 const { Constant } = require("../constant");
 const ComparisonOperators = require('../ComparisonOperators')
 const GetHistoricalData = require('../GetHistoricalData')
+const BuildSelectWhereConditions = require("../BuildSelectWhereConditions");
 module.exports = {
     /**
          * main function for eligibility check - to find the matching eligibility rule and call validateClaimItem function to validate against the rule
@@ -14,7 +15,6 @@ module.exports = {
         var oRule = aRules[0];
         var iHistoricalData = await this._getHistoricalData(oPayload, oRule, tx);
         var iCurrentRecordItemData = await this._getCurrentRecordItemData(oPayload, oRule, tx);
-
         this._validateClaimItem(oRule, oPayload, iHistoricalData + iCurrentRecordItemData);
         return oPayload;
     },
@@ -28,28 +28,15 @@ module.exports = {
          * @returns {Object} oPayload - return original payload but with result field filled
          */
     _getHistoricalData: async function (oPayload, oRule, tx) {
-        let sDate = null;
         var sHeaderTable = "";
         var sItemTable = "";
         // get Historical Claims Data
         // find field for date
         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
-        sMonth = parseInt(oPayload.CheckFields[iIndex].value.substring(6, 8));
-        sYear = parseInt(oPayload.CheckFields[iIndex].value.substring(0, 4));
-
-        switch (oRule.PERIOD) {
-            case Constant.FrequencyPeriod.MONTH:
-                // need to search as "##"
-                if (sMonth < 10) {
-                    sMonth = Constant.Wildcard.ZERO + sMonth;
-                }
-                break;
-
-            default:
-                break;
-        }
-        sDate = sYear + Constant.Wildcard.DASH + sMonth + Constant.Wildcard.DASH;
-        sDate = sDate + Constant.Wildcard.LIKE_PATTERN;
+        if (iIndex == -1) return;
+        const aDateToFrom = BuildSelectWhereConditions.getDateMonthRange(oPayload.CheckFields[iIndex].value);
+        const dDateFrom = aDateToFrom.dDateFrom;
+        const dDateTo = aDateToFrom.dDateTo;
 
         // Map ClaimID or RequestID based on which HeaderTable to use
         if (oPayload.RecordId.substring(0, 3) == Constant.WorkflowType.CLAIM) {
@@ -64,11 +51,12 @@ module.exports = {
             [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
             [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
             [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
-            [Constant.EntitiesFields.RECEIPT_DATE]: { LIKE: sDate }
+            [Constant.EntitiesFields.RECEIPT_DATE]: { between: [dDateFrom, dDateTo] }
         };
+        const sItemcondition = BuildSelectWhereConditions.buildWhereCondition(aItemcondition);
         const iHistoricalData = await GetHistoricalData.getHistoricalData(sHeaderTable,
             sItemTable,
-            aItemcondition,
+            sItemcondition,
             tx);
 
         return iHistoricalData;
@@ -83,29 +71,17 @@ module.exports = {
          * @returns {Object} oPayload - return original payload but with result field filled
          */
     _getCurrentRecordItemData: async function (oPayload, oRule, tx) {
-        let sDate = null;
         var sHeaderField = "";
         var sItemField = "";
         var sItemTable = "";
         // get Historical Claims Data
         // find field for date
         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
-        sMonth = parseInt(oPayload.CheckFields[iIndex].value.substring(6, 8));
-        sYear = parseInt(oPayload.CheckFields[iIndex].value.substring(0, 4));
-
-        switch (oRule.PERIOD) {
-            case Constant.FrequencyPeriod.MONTH:
-                // need to search as "##"
-                if (sMonth < 10) {
-                    sMonth = Constant.Wildcard.ZERO + sMonth;
-                }
-                break;
-
-            default:
-                break;
-        }
-        sDate = sYear + Constant.Wildcard.DASH + sMonth + Constant.Wildcard.DASH;
-        sDate = sDate + Constant.Wildcard.LIKE_PATTERN;
+        if (iIndex == -1) return;
+        // Derive first and last day of the month
+        const aDateToFrom = BuildSelectWhereConditions.getDateMonthRange(oPayload.CheckFields[iIndex].value);
+        const dDateFrom = aDateToFrom.dDateFrom;
+        const dDateTo = aDateToFrom.dDateTo;
 
         //Map Headers
         // Map ClaimID or RequestID based on which HeaderTable to use
@@ -122,14 +98,15 @@ module.exports = {
         const aCurrentItemcondition = {
             [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
             [sHeaderField]: oPayload.RecordId,
-            [sItemField]: { '!=': oPayload.RecordSubId },
+            [sItemField]: { [Constant.ComparisonOperators.NotEquals]: oPayload.RecordSubId },
             [Constant.EntitiesFields.CLAIM_TYPE_ID]: oPayload.ClaimType,
             [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: oPayload.ClaimTypeItem,
-            [Constant.EntitiesFields.RECEIPT_DATE]: { LIKE: sDate }
+            [Constant.EntitiesFields.RECEIPT_DATE]: { between: [dDateFrom, dDateTo] }
         };
+        const sCurrentItemcondition = BuildSelectWhereConditions.buildWhereCondition(aCurrentItemcondition);
 
         return iCurrentData = await GetHistoricalData.getCurrentItemData(sItemTable,
-            aCurrentItemcondition,
+            sCurrentItemcondition,
             tx);
     },
 
@@ -138,7 +115,7 @@ module.exports = {
     * @private
     * @param {Object} oRule - matched eligibility rule from aRules
     * @param {Object} oPayload - original payload from user input
-    * @param {iFrequencyCount} - Date frequency count
+    * @param {Integer} iFrequencyCount - Date frequency count
     */
     _validateClaimItem: function (oRule, oPayload, iFrequencyCount) {
         var iIndex;
@@ -147,6 +124,7 @@ module.exports = {
             case Constant.ClaimTypeItem.I_PAD:
                 // I-PAD - return true if there is no historical claims within same Year/Month based on frequency and period
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
+                if (iIndex == -1) return;
                 if (iFrequencyCount < oRule.FREQUENCY) {
                     oPayload.CheckFields[iIndex].result = true;
                 } else {
@@ -156,14 +134,19 @@ module.exports = {
                 iIndex = null;
                 // I-PAD - return true if claim amount is less than eligible amount
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT);
+                if (iIndex == -1) return;
                 if (!oRule) {
                     oPayload.CheckFields[iIndex].result = false;
                 } else {
                     // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
                     // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
-                    oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
-                        oPayload.CheckFields[iIndex].value,
-                        parseFloat(oRule.ELIGIBLE_AMOUNT));
+                    if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
+                        oPayload.CheckFields[iIndex].result = true;
+                    } else {
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
+                            oPayload.CheckFields[iIndex].value,
+                            parseFloat(oRule.ELIGIBLE_AMOUNT));
+                    }
                 }
                 break;
         }

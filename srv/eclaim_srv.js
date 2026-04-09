@@ -920,13 +920,6 @@ module.exports = (srv) => {
     srv.on('getAmountEntitlement', async (req) => {
         const { ZEMP_MASTER, ZPERDIEM_ENT } = srv.entities;
         const tx = cds.tx(req);
-        const emailFromToken =
-            req.user?.attr?.email ||
-            req.user?.attr?.mail ||
-            req.user?.attr?.user_name ||
-            req.user?.attr?.login_name ||
-            req.user?.id ||
-            "";
         const today = new Date().toISOString().slice(0, 10);
 
         let entitlement = null;
@@ -937,9 +930,8 @@ module.exports = (srv) => {
         let allowance = 0;
 
         //get employee personal grade 
-        const email = String(emailFromToken).trim().toLowerCase();
         const result = await tx.run(
-            SELECT.one.from(ZEMP_MASTER).where({ EMAIL: email })
+            SELECT.one.from(ZEMP_MASTER).where({ EEID: req.data.employeeid })
         );
 
         try {
@@ -1013,8 +1005,6 @@ module.exports = (srv) => {
                 currency_code: entitlement.CURRENCY
             };
         }
-
-
     });
 
     /**

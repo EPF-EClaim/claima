@@ -626,6 +626,9 @@ entity ZCLAIM_TYPE_ITEM : managed {
         RISK                 : String(2)  @Common.Label: 'Risk';
         SUBMISSION_TYPE      : String     @Common.Label: 'Submission Type';
         IND_OR_GROUP         : String(4)  @Common.Label: 'Individual/Group';
+        FREQUENCY            : Integer    @Common.Label: 'Frequency';
+        PERIOD               : Integer    @Common.Label: 'Period';
+        PERIOD_UNIT          : String(24) @Common.Label: 'Period Unit';
         ZCLAIM_CATEGORY      : Association to ZCLAIM_CATEGORY
                                    on ZCLAIM_CATEGORY.CLAIM_CAT_ID = CATEGORY_ID;
         ZRISK                : Association to ZRISK

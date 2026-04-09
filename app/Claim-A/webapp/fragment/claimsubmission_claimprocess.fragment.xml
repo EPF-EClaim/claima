@@ -50,10 +50,22 @@
                         id="select_claimprocess_claimitem"
                         forceSelection="false"
                         selectedKey="{claimsubmission_input>/claimtype/item}"
-                        editable="false"
+                        items="{
+                            path: 'employee>/ZCLAIM_TYPE_ITEM',
+                            sorter: [
+                                { path: 'CLAIM_TYPE_ITEM_DESC' },
+                                { path: 'CLAIM_TYPE_ITEM_ID' }
+                            ],
+                            parameters: {
+                                $expand: 'ZSUBMISSION_TYPE',
+                                $select: 'SUBMISSION_TYPE,ZSUBMISSION_TYPE/SUBMISSION_TYPE_DESC'
+                            }
+                        }"
+                        editable="{= ${claimsubmission_input>/claimtype/type} !== null }"
                         change="onSelect_ClaimProcess_ClaimItem"
                         liveChange="onSelect_ClaimProcess_ClaimItem"
                     >
+                        <core:Item key="{employee>CLAIM_TYPE_ITEM_ID}" text="{employee>CLAIM_TYPE_ITEM_DESC}" />
                     </Select>
 
                     <!-- Category -->
@@ -64,55 +76,90 @@
                         editable="false"
                     />
 
+                    <!-- Select Course Code -->
+                    <Label text="{i18n>label_claimprocess_coursecode}" />
+                    <Select
+                        id="select_claimprocess_course_code"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claimtype/course_code/course_id}"
+                        items="{
+                            path: 'employee_view>/ZCLM_COURSE_VIEW',
+                            sorter: [
+                                { path: 'COURSE_ID' },
+                                { path: 'COURSE_DESC' }
+                            ]
+                        }"
+                        visible="{= Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) &amp;&amp;
+                            ${claimsubmission_input>/claimtype/item} !== null
+                        }"
+                        change="onSelect_ClaimProcess_CourseCode"
+                        liveChange="onSelect_ClaimProcess_CourseCode"
+                    >
+                        <core:Item key="{employee_view>COURSE_ID}" text="{employee_view>COURSE_ID} - {employee_view>COURSE_DESC}" />
+                    </Select>
+
+                    <!-- Select Session Number -->
+                    <Label text="{i18n>label_claimprocess_session_number}" />
+                    <Select
+                        id="select_claimprocess_session_number"
+                        forceSelection="false"
+                        selectedKey="{claimsubmission_input>/claimtype/course_code/session_number}"
+                        items="{
+                            path: 'employee>/ZTRAIN_COURSE_PART',
+                            sorter: [{ path: 'SESSION_NUMBER' }],
+                            parameters: { $select: 'START_DATE,END_DATE' }
+                        }"
+                        editable="{= ${claimsubmission_input>/claimtype/course_code/course_id} !== null
+                        }"
+                        visible="{= Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) &amp;&amp;
+                            ${claimsubmission_input>/claimtype/item} !== null
+                        }"
+                        change="onSelect_ClaimProcess_SessionNumber"
+                        liveChange="onSelect_ClaimProcess_SessionNumber"
+                    >
+                        <core:Item key="{employee>SESSION_NUMBER}" text="{employee>SESSION_NUMBER}" />
+                    </Select>
+
                     <!-- Select Request Form (Pre-Approval) -->
                     <Label text="{i18n>label_claimprocess_requestform}" />
                     <Select
                         id="select_claimprocess_requestform"
                         forceSelection="false"
                         selectedKey="{claimsubmission_input>/claimtype/requestform/request_id}"
-                        enabled="false"
-                        editable="false"
-                        visible="false"
+                        items="{
+                            path: 'employee>/ZREQUEST_HEADER',
+                            sorter: [{ path: 'REQUEST_ID' }],
+                            parameters: {
+                                $expand: 'COSTCENTER',
+                                $select: 'EVENT_START_DATE,EVENT_END_DATE,ALTERNATE_COST_CENTER,PREAPPROVAL_AMOUNT,CASH_ADVANCE,COSTCENTER/COST_CENTER_DESC'
+                            }
+                        }"
+                        editable="{= !${claimsubmission_input>/req_emailapprove} }"
+                        visible="{= ( ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/PRE_APPROVE} ||
+                                        ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CASH_REPAYMENT} ||
+                                        ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CURR_SUBSIDY} ) }"
                         change="onSelect_ClaimProcess_RequestForm"
                         liveChange="onSelect_ClaimProcess_RequestForm"
                     >
+                        <core:Item key="{employee>REQUEST_ID}" text="{employee>REQUEST_ID} {employee>OBJECTIVE_PURPOSE} ({employee>TRIP_START_DATE} – {employee>TRIP_END_DATE})" />
                     </Select>
 
                     <!-- Email Approval -->
                     <Label text="{i18n>label_claimprocess_req_emailapprove}" />
                     <Switch
                         id="switch_claimprocess_req_emailapprove"
-                        state="false"
+                        state="{claimsubmission_input>/req_emailapprove}"
                         customTextOn="{i18n>switch_claimprocess_req_emailapprove_yes}"
                         customTextOff="{i18n>switch_claimprocess_req_emailapprove_no}"
-                        enabled="false"
-                        visible="false"
+                        visible="{= ( ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/PRE_APPROVE} ||
+                                        ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CASH_REPAYMENT} ||
+                                        ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CURR_SUBSIDY} ) }"
                         change="onSwitch_ClaimProcess_Req_EmailApprove"
                     >
                         <layoutData>
                             <FlexItemData growFactor="1" />
                         </layoutData>
                     </Switch>
-
-                    <!-- Select Course Code -->
-                    <Label text="{i18n>label_claimprocess_coursecode}" />
-                    <Select
-                        id="select_claimprocess_course_code"
-                        forceSelection="false"
-                        selectedKey="{claimsubmission_input>/claimtype/course_code}"
-                        items="{
-                            path: 'employee_view>/ZCLM_COURSE_VIEW_VH',
-                            sorter: [
-                                { path: 'COURSE_ID' },
-                                { path: 'COURSE_DESC' }
-                            ]
-                        }"
-                        visible="{= Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) }"
-                        change="onSelect_ClaimProcess_CourseCode"
-                        liveChange="onSelect_ClaimProcess_CourseCode"
-                    >
-                        <core:Item key="{employee_view>COURSE_ID}" text="{employee_view>COURSE_ID} - {employee_view>COURSE_DESC}" />
-                    </Select>
                 </f:content>
             </f:SimpleForm>
      
@@ -122,8 +169,9 @@
                 id="button_claimprocess_preapproval"
                 press="onPreApproval_ClaimProcess"
                 text="{i18n>button_claimprocess_preapproval}"
-                enabled="false"
-                visible="false"
+                enabled="{= ( ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/PRE_APPROVE} ||
+                                ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CASH_REPAYMENT} ||
+                                ${claimsubmission_input>/claimtype/category} === ${constant>/SubmissionType/CURR_SUBSIDY} ) }"
             />
 
             <!-- Start Claim -->
@@ -131,7 +179,18 @@
                 id="button_claimprocess_startclaim"
                 press="onStartClaim_ClaimProcess"
                 text="{i18n>button_claimprocess_startclaim}"
-                enabled="false"
+                enabled="{= ${claimsubmission_input>/claimtype/type} !== null &amp;&amp;
+                            ${claimsubmission_input>/claimtype/item} !== null &amp;&amp;
+
+                    ( !Object.values(${constant>/ClaimTypeKursus}).includes(${claimsubmission_input>/claimtype/type}) ||
+                        ( ${claimsubmission_input>/claimtype/course_code/course_id} !== null &amp;&amp; ${claimsubmission_input>/claimtype/course_code/session_number} !== null )) &amp;&amp;
+
+                    ( ( ${claimsubmission_input>/claimtype/category} !== ${constant>/SubmissionType/PRE_APPROVE} &amp;&amp;
+                        ${claimsubmission_input>/claimtype/category} !== ${constant>/SubmissionType/CASH_REPAYMENT} &amp;&amp;
+                        ${claimsubmission_input>/claimtype/category} !== ${constant>/SubmissionType/CURR_SUBSIDY} ) ||
+                            ${claimsubmission_input>/req_emailapprove} ||
+                                ${claimsubmission_input>/claimtype/requestform/request_id} !== null)
+                }"
             />
 
             <!-- Cancel -->
