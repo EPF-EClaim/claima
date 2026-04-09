@@ -1336,7 +1336,10 @@
                     multiple="false"
                     style="Emphasized"
                     visible="false"
-                    required="{= ${claimitem_input>/claim_item/attachment_file_1} === null }"
+                    required="{= ${claimitem_input>/claim_item/attachment_file_1} === null &amp;&amp;
+
+                                    ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT}
+                    }"
 				>
 				</u:FileUploader>
                 <Label id="label_claimdetails_input_attachment_file_1" />
