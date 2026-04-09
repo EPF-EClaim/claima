@@ -24,69 +24,28 @@
 
 
 
-# POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
-# Content-Type: application/json
+POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
+Content-Type: application/json
  
-#    {
-#     "budget": [
-#       {
-#       "ACTUAL": "78.00",
-#       "BUDGET_BALANCE": "0.00",
-#       "BUDGET_OWNER_ID": null,
-#       "COMMITMENT": null,
-#       "COMMITMENT_ITEM": "11111",
-#       "CONSUMED": "20.11",
-#       "CURRENCY": "MYR",
-#       "CURRENT_BUDGET": "40.00",
-#       "FUND_CENTER": "222222222",
-#       "INTERNAL_ORDER": "1",
-#       "MATERIAL_GROUP": "44444444",
-#       "ORIGINAL_BUDGET": "30.00",
-#       "PROJECT_CODE": null,
-#       "RETURN": null,
-#       "SUPPLEMENT": null,
-#       "VIREMENT_IN": null,
-#       "VIREMENT_OUT": null,
-#       "WBS_CODE": null,
-#       "YEAR": "1995",
-#       "createdAt": null,
-#       "createdBy": "nur.ain.mohamad1@my.ey.com",
-#       "modifiedAt": null,
-#       "modifiedBy": "nur.ain.mohamadss1@my.ey.com",
-#       "HasActiveEntity": false,
-#       "HasDraftEntity": false,
-#       "IsActiveEntity": true
-#     },
-#     {
-#       "ACTUAL": "0.00",
-#       "BUDGET_BALANCE": "50.00",
-#       "BUDGET_OWNER_ID": "ysean1.tc@gmail.com",
-#       "COMMITMENT": "0.00",
-#       "COMMITMENT_ITEM": "710010",
-#       "CONSUMED": "0.00",
-#       "CURRENCY": "MYR",
-#       "CURRENT_BUDGET": "100.00",
-#       "FUND_CENTER": "100000000",
-#       "INTERNAL_ORDER": "1",
-#       "MATERIAL_GROUP": "710010901",
-#       "ORIGINAL_BUDGET": "20.00",
-#       "PROJECT_CODE": "-",
-#       "RETURN": "50.00",
-#       "SUPPLEMENT": "10.00",
-#       "VIREMENT_IN": "20.00",
-#       "VIREMENT_OUT": "20.00",
-#       "WBS_CODE": "-",
-#       "YEAR": "2026",
-#       "createdAt": null,
-#       "createdBy": null,
-#       "modifiedAt": "2026-03-29T16:40:05.351Z",
-#       "modifiedBy": "munirssss.malik@my.ey.com",
-#       "HasActiveEntity": false,
-#       "HasDraftEntity": false,
-#       "IsActiveEntity": true
-#     }
-#     ]
-#    }
+   {
+    "budget": [
+        {
+            "COMMITMENT_ITEM": "760001",
+            "FUND_CENTER": "108S37004",
+            "INTERNAL_ORDER": "1",
+            "MATERIAL_GROUP": "760001959",
+            "ORIGINAL_BUDGET": "10.00",
+            "RETURN": "10.00",
+            "SUPPLEMENT": "10.00",
+            "VIREMENT_IN": "90.00",
+            "VIREMENT_OUT": "0.00",
+            "YEAR": "2026",
+            "HasActiveEntity": false,
+            "HasDraftEntity": false,
+            "IsActiveEntity": true
+        }
+    ]
+}
 
 # POST    http://localhost:4004/odata/v4/EmployeeSrv/onFinalApproveInsert
 # Content-Type: application/json
@@ -200,35 +159,35 @@
 #     "ID": "REQ26000000022"
 #    }
 
-POST    http://localhost:4004/odata/v4/EmployeeSrv/EligibilityCheck
-Content-Type: application/json
-Authorization: Basic alice
+# POST    http://localhost:4004/odata/v4/EmployeeSrv/EligibilityCheck
+# Content-Type: application/json
+# Authorization: Basic alice
  
-    {
-     "aPayload": [
-       {
-         "CheckFields": [
-            {
-               "fieldName": "RECEIPT_DATE",
-               "value": "2026-01-05",
-               "result": null
-            },
-            {
-               "fieldName": "ELIGIBLE_AMOUNT",
-               "value": "800",
-               "result": null
-            },
-            {
-               "fieldName": "TRAVEL_HOURS",
-               "value": "1",
-               "result": null
-            }
-            ],
-         "ClaimType": "I-PAD",
-         "ClaimTypeItem": "I-PAD",
-         "EmpId": "USER_003",
-         "RecordId": "CLM26000000401",
-         "RecordSubId": "CLM26000000401001"
-      }
-     ]
-    }
+#     {
+#      "aPayload": [
+#        {
+#          "CheckFields": [
+#             {
+#                "fieldName": "RECEIPT_DATE",
+#                "value": "2026-01-05",
+#                "result": null
+#             },
+#             {
+#                "fieldName": "ELIGIBLE_AMOUNT",
+#                "value": "800",
+#                "result": null
+#             },
+#             {
+#                "fieldName": "TRAVEL_HOURS",
+#                "value": "1",
+#                "result": null
+#             }
+#             ],
+#          "ClaimType": "I-PAD",
+#          "ClaimTypeItem": "I-PAD",
+#          "EmpId": "USER_003",
+#          "RecordId": "CLM26000000401",
+#          "RecordSubId": "CLM26000000401001"
+#       }
+#      ]
+#     }
