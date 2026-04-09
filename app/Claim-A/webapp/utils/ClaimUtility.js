@@ -371,6 +371,20 @@ sap.ui.define([
 			}
 		},
 
+		getClaimHeader: async function (oODataModel, sClaimId) {
+			try {
+				const oContextBinding = oODataModel.bindContext(
+					`/ZCLAIM_HEADER('${encodeURIComponent(sClaimId)}')`
+				);
+
+				await oContextBinding.requestObject(); 
+				const oContext = oContextBinding.getBoundContext();
+				return oContext;
+			} catch (oError) {
+				return null;
+			}
+		},
+
 		/**
 		 * Retrieve and apply meter cube entitlement from backend service.
 		 *

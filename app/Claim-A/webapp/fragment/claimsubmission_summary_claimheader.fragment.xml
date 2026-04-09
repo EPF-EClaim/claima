@@ -46,7 +46,7 @@
                 text="{i18n>button_claimdetails_input_save}"
                 id="btnExcelDownload3"
                 press=".onSaveHeader"
-                visible="{editable>/saveHeader}"
+                visible="{claimSubmissionHeaderEditableModel>/saveHeader}"
             />
 
         </OverflowToolbar>
@@ -107,7 +107,7 @@
                 
                 <DatePicker
                     id="text_claimsummary_claimheader_tripstartdate"
-                    editable="{editable>/startTrip}"
+                    editable="{claimSubmissionHeaderEditableModel>/startTrip}"
                     value="{
 						path: 'claimsubmission_input>/claim_header/trip_start_date',
 						type: 'sap.ui.model.odata.type.Date',
@@ -123,7 +123,7 @@
                 />
                 <DatePicker
                     id="text_claimsummary_claimheader_tripenddate"
-                    editable="{editable>/endTrip}"
+                    editable="{claimSubmissionHeaderEditableModel>/endTrip}"
                     value="{
 						path: 'claimsubmission_input>/claim_header/trip_end_date',
 						type: 'sap.ui.model.odata.type.Date',
@@ -138,7 +138,7 @@
                 />
                 <DatePicker
                     id="text_claimsummary_claimheader_eventstartdate"
-                    editable="{editable>/startEvent}"
+                    editable="{claimSubmissionHeaderEditableModel>/startEvent}"
                     value="{
 						path: 'claimsubmission_input>/claim_header/event_start_date',
 						type: 'sap.ui.model.odata.type.Date',
@@ -153,7 +153,7 @@
                 />
                 <DatePicker
                     id="text_claimsummary_claimheader_eventenddate"
-                    editable="{editable>/endEvent}"
+                    editable="{claimSubmissionHeaderEditableModel>/endEvent}"
                     value="{
 						path: 'claimsubmission_input>/claim_header/event_end_date',
 						type: 'sap.ui.model.odata.type.Date',
@@ -208,7 +208,7 @@
                 <Label text="{i18n>label_claimsummary_claimheader_comment}" />
                 <Input
                     id="text_claimsummary_claimheader_comment"
-                    editable="{editable>/comment}"
+                    editable="{claimSubmissionHeaderEditableModel>/comment}"
                     value="{claimsubmission_input>/claim_header/comment}"
                 />
 
@@ -216,7 +216,7 @@
                 <Label text="{i18n>label_claimsummary_claimheader_location}" />
                 <Input
                     id="text_claimsummary_claimheader_location"
-                    editable="{editable>/location}"
+                    editable="{claimSubmissionHeaderEditableModel>/location}"
                     value="{claimsubmission_input>/claim_header/location}"
                     placeholder="{i18n>placeholder_claiminput_location}"
                 />
@@ -234,7 +234,7 @@
                         id="text_claimsummary_claimheader_altcc"
                         value="{claimsubmission_input>/claim_header/alternate_cost_center}"
                         additionalValue="{claimsubmission_input>/claim_header/descr/alternate_cost_center}"
-                        editMode="{= ${editable>/altCostCenter} ? 'Editable' : 'Display' }"
+                        editMode="{= ${claimSubmissionHeaderEditableModel>/altCostCenter} ? 'Editable' : 'Display' }"
                         display="ValueDescription"
                         visible="{= ${claimsubmission_input>/claimtype/cost_center} === null &amp;&amp;
                             ${claimsubmission_input>/claimtype/requestform/alternate_cost_center} === null
