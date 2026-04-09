@@ -285,7 +285,8 @@
                         ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp;
 						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
 						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
-						!${claimitem_property>/entitled_breakfast/is_visible}
+						!${claimitem_property>/entitled_breakfast/is_visible} &amp;&amp;
+                        !Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id})
 					}"
 					visible="{claimitem_property>/amount/is_visible}"
 				/>
