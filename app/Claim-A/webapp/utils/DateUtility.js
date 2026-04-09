@@ -732,30 +732,30 @@ sap.ui.define([
         /**
          * Convert Timepicker value to HH:mm:ss which accepted by HANA Cloud.
          * @public
-         * @param {string} timeStr from TimePicker value
+         * @param {string} sTimeStr from TimePicker value
          * @returns {string|null} formatted time
          */
-        convertTo24Hour: function (timeStr) {
-            if (!timeStr) return null;
+        convertTo24Hour: function (sTimeStr) {
+            if (!sTimeStr) return null;
 
-            const normalized = timeStr.replace(/\s+/g, ' ').trim();
+            const sNormalized = sTimeStr.replace(/\s+/g, ' ').trim();
 
-            const [time, modifier] = normalized.split(' ');
+            const [sTime, sModifier] = sNormalized.split(' ');
 
-            if (!time || !modifier) return null;
+            if (!sTime || !sModifier) return null;
 
-            let [hours, minutes, seconds] = time.split(':').map(Number);
+            let [iHours, iMinutes, iSeconds] = sTime.split(':').map(Number);
 
-            if (modifier.toUpperCase() === 'AM' && hours === 12) {
-                hours = 0;
+            if (sModifier.toUpperCase() === 'AM' && iHours === 12) {
+                iHours = 0;
             }
-            if (modifier.toUpperCase() === 'PM' && hours !== 12) {
-                hours += 12;
+            if (sModifier.toUpperCase() === 'PM' && iHours !== 12) {
+                iHours += 12;
             }
 
-            return `${hours.toString().padStart(2, '0')}:${minutes
+            return `${hours.toString().padStart(2, '0')}:${iMinutes
                 .toString()
-                .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                .padStart(2, '0')}:${iSeconds.toString().padStart(2, '0')}`;
         }
 
     };
