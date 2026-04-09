@@ -98,6 +98,15 @@ sap.ui.define([
                         }
                     }
                     
+                    if (!!oInputModel?.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimTypeItem.E_PENGAKUT) {
+                        // check if previous claim with elaun pengangkutan has already been approved
+                        var bClaimExists = await ClaimUtility.fetchClaimElaunPengangkutan(this._oOwnerComponent.getModel("session").getProperty("/userId"));
+                        if (bClaimExists) {
+                            MessageBox.error(Utility.getText("error_msg_epengakut_already_approved"));
+                            bCanProceed = false;
+                        }
+                    }
+                    
                     if (!!oClaimSubmissionModel) {
                         // course code pre-check
                         var sClaimType = oClaimSubmissionModel.getProperty("/claim_header/claim_type_id") || oClaimSubmissionModel.getProperty("/claimtype/type");

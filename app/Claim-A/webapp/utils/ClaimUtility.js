@@ -395,6 +395,35 @@ sap.ui.define([
 		},
 
 		/**
+		 * Retrieve approved claim for employee with claim item Elaun Pengangkutan
+		 * @public
+		 * @param {String} sEmpId - Employee ID
+		 * @return {Boolean} - return true if approved claim already exists with elaun pengangkutan claim item
+		 */
+		fetchClaimElaunPengangkutan: async function (sEmpId) {
+			if (!sEmpId) {
+				return true;
+			}
+
+			// check if claim exists with claim item elaun pengangkutan for employee
+			try {
+				const oFunction = this._oOwnerComponent.getModel().bindContext("/checkExistingClaimEPengakut(...)");
+
+				oFunction.setParameter("sEmpId", sEmpId);
+
+				await oFunction.execute();
+
+				const oContext = oFunction.getBoundContext();
+				const dResult = oContext.getObject("value");
+
+				return dResult;
+
+			} catch (oError) {
+				return true;
+			}
+		},
+
+		/**
 		 * Retrieve and apply meter cube entitlement from backend service.
 		 *
 		 * Calls backend entitlement function using the logged-in employee ID

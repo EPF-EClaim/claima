@@ -1271,6 +1271,47 @@ module.exports = (srv) => {
         }
     });
 
+    /**
+     * Check if user has already approved claim with elaun pengangkutan claim item
+     * @public
+     * @param {String} sEmpId - Employee ID
+     * @return {Boolean} - return true if approved claim already exists with elaun pengangkutan claim item
+     */
+    srv.on('checkExistingClaimEPengakut', async (req) => {
+        const { sEmpId } = req.data;
+
+        try {
+            var oFilters = { EMP_ID: sEmpId }
+            if (!!sRelationship) {
+                oFilters.RELATIONSHIP = sRelationship;
+            }
+            const aClaimSubmissions = await SELECT
+                .from(Constant.Entities.ZCLAIM_ITEM)
+                .columns(
+                    Constant.EntitiesFields.CLAIMID,
+                    { ref: ["STATUS_ID"], as: "ZCLAIM_HEADER" }
+                )
+                .where({
+                    EMP_ID: sEmpId,
+                    CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.E_PENGAKUT,
+                    "ZCLAIM_HEADER/STATUS_ID": Constant.Status.APPROVED
+                })
+                .orderBy([
+                    Constant.EntitiesFields.CLAIMID,
+                    Constant.EntitiesFields.CLAIM_SUB_ID
+                ]);
+
+            if (!aClaimSubmissions) {
+                return req.error(404, `Unable to retrieve previous claims.`);
+            }
+
+            return (aClaimSubmissions.length > 0) ? true : false;
+
+        } catch (error) {
+            return req.error(500, 'An error occurred while retrieving claims from Claim Item table.');
+        }
+    });
+
     srv.on('getOfficeDistance', async (req) => {
         const {
             sFromState,
