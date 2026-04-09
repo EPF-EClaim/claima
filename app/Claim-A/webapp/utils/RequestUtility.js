@@ -4,7 +4,6 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"claima/utils/Utility",
-	"sap/ui/model/odata/type/Int",
 	"claima/utils/DateUtility",
 	"sap/m/MessageBox",
 ], function (
@@ -13,7 +12,6 @@ sap.ui.define([
 	Filter,
 	FilterOperator,
 	Utility,
-	Int,
 	DateUtility,
 	MessageBox) {
     "use strict";
@@ -112,7 +110,7 @@ sap.ui.define([
             const oReqModel = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
             const oReqItem  = oReqModel.getProperty("/req_item");
             const aReqPart  = oReqModel.getProperty("/participant");
-            let calculatedAllocAmount
+            let calculatedAllocAmount;
 
             switch (oReqItem.claim_type_item_id) {
                 case Constants.ClaimTypeItem.LODGING_L:

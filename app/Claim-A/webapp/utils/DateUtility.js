@@ -701,10 +701,10 @@ sap.ui.define([
                 iMinutes = tTime.getMinutes();
                 iSeconds = tTime.getSeconds();
             } else if (tTime && tTime.ms !== undefined) {
-                let tempDate = new Date(tTime.ms);
-                iHours = tempDate.getUTCHours();
-                iMinutes = tempDate.getUTCMinutes();
-                iSeconds = tempDate.getUTCSeconds();
+                let dtempDate = new Date(tTime.ms);
+                iHours = dtempDate.getUTCHours();
+                iMinutes = dtempDate.getUTCMinutes();
+                iSeconds = dtempDate.getUTCSeconds();
             } else if (typeof tTime === "string") {
                 if (tTime.startsWith("PT")) {
                     iHours = parseInt((tTime.match(/(\d+)H/) || [0, 0])[1], 10);
@@ -735,7 +735,7 @@ sap.ui.define([
          * @param {string} timeStr from TimePicker value
          * @returns {string|null} formatted time
          */
-        convertTo24Hour(timeStr) {
+        convertTo24Hour: function (timeStr) {
             if (!timeStr) return null;
 
             const normalized = timeStr.replace(/\s+/g, ' ').trim();
