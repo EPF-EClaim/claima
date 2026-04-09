@@ -3297,21 +3297,15 @@ sap.ui.define([
 					nEntLunch = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day") - oClaimItemInputModel.getProperty("/claim_item/provided_lunch");
 					nEntDinner = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day") - oClaimItemInputModel.getProperty("/claim_item/provided_dinner");
 					
-					if (nEntBfast < 0) {
-						oClaimItemInputModel.setProperty("/claim_item/provided_breakfast", 0);
-					} else {
+					if (nEntBfast >= 0) {
 						oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);
 					}
 
-					if (nEntLunch < 0) {
-						oClaimItemInputModel.setProperty("/claim_item/provided_lunch", 0);
-					} else {
+					if (!nEntLunch >= 0) {
 						oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nEntLunch);
 					}
 
-					if (nEntDinner < 0) {
-						oClaimItemInputModel.setProperty("/claim_item/provided_dinner", 0);
-					} else {
+					if (!nEntDinner >= 0) {
 						oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nEntDinner);
 					}
 			}

@@ -84,13 +84,8 @@ sap.ui.define([
                         var nEntLunch = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_lunch");
                         var nEntDinner = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_dinner");
                         if (nEntBfast < 0 || nEntLunch < 0 || nEntDinner < 0) {
-                                    MessageBox.error(Utility.getText("msg_provided_meal_exceed"),
-            	                    {
-                	                    title: Utility.getText("msg_invalid_input"),
-                	                    actions: [MessageBox.Action.OK],
-                	                    emphasizedAction: MessageBox.Action.OK,
-            	                    });
-                                    bCanProceed = false
+                            MessageBox.error(Utility.getText("msg_provided_meal_exceed"));
+                            bCanProceed = false
                     }
                 }
 
