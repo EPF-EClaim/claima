@@ -249,7 +249,8 @@ sap.ui.define([
             "FROM_STATE_ID": "FROM_STATE_ID",
             "FROM_LOCATION_ID": "FROM_LOCATION_ID",
             "TO_STATE_ID": "TO_STATE_ID",
-            "TO_LOCATION_ID": "TO_LOCATION_ID"
+            "TO_LOCATION_ID": "TO_LOCATION_ID",
+            "RELATIONSHIP" : "RELATIONSHIP"
         },
         "Operators": {
             "EQUAL": "EQ",

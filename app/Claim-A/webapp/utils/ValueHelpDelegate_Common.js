@@ -2,12 +2,14 @@ sap.ui.define([
     "sap/ui/mdc/ValueHelpDelegate",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "sap/ui/mdc/enums/RequestShowContainerReason"
+    "sap/ui/mdc/enums/RequestShowContainerReason",
+    "claima/utils/Constants"
 ], function (
     ValueHelpDelegate,
     Filter,
     FilterOperator,
-    RequestShowContainerReason
+    RequestShowContainerReason,
+    Constants
 ) {
     "use strict";
 
@@ -134,6 +136,7 @@ sap.ui.define([
         oBindingInfo.parameters.threshold = 300;
 
         const oPayload = oValueHelp.getPayload();
+        const oInputModel = oValueHelp.getModel("claimitem_input");
 
         if(oPayload.filters?.length){
             const aPayloadFilter =  oPayload.filters.map(filter => {
@@ -153,6 +156,14 @@ sap.ui.define([
             if(aPayloadFilter.length){
                 oBindingInfo.filters.push(...aPayloadFilter)
             }
+        }
+
+        if(oInputModel.getProperty("/claim_item/claim_type_item_id") === Constants.ClaimType.POST_EDUCATION_ASSISTANCE){
+            oBindingInfo.filters.push(new Filter({
+                path: Constants.EntitiesFields.RELATIONSHIP,
+                operator: FilterOperator.EQ,
+                value1: "02"
+            }));
         }
 
         if (oPayload.searchKeys) {
