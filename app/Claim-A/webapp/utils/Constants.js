@@ -97,6 +97,11 @@ sap.ui.define([
             "LODG_O": "LODG_O",
             "LODGING_L": "LODGING_L"
         },
+        "ClaimTypeItemMakan": {
+            "MAKAN_O": "MAKAN_O",
+            "MAKAN_L": "MAKAN_L",
+            "MKN_LOAN": "MKN_LOAN"
+        },
         "ClaimTypeItemStatus": {
             "ACTIVE": "ACTIVE",
         },

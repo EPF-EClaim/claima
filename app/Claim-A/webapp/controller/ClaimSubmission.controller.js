@@ -2317,8 +2317,10 @@ sap.ui.define([
 			}
 
 			// set number of family members based on claim item
+			// no of family member + 1 for the claimant itself
 			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
-				oInputModel.setProperty("/claim_item/no_of_family_member", await ClaimUtility.getNumberOfFamilyMembers(oClaimSubmissionModel.getProperty("/claim_header/emp_id")));
+				var nDependent = await ClaimUtility.getNumberOfFamilyMembers(oClaimSubmissionModel.getProperty("/claim_header/emp_id")) + 1;
+				oInputModel.setProperty("/claim_item/no_of_family_member", nDependent);
 			}
 
 			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
@@ -3043,11 +3045,15 @@ sap.ui.define([
 		 * On changing number of days field, method checks for lodging claim type item to calculate eligible amount
 		 * @public
 		 */
-		onChange_ClaimDetails_NumberOfDays: function () {
+		onChange_ClaimDetails_NumberOfDays: async function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
 			// if claim type item is lodging, calculate amount based on eligible amount and number of days
 			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
 				this._calculateLodgingEligibleAmount();
+			}
+			// calculate amount for ELAUN PINDAH - MKN_LOAN
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_LOAN) {
+				this._updateEntitlementAmount(oInputModel);
 			}
 		},
 
@@ -3255,6 +3261,7 @@ sap.ui.define([
 			) {
 				return;
 			}
+		
 			// calculate travel duration (days/hours)
 			var startDateValue = this.byId(startDate).getValue();
 			var endDateValue = this.byId(endDate).getValue();
@@ -4783,13 +4790,6 @@ sap.ui.define([
 					}
 				} else if (this.byId("input_claimdetails_input_amount").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/amount", oResult.amount);
-				}
-
-				// additional amount based on number of family members
-				var oPropertyModel = this.getView().getModel("claimitem_property");
-				if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
-					var fAmount = oClaimItemInputModel.getProperty("/claim_item/amount");
-					oClaimItemInputModel.setProperty("/claim_item/amount", fAmount + (fAmount * parseInt(oClaimItemInputModel.getProperty("/claim_item/no_of_family_member"))));
 				}
 				
 			}).catch(err => {
