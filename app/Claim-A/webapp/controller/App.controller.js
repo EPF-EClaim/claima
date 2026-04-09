@@ -245,6 +245,24 @@ sap.ui.define([
 			
 		},
 
+		////Added for Attachment Issue showing after recreate Claim Submission with Email field
+		onDialogClaimProcessAfterOpen: function () {
+			const oUploader = this.byId("fileuploader_claiminput_attachment");
+			if (!oUploader) return;
+
+			// Clear internal value
+			oUploader.clear();
+			oUploader.setValue("");
+
+			// Clear the UI display (DOM)
+			setTimeout(() => {
+				const oDom = oUploader.getFocusDomRef();
+				if (oDom) {
+					oDom.value = "";
+				}
+			}, 0);
+		},
+
 		_getNewEmployeeModel: function (modelName) {
 			// Employee Model
 			var oEmployeeModel = new JSONModel({
