@@ -115,23 +115,6 @@ sap.ui.define([
         },
 
         /**
-         * Merge Date and Time
-         */
-        mergeDateTime(oDate, sTime) {
-            const dMergedDate = new Date(oDate.getTime());
-
-            if (sTime && typeof sTime === "string") {
-                const aParts = sTime.split(":");
-                if (aParts.length >= 2) {
-                    dMergedDate.setHours(parseInt(aParts[0], 10), parseInt(aParts[1], 10), 0, 0);
-                }
-            } else {
-                dMergedDate.setHours(0, 0, 0, 0);
-            }
-            return dMergedDate;
-        },
-
-        /**
          * Calculate number of days between given date range based on claim type item
          * @public
          * @param {string} sSubmissionType - whether data is processed based on claim or request submission type
@@ -696,8 +679,84 @@ sap.ui.define([
                 .replace("DD", sDay);
         },
 
+        /**
+         * Parse Date and Time into DateTime format.
+         * @public
+         * @param {Date} Date from input
+         * @param {Time} Time from input 
+         * @returns {oBaseDate} 
+         */
+        parseDateTime: function (dDate, tTime) {
+            let oBaseDate = new Date(dDate);
 
+            if (isNaN(oBaseDate.getTime())) {
+                console.error("Invalid Date format received:", dDate);
+                return oBaseDate;
+            }
 
+            let iHours = 0, iMinutes = 0, iSeconds = 0;
+
+            if (tTime instanceof Date) {
+                iHours = tTime.getHours();
+                iMinutes = tTime.getMinutes();
+                iSeconds = tTime.getSeconds();
+            } else if (tTime && tTime.ms !== undefined) {
+                let dtempDate = new Date(tTime.ms);
+                iHours = dtempDate.getUTCHours();
+                iMinutes = dtempDate.getUTCMinutes();
+                iSeconds = dtempDate.getUTCSeconds();
+            } else if (typeof tTime === "string") {
+                if (tTime.startsWith("PT")) {
+                    iHours = parseInt((tTime.match(/(\d+)H/) || [0, 0])[1], 10);
+                    iMinutes = parseInt((tTime.match(/(\d+)M/) || [0, 0])[1], 10);
+                    iSeconds = parseInt((tTime.match(/(\d+)S/) || [0, 0])[1], 10);
+                } else {
+                    let isPM = tTime.toLowerCase().includes("pm");
+                    let isAM = tTime.toLowerCase().includes("am");
+                    
+                    let aTimeParts = tTime.replace(/[^0-9:]/g, "").split(":");
+                    
+                    iHours = parseInt(aTimeParts[0] || 0, 10);
+                    iMinutes = parseInt(aTimeParts[1] || 0, 10);
+                    iSeconds = parseInt(aTimeParts[2] || 0, 10);
+
+                    if (isPM && iHours < 12) iHours += 12;
+                    if (isAM && iHours === 12) iHours = 0;
+                }
+            }
+
+            oBaseDate.setHours(iHours, iMinutes, iSeconds, 0);
+            return oBaseDate;
+        },
+
+        /**
+         * Convert Timepicker value to HH:mm:ss which accepted by HANA Cloud.
+         * @public
+         * @param {string} sTimeStr from TimePicker value
+         * @returns {string|null} formatted time
+         */
+        convertTo24Hour: function (sTimeStr) {
+            if (!sTimeStr) return null;
+
+            const sNormalized = sTimeStr.replace(/\s+/g, ' ').trim();
+
+            const [sTime, sModifier] = sNormalized.split(' ');
+
+            if (!sTime || !sModifier) return null;
+
+            let [iHours, iMinutes, iSeconds] = sTime.split(':').map(Number);
+
+            if (sModifier.toUpperCase() === 'AM' && iHours === 12) {
+                iHours = 0;
+            }
+            if (sModifier.toUpperCase() === 'PM' && iHours !== 12) {
+                iHours += 12;
+            }
+
+            return `${hours.toString().padStart(2, '0')}:${iMinutes
+                .toString()
+                .padStart(2, '0')}:${iSeconds.toString().padStart(2, '0')}`;
+        }
 
     };
 });

@@ -374,21 +374,12 @@ sap.ui.define([
         "OfficeDistance" : {
             "MILEAGE" : "MILEAGE"
         },
-        "RelationshipType" :{
-            "SPOUSE": "01"
-        },
-        "MaritalStatus": {
+          "MaritalStatus": {
             "WIDOWED": "W",
             "SINGLE": "S",
             "MARRIED": "M",
             "ENGAGED": "E",
             "DIVORCED": "D"
-        },
-        "MeterCubeId": {
-            "EMPLOYEE": "01",
-            "SINGLE": "02",
-            "SPOUSE": "03",
-            "MARRIED": "06"
         },
         "InsuranceProvider" : {
             "OTHERS" : "4",
@@ -437,10 +428,16 @@ sap.ui.define([
             "CLAIM_TYPE_ITEM_ID": "claim_type_item_id",
             "CLAIM_TYPE_ID": "claim_type_id", 
             "CLAIM_ID": "claim_id", 
+            "CLAIM_SUB_ID": "claim_sub_id", 
             "DESCR": "descr", 
             "GL_ACCOUNT": "gl_account", 
             "COST_CENTER": "cost_center",
             "IS_NEW": "is_new",
+        },
+        "Region": {
+            "SEMENANJUNG": "01",
+            "SABAH_SARAWAK": "02",
+            "OVERSEA": "03"
         }
     }
 });
