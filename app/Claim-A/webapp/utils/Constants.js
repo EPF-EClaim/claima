@@ -88,12 +88,19 @@ sap.ui.define([
             "YURAN_KLJ": "YURAN_KLJ",
             "CASH_REPAY": "CASH_REPAY",
             "GALAKAN" : "GALAKAN",
-            "TELEFON_B" : "TELEFON_B"
+            "TELEFON_B" : "TELEFON_B",
+            "ELEKTRIK" : "ELEKTRIK",
+            "BIL_AIR" : "BIL_AIR"
         },
         "ClaimTypeItemLodging": {
             "LOD_TUKAR": "LOD_TUKAR",
             "LODG_O": "LODG_O",
             "LODGING_L": "LODGING_L"
+        },
+        "ClaimTypeItemMakan": {
+            "MAKAN_O": "MAKAN_O",
+            "MAKAN_L": "MAKAN_L",
+            "MKN_LOAN": "MKN_LOAN"
         },
         "ClaimTypeItemStatus": {
             "ACTIVE": "ACTIVE",

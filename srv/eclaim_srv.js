@@ -202,7 +202,7 @@ module.exports = (srv) => {
 
     srv.on('batchCreateBudget', async (req) => {
         const { ZBUDGET } = srv.entities;
-        let original_budget, virement_in, virement_out, supplement, return_value, current_budget, consumed;
+        let original_budget, virement_in, virement_out, supplement, return_value, consumed;
         let results = [];
         try {
             const { budget } = req.data;
@@ -250,11 +250,10 @@ module.exports = (srv) => {
                     supplement = Number(row.SUPPLEMENT) || 0;
                     return_value = Number(row.RETURN) || 0;
 
-                    current_budget = Number(existing[0].CURRENT_BUDGET);
                     consumed = Number(existing[0].CONSUMED);
 
                     var total_budget = original_budget + virement_in + virement_out + supplement + return_value;
-                    var total_budget_balance = current_budget + consumed;
+                    var total_budget_balance = total_budget + consumed;
                     updatePayload.CURRENT_BUDGET = total_budget.toFixed(2);
                     updatePayload.BUDGET_BALANCE = total_budget_balance.toFixed(2);
 
@@ -965,6 +964,11 @@ module.exports = (srv) => {
         if (!entitlement) {
             return { amount: 0, daily_allowance: 0, currency_code: null };
         } else {
+            //calculation for MKN_LOAN based on dependent
+            if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN){
+                total_amt_dp = (entitlement.AMOUNT * req.data.dependent * req.data.day); 
+                return { amount: total_amt_dp };
+            } else {
             time_difference = req.data.day != 0 ? req.data.hours - (24 * req.data.day) : 0;
 
             //checking on the daily and meal allowance entitlement
@@ -982,19 +986,13 @@ module.exports = (srv) => {
                 }
                 meal_allowance += daily_allowance;
             }
+        }
 
-            //deduction of meal allowance
-            //// no deduction for elaun makan perpindahan
-            if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN) {
-                bfast = req.data.breakfast != 0 ? entitlement.AMOUNT * req.data.breakfast : 0;
-                lunch = req.data.lunch != 0 ? entitlement.AMOUNT * req.data.lunch : 0;
-                dinner = req.data.dinner != 0 ? entitlement.AMOUNT * req.data.dinner : 0;
-            } else {
-                //20% from breakfast, 40% from lunch, 40% from dinner 
-                bfast = req.data.breakfast != 0 ? (0.2 * entitlement.AMOUNT) * req.data.breakfast : 0;
-                lunch = req.data.lunch != 0 ? (0.4 * entitlement.AMOUNT) * req.data.lunch : 0;
-                dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
-            }
+            //20% from breakfast, 40% from lunch, 40% from dinner 
+            bfast = req.data.breakfast != 0 ? (0.2 * entitlement.AMOUNT) * req.data.breakfast : 0;
+            lunch = req.data.lunch != 0 ? (0.4 * entitlement.AMOUNT) * req.data.lunch : 0;
+            dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
+            
 
             total_meal_allowance = meal_allowance != 0 ? (meal_allowance - bfast - lunch - dinner) : 0;
             return {

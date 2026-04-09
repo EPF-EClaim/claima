@@ -76,7 +76,8 @@ const Constant = {
         "ELAUN_PINDAH": "ELAUN_PINDAH",
         "HANDPHONE": "HANDPHONE",
         "I_PAD": "I-PAD",
-        "HANDPHONE": "HANDPHONE"
+        "HANDPHONE": "HANDPHONE",
+        "JALUR_LEB": "JALUR_LEB"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -134,7 +135,8 @@ const Constant = {
         "YURAN": "YURAN",
         "YURAN_KLJ": "YURAN_KLJ",
         "I_PAD": "I-PAD",
-        "TELEFON_B": "TELEFON_B"
+        "TELEFON_B": "TELEFON_B",
+        "JALUR_LEB": "JALUR_LEB"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
