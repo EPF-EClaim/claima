@@ -11,6 +11,7 @@ module.exports = {
         var sConditions = "";
         var sLine = "";
         var i = 0;
+        var sInValues;
         for (const [field, value] of Object.entries(oConditions)) {
             if (i > 0) {
                 sConditions = sConditions + " " + [Constant.WhereCondition.AND] + " ";
@@ -26,11 +27,11 @@ module.exports = {
             }
             //Handle In list
             else if (value && value.in && Array.isArray(value.in)) {
-                var sInValues = value.in
+                sInValues = value.in
                     .map(v => `'${v}'`)
                     .join(', ');
 
-                sLine = field + " " + [Constant.WhereCondition.IN] + " " + `(${sInValues})`;
+                sLine = field + " " + Constant.WhereCondition.IN + " " + `(${sInValues})`;
                 //  `${field} IN (${sInValues})`;
             }
             //Handle Greater or Equals
@@ -55,12 +56,12 @@ module.exports = {
         }
         return sConditions;
     },
- /**
-   * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
-   * @public
-   * @param {String} sDate - Input Date
-   * @returns {Object} Contains both Date from and Date to Ranges
-   */
+    /**
+      * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
+      * @public
+      * @param {String} sDate - Input Date
+      * @returns {Object} Contains both Date from and Date to Ranges
+      */
     getDateMonthRange: function (sDate) {
         const sYearMonth = sDate.substring(0, 7);
         // Derive first and last day of the month
