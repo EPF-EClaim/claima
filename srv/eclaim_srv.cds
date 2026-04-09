@@ -368,7 +368,8 @@ service eclaim_srv @(requires: 'authenticated-user'){
                                   claimtypeitem: String,
                                   breakfast: Integer, 
                                   lunch: Integer, 
-                                  dinner: Integer) returns perdiem;
+                                  dinner: Integer,
+                                  dependent: Integer) returns perdiem;
 
     entity ZCLM_TYPE_EXCEPTION_LIST                as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
