@@ -6,6 +6,17 @@ sap.ui.define([
     function (JSONModel, Device, Constants) {
         "use strict";
 
+        const oHeaderEditable = {
+            "startTrip": false,
+            "endTrip": false,
+            "startEvent": false,
+            "endEvent": false,
+            "location": false,
+            "comment": false,
+            "altCostCenter": false,
+            "saveHeader": false,
+		};
+
         return {
             /**
              * Provides runtime information for the device the UI5 app is running on as a JSONModel.
@@ -64,6 +75,21 @@ sap.ui.define([
                 });
                 return oRoleModel;
             }, 
+
+            createClaimHeaderEditableModel: function () {
+                return new JSONModel(
+                    Object.assign({}, oHeaderEditable)
+                );
+            },
+            
+            /**
+             * Returns default values for claim header editables
+             * @returns {object}
+             */
+            getClaimHeaderEditableDefaults: function () {
+                return Object.assign({}, oHeaderEditable);
+            }
+
         };
 
     });

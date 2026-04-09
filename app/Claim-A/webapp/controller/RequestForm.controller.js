@@ -23,6 +23,7 @@ sap.ui.define([
 	"claima/utils/RejectDialog",
 	"claima/utils/SendBackDialog",
 	'claima/utils/Utility',
+	"claima/utils/ClaimUtility",
 	"claima/utils/ApproverUtility",
 	"claima/utils/workflowApproval",
 	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
@@ -57,6 +58,7 @@ sap.ui.define([
 	RejectDialog,
 	SendBackDialog,
 	Utility,
+	ClaimUtility,
 	ApproverUtility,
 	workflowApproval,
 	EligibleScenarioCheck,
@@ -94,6 +96,17 @@ sap.ui.define([
 
 			// URL Access
 			this._oRouter.getRoute("RequestForm").attachPatternMatched(this._onMatched, this);
+
+			var oHeaderEditable = new JSONModel({
+				"startTrip": false,
+				"endTrip": false,
+				"startEvent": false,
+				"endEvent": false,
+				"location": false,
+				"comment": false,
+				"altCostCenter": false,
+			});
+			this.getView().setModel(oHeaderEditable, "editable");
 		},
 
 		/* =========================================================
@@ -211,7 +224,11 @@ sap.ui.define([
 			} else {
 				PARequestSharedFunction.getCurrentState(this);
 			}
-
+			
+			this.setHeaderUnEditable();
+			if (sReqStatus == this._oConstant.RequestStatus.DRAFT || sReqStatus == this._oConstant.RequestStatus.SEND_BACK) {
+				this.setHeaderEditable();
+			}
 			PARequestSharedFunction.determineFooterButton(this);
 		},
 
@@ -446,6 +463,116 @@ sap.ui.define([
 
 			PARequestSharedFunction._getItemList(this, sReqId);
 			this._showItemList(sReqId);
+		},
+
+		
+		//set editable header fields
+		setHeaderEditable: async function () {
+			const oReqModel = this.getView().getModel("request");
+			var oEditableFields = this.getView().getModel("editable");
+
+			oEditableFields.setProperty("/startEvent", true);
+			oEditableFields.setProperty("/endEvent", true);
+			oEditableFields.setProperty("/location", true);
+			oEditableFields.setProperty("/comment", true);
+			oEditableFields.setProperty("/startTrip", true);
+			oEditableFields.setProperty("/endTrip", true);
+			const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oReqModel.getProperty("/req_header/claimtypedesc"))
+			if ( !sDefaultCostCenter ){
+				oEditableFields.setProperty("/altCostCenter", true);
+			}
+			oEditableFields.setProperty("/saveHeader", true);
+		},
+
+		//set all fields uneditable
+		setHeaderUnEditable: function () {
+			var oEditableFields = this.getView().getModel("editable");
+
+			oEditableFields.setProperty("/startEvent", false);
+			oEditableFields.setProperty("/endEvent", false);
+			oEditableFields.setProperty("/location", false);
+			oEditableFields.setProperty("/comment", false);
+			oEditableFields.setProperty("/startTrip", false);
+			oEditableFields.setProperty("/endTrip", false);
+			oEditableFields.setProperty("/altCostCenter", false);
+			oEditableFields.setProperty("/saveHeader", false);
+		},
+		
+		onSaveHeader: async function () {
+			const oInputModel = this.getView().getModel("request");
+			const oODataModel = this.getOwnerComponent().getModel();
+
+			if ( this._getHanaDate(oInputModel.getProperty("/req_header/tripstartdate")) && this._getHanaDate(oInputModel.getProperty("/req_header/tripenddate")) ) {
+				try {
+					BusyIndicator.show(0);
+
+					const sReqID = oInputModel.getProperty("/req_header/reqid");
+					if (!sReqID) {
+						throw new Error("Missing Request ID");
+					}
+
+					// Bind to existing claim header
+					const oContextBinding = oODataModel.bindContext(
+						`/ZREQUEST_HEADER('${encodeURIComponent(sReqID)}')`
+					);
+
+					await oContextBinding.requestObject(); 
+					const oContext = oContextBinding.getBoundContext();
+
+					const lastModifiedDate = this._getHanaDate(new Date());
+
+					oContext.setProperty("LAST_MODIFIED_DATE", lastModifiedDate);
+					oContext.setProperty("REMARK",
+						oInputModel.getProperty("/req_header/comment")
+					);
+					oContext.setProperty("LOCATION",
+						oInputModel.getProperty("/req_header/location")
+					);
+					oContext.setProperty("ALTERNATE_COST_CENTER",
+						oInputModel.getProperty("/req_header/altcostcenter")
+					);
+
+					oContext.setProperty("TRIP_START_DATE",
+						this._getHanaDate(oInputModel.getProperty("/req_header/tripstartdate"))
+					);
+					oContext.setProperty("TRIP_END_DATE",
+						this._getHanaDate(oInputModel.getProperty("/req_header/tripenddate"))
+					);
+					oContext.setProperty("EVENT_START_DATE",
+						this._getHanaDate(oInputModel.getProperty("/req_header/eventstartdate"))
+					);
+					oContext.setProperty("EVENT_END_DATE",
+						this._getHanaDate(oInputModel.getProperty("/req_header/eventenddate"))
+					);
+
+					await oODataModel.submitBatch("$auto");
+
+					MessageToast.show(
+						Utility.getText("msg_claimheader_updated", [sReqID])
+					);
+
+				} catch (e) {
+					MessageToast.show(
+						Utility.getText("msg_claimsubmission_failed", [e.message])
+					);
+					console.error(e);
+				} finally {
+					BusyIndicator.hide();
+				}
+			}	
+			else {
+				MessageBox.error(Utility.getText("req_d_w_mandatory_field"));
+			}
+		},
+
+		_getHanaDate: function (iDate) {
+			if (iDate) {
+				var oDate = new Date(iDate);
+				var oDateString = oDate.getFullYear() + '-' + ('0' + (oDate.getMonth() + 1)).slice(-2) + '-' + ('0' + oDate.getDate()).slice(-2);
+				return oDateString;
+			} else {
+				return null;
+			}
 		},
 
 		/* =========================================================

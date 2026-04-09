@@ -147,7 +147,29 @@ sap.ui.define([
                     );
                 });
             return Promise.resolve(true);
-        }
+        },
+
+        /**
+         * Check if start and end dates are valid
+         * @param {string} sStartdate 
+         * @param {string} sEnddate 
+         * @returns {boolean}
+         */
+        validDateRange: function (sStartdate, sEnddate) {
+			// check for missing value
+			if (!sStartdate || !sEnddate) {
+                MessageBox.error(Utility.getText("msg_daterange_missing"));
+                return false;
+            }
+			// check if end date earlier than start date
+			if (new Date(sStartdate) > new Date(sEnddate)) {
+                MessageBox.error(Utility.getText("msg_daterange_order"));
+                return false;
+            }
+			else {
+				return true;
+			}
+		},
  
     };
 });
