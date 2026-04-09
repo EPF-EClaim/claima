@@ -17,7 +17,15 @@ sap.ui.define([
 		* Eligibility Checking Function
 		* ======================================================= */
 
-		generateEligibilityCheckPayload(oController, sSubmissionType) {
+		/**
+		* Generate the payload needed for eligibility check
+		* @public
+		* @param {Object} oController - Object Model from Controller;
+		* @param {String} sSubmissionType - Submission Type of the request E.g Claim or Request
+		* @param {String} oClaimItemPayload - The claim item that the user wishes to duplicate in the claim submission
+		* @returns {Object} Object Payload with results field in CheckFields List Array populated
+		*/
+		generateEligibilityCheckPayload(oController, sSubmissionType, oClaimItemPayload) {
 			switch (sSubmissionType) {
 				case Constants.SubmissionTypePrefix.REQUEST:
 					var oItemData = oController._oReqModel.getProperty('/req_item');
@@ -44,15 +52,17 @@ sap.ui.define([
 					break;
 
 				case Constants.SubmissionTypePrefix.CLAIM:
-					var sEmpId = oController._oSessionModel.getProperty("/userId")
+					var sEmpId = oController._oSessionModel.getProperty("/userId");
 					const oHeaderModel = oController.getView().getModel("claimsubmission_input");
 					const oItemModel = oController.getView().getModel("claimitem_input");
 					var aItemPartData = [{ PARTICIPANTS_ID: sEmpId }];
-					var oItemData = oItemModel.getProperty('/claim_item');
+					var oItemData = oItemModel.getProperty('/claim_item') || oClaimItemPayload;
 					var sRecordId = oHeaderModel.getProperty("/claim_header/claim_id");
 					var sRecordSubId = oItemData?.claim_sub_id;
 					var sClaimType = oHeaderModel.getProperty('/claim_header/claim_type_id');
 					var sClaimTypeItem = oItemData.claim_type_item_id;
+
+					var receipt_date = oItemData.receipt_date ? "receipt_date" : "bill_date"
 
 					var oMapping = {
 						// field                		: db technical name
@@ -63,7 +73,7 @@ sap.ui.define([
 						"flight_class": "FLIGHT_CLASS_ID",
 						"room_type": "ROOM_TYPE_ID",
 						"mobile_category_purpose_id": "MOBILE_PHONE_BILL",
-						"receipt_date": "RECEIPT_DATE"
+						[receipt_date]: "RECEIPT_DATE"
 					};
 					break;
 
@@ -110,6 +120,14 @@ sap.ui.define([
 			return aPayload;
 		},
 
+		/**
+		* Validation for eligibility
+		* @public
+		* @param {Object} oController - Object Model from Controller;
+		* @param {String} aPayload - the generated payload from the EligibleScenarioCheck
+		* @param {String} sSubmissionType - Submission Type of the request E.g Claim or Request
+		* @returns {Boolean} Boolean to determine if there is an error with the checking
+		*/
 		eligibilityHandling: function (oController, aPayload, sSubmissionType) {
 			let oDBToUIControlMap = {};
 

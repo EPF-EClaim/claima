@@ -86,7 +86,7 @@ module.exports = {
             // DOBI - return true if user's traveling days >= eligible min days
             case Constant.ClaimTypeItem.DOBI:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.TRAVEL_DAYS_ID);
-
+                if (iIndex == -1) return;
                 if (!oRule) {
                     oPayload.CheckFields[iIndex].result = false;
                 }
@@ -102,7 +102,7 @@ module.exports = {
             // FLIGHT_L - return true if selected flight class matches user's personal grade
             case Constant.ClaimTypeItem.FLIGHT_L:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.FLIGHT_CLASS_ID);
-
+                if (iIndex == -1) return;
                 // if no rule matches the selected flight class, return false
                 if (!oRule) {
                     oPayload.CheckFields[iIndex].result = false;
@@ -118,7 +118,7 @@ module.exports = {
             // FLIGHT_O - return true if selected flight class matches user's personal grade
             case Constant.ClaimTypeItem.FLIGHT_O:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.FLIGHT_CLASS_ID);
-
+                if (iIndex == -1) return;
                 // if no rule matches the selected flight class, return false
                 if (!oRule) {
                     oPayload.CheckFields[iIndex].result = false;
@@ -134,6 +134,7 @@ module.exports = {
                     // return true if travel hours is greater than rule table data
                     if (oRule.TRAVEL_HOURS != undefined || oRule.TRAVEL_HOURS != null) {
                         iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.TRAVEL_HOURS);
+                        if (iIndex == -1) return;
                         oPayload.CheckFields[iIndex].result = ComparisonOperators.GreaterEquals(
                             oPayload.CheckFields[iIndex].value,
                             oRule.TRAVEL_HOURS);
@@ -147,16 +148,20 @@ module.exports = {
             case Constant.ClaimTypeItem.LODG_O:
             case Constant.ClaimTypeItem.LODGING_L:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.ELIGIBLE_AMOUNT);
-
+                if (iIndex == -1) return;
                 if (!oRule) {
                     oPayload.CheckFields[iIndex].result = false;
                 }
                 // calculate max claim amount allowed
                 else {
-                    oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
-                        parseFloat(oPayload.CheckFields[iIndex].value),
-                        parseFloat(oRule.ELIGIBLE_AMOUNT) * parseFloat(aPayload.sTravelDaysId)
-                    );
+                    if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
+                        oPayload.CheckFields[iIndex].result = true;
+                    } else {
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
+                            parseFloat(oPayload.CheckFields[iIndex].value),
+                            parseFloat(oRule.ELIGIBLE_AMOUNT) * parseFloat(aPayload.sTravelDaysId)
+                        );
+                    }
                 }
                 break;
 
@@ -164,7 +169,7 @@ module.exports = {
             //         - return true if claim amount is less than eligible amount * travel days
             case Constant.ClaimTypeItem.HOTEL_O:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.ROOM_TYPE_ID);
-
+                if (iIndex == -1) return;
                 if (!oRule) {
                     oPayload.CheckFields[iIndex].result = false;
                 }
@@ -180,28 +185,36 @@ module.exports = {
                 iIndex = null;
 
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.ELIGIBLE_AMOUNT);
-
+                if (iIndex == -1) return;
                 if (!oRule) {
                     oPayload.CheckFields[iIndex].result = false;
                 }
                 // calculate max claim amount allowed
                 else {
-                    oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
-                        parseFloat(oPayload.CheckFields[iIndex].value),
-                        parseFloat(oRule.ELIGIBLE_AMOUNT) * parseFloat(aPayload.sTravelDaysId)
-                    );
+                    if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
+                        oPayload.CheckFields[iIndex].result = true;
+                    } else {
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(
+                            parseFloat(oPayload.CheckFields[iIndex].value),
+                            parseFloat(oRule.ELIGIBLE_AMOUNT) * parseFloat(aPayload.sTravelDaysId)
+                        );
+                    }
                 }
                 break;
             // PARKING & PKN_PANAS - return true if claim amount is less than eligible amount
             case Constant.ClaimTypeItem.PARKING:
             case Constant.ClaimTypeItem.PKN_PANAS:
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.ELIGIBLE_AMOUNT);
+                if (iIndex == -1) return;
                 if (!oRule) {
                     oPayload.CheckFields[iIndex].result = false;
                 } else {
-                    // if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
-                    // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
-                    oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, parseFloat(oRule.ELIGIBLE_AMOUNT));
+                    if (oRule.ELIGIBLE_AMOUNT == Constant.UnlimitedAmount) {
+                        oPayload.CheckFields[iIndex].result = true;
+                    } else {// if user input has amount 100 while Rules table has max amount 300 (iMaxAmountEligible), return true
+                        // if user input has amount 1000 while Rules table has max amount 300 (iMaxAmountEligible), return iMaxAmountEligible (300)
+                        oPayload.CheckFields[iIndex].result = ComparisonOperators.LesserEquals(oPayload.CheckFields[iIndex].value, parseFloat(oRule.ELIGIBLE_AMOUNT));
+                    }
                 }
                 break;
         }

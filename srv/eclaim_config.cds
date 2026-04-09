@@ -356,6 +356,26 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
                 $Type: 'UI.DataField',
                 Value: SUBMISSION_TYPE,
                 Label: 'Submission Type'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: IND_OR_GROUP,
+                Label: 'Individual/Group'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: FREQUENCY,
+                Label: 'Frequency'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: PERIOD,
+                Label: 'Period'
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: PERIOD_UNIT,
+                Label: 'Period Unit'
             }
         ]
     }
@@ -3626,6 +3646,12 @@ annotate service.ZMETER_CUBE with @(
             },
             {
                 $Type            : 'UI.DataField',
+                Value            : AGE_CONDITION,
+                ![@UI.Importance]: #High,
+                Label            : 'Age Condition'
+            },
+            {
+                $Type            : 'UI.DataField',
                 Value            : AGE,
                 ![@UI.Importance]: #High,
                 Label            : 'Age'
@@ -4248,7 +4274,7 @@ annotate service.ZELIGIBILITY_RULE with @(
                 $Type            : 'UI.DataField',
                 Value            : IND_OR_GROUP,
                 ![@UI.Importance]: #High,
-                Label            : 'Individual or Group'
+                Label            : 'Individual/Group'
             },
             {
                 $Type            : 'UI.DataField',

@@ -97,6 +97,9 @@
                         <Column>
                             <Text text="{i18n>glacct}" />
                         </Column>
+                         <Column>
+                            <Text text="{i18n>claimcc}" />
+                        </Column>
                         <Column>
                             <Text text="{i18n>req_rtype}" />
                         </Column>
@@ -128,6 +131,8 @@
                                 <Text text="{CLAIM_TYPE_DESC}" />
 
                                 <Text text="{GL_ACCOUNT}" />
+
+                                <Text text="{COST_CENTER}" />
 
                                 <Text text="{REQUEST_TYPE}" />
 
@@ -170,6 +175,10 @@
                             <ViewSettingsItem
                                 text="{i18n>glacct}"
                                 key="GL_ACCOUNT"
+                            />
+                            <ViewSettingsItem
+                                text="{i18n>claimcc}"
+                                key="COST_CENTER"
                             />
                             <ViewSettingsItem
                                 text="{i18n>req_rtype}"
@@ -230,6 +239,17 @@
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
+                                 <ViewSettingsCustomItem
+                                text="{i18n>claimcc}"
+                                key="COST_CENTER"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterCostcenter"
+                                        placeholder="{i18n>zclaim_cost_center}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
                             <ViewSettingsCustomItem
                                 text="{i18n>req_rtype}"
                                 key="REQUEST_TYPE"
@@ -260,6 +280,28 @@
                                     <Input
                                         id="filterProjectClaim"
                                         placeholder="{i18n>zclaim_proj_claim}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                             <ViewSettingsCustomItem
+                                text="{i18n>start_date}"
+                                key="Start Date"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterStartDate"
+                                        placeholder="{i18n>zclaim_start_date}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                             <ViewSettingsCustomItem
+                                text="{i18n>req_i_end_date}"
+                                key="End Date"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterEndDate"
+                                        placeholder="{i18n>zclaim_end_date}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
@@ -296,10 +338,6 @@
                                 key="CATEGORY_ID"
                             />
                             <ViewSettingsItem
-                                text="{i18n>req_cc}"
-                                key="COST_CENTER"
-                            />
-                            <ViewSettingsItem
                                 text="{i18n>materialcode}"
                                 key="MATERIAL_CODE"
                             />
@@ -310,6 +348,22 @@
                             <ViewSettingsItem
                                 text="{i18n>submitted_type}"
                                 key="SUBMISSION_TYPE"
+                            />
+                             <ViewSettingsItem
+                                text="{i18n>claim_grp}"
+                                key="IND_OR_GROUP"
+                            />
+                             <ViewSettingsItem
+                                text="{i18n>claim_freq}"
+                                key="FREQUENCY"
+                            />
+                             <ViewSettingsItem
+                                text="{i18n>claim_period}"
+                                key="PERIOD"
+                            />
+                             <ViewSettingsItem
+                                text="{i18n>claim_period_unit}"
+                                key="PERIOD UNIT"
                             />
                             <ViewSettingsItem
                                 text="{i18n>req_i_start_date}"
@@ -359,17 +413,6 @@
                                 </customControl>
                             </ViewSettingsCustomItem>
                             <ViewSettingsCustomItem
-                                text="{i18n>req_cc}"
-                                key="COST_CENTER"
-                            >
-                                <customControl>
-                                    <Input
-                                        id="filterCostcenter"
-                                        placeholder="{i18n>zclaim_cost_center}"
-                                    />
-                                </customControl>
-                            </ViewSettingsCustomItem>
-                            <ViewSettingsCustomItem
                                 text="{i18n>materialcode}"
                                 key="MATERIAL_CODE"
                             >
@@ -388,6 +431,61 @@
                                     <Input
                                         id="filterRisk"
                                         placeholder="{i18n>zclaim_risk}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                            <ViewSettingsCustomItem
+                                text="{i18n>submitted_type}"
+                                key="SUBMISSION_TYPE"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterSubmittedType"
+                                        placeholder="{i18n>zclaim_submit_type}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                             <ViewSettingsCustomItem
+                                text="{i18n>claim_grp}"
+                                key="IND_OR_GROUP"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterClaimGrp"
+                                        placeholder="{i18n>zclaim_ind_group}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                              <ViewSettingsCustomItem
+                                text="{i18n>claim_freq}"
+                                key="FREQUENCY"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterClaimFreq"
+                                        placeholder="{i18n>zclaim_frequency}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                             <ViewSettingsCustomItem
+                                text="{i18n>claim_period}"
+                                key="PERIOD"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterClaimPeriod"
+                                        placeholder="{i18n>zclaim_period}"
+                                    />
+                                </customControl>
+                            </ViewSettingsCustomItem>
+                             <ViewSettingsCustomItem
+                                text="{i18n>claim_period_unit}"
+                                key="PERIOD UNIT"
+                            >
+                                <customControl>
+                                    <Input
+                                        id="filterClaimPeriodUnit"
+                                        placeholder="{i18n>zclaim_period_unit}"
                                     />
                                 </customControl>
                             </ViewSettingsCustomItem>
