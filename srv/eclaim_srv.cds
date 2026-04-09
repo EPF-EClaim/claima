@@ -368,8 +368,24 @@ service eclaim_srv @(requires: 'authenticated-user'){
                                   claimtypeitem: String,
                                   breakfast: Integer, 
                                   lunch: Integer, 
-                                  dinner: Integer) returns perdiem;
+                                  dinner: Integer,
+                                  dependent: Integer) returns perdiem;
 
+    function getMeterCubeEntitlement(
+        empId : String
+    ) returns Decimal(15,2);
+
+    type meterCubeAmount {
+    entitled : Decimal(15, 2);
+    amount   : Decimal(15, 2);
+    }
+
+    function calculatePengangkutanLautAmount(
+        empId           : String,
+        actualMeterCube : Decimal(15, 2),
+        actualAmount    : Decimal(15, 2)
+    ) returns meterCubeAmount;
+                                
     entity ZCLM_TYPE_EXCEPTION_LIST                as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
     function checkDefaultCostCenter(sClaimTypeId: String) returns String;
@@ -406,4 +422,11 @@ service eclaim_srv @(requires: 'authenticated-user'){
         PARTICIPANTS_ID: String;
     }
     action deleteParticipants(participants: array of ParticipantKey) returns Boolean;
+
+    function getLodgingAmount(
+        sClaimTypeId: String,
+        sClaimTypeItemId: String,
+        sEmpId: String
+    ) returns Decimal(15, 2);
+
 };
