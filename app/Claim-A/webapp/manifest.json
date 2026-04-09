@@ -642,7 +642,12 @@
                     "pattern": "ZWORKFLOW_RULE",
                     "name": "ZWORKFLOW_RULE",
                     "target": "ZWORKFLOW_RULE"
-                }                
+                },
+                {
+                    "pattern": "ZTRAIN_COURSE_PART",
+                    "name": "ZTRAIN_COURSE_PART",
+                    "target": "ZTRAIN_COURSE_PART"
+                }                 
             ],
             "targets": {
                 "TargetMain": {
@@ -4763,7 +4768,75 @@
                             }
                         }
                     }
-                },                
+                },
+                 "ZTRAIN_COURSE_PART": {
+                    "type": "Component",
+                    "id": "ZTRAIN_COURSE_PART",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/ZTRAIN_COURSE_PART",
+                            "variantManagement": "None",
+                            "controlConfiguration": {
+                                "@com.sap.vocabularies.UI.v1.LineItem": {
+                                    "tableSettings": {
+                                        "type": "GridTable",
+                                        "createMode": "inline",
+                                        "initialLoad": "Enabled",
+                                        "enableExport": true,
+                                        "selectAll": true,
+                                        "selectionMode": "Multi",
+                                        "personalization": {
+                                            "column": false,
+                                            "filter": true,
+                                            "sort": true
+                                        },
+                                        "quickVariantSelection": {
+                                            "hideTableTitle": true
+                                        },
+                                        "enableMassEdit": false,
+                                        "creationMode": {
+                                            "name": "CreationDialog",
+                                            "creationFields": "COURSE_ID, COURSE_DESC, SESSION_NUMBER, COURSE_SESSION_STAT, ATTENDENCE_STATUS, PARTICIPANT_ID, START_DATE, END_DATE"
+                                        },
+                                        "disableCopyToClipboard": true
+                                    },
+                                    "actions": {
+                                        "newCopy": {
+                                            "press": "claima.ext.controller.Config.onclickcopy",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Copy"
+                                        },
+                                        "newEdit": {
+                                            "press": "claima.ext.controller.Config.onClickEdit",
+                                            "visible": "{= ${/FeatureControl/operationEnabled} }",
+                                            "enabled": true,
+                                            "requiresSelection": true,
+                                            "text": "Edit"
+                                        }
+                                    }
+                                }
+                            },
+                            "hideFilterBar": true,
+                            "initialLoad": "Enabled",
+                            "navigation": {},
+                            "content": {
+                                "header": {
+                                    "actions": {
+                                        "onBack": {
+                                            "press": "claima.ext.controller.ListReportHeader.onClickBack",
+                                            "visible": true,
+                                            "enabled": true,
+                                            "text": "Back"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },  
                 "ZCLAIM_TYPE": {
                     "id": "ConfigTable",
                     "path": "claima.view",

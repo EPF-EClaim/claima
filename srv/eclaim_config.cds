@@ -4569,3 +4569,75 @@ annotate service.ZWORKFLOW_RULE with @(
         ]
     }
 );
+
+annotate service.ZTRAIN_COURSE_PART with @(
+    cds.autoexpose,
+    Capabilities.SearchRestrictions: {Searchable: false},
+    Common.SemanticKey             : [COURSE_ID, COURSE_DESC, SESSION_NUMBER, COURSE_SESSION_STAT, ATTENDENCE_STATUS,PARTICIPANT_ID, START_DATE,END_DATE],
+    Capabilities                   : {
+        Deletable : true,
+        Updatable : true,
+        Insertable: true
+    },
+    odata.draft.enabled,
+
+    UI                             : {
+        CreateHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        DeleteHidden: {$edmJson: {$Path: '/eclaim_srv.EntityContainer/FeatureControl/operationHidden'}},
+        HeaderInfo  : {
+            $Type         : 'UI.HeaderInfoType',
+            TypeName      : 'ELC-Participant Course Code - ZTRAIN_COURSE_PART',
+            TypeNamePlural: 'ELC-Participant Course Code - ZTRAIN_COURSE_PART',
+        },
+        LineItem    : [
+            {
+                $Type            : 'UI.DataField',
+                Value            : COURSE_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Course ID'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COURSE_DESC,
+                ![@UI.Importance]: #High,
+                Label            : 'Course Description'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : START_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'Start Date'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : END_DATE,
+                ![@UI.Importance]: #High,
+                Label            : 'End Date'
+            },   
+            {
+                $Type            : 'UI.DataField',
+                Value            : SESSION_NUMBER,
+                ![@UI.Importance]: #High,
+                Label            : 'Session Number'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : COURSE_SESSION_STAT,
+                ![@UI.Importance]: #High,
+                Label            : 'Course Session Stat'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : ATTENDENCE_STATUS,
+                ![@UI.Importance]: #High,
+                Label            : 'Attendence Status'
+            },
+            {
+                $Type            : 'UI.DataField',
+                Value            : PARTICIPANT_ID,
+                ![@UI.Importance]: #High,
+                Label            : 'Participant ID'
+            }             
+        ]
+    }
+);
