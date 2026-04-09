@@ -162,7 +162,8 @@ const Constant = {
         "JOB_GROUP": "JOB_GROUP",
         "PERSONAL_GRADE": "PERSONAL_GRADE",
         "START_DATE": "START_DATE",
-        "END_DATE": "END_DATE"
+        "END_DATE": "END_DATE",
+        "MANAGED_CREATEDAT": "createdAt"
     },
     Wildcard: {
         "All": "*",
@@ -208,7 +209,9 @@ const Constant = {
     },
     WhereCondition: {
         "AND": "AND",
-        "IN": "IN"
+        "IN": "IN",
+        "DESC": "DESC",
+        "ASC": "ASC"
     },
 
     RelationshipType: {

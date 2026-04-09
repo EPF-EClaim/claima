@@ -17,7 +17,7 @@ module.exports = {
     try {
       oSequenceCheck = await this._SequenceCheck(oPayload, oEmp, aRules, tx);
     } catch (error) {
-      throw new Error('Error during Eligiblity / Exception Rule checking');
+      throw new Error(`${error.message}`);
     }
 
     var iHistoricalData = await this._getHistoricalData(oPayload, oSequenceCheck.dDateTo, oSequenceCheck.dDateFrom, tx);
@@ -47,7 +47,7 @@ module.exports = {
    * @returns {Object} oPayload - return original payload but with result field filled
    */
   _SequenceCheck: async function (oPayload, oEmp, aRules, tx) {
-    var dDateTo, dDateFrom;
+    var oRule, dDateFrom, dDateTo, iFrequencyCount;
     //Check if there is value in aRules table
     if (!!aRules) {
       // Check for employee Role
@@ -66,39 +66,30 @@ module.exports = {
           })
           if (!(!!aFilteredRules[0])) {
             // Check Exception list
-            aExceptionData = await this._getExceptionData(oPayload, tx);
-            console.log("aExceptionData");
-            console.log(aExceptionData[0]);
+            oExceptionData = await this._getExceptionData(oPayload, tx);
           }
         }
       }
     } else {
       //if no Eligibility table data, check exception list
-      aExceptionData = await this._getExceptionData(oPayload, tx);
+      oExceptionData = await this._getExceptionData(oPayload, tx);
     }
 
     var oDateRange = await this._getDateRange(oPayload, tx);
-    var iFrequencyCount = oDateRange.iItemFreq;
-    if (!!aFilteredRules) {
-      oRule = aFilteredRules[0];
-      var dDateTo = oDateRange.oDatetoFrom.dDateTo;
-      var dDateFrom = oDateRange.oDatetoFrom.dDateFrom;
-    } else if (!!aExceptionData[0]) {
-      oRule = aExceptionData[0];
+    iFrequencyCount = oDateRange.iItemFreq;
+    dDateTo = oDateRange.oDatetoFrom.dDateTo;
+    dDateFrom = oDateRange.oDatetoFrom.dDateFrom;
 
-      // Validate receipt date with Exception list start end date range
-      if (!!oRule) {
-        var dDateTo = oRule.END_DATE;
-        var dDateFrom = oRule.START_DATE;
-      } else {
-        throw new Error("Receipt date exceeds Exception Start End Dates");
-      }
+    if (!!aFilteredRules[0]) {
+      oRule = aFilteredRules[0];
+    } else if (!!oExceptionData) {
+      oRule = oExceptionData;
     }
-    else {
-      throw new Error("No Eligibility / Exception rule found");
-    }
-    console.log("sequence:")
-    console.log(oRule, dDateFrom, dDateTo, iFrequencyCount);
+    // else {
+      // iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
+      // if (iIndex == -1) return;
+      // oPayload.CheckFields[iIndex].result = false;
+    // }
     return { oRule, dDateFrom, dDateTo, iFrequencyCount };
   },
 
@@ -200,7 +191,7 @@ module.exports = {
     * @public
     * @param {Object} oPayload - payload contains user input passed from frontend
     * @param {Object} tx - CDS Transaction
-    * @returns {Object} aExceptionData - return Exception table data
+    * @returns {Object} oExceptionData - return Exception table data
     */
   _getExceptionData: async function (oPayload, tx) {
     // If No data from Rules Table, refer to Exception list table
@@ -219,12 +210,11 @@ module.exports = {
     };
     const sExceptionConditions = BuildSelectWhereConditions.buildWhereCondition(aExceptionCondition);
     // Get Exception List Data
-    const aExceptionData = await tx.run(
-      SELECT.from(sExceptionTable).where(`${sExceptionConditions}`)
+    var sCreatedAtDesc = Constant.EntitiesFields.MANAGED_CREATEDAT + " " + Constant.WhereCondition.DESC;
+    const oExceptionData = await tx.run(
+      SELECT.one.from(sExceptionTable).where(`${sExceptionConditions}`).orderBy(`${sCreatedAtDesc}`)
     );
-    console.log("aExceptionData");
-    console.log(aExceptionData);
-    return aExceptionData;
+    return oExceptionData;
   },
 
   /**
@@ -244,7 +234,7 @@ module.exports = {
           (field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE,
         );
         if (iIndex == -1) return;
-        if (iExistingFreq < iAllowedFreq) {
+        if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
           oPayload.CheckFields[iIndex].result = true;
         } else {
           oPayload.CheckFields[iIndex].result = false;

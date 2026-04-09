@@ -127,7 +127,7 @@ module.exports = {
                 // I-PAD - return true if there is no historical claims within same Year/Month based on frequency and period
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
                 if (iIndex == -1) return;
-                if (iExistingFreq < iAllowedFreq) {
+                if ((!!oRule) && (iExistingFreq < iAllowedFreq)) {
                     oPayload.CheckFields[iIndex].result = true;
                 } else {
                     oPayload.CheckFields[iIndex].result = false;
