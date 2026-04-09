@@ -5,7 +5,7 @@ sap.ui.define([
 	"sap/ui/core/BusyIndicator",
 	"sap/ui/core/routing/History",
 	"sap/ui/model/json/JSONModel",
-		"sap/ui/model/Filter",
+	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
 	"sap/ui/core/format/DateFormat",

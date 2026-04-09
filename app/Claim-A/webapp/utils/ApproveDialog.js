@@ -7,8 +7,9 @@ sap.ui.define([
   "sap/m/Text",
   "sap/m/TextArea",
   "sap/ui/layout/form/SimpleForm",
-  "claima/utils/Utility"
-], function (JSONModel, Dialog, Button, Label, Text, TextArea, SimpleForm, Utility) {
+  "claima/utils/Utility",
+  "claima/utils/Constants"
+], function (JSONModel, Dialog, Button, Label, Text, TextArea, SimpleForm, Utility, Constants) {
   "use strict";
 
   function ensureModels(oController) {
@@ -97,7 +98,7 @@ sap.ui.define([
 
     const sMode = oController.getView().getModel("Type").getProperty("/mode");
     
-    oDialog.getEndButton().setText(sMode === Utility.getText("approve_mode_claim") ? Utility.getText("approve_btn") : Utility.getText("approve_btn_request"))
+    oDialog.getEndButton().setText(sMode === Constants.ApprovalProcess.CLAIM_APPROVE ? Utility.getText("approve_btn") : Utility.getText("approve_btn_request"))
     
     oDialog.addStyleClass("requestDialog");
     oView.addDependent(oDialog);
