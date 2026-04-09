@@ -1859,6 +1859,10 @@ sap.ui.define([
 				{ label: Utility.getText("label_claimdetails_input_remarks"), property: "remark", field: "input_claimdetails_input_remarks", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_attachment_file_1"), property: "attachment_file_1", field: "fileuploader_claimdetails_input_attachment_file_1", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_attachment_file_2"), property: "attachment_file_2", field: "fileuploader_claimdetails_input_attachment_file_2", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_marriagecategory"), property: "marriage_category", field: "select_claimdetails__input_marriagecategory", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_actual_meter_cube"), property: "actual_meter_cube", field: "input_claimdetails_meter_cube_actual", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_entitled_meter_cube"), property: "entitled_meter_cube", field: "input_claimdetails_meter_cube", width: 30 },
+
 			];
 
 			await ExcelExport.onDownloadExcelReport(this._oConstant.SubmissionTypePrefix.CLAIM,
@@ -2263,71 +2267,46 @@ sap.ui.define([
 			this._oConstant.ClaimTypeItem.KILOMETER
 			].includes(sKey);
 			oPropertyModel.setProperty("/km/is_required", bKmRequired);
-			//Display Marriage Category field only for DARAT (land transport) claim items
-			if (sKey === this._oConstant.ClaimTypeItem.DARAT) {
-				oPropertyModel.setProperty("/marriage_category/is_visible", true);
-			} else {
-				oPropertyModel.setProperty("/marriage_category/is_visible", false);
-				oInputModel.setProperty("/claim_item/marriage_category", null);
-			}
-			//Require "To State" selection only for Flight Wilayah Asal claim item.
-			if (sKey === this._oConstant.ClaimTypeItem.FLIGHT_WIL) {
-				oPropertyModel.setProperty("/to_state_id/is_required", true);
-			} else {
-				oPropertyModel.setProperty("/to_state_id/is_required", false);
-				oInputModel.setProperty("/claim_item/to_state_id", null);
-			}
+			
+			switch (sKey){
+				case this._oConstant.ClaimTypeItem.FLIGHT_WIL:
+					oPropertyModel.setProperty("/to_state_id/is_required", true);
+					break;
 
-			if(sKey === this._oConstant.ClaimTypeItem.ELEKTRIK || sKey === this._oConstant.ClaimTypeItem.BIL_AIR){
+				case this._oConstant.ClaimTypeItem.ELEKTRIK:
+					oPropertyModel.setProperty("/bill_no/is_required", true);
+					oPropertyModel.setProperty("/account_no/is_required", true);
+					break;
+
+				case this._oConstant.ClaimTypeItem.BIL_AIR:
 				oPropertyModel.setProperty("/bill_no/is_required", true);
 				oPropertyModel.setProperty("/account_no/is_required", true);
-			}
+				break;
 
-			if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
-				//entitled meter cube
-				oPropertyModel.setProperty("/meter_cube_entitled/is_visible", true);
-				oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
+				case this._oConstant.ClaimTypeItem.LAUT:
+					//entitled meter cube
+					oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
+					//actual meter cube
+					oPropertyModel.setProperty("/meter_cube_actual/is_editable", true);
 
-				//actual meter cube
-				oPropertyModel.setProperty("/meter_cube_actual/is_visible", true);
-				oPropertyModel.setProperty("/meter_cube_actual/is_editable", true);
+					oPropertyModel.setProperty("/actual_amount/is_editable", true);
 
-				oPropertyModel.setProperty("/actual_amount/is_visible", true);
-				oPropertyModel.setProperty("/actual_amount/is_editable", true);
+					oPropertyModel.setProperty("/amount/is_editable", false);
 
-				oPropertyModel.setProperty("/amount/is_visible", true);
-				oPropertyModel.setProperty("/amount/is_editable", false);
+					await ClaimUtility.onSelect_ClaimDetails_MeterCube(
+						sKey,
+						oInputModel,
+						oPropertyModel,
+						this.getOwnerComponent().getModel("session")
+					);
 
-				await ClaimUtility.onSelect_ClaimDetails_MeterCube(
-					sKey,
-					oInputModel,
-					oPropertyModel,
-					this.getOwnerComponent().getModel("session")
-				);
+					setTimeout(() => {
+						ClaimUtility.calculatePengangkutanLautAmount(oInputModel);
+					}, 50);
 
-				setTimeout(() => {
 					ClaimUtility.calculatePengangkutanLautAmount(oInputModel);
-				}, 50);
-
-				ClaimUtility.calculatePengangkutanLautAmount(oInputModel);
+					break;
 			}
-
-			else {
-				//entitled meter cube
-				oPropertyModel.setProperty("/meter_cube_entitled/is_visible", false);
-				oInputModel.setProperty("/claim_item/meter_cube_entitled", null);
-
-				//actual meter cube
-				oPropertyModel.setProperty("/meter_cube_actual/is_visible", false);
-				oInputModel.setProperty("/claim_item/meter_cube_actual", null);
-
-				oPropertyModel.setProperty("/actual_amount/is_visible", false);
-				oInputModel.setProperty("/claim_item/actual_amount", null);
-
-				oPropertyModel.setProperty("/amount/is_visible", true);
-				oPropertyModel.setProperty("/amount/is_editable", true);
-			}
-
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
 			// calculate number of days
@@ -4492,6 +4471,9 @@ sap.ui.define([
 				"input_claimdetails_input_remarks",
 				"fileuploader_claimdetails_input_attachment1",
 				"fileuploader_claimdetails_input_attachment2",
+				"select_claimdetails__input_marriagecategory",
+				"input_claimdetails_meter_cube_actual",
+				"input_claimdetails_meter_cube"
 			];
 
 			aControlIds.forEach(id => {
@@ -4627,6 +4609,9 @@ sap.ui.define([
 				"input_claimdetails_input_remarks",
 				"fileuploader_claimdetails_input_attachment_file_1",
 				"fileuploader_claimdetails_input_attachment_file_2",
+				"select_claimdetails__input_marriagecategory",
+				"input_claimdetails_meter_cube_actual",
+				"input_claimdetails_meter_cube"
 			];
 
 			aControlIds.forEach(id => {
