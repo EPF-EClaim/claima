@@ -4810,13 +4810,6 @@ sap.ui.define([
 				} else if (this.byId("input_claimdetails_input_amount").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/amount", oResult.amount);
 				}
-
-				// additional amount based on number of family members
-				// var oPropertyModel = this.getView().getModel("claimitem_property");
-				// if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
-				// 	var fAmount = oClaimItemInputModel.getProperty("/claim_item/amount");
-				// 	oClaimItemInputModel.setProperty("/claim_item/amount", fAmount + (fAmount * parseInt(oClaimItemInputModel.getProperty("/claim_item/no_of_family_member"))));
-				// }
 				
 			}).catch(err => {
 				MessageBox.error(
