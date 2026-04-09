@@ -470,10 +470,15 @@ sap.ui.define([
 
 			oReqData.req_item = {
 				est_amount: 0,
-				kilometer: 0,
 				rate_per_kilometer: 0,
 				toll_amt: 0,
-				cash_advance: false
+				cash_advance: false,
+				entitled_breakfast: 0,
+				entitled_lunch: 0,
+				entitled_dinner: 0,
+				daily_allowance: 0,
+				travel_day: 0,
+				travel_hour: 0
 			};
 
 			// if group type is Individual
@@ -582,7 +587,18 @@ sap.ui.define([
 				gl_account				: oReqItem.GL_ACCOUNT || "",
 				material_code			: oReqItem.MATERIAL_CODE || "",
 				dependent_relationship	: oReqItem.DEPENDENT_RELATIONSHIP || "",
-				meter_cube_actual		: oReqItem.METER_CUBE_ACTUAL || 0,			
+				meter_cube_actual		: oReqItem.METER_CUBE_ACTUAL || 0,	
+
+				trip_start_date			: oReqItem.TRIP_START_DATE || null,
+				trip_end_date			: oReqItem.TRIP_END_DATE || null,
+				trip_start_time			: oReqItem.TRIP_START_TIME || null,
+				trip_end_time			: oReqItem.TRIP_END_TIME || null,
+				travel_day				: oReqItem.TRAVEL_DURATION_DAY || 0,
+				travel_hour				: oReqItem.TRAVEL_DURATION_HOUR || 0,
+				entitled_breakfast		: oReqItem.ENTITLED_BREAKFAST || 0,
+				entitled_lunch			: oReqItem.ENTITLED_LUNCH || 0,
+				entitled_dinner			: oReqItem.ENTITLED_DINNER || 0,
+				daily_allowance			: oReqItem.DAILY_ALLOWANCE || 0
 			});
 
 			const sState = this._oReqModel.getProperty("/view");
@@ -1056,6 +1072,8 @@ sap.ui.define([
 					var arrival_date 	= new Date(oReqItem.arrival_time).toISOString() || null;
 				}
 
+				var time = DateUtility.convertTo24Hour(oReqItem.trip_end_time);
+
 				let oPayload = {
 					EMP_ID: 					  sEmpId,
 					REQUEST_ID:                   sReqId,
@@ -1107,7 +1125,19 @@ sap.ui.define([
 					METER_CUBE_ENTITLED:          parseFloat(oReqItem.cube_eligible || 0),
 					METER_CUBE_ACTUAL:            parseFloat(oReqItem.meter_cube_actual || 0),
 					DECLARE_CLUB_MEMBERSHIP:      !!oReqItem.club_membership,
-					CASH_ADVANCE:                 !!oReqItem.cash_advance
+					CASH_ADVANCE:                 !!oReqItem.cash_advance,
+
+					// ======== MAKAN_L MAKAN_O ========
+					TRAVEL_DURATION_DAY:          parseFloat(oReqItem.travel_day || 0), 
+                    TRAVEL_DURATION_HOUR:         parseFloat(oReqItem.travel_hour || 0),
+                    TRIP_START_DATE:              oReqItem.trip_start_date || null,
+                    TRIP_END_DATE:                oReqItem.trip_end_date || null,
+                    TRIP_START_TIME:              oReqItem.trip_start_time || null,
+                    TRIP_END_TIME:                oReqItem.trip_end_time || null,
+                    DAILY_ALLOWANCE:              parseInt(oReqItem.daily_allowance, 10) || 0,
+                    ENTITLED_BREAKFAST:           parseInt(oReqItem.entitled_breakfast, 10) || 0,
+                    ENTITLED_LUNCH:               parseInt(oReqItem.entitled_lunch, 10) || 0,
+                    ENTITLED_DINNER:              parseInt(oReqItem.entitled_dinner, 10) || 0
 				};
 
 				if (sAttachment1_SFID) oPayload.ATTACHMENT1 = `${sAttachment1_SFID} - ${oReqItem.doc1.name}`;
@@ -1364,6 +1394,7 @@ sap.ui.define([
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", oEmpData.NAME);
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_COST_CENTER", oEmpData.CC);
 				RequestUtility.populateAllocatedAmount();	// populate allocated amount if applicable
+				
 			} else {
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANTS_ID", "");
 				this._oReqModel.setProperty(sRowPath + "/PARTICIPANT_NAME", "");
@@ -2055,13 +2086,32 @@ sap.ui.define([
 					const _oHeader = this._oReqModel.getProperty("/req_header") || {};
 					const _oItem = this._oReqModel.getProperty("/req_item") || {};
 					var iDiffDays = DateUtility.calculateNumberOfDays(this._oConstant.SubmissionTypePrefix.REQUEST, _oHeader, _oItem);
+
 					this._oReqModel.setProperty("/req_item/no_of_days", iDiffDays);
+
+					// special checking and prompt
+					switch (sClaimTypeItem) {
+						case Constants.ClaimTypeItem.LODGING_L:
+						case Constants.ClaimTypeItem.LODG_O:
+							RequestUtility.populateAllocatedAmount();
+							break;
+
+						case Constants.ClaimTypeItem.MAKAN_O:
+							this._onFilterOversea();
+							break;
+					
+						default:
+							break;
+					}
 				}
 
 			} catch (err) {
 				console.error("OData bindList failed:", err);
 			} finally {
 				BusyIndicator.hide();
+				if (this._oReqModel.getProperty("/view") === this._oConstant.PARMode.LIST) {
+					this._oReqModel.setProperty("/req_item/est_amount", 0);
+				}
 			}
 		},
 
@@ -2103,7 +2153,17 @@ sap.ui.define([
 				"i_cube_eligible",
 				"i_departure_time",
 				"i_arrival_time",
-				"i_lodging_cat"
+				"i_lodging_cat",
+				"i_trip_start_date",
+				"i_trip_end_date",
+				"i_trip_start_time", 
+				"i_trip_end_time", 
+				"i_travel_day", 
+				"i_travel_hour", 
+				"i_breakfast", 
+				"i_lunch", 
+				"i_dinner", 
+				"i_daily_allowance"
 			];
 
 			aControlIds.forEach(id => {
@@ -2439,6 +2499,17 @@ sap.ui.define([
 
 		onSelectToOffice: function () {
 			RequestUtility.determineOfficeMileage();
-		}
+		},
+
+		_onFilterOversea: function () {
+
+			const oSelect   = this.byId("item_select_sss");
+			const oBinding  = oSelect.getBinding("items");
+			const aFilters  = oSelect ? [
+                                new Filter("REGION_ID", FilterOperator.EQ, Constants.Region.OVERSEA)
+                            ]: [];
+			oBinding.filter(aFilters);
+		},
+
 	});
 });

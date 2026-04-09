@@ -716,7 +716,71 @@ sap.ui.define([
         },
 
 
+        parseDateTime (dDate, tTime) {
+            let oBaseDate = new Date(dDate);
 
+            if (isNaN(oBaseDate.getTime())) {
+                console.error("Invalid Date format received:", dDate);
+                return oBaseDate;
+            }
+
+            let iHours = 0, iMinutes = 0, iSeconds = 0;
+
+            if (tTime instanceof Date) {
+                iHours = tTime.getHours();
+                iMinutes = tTime.getMinutes();
+                iSeconds = tTime.getSeconds();
+            } else if (tTime && tTime.ms !== undefined) {
+                let tempDate = new Date(tTime.ms);
+                iHours = tempDate.getUTCHours();
+                iMinutes = tempDate.getUTCMinutes();
+                iSeconds = tempDate.getUTCSeconds();
+            } else if (typeof tTime === "string") {
+                if (tTime.startsWith("PT")) {
+                    iHours = parseInt((tTime.match(/(\d+)H/) || [0, 0])[1], 10);
+                    iMinutes = parseInt((tTime.match(/(\d+)M/) || [0, 0])[1], 10);
+                    iSeconds = parseInt((tTime.match(/(\d+)S/) || [0, 0])[1], 10);
+                } else {
+                    let isPM = tTime.toLowerCase().includes("pm");
+                    let isAM = tTime.toLowerCase().includes("am");
+                    
+                    let aTimeParts = tTime.replace(/[^0-9:]/g, "").split(":");
+                    
+                    iHours = parseInt(aTimeParts[0] || 0, 10);
+                    iMinutes = parseInt(aTimeParts[1] || 0, 10);
+                    iSeconds = parseInt(aTimeParts[2] || 0, 10);
+
+                    if (isPM && iHours < 12) iHours += 12;
+                    if (isAM && iHours === 12) iHours = 0;
+                }
+            }
+
+            oBaseDate.setHours(iHours, iMinutes, iSeconds, 0);
+            return oBaseDate;
+        },
+
+        convertTo24Hour(timeStr) {
+            if (!timeStr) return null;
+
+            const normalized = timeStr.replace(/\s+/g, ' ').trim();
+
+            const [time, modifier] = normalized.split(' ');
+
+            if (!time || !modifier) return null;
+
+            let [hours, minutes, seconds] = time.split(':').map(Number);
+
+            if (modifier.toUpperCase() === 'AM' && hours === 12) {
+                hours = 0;
+            }
+            if (modifier.toUpperCase() === 'PM' && hours !== 12) {
+                hours += 12;
+            }
+
+            return `${hours.toString().padStart(2, '0')}:${minutes
+                .toString()
+                .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
 
     };
 });
