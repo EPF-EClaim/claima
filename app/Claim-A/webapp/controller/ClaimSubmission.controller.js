@@ -1608,17 +1608,6 @@ sap.ui.define([
 					break;
 				//// Submit Report
 				case this._oConstant.Claim_Action.SUBMIT:
-
-					//Add checker for Trip End date greater than current date;
-					var oInputModel = this.getView().getModel("claimsubmission_input");
-					var sTripEndDate = oInputModel.getProperty("/claim_header/trip_end_date");
-
-
-					if (DateUtility.isFutureDate(sTripEndDate)) {
-						MessageBox.error(Utility.getText("msg_claimsubmit_datecheck"));
-						return;
-					}
-
 					this._pendingAction = oAction;
 
 					if (!this._openDeclarationDialog) {
