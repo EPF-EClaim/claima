@@ -1395,6 +1395,38 @@ module.exports = (srv) => {
         }
     });
 
+    srv.on("getLodgingAmount", async (req) => {
+        const { sClaimTypeId, sClaimTypeItemId, sEmpId } = req.data;
+
+        if (!sClaimTypeId || !sClaimTypeItemId || !sEmpId) {
+            return req.error(400, "Missing required parameters: Claim Type, Claim Type Item, or Employee ID.");
+        }
+
+        try {
+            const oEmployee = await SELECT.one.from('ZEMP_MASTER').where({EEID: sEmpId});
+            if (!oEmployee || !oEmployee.GRADE) {
+                return req.error(404, `Employee record or Personal Grade not found for ID: ${sEmpId}`);
+            }
+
+            const sPersonalGrade = oEmployee.GRADE;
+
+            const oRule = await SELECT.one.from('ZELIGIBILITY_RULE').where({
+                CLAIM_TYPE_ID: sClaimTypeId,
+                CLAIM_TYPE_ITEM_ID: sClaimTypeItemId,
+                PERSONAL_GRADE: sPersonalGrade
+            });
+
+            if (oRule && oRule.ELIGIBLE_AMOUNT !== undefined) {
+                return oRule.ELIGIBLE_AMOUNT; 
+            } else {
+                return req.error(404, `No eligibility rule configured for Grade ${sPersonalGrade} on this claim item.`);
+            }
+
+        } catch (error) {
+            return req.error(500, `Failed to retrieve lodging amount: ${error.message}`);
+        }
+    });
+
     /**
      * Compute total meter cube entitlement for an employee.
      * This helper method applies business rules to calculate the total meter cube
