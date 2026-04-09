@@ -3,6 +3,9 @@
     xmlns:l="sap.ui.layout"
     xmlns:f="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
+    xmlns:mdc="sap.ui.mdc"
+    xmlns:mdcvh="sap.ui.mdc.valuehelp"
+    xmlns:mdcvhcnt="sap.ui.mdc.valuehelp.content"
 	core:require="{FloatType: 'sap/ui/model/type/Float'}"
 >
     <VBox 
@@ -36,6 +39,16 @@
                 press=".onDownloadExcelReport"
             />
             
+            <!-- Save header -->
+            <Button
+                type="Default"
+                icon="sap-icon://save"
+                text="{i18n>button_claimdetails_input_save}"
+                id="btnExcelDownload3"
+                press=".onSaveHeader"
+                visible="{claimSubmissionHeaderEditableModel>/saveHeader}"
+            />
+
         </OverflowToolbar>
         <f:SimpleForm
             editable="false"
@@ -88,10 +101,14 @@
                 <!-- Trip Start Date -->
                 <Label
                     text="{i18n>label_claimsummary_claimheader_tripstartdate}"
+                    required="true"
+                    tooltip="{i18n>valuehelp_claiminput_tripdate}"
                 />
-                <Text
+                
+                <DatePicker
                     id="text_claimsummary_claimheader_tripstartdate"
-                    text="{
+                    editable="{claimSubmissionHeaderEditableModel>/startTrip}"
+                    value="{
 						path: 'claimsubmission_input>/claim_header/trip_start_date',
 						type: 'sap.ui.model.odata.type.Date',
 						formatOptions: { pattern: 'dd-MMM-yyyy' }
@@ -101,10 +118,13 @@
                 <!-- Trip End Date -->
                 <Label
                     text="{i18n>label_claimsummary_claimheader_tripenddate}"
+                    required="true"
+                    tooltip="{i18n>valuehelp_claiminput_tripdate}"
                 />
-                <Text
+                <DatePicker
                     id="text_claimsummary_claimheader_tripenddate"
-                    text="{
+                    editable="{claimSubmissionHeaderEditableModel>/endTrip}"
+                    value="{
 						path: 'claimsubmission_input>/claim_header/trip_end_date',
 						type: 'sap.ui.model.odata.type.Date',
 						formatOptions: { pattern: 'dd-MMM-yyyy' }
@@ -114,10 +134,12 @@
                 <!-- Event Start Date -->
                 <Label
                     text="{i18n>label_claimsummary_claimheader_eventstartdate}"
+                    tooltip="{i18n>valuehelp_claiminput_eventdate}"
                 />
-                <Text
+                <DatePicker
                     id="text_claimsummary_claimheader_eventstartdate"
-                    text="{
+                    editable="{claimSubmissionHeaderEditableModel>/startEvent}"
+                    value="{
 						path: 'claimsubmission_input>/claim_header/event_start_date',
 						type: 'sap.ui.model.odata.type.Date',
 						formatOptions: { pattern: 'dd-MMM-yyyy' }
@@ -127,10 +149,12 @@
                 <!-- Event End Date -->
                 <Label
                     text="{i18n>label_claimsummary_claimheader_eventenddate}"
+                    tooltip="{i18n>valuehelp_claiminput_eventdate}"
                 />
-                <Text
+                <DatePicker
                     id="text_claimsummary_claimheader_eventenddate"
-                    text="{
+                    editable="{claimSubmissionHeaderEditableModel>/endEvent}"
+                    value="{
 						path: 'claimsubmission_input>/claim_header/event_end_date',
 						type: 'sap.ui.model.odata.type.Date',
 						formatOptions: { pattern: 'dd-MMM-yyyy' }
@@ -162,16 +186,19 @@
 
                 <!-- Comment -->
                 <Label text="{i18n>label_claimsummary_claimheader_comment}" />
-                <Text
+                <Input
                     id="text_claimsummary_claimheader_comment"
-                    text="{claimsubmission_input>/claim_header/comment}"
+                    editable="{claimSubmissionHeaderEditableModel>/comment}"
+                    value="{claimsubmission_input>/claim_header/comment}"
                 />
 
                 <!-- Location -->
                 <Label text="{i18n>label_claimsummary_claimheader_location}" />
-                <Text
+                <Input
                     id="text_claimsummary_claimheader_location"
-                    text="{claimsubmission_input>/claim_header/location}"
+                    editable="{claimSubmissionHeaderEditableModel>/location}"
+                    value="{claimsubmission_input>/claim_header/location}"
+                    placeholder="{i18n>placeholder_claiminput_location}"
                 />
 
                 <!-- Cost Center -->
@@ -183,9 +210,16 @@
 
                 <!-- Alternate Cost Center -->
                 <Label text="{i18n>label_claimsummary_claimheader_altcc}" />
-                <Text
-                    id="text_claimsummary_claimheader_altcc"
-                    text="{claimsubmission_input>/claim_header/alternate_cost_center} {claimsubmission_input>/claim_header/descr/alternate_cost_center}"
+                <mdc:Field
+                        id="text_claimsummary_claimheader_altcc"
+                        value="{claimsubmission_input>/claim_header/alternate_cost_center}"
+                        additionalValue="{claimsubmission_input>/claim_header/descr/alternate_cost_center}"
+                        editMode="{= ${claimSubmissionHeaderEditableModel>/altCostCenter} ? 'Editable' : 'Display' }"
+                        display="ValueDescription"
+                        visible="{= ${claimsubmission_input>/claimtype/cost_center} === null &amp;&amp;
+                            ${claimsubmission_input>/claimtype/requestform/alternate_cost_center} === null
+                        }"
+                        valueHelp="valuehelp_claiminput_altcc"
                 />
 
                 <!-- Claim Status -->
@@ -265,6 +299,47 @@
                     textAlign="End"
                 />
             </f:content>
+            <f:dependents>
+                    <mdc:ValueHelp
+                        id="valuehelp_claiminput_altcc"
+                        delegate='\{
+                            "name": "claima/utils/ValueHelpDelegate_altcc",
+                            "payload": \{
+                                "searchKeys": ["COST_CENTER_ID", "COST_CENTER_DESC"],
+                                "columns": [
+                                    "\{i18n>valuehelp_claiminput_altcc_col_id\}",
+                                    "\{i18n>valuehelp_claiminput_altcc_col_name\}"
+                                ]
+                            \}
+                        \}'
+                    >
+                        <mdc:typeahead>
+                            <mdcvh:Popover id="valuehelp_claiminput_altcc_pop">
+                                <mdcvhcnt:MTable id="valuehelp_claiminput_altcc_pop_MTable"
+                                    keyPath="COST_CENTER_ID"
+                                    descriptionPath="COST_CENTER_DESC"
+                                    caseSensitive="false"
+                                    useAsValueHelp="false">
+                                    <!-- create table via delegate-->
+                                </mdcvhcnt:MTable>
+                            </mdcvh:Popover>
+                        </mdc:typeahead>
+                        <mdc:dialog>
+                            <mdcvh:Dialog
+                                id="valuehelp_claiminput_altcc_dialog"
+                                title="{i18n>valuehelp_claiminput_altcc}"
+                            >
+                                <mdcvhcnt:MTable
+                                    id="valuehelp_claiminput_altcc_dialog_MTable"
+                                    keyPath="COST_CENTER_ID"
+                                    descriptionPath="COST_CENTER_DESC"
+                                    caseSensitive="false">
+                                    <!-- create table via delegate-->
+                                </mdcvhcnt:MTable>
+                            </mdcvh:Dialog>
+                        </mdc:dialog>
+                    </mdc:ValueHelp>
+                </f:dependents>
         </f:SimpleForm>
     </VBox>
 </core:FragmentDefinition>

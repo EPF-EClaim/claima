@@ -147,7 +147,25 @@ sap.ui.define([
                     );
                 });
             return Promise.resolve(true);
-        }
+        },
+
+        validDateRange: function (startdate, enddate) {
+			// check for missing value
+			if (!startdate || !enddate) {
+				MessageBox.error(Utility.getText("msg_daterange_missing"));
+				return false;
+			}
+			// check if end date earlier than start date
+			var startDateUnix = new Date(startdate).valueOf();
+			var endDateUnix = new Date(enddate).valueOf();
+			if (startDateUnix > endDateUnix) {
+				MessageBox.error(Utility.getText("msg_daterange_order"));
+				return false;
+			}
+			else {
+				return true;
+			}
+		},
  
     };
 });
