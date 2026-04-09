@@ -371,6 +371,12 @@ sap.ui.define([
 			}
 		},
 
+		/**
+		 * Bind to existing claim header with claim ID
+		 * @param {object} oODataModel 
+		 * @param {string} sClaimId 
+		 * @returns {object}
+		 */
 		getClaimHeader: async function (oODataModel, sClaimId) {
 			try {
 				const oContextBinding = oODataModel.bindContext(

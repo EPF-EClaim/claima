@@ -31,7 +31,8 @@ sap.ui.define([
 	"claima/utils/EligibilityCheck",
 	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
 	"claima/utils/CustomValidator",
-	"claima/utils/CustomDuplicationCheck"
+	"claima/utils/CustomDuplicationCheck",
+	"claima/model/models"
 ], function (
 	Fragment,
 	Item,
@@ -65,7 +66,8 @@ sap.ui.define([
 	EligibilityCheck,
 	EligibleScenarioCheck,
 	CustomValidator,
-	CustomDuplicationCheck
+	CustomDuplicationCheck,
+	Models
 
 ) {
 	"use strict";
@@ -128,7 +130,8 @@ sap.ui.define([
 				}
 			}), "appModel");
 
-	  	},
+			this.getView().setModel(Models.createClaimHeaderEditableModel(), "claimSubmissionHeaderEditableModel");
+		},
 
 		_beforeRouteMatched: async function (oEvent) {
 			if (!this.currentHash || this.currentHash.indexOf("ClaimSubmission") === -1) {
@@ -207,10 +210,12 @@ sap.ui.define([
 				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.DRAFT &&
 				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
 			) {
-			 	oClaimSubmissionModel.setProperty("/view_only", true)
+				oClaimSubmissionModel.setProperty("/view_only", true);
+				await this.setHeaderEditable(false);
 			}
 			else {
-				oClaimSubmissionModel.setProperty("/view_only", false)
+				oClaimSubmissionModel.setProperty("/view_only", false);
+				await this.setHeaderEditable(true);
 			}
 
 			// load form fragments
@@ -225,20 +230,6 @@ sap.ui.define([
 			}
 			await this._showInitFormFragment();
 			await this._afterLoadFragments();
-		},
-
-		//set all fields uneditable
-		setHeaderUnEditable: function () {
-			var oEditableFields = this.getView().getModel("editable");
-
-			oEditableFields.setProperty("/startEvent", false);
-			oEditableFields.setProperty("/endEvent", false);
-			oEditableFields.setProperty("/location", false);
-			oEditableFields.setProperty("/comment", false);
-			oEditableFields.setProperty("/startTrip", false);
-			oEditableFields.setProperty("/endTrip", false);
-			oEditableFields.setProperty("/altCostCenter", false);
-			oEditableFields.setProperty("/saveHeader", false);
 		},
 
 		//event handle for confirm and cancel
@@ -2761,11 +2752,12 @@ sap.ui.define([
 			// validate date range
 			//// start/end date
 			if (this.byId("datepicker_claimdetails_input_startdate").getValue() || this.byId("datepicker_claimdetails_input_enddate").getValue()) {
-				if (!CustomValidator.validDateRange(this.byId("datepicker_claimdetails_input_startdate").getValue(), this.byId("datepicker_claimdetails_input_enddate").getValue())) {
+				if (!CustomValidator.validDateRange(oInputModel.getProperty("/claim_item/start_date"), oInputModel.getProperty("claim_item/end_date"))) {
 					// stop claim details if incomplete
 					return;
 				}
 			}
+			
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
 			// update claim item to database
