@@ -117,9 +117,9 @@ module.exports = {
     * @private
     * @param {Object} oRule - matched eligibility rule from aRules
     * @param {Object} oPayload - original payload from user input
-    * @param {Integer} iFrequencyCount - Date frequency count
+    * @param {Integer} iExistingFreq - Date frequency count
     */
-    _validateClaimItem: function (oRule, oPayload, iFrequencyCount) {
+    _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq) {
         var iIndex;
 
         switch (oPayload.ClaimTypeItem) {
@@ -127,7 +127,7 @@ module.exports = {
                 // I-PAD - return true if there is no historical claims within same Year/Month based on frequency and period
                 iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE);
                 if (iIndex == -1) return;
-                if (iFrequencyCount < oRule.FREQUENCY) {
+                if (iExistingFreq < iAllowedFreq) {
                     oPayload.CheckFields[iIndex].result = true;
                 } else {
                     oPayload.CheckFields[iIndex].result = false;

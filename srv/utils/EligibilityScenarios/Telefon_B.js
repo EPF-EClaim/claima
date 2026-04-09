@@ -27,12 +27,13 @@ module.exports = {
       oSequenceCheck.dDateFrom,
       tx,
     );
-
+    console.log("iHistoricalData, iCurrentRecordItemData");
+    console.log(iHistoricalData, iCurrentRecordItemData);
     this._validateClaimItem(
       oSequenceCheck.oRule,
       oPayload,
       iHistoricalData + iCurrentRecordItemData,
-      oSequenceCheck
+      oSequenceCheck.iFrequencyCount
     );
     return oPayload;
   },
@@ -66,31 +67,29 @@ module.exports = {
           if (!(!!aFilteredRules[0])) {
             // Check Exception list
             aExceptionData = await this._getExceptionData(oPayload, tx);
+            console.log("aExceptionData");
+            console.log(aExceptionData[0]);
           }
         }
       }
     } else {
       //if no Eligibility table data, check exception list
-      oExceptionData = await this._getExceptionData(oPayload, tx);
+      aExceptionData = await this._getExceptionData(oPayload, tx);
     }
 
-    console.log(aFilteredRules[0]);
     var oDateRange = await this._getDateRange(oPayload, tx);
-    var iFrequencyCount = oDateRange.oDatetoFrom.iItemFreq;
+    var iFrequencyCount = oDateRange.iItemFreq;
     if (!!aFilteredRules) {
       oRule = aFilteredRules[0];
       var dDateTo = oDateRange.oDatetoFrom.dDateTo;
       var dDateFrom = oDateRange.oDatetoFrom.dDateFrom;
-    } else if (!!oExceptionData) {
+    } else if (!!aExceptionData[0]) {
       oRule = aExceptionData[0];
+
       // Validate receipt date with Exception list start end date range
-      iIndex = oPayload.CheckFields.findIndex((field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE);
-      if (iIndex == -1) return;
-      if ((!!oPayload.CheckFields[iIndex].value)
-        && (oPayload.CheckFields[iIndex].value >= oRule.START_DATE)
-        && (oPayload.CheckFields[iIndex].value <= oRule.END_DATE)) {
-        var dDateTo = oRule.START_DATE;
-        var dDateFrom = oRule.END_DATE;
+      if (!!oRule) {
+        var dDateTo = oRule.END_DATE;
+        var dDateFrom = oRule.START_DATE;
       } else {
         throw new Error("Receipt date exceeds Exception Start End Dates");
       }
@@ -98,7 +97,8 @@ module.exports = {
     else {
       throw new Error("No Eligibility / Exception rule found");
     }
-
+    console.log("sequence:")
+    console.log(oRule, dDateFrom, dDateTo, iFrequencyCount);
     return { oRule, dDateFrom, dDateTo, iFrequencyCount };
   },
 
@@ -210,21 +210,20 @@ module.exports = {
       (field) => field.fieldName === Constant.EntitiesFields.RECEIPT_DATE,
     );
     if (iIndex == -1) return;
-    oDatetoFrom = BuildSelectWhereConditions.getDateMonthRange(oPayload.CheckFields[iIndex].value);
 
-    const dDateFrom = oDatetoFrom.dDateFrom;
-    const dDateTo = oDatetoFrom.dDateTo;
     const aExceptionCondition = {
       [Constant.EntitiesFields.EMP_ID]: oPayload.EmpId,
       [Constant.EntitiesFields.CLAIM_TYPE_ID]: Constant.ClaimType.HANDPHONE,
-      [Constant.EntitiesFields.START_DATE]: { [Constant.ComparisonOperators.LesserEquals]: dDateFrom },
-      [Constant.EntitiesFields.START_DATE]: { [Constant.ComparisonOperators.GreaterEquals]: dDateTo }
+      [Constant.EntitiesFields.START_DATE]: { [Constant.ComparisonOperators.LesserEquals]: oPayload.CheckFields[iIndex].value },
+      [Constant.EntitiesFields.END_DATE]: { [Constant.ComparisonOperators.GreaterEquals]: oPayload.CheckFields[iIndex].value }
     };
     const sExceptionConditions = BuildSelectWhereConditions.buildWhereCondition(aExceptionCondition);
     // Get Exception List Data
     const aExceptionData = await tx.run(
       SELECT.from(sExceptionTable).where(`${sExceptionConditions}`)
     );
+    console.log("aExceptionData");
+    console.log(aExceptionData);
     return aExceptionData;
   },
 
@@ -235,7 +234,7 @@ module.exports = {
    * @param {Object} oPayload - original payload from user input
    * @param {Integer} iFrequencyCount - Date frequency count
    */
-  _validateClaimItem: function (oRule, oPayload, iFrequencyCount) {
+  _validateClaimItem: function (oRule, oPayload, iExistingFreq, iAllowedFreq) {
     var iIndex;
 
     switch (oPayload.ClaimTypeItem) {
@@ -245,7 +244,7 @@ module.exports = {
           (field) => field.fieldName == Constant.EntitiesFields.RECEIPT_DATE,
         );
         if (iIndex == -1) return;
-        if (iFrequencyCount < oRule.FREQUENCY) {
+        if (iExistingFreq < iAllowedFreq) {
           oPayload.CheckFields[iIndex].result = true;
         } else {
           oPayload.CheckFields[iIndex].result = false;
