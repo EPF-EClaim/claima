@@ -175,7 +175,17 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 EMP_ID,
                 FROM_LOCATION_OFFICE,
                 TO_LOCATION_OFFICE,
-                createdBy
+                createdBy,
+                TRIP_START_DATE,
+                TRIP_END_DATE,
+                TRIP_START_TIME,
+                TRIP_END_TIME,
+                TRAVEL_DURATION_DAY,
+                TRAVEL_DURATION_HOUR,
+                ENTITLED_BREAKFAST,
+                ENTITLED_LUNCH,
+                ENTITLED_DINNER,
+                DAILY_ALLOWANCE,
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as
@@ -286,7 +296,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 createdBy,
                 modifiedAt,
                 COURSE_CODE,
-                ZTRAIN_COURSE_PART.COURSE_DESC as COURSE_CODE_DESC
+                ZTRAIN_COURSE_PART.COURSE_DESC as COURSE_CODE_DESC,
+                SESSION_NUMBER
         };
 
     entity ZEMP_CLAIM_ITEM_VIEW           as
@@ -910,8 +921,20 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 ZREQUEST_ITEM.EST_AMOUNT,
                 ZREQUEST_ITEM.COST_CENTER,
                 ZREQUEST_ITEM.GL_ACCOUNT,
-                TRIP_START_DATE
-        };
+                TRIP_START_DATE,
+                STATUS,
+                //Previously, the view returned records across all statuses, including those already sent to SF.
+                // With the addition of these fields, the view now filters only approved records that have not yet been sent to SF.
+                ZSTATUS.STATUS_DESC,
+                ZREQUEST_ITEM.SEND_TO_SF,
+        }
+
+        where
+                   ZSTATUS.STATUS_ID        =  'STAT05'
+            and (
+                   ZREQUEST_ITEM.SEND_TO_SF =  FALSE
+                or ZREQUEST_ITEM.SEND_TO_SF is null
+            );
 
 
     @cds.redirection.target
@@ -1034,7 +1057,8 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             ZTOSTATE.STATE_DESC;
 
 
-    entity ZCLM_COURSE_VIEW_VH               as projection on ECLAIM.ZTRAIN_COURSE_PART {
+    entity ZCLM_COURSE_VIEW               as
+        projection on ECLAIM.ZTRAIN_COURSE_PART {
             key COURSE_ID,
             key PARTICIPANT_ID,
                 COURSE_DESC,
@@ -1047,5 +1071,4 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
             COURSE_DESC,
             COURSE_SESSION_STAT,
             ATTENDENCE_STATUS
-        
-};
+}
