@@ -989,18 +989,11 @@ module.exports = (srv) => {
             }
         }
 
-            //deduction of meal allowance
-            //// no deduction for elaun makan perpindahan
-            if (req.data.claimtypeitem === Constant.ClaimTypeItem.MKN_LOAN) {
-                bfast = req.data.breakfast != 0 ? entitlement.AMOUNT * req.data.breakfast : 0;
-                lunch = req.data.lunch != 0 ? entitlement.AMOUNT * req.data.lunch : 0;
-                dinner = req.data.dinner != 0 ? entitlement.AMOUNT * req.data.dinner : 0;
-            } else {
-                //20% from breakfast, 40% from lunch, 40% from dinner 
-                bfast = req.data.breakfast != 0 ? (0.2 * entitlement.AMOUNT) * req.data.breakfast : 0;
-                lunch = req.data.lunch != 0 ? (0.4 * entitlement.AMOUNT) * req.data.lunch : 0;
-                dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
-            }
+            //20% from breakfast, 40% from lunch, 40% from dinner 
+            bfast = req.data.breakfast != 0 ? (0.2 * entitlement.AMOUNT) * req.data.breakfast : 0;
+            lunch = req.data.lunch != 0 ? (0.4 * entitlement.AMOUNT) * req.data.lunch : 0;
+            dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
+            
 
             total_meal_allowance = meal_allowance != 0 ? (meal_allowance - bfast - lunch - dinner) : 0;
             return {

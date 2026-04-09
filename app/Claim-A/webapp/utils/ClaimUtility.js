@@ -285,7 +285,6 @@ sap.ui.define([
 				nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
 				nDependent = 0;
 			}
-			// var nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
 			var nHour = oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour");
 			var sLocation = oClaimItemInputModel.getProperty("/claim_item/region");
 			var sClaimtype = oClaimItemInputModel.getProperty("/claim_item/claim_type_id");

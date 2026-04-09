@@ -2364,15 +2364,6 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/amount")) * 0.5);
 				}
 			}
-
-			// elaun pindah - makan
-			if (sKey === this._oConstant.ClaimTypeItem.PEM_PINDAH) {
-				oPropertyModel.setProperty("/actual_amount/is_visible", true);
-				oPropertyModel.setProperty("/actual_amount/is_editable", true);
-
-				oPropertyModel.setProperty("/amount/is_visible", true);
-				oPropertyModel.setProperty("/amount/is_editable", false);
-			}
 		},
 
 		onChange_ClaimDetails_ActualMeterCube: function () {
@@ -3087,7 +3078,7 @@ sap.ui.define([
 			}
 			// calculate amount for ELAUN PINDAH - MKN_LOAN
 			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_LOAN) {
-				await this._calculatePerDiem();
+				this._updateEntitlementAmount(oInputModel);
 			}
 		},
 
@@ -3286,7 +3277,6 @@ sap.ui.define([
 			// check if required fields have values
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oClaimItemInputModel = this.getView().getModel("claimitem_input");
-			if (oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") != this._oConstant.ClaimTypeItem.MKN_LOAN){
 			if (
 				(this.byId(startDate).getVisible() && !this.byId(startDate).getValue()) ||
 				(this.byId(startTime).getVisible() && !this.byId(startTime).getValue()) ||
@@ -3325,7 +3315,6 @@ sap.ui.define([
 			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
 				var nTravelHours = Math.floor((endDateUnix - startDateUnix) / 3600000); // round down hours
 				oClaimItemInputModel.setProperty("/claim_item/travel_duration_hour", nTravelHours);
-			}
 			}
 
 			this._updateEntitlementAmount(oClaimItemInputModel);
