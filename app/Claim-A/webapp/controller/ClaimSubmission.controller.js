@@ -1465,13 +1465,6 @@ sap.ui.define([
 			if (iItemIndex !== -1) {
 				var oObject = oInputModel.getProperty("/claim_items/" + iItemIndex);
 
-				oObject.claim_sub_id = null;
-				// Eligibility Checking
-				var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, oObject);
-				var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, oPayload);
-				var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
-				if (!bCanProceed)return;
-
 				oInputModel.setProperty("/claim_items", oInputModel.getProperty("/claim_items").concat(structuredClone(oObject)));
 				var addrIndex = "/claim_items/" + (oInputModel.getProperty("/claim_items").length - 1);
 				oInputModel.setProperty(
@@ -1848,6 +1841,10 @@ sap.ui.define([
 				{ label: Utility.getText("label_claimdetails_input_remarks"), property: "remark", field: "input_claimdetails_input_remarks", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_attachment_file_1"), property: "attachment_file_1", field: "fileuploader_claimdetails_input_attachment_file_1", width: 30 },
 				{ label: Utility.getText("label_claimdetails_input_attachment_file_2"), property: "attachment_file_2", field: "fileuploader_claimdetails_input_attachment_file_2", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_marriagecategory"), property: "marriage_category", field: "select_claimdetails__input_marriagecategory", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_actual_meter_cube"), property: "actual_meter_cube", field: "input_claimdetails_meter_cube_actual", width: 30 },
+				{ label: Utility.getText("label_claimdetails_input_entitled_meter_cube"), property: "entitled_meter_cube", field: "input_claimdetails_meter_cube", width: 30 },
+
 			];
 
 			await ExcelExport.onDownloadExcelReport(this._oConstant.SubmissionTypePrefix.CLAIM,
@@ -2252,56 +2249,35 @@ sap.ui.define([
 				this._oConstant.ClaimTypeItem.KILOMETER
 			].includes(sKey);
 			oPropertyModel.setProperty("/km/is_required", bKmRequired);
-			//Display Marriage Category field only for DARAT (land transport) claim items
-			if (sKey === this._oConstant.ClaimTypeItem.DARAT) {
-				oPropertyModel.setProperty("/marriage_category/is_visible", true);
-			} else {
-				oPropertyModel.setProperty("/marriage_category/is_visible", false);
-				oInputModel.setProperty("/claim_item/marriage_category", null);
-			}
-			//Require "To State" selection only for Flight Wilayah Asal claim item.
-			if (sKey === this._oConstant.ClaimTypeItem.FLIGHT_WIL) {
-				oPropertyModel.setProperty("/to_state_id/is_required", true);
-			} else {
-				oPropertyModel.setProperty("/to_state_id/is_required", false);
-				oInputModel.setProperty("/claim_item/to_state_id", null);
-			}
+			
+			switch (sKey){
+				case this._oConstant.ClaimTypeItem.FLIGHT_WIL:
+					oPropertyModel.setProperty("/to_state_id/is_required", true);
+					break;
 
-			if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
-				//entitled meter cube
-				oPropertyModel.setProperty("/meter_cube_entitled/is_visible", true);
-				oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
+				case this._oConstant.ClaimTypeItem.ELEKTRIK:
+					oPropertyModel.setProperty("/bill_no/is_required", true);
+					oPropertyModel.setProperty("/account_no/is_required", true);
+					break;
 
-				//actual meter cube
-				oPropertyModel.setProperty("/meter_cube_actual/is_visible", true);
-				oPropertyModel.setProperty("/meter_cube_actual/is_editable", true);
+				case this._oConstant.ClaimTypeItem.BIL_AIR:
+				oPropertyModel.setProperty("/bill_no/is_required", true);
+				oPropertyModel.setProperty("/account_no/is_required", true);
+				break;
 
-				oPropertyModel.setProperty("/actual_amount/is_visible", true);
-				oPropertyModel.setProperty("/actual_amount/is_editable", true);
+				case this._oConstant.ClaimTypeItem.LAUT:
+					//entitled meter cube
+					oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
+					//actual meter cube
+					oPropertyModel.setProperty("/meter_cube_actual/is_editable", true);
 
-				oPropertyModel.setProperty("/amount/is_visible", true);
-				oPropertyModel.setProperty("/amount/is_editable", false);
+					oPropertyModel.setProperty("/actual_amount/is_editable", true);
 
+					oPropertyModel.setProperty("/amount/is_editable", false);
+					
 				await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
 				await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 			}
-
-			else {
-				//entitled meter cube
-				oPropertyModel.setProperty("/meter_cube_entitled/is_visible", false);
-				oInputModel.setProperty("/claim_item/meter_cube_entitled", null);
-
-				//actual meter cube
-				oPropertyModel.setProperty("/meter_cube_actual/is_visible", false);
-				oInputModel.setProperty("/claim_item/meter_cube_actual", null);
-
-				oPropertyModel.setProperty("/actual_amount/is_visible", false);
-				oInputModel.setProperty("/claim_item/actual_amount", null);
-
-				oPropertyModel.setProperty("/amount/is_visible", true);
-				oPropertyModel.setProperty("/amount/is_editable", true);
-			}
-
 			//END TDL #6.1 meter cube for Pengangkutan Laut
 
 			// calculate number of days
@@ -2323,8 +2299,10 @@ sap.ui.define([
 			}
 
 			// set number of family members based on claim item
+			// no of family member + 1 for the claimant itself
 			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
-				oInputModel.setProperty("/claim_item/no_of_family_member", await ClaimUtility.getNumberOfFamilyMembers(oClaimSubmissionModel.getProperty("/claim_header/emp_id")));
+				var nDependent = await ClaimUtility.getNumberOfFamilyMembers(oClaimSubmissionModel.getProperty("/claim_header/emp_id")) + 1;
+				oInputModel.setProperty("/claim_item/no_of_family_member", nDependent);
 			}
 
 			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
@@ -2376,7 +2354,9 @@ sap.ui.define([
 				meter_cube_entitled: { is_visible: false },
 				meter_cube_actual: { is_visible: false, is_editable: true },
 				marriage_category: { is_visible: false },
-				to_state_id:{is_required: false}
+				to_state_id:{is_required: false},
+				bill_no:{is_required: false},
+				account_no:{is_required: false}
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
@@ -3045,11 +3025,15 @@ sap.ui.define([
 		 * On changing number of days field, method checks for lodging claim type item to calculate eligible amount
 		 * @public
 		 */
-		onChange_ClaimDetails_NumberOfDays: function () {
+		onChange_ClaimDetails_NumberOfDays: async function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
 			// if claim type item is lodging, calculate amount based on eligible amount and number of days
 			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
 				this._calculateLodgingEligibleAmount();
+			}
+			// calculate amount for ELAUN PINDAH - MKN_LOAN
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_LOAN) {
+				this._updateEntitlementAmount(oInputModel);
 			}
 		},
 
@@ -3257,6 +3241,7 @@ sap.ui.define([
 			) {
 				return;
 			}
+		
 			// calculate travel duration (days/hours)
 			var startDateValue = this.byId(startDate).getValue();
 			var endDateValue = this.byId(endDate).getValue();
@@ -4462,6 +4447,9 @@ sap.ui.define([
 				"input_claimdetails_input_remarks",
 				"fileuploader_claimdetails_input_attachment1",
 				"fileuploader_claimdetails_input_attachment2",
+				"select_claimdetails__input_marriagecategory",
+				"input_claimdetails_meter_cube_actual",
+				"input_claimdetails_meter_cube"
 			];
 
 			aControlIds.forEach(id => {
@@ -4597,6 +4585,9 @@ sap.ui.define([
 				"input_claimdetails_input_remarks",
 				"fileuploader_claimdetails_input_attachment_file_1",
 				"fileuploader_claimdetails_input_attachment_file_2",
+				"select_claimdetails__input_marriagecategory",
+				"input_claimdetails_meter_cube_actual",
+				"input_claimdetails_meter_cube"
 			];
 
 			aControlIds.forEach(id => {
@@ -4779,13 +4770,6 @@ sap.ui.define([
 					}
 				} else if (this.byId("input_claimdetails_input_amount").getVisible()) {
 					oClaimItemInputModel.setProperty("/claim_item/amount", oResult.amount);
-				}
-
-				// additional amount based on number of family members
-				var oPropertyModel = this.getView().getModel("claimitem_property");
-				if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
-					var fAmount = oClaimItemInputModel.getProperty("/claim_item/amount");
-					oClaimItemInputModel.setProperty("/claim_item/amount", fAmount + (fAmount * parseInt(oClaimItemInputModel.getProperty("/claim_item/no_of_family_member"))));
 				}
 				
 			}).catch(err => {

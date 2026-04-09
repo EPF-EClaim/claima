@@ -368,7 +368,8 @@ service eclaim_srv @(requires: 'authenticated-user'){
                                   claimtypeitem: String,
                                   breakfast: Integer, 
                                   lunch: Integer, 
-                                  dinner: Integer) returns perdiem;
+                                  dinner: Integer,
+                                  dependent: Integer) returns perdiem;
 
     function getMeterCubeEntitlement(
         empId : String
