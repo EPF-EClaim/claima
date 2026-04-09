@@ -2344,8 +2344,10 @@ sap.ui.define([
 			}
 
 			// set number of family members based on claim item
+			// no of family member + 1 for the claimant itself
 			if (oPropertyModel.getProperty("/no_of_family_member/is_visible")) {
-				oInputModel.setProperty("/claim_item/no_of_family_member", await ClaimUtility.getNumberOfFamilyMembers(oClaimSubmissionModel.getProperty("/claim_header/emp_id")));
+				var nDependent = await ClaimUtility.getNumberOfFamilyMembers(oClaimSubmissionModel.getProperty("/claim_header/emp_id")) + 1;
+				oInputModel.setProperty("/claim_item/no_of_family_member", nDependent);
 			}
 
 			// if claim type item is lodging, retrieve eligible amount and calculate amount based on number of days
@@ -2361,6 +2363,15 @@ sap.ui.define([
 				if (oClaimSubmissionModel.getProperty("/emp_master/marital") === this._oConstant.MaritalStatus.SINGLE) {
 					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/amount")) * 0.5);
 				}
+			}
+
+			// elaun pindah - makan
+			if (sKey === this._oConstant.ClaimTypeItem.PEM_PINDAH) {
+				oPropertyModel.setProperty("/actual_amount/is_visible", true);
+				oPropertyModel.setProperty("/actual_amount/is_editable", true);
+
+				oPropertyModel.setProperty("/amount/is_visible", true);
+				oPropertyModel.setProperty("/amount/is_editable", false);
 			}
 		},
 
@@ -3068,11 +3079,15 @@ sap.ui.define([
 		 * On changing number of days field, method checks for lodging claim type item to calculate eligible amount
 		 * @public
 		 */
-		onChange_ClaimDetails_NumberOfDays: function () {
+		onChange_ClaimDetails_NumberOfDays: async function () {
 			var oInputModel = this.getView().getModel("claimitem_input");
 			// if claim type item is lodging, calculate amount based on eligible amount and number of days
 			if (Object.values(this._oConstant.ClaimTypeItemLodging).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
 				this._calculateLodgingEligibleAmount();
+			}
+			// calculate amount for ELAUN PINDAH - MKN_LOAN
+			if (oInputModel.getProperty("/claim_item/claim_type_item_id") === this._oConstant.ClaimTypeItem.MKN_LOAN) {
+				await this._calculatePerDiem();
 			}
 		},
 
@@ -3271,6 +3286,7 @@ sap.ui.define([
 			// check if required fields have values
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
 			var oClaimItemInputModel = this.getView().getModel("claimitem_input");
+			if (oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") != this._oConstant.ClaimTypeItem.MKN_LOAN){
 			if (
 				(this.byId(startDate).getVisible() && !this.byId(startDate).getValue()) ||
 				(this.byId(startTime).getVisible() && !this.byId(startTime).getValue()) ||
@@ -3280,6 +3296,7 @@ sap.ui.define([
 			) {
 				return;
 			}
+		
 			// calculate travel duration (days/hours)
 			var startDateValue = this.byId(startDate).getValue();
 			var endDateValue = this.byId(endDate).getValue();
@@ -3308,6 +3325,7 @@ sap.ui.define([
 			if (this.byId("input_claimdetails_input_travel_duration_hour").getVisible()) {
 				var nTravelHours = Math.floor((endDateUnix - startDateUnix) / 3600000); // round down hours
 				oClaimItemInputModel.setProperty("/claim_item/travel_duration_hour", nTravelHours);
+			}
 			}
 
 			this._updateEntitlementAmount(oClaimItemInputModel);
