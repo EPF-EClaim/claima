@@ -30,7 +30,8 @@ sap.ui.define([
 	"claima/utils/EligibilityCheck",
 	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
 	"claima/utils/CustomValidator",
-	"claima/utils/CustomDuplicationCheck"
+	"claima/utils/CustomDuplicationCheck",
+	"claima/model/models"
 ], function (
 	Fragment,
 	Item,
@@ -63,7 +64,8 @@ sap.ui.define([
 	EligibilityCheck,
 	EligibleScenarioCheck,
 	CustomValidator,
-	CustomDuplicationCheck
+	CustomDuplicationCheck,
+	Models
 
 ) {
 	"use strict";
@@ -126,18 +128,7 @@ sap.ui.define([
 				}
 			}), "appModel");
 
-			this._oHeaderEditable = {
-				"startTrip": false,
-				"endTrip": false,
-				"startEvent": false,
-				"endEvent": false,
-				"location": false,
-				"comment": false,
-				"altCostCenter": false,
-				"saveHeader": false,
-			};
-			this.getView().setModel(new JSONModel(this._oHeaderEditable), "claimSubmissionHeaderEditableModel");
-
+			this.getView().setModel(Models.createClaimHeaderEditableModel(), "claimSubmissionHeaderEditableModel");
 		},
 
 		_beforeRouteMatched: async function (oEvent) {
@@ -218,11 +209,11 @@ sap.ui.define([
 				oClaimSubmissionModel.getProperty("/claim_header/status_id") !== this._oConstant.ClaimStatus.SEND_BACK
 			) {
 				oClaimSubmissionModel.setProperty("/view_only", true);
-				this.setHeaderUnEditable();
+				await this.setHeaderEditable(false);
 			}
 			else {
 				oClaimSubmissionModel.setProperty("/view_only", false);
-				await this.setHeaderEditable();
+				await this.setHeaderEditable(true);
 			}
 
 			// load form fragments
@@ -240,30 +231,34 @@ sap.ui.define([
 		},
 
 		//set editable header fields
-		setHeaderEditable: async function () {
+		/**
+		 * Set fields to be editable
+		 * if there is a request tied to claim, do not allow editing for start and end trip dates
+		 * if there is a default cost center tied to claim type, do not allow editing for alternate cost center
+		 * @private
+		 * @param {boolean} bEdit - edit toggle
+		 */
+		setHeaderEditable: async function (bEdit) {
 			const oClaimModel = this.getView().getModel("claimsubmission_input");
 			var oEditableFields = this.getView().getModel("claimSubmissionHeaderEditableModel");
-
-			oEditableFields.setProperty("/startEvent", true);
-			oEditableFields.setProperty("/endEvent", true);
-			oEditableFields.setProperty("/location", true);
-			oEditableFields.setProperty("/comment", true);
-			if (!oClaimModel.getProperty("/claim_header/request_id")) {
-				oEditableFields.setProperty("/startTrip", true);
-				oEditableFields.setProperty("/endTrip", true);
+			if (bEdit) {
+				oEditableFields.setProperty("/startEvent", true);
+				oEditableFields.setProperty("/endEvent", true);
+				oEditableFields.setProperty("/location", true);
+				oEditableFields.setProperty("/comment", true);
+				if (!oClaimModel.getProperty("/claim_header/request_id")) {
+					oEditableFields.setProperty("/startTrip", true);
+					oEditableFields.setProperty("/endTrip", true);
+				}
+				const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oClaimModel.getProperty("/claim_header/claim_type_id"))
+				if ( !sDefaultCostCenter ){
+					oEditableFields.setProperty("/altCostCenter", true);
+				}
+				oEditableFields.setProperty("/saveHeader", true);
 			}
-			const sDefaultCostCenter = await ClaimUtility.determineDefaultCostCenter(oClaimModel.getProperty("/claim_header/claim_type_id"))
-			if ( !sDefaultCostCenter ){
-				oEditableFields.setProperty("/altCostCenter", true);
+			else {	
+				oEditableFields.setData(Models.getClaimHeaderEditableDefaults(),false);
 			}
-			oEditableFields.setProperty("/saveHeader", true);
-		},
-
-		//set all fields uneditable
-		setHeaderUnEditable: function () {
-			var oEditableFields = this.getView().getModel("claimSubmissionHeaderEditableModel");	
-			oEditableFields.setData(Object.assign({}, this._oHeaderEditable),false);
-
 		},
 
 		//event handle for confirm and cancel
@@ -1778,6 +1773,20 @@ sap.ui.define([
 					if (!sClaimId) {
 						MessageBox.error("msg_error_missing_claim_id");
 					}
+					
+					// validate date range
+					//// trip start/end date
+					if (!CustomValidator.validDateRange(oInputModel.getProperty("/claim_header/trip_start_date"), oInputModel.getProperty("/claim_header/trip_end_date"))) {
+						// stop claim submission if incomplete
+						return;
+					}
+					//// event start/end date (optional)
+					if (this.byId("text_claimsummary_claimheader_eventstartdate").getValue() || this.byId("text_claimsummary_claimheader_eventenddate").getValue()) {
+						if (!CustomValidator.validDateRange(oInputModel.getProperty("/claim_header/event_start_date"), oInputModel.getProperty("/claim_header/event_end_date"))) {
+							// stop claim submission if incomplete
+							return;
+						}
+					}
 
 					// Bind to existing claim header 
 					const oContext = await ClaimUtility.getClaimHeader(oODataModel, sClaimId)
@@ -1812,20 +1821,6 @@ sap.ui.define([
 						DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/event_end_date"))
 					);
 
-					// validate date range
-					//// trip start/end date
-					if (!CustomValidator.validDateRange(this.byId("text_claimsummary_claimheader_tripstartdate").getValue(), this.byId("text_claimsummary_claimheader_tripenddate").getValue())) {
-						// stop claim submission if incomplete
-						return;
-					}
-					//// event start/end date (optional)
-					if (this.byId("text_claimsummary_claimheader_eventstartdate").getValue() || this.byId("text_claimsummary_claimheader_eventenddate").getValue()) {
-						if (!CustomValidator.validDateRange(this.byId("text_claimsummary_claimheader_eventstartdate").getValue(), this.byId("text_claimsummary_claimheader_eventenddate").getValue())) {
-							// stop claim submission if incomplete
-							return;
-						}
-					}
-
 					await oODataModel.submitBatch("$auto");
 
 					MessageToast.show(
@@ -1836,7 +1831,6 @@ sap.ui.define([
 					MessageToast.show(
 						Utility.getText("msg_claimsubmission_failed", [e.message])
 					);
-					console.error(e);
 				} finally {
 					BusyIndicator.hide();
 				}
@@ -2767,12 +2761,11 @@ sap.ui.define([
 			// validate date range
 			//// start/end date
 			if (this.byId("datepicker_claimdetails_input_startdate").getValue() || this.byId("datepicker_claimdetails_input_enddate").getValue()) {
-				if (!CustomValidator.validDateRange(this.byId("datepicker_claimdetails_input_startdate").getValue(), this.byId("datepicker_claimdetails_input_enddate").getValue())) {
+				if (!CustomValidator.validDateRange(oInputModel.getProperty("/claim_item/start_date"), oInputModel.getProperty("claim_item/end_date"))) {
 					// stop claim details if incomplete
 					return;
 				}
 			}
-
 			
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());

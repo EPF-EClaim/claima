@@ -149,19 +149,23 @@ sap.ui.define([
             return Promise.resolve(true);
         },
 
-        validDateRange: function (startdate, enddate) {
+        /**
+         * Check if start and end dates are valid
+         * @param {string} sStartdate 
+         * @param {string} sEnddate 
+         * @returns {boolean}
+         */
+        validDateRange: function (sStartdate, sEnddate) {
 			// check for missing value
-			if (!startdate || !enddate) {
-				MessageBox.error(Utility.getText("msg_daterange_missing"));
-				return false;
-			}
+			if (!sStartdate || !sEnddate) {
+                MessageBox.error(Utility.getText("msg_daterange_missing"));
+                return false;
+            }
 			// check if end date earlier than start date
-			var startDateUnix = new Date(startdate).valueOf();
-			var endDateUnix = new Date(enddate).valueOf();
-			if (startDateUnix > endDateUnix) {
-				MessageBox.error(Utility.getText("msg_daterange_order"));
-				return false;
-			}
+			if (new Date(sStartdate) > new Date(sEnddate)) {
+                MessageBox.error(Utility.getText("msg_daterange_order"));
+                return false;
+            }
 			else {
 				return true;
 			}
