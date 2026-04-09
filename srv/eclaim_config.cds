@@ -206,6 +206,11 @@ annotate service.ZCLAIM_TYPE with @(
             },
             {
                 $Type: 'UI.DataField',
+                Value: COST_CENTER,
+                Label: 'Cost Center'
+            },
+            {
+                $Type: 'UI.DataField',
                 Value: REQUEST_TYPE,
                 Label: 'Request Type'
             },
@@ -334,11 +339,6 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
             },
             {
                 $Type: 'UI.DataField',
-                Value: STATUS,
-                Label: 'Status'
-            },
-            {
-                $Type: 'UI.DataField',
                 Value: CATEGORY_ID,
                 Label: 'Category ID'
             },
@@ -376,7 +376,12 @@ annotate service.ZCLAIM_TYPE_ITEM with @(
                 $Type: 'UI.DataField',
                 Value: PERIOD_UNIT,
                 Label: 'Period Unit'
-            }
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: STATUS,
+                Label: 'Status'
+            },
         ]
     }
 );
