@@ -221,30 +221,5 @@ sap.ui.define([
                 oButtons.oBtnSubmit?.setEnabled(bAllowSubmit);
             }
         },
-
-        /**
-         * Fetch records from an OData entity with optional filters.
-         *
-         * @public
-         * @param {string} sPath - OData entity path (e.g. "/ZEMP_MASTER")
-         * @param {array} aFields - Fields to filter by
-         * @param {array} aValues - Values for each filter field
-         * @returns {array} List of matching records; empty array if none found
-         */
-        getMeterCubeCalc: async function (sPath, aFields = [], aValues = []) {
-            const oModel = this._oOwnerComponent.getModel();
-            const aFilters = aFields.map((sField, iIndex) =>
-                new Filter(sField, FilterOperator.EQ, aValues[iIndex])
-            );
-            const oListBinding = oModel.bindList(
-                sPath,
-                null,
-                null,
-                aFilters,
-                { $$ownRequest: true }
-            );
-            const aContexts = await oListBinding.requestContexts();
-            return aContexts.map(oCtx => oCtx.getObject());
-        }
     };
     });
