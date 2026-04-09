@@ -350,16 +350,9 @@ sap.ui.define([
 		 * @returns Updates entitled meter cube field upon completion
 		 */
 		fetchMeterCubeEntitlement: function (oInputModel) {
-			const oSessionModel = this._oOwnerComponent.getModel("session");
-			const sEmpId = oSessionModel.getProperty("/userId");
-			const oModel = this._oView.getModel();
+			const oContext = this._oView.getModel().bindContext("/getMeterCubeEntitlement(...)");
 
-			const oContext = oModel.bindContext(
-				"/getMeterCubeEntitlement(...)"
-			);
-
-			oContext.setParameter("empId", sEmpId);
-
+			oContext.setParameter("empId",this._oOwnerComponent.getModel("session").getProperty("/userId"));
 			return oContext.execute()
 				.then(() => oContext.requestObject())
 				.then((result) => {
@@ -383,12 +376,9 @@ sap.ui.define([
 		 * @returns Updates claim item fields upon completion
 		 */
 		fetchPengangkutanLautAmount: function (oInputModel) {
-			const oSessionModel = this._oOwnerComponent.getModel("session");
-			const sEmpId = oSessionModel.getProperty("/userId");
-			const oModel = this._oView.getModel();
-			const oContext = oModel.bindContext("/calculatePengangkutanLautAmount(...)");
+			const oContext = this._oView.getModel().bindContext("/calculatePengangkutanLautAmount(...)");
 
-			oContext.setParameter("empId", sEmpId);
+			oContext.setParameter("empId",this._oOwnerComponent.getModel("session").getProperty("/userId"));
 			oContext.setParameter("actualMeterCube", oInputModel.getProperty("/claim_item/meter_cube_actual"));
 			oContext.setParameter("actualAmount", oInputModel.getProperty("/claim_item/actual_amount"));
 
