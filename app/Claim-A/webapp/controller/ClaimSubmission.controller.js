@@ -2278,6 +2278,11 @@ sap.ui.define([
 				oInputModel.setProperty("/claim_item/to_state_id", null);
 			}
 
+			if(sKey === this._oConstant.ClaimTypeItem.ELEKTRIK || sKey === this._oConstant.ClaimTypeItem.BIL_AIR){
+				oPropertyModel.setProperty("/bill_no/is_required", true);
+				oPropertyModel.setProperty("/account_no/is_required", true);
+			}
+
 			if (sKey === this._oConstant.ClaimTypeItem.LAUT) {
 				//entitled meter cube
 				oPropertyModel.setProperty("/meter_cube_entitled/is_visible", true);
@@ -2401,7 +2406,9 @@ sap.ui.define([
 				meter_cube_entitled: { is_visible: false },
 				meter_cube_actual: { is_visible: false, is_editable: true },
 				marriage_category: { is_visible: false },
-				to_state_id:{is_required: false}
+				to_state_id:{is_required: false},
+				bill_no:{is_required: false},
+				account_no:{is_required: false}
 			};
 			var oClaimItemPropertyModel = new JSONModel(oClaimItemProperties);
 			//// set input
