@@ -175,7 +175,17 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 EMP_ID,
                 FROM_LOCATION_OFFICE,
                 TO_LOCATION_OFFICE,
-                createdBy
+                createdBy,
+                TRIP_START_DATE,
+                TRIP_END_DATE,
+                TRIP_START_TIME,
+                TRIP_END_TIME,
+                TRAVEL_DURATION_DAY,
+                TRAVEL_DURATION_HOUR,
+                ENTITLED_BREAKFAST,
+                ENTITLED_LUNCH,
+                ENTITLED_DINNER,
+                DAILY_ALLOWANCE,
         };
 
     entity ZEMP_REQUEST_PART_VIEW         as
@@ -915,7 +925,7 @@ service ECLAIM_VIEW_SRV @(requires: 'authenticated-user') {
                 STATUS,
                 //Previously, the view returned records across all statuses, including those already sent to SF.
                 // With the addition of these fields, the view now filters only approved records that have not yet been sent to SF.
-                ZSTATUS.STATUS_DESC,    
+                ZSTATUS.STATUS_DESC,
                 ZREQUEST_ITEM.SEND_TO_SF,
         }
 

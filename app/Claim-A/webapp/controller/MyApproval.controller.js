@@ -473,6 +473,7 @@ sap.ui.define([
                 approver5: null,
                 last_send_back_date: null,
                 course_code: o.COURSE_CODE,
+                session_number: o.SESSION_NUMBER,
                 project_code: null,
                 cash_advance_amount: o.CASH_ADVANCE_AMOUNT,
                 preapproved_amount: o.PREAPPROVED_AMOUNT,

@@ -423,6 +423,16 @@ sap.ui.define([
                 "ZVEHICLE_CLASS", "ZMOBILE_CATEGORY_PURPOSE", "ZBUDGET", "ZDB_STRUCTURE",
                 "ZDISBURSEMENT_STATUS", "ZCONSTANTS", "ZROLEHIERARCHY", "ZELIGIBILITY_RULE",
                 "ZWORKFLOW_STEP", "ZWORKFLOW_RULE"
-            ]
+            ], 
+        "ExcludeField":
+        {
+            "CLAIM_TYPE_ITEM_ID": "claim_type_item_id",
+            "CLAIM_TYPE_ID": "claim_type_id", 
+            "CLAIM_ID": "claim_id", 
+            "DESCR": "descr", 
+            "GL_ACCOUNT": "gl_account", 
+            "COST_CENTER": "cost_center",
+            "IS_NEW": "is_new",
+        }
     }
 });
