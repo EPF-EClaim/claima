@@ -202,7 +202,7 @@ module.exports = (srv) => {
 
     srv.on('batchCreateBudget', async (req) => {
         const { ZBUDGET } = srv.entities;
-        let original_budget, virement_in, virement_out, supplement, return_value, current_budget, consumed;
+        let original_budget, virement_in, virement_out, supplement, return_value, consumed;
         let results = [];
         try {
             const { budget } = req.data;
