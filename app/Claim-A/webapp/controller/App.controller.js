@@ -728,7 +728,7 @@ sap.ui.define([
 
 		onPreApproval_ClaimProcess: function () {
 			this.oDialog_ClaimProcess.close();
-y
+
 			// load Pre-Approval Request dialog 
 			this.onClickMyRequest();
 		},
@@ -869,16 +869,6 @@ y
 			}
 		},
 
-		_getHanaDate: function (date) {
-			if (date) {
-				var oDate = new Date(date);
-				var oDateString = oDate.getFullYear() + '-' + ('0' + (oDate.getMonth() + 1)).slice(-2) + '-' + ('0' + oDate.getDate()).slice(-2);
-				return oDateString;
-			} else {
-				return null;
-			}
-		},
-
 		_getHanaTime: function (time) {
 			if (time) {
 				var oDate = new Date(time);
@@ -959,13 +949,13 @@ y
 			}
 			// validate date range
 			//// trip start/end date
-			if (!this._validDateRange("datepicker_claiminput_tripstartdate", "datepicker_claiminput_tripenddate")) {
+			if (!CustomValidator.validDateRange(this.byId("datepicker_claiminput_tripstartdate").getValue(), this.byId("datepicker_claiminput_tripenddate").getValue())) {
 				// stop claim submission if incomplete
 				return;
 			}
 			//// event start/end date (optional)
 			if (this.byId("datepicker_claiminput_eventstartdate").getValue() || this.byId("datepicker_claiminput_eventenddate").getValue()) {
-				if (!this._validDateRange("datepicker_claiminput_eventstartdate", "datepicker_claiminput_eventenddate")) {
+				if (!CustomValidator.validDateRange(this.byId("datepicker_claiminput_eventstartdate").getValue(), this.byId("datepicker_claiminput_eventenddate").getValue())) {
 					// stop claim submission if incomplete
 					return;
 				}
@@ -992,10 +982,10 @@ y
 			var oBody = new JSONModel({
 				EMP_ID: this._oSessionModel.getProperty("/userId"),
 				PURPOSE: oInputModel.getProperty("/claim_header/purpose"),
-				TRIP_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")),
-				TRIP_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")),
-				EVENT_START_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/event_start_date")),
-				EVENT_END_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/event_end_date")),
+				TRIP_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")),
+				TRIP_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")),
+				EVENT_START_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/event_start_date")),
+				EVENT_END_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/event_end_date")),
 				SUBMISSION_TYPE: oInputModel.getProperty("/claim_header/submission_type"),
 				COMMENT: oInputModel.getProperty("/claim_header/comment"),
 				ALTERNATE_COST_CENTER: oInputModel.getProperty("/claim_header/alternate_cost_center"),
@@ -1006,15 +996,15 @@ y
 				CLAIM_TYPE_ID: oInputModel.getProperty("/claim_header/claim_type_id"),
 				TOTAL_CLAIM_AMOUNT: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/total_claim_amount"))).toFixed(2),
 				FINAL_AMOUNT_TO_RECEIVE: this._nonNan(parseFloat(oInputModel.getProperty("/claim_header/final_amount_to_receive"))).toFixed(2),
-				LAST_MODIFIED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
-				SUBMITTED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
-				LAST_APPROVED_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_approved_date")),
+				LAST_MODIFIED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_modified_date")),
+				SUBMITTED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/submitted_date")),
+				LAST_APPROVED_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_approved_date")),
 				LAST_APPROVED_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/last_approved_time")),
-				PAYMENT_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/payment_date")),
+				PAYMENT_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/payment_date")),
 				LOCATION: oInputModel.getProperty("/claim_header/location"),
 				SPOUSE_OFFICE_ADDRESS: oInputModel.getProperty("/claim_header/spouse_office_address"),
-				HOUSE_COMPLETION_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/house_completion_date")),
-				MOVE_IN_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/move_in_date")),
+				HOUSE_COMPLETION_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/house_completion_date")),
+				MOVE_IN_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/move_in_date")),
 				HOUSING_LOAN_SCHEME: oInputModel.getProperty("/claim_header/housing_loan_scheme"),
 				LENDER_NAME: oInputModel.getProperty("/claim_header/lender_name"),
 				SPECIFY_DETAILS: oInputModel.getProperty("/claim_header/specify_details"),
@@ -1026,7 +1016,7 @@ y
 				APPROVER3: oInputModel.getProperty("/claim_header/approver3"),
 				APPROVER4: oInputModel.getProperty("/claim_header/approver4"),
 				APPROVER5: oInputModel.getProperty("/claim_header/approver5"),
-				LAST_SEND_BACK_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/last_send_back_date")),
+				LAST_SEND_BACK_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/last_send_back_date")),
 				COURSE_CODE: oInputModel.getProperty("/claim_header/course_code"),
 				SESSION_NUMBER: oInputModel.getProperty("/claim_header/session_number"),
 				PROJECT_CODE: oInputModel.getProperty("/claim_header/project_code"),
@@ -1035,7 +1025,7 @@ y
 				REJECT_REASON_ID: oInputModel.getProperty("/claim_header/reject_reason_id"),
 				SEND_BACK_REASON_ID: oInputModel.getProperty("/claim_header/send_back_reason_id"),
 				LAST_SEND_BACK_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/last_send_back_time")),
-				REJECT_REASON_DATE: this._getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
+				REJECT_REASON_DATE: DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/reject_reason_date")),
 				REJECT_REASON_TIME: this._getHanaTime(oInputModel.getProperty("/claim_header/reject_reason_time"))
 			});
 			//// addon for new claim
@@ -1137,26 +1127,6 @@ y
 
 		onTypeMissmatch_ClaimInput_Attachment: function (oEvent) {
 			MessageToast.show(Utility.getText("msg_claiminput_attachment_upload_mismatch"));
-		},
-
-		_validDateRange: function (startdate, enddate) {
-			var startDateValue = this.byId(startdate).getValue();
-			var endDateValue = this.byId(enddate).getValue();
-			// check for missing value
-			if (!startDateValue || !endDateValue) {
-				MessageToast.show(Utility.getText("msg_daterange_missing"));
-				return false;
-			}
-			// check if end date earlier than start date
-			var startDateUnix = new Date(startDateValue).valueOf();
-			var endDateUnix = new Date(endDateValue).valueOf();
-			if (startDateUnix > endDateUnix) {
-				MessageToast.show(Utility.getText("msg_daterange_order"));
-				return false;
-			}
-			else {
-				return true;
-			}
 		},
 
 		onCancel_ClaimInput: function () {

@@ -330,6 +330,20 @@ sap.ui.define([
 			}
 		},
 
+		getClaimHeader: async function (oODataModel, sClaimId) {
+			try {
+				const oContextBinding = oODataModel.bindContext(
+					`/ZCLAIM_HEADER('${encodeURIComponent(sClaimId)}')`
+				);
+
+				await oContextBinding.requestObject(); 
+				const oContext = oContextBinding.getBoundContext();
+				return oContext;
+			} catch (oError) {
+				return null;
+			}
+		},
+
 		/**
 		 * Calculate entitled meter cube value for Pengangkutan Laut claim type.
 		 * Method retrieves employee master data, marital status, dependent (spouse) data,
