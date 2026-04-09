@@ -64,7 +64,8 @@ const Constant = {
         "ZCLAIM_ITEM": "ZCLAIM_ITEM",
         "ZREQUEST_HEADER": "ZREQUEST_HEADER",
         "ZREQUEST_ITEM": "ZREQUEST_ITEM",
-        "ZCLM_TYPE_EXCEPTION_LIST": "ZCLM_TYPE_EXCEPTION_LIST"
+        "ZCLM_TYPE_EXCEPTION_LIST": "ZCLM_TYPE_EXCEPTION_LIST",
+        "ZCLAIM_TYPE_ITEM": "ZCLAIM_TYPE_ITEM"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -195,10 +196,9 @@ const Constant = {
     ReminderMilestone: {
         AgingMilestone: { 1: '1', 30: '30', 60: '60', 85: '85' }
     },
-    FrequencyPeriod: {
+    PeriodUnit: {
         "MONTH": "Month",
-        "YEAR": "Year",
-        "THREE_YEARS": "3 years"
+        "YEAR": "Year"
     },
     ComparisonOperators:{
         "LesserEquals": "<=",

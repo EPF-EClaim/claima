@@ -60,16 +60,54 @@ module.exports = {
       * Get Current Claims Data by building querying conditions and using GetHistoricalData for data retrieval
       * @public
       * @param {String} sDate - Input Date
+      * @param {Integer} iAdjYears - Frequency * Period Year 
+      * @param {Integer} iAdjMonths - Frequency * Period Month 
+      * @param {Integer} iAdjDays - Frequency * Period Days 
       * @returns {Object} Contains both Date from and Date to Ranges
       */
-    getDateMonthRange: function (sDate) {
-        const sYearMonth = sDate.substring(0, 7);
-        // Derive first and last day of the month
-        const [year, month] = sYearMonth.split('-').map(Number);
-        const dDateFrom = `${sYearMonth}-01`;
-        const dDateTo = new Date(year, month, 0)  // last day of month
-            .toISOString().split('T')[0]; // 'YYYY-MM-DD'
+    subtractDateDelta: function (sDate, iYear, iMonth, iDays) {
 
-        return { dDateFrom, dDateTo };
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(sDate)) {
+            throw new Error("Date must be in YYYY-MM-DD format");
+        }
+
+        // Adjust each non-zero parameter by subtracting 1
+        const iAdjYears = iYear > 0 ? iYear - 1 : 0;
+        const iAdjMonths = iMonth > 0 ? iMonth - 1 : 0;
+        const iAdjDays = iDays > 0 ? iDays - 1 : 0;
+
+        const [inputYear, inputMonth, inputDay] = sDate.split("-").map(Number);
+
+        function daysInMonth(year, month) {
+            return new Date(Date.UTC(year, month, 0)).getUTCDate();
+        }
+
+        function formatDate(date) {
+            return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
+        }
+
+        let year = inputYear - iAdjYears;
+        let month = inputMonth - iAdjMonths;
+
+        while (month <= 0) {
+            month += 12;
+            year--;
+        }
+
+        const clampedDay = Math.min(inputDay, daysInMonth(year, month));
+        const adjustedDate = new Date(Date.UTC(year, month - 1, clampedDay));
+        adjustedDate.setUTCDate(adjustedDate.getUTCDate() - iAdjDays);
+
+        const resultYear = adjustedDate.getUTCFullYear();
+        const resultMonth = adjustedDate.getUTCMonth() + 1;
+
+        const firstDay = new Date(Date.UTC(resultYear, resultMonth - 1, 1));
+        const lastDay = new Date(Date.UTC(resultYear, resultMonth, 0));
+
+        return {
+            dDateFrom: formatDate(firstDay),
+            dDateTo: formatDate(lastDay)
+        };
     }
+
 };

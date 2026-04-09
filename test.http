@@ -24,28 +24,28 @@
 
 
 
-POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
-Content-Type: application/json
+# POST    http://localhost:4004/odata/v4/EmployeeSrv/batchCreateBudget
+# Content-Type: application/json
  
-   {
-    "budget": [
-        {
-            "COMMITMENT_ITEM": "760001",
-            "FUND_CENTER": "108S37004",
-            "INTERNAL_ORDER": "1",
-            "MATERIAL_GROUP": "760001959",
-            "ORIGINAL_BUDGET": "10.00",
-            "RETURN": "10.00",
-            "SUPPLEMENT": "10.00",
-            "VIREMENT_IN": "90.00",
-            "VIREMENT_OUT": "0.00",
-            "YEAR": "2026",
-            "HasActiveEntity": false,
-            "HasDraftEntity": false,
-            "IsActiveEntity": true
-        }
-    ]
-}
+#    {
+#     "budget": [
+#         {
+#             "COMMITMENT_ITEM": "760001",
+#             "FUND_CENTER": "108S37004",
+#             "INTERNAL_ORDER": "1",
+#             "MATERIAL_GROUP": "760001959",
+#             "ORIGINAL_BUDGET": "10.00",
+#             "RETURN": "10.00",
+#             "SUPPLEMENT": "10.00",
+#             "VIREMENT_IN": "90.00",
+#             "VIREMENT_OUT": "0.00",
+#             "YEAR": "2026",
+#             "HasActiveEntity": false,
+#             "HasDraftEntity": false,
+#             "IsActiveEntity": true
+#         }
+#     ]
+# }
 
 # POST    http://localhost:4004/odata/v4/EmployeeSrv/onFinalApproveInsert
 # Content-Type: application/json
@@ -159,35 +159,35 @@ Content-Type: application/json
 #     "ID": "REQ26000000022"
 #    }
 
-# POST    http://localhost:4004/odata/v4/EmployeeSrv/EligibilityCheck
-# Content-Type: application/json
-# Authorization: Basic alice
+POST    http://localhost:4004/odata/v4/EmployeeSrv/EligibilityCheck
+Content-Type: application/json
+Authorization: Basic alice
  
-#     {
-#      "aPayload": [
-#        {
-#          "CheckFields": [
-#             {
-#                "fieldName": "RECEIPT_DATE",
-#                "value": "2026-01-05",
-#                "result": null
-#             },
-#             {
-#                "fieldName": "ELIGIBLE_AMOUNT",
-#                "value": "800",
-#                "result": null
-#             },
-#             {
-#                "fieldName": "TRAVEL_HOURS",
-#                "value": "1",
-#                "result": null
-#             }
-#             ],
-#          "ClaimType": "I-PAD",
-#          "ClaimTypeItem": "I-PAD",
-#          "EmpId": "USER_003",
-#          "RecordId": "CLM26000000401",
-#          "RecordSubId": "CLM26000000401001"
-#       }
-#      ]
-#     }
+    {
+     "aPayload": [
+       {
+         "CheckFields": [
+            {
+               "fieldName": "RECEIPT_DATE",
+               "value": "2026-01-05",
+               "result": null
+            },
+            {
+               "fieldName": "ELIGIBLE_AMOUNT",
+               "value": "800",
+               "result": null
+            },
+            {
+               "fieldName": "TRAVEL_HOURS",
+               "value": "1",
+               "result": null
+            }
+            ],
+         "ClaimType": "I-PAD",
+         "ClaimTypeItem": "I-PAD",
+         "EmpId": "USER_003",
+         "RecordId": "CLM26000000401",
+         "RecordSubId": "CLM26000000401001"
+      }
+     ]
+    }
