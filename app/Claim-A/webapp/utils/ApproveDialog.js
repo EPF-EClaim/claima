@@ -89,12 +89,16 @@ sap.ui.define([
         press: cancelHandler.bind(oController)
       }),
       endButton: new Button(oView.createId("approver_placeholder_create"), {
-        text: "{i18n>approve_btn}",
         type: sap.m.ButtonType.Emphasized,
         press: fnCreateHandler.bind(oController)
       })
     });
 
+    const rb = oController.getOwnerComponent().getModel("i18n").getResourceBundle();
+    const mode = oController.getView().getModel("Type").getProperty("/mode");
+    
+    oDialog.getEndButton().setText(mode === "APPROVE_CLAIM" ? rb.getText("approve_btn") : rb.getText("approve_btn_request"))
+    
     oDialog.addStyleClass("requestDialog");
     oView.addDependent(oDialog);
     return oDialog;
