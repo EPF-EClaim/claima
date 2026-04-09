@@ -110,6 +110,18 @@
                         <Text text="{i18n>submitted_type}" />
                     </Column>
                     <Column>
+                        <Text text="{i18n>claim_grp}" />
+                    </Column>
+                    <Column>
+                        <Text text="{i18n>claim_freq}" />
+                    </Column>
+                    <Column>
+                        <Text text="{i18n>claim_period}" />
+                    </Column>
+                    <Column>
+                        <Text text="{i18n>claim_period_unit}" />
+                    </Column>
+                    <Column>
                         <Text text="{i18n>req_i_start_date}" />
                     </Column>
                     <Column>
@@ -129,6 +141,10 @@
                             <Text text="{MATERIAL_CODE}" />
                             <Text text="{RISK}" />
                             <Text text="{SUBMISSION_TYPE}" />
+                            <Text text="{IND_OR_GROUP}" />
+                            <Text text="{FREQUENCY}" />
+                            <Text text="{PERIOD}" />
+                            <Text text="{PERIOD_UNIT}" />
                             <Text text="{START_DATE}" />                            
                             <Text text="{END_DATE}" />
                             <Text text="{STATUS}" />                            

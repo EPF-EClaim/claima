@@ -2,6 +2,7 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
+	"sap/ui/model/json/JSONModel",
 	"sap/ui/core/BusyIndicator",
 	"sap/m/MessageBox",
 	"sap/m/MessageToast",
@@ -12,6 +13,7 @@ sap.ui.define([
 	Sorter,
 	Filter,
 	FilterOperator,
+	JSONModel,
 	BusyIndicator,
 	MessageBox,
 	MessageToast,
@@ -36,28 +38,25 @@ sap.ui.define([
 		* Checks if course has already used by user for a previously approved claim
 		* @public
 		* @param {string} sCourseCode - course code ID to check from database
+		* @param {string} sSessionNumber - session number ID to check from database
 		* @param {string} sParticipantId - participant ID to check from database
 		* @returns {boolean} if records found, return true; else return false
 		*/
-		checkExistingCourseCode: async function (sCourseCode, sParticipantId) {
+		checkExistingCourseCode: async function (sCourseCode, sSessionNumber, sParticipantId) {
 			const oModel = this._oOwnerComponent.getModel();
 			// filter by claim status (approved, pending approval)
 			const oFilterRoleId = new Filter({
 				filters: [
-					new Filter("CLAIM_STATUS", FilterOperator.EQ, Constant.ClaimStatus.APPROVED),
-					new Filter("CLAIM_STATUS", FilterOperator.EQ, Constant.ClaimStatus.PENDING_APPROVAL)
+					new Filter("STATUS_ID", FilterOperator.EQ, Constant.ClaimStatus.APPROVED),
+					new Filter("STATUS_ID", FilterOperator.EQ, Constant.ClaimStatus.PENDING_APPROVAL)
 				],
 				and: false
 			});
-			const oListBinding = oModel.bindList(Constant.Entities.ZTRAIN_COURSE_PART, null, [
-				new Sorter("COURSE_ID"),
-				new Sorter("SESSION_NUMBER"),
-			], [
-				// ensure status is active
-				new Filter("COURSE_ID", FilterOperator.EQ, sCourseCode),
-				new Filter("PARTICIPANT_ID", FilterOperator.EQ, sParticipantId),
-				new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, Constant.CourseSessionStatus.ACTIVE),
-				new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true),
+			const oListBinding = oModel.bindList(Constant.Entities.ZCLAIM_HEADER, null, null, [
+				// check if claim exists with following 
+				new Filter("COURSE_CODE", FilterOperator.EQ, sCourseCode),
+				new Filter("SESSION_NUMBER", FilterOperator.EQ, sSessionNumber),
+				new Filter("EMP_ID", FilterOperator.EQ, sParticipantId),
 				oFilterRoleId
 			]);
 
@@ -77,60 +76,6 @@ sap.ui.define([
 				BusyIndicator.hide();
 			}
 		},
-
-		/**
-		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
-		* Method retrieves db table to be checked with fields and values to be filtered against
-		* if records found, first record is retrieved from the table and returns values from the record
-		* @public
-		* @param {string} sCourseCode - course code ID to check from database
-		* @param {string} sParticipantId - participant ID to check from database
-		* @returns {object} oReturnDates - if records found, return total start and end date
-		*/
-		getCourseCodeStartEndDate: async function (sCourseCode, sParticipantId) {
-			const oModel = this._oOwnerComponent.getModel();
-			const oListBinding = oModel.bindList(Constant.Entities.ZTRAIN_COURSE_PART, null, [
-				new Sorter("COURSE_ID"),
-				new Sorter("SESSION_NUMBER"),
-			], [
-				// ensure status is active
-				new Filter("COURSE_ID", FilterOperator.EQ, sCourseCode),
-				new Filter("PARTICIPANT_ID", FilterOperator.EQ, sParticipantId),
-				new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, Constant.CourseSessionStatus.ACTIVE),
-				new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true),
-				new Filter("CLAIM_STATUS", FilterOperator.NE, Constant.ClaimStatus.APPROVED),
-				new Filter("CLAIM_STATUS", FilterOperator.NE, Constant.ClaimStatus.PENDING_APPROVAL)
-			]);
-
-			try {
-				BusyIndicator.show(0);
-				const aContexts = await oListBinding.requestContexts(0, Infinity);
-
-				if (aContexts.length > 0) {
-					var oReturnDates = {
-						start_date: null,
-						end_date: null,
-					}
-					for ( var iContext = 0; iContext < aContexts.length; iContext++) {
-						var oData = aContexts[iContext].getObject();
-						if (!oReturnDates.start_date || new Date(oData["START_DATE"]) < new Date(oReturnDates.start_date)) {
-							oReturnDates.start_date = oData["START_DATE"];
-						}
-						if (!oReturnDates.end_date || new Date(oData["END_DATE"]) > new Date(oReturnDates.end_date)) {
-							oReturnDates.end_date = oData["END_DATE"];
-						}
-					}
-					return oReturnDates;
-				} else {
-					return null;
-				}
-			} catch (oError) {
-				MessageBox.error(Utility.getText("msg_claimdetails_input_err", [oError]));
-				return null;
-			} finally {
-				BusyIndicator.hide();
-			}
-		}, 
 
 		/**
 		* Set default values for claim item fields
@@ -340,12 +285,16 @@ sap.ui.define([
 			var nBreakfast = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_breakfast"));
 			var nLunch = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_lunch"));
 			var nDinner = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_dinner"));
+			
+			var oSessionModel = this.getView().getModel("session");
+    		var sEEID = oSessionModel.getProperty("/userId");
+
 
 			nBreakfast = Number.isNaN(nBreakfast) ? 0 : nBreakfast;
 			nLunch = Number.isNaN(nLunch) ? 0 : nLunch;
 			nDinner = Number.isNaN(nDinner) ? 0 : nDinner;
 
-			const oModel = this._oView.getModel();
+			const oModel = this.getView().getModel();
 			const oContext = oModel.bindContext("/getAmountEntitlement(...)");
 
 			oContext.setParameter("day", nDay);
@@ -356,6 +305,7 @@ sap.ui.define([
 			oContext.setParameter("breakfast", nBreakfast);
 			oContext.setParameter("lunch", nLunch);
 			oContext.setParameter("dinner", nDinner);
+			oContext.setParameter("employeeid", sEEID);
 
 			return oContext.execute()
 				.then(() => oContext.requestObject());
