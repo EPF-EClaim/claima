@@ -126,7 +126,7 @@ sap.ui.define([
 				}
 			}), "appModel");
 
-			this._oHeaderEditable = {
+			var oHeaderEditable = new JSONModel({
 				"startTrip": false,
 				"endTrip": false,
 				"startEvent": false,
@@ -135,8 +135,8 @@ sap.ui.define([
 				"comment": false,
 				"altCostCenter": false,
 				"saveHeader": false,
-			};
-			this.getView().setModel(new JSONModel(this._oHeaderEditable), "claimSubmissionHeaderEditableModel");
+			});
+			this.getView().setModel(oHeaderEditable, "editable");
 
 		},
 
@@ -242,7 +242,7 @@ sap.ui.define([
 		//set editable header fields
 		setHeaderEditable: async function () {
 			const oClaimModel = this.getView().getModel("claimsubmission_input");
-			var oEditableFields = this.getView().getModel("claimSubmissionHeaderEditableModel");
+			var oEditableFields = this.getView().getModel("editable");
 
 			oEditableFields.setProperty("/startEvent", true);
 			oEditableFields.setProperty("/endEvent", true);
@@ -261,9 +261,16 @@ sap.ui.define([
 
 		//set all fields uneditable
 		setHeaderUnEditable: function () {
-			var oEditableFields = this.getView().getModel("claimSubmissionHeaderEditableModel");
+			var oEditableFields = this.getView().getModel("editable");
 
-			oEditableFields.setData(Object.assign({}, this._oHeaderEditable), false);
+			oEditableFields.setProperty("/startEvent", false);
+			oEditableFields.setProperty("/endEvent", false);
+			oEditableFields.setProperty("/location", false);
+			oEditableFields.setProperty("/comment", false);
+			oEditableFields.setProperty("/startTrip", false);
+			oEditableFields.setProperty("/endTrip", false);
+			oEditableFields.setProperty("/altCostCenter", false);
+			oEditableFields.setProperty("/saveHeader", false);
 		},
 
 		//event handle for confirm and cancel
@@ -1781,33 +1788,24 @@ sap.ui.define([
 			const oInputModel = this.getView().getModel("claimsubmission_input");
 			const oODataModel = this.getOwnerComponent().getModel();
 
-			if ( DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")) && DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")) ) {
+			if ( this._getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date")) && this._getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date")) ) {
 				try {
 					BusyIndicator.show(0);
 
-					// validate date range
-					//// trip start/end date
-					if (!CustomValidator.validDateRange(this.byId("text_claimsummary_claimheader_tripstartdate").getValue(), this.byId("text_claimsummary_claimheader_tripenddate").getValue())) {
-						// stop claim submission if incomplete
-						return;
-					}
-					//// event start/end date (optional)
-					if (this.byId("text_claimsummary_claimheader_eventstartdate").getValue() || this.byId("text_claimsummary_claimheader_eventenddate").getValue()) {
-						if (!CustomValidator.validDateRange(this.byId("text_claimsummary_claimheader_eventstartdate").getValue(), this.byId("text_claimsummary_claimheader_eventenddate").getValue())) {
-							// stop claim submission if incomplete
-							return;
-						}
-					}
-
 					const sClaimId = oInputModel.getProperty("/claim_header/claim_id");
 					if (!sClaimId) {
-						MessageBox.error(Utility.getText("msg_error_missing_claim_id"));
+						throw new Error("Missing Claim ID");
 					}
 
 					// Bind to existing claim header
-					const oContext = await ClaimUtility.getClaimHeader(oODataModel, sClaimId);
+					const oContextBinding = oODataModel.bindContext(
+						`/ZCLAIM_HEADER('${encodeURIComponent(sClaimId)}')`
+					);
 
-					const lastModifiedDate = DateUtility.getHanaDate(new Date());
+					await oContextBinding.requestObject(); 
+					const oContext = oContextBinding.getBoundContext();
+
+					const lastModifiedDate = this._getHanaDate(new Date());
 					oInputModel.setProperty(
 						"/claim_header/last_modified_date",
 						lastModifiedDate
@@ -1825,17 +1823,31 @@ sap.ui.define([
 					);
 
 					oContext.setProperty("TRIP_START_DATE",
-						DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date"))
+						this._getHanaDate(oInputModel.getProperty("/claim_header/trip_start_date"))
 					);
 					oContext.setProperty("TRIP_END_DATE",
-						DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date"))
+						this._getHanaDate(oInputModel.getProperty("/claim_header/trip_end_date"))
 					);
 					oContext.setProperty("EVENT_START_DATE",
-						DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/event_start_date"))
+						this._getHanaDate(oInputModel.getProperty("/claim_header/event_start_date"))
 					);
 					oContext.setProperty("EVENT_END_DATE",
-						DateUtility.getHanaDate(oInputModel.getProperty("/claim_header/event_end_date"))
+						this._getHanaDate(oInputModel.getProperty("/claim_header/event_end_date"))
 					);
+
+					// validate date range
+					//// trip start/end date
+					if (!this._validDateRange("text_claimsummary_claimheader_tripstartdate", "text_claimsummary_claimheader_tripenddate")) {
+						// stop claim submission if incomplete
+						return;
+					}
+					//// event start/end date (optional)
+					if (this.byId("text_claimsummary_claimheader_eventstartdate").getValue() || this.byId("text_claimsummary_claimheader_eventenddate").getValue()) {
+						if (!this._validDateRange("text_claimsummary_claimheader_eventstartdate", "text_claimsummary_claimheader_eventenddate")) {
+							// stop claim submission if incomplete
+							return;
+						}
+					}
 
 					await oODataModel.submitBatch("$auto");
 
@@ -1854,6 +1866,26 @@ sap.ui.define([
 			}	
 			else {
 				MessageBox.error(Utility.getText("req_d_w_mandatory_field"));
+			}
+		},
+
+		_validDateRange: function (startdate, enddate) {
+			var startDateValue = this.byId(startdate).getValue();
+			var endDateValue = this.byId(enddate).getValue();
+			// check for missing value
+			if (!startDateValue || !endDateValue) {
+				MessageToast.show(Utility.getText("msg_daterange_missing"));
+				return false;
+			}
+			// check if end date earlier than start date
+			var startDateUnix = new Date(startDateValue).valueOf();
+			var endDateUnix = new Date(endDateValue).valueOf();
+			if (startDateUnix > endDateUnix) {
+				MessageToast.show(Utility.getText("msg_daterange_order"));
+				return false;
+			}
+			else {
+				return true;
 			}
 		},
 
