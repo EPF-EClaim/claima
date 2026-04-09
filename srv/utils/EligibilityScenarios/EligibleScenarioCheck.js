@@ -8,6 +8,7 @@ const KursusDalam = require("./KursusDalam");
 const KursusLuar = require("./KursusLuar");
 const IPAD = require("./IPAD");
 const Telefon_B = require("./Telefon_B");
+const JalurLebar = require("./JalurLebar");
 
 module.exports = {
   /**
@@ -117,6 +118,13 @@ module.exports = {
             aEmpData[0],
             aEligibilityRules,
             tx,
+          );
+          break;
+
+        case Constant.ClaimType.JALUR_LEB:
+          oReturnPayload = JalurLebar.onEligibleCheck(
+            aPayload[i],
+            aEligibilityRules,
           );
           break;
 
