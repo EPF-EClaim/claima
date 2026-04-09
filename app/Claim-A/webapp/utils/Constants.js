@@ -366,6 +366,13 @@ sap.ui.define([
         "OfficeDistance" : {
             "MILEAGE" : "MILEAGE"
         },
+          "MaritalStatus": {
+            "WIDOWED": "W",
+            "SINGLE": "S",
+            "MARRIED": "M",
+            "ENGAGED": "E",
+            "DIVORCED": "D"
+        },
         "InsuranceProvider" : {
             "OTHERS" : "4",
         },

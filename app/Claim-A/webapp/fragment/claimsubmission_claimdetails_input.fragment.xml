@@ -186,8 +186,8 @@
                     editable="{claimitem_property>/meter_cube_actual/is_editable}"
                     visible="{claimitem_property>/meter_cube_actual/is_visible}"
                     required="true"
-                    liveChange="onChange_ClaimDetails_ActualMeterCube"
-                    change="onChange_ClaimDetails_ActualMeterCube"
+                    liveChange="onChange_PengangkutanLautInputs"
+                    change="onChange_PengangkutanLautInputs"
                 />
 
                 <!-- Actual Amount (MYR) -->

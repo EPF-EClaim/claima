@@ -341,7 +341,8 @@ sap.ui.define([
 		 * @param {sap.ui.model.json.JSONModel} oSessionModel - User session model
 		 * @returns Updates entitled meter cube field upon completion
 		 */
-		fetchMeterCubeEntitlement: function (oInputModel, oSessionModel) {
+		fetchMeterCubeEntitlement: function (oInputModel) {
+			const oSessionModel = this._oOwnerComponent.getModel("session");
 			const sEmpId = oSessionModel.getProperty("/userId");
 			const oModel = this._oView.getModel();
 
@@ -373,11 +374,13 @@ sap.ui.define([
 		 * @param {sap.ui.model.json.JSONModel} oSessionModel - User session model
 		 * @returns Updates claim item fields upon completion
 		 */
-		fetchPengangkutanLautAmount: function (oInputModel, oSessionModel) {
+		fetchPengangkutanLautAmount: function (oInputModel) {
+			const oSessionModel = this._oOwnerComponent.getModel("session");
+			const sEmpId = oSessionModel.getProperty("/userId");
 			const oModel = this._oView.getModel();
 			const oContext = oModel.bindContext("/calculatePengangkutanLautAmount(...)");
 
-			oContext.setParameter("empId", oSessionModel.getProperty("/userId"));
+			oContext.setParameter("empId", sEmpId);
 			oContext.setParameter("actualMeterCube", oInputModel.getProperty("/claim_item/meter_cube_actual"));
 			oContext.setParameter("actualAmount", oInputModel.getProperty("/claim_item/actual_amount"));
 

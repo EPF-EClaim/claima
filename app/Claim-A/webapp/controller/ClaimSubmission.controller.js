@@ -2282,14 +2282,8 @@ sap.ui.define([
 				oPropertyModel.setProperty("/amount/is_visible", true);
 				oPropertyModel.setProperty("/amount/is_editable", false);
 
-				await ClaimUtility.fetchMeterCubeEntitlement(
-					oInputModel,
-					this.getOwnerComponent().getModel("session")
-				);
-				await ClaimUtility.fetchPengangkutanLautAmount(
-					oInputModel,
-					this.getOwnerComponent().getModel("session")
-				);
+				await ClaimUtility.fetchMeterCubeEntitlement(oInputModel);
+				await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 			}
 
 			else {
@@ -2968,11 +2962,12 @@ sap.ui.define([
 				// set 'amount' property to % of actual amount based on percentage compensation
 				oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
 			}
-	
-		ClaimUtility.fetchPengangkutanLautAmount(
-				oInputModel,
-				this.getOwnerComponent().getModel("session")
-			);
+			ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
+		},
+
+		onChange_PengangkutanLautInputs: async function () {
+    		const oInputModel = this.getView().getModel("claimitem_input");
+    		await ClaimUtility.fetchPengangkutanLautAmount(oInputModel);
 		},
 
 		onChange_ClaimDetails_DateRange: async function (startdate, enddate) {
