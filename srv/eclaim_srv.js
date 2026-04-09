@@ -254,7 +254,7 @@ module.exports = (srv) => {
                     consumed = Number(existing[0].CONSUMED);
 
                     var total_budget = original_budget + virement_in + virement_out + supplement + return_value;
-                    var total_budget_balance = current_budget + consumed;
+                    var total_budget_balance = total_budget + consumed;
                     updatePayload.CURRENT_BUDGET = total_budget.toFixed(2);
                     updatePayload.BUDGET_BALANCE = total_budget_balance.toFixed(2);
 
