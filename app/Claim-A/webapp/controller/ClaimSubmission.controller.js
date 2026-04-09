@@ -3562,10 +3562,10 @@ sap.ui.define([
 				}
 				//FUT issue 102
 				// solving the issue of having 0 amount claim item when submitting claims
-				CustomValidator.init(this.getOwnerComponent(), this.getView());
-				if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
-					return;
-				}
+				// CustomValidator.init(this.getOwnerComponent(), this.getView());
+				// if (!(await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM))) {
+				// 	return;
+				// }
 
 				//// update last modified date
 				var lastModifiedDate = this._getJsonDate(new Date());
@@ -4805,6 +4805,7 @@ sap.ui.define([
 				if (sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ID ||
 					sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ITEM_ID ||
 					sKey === this._oConstant.ExcludeField.CLAIM_ID ||
+					sKey === this._oConstant.ExcludeField.CLAIM_SUB_ID ||
 					sKey === this._oConstant.ExcludeField.DESCR  ||
 					sKey ===  this._oConstant.ExcludeField.GL_ACCOUNT ||
 					sKey === this._oConstant.ExcludeField.COST_CENTER ||
