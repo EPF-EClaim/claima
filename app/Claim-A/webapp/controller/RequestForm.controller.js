@@ -582,13 +582,6 @@ sap.ui.define([
 				arrival_time			: oReqItem.ARRIVAL_TIME || "",
 				est_no_participant		: oReqItem.EST_NO_PARTICIPANT ?? 0,
 				cash_advance			: oReqItem.CASH_ADVANCE || false,
-				// extra hidden field value
-				cost_center				: oReqItem.COST_CENTER || "",
-				gl_account				: oReqItem.GL_ACCOUNT || "",
-				material_code			: oReqItem.MATERIAL_CODE || "",
-				dependent_relationship	: oReqItem.DEPENDENT_RELATIONSHIP || "",
-				meter_cube_actual		: oReqItem.METER_CUBE_ACTUAL || 0,	
-
 				trip_start_date			: oReqItem.TRIP_START_DATE || null,
 				trip_end_date			: oReqItem.TRIP_END_DATE || null,
 				trip_start_time			: oReqItem.TRIP_START_TIME || null,
@@ -598,7 +591,13 @@ sap.ui.define([
 				entitled_breakfast		: oReqItem.ENTITLED_BREAKFAST || 0,
 				entitled_lunch			: oReqItem.ENTITLED_LUNCH || 0,
 				entitled_dinner			: oReqItem.ENTITLED_DINNER || 0,
-				daily_allowance			: oReqItem.DAILY_ALLOWANCE || 0
+				daily_allowance			: oReqItem.DAILY_ALLOWANCE || 0,
+				// extra hidden field value
+				cost_center				: oReqItem.COST_CENTER || "",
+				gl_account				: oReqItem.GL_ACCOUNT || "",
+				material_code			: oReqItem.MATERIAL_CODE || "",
+				dependent_relationship	: oReqItem.DEPENDENT_RELATIONSHIP || "",
+				meter_cube_actual		: oReqItem.METER_CUBE_ACTUAL || 0
 			});
 
 			const sState = this._oReqModel.getProperty("/view");

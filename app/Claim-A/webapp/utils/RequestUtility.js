@@ -6,7 +6,7 @@ sap.ui.define([
 	"claima/utils/Utility",
 	"sap/ui/model/odata/type/Int",
 	"claima/utils/DateUtility",
-	"sap/m/MessageBox"
+	"sap/m/MessageBox",
 ], function (
     Constants,
 	Fragment,
@@ -29,6 +29,10 @@ sap.ui.define([
             this._oView = oView;
 		},
 
+		/**
+         * Determine the default cost center for specific claim type
+         * @public
+         */
         determineDefaultCostCenter: async function (oEvent) {
 			var oSelectControl = oEvent.getSource();
     		var sClaimTypeId = oSelectControl.getSelectedKey();
@@ -61,6 +65,10 @@ sap.ui.define([
 			}
 		},
 
+		/**
+         * Determine the office mileage 
+         * @public
+         */
         determineOfficeMileage: async function () {
             const oReqModel = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
             const oDataModel = this._oDataModel ? this._oDataModel : this._oOwnerComponent.getModel();
@@ -96,6 +104,10 @@ sap.ui.define([
             }
         },
 
+		/**
+         * Populate the allocated amount when needed 
+         * @public
+         */
         populateAllocatedAmount: async function () {
             const oReqModel = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
             const oReqItem  = oReqModel.getProperty("/req_item");
@@ -142,6 +154,10 @@ sap.ui.define([
             oReqModel.setProperty("/req_item/est_amount", fEstAmount.toFixed(2));
         },
 
+		/**
+         * Calculate the total for km and rate per km 
+         * @private
+         */
         _calculateKilometer: function (oReqItem) {
             var fKilometer  = parseFloat(oReqItem.kilometer).toFixed(2) || 0;
             var fRatePerKm  = parseFloat(oReqItem.rate_per_kilometer).toFixed(2) || 0;
@@ -151,6 +167,10 @@ sap.ui.define([
             return parseFloat(fKilometer) * parseFloat(fRatePerKm);
         },
 
+		/**
+         * Retrieve the eligible lodging amount from backend 
+         * @private
+         */
         _retrieveLodgingAmount: async function () {
             const oReqModel     = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
             const oDataModel    = this._oDataModel ? this._oDataModel : this._oOwnerComponent.getModel();
@@ -182,6 +202,10 @@ sap.ui.define([
 
         },
 
+		/**
+         * Retrieve MAKAN_O & MAKAN_L entitled amount from backend 
+         * @private
+         */
         _retrieveEntitlementAmount: async function () {
             const oReqModel     = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
             const oDataModel    = this._oDataModel ? this._oDataModel : this._oOwnerComponent.getModel();
@@ -230,10 +254,17 @@ sap.ui.define([
                 
 
             } catch (oError) {
-                console.error("Could not fetch Makan entitlement", oError);
+                MessageBox.error("Could not fetch Elaun Makan entitlement", oError);
             }
         },
 
+		/**
+         * Calculate the estimated amount based on the allocated amount of each participant 
+         * @private
+         * @param {Array} aParticipantList 
+         * @param {Object} oReqItem 
+         * @returns {Float} fTotalSum
+         */
 		_calculateEstimatedAmount(oReqItem, aParticipantList) {
 
 			const fTotalSum = aParticipantList.reduce((sum, row) => {
@@ -246,6 +277,10 @@ sap.ui.define([
 			return fTotalSum;
 		},
 
+		/**
+         * Calculate the Travel Duration 
+         * @private
+         */
         _calculateTravelDuration: function () {
             const oReqModel     = this._oReqModel ? this._oReqModel : this._oOwnerComponent.getModel('request');
             const oReqItem      = oReqModel.getProperty('/req_item');
@@ -265,7 +300,7 @@ sap.ui.define([
             const iDiffMs = oEndDateTime.getTime() - oStartDateTime.getTime();
 
             if (iDiffMs < 0) {
-                MessageBox.error("End date and time cannot be earlier than the start date and time.");
+                MessageBox.error(Utility.getText("req_d_e_end_date_less_then_start_date"));
                 oReqModel.setProperty('/req_item/travel_day', 0);
                 oReqModel.setProperty('/req_item/travel_hour', 0);
                 return;

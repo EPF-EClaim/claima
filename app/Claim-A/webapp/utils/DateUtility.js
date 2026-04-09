@@ -115,23 +115,6 @@ sap.ui.define([
         },
 
         /**
-         * Merge Date and Time
-         */
-        mergeDateTime(oDate, sTime) {
-            const dMergedDate = new Date(oDate.getTime());
-
-            if (sTime && typeof sTime === "string") {
-                const aParts = sTime.split(":");
-                if (aParts.length >= 2) {
-                    dMergedDate.setHours(parseInt(aParts[0], 10), parseInt(aParts[1], 10), 0, 0);
-                }
-            } else {
-                dMergedDate.setHours(0, 0, 0, 0);
-            }
-            return dMergedDate;
-        },
-
-        /**
          * Calculate number of days between given date range based on claim type item
          * @public
          * @param {string} sSubmissionType - whether data is processed based on claim or request submission type
@@ -715,8 +698,14 @@ sap.ui.define([
                 .replace("DD", sDay);
         },
 
-
-        parseDateTime (dDate, tTime) {
+        /**
+         * Parse Date and Time into DateTime format.
+         * @public
+         * @param {Date} Date from input
+         * @param {Time} Time from input 
+         * @returns {oBaseDate} 
+         */
+        parseDateTime: function (dDate, tTime) {
             let oBaseDate = new Date(dDate);
 
             if (isNaN(oBaseDate.getTime())) {
@@ -759,6 +748,12 @@ sap.ui.define([
             return oBaseDate;
         },
 
+        /**
+         * Convert Timepicker value to HH:mm:ss which accepted by HANA Cloud.
+         * @public
+         * @param {string} timeStr from TimePicker value
+         * @returns {string|null} formatted time
+         */
         convertTo24Hour(timeStr) {
             if (!timeStr) return null;
 
