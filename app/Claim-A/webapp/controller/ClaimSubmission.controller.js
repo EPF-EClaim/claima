@@ -4804,12 +4804,12 @@ sap.ui.define([
 
 		_resetClaimItemInputs: async function (oInputModel) {
 			Object.keys(oInputModel.getData().claim_item).forEach((sKey) => {
-				if (sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ID || 
-					sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ITEM_ID || 
-					sKey === this._oConstant.ExcludeField.CLAIM_ID || 
-					sKey === this._oConstant.ExcludeField.CLAIM_SUB_ID || 
-					sKey === this._oConstant.ExcludeField.DESCR  || 
-					sKey ===  this._oConstant.ExcludeField.GL_ACCOUNT || 
+				if (sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ID ||
+					sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ITEM_ID ||
+					sKey === this._oConstant.ExcludeField.CLAIM_ID ||
+					sKey === this._oConstant.ExcludeField.CLAIM_SUB_ID ||
+					sKey === this._oConstant.ExcludeField.DESCR  ||
+					sKey ===  this._oConstant.ExcludeField.GL_ACCOUNT ||
 					sKey === this._oConstant.ExcludeField.COST_CENTER ||
 					sKey === this._oConstant.ExcludeField.IS_NEW
 				){
