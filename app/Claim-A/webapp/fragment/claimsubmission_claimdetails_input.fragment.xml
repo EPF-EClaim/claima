@@ -145,14 +145,13 @@
 
                 <!-- Marriage Category -->
                 <Label
-                    text="{i18n>label_claimdetails_input_marriagecategory}"
-                    visible="{claimitem_property>/marriage_category/is_visible}" />
+                    text="{i18n>label_claimdetails_input_marriagecategory}" />
 
                 <Select
                     id="select_claimdetails__input_marriagecategory"
                     selectedKey="{claimitem_input>/claim_item/marriage_category}"
                     forceSelection="false"
-                    visible="{claimitem_property>/marriage_category/is_visible}"
+                    visible="false"
                     required="true"
                     items="{
                         path: 'employee>/ZMARITAL_CAT',
@@ -166,8 +165,7 @@
                 </Select>
 
                 <!-- Actual Meter Cube -->
-                <Label text="{i18n>label_claimdetails_input_actual_meter_cube}"
-                    visible="{claimitem_property>/meter_cube_actual/is_visible}" />
+                <Label text="{i18n>label_claimdetails_input_actual_meter_cube}" />
                 <Input
                     id="input_claimdetails_meter_cube_actual"
                     value="{
@@ -184,7 +182,7 @@
                         }
                     }"
                     editable="{claimitem_property>/meter_cube_actual/is_editable}"
-                    visible="{claimitem_property>/meter_cube_actual/is_visible}"
+                    visible="false"
                     required="true"
                     liveChange="onChange_ClaimDetails_ActualMeterCube"
                     change="onChange_ClaimDetails_ActualMeterCube"
@@ -255,13 +253,12 @@
                 />
 
                 <!-- Meter Cube Entitled -->
-                <Label text="{i18n>label_claimdetails_input_entitled_meter_cube}"
-                    visible="{claimitem_property>/meter_cube_entitled/is_visible}" />
+                <Label text="{i18n>label_claimdetails_input_entitled_meter_cube}" />
                 <Input
                     id="input_claimdetails_meter_cube"
                     value="{claimitem_input>/claim_item/meter_cube_entitled}"
                     editable="false"
-                    visible="{claimitem_property>/meter_cube_entitled/is_visible}"
+                    visible="false"
                 />
                                 
                 <!-- Amount (MYR) -->
@@ -1242,6 +1239,7 @@
                     id="input_claimdetails_input_bill_no"
                     value="{claimitem_input>/claim_item/bill_no}"
                     visible="false"
+                    required="{claimitem_property>/bill_no/is_required}"
                 />
 
                 <!-- Account No -->
@@ -1250,6 +1248,7 @@
                     id="input_claimdetails_input_account_no"
                     value="{claimitem_input>/claim_item/account_no}"
                     visible="false"
+                    required="{claimitem_property>/account_no/is_required}"
                 />
 
                 <!-- Bill Date -->
