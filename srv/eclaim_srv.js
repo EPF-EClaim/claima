@@ -250,7 +250,6 @@ module.exports = (srv) => {
                     supplement = Number(row.SUPPLEMENT) || 0;
                     return_value = Number(row.RETURN) || 0;
 
-                    current_budget = Number(existing[0].CURRENT_BUDGET);
                     consumed = Number(existing[0].CONSUMED);
 
                     var total_budget = original_budget + virement_in + virement_out + supplement + return_value;
