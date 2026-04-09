@@ -311,6 +311,8 @@
                                             value="{request>/req_item/start_time}"
                                             maskMode='On'
                                             textAlign="Begin"
+                                            valueFormat="HH:mm:ss"
+                                            displayFormat="HH:mm"
                                             required="true"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
@@ -325,6 +327,8 @@
                                             value="{request>/req_item/end_time}"
                                             maskMode='On'
                                             textAlign="Begin"
+                                            valueFormat="HH:mm:ss"
+                                            displayFormat="HH:mm"
                                             required="true"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
@@ -791,6 +795,7 @@
                                             id="i_sss" >
                                     <form:fields>
                                         <Select 
+                                            id="item_select_sss"
                                             selectedKey="{request>/req_item/sss}" 
                                             required="true" 
                                             forceSelection="false"
@@ -888,6 +893,150 @@
                                                         text="{employee>LODGING_CATEGORY_DESC}" />
                                             </items>
                                         </Select>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Elaun Makan - Start Date -->
+                                <form:FormElement label="{i18n>req_tripstartdate}"
+                                            visible="false"
+                                            id="i_trip_start_date" >
+                                    <form:fields>
+                                        <m:DatePicker
+                                            displayFormat="dd MMM yyyy"
+                                            valueFormat="yyyy-MM-dd"
+                                            placeholder="eg: 01 Jan 1990"
+                                            value="{request>/req_item/trip_start_date}"
+                                            textAlign="Begin"
+                                            required="true" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            change=".onInputAllocatedAmount"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Elaun Makan - End Date -->
+                                <form:FormElement label="{i18n>req_tripenddate}"
+                                            visible="false"
+                                            id="i_trip_end_date" >
+                                    <form:fields>
+                                        <m:DatePicker
+                                            displayFormat="dd MMM yyyy"
+                                            valueFormat="yyyy-MM-dd"
+                                            placeholder="eg: 01 Jan 1990"
+                                            value="{request>/req_item/trip_end_date}"
+                                            textAlign="Begin"
+                                            required="true" 
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            change=".onInputAllocatedAmount"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Elaun Makan - Trip Start Time -->
+                                <form:FormElement label="{i18n>req_i_trip_start_time}"
+                                            visible="false"
+                                            id="i_trip_start_time" >
+                                    <form:fields>
+                                        <m:TimePicker
+                                            value="{request>/req_item/trip_start_time}"
+                                            maskMode='On'
+                                            textAlign="Begin"
+                                            valueFormat="HH:mm:ss"
+                                            displayFormat="HH:mm"
+                                            required="true"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            change=".onInputAllocatedAmount"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Elaun Makan - Trip End Time -->
+                                <form:FormElement label="{i18n>req_i_trip_end_time}"
+                                            visible="false"
+                                            id="i_trip_end_time" >
+                                    <form:fields>
+                                        <m:TimePicker
+                                            value="{ path: 'request>/req_item/trip_end_time' }"
+                                            maskMode='On'
+                                            textAlign="Begin"
+                                            valueFormat="HH:mm:ss"
+                                            displayFormat="HH:mm"
+                                            required="true"
+                                            enabled="{= ${request>/view} !== 'view' }"
+                                            change=".onInputAllocatedAmount"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Elaun Makan - Travel Duration (Days) -->
+                                <form:FormElement label="{i18n>req_i_travel_day}"
+                                            visible="false"
+                                            id="i_travel_day" >
+                                    <form:fields>
+                                        <Text text="{
+                                            path: 'request>/req_item/travel_day',
+                                            type: 'sap.ui.model.type.Integer'
+                                            } days"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Elaun Makan - Travel Duration (Hours) -->
+                                <form:FormElement label="{i18n>req_i_travel_hour}"
+                                            visible="false"
+                                            id="i_travel_hour" >
+                                    <form:fields>
+                                        <Text text="{
+                                            path: 'request>/req_item/travel_hour',
+                                            type: 'sap.ui.model.type.Integer'
+                                            } hours"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Elaun Makan - Entitled Breakfast -->
+                                <form:FormElement label="{i18n>req_i_breakfast}"
+                                            visible="false"
+                                            id="i_breakfast" >
+                                    <form:fields>
+                                        <Text text="{
+                                            path: 'request>/req_item/entitled_breakfast',
+                                            type: 'sap.ui.model.type.Integer'
+                                            }"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Elaun Makan - Entitled Lunch -->
+                                <form:FormElement label="{i18n>req_i_lunch}"
+                                            visible="false"
+                                            id="i_lunch" >
+                                    <form:fields>
+                                        <Text text="{
+                                            path: 'request>/req_item/entitled_lunch',
+                                            type: 'sap.ui.model.type.Integer'
+                                            }"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Elaun Makan - Entitled Dinner -->
+                                <form:FormElement label="{i18n>req_i_dinner}"
+                                            visible="false"
+                                            id="i_dinner" >
+                                    <form:fields>
+                                        <Text text="{
+                                            path: 'request>/req_item/entitled_dinner',
+                                            type: 'sap.ui.model.type.Integer'
+                                            }"/>
+                                    </form:fields>
+                                </form:FormElement>
+
+                                <!-- Elaun Makan - Daily Allowance -->
+                                <form:FormElement label="{i18n>req_i_daily_allowance}"
+                                            visible="false"
+                                            id="i_daily_allowance" >
+                                    <form:fields>
+                                        <Text text="{
+                                            path: 'request>/req_item/daily_allowance',
+                                            type: 'sap.ui.model.type.Float',
+                                            formatOptions: {
+                                                minFractionDigits: 2,
+                                                maxFractionDigits: 2
+                                                }
+                                            }"/>
                                     </form:fields>
                                 </form:FormElement>
 
@@ -1004,14 +1153,18 @@
                                             maxFractionDigits: 2
                                         },
                                         constraints: {
-                                            minimum: 0
+                                            minimum: 0.01
                                         }
                                     }" 
                                     change=".onInputAllocatedAmount"
-                                    enabled="{= ${request>/view} !== 'view' &amp;&amp; 
-                                                ( ${request>/req_item/location_type} !== ${constant>/LocationType/KWSP} || 
-                                                ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/KILOMETER} ) &amp;&amp;
-                                                !${request>/req_item/kilometer} }">
+                                    enabled="{=
+                                        ${request>/view} !== 'view' &amp;&amp;
+                                        ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/KILOMETER} &amp;&amp;
+                                        ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/LODGING_L} &amp;&amp;
+                                        ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/LODG_O} &amp;&amp;
+                                        ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MAKAN_L} &amp;&amp;
+                                        ${request>/req_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/MAKAN_O}
+                                    }">
                                 </Input>
                             </table:template>
                         </table:Column>
