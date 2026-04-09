@@ -97,7 +97,7 @@ sap.ui.define([
 
     const sMode = oController.getView().getModel("Type").getProperty("/mode");
     
-    oDialog.getEndButton().setText(sMode === "APPROVE_CLAIM" ? Utility.getText("approve_btn") : Utility.getText("approve_btn_request"))
+    oDialog.getEndButton().setText(sMode === Utility.getText("approve_mode_claim") ? Utility.getText("approve_btn") : Utility.getText("approve_btn_request"))
     
     oDialog.addStyleClass("requestDialog");
     oView.addDependent(oDialog);
