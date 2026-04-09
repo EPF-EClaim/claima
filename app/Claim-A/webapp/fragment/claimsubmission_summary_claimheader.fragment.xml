@@ -108,8 +108,6 @@
                 />
                 
                 <DatePicker
-                
-                <DatePicker
                     id="text_claimsummary_claimheader_tripstartdate"
                     editable="{claimSubmissionHeaderEditableModel>/startTrip}"
                     value="{
@@ -128,7 +126,6 @@
                     tooltip="{i18n>valuehelp_claiminput_tripdate}"
                 />
                 <DatePicker
-                <DatePicker
                     id="text_claimsummary_claimheader_tripenddate"
                     editable="{claimSubmissionHeaderEditableModel>/endTrip}"
                     value="{
@@ -145,7 +142,6 @@
                     tooltip="{i18n>valuehelp_claiminput_eventdate}"
                 />
                 <DatePicker
-                <DatePicker
                     id="text_claimsummary_claimheader_eventstartdate"
                     editable="{claimSubmissionHeaderEditableModel>/startEvent}"
                     value="{
@@ -161,7 +157,6 @@
                     tooltip="{i18n>valuehelp_claiminput_eventdate}"
                     tooltip="{i18n>valuehelp_claiminput_eventdate}"
                 />
-                <DatePicker
                 <DatePicker
                     id="text_claimsummary_claimheader_eventenddate"
                     editable="{claimSubmissionHeaderEditableModel>/endEvent}"
@@ -218,7 +213,6 @@
                 <!-- Comment -->
                 <Label text="{i18n>label_claimsummary_claimheader_comment}" />
                 <Input
-                <Input
                     id="text_claimsummary_claimheader_comment"
                     editable="{claimSubmissionHeaderEditableModel>/comment}"
                     value="{claimsubmission_input>/claim_header/comment}"
@@ -226,7 +220,6 @@
 
                 <!-- Location -->
                 <Label text="{i18n>label_claimsummary_claimheader_location}" />
-                <Input
                 <Input
                     id="text_claimsummary_claimheader_location"
                     editable="{claimSubmissionHeaderEditableModel>/location}"

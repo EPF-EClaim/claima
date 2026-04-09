@@ -227,6 +227,20 @@ sap.ui.define([
 			await this._afterLoadFragments();
 		},
 
+		//set all fields uneditable
+		setHeaderUnEditable: function () {
+			var oEditableFields = this.getView().getModel("editable");
+
+			oEditableFields.setProperty("/startEvent", false);
+			oEditableFields.setProperty("/endEvent", false);
+			oEditableFields.setProperty("/location", false);
+			oEditableFields.setProperty("/comment", false);
+			oEditableFields.setProperty("/startTrip", false);
+			oEditableFields.setProperty("/endTrip", false);
+			oEditableFields.setProperty("/altCostCenter", false);
+			oEditableFields.setProperty("/saveHeader", false);
+		},
+
 		//event handle for confirm and cancel
 		onPressDeclarationConfirm: function () {
 			this._openDeclarationDialog.close();
@@ -1725,7 +1739,6 @@ sap.ui.define([
 
 			}
 		},
-		
 		onDownloadExcelReport: async function () {
 			// get header data
 			const oHeader = this.getView().getModel("claimsubmission_input").getProperty("/claim_header");
