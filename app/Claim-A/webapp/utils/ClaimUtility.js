@@ -339,10 +339,35 @@ sap.ui.define([
 		},
 
 		/**
-		 * Retrieve and apply meter cube entitlement from backend service.
+		 * Bind to existing claim header with claim ID
+		 * @param {object} oODataModel 
+		 * @param {string} sClaimId 
+		 * @returns {object}
+		 */
+		getClaimHeader: async function (oODataModel, sClaimId) {
+			try {
+				const oContextBinding = oODataModel.bindContext(
+					`/ZCLAIM_HEADER('${encodeURIComponent(sClaimId)}')`
+				);
+
+				await oContextBinding.requestObject(); 
+				const oContext = oContextBinding.getBoundContext();
+				return oContext;
+			} catch (oError) {
+				return null;
+			}
+		},
+
+		/**
+		 * Calculate entitled meter cube value for Pengangkutan Laut claim type.
+		 * Method retrieves employee master data, marital status, dependent (spouse) data,
+		 * and meter cube configuration table to determine the total entitled meter cube
+		 * based on predefined rules.
 		 *
-		 * Calls backend entitlement function using the logged-in employee ID
-		 * and updates the entitled meter cube value in the claim item input model.
+		 * Entitlement is derived from these components:
+		 * - Base employee meter cube
+		 * - Additional meter cube based on marital status (single/married)
+		 * - Additional meter cube if employee has a spouse
 		 *
 		 * @public
 		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim item input model
