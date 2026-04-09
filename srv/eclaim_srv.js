@@ -927,6 +927,7 @@ module.exports = (srv) => {
         let daily_allowance = 0;
         let time_difference = 0;
         let bfast, lunch, dinner, total_meal_allowance = 0;
+        var total_tips = 0;
 
         //get employee personal grade 
         const result = await tx.run(
@@ -995,8 +996,12 @@ module.exports = (srv) => {
                 lunch = req.data.lunch != 0 ? (0.4 * entitlement.AMOUNT) * req.data.lunch : 0;
                 dinner = req.data.dinner != 0 ? (0.4 * entitlement.AMOUNT) * req.data.dinner : 0;
             }
-
             total_meal_allowance = meal_allowance != 0 ? (meal_allowance - bfast - lunch - dinner) : 0;
+
+            if (!req.data.tips){
+                total_tips = 0.15 * total_meal_allowance;
+                total_meal_allowance = total_
+            }
             return {
                 amount: total_meal_allowance,
                 daily_allowance: (entitlement.AMOUNT / 2),

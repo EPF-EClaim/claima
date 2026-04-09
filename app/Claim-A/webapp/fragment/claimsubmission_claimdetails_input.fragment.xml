@@ -1152,6 +1152,32 @@
                     visible="false"
                     editable="false"
                 />
+                
+                <!-- Checkbox: Exclude Tips -->
+                <Label text="{i18n>label_claimdetails_input_excludetips}" />
+                <CheckBox
+                id="input_claimdetails_input_excludetips"
+                selected="{claimitem_input>/claim_item/excludetips}"
+                select="onSelect_ExcludeTips"
+                visible="{= Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
+                />
+
+                <!-- Tips Amount -->
+                <Label text="{i18n>label_claimdetails_input_tips_amt}" />
+                <Input
+                    id="input_claimdetails_input_tips_amount"
+                    value="{ path: 'claimitem_input>/claim_item/tips_amount',
+							 type: 'FloatType',
+							 formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
+						}"
+                    visible="{= Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id}) }"
+                    editable="false"
+                />
+
 
                 <!-- Lodging Address -->
                 <Label text="{i18n>label_claimdetails_input_lodging_address}" />
