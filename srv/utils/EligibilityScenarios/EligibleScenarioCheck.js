@@ -8,6 +8,7 @@ const KursusDalam = require("./KursusDalam");
 const KursusLuar = require("./KursusLuar");
 const IPAD = require("./IPAD");
 const Telefon_B = require("./Telefon_B");
+const JalurLebar = require("./JalurLebar");
 
 module.exports = {
   /**
@@ -48,7 +49,7 @@ module.exports = {
       [Constant.EntitiesFields.CLAIM_TYPE_ID]: aPayload[0].ClaimType,
       [Constant.EntitiesFields.CLAIM_TYPE_ITEM_ID]: aPayload[0].ClaimTypeItem,
     };
-
+ 
     // Claim Type that requires additional Job Group filtering
     if (
       aPayload[0].ClaimType == Constant.ClaimType.HANDPHONE &&
@@ -61,6 +62,7 @@ module.exports = {
       };
     }
     const sEligibilityCondition = BuildSelectWhereConditions.buildWhereCondition(aEligibilityCondition);
+
     // Get Eligibility Rules
     const aEligibilityRules = await tx.run(
       SELECT.from(Constant.Entities.ZELIGIBILITY_RULE).where(
@@ -116,6 +118,13 @@ module.exports = {
             aEmpData[0],
             aEligibilityRules,
             tx,
+          );
+          break;
+
+        case Constant.ClaimType.JALUR_LEB:
+          oReturnPayload = JalurLebar.onEligibleCheck(
+            aPayload[i],
+            aEligibilityRules,
           );
           break;
 
