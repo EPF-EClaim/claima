@@ -5,7 +5,7 @@
     xmlns:l="sap.ui.layout"
     xmlns:f="sap.ui.layout.form"
 >
-    <Dialog id="dialog_claimprocess" title="{i18n>dialog_claimprocess}" contentWidth="50em" afterOpen=".onDialogClaimProcessAfterOpen">
+    <Dialog id="dialog_claimprocess" title="{i18n>dialog_claimprocess}" contentWidth="50em">
 
             <!-- Form Layout -->
             <f:SimpleForm
