@@ -1217,6 +1217,9 @@ sap.ui.define([
 					"study_levels_id": null,
 					"travel_days_id": null,
 					"vehicle_class_id": null,
+					"dailyallowance": null,
+					"excludetips": null,
+					"tips_amount": null,
 					"descr": {
 						"claim_type_item_id": null,
 						"claim_category": null,
@@ -2864,7 +2867,9 @@ sap.ui.define([
 					REQUEST_APPROVAL_AMOUNT: oInputModel.getProperty("/claim_item/request_approval_amount"),
 					STUDY_LEVELS_ID: oInputModel.getProperty("/claim_item/study_levels_id"),
 					TRAVEL_DAYS_ID: oInputModel.getProperty("/claim_item/travel_days_id"),
-					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id")
+					VEHICLE_CLASS_ID: oInputModel.getProperty("/claim_item/vehicle_class_id"), 
+					DAILY_ALLOWANCE: oInputModel.getProperty("/claim_item/dailyallowance"), 
+					TIPS: oInputModel.getProperty("/claim_item/tips_amount")
 				});
 
 				if (oInputModel.getProperty("/claim_item/is_new")) {
@@ -4854,6 +4859,10 @@ sap.ui.define([
 				oInputModel.setProperty(`/claim_item/${sKey}`, null);
 			})
 
+		}, 
+
+		onSelect_ExcludeTips: async function () {
+			await this._calculatePerDiem();
 		}
 
 	});

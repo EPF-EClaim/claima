@@ -285,6 +285,7 @@ sap.ui.define([
 			var nBreakfast = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_breakfast"));
 			var nLunch = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_lunch"));
 			var nDinner = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_dinner"));
+			var bTips = oClaimItemInputModel.getProperty("/claim_item/excludetips");
 			
 			var oSessionModel = this.getView().getModel("session");
     		var sEEID = oSessionModel.getProperty("/userId");
@@ -306,6 +307,7 @@ sap.ui.define([
 			oContext.setParameter("lunch", nLunch);
 			oContext.setParameter("dinner", nDinner);
 			oContext.setParameter("employeeid", sEEID);
+			oContext.setParameter("tips", bTips);
 
 			return oContext.execute()
 				.then(() => oContext.requestObject());

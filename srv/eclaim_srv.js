@@ -998,14 +998,19 @@ module.exports = (srv) => {
             }
             total_meal_allowance = meal_allowance != 0 ? (meal_allowance - bfast - lunch - dinner) : 0;
 
+            //to include tips calculation (15%) from total entitlement
+            // only applicable for claim submission
+            // if true, exclude tips and set total tips to be 0. Else, include 15% tips
             if (!req.data.tips){
                 total_tips = 0.15 * total_meal_allowance;
-                total_meal_allowance = total_
+                total_meal_allowance += total_tips;
             }
+
             return {
                 amount: total_meal_allowance,
                 daily_allowance: (entitlement.AMOUNT / 2),
-                currency_code: entitlement.CURRENCY
+                currency_code: entitlement.CURRENCY, 
+                tips_amount: total_tips
             };
         }
     });
