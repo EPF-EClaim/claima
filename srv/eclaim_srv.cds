@@ -1344,7 +1344,8 @@ service eclaim_srv @(requires: 'authenticated-user'){
         currency_code: String;
     }
 
-    function getAmountEntitlement(day:Integer, 
+    function getAmountEntitlement(employeeid: String,
+                                  day:Integer, 
                                   hours: Decimal(5, 1), 
                                   location: String, 
                                   claimtypeid: String, 
