@@ -59,6 +59,7 @@ const Constant = {
     },
     Entities: {
         "ZEMP_MASTER": "ZEMP_MASTER",
+        "ZEMP_DEPENDENT": "ZEMP_DEPENDENT",
         "ZELIGIBILITY_RULE": "ZELIGIBILITY_RULE",
         "ZCLAIM_HEADER": "ZCLAIM_HEADER",
         "ZCLAIM_ITEM": "ZCLAIM_ITEM",
@@ -159,9 +160,12 @@ const Constant = {
         "JOB_GROUP": "JOB_GROUP",
         "MARITAL_STATUS": "MARITAL_STATUS",
         "EMPLOYEE_TYPE": "EMPLOYEE_TYPE",
+        "MARRIAGE_CATEGORY": "MARRIAGE_CATEGORY",
         "PERSONAL_GRADE": "PERSONAL_GRADE",
         "START_DATE": "START_DATE",
-        "END_DATE": "END_DATE"
+        "END_DATE": "END_DATE",
+        "RELATIONSHIP": "RELATIONSHIP",
+        "DEPENDENT_NO": "DEPENDENT_NO"
     },
     Wildcard: {
         "All": "*",

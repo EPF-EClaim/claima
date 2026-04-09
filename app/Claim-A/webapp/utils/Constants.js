@@ -373,7 +373,7 @@ sap.ui.define([
             "WIDOWED": "W",
             "SINGLE": "S",
             "MARRIED": "M",
-            "ENGAGED": "E",
+            "SEPARATED": "E",
             "DIVORCED": "D"
         },
         "MeterCubeId": {
@@ -404,6 +404,12 @@ sap.ui.define([
         "DependentType": {
             "ANGGOTA" : "1",
             "DEPENDENT": "2"
+        },
+        "MarriageCategory": {
+            "SINGLE" : "01",
+            "MARRIED_NO_CHILDREN": "02",
+            "MARRIED_1_TO_3_CHILDREN": "03",
+            "MARRIED_4_OR_MORE_CHILDREN": "04"
         },
         "ConfigAccess": 
              [

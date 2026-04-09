@@ -54,6 +54,30 @@ sap.ui.define([
 
             await oModel.submitBatch("$auto");
         },
+
+		/**
+		 * Return marriage category ID based on dependent count
+		 * @private
+         * @param {Integer} iDependents - number of depents under given employee
+         * @return {String} - return marriage category ID based on number of dependents
+		 */
+		_getMarriageCategoryByCount: async function (iDependents) {
+            if (!iDependents) {
+                return Constants.MarriageCategory.SINGLE;
+            }
+			
+            switch (true) {
+                case (iDependents >= 4):
+                    return Constants.MarriageCategory.MARRIED_4_OR_MORE_CHILDREN;
+                case (iDependents >= 1 && iDependents <= 3):
+                    return Constants.MarriageCategory.MARRIED_1_TO_3_CHILDREN;
+                case (iDependents == 0):
+                    return Constants.MarriageCategory.MARRIED_NO_CHILDREN;
+                default:
+                    return Constants.MarriageCategory.SINGLE;
+            }
+		},
+
         /**
          * Gets text from the resource bundle.
          * @public

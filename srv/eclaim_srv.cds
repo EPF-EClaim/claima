@@ -374,9 +374,15 @@ service eclaim_srv @(requires: 'authenticated-user'){
 
     function checkDefaultCostCenter(sClaimTypeId: String) returns String;
     
+    function getEmpDependentCount(
+        sEmpId: String,
+        sRelationship:  String
+    ) returns Integer;
+    
     function getEligibleAmountEPengakut(
-        sMaritalStatus: String,
-        sEmployeeType:  String
+        sMaritalStatus:     String,
+        sEmployeeType:      String,
+        sMarriageCategory:  String,
     ) returns Decimal(16, 2);
     
     type reminders {

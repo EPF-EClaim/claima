@@ -1188,19 +1188,55 @@ module.exports = (srv) => {
     });
 
     /**
+     * Get number of dependents tied to employee, based on relationship type
+     * @public
+     * @param {String} sEmpId - Employee ID
+     * @param {String} sRelationship - if specified, used to count number of dependents based on relationship type
+     * @return {Integer} - return number of specified dependents for employee as retrieved from table
+     */
+    srv.on('getEmpDependentCount', async (req) => {
+        const { sEmpId, sRelationship } = req.data;
+
+        try {
+            var oFilters = { EMP_ID: sEmpId }
+            if (!!sRelationship) {
+                oFilters.RELATIONSHIP = sRelationship;
+            }
+            const aDependents = await SELECT
+                .from(Constant.Entities.ZEMP_DEPENDENT)
+                .where(oFilters)
+                .orderBy([
+                    Constant.EntitiesFields.RELATIONSHIP,
+                    Constant.EntitiesFields.DEPENDENT_NO
+                ]);
+
+            if (!aDependents) {
+                return req.error(404, `Dependents not found for given employee.`);
+            }
+
+            return aDependents.length;
+
+        } catch (error) {
+            return req.error(500, 'An error occurred while checking Employee Dependent table.');
+        }
+    });
+
+    /**
      * Get eligible amount for employee on Elaun Pengangkutan, based on Marital Status and Employee Type
      * @public
      * @param {String} sMaritalStatus - Marital status retrieved from employee data
      * @param {String} sEmployeeType - Employee type retrieved from employee data
+     * @param {String} sMarriageCategory - Marriage category based on employee marital status and dependents
      * @return {Decimal} - return eligible amount retrieved from table
      */
     srv.on('getEligibleAmountEPengakut', async (req) => {
-        const { sMaritalStatus, sEmployeeType } = req.data;
+        const { sMaritalStatus, sEmployeeType, sMarriageCategory } = req.data;
 
         try {
             const sTodayDate = today.toISOString().slice(0, 10);
             const aMaritalStatusValues = [sMaritalStatus, Constant.Wildcard.All];
             const aEmployeeTypeValues = [sEmployeeType, Constant.Wildcard.All];
+            const aMarriageCategoryValues = [sMarriageCategory, Constant.Wildcard.All];
             const oEligibilityRule = await SELECT.one
                 .from(Constant.Entities.ZELIGIBILITY_RULE)
                 .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
@@ -1215,9 +1251,11 @@ module.exports = (srv) => {
                     // values to filter
                     MARITAL_STATUS: { 'in': aMaritalStatusValues },
                     EMPLOYEE_TYPE: { 'in': aEmployeeTypeValues },
+                    MARRIAGE_CATEGORY: { 'in': aMarriageCategoryValues }
                  })
                 .orderBy([
                     { ref: [Constant.EntitiesFields.MARITAL_STATUS], sort: 'desc' },
+                    { ref: [Constant.EntitiesFields.MARRIAGE_CATEGORY], sort: 'desc' },
                     { ref: [Constant.EntitiesFields.EMPLOYEE_TYPE], sort: 'desc' }
                 ]);
 
@@ -1225,7 +1263,7 @@ module.exports = (srv) => {
                 return req.error(404, `Eligible amount not found for given employee.`);
             }
 
-            return oEligibilityRule.ELIGIBLE_AMOUNT || 0.00;
+            return oEligibilityRule.ELIGIBLE_AMOUNT;
 
         } catch (error) {
             return req.error(500, 'An error occurred while checking Eligibility Rule table.');

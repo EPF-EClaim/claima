@@ -331,27 +331,53 @@ sap.ui.define([
 		},
 
 		/**
-		 * Retrieve approved amount for employee on Elaun Pengangkutan, based on Marital Status and Employee Type
+		 * Retrieve approved amount for employee on Elaun Pengangkutan, based on Marital Status, Employee Type, and Marriage Category
 		 * @public
-		 * @param {String} sMaritalStatus - Marital status retrieved from employee data
-		 * @param {String} sEmployeeType - Employee type retrieved from employee data
+		 * @param {Object} oEmployeeData - Employee ID, Marital Status, Employee Type
 		 * @return {Decimal} - return eligible amount retrieved from table
 		 */
-		fetchAmountElaunPengangkutan: async function (sMaritalStatus, sEmployeeType) {
+		fetchAmountElaunPengangkutan: async function (oEmployeeData) {
+			if (!oEmployeeData) {
+				// return zero if no employee data found
+				return 0.00;
+			}
+
+			// if marital status is not single, get eligible amount based on marital status, employee type and retrieved marriage category
+			var sMarriageCategory = Constant.MarriageCategory.SINGLE;
+			if (oEmployeeData.marital !== Constant.MaritalStatus.SINGLE) {
+				try {
+					const oFunctionCount = this._oOwnerComponent.getModel().bindContext("/getEmpDependentCount(...)");
+
+					oFunctionCount.setParameter("sMaritalStatus", oEmployeeData.eeid);
+					oFunctionCount.setParameter("sRelationship", Constant.DependentType.DEPENDENT);
+
+					await oFunctionCount.execute();
+
+					const iResultCount = oFunctionCount.getBoundContext();
+
+					sMarriageCategory = Utility._getMarriageCategoryByCount(iResultCount);
+
+				} catch (oError) {
+					sMarriageCategory = Constant.MarriageCategory.SINGLE;
+				}
+			}
+
+			// get eligible amount based on marital status, employee type and retrieved marriage category
 			try {
-				const oFunction = this._oOwnerComponent.getModel().bindContext("/getEligibleAmountEPengakut(...)");
+				const oFunctionEligible = this._oOwnerComponent.getModel().bindContext("/getEligibleAmountEPengakut(...)");
 
-				oFunction.setParameter("sMaritalStatus", sMaritalStatus);
-				oFunction.setParameter("sEmployeeType", sEmployeeType);
+				oFunctionEligible.setParameter("sMaritalStatus", oEmployeeData.marital);
+				oFunctionEligible.setParameter("sEmployeeType", oEmployeeData.employee_type);
+				oFunctionEligible.setParameter("sMarriageCategory", sMarriageCategory);
 
-				await oFunction.execute();
+				await oFunctionEligible.execute();
 
-				const oResult = oFunction.getBoundContext();
+				const dResultAmount = oFunctionEligible.getBoundContext();
 
-				return oResult;
+				return dResultAmount;
 
 			} catch (oError) {
-				return null;
+				return 0.00;
 			}
 		},
 
