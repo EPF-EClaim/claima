@@ -311,6 +311,7 @@
                                             value="{request>/req_item/start_time}"
                                             maskMode='On'
                                             textAlign="Begin"
+                                            required="true"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -324,6 +325,7 @@
                                             value="{request>/req_item/end_time}"
                                             maskMode='On'
                                             textAlign="Begin"
+                                            required="true"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
@@ -394,6 +396,7 @@
                                     <form:fields>
                                         <m:Input 
                                             textAlign="Begin" 
+                                            required="true"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             value="{request>/req_item/location}"/>
                                     </form:fields>
@@ -742,6 +745,7 @@
                                         <Select 
                                             selectedKey="{request>/req_item/mode_of_transfer}"
                                             forceSelection="false"
+                                            required="true"
                                             enabled="{= ${request>/view} !== 'view' }"
                                             items="{path: 'employee>/ZTRANSFER_MODE',
                                                     sorter: { path: 'TRANSFER_MODE_ID', descending: false },
@@ -766,6 +770,7 @@
                                             placeholder="eg: 01 Jan 1990"
                                             value="{request>/req_item/tarikh_pindah}"
                                             textAlign="Begin"
+                                            required="true"
                                             enabled="{= ${request>/view} !== 'view' }"/>
                                     </form:fields>
                                 </form:FormElement>
