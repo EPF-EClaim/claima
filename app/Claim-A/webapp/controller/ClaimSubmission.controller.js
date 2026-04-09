@@ -3308,44 +3308,39 @@ sap.ui.define([
 			this._updateEntitlementAmount(oClaimItemInputModel);
 		},
 
-		onChange_ClaimDetails_ProvidedMeals: function () {
+		onChange_ClaimDetails_ProvidedMeals: async function () {
 			let nEntBfast, nEntLunch, nEntDinner;
 			var oClaimItemInputModel = this.getView().getModel("claimitem_input");
 			//check if there is any input, if yes then recalculate entitled meals 
 			//breakfast meal entitlement
-			if (oClaimItemInputModel.getProperty("/claim_item/provided_breakfast") != null) {
-				nEntBfast = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day") - oClaimItemInputModel.getProperty("/claim_item/provided_breakfast");
-				if (nEntBfast < 0 ) {
-					this._displaywarning(nEntBfast);
-					oClaimItemInputModel.setProperty("/claim_item/provided_breakfast", 0);
-				} else {
-					oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);
-				}
+			if (oClaimItemInputModel.getProperty("/claim_item/provided_breakfast") != null || 
+				oClaimItemInputModel.getProperty("/claim_item/provided_lunch") != null ||
+				oClaimItemInputModel.getProperty("/claim_item/provided_dinner") != null
+			) {
+				CustomValidator.init(this.getOwnerComponent(), this.getView());
+					await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
 				
-			}
-
-			//lunch meal entitlement
-			if (oClaimItemInputModel.getProperty("/claim_item/provided_lunch") != null) {
-				nEntLunch = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day") - oClaimItemInputModel.getProperty("/claim_item/provided_lunch");
-				if (nEntLunch < 0) {
-					this._displaywarning(nEntLunch);
-					oClaimItemInputModel.setProperty("/claim_item/provided_lunch", 0);
-				} else {
-					oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nEntLunch);
-				}
-				
-			}
-
-			//dinner meal entitlement
-			if (oClaimItemInputModel.getProperty("/claim_item/provided_dinner") != null) {
-				nEntDinner = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day") - oClaimItemInputModel.getProperty("/claim_item/provided_dinner");
-				if (nEntDinner < 0) { 
-					this._displaywarning(nEntDinner);
-					oClaimItemInputModel.setProperty("/claim_item/provided_dinner", 0);
-				} else {
-					oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nEntDinner);
-				}
+					nEntBfast = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day") - oClaimItemInputModel.getProperty("/claim_item/provided_breakfast");
+					nEntLunch = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day") - oClaimItemInputModel.getProperty("/claim_item/provided_lunch");
+					nEntDinner = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day") - oClaimItemInputModel.getProperty("/claim_item/provided_dinner");
 					
+					if (nEntBfast < 0) {
+						oClaimItemInputModel.setProperty("/claim_item/provided_breakfast", 0);
+					} else {
+						oClaimItemInputModel.setProperty("/claim_item/entitled_breakfast", nEntBfast);
+					}
+
+					if (nEntLunch < 0) {
+						oClaimItemInputModel.setProperty("/claim_item/provided_lunch", 0);
+					} else {
+						oClaimItemInputModel.setProperty("/claim_item/entitled_lunch", nEntLunch);
+					}
+
+					if (nEntDinner < 0) {
+						oClaimItemInputModel.setProperty("/claim_item/provided_dinner", 0);
+					} else {
+						oClaimItemInputModel.setProperty("/claim_item/entitled_dinner", nEntDinner);
+					}
 			}
 
 			this._updateEntitlementAmount(oClaimItemInputModel);
@@ -4868,8 +4863,7 @@ sap.ui.define([
 				oInputModel.setProperty(`/claim_item/${sKey}`, null);
 			})
 
-		}
-
+		},
 
 		_displaywarning: async function(iDayDifference) {
 			if (iDayDifference < 0){

@@ -74,12 +74,25 @@ sap.ui.define([
                                     bCanProceed = false;
                                 }
                                 break;
-                            
-
                             default:
                                 break;
                         }
                     }
+
+                    if (Object.values(Constants.ClaimTypeItemMakan).includes(oInputModel.getProperty("/claim_item/claim_type_item_id"))) {
+                        var nEntBfast = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_breakfast");
+                        var nEntLunch = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_lunch");
+                        var nEntDinner = oInputModel.getProperty("/claim_item/travel_duration_day") - oInputModel.getProperty("/claim_item/provided_dinner");
+                        if (nEntBfast < 0 || nEntLunch < 0 || nEntDinner < 0) {
+                                    MessageBox.warning(Utility.getText("msg_provided_meal_exceed"),
+            	                    {
+                	                    title: Utility.getText("msg_invalid_input"),
+                	                    actions: [MessageBox.Action.OK],
+                	                    emphasizedAction: MessageBox.Action.OK,
+            	                    });
+                                    bCanProceed = false
+                    }
+                }
 
                     if(oInputModel?.getProperty("/claim_item/receipt_date") < oClaimSubmissionModel?.getProperty("/claim_header/trip_start_date") ){
                     	const bConfirm = await this.onShowConfirmation(Utility.getText("msg_claimdeatils_receipt_date_before_trip_start_date"));
