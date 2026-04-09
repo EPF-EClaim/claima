@@ -209,6 +209,27 @@ const Constant = {
         "IN": "IN"
     },
 
+    RelationshipType: {
+        SPOUSE: "01",
+        CHILD: "02",
+        ADDITIONAL_SPOUSE: "07"
+    },
+
+    MeterCubeId: {
+        EMPLOYEE: "01",
+        SINGLE: "02",
+        SPOUSE: "03",
+        CHILD_GE_3: "04",
+        CHILD_LT_3: "05",
+        MARRIED: "06",
+        ADDITIONAL_SPOUSE: "07"
+    },
+
+    MaritalStatus: {
+        SINGLE: "S",
+        MARRIED: "M"
+    },
+
     UnlimitedAmount: -1
 
 };

@@ -214,7 +214,7 @@ module.exports = (srv) => {
             //else, update the record but exclude the commitment, actual, consumed
             //IS to exclude current budget, commitment, actual, consumed and budget balance from payload
             for (const row of budget) {
-            
+
                 const existing = await tx.read(ZBUDGET)
                     .where({
                         YEAR: row.YEAR,
@@ -1198,7 +1198,7 @@ module.exports = (srv) => {
     });
 
     srv.on('getOfficeDistance', async (req) => {
-        const { 
+        const {
             sFromState,
             sFromOffice,
             sToState,
@@ -1212,18 +1212,18 @@ module.exports = (srv) => {
                 TO_STATE_ID: sToState,
                 TO_LOCATION_ID: sToOffice
             });
-            
+
             if (oRoute) {
-                return oRoute.MILEAGE; 
-            } 
-            
+                return oRoute.MILEAGE;
+            }
+
             return req.error(404, 'No distance record found for the selected route.');
 
         } catch (error) {
             return req.error(500, `Failed to retrieve mileage: ${error.message}`);
         }
     });
-    
+
     /**
     * Function to check if Pre-approval request has been used for claim submission
     * Show warning if Pre-approval request has been used, exclude REJECT & CANCEL status
@@ -1238,7 +1238,7 @@ module.exports = (srv) => {
 
         const claim = await tx.run(
             SELECT.one.from(ZCLAIM_HEADER).where({
-                REQUEST_ID: req.data.requestID, 
+                REQUEST_ID: req.data.requestID,
                 STATUS_ID: { 'not in': [Constant.Status.REJECTED, Constant.Status.CANCELLED] }
             })
         );
@@ -1260,7 +1260,7 @@ module.exports = (srv) => {
         try {
             const tx = cds.tx(req);
 
-            const aDeletePromises = participants.map(p => 
+            const aDeletePromises = participants.map(p =>
                 tx.run(
                     DELETE.from('ZREQ_ITEM_PART').where({
                         REQUEST_ID: p.REQUEST_ID,
@@ -1280,4 +1280,146 @@ module.exports = (srv) => {
         }
     });
 
+    /**
+     * Compute total meter cube entitlement for an employee.
+     * This helper method applies business rules to calculate the total meter cube
+     * entitlement based on employee profile and dependent information.
+     *
+     * Entitlement computation includes:
+     *  - Base employee entitlement
+     *  - Additional entitlement based on marital status (single / married)
+     *  - Dependent-based entitlement for spouse, additional spouse, and children
+     *    (with child age conditions applied)
+     *
+     * Meter cube values are retrieved from the ZMETER_CUBE configuration table.
+     * Employee and dependent details are retrieved from ZEMP_MASTER and ZEMP_DEPENDENT
+     * respectively.
+     *
+     * @private
+     * @async
+     * @param {object} tx - CAP transaction context for database operations
+     * @param {string} empId - Employee ID used to retrieve employee and dependent records
+     * @param {object} entities - CAP service entities containing database models
+     * @returns {number} Total entitled meter cube value (rounded to 2 decimal places)
+     */
+    async function computeMeterCubeEntitlement(tx, empId, entities) {
+        const { ZEMP_MASTER, ZEMP_DEPENDENT, ZMETER_CUBE } = entities;
+
+        let total = 0;
+
+        const aMeterCube = await tx.run(SELECT.from(ZMETER_CUBE));
+        const getCube = (id) =>
+            Number(aMeterCube.find(c => c.METER_CUBE_ID === id)?.METER_CUBE || 0);
+
+        const emp = await tx.run(
+            SELECT.one.from(ZEMP_MASTER).where({ EEID: empId })
+        );
+
+        total += getCube(Constant.MeterCubeId.EMPLOYEE);
+
+        if (emp.MARITAL === Constant.MaritalStatus.SINGLE) {
+            total += getCube(Constant.MeterCubeId.SINGLE);
+        }
+        if (emp.MARITAL === Constant.MaritalStatus.MARRIED) {
+            total += getCube(Constant.MeterCubeId.MARRIED);
+        }
+
+        const dependents = await tx.run(
+            SELECT.from(ZEMP_DEPENDENT).where({ EMP_ID: empId })
+        );
+
+        const year = new Date().getFullYear();
+
+        for (const d of dependents) {
+
+            if (d.RELATIONSHIP === Constant.RelationshipType.SPOUSE) {
+                total += getCube(Constant.MeterCubeId.SPOUSE);
+            }
+
+            else if (d.RELATIONSHIP === Constant.RelationshipType.ADDITIONAL_SPOUSE) {
+                total += getCube(Constant.MeterCubeId.ADDITIONAL_SPOUSE);
+            }
+
+            else if (d.RELATIONSHIP === Constant.RelationshipType.CHILD && d.DOB) {
+                const age = year - new Date(d.DOB).getFullYear();
+                total += age >= 3
+                    ? getCube(Constant.MeterCubeId.CHILD_GE_3)
+                    : getCube(Constant.MeterCubeId.CHILD_LT_3);
+            }
+        }
+
+        return Number(total.toFixed(2));
+    }
+
+    /**
+     * Retrieve meter cube entitlement for an employee.
+     * Calculates total meter cube entitlement based on employee profile
+     * and dependent relationships using backend business rules.
+     *
+     * @public
+     * @async
+     * @param {object} req - CAP request object containing employee context
+     * @returns {number} Total entitled meter cube value
+     */
+    srv.on('getMeterCubeEntitlement', async (req) => {
+        const tx = cds.tx(req);
+
+        const empId =
+            req.data.empId ||
+            req.user?.id ||
+            req.user?.attr?.user_name ||
+            req.user?.attr?.email;
+
+        if (!empId) {
+            req.error(400, "Employee ID not found");
+        }
+
+        return await computeMeterCubeEntitlement(
+            tx,
+            empId,
+            srv.entities
+        );
+    });
+
+    /**
+     * Calculate final claim amount for Pengangkutan Laut.
+     * Determines the payable amount by comparing actual meter cube
+     * against entitled meter cube and applying proration if required.
+     * Entitlement is always recalculated in backend for consistency.
+     *
+     * @public
+     * @async
+     * @param {object} req - CAP request object containing input values
+     * @returns {object} Result containing entitled meter cube and final amount
+     */
+    srv.on('calculatePengangkutanLautAmount', async (req) => {
+        const tx = cds.tx(req);
+
+        const empId =
+            req.data.empId ||
+            req.user?.id ||
+            req.user?.attr?.user_name ||
+            req.user?.attr?.email;
+
+        if (!empId) req.error(400, "Employee ID not found");
+
+        const nActualMC = Number(req.data.actualMeterCube);
+        const nActualAmount = Number(req.data.actualAmount);
+
+        if (isNaN(nActualMC) || isNaN(nActualAmount)) {
+            return { entitled: 0, amount: 0 };
+        }
+
+        const nEntitledMC = await computeMeterCubeEntitlement(tx, empId, srv.entities);
+
+        const nFinalAmount =
+            (nActualMC > nEntitledMC && nEntitledMC > 0)
+                ? (nActualAmount / nActualMC) * nEntitledMC
+                : nActualAmount;
+
+        return {
+            entitled: nEntitledMC,
+            amount: Number(nFinalAmount.toFixed(2))
+        };
+    });
 }

@@ -269,7 +269,7 @@ sap.ui.define([
 			} finally {
 				BusyIndicator.hide();
 			}
-		}, 
+		},
 
 		/**
 		 * Fetch entitlement amount from the backend function
@@ -326,99 +326,63 @@ sap.ui.define([
 		},
 
 		/**
-		 * Calculate entitled meter cube value for Pengangkutan Laut claim type.
-		 * Method retrieves employee master data, marital status, dependent (spouse) data,
-		 * and meter cube configuration table to determine the total entitled meter cube
-		 * based on predefined rules.
+		 * Retrieve and apply meter cube entitlement from backend service.
 		 *
-		 * Entitlement is derived from these components:
-		 * - Base employee meter cube
-		 * - Additional meter cube based on marital status (single/married)
-		 * - Additional meter cube if employee has a spouse
+		 * Calls backend entitlement function using the logged-in employee ID
+		 * and updates the entitled meter cube value in the claim item input model.
 		 *
 		 * @public
-		 * @param {string} sKey - Selected claim type key
-		 * @param {object} oInputModel - Model storing claim item input values
-		 * @param {object} oPropertyModel - Model controlling visibility/editability of UI fields
-		 * @param {object} oSessionModel - Model containing user session information
-		 * @returns {void} Does not return a value; updates claim item model properties directly
+		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim item input model
+		 * @param {sap.ui.model.json.JSONModel} oSessionModel - User session model
+		 * @returns Updates entitled meter cube field upon completion
 		 */
-		onSelect_ClaimDetails_MeterCube: async function (sKey, oInputModel, oPropertyModel, oSessionModel) {
+		fetchMeterCubeEntitlement: function (oInputModel, oSessionModel) {
+			const sEmpId = oSessionModel.getProperty("/userId");
+			const oModel = this._oView.getModel();
 
-			const sEmpId = oSessionModel?.getProperty("/userId");
-			if (sKey !== Constant.ClaimTypeItem.LAUT || !sEmpId) {
-				return;
-			}
-			const oMar = Constant.MaritalStatus;
-			const oCube = Constant.MeterCubeId;
-			const oRel = Constant.RelationshipType;
-			const aMaster = await Utility.getMeterCubeCalc("/ZEMP_MASTER", ["EEID"], [sEmpId]);
-			const sMarital = aMaster?.[0]?.MARITAL;
-			const aDep = await Utility.getMeterCubeCalc(
-				"/ZEMP_DEPENDENT",
-				["EMP_ID", "RELATIONSHIP"],
-				[sEmpId, oRel.SPOUSE]
+			const oContext = oModel.bindContext(
+				"/getMeterCubeEntitlement(...)"
 			);
-			const bHasSpouse = aDep.length > 0;
-			const aMeter = await Utility.getMeterCubeCalc("/ZMETER_CUBE");
-			const fnGetCube = (sId) =>
-				aMeter.find(oRow => oRow.METER_CUBE_ID === sId)?.METER_CUBE ?? 0;
-			const aParts = [
-				fnGetCube(oCube.EMPLOYEE),
-				sMarital === oMar.SINGLE ? fnGetCube(oCube.SINGLE) : 0,
-				sMarital === oMar.MARRIED ? fnGetCube(oCube.MARRIED) : 0,
-				bHasSpouse ? fnGetCube(oCube.SPOUSE) : 0
-			];
-			const fTotal = aParts.reduce((sum, val) => sum + Number(val), 0);
-			//final value
-			oInputModel.setProperty("/claim_item/meter_cube_entitled", fTotal.toFixed(2));
-			oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
-			oPropertyModel.setProperty("/meter_cube_entitled/is_visible", true);
-		},
 
+			oContext.setParameter("empId", sEmpId);
+
+			return oContext.execute()
+				.then(() => oContext.requestObject())
+				.then((result) => {
+					oInputModel.setProperty(
+						"/claim_item/meter_cube_entitled",
+						Number(result).toFixed(2)
+					);
+				});
+		},
+		
 		/**
-		 * Calculate claim amount for Pengangkutan Laut based on actual meter cube,
-		 * entitled meter cube, and actual amount entered by user.
+		 * Retrieve and apply Pengangkutan Laut claim amount from backend service.
 		 *
-		 * Method reads relevant values from the input model, validates them,
-		 * and applies the entitlement formula to derive the final payable amount.
+		 * Calls backend calculation function using employee ID, actual meter cube,
+		 * and actual amount, then updates entitled meter cube and final payable
+		 * amount in the claim item input model.
 		 *
 		 * @public
-		 * @param {object} oInputModel - JSON model containing claim item input values
-		 * @returns {void} Updates "/claim_item/amount" in the model; no return value
+		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim item input model
+		 * @param {sap.ui.model.json.JSONModel} oSessionModel - User session model
+		 * @returns Updates claim item fields upon completion
 		 */
-		calculatePengangkutanLautAmount: function (oInputModel) {
+		fetchPengangkutanLautAmount: function (oInputModel, oSessionModel) {
+			const oModel = this._oView.getModel();
+			const oContext = oModel.bindContext("/calculatePengangkutanLautAmount(...)");
 
-			const sActualMC = oInputModel.getProperty("/claim_item/meter_cube_actual");
-			const sActualAmount = oInputModel.getProperty("/claim_item/actual_amount");
+			oContext.setParameter("empId", oSessionModel.getProperty("/userId"));
+			oContext.setParameter("actualMeterCube", oInputModel.getProperty("/claim_item/meter_cube_actual"));
+			oContext.setParameter("actualAmount", oInputModel.getProperty("/claim_item/actual_amount"));
 
-			if (sActualMC === "" || sActualMC === null ||
-				sActualAmount === "" || sActualAmount === null) {
-				oInputModel.setProperty("/claim_item/amount", null);
-				return;
-			}
-
-			const nActualMeterCube = Number(sActualMC);
-			const nEntitledMeterCube = Number(oInputModel.getProperty("/claim_item/meter_cube_entitled"));
-
-			const nActualAmount = Number(sActualAmount.toString().replace(/,/g, ""));
-
-			if (isNaN(nActualMeterCube) || isNaN(nEntitledMeterCube) || isNaN(nActualAmount)) {
-				oInputModel.setProperty("/claim_item/amount", null);
-				return;
-			}
-
-			let nFinalAmount = 0;
-
-			if (nActualMeterCube > nEntitledMeterCube) {
-				nFinalAmount = (nActualAmount / nActualMeterCube) * nEntitledMeterCube;
-			} else {
-				nFinalAmount = nActualAmount;
-			}
-
-			oInputModel.setProperty("/claim_item/amount", nFinalAmount.toFixed(2));
+			return oContext.execute()
+				.then(() => oContext.requestObject())
+				.then((oResult) => {
+					oInputModel.setProperty("/claim_item/meter_cube_entitled", oResult.entitled);
+					oInputModel.setProperty("/claim_item/amount", oResult.amount);
+				});
 		},
-
 
 		/**
 		 * Check if PAR has been reused for claim submission 

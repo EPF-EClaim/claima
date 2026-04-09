@@ -369,6 +369,21 @@ service eclaim_srv @(requires: 'authenticated-user'){
                                   lunch: Integer, 
                                   dinner: Integer) returns perdiem;
 
+    function getMeterCubeEntitlement(
+        empId : String
+    ) returns Decimal(15,2);
+
+    type meterCubeAmount {
+    entitled : Decimal(15, 2);
+    amount   : Decimal(15, 2);
+    }
+
+    function calculatePengangkutanLautAmount(
+        empId           : String,
+        actualMeterCube : Decimal(15, 2),
+        actualAmount    : Decimal(15, 2)
+    ) returns meterCubeAmount;
+                                
     entity ZCLM_TYPE_EXCEPTION_LIST                as projection on ECLAIM.ZCLM_TYPE_EXCEPTION_LIST;
 
     function checkDefaultCostCenter(sClaimTypeId: String) returns String;

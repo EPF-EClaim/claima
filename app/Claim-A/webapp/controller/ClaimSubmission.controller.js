@@ -5,7 +5,7 @@ sap.ui.define([
 	"sap/ui/core/BusyIndicator",
 	"sap/ui/core/routing/History",
 	"sap/ui/model/json/JSONModel",
-		"sap/ui/model/Filter",
+	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/Sorter",
 	"sap/ui/core/format/DateFormat",
@@ -1470,7 +1470,7 @@ sap.ui.define([
 				var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, oObject);
 				var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, oPayload);
 				var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
-				if (!bCanProceed)return; 
+				if (!bCanProceed)return;
 
 				oInputModel.setProperty("/claim_items", oInputModel.getProperty("/claim_items").concat(structuredClone(oObject)));
 				var addrIndex = "/claim_items/" + (oInputModel.getProperty("/claim_items").length - 1);
@@ -2259,8 +2259,8 @@ sap.ui.define([
 
 			//Set Kilometer (KM) field as required only for DARAT and KILOMETER claim items.
 			const bKmRequired = [
-			this._oConstant.ClaimTypeItem.DARAT,
-			this._oConstant.ClaimTypeItem.KILOMETER
+				this._oConstant.ClaimTypeItem.DARAT,
+				this._oConstant.ClaimTypeItem.KILOMETER
 			].includes(sKey);
 			oPropertyModel.setProperty("/km/is_required", bKmRequired);
 			//Display Marriage Category field only for DARAT (land transport) claim items
@@ -2293,18 +2293,14 @@ sap.ui.define([
 				oPropertyModel.setProperty("/amount/is_visible", true);
 				oPropertyModel.setProperty("/amount/is_editable", false);
 
-				await ClaimUtility.onSelect_ClaimDetails_MeterCube(
-					sKey,
+				await ClaimUtility.fetchMeterCubeEntitlement(
 					oInputModel,
-					oPropertyModel,
 					this.getOwnerComponent().getModel("session")
 				);
-
-				setTimeout(() => {
-					ClaimUtility.calculatePengangkutanLautAmount(oInputModel);
-				}, 50);
-
-				ClaimUtility.calculatePengangkutanLautAmount(oInputModel);
+				await ClaimUtility.fetchPengangkutanLautAmount(
+					oInputModel,
+					this.getOwnerComponent().getModel("session")
+				);
 			}
 
 			else {
@@ -2362,10 +2358,6 @@ sap.ui.define([
 					oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/amount")) * 0.5);
 				}
 			}
-		},
-
-		onChange_ClaimDetails_ActualMeterCube: function () {
-			ClaimUtility.calculatePengangkutanLautAmount(this.getView().getModel("claimitem_input"));
 		},
 
 		_onInit_ClaimDetails_Input: async function (indexNumber) {
@@ -2662,8 +2654,6 @@ sap.ui.define([
 					return;
 				}
 			}
-
-			
 			// get descriptions
 			oInputModel.setProperty("/claim_item/descr/claim_type_item_id", this.byId("select_claimdetails_input_claimitem")._getSelectedItemText());
 			// update claim item to database
@@ -2732,7 +2722,7 @@ sap.ui.define([
 			// get input model
 			var oInputModel = this.getView().getModel("claimitem_input");
 			var oClaimSubmissionModel = this.getView().getModel("claimsubmission_input");
-	
+
 			CustomValidator.init(this.getOwnerComponent(), this.getView());
 			var bCanProceed = await CustomValidator.validate(this._oConstant.SubmissionTypePrefix.CLAIM);
 			if (!bCanProceed) {
@@ -2989,8 +2979,11 @@ sap.ui.define([
 				// set 'amount' property to % of actual amount based on percentage compensation
 				oInputModel.setProperty("/claim_item/amount", parseFloat(oInputModel.getProperty("/claim_item/actual_amount")) * (parseFloat(oInputModel.getProperty("/claim_item/percentage_compensation")) / 100));
 			}
-
-			ClaimUtility.calculatePengangkutanLautAmount(oInputModel);
+	
+		ClaimUtility.fetchPengangkutanLautAmount(
+				oInputModel,
+				this.getOwnerComponent().getModel("session")
+			);
 		},
 
 		onChange_ClaimDetails_DateRange: async function (startdate, enddate) {
@@ -3568,18 +3561,18 @@ sap.ui.define([
 				// check if selected course code/session number has already been approved for user before pushing changes 
 				if (Object.values(this._oConstant.ClaimTypeKursus).includes(oInputModel.getProperty("/claim_header/claim_type_id")) && oAction !== this._oConstant.Claim_Action.DELETE) {
 					var bCourseAlreadyApproved = await ClaimUtility.checkExistingCourseCode(
-							oInputModel.getProperty("/claim_header/course_code"),
-							oInputModel.getProperty("/claim_header/session_number"),
-							this._oSessionModel.getProperty("/userId"));
+						oInputModel.getProperty("/claim_header/course_code"),
+						oInputModel.getProperty("/claim_header/session_number"),
+						this._oSessionModel.getProperty("/userId"));
 					if (bCourseAlreadyApproved) {
 						MessageBox.error(Utility.getText("error_msg_course_already_approved", [
-								oInputModel.getProperty("/claim_header/course_code"),
-								oInputModel.getProperty("/claim_header/descr/course_code")]));
+							oInputModel.getProperty("/claim_header/course_code"),
+							oInputModel.getProperty("/claim_header/descr/course_code")]));
 						BusyIndicator.hide();
 						return;
 					}
 				}
-				
+
 				// Total Claim Amount Validation checking
 				if (aItems.length > 0 && (isNaN(oInputModel.getProperty("/claim_header/total_claim_amount")) || oInputModel.getProperty("/claim_header/total_claim_amount") <= 0)) {
 					MessageBox.error(Utility.getText("msg_claimsubmission_invalid_amount"));
@@ -3716,10 +3709,10 @@ sap.ui.define([
 									var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, aAllClaimItems[i]);
 									aAllEligibilityGeneratedPayload.push(oPayload[0]);
 								}
-								
+
 								var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, aAllEligibilityGeneratedPayload);
 								var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
-								if (!bCanProceed)return; 
+								if (!bCanProceed)return;
 
 								// move approver determination function before claim is saved
 								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
@@ -3795,7 +3788,7 @@ sap.ui.define([
 								MessageBox.error(Utility.getText("req_tm_w_inform_cc_owner", oHandlingResult.aClaimTypeItem));
 								return;
 							}
-							else {					
+							else {
 								//eligibility checking
 								var aAllClaimItems = oInputModel.getProperty("/claim_items");
 								var aAllEligibilityGeneratedPayload = [];
@@ -3803,10 +3796,10 @@ sap.ui.define([
 									var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, aAllClaimItems[i]);
 									aAllEligibilityGeneratedPayload.push(oPayload[0]);
 								}
-								
+
 								var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, aAllEligibilityGeneratedPayload);
 								var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
-								if (!bCanProceed)return; 
+								if (!bCanProceed)return;
 
 								// move approver determination function before claim is saved
 								// if approvers are determined, bApproversDetermined = true and proceed with changing status to PENDING APPROVAL
@@ -3848,7 +3841,7 @@ sap.ui.define([
 								var submittedDate = this._getJsonDate(new Date());
 								oInputModel.setProperty("/claim_header/submitted_date", submittedDate);
 							}
-							
+
 							this.onBack_ClaimSubmission();
 							break;
 						default:
@@ -4839,11 +4832,11 @@ sap.ui.define([
 
 		_resetClaimItemInputs: async function (oInputModel) {
 			Object.keys(oInputModel.getData().claim_item).forEach((sKey) => {
-				if (sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ID || 
-					sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ITEM_ID || 
-					sKey === this._oConstant.ExcludeField.CLAIM_ID || 
-					sKey === this._oConstant.ExcludeField.DESCR  || 
-					sKey ===  this._oConstant.ExcludeField.GL_ACCOUNT || 
+				if (sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ID ||
+					sKey === this._oConstant.ExcludeField.CLAIM_TYPE_ITEM_ID ||
+					sKey === this._oConstant.ExcludeField.CLAIM_ID ||
+					sKey === this._oConstant.ExcludeField.DESCR  ||
+					sKey ===  this._oConstant.ExcludeField.GL_ACCOUNT ||
 					sKey === this._oConstant.ExcludeField.COST_CENTER ||
 					sKey === this._oConstant.ExcludeField.IS_NEW
 				){
