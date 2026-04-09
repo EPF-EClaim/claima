@@ -4770,7 +4770,8 @@ sap.ui.define([
 		_updateEntitlementAmount: function (oClaimItemInputModel) {
 			BusyIndicator.show(0);
 
-			return ClaimUtility.fetchAndApplyEntitlement(oClaimItemInputModel).then(oResult => {
+			return ClaimUtility.fetchAndApplyEntitlement.bind(this)(oClaimItemInputModel).then(oResult =>
+			{
 				if (!oResult || oResult.amount === 0) {
 					MessageToast.show(Utility.getText("msg_claim_no_entitlement"));
 					return;
@@ -4802,11 +4803,12 @@ sap.ui.define([
 					var fAmount = oClaimItemInputModel.getProperty("/claim_item/amount");
 					oClaimItemInputModel.setProperty("/claim_item/amount", fAmount + (fAmount * parseInt(oClaimItemInputModel.getProperty("/claim_item/no_of_family_member"))));
 				}
+				
 			}).catch(err => {
 				MessageBox.error(
 					Utility.getText("msg_claimdetails_input_entmeals_err", [err])
 				);
-			}).finally(() => BusyIndicator.hide());
+			}).finally(() => BusyIndicator.hide()); 
 		},
 
 		_saveDraftItems: async function () {

@@ -56,7 +56,7 @@ sap.ui.define([
 					const oHeaderModel = oController.getView().getModel("claimsubmission_input");
 					const oItemModel = oController.getView().getModel("claimitem_input");
 					var aItemPartData = [{ PARTICIPANTS_ID: sEmpId }];
-					var oItemData = oItemModel.getProperty('/claim_item') || oClaimItemPayload;
+					var oItemData = oItemModel?.getProperty('/claim_item') || oClaimItemPayload;
 					var sRecordId = oHeaderModel.getProperty("/claim_header/claim_id");
 					var sRecordSubId = oItemData?.claim_sub_id;
 					var sClaimType = oHeaderModel.getProperty('/claim_header/claim_type_id');

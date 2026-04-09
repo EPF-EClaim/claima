@@ -285,12 +285,16 @@ sap.ui.define([
 			var nBreakfast = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_breakfast"));
 			var nLunch = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_lunch"));
 			var nDinner = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_dinner"));
+			
+			var oSessionModel = this.getView().getModel("session");
+    		var sEEID = oSessionModel.getProperty("/userId");
+
 
 			nBreakfast = Number.isNaN(nBreakfast) ? 0 : nBreakfast;
 			nLunch = Number.isNaN(nLunch) ? 0 : nLunch;
 			nDinner = Number.isNaN(nDinner) ? 0 : nDinner;
 
-			const oModel = this._oView.getModel();
+			const oModel = this.getView().getModel();
 			const oContext = oModel.bindContext("/getAmountEntitlement(...)");
 
 			oContext.setParameter("day", nDay);
@@ -301,6 +305,7 @@ sap.ui.define([
 			oContext.setParameter("breakfast", nBreakfast);
 			oContext.setParameter("lunch", nLunch);
 			oContext.setParameter("dinner", nDinner);
+			oContext.setParameter("employeeid", sEEID);
 
 			return oContext.execute()
 				.then(() => oContext.requestObject());
