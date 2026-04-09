@@ -1465,13 +1465,6 @@ sap.ui.define([
 			if (iItemIndex !== -1) {
 				var oObject = oInputModel.getProperty("/claim_items/" + iItemIndex);
 
-				oObject.claim_sub_id = null;
-				// Eligibility Checking
-				var oPayload = EligibilityCheck.generateEligibilityCheckPayload(this, this._oConstant.SubmissionTypePrefix.CLAIM, oObject);
-				var oReturnPayload = await EligibleScenarioCheck.onEligibilityCheck(this._oModel, oPayload);
-				var bCanProceed = await EligibilityCheck.eligibilityHandling(this, oReturnPayload, this._oConstant.SubmissionTypePrefix.CLAIM);
-				if (!bCanProceed)return; 
-
 				oInputModel.setProperty("/claim_items", oInputModel.getProperty("/claim_items").concat(structuredClone(oObject)));
 				var addrIndex = "/claim_items/" + (oInputModel.getProperty("/claim_items").length - 1);
 				oInputModel.setProperty(
