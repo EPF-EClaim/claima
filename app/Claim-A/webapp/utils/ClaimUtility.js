@@ -343,22 +343,26 @@ sap.ui.define([
 			}
 
 			// if marital status is not single, get eligible amount based on marital status, employee type and retrieved marriage category
-			var sMarriageCategory = Constant.MarriageCategory.SINGLE;
+			var sMarriageCategory = null;
+			if (oEmployeeData.marital === Constant.MaritalStatus.SINGLE) {
+				sMarriageCategory = Constant.MarriageCategory.SINGLE;
+			}
 			if (oEmployeeData.marital !== Constant.MaritalStatus.SINGLE) {
 				try {
 					const oFunctionCount = this._oOwnerComponent.getModel().bindContext("/getEmpDependentCount(...)");
 
-					oFunctionCount.setParameter("sMaritalStatus", oEmployeeData.eeid);
+					oFunctionCount.setParameter("sEmpId", oEmployeeData.eeid);
 					oFunctionCount.setParameter("sRelationship", Constant.DependentType.DEPENDENT);
 
 					await oFunctionCount.execute();
 
-					const iResultCount = oFunctionCount.getBoundContext();
+					const oContextCount = oFunctionCount.getBoundContext();
+					const iResultCount = oContextCount.getObject("value");
 
 					sMarriageCategory = Utility._getMarriageCategoryByCount(iResultCount);
 
 				} catch (oError) {
-					sMarriageCategory = Constant.MarriageCategory.SINGLE;
+					sMarriageCategory = null;
 				}
 			}
 
@@ -372,7 +376,8 @@ sap.ui.define([
 
 				await oFunctionEligible.execute();
 
-				const dResultAmount = oFunctionEligible.getBoundContext();
+				const oContextAmount = oFunctionEligible.getBoundContext();
+				const dResultAmount = oContextAmount.getObject("value");
 
 				return dResultAmount;
 

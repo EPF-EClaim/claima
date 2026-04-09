@@ -61,9 +61,9 @@ sap.ui.define([
          * @param {Integer} iDependents - number of depents under given employee
          * @return {String} - return marriage category ID based on number of dependents
 		 */
-		_getMarriageCategoryByCount: async function (iDependents) {
-            if (!iDependents) {
-                return Constants.MarriageCategory.SINGLE;
+		_getMarriageCategoryByCount: function (iDependents) {
+            if (isNaN(iDependents)) {
+                return null;
             }
 			
             switch (true) {
@@ -74,7 +74,7 @@ sap.ui.define([
                 case (iDependents == 0):
                     return Constants.MarriageCategory.MARRIED_NO_CHILDREN;
                 default:
-                    return Constants.MarriageCategory.SINGLE;
+                    return null;
             }
 		},
 

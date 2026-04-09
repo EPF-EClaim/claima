@@ -1233,10 +1233,13 @@ module.exports = (srv) => {
         const { sMaritalStatus, sEmployeeType, sMarriageCategory } = req.data;
 
         try {
-            const sTodayDate = today.toISOString().slice(0, 10);
+            const sTodayDate = new Date().toISOString().slice(0, 10);
             const aMaritalStatusValues = [sMaritalStatus, Constant.Wildcard.All];
             const aEmployeeTypeValues = [sEmployeeType, Constant.Wildcard.All];
-            const aMarriageCategoryValues = [sMarriageCategory, Constant.Wildcard.All];
+            var aMarriageCategoryValues = [Constant.Wildcard.All];
+            if (!!sMarriageCategory) {
+                aMarriageCategoryValues.push(sMarriageCategory);
+            }
             const oEligibilityRule = await SELECT.one
                 .from(Constant.Entities.ZELIGIBILITY_RULE)
                 .columns(Constant.EntitiesFields.ELIGIBLE_AMOUNT)
