@@ -269,25 +269,6 @@ sap.ui.define([
             return null;
         },
 
-
-        /**
-         * Used for date validation when submitting a Claim Report.  
-         * This method checks whether the provided date value represents
-         * a future date when compared against the current system date.
-         *
-         * @public
-         * @param {Date} sDate date value to be validated
-         * @returns {boolean} returns true if the given date is greater than today's date;
-         *                    otherwise returns false
-         */
-
-        isFutureDate: function (sDate) {
-            const dDate = new Date(sDate);
-            if (!sDate || isNaN(dDate)) return false;
-
-            return dDate.setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0);
-        },
-
         /**
          * Determines the minimum allowable date for specific date fields
          * based on submission type (REQUEST/CLAIM) & the following parameters.
