@@ -30,7 +30,8 @@ sap.ui.define([
 	"claima/utils/EligibilityCheck",
 	"claima/utils/EligibilityScenarios/EligibleScenarioCheck",
 	"claima/utils/CustomValidator",
-	"claima/utils/CustomDuplicationCheck"
+	"claima/utils/CustomDuplicationCheck",
+	"claima/utils/Constants",
 ], function (
 	Fragment,
 	Item,
@@ -63,8 +64,8 @@ sap.ui.define([
 	EligibilityCheck,
 	EligibleScenarioCheck,
 	CustomValidator,
-	CustomDuplicationCheck
-
+	CustomDuplicationCheck,
+	Constants
 ) {
 	"use strict";
 
@@ -4404,7 +4405,6 @@ sap.ui.define([
 				"input_claimdetails_input_km",
 				"input_claimdetails_input_rate_per_km",
 				"select_claimdetails_input_fare_type_id",
-				"select_claimdetails_input_vehicle_class_id",
 				"select_claimdetails_input_flight_class",
 				"input_claimdetails_input_toll",
 				"checkbox_claimdetails_input_parking",
@@ -4547,7 +4547,6 @@ sap.ui.define([
 				"select_claimdetails_input_vehicle_ownership_id",
 				"input_claimdetails_input_km",
 				"select_claimdetails_input_fare_type_id",
-				"select_claimdetails_input_vehicle_class_id",
 				"select_claimdetails_input_flight_class",
 				"input_claimdetails_input_toll",
 				"checkbox_claimdetails_input_parking",

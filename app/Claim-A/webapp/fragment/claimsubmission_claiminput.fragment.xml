@@ -88,7 +88,9 @@
                     />
 
                     <!-- Trip Start Date -->
-                    <Label text="{i18n>label_claiminput_tripstartdate}" />
+                    <Label text="{i18n>label_claiminput_tripstartdate}"
+                           tooltip="{i18n>valuehelp_claiminput_tripdate}" 
+                    />
                     <DatePicker
                         id="datepicker_claiminput_tripstartdate"
                         value="{claimsubmission_input>/claim_header/trip_start_date}"
@@ -105,7 +107,8 @@
                         />
 
                     <!-- Trip End Date -->
-                    <Label text="{i18n>label_claiminput_tripenddate}" />
+                    <Label text="{i18n>label_claiminput_tripenddate}"
+                           tooltip="{i18n>valuehelp_claiminput_tripdate}"  />
                     <DatePicker
                         id="datepicker_claiminput_tripenddate"
                         value="{claimsubmission_input>/claim_header/trip_end_date}"
@@ -122,7 +125,8 @@
                         />
 
                     <!-- Event Start Date -->
-                    <Label text="{i18n>label_claiminput_eventstartdate}" />
+                    <Label text="{i18n>label_claiminput_eventstartdate}"
+                           tooltip="{i18n>valuehelp_claiminput_eventdate}"  />
                     <DatePicker
                         id="datepicker_claiminput_eventstartdate"
                         value="{claimsubmission_input>/claim_header/event_start_date}"
@@ -134,7 +138,8 @@
                         />
 
                     <!-- Event End Date -->
-                    <Label text="{i18n>label_claiminput_eventenddate}" />
+                    <Label text="{i18n>label_claiminput_eventenddate}"
+                           tooltip="{i18n>valuehelp_claiminput_eventdate}"  />
                     <DatePicker
                         id="datepicker_claiminput_eventenddate"
                         value="{claimsubmission_input>/claim_header/event_end_date}"
@@ -200,6 +205,7 @@
                     <Input
                         id="input_claiminput_location"
                         value="{claimsubmission_input>/claim_header/location}"
+                        placeholder="{i18n>placeholder_claiminput_location}"
                     />
 
                     <!-- Alternate Cost Center -->
@@ -262,7 +268,6 @@
                     <Input
                         id="input_claiminput_comment"
                         value="{claimsubmission_input>/claim_header/comment}"
-                        required="true"
                     />
                 </f:content>
                 <f:dependents>
