@@ -143,9 +143,7 @@
                 />
                 <Text
                     id="text_claimsummary_claimheader_loan_scheme"
-                    text="{
-						path: 'claimsubmission_input>/claim_header/housing_loan_scheme'
-					}"
+                    text="{claimsubmission_input>/claim_header/housing_loan_scheme} {claimsubmission_input>/claim_header/descr/housing_loan_scheme}"
                     visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
                 />
 
@@ -155,9 +153,7 @@
                 />
                 <Text
                     id="text_claimsummary_claimheader_lender"
-                    text="{
-						path: 'claimsubmission_input>/claim_header/lender_name'
-					}"
+                    text="{claimsubmission_input>/claim_header/lender_name} {claimsubmission_input>/claim_header/descr/lender_name}"
                     visible="{= ${claimsubmission_input>/claim_header/claim_type_id} === ${constant>/ClaimType/ELAUN_PINDAH} }"
                 />
 
