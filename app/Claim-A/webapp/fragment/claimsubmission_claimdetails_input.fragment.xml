@@ -143,9 +143,29 @@
 				>
 				</Select>
 
+                <!-- Marriage Category -->
+                <Label
+                    text="{i18n>label_claimdetails_input_marriagecategory}" />
+
+                <Select
+                    id="select_claimdetails__input_marriagecategory"
+                    selectedKey="{claimitem_input>/claim_item/marriage_category}"
+                    forceSelection="false"
+                    visible="false"
+                    required="true"
+                    items="{
+                        path: 'employee>/ZMARITAL_CAT',
+                        sorter: { path: 'MARRIAGE_CATEGORY_ID', descending: false }
+                    }">
+                    <items>
+                        <core:Item
+                            key="{employee>MARRIAGE_CATEGORY_ID}"
+                            text="{employee>MARRIAGE_CATEGORY_DESC}" />
+                    </items>
+                </Select>
+
                 <!-- Actual Meter Cube -->
-                <Label text="{i18n>label_claimdetails_input_actual_meter_cube}"
-                    visible="{claimitem_property>/meter_cube_actual/is_visible}" />
+                <Label text="{i18n>label_claimdetails_input_actual_meter_cube}" />
                 <Input
                     id="input_claimdetails_meter_cube_actual"
                     value="{
@@ -162,10 +182,10 @@
                         }
                     }"
                     editable="{claimitem_property>/meter_cube_actual/is_editable}"
-                    visible="{claimitem_property>/meter_cube_actual/is_visible}"
+                    visible="false"
                     required="true"
-                    liveChange="onChange_ClaimDetails_ActualMeterCube"
-                    change="onChange_ClaimDetails_ActualMeterCube"
+                    liveChange="onChange_PengangkutanLautInputs"
+                    change="onChange_PengangkutanLautInputs"
                 />
 
                 <!-- Actual Amount (MYR) -->
@@ -233,13 +253,12 @@
                 />
 
                 <!-- Meter Cube Entitled -->
-                <Label text="{i18n>label_claimdetails_input_entitled_meter_cube}"
-                    visible="{claimitem_property>/meter_cube_entitled/is_visible}" />
+                <Label text="{i18n>label_claimdetails_input_entitled_meter_cube}" />
                 <Input
                     id="input_claimdetails_meter_cube"
                     value="{claimitem_input>/claim_item/meter_cube_entitled}"
                     editable="false"
-                    visible="{claimitem_property>/meter_cube_entitled/is_visible}"
+                    visible="false"
                 />
                                 
                 <!-- Amount (MYR) -->
@@ -263,7 +282,8 @@
                         ${claimitem_input>/claim_item/claim_type_item_id} !== ${constant>/ClaimTypeItem/E_PENGAKUT} &amp;&amp;
 						!${claimitem_property>/rate_per_km/is_visible} &amp;&amp;
 						!${claimitem_property>/actual_amount/is_visible} &amp;&amp;
-						!${claimitem_property>/entitled_breakfast/is_visible}
+						!${claimitem_property>/entitled_breakfast/is_visible} &amp;&amp;
+                        !Object.values(${constant>/ClaimTypeItemMakan}).includes(${claimitem_input>/claim_item/claim_type_item_id})
 					}"
 					visible="{claimitem_property>/amount/is_visible}"
 				/>
@@ -607,7 +627,7 @@
 					enabled="false"/>
 
 				<!-- Number of Days -->
-				<Label text="{i18n>label_claimdetails_input_numberofdays}" />
+				<Label text="{= ${claimitem_input>/claim_item/claim_type_item_id} === ${constant>/ClaimTypeItem/MKN_LOAN} ? ${i18n>label_claimdetails_input_maxday} :${i18n>label_claimdetails_input_numberofdays} }" />
 				<Input
 					id="input_claimdetails_input_no_of_days"
 					value="{claimitem_input>/claim_item/no_of_days}"
@@ -645,7 +665,9 @@
 				</Select>
 
                 <!-- Kilometer -->
-                <Label text="{i18n>label_claimdetails_input_km}" />
+                <Label text="{i18n>label_claimdetails_input_km}" 
+                  required="{claimitem_property>/km/is_required}"
+                  labelFor="input_claimdetails_input_km"/>
                 <Input
                     id="input_claimdetails_input_km"
                     value="{
@@ -807,11 +829,13 @@
                 </Select>
 
                 <!-- To State -->
-                <Label text="{i18n>label_claimdetails_input_state_to}" />
+                <Label text="{i18n>label_claimdetails_input_state_to}" 
+                required="{claimitem_property>/to_state_id/is_required}" />
                 <Select
                     id="select_claimdetails_input_to_state_id"
                     forceSelection="false"
                     selectedKey="{claimitem_input>/claim_item/to_state_id}"
+                    required="{claimitem_property>/to_state_id/is_required}"
                     visible="{= ${claimitem_input>/claim_item/location_type} === ${constant>/LocationType/KWSP}}"
                     items="{path: 'employee>/ZSTATE',
                             sorter: { path: 'STATE_ID', descending: false },
@@ -1111,6 +1135,22 @@
                     visible="false"
                 />
 
+                <!-- Daily Allowance -->
+                <Label text="{i18n>label_claimdetails_input_dailyallowance}" />
+                <Input
+                    id="input_claimdetails_input_dailyallowance"
+                    value="{ path: 'claimitem_input>/claim_item/dailyallowance',
+							 type: 'FloatType',
+							 formatOptions: {
+							minFractionDigits: 2,
+							maxFractionDigits: 2,
+							preserveDecimals: false
+						}
+						}"
+                    visible="false"
+                    editable="false"
+                />
+
                 <!-- Lodging Address -->
                 <Label text="{i18n>label_claimdetails_input_lodging_address}" />
                 <Input
@@ -1200,6 +1240,7 @@
                     id="input_claimdetails_input_bill_no"
                     value="{claimitem_input>/claim_item/bill_no}"
                     visible="false"
+                    required="{claimitem_property>/bill_no/is_required}"
                 />
 
                 <!-- Account No -->
@@ -1208,6 +1249,7 @@
                     id="input_claimdetails_input_account_no"
                     value="{claimitem_input>/claim_item/account_no}"
                     visible="false"
+                    required="{claimitem_property>/account_no/is_required}"
                 />
 
                 <!-- Bill Date -->
@@ -1267,15 +1309,6 @@
                     selected="{claimitem_input>/claim_item/disclaimer}"
                 />
 
-                <!-- Disclaimer (Galakan) -->
-				<Label text="{i18n>label_claimdetails_input_disclaimer}" required="true" />
-                <CheckBox
-                    id="checkbox_claimdetails_input_disclaimer_galakan"
-                    text="{i18n>checkbox_claimdetails_input_disclaimer_galakan}"
-                    visible="false"
-                    wrapping="true"
-                    selected="{claimitem_input>/claim_item/disclaimer_galakan}"
-                />
 
                 <!-- Remarks -->
                 <Label text="{i18n>label_claimdetails_input_remarks}" />
@@ -1283,22 +1316,6 @@
                     id="input_claimdetails_input_remarks"
                     value="{claimitem_input>/claim_item/remark}"
                     visible="false"
-                />
-
-                <!-- Daily Allowance -->
-                <Label text="{i18n>label_claimdetails_input_dailyallowance}" />
-                <Input
-                    id="input_claimdetails_input_dailyallowance"
-                    value="{ path: 'claimitem_input>/claim_item/dailyallowance',
-							 type: 'FloatType',
-							 formatOptions: {
-							minFractionDigits: 2,
-							maxFractionDigits: 2,
-							preserveDecimals: false
-						}
-						}"
-                    visible="false"
-                    editable="false"
                 />
 
                 <!-- Attachment 1 -->

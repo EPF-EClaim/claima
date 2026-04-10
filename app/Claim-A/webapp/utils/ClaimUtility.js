@@ -2,6 +2,7 @@ sap.ui.define([
 	"sap/ui/model/Sorter",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
+	"sap/ui/model/json/JSONModel",
 	"sap/ui/core/BusyIndicator",
 	"sap/m/MessageBox",
 	"sap/m/MessageToast",
@@ -12,6 +13,7 @@ sap.ui.define([
 	Sorter,
 	Filter,
 	FilterOperator,
+	JSONModel,
 	BusyIndicator,
 	MessageBox,
 	MessageToast,
@@ -36,28 +38,25 @@ sap.ui.define([
 		* Checks if course has already used by user for a previously approved claim
 		* @public
 		* @param {string} sCourseCode - course code ID to check from database
+		* @param {string} sSessionNumber - session number ID to check from database
 		* @param {string} sParticipantId - participant ID to check from database
 		* @returns {boolean} if records found, return true; else return false
 		*/
-		checkExistingCourseCode: async function (sCourseCode, sParticipantId) {
+		checkExistingCourseCode: async function (sCourseCode, sSessionNumber, sParticipantId) {
 			const oModel = this._oOwnerComponent.getModel();
 			// filter by claim status (approved, pending approval)
 			const oFilterRoleId = new Filter({
 				filters: [
-					new Filter("CLAIM_STATUS", FilterOperator.EQ, Constant.ClaimStatus.APPROVED),
-					new Filter("CLAIM_STATUS", FilterOperator.EQ, Constant.ClaimStatus.PENDING_APPROVAL)
+					new Filter("STATUS_ID", FilterOperator.EQ, Constant.ClaimStatus.APPROVED),
+					new Filter("STATUS_ID", FilterOperator.EQ, Constant.ClaimStatus.PENDING_APPROVAL)
 				],
 				and: false
 			});
-			const oListBinding = oModel.bindList(Constant.Entities.ZTRAIN_COURSE_PART, null, [
-				new Sorter("COURSE_ID"),
-				new Sorter("SESSION_NUMBER"),
-			], [
-				// ensure status is active
-				new Filter("COURSE_ID", FilterOperator.EQ, sCourseCode),
-				new Filter("PARTICIPANT_ID", FilterOperator.EQ, sParticipantId),
-				new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, Constant.CourseSessionStatus.ACTIVE),
-				new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true),
+			const oListBinding = oModel.bindList(Constant.Entities.ZCLAIM_HEADER, null, null, [
+				// check if claim exists with following 
+				new Filter("COURSE_CODE", FilterOperator.EQ, sCourseCode),
+				new Filter("SESSION_NUMBER", FilterOperator.EQ, sSessionNumber),
+				new Filter("EMP_ID", FilterOperator.EQ, sParticipantId),
 				oFilterRoleId
 			]);
 
@@ -77,60 +76,6 @@ sap.ui.define([
 				BusyIndicator.hide();
 			}
 		},
-
-		/**
-		* Retrieve start end dates for course code from db table, based on selected course code ID and user ID
-		* Method retrieves db table to be checked with fields and values to be filtered against
-		* if records found, first record is retrieved from the table and returns values from the record
-		* @public
-		* @param {string} sCourseCode - course code ID to check from database
-		* @param {string} sParticipantId - participant ID to check from database
-		* @returns {object} oReturnDates - if records found, return total start and end date
-		*/
-		getCourseCodeStartEndDate: async function (sCourseCode, sParticipantId) {
-			const oModel = this._oOwnerComponent.getModel();
-			const oListBinding = oModel.bindList(Constant.Entities.ZTRAIN_COURSE_PART, null, [
-				new Sorter("COURSE_ID"),
-				new Sorter("SESSION_NUMBER"),
-			], [
-				// ensure status is active
-				new Filter("COURSE_ID", FilterOperator.EQ, sCourseCode),
-				new Filter("PARTICIPANT_ID", FilterOperator.EQ, sParticipantId),
-				new Filter("COURSE_SESSION_STAT", FilterOperator.EQ, Constant.CourseSessionStatus.ACTIVE),
-				new Filter("ATTENDENCE_STATUS", FilterOperator.EQ, true),
-				new Filter("CLAIM_STATUS", FilterOperator.NE, Constant.ClaimStatus.APPROVED),
-				new Filter("CLAIM_STATUS", FilterOperator.NE, Constant.ClaimStatus.PENDING_APPROVAL)
-			]);
-
-			try {
-				BusyIndicator.show(0);
-				const aContexts = await oListBinding.requestContexts(0, Infinity);
-
-				if (aContexts.length > 0) {
-					var oReturnDates = {
-						start_date: null,
-						end_date: null,
-					}
-					for ( var iContext = 0; iContext < aContexts.length; iContext++) {
-						var oData = aContexts[iContext].getObject();
-						if (!oReturnDates.start_date || new Date(oData["START_DATE"]) < new Date(oReturnDates.start_date)) {
-							oReturnDates.start_date = oData["START_DATE"];
-						}
-						if (!oReturnDates.end_date || new Date(oData["END_DATE"]) > new Date(oReturnDates.end_date)) {
-							oReturnDates.end_date = oData["END_DATE"];
-						}
-					}
-					return oReturnDates;
-				} else {
-					return null;
-				}
-			} catch (oError) {
-				MessageBox.error(Utility.getText("msg_claimdetails_input_err", [oError]));
-				return null;
-			} finally {
-				BusyIndicator.hide();
-			}
-		}, 
 
 		/**
 		* Set default values for claim item fields
@@ -324,7 +269,7 @@ sap.ui.define([
 			} finally {
 				BusyIndicator.hide();
 			}
-		}, 
+		},
 
 		/**
 		 * Fetch entitlement amount from the backend function
@@ -332,7 +277,14 @@ sap.ui.define([
 		 * @param {sap.ui.model.json.JSONModel} oClaimItemInputModel Claim item input
 		 */
 		fetchAndApplyEntitlement: function (oClaimItemInputModel) {
-			var nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
+			var nDay, nDependent;
+			if ((oClaimItemInputModel.getProperty("/claim_item/claim_type_item_id") === Constant.ClaimTypeItem.MKN_LOAN)) {
+				nDay = oClaimItemInputModel.getProperty("/claim_item/no_of_days") > 2? 2: oClaimItemInputModel.getProperty("/claim_item/no_of_days");
+				nDependent = oClaimItemInputModel.getProperty("/claim_item/no_of_family_member");
+			} else {
+				nDay = oClaimItemInputModel.getProperty("/claim_item/travel_duration_day");
+				nDependent = 0;
+			}
 			var nHour = oClaimItemInputModel.getProperty("/claim_item/travel_duration_hour");
 			var sLocation = oClaimItemInputModel.getProperty("/claim_item/region");
 			var sClaimtype = oClaimItemInputModel.getProperty("/claim_item/claim_type_id");
@@ -340,12 +292,16 @@ sap.ui.define([
 			var nBreakfast = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_breakfast"));
 			var nLunch = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_lunch"));
 			var nDinner = parseInt(oClaimItemInputModel.getProperty("/claim_item/provided_dinner"));
+			
+			var oSessionModel = this.getView().getModel("session");
+    		var sEEID = oSessionModel.getProperty("/userId");
+
 
 			nBreakfast = Number.isNaN(nBreakfast) ? 0 : nBreakfast;
 			nLunch = Number.isNaN(nLunch) ? 0 : nLunch;
 			nDinner = Number.isNaN(nDinner) ? 0 : nDinner;
 
-			const oModel = this._oView.getModel();
+			const oModel = this.getView().getModel();
 			const oContext = oModel.bindContext("/getAmountEntitlement(...)");
 
 			oContext.setParameter("day", nDay);
@@ -356,6 +312,8 @@ sap.ui.define([
 			oContext.setParameter("breakfast", nBreakfast);
 			oContext.setParameter("lunch", nLunch);
 			oContext.setParameter("dinner", nDinner);
+			oContext.setParameter("employeeid", sEEID);
+			oContext.setParameter("dependent", nDependent);
 
 			return oContext.execute()
 				.then(() => oContext.requestObject());
@@ -381,99 +339,56 @@ sap.ui.define([
 		},
 
 		/**
-		 * Calculate entitled meter cube value for Pengangkutan Laut claim type.
-		 * Method retrieves employee master data, marital status, dependent (spouse) data,
-		 * and meter cube configuration table to determine the total entitled meter cube
-		 * based on predefined rules.
+		 * Retrieve and apply meter cube entitlement from backend service.
 		 *
-		 * Entitlement is derived from these components:
-		 * - Base employee meter cube
-		 * - Additional meter cube based on marital status (single/married)
-		 * - Additional meter cube if employee has a spouse
+		 * Calls backend entitlement function using the logged-in employee ID
+		 * and updates the entitled meter cube value in the claim item input model.
 		 *
 		 * @public
-		 * @param {string} sKey - Selected claim type key
-		 * @param {object} oInputModel - Model storing claim item input values
-		 * @param {object} oPropertyModel - Model controlling visibility/editability of UI fields
-		 * @param {object} oSessionModel - Model containing user session information
-		 * @returns {void} Does not return a value; updates claim item model properties directly
+		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim item input model
+		 * @param {sap.ui.model.json.JSONModel} oSessionModel - User session model
+		 * @returns Updates entitled meter cube field upon completion
 		 */
-		onSelect_ClaimDetails_MeterCube: async function (sKey, oInputModel, oPropertyModel, oSessionModel) {
+		fetchMeterCubeEntitlement: function (oInputModel) {
+			const oContext = this._oView.getModel().bindContext("/getMeterCubeEntitlement(...)");
 
-			const sEmpId = oSessionModel?.getProperty("/userId");
-			if (sKey !== Constant.ClaimTypeItem.LAUT || !sEmpId) {
-				return;
-			}
-			const oMar = Constant.MaritalStatus;
-			const oCube = Constant.MeterCubeId;
-			const oRel = Constant.RelationshipType;
-			const aMaster = await Utility.getMeterCubeCalc("/ZEMP_MASTER", ["EEID"], [sEmpId]);
-			const sMarital = aMaster?.[0]?.MARITAL;
-			const aDep = await Utility.getMeterCubeCalc(
-				"/ZEMP_DEPENDENT",
-				["EMP_ID", "RELATIONSHIP"],
-				[sEmpId, oRel.SPOUSE]
-			);
-			const bHasSpouse = aDep.length > 0;
-			const aMeter = await Utility.getMeterCubeCalc("/ZMETER_CUBE");
-			const fnGetCube = (sId) =>
-				aMeter.find(oRow => oRow.METER_CUBE_ID === sId)?.METER_CUBE ?? 0;
-			const aParts = [
-				fnGetCube(oCube.EMPLOYEE),
-				sMarital === oMar.SINGLE ? fnGetCube(oCube.SINGLE) : 0,
-				sMarital === oMar.MARRIED ? fnGetCube(oCube.MARRIED) : 0,
-				bHasSpouse ? fnGetCube(oCube.SPOUSE) : 0
-			];
-			const fTotal = aParts.reduce((sum, val) => sum + Number(val), 0);
-			//final value
-			oInputModel.setProperty("/claim_item/meter_cube_entitled", fTotal.toFixed(2));
-			oPropertyModel.setProperty("/meter_cube_entitled/is_editable", false);
-			oPropertyModel.setProperty("/meter_cube_entitled/is_visible", true);
+			oContext.setParameter("empId",this._oOwnerComponent.getModel("session").getProperty("/userId"));
+			return oContext.execute()
+				.then(() => oContext.requestObject())
+				.then((result) => {
+					oInputModel.setProperty(
+						"/claim_item/meter_cube_entitled",
+						Number(result).toFixed(2)
+					);
+				});
 		},
-
+		
 		/**
-		 * Calculate claim amount for Pengangkutan Laut based on actual meter cube,
-		 * entitled meter cube, and actual amount entered by user.
+		 * Retrieve and apply Pengangkutan Laut claim amount from backend service.
 		 *
-		 * Method reads relevant values from the input model, validates them,
-		 * and applies the entitlement formula to derive the final payable amount.
+		 * Calls backend calculation function using employee ID, actual meter cube,
+		 * and actual amount, then updates entitled meter cube and final payable
+		 * amount in the claim item input model.
 		 *
 		 * @public
-		 * @param {object} oInputModel - JSON model containing claim item input values
-		 * @returns {void} Updates "/claim_item/amount" in the model; no return value
+		 * @param {sap.ui.model.json.JSONModel} oInputModel - Claim item input model
+		 * @param {sap.ui.model.json.JSONModel} oSessionModel - User session model
+		 * @returns Updates claim item fields upon completion
 		 */
-		calculatePengangkutanLautAmount: function (oInputModel) {
+		fetchPengangkutanLautAmount: function (oInputModel) {
+			const oContext = this._oView.getModel().bindContext("/calculatePengangkutanLautAmount(...)");
 
-			const sActualMC = oInputModel.getProperty("/claim_item/meter_cube_actual");
-			const sActualAmount = oInputModel.getProperty("/claim_item/actual_amount");
+			oContext.setParameter("empId",this._oOwnerComponent.getModel("session").getProperty("/userId"));
+			oContext.setParameter("actualMeterCube", oInputModel.getProperty("/claim_item/meter_cube_actual"));
+			oContext.setParameter("actualAmount", oInputModel.getProperty("/claim_item/actual_amount"));
 
-			if (sActualMC === "" || sActualMC === null ||
-				sActualAmount === "" || sActualAmount === null) {
-				oInputModel.setProperty("/claim_item/amount", null);
-				return;
-			}
-
-			const nActualMeterCube = Number(sActualMC);
-			const nEntitledMeterCube = Number(oInputModel.getProperty("/claim_item/meter_cube_entitled"));
-
-			const nActualAmount = Number(sActualAmount.toString().replace(/,/g, ""));
-
-			if (isNaN(nActualMeterCube) || isNaN(nEntitledMeterCube) || isNaN(nActualAmount)) {
-				oInputModel.setProperty("/claim_item/amount", null);
-				return;
-			}
-
-			let nFinalAmount = 0;
-
-			if (nActualMeterCube > nEntitledMeterCube) {
-				nFinalAmount = (nActualAmount / nActualMeterCube) * nEntitledMeterCube;
-			} else {
-				nFinalAmount = nActualAmount;
-			}
-
-			oInputModel.setProperty("/claim_item/amount", nFinalAmount.toFixed(2));
+			return oContext.execute()
+				.then(() => oContext.requestObject())
+				.then((oResult) => {
+					oInputModel.setProperty("/claim_item/meter_cube_entitled", oResult.entitled);
+					oInputModel.setProperty("/claim_item/amount", oResult.amount);
+				});
 		},
-
 
 		/**
 		 * Check if PAR has been reused for claim submission 

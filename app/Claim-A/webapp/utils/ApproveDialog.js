@@ -6,8 +6,10 @@ sap.ui.define([
   "sap/m/Label",
   "sap/m/Text",
   "sap/m/TextArea",
-  "sap/ui/layout/form/SimpleForm"
-], function (JSONModel, Dialog, Button, Label, Text, TextArea, SimpleForm) {
+  "sap/ui/layout/form/SimpleForm",
+  "claima/utils/Utility",
+  "claima/utils/Constants"
+], function (JSONModel, Dialog, Button, Label, Text, TextArea, SimpleForm, Utility, Constants) {
   "use strict";
 
   function ensureModels(oController) {
@@ -89,12 +91,15 @@ sap.ui.define([
         press: cancelHandler.bind(oController)
       }),
       endButton: new Button(oView.createId("approver_placeholder_create"), {
-        text: "{i18n>approve_btn}",
         type: sap.m.ButtonType.Emphasized,
         press: fnCreateHandler.bind(oController)
       })
     });
 
+    const sMode = oController.getView().getModel("Type").getProperty("/mode");
+    
+    oDialog.getEndButton().setText(sMode === Constants.ApprovalProcess.CLAIM_APPROVE ? Utility.getText("approve_btn") : Utility.getText("approve_btn_request"))
+    
     oDialog.addStyleClass("requestDialog");
     oView.addDependent(oDialog);
     return oDialog;

@@ -63,7 +63,8 @@ const Constant = {
         "ZCLAIM_HEADER": "ZCLAIM_HEADER",
         "ZCLAIM_ITEM": "ZCLAIM_ITEM",
         "ZREQUEST_HEADER": "ZREQUEST_HEADER",
-        "ZREQUEST_ITEM": "ZREQUEST_ITEM"
+        "ZREQUEST_ITEM": "ZREQUEST_ITEM",
+        "ZCLM_TYPE_EXCEPTION_LIST": "ZCLM_TYPE_EXCEPTION_LIST"
     },
     ClaimType: {
         "KURSUS_DLM_NEGARA": "KURSUS_DLM_NEGARA",
@@ -74,7 +75,9 @@ const Constant = {
         "ELAUN_TUKAR": "ELAUN_TUKAR",
         "ELAUN_PINDAH": "ELAUN_PINDAH",
         "HANDPHONE": "HANDPHONE",
-        "I_PAD": "I-PAD"
+        "I_PAD": "I-PAD",
+        "HANDPHONE": "HANDPHONE",
+        "JALUR_LEB": "JALUR_LEB"
     },
     ClaimTypeItem: {
         "BAGAI": "BAGAI",
@@ -131,7 +134,9 @@ const Constant = {
         "VISA": "VISA",
         "YURAN": "YURAN",
         "YURAN_KLJ": "YURAN_KLJ",
-        "I_PAD": "I-PAD"
+        "I_PAD": "I-PAD",
+        "TELEFON_B": "TELEFON_B",
+        "JALUR_LEB": "JALUR_LEB"
     },
     EntitiesFields: {
         "FLIGHT_CLASS_ID": "FLIGHT_CLASS_ID",
@@ -150,14 +155,20 @@ const Constant = {
         "CLAIM_TYPE_ITEM_ID": "CLAIM_TYPE_ITEM_ID",
         "EEID": "EEID",
         "EMP_ID": "EMP_ID",
+        "ROLE_ID": "ROLE_ID",
         "BILL_DATE": "BILL_DATE",
-        "RECEIPT_DATE": "RECEIPT_DATE"
+        "RECEIPT_DATE": "RECEIPT_DATE",
+        "JOB_GROUP": "JOB_GROUP",
+        "PERSONAL_GRADE": "PERSONAL_GRADE",
+        "START_DATE": "START_DATE",
+        "END_DATE": "END_DATE"
     },
     Wildcard: {
         "All": "*",
         "LIKE_PATTERN": "%",
         "DASH": "-",
-        "ZERO": "0"
+        "ZERO": "0",
+        "NA": "NA"
     }, 
     Role: {
         "CEO": "CEO", 
@@ -191,8 +202,37 @@ const Constant = {
     },
     ComparisonOperators:{
         "LesserEquals": "<=",
-        "GreaterEquals": ">="
-    }
+        "GreaterEquals": ">=",
+        "Equals": "=",
+        "NotEquals": "!="
+    },
+    WhereCondition: {
+        "AND": "AND",
+        "IN": "IN"
+    },
+
+    RelationshipType: {
+        SPOUSE: "01",
+        CHILD: "02",
+        ADDITIONAL_SPOUSE: "07"
+    },
+
+    MeterCubeId: {
+        EMPLOYEE: "01",
+        SINGLE: "02",
+        SPOUSE: "03",
+        CHILD_GE_3: "04",
+        CHILD_LT_3: "05",
+        MARRIED: "06",
+        ADDITIONAL_SPOUSE: "07"
+    },
+
+    MaritalStatus: {
+        SINGLE: "S",
+        MARRIED: "M"
+    },
+
+    UnlimitedAmount: -1
 
 };
 
