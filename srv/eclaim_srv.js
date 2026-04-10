@@ -1290,7 +1290,7 @@ module.exports = (srv) => {
                 .where({
                     EMP_ID: sEmpId,
                     CLAIM_TYPE_ITEM_ID: Constant.ClaimTypeItem.E_PENGAKUT,
-                    "ZCLAIM_HEADER.STATUS_ID": Constant.Status.APPROVED
+                    "ZCLAIM_HEADER.STATUS_ID": [Constant.Status.PENDING_APPROVAL, Constant.Status.APPROVED]
                 })
                 .orderBy([
                     Constant.EntitiesFields.CLAIMID,

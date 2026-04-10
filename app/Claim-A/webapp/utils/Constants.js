@@ -403,6 +403,15 @@ sap.ui.define([
             "ANGGOTA" : "1",
             "DEPENDENT": "2"
         },
+        "Relationship": {
+            "SPOUSE" : "01",
+            "CHILD": "02",
+            "FATHER": "03",
+            "MOTHER": "04",
+            "SIBLING": "05",
+            "RELATIVES": "06",
+            "ADDITIONAL_SPOUSE": "07"
+        },
         "MarriageCategory": {
             "SINGLE" : "01",
             "MARRIED_NO_CHILDREN": "02",

@@ -77,7 +77,7 @@ sap.ui.define([
                     const oFunctionCount = this._oOwnerComponent.getModel().bindContext("/getEmpDependentCount(...)");
 
                     oFunctionCount.setParameter("sEmpId", sEmpId);
-                    oFunctionCount.setParameter("sRelationship", Constants.DependentType.DEPENDENT);
+                    oFunctionCount.setParameter("sRelationship", Constants.Relationship.CHILD);
 
                     await oFunctionCount.execute();
 
